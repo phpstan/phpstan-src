@@ -42,7 +42,7 @@ class MissingCheckedExceptionInFunctionThrowsRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Function %s() throws checked exception %s but it\'s missing from the PHPDoc @throws tag.',
 				$functionReflection->getName(),
-				$className
+				$className,
 			))
 				->line($throwPointNode->getLine())
 				->identifier('exceptions.missingThrowsTag')

@@ -289,8 +289,8 @@ class TypeCombinator
 		$types = array_values(
 			array_merge(
 				$types,
-				self::processArrayTypes($arrayTypes, $arrayAccessoryTypesToProcess)
-			)
+				self::processArrayTypes($arrayTypes, $arrayAccessoryTypesToProcess),
+			),
 		);
 		$typesCount = count($types);
 
@@ -300,7 +300,7 @@ class TypeCombinator
 				if ($types[$i] instanceof IterableType && $types[$j] instanceof IterableType) {
 					$types[$i] = new IterableType(
 						self::union($types[$i]->getIterableKeyType(), $types[$j]->getIterableKeyType()),
-						self::union($types[$i]->getIterableValueType(), $types[$j]->getIterableValueType())
+						self::union($types[$i]->getIterableValueType(), $types[$j]->getIterableValueType()),
 					);
 					array_splice($types, $j, 1);
 					$typesCount--;
@@ -524,7 +524,7 @@ class TypeCombinator
 
 			$subtractedType = self::union(
 				$type->getSubtractedType(),
-				$subtractedType
+				$subtractedType,
 			);
 			if ($subtractedType instanceof NeverType) {
 				$subtractedType = null;
@@ -555,7 +555,7 @@ class TypeCombinator
 
 		$subtractedType = self::intersect(
 			$subtractableType->getSubtractedType(),
-			$subtractedType
+			$subtractedType,
 		);
 		if ($subtractedType instanceof NeverType) {
 			$subtractedType = null;
@@ -636,7 +636,7 @@ class TypeCombinator
 			return [
 				self::intersect(new ArrayType(
 					self::union(...$keyTypesForGeneralArray),
-					self::union(...$valueTypesForGeneralArray)
+					self::union(...$valueTypesForGeneralArray),
 				), ...$accessoryTypes),
 			];
 		}
@@ -671,7 +671,7 @@ class TypeCombinator
 			foreach ($arrayTypeAgain->getKeyTypes() as $i => $keyType) {
 				$bucket[$keyType->getValue()]['valueType'] = self::union(
 					$bucket[$keyType->getValue()]['valueType'],
-					$arrayTypeAgain->getValueTypes()[$i]
+					$arrayTypeAgain->getValueTypes()[$i],
 				);
 				$bucket[$keyType->getValue()]['optional'] = $bucket[$keyType->getValue()]['optional'] || $arrayTypeAgain->isOptionalKey($i);
 			}
@@ -766,7 +766,7 @@ class TypeCombinator
 				$topLevelUnionSubTypes[] = self::intersect(
 					$innerUnionSubType,
 					...array_slice($types, 0, $i),
-					...array_slice($types, $i + 1)
+					...array_slice($types, $i + 1),
 				);
 			}
 
@@ -780,7 +780,7 @@ class TypeCombinator
 					$type->getScope(),
 					$type->getName(),
 					$union,
-					$type->getVariance()
+					$type->getVariance(),
 				);
 				if ($type->isArgument()) {
 					return TemplateTypeHelper::toArgument($union);

@@ -39,7 +39,7 @@ class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 
 		return new ArrayType(
 			new IntegerType(),
-			new UnionType([new StringType(), new IntegerType()])
+			new UnionType([new StringType(), new IntegerType()]),
 		);
 	}
 

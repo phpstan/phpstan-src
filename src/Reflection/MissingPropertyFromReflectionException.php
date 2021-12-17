@@ -17,8 +17,8 @@ class MissingPropertyFromReflectionException extends Exception
 			sprintf(
 				'Property $%s was not found in reflection of class %s.',
 				$propertyName,
-				$className
-			)
+				$className,
+			),
 		);
 	}
 

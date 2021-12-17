@@ -72,7 +72,7 @@ class OverridingConstantRule implements Rule
 				$classReflection->getDisplayName(),
 				$constantReflection->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$prototype->getName()
+				$prototype->getName(),
 			))->nonIgnorable()->build();
 		}
 
@@ -84,7 +84,7 @@ class OverridingConstantRule implements Rule
 					$constantReflection->getDeclaringClass()->getDisplayName(),
 					$constantReflection->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$prototype->getName()
+					$prototype->getName(),
 				))->nonIgnorable()->build();
 			}
 		} elseif ($constantReflection->isPrivate()) {
@@ -93,7 +93,7 @@ class OverridingConstantRule implements Rule
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantReflection->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$prototype->getName()
+				$prototype->getName(),
 			))->nonIgnorable()->build();
 		}
 
@@ -117,7 +117,7 @@ class OverridingConstantRule implements Rule
 				$constantReflection->getName(),
 				$prototype->getValueType()->describe(VerbosityLevel::value()),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$prototype->getName()
+				$prototype->getName(),
 			))->build();
 		}
 

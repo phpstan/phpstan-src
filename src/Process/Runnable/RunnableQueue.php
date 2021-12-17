@@ -99,8 +99,8 @@ class RunnableQueue
 					'Canot remote first item from the queue - it has size %d, current queue size is %d, new size would be %d',
 					$runnableSize,
 					$currentQueueSize,
-					$newSize
-				)
+					$newSize,
+				),
 			);
 			return;
 		}

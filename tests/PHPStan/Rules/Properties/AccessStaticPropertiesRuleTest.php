@@ -20,7 +20,7 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 		return new AccessStaticPropertiesRule(
 			$reflectionProvider,
 			new RuleLevelHelper($reflectionProvider, true, false, true, false),
-			new ClassCaseSensitivityCheck($reflectionProvider, true)
+			new ClassCaseSensitivityCheck($reflectionProvider, true),
 		);
 	}
 

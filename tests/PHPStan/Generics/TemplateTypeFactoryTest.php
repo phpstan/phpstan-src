@@ -52,7 +52,7 @@ class TemplateTypeFactoryTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('a'),
 					'U',
 					null,
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				),
 				new MixedType(),
 			],
@@ -79,12 +79,12 @@ class TemplateTypeFactoryTest extends PHPStanTestCase
 			$scope,
 			'T',
 			$bound,
-			TemplateTypeVariance::createInvariant()
+			TemplateTypeVariance::createInvariant(),
 		);
 
 		$this->assertTrue(
 			$expectedBound->equals($templateType->getBound()),
-			sprintf('%s -> equals(%s)', $expectedBound->describe(VerbosityLevel::precise()), $templateType->getBound()->describe(VerbosityLevel::precise()))
+			sprintf('%s -> equals(%s)', $expectedBound->describe(VerbosityLevel::precise()), $templateType->getBound()->describe(VerbosityLevel::precise())),
 		);
 	}
 

@@ -68,11 +68,11 @@ class ResolvedPropertyReflection implements WrapperPropertyReflection
 
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$this->reflection->getReadableType(),
-			$this->templateTypeMap
+			$this->templateTypeMap,
 		);
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$type,
-			$this->templateTypeMap
+			$this->templateTypeMap,
 		);
 
 		$this->readableType = $type;
@@ -89,11 +89,11 @@ class ResolvedPropertyReflection implements WrapperPropertyReflection
 
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$this->reflection->getWritableType(),
-			$this->templateTypeMap
+			$this->templateTypeMap,
 		);
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$type,
-			$this->templateTypeMap
+			$this->templateTypeMap,
 		);
 
 		$this->writableType = $type;

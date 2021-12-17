@@ -50,7 +50,7 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 	{
 		if (count($functionCall->getArgs()) < 1) {
 			return ParametersAcceptorSelector::selectSingle(
-				$functionReflection->getVariants()
+				$functionReflection->getVariants(),
 			)->getReturnType();
 		}
 

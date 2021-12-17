@@ -56,7 +56,7 @@ class IfConstantConditionRule implements Rule
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'If condition is always %s.',
-					$exprType->getValue() ? 'true' : 'false'
+					$exprType->getValue() ? 'true' : 'false',
 				)))->line($node->cond->getLine())
 					->identifier('deadCode.ifConstantCondition')
 					->metadata([

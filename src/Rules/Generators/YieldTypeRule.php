@@ -69,7 +69,7 @@ class YieldTypeRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects key type %s, %s given.',
 				$returnType->getIterableKeyType()->describe($verbosityLevel),
-				$keyType->describe($verbosityLevel)
+				$keyType->describe($verbosityLevel),
 			))->build();
 		}
 		if (!$this->ruleLevelHelper->accepts($returnType->getIterableValueType(), $valueType, $scope->isDeclareStrictTypes())) {
@@ -77,7 +77,7 @@ class YieldTypeRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects value type %s, %s given.',
 				$returnType->getIterableValueType()->describe($verbosityLevel),
-				$valueType->describe($verbosityLevel)
+				$valueType->describe($verbosityLevel),
 			))->build();
 		}
 		if ($scope->getType($node) instanceof VoidType && !$scope->isInFirstLevelStatement()) {

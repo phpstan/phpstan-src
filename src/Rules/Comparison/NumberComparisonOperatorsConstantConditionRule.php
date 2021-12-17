@@ -44,7 +44,7 @@ class NumberComparisonOperatorsConstantConditionRule implements Rule
 					$node->getOperatorSigil(),
 					$scope->getType($node->left)->describe(VerbosityLevel::value()),
 					$scope->getType($node->right)->describe(VerbosityLevel::value()),
-					$exprType->getValue() ? 'true' : 'false'
+					$exprType->getValue() ? 'true' : 'false',
 				))->build(),
 			];
 		}

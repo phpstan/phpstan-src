@@ -35,7 +35,7 @@ class ExistingClassesInArrowFunctionTypehintsRule implements Rule
 			'Anonymous function has invalid return type %s.',
 			'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
 			'Parameter $%s of anonymous function has unresolvable native type.',
-			'Anonymous function has unresolvable native return type.'
+			'Anonymous function has unresolvable native return type.',
 		);
 	}
 

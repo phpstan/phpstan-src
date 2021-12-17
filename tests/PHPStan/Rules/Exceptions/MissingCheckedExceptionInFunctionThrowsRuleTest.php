@@ -20,8 +20,8 @@ class MissingCheckedExceptionInFunctionThrowsRuleTest extends RuleTestCase
 				[],
 				[ShouldNotHappenException::class],
 				[],
-				[]
-			))
+				[],
+			)),
 		);
 	}
 

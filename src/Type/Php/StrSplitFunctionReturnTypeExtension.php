@@ -106,7 +106,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		if (!$stringType instanceof ConstantStringType) {
 			return TypeCombinator::intersect(
 				new ArrayType(new IntegerType(), new StringType()),
-				new NonEmptyArrayType()
+				new NonEmptyArrayType(),
 			);
 		}
 		$stringValue = $stringType->getValue();

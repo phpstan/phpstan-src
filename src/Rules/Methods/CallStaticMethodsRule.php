@@ -51,19 +51,19 @@ class CallStaticMethodsRule implements Rule
 		$displayMethodName = SprintfHelper::escapeFormatString(sprintf(
 			'%s %s',
 			$method->isStatic() ? 'Static method' : 'Method',
-			$method->getDeclaringClass()->getDisplayName() . '::' . $method->getName() . '()'
+			$method->getDeclaringClass()->getDisplayName() . '::' . $method->getName() . '()',
 		));
 		$lowercasedMethodName = SprintfHelper::escapeFormatString(sprintf(
 			'%s %s',
 			$method->isStatic() ? 'static method' : 'method',
-			$method->getDeclaringClass()->getDisplayName() . '::' . $method->getName() . '()'
+			$method->getDeclaringClass()->getDisplayName() . '::' . $method->getName() . '()',
 		));
 
 		$errors = array_merge($errors, $this->parametersCheck->check(
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$node->getArgs(),
-				$method->getVariants()
+				$method->getVariants(),
 			),
 			$scope,
 			$method->getDeclaringClass()->isBuiltin(),
@@ -82,7 +82,7 @@ class CallStaticMethodsRule implements Rule
 				'Missing parameter $%s in call to ' . $lowercasedMethodName . '.',
 				'Unknown parameter $%s in call to ' . $lowercasedMethodName . '.',
 				'Return type of call to ' . $lowercasedMethodName . ' contains unresolvable type.',
-			]
+			],
 		));
 
 		return $errors;

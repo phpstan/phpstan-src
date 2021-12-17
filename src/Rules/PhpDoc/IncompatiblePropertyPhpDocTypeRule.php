@@ -66,7 +66,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 				'%s for property %s::$%s contains unresolvable type.',
 				$description,
 				$propertyReflection->getDeclaringClass()->getName(),
-				$propertyName
+				$propertyName,
 			))->build();
 		}
 
@@ -79,7 +79,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$propertyName,
 				$phpDocType->describe(VerbosityLevel::typeOnly()),
-				$nativeType->describe(VerbosityLevel::typeOnly())
+				$nativeType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 
 		} elseif ($isSuperType->maybe()) {
@@ -89,7 +89,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$propertyName,
 				$phpDocType->describe(VerbosityLevel::typeOnly()),
-				$nativeType->describe(VerbosityLevel::typeOnly())
+				$nativeType->describe(VerbosityLevel::typeOnly()),
 			));
 
 			if ($phpDocType instanceof TemplateType) {
@@ -108,26 +108,26 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 				'%s for property %s::$%s contains generic type %%s but class %%s is not generic.',
 				$description,
 				$className,
-				$escapedPropertyName
+				$escapedPropertyName,
 			),
 			sprintf(
 				'Generic type %%s in %s for property %s::$%s does not specify all template types of class %%s: %%s',
 				$description,
 				$className,
-				$escapedPropertyName
+				$escapedPropertyName,
 			),
 			sprintf(
 				'Generic type %%s in %s for property %s::$%s specifies %%d template types, but class %%s supports only %%d: %%s',
 				$description,
 				$className,
-				$escapedPropertyName
+				$escapedPropertyName,
 			),
 			sprintf(
 				'Type %%s in generic type %%s in %s for property %s::$%s is not subtype of template type %%s of class %%s.',
 				$description,
 				$className,
-				$escapedPropertyName
-			)
+				$escapedPropertyName,
+			),
 		));
 
 		return $messages;

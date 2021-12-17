@@ -38,7 +38,7 @@ class IterableInForeachRule implements Rule
 			'Iterating over an object of an unknown class %s.',
 			static function (Type $type): bool {
 				return $type->isIterable()->yes();
-			}
+			},
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -51,7 +51,7 @@ class IterableInForeachRule implements Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Argument of an invalid type %s supplied for foreach, only iterables are supported.',
-				$type->describe(VerbosityLevel::typeOnly())
+				$type->describe(VerbosityLevel::typeOnly()),
 			))->line($node->expr->getLine())->build(),
 		];
 	}

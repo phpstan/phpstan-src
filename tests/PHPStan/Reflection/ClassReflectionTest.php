@@ -139,11 +139,11 @@ class ClassReflectionTest extends PHPStanTestCase
 			new ReflectionClass($class),
 			null,
 			null,
-			null
+			null,
 		);
 		$this->assertSame(
 			$expectedDistances,
-			$classReflection->getClassHierarchyDistances()
+			$classReflection->getClassHierarchyDistances(),
 		);
 	}
 
@@ -247,9 +247,9 @@ class ClassReflectionTest extends PHPStanTestCase
 				static function (ClassReflection $classReflection): string {
 					return $classReflection->getNativeReflection()->getName();
 				},
-				$reflectionProvider->getClass($className)->getTraits($recursive)
+				$reflectionProvider->getClass($className)->getTraits($recursive),
 			),
-			$expected
+			$expected,
 		);
 	}
 

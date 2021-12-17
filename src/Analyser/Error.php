@@ -109,7 +109,7 @@ class Error implements JsonSerializable
 			$this->nodeLine,
 			$this->nodeType,
 			$this->identifier,
-			$this->metadata
+			$this->metadata,
 		);
 	}
 
@@ -126,7 +126,7 @@ class Error implements JsonSerializable
 			$this->nodeLine,
 			$this->nodeType,
 			$this->identifier,
-			$this->metadata
+			$this->metadata,
 		);
 	}
 
@@ -170,7 +170,7 @@ class Error implements JsonSerializable
 			$this->traitFilePath,
 			null,
 			$this->nodeLine,
-			$this->nodeType
+			$this->nodeType,
 		);
 	}
 
@@ -237,7 +237,7 @@ class Error implements JsonSerializable
 			$json['nodeLine'] ?? null,
 			$json['nodeType'] ?? null,
 			$json['identifier'] ?? null,
-			$json['metadata'] ?? []
+			$json['metadata'] ?? [],
 		);
 	}
 
@@ -257,7 +257,7 @@ class Error implements JsonSerializable
 			$properties['nodeLine'] ?? null,
 			$properties['nodeType'] ?? null,
 			$properties['identifier'] ?? null,
-			$properties['metadata'] ?? []
+			$properties['metadata'] ?? [],
 		);
 	}
 

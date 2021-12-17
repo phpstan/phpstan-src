@@ -48,7 +48,7 @@ class CachingVisitor extends NodeVisitorAbstract
 					$node,
 					$this->currentNamespaceNode,
 					$this->fileName,
-					new LocatedSource($this->contents, $fullClassName, $this->fileName)
+					new LocatedSource($this->contents, $fullClassName, $this->fileName),
 				);
 			}
 
@@ -62,7 +62,7 @@ class CachingVisitor extends NodeVisitorAbstract
 					$node,
 					$this->currentNamespaceNode,
 					$this->fileName,
-					new LocatedSource($this->contents, $functionName, $this->fileName)
+					new LocatedSource($this->contents, $functionName, $this->fileName),
 				);
 			}
 
@@ -74,7 +74,7 @@ class CachingVisitor extends NodeVisitorAbstract
 				$node,
 				$this->currentNamespaceNode,
 				$this->fileName,
-				new LocatedSource($this->contents, null, $this->fileName)
+				new LocatedSource($this->contents, null, $this->fileName),
 			);
 
 			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
@@ -100,7 +100,7 @@ class CachingVisitor extends NodeVisitorAbstract
 				$node,
 				$this->currentNamespaceNode,
 				$this->fileName,
-				new LocatedSource($this->contents, $constantName, $this->fileName)
+				new LocatedSource($this->contents, $constantName, $this->fileName),
 			);
 			$this->constantNodes[] = $constantNode;
 

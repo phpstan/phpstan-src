@@ -16,7 +16,7 @@ class FileWriter
 
 			throw new CouldNotWriteFileException(
 				$fileName,
-				$error !== null ? $error['message'] : 'unknown cause'
+				$error !== null ? $error['message'] : 'unknown cause',
 			);
 		}
 	}

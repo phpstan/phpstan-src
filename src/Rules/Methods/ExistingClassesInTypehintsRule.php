@@ -49,25 +49,25 @@ class ExistingClassesInTypehintsRule implements Rule
 			sprintf(
 				'Parameter $%%s of method %s::%s() has invalid type %%s.',
 				$className,
-				$methodName
+				$methodName,
 			),
 			sprintf(
 				'Method %s::%s() has invalid return type %%s.',
 				$className,
-				$methodName
+				$methodName,
 			),
 			sprintf('Method %s::%s() uses native union types but they\'re supported only on PHP 8.0 and later.', $className, $methodName),
 			sprintf('Template type %%s of method %s::%s() is not referenced in a parameter.', $className, $methodName),
 			sprintf(
 				'Parameter $%%s of method %s::%s() has unresolvable native type.',
 				$className,
-				$methodName
+				$methodName,
 			),
 			sprintf(
 				'Method %s::%s() has unresolvable native return type.',
 				$className,
-				$methodName
-			)
+				$methodName,
+			),
 		);
 	}
 

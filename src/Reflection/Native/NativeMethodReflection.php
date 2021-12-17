@@ -101,7 +101,7 @@ class NativeMethodReflection implements MethodReflection
 				$prototypeMethod->isAbstract(),
 				$prototypeMethod->isFinal(),
 				$prototypeDeclaringClass->getNativeMethod($prototypeMethod->getName())->getVariants(),
-				$tentativeReturnType
+				$tentativeReturnType,
 			);
 		} catch (ReflectionException $e) {
 			return $this;

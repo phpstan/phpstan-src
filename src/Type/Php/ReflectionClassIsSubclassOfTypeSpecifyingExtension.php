@@ -51,7 +51,7 @@ class ReflectionClassIsSubclassOfTypeSpecifyingExtension implements MethodTypeSp
 			]),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

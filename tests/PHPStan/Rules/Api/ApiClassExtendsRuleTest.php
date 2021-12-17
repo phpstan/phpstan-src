@@ -26,7 +26,7 @@ class ApiClassExtendsRuleTest extends RuleTestCase
 	{
 		$tip = sprintf(
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
-			'https://github.com/phpstan/phpstan/discussions'
+			'https://github.com/phpstan/phpstan/discussions',
 		);
 
 		$this->analyse([__DIR__ . '/data/class-extends-out-of-phpstan.php'], [

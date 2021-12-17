@@ -49,7 +49,7 @@ class UnusedFunctionParametersCheck
 		$errors = [];
 		foreach (array_keys($unusedParameters) as $name) {
 			$errors[] = RuleErrorBuilder::message(
-				sprintf($unusedParameterMessage, $name)
+				sprintf($unusedParameterMessage, $name),
 			)->identifier($identifier)->metadata($additionalMetadata + ['variableName' => $name])->build();
 		}
 

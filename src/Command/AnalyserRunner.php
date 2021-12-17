@@ -82,7 +82,7 @@ class AnalyserRunner
 			$preFileCallback,
 			$postFileCallback,
 			$debug,
-			$this->switchTmpFile($allAnalysedFiles, $insteadOfFile, $tmpFile)
+			$this->switchTmpFile($allAnalysedFiles, $insteadOfFile, $tmpFile),
 		);
 	}
 

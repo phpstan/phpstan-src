@@ -221,7 +221,7 @@ class ClassReflection
 			if ($this->isGeneric()) {
 				$extendedType = TemplateTypeHelper::resolveTemplateTypes(
 					$extendedType,
-					$this->getActiveTemplateTypeMap()
+					$this->getActiveTemplateTypeMap(),
 				);
 			}
 
@@ -235,7 +235,7 @@ class ClassReflection
 		$parentReflection = $this->reflectionProvider->getClass($parentClass->getName());
 		if ($parentReflection->isGeneric()) {
 			return $parentReflection->withTypes(
-				array_values($parentReflection->getTemplateTypeMap()->resolveToBounds()->getTypes())
+				array_values($parentReflection->getTemplateTypeMap()->resolveToBounds()->getTypes()),
 			);
 		}
 
@@ -695,7 +695,7 @@ class ClassReflection
 				if ($this->isGeneric()) {
 					$implementedType = TemplateTypeHelper::resolveTemplateTypes(
 						$implementedType,
-						$this->getActiveTemplateTypeMap()
+						$this->getActiveTemplateTypeMap(),
 					);
 				}
 
@@ -710,7 +710,7 @@ class ClassReflection
 
 			if ($immediateInterface->isGeneric()) {
 				$immediateInterfaces[$immediateInterface->getName()] = $immediateInterface->withTypes(
-					array_values($immediateInterface->getTemplateTypeMap()->resolveToBounds()->getTypes())
+					array_values($immediateInterface->getTemplateTypeMap()->resolveToBounds()->getTypes()),
 				);
 				continue;
 			}
@@ -746,7 +746,7 @@ class ClassReflection
 			if ($parentClass !== false) {
 				return array_merge(
 					$traits,
-					$this->reflectionProvider->getClass($parentClass->getName())->getTraits(true)
+					$this->reflectionProvider->getClass($parentClass->getName())->getTraits(true),
 				);
 			}
 		}
@@ -799,7 +799,7 @@ class ClassReflection
 			$phpDocType = null;
 			$resolvedPhpDoc = $this->stubPhpDocProvider->findClassConstantPhpDoc(
 				$declaringClass->getName(),
-				$name
+				$name,
 			);
 			if ($resolvedPhpDoc === null && $fileName !== null) {
 				$docComment = null;
@@ -810,7 +810,7 @@ class ClassReflection
 					$docComment,
 					$declaringClass,
 					$fileName,
-					$name
+					$name,
 				);
 			}
 
@@ -831,7 +831,7 @@ class ClassReflection
 				$this->phpVersion,
 				$deprecatedDescription,
 				$isDeprecated,
-				$isInternal
+				$isInternal,
 			);
 		}
 		return $this->constants[$name];
@@ -911,7 +911,7 @@ class ClassReflection
 				array_merge($importedAliases, $localAliases),
 				static function (?TypeAlias $typeAlias): bool {
 					return $typeAlias !== null;
-				}
+				},
 			);
 		}
 
@@ -1095,7 +1095,7 @@ class ClassReflection
 			$this->reflection,
 			$this->anonymousFilename,
 			$this->typeMapFromList($types),
-			$this->stubPhpDocBlock
+			$this->stubPhpDocBlock,
 		);
 	}
 
@@ -1287,7 +1287,7 @@ class ClassReflection
 
 			$types[] = TemplateTypeHelper::resolveTemplateTypes(
 				$mixinTag->getType(),
-				$this->getActiveTemplateTypeMap()
+				$this->getActiveTemplateTypeMap(),
 			);
 		}
 

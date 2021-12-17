@@ -60,7 +60,7 @@ class UnusedConstructorParametersRule implements Rule
 
 		$message = sprintf(
 			'Constructor of class %s has an unused parameter $%%s.',
-			SprintfHelper::escapeFormatString($scope->getClassReflection()->getDisplayName())
+			SprintfHelper::escapeFormatString($scope->getClassReflection()->getDisplayName()),
 		);
 		if ($scope->getClassReflection()->isAnonymous()) {
 			$message = 'Constructor of an anonymous class has an unused parameter $%s.';
@@ -79,7 +79,7 @@ class UnusedConstructorParametersRule implements Rule
 			$originalNode->stmts,
 			$message,
 			'constructor.unusedParameter',
-			[]
+			[],
 		);
 	}
 

@@ -80,13 +80,13 @@ class TemplateTypeCheck
 			if ($this->reflectionProvider->hasClass($templateTagName)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsClassMessage,
-					$templateTagName
+					$templateTagName,
 				))->build();
 			}
 			if ($this->typeAliasResolver->hasTypeAlias($templateTagName, $templateTypeScope->getClassName())) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsTypeMessage,
-					$templateTagName
+					$templateTagName,
 				))->build();
 			}
 			$boundType = $templateTag->getBound();
@@ -101,7 +101,7 @@ class TemplateTypeCheck
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$invalidBoundTypeMessage,
 					$templateTagName,
-					$referencedClass
+					$referencedClass,
 				))->build();
 			}
 
@@ -142,7 +142,7 @@ class TemplateTypeCheck
 				sprintf('PHPDoc tag @template %s bound contains generic type %%s but class %%s is not generic.', $escapedTemplateTagName),
 				sprintf('PHPDoc tag @template %s bound has type %%s which does not specify all template types of class %%s: %%s', $escapedTemplateTagName),
 				sprintf('PHPDoc tag @template %s bound has type %%s which specifies %%d template types, but class %%s supports only %%d: %%s', $escapedTemplateTagName),
-				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s is not subtype of template type %%s of class %%s.', $escapedTemplateTagName)
+				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s is not subtype of template type %%s of class %%s.', $escapedTemplateTagName),
 			);
 			foreach ($genericObjectErrors as $genericObjectError) {
 				$messages[] = $genericObjectError;

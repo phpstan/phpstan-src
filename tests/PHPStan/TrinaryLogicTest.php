@@ -136,7 +136,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 	{
 		$this->assertSame(
 			$expected,
-			$first->compareTo($second)
+			$first->compareTo($second),
 		);
 	}
 
@@ -147,7 +147,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 	{
 		$this->assertSame(
 			$expected,
-			$second->compareTo($first)
+			$second->compareTo($first),
 		);
 	}
 

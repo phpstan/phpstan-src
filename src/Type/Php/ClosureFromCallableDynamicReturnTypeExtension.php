@@ -32,7 +32,7 @@ class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStaticMeth
 			return ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$methodCall->getArgs(),
-				$methodReflection->getVariants()
+				$methodReflection->getVariants(),
 			)->getReturnType();
 		}
 
@@ -49,7 +49,7 @@ class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStaticMeth
 				$variant->getReturnType(),
 				$variant->isVariadic(),
 				$variant->getTemplateTypeMap(),
-				$variant->getResolvedTemplateTypeMap()
+				$variant->getResolvedTemplateTypeMap(),
 			);
 		}
 

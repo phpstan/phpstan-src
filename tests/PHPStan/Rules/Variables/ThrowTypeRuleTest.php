@@ -44,7 +44,7 @@ class ThrowTypeRuleTest extends RuleTestCase
 					44,
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
-			]
+			],
 		);
 	}
 

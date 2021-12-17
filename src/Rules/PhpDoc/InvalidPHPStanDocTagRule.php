@@ -88,7 +88,7 @@ class InvalidPHPStanDocTagRule implements Rule
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Unknown PHPDoc tag: %s',
-				$phpDocTag->name
+				$phpDocTag->name,
 			))->build();
 		}
 

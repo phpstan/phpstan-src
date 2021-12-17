@@ -52,7 +52,7 @@ class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			if ($numberType->getMin() < 0) {
 				return TypeCombinator::union(
 					new ArrayType(new IntegerType(), $valueType),
-					new ConstantBooleanType(false)
+					new ConstantBooleanType(false),
 				);
 			}
 		}
@@ -75,7 +75,7 @@ class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			for ($i = 0; $i < $numberType->getValue(); $i++) {
 				$arrayBuilder->setOffsetValueType(
 					new ConstantIntegerType($nextIndex),
-					$valueType
+					$valueType,
 				);
 				if ($nextIndex < 0) {
 					$nextIndex = 0;

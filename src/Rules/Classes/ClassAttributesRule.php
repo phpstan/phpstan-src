@@ -32,7 +32,7 @@ class ClassAttributesRule implements Rule
 			$scope,
 			$node->attrGroups,
 			Attribute::TARGET_CLASS,
-			'class'
+			'class',
 		);
 	}
 

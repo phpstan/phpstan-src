@@ -28,7 +28,7 @@ class TemplateTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction($functionName ?? '_'),
 				$name,
 				$bound,
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			);
 		};
 
@@ -91,7 +91,7 @@ class TemplateTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedAccept->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 
 		$type = $type->toArgument();
@@ -100,7 +100,7 @@ class TemplateTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedAcceptArg->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s) (Argument strategy)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s) (Argument strategy)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -111,7 +111,7 @@ class TemplateTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction($functionName ?? '_'),
 				$name,
 				$bound,
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			);
 		};
 
@@ -282,14 +282,14 @@ class TemplateTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedIsSuperType->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 
 		$actualResult = $otherType->isSuperTypeOf($type);
 		$this->assertSame(
 			$expectedIsSuperTypeInverse->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -301,7 +301,7 @@ class TemplateTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction($functionName ?? '_'),
 				$name,
 				$bound,
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			);
 		};
 
@@ -356,7 +356,7 @@ class TemplateTypeTest extends PHPStanTestCase
 			$expectedTypes,
 			array_map(static function (Type $type): string {
 				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes())
+			}, $result->getTypes()),
 		);
 	}
 

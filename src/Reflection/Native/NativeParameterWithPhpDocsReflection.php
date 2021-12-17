@@ -99,7 +99,7 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 			$properties['nativeType'],
 			$properties['passedByReference'],
 			$properties['variadic'],
-			$properties['defaultValue']
+			$properties['defaultValue'],
 		);
 	}
 

@@ -176,7 +176,7 @@ abstract class LevelsTestCase extends TestCase
 		try {
 			$this->assertJsonStringEqualsJsonFile(
 				$expectedJsonFile,
-				$actualOutput
+				$actualOutput,
 			);
 		} catch (AssertionFailedError $e) {
 			FileWriter::write($expectedJsonFile, $actualOutput);

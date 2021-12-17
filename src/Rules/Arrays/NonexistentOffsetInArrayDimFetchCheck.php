@@ -46,7 +46,7 @@ class NonexistentOffsetInArrayDimFetchCheck
 			$unknownClassPattern,
 			static function (Type $type) use ($dimType): bool {
 				return $type->hasOffsetValueType($dimType)->yes();
-			}
+			},
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {

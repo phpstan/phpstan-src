@@ -314,7 +314,7 @@ class MutatingScope implements Scope
 		return sprintf(
 			'%s (in context of %s)',
 			$traitReflection->getFileName(),
-			$className
+			$className,
 		);
 	}
 
@@ -332,7 +332,7 @@ class MutatingScope implements Scope
 			[],
 			null,
 			null,
-			$this->variableTypes
+			$this->variableTypes,
 		);
 	}
 
@@ -419,7 +419,7 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			true,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -474,7 +474,7 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -839,7 +839,7 @@ class MutatingScope implements Scope
 				&& $rightBooleanType instanceof ConstantBooleanType
 			) {
 				return new ConstantBooleanType(
-					$leftBooleanType->getValue() xor $rightBooleanType->getValue()
+					$leftBooleanType->getValue() xor $rightBooleanType->getValue(),
 				);
 			}
 
@@ -1050,7 +1050,7 @@ class MutatingScope implements Scope
 			$rightStringType = $this->getType($right)->toString();
 			if (TypeCombinator::union(
 				$leftStringType,
-				$rightStringType
+				$rightStringType,
 			) instanceof ErrorType) {
 				return new ErrorType();
 			}
@@ -1216,7 +1216,7 @@ class MutatingScope implements Scope
 
 			if (TypeCombinator::union(
 				$this->getType($left)->toNumber(),
-				$this->getType($right)->toNumber()
+				$this->getType($right)->toNumber(),
 			) instanceof ErrorType) {
 				return new ErrorType();
 			}
@@ -1290,7 +1290,7 @@ class MutatingScope implements Scope
 							foreach ($leftConstantArray->getKeyTypes() as $leftKeyType) {
 								$newArrayBuilder->setOffsetValueType(
 									$leftKeyType,
-									$leftConstantArray->getOffsetValueType($leftKeyType)
+									$leftConstantArray->getOffsetValueType($leftKeyType),
 								);
 							}
 							$resultTypes[] = $newArrayBuilder->getArray();
@@ -1319,7 +1319,7 @@ class MutatingScope implements Scope
 
 					$arrayType = new ArrayType(
 						$keyType,
-						TypeCombinator::union($leftType->getIterableValueType(), $rightType->getIterableValueType())
+						TypeCombinator::union($leftType->getIterableValueType(), $rightType->getIterableValueType()),
 					);
 
 					if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
@@ -1345,7 +1345,7 @@ class MutatingScope implements Scope
 					return $this->integerRangeMath(
 						$leftType,
 						$node,
-						$rightType
+						$rightType,
 					);
 				} elseif ($leftType instanceof UnionType) {
 
@@ -1502,7 +1502,7 @@ class MutatingScope implements Scope
 				if ($node->name instanceof Name) {
 					if ($this->reflectionProvider->hasFunction($node->name, $this)) {
 						return $this->createFirstClassCallable(
-							$this->reflectionProvider->getFunction($node->name, $this)->getVariants()
+							$this->reflectionProvider->getFunction($node->name, $this)->getVariants(),
 						);
 					}
 
@@ -1515,7 +1515,7 @@ class MutatingScope implements Scope
 				}
 
 				return $this->createFirstClassCallable(
-					$callableType->getCallableParametersAcceptors($this)
+					$callableType->getCallableParametersAcceptors($this),
 				);
 			}
 
@@ -1587,7 +1587,7 @@ class MutatingScope implements Scope
 						? PassedByReference::createCreatesNewVariable()
 						: PassedByReference::createNo(),
 					$param->variadic,
-					$param->default !== null ? $this->getType($param->default) : null
+					$param->default !== null ? $this->getType($param->default) : null,
 				);
 			}
 
@@ -1732,7 +1732,7 @@ class MutatingScope implements Scope
 			return new ClosureType(
 				$parameters,
 				$returnType,
-				$isVariadic
+				$isVariadic,
 			);
 		} elseif ($node instanceof New_) {
 			if ($node->class instanceof Name) {
@@ -1787,7 +1787,7 @@ class MutatingScope implements Scope
 				} else {
 					$arrayBuilder->setOffsetValueType(
 						$arrayItem->key !== null ? $this->getType($arrayItem->key) : null,
-						$valueType
+						$valueType,
 					);
 				}
 			}
@@ -1828,7 +1828,7 @@ class MutatingScope implements Scope
 			}
 			if ($function instanceof MethodReflection) {
 				return new ConstantStringType(
-					sprintf('%s::%s', $function->getDeclaringClass()->getName(), $function->getName())
+					sprintf('%s::%s', $function->getDeclaringClass()->getName(), $function->getName()),
 				);
 			}
 
@@ -1978,7 +1978,7 @@ class MutatingScope implements Scope
 				$hasOffset = $varType->hasOffsetValueType($dimType);
 				$leftType = $this->getType($node->left);
 				$rightType = $this->filterByFalseyValue(
-					new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null')))
+					new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null'))),
 				)->getType($node->right);
 				if ($hasOffset->no()) {
 					return $rightType;
@@ -1991,13 +1991,13 @@ class MutatingScope implements Scope
 
 				return TypeCombinator::union(
 					TypeCombinator::removeNull($leftType),
-					$rightType
+					$rightType,
 				);
 			}
 
 			$leftType = $this->getType($node->left);
 			$rightType = $this->filterByFalseyValue(
-				new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null')))
+				new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null'))),
 			)->getType($node->right);
 			if ($leftType instanceof ErrorType || $leftType instanceof NullType) {
 				return $rightType;
@@ -2014,7 +2014,7 @@ class MutatingScope implements Scope
 			) {
 				return TypeCombinator::union(
 					TypeCombinator::removeNull($leftType),
-					$rightType
+					$rightType,
 				);
 			}
 
@@ -2205,7 +2205,7 @@ class MutatingScope implements Scope
 				}
 				return TypeCombinator::union(
 					TypeCombinator::remove($this->filterByTruthyValue($node->cond)->getType($node->cond), StaticTypeFactory::falsey()),
-					$this->filterByFalseyValue($node->cond)->getType($node->else)
+					$this->filterByFalseyValue($node->cond)->getType($node->else),
 				);
 			}
 
@@ -2220,7 +2220,7 @@ class MutatingScope implements Scope
 
 			return TypeCombinator::union(
 				$this->filterByTruthyValue($node->cond)->getType($node->if),
-				$this->filterByFalseyValue($node->cond)->getType($node->else)
+				$this->filterByFalseyValue($node->cond)->getType($node->else),
 			);
 		}
 
@@ -2238,8 +2238,8 @@ class MutatingScope implements Scope
 				$this->getTypeFromArrayDimFetch(
 					$node,
 					$this->getType($node->dim),
-					$this->getType($node->var)
-				)
+					$this->getType($node->var),
+				),
 			);
 		}
 
@@ -2248,7 +2248,7 @@ class MutatingScope implements Scope
 				$returnType = $this->methodCallReturnType(
 					$this->getType($node->var),
 					$node->name->name,
-					$node
+					$node,
 				);
 				if ($returnType === null) {
 					return new ErrorType();
@@ -2268,7 +2268,7 @@ class MutatingScope implements Scope
 			return TypeCombinator::union(
 				$this->filterByTruthyValue(new BinaryOp\NotIdentical($node->var, new ConstFetch(new Name('null'))))
 					->getType(new MethodCall($node->var, $node->name, $node->args)),
-				new NullType()
+				new NullType(),
 			);
 		}
 
@@ -2286,7 +2286,7 @@ class MutatingScope implements Scope
 				$returnType = $this->methodCallReturnType(
 					$staticMethodCalledOnType,
 					$node->name->toString(),
-					$node
+					$node,
 				);
 				if ($returnType === null) {
 					return new ErrorType();
@@ -2307,7 +2307,7 @@ class MutatingScope implements Scope
 				$returnType = $this->propertyFetchType(
 					$this->getType($node->var),
 					$node->name->name,
-					$node
+					$node,
 				);
 				if ($returnType === null) {
 					return new ErrorType();
@@ -2327,7 +2327,7 @@ class MutatingScope implements Scope
 			return TypeCombinator::union(
 				$this->filterByTruthyValue(new BinaryOp\NotIdentical($node->var, new ConstFetch(new Name('null'))))
 					->getType(new PropertyFetch($node->var, $node->name)),
-				new NullType()
+				new NullType(),
 			);
 		}
 
@@ -2348,7 +2348,7 @@ class MutatingScope implements Scope
 				$returnType = $this->propertyFetchType(
 					$staticPropertyFetchedOnType,
 					$node->name->toString(),
-					$node
+					$node,
 				);
 				if ($returnType === null) {
 					return new ErrorType();
@@ -2374,7 +2374,7 @@ class MutatingScope implements Scope
 				return ParametersAcceptorSelector::selectFromArgs(
 					$this,
 					$node->getArgs(),
-					$calledOnType->getCallableParametersAcceptors($this)
+					$calledOnType->getCallableParametersAcceptors($this),
 				)->getReturnType();
 			}
 
@@ -2394,7 +2394,7 @@ class MutatingScope implements Scope
 			return ParametersAcceptorSelector::selectFromArgs(
 				$this,
 				$node->getArgs(),
-				$functionReflection->getVariants()
+				$functionReflection->getVariants(),
 			)->getReturnType();
 		}
 
@@ -2448,7 +2448,7 @@ class MutatingScope implements Scope
 				$variant->getReturnType(),
 				$variant->isVariadic(),
 				$variant->getTemplateTypeMap(),
-				$variant->getResolvedTemplateTypeMap()
+				$variant->getResolvedTemplateTypeMap(),
 			);
 		}
 
@@ -2479,8 +2479,8 @@ class MutatingScope implements Scope
 				$this->getTypeFromArrayDimFetch(
 					$expr,
 					$this->getNativeType($expr->dim),
-					$this->getNativeType($expr->var)
-				)
+					$this->getNativeType($expr->var),
+				),
 			);
 		}
 
@@ -2522,7 +2522,7 @@ class MutatingScope implements Scope
 			$this->dynamicConstantNames,
 			false,
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -2556,7 +2556,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
-			[]
+			[],
 		);
 	}
 
@@ -2595,8 +2595,8 @@ class MutatingScope implements Scope
 					new Node\Identifier('offsetGet'),
 					[
 						new Node\Arg($arrayDimFetch->dim),
-					]
-				)
+					],
+				),
 			);
 		}
 
@@ -2818,7 +2818,7 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			$stack,
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -2843,7 +2843,7 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			$stack,
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -2891,7 +2891,7 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			[
 				'this' => VariableTypeHolder::createYes(new ThisType($classReflection)),
-			]
+			],
 		);
 	}
 
@@ -2907,7 +2907,7 @@ class MutatingScope implements Scope
 			$this->moreSpecificTypes,
 			[],
 			$this->inClosureBindScopeClass,
-			$this->anonymousFunctionReflection
+			$this->anonymousFunctionReflection,
 		);
 	}
 
@@ -2950,9 +2950,9 @@ class MutatingScope implements Scope
 				$isDeprecated,
 				$isInternal,
 				$isFinal,
-				$isPure
+				$isPure,
 			),
-			!$classMethod->isStatic()
+			!$classMethod->isStatic(),
 		);
 	}
 
@@ -2988,7 +2988,7 @@ class MutatingScope implements Scope
 			$realParameterTypes[$parameter->var->name] = $this->getFunctionType(
 				$parameter->type,
 				$this->isParameterValueNullable($parameter),
-				false
+				false,
 			);
 		}
 
@@ -3048,9 +3048,9 @@ class MutatingScope implements Scope
 				$isDeprecated,
 				$isInternal,
 				$isFinal,
-				$isPure
+				$isPure,
 			),
-			false
+			false,
 		);
 	}
 
@@ -3091,7 +3091,7 @@ class MutatingScope implements Scope
 			null,
 			true,
 			[],
-			$nativeExpressionTypes
+			$nativeExpressionTypes,
 		);
 	}
 
@@ -3102,7 +3102,7 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			$this->constantTypes,
 			null,
-			$namespaceName
+			$namespaceName,
 		);
 	}
 
@@ -3130,7 +3130,7 @@ class MutatingScope implements Scope
 			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$scopeClass,
-			$this->anonymousFunctionReflection
+			$this->anonymousFunctionReflection,
 		);
 	}
 
@@ -3153,7 +3153,7 @@ class MutatingScope implements Scope
 			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$originalScope->inClosureBindScopeClass,
-			$this->anonymousFunctionReflection
+			$this->anonymousFunctionReflection,
 		);
 	}
 
@@ -3172,7 +3172,7 @@ class MutatingScope implements Scope
 			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$thisType instanceof TypeWithClassName ? $thisType->getClassName() : null,
-			$this->anonymousFunctionReflection
+			$this->anonymousFunctionReflection,
 		);
 	}
 
@@ -3214,7 +3214,7 @@ class MutatingScope implements Scope
 			$scope->nativeExpressionTypes,
 			[],
 			false,
-			$this
+			$this,
 		);
 	}
 
@@ -3249,7 +3249,7 @@ class MutatingScope implements Scope
 				throw new ShouldNotHappenException();
 			}
 			$variableTypes[$parameter->var->name] = VariableTypeHolder::createYes(
-				$parameterType
+				$parameterType,
 			);
 		}
 
@@ -3305,7 +3305,7 @@ class MutatingScope implements Scope
 			$nativeTypes,
 			[],
 			false,
-			$this
+			$this,
 		);
 	}
 
@@ -3338,7 +3338,7 @@ class MutatingScope implements Scope
 			[],
 			[],
 			$scope->afterExtractCall,
-			$scope->parentScope
+			$scope->parentScope,
 		);
 	}
 
@@ -3456,7 +3456,7 @@ class MutatingScope implements Scope
 			[],
 			[],
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -3477,7 +3477,7 @@ class MutatingScope implements Scope
 	{
 		if ($isNullable) {
 			return TypeCombinator::addNull(
-				$this->getFunctionType($type, false, $isVariadic)
+				$this->getFunctionType($type, false, $isVariadic),
 			);
 		}
 		if ($isVariadic) {
@@ -3485,14 +3485,14 @@ class MutatingScope implements Scope
 				return new ArrayType(new UnionType([new IntegerType(), new StringType()]), $this->getFunctionType(
 					$type,
 					false,
-					false
+					false,
 				));
 			}
 
 			return new ArrayType(new IntegerType(), $this->getFunctionType(
 				$type,
 				false,
-				false
+				false,
 			));
 		}
 
@@ -3555,7 +3555,7 @@ class MutatingScope implements Scope
 
 		return $this->assignVariable(
 			$variableName,
-			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class))
+			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
 		);
 	}
 
@@ -3581,7 +3581,7 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			[],
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -3607,7 +3607,7 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			[],
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -3683,7 +3683,7 @@ class MutatingScope implements Scope
 			$nativeTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -3719,7 +3719,7 @@ class MutatingScope implements Scope
 				$nativeTypes,
 				[],
 				$this->afterExtractCall,
-				$this->parentScope
+				$this->parentScope,
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$varType = $this->getType($expr->var);
@@ -3732,7 +3732,7 @@ class MutatingScope implements Scope
 				}
 				return $this->specifyExpressionType(
 					$expr->var,
-					TypeCombinator::union(...$unsetArrays)
+					TypeCombinator::union(...$unsetArrays),
 				);
 			}
 
@@ -3775,7 +3775,7 @@ class MutatingScope implements Scope
 				$this->nativeExpressionTypes,
 				$this->inFunctionCallsStack,
 				$this->afterExtractCall,
-				$this->parentScope
+				$this->parentScope,
 			);
 		}
 
@@ -3813,7 +3813,7 @@ class MutatingScope implements Scope
 				$nativeTypes,
 				$this->inFunctionCallsStack,
 				$this->afterExtractCall,
-				$this->parentScope
+				$this->parentScope,
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$constantArrays = TypeUtils::getConstantArrays($this->getType($expr->var));
@@ -3825,7 +3825,7 @@ class MutatingScope implements Scope
 				}
 				$scope = $this->specifyExpressionType(
 					$expr->var,
-					TypeCombinator::union(...$setArrays)
+					TypeCombinator::union(...$setArrays),
 				);
 			}
 		}
@@ -3918,7 +3918,7 @@ class MutatingScope implements Scope
 			$nativeExpressionTypes,
 			[],
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -3976,7 +3976,7 @@ class MutatingScope implements Scope
 			$nativeExpressionTypes,
 			[],
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -3994,7 +3994,7 @@ class MutatingScope implements Scope
 		}
 		$scope = $this->specifyExpressionType(
 			$expr,
-			$typeAfterRemove
+			$typeAfterRemove,
 		);
 		if ($expr instanceof Variable && is_string($expr->name)) {
 			$scope->nativeExpressionTypes[sprintf('$%s', $expr->name)] = TypeCombinator::remove($this->getNativeType($expr), $typeToRemove);
@@ -4177,7 +4177,7 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -4204,7 +4204,7 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -4226,7 +4226,7 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -4263,7 +4263,7 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			[],
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -4310,20 +4310,20 @@ class MutatingScope implements Scope
 			$conditionalExpressions,
 			$ourVariableTypes,
 			$theirVariableTypes,
-			$mergedVariableHolders
+			$mergedVariableHolders,
 		);
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
 			$theirVariableTypes,
 			$ourVariableTypes,
-			$mergedVariableHolders
+			$mergedVariableHolders,
 		);
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			array_map($variableHolderToType, array_filter($this->mergeVariableHolders(
 				array_map($typeToVariableHolder, $this->constantTypes),
-				array_map($typeToVariableHolder, $otherScope->constantTypes)
+				array_map($typeToVariableHolder, $otherScope->constantTypes),
 			), $filterVariableHolders)),
 			$this->getFunction(),
 			$this->getNamespace(),
@@ -4336,11 +4336,11 @@ class MutatingScope implements Scope
 			[],
 			array_map($variableHolderToType, array_filter($this->mergeVariableHolders(
 				array_map($typeToVariableHolder, $this->nativeExpressionTypes),
-				array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes)
+				array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes),
 			), $filterVariableHolders)),
 			[],
 			$this->afterExtractCall && $otherScope->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -4492,19 +4492,19 @@ class MutatingScope implements Scope
 			array_map($variableHolderToType, array_filter($this->processFinallyScopeVariableTypeHolders(
 				array_map($typeToVariableHolder, $this->constantTypes),
 				array_map($typeToVariableHolder, $finallyScope->constantTypes),
-				array_map($typeToVariableHolder, $originalFinallyScope->constantTypes)
+				array_map($typeToVariableHolder, $originalFinallyScope->constantTypes),
 			), $filterVariableHolders)),
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->processFinallyScopeVariableTypeHolders(
 				$this->getVariableTypes(),
 				$finallyScope->getVariableTypes(),
-				$originalFinallyScope->getVariableTypes()
+				$originalFinallyScope->getVariableTypes(),
 			),
 			$this->processFinallyScopeVariableTypeHolders(
 				$this->moreSpecificTypes,
 				$finallyScope->moreSpecificTypes,
-				$originalFinallyScope->moreSpecificTypes
+				$originalFinallyScope->moreSpecificTypes,
 			),
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
@@ -4514,11 +4514,11 @@ class MutatingScope implements Scope
 			array_map($variableHolderToType, array_filter($this->processFinallyScopeVariableTypeHolders(
 				array_map($typeToVariableHolder, $this->nativeExpressionTypes),
 				array_map($typeToVariableHolder, $finallyScope->nativeExpressionTypes),
-				array_map($typeToVariableHolder, $originalFinallyScope->nativeExpressionTypes)
+				array_map($typeToVariableHolder, $originalFinallyScope->nativeExpressionTypes),
 			), $filterVariableHolders)),
 			[],
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -4611,7 +4611,7 @@ class MutatingScope implements Scope
 			$nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -4628,7 +4628,7 @@ class MutatingScope implements Scope
 
 			$variableTypeHolders[$name] = new VariableTypeHolder(
 				$variableTypeHolder->getType(),
-				$variableTypeHolder->getCertainty()->and($variableTypeHolders[$name]->getCertainty())
+				$variableTypeHolder->getCertainty()->and($variableTypeHolders[$name]->getCertainty()),
 			);
 		}
 
@@ -4641,7 +4641,7 @@ class MutatingScope implements Scope
 
 			$moreSpecificTypes[$exprString] = new VariableTypeHolder(
 				$variableTypeHolder->getType(),
-				$variableTypeHolder->getCertainty()->and($moreSpecificTypes[$exprString]->getCertainty())
+				$variableTypeHolder->getCertainty()->and($moreSpecificTypes[$exprString]->getCertainty()),
 			);
 		}
 
@@ -4661,7 +4661,7 @@ class MutatingScope implements Scope
 			$nativeTypes,
 			[],
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -4669,12 +4669,12 @@ class MutatingScope implements Scope
 	{
 		$variableTypeHolders = $this->generalizeVariableTypeHolders(
 			$this->getVariableTypes(),
-			$otherScope->getVariableTypes()
+			$otherScope->getVariableTypes(),
 		);
 
 		$moreSpecificTypes = $this->generalizeVariableTypeHolders(
 			$this->moreSpecificTypes,
-			$otherScope->moreSpecificTypes
+			$otherScope->moreSpecificTypes,
 		);
 
 		$variableHolderToType = static function (VariableTypeHolder $holder): Type {
@@ -4688,7 +4688,7 @@ class MutatingScope implements Scope
 		};
 		$nativeTypes = array_map($variableHolderToType, array_filter($this->generalizeVariableTypeHolders(
 			array_map($typeToVariableHolder, $this->nativeExpressionTypes),
-			array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes)
+			array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes),
 		), $filterVariableHolders));
 
 		return $this->scopeFactory->create(
@@ -4696,7 +4696,7 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			array_map($variableHolderToType, array_filter($this->generalizeVariableTypeHolders(
 				array_map($typeToVariableHolder, $this->constantTypes),
-				array_map($typeToVariableHolder, $otherScope->constantTypes)
+				array_map($typeToVariableHolder, $otherScope->constantTypes),
 			), $filterVariableHolders)),
 			$this->getFunction(),
 			$this->getNamespace(),
@@ -4710,7 +4710,7 @@ class MutatingScope implements Scope
 			$nativeTypes,
 			[],
 			$this->afterExtractCall,
-			$this->parentScope
+			$this->parentScope,
 		);
 	}
 
@@ -4731,7 +4731,7 @@ class MutatingScope implements Scope
 
 			$variableTypeHolders[$name] = new VariableTypeHolder(
 				self::generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$name]->getType()),
-				$variableTypeHolder->getCertainty()
+				$variableTypeHolder->getCertainty(),
 			);
 		}
 
@@ -4824,8 +4824,8 @@ class MutatingScope implements Scope
 							$keyType,
 							self::generalizeType(
 								$constantArraysA->getOffsetValueType($keyType),
-								$constantArraysB->getOffsetValueType($keyType)
-							)
+								$constantArraysB->getOffsetValueType($keyType),
+							),
 						);
 					}
 
@@ -4833,7 +4833,7 @@ class MutatingScope implements Scope
 				} else {
 					$resultTypes[] = new ArrayType(
 						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType())),
-						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType()))
+						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType())),
 					);
 				}
 			}
@@ -4869,7 +4869,7 @@ class MutatingScope implements Scope
 
 				$resultTypes[] = new ArrayType(
 					TypeCombinator::union(self::generalizeType($generalArraysA->getIterableKeyType(), $generalArraysB->getIterableKeyType())),
-					TypeCombinator::union(self::generalizeType($aValueType, $bValueType))
+					TypeCombinator::union(self::generalizeType($aValueType, $bValueType)),
 				);
 			}
 		}
@@ -4914,7 +4914,7 @@ class MutatingScope implements Scope
 
 		$nativeExpressionTypesResult = $this->compareVariableTypeHolders(
 			array_map($typeToVariableHolder, $this->nativeExpressionTypes),
-			array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes)
+			array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes),
 		);
 
 		if (!$nativeExpressionTypesResult) {
@@ -4923,7 +4923,7 @@ class MutatingScope implements Scope
 
 		return $this->compareVariableTypeHolders(
 			array_map($typeToVariableHolder, $this->constantTypes),
-			array_map($typeToVariableHolder, $otherScope->constantTypes)
+			array_map($typeToVariableHolder, $otherScope->constantTypes),
 		);
 	}
 
@@ -5022,7 +5022,7 @@ class MutatingScope implements Scope
 			$key = sprintf(
 				'%s-specified (%s)',
 				$exprString,
-				$typeHolder->getCertainty()->describe()
+				$typeHolder->getCertainty()->describe(),
 			);
 			$descriptions[$key] = $typeHolder->getType()->describe(VerbosityLevel::precise());
 		}
@@ -5060,7 +5060,7 @@ class MutatingScope implements Scope
 		$methodCall = new Expr\StaticCall(
 			new Name($resolvedClassName),
 			new Node\Identifier($constructorMethod->getName()),
-			$node->getArgs()
+			$node->getArgs(),
 		);
 
 		foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
@@ -5121,19 +5121,19 @@ class MutatingScope implements Scope
 		if ($constructorMethod instanceof DummyConstructorReflection || $constructorMethod->getDeclaringClass()->getName() !== $classReflection->getName()) {
 			return new GenericObjectType(
 				$resolvedClassName,
-				$classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds())
+				$classReflection->typeMapToList($classReflection->getTemplateTypeMap()->resolveToBounds()),
 			);
 		}
 
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$this,
 			$methodCall->getArgs(),
-			$constructorMethod->getVariants()
+			$constructorMethod->getVariants(),
 		);
 
 		return new GenericObjectType(
 			$resolvedClassName,
-			$classReflection->typeMapToList($parametersAcceptor->getResolvedTemplateTypeMap())
+			$classReflection->typeMapToList($parametersAcceptor->getResolvedTemplateTypeMap()),
 		);
 	}
 
@@ -5237,7 +5237,7 @@ class MutatingScope implements Scope
 		return ParametersAcceptorSelector::selectFromArgs(
 			$this,
 			$methodCall->getArgs(),
-			$methodReflection->getVariants()
+			$methodReflection->getVariants(),
 		)->getReturnType();
 	}
 

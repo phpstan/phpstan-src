@@ -42,7 +42,7 @@ final class IteratorToArrayFunctionReturnTypeExtension implements DynamicFunctio
 
 		return new ArrayType(
 			$arrayKeyType,
-			$traversableType->getIterableValueType()
+			$traversableType->getIterableValueType(),
 		);
 	}
 

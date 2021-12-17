@@ -17,7 +17,7 @@ class ExistingClassInTraitUseRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassInTraitUseRule(
 			new ClassCaseSensitivityCheck($broker, true),
-			$broker
+			$broker,
 		);
 	}
 

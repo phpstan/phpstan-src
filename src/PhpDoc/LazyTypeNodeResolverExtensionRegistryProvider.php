@@ -21,7 +21,7 @@ class LazyTypeNodeResolverExtensionRegistryProvider implements TypeNodeResolverE
 		if ($this->registry === null) {
 			$this->registry = new TypeNodeResolverExtensionRegistry(
 				$this->container->getByType(TypeNodeResolver::class),
-				$this->container->getServicesByTag(TypeNodeResolverExtension::EXTENSION_TAG)
+				$this->container->getServicesByTag(TypeNodeResolverExtension::EXTENSION_TAG),
 			);
 		}
 

@@ -94,7 +94,7 @@ class ParametersAcceptorSelector
 					]),
 					$parameters[0]->passedByReference(),
 					$parameters[0]->isVariadic(),
-					$parameters[0]->getDefaultValue()
+					$parameters[0]->getDefaultValue(),
 				);
 				$parametersAcceptors = [
 					new FunctionVariant(
@@ -102,7 +102,7 @@ class ParametersAcceptorSelector
 						$acceptor->getResolvedTemplateTypeMap(),
 						$parameters,
 						$acceptor->isVariadic(),
-						$acceptor->getReturnType()
+						$acceptor->getReturnType(),
 					),
 				];
 			}
@@ -137,11 +137,11 @@ class ParametersAcceptorSelector
 							new DummyParameter('item', $scope->getType($args[0]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
 						],
 						new MixedType(),
-						false
+						false,
 					),
 					$parameters[1]->passedByReference(),
 					$parameters[1]->isVariadic(),
-					$parameters[1]->getDefaultValue()
+					$parameters[1]->getDefaultValue(),
 				);
 				$parametersAcceptors = [
 					new FunctionVariant(
@@ -149,7 +149,7 @@ class ParametersAcceptorSelector
 						$acceptor->getResolvedTemplateTypeMap(),
 						$parameters,
 						$acceptor->isVariadic(),
-						$acceptor->getReturnType()
+						$acceptor->getReturnType(),
 					),
 				];
 			}
@@ -184,7 +184,7 @@ class ParametersAcceptorSelector
 
 		if (count($parametersAcceptors) === 0) {
 			throw new ShouldNotHappenException(
-				'getVariants() must return at least one variant.'
+				'getVariants() must return at least one variant.',
 			);
 		}
 
@@ -284,7 +284,7 @@ class ParametersAcceptorSelector
 	{
 		if (count($acceptors) === 0) {
 			throw new ShouldNotHappenException(
-				'getVariants() must return at least one variant.'
+				'getVariants() must return at least one variant.',
 			);
 		}
 		if (count($acceptors) === 1) {
@@ -329,7 +329,7 @@ class ParametersAcceptorSelector
 						$parameter->getType(),
 						$parameter->passedByReference(),
 						$parameter->isVariadic(),
-						$parameter->getDefaultValue()
+						$parameter->getDefaultValue(),
 					);
 					continue;
 				}
@@ -349,7 +349,7 @@ class ParametersAcceptorSelector
 					TypeCombinator::union($parameters[$i]->getType(), $parameter->getType()),
 					$parameters[$i]->passedByReference()->combine($parameter->passedByReference()),
 					$isVariadic,
-					$defaultValue
+					$defaultValue,
 				);
 
 				if ($isVariadic) {
@@ -364,7 +364,7 @@ class ParametersAcceptorSelector
 			null,
 			$parameters,
 			$isVariadic,
-			$returnType
+			$returnType,
 		);
 	}
 

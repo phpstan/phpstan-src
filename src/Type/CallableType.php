@@ -147,11 +147,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 						static function (ParameterReflection $param) use ($level): string {
 							return sprintf('%s%s', $param->isVariadic() ? '...' : '', $param->getType()->describe($level));
 						},
-						$this->getParameters()
+						$this->getParameters(),
 					)),
-					$this->returnType->describe($level)
+					$this->returnType->describe($level),
 				);
-			}
+			},
 		);
 	}
 
@@ -267,7 +267,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
 		$references = $this->getReturnType()->getReferencedTemplateTypes(
-			$positionVariance->compose(TemplateTypeVariance::createCovariant())
+			$positionVariance->compose(TemplateTypeVariance::createCovariant()),
 		);
 
 		$paramVariance = $positionVariance->compose(TemplateTypeVariance::createContravariant());
@@ -295,14 +295,14 @@ class CallableType implements CompoundType, ParametersAcceptor
 				$cb($param->getType()),
 				$param->passedByReference(),
 				$param->isVariadic(),
-				$defaultValue !== null ? $cb($defaultValue) : null
+				$defaultValue !== null ? $cb($defaultValue) : null,
 			);
 		}, $this->getParameters());
 
 		return new self(
 			$parameters,
 			$cb($this->getReturnType()),
-			$this->isVariadic()
+			$this->isVariadic(),
 		);
 	}
 
@@ -339,7 +339,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return new self(
 			(bool) $properties['isCommonCallable'] ? null : $properties['parameters'],
 			(bool) $properties['isCommonCallable'] ? null : $properties['returnType'],
-			$properties['variadic']
+			$properties['variadic'],
 		);
 	}
 

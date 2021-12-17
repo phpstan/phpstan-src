@@ -102,7 +102,7 @@ class LazyScopeFactory implements ScopeFactory
 			$this->dynamicConstantNames,
 			$this->treatPhpDocTypesAsCertain,
 			$afterExtractCall,
-			$parentScope
+			$parentScope,
 		);
 	}
 

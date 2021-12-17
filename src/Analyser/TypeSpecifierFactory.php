@@ -29,7 +29,7 @@ class TypeSpecifierFactory
 			$this->container->getByType(ReflectionProvider::class),
 			$this->container->getServicesByTag(self::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG),
 			$this->container->getServicesByTag(self::METHOD_TYPE_SPECIFYING_EXTENSION_TAG),
-			$this->container->getServicesByTag(self::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG)
+			$this->container->getServicesByTag(self::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG),
 		);
 
 		foreach (array_merge(
@@ -37,7 +37,7 @@ class TypeSpecifierFactory
 			$this->container->getServicesByTag(BrokerFactory::METHODS_CLASS_REFLECTION_EXTENSION_TAG),
 			$this->container->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG),
 			$this->container->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG),
-			$this->container->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG)
+			$this->container->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG),
 		) as $extension) {
 			if (!($extension instanceof TypeSpecifierAwareExtension)) {
 				continue;

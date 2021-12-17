@@ -59,14 +59,14 @@ class BooleanAndConstantConditionRule implements Rule
 			};
 			$errors[] = $addTipLeft(RuleErrorBuilder::message(sprintf(
 				'Left side of && is always %s.',
-				$leftType->getValue() ? 'true' : 'false'
+				$leftType->getValue() ? 'true' : 'false',
 			)))->line($originalNode->left->getLine())->build();
 		}
 
 		$rightScope = $node->getRightScope();
 		$rightType = $this->helper->getBooleanType(
 			$rightScope,
-			$originalNode->right
+			$originalNode->right,
 		);
 		if ($rightType instanceof ConstantBooleanType) {
 			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($rightScope, $originalNode, $tipText): RuleErrorBuilder {
@@ -76,7 +76,7 @@ class BooleanAndConstantConditionRule implements Rule
 
 				$booleanNativeType = $this->helper->getNativeBooleanType(
 					$rightScope->doNotTreatPhpDocTypesAsCertain(),
-					$originalNode->right
+					$originalNode->right,
 				);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
 					return $ruleErrorBuilder;
@@ -86,7 +86,7 @@ class BooleanAndConstantConditionRule implements Rule
 			};
 			$errors[] = $addTipRight(RuleErrorBuilder::message(sprintf(
 				'Right side of && is always %s.',
-				$rightType->getValue() ? 'true' : 'false'
+				$rightType->getValue() ? 'true' : 'false',
 			)))->line($originalNode->right->getLine())->build();
 		}
 
@@ -108,7 +108,7 @@ class BooleanAndConstantConditionRule implements Rule
 
 				$errors[] = $addTip(RuleErrorBuilder::message(sprintf(
 					'Result of && is always %s.',
-					$nodeType->getValue() ? 'true' : 'false'
+					$nodeType->getValue() ? 'true' : 'false',
 				)))->build();
 			}
 		}

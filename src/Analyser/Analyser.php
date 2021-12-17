@@ -80,7 +80,7 @@ class Analyser
 					$file,
 					$allAnalysedFiles,
 					$this->registry,
-					null
+					null,
 				);
 				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
@@ -99,7 +99,7 @@ class Analyser
 					'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
 					"\n",
 					"\n",
-					'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md'
+					'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md',
 				);
 				$errors[] = new Error($internalErrorMessage, $file, null, $t);
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
@@ -124,7 +124,7 @@ class Analyser
 			[],
 			$internalErrorsCount === 0 ? $dependencies : null,
 			$exportedNodes,
-			$reachedInternalErrorsCountLimit
+			$reachedInternalErrorsCountLimit,
 		);
 	}
 

@@ -94,12 +94,12 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 	{
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
 		$formatter = new TeamcityErrorFormatter(
-			$relativePathHelper
+			$relativePathHelper,
 		);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getOutput()
+			$this->getOutput(),
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertEquals($expected, $this->getOutputContent(), sprintf('%s: output do not match', $message));

@@ -33,8 +33,8 @@ class CleaningParserTest extends PHPStanTestCase
 		$parser = new CleaningParser(
 			new SimpleParser(
 				new Php7(new Emulative()),
-				new NameResolver()
-			)
+				new NameResolver(),
+			),
 		);
 		$printer = new Standard();
 		$ast = $parser->parseFile($beforeFile);

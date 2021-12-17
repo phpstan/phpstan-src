@@ -92,7 +92,7 @@ class FunctionDefinitionCheck
 			$unionTypesMessage,
 			$templateTypeMissingInParameterMessage,
 			$unresolvableParameterTypeMessage,
-			$unresolvableReturnTypeMessage
+			$unresolvableReturnTypeMessage,
 		);
 	}
 
@@ -149,7 +149,7 @@ class FunctionDefinitionCheck
 						$errors,
 						$this->classCaseSensitivityCheck->checkClassNames([
 							new ClassNameNodePair($class, $param->type),
-						])
+						]),
 					);
 				}
 			}
@@ -187,7 +187,7 @@ class FunctionDefinitionCheck
 					$errors,
 					$this->classCaseSensitivityCheck->checkClassNames([
 						new ClassNameNodePair($returnTypeClass, $returnTypeNode),
-					])
+					]),
 				);
 			}
 		}
@@ -220,7 +220,7 @@ class FunctionDefinitionCheck
 			$unionTypesMessage,
 			$templateTypeMissingInParameterMessage,
 			$unresolvableParameterTypeMessage,
-			$unresolvableReturnTypeMessage
+			$unresolvableReturnTypeMessage,
 		);
 	}
 
@@ -295,7 +295,7 @@ class FunctionDefinitionCheck
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$parameterMessage,
 					$parameter->getName(),
-					$class
+					$class,
 				))->line($parameterNodeCallback()->getLine())->build();
 			}
 
@@ -304,7 +304,7 @@ class FunctionDefinitionCheck
 					$errors,
 					$this->classCaseSensitivityCheck->checkClassNames(array_map(static function (string $class) use ($parameterNodeCallback): ClassNameNodePair {
 						return new ClassNameNodePair($class, $parameterNodeCallback());
-					}, $referencedClasses))
+					}, $referencedClasses)),
 				);
 			}
 			if (!($parameter->getType() instanceof NonexistentParentClassType)) {
@@ -336,7 +336,7 @@ class FunctionDefinitionCheck
 				$errors,
 				$this->classCaseSensitivityCheck->checkClassNames(array_map(static function (string $class) use ($returnTypeNode): ClassNameNodePair {
 					return new ClassNameNodePair($class, $returnTypeNode);
-				}, $returnTypeReferencedClasses))
+				}, $returnTypeReferencedClasses)),
 			);
 		}
 		if ($parametersAcceptor->getReturnType() instanceof NonexistentParentClassType) {
@@ -451,7 +451,7 @@ class FunctionDefinitionCheck
 
 		return array_merge(
 			$parameter->getNativeType()->getReferencedClasses(),
-			$parameter->getPhpDocType()->getReferencedClasses()
+			$parameter->getPhpDocType()->getReferencedClasses(),
 		);
 	}
 
@@ -470,7 +470,7 @@ class FunctionDefinitionCheck
 
 		return array_merge(
 			$parametersAcceptor->getNativeReturnType()->getReferencedClasses(),
-			$parametersAcceptor->getPhpDocReturnType()->getReferencedClasses()
+			$parametersAcceptor->getPhpDocReturnType()->getReferencedClasses(),
 		);
 	}
 

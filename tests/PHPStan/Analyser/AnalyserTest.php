@@ -458,7 +458,7 @@ class AnalyserTest extends PHPStanTestCase
 			self::getContainer()->getByType(IgnoredRegexValidator::class),
 			$this->getFileHelper(),
 			$ignoreErrors,
-			$reportUnmatchedIgnoredErrors
+			$reportUnmatchedIgnoredErrors,
 		);
 		$ignoredErrorHelperResult = $ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
@@ -478,7 +478,7 @@ class AnalyserTest extends PHPStanTestCase
 
 		return array_merge(
 			$errors,
-			$analyserResult->getInternalErrors()
+			$analyserResult->getInternalErrors(),
 		);
 	}
 
@@ -512,7 +512,7 @@ class AnalyserTest extends PHPStanTestCase
 			true,
 			[],
 			[],
-			true
+			true,
 		);
 		$lexer = new Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
 		$fileAnalyser = new FileAnalyser(
@@ -523,17 +523,17 @@ class AnalyserTest extends PHPStanTestCase
 				$lexer,
 				new NameResolver(),
 				new NodeConnectingVisitor(),
-				new StatementOrderVisitor()
+				new StatementOrderVisitor(),
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, $printer)),
-			$reportUnmatchedIgnoredErrors
+			$reportUnmatchedIgnoredErrors,
 		);
 
 		return new Analyser(
 			$fileAnalyser,
 			$registry,
 			$nodeScopeResolver,
-			50
+			50,
 		);
 	}
 

@@ -55,7 +55,7 @@ class CallMethodsRule implements Rule
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$node->getArgs(),
-				$methodReflection->getVariants()
+				$methodReflection->getVariants(),
 			),
 			$scope,
 			$declaringClass->isBuiltin(),
@@ -74,7 +74,7 @@ class CallMethodsRule implements Rule
 				'Missing parameter $%s in call to method ' . $messagesMethodName . '.',
 				'Unknown parameter $%s in call to method ' . $messagesMethodName . '.',
 				'Return type of call to method ' . $messagesMethodName . ' contains unresolvable type.',
-			]
+			],
 		));
 	}
 

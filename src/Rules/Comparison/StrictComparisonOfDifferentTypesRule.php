@@ -48,7 +48,7 @@ class StrictComparisonOfDifferentTypesRule implements Rule
 					'Strict comparison using %s between %s and %s will always evaluate to false.',
 					$node instanceof Node\Expr\BinaryOp\Identical ? '===' : '!==',
 					$leftType->describe(VerbosityLevel::value()),
-					$rightType->describe(VerbosityLevel::value())
+					$rightType->describe(VerbosityLevel::value()),
 				))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueStrictComparison) {
@@ -57,7 +57,7 @@ class StrictComparisonOfDifferentTypesRule implements Rule
 					'Strict comparison using %s between %s and %s will always evaluate to true.',
 					$node instanceof Node\Expr\BinaryOp\Identical ? '===' : '!==',
 					$leftType->describe(VerbosityLevel::value()),
-					$rightType->describe(VerbosityLevel::value())
+					$rightType->describe(VerbosityLevel::value()),
 				))->build(),
 			];
 		}

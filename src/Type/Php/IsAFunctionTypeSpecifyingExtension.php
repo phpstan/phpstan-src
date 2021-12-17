@@ -71,7 +71,7 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 					isset($objectType) ? new GenericClassStringType($objectType) : new ClassStringType(),
 					$context,
 					false,
-					$scope
+					$scope,
 				));
 			}
 		}

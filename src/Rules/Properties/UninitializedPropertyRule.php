@@ -58,7 +58,7 @@ class UninitializedPropertyRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Class %s has an uninitialized property $%s. Give it default value or assign it in the constructor.',
 				$classReflection->getDisplayName(),
-				$propertyName
+				$propertyName,
 			))->line($propertyNode->getLine())->build();
 		}
 
@@ -66,7 +66,7 @@ class UninitializedPropertyRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Access to an uninitialized property %s::$%s.',
 				$classReflection->getDisplayName(),
-				$propertyName
+				$propertyName,
 			))->line($line)->build();
 		}
 

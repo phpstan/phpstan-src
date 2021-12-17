@@ -62,7 +62,7 @@ class CallableTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -141,7 +141,7 @@ class CallableTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -154,7 +154,7 @@ class CallableTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -167,7 +167,7 @@ class CallableTypeTest extends PHPStanTestCase
 				$type,
 				PassedByReference::createNo(),
 				false,
-				null
+				null,
 			);
 		};
 
@@ -176,7 +176,7 @@ class CallableTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
 				new MixedType(),
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			);
 		};
 
@@ -186,13 +186,13 @@ class CallableTypeTest extends PHPStanTestCase
 					[
 						$param(new StringType()),
 					],
-					new IntegerType()
+					new IntegerType(),
 				),
 				new CallableType(
 					[
 						$param($templateType('T')),
 					],
-					new IntegerType()
+					new IntegerType(),
 				),
 				['T' => 'string'],
 			],
@@ -201,13 +201,13 @@ class CallableTypeTest extends PHPStanTestCase
 					[
 						$param(new StringType()),
 					],
-					new IntegerType()
+					new IntegerType(),
 				),
 				new CallableType(
 					[
 						$param(new StringType()),
 					],
-					$templateType('T')
+					$templateType('T'),
 				),
 				['T' => 'int'],
 			],
@@ -217,14 +217,14 @@ class CallableTypeTest extends PHPStanTestCase
 						$param(new StringType()),
 						$param(new ObjectType('DateTime')),
 					],
-					new IntegerType()
+					new IntegerType(),
 				),
 				new CallableType(
 					[
 						$param(new StringType()),
 						$param($templateType('A')),
 					],
-					$templateType('B')
+					$templateType('B'),
 				),
 				['B' => 'int', 'A' => 'DateTime'],
 			],
@@ -236,7 +236,7 @@ class CallableTypeTest extends PHPStanTestCase
 							$param(new StringType()),
 							$param(new ObjectType('DateTime')),
 						],
-						new IntegerType()
+						new IntegerType(),
 					),
 				]),
 				new CallableType(
@@ -244,7 +244,7 @@ class CallableTypeTest extends PHPStanTestCase
 						$param(new StringType()),
 						$param($templateType('A')),
 					],
-					$templateType('B')
+					$templateType('B'),
 				),
 				['B' => 'int', 'A' => 'DateTime'],
 			],
@@ -255,7 +255,7 @@ class CallableTypeTest extends PHPStanTestCase
 						$param(new StringType()),
 						$param($templateType('A')),
 					],
-					$templateType('B')
+					$templateType('B'),
 				),
 				[],
 			],
@@ -274,7 +274,7 @@ class CallableTypeTest extends PHPStanTestCase
 			$expectedTypes,
 			array_map(static function (Type $type): string {
 				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes())
+			}, $result->getTypes()),
 		);
 	}
 
@@ -359,7 +359,7 @@ class CallableTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$type->accepts($acceptedType, true)->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
 		);
 	}
 

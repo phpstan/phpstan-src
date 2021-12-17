@@ -99,7 +99,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/catch-union.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -224,7 +224,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/union-intersection.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -754,7 +754,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$variableName,
 			$expectedCertainty,
 			$typeDescription,
-			$iterableValueTypeDescription
+			$iterableValueTypeDescription,
 		);
 	}
 
@@ -890,7 +890,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$variableName,
 			TrinaryLogic::createYes(),
 			$typeDescription,
-			null
+			null,
 		);
 	}
 
@@ -909,8 +909,8 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'Certainty of variable $%s is %s, expected %s',
 				$variableName,
 				$certainty->describe(),
-				$expectedCertainty->describe()
-			)
+				$expectedCertainty->describe(),
+			),
 		);
 		if (!$expectedCertainty->no()) {
 			if ($typeDescription === null) {
@@ -920,14 +920,14 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$this->assertSame(
 				$typeDescription,
 				$scope->getVariableType($variableName)->describe(VerbosityLevel::precise()),
-				sprintf('Type of variable $%s does not match the expected one.', $variableName)
+				sprintf('Type of variable $%s does not match the expected one.', $variableName),
 			);
 
 			if ($iterableValueTypeDescription !== null) {
 				$this->assertSame(
 					$iterableValueTypeDescription,
 					$scope->getVariableType($variableName)->getIterableValueType()->describe(VerbosityLevel::precise()),
-					sprintf('Iterable value type of variable $%s does not match the expected one.', $variableName)
+					sprintf('Iterable value type of variable $%s does not match the expected one.', $variableName),
 				);
 			}
 		} elseif ($typeDescription !== null) {
@@ -935,8 +935,8 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				sprintf(
 					'No type should be asserted for an undefined variable $%s, %s given.',
 					$variableName,
-					$typeDescription
-				)
+					$typeDescription,
+				),
 			);
 		}
 	}
@@ -1222,7 +1222,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/array-destructuring.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -1303,7 +1303,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/typehints.php',
 			$typeClass,
-			$expression
+			$expression,
 		);
 	}
 
@@ -1364,7 +1364,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/typehints-anonymous-function.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -1448,7 +1448,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$expression,
 			'die',
 			[],
-			false
+			false,
 		);
 	}
 
@@ -1601,7 +1601,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/casts.php',
 			$desciptiion,
-			$expression
+			$expression,
 		);
 	}
 
@@ -1625,13 +1625,13 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70200) {
 			$this->markTestSkipped(
-				'Test cannot be run on PHP 7.2 and higher - (unset) cast is deprecated.'
+				'Test cannot be run on PHP 7.2 and higher - (unset) cast is deprecated.',
 			);
 		}
 		$this->assertTypes(
 			__DIR__ . '/data/cast-unset.php',
 			$desciptiion,
-			$expression
+			$expression,
 		);
 	}
 
@@ -1761,7 +1761,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/deducted-types.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -1906,7 +1906,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/properties.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3211,7 +3211,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/binary.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3236,7 +3236,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/var-stmt-annotation.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3261,7 +3261,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/clone.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3314,7 +3314,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/literal-arrays.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3392,7 +3392,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/literal-arrays-keys.php',
 			$description,
 			'$key',
-			$evaluatedPointExpressionType
+			$evaluatedPointExpressionType,
 		);
 	}
 
@@ -3433,7 +3433,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/string-array-access.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3610,7 +3610,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/functionPhpDocs.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3637,7 +3637,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/functionPhpDocs-psalmPrefix.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3654,7 +3654,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/functionPhpDocs-phpstanPrefix.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3812,7 +3812,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/methodPhpDocs.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3837,7 +3837,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/methodPhpDocs-psalmPrefix.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3863,7 +3863,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/methodPhpDocs-phpstanPrefix.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3888,7 +3888,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/methodPhpDocs-trait.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3913,7 +3913,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/method-phpDocs-inheritdoc-without-curly-braces.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3938,7 +3938,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/methodPhpDocs-recursiveTrait.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3963,7 +3963,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/methodPhpDocs-traitInSameFileAsClass.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -3988,7 +3988,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/method-phpDocs-inheritdoc.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -4013,7 +4013,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/methodPhpDocs-implicitInheritance.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -4022,7 +4022,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/switch-instanceof-not.php',
 			'*ERROR*',
-			'$foo'
+			'$foo',
 		);
 	}
 
@@ -4055,7 +4055,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/switch-instanceof.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -4070,7 +4070,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/switch-instanceof-truthy.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -4103,7 +4103,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/switch-get-class.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -4128,7 +4128,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/switch-instanceof-fallthrough.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -4153,7 +4153,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/switch-type-elimination.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -4191,7 +4191,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/overwritingVariable.php',
 			$description,
 			$expression,
-			$evaluatedPointExpressionType
+			$evaluatedPointExpressionType,
 		);
 	}
 
@@ -4256,7 +4256,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/negated-instanceof.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -4293,7 +4293,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/anonymous-function.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -4430,7 +4430,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			$file,
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -4457,7 +4457,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			$file,
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -4517,7 +4517,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$file,
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -5222,7 +5222,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/array-functions.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -5688,7 +5688,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/functions.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -5716,7 +5716,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/dio-functions.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -5741,7 +5741,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/ssh2-functions.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -5810,7 +5810,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/range-function.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -5967,7 +5967,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/specifiedTypesUsingIsFunctions.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6132,7 +6132,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/iterable.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6169,7 +6169,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/array-accessable.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6202,7 +6202,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/void.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6239,7 +6239,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/nullable-returnTypes.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6284,7 +6284,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/ternary.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6313,7 +6313,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/heredoc.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6486,7 +6486,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/type-elimination.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -6519,7 +6519,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/misleading-types.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6548,7 +6548,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/misleading-types-without-namespace.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6581,7 +6581,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/unresolvable-types.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6610,7 +6610,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/combine-types.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6649,7 +6649,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/constants.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6678,7 +6678,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/finally.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6693,7 +6693,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/finally-with-early-termination.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6718,7 +6718,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/inheritdoc-from-interface.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6733,7 +6733,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/inheritdoc-without-curly-braces-from-interface.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6759,7 +6759,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/inheritdoc-from-interface2.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6775,7 +6775,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/inheritdoc-without-curly-braces-from-interface2.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6800,7 +6800,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/inheritdoc-from-trait.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6815,7 +6815,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/inheritdoc-without-curly-braces-from-trait.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6842,7 +6842,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/inheritdoc-from-trait2.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6859,7 +6859,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/inheritdoc-without-curly-braces-from-trait2.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -6900,7 +6900,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/resolve-static.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -7105,7 +7105,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/foreach-loop-variables.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -7123,7 +7123,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/while-loop-variables.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -7141,7 +7141,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/for-loop-variables.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -7250,7 +7250,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/do-while-loop-variables.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -7283,7 +7283,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/multiple-classes-per-file.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -7312,7 +7312,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/calling-multiple-classes-per-file.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -7353,7 +7353,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/explode.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -7422,7 +7422,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/array-pointer-functions.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -7499,7 +7499,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/replaceFunctions.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -7658,7 +7658,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/filterVar.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -7771,7 +7771,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/closure-passed-by-reference.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -7796,7 +7796,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/closure-passed-by-reference-in-call.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -7847,7 +7847,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/static-closure.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -7864,7 +7864,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/closure-passed-by-reference-return.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -7896,7 +7896,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$expression,
 			'die',
 			[],
-			false
+			false,
 		);
 	}
 
@@ -8001,7 +8001,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/traits/traits.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -8034,7 +8034,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/passed-by-reference.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -8079,7 +8079,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/callables.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -8136,7 +8136,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/array-keys-branches.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -8184,7 +8184,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/specified-function-call.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -8225,7 +8225,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/mixed-elements.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -8254,7 +8254,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/case-insensitive-phpdocs.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -8337,7 +8337,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/constant-types-duplicate-condition.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -8390,7 +8390,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/anonymous-class-name.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -8415,7 +8415,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/anonymous-class-name-in-trait.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -8461,7 +8461,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				'DynamicConstants\\DynamicConstantClass::DYNAMIC_CONSTANT_IN_CLASS',
 				'GLOBAL_DYNAMIC_CONSTANT',
-			]
+			],
 		);
 	}
 
@@ -8542,7 +8542,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/isset.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -8590,7 +8590,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/property-array.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -8627,7 +8627,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/in-array.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -8718,7 +8718,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/get-parent-class.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -8751,7 +8751,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			__DIR__ . '/data/is_countable.php',
 			$description,
 			$expression,
-			$evaluatedPointExpression
+			$evaluatedPointExpression,
 		);
 	}
 
@@ -8867,7 +8867,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/php73_functions.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -8999,7 +8999,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/php74_functions.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9028,7 +9028,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/union-methods.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9057,7 +9057,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/union-properties.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9082,7 +9082,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/assignment-in-condition.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9107,7 +9107,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/generalize-scope.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9132,7 +9132,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/generalize-scope-recursive.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9165,7 +9165,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/array-shapes.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9218,7 +9218,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/infer-private-property-type-from-constructor.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9254,7 +9254,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/property-native-types.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9290,7 +9290,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/arrow-functions.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9326,7 +9326,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/arrow-functions-inside.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9386,7 +9386,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/coalesce-assign.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9438,7 +9438,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/array-spread.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9466,7 +9466,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/die-73.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9494,7 +9494,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertTypes(
 			__DIR__ . '/data/die-74.php',
 			$description,
-			$expression
+			$expression,
 		);
 	}
 
@@ -9534,7 +9534,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$expression,
 			$evaluatedPointExpression,
 			[],
-			false
+			false,
 		);
 	}
 
@@ -9557,7 +9557,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$this->assertTypeDescribe(
 				$description,
 				$type,
-				sprintf('%s at %s', $expression, $evaluatedPointExpression)
+				sprintf('%s at %s', $expression, $evaluatedPointExpression),
 			);
 		};
 		if ($useCache && isset(self::$assertTypesCache[$file][$evaluatedPointExpression])) {
@@ -9580,7 +9580,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 					$assertType($scope);
 				},
-				$dynamicConstantNames
+				$dynamicConstantNames,
 			);
 	}
 
@@ -9662,7 +9662,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		$this->assertSame(
 			$expectedDescription,
 			$actualDescription,
-			$label
+			$label,
 		);
 	}
 

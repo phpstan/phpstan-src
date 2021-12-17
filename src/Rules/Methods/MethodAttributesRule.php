@@ -32,7 +32,7 @@ class MethodAttributesRule implements Rule
 			$scope,
 			$node->attrGroups,
 			Attribute::TARGET_METHOD,
-			'method'
+			'method',
 		);
 	}
 

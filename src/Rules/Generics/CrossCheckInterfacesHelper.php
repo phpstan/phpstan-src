@@ -43,7 +43,7 @@ class CrossCheckInterfacesHelper
 							$name,
 							$interface->getName(),
 							$type->describe(VerbosityLevel::value()),
-							$otherType->describe(VerbosityLevel::value())
+							$otherType->describe(VerbosityLevel::value()),
 						))->build();
 					}
 					continue;

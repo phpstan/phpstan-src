@@ -19,7 +19,7 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		return new IncompatiblePhpDocTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
 			new GenericObjectTypeCheck(),
-			new UnresolvableTypeHelper()
+			new UnresolvableTypeHelper(),
 		);
 	}
 

@@ -72,7 +72,7 @@ class ConstantStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					null,
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				TrinaryLogic::createMaybe(),
 			],
@@ -82,7 +82,7 @@ class ConstantStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new ObjectType(Exception::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				TrinaryLogic::createMaybe(),
 			],
@@ -92,7 +92,7 @@ class ConstantStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new ObjectType(Exception::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				TrinaryLogic::createMaybe(),
 			],
@@ -102,7 +102,7 @@ class ConstantStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new ObjectType(Exception::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				TrinaryLogic::createNo(),
 			],
@@ -112,7 +112,7 @@ class ConstantStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new ObjectType(Exception::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				TrinaryLogic::createNo(),
 			],
@@ -143,7 +143,7 @@ class ConstantStringTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 

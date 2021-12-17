@@ -39,7 +39,7 @@ final class TemplateIntegerType extends IntegerType implements TemplateType
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

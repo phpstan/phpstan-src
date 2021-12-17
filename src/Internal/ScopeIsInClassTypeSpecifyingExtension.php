@@ -72,11 +72,11 @@ class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 		return $this->typeSpecifier->create(
 			new MethodCall($node->var, $this->removeNullMethodName),
 			TypeCombinator::removeNull(
-				ParametersAcceptorSelector::selectSingle($methodVariants)->getReturnType()
+				ParametersAcceptorSelector::selectSingle($methodVariants)->getReturnType(),
 			),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

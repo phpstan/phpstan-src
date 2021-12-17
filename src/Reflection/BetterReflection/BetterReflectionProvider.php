@@ -176,7 +176,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$reflectionClass instanceof \PHPStan\BetterReflection\Reflection\ReflectionEnum && PHP_VERSION_ID >= 80000 ? new ReflectionEnum($reflectionClass) : new ReflectionClass($reflectionClass),
 			null,
 			null,
-			$this->stubPhpDocProvider->findClassPhpDoc($reflectionClass->getName())
+			$this->stubPhpDocProvider->findClassPhpDoc($reflectionClass->getName()),
 		);
 
 		$this->classReflections[$reflectionClassName] = $classReflection;
@@ -222,7 +222,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		$filename = $this->fileHelper->normalizePath($this->relativePathHelper->getRelativePath($scopeFile), '/');
 		$className = $this->anonymousClassNameHelper->getAnonymousClassName(
 			$classNode,
-			$scopeFile
+			$scopeFile,
 		);
 		$classNode->name = new Node\Identifier($className);
 		$classNode->setAttribute('anonymousClass', true);
@@ -235,7 +235,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$this->reflector,
 			$classNode,
 			new LocatedSource($this->printer->prettyPrint([$classNode]), $className, $scopeFile),
-			null
+			null,
 		);
 
 		self::$anonymousClasses[$className] = new ClassReflection(
@@ -250,7 +250,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			new ReflectionClass($reflectionClass),
 			$scopeFile,
 			null,
-			$this->stubPhpDocProvider->findClassPhpDoc($className)
+			$this->stubPhpDocProvider->findClassPhpDoc($className),
 		);
 		$this->classReflections[$className] = self::$anonymousClasses[$className];
 
@@ -330,7 +330,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$isInternal,
 			$isFinal,
 			$reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null,
-			$isPure
+			$isPure,
 		);
 	}
 
@@ -382,7 +382,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		return $this->cachedConstants[$constantName] = new RuntimeConstantReflection(
 			$constantName,
 			$constantValueType,
-			$fileName
+			$fileName,
 		);
 	}
 

@@ -55,7 +55,7 @@ class TernaryOperatorConstantConditionRule implements Rule
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Ternary operator condition is always %s.',
-					$exprType->getValue() ? 'true' : 'false'
+					$exprType->getValue() ? 'true' : 'false',
 				)))
 					->identifier('deadCode.ternaryConstantCondition')
 					->metadata([

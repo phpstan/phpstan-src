@@ -77,7 +77,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -92,7 +92,7 @@ class ArrayTypeTest extends PHPStanTestCase
 					new ConstantArrayType([], []),
 					new ConstantArrayType(
 						[new ConstantIntegerType(0)],
-						[new MixedType()]
+						[new MixedType()],
 					),
 					new ConstantArrayType([
 						new ConstantIntegerType(0),
@@ -100,7 +100,7 @@ class ArrayTypeTest extends PHPStanTestCase
 					], [
 						new StringType(),
 						new MixedType(),
-					])
+					]),
 				),
 				TrinaryLogic::createYes(),
 			],
@@ -143,7 +143,7 @@ class ArrayTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -178,7 +178,7 @@ class ArrayTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
 				new MixedType(),
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			);
 		};
 
@@ -186,11 +186,11 @@ class ArrayTypeTest extends PHPStanTestCase
 			'valid templated item' => [
 				new ArrayType(
 					new MixedType(),
-					new ObjectType('DateTime')
+					new ObjectType('DateTime'),
 				),
 				new ArrayType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				['T' => 'DateTime'],
 			],
@@ -198,7 +198,7 @@ class ArrayTypeTest extends PHPStanTestCase
 				new MixedType(),
 				new ArrayType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				[],
 			],
@@ -206,7 +206,7 @@ class ArrayTypeTest extends PHPStanTestCase
 				new StringType(),
 				new ArrayType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				[],
 			],
@@ -216,11 +216,11 @@ class ArrayTypeTest extends PHPStanTestCase
 					new UnionType([
 						new StringType(),
 						new IntegerType(),
-					])
+					]),
 				),
 				new ArrayType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				['T' => 'int|string'],
 			],
@@ -229,16 +229,16 @@ class ArrayTypeTest extends PHPStanTestCase
 					new StringType(),
 					new ArrayType(
 						new MixedType(),
-						new StringType()
+						new StringType(),
 					),
 					new ArrayType(
 						new MixedType(),
-						new IntegerType()
+						new IntegerType(),
 					),
 				]),
 				new ArrayType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				['T' => 'int|string'],
 			],
@@ -257,7 +257,7 @@ class ArrayTypeTest extends PHPStanTestCase
 			$expectedTypes,
 			array_map(static function (Type $type): string {
 				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes())
+			}, $result->getTypes()),
 		);
 	}
 

@@ -77,7 +77,7 @@ class StaticType implements TypeWithClassName
 				});
 				return $this->staticObjectType = new GenericObjectType(
 					$this->classReflection->getName(),
-					$this->classReflection->typeMapToList($typeMap)
+					$this->classReflection->typeMapToList($typeMap),
 				);
 			}
 
@@ -186,7 +186,7 @@ class StaticType implements TypeWithClassName
 			false,
 			function (Type $type) use ($scope): Type {
 				return $this->transformStaticType($type, $scope);
-			}
+			},
 		);
 	}
 
@@ -225,7 +225,7 @@ class StaticType implements TypeWithClassName
 			false,
 			function (Type $type) use ($scope): Type {
 				return $this->transformStaticType($type, $scope);
-			}
+			},
 		);
 	}
 

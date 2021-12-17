@@ -71,7 +71,7 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 			]),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

@@ -42,7 +42,7 @@ class FunctionSignatureVarianceRule implements Rule
 			sprintf('in parameter %%s of function %s()', SprintfHelper::escapeFormatString($functionName)),
 			sprintf('in return type of function %s()', $functionName),
 			sprintf('in function %s()', $functionName),
-			false
+			false,
 		);
 	}
 

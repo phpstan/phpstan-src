@@ -35,12 +35,12 @@ class AnonymousClassNameHelper
 		}
 
 		$filename = $this->relativePathHelper->getRelativePath(
-			$this->fileHelper->normalizePath($filename, '/')
+			$this->fileHelper->normalizePath($filename, '/'),
 		);
 
 		return sprintf(
 			'AnonymousClass%s',
-			md5(sprintf('%s:%s', $filename, $classNode->getLine()))
+			md5(sprintf('%s:%s', $filename, $classNode->getLine())),
 		);
 	}
 

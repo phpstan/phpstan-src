@@ -64,7 +64,7 @@ class OffsetAccessValueAssignmentRule implements Rule
 			static function (Type $varType) use ($assignedValueType): bool {
 				$result = $varType->setOffsetValueType(new MixedType(), $assignedValueType);
 				return !($result instanceof ErrorType);
-			}
+			},
 		);
 		$arrayType = $arrayTypeResult->getType();
 		if ($arrayType instanceof ErrorType) {
@@ -83,7 +83,7 @@ class OffsetAccessValueAssignmentRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'%s does not accept %s.',
 				$originalArrayType->describe(VerbosityLevel::value()),
-				$assignedValueType->describe(VerbosityLevel::typeOnly())
+				$assignedValueType->describe(VerbosityLevel::typeOnly()),
 			))->build(),
 		];
 	}

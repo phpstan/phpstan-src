@@ -132,7 +132,7 @@ class PhpFunctionReflection implements FunctionReflection
 					$this->isVariadic(),
 					$this->getReturnType(),
 					$this->getPhpDocReturnType(),
-					$this->getNativeReturnType()
+					$this->getNativeReturnType(),
 				),
 			];
 		}
@@ -149,7 +149,7 @@ class PhpFunctionReflection implements FunctionReflection
 			return new PhpParameterReflection(
 				$reflection,
 				$this->phpDocParameterTypes[$reflection->getName()] ?? null,
-				null
+				null,
 			);
 		}, $this->reflection->getParameters());
 	}
@@ -224,7 +224,7 @@ class PhpFunctionReflection implements FunctionReflection
 	{
 		return TypehintHelper::decideTypeFromReflection(
 			$this->reflection->getReturnType(),
-			$this->phpDocReturnType
+			$this->phpDocReturnType,
 		);
 	}
 
@@ -254,7 +254,7 @@ class PhpFunctionReflection implements FunctionReflection
 	public function isDeprecated(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean(
-			$this->isDeprecated || $this->reflection->isDeprecated()
+			$this->isDeprecated || $this->reflection->isDeprecated(),
 		);
 	}
 

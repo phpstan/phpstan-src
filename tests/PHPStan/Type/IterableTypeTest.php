@@ -67,7 +67,7 @@ class IterableTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -166,7 +166,7 @@ class IterableTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -179,7 +179,7 @@ class IterableTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -190,7 +190,7 @@ class IterableTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
 				new MixedType(),
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			);
 		};
 
@@ -198,22 +198,22 @@ class IterableTypeTest extends PHPStanTestCase
 			'receive iterable' => [
 				new IterableType(
 					new MixedType(),
-					new ObjectType('DateTime')
+					new ObjectType('DateTime'),
 				),
 				new IterableType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				['T' => 'DateTime'],
 			],
 			'receive iterable template key' => [
 				new IterableType(
 					new StringType(),
-					new ObjectType('DateTime')
+					new ObjectType('DateTime'),
 				),
 				new IterableType(
 					$templateType('U'),
-					$templateType('T')
+					$templateType('T'),
 				),
 				['U' => 'string', 'T' => 'DateTime'],
 			],
@@ -221,7 +221,7 @@ class IterableTypeTest extends PHPStanTestCase
 				new MixedType(),
 				new IterableType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				[],
 			],
@@ -229,7 +229,7 @@ class IterableTypeTest extends PHPStanTestCase
 				new StringType(),
 				new IterableType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				[],
 			],
@@ -248,7 +248,7 @@ class IterableTypeTest extends PHPStanTestCase
 			$expectedTypes,
 			array_map(static function (Type $type): string {
 				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes())
+			}, $result->getTypes()),
 		);
 	}
 
@@ -258,7 +258,7 @@ class IterableTypeTest extends PHPStanTestCase
 			TemplateTypeScope::createWithFunction('a'),
 			'T',
 			null,
-			TemplateTypeVariance::createInvariant()
+			TemplateTypeVariance::createInvariant(),
 		);
 
 		return [
@@ -306,13 +306,13 @@ class IterableTypeTest extends PHPStanTestCase
 			TemplateTypeScope::createWithFunction('foo'),
 			'T',
 			null,
-			TemplateTypeVariance::createInvariant()
+			TemplateTypeVariance::createInvariant(),
 		);
 		return [
 			[
 				new IterableType(
 					new MixedType(),
-					$t
+					$t,
 				),
 				new ConstantArrayType([], []),
 				TrinaryLogic::createYes(),
@@ -320,7 +320,7 @@ class IterableTypeTest extends PHPStanTestCase
 			[
 				new IterableType(
 					new MixedType(),
-					$t->toArgument()
+					$t->toArgument(),
 				),
 				new ConstantArrayType([], []),
 				TrinaryLogic::createYes(),
@@ -337,7 +337,7 @@ class IterableTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $iterableType->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $iterableType->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 

@@ -133,7 +133,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 			$classReflection = $this->getClassFromReflection(
 				$reflectionClass,
 				$reflectionClass->getName(),
-				$reflectionClass->isAnonymous() ? $filename : null
+				$reflectionClass->isAnonymous() ? $filename : null,
 			);
 			$this->classReflections[$className] = $classReflection;
 			if ($className !== $reflectionClass->getName()) {
@@ -195,7 +195,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 				$reflectionClass,
 				$anonymousFilename,
 				null,
-				$this->stubPhpDocProvider->findClassPhpDoc($className)
+				$this->stubPhpDocProvider->findClassPhpDoc($className),
 			);
 			$this->classReflections[$className] = $classReflection;
 		}
@@ -228,7 +228,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		} catch (Throwable $t) {
 			throw new ClassAutoloadingException(
 				$className,
-				$t
+				$t,
 			);
 		} finally {
 			spl_autoload_unregister($autoloader);
@@ -333,7 +333,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 			$isInternal,
 			$isFinal,
 			$reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null,
-			$isPure
+			$isPure,
 		);
 		$this->customFunctionReflections[$lowerCasedFunctionName] = $functionReflection;
 
@@ -375,7 +375,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		return $this->cachedConstants[$constantName] = new RuntimeConstantReflection(
 			$constantName,
 			ConstantTypeHelper::getTypeFromValue(@constant($constantName)),
-			null
+			null,
 		);
 	}
 

@@ -51,7 +51,7 @@ class DuplicateDeclarationRuleTest extends RuleTestCase
 					'Cannot redeclare method DuplicateDeclarations\Foo::Func1().',
 					35,
 				],
-			]
+			],
 		);
 	}
 

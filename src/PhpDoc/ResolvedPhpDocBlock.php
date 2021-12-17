@@ -280,7 +280,7 @@ class ResolvedPhpDocBlock
 		if ($this->varTags === false) {
 			$this->varTags = $this->phpDocNodeResolver->resolveVarTags(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 		return $this->varTags;
@@ -294,7 +294,7 @@ class ResolvedPhpDocBlock
 		if ($this->methodTags === false) {
 			$this->methodTags = $this->phpDocNodeResolver->resolveMethodTags(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 		return $this->methodTags;
@@ -308,7 +308,7 @@ class ResolvedPhpDocBlock
 		if ($this->propertyTags === false) {
 			$this->propertyTags = $this->phpDocNodeResolver->resolvePropertyTags(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 		return $this->propertyTags;
@@ -330,7 +330,7 @@ class ResolvedPhpDocBlock
 		if ($this->extendsTags === false) {
 			$this->extendsTags = $this->phpDocNodeResolver->resolveExtendsTags(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 		return $this->extendsTags;
@@ -344,7 +344,7 @@ class ResolvedPhpDocBlock
 		if ($this->implementsTags === false) {
 			$this->implementsTags = $this->phpDocNodeResolver->resolveImplementsTags(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 		return $this->implementsTags;
@@ -358,7 +358,7 @@ class ResolvedPhpDocBlock
 		if ($this->usesTags === false) {
 			$this->usesTags = $this->phpDocNodeResolver->resolveUsesTags(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 		return $this->usesTags;
@@ -372,7 +372,7 @@ class ResolvedPhpDocBlock
 		if ($this->paramTags === false) {
 			$this->paramTags = $this->phpDocNodeResolver->resolveParamTags(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 		return $this->paramTags;
@@ -383,7 +383,7 @@ class ResolvedPhpDocBlock
 		if ($this->returnTag === false) {
 			$this->returnTag = $this->phpDocNodeResolver->resolveReturnTag(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 		return $this->returnTag;
@@ -394,7 +394,7 @@ class ResolvedPhpDocBlock
 		if ($this->throwsTag === false) {
 			$this->throwsTag = $this->phpDocNodeResolver->resolveThrowsTags(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 		return $this->throwsTag;
@@ -408,7 +408,7 @@ class ResolvedPhpDocBlock
 		if ($this->mixinTags === false) {
 			$this->mixinTags = $this->phpDocNodeResolver->resolveMixinTags(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 
@@ -423,7 +423,7 @@ class ResolvedPhpDocBlock
 		if ($this->typeAliasTags === false) {
 			$this->typeAliasTags = $this->phpDocNodeResolver->resolveTypeAliasTags(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 
@@ -438,7 +438,7 @@ class ResolvedPhpDocBlock
 		if ($this->typeAliasImportTags === false) {
 			$this->typeAliasImportTags = $this->phpDocNodeResolver->resolveTypeAliasImportTags(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 
@@ -450,7 +450,7 @@ class ResolvedPhpDocBlock
 		if ($this->deprecatedTag === false) {
 			$this->deprecatedTag = $this->phpDocNodeResolver->resolveDeprecatedTag(
 				$this->phpDocNode,
-				$this->getNameScope()
+				$this->getNameScope(),
 			);
 		}
 		return $this->deprecatedTag;
@@ -460,7 +460,7 @@ class ResolvedPhpDocBlock
 	{
 		if ($this->isDeprecated === null) {
 			$this->isDeprecated = $this->phpDocNodeResolver->resolveIsDeprecated(
-				$this->phpDocNode
+				$this->phpDocNode,
 			);
 		}
 		return $this->isDeprecated;
@@ -470,7 +470,7 @@ class ResolvedPhpDocBlock
 	{
 		if ($this->isInternal === null) {
 			$this->isInternal = $this->phpDocNodeResolver->resolveIsInternal(
-				$this->phpDocNode
+				$this->phpDocNode,
 			);
 		}
 		return $this->isInternal;
@@ -480,7 +480,7 @@ class ResolvedPhpDocBlock
 	{
 		if ($this->isFinal === null) {
 			$this->isFinal = $this->phpDocNodeResolver->resolveIsFinal(
-				$this->phpDocNode
+				$this->phpDocNode,
 			);
 		}
 		return $this->isFinal;
@@ -495,14 +495,14 @@ class ResolvedPhpDocBlock
 	{
 		if ($this->isPure === 'notLoaded') {
 			$pure = $this->phpDocNodeResolver->resolveIsPure(
-				$this->phpDocNode
+				$this->phpDocNode,
 			);
 			if ($pure) {
 				$this->isPure = true;
 				return $this->isPure;
 			} else {
 				$impure = $this->phpDocNodeResolver->resolveIsImpure(
-					$this->phpDocNode
+					$this->phpDocNode,
 				);
 				if ($impure) {
 					$this->isPure = false;
@@ -678,7 +678,7 @@ class ResolvedPhpDocBlock
 	{
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$tag->getType(),
-			$phpDocBlock->getClassReflection()->getActiveTemplateTypeMap()
+			$phpDocBlock->getClassReflection()->getActiveTemplateTypeMap(),
 		);
 		return $tag->withType($type);
 	}

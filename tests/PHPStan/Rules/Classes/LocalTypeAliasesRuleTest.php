@@ -17,7 +17,7 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 		return new LocalTypeAliasesRule(
 			['GlobalTypeAlias' => 'int|string'],
 			$this->createReflectionProvider(),
-			self::getContainer()->getByType(TypeNodeResolver::class)
+			self::getContainer()->getByType(TypeNodeResolver::class),
 		);
 	}
 

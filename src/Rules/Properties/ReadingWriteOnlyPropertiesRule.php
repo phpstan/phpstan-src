@@ -76,7 +76,7 @@ class ReadingWriteOnlyPropertiesRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'%s is not readable.',
-					$propertyDescription
+					$propertyDescription,
 				))->build(),
 			];
 		}

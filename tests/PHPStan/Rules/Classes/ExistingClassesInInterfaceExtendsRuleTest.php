@@ -17,7 +17,7 @@ class ExistingClassesInInterfaceExtendsRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassesInInterfaceExtendsRule(
 			new ClassCaseSensitivityCheck($broker, true),
-			$broker
+			$broker,
 		);
 	}
 

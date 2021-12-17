@@ -158,7 +158,7 @@ abstract class PHPStanTestCase extends TestCase
 			self::getContainer()->getByType(NodeScopeResolver::class),
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container,
-			$container->getByType(PhpVersion::class)
+			$container->getByType(PhpVersion::class),
 		);
 	}
 
@@ -173,7 +173,7 @@ abstract class PHPStanTestCase extends TestCase
 			$globalTypeAliases,
 			$container->getByType(TypeStringResolver::class),
 			$container->getByType(TypeNodeResolver::class),
-			$reflectionProvider
+			$reflectionProvider,
 		);
 	}
 

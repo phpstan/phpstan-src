@@ -48,7 +48,7 @@ class ParallelAnalyserIntegrationTest extends TestCase
 			}, [
 				__DIR__ . '/data/trait-definition.php',
 				__DIR__ . '/data/traits.php',
-			]))
+			])),
 		), $outputLines, $exitCode);
 		$output = implode("\n", $outputLines);
 

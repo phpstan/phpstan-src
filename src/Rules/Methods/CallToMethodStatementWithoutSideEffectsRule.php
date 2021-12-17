@@ -52,7 +52,7 @@ class CallToMethodStatementWithoutSideEffectsRule implements Rule
 			'',
 			static function (Type $type) use ($methodName): bool {
 				return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();
-			}
+			},
 		);
 		$calledOnType = $typeResult->getType();
 		if ($calledOnType instanceof ErrorType) {
@@ -85,7 +85,7 @@ class CallToMethodStatementWithoutSideEffectsRule implements Rule
 					'Call to %s %s::%s() on a separate line has no effect.',
 					$method->isStatic() ? 'static method' : 'method',
 					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName()
+					$method->getName(),
 				))->build(),
 			];
 		}

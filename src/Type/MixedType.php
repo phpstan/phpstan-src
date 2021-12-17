@@ -209,7 +209,7 @@ class MixedType implements CompoundType, SubtractableType
 			false,
 			static function (Type $type): Type {
 				return $type;
-			}
+			},
 		);
 	}
 
@@ -237,7 +237,7 @@ class MixedType implements CompoundType, SubtractableType
 			false,
 			static function (Type $type): Type {
 				return $type;
-			}
+			},
 		);
 	}
 
@@ -291,7 +291,7 @@ class MixedType implements CompoundType, SubtractableType
 				}
 
 				return $description;
-			}
+			},
 		);
 	}
 
@@ -433,7 +433,7 @@ class MixedType implements CompoundType, SubtractableType
 	{
 		return new self(
 			$properties['isExplicitMixed'],
-			$properties['subtractedType'] ?? null
+			$properties['subtractedType'] ?? null,
 		);
 	}
 

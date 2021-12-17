@@ -78,7 +78,7 @@ class FileMonitor
 			$newFiles,
 			$changedFiles,
 			$deletedFiles,
-			count($fileHashes)
+			count($fileHashes),
 		);
 	}
 

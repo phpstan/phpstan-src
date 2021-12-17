@@ -21,11 +21,11 @@ class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 					$this->createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
-					$this->treatPhpDocTypesAsCertain
+					$this->treatPhpDocTypesAsCertain,
 				),
-				$this->treatPhpDocTypesAsCertain
+				$this->treatPhpDocTypesAsCertain,
 			),
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		);
 	}
 

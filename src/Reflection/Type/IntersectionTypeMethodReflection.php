@@ -93,7 +93,7 @@ class IntersectionTypeMethodReflection implements MethodReflection
 				$acceptor->getResolvedTemplateTypeMap(),
 				$acceptor->getParameters(),
 				$acceptor->isVariadic(),
-				$returnType
+				$returnType,
 			);
 		}, $this->methods[0]->getVariants());
 	}

@@ -54,7 +54,7 @@ class TableErrorFormatter implements ErrorFormatter
 					$output->writeLineFormatted(sprintf(
 						"PHPStan is performing only the most basic checks.\nYou can pass a higher rule level through the <fg=cyan>--%s</> option\n(the default and current level is %d) to analyse code more thoroughly.",
 						AnalyseCommand::OPTION_LEVEL,
-						AnalyseCommand::DEFAULT_LEVEL
+						AnalyseCommand::DEFAULT_LEVEL,
 					));
 					$output->writeLineFormatted('');
 				}

@@ -56,7 +56,7 @@ class DateTimeInstantiationRule implements Rule
 					'Instantiating %s with %s produces an error: %s',
 					(string) $node->class,
 					$dateString,
-					$error
+					$error,
 				))->build();
 			}
 		}

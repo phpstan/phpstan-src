@@ -105,7 +105,7 @@ class ExistingNamesInUseRule implements Rule
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Function %s used with incorrect case: %s.',
 						$realName,
-						$usedName
+						$usedName,
 					))->line($use->name->getLine())->build();
 				}
 			}
@@ -123,7 +123,7 @@ class ExistingNamesInUseRule implements Rule
 		return $this->classCaseSensitivityCheck->checkClassNames(
 			array_map(static function (Node\Stmt\UseUse $use): ClassNameNodePair {
 				return new ClassNameNodePair((string) $use->name, $use->name);
-			}, $uses)
+			}, $uses),
 		);
 	}
 

@@ -60,7 +60,7 @@ class SimpleXMLElementProperty implements PropertyReflection
 			new IntegerType(),
 			new FloatType(),
 			new StringType(),
-			new BooleanType()
+			new BooleanType(),
 		);
 	}
 

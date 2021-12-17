@@ -85,7 +85,7 @@ class OffsetAccessWithoutDimForReadingRuleTest extends RuleTestCase
 					'Cannot use [] for reading.',
 					30,
 				],
-			]
+			],
 		);
 	}
 

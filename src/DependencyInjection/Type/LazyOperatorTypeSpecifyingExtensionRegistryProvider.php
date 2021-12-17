@@ -24,7 +24,7 @@ class LazyOperatorTypeSpecifyingExtensionRegistryProvider implements OperatorTyp
 		if ($this->registry === null) {
 			$this->registry = new OperatorTypeSpecifyingExtensionRegistry(
 				$this->container->getByType(Broker::class),
-				$this->container->getServicesByTag(BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG)
+				$this->container->getServicesByTag(BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG),
 			);
 		}
 

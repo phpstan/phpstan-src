@@ -173,7 +173,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					'Cannot access property $array on stdClass|null.',
 					412,
 				],
-			]
+			],
 		);
 	}
 
@@ -303,7 +303,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
 					386,
 				],
-			]
+			],
 		);
 	}
 
@@ -330,7 +330,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
 					386,
 				],
-			]
+			],
 		);
 	}
 

@@ -259,7 +259,7 @@ class DependencyResolver
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
 			$referencedClasses = array_merge(
 				$parameter->getNativeType()->getReferencedClasses(),
-				$parameter->getPhpDocType()->getReferencedClasses()
+				$parameter->getPhpDocType()->getReferencedClasses(),
 			);
 
 			foreach ($referencedClasses as $referencedClass) {
@@ -269,7 +269,7 @@ class DependencyResolver
 
 		$returnTypeReferencedClasses = array_merge(
 			$parametersAcceptor->getNativeReturnType()->getReferencedClasses(),
-			$parametersAcceptor->getPhpDocReturnType()->getReferencedClasses()
+			$parametersAcceptor->getPhpDocReturnType()->getReferencedClasses(),
 		);
 		foreach ($returnTypeReferencedClasses as $referencedClass) {
 			$this->addClassToDependencies($referencedClass, $dependenciesReflections);

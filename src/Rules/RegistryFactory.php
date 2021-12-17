@@ -19,7 +19,7 @@ class RegistryFactory
 	public function create(): Registry
 	{
 		return new Registry(
-			$this->container->getServicesByTag(self::RULE_TAG)
+			$this->container->getServicesByTag(self::RULE_TAG),
 		);
 	}
 

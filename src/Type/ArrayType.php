@@ -67,7 +67,7 @@ class ArrayType implements Type
 	{
 		return array_merge(
 			$this->keyType->getReferencedClasses(),
-			$this->getItemType()->getReferencedClasses()
+			$this->getItemType()->getReferencedClasses(),
 		);
 	}
 
@@ -149,7 +149,7 @@ class ArrayType implements Type
 				}
 
 				return sprintf('array<%s, %s>', $this->keyType->describe($level), $this->itemType->describe($level));
-			}
+			},
 		);
 	}
 
@@ -254,7 +254,7 @@ class ArrayType implements Type
 
 		return TypeCombinator::intersect(new self(
 			TypeCombinator::union($this->keyType, self::castToArrayKeyType($offsetType)),
-			$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType
+			$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType,
 		), new NonEmptyArrayType());
 	}
 
@@ -289,7 +289,7 @@ class ArrayType implements Type
 	{
 		return TypeCombinator::union(
 			new ConstantIntegerType(0),
-			new ConstantIntegerType(1)
+			new ConstantIntegerType(1),
 		);
 	}
 
@@ -297,7 +297,7 @@ class ArrayType implements Type
 	{
 		return TypeCombinator::union(
 			new ConstantFloatType(0.0),
-			new ConstantFloatType(1.0)
+			new ConstantFloatType(1.0),
 		);
 	}
 
@@ -402,7 +402,7 @@ class ArrayType implements Type
 
 		return array_merge(
 			$this->getKeyType()->getReferencedTemplateTypes($keyVariance),
-			$this->getItemType()->getReferencedTemplateTypes($itemVariance)
+			$this->getItemType()->getReferencedTemplateTypes($itemVariance),
 		);
 	}
 
@@ -425,7 +425,7 @@ class ArrayType implements Type
 	{
 		return new self(
 			$properties['keyType'],
-			$properties['itemType']
+			$properties['itemType'],
 		);
 	}
 

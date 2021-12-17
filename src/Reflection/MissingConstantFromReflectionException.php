@@ -17,8 +17,8 @@ class MissingConstantFromReflectionException extends Exception
 			sprintf(
 				'Constant %s was not found in reflection of class %s.',
 				$constantName,
-				$className
-			)
+				$className,
+			),
 		);
 	}
 

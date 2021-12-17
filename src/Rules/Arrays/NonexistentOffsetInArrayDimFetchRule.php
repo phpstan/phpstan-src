@@ -58,7 +58,7 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$unknownClassPattern,
 			static function (Type $type): bool {
 				return $type->isOffsetAccessible()->yes();
-			}
+			},
 		);
 		$isOffsetAccessibleType = $isOffsetAccessibleTypeResult->getType();
 		if ($isOffsetAccessibleType instanceof ErrorType) {
@@ -78,7 +78,7 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 						RuleErrorBuilder::message(sprintf(
 							'Cannot access offset %s on %s.',
 							$dimType->describe(VerbosityLevel::value()),
-							$isOffsetAccessibleType->describe(VerbosityLevel::value())
+							$isOffsetAccessibleType->describe(VerbosityLevel::value()),
 						))->build(),
 					];
 				}
@@ -86,7 +86,7 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Cannot access an offset on %s.',
-						$isOffsetAccessibleType->describe(VerbosityLevel::typeOnly())
+						$isOffsetAccessibleType->describe(VerbosityLevel::typeOnly()),
 					))->build(),
 				];
 			}
@@ -102,7 +102,7 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$scope,
 			$node->var,
 			$unknownClassPattern,
-			$dimType
+			$dimType,
 		);
 	}
 

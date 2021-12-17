@@ -90,7 +90,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 			$function !== null ? $function->getName() : null,
-			$docComment->getText()
+			$docComment->getText(),
 		);
 
 		$errors = [];
@@ -113,7 +113,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'%s has no value type specified in iterable type %s.',
 						$identifier,
-						$iterableTypeDescription
+						$iterableTypeDescription,
 					))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 				}
 			}
@@ -124,7 +124,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 				sprintf('%s contains generic type %%s but class %%s is not generic.', $escapedIdentifier),
 				sprintf('Generic type %%s in %s does not specify all template types of class %%s: %%s', $escapedIdentifier),
 				sprintf('Generic type %%s in %s specifies %%d template types, but class %%s supports only %%d: %%s', $escapedIdentifier),
-				sprintf('Type %%s in generic type %%s in %s is not subtype of template type %%s of class %%s.', $escapedIdentifier)
+				sprintf('Type %%s in generic type %%s in %s is not subtype of template type %%s of class %%s.', $escapedIdentifier),
 			));
 
 			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($varTagType) as [$innerName, $genericTypeNames]) {
@@ -132,7 +132,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 					'%s contains generic %s but does not specify its types: %s',
 					$identifier,
 					$innerName,
-					implode(', ', $genericTypeNames)
+					implode(', ', $genericTypeNames),
 				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 			}
 
@@ -142,7 +142,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 					if ($this->reflectionProvider->getClass($referencedClass)->isTrait()) {
 						$errors[] = RuleErrorBuilder::message(sprintf(
 							sprintf('%s has invalid type %%s.', $identifier),
-							$referencedClass
+							$referencedClass,
 						))->build();
 					}
 					continue;
@@ -150,7 +150,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					sprintf('%s contains unknown class %%s.', $identifier),
-					$referencedClass
+					$referencedClass,
 				))->discoveringSymbolsTip()->build();
 			}
 
@@ -162,7 +162,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 				$errors,
 				$this->classCaseSensitivityCheck->checkClassNames(array_map(static function (string $class) use ($node): ClassNameNodePair {
 					return new ClassNameNodePair($class, $node);
-				}, $referencedClasses))
+				}, $referencedClasses)),
 			);
 		}
 

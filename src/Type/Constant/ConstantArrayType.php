@@ -88,7 +88,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		parent::__construct(
 			count($keyTypes) > 0 ? TypeCombinator::union(...$keyTypes) : new NeverType(),
-			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType()
+			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType(),
 		);
 
 		$this->keyTypes = $keyTypes;
@@ -291,7 +291,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 			return $result->and(
 				$this->getKeyType()->isSuperTypeOf($type->getKeyType()),
-				$this->getItemType()->isSuperTypeOf($type->getItemType())
+				$this->getItemType()->isSuperTypeOf($type->getItemType()),
 			);
 		}
 
@@ -556,7 +556,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$keyTypes,
 			$valueTypes,
 			$nextAutoindex,
-			array_values($optionalKeys)
+			array_values($optionalKeys),
 		);
 	}
 
@@ -616,7 +616,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$keyTypes,
 			$valueTypes,
 			(int) $nextAutoIndex,
-			[]
+			[],
 		);
 	}
 
@@ -643,7 +643,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$arrayType = new ArrayType(
 			TypeUtils::generalizeType($this->getKeyType(), $precision),
-			TypeUtils::generalizeType($this->getItemType(), $precision)
+			TypeUtils::generalizeType($this->getItemType(), $precision),
 		);
 
 		if (count($this->keyTypes) > count($this->optionalKeys)) {
@@ -767,7 +767,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return sprintf(
 				'array{%s%s}',
 				implode(', ', $exportValuesOnly ? $values : $items),
-				$append
+				$append,
 			);
 		};
 		return $level->handle(
@@ -779,7 +779,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			},
 			static function () use ($describeValue): string {
 				return $describeValue(false);
-			}
+			},
 		);
 	}
 

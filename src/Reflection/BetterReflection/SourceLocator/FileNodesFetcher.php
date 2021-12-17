@@ -43,7 +43,7 @@ class FileNodesFetcher
 		return new FetchedNodesResult(
 			$this->cachingVisitor->getClassNodes(),
 			$this->cachingVisitor->getFunctionNodes(),
-			$this->cachingVisitor->getConstantNodes()
+			$this->cachingVisitor->getConstantNodes(),
 		);
 	}
 

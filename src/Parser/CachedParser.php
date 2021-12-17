@@ -41,7 +41,7 @@ class CachedParser implements Parser
 				$this->cachedNodesByString,
 				1,
 				null,
-				true
+				true,
 			);
 
 			--$this->cachedNodesByStringCount;
@@ -67,7 +67,7 @@ class CachedParser implements Parser
 				$this->cachedNodesByString,
 				1,
 				null,
-				true
+				true,
 			);
 
 			--$this->cachedNodesByStringCount;

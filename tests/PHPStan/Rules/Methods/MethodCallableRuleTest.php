@@ -23,7 +23,7 @@ class MethodCallableRuleTest extends RuleTestCase
 
 		return new MethodCallableRule(
 			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
-			new PhpVersion($this->phpVersion)
+			new PhpVersion($this->phpVersion),
 		);
 	}
 

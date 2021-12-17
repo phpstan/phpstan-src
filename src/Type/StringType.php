@@ -90,7 +90,7 @@ class StringType implements Type
 
 			$typeClass = $reflectionProvider->getClass($type->getClassName());
 			return TrinaryLogic::createFromBoolean(
-				$typeClass->hasNativeMethod('__toString')
+				$typeClass->hasNativeMethod('__toString'),
 			);
 		}
 
@@ -122,7 +122,7 @@ class StringType implements Type
 		return new ConstantArrayType(
 			[new ConstantIntegerType(0)],
 			[$this],
-			1
+			1,
 		);
 	}
 

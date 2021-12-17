@@ -14,7 +14,7 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new MethodSignatureVarianceRule(
-			self::getContainer()->getByType(VarianceCheck::class)
+			self::getContainer()->getByType(VarianceCheck::class),
 		);
 	}
 

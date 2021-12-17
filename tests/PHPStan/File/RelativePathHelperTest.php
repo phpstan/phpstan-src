@@ -159,7 +159,7 @@ class RelativePathHelperTest extends TestCase
 		$helper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), $currentWorkingDirectory, $analysedPaths, '/');
 		$this->assertSame(
 			$expectedResult,
-			$helper->getRelativePath($filenameToRelativize)
+			$helper->getRelativePath($filenameToRelativize),
 		);
 	}
 
@@ -184,7 +184,7 @@ class RelativePathHelperTest extends TestCase
 		$helper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), $sanitize($currentWorkingDirectory), array_map($sanitize, $analysedPaths), '\\');
 		$this->assertSame(
 			$sanitize($expectedResult),
-			$helper->getRelativePath($sanitize($filenameToRelativize))
+			$helper->getRelativePath($sanitize($filenameToRelativize)),
 		);
 	}
 
@@ -226,7 +226,7 @@ class RelativePathHelperTest extends TestCase
 		$helper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), $currentWorkingDirectory, $analysedPaths, '\\');
 		$this->assertSame(
 			$expectedResult,
-			$helper->getRelativePath($filenameToRelativize)
+			$helper->getRelativePath($filenameToRelativize),
 		);
 	}
 

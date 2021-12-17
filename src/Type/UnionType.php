@@ -47,7 +47,7 @@ class UnionType implements CompoundType
 				self::class,
 				implode(', ', array_map(static function (Type $type): string {
 					return $type->describe(VerbosityLevel::value());
-				}, $types))
+				}, $types)),
 			));
 		};
 		if (count($types) < 2) {
@@ -88,7 +88,7 @@ class UnionType implements CompoundType
 			$type->equals(new ObjectType(DateTimeInterface::class))
 			&& $this->accepts(
 				new UnionType([new ObjectType(DateTime::class), new ObjectType(DateTimeImmutable::class)]),
-				$strictTypes
+				$strictTypes,
 			)->yes()
 		) {
 			return TrinaryLogic::createYes();
@@ -202,7 +202,7 @@ class UnionType implements CompoundType
 			},
 			function () use ($joinTypes): string {
 				return $joinTypes($this->types);
-			}
+			},
 		);
 	}
 
@@ -362,7 +362,7 @@ class UnionType implements CompoundType
 			},
 			static function (Type $type) use ($constantName): TrinaryLogic {
 				return $type->hasConstant($constantName);
-			}
+			},
 		);
 	}
 
@@ -374,7 +374,7 @@ class UnionType implements CompoundType
 			},
 			static function (Type $type) use ($constantName): ConstantReflection {
 				return $type->getConstant($constantName);
-			}
+			},
 		);
 	}
 

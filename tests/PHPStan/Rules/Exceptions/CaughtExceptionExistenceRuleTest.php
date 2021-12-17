@@ -18,7 +18,7 @@ class CaughtExceptionExistenceRuleTest extends RuleTestCase
 		return new CaughtExceptionExistenceRule(
 			$broker,
 			new ClassCaseSensitivityCheck($broker, true),
-			true
+			true,
 		);
 	}
 

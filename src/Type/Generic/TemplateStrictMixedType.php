@@ -48,7 +48,7 @@ final class TemplateStrictMixedType extends StrictMixedType implements TemplateT
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

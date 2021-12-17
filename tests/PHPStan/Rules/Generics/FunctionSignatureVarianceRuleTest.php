@@ -14,7 +14,7 @@ class FunctionSignatureVarianceRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new FunctionSignatureVarianceRule(
-			self::getContainer()->getByType(VarianceCheck::class)
+			self::getContainer()->getByType(VarianceCheck::class),
 		);
 	}
 

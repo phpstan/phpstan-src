@@ -84,7 +84,7 @@ class ExportedTraitUseAdaptation implements ExportedNode, JsonSerializable
 			$properties['method'],
 			$properties['newModifier'],
 			$properties['newName'],
-			$properties['insteadOfs']
+			$properties['insteadOfs'],
 		);
 	}
 
@@ -99,7 +99,7 @@ class ExportedTraitUseAdaptation implements ExportedNode, JsonSerializable
 			$data['method'],
 			$data['newModifier'],
 			$data['newName'],
-			$data['insteadOfs']
+			$data['insteadOfs'],
 		);
 	}
 

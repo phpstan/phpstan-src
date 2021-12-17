@@ -16,7 +16,7 @@ class AppendedArrayKeyTypeRuleTest extends RuleTestCase
 	{
 		return new AppendedArrayKeyTypeRule(
 			new PropertyReflectionFinder(),
-			true
+			true,
 		);
 	}
 

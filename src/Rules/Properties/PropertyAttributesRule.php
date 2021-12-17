@@ -32,7 +32,7 @@ class PropertyAttributesRule implements Rule
 			$scope,
 			$node->attrGroups,
 			Attribute::TARGET_PROPERTY,
-			'property'
+			'property',
 		);
 	}
 

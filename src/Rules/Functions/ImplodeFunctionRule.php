@@ -68,7 +68,7 @@ class ImplodeFunctionRule implements Rule
 			'',
 			static function (Type $type): bool {
 				return !$type->getIterableValueType()->toString() instanceof ErrorType;
-			}
+			},
 		);
 
 		if ($typeResult->getType() instanceof ErrorType
@@ -78,7 +78,7 @@ class ImplodeFunctionRule implements Rule
 
 		return [
 			RuleErrorBuilder::message(
-				sprintf('Parameter #%d $array of function %s expects array<string>, %s given.', $paramNo, $functionName, $typeResult->getType()->describe(VerbosityLevel::typeOnly()))
+				sprintf('Parameter #%d $array of function %s expects array<string>, %s given.', $paramNo, $functionName, $typeResult->getType()->describe(VerbosityLevel::typeOnly())),
 			)->build(),
 		];
 	}

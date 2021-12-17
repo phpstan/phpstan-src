@@ -48,7 +48,7 @@ class ClassCaseSensitivityCheck
 				'%s %s referenced with incorrect case: %s.',
 				$this->getTypeName($classReflection),
 				$realClassName,
-				$className
+				$className,
 			))->line($pair->getNode()->getLine())->build();
 		}
 

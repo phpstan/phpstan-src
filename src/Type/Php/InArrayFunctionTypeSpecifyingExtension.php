@@ -52,7 +52,7 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 				$arrayValueType,
 				$context,
 				false,
-				$scope
+				$scope,
 			);
 		}
 

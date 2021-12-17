@@ -75,7 +75,7 @@ class ContainerFactory
 			$this->fileHelper,
 			$this->rootDirectory,
 			$this->currentWorkingDirectory,
-			$generateBaselineFile
+			$generateBaselineFile,
 		));
 		$configurator->defaultExtensions = [
 			'php' => PhpExtension::class,
@@ -113,7 +113,7 @@ class ContainerFactory
 			$container->getService('betterReflectionSourceLocator'), // @phpstan-ignore-line
 			$container->getService('betterReflectionReflector'), // @phpstan-ignore-line
 			$container->getService('phpParserDecorator'), // @phpstan-ignore-line
-			$container->getByType(PhpStormStubsSourceStubber::class)
+			$container->getByType(PhpStormStubsSourceStubber::class),
 		);
 
 		/** @var Broker $broker */
@@ -133,7 +133,7 @@ class ContainerFactory
 			$this->fileHelper,
 			$this->rootDirectory,
 			$this->currentWorkingDirectory,
-			null
+			null,
 		));
 		$configurator->setDebugMode(true);
 		$configurator->setTempDirectory($tempDirectory);

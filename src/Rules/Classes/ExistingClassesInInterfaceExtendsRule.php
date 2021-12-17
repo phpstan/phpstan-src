@@ -41,7 +41,7 @@ class ExistingClassesInInterfaceExtendsRule implements Rule
 		$messages = $this->classCaseSensitivityCheck->checkClassNames(
 			array_map(static function (Node\Name $interfaceName): ClassNameNodePair {
 				return new ClassNameNodePair((string) $interfaceName, $interfaceName);
-			}, $node->extends)
+			}, $node->extends),
 		);
 
 		$currentInterfaceName = (string) $node->namespacedName;
@@ -52,7 +52,7 @@ class ExistingClassesInInterfaceExtendsRule implements Rule
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'Interface %s extends unknown interface %s.',
 						$currentInterfaceName,
-						$extendedInterfaceName
+						$extendedInterfaceName,
 					))->nonIgnorable()->discoveringSymbolsTip()->build();
 				}
 			} else {
@@ -61,13 +61,13 @@ class ExistingClassesInInterfaceExtendsRule implements Rule
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'Interface %s extends class %s.',
 						$currentInterfaceName,
-						$extendedInterfaceName
+						$extendedInterfaceName,
 					))->nonIgnorable()->build();
 				} elseif ($reflection->isTrait()) {
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'Interface %s extends trait %s.',
 						$currentInterfaceName,
-						$extendedInterfaceName
+						$extendedInterfaceName,
 					))->nonIgnorable()->build();
 				}
 			}

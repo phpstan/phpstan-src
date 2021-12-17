@@ -73,8 +73,8 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 								new IntegerType(),
 								TypeCombinator::union(
 									$startConstant->generalize(GeneralizePrecision::moreSpecific()),
-									$endConstant->generalize(GeneralizePrecision::moreSpecific())
-								)
+									$endConstant->generalize(GeneralizePrecision::moreSpecific()),
+								),
 							),
 							new NonEmptyArrayType(),
 						]);

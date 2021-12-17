@@ -92,8 +92,8 @@ class FileCacheStorage implements CacheStorage
 			$tmpPath,
 			sprintf(
 				"<?php declare(strict_types = 1);\n\nreturn %s;",
-				$exported
-			)
+				$exported,
+			),
 		);
 
 		$renameSuccess = @rename($tmpPath, $path);

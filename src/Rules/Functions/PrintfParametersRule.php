@@ -98,11 +98,11 @@ class PrintfParametersRule implements Rule
 					sprintf(
 						'%s, %s.',
 						$placeHoldersCount === 1 ? 'Call to %s contains %d placeholder' : 'Call to %s contains %d placeholders',
-						$argsCount - 1 === 1 ? '%d value given' : '%d values given'
+						$argsCount - 1 === 1 ? '%d value given' : '%d values given',
 					),
 					$name,
 					$placeHoldersCount,
-					$argsCount - 1
+					$argsCount - 1,
 				))->build(),
 			];
 		}

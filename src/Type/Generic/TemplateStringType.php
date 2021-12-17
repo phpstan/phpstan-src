@@ -39,7 +39,7 @@ final class TemplateStringType extends StringType implements TemplateType
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

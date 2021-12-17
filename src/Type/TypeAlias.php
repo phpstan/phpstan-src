@@ -37,7 +37,7 @@ class TypeAlias
 		if ($this->resolvedType === null) {
 			$this->resolvedType = $typeNodeResolver->resolve(
 				$this->typeNode,
-				$this->nameScope
+				$this->nameScope,
 			);
 		}
 

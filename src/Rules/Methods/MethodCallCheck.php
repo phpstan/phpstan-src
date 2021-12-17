@@ -57,7 +57,7 @@ class MethodCallCheck
 			sprintf('Call to method %s() on an unknown class %%s.', SprintfHelper::escapeFormatString($methodName)),
 			static function (Type $type) use ($methodName): bool {
 				return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();
-			}
+			},
 		);
 
 		$type = $typeResult->getType();
@@ -70,7 +70,7 @@ class MethodCallCheck
 					RuleErrorBuilder::message(sprintf(
 						'Cannot call method %s() on %s.',
 						$methodName,
-						$type->describe(VerbosityLevel::typeOnly())
+						$type->describe(VerbosityLevel::typeOnly()),
 					))->build(),
 				],
 				null,
@@ -104,7 +104,7 @@ class MethodCallCheck
 								RuleErrorBuilder::message(sprintf(
 									'Call to private method %s() of parent class %s.',
 									$methodReflection->getName(),
-									$parentClassReflection->getDisplayName()
+									$parentClassReflection->getDisplayName(),
 								))->build(),
 							],
 							$methodReflection,
@@ -120,7 +120,7 @@ class MethodCallCheck
 					RuleErrorBuilder::message(sprintf(
 						'Call to an undefined method %s::%s().',
 						$type->describe(VerbosityLevel::typeOnly()),
-						$methodName
+						$methodName,
 					))->build(),
 				],
 				null,
@@ -136,7 +136,7 @@ class MethodCallCheck
 				'Call to %s method %s() of class %s.',
 				$methodReflection->isPrivate() ? 'private' : 'protected',
 				$methodReflection->getName(),
-				$declaringClass->getDisplayName()
+				$declaringClass->getDisplayName(),
 			))->build();
 		}
 
@@ -146,7 +146,7 @@ class MethodCallCheck
 			&& $methodReflection->getName() !== $methodName
 		) {
 			$errors[] = RuleErrorBuilder::message(
-				sprintf('Call to method %s with incorrect case: %s', $messagesMethodName, $methodName)
+				sprintf('Call to method %s with incorrect case: %s', $messagesMethodName, $methodName),
 			)->build();
 		}
 

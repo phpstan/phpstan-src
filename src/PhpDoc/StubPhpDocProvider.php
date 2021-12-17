@@ -100,7 +100,7 @@ class StubPhpDocProvider
 				$className,
 				null,
 				null,
-				$docComment
+				$docComment,
 			);
 
 			return $this->classMap[$className];
@@ -126,7 +126,7 @@ class StubPhpDocProvider
 				$className,
 				null,
 				null,
-				$docComment
+				$docComment,
 			);
 
 			return $this->propertyMap[$className][$propertyName];
@@ -152,7 +152,7 @@ class StubPhpDocProvider
 				$className,
 				null,
 				null,
-				$docComment
+				$docComment,
 			);
 
 			return $this->constantMap[$className][$constantName];
@@ -181,7 +181,7 @@ class StubPhpDocProvider
 				$className,
 				null,
 				$methodName,
-				$docComment
+				$docComment,
 			);
 
 			if (!isset($this->knownMethodsParameterNames[$className][$methodName])) {
@@ -224,7 +224,7 @@ class StubPhpDocProvider
 				null,
 				null,
 				$functionName,
-				$docComment
+				$docComment,
 			);
 
 			if (!isset($this->knownFunctionParameterNames[$functionName])) {

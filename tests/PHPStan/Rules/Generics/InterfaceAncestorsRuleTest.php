@@ -21,9 +21,9 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
 				true,
-				[]
+				[],
 			),
-			new CrossCheckInterfacesHelper()
+			new CrossCheckInterfacesHelper(),
 		);
 	}
 

@@ -167,7 +167,7 @@ class TypehintHelper
 						if ($innerType instanceof ArrayType) {
 							$innerTypes[] = new IterableType(
 								$innerType->getKeyType(),
-								$innerType->getItemType()
+								$innerType->getItemType(),
 							);
 						} else {
 							$innerTypes[] = $innerType;
@@ -177,7 +177,7 @@ class TypehintHelper
 				} elseif ($phpDocType instanceof ArrayType) {
 					$phpDocType = new IterableType(
 						$phpDocType->getKeyType(),
-						$phpDocType->getItemType()
+						$phpDocType->getItemType(),
 					);
 				}
 			}

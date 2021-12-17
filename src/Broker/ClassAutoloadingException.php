@@ -22,12 +22,12 @@ class ClassAutoloadingException extends AnalysedCodeException
 				'%s (%s) thrown while looking for class %s.',
 				get_class($previous),
 				$previous->getMessage(),
-				$functionName
+				$functionName,
 			), 0, $previous);
 		} else {
 			parent::__construct(sprintf(
 				'Class %s not found.',
-				$functionName
+				$functionName,
 			), 0);
 		}
 

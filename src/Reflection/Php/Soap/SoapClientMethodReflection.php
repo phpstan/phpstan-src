@@ -68,7 +68,7 @@ class SoapClientMethodReflection implements MethodReflection
 				TemplateTypeMap::createEmpty(),
 				[],
 				true,
-				new MixedType(true)
+				new MixedType(true),
 			),
 		];
 	}

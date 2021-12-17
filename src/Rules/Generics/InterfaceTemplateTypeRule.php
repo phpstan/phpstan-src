@@ -52,7 +52,7 @@ class InterfaceTemplateTypeRule implements Rule
 			$interfaceName,
 			null,
 			null,
-			$docComment->getText()
+			$docComment->getText(),
 		);
 
 		$escapadInterfaceName = SprintfHelper::escapeFormatString($interfaceName);
@@ -64,7 +64,7 @@ class InterfaceTemplateTypeRule implements Rule
 			sprintf('PHPDoc tag @template for interface %s cannot have existing class %%s as its name.', $escapadInterfaceName),
 			sprintf('PHPDoc tag @template for interface %s cannot have existing type alias %%s as its name.', $escapadInterfaceName),
 			sprintf('PHPDoc tag @template %%s for interface %s has invalid bound type %%s.', $escapadInterfaceName),
-			sprintf('PHPDoc tag @template %%s for interface %s with bound type %%s is not supported.', $escapadInterfaceName)
+			sprintf('PHPDoc tag @template %%s for interface %s with bound type %%s is not supported.', $escapadInterfaceName),
 		);
 	}
 

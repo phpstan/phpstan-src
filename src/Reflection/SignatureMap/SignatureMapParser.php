@@ -42,7 +42,7 @@ class SignatureMapParser
 			$parameterSignatures,
 			$this->getTypeFromString($map[0], $className),
 			new MixedType(),
-			$hasVariadic
+			$hasVariadic,
 		);
 	}
 
@@ -70,7 +70,7 @@ class SignatureMapParser
 				$this->getTypeFromString($typeString, null),
 				new MixedType(),
 				$passedByReference,
-				$isVariadic
+				$isVariadic,
 			);
 		}
 
@@ -84,7 +84,7 @@ class SignatureMapParser
 	{
 		$matches = Strings::match(
 			$parameterNameString,
-			'#^(?P<reference>&(?:\.\.\.)?r?w?_?)?(?P<variadic>\.\.\.)?(?P<name>[^=]+)?(?P<optional>=)?($)#'
+			'#^(?P<reference>&(?:\.\.\.)?r?w?_?)?(?P<variadic>\.\.\.)?(?P<name>[^=]+)?(?P<optional>=)?($)#',
 		);
 		if ($matches === null || !isset($matches['optional'])) {
 			throw new ShouldNotHappenException();

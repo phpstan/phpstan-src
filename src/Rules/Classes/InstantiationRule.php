@@ -114,7 +114,7 @@ class InstantiationRule implements Rule
 						'%s::%s() calls new parent but %s does not extend any class.',
 						$scope->getClassReflection()->getDisplayName(),
 						$scope->getFunctionName(),
-						$scope->getClassReflection()->getDisplayName()
+						$scope->getClassReflection()->getDisplayName(),
 					))->build(),
 				];
 			}
@@ -140,7 +140,7 @@ class InstantiationRule implements Rule
 		if ($classReflection->isEnum() && $isName) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Cannot instantiate enum %s.', $classReflection->getDisplayName())
+					sprintf('Cannot instantiate enum %s.', $classReflection->getDisplayName()),
 				)->build(),
 			];
 		}
@@ -148,7 +148,7 @@ class InstantiationRule implements Rule
 		if (!$isStatic && $classReflection->isInterface() && $isName) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Cannot instantiate interface %s.', $classReflection->getDisplayName())
+					sprintf('Cannot instantiate interface %s.', $classReflection->getDisplayName()),
 				)->build(),
 			];
 		}
@@ -156,7 +156,7 @@ class InstantiationRule implements Rule
 		if (!$isStatic && $classReflection->isAbstract() && $isName) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Instantiated class %s is abstract.', $classReflection->getDisplayName())
+					sprintf('Instantiated class %s is abstract.', $classReflection->getDisplayName()),
 				)->build(),
 			];
 		}
@@ -170,7 +170,7 @@ class InstantiationRule implements Rule
 				return array_merge($messages, [
 					RuleErrorBuilder::message(sprintf(
 						'Class %s does not have a constructor and must be instantiated without any parameters.',
-						$classReflection->getDisplayName()
+						$classReflection->getDisplayName(),
 					))->build(),
 				]);
 			}
@@ -185,7 +185,7 @@ class InstantiationRule implements Rule
 				$classReflection->getDisplayName(),
 				$constructorReflection->isPrivate() ? 'private' : 'protected',
 				$constructorReflection->getDeclaringClass()->getDisplayName(),
-				$constructorReflection->getName()
+				$constructorReflection->getName(),
 			))->build();
 		}
 
@@ -195,7 +195,7 @@ class InstantiationRule implements Rule
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$node->getArgs(),
-				$constructorReflection->getVariants()
+				$constructorReflection->getVariants(),
 			),
 			$scope,
 			$constructorReflection->getDeclaringClass()->isBuiltin(),
@@ -214,7 +214,7 @@ class InstantiationRule implements Rule
 				'Missing parameter $%s in call to ' . $classDisplayName . ' constructor.',
 				'Unknown parameter $%s in call to ' . $classDisplayName . ' constructor.',
 				'Return type of call to ' . $classDisplayName . ' constructor contains unresolvable type.',
-			]
+			],
 		));
 	}
 
@@ -244,14 +244,14 @@ class InstantiationRule implements Rule
 				static function (ConstantStringType $type): array {
 					return [$type->getValue(), true];
 				},
-				TypeUtils::getConstantStrings($type)
+				TypeUtils::getConstantStrings($type),
 			),
 			array_map(
 				static function (string $name): array {
 					return [$name, false];
 				},
-				TypeUtils::getDirectClassNames($type)
-			)
+				TypeUtils::getDirectClassNames($type),
+			),
 		);
 	}
 

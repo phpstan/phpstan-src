@@ -55,7 +55,7 @@ class FunctionReturnTypeCheck
 			$returnType = GenericTypeVariableResolver::getType(
 				$returnType,
 				Generator::class,
-				'TReturn'
+				'TReturn',
 			);
 			if ($returnType === null) {
 				return [];
@@ -72,7 +72,7 @@ class FunctionReturnTypeCheck
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$emptyReturnStatementMessage,
-					$returnType->describe($verbosityLevel)
+					$returnType->describe($verbosityLevel),
 				))->line($returnNode->getLine())->build(),
 			];
 		}
@@ -84,7 +84,7 @@ class FunctionReturnTypeCheck
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$voidMessage,
-					$returnValueType->describe($verbosityLevel)
+					$returnValueType->describe($verbosityLevel),
 				))->line($returnNode->getLine())->build(),
 			];
 		}
@@ -94,7 +94,7 @@ class FunctionReturnTypeCheck
 				RuleErrorBuilder::message(sprintf(
 					$typeMismatchMessage,
 					$returnType->describe($verbosityLevel),
-					$returnValueType->describe($verbosityLevel)
+					$returnValueType->describe($verbosityLevel),
 				))->line($returnNode->getLine())->build(),
 			];
 		}

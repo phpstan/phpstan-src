@@ -66,7 +66,7 @@ class CaughtExceptionExistenceRule implements Rule
 
 			$errors = array_merge(
 				$errors,
-				$this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)])
+				$this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($className, $class)]),
 			);
 		}
 

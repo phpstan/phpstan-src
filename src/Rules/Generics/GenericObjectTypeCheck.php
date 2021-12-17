@@ -53,7 +53,7 @@ class GenericObjectTypeCheck
 					$notEnoughTypesMessage,
 					$genericType->describe(VerbosityLevel::typeOnly()),
 					$classReflection->getDisplayName(false),
-					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes()))
+					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes())),
 				))->build();
 			} elseif ($templateTypesCount < $genericTypeTypesCount) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
@@ -62,7 +62,7 @@ class GenericObjectTypeCheck
 					$genericTypeTypesCount,
 					$classReflection->getDisplayName(false),
 					$templateTypesCount,
-					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes()))
+					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes())),
 				))->build();
 			}
 
@@ -95,7 +95,7 @@ class GenericObjectTypeCheck
 					$genericTypeType->describe(VerbosityLevel::typeOnly()),
 					$genericType->describe(VerbosityLevel::typeOnly()),
 					$templateType->describe(VerbosityLevel::typeOnly()),
-					$classReflection->getDisplayName(false)
+					$classReflection->getDisplayName(false),
 				))->build();
 			}
 		}

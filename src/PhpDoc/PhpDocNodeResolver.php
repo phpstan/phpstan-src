@@ -107,7 +107,7 @@ class PhpDocNodeResolver
 				$resolved[$propertyName] = new PropertyTag(
 					$propertyType,
 					true,
-					true
+					true,
 				);
 			}
 		}
@@ -120,7 +120,7 @@ class PhpDocNodeResolver
 				$resolved[$propertyName] = new PropertyTag(
 					$propertyType,
 					true,
-					false
+					false,
 				);
 			}
 		}
@@ -133,7 +133,7 @@ class PhpDocNodeResolver
 				$resolved[$propertyName] = new PropertyTag(
 					$propertyType,
 					false,
-					true
+					true,
 				);
 			}
 		}
@@ -171,7 +171,7 @@ class PhpDocNodeResolver
 							: PassedByReference::createNo(),
 						$parameterNode->isVariadic || $parameterNode->defaultValue !== null,
 						$parameterNode->isVariadic,
-						$defaultValue
+						$defaultValue,
 					);
 				}
 
@@ -180,7 +180,7 @@ class PhpDocNodeResolver
 						? $this->typeNodeResolver->resolve($tagValue->returnType, $nameScope)
 						: new MixedType(),
 					$tagValue->isStatic,
-					$parameters
+					$parameters,
 				);
 			}
 		}
@@ -198,7 +198,7 @@ class PhpDocNodeResolver
 		foreach (['@extends', '@template-extends', '@phpstan-extends'] as $tagName) {
 			foreach ($phpDocNode->getExtendsTagValues($tagName) as $tagValue) {
 				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new ExtendsTag(
-					$this->typeNodeResolver->resolve($tagValue->type, $nameScope)
+					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
 				);
 			}
 		}
@@ -216,7 +216,7 @@ class PhpDocNodeResolver
 		foreach (['@implements', '@template-implements', '@phpstan-implements'] as $tagName) {
 			foreach ($phpDocNode->getImplementsTagValues($tagName) as $tagValue) {
 				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new ImplementsTag(
-					$this->typeNodeResolver->resolve($tagValue->type, $nameScope)
+					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
 				);
 			}
 		}
@@ -234,7 +234,7 @@ class PhpDocNodeResolver
 		foreach (['@use', '@template-use', '@phpstan-use'] as $tagName) {
 			foreach ($phpDocNode->getUsesTagValues($tagName) as $tagValue) {
 				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new UsesTag(
-					$this->typeNodeResolver->resolve($tagValue->type, $nameScope)
+					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
 				);
 			}
 		}
@@ -289,7 +289,7 @@ class PhpDocNodeResolver
 			$resolved[$valueNode->name] = new TemplateTag(
 				$valueNode->name,
 				$valueNode->bound !== null ? $this->typeNodeResolver->resolve($valueNode->bound, $nameScope->unsetTemplateType($valueNode->name)) : new MixedType(),
-				$variance
+				$variance,
 			);
 			$resolvedPrefix[$valueNode->name] = $prefix;
 		}
@@ -314,7 +314,7 @@ class PhpDocNodeResolver
 
 				$resolved[$parameterName] = new ParamTag(
 					$parameterType,
-					$tagValue->isVariadic
+					$tagValue->isVariadic,
 				);
 			}
 		}
@@ -368,7 +368,7 @@ class PhpDocNodeResolver
 	{
 		return array_map(function (MixinTagValueNode $mixinTagValueNode) use ($nameScope): MixinTag {
 			return new MixinTag(
-				$this->typeNodeResolver->resolve($mixinTagValueNode->type, $nameScope)
+				$this->typeNodeResolver->resolve($mixinTagValueNode->type, $nameScope),
 			);
 		}, $phpDocNode->getMixinTagValues());
 	}

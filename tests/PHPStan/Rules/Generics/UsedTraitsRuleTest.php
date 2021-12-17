@@ -21,8 +21,8 @@ class UsedTraitsRuleTest extends RuleTestCase
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
 				true,
-				[]
-			)
+				[],
+			),
 		);
 	}
 

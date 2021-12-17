@@ -47,7 +47,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 				}
 
 				return $formatted;
-			}
+			},
 		);
 	}
 

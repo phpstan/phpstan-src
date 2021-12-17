@@ -92,7 +92,7 @@ class AnnotationMethodReflection implements MethodReflection
 					null,
 					$this->parameters,
 					$this->isVariadic,
-					$this->returnType
+					$this->returnType,
 				),
 			];
 		}

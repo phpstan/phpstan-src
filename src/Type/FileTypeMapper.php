@@ -153,8 +153,8 @@ class FileTypeMapper
 			$nameScope = $nameScope->withTemplateTypeMap(
 				new TemplateTypeMap(array_merge(
 					$nameScope->getTemplateTypeMap()->getTypes(),
-					$templateTypeMap->getTypes()
-				))
+					$templateTypeMap->getTypes(),
+				)),
 			);
 			$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 			$templateTypeMap = new TemplateTypeMap(array_map(static function (TemplateTag $tag) use ($templateTypeScope): Type {
@@ -163,8 +163,8 @@ class FileTypeMapper
 			$nameScope = $nameScope->withTemplateTypeMap(
 				new TemplateTypeMap(array_merge(
 					$nameScope->getTemplateTypeMap()->getTypes(),
-					$templateTypeMap->getTypes()
-				))
+					$templateTypeMap->getTypes(),
+				)),
 			);
 		} else {
 			$templateTypeMap = TemplateTypeMap::createEmpty();
@@ -175,7 +175,7 @@ class FileTypeMapper
 				$this->resolvedPhpDocBlockCache,
 				1,
 				null,
-				true
+				true,
 			);
 
 			$this->resolvedPhpDocBlockCacheCount--;
@@ -188,7 +188,7 @@ class FileTypeMapper
 			$nameScope,
 			$templateTypeMap,
 			$templateTags,
-			$this->phpDocNodeResolver
+			$this->phpDocNodeResolver,
 		);
 		$this->resolvedPhpDocBlockCacheCount++;
 
@@ -342,7 +342,7 @@ class FileTypeMapper
 
 							return (new TemplateTypeMap(array_merge(
 								$typeMapCb !== null ? $typeMapCb()->getTypes() : [],
-								$templateTypeMap->getTypes()
+								$templateTypeMap->getTypes(),
 							)))->map(static function (string $name, Type $type) use ($className, $resolvableTemplateTypes): Type {
 								return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($className, $resolvableTemplateTypes): Type {
 									if (!$type instanceof TemplateType) {
@@ -389,7 +389,7 @@ class FileTypeMapper
 							$className,
 							$functionName,
 							($typeMapCb !== null ? $typeMapCb() : TemplateTypeMap::createEmpty()),
-							$typeAliasesMap
+							$typeAliasesMap,
 						);
 					};
 				}
@@ -469,7 +469,7 @@ class FileTypeMapper
 							$traitReflection->getFileName(),
 							$traitName,
 							$className,
-							$traitMethodAliases[$traitName] ?? []
+							$traitMethodAliases[$traitName] ?? [],
 						);
 						$finalTraitPhpDocMap = [];
 						foreach ($traitPhpDocMap as $nameScopeTraitKey => $callback) {
@@ -489,7 +489,7 @@ class FileTypeMapper
 										$className,
 										$lookForTrait,
 										null,
-										$useDocComment
+										$useDocComment,
 									)->getUsesTags();
 									foreach ($useTags as $useTag) {
 										$useTagType = $useTag->getType();
@@ -559,7 +559,7 @@ class FileTypeMapper
 					throw new ShouldNotHappenException();
 				}
 				array_pop($typeMapStack);
-			}
+			},
 		);
 
 		if (count($typeMapStack) > 0) {
@@ -745,7 +745,7 @@ class FileTypeMapper
 				return null;
 			},
 			static function (): void {
-			}
+			},
 		);
 
 		unset($this->alreadyProcessedDependentFiles[$fileName]);

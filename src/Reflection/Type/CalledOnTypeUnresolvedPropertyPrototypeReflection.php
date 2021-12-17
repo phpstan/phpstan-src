@@ -48,7 +48,7 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 			$this->propertyReflection,
 			$this->resolvedDeclaringClass,
 			false,
-			$this->fetchedOnType
+			$this->fetchedOnType,
 		);
 	}
 
@@ -66,7 +66,7 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 
 		return $this->transformedProperty = new ResolvedPropertyReflection(
 			$this->transformPropertyWithStaticType($this->resolvedDeclaringClass, $this->propertyReflection),
-			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap
+			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap,
 		);
 	}
 
@@ -76,7 +76,7 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 			$this->propertyReflection,
 			$this->resolvedDeclaringClass,
 			$this->resolveTemplateTypeMapToBounds,
-			$type
+			$type,
 		);
 	}
 

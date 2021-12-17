@@ -31,7 +31,7 @@ class ParametersSchemaExtension extends CompilerExtension
 		$builder->parameters['__parametersSchema'] = $this->processArgument(
 			new Statement('schema', [
 				new Statement('structure', [$config]),
-			])
+			]),
 		);
 	}
 

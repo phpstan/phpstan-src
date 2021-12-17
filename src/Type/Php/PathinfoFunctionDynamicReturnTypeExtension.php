@@ -37,8 +37,8 @@ class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctionRetur
 			$builder = ConstantArrayTypeBuilder::createFromConstantArray(
 				new ConstantArrayType(
 					[new ConstantStringType('dirname'), new ConstantStringType('basename'), new ConstantStringType('filename')],
-					[$stringType, $stringType, $stringType]
-				)
+					[$stringType, $stringType, $stringType],
+				),
 			);
 			$builder->setOffsetValueType(new ConstantStringType('extension'), $stringType, true);
 

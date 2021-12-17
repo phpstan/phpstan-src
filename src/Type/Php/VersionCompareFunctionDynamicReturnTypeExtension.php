@@ -50,7 +50,7 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			$returnType = TypeCombinator::union(
 				new ConstantIntegerType(-1),
 				new ConstantIntegerType(0),
-				new ConstantIntegerType(1)
+				new ConstantIntegerType(1),
 			);
 		}
 

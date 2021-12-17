@@ -25,8 +25,8 @@ class RawErrorFormatter implements ErrorFormatter
 					'%s:%d:%s',
 					$fileSpecificError->getFile(),
 					$fileSpecificError->getLine() ?? '?',
-					$fileSpecificError->getMessage()
-				)
+					$fileSpecificError->getMessage(),
+				),
 			);
 			$output->writeLineFormatted('');
 		}

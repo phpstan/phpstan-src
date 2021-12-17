@@ -64,7 +64,7 @@ class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodR
 		return ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$methodCall->getArgs(),
-			$methodReflection->getVariants()
+			$methodReflection->getVariants(),
 		)->getReturnType();
 	}
 

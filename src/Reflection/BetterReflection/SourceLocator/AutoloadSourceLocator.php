@@ -79,7 +79,7 @@ class AutoloadSourceLocator implements SourceLocator
 					$reflector,
 					$this->functionNodes[$loweredFunctionName]->getNode(),
 					$this->functionNodes[$loweredFunctionName]->getLocatedSource(),
-					$this->functionNodes[$loweredFunctionName]->getNamespace()
+					$this->functionNodes[$loweredFunctionName]->getNamespace(),
 				);
 			}
 			if (!function_exists($functionName)) {
@@ -108,7 +108,7 @@ class AutoloadSourceLocator implements SourceLocator
 						$reflector,
 						$stmtConst->getNode(),
 						$stmtConst->getLocatedSource(),
-						$stmtConst->getNamespace()
+						$stmtConst->getNamespace(),
 					);
 					if (!$constantReflection instanceof ReflectionConstant) {
 						throw new ShouldNotHappenException();
@@ -126,7 +126,7 @@ class AutoloadSourceLocator implements SourceLocator
 						$stmtConst->getNode(),
 						$stmtConst->getLocatedSource(),
 						$stmtConst->getNamespace(),
-						$i
+						$i,
 					);
 					if (!$constantReflection instanceof ReflectionConstant) {
 						throw new ShouldNotHappenException();
@@ -151,7 +151,7 @@ class AutoloadSourceLocator implements SourceLocator
 				]),
 				new LocatedSource('', $constantName, null),
 				null,
-				null
+				null,
 			);
 			$reflection->populateValue(@constant($constantName));
 
@@ -176,7 +176,7 @@ class AutoloadSourceLocator implements SourceLocator
 						$reflector,
 						$classNode->getNode(),
 						$classNode->getLocatedSource(),
-						$classNode->getNamespace()
+						$classNode->getNamespace(),
 					);
 				}
 			}
@@ -230,7 +230,7 @@ class AutoloadSourceLocator implements SourceLocator
 					$reflector,
 					$classNode->getNode(),
 					$classNode->getLocatedSource(),
-					$classNode->getNamespace()
+					$classNode->getNamespace(),
 				);
 			}
 
@@ -246,7 +246,7 @@ class AutoloadSourceLocator implements SourceLocator
 				$reflector,
 				$this->functionNodes[$identifierName]->getNode(),
 				$this->functionNodes[$identifierName]->getLocatedSource(),
-				$this->functionNodes[$identifierName]->getNamespace()
+				$this->functionNodes[$identifierName]->getNamespace(),
 			);
 		}
 
@@ -316,7 +316,7 @@ class AutoloadSourceLocator implements SourceLocator
 					}
 
 					return null;
-				}
+				},
 			);
 		} finally {
 			restore_error_handler();

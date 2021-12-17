@@ -36,7 +36,7 @@ class Php8StubsSourceStubberTest extends TestCase
 		$sourceStubber = new Php8StubsSourceStubber();
 		$phpInternalSourceLocator = new PhpInternalSourceLocator(
 			$astLocator,
-			$sourceStubber
+			$sourceStubber,
 		);
 		return new DefaultReflector($phpInternalSourceLocator);
 	}

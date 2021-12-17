@@ -125,7 +125,7 @@ class ClassStatementsGatherer
 			if ($node->isPromoted()) {
 				$this->propertyUsages[] = new PropertyWrite(
 					new PropertyFetch(new Expr\Variable('this'), new Identifier($node->getName())),
-					$scope
+					$scope,
 				);
 			}
 			return;

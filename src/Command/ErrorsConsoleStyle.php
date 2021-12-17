@@ -66,7 +66,7 @@ class ErrorsConsoleStyle extends SymfonyStyle
 							$s,
 							$terminalWidth - $maxHeaderWidth - 5,
 							"\n",
-							true
+							true,
 						);
 					}
 

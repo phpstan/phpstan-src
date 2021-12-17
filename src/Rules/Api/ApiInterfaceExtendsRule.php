@@ -65,10 +65,10 @@ class ApiInterfaceExtendsRule implements Rule
 
 		$ruleError = RuleErrorBuilder::message(sprintf(
 			'Extending %s is not covered by backward compatibility promise. The interface might change in a minor PHPStan version.',
-			$extendedInterfaceReflection->getDisplayName()
+			$extendedInterfaceReflection->getDisplayName(),
 		))->tip(sprintf(
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
-			'https://github.com/phpstan/phpstan/discussions'
+			'https://github.com/phpstan/phpstan/discussions',
 		))->build();
 
 		if ($extendedInterfaceReflection->getName() === Type::class) {

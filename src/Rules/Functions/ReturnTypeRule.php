@@ -76,21 +76,21 @@ class ReturnTypeRule implements Rule
 			$node,
 			sprintf(
 				'Function %s() should return %%s but empty return statement found.',
-				$function->getName()
+				$function->getName(),
 			),
 			sprintf(
 				'Function %s() with return type void returns %%s but should not return anything.',
-				$function->getName()
+				$function->getName(),
 			),
 			sprintf(
 				'Function %s() should return %%s but returns %%s.',
-				$function->getName()
+				$function->getName(),
 			),
 			sprintf(
 				'Function %s() should never return but return statement found.',
-				$function->getName()
+				$function->getName(),
 			),
-			$reflection !== null && $reflection->isGenerator()
+			$reflection !== null && $reflection->isGenerator(),
 		);
 	}
 

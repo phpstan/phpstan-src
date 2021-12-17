@@ -52,7 +52,7 @@ class FunctionTemplateTypeRule implements Rule
 			null,
 			null,
 			$functionName,
-			$docComment->getText()
+			$docComment->getText(),
 		);
 
 		$escapedFunctionName = SprintfHelper::escapeFormatString($functionName);
@@ -64,7 +64,7 @@ class FunctionTemplateTypeRule implements Rule
 			sprintf('PHPDoc tag @template for function %s() cannot have existing class %%s as its name.', $escapedFunctionName),
 			sprintf('PHPDoc tag @template for function %s() cannot have existing type alias %%s as its name.', $escapedFunctionName),
 			sprintf('PHPDoc tag @template %%s for function %s() has invalid bound type %%s.', $escapedFunctionName),
-			sprintf('PHPDoc tag @template %%s for function %s() with bound type %%s is not supported.', $escapedFunctionName)
+			sprintf('PHPDoc tag @template %%s for function %s() with bound type %%s is not supported.', $escapedFunctionName),
 		);
 	}
 

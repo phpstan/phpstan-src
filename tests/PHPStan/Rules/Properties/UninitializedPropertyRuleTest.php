@@ -38,7 +38,7 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 			]),
 			[
 				'UninitializedProperty\\TestCase::setUp',
-			]
+			],
 		);
 	}
 

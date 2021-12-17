@@ -16,7 +16,7 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new DuplicateKeysInLiteralArraysRule(
-			new Standard()
+			new Standard(),
 		);
 	}
 

@@ -258,7 +258,7 @@ class TypeNodeResolver
 			case 'non-empty-array':
 				return TypeCombinator::intersect(
 					new ArrayType(new MixedType(), new MixedType()),
-					new NonEmptyArrayType()
+					new NonEmptyArrayType(),
 				);
 
 			case 'iterable':
@@ -305,7 +305,7 @@ class TypeNodeResolver
 			case 'non-empty-list':
 				return TypeCombinator::intersect(
 					new ArrayType(new IntegerType(), new MixedType()),
-					new NonEmptyArrayType()
+					new NonEmptyArrayType(),
 				);
 		}
 
@@ -601,14 +601,14 @@ class TypeNodeResolver
 			if (count($genericTypes) === 1) { // Foo<ValueType>
 				return TypeCombinator::intersect(
 					$mainType,
-					new IterableType(new MixedType(true), $genericTypes[0])
+					new IterableType(new MixedType(true), $genericTypes[0]),
 				);
 			}
 
 			if (count($genericTypes) === 2) { // Foo<KeyType, ValueType>
 				return TypeCombinator::intersect(
 					$mainType,
-					new IterableType($genericTypes[0], $genericTypes[1])
+					new IterableType($genericTypes[0], $genericTypes[1]),
 				);
 			}
 		}
@@ -637,10 +637,10 @@ class TypeNodeResolver
 					$this->resolve($parameterNode->type, $nameScope),
 					$parameterNode->isReference ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),
 					$parameterNode->isVariadic,
-					null
+					null,
 				);
 			},
-			$typeNode->parameters
+			$typeNode->parameters,
 		);
 		$returnType = $this->resolve($typeNode->returnType, $nameScope);
 

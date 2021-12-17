@@ -55,7 +55,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 			]),
 			$this->alwaysWrittenTags,
 			$this->alwaysReadTags,
-			true
+			true,
 		);
 	}
 

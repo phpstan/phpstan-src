@@ -39,7 +39,7 @@ final class TemplateBooleanType extends BooleanType implements TemplateType
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

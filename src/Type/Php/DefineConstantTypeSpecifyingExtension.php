@@ -52,12 +52,12 @@ class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 
 		return $this->typeSpecifier->create(
 			new Node\Expr\ConstFetch(
-				new Node\Name\FullyQualified($constantName->getValue())
+				new Node\Name\FullyQualified($constantName->getValue()),
 			),
 			$scope->getType($node->getArgs()[1]->value),
 			TypeSpecifierContext::createTruthy(),
 			false,
-			$scope
+			$scope,
 		);
 	}
 

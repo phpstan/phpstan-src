@@ -43,7 +43,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctio
 	): Type
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle(
-			$functionReflection->getVariants()
+			$functionReflection->getVariants(),
 		)->getReturnType();
 		if (count($functionCall->getArgs()) === 0) {
 			if ($scope->isInTrait()) {
@@ -51,7 +51,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctio
 			}
 			if ($scope->isInClass()) {
 				return $this->findParentClassType(
-					$scope->getClassReflection()
+					$scope->getClassReflection(),
 				);
 			}
 

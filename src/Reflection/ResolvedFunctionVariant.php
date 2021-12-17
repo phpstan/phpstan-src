@@ -56,7 +56,7 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 					$param->isOptional(),
 					$param->passedByReference(),
 					$param->isVariadic(),
-					$param->getDefaultValue()
+					$param->getDefaultValue(),
 				);
 			}, $this->parametersAcceptor->getParameters());
 
@@ -78,7 +78,7 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 		if ($type === null) {
 			$type = TemplateTypeHelper::resolveTemplateTypes(
 				$this->parametersAcceptor->getReturnType(),
-				$this->resolvedTemplateTypeMap
+				$this->resolvedTemplateTypeMap,
 			);
 
 			$this->returnType = $type;

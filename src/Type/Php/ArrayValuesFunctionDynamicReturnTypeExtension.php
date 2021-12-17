@@ -37,7 +37,7 @@ class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionRe
 
 		return new ArrayType(
 			new IntegerType(),
-			new MixedType()
+			new MixedType(),
 		);
 	}
 

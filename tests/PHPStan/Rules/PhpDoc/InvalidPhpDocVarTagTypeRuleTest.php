@@ -26,7 +26,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 			new MissingTypehintCheck($broker, true, true, true, []),
 			new UnresolvableTypeHelper(),
 			true,
-			true
+			true,
 		);
 	}
 

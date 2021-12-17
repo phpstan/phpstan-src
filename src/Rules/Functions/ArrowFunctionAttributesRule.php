@@ -32,7 +32,7 @@ class ArrowFunctionAttributesRule implements Rule
 			$scope,
 			$node->attrGroups,
 			Attribute::TARGET_FUNCTION,
-			'function'
+			'function',
 		);
 	}
 

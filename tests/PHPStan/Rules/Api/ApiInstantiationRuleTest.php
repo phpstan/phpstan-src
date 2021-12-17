@@ -16,7 +16,7 @@ class ApiInstantiationRuleTest extends RuleTestCase
 	{
 		return new ApiInstantiationRule(
 			new ApiRuleHelper(),
-			$this->createReflectionProvider()
+			$this->createReflectionProvider(),
 		);
 	}
 
@@ -29,7 +29,7 @@ class ApiInstantiationRuleTest extends RuleTestCase
 	{
 		$tip = sprintf(
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
-			'https://github.com/phpstan/phpstan/discussions'
+			'https://github.com/phpstan/phpstan/discussions',
 		);
 		$this->analyse([__DIR__ . '/data/new-out-of-phpstan.php'], [
 			[

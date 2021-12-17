@@ -35,7 +35,7 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 		foreach ($this->groupByFile($analysisResult) as $relativeFilePath => $errors) {
 			$output->writeRaw(sprintf(
 				'<file name="%s">',
-				$this->escape($relativeFilePath)
+				$this->escape($relativeFilePath),
 			));
 			$output->writeLineFormatted('');
 
@@ -43,7 +43,7 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 				$output->writeRaw(sprintf(
 					'  <error line="%d" column="1" severity="error" message="%s" />',
 					$this->escape((string) $error->getLine()),
-					$this->escape($error->getMessage())
+					$this->escape($error->getMessage()),
 				));
 				$output->writeLineFormatted('');
 			}
@@ -111,7 +111,7 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 				$absolutePath = $fileSpecificError->getTraitFilePath();
 			}
 			$relativeFilePath = $this->relativePathHelper->getRelativePath(
-				$absolutePath
+				$absolutePath,
 			);
 
 			$files[$relativeFilePath][] = $fileSpecificError;

@@ -69,7 +69,7 @@ class ExistingClassesInPropertiesRule implements Rule
 		} else {
 			$referencedClasses = array_merge(
 				$propertyReflection->getNativeType()->getReferencedClasses(),
-				$propertyReflection->getPhpDocType()->getReferencedClasses()
+				$propertyReflection->getPhpDocType()->getReferencedClasses(),
 			);
 		}
 
@@ -81,7 +81,7 @@ class ExistingClassesInPropertiesRule implements Rule
 						'Property %s::$%s has invalid type %s.',
 						$propertyReflection->getDeclaringClass()->getDisplayName(),
 						$node->getName(),
-						$referencedClass
+						$referencedClass,
 					))->build();
 				}
 				continue;
@@ -91,7 +91,7 @@ class ExistingClassesInPropertiesRule implements Rule
 				'Property %s::$%s has unknown class %s as its type.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-				$referencedClass
+				$referencedClass,
 			))->discoveringSymbolsTip()->build();
 		}
 
@@ -100,7 +100,7 @@ class ExistingClassesInPropertiesRule implements Rule
 				$errors,
 				$this->classCaseSensitivityCheck->checkClassNames(array_map(static function (string $class) use ($node): ClassNameNodePair {
 					return new ClassNameNodePair($class, $node);
-				}, $referencedClasses))
+				}, $referencedClasses)),
 			);
 		}
 
@@ -111,7 +111,7 @@ class ExistingClassesInPropertiesRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s has unresolvable native type.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
-				$node->getName()
+				$node->getName(),
 			))->build();
 		}
 

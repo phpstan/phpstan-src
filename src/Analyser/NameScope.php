@@ -138,9 +138,9 @@ class NameScope
 			$this->functionName,
 			new TemplateTypeMap(array_merge(
 				$this->templateTypeMap->getTypes(),
-				$map->getTypes()
+				$map->getTypes(),
 			)),
-			$this->typeAliasesMap
+			$this->typeAliasesMap,
 		);
 	}
 
@@ -157,7 +157,7 @@ class NameScope
 			$this->className,
 			$this->functionName,
 			$this->templateTypeMap->unsetType($name),
-			$this->typeAliasesMap
+			$this->typeAliasesMap,
 		);
 	}
 
@@ -187,7 +187,7 @@ class NameScope
 			$properties['className'],
 			$properties['functionName'],
 			$properties['templateTypeMap'],
-			$properties['typeAliasesMap']
+			$properties['typeAliasesMap'],
 		);
 	}
 

@@ -39,7 +39,7 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

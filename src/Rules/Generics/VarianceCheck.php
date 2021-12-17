@@ -46,7 +46,7 @@ class VarianceCheck
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type %s in %s.',
 				$templateType->getName(),
-				$generalMessage
+				$generalMessage,
 			))->build();
 		}
 
@@ -76,7 +76,7 @@ class VarianceCheck
 				$referredType->getName(),
 				$referredType->getVariance()->describe(),
 				$reference->getPositionVariance()->describe(),
-				$messageContext
+				$messageContext,
 			))->build();
 		}
 

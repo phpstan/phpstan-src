@@ -54,7 +54,7 @@ trait TemplateTypeTrait
 			return sprintf(
 				'%s%s',
 				$this->name,
-				$boundDescription
+				$boundDescription,
 			);
 		};
 
@@ -63,7 +63,7 @@ trait TemplateTypeTrait
 			$basicDescription,
 			function () use ($basicDescription): string {
 				return sprintf('%s (%s, %s)', $basicDescription(), $this->scope->describe(), $this->isArgument() ? 'argument' : 'parameter');
-			}
+			},
 		);
 	}
 
@@ -79,7 +79,7 @@ trait TemplateTypeTrait
 			new TemplateTypeArgumentStrategy(),
 			$this->variance,
 			$this->name,
-			TemplateTypeHelper::toArgument($this->getBound())
+			TemplateTypeHelper::toArgument($this->getBound()),
 		);
 	}
 
@@ -211,7 +211,7 @@ trait TemplateTypeTrait
 			$properties['strategy'],
 			$properties['variance'],
 			$properties['name'],
-			$properties['bound']
+			$properties['bound'],
 		);
 	}
 

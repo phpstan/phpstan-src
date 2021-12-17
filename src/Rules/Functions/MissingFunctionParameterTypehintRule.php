@@ -68,7 +68,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Function %s() has parameter $%s with no type specified.',
 					$functionReflection->getName(),
-					$parameterReflection->getName()
+					$parameterReflection->getName(),
 				))->build(),
 			];
 		}
@@ -80,7 +80,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				'Function %s() has parameter $%s with no value type specified in iterable type %s.',
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
-				$iterableTypeDescription
+				$iterableTypeDescription,
 			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
@@ -90,7 +90,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
 				$name,
-				implode(', ', $genericTypeNames)
+				implode(', ', $genericTypeNames),
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
@@ -99,7 +99,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				'Function %s() has parameter $%s with no signature specified for %s.',
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
-				$callableType->describe(VerbosityLevel::typeOnly())
+				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

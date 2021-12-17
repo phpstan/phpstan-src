@@ -78,7 +78,7 @@ final class ClosureCallMethodReflection implements MethodReflection
 			new ObjectWithoutClassType(),
 			PassedByReference::createNo(),
 			false,
-			null
+			null,
 		);
 
 		array_unshift($parameters, $newThis);
@@ -89,7 +89,7 @@ final class ClosureCallMethodReflection implements MethodReflection
 				$this->closureType->getResolvedTemplateTypeMap(),
 				$parameters,
 				$this->closureType->isVariadic(),
-				$this->closureType->getReturnType()
+				$this->closureType->getReturnType(),
 			),
 		];
 	}

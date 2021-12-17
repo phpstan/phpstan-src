@@ -74,7 +74,7 @@ class FunctionCallableRule implements Rule
 							RuleErrorBuilder::message(sprintf(
 								'Call to function %s() with incorrect case: %s',
 								$function->getName(),
-								$functionNameName
+								$functionNameName,
 							))->build(),
 						];
 					}
@@ -99,7 +99,7 @@ class FunctionCallableRule implements Rule
 			'Creating callable from an unknown class %s.',
 			static function (Type $type): bool {
 				return $type->isCallable()->yes();
-			}
+			},
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -110,14 +110,14 @@ class FunctionCallableRule implements Rule
 		if ($isCallable->no()) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Creating callable from %s but it\'s not a callable.', $type->describe(VerbosityLevel::value()))
+					sprintf('Creating callable from %s but it\'s not a callable.', $type->describe(VerbosityLevel::value())),
 				)->build(),
 			];
 		}
 		if ($this->reportMaybes && $isCallable->maybe()) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Creating callable from %s but it might not be a callable.', $type->describe(VerbosityLevel::value()))
+					sprintf('Creating callable from %s but it might not be a callable.', $type->describe(VerbosityLevel::value())),
 				)->build(),
 			];
 		}

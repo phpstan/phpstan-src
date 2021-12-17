@@ -58,7 +58,7 @@ class IterableType implements CompoundType
 	{
 		return array_merge(
 			$this->keyType->getReferencedClasses(),
-			$this->getItemType()->getReferencedClasses()
+			$this->getItemType()->getReferencedClasses(),
 		);
 	}
 
@@ -139,7 +139,7 @@ class IterableType implements CompoundType
 		return $limit->and(
 			$otherType->isIterable(),
 			$otherType->getIterableValueType()->isSuperTypeOf($this->itemType),
-			$otherType->getIterableKeyType()->isSuperTypeOf($this->keyType)
+			$otherType->getIterableKeyType()->isSuperTypeOf($this->keyType),
 		);
 	}
 
@@ -268,7 +268,7 @@ class IterableType implements CompoundType
 	{
 		return array_merge(
 			$this->getIterableKeyType()->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant()),
-			$this->getIterableValueType()->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant())
+			$this->getIterableValueType()->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant()),
 		);
 	}
 

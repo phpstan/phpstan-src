@@ -57,7 +57,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			true,
 			$this->getEarlyTerminatingMethodCalls(),
 			$this->getEarlyTerminatingFunctionCalls(),
-			true
+			true,
 		);
 		$resolver->setAnalysedFiles(array_map(static function (string $file) use ($fileHelper): string {
 			return $fileHelper->normalizePath($file);
@@ -74,7 +74,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		$resolver->processNodes(
 			$this->getParser()->parseFile($file),
 			$scope,
-			$callback
+			$callback,
 		);
 	}
 
@@ -96,7 +96,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$this->assertSame(
 				$expected,
 				$actual,
-				sprintf('Expected type %s, got type %s in %s on line %d.', $expected, $actual, $file, $args[2])
+				sprintf('Expected type %s, got type %s in %s on line %d.', $expected, $actual, $file, $args[2]),
 			);
 		} elseif ($assertType === 'variableCertainty') {
 			$expectedCertainty = $args[0];
@@ -104,7 +104,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$variableName = $args[2];
 			$this->assertTrue(
 				$expectedCertainty->equals($actualCertainty),
-				sprintf('Expected %s, actual certainty of variable $%s is %s', $expectedCertainty->describe(), $variableName, $actualCertainty->describe())
+				sprintf('Expected %s, actual certainty of variable $%s is %s', $expectedCertainty->describe(), $variableName, $actualCertainty->describe()),
 			);
 		}
 	}
@@ -173,7 +173,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				$this->fail(sprintf(
 					'ERROR: Wrong %s() call on line %d.',
 					$functionName,
-					$node->getLine()
+					$node->getLine(),
 				));
 			}
 

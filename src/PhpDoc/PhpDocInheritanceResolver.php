@@ -34,7 +34,7 @@ class PhpDocInheritanceResolver
 			$classReflectionFileName,
 			null,
 			[],
-			[]
+			[],
 		);
 
 		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, $declaringTraitName, null);
@@ -55,7 +55,7 @@ class PhpDocInheritanceResolver
 			$classReflectionFileName,
 			null,
 			[],
-			[]
+			[],
 		);
 
 		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, null, null);
@@ -81,7 +81,7 @@ class PhpDocInheritanceResolver
 			$fileName,
 			null,
 			$positionalParameterNames,
-			$positionalParameterNames
+			$positionalParameterNames,
 		);
 
 		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, $phpDocBlock->getTrait(), $methodName);
@@ -103,7 +103,7 @@ class PhpDocInheritanceResolver
 			$parents[] = $this->docBlockTreeToResolvedDocBlock(
 				$parentPhpDocBlock,
 				$parentPhpDocBlock->getTrait(),
-				$functionName
+				$functionName,
 			);
 			$parentPhpDocBlocks[] = $parentPhpDocBlock;
 		}
@@ -121,7 +121,7 @@ class PhpDocInheritanceResolver
 			$classReflection->getName(),
 			$traitName,
 			$functionName,
-			$phpDocBlock->getDocComment()
+			$phpDocBlock->getDocComment(),
 		);
 	}
 

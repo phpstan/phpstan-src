@@ -24,7 +24,7 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 
 		return new StaticMethodCallableRule(
 			new StaticMethodCallCheck($reflectionProvider, $ruleLevelHelper, new ClassCaseSensitivityCheck($reflectionProvider, true), true, true),
-			new PhpVersion($this->phpVersion)
+			new PhpVersion($this->phpVersion),
 		);
 	}
 

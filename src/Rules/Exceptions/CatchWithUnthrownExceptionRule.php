@@ -27,14 +27,14 @@ class CatchWithUnthrownExceptionRule implements Rule
 		if ($node->getCaughtType() instanceof NeverType) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Dead catch - %s is already caught above.', $node->getOriginalCaughtType()->describe(VerbosityLevel::typeOnly()))
+					sprintf('Dead catch - %s is already caught above.', $node->getOriginalCaughtType()->describe(VerbosityLevel::typeOnly())),
 				)->line($node->getLine())->build(),
 			];
 		}
 
 		return [
 			RuleErrorBuilder::message(
-				sprintf('Dead catch - %s is never thrown in the try block.', $node->getCaughtType()->describe(VerbosityLevel::typeOnly()))
+				sprintf('Dead catch - %s is never thrown in the try block.', $node->getCaughtType()->describe(VerbosityLevel::typeOnly())),
 			)->line($node->getLine())->build(),
 		];
 	}

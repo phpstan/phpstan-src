@@ -55,7 +55,7 @@ class IgnoredErrorHelper
 					if (!isset($ignoreError['message'])) {
 						$errors[] = sprintf(
 							'Ignored error %s is missing a message.',
-							Json::encode($ignoreError)
+							Json::encode($ignoreError),
 						);
 						continue;
 					}
@@ -63,7 +63,7 @@ class IgnoredErrorHelper
 						if (!isset($ignoreError['paths'])) {
 							$errors[] = sprintf(
 								'Ignored error %s is missing a path.',
-								Json::encode($ignoreError)
+								Json::encode($ignoreError),
 							);
 						}
 
@@ -148,8 +148,8 @@ class IgnoredErrorHelper
 				"It ignores all errors containing the following types:\n%s",
 				implode("\n", array_map(static function (string $typeDescription): string {
 					return sprintf('* %s', $typeDescription);
-				}, array_keys($ignoredTypes)))
-			)
+				}, array_keys($ignoredTypes))),
+			),
 		);
 	}
 

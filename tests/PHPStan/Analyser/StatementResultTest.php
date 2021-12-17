@@ -404,7 +404,7 @@ class StatementResultTest extends PHPStanTestCase
 			$stmts,
 			$scope,
 			static function (): void {
-			}
+			},
 		);
 		$this->assertSame($expectedIsAlwaysTerminating, $result->isAlwaysTerminating());
 	}

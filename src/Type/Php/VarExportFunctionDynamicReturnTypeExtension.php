@@ -28,7 +28,7 @@ class VarExportFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 				'highlight_string',
 				'print_r',
 			],
-			true
+			true,
 		);
 	}
 
@@ -45,7 +45,7 @@ class VarExportFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 		if (count($functionCall->getArgs()) < 1) {
 			return TypeCombinator::union(
 				new StringType(),
-				$fallbackReturnType
+				$fallbackReturnType,
 			);
 		}
 

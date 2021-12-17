@@ -90,12 +90,12 @@ class TemplateTypeVarianceTest extends TestCase
 		$this->assertSame(
 			$expected->describe(),
 			$variance->isValidVariance($a, $b)->describe(),
-			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $a->describe(VerbosityLevel::precise()), $b->describe(VerbosityLevel::precise()))
+			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $a->describe(VerbosityLevel::precise()), $b->describe(VerbosityLevel::precise())),
 		);
 		$this->assertSame(
 			$expectedInversed->describe(),
 			$variance->isValidVariance($b, $a)->describe(),
-			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $b->describe(VerbosityLevel::precise()), $a->describe(VerbosityLevel::precise()))
+			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $b->describe(VerbosityLevel::precise()), $a->describe(VerbosityLevel::precise())),
 		);
 	}
 

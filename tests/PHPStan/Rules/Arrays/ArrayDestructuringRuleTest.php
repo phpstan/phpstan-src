@@ -19,7 +19,7 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 
 		return new ArrayDestructuringRule(
 			$ruleLevelHelper,
-			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true)
+			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true),
 		);
 	}
 

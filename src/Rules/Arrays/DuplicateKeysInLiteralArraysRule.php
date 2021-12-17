@@ -82,7 +82,7 @@ class DuplicateKeysInLiteralArraysRule implements Rule
 				count($printedValues[$value]),
 				count($printedValues[$value]) === 1 ? 'duplicate key' : 'duplicate keys',
 				var_export($value, true),
-				implode(', ', $printedValues[$value])
+				implode(', ', $printedValues[$value]),
 			))->line($valueLines[$value])->build();
 		}
 

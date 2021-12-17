@@ -42,7 +42,7 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 				'json_encode',
 				'json_decode',
 			],
-			true
+			true,
 		);
 	}
 

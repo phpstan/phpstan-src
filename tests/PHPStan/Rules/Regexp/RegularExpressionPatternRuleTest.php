@@ -114,7 +114,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					'Regex pattern is invalid: Compilation failed: missing ) at offset 1 in pattern: ~(~',
 					43,
 				],
-			]
+			],
 		);
 	}
 
@@ -215,7 +215,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					'Regex pattern is invalid: Compilation failed: missing closing parenthesis at offset 1 in pattern: ~(~',
 					43,
 				],
-			]
+			],
 		);
 	}
 

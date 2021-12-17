@@ -40,7 +40,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

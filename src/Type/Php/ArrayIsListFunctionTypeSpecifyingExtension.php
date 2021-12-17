@@ -54,7 +54,7 @@ class ArrayIsListFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			TypeCombinator::intersect(new ArrayType(new IntegerType(), $valueType->getIterableValueType()), ...TypeUtils::getAccessoryTypes($valueType)),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

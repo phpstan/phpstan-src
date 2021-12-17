@@ -41,7 +41,7 @@ class EchoRule implements Rule
 				'',
 				static function (Type $type): bool {
 					return !$type->toString() instanceof ErrorType;
-				}
+				},
 			);
 
 			if ($typeResult->getType() instanceof ErrorType
@@ -53,7 +53,7 @@ class EchoRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Parameter #%d (%s) of echo cannot be converted to string.',
 				$key + 1,
-				$typeResult->getType()->describe(VerbosityLevel::value())
+				$typeResult->getType()->describe(VerbosityLevel::value()),
 			))->line($expr->getLine())->build();
 		}
 		return $messages;

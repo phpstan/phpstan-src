@@ -17,7 +17,7 @@ class UnionTypeMethodReflectionTest extends PHPStanTestCase
 				$this->createDeprecatedMethod(TrinaryLogic::createYes(), 'Deprecated'),
 				$this->createDeprecatedMethod(TrinaryLogic::createMaybe(), 'Maybe deprecated'),
 				$this->createDeprecatedMethod(TrinaryLogic::createNo(), 'Not deprecated'),
-			]
+			],
 		);
 
 		$this->assertSame('Deprecated', $reflection->getDeprecatedDescription());
@@ -30,7 +30,7 @@ class UnionTypeMethodReflectionTest extends PHPStanTestCase
 			[
 				$this->createDeprecatedMethod(TrinaryLogic::createYes(), 'Deprecated #1'),
 				$this->createDeprecatedMethod(TrinaryLogic::createYes(), 'Deprecated #2'),
-			]
+			],
 		);
 
 		$this->assertSame('Deprecated #1 Deprecated #2', $reflection->getDeprecatedDescription());

@@ -132,7 +132,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			$reflector,
 			$fetchedNode->getNode(),
 			$fetchedNode->getLocatedSource(),
-			$fetchedNode->getNamespace()
+			$fetchedNode->getNamespace(),
 		);
 	}
 

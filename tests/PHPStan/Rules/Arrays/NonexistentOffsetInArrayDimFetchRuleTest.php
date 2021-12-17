@@ -22,7 +22,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		return new NonexistentOffsetInArrayDimFetchRule(
 			$ruleLevelHelper,
 			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true),
-			true
+			true,
 		);
 	}
 

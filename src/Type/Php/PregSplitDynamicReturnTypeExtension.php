@@ -46,7 +46,7 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		if ($this->hasFlag($this->getConstant('PREG_SPLIT_OFFSET_CAPTURE'), $flagsArg, $scope)) {
 			$type = new ArrayType(
 				new IntegerType(),
-				new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new StringType(), new IntegerType()])
+				new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new StringType(), new IntegerType()]),
 			);
 			return TypeCombinator::union($type, new ConstantBooleanType(false));
 		}

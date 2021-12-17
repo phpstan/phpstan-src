@@ -50,7 +50,7 @@ class InvalidIncDecOperationRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot use %s on a non-variable.',
-					$operatorString
+					$operatorString,
 				))->line($node->var->getLine())->build(),
 			];
 		}
@@ -68,7 +68,7 @@ class InvalidIncDecOperationRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot use %s on %s.',
 					$operatorString,
-					$varType->describe(VerbosityLevel::value())
+					$varType->describe(VerbosityLevel::value()),
 				))->line($node->var->getLine())->build(),
 			];
 		}

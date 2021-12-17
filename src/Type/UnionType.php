@@ -230,12 +230,11 @@ class UnionType implements CompoundType
 	/**
 	 * @param callable(Type $type): TrinaryLogic $hasCallback
 	 * @param callable(Type $type): object $getCallback
-	 * @return object
 	 */
 	private function getInternal(
 		callable $hasCallback,
 		callable $getCallback
-	)
+	): object
 	{
 		/** @var TrinaryLogic|null $result */
 		$result = null;

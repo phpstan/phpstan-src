@@ -5,6 +5,7 @@ namespace PHPStan\DependencyInjection;
 use Nette\DI\Extensions\ExtensionsExtension;
 use Nette\DI\Extensions\PhpExtension;
 use Phar;
+use PhpParser\Parser;
 use PHPStan\BetterReflection\BetterReflection;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
@@ -116,7 +117,7 @@ class ContainerFactory
 		/** @var Reflector $reflector */
 		$reflector = $container->getService('betterReflectionReflector');
 
-		/** @var \PhpParser\Parser $phpParser */
+		/** @var Parser $phpParser */
 		$phpParser = $container->getService('phpParserDecorator');
 
 		BetterReflection::populate(

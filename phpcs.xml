@@ -74,6 +74,11 @@
 	</rule>
 	<rule ref="SlevomatCodingStandard.ControlStructures.AssignmentInCondition"/>
 	<rule ref="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceOperator"/>
+	<rule ref="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceEqualOperator">
+		<properties>
+			<property name="enable" value="true"/>
+		</properties>
+	</rule>
 	<rule ref="SlevomatCodingStandard.ControlStructures.EarlyExit">
 		<exclude name="SlevomatCodingStandard.ControlStructures.EarlyExit.UselessElseIf"/>
 	</rule>

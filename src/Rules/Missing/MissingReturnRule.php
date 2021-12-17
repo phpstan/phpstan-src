@@ -81,7 +81,7 @@ class MissingReturnRule implements Rule
 				$generatorReturnType = GenericTypeVariableResolver::getType(
 					$returnType,
 					Generator::class,
-					'TReturn'
+					'TReturn',
 				);
 				if ($generatorReturnType !== null) {
 					$returnType = $generatorReturnType;
@@ -91,7 +91,7 @@ class MissingReturnRule implements Rule
 					if (!$returnType instanceof MixedType) {
 						return [
 							RuleErrorBuilder::message(
-								sprintf('%s should return %s but return statement is missing.', $description, $returnType->describe(VerbosityLevel::typeOnly()))
+								sprintf('%s should return %s but return statement is missing.', $description, $returnType->describe(VerbosityLevel::typeOnly())),
 							)->line($node->getNode()->getStartLine())->build(),
 						];
 					}
@@ -133,7 +133,7 @@ class MissingReturnRule implements Rule
 		}
 
 		$errorBuilder = RuleErrorBuilder::message(
-			sprintf('%s should return %s but return statement is missing.', $description, $returnType->describe(VerbosityLevel::typeOnly()))
+			sprintf('%s should return %s but return statement is missing.', $description, $returnType->describe(VerbosityLevel::typeOnly())),
 		)->line($node->getNode()->getStartLine());
 
 		if ($node->hasNativeReturnTypehint()) {

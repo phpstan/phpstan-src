@@ -441,7 +441,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 			return self::fromInterval(
 				$this->min !== null && $otherMin !== null ? min($this->min, $otherMin) : null,
-				$this->max !== null && $otherMax !== null ? max($this->max, $otherMax) : null
+				$this->max !== null && $otherMax !== null ? max($this->max, $otherMax) : null,
 			);
 		}
 

@@ -32,7 +32,7 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 			$resolvedTemplateTypeMap,
 			$parameters,
 			$isVariadic,
-			$returnType
+			$returnType,
 		);
 		$this->phpDocReturnType = $phpDocReturnType;
 		$this->nativeReturnType = $nativeReturnType;

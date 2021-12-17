@@ -38,7 +38,7 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 		if ($arrayArg === null) {
 			return new ArrayType(
 				new IntegerType(),
-				new MixedType()
+				new MixedType(),
 			);
 		}
 
@@ -70,7 +70,7 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 			}
 			return new ArrayType(
 				new MixedType(),
-				new MixedType()
+				new MixedType(),
 			);
 		}
 

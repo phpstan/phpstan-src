@@ -67,7 +67,7 @@ class InvalidCastRule implements Rule
 				}
 
 				return !$castType instanceof ErrorType;
-			}
+			},
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -89,7 +89,7 @@ class InvalidCastRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot cast %s to %s.',
 					$scope->getType($node->expr)->describe(VerbosityLevel::value()),
-					$shortName
+					$shortName,
 				))->line($node->getLine())->build(),
 			];
 		}

@@ -54,7 +54,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 				if ($allowString) {
 					$type = TypeCombinator::union(
 						new ObjectWithoutClassType(),
-						new ClassStringType()
+						new ClassStringType(),
 					);
 				} else {
 					$type = new ObjectWithoutClassType();
@@ -65,7 +65,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 					$type,
 					$context,
 					false,
-					$scope
+					$scope,
 				);
 			}
 
@@ -92,7 +92,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 				if ($allowString) {
 					return TypeCombinator::union(
 						new GenericClassStringType($objectType),
-						$objectType
+						$objectType,
 					);
 				}
 
@@ -106,7 +106,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 			$type,
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

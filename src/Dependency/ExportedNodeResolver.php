@@ -71,7 +71,7 @@ class ExportedNodeResolver
 					$fileName,
 					$className,
 					null,
-					$docComment !== null ? $docComment->getText() : null
+					$docComment !== null ? $docComment->getText() : null,
 				),
 				$node->isAbstract(),
 				$node->isFinal(),
@@ -84,7 +84,7 @@ class ExportedNodeResolver
 							$adaptation->trait !== null ? $adaptation->trait->toString() : null,
 							$adaptation->method->toString(),
 							$adaptation->newModifier,
-							$adaptation->newName !== null ? $adaptation->newName->toString() : null
+							$adaptation->newName !== null ? $adaptation->newName->toString() : null,
 						);
 					}
 
@@ -94,13 +94,13 @@ class ExportedNodeResolver
 							$adaptation->method->toString(),
 							array_map(static function (Name $name): string {
 								return $name->toString();
-							}, $adaptation->insteadof)
+							}, $adaptation->insteadof),
 						);
 					}
 
 					throw new ShouldNotHappenException();
 				}, $adaptations),
-				$this->exportClassStatements($node->stmts, $fileName, $node, $className)
+				$this->exportClassStatements($node->stmts, $fileName, $node, $className),
 			);
 		}
 
@@ -118,10 +118,10 @@ class ExportedNodeResolver
 					$fileName,
 					$interfaceName,
 					null,
-					$docComment !== null ? $docComment->getText() : null
+					$docComment !== null ? $docComment->getText() : null,
 				),
 				$extendsNames,
-				$this->exportClassStatements($node->stmts, $fileName, $node, $interfaceName)
+				$this->exportClassStatements($node->stmts, $fileName, $node, $interfaceName),
 			);
 		}
 
@@ -143,11 +143,11 @@ class ExportedNodeResolver
 					$fileName,
 					null,
 					$functionName,
-					$docComment !== null ? $docComment->getText() : null
+					$docComment !== null ? $docComment->getText() : null,
 				),
 				$node->byRef,
 				$this->printType($node->returnType),
-				$this->exportParameterNodes($node->params)
+				$this->exportParameterNodes($node->params),
 			);
 		}
 
@@ -226,7 +226,7 @@ class ExportedNodeResolver
 				$this->printType($type),
 				$param->byRef,
 				$param->variadic,
-				$param->default !== null
+				$param->default !== null,
 			);
 		}
 
@@ -249,7 +249,7 @@ class ExportedNodeResolver
 			$className,
 			null,
 			$functionName,
-			$text
+			$text,
 		);
 
 		$nameScope = $resolvedPhpDocBlock->getNullableNameScope();
@@ -292,7 +292,7 @@ class ExportedNodeResolver
 						$fileName,
 						$namespacedName,
 						$methodName,
-						$docComment !== null ? $docComment->getText() : null
+						$docComment !== null ? $docComment->getText() : null,
 					),
 					$node->byRef,
 					$node->isPublic(),
@@ -301,7 +301,7 @@ class ExportedNodeResolver
 					$node->isFinal(),
 					$node->isStatic(),
 					$this->printType($node->returnType),
-					$this->exportParameterNodes($node->params)
+					$this->exportParameterNodes($node->params),
 				);
 			}
 		}
@@ -325,13 +325,13 @@ class ExportedNodeResolver
 					$fileName,
 					$namespacedName,
 					null,
-					$docComment !== null ? $docComment->getText() : null
+					$docComment !== null ? $docComment->getText() : null,
 				),
 				$this->printType($node->type),
 				$node->isPublic(),
 				$node->isPrivate(),
 				$node->isStatic(),
-				$node->isReadonly()
+				$node->isReadonly(),
 			);
 		}
 
@@ -350,7 +350,7 @@ class ExportedNodeResolver
 			foreach ($node->consts as $const) {
 				$constants[] = new ExportedClassConstantNode(
 					$const->name->toString(),
-					$this->printer->prettyPrintExpr($const->value)
+					$this->printer->prettyPrintExpr($const->value),
 				);
 			}
 
@@ -363,8 +363,8 @@ class ExportedNodeResolver
 					$fileName,
 					$namespacedName,
 					null,
-					$docComment !== null ? $docComment->getText() : null
-				)
+					$docComment !== null ? $docComment->getText() : null,
+				),
 			);
 		}
 

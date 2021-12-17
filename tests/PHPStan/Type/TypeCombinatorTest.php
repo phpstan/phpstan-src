@@ -754,7 +754,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				[
 					new ArrayType(
 						new IntegerType(),
-						new ObjectType(stdClass::class)
+						new ObjectType(stdClass::class),
 					),
 					new ConstantArrayType([
 						new ConstantStringType('foo'),
@@ -898,7 +898,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 							[
 								new ObjectWithoutClassType(),
 								new ConstantStringType('foo'),
-							]
+							],
 						),
 						new CallableType(),
 					]),
@@ -911,7 +911,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 							[
 								new ObjectWithoutClassType(),
 								new ConstantStringType('foo'),
-							]
+							],
 						),
 						new CallableType(),
 					]),
@@ -1145,7 +1145,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						null,
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectType('DateTime'),
 				],
@@ -1158,7 +1158,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectType('DateTime'),
 				],
@@ -1171,13 +1171,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				TemplateType::class,
@@ -1189,13 +1189,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'U',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				UnionType::class,
@@ -1552,7 +1552,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectWithoutClassType(),
 				],
@@ -1565,7 +1565,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectType(stdClass::class),
 				],
@@ -1578,7 +1578,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new MixedType(),
 				],
@@ -1591,13 +1591,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						null,
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'K',
 						null,
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				UnionType::class,
@@ -1609,13 +1609,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'K',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				UnionType::class,
@@ -1627,13 +1627,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType(Exception::class),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'K',
 						new ObjectType(stdClass::class),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				UnionType::class,
@@ -1830,7 +1830,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 							new FloatType(),
 							new BooleanType(),
 						]),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new NullType(),
 				],
@@ -1848,7 +1848,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithClass('Foo'),
 						'TCode',
 						new UnionType([new ArrayType(new IntegerType(), new IntegerType()), new IntegerType()]),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				UnionType::class,
@@ -1864,7 +1864,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithClass('Foo'),
 						'TCode',
 						new UnionType([new ArrayType(new IntegerType(), new IntegerType()), new IntegerType()]),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				UnionType::class,
@@ -1909,8 +1909,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				static function (Type $type): string {
 					return $type->describe(VerbosityLevel::precise());
 				},
-				$types
-			)))
+				$types,
+			))),
 		);
 
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
@@ -1957,8 +1957,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				static function (Type $type): string {
 					return $type->describe(VerbosityLevel::precise());
 				},
-				$types
-			)))
+				$types,
+			))),
 		);
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
@@ -2001,8 +2001,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 							TemplateTypeScope::createWithFunction('_'),
 							'T',
 							null,
-							TemplateTypeVariance::createInvariant()
-						)
+							TemplateTypeVariance::createInvariant(),
+						),
 					),
 				],
 				IntersectionType::class,
@@ -2404,7 +2404,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				[
 					new ConstantArrayType(
 						[new ConstantStringType('a')],
-						[new ConstantStringType('foo')]
+						[new ConstantStringType('foo')],
 					),
 					new HasOffsetType(new ConstantStringType('a')),
 				],
@@ -2415,7 +2415,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				[
 					new ConstantArrayType(
 						[new ConstantStringType('a')],
-						[new ConstantStringType('foo')]
+						[new ConstantStringType('foo')],
 					),
 					new HasOffsetType(new ConstantStringType('b')),
 				],
@@ -2435,12 +2435,12 @@ class TypeCombinatorTest extends PHPStanTestCase
 					TypeCombinator::union(
 						new ConstantArrayType(
 							[new ConstantStringType('a')],
-							[new ConstantStringType('foo')]
+							[new ConstantStringType('foo')],
 						),
 						new ConstantArrayType(
 							[new ConstantStringType('b')],
-							[new ConstantStringType('foo')]
-						)
+							[new ConstantStringType('foo')],
+						),
 					),
 					new HasOffsetType(new ConstantStringType('b')),
 				],
@@ -2452,9 +2452,9 @@ class TypeCombinatorTest extends PHPStanTestCase
 					TypeCombinator::union(
 						new ConstantArrayType(
 							[new ConstantStringType('a')],
-							[new ConstantStringType('foo')]
+							[new ConstantStringType('foo')],
 						),
-						new ClosureType([], new MixedType(), false)
+						new ClosureType([], new MixedType(), false),
 					),
 					new HasOffsetType(new ConstantStringType('a')),
 				],
@@ -2531,7 +2531,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 							new ConstantIntegerType(0),
 						], [
 							new StringType(),
-						])
+						]),
 					),
 					new NonEmptyArrayType(),
 				],
@@ -2606,7 +2606,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						null,
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectType('DateTime'),
 				],
@@ -2619,7 +2619,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectType('DateTime'),
 				],
@@ -2632,13 +2632,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				TemplateType::class,
@@ -2650,13 +2650,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'U',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				IntersectionType::class,
@@ -2668,7 +2668,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						null,
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new MixedType(),
 				],
@@ -2925,7 +2925,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectWithoutClassType(),
 				],
@@ -2938,7 +2938,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectType(stdClass::class),
 				],
@@ -2951,7 +2951,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new MixedType(),
 				],
@@ -3069,7 +3069,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('my_array_keys'),
 						'T',
 						new BenevolentUnionType([new IntegerType(), new StringType()]),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new UnionType([new IntegerType(), new StringType()]),
 				],
@@ -3082,7 +3082,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('my_array_keys'),
 						'T',
 						new BenevolentUnionType([new IntegerType(), new StringType()]),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 				],
@@ -3095,7 +3095,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						TemplateTypeScope::createWithFunction('my_array_keys'),
 						'T',
 						new UnionType([new IntegerType(), new StringType()]),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new UnionType([new IntegerType(), new StringType()]),
 				],
@@ -3396,7 +3396,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 						new ConstantIntegerType(0),
 					], [
 						new StringType(),
-					])
+					]),
 				),
 				new ConstantArrayType([], []),
 				ConstantArrayType::class,

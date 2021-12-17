@@ -52,7 +52,7 @@ trait ObjectTypeTrait
 			false,
 			static function (Type $type): Type {
 				return $type;
-			}
+			},
 		);
 	}
 
@@ -80,7 +80,7 @@ trait ObjectTypeTrait
 			false,
 			static function (Type $type): Type {
 				return $type;
-			}
+			},
 		);
 	}
 

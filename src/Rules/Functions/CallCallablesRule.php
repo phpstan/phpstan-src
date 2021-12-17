@@ -64,7 +64,7 @@ class CallCallablesRule implements Rule
 			'Invoking callable on an unknown class %s.',
 			static function (Type $type): bool {
 				return $type->isCallable()->yes();
-			}
+			},
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -75,14 +75,14 @@ class CallCallablesRule implements Rule
 		if ($isCallable->no()) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Trying to invoke %s but it\'s not a callable.', $type->describe(VerbosityLevel::value()))
+					sprintf('Trying to invoke %s but it\'s not a callable.', $type->describe(VerbosityLevel::value())),
 				)->build(),
 			];
 		}
 		if ($this->reportMaybes && $isCallable->maybe()) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Trying to invoke %s but it might not be a callable.', $type->describe(VerbosityLevel::value()))
+					sprintf('Trying to invoke %s but it might not be a callable.', $type->describe(VerbosityLevel::value())),
 				)->build(),
 			];
 		}
@@ -99,14 +99,14 @@ class CallCallablesRule implements Rule
 				'Call to %s method %s() of class %s.',
 				$method->isPrivate() ? 'private' : 'protected',
 				$method->getName(),
-				$method->getDeclaringClass()->getDisplayName()
+				$method->getDeclaringClass()->getDisplayName(),
 			))->build();
 		}
 
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$node->getArgs(),
-			$parametersAcceptors
+			$parametersAcceptors,
 		);
 
 		if ($type instanceof ClosureType) {
@@ -136,8 +136,8 @@ class CallCallablesRule implements Rule
 					'Missing parameter $%s in call to ' . $callableDescription . '.',
 					'Unknown parameter $%s in call to ' . $callableDescription . '.',
 					'Return type of call to ' . $callableDescription . ' contains unresolvable type.',
-				]
-			)
+				],
+			),
 		);
 	}
 

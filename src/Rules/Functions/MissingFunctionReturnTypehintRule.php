@@ -48,7 +48,7 @@ final class MissingFunctionReturnTypehintRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Function %s() has no return type specified.',
-					$functionReflection->getName()
+					$functionReflection->getName(),
 				))->build(),
 			];
 		}
@@ -64,7 +64,7 @@ final class MissingFunctionReturnTypehintRule implements Rule
 				'Function %s() return type with generic %s does not specify its types: %s',
 				$functionReflection->getName(),
 				$name,
-				implode(', ', $genericTypeNames)
+				implode(', ', $genericTypeNames),
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
@@ -72,7 +72,7 @@ final class MissingFunctionReturnTypehintRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Function %s() return type has no signature specified for %s.',
 				$functionReflection->getName(),
-				$callableType->describe(VerbosityLevel::typeOnly())
+				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

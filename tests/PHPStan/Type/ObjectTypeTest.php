@@ -51,7 +51,7 @@ class ObjectTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isIterable()', $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isIterable()', $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -73,7 +73,7 @@ class ObjectTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -336,7 +336,7 @@ class ObjectTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithClass(DateTimeInterface::class),
 					'T',
 					new ObjectType(DateTimeInterface::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				),
 				TrinaryLogic::createYes(),
 			],
@@ -346,7 +346,7 @@ class ObjectTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithClass(DateTime::class),
 					'T',
 					new ObjectType(DateTime::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				),
 				TrinaryLogic::createYes(),
 			],
@@ -356,7 +356,7 @@ class ObjectTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithClass(DateTimeInterface::class),
 					'T',
 					new ObjectType(DateTimeInterface::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				),
 				TrinaryLogic::createMaybe(),
 			],
@@ -372,7 +372,7 @@ class ObjectTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -400,7 +400,7 @@ class ObjectTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithClass(DateTimeInterface::class),
 					'T',
 					new ObjectType(DateTimeInterface::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				),
 				TrinaryLogic::createYes(),
 			],
@@ -410,7 +410,7 @@ class ObjectTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithClass(DateTimeInterface::class),
 					'T',
 					new ObjectType(DateTimeInterface::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				),
 				TrinaryLogic::createMaybe(),
 			],
@@ -429,7 +429,7 @@ class ObjectTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$type->accepts($acceptedType, true)->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -509,7 +509,7 @@ class ObjectTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$type->hasOffsetValueType($offsetType)->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $offsetType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $offsetType->describe(VerbosityLevel::precise())),
 		);
 	}
 

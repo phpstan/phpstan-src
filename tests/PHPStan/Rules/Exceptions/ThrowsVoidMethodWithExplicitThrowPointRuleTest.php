@@ -24,7 +24,7 @@ class ThrowsVoidMethodWithExplicitThrowPointRuleTest extends RuleTestCase
 			[],
 			[],
 			[],
-			$this->checkedExceptionClasses
+			$this->checkedExceptionClasses,
 		), $this->missingCheckedExceptionInThrows);
 	}
 

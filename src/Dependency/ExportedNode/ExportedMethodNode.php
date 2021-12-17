@@ -116,7 +116,7 @@ class ExportedMethodNode implements ExportedNode, JsonSerializable
 			$properties['final'],
 			$properties['static'],
 			$properties['returnType'],
-			$properties['parameters']
+			$properties['parameters'],
 		);
 	}
 
@@ -164,7 +164,7 @@ class ExportedMethodNode implements ExportedNode, JsonSerializable
 					throw new ShouldNotHappenException();
 				}
 				return ExportedParameterNode::decode($parameterData['data']);
-			}, $data['parameters'])
+			}, $data['parameters']),
 		);
 	}
 

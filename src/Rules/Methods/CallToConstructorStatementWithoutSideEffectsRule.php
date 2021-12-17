@@ -66,7 +66,7 @@ class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Call to %s::%s() on a separate line has no effect.',
 					$classReflection->getDisplayName(),
-					$constructor->getName()
+					$constructor->getName(),
 				))->build(),
 			];
 		}

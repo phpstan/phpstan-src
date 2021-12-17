@@ -429,7 +429,7 @@ class ResultCacheManager
 			$internalErrors,
 			$dependencies,
 			$exportedNodes,
-			$analyserResult->hasReachedInternalErrorsCountLimit()
+			$analyserResult->hasReachedInternalErrorsCountLimit(),
 		), $saved);
 	}
 
@@ -599,8 +599,8 @@ php;
 				var_export($this->getProjectExtensionFiles($projectConfigArray, $dependencies), true),
 				var_export($errors, true),
 				var_export($invertedDependencies, true),
-				var_export($exportedNodes, true)
-			)
+				var_export($exportedNodes, true),
+			),
 		);
 	}
 
@@ -616,7 +616,7 @@ php;
 		if ($projectConfig !== null) {
 			$services = array_merge(
 				$projectConfig['services'] ?? [],
-				$projectConfig['rules'] ?? []
+				$projectConfig['rules'] ?? [],
 			);
 			foreach ($services as $service) {
 				$classes = $this->getClassesFromConfigDefinition($service);

@@ -130,7 +130,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				], [
 					new StringType(),
 					new StringType(),
-				])
+				]),
 			),
 			new ConstantArrayType([
 				new ConstantStringType('name'),
@@ -167,7 +167,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				], [
 					new StringType(),
 					new StringType(),
-				])
+				]),
 			),
 			new ConstantArrayType([
 				new ConstantStringType('surname'),
@@ -355,7 +355,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -511,7 +511,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -522,7 +522,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
 				new MixedType(),
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			);
 		};
 
@@ -536,7 +536,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 					[
 						new StringType(),
 						new IntegerType(),
-					]
+					],
 				),
 				new ConstantArrayType(
 					[
@@ -546,7 +546,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 					[
 						$templateType('T'),
 						$templateType('U'),
-					]
+					],
 				),
 				['T' => 'string', 'U' => 'int'],
 			],
@@ -559,7 +559,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 					[
 						new StringType(),
 						new IntegerType(),
-					]
+					],
 				),
 				new ConstantArrayType(
 					[
@@ -569,7 +569,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 					[
 						$templateType('T'),
 						$templateType('U'),
-					]
+					],
 				),
 				['T' => 'string', 'U' => 'int'],
 			],
@@ -580,7 +580,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 					],
 					[
 						new StringType(),
-					]
+					],
 				),
 				new ConstantArrayType(
 					[
@@ -590,7 +590,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 					[
 						$templateType('T'),
 						$templateType('U'),
-					]
+					],
 				),
 				[],
 			],
@@ -602,7 +602,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 					],
 					[
 						$templateType('T'),
-					]
+					],
 				),
 				[],
 			],
@@ -614,7 +614,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 					],
 					[
 						$templateType('T'),
-					]
+					],
 				),
 				['T' => 'string'],
 			],
@@ -633,7 +633,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			$expectedTypes,
 			array_map(static function (Type $type): string {
 				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes())
+			}, $result->getTypes()),
 		);
 	}
 
@@ -646,7 +646,7 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise())),
 		);
 	}
 

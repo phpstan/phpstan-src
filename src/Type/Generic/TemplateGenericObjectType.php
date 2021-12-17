@@ -39,7 +39,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 
@@ -53,7 +53,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 			$this->strategy,
 			$this->variance,
 			$this->name,
-			$this->getBound()
+			$this->getBound(),
 		);
 	}
 

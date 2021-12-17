@@ -47,7 +47,7 @@ class IsCountableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			]),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

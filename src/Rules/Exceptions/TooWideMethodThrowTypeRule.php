@@ -55,7 +55,7 @@ class TooWideMethodThrowTypeRule implements Rule
 			$classReflection->getName(),
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 			$methodReflection->getName(),
-			$docComment->getText()
+			$docComment->getText(),
 		);
 
 		if ($resolvedPhpDoc->getThrowsTag() === null) {
@@ -70,7 +70,7 @@ class TooWideMethodThrowTypeRule implements Rule
 				'Method %s::%s() has %s in PHPDoc @throws tag but it\'s not thrown.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
-				$throwClass
+				$throwClass,
 			))
 				->identifier('exceptions.tooWideThrowType')
 				->metadata([

@@ -62,7 +62,7 @@ class ConstantArrayTypeBuilder
 			$startArrayType->getKeyTypes(),
 			$startArrayType->getValueTypes(),
 			$startArrayType->getNextAutoIndex(),
-			$startArrayType->getOptionalKeys()
+			$startArrayType->getOptionalKeys(),
 		);
 	}
 
@@ -134,7 +134,7 @@ class ConstantArrayTypeBuilder
 
 		$array = new ArrayType(
 			TypeCombinator::union(...$this->keyTypes),
-			TypeCombinator::union(...$this->valueTypes)
+			TypeCombinator::union(...$this->valueTypes),
 		);
 
 		if (count($this->optionalKeys) < $keyTypesCount) {

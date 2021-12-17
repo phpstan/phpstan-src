@@ -41,9 +41,9 @@ class UnionTypeTest extends PHPStanTestCase
 				TypeCombinator::union(
 					new ConstantArrayType(
 						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
-						[new ConstantStringType('Closure'), new ConstantStringType('bind')]
+						[new ConstantStringType('Closure'), new ConstantStringType('bind')],
 					),
-					new ConstantStringType('array_push')
+					new ConstantStringType('array_push'),
 				),
 				TrinaryLogic::createYes(),
 			],
@@ -80,7 +80,7 @@ class UnionTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -152,17 +152,17 @@ class UnionTypeTest extends PHPStanTestCase
 		$description = $type->describe(VerbosityLevel::precise());
 		$this->assertTrue(
 			$type->equals($type),
-			sprintf('%s -> equals(itself)', $description)
+			sprintf('%s -> equals(itself)', $description),
 		);
 		$this->assertEquals(
 			'Yes',
 			$type->isSuperTypeOf($type)->describe(),
-			sprintf('%s -> isSuperTypeOf(itself)', $description)
+			sprintf('%s -> isSuperTypeOf(itself)', $description),
 		);
 		$this->assertInstanceOf(
 			get_class($type),
 			TypeCombinator::union($type, $type),
-			sprintf('%s -> union with itself is same type', $description)
+			sprintf('%s -> union with itself is same type', $description),
 		);
 	}
 
@@ -353,7 +353,7 @@ class UnionTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -521,7 +521,7 @@ class UnionTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -534,7 +534,7 @@ class UnionTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -588,7 +588,7 @@ class UnionTypeTest extends PHPStanTestCase
 						new IntegerType(),
 						new FloatType(),
 					]),
-					new ConstantStringType('aaa')
+					new ConstantStringType('aaa'),
 				),
 				'\'aaa\'|array{a: int|string, b: bool|float}',
 				'array<string, bool|float|int|string>|string',
@@ -609,7 +609,7 @@ class UnionTypeTest extends PHPStanTestCase
 						new IntegerType(),
 						new FloatType(),
 					]),
-					new ConstantStringType('aaa')
+					new ConstantStringType('aaa'),
 				),
 				'\'aaa\'|array{a: string, b: bool}|array{b: int, c: float}',
 				'array<string, bool|float|int|string>|string',
@@ -630,7 +630,7 @@ class UnionTypeTest extends PHPStanTestCase
 						new IntegerType(),
 						new FloatType(),
 					]),
-					new ConstantStringType('aaa')
+					new ConstantStringType('aaa'),
 				),
 				'\'aaa\'|array{a: string, b: bool}|array{c: int, d: float}',
 				'array<string, bool|float|int|string>|string',
@@ -650,7 +650,7 @@ class UnionTypeTest extends PHPStanTestCase
 						new IntegerType(),
 						new BooleanType(),
 						new FloatType(),
-					])
+					]),
 				),
 				'array{0: int|string, 1?: bool, 2?: float}',
 				'array<int, bool|float|int|string>',
@@ -662,7 +662,7 @@ class UnionTypeTest extends PHPStanTestCase
 						new ConstantStringType('foooo'),
 					], [
 						new ConstantStringType('barrr'),
-					])
+					]),
 				),
 				'array{}|array{foooo: \'barrr\'}',
 				'array<string, string>',
@@ -673,7 +673,7 @@ class UnionTypeTest extends PHPStanTestCase
 					new IntersectionType([
 						new StringType(),
 						new AccessoryNumericStringType(),
-					])
+					]),
 				),
 				'int|numeric-string',
 				'int|string',
@@ -779,7 +779,7 @@ class UnionTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$type->accepts($acceptedType, true)->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -851,7 +851,7 @@ class UnionTypeTest extends PHPStanTestCase
 
 		$this->assertTrue(
 			$type1->equals($type2),
-			'UnionType sorting always produces the same order'
+			'UnionType sorting always produces the same order',
 		);
 	}
 

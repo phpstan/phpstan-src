@@ -47,7 +47,7 @@ class ResolvedMethodReflection implements MethodReflection
 		foreach ($this->reflection->getVariants() as $variant) {
 			$variants[] = new ResolvedFunctionVariant(
 				$variant,
-				$this->resolvedTemplateTypeMap
+				$this->resolvedTemplateTypeMap,
 			);
 		}
 

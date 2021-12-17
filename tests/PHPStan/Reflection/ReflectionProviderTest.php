@@ -66,7 +66,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 		$this->assertNotNull($throwType);
 		$this->assertSame(
 			$expectedThrowType->describe(VerbosityLevel::precise()),
-			$throwType->describe(VerbosityLevel::precise())
+			$throwType->describe(VerbosityLevel::precise()),
 		);
 	}
 
@@ -138,7 +138,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 		$this->assertNotNull($throwType);
 		$this->assertSame(
 			$expectedThrowType->describe(VerbosityLevel::precise()),
-			$throwType->describe(VerbosityLevel::precise())
+			$throwType->describe(VerbosityLevel::precise()),
 		);
 	}
 

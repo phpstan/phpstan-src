@@ -109,7 +109,7 @@ class TooWideMethodReturnTypehintRule implements Rule
 				'Method %s::%s() never returns %s so it can be removed from the return type.',
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$type->describe(VerbosityLevel::getRecommendedLevelByType($type))
+				$type->describe(VerbosityLevel::getRecommendedLevelByType($type)),
 			))->build();
 		}
 

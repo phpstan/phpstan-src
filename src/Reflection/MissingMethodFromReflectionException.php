@@ -17,8 +17,8 @@ class MissingMethodFromReflectionException extends Exception
 			sprintf(
 				'Method %s() was not found in reflection of class %s.',
 				$methodName,
-				$className
-			)
+				$className,
+			),
 		);
 	}
 

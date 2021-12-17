@@ -91,7 +91,7 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 		return TypeCombinator::union(
 			$iterableKeyType,
 			new ConstantBooleanType(false),
-			...$typesFromConstantArrays
+			...$typesFromConstantArrays,
 		);
 	}
 

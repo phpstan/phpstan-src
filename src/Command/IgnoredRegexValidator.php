@@ -55,7 +55,7 @@ class IgnoredRegexValidator
 		return new IgnoredRegexValidatorResult(
 			$this->getIgnoredTypes($ast),
 			$this->hasAnchorsInTheMiddle($ast),
-			false
+			false,
 		);
 	}
 

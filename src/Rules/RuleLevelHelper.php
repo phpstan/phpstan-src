@@ -112,11 +112,11 @@ class RuleLevelHelper
 			return self::accepts(
 				$acceptingType->getIterableKeyType(),
 				$acceptedType->getIterableKeyType(),
-				$strictTypes
+				$strictTypes,
 			) && self::accepts(
 				$acceptingType->getIterableValueType(),
 				$acceptedType->getIterableValueType(),
-				$strictTypes
+				$strictTypes,
 			);
 		}
 

@@ -91,7 +91,7 @@ class AccessStaticPropertiesRule implements Rule
 						RuleErrorBuilder::message(sprintf(
 							'Accessing %s::$%s outside of class scope.',
 							$class,
-							$name
+							$name,
 						))->build(),
 					];
 				}
@@ -102,7 +102,7 @@ class AccessStaticPropertiesRule implements Rule
 						RuleErrorBuilder::message(sprintf(
 							'Accessing %s::$%s outside of class scope.',
 							$class,
-							$name
+							$name,
 						))->build(),
 					];
 				}
@@ -113,7 +113,7 @@ class AccessStaticPropertiesRule implements Rule
 							$scope->getClassReflection()->getDisplayName(),
 							$scope->getFunctionName(),
 							$name,
-							$scope->getClassReflection()->getDisplayName()
+							$scope->getClassReflection()->getDisplayName(),
 						))->build(),
 					];
 				}
@@ -139,7 +139,7 @@ class AccessStaticPropertiesRule implements Rule
 						RuleErrorBuilder::message(sprintf(
 							'Access to static property $%s on an unknown class %s.',
 							$name,
-							$class
+							$class,
 						))->discoveringSymbolsTip()->build(),
 					];
 				} else {
@@ -155,7 +155,7 @@ class AccessStaticPropertiesRule implements Rule
 				sprintf('Access to static property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
 				static function (Type $type) use ($name): bool {
 					return $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes();
-				}
+				},
 			);
 			$classType = $classTypeResult->getType();
 			if ($classType instanceof ErrorType) {
@@ -182,7 +182,7 @@ class AccessStaticPropertiesRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access static property $%s on %s.',
 					$name,
-					$typeForDescribe->describe(VerbosityLevel::typeOnly())
+					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 				))->build(),
 			]);
 		}
@@ -196,7 +196,7 @@ class AccessStaticPropertiesRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Access to an undefined static property %s::$%s.',
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
-					$name
+					$name,
 				))->build(),
 			]);
 		}
@@ -214,7 +214,7 @@ class AccessStaticPropertiesRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Static access to instance property %s::$%s.',
 					$property->getDeclaringClass()->getDisplayName(),
-					$name
+					$name,
 				))->build(),
 			]);
 		}
@@ -225,7 +225,7 @@ class AccessStaticPropertiesRule implements Rule
 					'Access to %s property $%s of class %s.',
 					$property->isPrivate() ? 'private' : 'protected',
 					$name,
-					$property->getDeclaringClass()->getDisplayName()
+					$property->getDeclaringClass()->getDisplayName(),
 				))->build(),
 			]);
 		}

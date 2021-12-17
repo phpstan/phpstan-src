@@ -79,7 +79,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag @var for constant %s::%s contains unresolvable type.',
 				$constantReflection->getDeclaringClass()->getName(),
-				$constantName
+				$constantName,
 			))->build();
 		} else {
 			$nativeType = ConstantTypeHelper::getTypeFromValue($constantReflection->getValue());
@@ -91,7 +91,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 					$constantReflection->getDeclaringClass()->getDisplayName(),
 					$constantName,
 					$phpDocType->describe($verbosity),
-					$nativeType->describe(VerbosityLevel::value())
+					$nativeType->describe(VerbosityLevel::value()),
 				))->build();
 
 			} elseif ($isSuperType->maybe()) {
@@ -100,7 +100,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 					$constantReflection->getDeclaringClass()->getDisplayName(),
 					$constantName,
 					$phpDocType->describe($verbosity),
-					$nativeType->describe(VerbosityLevel::value())
+					$nativeType->describe(VerbosityLevel::value()),
 				))->build();
 			}
 		}
@@ -113,23 +113,23 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 			sprintf(
 				'PHPDoc tag @var for constant %s::%s contains generic type %%s but class %%s is not generic.',
 				$className,
-				$escapedConstantName
+				$escapedConstantName,
 			),
 			sprintf(
 				'Generic type %%s in PHPDoc tag @var for constant %s::%s does not specify all template types of class %%s: %%s',
 				$className,
-				$escapedConstantName
+				$escapedConstantName,
 			),
 			sprintf(
 				'Generic type %%s in PHPDoc tag @var for constant %s::%s specifies %%d template types, but class %%s supports only %%d: %%s',
 				$className,
-				$escapedConstantName
+				$escapedConstantName,
 			),
 			sprintf(
 				'Type %%s in generic type %%s in PHPDoc tag @var for constant %s::%s is not subtype of template type %%s of class %%s.',
 				$className,
-				$escapedConstantName
-			)
+				$escapedConstantName,
+			),
 		));
 	}
 

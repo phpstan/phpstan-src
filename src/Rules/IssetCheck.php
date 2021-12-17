@@ -57,7 +57,7 @@ class IssetCheck
 					return $this->generateError(
 						$scope->getVariableType($expr->name),
 						sprintf('Variable $%s %s always exists and', $expr->name, $operatorDescription),
-						$typeMessageCallback
+						$typeMessageCallback,
 					);
 				}
 
@@ -91,8 +91,8 @@ class IssetCheck
 						'Offset %s on %s %s does not exist.',
 						$dimType->describe(VerbosityLevel::value()),
 						$type->describe(VerbosityLevel::value()),
-						$operatorDescription
-					)
+						$operatorDescription,
+					),
 				)->build();
 			}
 
@@ -115,7 +115,7 @@ class IssetCheck
 					'Offset %s on %s %s always exists and',
 					$dimType->describe(VerbosityLevel::value()),
 					$type->describe(VerbosityLevel::value()),
-					$operatorDescription
+					$operatorDescription,
 				), $typeMessageCallback);
 
 				if ($error !== null) {
@@ -189,7 +189,7 @@ class IssetCheck
 			$error = $this->generateError(
 				$propertyReflection->getWritableType(),
 				sprintf('%s (%s) %s', $propertyDescription, $propertyType->describe(VerbosityLevel::typeOnly()), $operatorDescription),
-				$typeMessageCallback
+				$typeMessageCallback,
 			);
 
 			if ($error !== null) {
@@ -244,8 +244,8 @@ class IssetCheck
 					'Offset %s on %s %s does not exist.',
 					$dimType->describe(VerbosityLevel::value()),
 					$type->describe(VerbosityLevel::value()),
-					$operatorDescription
-				)
+					$operatorDescription,
+				),
 			)->build();
 		}
 
@@ -271,7 +271,7 @@ class IssetCheck
 		}
 
 		return RuleErrorBuilder::message(
-			sprintf('%s %s.', $message, $typeMessage)
+			sprintf('%s %s.', $message, $typeMessage),
 		)->build();
 	}
 

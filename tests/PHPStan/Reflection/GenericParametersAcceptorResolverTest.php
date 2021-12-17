@@ -35,7 +35,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
 				$type,
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			);
 		};
 
@@ -56,11 +56,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					new NullType()
+					new NullType(),
 				),
 				new FunctionVariant(
 					new TemplateTypeMap([
@@ -74,11 +74,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					new NullType()
+					new NullType(),
 				),
 			],
 			'two params, two args, return type' => [
@@ -99,7 +99,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -107,11 +107,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					$templateType('U')
+					$templateType('U'),
 				),
 				new FunctionVariant(
 					new TemplateTypeMap([
@@ -126,7 +126,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -134,11 +134,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					new IntegerType()
+					new IntegerType(),
 				),
 			],
 			'mixed types' => [
@@ -158,7 +158,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -166,11 +166,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					$templateType('T')
+					$templateType('T'),
 				),
 				new FunctionVariant(
 					new TemplateTypeMap([
@@ -187,7 +187,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -198,14 +198,14 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
 					new UnionType([
 						new ObjectType('DateTime'),
 						new IntegerType(),
-					])
+					]),
 				),
 			],
 			'parameter default value' => [
@@ -225,7 +225,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -233,11 +233,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							true,
 							PassedByReference::createNo(),
 							false,
-							new IntegerType()
+							new IntegerType(),
 						),
 					],
 					false,
-					new NullType()
+					new NullType(),
 				),
 				new FunctionVariant(
 					new TemplateTypeMap([
@@ -252,7 +252,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -260,11 +260,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					new NullType()
+					new NullType(),
 				),
 			],
 			'variadic parameter' => [
@@ -287,7 +287,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -295,11 +295,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							true,
-							null
+							null,
 						),
 					],
 					true,
-					$templateType('U')
+					$templateType('U'),
 				),
 				new FunctionVariant(
 					new TemplateTypeMap([
@@ -314,7 +314,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -322,11 +322,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							true,
-							null
+							null,
 						),
 					],
 					false,
-					new IntegerType()
+					new IntegerType(),
 				),
 			],
 			'missing args' => [
@@ -346,7 +346,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -354,11 +354,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					new NullType()
+					new NullType(),
 				),
 				new FunctionVariant(
 					new TemplateTypeMap([
@@ -373,7 +373,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -381,11 +381,11 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					new NullType()
+					new NullType(),
 				),
 			],
 			'constant string arg resolved to constant string' => [
@@ -401,7 +401,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 						new DummyParameter('str', $templateType('T'), false, null, false, null),
 					],
 					false,
-					$templateType('T')
+					$templateType('T'),
 				),
 				new FunctionVariant(
 					TemplateTypeMap::createEmpty(),
@@ -410,7 +410,7 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 						new DummyParameter('str', new StringType(), false, null, false, null),
 					],
 					false,
-					new StringType()
+					new StringType(),
 				),
 			],
 		];
@@ -424,18 +424,18 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 	{
 		$result = GenericParametersAcceptorResolver::resolve(
 			$argTypes,
-			$parametersAcceptor
+			$parametersAcceptor,
 		);
 
 		$this->assertInstanceOf(
 			get_class($expectedResult->getReturnType()),
 			$result->getReturnType(),
-			'Unexpected return type'
+			'Unexpected return type',
 		);
 		$this->assertSame(
 			$expectedResult->getReturnType()->describe(VerbosityLevel::precise()),
 			$result->getReturnType()->describe(VerbosityLevel::precise()),
-			'Unexpected return type'
+			'Unexpected return type',
 		);
 
 		$resultParameters = $result->getParameters();
@@ -447,12 +447,12 @@ class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 			$this->assertInstanceOf(
 				get_class($param->getType()),
 				$resultParameters[$i]->getType(),
-				sprintf('Unexpected parameter %d', $i + 1)
+				sprintf('Unexpected parameter %d', $i + 1),
 			);
 			$this->assertSame(
 				$param->getType()->describe(VerbosityLevel::precise()),
 				$resultParameters[$i]->getType()->describe(VerbosityLevel::precise()),
-				sprintf('Unexpected parameter %d', $i + 1)
+				sprintf('Unexpected parameter %d', $i + 1),
 			);
 		}
 	}

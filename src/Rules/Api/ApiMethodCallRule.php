@@ -52,10 +52,10 @@ class ApiMethodCallRule implements Rule
 		$ruleError = RuleErrorBuilder::message(sprintf(
 			'Calling %s::%s() is not covered by backward compatibility promise. The method might change in a minor PHPStan version.',
 			$declaringClass->getDisplayName(),
-			$methodReflection->getName()
+			$methodReflection->getName(),
 		))->tip(sprintf(
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
-			'https://github.com/phpstan/phpstan/discussions'
+			'https://github.com/phpstan/phpstan/discussions',
 		))->build();
 
 		return [$ruleError];

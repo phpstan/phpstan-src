@@ -38,7 +38,7 @@ final class TemplateUnionType extends UnionType implements TemplateType
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

@@ -62,7 +62,7 @@ class RandomIntParametersRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					$message,
 					$minType->describe(VerbosityLevel::value()),
-					$maxType->describe(VerbosityLevel::value())
+					$maxType->describe(VerbosityLevel::value()),
 				))->build(),
 			];
 		}

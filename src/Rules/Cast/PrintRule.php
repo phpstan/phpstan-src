@@ -38,7 +38,7 @@ class PrintRule implements Rule
 			'',
 			static function (Type $type): bool {
 				return !$type->toString() instanceof ErrorType;
-			}
+			},
 		);
 
 		if (!$typeResult->getType() instanceof ErrorType
@@ -46,7 +46,7 @@ class PrintRule implements Rule
 		) {
 			return [RuleErrorBuilder::message(sprintf(
 				'Parameter %s of print cannot be converted to string.',
-				$typeResult->getType()->describe(VerbosityLevel::value())
+				$typeResult->getType()->describe(VerbosityLevel::value()),
 			))->line($node->expr->getLine())->build()];
 		}
 

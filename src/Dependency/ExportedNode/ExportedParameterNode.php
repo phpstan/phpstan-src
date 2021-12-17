@@ -58,7 +58,7 @@ class ExportedParameterNode implements ExportedNode, JsonSerializable
 			$properties['type'],
 			$properties['byRef'],
 			$properties['variadic'],
-			$properties['hasDefault']
+			$properties['hasDefault'],
 		);
 	}
 
@@ -91,7 +91,7 @@ class ExportedParameterNode implements ExportedNode, JsonSerializable
 			$data['type'],
 			$data['byRef'],
 			$data['variadic'],
-			$data['hasDefault']
+			$data['hasDefault'],
 		);
 	}
 

@@ -125,6 +125,11 @@
 	<rule ref="Consistence.NamingConventions.ValidVariableName.NotCamelCaps">
 		<exclude-pattern>src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php</exclude-pattern>
 	</rule>
+	<rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInCall">
+		<properties>
+			<property name="enable" value="true"/>
+		</properties>
+	</rule>
 	<exclude-pattern>tests/*/data</exclude-pattern>
 	<exclude-pattern>tests/e2e/resultCache_1.php</exclude-pattern>
 	<exclude-pattern>tests/e2e/resultCache_2.php</exclude-pattern>

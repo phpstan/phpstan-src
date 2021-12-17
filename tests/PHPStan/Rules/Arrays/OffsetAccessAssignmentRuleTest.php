@@ -71,7 +71,7 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 					'Cannot assign new offset to OffsetAccessAssignment\ObjectWithOffsetAccess.',
 					81,
 				],
-			]
+			],
 		);
 	}
 
@@ -113,7 +113,7 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 					'Cannot assign new offset to OffsetAccessAssignment\ObjectWithOffsetAccess.',
 					81,
 				],
-			]
+			],
 		);
 	}
 

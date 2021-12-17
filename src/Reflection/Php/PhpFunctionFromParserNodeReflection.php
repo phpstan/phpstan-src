@@ -136,7 +136,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 					$this->isVariadic(),
 					$this->getReturnType(),
 					$this->phpDocReturnType ?? new MixedType(),
-					$this->realReturnType
+					$this->realReturnType,
 				),
 			];
 		}
@@ -170,7 +170,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 					? PassedByReference::createCreatesNewVariable()
 					: PassedByReference::createNo(),
 				$this->realParameterDefaultValues[$parameter->var->name] ?? null,
-				$parameter->variadic
+				$parameter->variadic,
 			);
 		}
 

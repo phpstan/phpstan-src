@@ -63,7 +63,7 @@ final class MissingClassConstantTypehintRule implements Rule
 				'Constant %s::%s type has no value type specified in iterable type %s.',
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
-				$iterableTypeDescription
+				$iterableTypeDescription,
 			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
@@ -73,7 +73,7 @@ final class MissingClassConstantTypehintRule implements Rule
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
 				$name,
-				implode(', ', $genericTypeNames)
+				implode(', ', $genericTypeNames),
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
@@ -82,7 +82,7 @@ final class MissingClassConstantTypehintRule implements Rule
 				'Constant %s::%s type has no signature specified for %s.',
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
-				$callableType->describe(VerbosityLevel::typeOnly())
+				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

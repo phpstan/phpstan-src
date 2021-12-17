@@ -141,7 +141,7 @@ class ResultCacheEndToEndTest extends TestCase
 			'%s %s analyse -c %s -l 5 --no-progress --error-format json lib 2>&1',
 			escapeshellarg(PHP_BINARY),
 			escapeshellarg(__DIR__ . '/../../bin/phpstan'),
-			escapeshellarg(__DIR__ . '/phpstan.neon')
+			escapeshellarg(__DIR__ . '/phpstan.neon'),
 		), $outputLines, $exitCode);
 		$output = implode("\n", $outputLines);
 

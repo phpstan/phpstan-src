@@ -50,7 +50,7 @@ class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropert
 			$this->propertyReflection,
 			$this->resolvedDeclaringClass,
 			false,
-			$this->transformStaticTypeCallback
+			$this->transformStaticTypeCallback,
 		);
 	}
 
@@ -68,7 +68,7 @@ class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropert
 
 		return $this->transformedProperty = new ResolvedPropertyReflection(
 			$this->transformPropertyWithStaticType($this->resolvedDeclaringClass, $this->propertyReflection),
-			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap
+			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap,
 		);
 	}
 
@@ -78,7 +78,7 @@ class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropert
 			$this->propertyReflection,
 			$this->resolvedDeclaringClass,
 			$this->resolveTemplateTypeMapToBounds,
-			$type
+			$type,
 		);
 	}
 

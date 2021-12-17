@@ -20,10 +20,10 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 				$this->createReflectionProvider(),
 				$this->getTypeSpecifier(),
 				[],
-				$this->treatPhpDocTypesAsCertain
+				$this->treatPhpDocTypesAsCertain,
 			),
 			true,
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		);
 	}
 

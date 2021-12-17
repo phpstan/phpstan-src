@@ -133,7 +133,7 @@ class PhpDocBlock
 			__FUNCTION__,
 			$explicit,
 			[],
-			[]
+			[],
 		);
 	}
 
@@ -163,7 +163,7 @@ class PhpDocBlock
 			__FUNCTION__,
 			$explicit,
 			[],
-			[]
+			[],
 		);
 	}
 
@@ -193,7 +193,7 @@ class PhpDocBlock
 			__FUNCTION__,
 			$explicit,
 			$originalPositionalParameterNames,
-			$newPositionalParameterNames
+			$newPositionalParameterNames,
 		);
 	}
 
@@ -222,7 +222,7 @@ class PhpDocBlock
 			$getMethodName,
 			$resolveMethodName,
 			$explicit ?? $docComment !== null,
-			$newPositionalParameterNames
+			$newPositionalParameterNames,
 		);
 
 		return new self(
@@ -232,7 +232,7 @@ class PhpDocBlock
 			$trait,
 			$explicit ?? true,
 			self::remapParameterNames($originalPositionalParameterNames, $newPositionalParameterNames),
-			$docBlocksFromParents
+			$docBlocksFromParents,
 		);
 	}
 
@@ -282,7 +282,7 @@ class PhpDocBlock
 				$getMethodName,
 				$resolveMethodName,
 				$explicit,
-				$positionalParameterNames
+				$positionalParameterNames,
 			);
 
 			if ($oneResult === null) { // Null if it is private or from a wrong trait.
@@ -374,7 +374,7 @@ class PhpDocBlock
 				$classReflection->getFileNameWithPhpDocs(),
 				$explicit,
 				$positionalParameterNames,
-				$positionalMethodParameterNames
+				$positionalMethodParameterNames,
 			);
 		}
 

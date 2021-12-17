@@ -35,7 +35,7 @@ class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		$callbackReturnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$functionCall->getArgs(),
-			$callbackType->getCallableParametersAcceptors($scope)
+			$callbackType->getCallableParametersAcceptors($scope),
 		)->getReturnType();
 
 		if (isset($functionCall->getArgs()[2])) {

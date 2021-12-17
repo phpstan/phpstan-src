@@ -106,7 +106,7 @@ class StubValidator
 					$analysedFiles,
 					$ruleRegistry,
 					static function (): void {
-					}
+					},
 				)->getErrors();
 				foreach ($tmpErrors as $tmpError) {
 					$errors[] = $tmpError->withoutTip();
@@ -167,12 +167,12 @@ class StubValidator
 			new IncompatiblePhpDocTypeRule(
 				$fileTypeMapper,
 				$genericObjectTypeCheck,
-				$unresolvableTypeHelper
+				$unresolvableTypeHelper,
 			),
 			new IncompatiblePropertyPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper),
 			new InvalidPhpDocTagValueRule(
 				$container->getByType(Lexer::class),
-				$container->getByType(PhpDocParser::class)
+				$container->getByType(PhpDocParser::class),
 			),
 			new InvalidThrowsPhpDocValueRule($fileTypeMapper),
 

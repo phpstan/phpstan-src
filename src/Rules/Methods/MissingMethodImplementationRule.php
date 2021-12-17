@@ -50,7 +50,7 @@ class MissingMethodImplementationRule implements Rule
 				$classReflection->getDisplayName(),
 				$method->getName(),
 				$declaringClass->isInterface() ? 'interface' : 'class',
-				$declaringClass->getName()
+				$declaringClass->getName(),
 			))->nonIgnorable()->build();
 		}
 

@@ -104,7 +104,7 @@ class GenericAncestorsCheck
 				$classNotGenericMessage,
 				$notEnoughTypesMessage,
 				$extraTypesMessage,
-				$typeIsNotSubtypeMessage
+				$typeIsNotSubtypeMessage,
 			);
 			$messages = array_merge($messages, $genericObjectTypeCheckMessages);
 
@@ -119,7 +119,7 @@ class GenericAncestorsCheck
 			$variance = TemplateTypeVariance::createInvariant();
 			$messageContext = sprintf(
 				$invalidVarianceMessage,
-				$ancestorType->describe(VerbosityLevel::typeOnly())
+				$ancestorType->describe(VerbosityLevel::typeOnly()),
 			);
 			foreach ($this->varianceCheck->check($variance, $ancestorType, $messageContext) as $message) {
 				$messages[] = $message;
@@ -143,7 +143,7 @@ class GenericAncestorsCheck
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$genericClassInNonGenericObjectType,
 					$unusedName,
-					implode(', ', array_keys($unusedNameClassReflection->getTemplateTypeMap()->getTypes()))
+					implode(', ', array_keys($unusedNameClassReflection->getTemplateTypeMap()->getTypes())),
 				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 			}
 		}

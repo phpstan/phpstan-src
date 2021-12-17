@@ -43,7 +43,7 @@ class EnumSanityRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Enum %s contains abstract method %s().',
 					$node->namespacedName->toString(),
-					$methodNode->name->name
+					$methodNode->name->name,
 				))->line($methodNode->getLine())->nonIgnorable()->build();
 			}
 
@@ -53,18 +53,18 @@ class EnumSanityRule implements Rule
 				if ($lowercasedMethodName === '__construct') {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s contains constructor.',
-						$node->namespacedName->toString()
+						$node->namespacedName->toString(),
 					))->line($methodNode->getLine())->nonIgnorable()->build();
 				} elseif ($lowercasedMethodName === '__destruct') {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s contains destructor.',
-						$node->namespacedName->toString()
+						$node->namespacedName->toString(),
 					))->line($methodNode->getLine())->nonIgnorable()->build();
 				} elseif (!array_key_exists($lowercasedMethodName, self::ALLOWED_MAGIC_METHODS)) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s contains magic method %s().',
 						$node->namespacedName->toString(),
-						$methodNode->name->name
+						$methodNode->name->name,
 					))->line($methodNode->getLine())->nonIgnorable()->build();
 				}
 			}
@@ -73,7 +73,7 @@ class EnumSanityRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Enum %s cannot redeclare native method %s().',
 					$node->namespacedName->toString(),
-					$methodNode->name->name
+					$methodNode->name->name,
 				))->line($methodNode->getLine())->nonIgnorable()->build();
 			}
 
@@ -88,7 +88,7 @@ class EnumSanityRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Enum %s cannot redeclare native method %s().',
 				$node->namespacedName->toString(),
-				$methodNode->name->name
+				$methodNode->name->name,
 			))->line($methodNode->getLine())->nonIgnorable()->build();
 		}
 
@@ -99,7 +99,7 @@ class EnumSanityRule implements Rule
 		) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Backed enum %s can have only "int" or "string" type.',
-				$node->namespacedName->toString()
+				$node->namespacedName->toString(),
 			))->line($node->scalarType->getLine())->nonIgnorable()->build();
 		}
 

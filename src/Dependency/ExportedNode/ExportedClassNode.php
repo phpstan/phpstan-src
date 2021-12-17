@@ -127,7 +127,7 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 			$properties['implements'],
 			$properties['usedTraits'],
 			$properties['traitUseAdaptations'],
-			$properties['statements']
+			$properties['statements'],
 		);
 	}
 
@@ -177,7 +177,7 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 				$nodeType = $node['type'];
 
 				return $nodeType::decode($node['data']);
-			}, $data['statements'])
+			}, $data['statements']),
 		);
 	}
 

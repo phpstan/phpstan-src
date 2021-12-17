@@ -41,7 +41,7 @@ class VariableCloningRule implements Rule
 			'Cloning object of an unknown class %s.',
 			static function (Type $type): bool {
 				return $type->isCloneable()->yes();
-			}
+			},
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -56,7 +56,7 @@ class VariableCloningRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot clone non-object variable $%s of type %s.',
 					$node->expr->name,
-					$type->describe(VerbosityLevel::typeOnly())
+					$type->describe(VerbosityLevel::typeOnly()),
 				))->build(),
 			];
 		}
@@ -64,7 +64,7 @@ class VariableCloningRule implements Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Cannot clone %s.',
-				$type->describe(VerbosityLevel::typeOnly())
+				$type->describe(VerbosityLevel::typeOnly()),
 			))->build(),
 		];
 	}

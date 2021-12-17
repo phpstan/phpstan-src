@@ -23,7 +23,7 @@ class ErrorType extends MixedType
 			},
 			static function (): string {
 				return '*ERROR*';
-			}
+			},
 		);
 	}
 

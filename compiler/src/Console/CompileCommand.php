@@ -119,7 +119,7 @@ final class CompileCommand extends Command
 
 			$renameSuccess = rename(
 				$path,
-				dirname($path) . '/' . $stubFile->getBasename('.php') . '.stub'
+				dirname($path) . '/' . $stubFile->getBasename('.php') . '.stub',
 			);
 			if ($renameSuccess === false) {
 				throw new ShouldNotHappenException(sprintf('Could not rename %s', $path));
@@ -156,7 +156,7 @@ final class CompileCommand extends Command
 
 			$renameSuccess = rename(
 				$path,
-				dirname($path) . '/' . $stubFile->getBasename('.php') . '.stub'
+				dirname($path) . '/' . $stubFile->getBasename('.php') . '.stub',
 			);
 			if ($renameSuccess === false) {
 				throw new ShouldNotHappenException(sprintf('Could not rename %s', $path));
@@ -246,7 +246,7 @@ php;
 			'patch -d %s %s %s',
 			escapeshellarg($this->buildDir),
 			escapeshellarg($originalFile),
-			escapeshellarg($patchFile)
+			escapeshellarg($patchFile),
 		), $outputLines, $exitCode);
 		if ($exitCode === 0) {
 			return;

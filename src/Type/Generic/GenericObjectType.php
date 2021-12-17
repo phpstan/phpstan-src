@@ -56,7 +56,7 @@ class GenericObjectType extends ObjectType
 			parent::describe($level),
 			implode(', ', array_map(static function (Type $type) use ($level): string {
 				return $type->describe($level);
-			}, $this->types))
+			}, $this->types)),
 		);
 	}
 
@@ -265,7 +265,7 @@ class GenericObjectType extends ObjectType
 			$variance = $positionVariance->compose(
 				isset($typeList[$i]) && $typeList[$i] instanceof TemplateType
 					? $typeList[$i]->getVariance()
-					: TemplateTypeVariance::createInvariant()
+					: TemplateTypeVariance::createInvariant(),
 			);
 			foreach ($type->getReferencedTemplateTypes($variance) as $reference) {
 				$references[] = $reference;
@@ -306,7 +306,7 @@ class GenericObjectType extends ObjectType
 		return new self(
 			$className,
 			$types,
-			$subtractedType
+			$subtractedType,
 		);
 	}
 
@@ -323,7 +323,7 @@ class GenericObjectType extends ObjectType
 		return new self(
 			$properties['className'],
 			$properties['types'],
-			$properties['subtractedType'] ?? null
+			$properties['subtractedType'] ?? null,
 		);
 	}
 

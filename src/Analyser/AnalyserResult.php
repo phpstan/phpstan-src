@@ -53,7 +53,7 @@ class AnalyserResult
 					$b->getLine(),
 					$b->getMessage(),
 				];
-			}
+			},
 		);
 
 		$this->errors = $errors;

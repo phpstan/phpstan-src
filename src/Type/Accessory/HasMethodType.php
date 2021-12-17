@@ -109,7 +109,7 @@ class HasMethodType implements AccessoryType, CompoundType
 			false,
 			static function (Type $type): Type {
 				return $type;
-			}
+			},
 		);
 	}
 

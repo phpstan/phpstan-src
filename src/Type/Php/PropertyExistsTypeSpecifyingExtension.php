@@ -65,7 +65,7 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 		} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($objectType)->yes()) {
 			$propertyNode = new PropertyFetch(
 				$node->getArgs()[0]->value,
-				new Identifier($propertyNameType->getValue())
+				new Identifier($propertyNameType->getValue()),
 			);
 		} else {
 			return new SpecifiedTypes([], []);
@@ -86,7 +86,7 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 			]),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

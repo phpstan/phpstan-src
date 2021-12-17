@@ -36,7 +36,7 @@ class TypeAliasTag
 	{
 		return new TypeAlias(
 			$this->typeNode,
-			$this->nameScope
+			$this->nameScope,
 		);
 	}
 

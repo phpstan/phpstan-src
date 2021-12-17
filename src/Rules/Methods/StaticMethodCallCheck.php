@@ -81,7 +81,7 @@ class StaticMethodCallCheck
 							RuleErrorBuilder::message(sprintf(
 								'Calling %s::%s() outside of class scope.',
 								$className,
-								$methodName
+								$methodName,
 							))->build(),
 						],
 						null,
@@ -95,7 +95,7 @@ class StaticMethodCallCheck
 							RuleErrorBuilder::message(sprintf(
 								'Calling %s::%s() outside of class scope.',
 								$className,
-								$methodName
+								$methodName,
 							))->build(),
 						],
 						null,
@@ -110,7 +110,7 @@ class StaticMethodCallCheck
 								$scope->getClassReflection()->getDisplayName(),
 								$scope->getFunctionName(),
 								$methodName,
-								$scope->getClassReflection()->getDisplayName()
+								$scope->getClassReflection()->getDisplayName(),
 							))->build(),
 						],
 						null,
@@ -133,7 +133,7 @@ class StaticMethodCallCheck
 							RuleErrorBuilder::message(sprintf(
 								'Call to static method %s() on an unknown class %s.',
 								$methodName,
-								$className
+								$className,
 							))->discoveringSymbolsTip()->build(),
 						],
 						null,
@@ -159,7 +159,7 @@ class StaticMethodCallCheck
 				sprintf('Call to static method %s() on an unknown class %%s.', SprintfHelper::escapeFormatString($methodName)),
 				static function (Type $type) use ($methodName): bool {
 					return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();
-				}
+				},
 			);
 			$classType = $classTypeResult->getType();
 			if ($classType instanceof ErrorType) {
@@ -188,7 +188,7 @@ class StaticMethodCallCheck
 					RuleErrorBuilder::message(sprintf(
 						'Cannot call static method %s() on %s.',
 						$methodName,
-						$typeForDescribe->describe(VerbosityLevel::typeOnly())
+						$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 					))->build(),
 				]),
 				null,
@@ -215,7 +215,7 @@ class StaticMethodCallCheck
 					RuleErrorBuilder::message(sprintf(
 						'Call to an undefined static method %s::%s().',
 						$typeForDescribe->describe(VerbosityLevel::typeOnly()),
-						$methodName
+						$methodName,
 					))->build(),
 				]),
 				null,
@@ -240,7 +240,7 @@ class StaticMethodCallCheck
 						RuleErrorBuilder::message(sprintf(
 							'Static call to instance method %s::%s().',
 							$method->getDeclaringClass()->getDisplayName(),
-							$method->getName()
+							$method->getName(),
 						))->build(),
 					]),
 					$method,
@@ -255,7 +255,7 @@ class StaticMethodCallCheck
 					$method->isPrivate() ? 'private' : 'protected',
 					$method->isStatic() ? 'static method' : 'method',
 					$method->getName(),
-					$method->getDeclaringClass()->getDisplayName()
+					$method->getDeclaringClass()->getDisplayName(),
 				))->build(),
 			]);
 		}
@@ -267,7 +267,7 @@ class StaticMethodCallCheck
 						'Cannot call abstract%s method %s::%s().',
 						$method->isStatic() ? ' static' : '',
 						$method->getDeclaringClass()->getDisplayName(),
-						$method->getName()
+						$method->getName(),
 					))->build(),
 				],
 				$method,
@@ -277,7 +277,7 @@ class StaticMethodCallCheck
 		$lowercasedMethodName = SprintfHelper::escapeFormatString(sprintf(
 			'%s %s',
 			$method->isStatic() ? 'static method' : 'method',
-			$method->getDeclaringClass()->getDisplayName() . '::' . $method->getName() . '()'
+			$method->getDeclaringClass()->getDisplayName() . '::' . $method->getName() . '()',
 		));
 
 		if (
@@ -287,7 +287,7 @@ class StaticMethodCallCheck
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Call to %s with incorrect case: %s',
 				$lowercasedMethodName,
-				$methodName
+				$methodName,
 			))->build();
 		}
 

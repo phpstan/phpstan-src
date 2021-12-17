@@ -32,7 +32,7 @@ class EnumCaseAttributesRule implements Rule
 			$scope,
 			$node->attrGroups,
 			Attribute::TARGET_CLASS_CONSTANT,
-			'class constant'
+			'class constant',
 		);
 	}
 

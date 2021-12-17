@@ -64,7 +64,7 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 				$defaultValueType->describe($verbosityLevel),
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
-				$parameterType->describe($verbosityLevel)
+				$parameterType->describe($verbosityLevel),
 			))->line($param->getLine())->build();
 		}
 

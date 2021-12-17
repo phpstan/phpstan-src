@@ -111,7 +111,7 @@ class AnalyseApplication
 				$projectConfigFile,
 				$stdOutput,
 				$errorOutput,
-				$input
+				$input,
 			);
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
 			$analyserResult = $resultCacheResult->getAnalyserResult();
@@ -144,7 +144,7 @@ class AnalyseApplication
 			[],
 			$defaultLevelUsed,
 			$projectConfigFile,
-			$savedResultCache
+			$savedResultCache,
 		);
 	}
 

@@ -54,7 +54,7 @@ class DirectClassReflectionExtensionRegistryProvider implements ClassReflectionE
 		return new ClassReflectionExtensionRegistry(
 			$this->broker,
 			$this->propertiesClassReflectionExtensions,
-			$this->methodsClassReflectionExtensions
+			$this->methodsClassReflectionExtensions,
 		);
 	}
 

@@ -71,7 +71,7 @@ class InvalidPhpDocTagValueRule implements Rule
 				'PHPDoc tag %s has invalid value (%s): %s',
 				$phpDocTag->name,
 				$phpDocTag->value->value,
-				$phpDocTag->value->exception->getMessage()
+				$phpDocTag->value->exception->getMessage(),
 			))->build();
 		}
 

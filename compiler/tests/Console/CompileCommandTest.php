@@ -30,8 +30,7 @@ final class CompileCommandTest extends TestCase
         }
     }
 }
-EOT
-		);
+EOT);
 
 		$process = $this->createMock(Process::class);
 

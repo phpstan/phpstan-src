@@ -25,7 +25,7 @@ class ConstantRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Constant %s not found.',
-					(string) $node->name
+					(string) $node->name,
 				))->discoveringSymbolsTip()->build(),
 			];
 		}

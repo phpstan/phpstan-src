@@ -55,7 +55,7 @@ class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFunction
 				new ConstantStringType('none'),
 				new ConstantStringType('long'),
 				new ConstantStringType('entity'),
-				...$ranges
+				...$ranges,
 			);
 		}
 

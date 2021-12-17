@@ -71,7 +71,7 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 			},
 			function (): string {
 				return sprintf('%s', $this->value);
-			}
+			},
 		);
 	}
 

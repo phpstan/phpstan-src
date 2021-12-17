@@ -41,7 +41,7 @@ class FileNodeTest extends RuleTestCase
 
 				return [
 					RuleErrorBuilder::message(
-						sprintf('First node in file %s is: %s', $pathHelper->getRelativePath($scope->getFile()), get_class($nodes[0]))
+						sprintf('First node in file %s is: %s', $pathHelper->getRelativePath($scope->getFile()), get_class($nodes[0])),
 					)->build(),
 				];
 			}

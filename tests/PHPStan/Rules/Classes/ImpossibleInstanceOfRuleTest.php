@@ -179,7 +179,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					433,
 					$tipText,
 				],
-			]
+			],
 		);
 	}
 
@@ -272,7 +272,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					432,
 					$tipText,
 				],
-			]
+			],
 		);
 	}
 

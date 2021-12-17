@@ -95,7 +95,7 @@ class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 			$properties['public'],
 			$properties['private'],
 			$properties['static'],
-			$properties['readonly']
+			$properties['readonly'],
 		);
 	}
 
@@ -112,7 +112,7 @@ class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 			$data['public'],
 			$data['private'],
 			$data['static'],
-			$data['readonly']
+			$data['readonly'],
 		);
 	}
 

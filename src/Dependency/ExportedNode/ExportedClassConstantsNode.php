@@ -79,7 +79,7 @@ class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 			$properties['public'],
 			$properties['private'],
 			$properties['final'],
-			$properties['phpDoc']
+			$properties['phpDoc'],
 		);
 	}
 
@@ -99,7 +99,7 @@ class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 			$data['public'],
 			$data['private'],
 			$data['final'],
-			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null
+			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null,
 		);
 	}
 

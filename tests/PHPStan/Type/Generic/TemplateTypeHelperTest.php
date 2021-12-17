@@ -17,19 +17,19 @@ class TemplateTypeHelperTest extends PHPStanTestCase
 			TemplateTypeScope::createWithFunction('a'),
 			'T',
 			null,
-			TemplateTypeVariance::createInvariant()
+			TemplateTypeVariance::createInvariant(),
 		);
 
 		$type = TemplateTypeHelper::resolveTemplateTypes(
 			$templateType,
 			new TemplateTypeMap([
 				'T' => $templateType,
-			])
+			]),
 		);
 
 		$this->assertEquals(
 			'T (function a(), parameter)',
-			$type->describe(VerbosityLevel::precise())
+			$type->describe(VerbosityLevel::precise()),
 		);
 
 		$type = TemplateTypeHelper::resolveTemplateTypes(
@@ -39,12 +39,12 @@ class TemplateTypeHelperTest extends PHPStanTestCase
 					new ObjectType(DateTime::class),
 					$templateType,
 				]),
-			])
+			]),
 		);
 
 		$this->assertEquals(
 			'DateTime&T (function a(), parameter)',
-			$type->describe(VerbosityLevel::precise())
+			$type->describe(VerbosityLevel::precise()),
 		);
 	}
 

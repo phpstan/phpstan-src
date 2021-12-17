@@ -52,7 +52,7 @@ class InvalidThrowsPhpDocValueRule implements Rule
 			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 			$functionName,
-			$docComment->getText()
+			$docComment->getText(),
 		);
 
 		if ($resolvedPhpDoc->getThrowsTag() === null) {
@@ -72,7 +72,7 @@ class InvalidThrowsPhpDocValueRule implements Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag @throws with type %s is not subtype of Throwable',
-				$phpDocThrowsType->describe(VerbosityLevel::typeOnly())
+				$phpDocThrowsType->describe(VerbosityLevel::typeOnly()),
 			))->build(),
 		];
 	}

@@ -79,7 +79,7 @@ class NativeParameterReflection implements ParameterReflection
 			$properties['type'],
 			$properties['passedByReference'],
 			$properties['variadic'],
-			$properties['defaultValue']
+			$properties['defaultValue'],
 		);
 	}
 

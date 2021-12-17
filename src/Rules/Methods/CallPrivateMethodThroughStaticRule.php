@@ -54,7 +54,7 @@ class CallPrivateMethodThroughStaticRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Unsafe call to private method %s::%s() through static::.',
 				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName()
+				$method->getName(),
 			))->build(),
 		];
 	}

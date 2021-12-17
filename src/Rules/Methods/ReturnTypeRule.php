@@ -57,24 +57,24 @@ class ReturnTypeRule implements Rule
 			sprintf(
 				'Method %s::%s() should return %%s but empty return statement found.',
 				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName()
+				$method->getName(),
 			),
 			sprintf(
 				'Method %s::%s() with return type void returns %%s but should not return anything.',
 				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName()
+				$method->getName(),
 			),
 			sprintf(
 				'Method %s::%s() should return %%s but returns %%s.',
 				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName()
+				$method->getName(),
 			),
 			sprintf(
 				'Method %s::%s() should never return but return statement found.',
 				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName()
+				$method->getName(),
 			),
-			$reflection !== null && $reflection->isGenerator()
+			$reflection !== null && $reflection->isGenerator(),
 		);
 	}
 

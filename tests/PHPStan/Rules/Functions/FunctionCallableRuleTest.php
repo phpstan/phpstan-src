@@ -23,7 +23,7 @@ class FunctionCallableRuleTest extends RuleTestCase
 			new RuleLevelHelper($reflectionProvider, true, false, true, false),
 			new PhpVersion(PHP_VERSION_ID),
 			true,
-			true
+			true,
 		);
 	}
 

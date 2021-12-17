@@ -53,12 +53,12 @@ class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 		return $this->typeSpecifier->create(
 			new Node\Expr\ConstFetch(
-				new Node\Name\FullyQualified($constantName->getValue())
+				new Node\Name\FullyQualified($constantName->getValue()),
 			),
 			new MixedType(),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

@@ -42,7 +42,7 @@ class ExistingClassInTraitUseRule implements Rule
 		$messages = $this->classCaseSensitivityCheck->checkClassNames(
 			array_map(static function (Node\Name $traitName): ClassNameNodePair {
 				return new ClassNameNodePair((string) $traitName, $traitName);
-			}, $node->traits)
+			}, $node->traits),
 		);
 
 		if (!$scope->isInClass()) {

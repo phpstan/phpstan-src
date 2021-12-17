@@ -175,7 +175,7 @@ class PhpMethodReflection implements MethodReflection
 				$prototypeMethod->isAbstract(),
 				$prototypeMethod->isFinal(),
 				$prototypeDeclaringClass->getNativeMethod($prototypeMethod->getName())->getVariants(),
-				$tentativeReturnType
+				$tentativeReturnType,
 			);
 		} catch (ReflectionException $e) {
 			return $this;
@@ -241,7 +241,7 @@ class PhpMethodReflection implements MethodReflection
 					$this->isVariadic(),
 					$this->getReturnType(),
 					$this->getPhpDocReturnType(),
-					$this->getNativeReturnType()
+					$this->getNativeReturnType(),
 				),
 			];
 		}
@@ -259,7 +259,7 @@ class PhpMethodReflection implements MethodReflection
 				return new PhpParameterReflection(
 					$reflection,
 					$this->phpDocParameterTypes[$reflection->getName()] ?? null,
-					$this->getDeclaringClass()->getName()
+					$this->getDeclaringClass()->getName(),
 				);
 			}, $this->reflection->getParameters());
 		}
@@ -394,7 +394,7 @@ class PhpMethodReflection implements MethodReflection
 			$this->returnType = TypehintHelper::decideTypeFromReflection(
 				$this->reflection->getReturnType(),
 				$this->phpDocReturnType,
-				$this->declaringClass->getName()
+				$this->declaringClass->getName(),
 			);
 		}
 
@@ -416,7 +416,7 @@ class PhpMethodReflection implements MethodReflection
 			$this->nativeReturnType = TypehintHelper::decideTypeFromReflection(
 				$this->reflection->getReturnType(),
 				null,
-				$this->declaringClass->getName()
+				$this->declaringClass->getName(),
 			);
 		}
 

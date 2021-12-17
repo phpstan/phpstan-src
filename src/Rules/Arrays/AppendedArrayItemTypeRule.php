@@ -84,7 +84,7 @@ class AppendedArrayItemTypeRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Array (%s) does not accept %s.',
 					$assignedToType->describe($verbosityLevel),
-					$assignedValueType->describe($verbosityLevel)
+					$assignedValueType->describe($verbosityLevel),
 				))->build(),
 			];
 		}

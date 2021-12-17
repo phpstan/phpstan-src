@@ -72,7 +72,7 @@ class TemplateTypeScope
 	{
 		return new self(
 			$properties['className'],
-			$properties['functionName']
+			$properties['functionName'],
 		);
 	}
 

@@ -45,7 +45,7 @@ final class MissingPropertyTypehintRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Property %s::$%s has no type specified.',
 					$propertyReflection->getDeclaringClass()->getDisplayName(),
-					$node->getName()
+					$node->getName(),
 				))->build(),
 			];
 		}
@@ -57,7 +57,7 @@ final class MissingPropertyTypehintRule implements Rule
 				'Property %s::$%s type has no value type specified in iterable type %s.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-				$iterableTypeDescription
+				$iterableTypeDescription,
 			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
@@ -67,7 +67,7 @@ final class MissingPropertyTypehintRule implements Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
 				$name,
-				implode(', ', $genericTypeNames)
+				implode(', ', $genericTypeNames),
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
@@ -76,7 +76,7 @@ final class MissingPropertyTypehintRule implements Rule
 				'Property %s::$%s type has no signature specified for %s.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-				$callableType->describe(VerbosityLevel::typeOnly())
+				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

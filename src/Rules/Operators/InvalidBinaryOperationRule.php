@@ -83,7 +83,7 @@ class InvalidBinaryOperationRule implements Rule
 				$scope,
 				$left,
 				'',
-				$callback
+				$callback,
 			)->getType();
 			if ($leftType instanceof ErrorType) {
 				return [];
@@ -93,7 +93,7 @@ class InvalidBinaryOperationRule implements Rule
 				$scope,
 				$right,
 				'',
-				$callback
+				$callback,
 			)->getType();
 			if ($rightType instanceof ErrorType) {
 				return [];
@@ -116,7 +116,7 @@ class InvalidBinaryOperationRule implements Rule
 					'Binary operation "%s" between %s and %s results in an error.',
 					substr(substr($this->printer->prettyPrintExpr($newNode), strlen($leftName) + 2), 0, -(strlen($rightName) + 2)),
 					$scope->getType($left)->describe(VerbosityLevel::value()),
-					$scope->getType($right)->describe(VerbosityLevel::value())
+					$scope->getType($right)->describe(VerbosityLevel::value()),
 				))->line($left->getLine())->build(),
 			];
 		}

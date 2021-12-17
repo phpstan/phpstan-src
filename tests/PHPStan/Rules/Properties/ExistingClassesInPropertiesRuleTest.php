@@ -26,7 +26,7 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 			new UnresolvableTypeHelper(),
 			new PhpVersion($this->phpVersion),
 			true,
-			false
+			false,
 		);
 	}
 
@@ -89,7 +89,7 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 					33,
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
-			]
+			],
 		);
 	}
 

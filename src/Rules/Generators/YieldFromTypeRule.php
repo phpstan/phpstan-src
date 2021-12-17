@@ -50,7 +50,7 @@ class YieldFromTypeRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$messagePattern,
-					$exprType->describe(VerbosityLevel::typeOnly())
+					$exprType->describe(VerbosityLevel::typeOnly()),
 				))->line($node->expr->getLine())->build(),
 			];
 		} elseif (
@@ -61,7 +61,7 @@ class YieldFromTypeRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$messagePattern,
-					$exprType->describe(VerbosityLevel::typeOnly())
+					$exprType->describe(VerbosityLevel::typeOnly()),
 				))->line($node->expr->getLine())->build(),
 			];
 		}
@@ -86,7 +86,7 @@ class YieldFromTypeRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects key type %s, %s given.',
 				$returnType->getIterableKeyType()->describe($verbosityLevel),
-				$exprType->getIterableKeyType()->describe($verbosityLevel)
+				$exprType->getIterableKeyType()->describe($verbosityLevel),
 			))->line($node->expr->getLine())->build();
 		}
 		if (!$this->ruleLevelHelper->accepts($returnType->getIterableValueType(), $exprType->getIterableValueType(), $scope->isDeclareStrictTypes())) {
@@ -94,7 +94,7 @@ class YieldFromTypeRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects value type %s, %s given.',
 				$returnType->getIterableValueType()->describe($verbosityLevel),
-				$exprType->getIterableValueType()->describe($verbosityLevel)
+				$exprType->getIterableValueType()->describe($verbosityLevel),
 			))->line($node->expr->getLine())->build();
 		}
 
@@ -123,13 +123,13 @@ class YieldFromTypeRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects delegated TSend type %s, %s given.',
 				$exprSendType->describe(VerbosityLevel::typeOnly()),
-				$thisSendType->describe(VerbosityLevel::typeOnly())
+				$thisSendType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		} elseif ($this->reportMaybes && !$isSuperType->yes()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects delegated TSend type %s, %s given.',
 				$exprSendType->describe(VerbosityLevel::typeOnly()),
-				$thisSendType->describe(VerbosityLevel::typeOnly())
+				$thisSendType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

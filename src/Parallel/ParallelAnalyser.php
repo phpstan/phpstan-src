@@ -140,7 +140,7 @@ class ParallelAnalyser
 				'worker',
 				$projectConfigFile,
 				$commandOptions,
-				$input
+				$input,
 			), $loop, $this->processTimeout);
 			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$exportedNodes, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
 				foreach ($json['errors'] as $jsonError) {
@@ -219,7 +219,7 @@ class ParallelAnalyser
 			$internalErrors,
 			$internalErrorsCount === 0 ? $dependencies : null,
 			$exportedNodes,
-			$reachedInternalErrorsCountLimit
+			$reachedInternalErrorsCountLimit,
 		);
 	}
 

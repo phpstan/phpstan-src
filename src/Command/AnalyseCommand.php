@@ -153,7 +153,7 @@ class AnalyseCommand extends Command
 				$level,
 				$allowXdebug,
 				true,
-				$debugEnabled
+				$debugEnabled,
 			);
 		} catch (InceptionNotSuccessfulException $e) {
 			return 1;
@@ -204,7 +204,7 @@ class AnalyseCommand extends Command
 				$errorFormat,
 				implode(', ', array_map(static function (string $name): string {
 					return substr($name, strlen('errorFormatter.'));
-				}, $container->findServiceNamesByType(ErrorFormatter::class)))
+				}, $container->findServiceNamesByType(ErrorFormatter::class))),
 			));
 			return 1;
 		}
@@ -249,7 +249,7 @@ class AnalyseCommand extends Command
 				$debug,
 				$inceptionResult->getProjectConfigFile(),
 				$inceptionResult->getProjectConfigArray(),
-				$input
+				$input,
 			);
 		} catch (Throwable $t) {
 			if ($debug) {
@@ -258,7 +258,7 @@ class AnalyseCommand extends Command
 					get_class($t),
 					$t->getMessage(),
 					$t->getFile(),
-					$t->getLine()
+					$t->getLine(),
 				));
 				$inceptionResult->getStdOutput()->writeLineFormatted('');
 				$inceptionResult->getStdOutput()->writeRaw($t->getTraceAsString());
@@ -372,7 +372,7 @@ class AnalyseCommand extends Command
 					[],
 					$analysisResult->isDefaultLevelUsed(),
 					$analysisResult->getProjectConfigFile(),
-					$analysisResult->isResultCacheSaved()
+					$analysisResult->isResultCacheSaved(),
 				);
 
 				$stdOutput = $inceptionResult->getStdOutput();
@@ -428,7 +428,7 @@ class AnalyseCommand extends Command
 				$analysisResult->getFileSpecificErrors(),
 				$analysisResult->getNotFileSpecificErrors(),
 				count($files),
-				$_SERVER['argv'][0]
+				$_SERVER['argv'][0],
 			);
 		}
 
@@ -436,7 +436,7 @@ class AnalyseCommand extends Command
 		$errorFormatter = $container->getService($errorFormatterServiceName);
 
 		return $inceptionResult->handleReturn(
-			$errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput())
+			$errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput()),
 		);
 	}
 

@@ -23,7 +23,7 @@ class IssetRuleTest extends RuleTestCase
 			new PropertyDescriptor(),
 			new PropertyReflectionFinder(),
 			true,
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		));
 	}
 

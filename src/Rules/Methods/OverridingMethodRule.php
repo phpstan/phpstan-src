@@ -77,7 +77,7 @@ class OverridingMethodRule implements Rule
 								$method->getDeclaringClass()->getDisplayName(),
 								$method->getName(),
 								$parent->getDisplayName(),
-								$parentConstructor->getName()
+								$parentConstructor->getName(),
 							))->nonIgnorable()->build(),
 						], $node, $scope);
 					}
@@ -98,7 +98,7 @@ class OverridingMethodRule implements Rule
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$prototype->getName()
+				$prototype->getName(),
 			))->nonIgnorable()->build();
 		}
 
@@ -109,7 +109,7 @@ class OverridingMethodRule implements Rule
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$prototype->getName()
+					$prototype->getName(),
 				))->nonIgnorable()->build();
 			}
 		} elseif ($method->isStatic()) {
@@ -118,7 +118,7 @@ class OverridingMethodRule implements Rule
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$prototype->getName()
+				$prototype->getName(),
 			))->nonIgnorable()->build();
 		}
 
@@ -130,7 +130,7 @@ class OverridingMethodRule implements Rule
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$prototype->getName()
+					$prototype->getName(),
 				))->nonIgnorable()->build();
 			}
 		} elseif ($method->isPrivate()) {
@@ -139,7 +139,7 @@ class OverridingMethodRule implements Rule
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$prototype->getName()
+				$prototype->getName(),
 			))->nonIgnorable()->build();
 		}
 
@@ -168,7 +168,7 @@ class OverridingMethodRule implements Rule
 					$method->getName(),
 					$prototype->getTentativeReturnType()->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$prototype->getName()
+					$prototype->getName(),
 				))->tip('Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.')->nonIgnorable()->build();
 			}
 		}
@@ -183,7 +183,7 @@ class OverridingMethodRule implements Rule
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName(),
 					$i + 1,
-					$prototypeParameter->getName()
+					$prototypeParameter->getName(),
 				))->nonIgnorable()->build();
 				continue;
 			}
@@ -200,7 +200,7 @@ class OverridingMethodRule implements Rule
 						$i + 1,
 						$prototypeParameter->getName(),
 						$prototype->getDeclaringClass()->getDisplayName(),
-						$prototype->getName()
+						$prototype->getName(),
 					))->nonIgnorable()->build();
 				}
 			} elseif ($methodParameter->passedByReference()->no()) {
@@ -213,7 +213,7 @@ class OverridingMethodRule implements Rule
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$prototype->getName()
+					$prototype->getName(),
 				))->nonIgnorable()->build();
 			}
 
@@ -227,7 +227,7 @@ class OverridingMethodRule implements Rule
 								$i + 1,
 								$methodParameter->getName(),
 								$method->getDeclaringClass()->getDisplayName(),
-								$method->getName()
+								$method->getName(),
 							))->nonIgnorable()->build();
 							continue;
 						}
@@ -241,7 +241,7 @@ class OverridingMethodRule implements Rule
 							$i + 1,
 							$prototypeParameter->getName(),
 							$prototype->getDeclaringClass()->getDisplayName(),
-							$prototype->getName()
+							$prototype->getName(),
 						))->nonIgnorable()->build();
 						continue;
 					} elseif (count($methodParameters) === $i + 1) {
@@ -250,7 +250,7 @@ class OverridingMethodRule implements Rule
 							$i + 1,
 							$methodParameter->getName(),
 							$method->getDeclaringClass()->getDisplayName(),
-							$method->getName()
+							$method->getName(),
 						))->nonIgnorable()->build();
 					}
 				}
@@ -276,7 +276,7 @@ class OverridingMethodRule implements Rule
 							$remainingPrototypeParameter->getName(),
 							$remainingPrototypeParameter->getNativeType()->describe(VerbosityLevel::typeOnly()),
 							$prototype->getDeclaringClass()->getDisplayName(),
-							$prototype->getName()
+							$prototype->getName(),
 						))->nonIgnorable()->build();
 					}
 					break;
@@ -290,7 +290,7 @@ class OverridingMethodRule implements Rule
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$prototype->getName()
+					$prototype->getName(),
 				))->nonIgnorable()->build();
 				continue;
 			}
@@ -305,7 +305,7 @@ class OverridingMethodRule implements Rule
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$prototype->getName()
+					$prototype->getName(),
 				))->nonIgnorable()->build();
 			}
 
@@ -329,7 +329,7 @@ class OverridingMethodRule implements Rule
 						$prototypeParameter->getName(),
 						$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
 						$prototype->getDeclaringClass()->getDisplayName(),
-						$prototype->getName()
+						$prototype->getName(),
 					))->nonIgnorable()->build();
 				}
 				continue;
@@ -351,7 +351,7 @@ class OverridingMethodRule implements Rule
 					$prototypeParameter->getName(),
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$prototype->getName()
+					$prototype->getName(),
 				))->nonIgnorable()->build();
 			} else {
 				$messages[] = RuleErrorBuilder::message(sprintf(
@@ -365,7 +365,7 @@ class OverridingMethodRule implements Rule
 					$prototypeParameter->getName(),
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$prototype->getName()
+					$prototype->getName(),
 				))->nonIgnorable()->build();
 			}
 		}
@@ -389,7 +389,7 @@ class OverridingMethodRule implements Rule
 					$j + 1,
 					$methodParameter->getName(),
 					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName()
+					$method->getName(),
 				))->nonIgnorable()->build();
 				continue;
 			}
@@ -400,7 +400,7 @@ class OverridingMethodRule implements Rule
 					$j + 1,
 					$methodParameter->getName(),
 					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName()
+					$method->getName(),
 				))->nonIgnorable()->build();
 				continue;
 			}
@@ -421,7 +421,7 @@ class OverridingMethodRule implements Rule
 					$method->getName(),
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$prototype->getName()
+					$prototype->getName(),
 				))->nonIgnorable()->build();
 			} else {
 				$messages[] = RuleErrorBuilder::message(sprintf(
@@ -431,7 +431,7 @@ class OverridingMethodRule implements Rule
 					$method->getName(),
 					$prototypeReturnType->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$prototype->getName()
+					$prototype->getName(),
 				))->nonIgnorable()->build();
 			}
 		}

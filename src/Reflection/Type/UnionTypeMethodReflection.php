@@ -94,7 +94,7 @@ class UnionTypeMethodReflection implements MethodReflection
 				$acceptor->getResolvedTemplateTypeMap(),
 				$acceptor->getParameters(),
 				$acceptor->isVariadic(),
-				$returnType
+				$returnType,
 			);
 		}, $variants);
 	}

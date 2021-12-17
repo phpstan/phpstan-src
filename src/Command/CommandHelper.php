@@ -169,7 +169,7 @@ class CommandHelper
 				$currentWorkingDirectoryFileHelper,
 				$containerFactory->getRootDirectory(),
 				$containerFactory->getCurrentWorkingDirectory(),
-				$generateBaselineFile
+				$generateBaselineFile,
 			))->createLoader();
 
 			try {
@@ -253,7 +253,7 @@ class CommandHelper
 			$errorOutput,
 			$currentWorkingDirectoryFileHelper,
 			$additionalConfigFiles,
-			$loaderParameters
+			$loaderParameters,
 		);
 
 		$createDir = static function (string $path) use ($errorOutput): void {
@@ -453,7 +453,7 @@ class CommandHelper
 			$memoryLimitFile,
 			$projectConfigFile,
 			$projectConfig,
-			$generateBaselineFile
+			$generateBaselineFile,
 		);
 	}
 

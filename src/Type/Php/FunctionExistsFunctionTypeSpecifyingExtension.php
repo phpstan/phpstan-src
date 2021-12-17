@@ -43,7 +43,7 @@ class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 				new ConstantBooleanType(true),
 				$context,
 				false,
-				$scope
+				$scope,
 			);
 		}
 
@@ -52,7 +52,7 @@ class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 			new CallableType(),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

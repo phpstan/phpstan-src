@@ -50,7 +50,7 @@ class OffsetAccessAssignmentRule implements Rule
 			static function (Type $varType) use ($potentialDimType): bool {
 				$arrayDimType = $varType->setOffsetValueType($potentialDimType, new MixedType());
 				return !($arrayDimType instanceof ErrorType);
-			}
+			},
 		);
 		$varType = $varTypeResult->getType();
 		if ($varType instanceof ErrorType) {
@@ -68,7 +68,7 @@ class OffsetAccessAssignmentRule implements Rule
 				static function (Type $dimType) use ($varType): bool {
 					$arrayDimType = $varType->setOffsetValueType($dimType, new MixedType());
 					return !($arrayDimType instanceof ErrorType);
-				}
+				},
 			);
 			$dimType = $dimTypeResult->getType();
 		} else {
@@ -84,7 +84,7 @@ class OffsetAccessAssignmentRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot assign new offset to %s.',
-					$varType->describe(VerbosityLevel::typeOnly())
+					$varType->describe(VerbosityLevel::typeOnly()),
 				))->build(),
 			];
 		}
@@ -93,7 +93,7 @@ class OffsetAccessAssignmentRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Cannot assign offset %s to %s.',
 				$dimType->describe(VerbosityLevel::value()),
-				$varType->describe(VerbosityLevel::typeOnly())
+				$varType->describe(VerbosityLevel::typeOnly()),
 			))->build(),
 		];
 	}

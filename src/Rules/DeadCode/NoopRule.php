@@ -57,7 +57,7 @@ class NoopRule implements Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Expression "%s" on a separate line does not do anything.',
-				$this->printer->prettyPrintExpr($originalExpr)
+				$this->printer->prettyPrintExpr($originalExpr),
 			))->line($expr->getLine())
 				->identifier('deadCode.noopExpression')
 				->metadata([

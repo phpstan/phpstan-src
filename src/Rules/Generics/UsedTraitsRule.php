@@ -57,7 +57,7 @@ class UsedTraitsRule implements Rule
 				$className,
 				$traitName,
 				null,
-				$docComment->getText()
+				$docComment->getText(),
 			);
 			$useTags = $resolvedPhpDoc->getUsesTags();
 		}
@@ -83,7 +83,7 @@ class UsedTraitsRule implements Rule
 			'Type %s in generic type %s in PHPDoc tag @use is not subtype of template type %s of trait %s.',
 			'PHPDoc tag @use has invalid type %s.',
 			sprintf('%s uses generic trait %%s but does not specify its types: %%s', ucfirst($description)),
-			sprintf('in used type %%s of %s', $description)
+			sprintf('in used type %%s of %s', $description),
 		);
 	}
 

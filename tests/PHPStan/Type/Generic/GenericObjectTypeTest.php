@@ -150,7 +150,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -223,7 +223,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -235,7 +235,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
 				$bound ?? new MixedType(),
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			);
 		};
 
@@ -340,7 +340,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 			$expectedTypes,
 			array_map(static function (Type $type): string {
 				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes())
+			}, $result->getTypes()),
 		);
 	}
 
@@ -352,7 +352,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction('a'),
 				$name,
 				$bound ?? new MixedType(),
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			);
 		};
 
@@ -365,7 +365,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 			],
@@ -377,7 +377,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createContravariant()
+						TemplateTypeVariance::createContravariant(),
 					),
 				],
 			],
@@ -391,7 +391,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createContravariant()
+						TemplateTypeVariance::createContravariant(),
 					),
 				],
 			],
@@ -407,7 +407,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createContravariant()
+						TemplateTypeVariance::createContravariant(),
 					),
 				],
 			],
@@ -419,7 +419,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 			],
@@ -431,7 +431,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createCovariant()
+						TemplateTypeVariance::createCovariant(),
 					),
 				],
 			],
@@ -445,7 +445,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createCovariant()
+						TemplateTypeVariance::createCovariant(),
 					),
 				],
 			],
@@ -461,7 +461,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createCovariant()
+						TemplateTypeVariance::createCovariant(),
 					),
 				],
 			],
@@ -475,7 +475,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 			],

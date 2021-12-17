@@ -126,7 +126,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getOutput()
+			$this->getOutput(),
 		), sprintf('%s: response code do not match', $message));
 
 		$outputContent = $this->getOutputContent();
@@ -143,7 +143,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			5,
 			true,
 			__DIR__ . '/Foo.php',
-			__DIR__ . '/FooTrait.php'
+			__DIR__ . '/FooTrait.php',
 		);
 		$formatter->formatErrors(new AnalysisResult(
 			[$error],
@@ -152,7 +152,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			[],
 			false,
 			null,
-			true
+			true,
 		), $this->getOutput());
 		$this->assertXmlStringEqualsXmlString('<checkstyle>
 	<file name="FooTrait.php">

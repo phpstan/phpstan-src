@@ -120,7 +120,7 @@ class FixerWorkerCommand extends Command
 				false,
 				$singleReflectionFile,
 				$insteadOfFile,
-				false
+				false,
 			);
 		} catch (InceptionNotSuccessfulException $e) {
 			return 1;
@@ -158,21 +158,21 @@ class FixerWorkerCommand extends Command
 			$configuration,
 			$tmpFile,
 			$insteadOfFile,
-			$input
+			$input,
 		);
 		$result = $resultCacheManager->process(
 			$this->switchTmpFileInAnalyserResult($intermediateAnalyserResult, $tmpFile, $insteadOfFile),
 			$resultCache,
 			$inceptionResult->getErrorOutput(),
 			false,
-			is_string($saveResultCache) ? $saveResultCache : $saveResultCache === null
+			is_string($saveResultCache) ? $saveResultCache : $saveResultCache === null,
 		)->getAnalyserResult();
 
 		$intermediateErrors = $ignoredErrorHelperResult->process(
 			$result->getErrors(),
 			$isOnlyFiles,
 			$inceptionFiles,
-			count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit()
+			count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit(),
 		);
 		$finalFileSpecificErrors = [];
 		$finalNotFileSpecificErrors = [];
@@ -257,7 +257,7 @@ class FixerWorkerCommand extends Command
 			$analyserResult->getInternalErrors(),
 			$dependencies,
 			$exportedNodes,
-			$analyserResult->hasReachedInternalErrorsCountLimit()
+			$analyserResult->hasReachedInternalErrorsCountLimit(),
 		);
 	}
 

@@ -82,7 +82,7 @@ class ClassConstantRuleTest extends RuleTestCase
 					'Access to undefined constant ClassConstantNamespace\Foo|string::DOLOR.',
 					33,
 				],
-			]
+			],
 		);
 	}
 

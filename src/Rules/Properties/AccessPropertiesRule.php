@@ -80,7 +80,7 @@ class AccessPropertiesRule implements Rule
 			sprintf('Access to property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
 			static function (Type $type) use ($name): bool {
 				return $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes();
-			}
+			},
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -96,7 +96,7 @@ class AccessPropertiesRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access property $%s on %s.',
 					$name,
-					$type->describe(VerbosityLevel::typeOnly())
+					$type->describe(VerbosityLevel::typeOnly()),
 				))->build(),
 			];
 		}
@@ -133,7 +133,7 @@ class AccessPropertiesRule implements Rule
 							RuleErrorBuilder::message(sprintf(
 								'Access to private property $%s of parent class %s.',
 								$name,
-								$parentClassReflection->getDisplayName()
+								$parentClassReflection->getDisplayName(),
 							))->build(),
 						];
 					}
@@ -145,7 +145,7 @@ class AccessPropertiesRule implements Rule
 			$ruleErrorBuilder = RuleErrorBuilder::message(sprintf(
 				'Access to an undefined property %s::$%s.',
 				$type->describe(VerbosityLevel::typeOnly()),
-				$name
+				$name,
 			));
 			if ($typeResult->getTip() !== null) {
 				$ruleErrorBuilder->tip($typeResult->getTip());
@@ -163,7 +163,7 @@ class AccessPropertiesRule implements Rule
 					'Access to %s property %s::$%s.',
 					$propertyReflection->isPrivate() ? 'private' : 'protected',
 					$type->describe(VerbosityLevel::typeOnly()),
-					$name
+					$name,
 				))->build(),
 			];
 		}

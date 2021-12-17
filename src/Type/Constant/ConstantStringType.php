@@ -94,12 +94,12 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 				return var_export(
 					$truncatedValue,
-					true
+					true,
 				);
 			},
 			function (): string {
 				return var_export($this->value, true);
-			}
+			},
 		);
 	}
 
@@ -269,7 +269,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	{
 		if ($offsetType instanceof ConstantIntegerType) {
 			return TrinaryLogic::createFromBoolean(
-				$offsetType->getValue() < strlen($this->value)
+				$offsetType->getValue() < strlen($this->value),
 			);
 		}
 

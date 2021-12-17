@@ -57,8 +57,8 @@ class DumpTypeRule implements Rule
 			RuleErrorBuilder::message(
 				sprintf(
 					'Dumped type: %s',
-					$scope->getType($node->getArgs()[0]->value)->describe(VerbosityLevel::precise())
-				)
+					$scope->getType($node->getArgs()[0]->value)->describe(VerbosityLevel::precise()),
+				),
 			)->nonIgnorable()->build(),
 		];
 	}

@@ -43,7 +43,7 @@ class ThrowTypeRule implements Rule
 			'Throwing object of an unknown class %s.',
 			static function (Type $type) use ($throwableType): bool {
 				return $throwableType->isSuperTypeOf($type)->yes();
-			}
+			},
 		);
 
 		$foundType = $typeResult->getType();
@@ -59,7 +59,7 @@ class ThrowTypeRule implements Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Invalid type %s to throw.',
-				$foundType->describe(VerbosityLevel::typeOnly())
+				$foundType->describe(VerbosityLevel::typeOnly()),
 			))->build(),
 		];
 	}

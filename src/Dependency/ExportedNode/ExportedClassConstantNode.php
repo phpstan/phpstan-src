@@ -37,7 +37,7 @@ class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 	{
 		return new self(
 			$properties['name'],
-			$properties['value']
+			$properties['value'],
 		);
 	}
 
@@ -49,7 +49,7 @@ class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 	{
 		return new self(
 			$data['name'],
-			$data['value']
+			$data['value'],
 		);
 	}
 

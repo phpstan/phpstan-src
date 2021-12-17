@@ -195,20 +195,20 @@ class FunctionCallParametersCheck
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						$invokedParametersCount === 1 ? $messages[0] : $messages[1],
 						$invokedParametersCount,
-						$functionParametersMinCount
+						$functionParametersMinCount,
 					))->line($funcCall->getLine())->build();
 				} elseif ($functionParametersMaxCount === -1 && $invokedParametersCount < $functionParametersMinCount) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						$invokedParametersCount === 1 ? $messages[2] : $messages[3],
 						$invokedParametersCount,
-						$functionParametersMinCount
+						$functionParametersMinCount,
 					))->line($funcCall->getLine())->build();
 				} elseif ($functionParametersMaxCount !== -1) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						$invokedParametersCount === 1 ? $messages[4] : $messages[5],
 						$invokedParametersCount,
 						$functionParametersMinCount,
-						$functionParametersMaxCount
+						$functionParametersMaxCount,
 					))->line($funcCall->getLine())->build();
 				}
 			}
@@ -239,7 +239,7 @@ class FunctionCallParametersCheck
 					'',
 					static function (Type $type): bool {
 						return $type->isIterable()->yes();
-					}
+					},
 				);
 				$iterableTypeResultType = $iterableTypeResult->getType();
 				if (
@@ -249,7 +249,7 @@ class FunctionCallParametersCheck
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Only iterables can be unpacked, %s given in argument #%d.',
 						$iterableTypeResultType->describe(VerbosityLevel::typeOnly()),
-						$i + 1
+						$i + 1,
 					))->line($argumentLine)->build();
 				}
 			}
@@ -271,10 +271,10 @@ class FunctionCallParametersCheck
 					$argumentName === null ? sprintf(
 						'#%d %s',
 						$i + 1,
-						$parameterDescription
+						$parameterDescription,
 					) : $parameterDescription,
 					$parameterType->describe($verbosityLevel),
-					$argumentValueType->describe($verbosityLevel)
+					$argumentValueType->describe($verbosityLevel),
 				))->line($argumentLine)->build();
 			}
 
@@ -289,7 +289,7 @@ class FunctionCallParametersCheck
 				$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[8],
-					$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription
+					$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
 				))->line($argumentLine)->build();
 				continue;
 			}
@@ -304,7 +304,7 @@ class FunctionCallParametersCheck
 			$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				$messages[8],
-				$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription
+				$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
 			))->line($argumentLine)->build();
 		}
 

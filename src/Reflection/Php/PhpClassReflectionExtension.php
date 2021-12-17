@@ -182,7 +182,7 @@ class PhpClassReflectionExtension
 			throw new ShouldNotHappenException(sprintf(
 				'Internal error: Expected to find an ancestor with class name %s on %s, but none was found.',
 				$declaringClassName,
-				$classReflection->getName()
+				$classReflection->getName(),
 			));
 		}
 
@@ -219,7 +219,7 @@ class PhpClassReflectionExtension
 		$phpDocType = null;
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findPropertyPhpDoc(
 			$declaringClassName,
-			$propertyReflection->getName()
+			$propertyReflection->getName(),
 		);
 		$stubPhpDocString = null;
 		if ($resolvedPhpDoc === null) {
@@ -238,7 +238,7 @@ class PhpClassReflectionExtension
 						$declaringClassReflection,
 						$declaringClassReflection->getFileName(),
 						$declaringTraitName,
-						$propertyName
+						$propertyName,
 					);
 				} elseif ($docComment !== null) {
 					$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
@@ -246,7 +246,7 @@ class PhpClassReflectionExtension
 						$declaringClassName,
 						$declaringTraitName,
 						$constructorName,
-						$docComment
+						$docComment,
 					);
 				}
 				$phpDocBlockClassReflection = $declaringClassReflection;
@@ -281,7 +281,7 @@ class PhpClassReflectionExtension
 					$declaringClassReflection,
 					$declaringTraitName,
 					$constructorName,
-					$positionalParameterNames
+					$positionalParameterNames,
 				);
 				$paramTags = $resolvedPhpDoc->getParamTags();
 				if (isset($paramTags[$propertyReflection->getName()])) {
@@ -296,7 +296,7 @@ class PhpClassReflectionExtension
 			}
 			$phpDocType = $phpDocType !== null ? TemplateTypeHelper::resolveTemplateTypes(
 				$phpDocType,
-				$phpDocBlockClassReflection->getActiveTemplateTypeMap()
+				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
 			) : null;
 			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
@@ -314,7 +314,7 @@ class PhpClassReflectionExtension
 		) {
 			$phpDocType = $this->inferPrivatePropertyType(
 				$propertyReflection->getName(),
-				$declaringClassReflection->getConstructor()
+				$declaringClassReflection->getConstructor(),
 			);
 		}
 
@@ -340,7 +340,7 @@ class PhpClassReflectionExtension
 			$deprecatedDescription,
 			$isDeprecated,
 			$isInternal,
-			$stubPhpDocString
+			$stubPhpDocString,
 		);
 	}
 
@@ -377,7 +377,7 @@ class PhpClassReflectionExtension
 		if ($methodName === '__get' && UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
 			$this->reflectionProviderProvider->getReflectionProvider(),
 			$this->universalObjectCratesClasses,
-			$classReflection
+			$classReflection,
 		)) {
 			return true;
 		}
@@ -393,7 +393,7 @@ class PhpClassReflectionExtension
 
 		if ($classReflection->getNativeReflection()->hasMethod($methodName)) {
 			$nativeMethodReflection = new NativeBuiltinMethodReflection(
-				$classReflection->getNativeReflection()->getMethod($methodName)
+				$classReflection->getNativeReflection()->getMethod($methodName),
 			);
 		} else {
 			if (
@@ -401,14 +401,14 @@ class PhpClassReflectionExtension
 				|| !UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
 					$this->reflectionProviderProvider->getReflectionProvider(),
 					$this->universalObjectCratesClasses,
-					$classReflection
+					$classReflection,
 				)) {
 				throw new ShouldNotHappenException();
 			}
 
 			$nativeMethodReflection = new FakeBuiltinMethodReflection(
 				$methodName,
-				$classReflection->getNativeReflection()
+				$classReflection->getNativeReflection(),
 			);
 		}
 
@@ -453,7 +453,7 @@ class PhpClassReflectionExtension
 			throw new ShouldNotHappenException(sprintf(
 				'Internal error: Expected to find an ancestor with class name %s on %s, but none was found.',
 				$declaringClassName,
-				$classReflection->getName()
+				$classReflection->getName(),
 			));
 		}
 
@@ -501,14 +501,14 @@ class PhpClassReflectionExtension
 						if ($returnTag !== null) {
 							$stubPhpDocReturnType = TemplateTypeHelper::resolveTemplateTypes(
 								$returnTag->getType(),
-								$templateTypeMap
+								$templateTypeMap,
 							);
 						}
 
 						foreach ($stubPhpDoc->getParamTags() as $name => $paramTag) {
 							$stubPhpDocParameterTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
 								$paramTag->getType(),
-								$templateTypeMap
+								$templateTypeMap,
 							);
 							$stubPhpDocParameterVariadicity[$name] = $paramTag->isVariadic();
 						}
@@ -527,7 +527,7 @@ class PhpClassReflectionExtension
 							$declaringClassName,
 							null,
 							$reflectionMethod->getName(),
-							$reflectionMethod->getDocComment()
+							$reflectionMethod->getDocComment(),
 						);
 						$throwsTag = $phpDocBlock->getThrowsTag();
 						if ($throwsTag !== null) {
@@ -566,7 +566,7 @@ class PhpClassReflectionExtension
 				$variants,
 				$hasSideEffects,
 				$stubPhpDocString,
-				$throwType
+				$throwType,
 			);
 		}
 
@@ -594,7 +594,7 @@ class PhpClassReflectionExtension
 					$declaringClass,
 					$declaringTraitName,
 					$methodReflection->getName(),
-					$positionalParameterNames
+					$positionalParameterNames,
 				);
 				$phpDocBlockClassReflection = $declaringClass;
 			}
@@ -646,7 +646,7 @@ class PhpClassReflectionExtension
 					$declaringClassName,
 					$declaringTraitName,
 					$methodReflection->getName(),
-					$parameterProperty->getDocComment()
+					$parameterProperty->getDocComment(),
 				);
 				$varTags = $propertyDocblock->getVarTags();
 				if (isset($varTags[0]) && count($varTags) === 1) {
@@ -671,13 +671,13 @@ class PhpClassReflectionExtension
 			foreach ($phpDocParameterTypes as $paramName => $paramType) {
 				$phpDocParameterTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
 					$paramType,
-					$phpDocBlockClassReflection->getActiveTemplateTypeMap()
+					$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
 				);
 			}
 			$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 				$methodReflection->getReturnType(),
 				null,
-				$declaringClass->getName()
+				$declaringClass->getName(),
 			);
 			$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
 			$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
@@ -701,7 +701,7 @@ class PhpClassReflectionExtension
 			$isInternal,
 			$isFinal,
 			$stubPhpDocString,
-			$isPure
+			$isPure,
 		);
 	}
 
@@ -743,7 +743,7 @@ class PhpClassReflectionExtension
 				$parameterSignature->getNativeType(),
 				$parameterSignature->passedByReference(),
 				$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
-				null
+				null,
 			);
 		}
 
@@ -760,7 +760,7 @@ class PhpClassReflectionExtension
 			$methodSignature->isVariadic(),
 			$returnType ?? $methodSignature->getReturnType(),
 			$phpDocReturnType ?? new MixedType(),
-			$methodSignature->getNativeReturnType()
+			$methodSignature->getNativeReturnType(),
 		);
 	}
 
@@ -946,7 +946,7 @@ class PhpClassReflectionExtension
 			false,
 			[],
 			$constructor,
-			$namespace
+			$namespace,
 		)->enterClass($declaringClass);
 		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
@@ -959,7 +959,7 @@ class PhpClassReflectionExtension
 			$isDeprecated,
 			$isInternal,
 			$isFinal,
-			$isPure
+			$isPure,
 		);
 
 		$propertyTypes = [];
@@ -1064,7 +1064,7 @@ class PhpClassReflectionExtension
 		$phpDocReturnType = $returnTag->getType();
 		$phpDocReturnType = TemplateTypeHelper::resolveTemplateTypes(
 			$phpDocReturnType,
-			$phpDocBlockClassReflection->getActiveTemplateTypeMap()
+			$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
 		);
 
 		if ($returnTag->isExplicit() || $nativeReturnType->isSuperTypeOf($phpDocReturnType)->yes()) {

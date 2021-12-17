@@ -69,7 +69,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 				$function !== null ? $function->getName() : null,
-				$comment->getText()
+				$comment->getText(),
 			);
 			foreach ($resolvedPhpDoc->getVarTags() as $key => $varTag) {
 				$varTags[$key] = $varTag;
@@ -116,7 +116,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @var above %s has no effect.',
-					$description
+					$description,
 				))->build(),
 			];
 		}
@@ -142,7 +142,7 @@ class WrongVariableNameInVarTagRule implements Rule
 					}
 				} elseif (count($assignedVariables) !== 1) {
 					$errors[] = RuleErrorBuilder::message(
-						'PHPDoc tag @var above assignment does not specify variable name.'
+						'PHPDoc tag @var above assignment does not specify variable name.',
 					)->build();
 				}
 				continue;
@@ -160,7 +160,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Variable $%s in PHPDoc tag @var does not match assigned variable $%s.',
 					$key,
-					$assignedVariables[0]
+					$assignedVariables[0],
 				))->build();
 			} else {
 				$errors[] = RuleErrorBuilder::message(sprintf('Variable $%s in PHPDoc tag @var does not exist.', $key))->build();
@@ -221,7 +221,7 @@ class WrongVariableNameInVarTagRule implements Rule
 					continue;
 				}
 				$errors[] = RuleErrorBuilder::message(
-					'PHPDoc tag @var above foreach loop does not specify variable name.'
+					'PHPDoc tag @var above foreach loop does not specify variable name.',
 				)->build();
 				continue;
 			}
@@ -235,7 +235,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				$name,
 				implode(', ', array_map(static function (string $name): string {
 					return sprintf('$%s', $name);
-				}, $variableNames))
+				}, $variableNames)),
 			))->build();
 		}
 
@@ -266,7 +266,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				}
 
 				$errors[] = RuleErrorBuilder::message(
-					'PHPDoc tag @var above multiple static variables does not specify variable name.'
+					'PHPDoc tag @var above multiple static variables does not specify variable name.',
 				)->build();
 				continue;
 			}
@@ -280,7 +280,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				$name,
 				implode(', ', array_map(static function (string $name): string {
 					return sprintf('$%s', $name);
-				}, array_keys($variableNames)))
+				}, array_keys($variableNames))),
 			))->build();
 		}
 
@@ -357,7 +357,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				}
 
 				$errors[] = RuleErrorBuilder::message(
-					'PHPDoc tag @var above multiple global variables does not specify variable name.'
+					'PHPDoc tag @var above multiple global variables does not specify variable name.',
 				)->build();
 				continue;
 			}
@@ -371,7 +371,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				$name,
 				implode(', ', array_map(static function (string $name): string {
 					return sprintf('$%s', $name);
-				}, array_keys($variableNames)))
+				}, array_keys($variableNames))),
 			))->build();
 		}
 

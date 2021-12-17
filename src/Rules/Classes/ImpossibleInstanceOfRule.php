@@ -50,14 +50,14 @@ class ImpossibleInstanceOfRule implements Rule
 			$classType = $scope->getType($node->class);
 			$allowed = TypeCombinator::union(
 				new StringType(),
-				new ObjectWithoutClassType()
+				new ObjectWithoutClassType(),
 			);
 			if (!$allowed->accepts($classType, true)->yes()) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Instanceof between %s and %s results in an error.',
 						$expressionType->describe(VerbosityLevel::typeOnly()),
-						$classType->describe(VerbosityLevel::typeOnly())
+						$classType->describe(VerbosityLevel::typeOnly()),
 					))->build(),
 				];
 			}
@@ -85,7 +85,7 @@ class ImpossibleInstanceOfRule implements Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to false.',
 					$expressionType->describe(VerbosityLevel::typeOnly()),
-					$classType->describe(VerbosityLevel::typeOnly())
+					$classType->describe(VerbosityLevel::typeOnly()),
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueInstanceof) {
@@ -93,7 +93,7 @@ class ImpossibleInstanceOfRule implements Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to true.',
 					$expressionType->describe(VerbosityLevel::typeOnly()),
-					$classType->describe(VerbosityLevel::typeOnly())
+					$classType->describe(VerbosityLevel::typeOnly()),
 				)))->build(),
 			];
 		}

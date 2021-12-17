@@ -39,7 +39,7 @@ class Scheduler
 		$jobs = array_chunk($files, $this->jobSize);
 		$numberOfProcesses = min(
 			max((int) floor(count($jobs) / $this->minimumNumberOfJobsPerProcess), 1),
-			$cpuCores
+			$cpuCores,
 		);
 
 		return new Schedule(min($numberOfProcesses, $this->maximumNumberOfProcesses), $jobs);

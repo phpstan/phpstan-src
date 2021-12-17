@@ -64,7 +64,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 				$this->reflection->getType(),
 				$phpDocType,
 				$this->declaringClassName,
-				$this->isVariadic()
+				$this->isVariadic(),
 			);
 		}
 
@@ -99,7 +99,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 				$this->reflection->getType(),
 				null,
 				$this->declaringClassName,
-				$this->isVariadic()
+				$this->isVariadic(),
 			);
 		}
 

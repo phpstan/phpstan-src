@@ -229,7 +229,7 @@ class TemplateTypeMap
 	{
 		return new self(
 			$properties['types'],
-			$properties['lowerBoundTypes'] ?? []
+			$properties['lowerBoundTypes'] ?? [],
 		);
 	}
 

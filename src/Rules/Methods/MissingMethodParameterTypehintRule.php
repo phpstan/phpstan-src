@@ -66,7 +66,7 @@ final class MissingMethodParameterTypehintRule implements Rule
 					'Method %s::%s() has parameter $%s with no type specified.',
 					$methodReflection->getDeclaringClass()->getDisplayName(),
 					$methodReflection->getName(),
-					$parameterReflection->getName()
+					$parameterReflection->getName(),
 				))->build(),
 			];
 		}
@@ -79,7 +79,7 @@ final class MissingMethodParameterTypehintRule implements Rule
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$parameterReflection->getName(),
-				$iterableTypeDescription
+				$iterableTypeDescription,
 			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
@@ -90,7 +90,7 @@ final class MissingMethodParameterTypehintRule implements Rule
 				$methodReflection->getName(),
 				$parameterReflection->getName(),
 				$name,
-				implode(', ', $genericTypeNames)
+				implode(', ', $genericTypeNames),
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
@@ -100,7 +100,7 @@ final class MissingMethodParameterTypehintRule implements Rule
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$parameterReflection->getName(),
-				$callableType->describe(VerbosityLevel::typeOnly())
+				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

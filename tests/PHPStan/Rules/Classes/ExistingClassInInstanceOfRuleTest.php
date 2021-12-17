@@ -18,7 +18,7 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 		return new ExistingClassInInstanceOfRule(
 			$broker,
 			new ClassCaseSensitivityCheck($broker, true),
-			true
+			true,
 		);
 	}
 
@@ -51,7 +51,7 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 					'Using self outside of class scope.',
 					17,
 				],
-			]
+			],
 		);
 	}
 

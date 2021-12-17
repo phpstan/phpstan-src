@@ -72,7 +72,7 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 				}
 
 				return new ConstantBooleanType(false);
-			}
+			},
 		);
 	}
 

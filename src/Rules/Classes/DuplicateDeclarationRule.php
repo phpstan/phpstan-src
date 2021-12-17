@@ -42,7 +42,7 @@ class DuplicateDeclarationRule implements Rule
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Cannot redeclare enum case %s::%s.',
 						$classReflection->getDisplayName(),
-						$stmtNode->name->name
+						$stmtNode->name->name,
 					))->line($stmtNode->getLine())->nonIgnorable()->build();
 				} else {
 					$declaredClassConstantsOrEnumCases[$stmtNode->name->name] = true;
@@ -53,7 +53,7 @@ class DuplicateDeclarationRule implements Rule
 						$errors[] = RuleErrorBuilder::message(sprintf(
 							'Cannot redeclare constant %s::%s.',
 							$classReflection->getDisplayName(),
-							$classConstNode->name->name
+							$classConstNode->name->name,
 						))->line($classConstNode->getLine())->nonIgnorable()->build();
 					} else {
 						$declaredClassConstantsOrEnumCases[$classConstNode->name->name] = true;
@@ -69,7 +69,7 @@ class DuplicateDeclarationRule implements Rule
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Cannot redeclare property %s::$%s.',
 						$classReflection->getDisplayName(),
-						$property->name->name
+						$property->name->name,
 					))->line($property->getLine())->nonIgnorable()->build();
 				} else {
 					$declaredProperties[$property->name->name] = true;
@@ -95,7 +95,7 @@ class DuplicateDeclarationRule implements Rule
 						$errors[] = RuleErrorBuilder::message(sprintf(
 							'Cannot redeclare property %s::$%s.',
 							$classReflection->getDisplayName(),
-							$propertyName
+							$propertyName,
 						))->line($param->getLine())->nonIgnorable()->build();
 					} else {
 						$declaredProperties[$propertyName] = true;
@@ -106,7 +106,7 @@ class DuplicateDeclarationRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Cannot redeclare method %s::%s().',
 					$classReflection->getDisplayName(),
-					$method->name->name
+					$method->name->name,
 				))->line($method->getStartLine())->nonIgnorable()->build();
 			} else {
 				$declaredFunctions[strtolower($method->name->name)] = true;

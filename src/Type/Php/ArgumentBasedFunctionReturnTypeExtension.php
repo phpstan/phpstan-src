@@ -61,7 +61,7 @@ class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 		return new ArrayType(
 			$argumentKeyType,
-			$argumentValueType
+			$argumentValueType,
 		);
 	}
 

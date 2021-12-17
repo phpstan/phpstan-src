@@ -245,7 +245,7 @@ class ImpossibleCheckTypeHelper
 				}
 			}
 			$types = TypeCombinator::union(
-				...array_column($sureTypes, 1)
+				...array_column($sureTypes, 1),
 			);
 			if ($types instanceof NeverType) {
 				return false;
@@ -259,7 +259,7 @@ class ImpossibleCheckTypeHelper
 				}
 			}
 			$types = TypeCombinator::union(
-				...array_column($sureNotTypes, 1)
+				...array_column($sureNotTypes, 1),
 			);
 			if ($types instanceof NeverType) {
 				return true;
@@ -294,7 +294,7 @@ class ImpossibleCheckTypeHelper
 		return sprintf(
 			' with arguments %s and %s',
 			implode(', ', $descriptions),
-			$lastDescription
+			$lastDescription,
 		);
 	}
 
@@ -308,7 +308,7 @@ class ImpossibleCheckTypeHelper
 			$this->reflectionProvider,
 			$this->typeSpecifier,
 			$this->universalObjectCratesClasses,
-			false
+			false,
 		);
 	}
 

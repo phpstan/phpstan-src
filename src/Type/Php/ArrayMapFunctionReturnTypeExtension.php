@@ -49,7 +49,7 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {
 				$arrayBuilder->setOffsetValueType(
 					new ConstantIntegerType($index),
-					$scope->getType($arg->value)->getIterableValueType()
+					$scope->getType($arg->value)->getIterableValueType(),
 				);
 			}
 			$valueType = $arrayBuilder->getArray();
@@ -71,7 +71,7 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 					foreach ($constantArray->getKeyTypes() as $keyType) {
 						$returnedArrayBuilder->setOffsetValueType(
 							$keyType,
-							$valueType
+							$valueType,
 						);
 					}
 					$arrayTypes[] = $returnedArrayBuilder->getArray();
@@ -81,18 +81,18 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			} elseif ($arrayType->isArray()->yes()) {
 				$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 					$arrayType->getIterableKeyType(),
-					$valueType
+					$valueType,
 				), ...TypeUtils::getAccessoryTypes($arrayType));
 			} else {
 				$mappedArrayType = new ArrayType(
 					new MixedType(),
-					$valueType
+					$valueType,
 				);
 			}
 		} else {
 			$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 				new IntegerType(),
-				$valueType
+				$valueType,
 			), ...TypeUtils::getAccessoryTypes($arrayType));
 		}
 

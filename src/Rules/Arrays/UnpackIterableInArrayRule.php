@@ -51,7 +51,7 @@ class UnpackIterableInArrayRule implements Rule
 				'',
 				static function (Type $type): bool {
 					return $type->isIterable()->yes();
-				}
+				},
 			);
 			$type = $typeResult->getType();
 			if ($type instanceof ErrorType) {
@@ -64,7 +64,7 @@ class UnpackIterableInArrayRule implements Rule
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Only iterables can be unpacked, %s given.',
-				$type->describe(VerbosityLevel::typeOnly())
+				$type->describe(VerbosityLevel::typeOnly()),
 			))->line($item->getLine())->build();
 		}
 

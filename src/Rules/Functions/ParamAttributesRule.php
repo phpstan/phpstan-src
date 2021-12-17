@@ -37,7 +37,7 @@ class ParamAttributesRule implements Rule
 				$scope,
 				$node->attrGroups,
 				Attribute::TARGET_PROPERTY,
-				$targetName
+				$targetName,
 			);
 
 			if (count($propertyTargetErrors) === 0) {
@@ -49,7 +49,7 @@ class ParamAttributesRule implements Rule
 			$scope,
 			$node->attrGroups,
 			Attribute::TARGET_PARAMETER,
-			$targetName
+			$targetName,
 		);
 	}
 

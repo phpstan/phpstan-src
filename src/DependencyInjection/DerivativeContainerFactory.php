@@ -72,7 +72,7 @@ class DerivativeContainerFactory
 	public function create(array $additionalConfigFiles): Container
 	{
 		$containerFactory = new ContainerFactory(
-			$this->currentWorkingDirectory
+			$this->currentWorkingDirectory,
 		);
 
 		return $containerFactory->create(
@@ -85,7 +85,7 @@ class DerivativeContainerFactory
 			$this->generateBaselineFile,
 			$this->cliAutoloadFile,
 			$this->singleReflectionFile,
-			$this->singleReflectionInsteadOfFile
+			$this->singleReflectionInsteadOfFile,
 		);
 	}
 

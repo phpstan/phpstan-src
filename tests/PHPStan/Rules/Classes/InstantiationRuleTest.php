@@ -24,7 +24,7 @@ class InstantiationRuleTest extends RuleTestCase
 		return new InstantiationRule(
 			$broker,
 			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), true, true, true, true),
-			new ClassCaseSensitivityCheck($broker, true)
+			new ClassCaseSensitivityCheck($broker, true),
 		);
 	}
 
@@ -193,7 +193,7 @@ class InstantiationRuleTest extends RuleTestCase
 					'Class TestInstantiation\ClassExtendingAbstractConstructor constructor invoked with 0 parameters, 1 required.',
 					273,
 				],
-			]
+			],
 		);
 	}
 
@@ -206,7 +206,7 @@ class InstantiationRuleTest extends RuleTestCase
 					'Parameter #2 $string of class SoapFault constructor expects string, int given.',
 					6,
 				],
-			]
+			],
 		);
 	}
 

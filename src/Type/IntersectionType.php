@@ -48,7 +48,7 @@ class IntersectionType implements CompoundType
 				self::class,
 				implode(', ', array_map(static function (Type $type): string {
 					return $type->describe(VerbosityLevel::value());
-				}, $types))
+				}, $types)),
 			));
 		}
 
@@ -162,7 +162,7 @@ class IntersectionType implements CompoundType
 			},
 			function () use ($level): string {
 				return $this->describeItself($level, false);
-			}
+			},
 		);
 	}
 

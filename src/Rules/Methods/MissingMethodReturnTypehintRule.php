@@ -47,7 +47,7 @@ final class MissingMethodReturnTypehintRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Method %s::%s() has no return type specified.',
 					$methodReflection->getDeclaringClass()->getDisplayName(),
-					$methodReflection->getName()
+					$methodReflection->getName(),
 				))->build(),
 			];
 		}
@@ -59,7 +59,7 @@ final class MissingMethodReturnTypehintRule implements Rule
 				'Method %s::%s() return type has no value type specified in iterable type %s.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
-				$iterableTypeDescription
+				$iterableTypeDescription,
 			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
@@ -69,7 +69,7 @@ final class MissingMethodReturnTypehintRule implements Rule
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$name,
-				implode(', ', $genericTypeNames)
+				implode(', ', $genericTypeNames),
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
@@ -78,7 +78,7 @@ final class MissingMethodReturnTypehintRule implements Rule
 				'Method %s::%s() return type has no signature specified for %s.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
-				$callableType->describe(VerbosityLevel::typeOnly())
+				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

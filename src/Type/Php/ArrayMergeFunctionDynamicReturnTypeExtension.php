@@ -55,7 +55,7 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 
 		$arrayType = new ArrayType(
 			TypeCombinator::union(...$keyTypes),
-			TypeCombinator::union(...$valueTypes)
+			TypeCombinator::union(...$valueTypes),
 		);
 
 		if ($nonEmpty) {

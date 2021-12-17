@@ -69,7 +69,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 			$functionName,
-			$docComment->getText()
+			$docComment->getText(),
 		);
 		$nativeParameterTypes = $this->getNativeParameterTypes($node, $scope);
 		$nativeReturnType = $this->getNativeReturnType($node, $scope);
@@ -81,7 +81,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 			if (!isset($nativeParameterTypes[$parameterName])) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @param references unknown parameter: $%s',
-					$parameterName
+					$parameterName,
 				))->identifier('phpDoc.unknownParameter')->metadata(['parameterName' => $parameterName])->build();
 
 			} elseif (
@@ -89,7 +89,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 			) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @param for parameter $%s contains unresolvable type.',
-					$parameterName
+					$parameterName,
 				))->build();
 
 			} else {
@@ -109,20 +109,20 @@ class IncompatiblePhpDocTypeRule implements Rule
 					$phpDocParamType,
 					sprintf(
 						'PHPDoc tag @param for parameter $%s contains generic type %%s but class %%s is not generic.',
-						$escapedParameterName
+						$escapedParameterName,
 					),
 					sprintf(
 						'Generic type %%s in PHPDoc tag @param for parameter $%s does not specify all template types of class %%s: %%s',
-						$escapedParameterName
+						$escapedParameterName,
 					),
 					sprintf(
 						'Generic type %%s in PHPDoc tag @param for parameter $%s specifies %%d template types, but class %%s supports only %%d: %%s',
-						$escapedParameterName
+						$escapedParameterName,
 					),
 					sprintf(
 						'Type %%s in generic type %%s in PHPDoc tag @param for parameter $%s is not subtype of template type %%s of class %%s.',
-						$escapedParameterName
-					)
+						$escapedParameterName,
+					),
 				));
 
 				if ($isParamSuperType->no()) {
@@ -130,7 +130,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 						'PHPDoc tag @param for parameter $%s with type %s is incompatible with native type %s.',
 						$parameterName,
 						$phpDocParamType->describe(VerbosityLevel::typeOnly()),
-						$nativeParamType->describe(VerbosityLevel::typeOnly())
+						$nativeParamType->describe(VerbosityLevel::typeOnly()),
 					))->build();
 
 				} elseif ($isParamSuperType->maybe()) {
@@ -138,7 +138,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 						'PHPDoc tag @param for parameter $%s with type %s is not subtype of native type %s.',
 						$parameterName,
 						$phpDocParamType->describe(VerbosityLevel::typeOnly()),
-						$nativeParamType->describe(VerbosityLevel::typeOnly())
+						$nativeParamType->describe(VerbosityLevel::typeOnly()),
 					));
 					if ($phpDocParamType instanceof TemplateType) {
 						$errorBuilder->tip(sprintf('Write @template %s of %s to fix this.', $phpDocParamType->getName(), $nativeParamType->describe(VerbosityLevel::typeOnly())));
@@ -164,20 +164,20 @@ class IncompatiblePhpDocTypeRule implements Rule
 					'PHPDoc tag @return contains generic type %s but class %s is not generic.',
 					'Generic type %s in PHPDoc tag @return does not specify all template types of class %s: %s',
 					'Generic type %s in PHPDoc tag @return specifies %d template types, but class %s supports only %d: %s',
-					'Type %s in generic type %s in PHPDoc tag @return is not subtype of template type %s of class %s.'
+					'Type %s in generic type %s in PHPDoc tag @return is not subtype of template type %s of class %s.',
 				));
 				if ($isReturnSuperType->no()) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag @return with type %s is incompatible with native type %s.',
 						$phpDocReturnType->describe(VerbosityLevel::typeOnly()),
-						$nativeReturnType->describe(VerbosityLevel::typeOnly())
+						$nativeReturnType->describe(VerbosityLevel::typeOnly()),
 					))->build();
 
 				} elseif ($isReturnSuperType->maybe()) {
 					$errorBuilder = RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag @return with type %s is not subtype of native type %s.',
 						$phpDocReturnType->describe(VerbosityLevel::typeOnly()),
-						$nativeReturnType->describe(VerbosityLevel::typeOnly())
+						$nativeReturnType->describe(VerbosityLevel::typeOnly()),
 					));
 					if ($phpDocReturnType instanceof TemplateType) {
 						$errorBuilder->tip(sprintf('Write @template %s of %s to fix this.', $phpDocReturnType->getName(), $nativeReturnType->describe(VerbosityLevel::typeOnly())));
@@ -205,7 +205,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 			$nativeParameterTypes[$parameter->var->name] = $scope->getFunctionType(
 				$parameter->type,
 				$isNullable,
-				false
+				false,
 			);
 		}
 

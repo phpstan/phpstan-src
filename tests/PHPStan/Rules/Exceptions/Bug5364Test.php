@@ -19,8 +19,8 @@ class Bug5364Test extends RuleTestCase
 				[],
 				[],
 				[],
-				[]
-			))
+				[],
+			)),
 		);
 	}
 

@@ -143,10 +143,10 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		return new Php8SignatureMapProvider(
 			new FunctionSignatureMapProvider(
 				self::getContainer()->getByType(SignatureMapParser::class),
-				new PhpVersion(80000)
+				new PhpVersion(80000),
 			),
 			self::getContainer()->getByType(FileNodesFetcher::class),
-			self::getContainer()->getByType(FileTypeMapper::class)
+			self::getContainer()->getByType(FileTypeMapper::class),
 		);
 	}
 

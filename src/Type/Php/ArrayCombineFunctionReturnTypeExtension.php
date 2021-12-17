@@ -63,14 +63,14 @@ class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			if ($keyTypes !== null) {
 				return new ConstantArrayType(
 					$keyTypes,
-					$valueTypes
+					$valueTypes,
 				);
 			}
 		}
 
 		$arrayType = new ArrayType(
 			$keysParamType instanceof ArrayType ? $keysParamType->getItemType() : new MixedType(),
-			$valuesParamType instanceof ArrayType ? $valuesParamType->getItemType() : new MixedType()
+			$valuesParamType instanceof ArrayType ? $valuesParamType->getItemType() : new MixedType(),
 		);
 
 		if ($keysParamType->isIterableAtLeastOnce()->yes() && $valuesParamType->isIterableAtLeastOnce()->yes()) {

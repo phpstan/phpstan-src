@@ -44,7 +44,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 				'json_encode',
 				'json_decode',
 			],
-			true
+			true,
 		);
 	}
 

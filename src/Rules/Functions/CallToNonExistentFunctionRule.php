@@ -65,7 +65,7 @@ class CallToNonExistentFunctionRule implements Rule
 					RuleErrorBuilder::message(sprintf(
 						'Call to function %s() with incorrect case: %s',
 						$function->getName(),
-						$name
+						$name,
 					))->build(),
 				];
 			}

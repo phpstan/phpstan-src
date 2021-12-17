@@ -51,7 +51,7 @@ class InvalidPartOfEncapsedStringRule implements Rule
 				'',
 				static function (Type $type): bool {
 					return !$type->toString() instanceof ErrorType;
-				}
+				},
 			);
 			$partType = $typeResult->getType();
 			if ($partType instanceof ErrorType) {
@@ -65,7 +65,7 @@ class InvalidPartOfEncapsedStringRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Part %s (%s) of encapsed string cannot be cast to string.',
 				$this->printer->prettyPrintExpr($part),
-				$partType->describe(VerbosityLevel::value())
+				$partType->describe(VerbosityLevel::value()),
 			))->line($part->getLine())->build();
 		}
 

@@ -43,7 +43,7 @@ class MissingCheckedExceptionInMethodThrowsRule implements Rule
 				'Method %s::%s() throws checked exception %s but it\'s missing from the PHPDoc @throws tag.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
-				$className
+				$className,
 			))
 				->line($throwPointNode->getLine())
 				->identifier('exceptions.missingThrowsTag')

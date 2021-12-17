@@ -54,7 +54,7 @@ class YieldInGeneratorRule implements Rule
 			$isSuperType = TrinaryLogic::createNo();
 		} else {
 			$isSuperType = $returnType->isIterable()->and(TrinaryLogic::createFromBoolean(
-				!$returnType->isArray()->yes()
+				!$returnType->isArray()->yes(),
 			));
 		}
 		if ($isSuperType->yes()) {
@@ -68,7 +68,7 @@ class YieldInGeneratorRule implements Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Yield can be used only with these return types: %s.',
-				'Generator, Iterator, Traversable, iterable'
+				'Generator, Iterator, Traversable, iterable',
 			))->build(),
 		];
 	}

@@ -67,7 +67,7 @@ class ClassAncestorsRule implements Rule
 				$className,
 				null,
 				null,
-				$docComment->getText()
+				$docComment->getText(),
 			);
 			$extendsTags = $resolvedPhpDoc->getExtendsTags();
 			$implementsTags = $resolvedPhpDoc->getImplementsTags();
@@ -89,7 +89,7 @@ class ClassAncestorsRule implements Rule
 			'Type %s in generic type %s in PHPDoc tag @extends is not subtype of template type %s of class %s.',
 			'PHPDoc tag @extends has invalid type %s.',
 			sprintf('Class %s extends generic class %%s but does not specify its types: %%s', $escapedClassName),
-			sprintf('in extended type %%s of class %s', $escapedClassName)
+			sprintf('in extended type %%s of class %s', $escapedClassName),
 		);
 
 		$implementsErrors = $this->genericAncestorsCheck->check(
@@ -106,7 +106,7 @@ class ClassAncestorsRule implements Rule
 			'Type %s in generic type %s in PHPDoc tag @implements is not subtype of template type %s of interface %s.',
 			'PHPDoc tag @implements has invalid type %s.',
 			sprintf('Class %s implements generic interface %%s but does not specify its types: %%s', $escapedClassName),
-			sprintf('in implemented type %%s of class %s', $escapedClassName)
+			sprintf('in implemented type %%s of class %s', $escapedClassName),
 		);
 
 		foreach ($this->crossCheckInterfacesHelper->check($classReflection) as $error) {

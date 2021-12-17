@@ -54,7 +54,7 @@ class RandomIntFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 				}
 				return null;
 			},
-			$minType instanceof UnionType ? $minType->getTypes() : [$minType]
+			$minType instanceof UnionType ? $minType->getTypes() : [$minType],
 		);
 
 		$maxValues = array_map(
@@ -67,7 +67,7 @@ class RandomIntFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 				}
 				return null;
 			},
-			$maxType instanceof UnionType ? $maxType->getTypes() : [$maxType]
+			$maxType instanceof UnionType ? $maxType->getTypes() : [$maxType],
 		);
 
 		assert(count($minValues) > 0);
@@ -75,7 +75,7 @@ class RandomIntFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 		return IntegerRangeType::fromInterval(
 			in_array(null, $minValues, true) ? null : min($minValues),
-			in_array(null, $maxValues, true) ? null : max($maxValues)
+			in_array(null, $maxValues, true) ? null : max($maxValues),
 		);
 	}
 

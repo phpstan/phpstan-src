@@ -24,7 +24,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	{
 		return new DefinedVariableRule(
 			$this->cliArgumentsVariablesRegistered,
-			$this->checkMaybeUndefinedVariables
+			$this->checkMaybeUndefinedVariables,
 		);
 	}
 

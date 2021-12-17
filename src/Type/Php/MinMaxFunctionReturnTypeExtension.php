@@ -61,7 +61,7 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 				return $this->processType(
 					$functionReflection->getName(),
-					$argumentTypes
+					$argumentTypes,
 				);
 			}
 
@@ -81,13 +81,13 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 					return $scope->getType(new Ternary(
 						new Smaller($args[0]->value, $args[1]->value),
 						$args[0]->value,
-						$args[1]->value
+						$args[1]->value,
 					));
 				} elseif ($functionName === 'max') {
 					return $scope->getType(new Ternary(
 						new Smaller($args[0]->value, $args[1]->value),
 						$args[1]->value,
-						$args[0]->value
+						$args[0]->value,
 					));
 				}
 			}
@@ -113,7 +113,7 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 		return $this->processType(
 			$functionName,
-			$argumentTypes
+			$argumentTypes,
 		);
 	}
 

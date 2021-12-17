@@ -37,7 +37,7 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 			$this->strategy,
 			$this->variance,
 			$this->name,
-			new BenevolentUnionType($types)
+			new BenevolentUnionType($types),
 		);
 	}
 
@@ -50,7 +50,7 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

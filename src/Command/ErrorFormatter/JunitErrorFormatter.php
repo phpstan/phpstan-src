@@ -29,7 +29,7 @@ class JunitErrorFormatter implements ErrorFormatter
 		$result .= sprintf(
 			'<testsuite failures="%d" name="phpstan" tests="%d" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">',
 			$analysisResult->getTotalErrorsCount(),
-			$analysisResult->getTotalErrorsCount()
+			$analysisResult->getTotalErrorsCount(),
 		);
 
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
@@ -37,7 +37,7 @@ class JunitErrorFormatter implements ErrorFormatter
 			$result .= $this->createTestCase(
 				sprintf('%s:%s', $fileName, (string) $fileSpecificError->getLine()),
 				'ERROR',
-				$this->escape($fileSpecificError->getMessage())
+				$this->escape($fileSpecificError->getMessage()),
 			);
 		}
 

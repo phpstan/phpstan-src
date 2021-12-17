@@ -35,7 +35,7 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 		$output = $this->runPath($path, 1);
 		$this->assertStringContainsString(sprintf(
 			'File %s does not exist.',
-			$path
+			$path,
 		), $output);
 	}
 
@@ -58,7 +58,7 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 
 		$symfonyOutput = new SymfonyOutput(
 			$output,
-			new \PHPStan\Command\Symfony\SymfonyStyle(new SymfonyStyle($this->createMock(InputInterface::class), $output))
+			new \PHPStan\Command\Symfony\SymfonyStyle(new SymfonyStyle($this->createMock(InputInterface::class), $output)),
 		);
 
 		$memoryLimitFile = self::getContainer()->getParameter('memoryLimitFile');
@@ -74,7 +74,7 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 			false,
 			null,
 			null,
-			$this->createMock(InputInterface::class)
+			$this->createMock(InputInterface::class),
 		);
 		if (file_exists($memoryLimitFile)) {
 			unlink($memoryLimitFile);

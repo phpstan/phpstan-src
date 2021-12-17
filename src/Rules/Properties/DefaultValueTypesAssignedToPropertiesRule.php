@@ -64,7 +64,7 @@ class DefaultValueTypesAssignedToPropertiesRule implements Rule
 				$classReflection->getDisplayName(),
 				$node->getName(),
 				$propertyType->describe($verbosityLevel),
-				$defaultValueType->describe($verbosityLevel)
+				$defaultValueType->describe($verbosityLevel),
 			))->build(),
 		];
 	}

@@ -48,7 +48,7 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 					$parameterTag->passedByReference(),
 					$parameterTag->isOptional(),
 					$parameterTag->isVariadic(),
-					$parameterTag->getDefaultValue()
+					$parameterTag->getDefaultValue(),
 				);
 			}
 
@@ -57,11 +57,11 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 				$declaringClass,
 				TemplateTypeHelper::resolveTemplateTypes(
 					$methodTags[$methodName]->getReturnType(),
-					$classReflection->getActiveTemplateTypeMap()
+					$classReflection->getActiveTemplateTypeMap(),
 				),
 				$parameters,
 				$methodTags[$methodName]->isStatic(),
-				$this->detectMethodVariadic($parameters)
+				$this->detectMethodVariadic($parameters),
 			);
 		}
 

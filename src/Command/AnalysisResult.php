@@ -56,7 +56,7 @@ class AnalysisResult
 					$b->getLine(),
 					$b->getMessage(),
 				];
-			}
+			},
 		);
 
 		$this->fileSpecificErrors = $fileSpecificErrors;

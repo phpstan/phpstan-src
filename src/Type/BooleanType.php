@@ -45,7 +45,7 @@ class BooleanType implements Type
 	{
 		return TypeCombinator::union(
 			new ConstantStringType(''),
-			new ConstantStringType('1')
+			new ConstantStringType('1'),
 		);
 	}
 
@@ -53,7 +53,7 @@ class BooleanType implements Type
 	{
 		return TypeCombinator::union(
 			new ConstantIntegerType(0),
-			new ConstantIntegerType(1)
+			new ConstantIntegerType(1),
 		);
 	}
 
@@ -61,7 +61,7 @@ class BooleanType implements Type
 	{
 		return TypeCombinator::union(
 			new ConstantFloatType(0.0),
-			new ConstantFloatType(1.0)
+			new ConstantFloatType(1.0),
 		);
 	}
 
@@ -70,7 +70,7 @@ class BooleanType implements Type
 		return new ConstantArrayType(
 			[new ConstantIntegerType(0)],
 			[$this],
-			1
+			1,
 		);
 	}
 

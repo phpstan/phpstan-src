@@ -45,7 +45,7 @@ class UnsetRule implements Rule
 			$hasVariable = $scope->hasVariableType($node->name);
 			if ($hasVariable->no()) {
 				return RuleErrorBuilder::message(
-					sprintf('Call to function unset() contains undefined variable $%s.', $node->name)
+					sprintf('Call to function unset() contains undefined variable $%s.', $node->name),
 				)->line($node->getLine())->build();
 			}
 		} elseif ($node instanceof Node\Expr\ArrayDimFetch && $node->dim !== null) {
@@ -57,8 +57,8 @@ class UnsetRule implements Rule
 					sprintf(
 						'Cannot unset offset %s on %s.',
 						$dimType->describe(VerbosityLevel::value()),
-						$type->describe(VerbosityLevel::value())
-					)
+						$type->describe(VerbosityLevel::value()),
+					),
 				)->line($node->getLine())->build();
 			}
 

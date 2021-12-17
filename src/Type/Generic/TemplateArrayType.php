@@ -39,7 +39,7 @@ final class TemplateArrayType extends ArrayType implements TemplateType
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

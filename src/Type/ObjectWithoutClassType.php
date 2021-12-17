@@ -45,7 +45,7 @@ class ObjectWithoutClassType implements SubtractableType
 		}
 
 		return TrinaryLogic::createFromBoolean(
-			$type instanceof self || $type instanceof TypeWithClassName
+			$type instanceof self || $type instanceof TypeWithClassName,
 		);
 	}
 
@@ -117,7 +117,7 @@ class ObjectWithoutClassType implements SubtractableType
 				}
 
 				return $description;
-			}
+			},
 		);
 	}
 

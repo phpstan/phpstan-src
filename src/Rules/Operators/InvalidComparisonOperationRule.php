@@ -64,7 +64,7 @@ class InvalidComparisonOperationRule implements Rule
 					'Comparison operation "%s" between %s and %s results in an error.',
 					$node->getOperatorSigil(),
 					$scope->getType($node->left)->describe(VerbosityLevel::value()),
-					$scope->getType($node->right)->describe(VerbosityLevel::value())
+					$scope->getType($node->right)->describe(VerbosityLevel::value()),
 				))->line($node->left->getLine())->build(),
 			];
 		}
@@ -101,7 +101,7 @@ class InvalidComparisonOperationRule implements Rule
 			'',
 			static function (Type $type) use ($acceptedType): bool {
 				return $acceptedType->isSuperTypeOf($type)->yes();
-			}
+			},
 		)->getType();
 
 		if ($type instanceof ErrorType) {
@@ -128,7 +128,7 @@ class InvalidComparisonOperationRule implements Rule
 			'',
 			static function (Type $type): bool {
 				return $type->isArray()->yes();
-			}
+			},
 		)->getType();
 
 		if (TypeCombinator::containsNull($type) && !$type instanceof NullType) {

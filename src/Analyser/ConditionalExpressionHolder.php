@@ -56,7 +56,7 @@ class ConditionalExpressionHolder
 			'%s => %s (%s)',
 			implode(' && ', $parts),
 			$this->typeHolder->getType()->describe(VerbosityLevel::precise()),
-			$this->typeHolder->getCertainty()->describe()
+			$this->typeHolder->getCertainty()->describe(),
 		);
 	}
 

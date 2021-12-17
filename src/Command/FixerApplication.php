@@ -159,7 +159,7 @@ class FixerApplication
 				}
 
 			},
-			min($this->cpuCoreCounter->getNumberOfCpuCores(), $this->maximumNumberOfProcesses)
+			min($this->cpuCoreCounter->getNumberOfCpuCores(), $this->maximumNumberOfProcesses),
 		);
 
 		$server->on('connection', function (ConnectionInterface $connection) use ($loop, $projectConfigFile, $input, $output, $fileSpecificErrors, $notFileSpecificErrors, $mainScript, $filesCount, $reanalyseProcessQueue, $inceptionResult): void {
@@ -210,7 +210,7 @@ class FixerApplication
 					$data['data']['tmpFile'],
 					$data['data']['insteadOfFile'],
 					$data['data']['fixerSuggestionId'],
-					$input
+					$input,
 				)->done(static function (string $output) use ($encoder, $id): void {
 					$encoder->write(['id' => $id, 'response' => Json::decode($output, Json::FORCE_ARRAY)]);
 				}, static function (Throwable $e) use ($encoder, $id, $output): void {
@@ -245,7 +245,7 @@ class FixerApplication
 					$mainScript,
 					$projectConfigFile,
 					$this->fixerSuggestionId,
-					$input
+					$input,
 				)->done(function (array $json) use ($encoder, $changes): void {
 					$this->processInProgress = null;
 					$this->fixerSuggestionId = null;
@@ -403,8 +403,8 @@ class FixerApplication
 						'cafile' => CaBundle::getBundledCaBundlePath(),
 					],
 					'dns' => '1.1.1.1',
-				]
-			)
+				],
+			),
 		);
 
 		/** @var array{url: string, version: string} $latestInfo */
@@ -509,7 +509,7 @@ class FixerApplication
 				escapeshellarg($fixerSuggestionId),
 				'--allow-parallel',
 			],
-			$input
+			$input,
 		));
 
 		return $runnableQueue->queue($process, $schedule->getNumberOfProcesses());
@@ -540,13 +540,13 @@ class FixerApplication
 				$resultCache,
 				$inceptionResult->getErrorOutput(),
 				false,
-				true
+				true,
 			)->getAnalyserResult();
 			$intermediateErrors = $ignoredErrorHelperResult->process(
 				$result->getErrors(),
 				$isOnlyFiles,
 				$inceptionFiles,
-				count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit()
+				count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit(),
 			);
 			$finalFileSpecificErrors = [];
 			$finalNotFileSpecificErrors = [];
@@ -575,7 +575,7 @@ class FixerApplication
 			'fixer:worker',
 			$projectConfigFile,
 			$options,
-			$input
+			$input,
 		));
 		$this->processInProgress = $process->run();
 

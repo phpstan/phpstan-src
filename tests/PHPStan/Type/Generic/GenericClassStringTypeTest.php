@@ -85,7 +85,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					null,
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				new ConstantStringType(Exception::class),
 				TrinaryLogic::createYes(),
@@ -95,7 +95,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new ObjectType(Exception::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				new ConstantStringType(Exception::class),
 				TrinaryLogic::createYes(),
@@ -105,7 +105,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new ObjectType(Exception::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				new ConstantStringType(stdClass::class),
 				TrinaryLogic::createNo(),
@@ -115,7 +115,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new ObjectType(Exception::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				new ConstantStringType(InvalidArgumentException::class),
 				TrinaryLogic::createYes(),
@@ -125,7 +125,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new ObjectType(Exception::class),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				new ConstantStringType(Throwable::class),
 				TrinaryLogic::createNo(),
@@ -157,7 +157,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -199,7 +199,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					null,
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				new ConstantStringType('NonexistentClass'),
 				TrinaryLogic::createNo(),
@@ -209,7 +209,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithClass('Foo'),
 					'T',
 					null,
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				new UnionType([
 					new ConstantStringType(DateTime::class),
@@ -222,7 +222,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithClass('Foo'),
 					'T',
 					new ObjectWithoutClassType(),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				new ClassStringType(),
 				TrinaryLogic::createYes(),
@@ -232,13 +232,13 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithClass('Foo'),
 					'T',
 					new ObjectWithoutClassType(),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				new GenericClassStringType(TemplateTypeFactory::create(
 					TemplateTypeScope::createWithClass('Boo'),
 					'U',
 					new ObjectWithoutClassType(),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				TrinaryLogic::createMaybe(),
 			],
@@ -247,7 +247,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithClass('Foo'),
 					'T',
 					new ObjectWithoutClassType(),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				new UnionType([new IntegerType(), new StringType()]),
 				TrinaryLogic::createMaybe(),
@@ -257,7 +257,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithClass('Foo'),
 					'T',
 					new ObjectWithoutClassType(),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				)),
 				new BenevolentUnionType([new IntegerType(), new StringType()]),
 				TrinaryLogic::createMaybe(),
@@ -278,7 +278,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -323,14 +323,14 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expected,
 			$actual,
-			sprintf('%s -> equals(%s)', $typeDescription, $otherTypeDescription)
+			sprintf('%s -> equals(%s)', $typeDescription, $otherTypeDescription),
 		);
 
 		$actual = $otherType->equals($type);
 		$this->assertSame(
 			$expected,
 			$actual,
-			sprintf('%s -> equals(%s)', $otherTypeDescription, $typeDescription)
+			sprintf('%s -> equals(%s)', $otherTypeDescription, $typeDescription),
 		);
 	}
 

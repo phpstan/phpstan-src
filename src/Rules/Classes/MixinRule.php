@@ -79,7 +79,7 @@ class MixinRule implements Rule
 			$className,
 			null,
 			null,
-			$docComment->getText()
+			$docComment->getText(),
 		);
 		$mixinTags = $resolvedPhpDoc->getMixinTags();
 		$errors = [];
@@ -102,14 +102,14 @@ class MixinRule implements Rule
 				'PHPDoc tag @mixin contains generic type %s but class %s is not generic.',
 				'Generic type %s in PHPDoc tag @mixin does not specify all template types of class %s: %s',
 				'Generic type %s in PHPDoc tag @mixin specifies %d template types, but class %s supports only %d: %s',
-				'Type %s in generic type %s in PHPDoc tag @mixin is not subtype of template type %s of class %s.'
+				'Type %s in generic type %s in PHPDoc tag @mixin is not subtype of template type %s of class %s.',
 			));
 
 			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($type) as [$innerName, $genericTypeNames]) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @mixin contains generic %s but does not specify its types: %s',
 					$innerName,
-					implode(', ', $genericTypeNames)
+					implode(', ', $genericTypeNames),
 				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 			}
 
@@ -123,7 +123,7 @@ class MixinRule implements Rule
 						$errors,
 						$this->classCaseSensitivityCheck->checkClassNames([
 							new ClassNameNodePair($class, $node),
-						])
+						]),
 					);
 				}
 			}

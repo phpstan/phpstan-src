@@ -33,7 +33,7 @@ class StrictMixedType implements CompoundType
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean(
-			$acceptingType instanceof MixedType && !$acceptingType instanceof TemplateMixedType
+			$acceptingType instanceof MixedType && !$acceptingType instanceof TemplateMixedType,
 		);
 	}
 

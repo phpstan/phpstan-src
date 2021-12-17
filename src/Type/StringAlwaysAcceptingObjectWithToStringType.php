@@ -18,7 +18,7 @@ class StringAlwaysAcceptingObjectWithToStringType extends StringType
 
 			$typeClass = $reflectionProvider->getClass($type->getClassName());
 			return TrinaryLogic::createFromBoolean(
-				$typeClass->hasNativeMethod('__toString')
+				$typeClass->hasNativeMethod('__toString'),
 			);
 		}
 

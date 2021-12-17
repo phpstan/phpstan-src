@@ -39,7 +39,7 @@ final class TemplateFloatType extends FloatType implements TemplateType
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

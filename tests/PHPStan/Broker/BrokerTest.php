@@ -49,12 +49,12 @@ class BrokerTest extends PHPStanTestCase
 			self::getContainer()->getByType(PhpVersion::class),
 			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
 			self::getContainer()->getByType(StubPhpDocProvider::class),
-			self::getContainer()->getByType(PhpStormStubsSourceStubber::class)
+			self::getContainer()->getByType(PhpStormStubsSourceStubber::class),
 		);
 		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
 		$this->broker = new Broker(
 			$reflectionProvider,
-			[]
+			[],
 		);
 		$classReflectionExtensionRegistryProvider->setBroker($this->broker);
 	}

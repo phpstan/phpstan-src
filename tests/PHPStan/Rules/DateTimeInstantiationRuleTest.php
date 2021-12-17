@@ -44,7 +44,7 @@ class DateTimeInstantiationRuleTest extends RuleTestCase
 					'Instantiating DateTime with 2020-04-31 produces a warning: The parsed date was invalid',
 					20,
 				],*/
-			]
+			],
 		);
 	}
 

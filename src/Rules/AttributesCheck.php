@@ -120,7 +120,7 @@ class AttributesCheck
 						'Missing parameter $%s in call to ' . $attributeClassName . ' constructor.',
 						'Unknown parameter $%s in call to ' . $attributeClassName . ' constructor.',
 						'Return type of call to ' . $attributeClassName . ' constructor contains unresolvable type.',
-					]
+					],
 				);
 
 				foreach ($parameterErrors as $error) {

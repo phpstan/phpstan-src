@@ -47,7 +47,7 @@ class VariableTypeHolder
 		}
 		return new self(
 			$type,
-			$this->getCertainty()->and($other->getCertainty())
+			$this->getCertainty()->and($other->getCertainty()),
 		);
 	}
 

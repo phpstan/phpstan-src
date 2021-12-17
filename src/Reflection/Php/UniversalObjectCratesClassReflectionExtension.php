@@ -32,7 +32,7 @@ class UniversalObjectCratesClassReflectionExtension
 		return self::isUniversalObjectCrate(
 			$this->reflectionProvider,
 			$this->classes,
-			$classReflection
+			$classReflection,
 		);
 	}
 

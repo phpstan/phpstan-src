@@ -33,13 +33,13 @@ class UniversalObjectCratesClassReflectionExtensionTest extends PHPStanTestCase
 			new ObjectType('UniversalObjectCreates\DifferentGetSetTypesValue'),
 			$extension
 				->getProperty($reflectionProvider->getClass('UniversalObjectCreates\DifferentGetSetTypes'), 'foo')
-				->getReadableType()
+				->getReadableType(),
 		);
 		$this->assertEquals(
 			new StringType(),
 			$extension
 				->getProperty($reflectionProvider->getClass('UniversalObjectCreates\DifferentGetSetTypes'), 'foo')
-				->getWritableType()
+				->getWritableType(),
 		);
 	}
 

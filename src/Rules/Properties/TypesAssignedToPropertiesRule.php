@@ -65,7 +65,7 @@ class TypesAssignedToPropertiesRule implements Rule
 		foreach ($propertyReflections as $propertyReflection) {
 			$errors = array_merge($errors, $this->processSingleProperty(
 				$propertyReflection,
-				$node
+				$node,
 			));
 		}
 
@@ -97,7 +97,7 @@ class TypesAssignedToPropertiesRule implements Rule
 					'%s (%s) does not accept %s.',
 					$propertyDescription,
 					$propertyType->describe($verbosityLevel),
-					$assignedValueType->describe($verbosityLevel)
+					$assignedValueType->describe($verbosityLevel),
 				))->build(),
 			];
 		}

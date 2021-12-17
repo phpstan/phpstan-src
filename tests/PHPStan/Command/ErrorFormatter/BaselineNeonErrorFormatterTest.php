@@ -116,7 +116,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getOutput()
+			$this->getOutput(),
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertSame(trim(Neon::encode(['parameters' => ['ignoreErrors' => $expected]], Neon::BLOCK)), trim($this->getOutputContent()), sprintf('%s: output do not match', $message));
@@ -134,11 +134,11 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			[],
 			false,
 			null,
-			true
+			true,
 		);
 		$formatter->formatErrors(
 			$result,
-			$this->getOutput()
+			$this->getOutput(),
 		);
 
 		self::assertSame(
@@ -153,9 +153,9 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 							],
 						],
 					],
-				], Neon::BLOCK)
+				], Neon::BLOCK),
 			),
-			trim($this->getOutputContent())
+			trim($this->getOutputContent()),
 		);
 	}
 
@@ -169,12 +169,12 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			[],
 			false,
 			null,
-			true
+			true,
 		);
 
 		$formatter->formatErrors(
 			$result,
-			$this->getOutput()
+			$this->getOutput(),
 		);
 		self::assertSame(
 			trim(
@@ -188,9 +188,9 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 							],
 						],
 					],
-				], Neon::BLOCK)
+				], Neon::BLOCK),
 			),
-			trim($this->getOutputContent())
+			trim($this->getOutputContent()),
 		);
 	}
 
@@ -231,12 +231,12 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			[],
 			false,
 			null,
-			true
+			true,
 		);
 
 		$formatter->formatErrors(
 			$result,
-			$this->getOutput()
+			$this->getOutput(),
 		);
 		self::assertSame(
 			trim(Neon::encode([
@@ -280,7 +280,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 					],
 				],
 			], Neon::BLOCK)),
-			$f = trim($this->getOutputContent())
+			$f = trim($this->getOutputContent()),
 		);
 	}
 

@@ -51,7 +51,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		if ($context->truthy()) {
 			$type = TypeCombinator::intersect(
 				new ArrayType(new MixedType(), new MixedType()),
-				new HasOffsetType($keyType)
+				new HasOffsetType($keyType),
 			);
 		} else {
 			$type = new HasOffsetType($keyType);
@@ -62,7 +62,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 			$type,
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

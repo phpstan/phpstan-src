@@ -70,7 +70,7 @@ class ImpossibleCheckTypeMethodCallRule implements Rule
 					'Call to method %s::%s()%s will always evaluate to false.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs())
+					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
@@ -80,7 +80,7 @@ class ImpossibleCheckTypeMethodCallRule implements Rule
 					'Call to method %s::%s()%s will always evaluate to true.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs())
+					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
 				)))->build(),
 			];
 		}

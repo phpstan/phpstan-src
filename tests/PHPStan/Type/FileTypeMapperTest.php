@@ -101,13 +101,13 @@ class FileTypeMapperTest extends PHPStanTestCase
 			Foo::class,
 			null,
 			'addPages',
-			'/** @param Foo[]|Foo|\Iterator $pages */'
+			'/** @param Foo[]|Foo|\Iterator $pages */',
 		);
 
 		$this->assertCount(1, $resolved->getParamTags());
 		$this->assertSame(
 			'(DependentPhpDocs\Foo&iterable<DependentPhpDocs\Foo>)|(iterable<DependentPhpDocs\Foo>&Iterator)',
-			$resolved->getParamTags()['pages']->getType()->describe(VerbosityLevel::precise())
+			$resolved->getParamTags()['pages']->getType()->describe(VerbosityLevel::precise()),
 		);
 	}
 
@@ -128,7 +128,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertNotNull($resolved->getThrowsTag());
 		$this->assertSame(
 			RuntimeException::class,
-			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise())
+			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise()),
 		);
 
 		$resolved = $fileTypeMapper->getResolvedPhpDoc($realpath, \ThrowsPhpDocs\Foo::class, null, 'throwRuntimeAndLogicException', '/**
@@ -138,7 +138,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertNotNull($resolved->getThrowsTag());
 		$this->assertSame(
 			'LogicException|RuntimeException',
-			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise())
+			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise()),
 		);
 
 		$resolved = $fileTypeMapper->getResolvedPhpDoc($realpath, \ThrowsPhpDocs\Foo::class, null, 'throwRuntimeAndLogicException2', '/**
@@ -149,7 +149,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 		$this->assertNotNull($resolved->getThrowsTag());
 		$this->assertSame(
 			'LogicException|RuntimeException',
-			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise())
+			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise()),
 		);
 	}
 
@@ -170,7 +170,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 			\CyclicPhpDocs\Foo::class,
 			null,
 			'getIterator',
-			'/** @return iterable<Foo> | Foo */'
+			'/** @return iterable<Foo> | Foo */',
 		);
 
 		/** @var ReturnTag $returnTag */

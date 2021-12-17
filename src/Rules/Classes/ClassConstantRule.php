@@ -89,7 +89,7 @@ class ClassConstantRule implements Rule
 						RuleErrorBuilder::message(sprintf(
 							'Access to parent::%s but %s does not extend any class.',
 							$constantName,
-							$currentClassReflection->getDisplayName()
+							$currentClassReflection->getDisplayName(),
 						))->build(),
 					];
 				}
@@ -108,7 +108,7 @@ class ClassConstantRule implements Rule
 
 					return [
 						RuleErrorBuilder::message(
-							sprintf('Access to constant %s on an unknown class %s.', $constantName, $className)
+							sprintf('Access to constant %s on an unknown class %s.', $constantName, $className),
 						)->discoveringSymbolsTip()->build(),
 					];
 				} else {
@@ -128,7 +128,7 @@ class ClassConstantRule implements Rule
 				sprintf('Access to constant %s on an unknown class %%s.', SprintfHelper::escapeFormatString($constantName)),
 				static function (Type $type) use ($constantName): bool {
 					return $type->canAccessConstants()->yes() && $type->hasConstant($constantName)->yes();
-				}
+				},
 			);
 			$classType = $classTypeResult->getType();
 			if ($classType instanceof ErrorType) {
@@ -169,7 +169,7 @@ class ClassConstantRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access constant %s on %s.',
 					$constantName,
-					$typeForDescribe->describe(VerbosityLevel::typeOnly())
+					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 				))->build(),
 			]);
 		}
@@ -183,7 +183,7 @@ class ClassConstantRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Access to undefined constant %s::%s.',
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
-					$constantName
+					$constantName,
 				))->build(),
 			]);
 		}
@@ -195,7 +195,7 @@ class ClassConstantRule implements Rule
 					'Access to %s constant %s of class %s.',
 					$constantReflection->isPrivate() ? 'private' : 'protected',
 					$constantName,
-					$constantReflection->getDeclaringClass()->getDisplayName()
+					$constantReflection->getDeclaringClass()->getDisplayName(),
 				))->build(),
 			]);
 		}

@@ -66,20 +66,20 @@ abstract class RuleTestCase extends PHPStanTestCase
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 				[],
 				[],
-				true
+				true,
 			);
 			$fileAnalyser = new FileAnalyser(
 				$this->createScopeFactory($reflectionProvider, $typeSpecifier),
 				$nodeScopeResolver,
 				$this->getParser(),
 				self::getContainer()->getByType(DependencyResolver::class),
-				true
+				true,
 			);
 			$this->analyser = new Analyser(
 				$fileAnalyser,
 				$registry,
 				$nodeScopeResolver,
-				50
+				50,
 			);
 		}
 
@@ -97,7 +97,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			$files,
 			null,
 			null,
-			true
+			true,
 		);
 		if (count($analyserResult->getInternalErrors()) > 0) {
 			$this->fail(implode("\n", $analyserResult->getInternalErrors()));
@@ -123,7 +123,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				}
 				return $strictlyTypedSprintf($error[1], $error[0], $error[2] ?? null);
 			},
-			$expectedErrors
+			$expectedErrors,
 		);
 
 		$actualErrors = array_map(
@@ -134,7 +134,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				}
 				return $strictlyTypedSprintf($line, $error->getMessage(), $error->getTip());
 			},
-			$actualErrors
+			$actualErrors,
 		);
 
 		$this->assertSame(implode("\n", $expectedErrors) . "\n", implode("\n", $actualErrors) . "\n");

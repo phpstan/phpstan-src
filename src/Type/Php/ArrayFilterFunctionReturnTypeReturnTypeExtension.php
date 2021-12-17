@@ -55,7 +55,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 
 			if ($callbackArg === null) {
 				return TypeCombinator::union(
-					...array_map([$this, 'removeFalsey'], TypeUtils::getArrays($arrayArgType))
+					...array_map([$this, 'removeFalsey'], TypeUtils::getArrays($arrayArgType)),
 				);
 			}
 

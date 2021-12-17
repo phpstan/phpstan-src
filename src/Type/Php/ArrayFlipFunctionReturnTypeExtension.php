@@ -38,7 +38,7 @@ class ArrayFlipFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 			$flippedArrayType = new ArrayType(
 				$itemType,
-				$keyType
+				$keyType,
 			);
 
 			if ($argType->isIterableAtLeastOnce()->yes()) {

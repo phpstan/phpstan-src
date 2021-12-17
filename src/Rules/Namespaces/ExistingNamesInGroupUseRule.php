@@ -104,7 +104,7 @@ class ExistingNamesInGroupUseRule implements Rule
 				return RuleErrorBuilder::message(sprintf(
 					'Function %s used with incorrect case: %s.',
 					$realName,
-					$usedName
+					$usedName,
 				))->line($name->getLine())->build();
 			}
 		}

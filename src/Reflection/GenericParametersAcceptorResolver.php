@@ -37,8 +37,8 @@ class GenericParametersAcceptorResolver
 				$parametersAcceptor->getTemplateTypeMap()->map(static function (string $name, Type $type): Type {
 					return new ErrorType();
 				})->getTypes(),
-				$typeMap->getTypes()
-			))
+				$typeMap->getTypes(),
+			)),
 		);
 	}
 

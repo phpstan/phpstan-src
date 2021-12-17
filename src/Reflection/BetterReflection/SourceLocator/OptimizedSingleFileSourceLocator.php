@@ -53,7 +53,7 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 					$reflector,
 					$classNode->getNode(),
 					$classNode->getLocatedSource(),
-					$classNode->getNamespace()
+					$classNode->getNamespace(),
 				);
 				if (!$classReflection instanceof ReflectionClass) {
 					throw new ShouldNotHappenException();
@@ -74,7 +74,7 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 				$reflector,
 				$functionNodes[$functionName]->getNode(),
 				$functionNodes[$functionName]->getLocatedSource(),
-				$functionNodes[$functionName]->getNamespace()
+				$functionNodes[$functionName]->getNamespace(),
 			);
 			if (!$functionReflection instanceof ReflectionFunction) {
 				throw new ShouldNotHappenException();
@@ -91,7 +91,7 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 						$reflector,
 						$stmtConst->getNode(),
 						$stmtConst->getLocatedSource(),
-						$stmtConst->getNamespace()
+						$stmtConst->getNamespace(),
 					);
 					if (!$constantReflection instanceof ReflectionConstant) {
 						throw new ShouldNotHappenException();
@@ -109,7 +109,7 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 						$stmtConst->getNode(),
 						$stmtConst->getLocatedSource(),
 						$stmtConst->getNamespace(),
-						$i
+						$i,
 					);
 					if (!$constantReflection instanceof ReflectionConstant) {
 						throw new ShouldNotHappenException();

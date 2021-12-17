@@ -23,8 +23,8 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				new ClassCaseSensitivityCheck($broker, true),
 				new GenericObjectTypeCheck(),
 				$typeAliasResolver,
-				true
-			)
+				true,
+			),
 		);
 	}
 

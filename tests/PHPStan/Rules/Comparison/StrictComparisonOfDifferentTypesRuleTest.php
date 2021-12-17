@@ -229,7 +229,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					'Strict comparison using === between 1000 and 1000 will always evaluate to true.',
 					910,
 				],
-			]
+			],
 		);
 	}
 
@@ -367,7 +367,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					'Strict comparison using === between mixed and \'foo\' will always evaluate to false.',
 					808,
 				],
-			]
+			],
 		);
 	}
 

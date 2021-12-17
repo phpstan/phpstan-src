@@ -59,7 +59,7 @@ class DummyConstructorReflection implements MethodReflection
 				null,
 				[],
 				false,
-				new VoidType()
+				new VoidType(),
 			),
 		];
 	}

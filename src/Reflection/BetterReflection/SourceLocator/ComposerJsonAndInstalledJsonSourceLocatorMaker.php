@@ -74,9 +74,9 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			...array_map(function (array $package) use ($projectInstallationPath, $installedJsonDirectoryPath): array {
 				return $this->prefixPaths(
 					$this->packageToClassMapPaths($package),
-					$this->packagePrefixPath($projectInstallationPath, $installedJsonDirectoryPath, $package)
+					$this->packagePrefixPath($projectInstallationPath, $installedJsonDirectoryPath, $package),
 				);
-			}, $installed)
+			}, $installed),
 		);
 		$classMapFiles = array_filter($classMapPaths, 'is_file');
 		$classMapDirectories = array_filter($classMapPaths, 'is_dir');
@@ -85,9 +85,9 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			...array_map(function (array $package) use ($projectInstallationPath, $installedJsonDirectoryPath): array {
 				return $this->prefixPaths(
 					$this->packageToFilePaths($package),
-					$this->packagePrefixPath($projectInstallationPath, $installedJsonDirectoryPath, $package)
+					$this->packagePrefixPath($projectInstallationPath, $installedJsonDirectoryPath, $package),
 				);
-			}, $installed)
+			}, $installed),
 		);
 
 		$locators = [];
@@ -99,10 +99,10 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 						$this->packageToPsr4AutoloadNamespaces($package),
 						$projectInstallationPath,
 						$installedJsonDirectoryPath,
-						$package
+						$package,
 					);
-				}, $installed)
-			))
+				}, $installed),
+			)),
 		);
 
 		$locators[] = $this->optimizedPsrAutoloaderLocatorFactory->create(
@@ -113,10 +113,10 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 						$this->packageToPsr0AutoloadNamespaces($package),
 						$projectInstallationPath,
 						$installedJsonDirectoryPath,
-						$package
+						$package,
 					);
-				}, $installed)
-			))
+				}, $installed),
+			)),
 		);
 
 		foreach ($classMapDirectories as $classMapDirectory) {

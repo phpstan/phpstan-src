@@ -56,7 +56,7 @@ class ArrowFunctionReturnTypeRule implements Rule
 			'Anonymous function with return type void returns %s but should not return anything.',
 			'Anonymous function should return %s but returns %s.',
 			'Anonymous function should never return but return statement found.',
-			$generatorType->isSuperTypeOf($returnType)->yes()
+			$generatorType->isSuperTypeOf($returnType)->yes(),
 		);
 	}
 

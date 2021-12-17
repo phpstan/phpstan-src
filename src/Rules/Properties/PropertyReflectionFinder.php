@@ -38,8 +38,8 @@ class PropertyReflectionFinder
 					$name,
 					$propertyFetch->name instanceof Expr ? $scope->filterByTruthyValue(new Expr\BinaryOp\Identical(
 						$propertyFetch->name,
-						new String_($name)
-					)) : $scope
+						new String_($name),
+					)) : $scope,
 				);
 				if ($reflection === null) {
 					continue;
@@ -72,8 +72,8 @@ class PropertyReflectionFinder
 				$name,
 				$propertyFetch->name instanceof Expr ? $scope->filterByTruthyValue(new Expr\BinaryOp\Identical(
 					$propertyFetch->name,
-					new String_($name)
-				)) : $scope
+					new String_($name),
+				)) : $scope,
 			);
 			if ($reflection === null) {
 				continue;
@@ -124,7 +124,7 @@ class PropertyReflectionFinder
 			$scope,
 			$propertyName,
 			$originalProperty->getReadableType(),
-			$originalProperty->getWritableType()
+			$originalProperty->getWritableType(),
 		);
 	}
 

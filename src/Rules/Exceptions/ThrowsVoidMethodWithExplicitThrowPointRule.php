@@ -70,7 +70,7 @@ class ThrowsVoidMethodWithExplicitThrowPointRule implements Rule
 					'Method %s::%s() throws exception %s but the PHPDoc contains @throws void.',
 					$methodReflection->getDeclaringClass()->getDisplayName(),
 					$methodReflection->getName(),
-					$throwPointType->describe(VerbosityLevel::typeOnly())
+					$throwPointType->describe(VerbosityLevel::typeOnly()),
 				))->line($throwPoint->getNode()->getLine())->build();
 			}
 		}

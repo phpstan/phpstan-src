@@ -26,7 +26,7 @@ class OptimizedDirectorySourceLocatorFactory
 		return new OptimizedDirectorySourceLocator(
 			$this->fileNodesFetcher,
 			$this->phpVersion,
-			$this->fileFinder->findFiles([$directory])->getFiles()
+			$this->fileFinder->findFiles([$directory])->getFiles(),
 		);
 	}
 
@@ -38,7 +38,7 @@ class OptimizedDirectorySourceLocatorFactory
 		return new OptimizedDirectorySourceLocator(
 			$this->fileNodesFetcher,
 			$this->phpVersion,
-			$files
+			$files,
 		);
 	}
 

@@ -86,7 +86,7 @@ class ExportedFunctionNode implements ExportedNode, JsonSerializable
 			$properties['phpDoc'],
 			$properties['byRef'],
 			$properties['returnType'],
-			$properties['parameters']
+			$properties['parameters'],
 		);
 	}
 
@@ -124,7 +124,7 @@ class ExportedFunctionNode implements ExportedNode, JsonSerializable
 					throw new ShouldNotHappenException();
 				}
 				return ExportedParameterNode::decode($parameterData['data']);
-			}, $data['parameters'])
+			}, $data['parameters']),
 		);
 	}
 

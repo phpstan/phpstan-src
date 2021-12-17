@@ -43,7 +43,7 @@ trait MaybeObjectTypeTrait
 			false,
 			static function (Type $type): Type {
 				return $type;
-			}
+			},
 		);
 	}
 
@@ -71,7 +71,7 @@ trait MaybeObjectTypeTrait
 			false,
 			static function (Type $type): Type {
 				return $type;
-			}
+			},
 		);
 	}
 

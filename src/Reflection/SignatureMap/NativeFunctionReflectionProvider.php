@@ -113,7 +113,7 @@ class NativeFunctionReflectionProvider
 								new FloatType(),
 								new NullType(),
 								new BooleanType(),
-							])
+							]),
 						);
 					}
 
@@ -130,11 +130,11 @@ class NativeFunctionReflectionProvider
 						TypehintHelper::decideType($type, $phpDocType),
 						$parameterSignature->passedByReference(),
 						$parameterSignature->isVariadic(),
-						$defaultValue
+						$defaultValue,
 					);
 				}, $functionSignature->getParameters()),
 				$functionSignature->isVariadic(),
-				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDoc !== null ? $this->getReturnTypeFromPhpDoc($phpDoc) : null)
+				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDoc !== null ? $this->getReturnTypeFromPhpDoc($phpDoc) : null),
 			);
 
 			$i++;
@@ -171,7 +171,7 @@ class NativeFunctionReflectionProvider
 			$variants,
 			$throwType,
 			$hasSideEffects,
-			$isDeprecated
+			$isDeprecated,
 		);
 		self::$functionMap[$lowerCasedFunctionName] = $functionReflection;
 

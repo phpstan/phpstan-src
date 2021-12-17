@@ -134,7 +134,7 @@ class IgnoredErrorHelperResult
 				if (!$error->canBeIgnored()) {
 					$addErrors[] = sprintf(
 						'Error message "%s" cannot be ignored, use excludePaths instead.',
-						$error->getMessage()
+						$error->getMessage(),
 					);
 					return true;
 				}
@@ -200,7 +200,7 @@ class IgnoredErrorHelperResult
 				$unmatchedIgnoredError['count'],
 				$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
 				$unmatchedIgnoredError['realCount'],
-				$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times'
+				$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times',
 			), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false);
 		}
 
@@ -222,7 +222,7 @@ class IgnoredErrorHelperResult
 							$unmatchedIgnoredError['count'],
 							$unmatchedIgnoredError['count'] === 1 ? 'time' : 'times',
 							$unmatchedIgnoredError['realCount'],
-							$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times'
+							$unmatchedIgnoredError['realCount'] === 1 ? 'time' : 'times',
 						), $unmatchedIgnoredError['file'], $unmatchedIgnoredError['line'], false);
 					}
 				} elseif (isset($unmatchedIgnoredError['realPath'])) {
@@ -233,16 +233,16 @@ class IgnoredErrorHelperResult
 					$errors[] = new Error(
 						sprintf(
 							'Ignored error pattern %s was not matched in reported errors.',
-							IgnoredError::stringifyPattern($unmatchedIgnoredError)
+							IgnoredError::stringifyPattern($unmatchedIgnoredError),
 						),
 						$unmatchedIgnoredError['realPath'],
 						null,
-						false
+						false,
 					);
 				} elseif (!$onlyFiles) {
 					$errors[] = sprintf(
 						'Ignored error pattern %s was not matched in reported errors.',
-						IgnoredError::stringifyPattern($unmatchedIgnoredError)
+						IgnoredError::stringifyPattern($unmatchedIgnoredError),
 					);
 				}
 			}

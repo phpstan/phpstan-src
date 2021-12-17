@@ -53,7 +53,7 @@ class AccessPrivateConstantThroughStaticRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Unsafe access to private constant %s::%s through static::.',
 				$constant->getDeclaringClass()->getDisplayName(),
-				$constantName
+				$constantName,
 			))->build(),
 		];
 	}

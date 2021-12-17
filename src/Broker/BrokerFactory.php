@@ -26,7 +26,7 @@ class BrokerFactory
 	{
 		return new Broker(
 			$this->container->getByType(ReflectionProvider::class),
-			$this->container->getParameter('universalObjectCratesClasses')
+			$this->container->getParameter('universalObjectCratesClasses'),
 		);
 	}
 

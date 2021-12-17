@@ -77,7 +77,7 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 			$properties['name'],
 			$properties['phpDoc'],
 			$properties['extends'],
-			$properties['statements']
+			$properties['statements'],
 		);
 	}
 
@@ -112,7 +112,7 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 				$nodeType = $node['type'];
 
 				return $nodeType::decode($node['data']);
-			}, $data['statements'])
+			}, $data['statements']),
 		);
 	}
 

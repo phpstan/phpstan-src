@@ -55,7 +55,7 @@ class ElseIfConstantConditionRule implements Rule
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Elseif condition is always %s.',
-					$exprType->getValue() ? 'true' : 'false'
+					$exprType->getValue() ? 'true' : 'false',
 				)))->line($node->cond->getLine())
 					->identifier('deadCode.elseifConstantCondition')
 					->metadata([

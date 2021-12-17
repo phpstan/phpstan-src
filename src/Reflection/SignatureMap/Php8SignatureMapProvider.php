@@ -144,7 +144,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		if ($this->functionSignatureMapProvider->hasMethodSignature($className, $methodName)) {
 			return $this->mergeSignatures(
 				$signature,
-				$this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant)
+				$this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant),
 			);
 		}
 
@@ -177,7 +177,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName)) {
 			return $this->mergeSignatures(
 				$signature,
-				$this->functionSignatureMapProvider->getFunctionSignature($functionName, $className)
+				$this->functionSignatureMapProvider->getFunctionSignature($functionName, $className),
 			);
 		}
 
@@ -202,12 +202,12 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 					$nativeParameterType,
 					TypehintHelper::decideType(
 						$nativeParameter->getType(),
-						$functionMapParameter->getType()
-					)
+						$functionMapParameter->getType(),
+					),
 				),
 				$nativeParameterType,
 				$nativeParameter->passedByReference()->yes() ? $functionMapParameter->passedByReference() : $nativeParameter->passedByReference(),
-				$nativeParameter->isVariadic()
+				$nativeParameter->isVariadic(),
 			);
 		}
 
@@ -219,8 +219,8 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$nativeReturnType,
 				TypehintHelper::decideType(
 					$nativeSignature->getReturnType(),
-					$functionMapSignature->getReturnType()
-				)
+					$functionMapSignature->getReturnType(),
+				),
 			);
 		}
 
@@ -228,7 +228,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			$parameters,
 			$returnType,
 			$nativeReturnType,
-			$nativeSignature->isVariadic()
+			$nativeSignature->isVariadic(),
 		);
 	}
 
@@ -282,7 +282,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$className,
 				null,
 				$functionName,
-				$function->getDocComment()->getText()
+				$function->getDocComment()->getText(),
 			);
 			$phpDocParameterTypes = array_map(static function (ParamTag $param): Type {
 				return $param->getType();
@@ -305,7 +305,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				TypehintHelper::decideType($parameterType, $phpDocParameterTypes[$name->name] ?? null),
 				$parameterType,
 				$param->byRef ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),
-				$param->variadic
+				$param->variadic,
 			);
 
 			$variadic = $variadic || $param->variadic;
@@ -317,7 +317,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			$parameters,
 			TypehintHelper::decideType($returnType, $phpDocReturnType ?? null),
 			$returnType,
-			$variadic
+			$variadic,
 		);
 	}
 

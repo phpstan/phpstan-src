@@ -69,7 +69,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 				$parameter->getType(),
 				TypehintHelper::decideTypeFromReflection($nativeParameters[$i]->getType()),
 				$parameter->passedByReference(),
-				$parameter->isVariadic()
+				$parameter->isVariadic(),
 			);
 		}
 
@@ -83,7 +83,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 			$parameters,
 			$signature->getReturnType(),
 			$nativeReturnType,
-			$signature->isVariadic()
+			$signature->isVariadic(),
 		);
 	}
 
@@ -102,7 +102,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 
 		return $this->parser->getFunctionSignature(
 			$signatureMap[$functionName],
-			$className
+			$className,
 		);
 	}
 

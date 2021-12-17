@@ -24,10 +24,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				$this->createReflectionProvider(),
 				$this->getTypeSpecifier(),
 				[stdClass::class],
-				$this->treatPhpDocTypesAsCertain
+				$this->treatPhpDocTypesAsCertain,
 			),
 			$this->checkAlwaysTrueCheckTypeFunctionCall,
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		);
 	}
 
@@ -241,7 +241,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					'Call to function property_exists() with CheckTypeFunctionCall\Bug2221 and \'foo\' will always evaluate to true.',
 					786,
 				],
-			]
+			],
 		);
 	}
 
@@ -341,7 +341,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
 					693,
 				],
-			]
+			],
 		);
 	}
 

@@ -18,7 +18,7 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new CallToStaticMethodStatementWithoutSideEffectsRule(
 			new RuleLevelHelper($broker, true, false, true, false),
-			$broker
+			$broker,
 		);
 	}
 

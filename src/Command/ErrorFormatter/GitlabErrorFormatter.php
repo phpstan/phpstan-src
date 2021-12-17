@@ -36,8 +36,8 @@ class GitlabErrorFormatter implements ErrorFormatter
 							$fileSpecificError->getFile(),
 							$fileSpecificError->getLine(),
 							$fileSpecificError->getMessage(),
-						]
-					)
+						],
+					),
 				),
 				'severity' => $fileSpecificError->canBeIgnored() ? 'major' : 'blocker',
 				'location' => [

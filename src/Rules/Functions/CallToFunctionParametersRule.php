@@ -49,7 +49,7 @@ class CallToFunctionParametersRule implements Rule
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$node->getArgs(),
-				$function->getVariants()
+				$function->getVariants(),
 			),
 			$scope,
 			$function->isBuiltin(),
@@ -68,7 +68,7 @@ class CallToFunctionParametersRule implements Rule
 				'Missing parameter $%s in call to function ' . $functionName . '.',
 				'Unknown parameter $%s in call to function ' . $functionName . '.',
 				'Return type of call to function ' . $functionName . ' contains unresolvable type.',
-			]
+			],
 		);
 	}
 

@@ -53,7 +53,7 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 			$this->methodReflection,
 			$this->resolvedDeclaringClass,
 			false,
-			$this->calledOnType
+			$this->calledOnType,
 		);
 	}
 
@@ -71,7 +71,7 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 
 		return $this->transformedMethod = new ResolvedMethodReflection(
 			$this->transformMethodWithStaticType($this->resolvedDeclaringClass, $this->methodReflection),
-			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap
+			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap,
 		);
 	}
 
@@ -81,7 +81,7 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 			$this->methodReflection,
 			$this->resolvedDeclaringClass,
 			$this->resolveTemplateTypeMapToBounds,
-			$type
+			$type,
 		);
 	}
 
@@ -98,11 +98,11 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 						$parameter->isOptional(),
 						$parameter->passedByReference(),
 						$parameter->isVariadic(),
-						$parameter->getDefaultValue()
+						$parameter->getDefaultValue(),
 					);
 				}, $acceptor->getParameters()),
 				$acceptor->isVariadic(),
-				$this->transformStaticType($acceptor->getReturnType())
+				$this->transformStaticType($acceptor->getReturnType()),
 			);
 		}, $method->getVariants());
 

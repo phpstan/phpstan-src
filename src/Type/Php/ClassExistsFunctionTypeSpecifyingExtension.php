@@ -49,7 +49,7 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 				new ConstantBooleanType(true),
 				$context,
 				false,
-				$scope
+				$scope,
 			);
 		}
 
@@ -58,7 +58,7 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			$classStringType,
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

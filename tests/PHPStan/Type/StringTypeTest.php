@@ -32,7 +32,7 @@ class StringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new StringType(),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				),
 				TrinaryLogic::createYes(),
 			],
@@ -41,7 +41,7 @@ class StringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new StringType(),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				),
 				new StringType(),
 				TrinaryLogic::createMaybe(),
@@ -52,7 +52,7 @@ class StringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new StringType(),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				),
 				TrinaryLogic::createMaybe(),
 			],
@@ -61,7 +61,7 @@ class StringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new StringType(),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				),
 				new ClassStringType(),
 				TrinaryLogic::createMaybe(),
@@ -72,7 +72,7 @@ class StringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new StringType(),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				),
 				TrinaryLogic::createMaybe(),
 			],
@@ -81,7 +81,7 @@ class StringTypeTest extends PHPStanTestCase
 					TemplateTypeScope::createWithFunction('foo'),
 					'T',
 					new StringType(),
-					TemplateTypeVariance::createInvariant()
+					TemplateTypeVariance::createInvariant(),
 				),
 				new GenericClassStringType(new ObjectType(stdClass::class)),
 				TrinaryLogic::createMaybe(),
@@ -98,7 +98,7 @@ class StringTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -125,7 +125,7 @@ class StringTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction('foo'),
 				'T',
 				new StringType(),
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			),
 			TrinaryLogic::createYes(),
 		];
@@ -135,7 +135,7 @@ class StringTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction('foo'),
 				'T',
 				new StringType(),
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			),
 			new StringType(),
 			TrinaryLogic::createYes(),
@@ -146,7 +146,7 @@ class StringTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction('foo'),
 				'T',
 				new StringType(),
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			)->toArgument(),
 			new StringType(),
 			TrinaryLogic::createNo(),
@@ -157,13 +157,13 @@ class StringTypeTest extends PHPStanTestCase
 				TemplateTypeScope::createWithFunction('foo'),
 				'T',
 				new StringType(),
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			)->toArgument(),
 			TemplateTypeFactory::create(
 				TemplateTypeScope::createWithFunction('foo'),
 				'T',
 				new StringType(),
-				TemplateTypeVariance::createInvariant()
+				TemplateTypeVariance::createInvariant(),
 			)->toArgument(),
 			TrinaryLogic::createYes(),
 		];
@@ -178,7 +178,7 @@ class StringTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -227,7 +227,7 @@ class StringTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult,
 			$actualResult,
-			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 

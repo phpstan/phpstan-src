@@ -54,7 +54,7 @@ class ArrayDestructuringRule implements Rule
 		return $this->getErrors(
 			$scope,
 			$node->var,
-			$node->expr
+			$node->expr,
 		);
 	}
 
@@ -70,7 +70,7 @@ class ArrayDestructuringRule implements Rule
 			'',
 			static function (Type $varType): bool {
 				return $varType->isArray()->yes() || (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes();
-			}
+			},
 		);
 		$exprType = $exprTypeResult->getType();
 		if ($exprType instanceof ErrorType) {
@@ -107,7 +107,7 @@ class ArrayDestructuringRule implements Rule
 				$scope,
 				$expr,
 				'',
-				$keyType
+				$keyType,
 			);
 			$errors = array_merge($errors, $itemErrors);
 
@@ -124,7 +124,7 @@ class ArrayDestructuringRule implements Rule
 			$errors = array_merge($errors, $this->getErrors(
 				$scope,
 				$item->value,
-				new Expr\ArrayDimFetch($expr, $keyExpr)
+				new Expr\ArrayDimFetch($expr, $keyExpr),
 			));
 		}
 

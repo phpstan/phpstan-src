@@ -56,7 +56,7 @@ class AccessPrivatePropertyThroughStaticRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Unsafe access to private property %s::$%s through static::.',
 				$property->getDeclaringClass()->getDisplayName(),
-				$propertyName
+				$propertyName,
 			))->build(),
 		];
 	}

@@ -84,7 +84,7 @@ class AppendedArrayKeyTypeRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Array (%s) does not accept key %s.',
 					$arrayType->describe($verbosity),
-					$keyType->describe(VerbosityLevel::value())
+					$keyType->describe(VerbosityLevel::value()),
 				))->build(),
 			];
 		}

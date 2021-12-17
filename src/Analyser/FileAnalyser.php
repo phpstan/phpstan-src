@@ -174,7 +174,7 @@ class FileAnalyser
 								$nodeLine,
 								$nodeType,
 								$identifier,
-								$metadata
+								$metadata,
 							);
 						}
 					}
@@ -213,7 +213,7 @@ class FileAnalyser
 				$this->nodeScopeResolver->processNodes(
 					$parserNodes,
 					$scope,
-					$nodeCallback
+					$nodeCallback,
 				);
 				$unmatchedLineIgnores = $linesToIgnore;
 				foreach ($temporaryFileErrors as $tmpFileError) {
@@ -248,7 +248,7 @@ class FileAnalyser
 								null,
 								null,
 								null,
-								'ignoredError.unmatchedOnLine'
+								'ignoredError.unmatchedOnLine',
 							);
 						}
 					}

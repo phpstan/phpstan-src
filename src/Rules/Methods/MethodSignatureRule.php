@@ -92,7 +92,7 @@ class MethodSignatureRule implements Rule
 					$returnTypeCompatibility->no() ? 'compatible' : 'covariant',
 					$parentReturnType->describe(VerbosityLevel::value()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
-					$parentMethod->getName()
+					$parentMethod->getName(),
 				))->build();
 			}
 
@@ -117,7 +117,7 @@ class MethodSignatureRule implements Rule
 					$parentParameter->getName(),
 					$parentParameterType->describe(VerbosityLevel::value()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
-					$parentMethod->getName()
+					$parentMethod->getName(),
 				))->build();
 			}
 		}
@@ -162,11 +162,11 @@ class MethodSignatureRule implements Rule
 	{
 		$returnType = TypehintHelper::decideType(
 			$currentVariant->getNativeReturnType(),
-			TemplateTypeHelper::resolveToBounds($currentVariant->getPhpDocReturnType())
+			TemplateTypeHelper::resolveToBounds($currentVariant->getPhpDocReturnType()),
 		);
 		$originalParentReturnType = TypehintHelper::decideType(
 			$parentVariant->getNativeReturnType(),
-			TemplateTypeHelper::resolveToBounds($parentVariant->getPhpDocReturnType())
+			TemplateTypeHelper::resolveToBounds($parentVariant->getPhpDocReturnType()),
 		);
 		$parentReturnType = $this->transformStaticType($declaringClass, $originalParentReturnType);
 		// Allow adding `void` return type hints when the parent defines no return type
@@ -181,7 +181,7 @@ class MethodSignatureRule implements Rule
 
 		return [$parentReturnType->isSuperTypeOf($returnType), TypehintHelper::decideType(
 			$currentVariant->getNativeReturnType(),
-			$currentVariant->getPhpDocReturnType()
+			$currentVariant->getPhpDocReturnType(),
 		), $originalParentReturnType];
 	}
 
@@ -205,17 +205,17 @@ class MethodSignatureRule implements Rule
 
 			$parameterType = TypehintHelper::decideType(
 				$parameter->getNativeType(),
-				TemplateTypeHelper::resolveToBounds($parameter->getPhpDocType())
+				TemplateTypeHelper::resolveToBounds($parameter->getPhpDocType()),
 			);
 			$originalParameterType = TypehintHelper::decideType(
 				$parentParameter->getNativeType(),
-				TemplateTypeHelper::resolveToBounds($parentParameter->getPhpDocType())
+				TemplateTypeHelper::resolveToBounds($parentParameter->getPhpDocType()),
 			);
 			$parentParameterType = $this->transformStaticType($declaringClass, $originalParameterType);
 
 			$parameterResults[] = [$parameterType->isSuperTypeOf($parentParameterType), TypehintHelper::decideType(
 				$parameter->getNativeType(),
-				$parameter->getPhpDocType()
+				$parameter->getPhpDocType(),
 			), $originalParameterType];
 		}
 

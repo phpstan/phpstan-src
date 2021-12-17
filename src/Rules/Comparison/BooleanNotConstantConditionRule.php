@@ -56,7 +56,7 @@ class BooleanNotConstantConditionRule implements Rule
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Negated boolean expression is always %s.',
-					$exprType->getValue() ? 'false' : 'true'
+					$exprType->getValue() ? 'false' : 'true',
 				)))->line($node->expr->getLine())->build(),
 			];
 		}

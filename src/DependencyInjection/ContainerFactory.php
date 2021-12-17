@@ -6,7 +6,9 @@ use Nette\DI\Extensions\ExtensionsExtension;
 use Nette\DI\Extensions\PhpExtension;
 use Phar;
 use PHPStan\BetterReflection\BetterReflection;
+use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Broker\Broker;
 use PHPStan\Command\CommandHelper;
 use PHPStan\File\FileHelper;
@@ -108,11 +110,20 @@ class ContainerFactory
 
 		$container = $configurator->createContainer();
 
+		/** @var SourceLocator $sourceLocator */
+		$sourceLocator = $container->getService('betterReflectionSourceLocator');
+
+		/** @var Reflector $reflector */
+		$reflector = $container->getService('betterReflectionReflector');
+
+		/** @var \PhpParser\Parser $phpParser */
+		$phpParser = $container->getService('phpParserDecorator');
+
 		BetterReflection::populate(
 			$container->getByType(PhpVersion::class)->getVersionId(),
-			$container->getService('betterReflectionSourceLocator'), // @phpstan-ignore-line
-			$container->getService('betterReflectionReflector'), // @phpstan-ignore-line
-			$container->getService('phpParserDecorator'), // @phpstan-ignore-line
+			$sourceLocator,
+			$reflector,
+			$phpParser,
 			$container->getByType(PhpStormStubsSourceStubber::class),
 		);
 

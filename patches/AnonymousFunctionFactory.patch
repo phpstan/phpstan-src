@@ -1,0 +1,44 @@
+@package rector/rector
+
+--- rules/Php72/NodeFactory/AnonymousFunctionFactory.php	2021-11-23 18:38:29.000000000 +0100
++++ rules/Php72/NodeFactory/AnonymousFunctionFactory.php	2021-12-17 18:06:56.000000000 +0100
+@@ -174,13 +174,19 @@
+      */
+     private function cleanClosureUses(array $uses) : array
+     {
+-        $variableNames = \array_map(function ($use) : string {
+-            return (string) $this->nodeNameResolver->getName($use->var);
+-        }, $uses, []);
+-        $variableNames = \array_unique($variableNames);
+-        return \array_map(static function ($variableName) : ClosureUse {
+-            return new \PhpParser\Node\Expr\ClosureUse(new \PhpParser\Node\Expr\Variable($variableName));
+-        }, $variableNames, []);
++		$uniqueUses = [];
++		foreach ($uses as $use) {
++			if (!\is_string($use->var->name)) {
++				continue;
++			}
++			$variableName = $use->var->name;
++			if (\array_key_exists($variableName, $uniqueUses)) {
++				continue;
++			}
++
++			$uniqueUses[$variableName] = $use;
++		}
++		return \array_values($uniqueUses);
+     }
+     private function applyNestedUses(\PhpParser\Node\Expr\Closure $anonymousFunctionNode, \PhpParser\Node\Expr\Variable $useVariable) : \PhpParser\Node\Expr\Closure
+     {
+@@ -269,7 +275,11 @@
+             }
+             $parentArrowFunction = $this->betterNodeFinder->findParentType($subNode, \PhpParser\Node\Expr\ArrowFunction::class);
+             if ($parentArrowFunction instanceof \PhpParser\Node\Expr\ArrowFunction) {
+-                return !(bool) $this->betterNodeFinder->findParentType($parentArrowFunction, \PhpParser\Node\Expr\ArrowFunction::class);
++				$parentCallLike = $this->betterNodeFinder->findParentType($subNode, \PhpParser\Node\Expr\CallLike::class);
++
++				if (! $parentCallLike instanceof \PhpParser\Node\Expr\CallLike) {
++					return ! (bool) $this->betterNodeFinder->findParentType($parentArrowFunction, \PhpParser\Node\Expr\ArrowFunction::class);
++				}
+             }
+             return \true;
+         });

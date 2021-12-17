@@ -72,9 +72,7 @@ class StaticType implements TypeWithClassName
 	{
 		if ($this->staticObjectType === null) {
 			if ($this->classReflection->isGeneric()) {
-				$typeMap = $this->classReflection->getActiveTemplateTypeMap()->map(static function (string $name, Type $type): Type {
-					return TemplateTypeHelper::toArgument($type);
-				});
+				$typeMap = $this->classReflection->getActiveTemplateTypeMap()->map(static fn (string $name, Type $type): Type => TemplateTypeHelper::toArgument($type));
 				return $this->staticObjectType = new GenericObjectType(
 					$this->classReflection->getName(),
 					$this->classReflection->typeMapToList($typeMap),
@@ -184,9 +182,7 @@ class StaticType implements TypeWithClassName
 			$nakedProperty,
 			$classReflection,
 			false,
-			function (Type $type) use ($scope): Type {
-				return $this->transformStaticType($type, $scope);
-			},
+			fn (Type $type): Type => $this->transformStaticType($type, $scope),
 		);
 	}
 
@@ -223,9 +219,7 @@ class StaticType implements TypeWithClassName
 			$nakedMethod,
 			$classReflection,
 			false,
-			function (Type $type) use ($scope): Type {
-				return $this->transformStaticType($type, $scope);
-			},
+			fn (Type $type): Type => $this->transformStaticType($type, $scope),
 		);
 	}
 

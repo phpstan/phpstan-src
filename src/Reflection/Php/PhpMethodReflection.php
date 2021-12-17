@@ -255,13 +255,11 @@ class PhpMethodReflection implements MethodReflection
 	private function getParameters(): array
 	{
 		if ($this->parameters === null) {
-			$this->parameters = array_map(function (ReflectionParameter $reflection): PhpParameterReflection {
-				return new PhpParameterReflection(
-					$reflection,
-					$this->phpDocParameterTypes[$reflection->getName()] ?? null,
-					$this->getDeclaringClass()->getName(),
-				);
-			}, $this->reflection->getParameters());
+			$this->parameters = array_map(fn (ReflectionParameter $reflection): PhpParameterReflection => new PhpParameterReflection(
+				$reflection,
+				$this->phpDocParameterTypes[$reflection->getName()] ?? null,
+				$this->getDeclaringClass()->getName(),
+			), $this->reflection->getParameters());
 		}
 
 		return $this->parameters;

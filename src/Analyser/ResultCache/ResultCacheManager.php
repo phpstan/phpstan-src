@@ -714,9 +714,7 @@ php;
 	 */
 	private function getMeta(array $allAnalysedFiles, ?array $projectConfigArray): array
 	{
-		$extensions = array_values(array_filter(get_loaded_extensions(), static function (string $extension): bool {
-			return $extension !== 'xdebug';
-		}));
+		$extensions = array_values(array_filter(get_loaded_extensions(), static fn (string $extension): bool => $extension !== 'xdebug'));
 		sort($extensions);
 
 		if ($projectConfigArray !== null) {

@@ -77,9 +77,7 @@ class ClassAncestorsRule implements Rule
 
 		$extendsErrors = $this->genericAncestorsCheck->check(
 			$originalNode->extends !== null ? [$originalNode->extends] : [],
-			array_map(static function (ExtendsTag $tag): Type {
-				return $tag->getType();
-			}, $extendsTags),
+			array_map(static fn (ExtendsTag $tag): Type => $tag->getType(), $extendsTags),
 			sprintf('Class %s @extends tag contains incompatible type %%s.', $escapedClassName),
 			sprintf('Class %s has @extends tag, but does not extend any class.', $escapedClassName),
 			sprintf('The @extends tag of class %s describes %%s but the class extends %%s.', $escapedClassName),
@@ -94,9 +92,7 @@ class ClassAncestorsRule implements Rule
 
 		$implementsErrors = $this->genericAncestorsCheck->check(
 			$originalNode->implements,
-			array_map(static function (ImplementsTag $tag): Type {
-				return $tag->getType();
-			}, $implementsTags),
+			array_map(static fn (ImplementsTag $tag): Type => $tag->getType(), $implementsTags),
 			sprintf('Class %s @implements tag contains incompatible type %%s.', $escapedClassName),
 			sprintf('Class %s has @implements tag, but does not implement any interface.', $escapedClassName),
 			sprintf('The @implements tag of class %s describes %%s but the class implements: %%s', $escapedClassName),

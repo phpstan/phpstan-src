@@ -96,9 +96,7 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 
 	private function rtrimMultiline(string $output): string
 	{
-		$result = array_map(static function (string $line): string {
-			return rtrim($line, " \r\n");
-		}, explode("\n", $output));
+		$result = array_map(static fn (string $line): string => rtrim($line, " \r\n"), explode("\n", $output));
 
 		return implode("\n", $result);
 	}

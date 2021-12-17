@@ -54,9 +54,7 @@ class GenericObjectType extends ObjectType
 		return sprintf(
 			'%s<%s>',
 			parent::describe($level),
-			implode(', ', array_map(static function (Type $type) use ($level): string {
-				return $type->describe($level);
-			}, $this->types)),
+			implode(', ', array_map(static fn (Type $type): string => $type->describe($level), $this->types)),
 		);
 	}
 

@@ -141,9 +141,7 @@ class UnusedPrivatePropertyRule implements Rule
 					return [];
 				}
 
-				$propertyNames = array_map(static function (ConstantStringType $type): string {
-					return $type->getValue();
-				}, $strings);
+				$propertyNames = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $strings);
 			}
 			if ($fetch instanceof Node\Expr\PropertyFetch) {
 				$fetchedOnType = $usage->getScope()->getType($fetch->var);

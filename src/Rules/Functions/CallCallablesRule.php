@@ -62,9 +62,7 @@ class CallCallablesRule implements Rule
 			$scope,
 			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->name),
 			'Invoking callable on an unknown class %s.',
-			static function (Type $type): bool {
-				return $type->isCallable()->yes();
-			},
+			static fn (Type $type): bool => $type->isCallable()->yes(),
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {

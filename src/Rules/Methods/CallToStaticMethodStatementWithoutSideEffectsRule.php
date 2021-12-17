@@ -65,9 +65,7 @@ class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 				$scope,
 				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $staticCall->class),
 				'',
-				static function (Type $type) use ($methodName): bool {
-					return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();
-				},
+				static fn (Type $type): bool => $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes(),
 			);
 			$calledOnType = $typeResult->getType();
 			if ($calledOnType instanceof ErrorType) {

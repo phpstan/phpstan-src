@@ -202,9 +202,7 @@ class AnalyseCommand extends Command
 			$errorOutput->writeLineFormatted(sprintf(
 				'Error formatter "%s" not found. Available error formatters are: %s',
 				$errorFormat,
-				implode(', ', array_map(static function (string $name): string {
-					return substr($name, strlen('errorFormatter.'));
-				}, $container->findServiceNamesByType(ErrorFormatter::class))),
+				implode(', ', array_map(static fn (string $name): string => substr($name, strlen('errorFormatter.')), $container->findServiceNamesByType(ErrorFormatter::class))),
 			));
 			return 1;
 		}

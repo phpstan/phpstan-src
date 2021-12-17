@@ -41,9 +41,7 @@ class ThrowTypeRule implements Rule
 			$scope,
 			$node->expr,
 			'Throwing object of an unknown class %s.',
-			static function (Type $type) use ($throwableType): bool {
-				return $throwableType->isSuperTypeOf($type)->yes();
-			},
+			static fn (Type $type): bool => $throwableType->isSuperTypeOf($type)->yes(),
 		);
 
 		$foundType = $typeResult->getType();

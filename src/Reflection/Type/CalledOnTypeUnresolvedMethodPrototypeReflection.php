@@ -87,24 +87,20 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 
 	private function transformMethodWithStaticType(ClassReflection $declaringClass, MethodReflection $method): MethodReflection
 	{
-		$variants = array_map(function (ParametersAcceptor $acceptor): ParametersAcceptor {
-			return new FunctionVariant(
-				$acceptor->getTemplateTypeMap(),
-				$acceptor->getResolvedTemplateTypeMap(),
-				array_map(function (ParameterReflection $parameter): ParameterReflection {
-					return new DummyParameter(
-						$parameter->getName(),
-						$this->transformStaticType($parameter->getType()),
-						$parameter->isOptional(),
-						$parameter->passedByReference(),
-						$parameter->isVariadic(),
-						$parameter->getDefaultValue(),
-					);
-				}, $acceptor->getParameters()),
-				$acceptor->isVariadic(),
-				$this->transformStaticType($acceptor->getReturnType()),
-			);
-		}, $method->getVariants());
+		$variants = array_map(fn (ParametersAcceptor $acceptor): ParametersAcceptor => new FunctionVariant(
+			$acceptor->getTemplateTypeMap(),
+			$acceptor->getResolvedTemplateTypeMap(),
+			array_map(fn (ParameterReflection $parameter): ParameterReflection => new DummyParameter(
+				$parameter->getName(),
+				$this->transformStaticType($parameter->getType()),
+				$parameter->isOptional(),
+				$parameter->passedByReference(),
+				$parameter->isVariadic(),
+				$parameter->getDefaultValue(),
+			), $acceptor->getParameters()),
+			$acceptor->isVariadic(),
+			$this->transformStaticType($acceptor->getReturnType()),
+		), $method->getVariants());
 
 		return new ChangedTypeMethodReflection($declaringClass, $method, $variants);
 	}

@@ -366,11 +366,9 @@ class PhpDocNodeResolver
 	 */
 	public function resolveMixinTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
-		return array_map(function (MixinTagValueNode $mixinTagValueNode) use ($nameScope): MixinTag {
-			return new MixinTag(
-				$this->typeNodeResolver->resolve($mixinTagValueNode->type, $nameScope),
-			);
-		}, $phpDocNode->getMixinTagValues());
+		return array_map(fn (MixinTagValueNode $mixinTagValueNode): MixinTag => new MixinTag(
+			$this->typeNodeResolver->resolve($mixinTagValueNode->type, $nameScope),
+		), $phpDocNode->getMixinTagValues());
 	}
 
 	/**

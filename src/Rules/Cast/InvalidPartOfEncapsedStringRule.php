@@ -49,9 +49,7 @@ class InvalidPartOfEncapsedStringRule implements Rule
 				$scope,
 				$part,
 				'',
-				static function (Type $type): bool {
-					return !$type->toString() instanceof ErrorType;
-				},
+				static fn (Type $type): bool => !$type->toString() instanceof ErrorType,
 			);
 			$partType = $typeResult->getType();
 			if ($partType instanceof ErrorType) {

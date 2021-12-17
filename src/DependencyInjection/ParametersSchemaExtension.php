@@ -46,9 +46,7 @@ class ParametersSchemaExtension extends CompilerExtension
 
 		$parameterSchema = null;
 		foreach ($statements as $statement) {
-			$processedArguments = array_map(function ($argument) {
-				return $this->processArgument($argument);
-			}, $statement->arguments);
+			$processedArguments = array_map(fn ($argument) => $this->processArgument($argument), $statement->arguments);
 			if ($parameterSchema === null) {
 				/** @var Type|AnyOf|Structure $parameterSchema */
 				$parameterSchema = Expect::{$statement->getEntity()}(...$processedArguments);

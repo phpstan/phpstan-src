@@ -43,17 +43,15 @@ class AnalyserResult
 
 		usort(
 			$errors,
-			static function (Error $a, Error $b): int {
-				return [
-					$a->getFile(),
-					$a->getLine(),
-					$a->getMessage(),
-				] <=> [
-					$b->getFile(),
-					$b->getLine(),
-					$b->getMessage(),
-				];
-			},
+			static fn (Error $a, Error $b): int => [
+				$a->getFile(),
+				$a->getLine(),
+				$a->getMessage(),
+			] <=> [
+				$b->getFile(),
+				$b->getLine(),
+				$b->getMessage(),
+			],
 		);
 
 		$this->errors = $errors;

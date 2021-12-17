@@ -146,9 +146,7 @@ class IgnoredErrorHelper
 			$regex,
 			sprintf(
 				"It ignores all errors containing the following types:\n%s",
-				implode("\n", array_map(static function (string $typeDescription): string {
-					return sprintf('* %s', $typeDescription);
-				}, array_keys($ignoredTypes))),
+				implode("\n", array_map(static fn (string $typeDescription): string => sprintf('* %s', $typeDescription), array_keys($ignoredTypes))),
 			),
 		);
 	}

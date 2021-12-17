@@ -56,9 +56,7 @@ class AccessPropertiesRule implements Rule
 		if ($node->name instanceof Identifier) {
 			$names = [$node->name->name];
 		} else {
-			$names = array_map(static function (ConstantStringType $type): string {
-				return $type->getValue();
-			}, TypeUtils::getConstantStrings($scope->getType($node->name)));
+			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), TypeUtils::getConstantStrings($scope->getType($node->name)));
 		}
 
 		$errors = [];
@@ -78,9 +76,7 @@ class AccessPropertiesRule implements Rule
 			$scope,
 			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->var),
 			sprintf('Access to property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
-			static function (Type $type) use ($name): bool {
-				return $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes();
-			},
+			static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes(),
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {

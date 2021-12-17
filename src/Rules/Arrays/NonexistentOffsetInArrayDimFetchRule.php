@@ -56,9 +56,7 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 			$scope,
 			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->var),
 			$unknownClassPattern,
-			static function (Type $type): bool {
-				return $type->isOffsetAccessible()->yes();
-			},
+			static fn (Type $type): bool => $type->isOffsetAccessible()->yes(),
 		);
 		$isOffsetAccessibleType = $isOffsetAccessibleTypeResult->getType();
 		if ($isOffsetAccessibleType instanceof ErrorType) {

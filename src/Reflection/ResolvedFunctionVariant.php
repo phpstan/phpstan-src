@@ -49,16 +49,14 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 		$parameters = $this->parameters;
 
 		if ($parameters === null) {
-			$parameters = array_map(function (ParameterReflection $param): ParameterReflection {
-				return new DummyParameter(
-					$param->getName(),
-					TemplateTypeHelper::resolveTemplateTypes($param->getType(), $this->resolvedTemplateTypeMap),
-					$param->isOptional(),
-					$param->passedByReference(),
-					$param->isVariadic(),
-					$param->getDefaultValue(),
-				);
-			}, $this->parametersAcceptor->getParameters());
+			$parameters = array_map(fn (ParameterReflection $param): ParameterReflection => new DummyParameter(
+				$param->getName(),
+				TemplateTypeHelper::resolveTemplateTypes($param->getType(), $this->resolvedTemplateTypeMap),
+				$param->isOptional(),
+				$param->passedByReference(),
+				$param->isVariadic(),
+				$param->getDefaultValue(),
+			), $this->parametersAcceptor->getParameters());
 
 			$this->parameters = $parameters;
 		}

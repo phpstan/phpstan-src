@@ -63,9 +63,7 @@ class AccessStaticPropertiesRule implements Rule
 		if ($node->name instanceof Node\VarLikeIdentifier) {
 			$names = [$node->name->name];
 		} else {
-			$names = array_map(static function (ConstantStringType $type): string {
-				return $type->getValue();
-			}, TypeUtils::getConstantStrings($scope->getType($node->name)));
+			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), TypeUtils::getConstantStrings($scope->getType($node->name)));
 		}
 
 		$errors = [];
@@ -153,9 +151,7 @@ class AccessStaticPropertiesRule implements Rule
 				$scope,
 				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->class),
 				sprintf('Access to static property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
-				static function (Type $type) use ($name): bool {
-					return $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes();
-				},
+				static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes(),
 			);
 			$classType = $classTypeResult->getType();
 			if ($classType instanceof ErrorType) {

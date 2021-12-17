@@ -145,13 +145,11 @@ class PhpFunctionReflection implements FunctionReflection
 	 */
 	private function getParameters(): array
 	{
-		return array_map(function (ReflectionParameter $reflection): PhpParameterReflection {
-			return new PhpParameterReflection(
-				$reflection,
-				$this->phpDocParameterTypes[$reflection->getName()] ?? null,
-				null,
-			);
-		}, $this->reflection->getParameters());
+		return array_map(fn (ReflectionParameter $reflection): PhpParameterReflection => new PhpParameterReflection(
+			$reflection,
+			$this->phpDocParameterTypes[$reflection->getName()] ?? null,
+			null,
+		), $this->reflection->getParameters());
 	}
 
 	private function isVariadic(): bool

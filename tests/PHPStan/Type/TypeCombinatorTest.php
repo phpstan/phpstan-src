@@ -1906,9 +1906,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 			$expectedTypeDescription,
 			$actualTypeDescription,
 			sprintf('union(%s)', implode(', ', array_map(
-				static function (Type $type): string {
-					return $type->describe(VerbosityLevel::precise());
-				},
+				static fn (Type $type): string => $type->describe(VerbosityLevel::precise()),
 				$types,
 			))),
 		);
@@ -1954,9 +1952,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 			$expectedTypeDescription,
 			$actualTypeDescription,
 			sprintf('union(%s)', implode(', ', array_map(
-				static function (Type $type): string {
-					return $type->describe(VerbosityLevel::precise());
-				},
+				static fn (Type $type): string => $type->describe(VerbosityLevel::precise()),
 				$types,
 			))),
 		);

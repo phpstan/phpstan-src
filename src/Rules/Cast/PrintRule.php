@@ -36,9 +36,7 @@ class PrintRule implements Rule
 			$scope,
 			$node->expr,
 			'',
-			static function (Type $type): bool {
-				return !$type->toString() instanceof ErrorType;
-			},
+			static fn (Type $type): bool => !$type->toString() instanceof ErrorType,
 		);
 
 		if (!$typeResult->getType() instanceof ErrorType

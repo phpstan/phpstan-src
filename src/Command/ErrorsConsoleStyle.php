@@ -58,9 +58,7 @@ class ErrorsConsoleStyle extends SymfonyStyle
 			$maxHeaderWidth = $length;
 		}
 
-		$wrap = static function ($rows) use ($terminalWidth, $maxHeaderWidth): array {
-			return array_map(static function ($row) use ($terminalWidth, $maxHeaderWidth): array {
-				return array_map(static function ($s) use ($terminalWidth, $maxHeaderWidth) {
+		$wrap = static fn ($rows): array => array_map(static fn ($row): array => array_map(static function ($s) use ($terminalWidth, $maxHeaderWidth) {
 					if ($terminalWidth > $maxHeaderWidth + 5) {
 						return wordwrap(
 							$s,
@@ -71,9 +69,7 @@ class ErrorsConsoleStyle extends SymfonyStyle
 					}
 
 					return $s;
-				}, $row);
-			}, $rows);
-		};
+		}, $row), $rows);
 
 		parent::table($headers, $wrap($rows));
 	}

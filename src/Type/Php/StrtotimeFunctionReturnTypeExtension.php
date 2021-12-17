@@ -37,9 +37,7 @@ class StrtotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 		if ($argType instanceof MixedType) {
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
-		$result = array_unique(array_map(static function (ConstantStringType $string): bool {
-			return is_int(strtotime($string->getValue()));
-		}, TypeUtils::getConstantStrings($argType)));
+		$result = array_unique(array_map(static fn (ConstantStringType $string): bool => is_int(strtotime($string->getValue())), TypeUtils::getConstantStrings($argType)));
 
 		if (count($result) !== 1) {
 			return $defaultReturnType;

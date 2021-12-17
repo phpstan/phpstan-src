@@ -93,9 +93,7 @@ class NetteContainer implements Container
 	 */
 	private function tagsToServices(array $tags): array
 	{
-		return array_map(function (string $serviceName) {
-			return $this->getService($serviceName);
-		}, array_keys($tags));
+		return array_map(fn (string $serviceName) => $this->getService($serviceName), array_keys($tags));
 	}
 
 }

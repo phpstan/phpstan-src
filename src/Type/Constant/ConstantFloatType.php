@@ -37,9 +37,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			static function (): string {
-				return 'float';
-			},
+			static fn (): string => 'float',
 			function (): string {
 				$formatted = (string) $this->value;
 				if (strpos($formatted, '.') === false) {

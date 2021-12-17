@@ -43,9 +43,7 @@ class ParallelAnalyserIntegrationTest extends TestCase
 			escapeshellarg(__DIR__ . '/../../../bin/phpstan'),
 			$command,
 			escapeshellarg(__DIR__ . '/parallel-analyser.neon'),
-			implode(' ', array_map(static function (string $path): string {
-				return escapeshellarg($path);
-			}, [
+			implode(' ', array_map(static fn (string $path): string => escapeshellarg($path), [
 				__DIR__ . '/data/trait-definition.php',
 				__DIR__ . '/data/traits.php',
 			])),

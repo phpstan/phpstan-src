@@ -152,9 +152,7 @@ class CommandHelper
 			$defaultLevelUsed = true;
 		}
 
-		$paths = array_map(static function (string $path) use ($currentWorkingDirectoryFileHelper): string {
-			return $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($path));
-		}, $paths);
+		$paths = array_map(static fn (string $path): string => $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($path)), $paths);
 
 		$analysedPathsFromConfig = [];
 		$containerFactory = new ContainerFactory($currentWorkingDirectory);
@@ -521,9 +519,7 @@ class CommandHelper
 			$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $configFile, $loaderParameters, null));
 		}
 
-		$normalized = array_map(static function (string $file) use ($fileHelper): string {
-			return $fileHelper->normalizePath($file);
-		}, $allConfigFiles);
+		$normalized = array_map(static fn (string $file): string => $fileHelper->normalizePath($file), $allConfigFiles);
 
 		$deduplicated = array_unique($normalized);
 		if (count($normalized) <= count($deduplicated)) {

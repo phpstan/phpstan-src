@@ -39,9 +39,7 @@ class ExistingClassesInInterfaceExtendsRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$messages = $this->classCaseSensitivityCheck->checkClassNames(
-			array_map(static function (Node\Name $interfaceName): ClassNameNodePair {
-				return new ClassNameNodePair((string) $interfaceName, $interfaceName);
-			}, $node->extends),
+			array_map(static fn (Node\Name $interfaceName): ClassNameNodePair => new ClassNameNodePair((string) $interfaceName, $interfaceName), $node->extends),
 		);
 
 		$currentInterfaceName = (string) $node->namespacedName;

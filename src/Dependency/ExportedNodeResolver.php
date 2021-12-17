@@ -92,9 +92,7 @@ class ExportedNodeResolver
 						return ExportedTraitUseAdaptation::createPrecedence(
 							$adaptation->trait !== null ? $adaptation->trait->toString() : null,
 							$adaptation->method->toString(),
-							array_map(static function (Name $name): string {
-								return $name->toString();
-							}, $adaptation->insteadof),
+							array_map(static fn (Name $name): string => $name->toString(), $adaptation->insteadof),
 						);
 					}
 
@@ -105,9 +103,7 @@ class ExportedNodeResolver
 		}
 
 		if ($node instanceof Node\Stmt\Interface_ && isset($node->namespacedName)) {
-			$extendsNames = array_map(static function (Name $name): string {
-				return (string) $name;
-			}, $node->extends);
+			$extendsNames = array_map(static fn (Name $name): string => (string) $name, $node->extends);
 			$docComment = $node->getDocComment();
 
 			$interfaceName = $node->namespacedName->toString();
@@ -318,9 +314,7 @@ class ExportedNodeResolver
 			$docComment = $node->getDocComment();
 
 			return new ExportedPropertiesNode(
-				array_map(static function (Node\Stmt\PropertyProperty $prop): string {
-					return $prop->name->toString();
-				}, $node->props),
+				array_map(static fn (Node\Stmt\PropertyProperty $prop): string => $prop->name->toString(), $node->props),
 				$this->exportPhpDocNode(
 					$fileName,
 					$namespacedName,

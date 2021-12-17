@@ -73,9 +73,7 @@ class UnusedConstructorParametersRule implements Rule
 					throw new ShouldNotHappenException();
 				}
 				return $parameter->var->name;
-			}, array_values(array_filter($originalNode->params, static function (Param $parameter): bool {
-				return $parameter->flags === 0;
-			}))),
+			}, array_values(array_filter($originalNode->params, static fn (Param $parameter): bool => $parameter->flags === 0))),
 			$originalNode->stmts,
 			$message,
 			'constructor.unusedParameter',

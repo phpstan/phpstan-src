@@ -465,9 +465,7 @@ class AnalyserTest extends PHPStanTestCase
 			return $ignoredErrorHelperResult->getErrors();
 		}
 
-		$normalizedFilePaths = array_map(function (string $path): string {
-			return $this->getFileHelper()->normalizePath($path);
-		}, $filePaths);
+		$normalizedFilePaths = array_map(fn (string $path): string => $this->getFileHelper()->normalizePath($path), $filePaths);
 
 		$analyserResult = $analyser->analyse($normalizedFilePaths);
 

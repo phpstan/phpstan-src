@@ -147,18 +147,12 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			static function (): string {
-				return 'Closure';
-			},
-			function () use ($level): string {
-				return sprintf(
-					'Closure(%s): %s',
-					implode(', ', array_map(static function (ParameterReflection $parameter) use ($level): string {
-						return sprintf('%s%s', $parameter->isVariadic() ? '...' : '', $parameter->getType()->describe($level));
-					}, $this->parameters)),
-					$this->returnType->describe($level),
-				);
-			},
+			static fn (): string => 'Closure',
+			fn (): string => sprintf(
+				'Closure(%s): %s',
+				implode(', ', array_map(static fn (ParameterReflection $parameter): string => sprintf('%s%s', $parameter->isVariadic() ? '...' : '', $parameter->getType()->describe($level)), $this->parameters)),
+				$this->returnType->describe($level),
+			),
 		);
 	}
 

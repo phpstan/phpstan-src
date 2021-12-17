@@ -88,9 +88,7 @@ class TypehintHelper
 		}
 
 		if ($reflectionType instanceof ReflectionUnionType) {
-			$type = TypeCombinator::union(...array_map(static function (ReflectionType $type) use ($selfClass): Type {
-				return self::decideTypeFromReflection($type, null, $selfClass, false);
-			}, $reflectionType->getTypes()));
+			$type = TypeCombinator::union(...array_map(static fn (ReflectionType $type): Type => self::decideTypeFromReflection($type, null, $selfClass, false), $reflectionType->getTypes()));
 
 			return self::decideType($type, $phpDocType);
 		}

@@ -36,9 +36,7 @@ class IntersectionTypeUnresolvedMethodPrototypeReflection implements UnresolvedM
 			return $this->cachedDoNotResolveTemplateTypeMapToBounds;
 		}
 
-		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self($this->methodName, array_map(static function (UnresolvedMethodPrototypeReflection $prototype): UnresolvedMethodPrototypeReflection {
-			return $prototype->doNotResolveTemplateTypeMapToBounds();
-		}, $this->methodPrototypes));
+		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self($this->methodName, array_map(static fn (UnresolvedMethodPrototypeReflection $prototype): UnresolvedMethodPrototypeReflection => $prototype->doNotResolveTemplateTypeMapToBounds(), $this->methodPrototypes));
 	}
 
 	public function getNakedMethod(): MethodReflection
@@ -51,18 +49,14 @@ class IntersectionTypeUnresolvedMethodPrototypeReflection implements UnresolvedM
 		if ($this->transformedMethod !== null) {
 			return $this->transformedMethod;
 		}
-		$methods = array_map(static function (UnresolvedMethodPrototypeReflection $prototype): MethodReflection {
-			return $prototype->getTransformedMethod();
-		}, $this->methodPrototypes);
+		$methods = array_map(static fn (UnresolvedMethodPrototypeReflection $prototype): MethodReflection => $prototype->getTransformedMethod(), $this->methodPrototypes);
 
 		return $this->transformedMethod = new IntersectionTypeMethodReflection($this->methodName, $methods);
 	}
 
 	public function withCalledOnType(Type $type): UnresolvedMethodPrototypeReflection
 	{
-		return new self($this->methodName, array_map(static function (UnresolvedMethodPrototypeReflection $prototype) use ($type): UnresolvedMethodPrototypeReflection {
-			return $prototype->withCalledOnType($type);
-		}, $this->methodPrototypes));
+		return new self($this->methodName, array_map(static fn (UnresolvedMethodPrototypeReflection $prototype): UnresolvedMethodPrototypeReflection => $prototype->withCalledOnType($type), $this->methodPrototypes));
 	}
 
 }

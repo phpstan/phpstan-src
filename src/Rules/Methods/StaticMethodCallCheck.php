@@ -157,9 +157,7 @@ class StaticMethodCallCheck
 				$scope,
 				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $class),
 				sprintf('Call to static method %s() on an unknown class %%s.', SprintfHelper::escapeFormatString($methodName)),
-				static function (Type $type) use ($methodName): bool {
-					return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();
-				},
+				static fn (Type $type): bool => $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes(),
 			);
 			$classType = $classTypeResult->getType();
 			if ($classType instanceof ErrorType) {

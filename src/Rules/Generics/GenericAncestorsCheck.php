@@ -73,9 +73,7 @@ class GenericAncestorsCheck
 		string $invalidVarianceMessage
 	): array
 	{
-		$names = array_fill_keys(array_map(static function (Name $nameNode): string {
-			return $nameNode->toString();
-		}, $nameNodes), true);
+		$names = array_fill_keys(array_map(static fn (Name $nameNode): string => $nameNode->toString(), $nameNodes), true);
 
 		$unusedNames = $names;
 

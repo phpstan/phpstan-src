@@ -68,9 +68,7 @@ class ArrayDestructuringRule implements Rule
 			$scope,
 			$expr,
 			'',
-			static function (Type $varType): bool {
-				return $varType->isArray()->yes() || (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes();
-			},
+			static fn (Type $varType): bool => $varType->isArray()->yes() || (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes(),
 		);
 		$exprType = $exprTypeResult->getType();
 		if ($exprType instanceof ErrorType) {

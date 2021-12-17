@@ -325,9 +325,7 @@ class AutoloadSourceLocator implements SourceLocator
 
 	private function silenceErrors(): void
 	{
-		set_error_handler(static function (): bool {
-			return true;
-		});
+		set_error_handler(static fn (): bool => true);
 	}
 
 }

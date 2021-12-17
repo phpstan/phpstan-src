@@ -79,9 +79,7 @@ class AutoloadFilesTest extends TestCase
 			]);
 		}
 
-		$expectedFiles = array_map(static function (string $path) use ($fileHelper): string {
-			return $fileHelper->normalizePath($path);
-		}, $expectedFiles);
+		$expectedFiles = array_map(static fn (string $path): string => $fileHelper->normalizePath($path), $expectedFiles);
 		sort($expectedFiles);
 
 		$this->assertSame($expectedFiles, $autoloadFiles);

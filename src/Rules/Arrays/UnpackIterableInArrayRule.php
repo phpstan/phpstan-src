@@ -49,9 +49,7 @@ class UnpackIterableInArrayRule implements Rule
 				$scope,
 				$item->value,
 				'',
-				static function (Type $type): bool {
-					return $type->isIterable()->yes();
-				},
+				static fn (Type $type): bool => $type->isIterable()->yes(),
 			);
 			$type = $typeResult->getType();
 			if ($type instanceof ErrorType) {

@@ -23,14 +23,12 @@ class TemplateTypeTest extends PHPStanTestCase
 
 	public function dataAccepts(): array
 	{
-		$templateType = static function (string $name, ?Type $bound, ?string $functionName = null): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction($functionName ?? '_'),
-				$name,
-				$bound,
-				TemplateTypeVariance::createInvariant(),
-			);
-		};
+		$templateType = static fn (string $name, ?Type $bound, ?string $functionName = null): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction($functionName ?? '_'),
+			$name,
+			$bound,
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			[
@@ -106,14 +104,12 @@ class TemplateTypeTest extends PHPStanTestCase
 
 	public function dataIsSuperTypeOf(): array
 	{
-		$templateType = static function (string $name, ?Type $bound, ?string $functionName = null): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction($functionName ?? '_'),
-				$name,
-				$bound,
-				TemplateTypeVariance::createInvariant(),
-			);
-		};
+		$templateType = static fn (string $name, ?Type $bound, ?string $functionName = null): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction($functionName ?? '_'),
+			$name,
+			$bound,
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			0 => [
@@ -296,14 +292,12 @@ class TemplateTypeTest extends PHPStanTestCase
 	/** @return array<string,array{Type,Type,array<string,string>}> */
 	public function dataInferTemplateTypes(): array
 	{
-		$templateType = static function (string $name, ?Type $bound = null, ?string $functionName = null): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction($functionName ?? '_'),
-				$name,
-				$bound,
-				TemplateTypeVariance::createInvariant(),
-			);
-		};
+		$templateType = static fn (string $name, ?Type $bound = null, ?string $functionName = null): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction($functionName ?? '_'),
+			$name,
+			$bound,
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'simple' => [
@@ -354,9 +348,7 @@ class TemplateTypeTest extends PHPStanTestCase
 
 		$this->assertSame(
 			$expectedTypes,
-			array_map(static function (Type $type): string {
-				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes()),
+			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
 	}
 

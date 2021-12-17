@@ -29,7 +29,7 @@ class TemplateTypeVariance
 
 	private static function create(int $value): self
 	{
-		self::$registry[$value] = self::$registry[$value] ?? new self($value);
+		self::$registry[$value] ??= new self($value);
 		return self::$registry[$value];
 	}
 

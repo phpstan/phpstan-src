@@ -45,18 +45,18 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Install PHP for code transform"
-        if: matrix.php-version != '7.4' && matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
           php-version: 8.0
 
       - name: "Transform source code"
-        if: matrix.php-version != '7.4' && matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
         run: "build/transform-source ${{ matrix.php-version }}"
 
       - name: "Reinstall matrix PHP version"
-        if: matrix.php-version != '7.4' && matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"

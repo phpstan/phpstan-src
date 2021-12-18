@@ -34,7 +34,7 @@ class ExportedNodeFetcher
 		try {
 			/** @var Node[] $ast */
 			$ast = $this->parser->parseFile($fileName);
-		} catch (ParserErrorsException $e) {
+		} catch (ParserErrorsException) {
 			return [];
 		}
 		$this->visitor->reset($fileName);

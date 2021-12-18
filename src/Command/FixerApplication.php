@@ -268,7 +268,7 @@ class FixerApplication
 
 		try {
 			$fixerProcess = $this->getFixerProcess($output, $serverPort);
-		} catch (FixerProcessException $e) {
+		} catch (FixerProcessException) {
 			return 1;
 		}
 
@@ -318,7 +318,7 @@ class FixerApplication
 
 		try {
 			$phar = new Phar($pharPath);
-		} catch (Throwable $e) {
+		} catch (Throwable) {
 			@unlink($pharPath);
 			@unlink($infoPath);
 			$output->writeln('<fg=red>PHPStan Pro PHAR signature is corrupted.</>');
@@ -407,8 +407,11 @@ class FixerApplication
 			),
 		);
 
-		/** @var array{url: string, version: string} $latestInfo */
-		$latestInfo = Json::decode((string) await($client->get('https://fixer-download-api.phpstan.com/latest'), $loop, 5.0)->getBody(), Json::FORCE_ARRAY); // @phpstan-ignore-line
+		/**
+		 * @var array{url: string, version: string} $latestInfo
+		 * @phpstan-ignore-next-line
+		 */
+		$latestInfo = Json::decode((string) await($client->get('https://fixer-download-api.phpstan.com/latest'), $loop, 5.0)->getBody(), Json::FORCE_ARRAY);
 		if ($currentVersion !== null && $latestInfo['version'] === $currentVersion) {
 			$this->writeInfoFile($infoPath, $latestInfo['version']);
 			$output->writeln('<fg=green>You\'re running the latest PHPStan Pro!</>');
@@ -586,7 +589,7 @@ class FixerApplication
 	{
 		try {
 			return PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
-		} catch (OutOfBoundsException $e) {
+		} catch (OutOfBoundsException) {
 			return 'Version unknown';
 		}
 	}
@@ -601,7 +604,7 @@ class FixerApplication
 			$contents = FileReader::read('/proc/1/cgroup');
 
 			return strpos($contents, 'docker') !== false;
-		} catch (CouldNotReadFileException $e) {
+		} catch (CouldNotReadFileException) {
 			return false;
 		}
 	}

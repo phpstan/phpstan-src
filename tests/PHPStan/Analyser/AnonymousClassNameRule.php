@@ -34,7 +34,7 @@ class AnonymousClassNameRule implements Rule
 			: (string) $node->name;
 		try {
 			$this->reflectionProvider->getClass($className);
-		} catch (ClassNotFoundException $e) {
+		} catch (ClassNotFoundException) {
 			return ['not found'];
 		}
 

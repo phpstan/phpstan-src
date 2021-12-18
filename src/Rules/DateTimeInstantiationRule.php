@@ -46,7 +46,7 @@ class DateTimeInstantiationRule implements Rule
 		$dateString = $arg->getValue();
 		try {
 			new DateTime($dateString);
-		} catch (Throwable $e) {
+		} catch (Throwable) {
 			// an exception is thrown for errors only but we want to catch warnings too
 		}
 		$lastErrors = DateTime::getLastErrors();

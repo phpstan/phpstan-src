@@ -808,7 +808,7 @@ php;
 	{
 		try {
 			return PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
-		} catch (OutOfBoundsException $e) {
+		} catch (OutOfBoundsException) {
 			return 'Version unknown';
 		}
 	}

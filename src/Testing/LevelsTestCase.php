@@ -75,7 +75,7 @@ abstract class LevelsTestCase extends TestCase
 
 			try {
 				$actualJson = Json::decode($output, Json::FORCE_ARRAY);
-			} catch (JsonException $e) {
+			} catch (JsonException) {
 				throw new JsonException(sprintf('Cannot decode: %s', $output));
 			}
 			if (count($actualJson['files']) > 0) {

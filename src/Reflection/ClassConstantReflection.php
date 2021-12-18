@@ -66,7 +66,7 @@ class ClassConstantReflection implements ConstantReflection
 	{
 		try {
 			return $this->reflection->getValue();
-		} catch (UnableToCompileNode $e) {
+		} catch (UnableToCompileNode) {
 			return NAN;
 		}
 	}

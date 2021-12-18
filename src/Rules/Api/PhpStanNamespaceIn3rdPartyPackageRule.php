@@ -81,9 +81,9 @@ class PhpStanNamespaceIn3rdPartyPackageRule implements Rule
 
 		try {
 			return Json::decode(FileReader::read($composerJsonPath), Json::FORCE_ARRAY);
-		} catch (JsonException $e) {
+		} catch (JsonException) {
 			return null;
-		} catch (CouldNotReadFileException $e) {
+		} catch (CouldNotReadFileException) {
 			return null;
 		}
 	}

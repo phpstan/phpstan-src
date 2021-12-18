@@ -99,7 +99,7 @@ class UninitializedPropertyRule implements Rule
 
 			try {
 				$prototype = $nativeMethod->getPrototype();
-			} catch (ReflectionException $e) {
+			} catch (ReflectionException) {
 				$prototype = $nativeMethod;
 			}
 

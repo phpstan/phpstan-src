@@ -98,7 +98,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 	{
 		try {
 			return $this->declaringClass->getNativeMethod($this->getClassMethod()->name->name)->getPrototype();
-		} catch (MissingMethodFromReflectionException $e) {
+		} catch (MissingMethodFromReflectionException) {
 			return $this;
 		}
 	}

@@ -83,7 +83,7 @@ class CachingVisitor extends NodeVisitorAbstract
 		if ($node instanceof Node\Expr\FuncCall) {
 			try {
 				ConstantNodeChecker::assertValidDefineFunctionCall($node);
-			} catch (InvalidConstantNode $e) {
+			} catch (InvalidConstantNode) {
 				return null;
 			}
 

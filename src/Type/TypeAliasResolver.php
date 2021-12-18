@@ -124,7 +124,7 @@ class TypeAliasResolver
 		try {
 			$unresolvedAlias = $localTypeAliases[$aliasName];
 			$resolvedAliasType = $unresolvedAlias->resolve($this->typeNodeResolver);
-		} catch (CircularTypeAliasDefinitionException $e) {
+		} catch (CircularTypeAliasDefinitionException) {
 			$resolvedAliasType = new CircularTypeAliasErrorType();
 		}
 

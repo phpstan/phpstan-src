@@ -571,7 +571,7 @@ class ClassReflection
 
 		try {
 			return $this->subclasses[$className] = $this->reflection->isSubclassOf($className);
-		} catch (ReflectionException $e) {
+		} catch (ReflectionException) {
 			return $this->subclasses[$className] = false;
 		}
 	}
@@ -580,7 +580,7 @@ class ClassReflection
 	{
 		try {
 			return $this->reflection->implementsInterface($className);
-		} catch (ReflectionException $e) {
+		} catch (ReflectionException) {
 			return false;
 		}
 	}
@@ -884,7 +884,7 @@ class ClassReflection
 
 				try {
 					$typeAliases = $importedFromReflection->getTypeAliases();
-				} catch (CircularTypeAliasDefinitionException $e) {
+				} catch (CircularTypeAliasDefinitionException) {
 					return TypeAlias::invalid();
 				}
 

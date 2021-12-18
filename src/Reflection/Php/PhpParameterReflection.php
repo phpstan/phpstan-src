@@ -55,7 +55,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 					if ($this->reflection->isDefaultValueAvailable() && $this->reflection->getDefaultValue() === null) {
 						$phpDocType = TypeCombinator::addNull($phpDocType);
 					}
-				} catch (Throwable $e) {
+				} catch (Throwable) {
 					// pass
 				}
 			}
@@ -113,7 +113,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 				$defaultValue = $this->reflection->getDefaultValue();
 				return ConstantTypeHelper::getTypeFromValue($defaultValue);
 			}
-		} catch (Throwable $e) {
+		} catch (Throwable) {
 			return null;
 		}
 

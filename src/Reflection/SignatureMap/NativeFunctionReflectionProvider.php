@@ -158,9 +158,9 @@ class NativeFunctionReflectionProvider
 				}
 				$isDeprecated = $reflectionFunction->isDeprecated();
 			}
-		} catch (IdentifierNotFound $e) {
+		} catch (IdentifierNotFound) {
 			// pass
-		} catch (InvalidIdentifierName $e) {
+		} catch (InvalidIdentifierName) {
 			// pass
 		}
 

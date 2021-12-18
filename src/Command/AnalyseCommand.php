@@ -191,7 +191,7 @@ class AnalyseCommand extends Command
 				} elseif ($ci->getCiName() === CiDetector::CI_TEAMCITY) {
 					$errorFormat = 'teamcity';
 				}
-			} catch (CiNotDetectedException $e) {
+			} catch (CiNotDetectedException) {
 				// pass
 			}
 		}

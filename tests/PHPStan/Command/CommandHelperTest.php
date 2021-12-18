@@ -129,7 +129,7 @@ class CommandHelperTest extends TestCase
 			if ($expectException) {
 				$this->fail();
 			}
-		} catch (InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException) {
 			if (!$expectException) {
 				rewind($output->getStream());
 				$contents = stream_get_contents($output->getStream());

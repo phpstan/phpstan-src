@@ -64,7 +64,7 @@ class ReturnTypeRule implements Rule
 		} else {
 			try {
 				$reflection = $this->reflector->reflectFunction($function->getName());
-			} catch (IdentifierNotFound $e) {
+			} catch (IdentifierNotFound) {
 				// pass
 			}
 		}

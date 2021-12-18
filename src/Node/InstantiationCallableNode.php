@@ -9,8 +9,7 @@ use PhpParser\Node\Name;
 class InstantiationCallableNode extends Expr implements VirtualNode
 {
 
-	/** @var Name|Expr */
-	private $class;
+	private Name|Expr $class;
 
 	/**
 	 * @param Expr|Name $class

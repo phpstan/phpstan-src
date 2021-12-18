@@ -11,8 +11,7 @@ use PHPStan\Analyser\Scope;
 class MethodCall
 {
 
-	/** @var Node\Expr\MethodCall|StaticCall|Array_ */
-	private $node;
+	private Node\Expr\MethodCall|StaticCall|Array_ $node;
 
 	private Scope $scope;
 

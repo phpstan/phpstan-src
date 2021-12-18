@@ -11,8 +11,7 @@ use PHPStan\Analyser\Scope;
 class BooleanOrNode extends NodeAbstract implements VirtualNode
 {
 
-	/** @var BooleanOr|LogicalOr */
-	private $originalNode;
+	private BooleanOr|LogicalOr $originalNode;
 
 	private Scope $rightScope;
 

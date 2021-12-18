@@ -10,11 +10,9 @@ use PhpParser\Node\Name;
 class StaticMethodCallableNode extends Expr implements VirtualNode
 {
 
-	/** @var Name|Expr */
-	private $class;
+	private Name|Expr $class;
 
-	/** @var Identifier|Expr */
-	private $name;
+	private Identifier|Expr $name;
 
 	private Expr\StaticCall $originalNode;
 

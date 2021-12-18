@@ -47,7 +47,7 @@ final class CompileCommand extends Command
 		Filesystem $filesystem,
 		ProcessFactory $processFactory,
 		string $dataDir,
-		string $buildDir
+		string $buildDir,
 	)
 	{
 		parent::__construct();

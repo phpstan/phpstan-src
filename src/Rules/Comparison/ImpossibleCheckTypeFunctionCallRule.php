@@ -24,7 +24,7 @@ class ImpossibleCheckTypeFunctionCallRule implements Rule
 	public function __construct(
 		ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 		bool $checkAlwaysTrueCheckTypeFunctionCall,
-		bool $treatPhpDocTypesAsCertain
+		bool $treatPhpDocTypesAsCertain,
 	)
 	{
 		$this->impossibleCheckTypeHelper = $impossibleCheckTypeHelper;

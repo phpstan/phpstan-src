@@ -26,7 +26,7 @@ interface PhpMethodReflectionFactory
 		bool $isInternal,
 		bool $isFinal,
 		?string $stubPhpDocString,
-		?bool $isPure = null
+		?bool $isPure = null,
 	): PhpMethodReflection;
 
 }

@@ -19,7 +19,7 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		ObjectWithoutClassType $bound
+		ObjectWithoutClassType $bound,
 	)
 	{
 		parent::__construct();

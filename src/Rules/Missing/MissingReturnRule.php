@@ -33,7 +33,7 @@ class MissingReturnRule implements Rule
 
 	public function __construct(
 		bool $checkExplicitMixedMissingReturn,
-		bool $checkPhpDocMissingReturn
+		bool $checkPhpDocMissingReturn,
 	)
 	{
 		$this->checkExplicitMixedMissingReturn = $checkExplicitMixedMissingReturn;

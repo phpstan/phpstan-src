@@ -29,7 +29,7 @@ class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 	public function __construct(
 		string $isInMethodName,
 		string $removeNullMethodName,
-		ReflectionProvider $reflectionProvider
+		ReflectionProvider $reflectionProvider,
 	)
 	{
 		$this->isInMethodName = $isInMethodName;
@@ -50,7 +50,7 @@ class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 	public function isMethodSupported(
 		MethodReflection $methodReflection,
 		MethodCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		return $methodReflection->getName() === $this->isInMethodName
@@ -61,7 +61,7 @@ class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 		MethodReflection $methodReflection,
 		MethodCall $node,
 		Scope $scope,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		$scopeClass = $this->reflectionProvider->getClass(Scope::class);

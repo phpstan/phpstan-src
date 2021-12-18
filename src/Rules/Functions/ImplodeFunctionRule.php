@@ -28,7 +28,7 @@ class ImplodeFunctionRule implements Rule
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
-		RuleLevelHelper $ruleLevelHelper
+		RuleLevelHelper $ruleLevelHelper,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

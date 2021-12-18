@@ -50,7 +50,7 @@ class StaticMethodCallCheck
 		RuleLevelHelper $ruleLevelHelper,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		bool $checkFunctionNameCase,
-		bool $reportMagicMethods
+		bool $reportMagicMethods,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -66,7 +66,7 @@ class StaticMethodCallCheck
 	public function check(
 		Scope $scope,
 		string $methodName,
-		$class
+		$class,
 	): array
 	{
 		$errors = [];

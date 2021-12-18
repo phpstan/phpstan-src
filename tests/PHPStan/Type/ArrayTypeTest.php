@@ -136,7 +136,7 @@ class ArrayTypeTest extends PHPStanTestCase
 	public function testAccepts(
 		ArrayType $acceptingType,
 		Type $acceptedType,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$actualResult = $acceptingType->accepts($acceptedType, true);
@@ -165,7 +165,7 @@ class ArrayTypeTest extends PHPStanTestCase
 	 */
 	public function testDescribe(
 		ArrayType $type,
-		string $expectedDescription
+		string $expectedDescription,
 	): void
 	{
 		$this->assertSame($expectedDescription, $type->describe(VerbosityLevel::precise()));

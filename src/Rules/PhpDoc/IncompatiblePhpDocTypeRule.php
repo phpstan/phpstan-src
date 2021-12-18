@@ -35,7 +35,7 @@ class IncompatiblePhpDocTypeRule implements Rule
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
 		GenericObjectTypeCheck $genericObjectTypeCheck,
-		UnresolvableTypeHelper $unresolvableTypeHelper
+		UnresolvableTypeHelper $unresolvableTypeHelper,
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;

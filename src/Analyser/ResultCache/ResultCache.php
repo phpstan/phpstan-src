@@ -41,7 +41,7 @@ class ResultCache
 		array $meta,
 		array $errors,
 		array $dependencies,
-		array $exportedNodes
+		array $exportedNodes,
 	)
 	{
 		$this->filesToAnalyse = $filesToAnalyse;

@@ -50,7 +50,7 @@ class DerivativeContainerFactory
 		?string $generateBaselineFile,
 		?string $cliAutoloadFile,
 		?string $singleReflectionFile,
-		?string $singleReflectionInsteadOfFile
+		?string $singleReflectionInsteadOfFile,
 	)
 	{
 		$this->currentWorkingDirectory = $currentWorkingDirectory;

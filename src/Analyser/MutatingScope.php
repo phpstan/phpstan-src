@@ -248,7 +248,7 @@ class MutatingScope implements Scope
 		array $dynamicConstantNames = [],
 		bool $treatPhpDocTypesAsCertain = true,
 		bool $afterExtractCall = false,
-		?Scope $parentScope = null
+		?Scope $parentScope = null,
 	)
 	{
 		if ($namespace === '') {
@@ -2581,7 +2581,7 @@ class MutatingScope implements Scope
 	protected function getTypeFromArrayDimFetch(
 		Expr\ArrayDimFetch $arrayDimFetch,
 		Type $offsetType,
-		Type $offsetAccessibleType
+		Type $offsetAccessibleType,
 	): Type
 	{
 		if ($arrayDimFetch->dim === null) {
@@ -2925,7 +2925,7 @@ class MutatingScope implements Scope
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		?bool $isPure = null
+		?bool $isPure = null,
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -3026,7 +3026,7 @@ class MutatingScope implements Scope
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		?bool $isPure = null
+		?bool $isPure = null,
 	): self
 	{
 		return $this->enterFunctionLike(
@@ -3052,7 +3052,7 @@ class MutatingScope implements Scope
 
 	private function enterFunctionLike(
 		PhpFunctionFromParserNodeReflection $functionReflection,
-		bool $preserveThis
+		bool $preserveThis,
 	): self
 	{
 		$variableTypes = [];
@@ -3184,7 +3184,7 @@ class MutatingScope implements Scope
 	 */
 	public function enterAnonymousFunction(
 		Expr\Closure $closure,
-		?array $callableParameters = null
+		?array $callableParameters = null,
 	): self
 	{
 		$anonymousFunctionReflection = $this->getType($closure);
@@ -3219,7 +3219,7 @@ class MutatingScope implements Scope
 	 */
 	private function enterAnonymousFunctionWithoutReflection(
 		Expr\Closure $closure,
-		?array $callableParameters = null
+		?array $callableParameters = null,
 	): self
 	{
 		$variableTypes = [];
@@ -4368,7 +4368,7 @@ class MutatingScope implements Scope
 		array $conditionalExpressions,
 		array $variableTypes,
 		array $theirVariableTypes,
-		array $mergedVariableHolders
+		array $mergedVariableHolders,
 	): array
 	{
 		$newVariableTypes = $variableTypes;
@@ -4513,7 +4513,7 @@ class MutatingScope implements Scope
 	private function processFinallyScopeVariableTypeHolders(
 		array $ourVariableTypeHolders,
 		array $finallyVariableTypeHolders,
-		array $originalVariableTypeHolders
+		array $originalVariableTypeHolders,
 	): array
 	{
 		foreach ($finallyVariableTypeHolders as $name => $variableTypeHolder) {
@@ -4541,7 +4541,7 @@ class MutatingScope implements Scope
 	public function processClosureScope(
 		self $closureScope,
 		?self $prevScope,
-		array $byRefUses
+		array $byRefUses,
 	): self
 	{
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
@@ -4697,7 +4697,7 @@ class MutatingScope implements Scope
 	 */
 	private function generalizeVariableTypeHolders(
 		array $variableTypeHolders,
-		array $otherVariableTypeHolders
+		array $otherVariableTypeHolders,
 	): array
 	{
 		foreach ($variableTypeHolders as $name => $variableTypeHolder) {

@@ -16,7 +16,7 @@ interface ErrorFormatter
 	 */
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		Output $output
+		Output $output,
 	): int;
 
 }

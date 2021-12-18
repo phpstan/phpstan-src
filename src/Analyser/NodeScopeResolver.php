@@ -210,7 +210,7 @@ class NodeScopeResolver
 		bool $polluteScopeWithAlwaysIterableForeach,
 		array $earlyTerminatingMethodCalls,
 		array $earlyTerminatingFunctionCalls,
-		bool $implicitThrows
+		bool $implicitThrows,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -248,7 +248,7 @@ class NodeScopeResolver
 	public function processNodes(
 		array $nodes,
 		MutatingScope $scope,
-		callable $nodeCallback
+		callable $nodeCallback,
 	): void
 	{
 		$nodesCount = count($nodes);
@@ -283,7 +283,7 @@ class NodeScopeResolver
 		Node $parentNode,
 		array $stmts,
 		MutatingScope $scope,
-		callable $nodeCallback
+		callable $nodeCallback,
 	): StatementResult
 	{
 		$exitPoints = [];
@@ -355,7 +355,7 @@ class NodeScopeResolver
 	private function processStmtNode(
 		Node\Stmt $stmt,
 		MutatingScope $scope,
-		callable $nodeCallback
+		callable $nodeCallback,
 	): StatementResult
 	{
 		if (
@@ -2680,7 +2680,7 @@ class NodeScopeResolver
 		FunctionReflection $functionReflection,
 		?ParametersAcceptor $parametersAcceptor,
 		FuncCall $funcCall,
-		MutatingScope $scope
+		MutatingScope $scope,
 	): ?ThrowPoint
 	{
 		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {
@@ -2872,7 +2872,7 @@ class NodeScopeResolver
 		callable $nodeCallback,
 		Expr $expr,
 		MutatingScope $scope,
-		ExpressionContext $context
+		ExpressionContext $context,
 	): void
 	{
 		if ($context->isDeep()) {
@@ -2889,7 +2889,7 @@ class NodeScopeResolver
 		MutatingScope $scope,
 		callable $nodeCallback,
 		ExpressionContext $context,
-		?Type $passedToType
+		?Type $passedToType,
 	): ExpressionResult
 	{
 		foreach ($expr->params as $param) {
@@ -3014,7 +3014,7 @@ class NodeScopeResolver
 		MutatingScope $scope,
 		callable $nodeCallback,
 		ExpressionContext $context,
-		?Type $passedToType
+		?Type $passedToType,
 	): ExpressionResult
 	{
 		foreach ($expr->params as $param) {
@@ -3092,7 +3092,7 @@ class NodeScopeResolver
 	private function processParamNode(
 		Node\Param $param,
 		MutatingScope $scope,
-		callable $nodeCallback
+		callable $nodeCallback,
 	): void
 	{
 		foreach ($param->attrGroups as $attrGroup) {
@@ -3125,7 +3125,7 @@ class NodeScopeResolver
 		MutatingScope $scope,
 		callable $nodeCallback,
 		ExpressionContext $context,
-		?MutatingScope $closureBindScope = null
+		?MutatingScope $closureBindScope = null,
 	): ExpressionResult
 	{
 		if ($parametersAcceptor !== null) {
@@ -3202,7 +3202,7 @@ class NodeScopeResolver
 		callable $nodeCallback,
 		ExpressionContext $context,
 		Closure $processExprCallback,
-		bool $enterExpressionAssign
+		bool $enterExpressionAssign,
 	): ExpressionResult
 	{
 		$nodeCallback($var, $enterExpressionAssign ? $scope->enterExpressionAssign($var) : $scope);

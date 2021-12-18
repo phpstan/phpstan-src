@@ -36,7 +36,7 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 		MethodReflection $methodReflection,
 		ClassReflection $resolvedDeclaringClass,
 		bool $resolveTemplateTypeMapToBounds,
-		callable $transformStaticTypeCallback
+		callable $transformStaticTypeCallback,
 	)
 	{
 		$this->methodReflection = $methodReflection;

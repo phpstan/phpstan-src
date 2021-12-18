@@ -22,7 +22,7 @@ class AnnotationPropertyReflection implements PropertyReflection
 		ClassReflection $declaringClass,
 		Type $type,
 		bool $readable = true,
-		bool $writable = true
+		bool $writable = true,
 	)
 	{
 		$this->declaringClass = $declaringClass;

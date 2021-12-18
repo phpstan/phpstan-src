@@ -16,7 +16,7 @@ class ExpressionContext
 	private function __construct(
 		bool $isDeep,
 		?string $inAssignRightSideVariableName,
-		?Type $inAssignRightSideType
+		?Type $inAssignRightSideType,
 	)
 	{
 		$this->isDeep = $isDeep;

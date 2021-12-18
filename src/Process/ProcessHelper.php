@@ -24,7 +24,7 @@ class ProcessHelper
 		string $commandName,
 		?string $projectConfigFile,
 		array $additionalItems,
-		InputInterface $input
+		InputInterface $input,
 	): string
 	{
 		$phpIni = php_ini_loaded_file();

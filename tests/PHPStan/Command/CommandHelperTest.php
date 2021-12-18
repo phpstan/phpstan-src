@@ -103,7 +103,7 @@ class CommandHelperTest extends TestCase
 		?string $projectConfigFile,
 		?string $level,
 		array $expectedParameters,
-		bool $expectException
+		bool $expectException,
 	): void
 	{
 		$resource = fopen('php://memory', 'w', false);
@@ -294,7 +294,7 @@ class CommandHelperTest extends TestCase
 	 */
 	public function testResolveParameters(
 		string $configFile,
-		array $expectedParameters
+		array $expectedParameters,
 	): void
 	{
 		$result = CommandHelper::begin(

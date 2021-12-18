@@ -293,7 +293,7 @@ class GitlabFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
-		string $expected
+		string $expected,
 	): void
 	{
 		$formatter = new GitlabErrorFormatter(new SimpleRelativePathHelper('/data/folder'));

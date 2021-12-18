@@ -23,7 +23,7 @@ class UnionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedProper
 	 */
 	public function __construct(
 		string $methodName,
-		array $propertyPrototypes
+		array $propertyPrototypes,
 	)
 	{
 		$this->propertyName = $methodName;

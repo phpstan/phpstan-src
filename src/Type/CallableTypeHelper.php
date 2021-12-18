@@ -11,7 +11,7 @@ class CallableTypeHelper
 	public static function isParametersAcceptorSuperTypeOf(
 		ParametersAcceptor $ours,
 		ParametersAcceptor $theirs,
-		bool $treatMixedAsAny
+		bool $treatMixedAsAny,
 	): TrinaryLogic
 	{
 		$theirParameters = $theirs->getParameters();

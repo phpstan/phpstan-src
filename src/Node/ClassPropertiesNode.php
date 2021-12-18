@@ -95,7 +95,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	public function getUninitializedProperties(
 		Scope $scope,
 		array $constructors,
-		array $extensions
+		array $extensions,
 	): array
 	{
 		if (!$this->getClass() instanceof Class_) {
@@ -199,7 +199,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	private function getMethodsCalledFromConstructor(
 		ObjectType $classType,
 		array $methodCalls,
-		array $methods
+		array $methods,
 	): array
 	{
 		$originalCount = count($methods);

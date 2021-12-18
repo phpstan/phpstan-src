@@ -37,7 +37,7 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		$type = $this->getPreliminarilyResolvedTypeFromFunctionCall($functionReflection, $functionCall, $scope);
@@ -54,7 +54,7 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 	private function getPreliminarilyResolvedTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		$argumentPosition = $this->functions[$functionReflection->getName()];

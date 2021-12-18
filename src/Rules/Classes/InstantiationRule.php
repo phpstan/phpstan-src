@@ -40,7 +40,7 @@ class InstantiationRule implements Rule
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		FunctionCallParametersCheck $check,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck
+		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

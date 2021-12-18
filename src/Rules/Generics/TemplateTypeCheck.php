@@ -50,7 +50,7 @@ class TemplateTypeCheck
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		GenericObjectTypeCheck $genericObjectTypeCheck,
 		TypeAliasResolver $typeAliasResolver,
-		bool $checkClassCaseSensitivity
+		bool $checkClassCaseSensitivity,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -71,7 +71,7 @@ class TemplateTypeCheck
 		string $sameTemplateTypeNameAsClassMessage,
 		string $sameTemplateTypeNameAsTypeMessage,
 		string $invalidBoundTypeMessage,
-		string $notSupportedBoundMessage
+		string $notSupportedBoundMessage,
 	): array
 	{
 		$messages = [];

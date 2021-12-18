@@ -19,7 +19,7 @@ class ExecutionEndNode extends NodeAbstract implements VirtualNode
 	public function __construct(
 		Node $node,
 		StatementResult $statementResult,
-		bool $hasNativeReturnTypehint
+		bool $hasNativeReturnTypehint,
 	)
 	{
 		parent::__construct($node->getAttributes());

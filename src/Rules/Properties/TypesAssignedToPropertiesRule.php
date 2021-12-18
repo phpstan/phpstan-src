@@ -27,7 +27,7 @@ class TypesAssignedToPropertiesRule implements Rule
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,
 		PropertyDescriptor $propertyDescriptor,
-		PropertyReflectionFinder $propertyReflectionFinder
+		PropertyReflectionFinder $propertyReflectionFinder,
 	)
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;
@@ -77,7 +77,7 @@ class TypesAssignedToPropertiesRule implements Rule
 	 */
 	private function processSingleProperty(
 		FoundPropertyReflection $propertyReflection,
-		Node\Expr $node
+		Node\Expr $node,
 	): array
 	{
 		$propertyType = $propertyReflection->getWritableType();

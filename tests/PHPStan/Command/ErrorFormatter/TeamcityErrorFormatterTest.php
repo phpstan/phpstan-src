@@ -89,7 +89,7 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
-		string $expected
+		string $expected,
 	): void
 	{
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');

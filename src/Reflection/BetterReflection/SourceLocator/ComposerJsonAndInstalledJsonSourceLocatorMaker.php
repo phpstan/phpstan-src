@@ -32,7 +32,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	public function __construct(
 		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
 		OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
-		OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory
+		OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory,
 	)
 	{
 		$this->optimizedDirectorySourceLocatorRepository = $optimizedDirectorySourceLocatorRepository;
@@ -180,7 +180,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	private function packagePrefixPath(
 		string $projectInstallationPath,
 		string $installedJsonDirectoryPath,
-		array $package
+		array $package,
 	): string
 	{
 		if (array_key_exists('install-path', $package)) {

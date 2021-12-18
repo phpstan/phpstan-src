@@ -34,7 +34,7 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 		MethodReflection $methodReflection,
 		ClassReflection $resolvedDeclaringClass,
 		bool $resolveTemplateTypeMapToBounds,
-		Type $calledOnType
+		Type $calledOnType,
 	)
 	{
 		$this->methodReflection = $methodReflection;

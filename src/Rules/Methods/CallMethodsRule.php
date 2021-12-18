@@ -23,7 +23,7 @@ class CallMethodsRule implements Rule
 
 	public function __construct(
 		MethodCallCheck $methodCallCheck,
-		FunctionCallParametersCheck $parametersCheck
+		FunctionCallParametersCheck $parametersCheck,
 	)
 	{
 		$this->methodCallCheck = $methodCallCheck;

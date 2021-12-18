@@ -34,7 +34,7 @@ class ParametersAcceptorSelector
 	 * @return T
 	 */
 	public static function selectSingle(
-		array $parametersAcceptors
+		array $parametersAcceptors,
 	): ParametersAcceptor
 	{
 		if (count($parametersAcceptors) !== 1) {
@@ -51,7 +51,7 @@ class ParametersAcceptorSelector
 	public static function selectFromArgs(
 		Scope $scope,
 		array $args,
-		array $parametersAcceptors
+		array $parametersAcceptors,
 	): ParametersAcceptor
 	{
 		$types = [];
@@ -175,7 +175,7 @@ class ParametersAcceptorSelector
 	public static function selectFromTypes(
 		array $types,
 		array $parametersAcceptors,
-		bool $unpack
+		bool $unpack,
 	): ParametersAcceptor
 	{
 		if (count($parametersAcceptors) === 1) {

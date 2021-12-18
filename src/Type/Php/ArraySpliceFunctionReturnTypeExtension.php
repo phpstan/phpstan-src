@@ -21,7 +21,7 @@ class ArraySpliceFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		if (!isset($functionCall->getArgs()[0])) {

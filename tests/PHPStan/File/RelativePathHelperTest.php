@@ -153,7 +153,7 @@ class RelativePathHelperTest extends TestCase
 		string $currentWorkingDirectory,
 		array $analysedPaths,
 		string $filenameToRelativize,
-		string $expectedResult
+		string $expectedResult,
 	): void
 	{
 		$helper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), $currentWorkingDirectory, $analysedPaths, '/');
@@ -171,7 +171,7 @@ class RelativePathHelperTest extends TestCase
 		string $currentWorkingDirectory,
 		array $analysedPaths,
 		string $filenameToRelativize,
-		string $expectedResult
+		string $expectedResult,
 	): void
 	{
 		$sanitize = static function (string $path): string {
@@ -220,7 +220,7 @@ class RelativePathHelperTest extends TestCase
 		string $currentWorkingDirectory,
 		array $analysedPaths,
 		string $filenameToRelativize,
-		string $expectedResult
+		string $expectedResult,
 	): void
 	{
 		$helper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), $currentWorkingDirectory, $analysedPaths, '\\');

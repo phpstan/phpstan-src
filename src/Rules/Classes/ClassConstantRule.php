@@ -43,7 +43,7 @@ class ClassConstantRule implements Rule
 		ReflectionProvider $reflectionProvider,
 		RuleLevelHelper $ruleLevelHelper,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		PhpVersion $phpVersion
+		PhpVersion $phpVersion,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

@@ -44,7 +44,7 @@ class UnusedPrivatePropertyRule implements Rule
 		ReadWritePropertiesExtensionProvider $extensionProvider,
 		array $alwaysWrittenTags,
 		array $alwaysReadTags,
-		bool $checkUninitializedProperties
+		bool $checkUninitializedProperties,
 	)
 	{
 		$this->extensionProvider = $extensionProvider;

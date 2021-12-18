@@ -30,7 +30,7 @@ class SpecifiedTypes
 		array $sureTypes = [],
 		array $sureNotTypes = [],
 		bool $overwrite = false,
-		array $newConditionalExpressionHolders = []
+		array $newConditionalExpressionHolders = [],
 	)
 	{
 		$this->sureTypes = $sureTypes;

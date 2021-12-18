@@ -28,7 +28,7 @@ class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStateme
 		Function_ $function,
 		array $returnStatements,
 		StatementResult $statementResult,
-		array $executionEnds
+		array $executionEnds,
 	)
 	{
 		parent::__construct($function->getAttributes());

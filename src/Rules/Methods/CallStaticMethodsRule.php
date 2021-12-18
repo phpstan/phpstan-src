@@ -24,7 +24,7 @@ class CallStaticMethodsRule implements Rule
 
 	public function __construct(
 		StaticMethodCallCheck $methodCallCheck,
-		FunctionCallParametersCheck $parametersCheck
+		FunctionCallParametersCheck $parametersCheck,
 	)
 	{
 		$this->methodCallCheck = $methodCallCheck;

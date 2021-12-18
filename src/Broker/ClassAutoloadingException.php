@@ -14,7 +14,7 @@ class ClassAutoloadingException extends AnalysedCodeException
 
 	public function __construct(
 		string $functionName,
-		?Throwable $previous = null
+		?Throwable $previous = null,
 	)
 	{
 		if ($previous !== null) {

@@ -137,7 +137,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGeneralErrors,
-		string $expected
+		string $expected,
 	): void
 	{
 		$this->assertSame(

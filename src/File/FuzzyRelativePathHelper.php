@@ -31,7 +31,7 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 		RelativePathHelper $fallbackRelativePathHelper,
 		string $currentWorkingDirectory,
 		array $analysedPaths,
-		?string $directorySeparator = null
+		?string $directorySeparator = null,
 	)
 	{
 		$this->fallbackRelativePathHelper = $fallbackRelativePathHelper;

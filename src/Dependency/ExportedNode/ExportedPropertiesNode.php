@@ -35,7 +35,7 @@ class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 		bool $public,
 		bool $private,
 		bool $static,
-		bool $readonly
+		bool $readonly,
 	)
 	{
 		$this->names = $names;

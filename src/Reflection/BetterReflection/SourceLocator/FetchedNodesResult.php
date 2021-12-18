@@ -24,7 +24,7 @@ class FetchedNodesResult
 	public function __construct(
 		array $classNodes,
 		array $functionNodes,
-		array $constantNodes
+		array $constantNodes,
 	)
 	{
 		$this->classNodes = $classNodes;

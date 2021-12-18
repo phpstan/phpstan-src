@@ -23,7 +23,7 @@ class GithubErrorFormatter implements ErrorFormatter
 
 	public function __construct(
 		RelativePathHelper $relativePathHelper,
-		ErrorFormatter $errorFormatter
+		ErrorFormatter $errorFormatter,
 	)
 	{
 		$this->relativePathHelper = $relativePathHelper;

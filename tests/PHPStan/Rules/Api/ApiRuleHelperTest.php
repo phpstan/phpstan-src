@@ -141,7 +141,7 @@ class ApiRuleHelperTest extends TestCase
 		string $scopeFile,
 		string $nameToCheck,
 		?string $declaringFileNameToCheck,
-		bool $expected
+		bool $expected,
 	): void
 	{
 		$rule = new ApiRuleHelper();

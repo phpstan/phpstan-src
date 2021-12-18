@@ -14,7 +14,7 @@ class NeonLoader extends Loader
 
 	public function __construct(
 		FileHelper $fileHelper,
-		?string $generateBaselineFile
+		?string $generateBaselineFile,
 	)
 	{
 		$this->fileHelper = $fileHelper;

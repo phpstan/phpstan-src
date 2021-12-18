@@ -233,7 +233,7 @@ class ExportedNodeResolver
 		string $file,
 		?string $className,
 		?string $functionName,
-		?string $text
+		?string $text,
 	): ?ExportedPhpDocNode
 	{
 		if ($text === null) {

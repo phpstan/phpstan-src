@@ -82,7 +82,7 @@ class SchedulerTest extends TestCase
 		int $jobSize,
 		int $numberOfFiles,
 		int $expectedNumberOfProcesses,
-		array $expectedJobSizes
+		array $expectedJobSizes,
 	): void
 	{
 		$files = array_fill(0, $numberOfFiles, 'file.php');

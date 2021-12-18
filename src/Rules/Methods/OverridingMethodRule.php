@@ -44,7 +44,7 @@ class OverridingMethodRule implements Rule
 	public function __construct(
 		PhpVersion $phpVersion,
 		MethodSignatureRule $methodSignatureRule,
-		bool $checkPhpDocMethodSignatures
+		bool $checkPhpDocMethodSignatures,
 	)
 	{
 		$this->phpVersion = $phpVersion;
@@ -476,7 +476,7 @@ class OverridingMethodRule implements Rule
 	private function addErrors(
 		array $errors,
 		InClassMethodNode $classMethod,
-		Scope $scope
+		Scope $scope,
 	): array
 	{
 		if (count($errors) > 0) {

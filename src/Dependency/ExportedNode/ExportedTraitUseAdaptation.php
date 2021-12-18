@@ -28,7 +28,7 @@ class ExportedTraitUseAdaptation implements ExportedNode, JsonSerializable
 		string $method,
 		?int $newModifier,
 		?string $newName,
-		?array $insteadOfs
+		?array $insteadOfs,
 	)
 	{
 		$this->traitName = $traitName;
@@ -42,7 +42,7 @@ class ExportedTraitUseAdaptation implements ExportedNode, JsonSerializable
 		?string $traitName,
 		string $method,
 		?int $newModifier,
-		?string $newName
+		?string $newName,
 	): self
 	{
 		return new self($traitName, $method, $newModifier, $newName, null);
@@ -54,7 +54,7 @@ class ExportedTraitUseAdaptation implements ExportedNode, JsonSerializable
 	public static function createPrecedence(
 		?string $traitName,
 		string $method,
-		array $insteadOfs
+		array $insteadOfs,
 	): self
 	{
 		return new self($traitName, $method, null, null, $insteadOfs);

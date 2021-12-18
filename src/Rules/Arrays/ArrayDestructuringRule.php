@@ -33,7 +33,7 @@ class ArrayDestructuringRule implements Rule
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,
-		NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck
+		NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck,
 	)
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;

@@ -25,7 +25,7 @@ class ArrayIsListFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection,
 		FuncCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		return strtolower($functionReflection->getName()) === 'array_is_list'
@@ -36,7 +36,7 @@ class ArrayIsListFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 		FunctionReflection $functionReflection,
 		FuncCall $node,
 		Scope $scope,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		$arrayArg = $node->getArgs()[0]->value ?? null;

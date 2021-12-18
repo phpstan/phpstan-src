@@ -33,7 +33,7 @@ class Analyser
 		FileAnalyser $fileAnalyser,
 		Registry $registry,
 		NodeScopeResolver $nodeScopeResolver,
-		int $internalErrorsCountLimit
+		int $internalErrorsCountLimit,
 	)
 	{
 		$this->fileAnalyser = $fileAnalyser;
@@ -53,7 +53,7 @@ class Analyser
 		?Closure $preFileCallback = null,
 		?Closure $postFileCallback = null,
 		bool $debug = false,
-		?array $allAnalysedFiles = null
+		?array $allAnalysedFiles = null,
 	): AnalyserResult
 	{
 		if ($allAnalysedFiles === null) {

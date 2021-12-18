@@ -27,7 +27,7 @@ class FileMonitorResult
 		array $newFiles,
 		array $changedFiles,
 		array $deletedFiles,
-		int $totalFilesCount
+		int $totalFilesCount,
 	)
 	{
 		$this->newFiles = $newFiles;

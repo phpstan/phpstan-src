@@ -28,7 +28,7 @@ class OverridingPropertyRule implements Rule
 
 	public function __construct(
 		bool $checkPhpDocMethodSignatures,
-		bool $reportMaybes
+		bool $reportMaybes,
 	)
 	{
 		$this->checkPhpDocMethodSignatures = $checkPhpDocMethodSignatures;

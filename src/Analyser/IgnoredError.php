@@ -46,7 +46,7 @@ class IgnoredError
 		FileHelper $fileHelper,
 		Error $error,
 		string $ignoredErrorPattern,
-		?string $path
+		?string $path,
 	): bool
 	{
 		// normalize newlines to allow working with ignore-patterns independent of used OS newline-format

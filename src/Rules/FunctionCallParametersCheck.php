@@ -52,7 +52,7 @@ class FunctionCallParametersCheck
 		bool $checkArgumentTypes,
 		bool $checkArgumentsPassedByReference,
 		bool $checkExtraArguments,
-		bool $checkMissingTypehints
+		bool $checkMissingTypehints,
 	)
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;
@@ -75,7 +75,7 @@ class FunctionCallParametersCheck
 		Scope $scope,
 		bool $isBuiltin,
 		$funcCall,
-		array $messages
+		array $messages,
 	): array
 	{
 		$functionParametersMinCount = 0;
@@ -377,7 +377,7 @@ class FunctionCallParametersCheck
 		array $arguments,
 		bool $hasNamedArguments,
 		string $missingParameterMessage,
-		string $unknownParameterMessage
+		string $unknownParameterMessage,
 	): array
 	{
 		$parameters = $parametersAcceptor->getParameters();

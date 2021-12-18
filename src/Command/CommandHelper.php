@@ -87,7 +87,7 @@ class CommandHelper
 		bool $debugEnabled = false,
 		?string $singleReflectionFile = null,
 		?string $singleReflectionInsteadOfFile = null,
-		bool $cleanupContainerCache = true
+		bool $cleanupContainerCache = true,
 	): InceptionResult
 	{
 		if (!$allowXdebug) {
@@ -470,7 +470,7 @@ class CommandHelper
 		string $file,
 		Container $container,
 		Output $errorOutput,
-		bool $debugEnabled
+		bool $debugEnabled,
 	): void
 	{
 		if (!is_file($file)) {
@@ -517,7 +517,7 @@ class CommandHelper
 		Output $output,
 		FileHelper $fileHelper,
 		array $configFiles,
-		array $loaderParameters
+		array $loaderParameters,
 	): void
 	{
 		$neonAdapter = new NeonAdapter();
@@ -559,7 +559,7 @@ class CommandHelper
 		PhpAdapter $phpAdapter,
 		string $configFile,
 		array $loaderParameters,
-		?string $generateBaselineFile
+		?string $generateBaselineFile,
 	): array
 	{
 		if ($generateBaselineFile === $fileHelper->normalizePath($configFile)) {

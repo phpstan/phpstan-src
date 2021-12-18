@@ -80,7 +80,7 @@ class TemplateTypeTest extends PHPStanTestCase
 		Type $type,
 		Type $otherType,
 		TrinaryLogic $expectedAccept,
-		TrinaryLogic $expectedAcceptArg
+		TrinaryLogic $expectedAcceptArg,
 	): void
 	{
 		assert($type instanceof TemplateType);
@@ -269,7 +269,7 @@ class TemplateTypeTest extends PHPStanTestCase
 		Type $type,
 		Type $otherType,
 		TrinaryLogic $expectedIsSuperType,
-		TrinaryLogic $expectedIsSuperTypeInverse
+		TrinaryLogic $expectedIsSuperTypeInverse,
 	): void
 	{
 		assert($type instanceof TemplateType);

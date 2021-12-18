@@ -23,7 +23,7 @@ class BooleanOrConstantConditionRule implements Rule
 
 	public function __construct(
 		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain
+		bool $treatPhpDocTypesAsCertain,
 	)
 	{
 		$this->helper = $helper;
@@ -37,7 +37,7 @@ class BooleanOrConstantConditionRule implements Rule
 
 	public function processNode(
 		Node $node,
-		Scope $scope
+		Scope $scope,
 	): array
 	{
 		$originalNode = $node->getOriginalNode();

@@ -33,7 +33,7 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 		Type $nativeType,
 		PassedByReference $passedByReference,
 		bool $variadic,
-		?Type $defaultValue
+		?Type $defaultValue,
 	)
 	{
 		$this->name = $name;

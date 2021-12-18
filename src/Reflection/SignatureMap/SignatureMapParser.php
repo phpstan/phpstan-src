@@ -19,7 +19,7 @@ class SignatureMapParser
 	private TypeStringResolver $typeStringResolver;
 
 	public function __construct(
-		TypeStringResolver $typeNodeResolver
+		TypeStringResolver $typeNodeResolver,
 	)
 	{
 		$this->typeStringResolver = $typeNodeResolver;

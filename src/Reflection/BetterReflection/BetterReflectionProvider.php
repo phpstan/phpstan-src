@@ -107,7 +107,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		AnonymousClassNameHelper $anonymousClassNameHelper,
 		Standard $printer,
 		FileHelper $fileHelper,
-		PhpStormStubsSourceStubber $phpstormStubsSourceStubber
+		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 	)
 	{
 		$this->reflectionProviderProvider = $reflectionProviderProvider;
@@ -403,7 +403,7 @@ class BetterReflectionProvider implements ReflectionProvider
 	private function resolveName(
 		Node\Name $nameNode,
 		Closure $existsCallback,
-		?Scope $scope
+		?Scope $scope,
 	): ?string
 	{
 		$name = (string) $nameNode;

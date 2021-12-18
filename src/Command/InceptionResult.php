@@ -44,7 +44,7 @@ class InceptionResult
 		string $memoryLimitFile,
 		?string $projectConfigFile,
 		?array $projectConfigArray,
-		?string $generateBaselineFile
+		?string $generateBaselineFile,
 	)
 	{
 		$this->filesCallback = $filesCallback;

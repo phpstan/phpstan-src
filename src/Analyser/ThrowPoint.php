@@ -30,7 +30,7 @@ class ThrowPoint
 		Type $type,
 		Node $node,
 		bool $explicit,
-		bool $canContainAnyThrowable
+		bool $canContainAnyThrowable,
 	)
 	{
 		$this->scope = $scope;

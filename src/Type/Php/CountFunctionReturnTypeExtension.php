@@ -27,7 +27,7 @@ class CountFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		if (count($functionCall->getArgs()) < 1) {

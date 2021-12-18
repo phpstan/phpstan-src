@@ -119,7 +119,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
-		string $expected
+		string $expected,
 	): void
 	{
 		$formatter = new CheckstyleErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));

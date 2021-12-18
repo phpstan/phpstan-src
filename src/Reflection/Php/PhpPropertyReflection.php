@@ -47,7 +47,7 @@ class PhpPropertyReflection implements PropertyReflection
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		bool $isInternal,
-		?string $stubPhpDocString
+		?string $stubPhpDocString,
 	)
 	{
 		$this->declaringClass = $declaringClass;

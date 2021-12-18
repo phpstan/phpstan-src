@@ -22,7 +22,7 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 
 	public function __construct(
 		ParametersAcceptor $parametersAcceptor,
-		TemplateTypeMap $resolvedTemplateTypeMap
+		TemplateTypeMap $resolvedTemplateTypeMap,
 	)
 	{
 		$this->parametersAcceptor = $parametersAcceptor;

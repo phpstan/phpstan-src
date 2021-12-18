@@ -42,7 +42,7 @@ class UniversalObjectCratesClassReflectionExtension
 	public static function isUniversalObjectCrate(
 		ReflectionProvider $reflectionProvider,
 		array $classes,
-		ClassReflection $classReflection
+		ClassReflection $classReflection,
 	): bool
 	{
 		foreach ($classes as $className) {

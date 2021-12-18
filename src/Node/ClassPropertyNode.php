@@ -36,7 +36,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		?Expr $default,
 		?string $phpDoc,
 		bool $isPromoted,
-		Node $originalNode
+		Node $originalNode,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());

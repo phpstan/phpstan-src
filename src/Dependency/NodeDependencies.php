@@ -23,7 +23,7 @@ class NodeDependencies
 	public function __construct(
 		FileHelper $fileHelper,
 		array $reflections,
-		?ExportedNode $exportedNode
+		?ExportedNode $exportedNode,
 	)
 	{
 		$this->fileHelper = $fileHelper;

@@ -51,7 +51,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	public function __construct(
 		FileNodesFetcher $fileNodesFetcher,
 		PhpVersion $phpVersion,
-		array $files
+		array $files,
 	)
 	{
 		$this->fileNodesFetcher = $fileNodesFetcher;

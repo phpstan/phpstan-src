@@ -34,7 +34,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 	public function testAnd(
 		TrinaryLogic $expectedResult,
 		TrinaryLogic $value,
-		TrinaryLogic ...$operands
+		TrinaryLogic ...$operands,
 	): void
 	{
 		$this->assertTrue($expectedResult->equals($value->and(...$operands)));
@@ -67,7 +67,7 @@ class TrinaryLogicTest extends PHPStanTestCase
 	public function testOr(
 		TrinaryLogic $expectedResult,
 		TrinaryLogic $value,
-		TrinaryLogic ...$operands
+		TrinaryLogic ...$operands,
 	): void
 	{
 		$this->assertTrue($expectedResult->equals($value->or(...$operands)));

@@ -27,7 +27,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 
 	public function __construct(
 		GenericObjectTypeCheck $genericObjectTypeCheck,
-		UnresolvableTypeHelper $unresolvableTypeHelper
+		UnresolvableTypeHelper $unresolvableTypeHelper,
 	)
 	{
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;

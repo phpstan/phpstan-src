@@ -80,7 +80,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		?bool $isPure
+		?bool $isPure,
 	)
 	{
 		$this->functionLike = $functionLike;

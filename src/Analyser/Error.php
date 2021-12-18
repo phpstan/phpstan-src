@@ -57,7 +57,7 @@ class Error implements JsonSerializable
 		?int $nodeLine = null,
 		?string $nodeType = null,
 		?string $identifier = null,
-		array $metadata = []
+		array $metadata = [],
 	)
 	{
 		$this->message = $message;

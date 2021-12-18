@@ -11,7 +11,7 @@ class RawErrorFormatter implements ErrorFormatter
 
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		Output $output
+		Output $output,
 	): int
 	{
 		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {

@@ -19,7 +19,7 @@ class VarianceCheck
 		string $parameterTypeMessage,
 		string $returnTypeMessage,
 		string $generalMessage,
-		bool $isStatic
+		bool $isStatic,
 	): array
 	{
 		$errors = [];

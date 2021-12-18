@@ -26,7 +26,7 @@ class ParameterSignature
 		Type $type,
 		Type $nativeType,
 		PassedByReference $passedByReference,
-		bool $variadic
+		bool $variadic,
 	)
 	{
 		$this->name = $name;

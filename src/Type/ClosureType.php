@@ -58,7 +58,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		Type $returnType,
 		bool $variadic,
 		?TemplateTypeMap $templateTypeMap = null,
-		?TemplateTypeMap $resolvedTemplateTypeMap = null
+		?TemplateTypeMap $resolvedTemplateTypeMap = null,
 	)
 	{
 		$this->objectType = new ObjectType(Closure::class);

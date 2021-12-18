@@ -27,7 +27,7 @@ class AppendedArrayKeyTypeRule implements Rule
 
 	public function __construct(
 		PropertyReflectionFinder $propertyReflectionFinder,
-		bool $checkUnionTypes
+		bool $checkUnionTypes,
 	)
 	{
 		$this->propertyReflectionFinder = $propertyReflectionFinder;

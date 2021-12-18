@@ -216,7 +216,7 @@ class GenericObjectTypeTest extends PHPStanTestCase
 	public function testAccepts(
 		Type $acceptingType,
 		Type $acceptedType,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$actualResult = $acceptingType->accepts($acceptedType, true);

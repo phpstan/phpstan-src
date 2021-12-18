@@ -26,7 +26,7 @@ class MethodTemplateTypeRule implements Rule
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
-		TemplateTypeCheck $templateTypeCheck
+		TemplateTypeCheck $templateTypeCheck,
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;

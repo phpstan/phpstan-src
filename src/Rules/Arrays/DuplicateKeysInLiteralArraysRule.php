@@ -24,7 +24,7 @@ class DuplicateKeysInLiteralArraysRule implements Rule
 	private Standard $printer;
 
 	public function __construct(
-		Standard $printer
+		Standard $printer,
 	)
 	{
 		$this->printer = $printer;

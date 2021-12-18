@@ -26,7 +26,7 @@ class FoundTypeResult
 		Type $type,
 		array $referencedClasses,
 		array $unknownClassErrors,
-		?string $tip
+		?string $tip,
 	)
 	{
 		$this->type = $type;

@@ -49,7 +49,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function __construct(
 		?array $parameters = null,
 		?Type $returnType = null,
-		bool $variadic = true
+		bool $variadic = true,
 	)
 	{
 		$this->parameters = $parameters ?? [];

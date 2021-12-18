@@ -109,7 +109,7 @@ class ParentDirectoryRelativePathHelperTest extends TestCase
 	public function testGetRelativePath(
 		string $parentDirectory,
 		string $filename,
-		string $expectedRelativePath
+		string $expectedRelativePath,
 	): void
 	{
 		$helper = new ParentDirectoryRelativePathHelper($parentDirectory);

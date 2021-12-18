@@ -20,7 +20,7 @@ class Scheduler
 	public function __construct(
 		int $jobSize,
 		int $maximumNumberOfProcesses,
-		int $minimumNumberOfJobsPerProcess
+		int $minimumNumberOfJobsPerProcess,
 	)
 	{
 		$this->jobSize = $jobSize;
@@ -33,7 +33,7 @@ class Scheduler
 	 */
 	public function scheduleWork(
 		int $cpuCores,
-		array $files
+		array $files,
 	): Schedule
 	{
 		$jobs = array_chunk($files, $this->jobSize);

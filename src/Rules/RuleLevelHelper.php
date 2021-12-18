@@ -43,7 +43,7 @@ class RuleLevelHelper
 		bool $checkNullables,
 		bool $checkThisOnly,
 		bool $checkUnionTypes,
-		bool $checkExplicitMixed
+		bool $checkExplicitMixed,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -131,7 +131,7 @@ class RuleLevelHelper
 		Scope $scope,
 		Expr $var,
 		string $unknownClassErrorPattern,
-		callable $unionTypeCriteriaCallback
+		callable $unionTypeCriteriaCallback,
 	): FoundTypeResult
 	{
 		if ($this->checkThisOnly && !$this->isThis($var)) {

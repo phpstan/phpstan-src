@@ -25,7 +25,7 @@ class FileFinder
 	public function __construct(
 		FileExcluder $fileExcluder,
 		FileHelper $fileHelper,
-		array $fileExtensions
+		array $fileExtensions,
 	)
 	{
 		$this->fileExcluder = $fileExcluder;

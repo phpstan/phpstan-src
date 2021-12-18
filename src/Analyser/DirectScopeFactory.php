@@ -60,7 +60,7 @@ class DirectScopeFactory implements ScopeFactory
 		NodeScopeResolver $nodeScopeResolver,
 		bool $treatPhpDocTypesAsCertain,
 		Container $container,
-		PhpVersion $phpVersion
+		PhpVersion $phpVersion,
 	)
 	{
 		$this->scopeClass = $scopeClass;
@@ -104,7 +104,7 @@ class DirectScopeFactory implements ScopeFactory
 		array $nativeExpressionTypes = [],
 		array $inFunctionCallsStack = [],
 		bool $afterExtractCall = false,
-		?Scope $parentScope = null
+		?Scope $parentScope = null,
 	): MutatingScope
 	{
 		$scopeClass = $this->scopeClass;

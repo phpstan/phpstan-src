@@ -30,7 +30,7 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		$arrayArg = $functionCall->getArgs()[0]->value ?? null;

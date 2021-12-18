@@ -35,7 +35,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	public function processFile(
 		string $file,
 		callable $callback,
-		array $dynamicConstantNames = []
+		array $dynamicConstantNames = [],
 	): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();
@@ -83,7 +83,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	public function assertFileAsserts(
 		string $assertType,
 		string $file,
-		...$args
+		...$args,
 	): void
 	{
 		if ($assertType === 'type') {

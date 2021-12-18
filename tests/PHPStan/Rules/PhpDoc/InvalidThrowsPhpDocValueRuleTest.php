@@ -104,7 +104,7 @@ class InvalidThrowsPhpDocValueRuleTest extends RuleTestCase
 	public function testMergeInheritedPhpDocs(
 		string $className,
 		string $method,
-		string $expectedType
+		string $expectedType,
 	): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();

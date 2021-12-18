@@ -41,7 +41,7 @@ class TypeAliasResolver
 		array $globalTypeAliases,
 		TypeStringResolver $typeStringResolver,
 		TypeNodeResolver $typeNodeResolver,
-		ReflectionProvider $reflectionProvider
+		ReflectionProvider $reflectionProvider,
 	)
 	{
 		$this->globalTypeAliases = $globalTypeAliases;

@@ -27,7 +27,7 @@ class FetchedNode
 		Node $node,
 		?Node\Stmt\Namespace_ $namespace,
 		string $fileName,
-		LocatedSource $locatedSource
+		LocatedSource $locatedSource,
 	)
 	{
 		$this->node = $node;

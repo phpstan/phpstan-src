@@ -28,7 +28,7 @@ class AppendedArrayItemTypeRule implements Rule
 
 	public function __construct(
 		PropertyReflectionFinder $propertyReflectionFinder,
-		RuleLevelHelper $ruleLevelHelper
+		RuleLevelHelper $ruleLevelHelper,
 	)
 	{
 		$this->propertyReflectionFinder = $propertyReflectionFinder;

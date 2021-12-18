@@ -50,7 +50,7 @@ class ClassStatementsGatherer
 	 */
 	public function __construct(
 		ClassReflection $classReflection,
-		callable $nodeCallback
+		callable $nodeCallback,
 	)
 	{
 		$this->classReflection = $classReflection;

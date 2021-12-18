@@ -50,7 +50,7 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 		MissingTypehintCheck $missingTypehintCheck,
 		UnresolvableTypeHelper $unresolvableTypeHelper,
 		bool $checkClassCaseSensitivity,
-		bool $checkMissingVarTagTypehint
+		bool $checkMissingVarTagTypehint,
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;

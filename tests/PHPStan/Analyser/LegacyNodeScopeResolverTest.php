@@ -93,7 +93,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testUnionInCatch(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -218,7 +218,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testUnionAndIntersection(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -746,7 +746,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $variableName,
 		TrinaryLogic $expectedCertainty,
 		?string $typeDescription = null,
-		?string $iterableValueTypeDescription = null
+		?string $iterableValueTypeDescription = null,
 	): void
 	{
 		$this->assertVariables(
@@ -882,7 +882,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testConstantTypes(
 		Scope $scope,
 		string $variableName,
-		string $typeDescription
+		string $typeDescription,
 	): void
 	{
 		$this->assertVariables(
@@ -899,7 +899,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $variableName,
 		TrinaryLogic $expectedCertainty,
 		?string $typeDescription = null,
-		?string $iterableValueTypeDescription = null
+		?string $iterableValueTypeDescription = null,
 	): void
 	{
 		$certainty = $scope->hasVariableType($variableName);
@@ -1216,7 +1216,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testArrayDestructuring(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -1297,7 +1297,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testTypehints(
 		string $typeClass,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -1358,7 +1358,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testAnonymousFunctionTypehints(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -1439,7 +1439,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testVarAnnotations(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -1595,7 +1595,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testCasts(
 		string $desciptiion,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -1620,7 +1620,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testUnsetCast(
 		string $desciptiion,
-		string $expression
+		string $expression,
 	): void
 	{
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70200) {
@@ -1754,7 +1754,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testDeductedTypes(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		require_once __DIR__ . '/data/function-definitions.php';
@@ -1900,7 +1900,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testProperties(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -3205,7 +3205,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testBinaryOperations(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -3230,7 +3230,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testVarStatementAnnotation(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -3255,7 +3255,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testCloneOperators(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -3308,7 +3308,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testLiteralArrays(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -3385,7 +3385,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testLiteralArraysKeys(
 		string $description,
-		string $evaluatedPointExpressionType
+		string $evaluatedPointExpressionType,
 	): void
 	{
 		$this->assertTypes(
@@ -3427,7 +3427,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testStringArrayAccess(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -3603,7 +3603,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testTypeFromFunctionPhpDocs(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		require_once __DIR__ . '/data/functionPhpDocs.php';
@@ -3630,7 +3630,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testTypeFromFunctionPhpDocsPsalmPrefix(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		require_once __DIR__ . '/data/functionPhpDocs-psalmPrefix.php';
@@ -3647,7 +3647,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testTypeFromFunctionPhpDocsPhpstanPrefix(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		require_once __DIR__ . '/data/functionPhpDocs-phpstanPrefix.php';
@@ -3806,7 +3806,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testTypeFromMethodPhpDocs(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -3823,7 +3823,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testTypeFromMethodPhpDocsPsalmPrefix(
 		string $description,
 		string $expression,
-		bool $replaceClass = true
+		bool $replaceClass = true,
 	): void
 	{
 		$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooPsalmPrefix)', $description);
@@ -3849,7 +3849,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testTypeFromMethodPhpDocsPhpstanPrefix(
 		string $description,
 		string $expression,
-		bool $replaceClass = true
+		bool $replaceClass = true,
 	): void
 	{
 		$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooPhpstanPrefix)', $description);
@@ -3874,7 +3874,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testTypeFromTraitPhpDocs(
 		string $description,
 		string $expression,
-		bool $replaceClass = true
+		bool $replaceClass = true,
 	): void
 	{
 		$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooWithTrait)', $description);
@@ -3899,7 +3899,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testTypeFromMethodPhpDocsInheritDocWithoutCurlyBraces(
 		string $description,
 		string $expression,
-		bool $replaceClass = true
+		bool $replaceClass = true,
 	): void
 	{
 		if ($replaceClass) {
@@ -3924,7 +3924,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testTypeFromRecursiveTraitPhpDocs(
 		string $description,
 		string $expression,
-		bool $replaceClass = true
+		bool $replaceClass = true,
 	): void
 	{
 		$description = str_replace('static(MethodPhpDocsNamespace\Foo)', 'static(MethodPhpDocsNamespace\FooWithRecursiveTrait)', $description);
@@ -3957,7 +3957,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testTypeFromTraitPhpDocsInSameFile(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -3974,7 +3974,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testTypeFromMethodPhpDocsInheritDoc(
 		string $description,
 		string $expression,
-		bool $replaceClass = true
+		bool $replaceClass = true,
 	): void
 	{
 		if ($replaceClass) {
@@ -3999,7 +3999,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testTypeFromMethodPhpDocsImplicitInheritance(
 		string $description,
 		string $expression,
-		bool $replaceClass = true
+		bool $replaceClass = true,
 	): void
 	{
 		if ($replaceClass) {
@@ -4049,7 +4049,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testSwitchInstanceof(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -4064,7 +4064,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testSwitchInstanceofTruthy(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -4096,7 +4096,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testSwitchGetClass(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -4122,7 +4122,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testSwitchInstanceOfFallthrough(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -4147,7 +4147,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testSwitchTypeElimination(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -4184,7 +4184,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testOverwritingVariable(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpressionType
+		string $evaluatedPointExpressionType,
 	): void
 	{
 		$this->assertTypes(
@@ -4250,7 +4250,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testNegatedInstanceof(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -4287,7 +4287,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testAnonymousFunction(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -4424,7 +4424,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testForeachArrayType(
 		string $file,
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -4451,7 +4451,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testOverridingSpecifiedType(
 		string $file,
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -4510,7 +4510,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $file,
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -5216,7 +5216,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testArrayFunctions(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -5682,7 +5682,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testFunctions(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -5707,7 +5707,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testDioFunctions(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		if (!function_exists('dio_stat')) {
@@ -5735,7 +5735,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testSsh2Functions(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -5804,7 +5804,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testRangeFunction(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -5961,7 +5961,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testSpecifiedTypesUsingIsFunctions(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6126,7 +6126,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testIterable(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6163,7 +6163,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testArrayAccess(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6196,7 +6196,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testVoid(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6233,7 +6233,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testNullableReturnTypes(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6278,7 +6278,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testTernary(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6307,7 +6307,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testHeredoc(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6479,7 +6479,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testTypeElimination(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -6513,7 +6513,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testMisleadingTypes(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6542,7 +6542,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testMisleadingTypesWithoutNamespace(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6575,7 +6575,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testUnresolvableTypes(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6604,7 +6604,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testCombineTypes(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6643,7 +6643,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testConstants(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6672,7 +6672,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testFinally(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6687,7 +6687,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testFinallyWithEarlyTermination(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6712,7 +6712,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testInheritDocFromInterface(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6727,7 +6727,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testInheritDocWithoutCurlyBracesFromInterface(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6752,7 +6752,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testInheritDocFromInterface2(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		require_once __DIR__ . '/data/inheritdoc-from-interface2-definition.php';
@@ -6768,7 +6768,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testInheritDocWithoutCurlyBracesFromInterface2(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		require_once __DIR__ . '/data/inheritdoc-without-curly-braces-from-interface2-definition.php';
@@ -6794,7 +6794,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testInheritDocFromTrait(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6809,7 +6809,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testInheritDocWithoutCurlyBracesFromTrait(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -6834,7 +6834,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testInheritDocFromTrait2(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		require_once __DIR__ . '/data/inheritdoc-from-trait2-definition.php';
@@ -6851,7 +6851,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testInheritDocWithoutCurlyBracesFromTrait2(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		require_once __DIR__ . '/data/inheritdoc-without-curly-braces-from-trait2-definition.php';
@@ -6894,7 +6894,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testResolveStatic(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -7098,7 +7098,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testForeachLoopVariables(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -7116,7 +7116,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testWhileLoopVariables(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -7134,7 +7134,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testForLoopVariables(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -7243,7 +7243,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testDoWhileLoopVariables(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -7276,7 +7276,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testMultipleClassesInOneFile(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -7306,7 +7306,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testCallingMultipleClassesInOneFile(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -7347,7 +7347,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testExplode(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -7416,7 +7416,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testArrayPointerFunctions(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -7493,7 +7493,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testReplaceFunctions(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -7652,7 +7652,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testFilterVar(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -7764,7 +7764,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testClosureWithUsePassedByReference(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -7790,7 +7790,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testClosureWithUsePassedByReferenceInMethodCall(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -7841,7 +7841,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testStaticClosure(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -7857,7 +7857,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testClosureWithUsePassedByReferenceReturn(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -7887,7 +7887,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testClosureWithInferredTypehint(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -7995,7 +7995,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testTraitsPhpDocs(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -8028,7 +8028,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testPassedByReference(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -8073,7 +8073,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testCallables(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -8130,7 +8130,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testArrayKeysInBranches(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -8177,7 +8177,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testSpecifiedFunctionCall(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -8219,7 +8219,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testElementsOnMixed(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -8248,7 +8248,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testCaseInsensitivePhpDocTypes(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -8330,7 +8330,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testConstantTypeAfterDuplicateCondition(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -8383,7 +8383,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testAnonymousClassName(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -8409,7 +8409,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testAnonymousClassNameInTrait(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -8450,7 +8450,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testDynamicConstants(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -8536,7 +8536,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testIsset(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -8583,7 +8583,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testPropertyArrayAssignment(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -8621,7 +8621,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testInArray(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -8711,7 +8711,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testGetParentClass(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression = 'die'
+		string $evaluatedPointExpression = 'die',
 	): void
 	{
 		$this->assertTypes(
@@ -8744,7 +8744,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testIsCountable(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -8858,7 +8858,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testPhp73Functions(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		if (PHP_VERSION_ID < 70300) {
@@ -8990,7 +8990,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testPhp74Functions(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		if (PHP_VERSION_ID < 70400) {
@@ -9022,7 +9022,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testUnionMethods(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -9051,7 +9051,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testUnionProperties(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -9076,7 +9076,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testAssignmentInCondition(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -9101,7 +9101,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testGeneralizeScope(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -9126,7 +9126,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testGeneralizeScopeRecursiveType(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -9159,7 +9159,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testArrayShapesInPhpDoc(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -9212,7 +9212,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testInferPrivatePropertyTypeFromConstructor(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		$this->assertTypes(
@@ -9245,7 +9245,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testPropertyNativeTypes(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
@@ -9281,7 +9281,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testArrowFunctions(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
@@ -9317,7 +9317,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testArrowFunctionsInside(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
@@ -9377,7 +9377,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testCoalesceAssign(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
@@ -9429,7 +9429,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testArraySpread(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
@@ -9457,7 +9457,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testPhp74FunctionsIn73(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		if (PHP_VERSION_ID >= 70400) {
@@ -9485,7 +9485,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	 */
 	public function testPhp74FunctionsIn74(
 		string $description,
-		string $expression
+		string $expression,
 	): void
 	{
 		if (PHP_VERSION_ID < 70400) {
@@ -9525,7 +9525,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	public function testTryCatchScope(
 		string $description,
 		string $expression,
-		string $evaluatedPointExpression
+		string $evaluatedPointExpression,
 	): void
 	{
 		$this->assertTypes(
@@ -9547,7 +9547,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $expression,
 		string $evaluatedPointExpression = 'die',
 		array $dynamicConstantNames = [],
-		bool $useCache = true
+		bool $useCache = true,
 	): void
 	{
 		$assertType = function (Scope $scope) use ($expression, $description, $evaluatedPointExpression): void {
@@ -9655,7 +9655,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	private function assertTypeDescribe(
 		string $expectedDescription,
 		Type $actualType,
-		string $label = ''
+		string $label = '',
 	): void
 	{
 		$actualDescription = $actualType->describe(VerbosityLevel::precise());

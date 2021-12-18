@@ -109,7 +109,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
-		array $expected
+		array $expected,
 	): void
 	{
 		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));

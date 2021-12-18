@@ -22,7 +22,7 @@ class ClassBlacklistSourceLocator implements SourceLocator
 	 */
 	public function __construct(
 		SourceLocator $sourceLocator,
-		array $patterns
+		array $patterns,
 	)
 	{
 		$this->sourceLocator = $sourceLocator;

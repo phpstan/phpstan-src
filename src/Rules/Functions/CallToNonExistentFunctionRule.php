@@ -23,7 +23,7 @@ class CallToNonExistentFunctionRule implements Rule
 
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
-		bool $checkFunctionNameCase
+		bool $checkFunctionNameCase,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

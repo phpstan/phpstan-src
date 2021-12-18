@@ -95,7 +95,7 @@ class TypeSpecifier
 		ReflectionProvider $reflectionProvider,
 		array $functionTypeSpecifyingExtensions,
 		array $methodTypeSpecifyingExtensions,
-		array $staticMethodTypeSpecifyingExtensions
+		array $staticMethodTypeSpecifyingExtensions,
 	)
 	{
 		$this->printer = $printer;
@@ -118,7 +118,7 @@ class TypeSpecifier
 	public function specifyTypesInCondition(
 		Scope $scope,
 		Expr $expr,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
@@ -986,7 +986,7 @@ class TypeSpecifier
 		Type $type,
 		TypeSpecifierContext $context,
 		bool $overwrite = false,
-		?Scope $scope = null
+		?Scope $scope = null,
 	): SpecifiedTypes
 	{
 		if ($expr instanceof New_ || $expr instanceof Instanceof_ || $expr instanceof Expr\List_) {

@@ -62,7 +62,7 @@ class StubValidator
 	private DerivativeContainerFactory $derivativeContainerFactory;
 
 	public function __construct(
-		DerivativeContainerFactory $derivativeContainerFactory
+		DerivativeContainerFactory $derivativeContainerFactory,
 	)
 	{
 		$this->derivativeContainerFactory = $derivativeContainerFactory;

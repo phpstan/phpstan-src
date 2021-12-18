@@ -25,7 +25,7 @@ class TableErrorFormatter implements ErrorFormatter
 	public function __construct(
 		RelativePathHelper $relativePathHelper,
 		bool $showTipsOfTheDay,
-		?string $editorUrl
+		?string $editorUrl,
 	)
 	{
 		$this->relativePathHelper = $relativePathHelper;
@@ -36,7 +36,7 @@ class TableErrorFormatter implements ErrorFormatter
 	/** @api */
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		Output $output
+		Output $output,
 	): int
 	{
 		$projectConfigFile = 'phpstan.neon';

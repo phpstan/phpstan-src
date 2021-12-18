@@ -27,7 +27,7 @@ class WritingToReadOnlyPropertiesRule implements Rule
 		RuleLevelHelper $ruleLevelHelper,
 		PropertyDescriptor $propertyDescriptor,
 		PropertyReflectionFinder $propertyReflectionFinder,
-		bool $checkThisOnly
+		bool $checkThisOnly,
 	)
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;

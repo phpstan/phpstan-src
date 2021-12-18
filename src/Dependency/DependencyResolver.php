@@ -37,7 +37,7 @@ class DependencyResolver
 	public function __construct(
 		FileHelper $fileHelper,
 		ReflectionProvider $reflectionProvider,
-		ExportedNodeResolver $exportedNodeResolver
+		ExportedNodeResolver $exportedNodeResolver,
 	)
 	{
 		$this->fileHelper = $fileHelper;
@@ -253,7 +253,7 @@ class DependencyResolver
 	 */
 	private function extractFromParametersAcceptor(
 		ParametersAcceptorWithPhpDocs $parametersAcceptor,
-		array &$dependenciesReflections
+		array &$dependenciesReflections,
 	): void
 	{
 		foreach ($parametersAcceptor->getParameters() as $parameter) {
@@ -281,7 +281,7 @@ class DependencyResolver
 	 */
 	private function extractThrowType(
 		?Type $throwType,
-		array &$dependenciesReflections
+		array &$dependenciesReflections,
 	): void
 	{
 		if ($throwType === null) {

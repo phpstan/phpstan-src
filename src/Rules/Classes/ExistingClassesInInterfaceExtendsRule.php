@@ -24,7 +24,7 @@ class ExistingClassesInInterfaceExtendsRule implements Rule
 
 	public function __construct(
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		ReflectionProvider $reflectionProvider
+		ReflectionProvider $reflectionProvider,
 	)
 	{
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;

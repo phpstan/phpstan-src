@@ -423,7 +423,7 @@ class ObjectTypeTest extends PHPStanTestCase
 	public function testAccepts(
 		ObjectType $type,
 		Type $acceptedType,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$this->assertSame(
@@ -503,7 +503,7 @@ class ObjectTypeTest extends PHPStanTestCase
 	public function testHasOffsetValueType(
 		ObjectType $type,
 		Type $offsetType,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$this->assertSame(

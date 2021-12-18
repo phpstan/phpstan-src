@@ -24,7 +24,7 @@ class ExportedParameterNode implements ExportedNode, JsonSerializable
 		?string $type,
 		bool $byRef,
 		bool $variadic,
-		bool $hasDefault
+		bool $hasDefault,
 	)
 	{
 		$this->name = $name;

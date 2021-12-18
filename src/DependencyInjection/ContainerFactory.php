@@ -71,7 +71,7 @@ class ContainerFactory
 		?string $generateBaselineFile = null,
 		?string $cliAutoloadFile = null,
 		?string $singleReflectionFile = null,
-		?string $singleReflectionInsteadOfFile = null
+		?string $singleReflectionInsteadOfFile = null,
 	): Container
 	{
 		$configurator = new Configurator(new LoaderFactory(

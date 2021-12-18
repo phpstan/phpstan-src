@@ -52,7 +52,7 @@ class ImpossibleCheckTypeHelper
 		ReflectionProvider $reflectionProvider,
 		TypeSpecifier $typeSpecifier,
 		array $universalObjectCratesClasses,
-		bool $treatPhpDocTypesAsCertain
+		bool $treatPhpDocTypesAsCertain,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -63,7 +63,7 @@ class ImpossibleCheckTypeHelper
 
 	public function findSpecifiedType(
 		Scope $scope,
-		Expr $node
+		Expr $node,
 	): ?bool
 	{
 		if (
@@ -274,7 +274,7 @@ class ImpossibleCheckTypeHelper
 	 */
 	public function getArgumentsDescription(
 		Scope $scope,
-		array $args
+		array $args,
 	): string
 	{
 		if (count($args) === 0) {

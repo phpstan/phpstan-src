@@ -77,7 +77,7 @@ class RawErrorFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
-		string $expected
+		string $expected,
 	): void
 	{
 		$formatter = new RawErrorFormatter();

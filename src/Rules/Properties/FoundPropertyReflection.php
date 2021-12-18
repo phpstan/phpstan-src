@@ -28,7 +28,7 @@ class FoundPropertyReflection implements PropertyReflection
 		Scope $scope,
 		string $propertyName,
 		Type $readableType,
-		Type $writableType
+		Type $writableType,
 	)
 	{
 		$this->originalPropertyReflection = $originalPropertyReflection;

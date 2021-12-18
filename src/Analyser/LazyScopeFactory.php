@@ -30,7 +30,7 @@ class LazyScopeFactory implements ScopeFactory
 
 	public function __construct(
 		string $scopeClass,
-		Container $container
+		Container $container,
 	)
 	{
 		$this->scopeClass = $scopeClass;
@@ -66,7 +66,7 @@ class LazyScopeFactory implements ScopeFactory
 		array $nativeExpressionTypes = [],
 		array $inFunctionCallsStack = [],
 		bool $afterExtractCall = false,
-		?Scope $parentScope = null
+		?Scope $parentScope = null,
 	): MutatingScope
 	{
 		$scopeClass = $this->scopeClass;

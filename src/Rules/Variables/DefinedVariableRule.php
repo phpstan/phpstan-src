@@ -23,7 +23,7 @@ class DefinedVariableRule implements Rule
 
 	public function __construct(
 		bool $cliArgumentsVariablesRegistered,
-		bool $checkMaybeUndefinedVariables
+		bool $checkMaybeUndefinedVariables,
 	)
 	{
 		$this->cliArgumentsVariablesRegistered = $cliArgumentsVariablesRegistered;

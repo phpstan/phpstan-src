@@ -44,7 +44,7 @@ class PhpDocBlock
 		?string $trait,
 		bool $explicit,
 		array $parameterNameMapping,
-		array $parents
+		array $parents,
 	)
 	{
 		$this->docComment = $docComment;
@@ -119,7 +119,7 @@ class PhpDocBlock
 		string $file,
 		?bool $explicit,
 		array $originalPositionalParameterNames, // unused
-		array $newPositionalParameterNames // unused
+		array $newPositionalParameterNames, // unused
 	): self
 	{
 		return self::resolvePhpDocBlockTree(
@@ -149,7 +149,7 @@ class PhpDocBlock
 		string $file,
 		?bool $explicit,
 		array $originalPositionalParameterNames, // unused
-		array $newPositionalParameterNames // unused
+		array $newPositionalParameterNames, // unused
 	): self
 	{
 		return self::resolvePhpDocBlockTree(
@@ -179,7 +179,7 @@ class PhpDocBlock
 		string $file,
 		?bool $explicit,
 		array $originalPositionalParameterNames,
-		array $newPositionalParameterNames
+		array $newPositionalParameterNames,
 	): self
 	{
 		return self::resolvePhpDocBlockTree(
@@ -212,7 +212,7 @@ class PhpDocBlock
 		string $resolveMethodName,
 		?bool $explicit,
 		array $originalPositionalParameterNames,
-		array $newPositionalParameterNames
+		array $newPositionalParameterNames,
 	): self
 	{
 		$docBlocksFromParents = self::resolveParentPhpDocBlocks(
@@ -243,7 +243,7 @@ class PhpDocBlock
 	 */
 	private static function remapParameterNames(
 		array $originalPositionalParameterNames,
-		array $newPositionalParameterNames
+		array $newPositionalParameterNames,
 	): array
 	{
 		$parameterNameMapping = [];
@@ -268,7 +268,7 @@ class PhpDocBlock
 		string $getMethodName,
 		string $resolveMethodName,
 		bool $explicit,
-		array $positionalParameterNames
+		array $positionalParameterNames,
 	): array
 	{
 		$result = [];
@@ -324,7 +324,7 @@ class PhpDocBlock
 		string $getMethodName,
 		string $resolveMethodName,
 		bool $explicit,
-		array $positionalParameterNames
+		array $positionalParameterNames,
 	): ?self
 	{
 		if ($classReflection->getFileNameWithPhpDocs() !== null && $classReflection->$hasMethodName($name)) {

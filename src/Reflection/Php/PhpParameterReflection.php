@@ -28,7 +28,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 	public function __construct(
 		ReflectionParameter $reflection,
 		?Type $phpDocType,
-		?string $declaringClassName
+		?string $declaringClassName,
 	)
 	{
 		$this->reflection = $reflection;

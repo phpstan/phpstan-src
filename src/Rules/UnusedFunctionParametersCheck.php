@@ -35,7 +35,7 @@ class UnusedFunctionParametersCheck
 		array $statements,
 		string $unusedParameterMessage,
 		string $identifier,
-		array $additionalMetadata
+		array $additionalMetadata,
 	): array
 	{
 		$unusedParameters = array_fill_keys($parameterNames, true);

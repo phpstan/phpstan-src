@@ -29,7 +29,7 @@ class AnalyserRunner
 		Scheduler $scheduler,
 		Analyser $analyser,
 		ParallelAnalyser $parallelAnalyser,
-		CpuCoreCounter $cpuCoreCounter
+		CpuCoreCounter $cpuCoreCounter,
 	)
 	{
 		$this->scheduler = $scheduler;
@@ -54,7 +54,7 @@ class AnalyserRunner
 		?string $projectConfigFile,
 		?string $tmpFile,
 		?string $insteadOfFile,
-		InputInterface $input
+		InputInterface $input,
 	): AnalyserResult
 	{
 		$filesCount = count($files);
@@ -93,7 +93,7 @@ class AnalyserRunner
 	private function switchTmpFile(
 		array $analysedFiles,
 		?string $insteadOfFile,
-		?string $tmpFile
+		?string $tmpFile,
 	): array
 	{
 		$analysedFiles = array_values(array_filter($analysedFiles, static function (string $file) use ($insteadOfFile): bool {

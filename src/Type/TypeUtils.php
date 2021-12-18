@@ -174,7 +174,7 @@ class TypeUtils
 		string $typeClass,
 		Type $type,
 		bool $inspectIntersections,
-		bool $stopOnUnmatched = true
+		bool $stopOnUnmatched = true,
 	): array
 	{
 		if ($type instanceof $typeClass) {

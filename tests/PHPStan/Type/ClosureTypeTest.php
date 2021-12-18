@@ -92,7 +92,7 @@ class ClosureTypeTest extends PHPStanTestCase
 	public function testIsSuperTypeOf(
 		Type $type,
 		Type $otherType,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$actualResult = $type->isSuperTypeOf($otherType);

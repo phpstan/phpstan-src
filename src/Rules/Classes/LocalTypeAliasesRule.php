@@ -40,7 +40,7 @@ class LocalTypeAliasesRule implements Rule
 	public function __construct(
 		array $globalTypeAliases,
 		ReflectionProvider $reflectionProvider,
-		TypeNodeResolver $typeNodeResolver
+		TypeNodeResolver $typeNodeResolver,
 	)
 	{
 		$this->globalTypeAliases = $globalTypeAliases;

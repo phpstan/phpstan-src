@@ -33,7 +33,7 @@ class MethodCallCheck
 		ReflectionProvider $reflectionProvider,
 		RuleLevelHelper $ruleLevelHelper,
 		bool $checkFunctionNameCase,
-		bool $reportMagicMethods
+		bool $reportMagicMethods,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -48,7 +48,7 @@ class MethodCallCheck
 	public function check(
 		Scope $scope,
 		string $methodName,
-		Expr $var
+		Expr $var,
 	): array
 	{
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(

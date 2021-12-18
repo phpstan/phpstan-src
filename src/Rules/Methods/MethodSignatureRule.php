@@ -39,7 +39,7 @@ class MethodSignatureRule implements Rule
 
 	public function __construct(
 		bool $reportMaybes,
-		bool $reportStatic
+		bool $reportStatic,
 	)
 	{
 		$this->reportMaybes = $reportMaybes;
@@ -157,7 +157,7 @@ class MethodSignatureRule implements Rule
 	private function checkReturnTypeCompatibility(
 		ClassReflection $declaringClass,
 		ParametersAcceptorWithPhpDocs $currentVariant,
-		ParametersAcceptorWithPhpDocs $parentVariant
+		ParametersAcceptorWithPhpDocs $parentVariant,
 	): array
 	{
 		$returnType = TypehintHelper::decideType(
@@ -193,7 +193,7 @@ class MethodSignatureRule implements Rule
 	private function checkParameterTypeCompatibility(
 		ClassReflection $declaringClass,
 		array $parameters,
-		array $parentParameters
+		array $parentParameters,
 	): array
 	{
 		$parameterResults = [];

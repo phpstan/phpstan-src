@@ -26,7 +26,7 @@ class UsedTraitsRule implements Rule
 
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
-		GenericAncestorsCheck $genericAncestorsCheck
+		GenericAncestorsCheck $genericAncestorsCheck,
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;

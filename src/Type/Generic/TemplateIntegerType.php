@@ -19,7 +19,7 @@ final class TemplateIntegerType extends IntegerType implements TemplateType
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		IntegerType $bound
+		IntegerType $bound,
 	)
 	{
 		parent::__construct();

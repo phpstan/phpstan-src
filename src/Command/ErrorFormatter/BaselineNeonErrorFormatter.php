@@ -23,7 +23,7 @@ class BaselineNeonErrorFormatter implements ErrorFormatter
 
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		Output $output
+		Output $output,
 	): int
 	{
 		if (!$analysisResult->hasErrors()) {

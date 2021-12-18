@@ -17,7 +17,7 @@ class ConstantConditionRuleHelper
 
 	public function __construct(
 		ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
-		bool $treatPhpDocTypesAsCertain
+		bool $treatPhpDocTypesAsCertain,
 	)
 	{
 		$this->impossibleCheckTypeHelper = $impossibleCheckTypeHelper;

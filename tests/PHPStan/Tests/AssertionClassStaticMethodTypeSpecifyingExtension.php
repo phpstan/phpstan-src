@@ -28,7 +28,7 @@ class AssertionClassStaticMethodTypeSpecifyingExtension implements StaticMethodT
 	public function isStaticMethodSupported(
 		MethodReflection $staticMethodReflection,
 		StaticCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		if ($this->nullContext === null) {
@@ -46,7 +46,7 @@ class AssertionClassStaticMethodTypeSpecifyingExtension implements StaticMethodT
 		MethodReflection $staticMethodReflection,
 		StaticCall $node,
 		Scope $scope,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		return new SpecifiedTypes(['$bar' => [$node->getArgs()[0]->value, new IntegerType()]]);

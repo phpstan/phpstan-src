@@ -6,6 +6,7 @@ use Rector\DowngradePhp73\Rector\FuncCall\DowngradeTrailingCommasInFunctionCalls
 use Rector\DowngradePhp74\Rector\Coalesce\DowngradeNullCoalescingOperatorRector;
 use Rector\DowngradePhp74\Rector\ArrowFunction\ArrowFunctionToAnonymousFunctionRector;
 use Rector\DowngradePhp74\Rector\Property\DowngradeTypedPropertyRector;
+use Rector\DowngradePhp80\Rector\ClassMethod\DowngradeTrailingCommasInParamUseRector;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 
@@ -32,6 +33,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 	]);
 
 	$services = $containerConfigurator->services();
+
+	if ($targetPhpVersionId < 80000) {
+		$services->set(DowngradeTrailingCommasInParamUseRector::class);
+	}
 
 	if ($targetPhpVersionId < 70400) {
 		$services->set(DowngradeTypedPropertyRector::class);

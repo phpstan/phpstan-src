@@ -80,7 +80,7 @@ class FileTypeMapper
 		PhpDocStringResolver $phpDocStringResolver,
 		PhpDocNodeResolver $phpDocNodeResolver,
 		Cache $cache,
-		AnonymousClassNameHelper $anonymousClassNameHelper
+		AnonymousClassNameHelper $anonymousClassNameHelper,
 	)
 	{
 		$this->reflectionProviderProvider = $reflectionProviderProvider;
@@ -97,7 +97,7 @@ class FileTypeMapper
 		?string $className,
 		?string $traitName,
 		?string $functionName,
-		string $docComment
+		string $docComment,
 	): ResolvedPhpDocBlock
 	{
 		if ($className === null && $traitName !== null) {
@@ -249,7 +249,7 @@ class FileTypeMapper
 		string $fileName,
 		?string $lookForTrait,
 		?string $traitUseClass,
-		array $traitMethodAliases = []
+		array $traitMethodAliases = [],
 	): array
 	{
 		/** @var (callable(): NameScope)[] $nameScopeMap */
@@ -605,7 +605,7 @@ class FileTypeMapper
 		string $file,
 		?string $class,
 		?string $trait,
-		?string $function
+		?string $function,
 	): string
 	{
 		if ($class === null && $trait === null && $function === null) {

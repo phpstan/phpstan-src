@@ -25,7 +25,7 @@ class IgnoredRegexValidator
 
 	public function __construct(
 		Parser $parser,
-		TypeStringResolver $typeStringResolver
+		TypeStringResolver $typeStringResolver,
 	)
 	{
 		$this->parser = $parser;

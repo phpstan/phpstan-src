@@ -41,7 +41,7 @@ class GenericObjectType extends ObjectType
 		string $mainType,
 		array $types,
 		?Type $subtractedType = null,
-		?ClassReflection $classReflection = null
+		?ClassReflection $classReflection = null,
 	)
 	{
 		parent::__construct($mainType, $subtractedType, $classReflection);

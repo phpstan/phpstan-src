@@ -26,7 +26,7 @@ class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection,
 		FuncCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		return $functionReflection->getName() === 'function_exists' && isset($node->getArgs()[0]) && $context->truthy();

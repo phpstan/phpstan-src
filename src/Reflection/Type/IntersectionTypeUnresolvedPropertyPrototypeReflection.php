@@ -23,7 +23,7 @@ class IntersectionTypeUnresolvedPropertyPrototypeReflection implements Unresolve
 	 */
 	public function __construct(
 		string $propertyName,
-		array $propertyPrototypes
+		array $propertyPrototypes,
 	)
 	{
 		$this->propertyName = $propertyName;

@@ -23,7 +23,7 @@ class ThrowTypeRule implements Rule
 	private RuleLevelHelper $ruleLevelHelper;
 
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper
+		RuleLevelHelper $ruleLevelHelper,
 	)
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;

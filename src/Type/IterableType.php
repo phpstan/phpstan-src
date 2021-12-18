@@ -34,7 +34,7 @@ class IterableType implements CompoundType
 	/** @api */
 	public function __construct(
 		Type $keyType,
-		Type $itemType
+		Type $itemType,
 	)
 	{
 		$this->keyType = $keyType;

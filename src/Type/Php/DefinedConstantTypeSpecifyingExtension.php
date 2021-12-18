@@ -28,7 +28,7 @@ class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection,
 		FuncCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		return $functionReflection->getName() === 'defined'
@@ -40,7 +40,7 @@ class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		FunctionReflection $functionReflection,
 		FuncCall $node,
 		Scope $scope,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		$constantName = $scope->getType($node->getArgs()[0]->value);

@@ -125,7 +125,7 @@ class PhpClassReflectionExtension
 		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		FileTypeMapper $fileTypeMapper,
 		bool $inferPrivatePropertyTypeFromConstructor,
-		array $universalObjectCratesClasses
+		array $universalObjectCratesClasses,
 	)
 	{
 		$this->scopeFactory = $scopeFactory;
@@ -171,7 +171,7 @@ class PhpClassReflectionExtension
 	private function createProperty(
 		ClassReflection $classReflection,
 		string $propertyName,
-		bool $includingAnnotations
+		bool $includingAnnotations,
 	): PropertyReflection
 	{
 		$propertyReflection = $classReflection->getNativeReflection()->getProperty($propertyName);
@@ -421,7 +421,7 @@ class PhpClassReflectionExtension
 	private function createMethod(
 		ClassReflection $classReflection,
 		BuiltinMethodReflection $methodReflection,
-		bool $includingAnnotations
+		bool $includingAnnotations,
 	): MethodReflection
 	{
 		if ($includingAnnotations && $this->annotationsMethodsClassReflectionExtension->hasMethod($classReflection, $methodReflection->getName())) {
@@ -710,7 +710,7 @@ class PhpClassReflectionExtension
 		?Type $stubPhpDocReturnType,
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
-		array $phpDocParameterNameMapping
+		array $phpDocParameterNameMapping,
 	): FunctionVariantWithPhpDocs
 	{
 		$parameters = [];
@@ -784,7 +784,7 @@ class PhpClassReflectionExtension
 	 */
 	private function deepScanTraitsForProperty(
 		array $traits,
-		\ReflectionProperty $propertyReflection
+		\ReflectionProperty $propertyReflection,
 	): ?string
 	{
 		foreach ($traits as $trait) {
@@ -807,7 +807,7 @@ class PhpClassReflectionExtension
 	}
 
 	private function findMethodTrait(
-		BuiltinMethodReflection $methodReflection
+		BuiltinMethodReflection $methodReflection,
 	): ?string
 	{
 		if ($methodReflection->getReflection() instanceof ReflectionMethod) {
@@ -883,7 +883,7 @@ class PhpClassReflectionExtension
 
 	private function inferPrivatePropertyType(
 		string $propertyName,
-		MethodReflection $constructor
+		MethodReflection $constructor,
 	): ?Type
 	{
 		$declaringClassName = $constructor->getDeclaringClass()->getName();
@@ -904,7 +904,7 @@ class PhpClassReflectionExtension
 	 * @return array<string, Type>
 	 */
 	private function inferAndCachePropertyTypes(
-		MethodReflection $constructor
+		MethodReflection $constructor,
 	): array
 	{
 		$declaringClass = $constructor->getDeclaringClass();

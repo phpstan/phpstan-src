@@ -42,7 +42,7 @@ class ConstantArrayTypeBuilder
 		array $keyTypes,
 		array $valueTypes,
 		int $nextAutoIndex,
-		array $optionalKeys
+		array $optionalKeys,
 	)
 	{
 		$this->keyTypes = $keyTypes;

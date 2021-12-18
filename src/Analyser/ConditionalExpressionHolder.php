@@ -22,7 +22,7 @@ class ConditionalExpressionHolder
 	 */
 	public function __construct(
 		array $conditionExpressionTypes,
-		VariableTypeHolder $typeHolder
+		VariableTypeHolder $typeHolder,
 	)
 	{
 		if (count($conditionExpressionTypes) === 0) {

@@ -139,7 +139,7 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 		array $checkedExceptionRegexes,
 		array $checkedExceptionClasses,
 		string $className,
-		bool $expectedResult
+		bool $expectedResult,
 	): void
 	{
 		$resolver = new DefaultExceptionTypeResolver($this->createReflectionProvider(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);

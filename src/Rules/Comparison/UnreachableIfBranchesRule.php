@@ -20,7 +20,7 @@ class UnreachableIfBranchesRule implements Rule
 
 	public function __construct(
 		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain
+		bool $treatPhpDocTypesAsCertain,
 	)
 	{
 		$this->helper = $helper;

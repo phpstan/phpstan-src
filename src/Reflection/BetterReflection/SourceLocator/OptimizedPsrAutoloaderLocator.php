@@ -19,7 +19,7 @@ class OptimizedPsrAutoloaderLocator implements SourceLocator
 
 	public function __construct(
 		PsrAutoloaderMapping $mapping,
-		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository
+		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 	)
 	{
 		$this->mapping = $mapping;

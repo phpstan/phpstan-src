@@ -81,7 +81,7 @@ class PhpVersionFactoryTest extends TestCase
 		?int $versionId,
 		?string $composerPhpVersion,
 		int $expectedVersion,
-		?string $expectedVersionString
+		?string $expectedVersionString,
 	): void
 	{
 		$factory = new PhpVersionFactory($versionId, $composerPhpVersion);

@@ -13,7 +13,7 @@ class TypeNodeResolverExtensionRegistry
 	 */
 	public function __construct(
 		TypeNodeResolver $typeNodeResolver,
-		array $extensions
+		array $extensions,
 	)
 	{
 		foreach ($extensions as $extension) {

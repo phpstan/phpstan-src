@@ -26,7 +26,7 @@ class Broker implements ReflectionProvider
 	 */
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
-		array $universalObjectCratesClasses
+		array $universalObjectCratesClasses,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

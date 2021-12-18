@@ -33,7 +33,7 @@ class UninitializedPropertyRule implements Rule
 	 */
 	public function __construct(
 		ReadWritePropertiesExtensionProvider $extensionProvider,
-		array $additionalConstructors
+		array $additionalConstructors,
 	)
 	{
 		$this->extensionProvider = $extensionProvider;

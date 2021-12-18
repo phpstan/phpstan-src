@@ -35,7 +35,7 @@ class RichParser implements Parser
 		Lexer $lexer,
 		NameResolver $nameResolver,
 		NodeConnectingVisitor $nodeConnectingVisitor,
-		StatementOrderVisitor $statementOrderVisitor
+		StatementOrderVisitor $statementOrderVisitor,
 	)
 	{
 		$this->parser = $parser;

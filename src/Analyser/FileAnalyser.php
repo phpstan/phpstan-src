@@ -49,7 +49,7 @@ class FileAnalyser
 		NodeScopeResolver $nodeScopeResolver,
 		Parser $parser,
 		DependencyResolver $dependencyResolver,
-		bool $reportUnmatchedIgnoredErrors
+		bool $reportUnmatchedIgnoredErrors,
 	)
 	{
 		$this->scopeFactory = $scopeFactory;
@@ -67,7 +67,7 @@ class FileAnalyser
 		string $file,
 		array $analysedFiles,
 		Registry $registry,
-		?callable $outerNodeCallback
+		?callable $outerNodeCallback,
 	): FileAnalyserResult
 	{
 		$fileErrors = [];

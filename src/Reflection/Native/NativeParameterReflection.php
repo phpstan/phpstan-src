@@ -27,7 +27,7 @@ class NativeParameterReflection implements ParameterReflection
 		Type $type,
 		PassedByReference $passedByReference,
 		bool $variadic,
-		?Type $defaultValue
+		?Type $defaultValue,
 	)
 	{
 		$this->name = $name;

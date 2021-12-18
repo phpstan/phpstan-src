@@ -24,7 +24,7 @@ class Base64DecodeDynamicFunctionReturnTypeExtension implements DynamicFunctionR
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		if (!isset($functionCall->getArgs()[1])) {

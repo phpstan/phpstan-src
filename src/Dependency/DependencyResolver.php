@@ -98,7 +98,7 @@ class DependencyResolver
 			if ($functionName instanceof Node\Name) {
 				try {
 					$dependenciesReflections[] = $this->getFunctionReflection($functionName, $scope);
-				} catch (FunctionNotFoundException $e) {
+				} catch (FunctionNotFoundException) {
 					// pass
 				}
 			} else {
@@ -224,7 +224,7 @@ class DependencyResolver
 	{
 		try {
 			$classReflection = $this->reflectionProvider->getClass($className);
-		} catch (ClassNotFoundException $e) {
+		} catch (ClassNotFoundException) {
 			return;
 		}
 

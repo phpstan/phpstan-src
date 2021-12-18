@@ -56,14 +56,14 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		try {
 			$composerJsonContents = FileReader::read($composerJsonPath);
 			$composer = Json::decode($composerJsonContents, Json::FORCE_ARRAY);
-		} catch (CouldNotReadFileException | JsonException $e) {
+		} catch (CouldNotReadFileException | JsonException) {
 			return null;
 		}
 
 		try {
 			$installedJsonContents = FileReader::read($installedJsonPath);
 			$installedJson = Json::decode($installedJsonContents, Json::FORCE_ARRAY);
-		} catch (CouldNotReadFileException | JsonException $e) {
+		} catch (CouldNotReadFileException | JsonException) {
 			return null;
 		}
 

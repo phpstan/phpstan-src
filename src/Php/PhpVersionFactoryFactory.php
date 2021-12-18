@@ -44,7 +44,7 @@ class PhpVersionFactoryFactory
 					if (is_string($platformVersion)) {
 						$composerPhpVersion = $platformVersion;
 					}
-				} catch (CouldNotReadFileException | JsonException $e) {
+				} catch (CouldNotReadFileException | JsonException) {
 					// pass
 				}
 			}

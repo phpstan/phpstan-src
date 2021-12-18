@@ -34,7 +34,7 @@ class FileNodesFetcher
 		try {
 			/** @var Node[] $ast */
 			$ast = $this->parser->parseFile($fileName);
-		} catch (ParserErrorsException $e) {
+		} catch (ParserErrorsException) {
 			return new FetchedNodesResult([], [], []);
 		}
 		$this->cachingVisitor->reset($fileName, $contents);

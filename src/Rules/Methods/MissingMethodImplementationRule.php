@@ -35,7 +35,7 @@ class MissingMethodImplementationRule implements Rule
 
 		try {
 			$nativeMethods = $classReflection->getNativeReflection()->getMethods();
-		} catch (IdentifierNotFound $e) {
+		} catch (IdentifierNotFound) {
 			return [];
 		}
 		foreach ($nativeMethods as $method) {

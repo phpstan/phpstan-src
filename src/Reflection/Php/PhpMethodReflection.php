@@ -177,7 +177,7 @@ class PhpMethodReflection implements MethodReflection
 				$prototypeDeclaringClass->getNativeMethod($prototypeMethod->getName())->getVariants(),
 				$tentativeReturnType,
 			);
-		} catch (ReflectionException $e) {
+		} catch (ReflectionException) {
 			return $this;
 		}
 	}

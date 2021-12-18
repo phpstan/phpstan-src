@@ -3866,7 +3866,7 @@ class MutatingScope implements Scope
 
 			try {
 				$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
-			} catch (ParserErrorsException $e) {
+			} catch (ParserErrorsException) {
 				continue;
 			}
 			if (!$expr instanceof Node\Stmt\Expression) {
@@ -3928,7 +3928,7 @@ class MutatingScope implements Scope
 
 			try {
 				$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
-			} catch (ParserErrorsException $e) {
+			} catch (ParserErrorsException) {
 				continue;
 			}
 			if (!$expr instanceof Node\Stmt\Expression) {

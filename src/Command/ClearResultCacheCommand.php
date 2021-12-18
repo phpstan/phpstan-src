@@ -65,7 +65,7 @@ class ClearResultCacheCommand extends Command
 				false,
 				false,
 			);
-		} catch (InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException) {
 			return 1;
 		}
 

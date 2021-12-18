@@ -88,7 +88,7 @@ class IgnoredRegexValidator
 
 			try {
 				$type = $this->typeStringResolver->resolve($matches[1], null);
-			} catch (ParserException $e) {
+			} catch (ParserException) {
 				continue;
 			}
 

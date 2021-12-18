@@ -64,7 +64,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 		try {
 			$value = @sprintf($format, ...$values);
-		} catch (Throwable $e) {
+		} catch (Throwable) {
 			return $returnType;
 		}
 

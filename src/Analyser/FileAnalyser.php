@@ -199,11 +199,11 @@ class FileAnalyser
 						if ($dependencies->getExportedNode() !== null) {
 							$exportedNodes[] = $dependencies->getExportedNode();
 						}
-					} catch (AnalysedCodeException $e) {
+					} catch (AnalysedCodeException) {
 						// pass
-					} catch (IdentifierNotFound $e) {
+					} catch (IdentifierNotFound) {
 						// pass
-					} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection $e) {
+					} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection) {
 						// pass
 					}
 				};

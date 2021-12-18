@@ -86,7 +86,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 				try {
 					$truncatedValue = Strings::truncate($this->value, self::DESCRIBE_LIMIT);
-				} catch (RegexpException $e) {
+				} catch (RegexpException) {
 					$truncatedValue = substr($this->value, 0, self::DESCRIBE_LIMIT) . "\u{2026}";
 				}
 

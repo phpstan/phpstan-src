@@ -139,9 +139,9 @@ class BetterReflectionProvider implements ReflectionProvider
 		try {
 			$this->reflector->reflectClass($className);
 			return true;
-		} catch (IdentifierNotFound $e) {
+		} catch (IdentifierNotFound) {
 			return false;
-		} catch (InvalidIdentifierName $e) {
+		} catch (InvalidIdentifierName) {
 			return false;
 		}
 	}
@@ -154,7 +154,7 @@ class BetterReflectionProvider implements ReflectionProvider
 
 		try {
 			$reflectionClass = $this->reflector->reflectClass($className);
-		} catch (IdentifierNotFound $e) {
+		} catch (IdentifierNotFound) {
 			throw new ClassNotFoundException($className);
 		}
 
@@ -336,9 +336,9 @@ class BetterReflectionProvider implements ReflectionProvider
 			try {
 				$this->reflector->reflectFunction($name);
 				return true;
-			} catch (IdentifierNotFound $e) {
+			} catch (IdentifierNotFound) {
 				// pass
-			} catch (InvalidIdentifierName $e) {
+			} catch (InvalidIdentifierName) {
 				// pass
 			}
 
@@ -370,7 +370,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$constantValue = $constantReflection->getValue();
 			$constantValueType = ConstantTypeHelper::getTypeFromValue($constantValue);
 			$fileName = $constantReflection->getFileName();
-		} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection $e) {
+		} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection) {
 			$constantValueType = new MixedType();
 			$fileName = null;
 		}
@@ -388,9 +388,9 @@ class BetterReflectionProvider implements ReflectionProvider
 			try {
 				$this->reflector->reflectConstant($name);
 				return true;
-			} catch (IdentifierNotFound $e) {
+			} catch (IdentifierNotFound) {
 				// pass
-			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection $e) {
+			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection) {
 				// pass
 			}
 			return false;

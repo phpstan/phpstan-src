@@ -324,7 +324,7 @@ class CommandHelper
 				$memoryLimitFileContents = FileReader::read($memoryLimitFile);
 				$errorOutput->writeLineFormatted(sprintf('It consumed around %s of memory.', $memoryLimitFileContents));
 				$errorOutput->writeLineFormatted('');
-			} catch (CouldNotReadFileException $e) {
+			} catch (CouldNotReadFileException) {
 				// pass
 			}
 

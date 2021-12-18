@@ -31,13 +31,16 @@ jobs:
           php-version: "8.0"
 
       - name: "Install dependencies"
-        run: "composer install --no-dev --no-interaction --no-progress"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Install BackwardCompatibilityCheck"
         run: |
           composer global config minimum-stability dev
           composer global config prefer-stable true
           composer global require --dev ondrejmirtes/backward-compatibility-check:^5.0.8
+
+      - name: "Transform source code"
+        run: "build/transform-source 7.1"
 
       - name: "Check"
         run: "$(composer global config bin-dir --absolute)/roave-backward-compatibility-check"

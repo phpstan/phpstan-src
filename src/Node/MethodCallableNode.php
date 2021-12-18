@@ -11,8 +11,7 @@ class MethodCallableNode extends Expr implements VirtualNode
 
 	private Expr $var;
 
-	/** @var Identifier|Expr */
-	private $name;
+	private Identifier|Expr $name;
 
 	private Expr\MethodCall $originalNode;
 

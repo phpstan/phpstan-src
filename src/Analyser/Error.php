@@ -20,8 +20,7 @@ class Error implements JsonSerializable
 
 	private ?int $line;
 
-	/** @var bool|Throwable */
-	private $canBeIgnored;
+	private bool|Throwable $canBeIgnored;
 
 	private ?string $filePath;
 

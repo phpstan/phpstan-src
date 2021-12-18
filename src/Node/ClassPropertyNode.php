@@ -17,8 +17,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 
 	private int $flags;
 
-	/** @var Identifier|Name|Node\ComplexType|null */
-	private $type;
+	private Identifier|Name|Node\ComplexType|null $type = null;
 
 	private ?Expr $default;
 

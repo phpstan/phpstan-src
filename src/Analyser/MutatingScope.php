@@ -171,8 +171,7 @@ class MutatingScope implements Scope
 	/** @var array<string, Type> */
 	private array $constantTypes;
 
-	/** @var FunctionReflection|MethodReflection|null */
-	private $function;
+	private FunctionReflection|MethodReflection|null $function = null;
 
 	private ?string $namespace;
 

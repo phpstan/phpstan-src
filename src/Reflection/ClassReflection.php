@@ -43,6 +43,7 @@ use function array_values;
 use function count;
 use function implode;
 use function in_array;
+use function is_bool;
 use function is_file;
 use function method_exists;
 use function reset;
@@ -113,17 +114,14 @@ class ClassReflection
 	/** @var array<string, bool> */
 	private array $subclasses = [];
 
-	/** @var string|false|null */
-	private $filename = false;
+	private string|false|null $filename = false;
 
-	/** @var string|false|null */
-	private $reflectionDocComment = false;
+	private string|false|null $reflectionDocComment = false;
 
 	/** @var ClassReflection[]|null */
 	private ?array $cachedInterfaces = null;
 
-	/** @var ClassReflection|false|null */
-	private $cachedParentClass = false;
+	private ClassReflection|false|null $cachedParentClass = false;
 
 	/** @var array<string, TypeAlias>|null */
 	private ?array $typeAliases = null;
@@ -173,7 +171,7 @@ class ClassReflection
 
 	public function getFileName(): ?string
 	{
-		if ($this->filename !== false) {
+		if (!is_bool($this->filename)) {
 			return $this->filename;
 		}
 
@@ -203,7 +201,7 @@ class ClassReflection
 
 	public function getParentClass(): ?ClassReflection
 	{
-		if ($this->cachedParentClass !== false) {
+		if (!is_bool($this->cachedParentClass)) {
 			return $this->cachedParentClass;
 		}
 
@@ -1098,7 +1096,7 @@ class ClassReflection
 			return null;
 		}
 
-		if ($this->reflectionDocComment === false) {
+		if (is_bool($this->reflectionDocComment)) {
 			$docComment = $this->reflection->getDocComment();
 			$this->reflectionDocComment = $docComment !== false ? $docComment : null;
 		}

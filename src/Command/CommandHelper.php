@@ -23,6 +23,7 @@ use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\LoaderFactory;
 use PHPStan\DependencyInjection\NeonAdapter;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
+use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
@@ -316,10 +317,16 @@ class CommandHelper
 
 		$memoryLimitFile = $container->getParameter('memoryLimitFile');
 		if ($manageMemoryLimitFile && is_file($memoryLimitFile)) {
-			$memoryLimitFileContents = FileReader::read($memoryLimitFile);
 			$errorOutput->writeLineFormatted('PHPStan crashed in the previous run probably because of excessive memory consumption.');
-			$errorOutput->writeLineFormatted(sprintf('It consumed around %s of memory.', $memoryLimitFileContents));
-			$errorOutput->writeLineFormatted('');
+
+			try {
+				$memoryLimitFileContents = FileReader::read($memoryLimitFile);
+				$errorOutput->writeLineFormatted(sprintf('It consumed around %s of memory.', $memoryLimitFileContents));
+				$errorOutput->writeLineFormatted('');
+			} catch (CouldNotReadFileException $e) {
+				// pass
+			}
+
 			$errorOutput->writeLineFormatted('');
 			$errorOutput->writeLineFormatted('To avoid this issue, allow to use more memory with the --memory-limit option.');
 			@unlink($memoryLimitFile);

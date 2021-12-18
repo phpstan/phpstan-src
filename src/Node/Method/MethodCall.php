@@ -11,24 +11,17 @@ use PHPStan\Analyser\Scope;
 class MethodCall
 {
 
-	/** @var Node\Expr\MethodCall|StaticCall|Array_ */
-	private $node;
+	private Node\Expr\MethodCall|StaticCall|Array_ $node;
 
 	private Scope $scope;
 
-	/**
-	 * @param Node\Expr\MethodCall|StaticCall|Array_ $node
-	 */
-	public function __construct($node, Scope $scope)
+	public function __construct(Node\Expr\MethodCall|StaticCall|Array_ $node, Scope $scope)
 	{
 		$this->node = $node;
 		$this->scope = $scope;
 	}
 
-	/**
-	 * @return Node\Expr\MethodCall|StaticCall|Array_
-	 */
-	public function getNode()
+	public function getNode(): Node\Expr\MethodCall|StaticCall|Array_
 	{
 		return $this->node;
 	}

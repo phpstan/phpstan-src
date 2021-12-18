@@ -57,10 +57,10 @@ class UnusedFunctionParametersCheck
 	}
 
 	/**
-	 * @param Node[]|Node|scalar $node
+	 * @param Node[]|Node|scalar|null $node
 	 * @return string[]
 	 */
-	private function getUsedVariables(Scope $scope, $node): array
+	private function getUsedVariables(Scope $scope, array|Node|string|int|float|bool|null $node): array
 	{
 		$variableNames = [];
 		if ($node instanceof Node) {

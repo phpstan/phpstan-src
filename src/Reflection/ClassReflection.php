@@ -113,17 +113,14 @@ class ClassReflection
 	/** @var array<string, bool> */
 	private array $subclasses = [];
 
-	/** @var string|false|null */
-	private $filename = false;
+	private string|false|null $filename = false;
 
-	/** @var string|false|null */
-	private $reflectionDocComment = false;
+	private string|false|null $reflectionDocComment = false;
 
 	/** @var ClassReflection[]|null */
 	private ?array $cachedInterfaces = null;
 
-	/** @var ClassReflection|false|null */
-	private $cachedParentClass = false;
+	private ClassReflection|false|null $cachedParentClass = false;
 
 	/** @var array<string, TypeAlias>|null */
 	private ?array $typeAliases = null;

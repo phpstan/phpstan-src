@@ -47,43 +47,40 @@ class ResolvedPhpDocBlock
 	private PhpDocNodeResolver $phpDocNodeResolver;
 
 	/** @var array<(string|int), VarTag>|false */
-	private $varTags = false;
+	private array|false $varTags = false;
 
 	/** @var array<string, MethodTag>|false */
-	private $methodTags = false;
+	private array|false $methodTags = false;
 
 	/** @var array<string, PropertyTag>|false */
-	private $propertyTags = false;
+	private array|false $propertyTags = false;
 
 	/** @var array<string, ExtendsTag>|false */
-	private $extendsTags = false;
+	private array|false $extendsTags = false;
 
 	/** @var array<string, ImplementsTag>|false */
-	private $implementsTags = false;
+	private array|false $implementsTags = false;
 
 	/** @var array<string, UsesTag>|false */
-	private $usesTags = false;
+	private array|false $usesTags = false;
 
 	/** @var array<string, ParamTag>|false */
-	private $paramTags = false;
+	private array|false $paramTags = false;
 
-	/** @var ReturnTag|false|null */
-	private $returnTag = false;
+	private ReturnTag|false|null $returnTag = false;
 
-	/** @var ThrowsTag|false|null */
-	private $throwsTag = false;
+	private ThrowsTag|false|null $throwsTag = false;
 
 	/** @var array<MixinTag>|false */
-	private $mixinTags = false;
+	private array|false $mixinTags = false;
 
 	/** @var array<TypeAliasTag>|false */
-	private $typeAliasTags = false;
+	private array|false $typeAliasTags = false;
 
 	/** @var array<TypeAliasImportTag>|false */
-	private $typeAliasImportTags = false;
+	private array|false $typeAliasImportTags = false;
 
-	/** @var DeprecatedTag|false|null */
-	private $deprecatedTag = false;
+	private DeprecatedTag|false|null $deprecatedTag = false;
 
 	private ?bool $isDeprecated = null;
 
@@ -92,7 +89,7 @@ class ResolvedPhpDocBlock
 	private ?bool $isFinal = null;
 
 	/** @var bool|'notLoaded'|null */
-	private $isPure = 'notLoaded';
+	private bool|string|null $isPure = 'notLoaded';
 
 	private function __construct()
 	{

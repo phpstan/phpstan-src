@@ -135,7 +135,7 @@ final class FileReadTrapStreamWrapper
 	 *
 	 * @return mixed[]|bool
 	 */
-	public function stream_stat()
+	public function stream_stat(): array|bool
 	{
 		if (self::$autoloadLocatedFile === null) {
 			return false;
@@ -160,7 +160,7 @@ final class FileReadTrapStreamWrapper
 	 *
 	 * @return mixed[]|bool
 	 */
-	public function url_stat($path, $flags)
+	public function url_stat($path, $flags): array|bool
 	{
 		if (self::$registeredStreamWrapperProtocols === null) {
 			throw new ShouldNotHappenException(self::class . ' not registered: cannot operate. Do not call this method directly.');

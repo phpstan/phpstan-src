@@ -30,10 +30,7 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function getTraitReflection(): ?ClassReflection;
 
-	/**
-	 * @return FunctionReflection|MethodReflection|null
-	 */
-	public function getFunction();
+	public function getFunction(): FunctionReflection|MethodReflection|null;
 
 	public function getFunctionName(): ?string;
 
@@ -95,10 +92,7 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function isParameterValueNullable(Param $parameter): bool;
 
-	/**
-	 * @param Node\Name|Node\Identifier|Node\ComplexType|null $type
-	 */
-	public function getFunctionType($type, bool $isNullable, bool $isVariadic): Type;
+	public function getFunctionType(Node\Name|Node\Identifier|Node\ComplexType|null $type, bool $isNullable, bool $isVariadic): Type;
 
 	public function isInExpressionAssign(Expr $expr): bool;
 

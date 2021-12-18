@@ -339,10 +339,7 @@ class ResultCacheManager
 		return false;
 	}
 
-	/**
-	 * @param bool|string $save
-	 */
-	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, $save): ResultCacheProcessResult
+	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, bool|string $save): ResultCacheProcessResult
 	{
 		$internalErrors = $analyserResult->getInternalErrors();
 		$freshErrorsByFile = [];

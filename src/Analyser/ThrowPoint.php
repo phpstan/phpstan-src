@@ -66,10 +66,7 @@ class ThrowPoint
 		return $this->type;
 	}
 
-	/**
-	 * @return Node\Expr|Node\Stmt
-	 */
-	public function getNode()
+	public function getNode(): Node\Expr|Node\Stmt
 	{
 		return $this->node;
 	}

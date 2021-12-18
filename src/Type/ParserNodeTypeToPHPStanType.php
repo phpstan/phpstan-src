@@ -16,10 +16,7 @@ use function strtolower;
 class ParserNodeTypeToPHPStanType
 {
 
-	/**
-	 * @param Node\Name|Node\Identifier|Node\ComplexType|null $type
-	 */
-	public static function resolve($type, ?ClassReflection $classReflection): Type
+	public static function resolve(Node\Name|Node\Identifier|Node\ComplexType|null $type, ?ClassReflection $classReflection): Type
 	{
 		if ($type === null) {
 			return new MixedType();

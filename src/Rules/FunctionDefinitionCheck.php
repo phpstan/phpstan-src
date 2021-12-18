@@ -98,13 +98,12 @@ class FunctionDefinitionCheck
 
 	/**
 	 * @param Node\Param[] $parameters
-	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $returnTypeNode
 	 * @return RuleError[]
 	 */
 	public function checkAnonymousFunction(
 		Scope $scope,
 		array $parameters,
-		$returnTypeNode,
+		Node\Identifier|Node\Name|Node\ComplexType|null $returnTypeNode,
 		string $parameterMessage,
 		string $returnMessage,
 		string $unionTypesMessage,

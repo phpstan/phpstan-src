@@ -40,7 +40,7 @@ class NullType implements ConstantScalarType
 	/**
 	 * @return null
 	 */
-	public function getValue()
+	public function getValue(): int|float|string|bool|null
 	{
 		return null;
 	}

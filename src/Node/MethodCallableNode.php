@@ -11,15 +11,11 @@ class MethodCallableNode extends Expr implements VirtualNode
 
 	private Expr $var;
 
-	/** @var Identifier|Expr */
-	private $name;
+	private Identifier|Expr $name;
 
 	private Expr\MethodCall $originalNode;
 
-	/**
-	 * @param Expr|Identifier $name
-	 */
-	public function __construct(Expr $var, $name, Expr\MethodCall $originalNode)
+	public function __construct(Expr $var, Expr|Identifier $name, Expr\MethodCall $originalNode)
 	{
 		parent::__construct($originalNode->getAttributes());
 		$this->var = $var;
@@ -32,10 +28,7 @@ class MethodCallableNode extends Expr implements VirtualNode
 		return $this->var;
 	}
 
-	/**
-	 * @return Expr|Identifier
-	 */
-	public function getName()
+	public function getName(): Expr|Identifier
 	{
 		return $this->name;
 	}

@@ -578,11 +578,11 @@ class FileTypeMapper
 	}
 
 	/**
-	 * @param Node[]|Node|scalar $node
+	 * @param Node[]|Node|scalar|null $node
 	 * @param Closure(Node $node): mixed $nodeCallback
 	 * @param Closure(Node $node, mixed $callbackResult): void $endNodeCallback
 	 */
-	private function processNodes($node, Closure $nodeCallback, Closure $endNodeCallback): void
+	private function processNodes(array|Node|string|int|float|bool|null $node, Closure $nodeCallback, Closure $endNodeCallback): void
 	{
 		if ($node instanceof Node) {
 			$callbackResult = $nodeCallback($node);

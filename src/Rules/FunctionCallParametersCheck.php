@@ -66,7 +66,6 @@ class FunctionCallParametersCheck
 	}
 
 	/**
-	 * @param Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall
 	 * @param array{string, string, string, string, string, string, string, string, string, string, string, string, string} $messages
 	 * @return RuleError[]
 	 */
@@ -74,7 +73,7 @@ class FunctionCallParametersCheck
 		ParametersAcceptor $parametersAcceptor,
 		Scope $scope,
 		bool $isBuiltin,
-		$funcCall,
+		Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall,
 		array $messages,
 	): array
 	{

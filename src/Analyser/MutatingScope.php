@@ -171,8 +171,7 @@ class MutatingScope implements Scope
 	/** @var array<string, Type> */
 	private array $constantTypes;
 
-	/** @var FunctionReflection|MethodReflection|null */
-	private $function;
+	private FunctionReflection|MethodReflection|null $function = null;
 
 	private ?string $namespace;
 
@@ -211,7 +210,6 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param array<string, Type> $constantTypes
-	 * @param FunctionReflection|MethodReflection|null $function
 	 * @param VariableTypeHolder[] $variablesTypes
 	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
@@ -234,7 +232,7 @@ class MutatingScope implements Scope
 		PhpVersion $phpVersion,
 		bool $declareStrictTypes = false,
 		array $constantTypes = [],
-		$function = null,
+		FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
 		array $variablesTypes = [],
 		array $moreSpecificTypes = [],
@@ -362,9 +360,8 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @return FunctionReflection|MethodReflection|null
 	 */
-	public function getFunction()
+	public function getFunction(): FunctionReflection|MethodReflection|null
 	{
 		return $this->function;
 	}
@@ -2560,10 +2557,7 @@ class MutatingScope implements Scope
 		);
 	}
 
-	/**
-	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
-	 */
-	private function hasPropertyNativeType($propertyFetch): bool
+	private function hasPropertyNativeType(Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch): bool
 	{
 		$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($propertyFetch, $this);
 		if ($propertyReflection === null) {
@@ -2794,10 +2788,7 @@ class MutatingScope implements Scope
 			&& $this->moreSpecificTypes[$exprString]->getCertainty()->yes();
 	}
 
-	/**
-	 * @param MethodReflection|FunctionReflection $reflection
-	 */
-	public function pushInFunctionCall($reflection): self
+	public function pushInFunctionCall(MethodReflection|FunctionReflection $reflection): self
 	{
 		$stack = $this->inFunctionCallsStack;
 		$stack[] = $reflection;
@@ -3467,9 +3458,8 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @param Node\Name|Node\Identifier|Node\ComplexType|null $type
 	 */
-	public function getFunctionType($type, bool $isNullable, bool $isVariadic): Type
+	public function getFunctionType(Node\Name|Node\Identifier|Node\ComplexType|null $type, bool $isNullable, bool $isVariadic): Type
 	{
 		if ($isNullable) {
 			return TypeCombinator::addNull(

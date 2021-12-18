@@ -17,8 +17,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 
 	private int $flags;
 
-	/** @var Identifier|Name|Node\ComplexType|null */
-	private $type;
+	private Identifier|Name|Node\ComplexType|null $type = null;
 
 	private ?Expr $default;
 
@@ -26,13 +25,10 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 
 	private bool $isPromoted;
 
-	/**
-	 * @param Identifier|Name|Node\ComplexType|null $type
-	 */
 	public function __construct(
 		string $name,
 		int $flags,
-		$type,
+		Identifier|Name|Node\ComplexType|null $type,
 		?Expr $default,
 		?string $phpDoc,
 		bool $isPromoted,
@@ -99,10 +95,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		return (bool) ($this->flags & Class_::MODIFIER_READONLY);
 	}
 
-	/**
-	 * @return Identifier|Name|Node\ComplexType|null
-	 */
-	public function getNativeType()
+	public function getNativeType(): Identifier|Name|Node\ComplexType|null
 	{
 		return $this->type;
 	}

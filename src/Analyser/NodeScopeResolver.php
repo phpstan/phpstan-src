@@ -3114,12 +3114,11 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param MethodReflection|FunctionReflection|null $calleeReflection
 	 * @param Node\Arg[] $args
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	private function processArgs(
-		$calleeReflection,
+		MethodReflection|FunctionReflection|null $calleeReflection,
 		?ParametersAcceptor $parametersAcceptor,
 		array $args,
 		MutatingScope $scope,
@@ -3659,11 +3658,11 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param Node[]|Node|scalar $node
+	 * @param Node[]|Node|scalar|null $node
 	 * @param Node\Stmt\TraitUseAdaptation[] $adaptations
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processNodesForTraitUse($node, ClassReflection $traitReflection, MutatingScope $scope, array $adaptations, callable $nodeCallback): void
+	private function processNodesForTraitUse(array|Node|string|int|float|bool|null $node, ClassReflection $traitReflection, MutatingScope $scope, array $adaptations, callable $nodeCallback): void
 	{
 		if ($node instanceof Node) {
 			if ($node instanceof Node\Stmt\Trait_ && $traitReflection->getName() === (string) $node->namespacedName && $traitReflection->getNativeReflection()->getStartLine() === $node->getStartLine()) {

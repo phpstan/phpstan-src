@@ -91,11 +91,10 @@ class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 	}
 
 	/**
-	 * @param Node\Name|Expr $class
 	 * @throws ShouldNotHappenException
 	 */
 	private function getMethod(
-		$class,
+		Node\Name|Expr $class,
 		string $methodName,
 		Scope $scope,
 	): MethodReflection

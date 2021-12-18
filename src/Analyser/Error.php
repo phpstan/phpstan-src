@@ -20,8 +20,7 @@ class Error implements JsonSerializable
 
 	private ?int $line;
 
-	/** @var bool|Throwable */
-	private $canBeIgnored;
+	private bool|Throwable $canBeIgnored;
 
 	private ?string $filePath;
 
@@ -42,7 +41,6 @@ class Error implements JsonSerializable
 	/**
 	 * Error constructor.
 	 *
-	 * @param bool|Throwable $canBeIgnored
 	 * @param class-string<Node>|null $nodeType
 	 * @param mixed[] $metadata
 	 */
@@ -50,7 +48,7 @@ class Error implements JsonSerializable
 		string $message,
 		string $file,
 		?int $line = null,
-		$canBeIgnored = true,
+		bool|Throwable $canBeIgnored = true,
 		?string $filePath = null,
 		?string $traitFilePath = null,
 		?string $tip = null,

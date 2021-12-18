@@ -18,10 +18,7 @@ class PropertyDescriptor
 		return sprintf('Static property %s::$%s', $property->getDeclaringClass()->getDisplayName(), $propertyName);
 	}
 
-	/**
-	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
-	 */
-	public function describeProperty(PropertyReflection $property, $propertyFetch): string
+	public function describeProperty(PropertyReflection $property, Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch): string
 	{
 		/** @var Node\Identifier $name */
 		$name = $propertyFetch->name;

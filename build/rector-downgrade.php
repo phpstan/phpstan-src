@@ -8,6 +8,8 @@ use Rector\DowngradePhp74\Rector\ArrowFunction\ArrowFunctionToAnonymousFunctionR
 use Rector\DowngradePhp74\Rector\Property\DowngradeTypedPropertyRector;
 use Rector\DowngradePhp80\Rector\Catch_\DowngradeNonCapturingCatchesRector;
 use Rector\DowngradePhp80\Rector\ClassMethod\DowngradeTrailingCommasInParamUseRector;
+use Rector\DowngradePhp80\Rector\FunctionLike\DowngradeUnionTypeDeclarationRector;
+use Rector\DowngradePhp80\Rector\Property\DowngradeUnionTypeTypedPropertyRector;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 
@@ -38,6 +40,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 	if ($targetPhpVersionId < 80000) {
 		$services->set(DowngradeTrailingCommasInParamUseRector::class);
 		$services->set(DowngradeNonCapturingCatchesRector::class);
+		$services->set(DowngradeUnionTypeDeclarationRector::class);
+		$services->set(DowngradeUnionTypeTypedPropertyRector::class);
 	}
 
 	if ($targetPhpVersionId < 70400) {

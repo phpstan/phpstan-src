@@ -6,9 +6,6 @@ namespace PHPStan\Type;
 interface ConstantScalarType extends ConstantType
 {
 
-	/**
-	 * @return int|float|string|bool|null
-	 */
-	public function getValue();
+	public function getValue(): int|float|string|bool|null;
 
 }

@@ -41,7 +41,6 @@ class LazyScopeFactory implements ScopeFactory
 
 	/**
 	 * @param array<string, Type> $constantTypes
-	 * @param FunctionReflection|MethodReflection|null $function
 	 * @param VariableTypeHolder[] $variablesTypes
 	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
@@ -54,7 +53,7 @@ class LazyScopeFactory implements ScopeFactory
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
 		array $constantTypes = [],
-		$function = null,
+		FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
 		array $variablesTypes = [],
 		array $moreSpecificTypes = [],

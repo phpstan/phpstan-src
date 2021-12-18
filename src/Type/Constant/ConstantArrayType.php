@@ -889,10 +889,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndex, $optionalKeys);
 	}
 
-	/**
-	 * @param ConstantIntegerType|ConstantStringType $otherKeyType
-	 */
-	private function getKeyIndex($otherKeyType): ?int
+	private function getKeyIndex(ConstantIntegerType|ConstantStringType $otherKeyType): ?int
 	{
 		foreach ($this->keyTypes as $i => $keyType) {
 			if ($keyType->equals($otherKeyType)) {

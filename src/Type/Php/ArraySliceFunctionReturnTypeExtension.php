@@ -62,6 +62,9 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 			$limit = new NullType();
 		}
 
+		/** @var int|null $limitValue */
+		$limitValue = $limit->getValue();
+
 		$constantArrays = TypeUtils::getConstantArrays($valueType);
 		if (count($constantArrays) === 0) {
 			$arrays = TypeUtils::getArrays($valueType);
@@ -81,7 +84,7 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 			$preserveKeys = false;
 		}
 
-		$arrayTypes = array_map(static fn (ConstantArrayType $constantArray): ConstantArrayType => $constantArray->slice($offset->getValue(), $limit->getValue(), $preserveKeys), $constantArrays);
+		$arrayTypes = array_map(static fn (ConstantArrayType $constantArray): ConstantArrayType => $constantArray->slice($offset->getValue(), $limitValue, $preserveKeys), $constantArrays);
 
 		return TypeCombinator::union(...$arrayTypes);
 	}

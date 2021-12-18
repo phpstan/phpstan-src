@@ -444,7 +444,7 @@ class AnalyserTest extends PHPStanTestCase
 	private function runAnalyser(
 		array $ignoreErrors,
 		bool $reportUnmatchedIgnoredErrors,
-		$filePaths,
+		string|array $filePaths,
 		bool $onlyFiles,
 	): array
 	{

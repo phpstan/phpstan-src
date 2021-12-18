@@ -150,10 +150,7 @@ class ExportedNodeResolver
 		return null;
 	}
 
-	/**
-	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $type
-	 */
-	private function printType($type): ?string
+	private function printType(Node\Identifier|Node\Name|Node\ComplexType|null $type): ?string
 	{
 		if ($type === null) {
 			return null;

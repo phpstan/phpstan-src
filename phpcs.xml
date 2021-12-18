@@ -38,6 +38,7 @@
 		<exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingTraversableTypeHintSpecification"/>
 		<properties>
 			<property name="enableObjectTypeHint" value="true"/>
+			<property name="enableUnionTypeHint" value="true"/>
 		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint.UselessAnnotation">
@@ -47,6 +48,7 @@
 		<exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingTraversableTypeHintSpecification"/>
 		<properties>
 			<property name="enableNativeTypeHint" value="true"/>
+			<property name="enableUnionTypeHint" value="true"/>
 		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint.UselessAnnotation">
@@ -57,6 +59,7 @@
 		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingAnyTypeHint"/>
 		<properties>
 			<property name="enableObjectTypeHint" value="true"/>
+			<property name="enableUnionTypeHint" value="true"/>
 		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.UselessAnnotation">
@@ -155,6 +158,13 @@
 	<rule ref="SlevomatCodingStandard.Exceptions.RequireNonCapturingCatch">
 		<properties>
 			<property name="enable" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.TypeHints.UnionTypeHintFormat">
+		<properties>
+			<property name="enable" value="true"/>
+			<property name="withSpaces" value="no"/>
+			<property name="nullPosition" value="last"/>
 		</properties>
 	</rule>
 	<exclude-pattern>tests/*/data</exclude-pattern>

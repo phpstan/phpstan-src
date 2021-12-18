@@ -60,13 +60,12 @@ class StaticMethodCallCheck
 		$this->reportMagicMethods = $reportMagicMethods;
 	}
 	/**
-	 * @param Name|Expr $class
 	 * @return array{RuleError[], MethodReflection|null}
 	 */
 	public function check(
 		Scope $scope,
 		string $methodName,
-		$class,
+		Name|Expr $class,
 	): array
 	{
 		$errors = [];

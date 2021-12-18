@@ -16,10 +16,9 @@ class PropertyReflectionFinder
 {
 
 	/**
-	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
 	 * @return FoundPropertyReflection[]
 	 */
-	public function findPropertyReflectionsFromNode($propertyFetch, Scope $scope): array
+	public function findPropertyReflectionsFromNode(Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch, Scope $scope): array
 	{
 		if ($propertyFetch instanceof Node\Expr\PropertyFetch) {
 			if ($propertyFetch->name instanceof Node\Identifier) {
@@ -81,10 +80,7 @@ class PropertyReflectionFinder
 		return $reflections;
 	}
 
-	/**
-	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
-	 */
-	public function findPropertyReflectionFromNode($propertyFetch, Scope $scope): ?FoundPropertyReflection
+	public function findPropertyReflectionFromNode(Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch, Scope $scope): ?FoundPropertyReflection
 	{
 		if ($propertyFetch instanceof Node\Expr\PropertyFetch) {
 			if (!$propertyFetch->name instanceof Node\Identifier) {

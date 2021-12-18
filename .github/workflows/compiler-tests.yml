@@ -51,3 +51,10 @@ jobs:
     uses: phpstan/phpstan/.github/workflows/integration-tests.yml@master
     with:
       ref: master
+
+  extension-tests:
+    if: github.event_name == 'pull_request'
+    needs: compiler-tests
+    uses: phpstan/phpstan/.github/workflows/extension-tests.yml@master
+    with:
+      ref: master

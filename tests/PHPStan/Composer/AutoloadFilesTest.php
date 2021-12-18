@@ -66,10 +66,14 @@ class AutoloadFilesTest extends TestCase
 			'react/promise-timer/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'react/promise/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'ringcentral/psr7/src/functions_include.php', // added to phpstan-dist/bootstrap.php
+			'symfony/deprecation-contracts/function.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-ctype/bootstrap.php', // afaik polyfills aren't necessary
+			'symfony/polyfill-intl-grapheme/bootstrap.php', // afaik polyfills aren't necessary
+			'symfony/polyfill-intl-normalizer/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-mbstring/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-php73/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-php80/bootstrap.php', // afaik polyfills aren't necessary
+			'symfony/string/Resources/functions.php', // afaik polyfills aren't necessary
 		];
 
 		$phpunitFunctions = 'phpunit/phpunit/src/Framework/Assert/Functions.php';

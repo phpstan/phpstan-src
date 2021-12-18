@@ -92,6 +92,7 @@ class CommandHelper
 	{
 		if (!$allowXdebug) {
 			$xdebug = new XdebugHandler('phpstan');
+			$xdebug->setPersistent();
 			$xdebug->check();
 			unset($xdebug);
 		}

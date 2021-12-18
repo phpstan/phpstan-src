@@ -17,6 +17,7 @@ foreach ($stubFinder->files()->name('*.php')->in([
 	'../../vendor/jetbrains/phpstorm-stubs',
 	'../../vendor/phpstan/php-8-stubs/stubs',
 	'../../vendor/symfony/polyfill-php80',
+	'../../vendor/symfony/polyfill-mbstring',
 ]) as $file) {
 	if ($file->getPathName() === '../../vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php') {
 		continue;
@@ -257,6 +258,7 @@ return [
 		'PhpParser\*',
 		'Hoa\*',
 		'Symfony\Polyfill\Php80\*',
+		'Symfony\Polyfill\Mbstring\*',
 	],
 	'whitelist-global-functions' => false,
 	'whitelist-global-classes' => false,

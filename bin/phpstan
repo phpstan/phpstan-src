@@ -28,6 +28,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 		!array_key_exists('e88992873b7765f9b5710cab95ba5dd7', $composerAutoloadFiles)
 		|| !array_key_exists('3e76f7f02b41af8cea96018933f6b7e3', $composerAutoloadFiles)
 		|| !array_key_exists('a4a119a56e50fbb293281d9a48007e0e', $composerAutoloadFiles)
+		|| !array_key_exists('0e6d7bf4a5811bfa5cf40c5ccd6fae6a', $composerAutoloadFiles)
 	) {
 		echo "Composer autoloader changed\n";
 		exit(1);
@@ -41,6 +42,9 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 		// vendor/symfony/polyfill-php80/bootstrap.php
 		'a4a119a56e50fbb293281d9a48007e0e' => true,
+
+		// vendor/symfony/polyfill-mbstring/bootstrap.php
+		'0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => true,
 	];
 
 	$autoloaderInWorkingDirectory = getcwd() . '/vendor/autoload.php';

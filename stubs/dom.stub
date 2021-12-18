@@ -29,8 +29,6 @@ class DOMDocument
 
 class DOMNode
 {
-	/** @var DOMNode|null */
-	public $firstChild;
 }
 
 class DOMElement extends DOMNode

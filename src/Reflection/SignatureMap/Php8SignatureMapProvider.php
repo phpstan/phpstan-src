@@ -41,7 +41,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 	public function __construct(
 		FunctionSignatureMapProvider $functionSignatureMapProvider,
 		FileNodesFetcher $fileNodesFetcher,
-		FileTypeMapper $fileTypeMapper
+		FileTypeMapper $fileTypeMapper,
 	)
 	{
 		$this->functionSignatureMapProvider = $functionSignatureMapProvider;
@@ -264,7 +264,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 	private function getSignature(
 		FunctionLike $function,
 		?string $className,
-		string $stubFile
+		string $stubFile,
 	): FunctionSignature
 	{
 		$phpDocParameterTypes = null;

@@ -18,7 +18,7 @@ class RuntimeConstantReflection implements GlobalConstantReflection
 	public function __construct(
 		string $name,
 		Type $valueType,
-		?string $fileName
+		?string $fileName,
 	)
 	{
 		$this->name = $name;

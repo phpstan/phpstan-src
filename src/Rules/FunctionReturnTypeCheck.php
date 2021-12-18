@@ -36,7 +36,7 @@ class FunctionReturnTypeCheck
 		string $voidMessage,
 		string $typeMismatchMessage,
 		string $neverMessage,
-		bool $isGenerator
+		bool $isGenerator,
 	): array
 	{
 		if ($returnType instanceof NeverType && $returnType->isExplicit()) {

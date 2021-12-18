@@ -24,7 +24,7 @@ class ApiClassExtendsRule implements Rule
 
 	public function __construct(
 		ApiRuleHelper $apiRuleHelper,
-		ReflectionProvider $reflectionProvider
+		ReflectionProvider $reflectionProvider,
 	)
 	{
 		$this->apiRuleHelper = $apiRuleHelper;

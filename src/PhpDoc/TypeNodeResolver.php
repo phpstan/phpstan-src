@@ -92,7 +92,7 @@ class TypeNodeResolver
 
 	public function __construct(
 		TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,
-		Container $container
+		Container $container,
 	)
 	{
 		$this->extensionRegistryProvider = $extensionRegistryProvider;

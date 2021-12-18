@@ -28,7 +28,7 @@ class ReturnTypeRule implements Rule
 
 	public function __construct(
 		FunctionReturnTypeCheck $returnTypeCheck,
-		Reflector $reflector
+		Reflector $reflector,
 	)
 	{
 		$this->returnTypeCheck = $returnTypeCheck;

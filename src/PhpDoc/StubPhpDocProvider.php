@@ -74,7 +74,7 @@ class StubPhpDocProvider
 		Parser $parser,
 		FileTypeMapper $fileTypeMapper,
 		Container $container,
-		array $stubFiles
+		array $stubFiles,
 	)
 	{
 		$this->parser = $parser;

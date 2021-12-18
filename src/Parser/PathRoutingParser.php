@@ -24,7 +24,7 @@ class PathRoutingParser implements Parser
 		FileHelper $fileHelper,
 		Parser $currentPhpVersionRichParser,
 		Parser $currentPhpVersionSimpleParser,
-		Parser $php8Parser
+		Parser $php8Parser,
 	)
 	{
 		$this->fileHelper = $fileHelper;

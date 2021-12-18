@@ -16,7 +16,7 @@ class PhpVersionFactory
 
 	public function __construct(
 		?int $versionId,
-		?string $composerPhpVersion
+		?string $composerPhpVersion,
 	)
 	{
 		$this->versionId = $versionId;

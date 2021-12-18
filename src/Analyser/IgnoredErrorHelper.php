@@ -35,7 +35,7 @@ class IgnoredErrorHelper
 		IgnoredRegexValidator $ignoredRegexValidator,
 		FileHelper $fileHelper,
 		array $ignoreErrors,
-		bool $reportUnmatchedIgnoredErrors
+		bool $reportUnmatchedIgnoredErrors,
 	)
 	{
 		$this->ignoredRegexValidator = $ignoredRegexValidator;

@@ -10,7 +10,7 @@ class MissingMethodFromReflectionException extends Exception
 
 	public function __construct(
 		string $className,
-		string $methodName
+		string $methodName,
 	)
 	{
 		parent::__construct(

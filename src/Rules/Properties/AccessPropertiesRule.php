@@ -38,7 +38,7 @@ class AccessPropertiesRule implements Rule
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		RuleLevelHelper $ruleLevelHelper,
-		bool $reportMagicProperties
+		bool $reportMagicProperties,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

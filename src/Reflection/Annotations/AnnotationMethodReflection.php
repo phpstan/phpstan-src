@@ -39,7 +39,7 @@ class AnnotationMethodReflection implements MethodReflection
 		Type $returnType,
 		array $parameters,
 		bool $isStatic,
-		bool $isVariadic
+		bool $isVariadic,
 	)
 	{
 		$this->name = $name;

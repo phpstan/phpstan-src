@@ -23,7 +23,7 @@ class ChainReflectionProvider implements ReflectionProvider
 	 * @param ReflectionProvider[] $providers
 	 */
 	public function __construct(
-		array $providers
+		array $providers,
 	)
 	{
 		$this->providers = $providers;

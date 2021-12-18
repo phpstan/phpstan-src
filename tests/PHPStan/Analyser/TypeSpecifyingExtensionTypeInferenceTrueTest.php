@@ -21,7 +21,7 @@ class TypeSpecifyingExtensionTypeInferenceTrueTest extends TypeInferenceTestCase
 	public function testTypeSpecifyingExtensionsTrue(
 		string $assertType,
 		string $file,
-		...$args
+		...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

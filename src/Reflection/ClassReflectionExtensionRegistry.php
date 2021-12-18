@@ -21,7 +21,7 @@ class ClassReflectionExtensionRegistry
 	public function __construct(
 		Broker $broker,
 		array $propertiesClassReflectionExtensions,
-		array $methodsClassReflectionExtensions
+		array $methodsClassReflectionExtensions,
 	)
 	{
 		foreach (array_merge($propertiesClassReflectionExtensions, $methodsClassReflectionExtensions) as $extension) {

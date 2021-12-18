@@ -36,7 +36,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 		ReflectionProvider $reflectionProvider,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		array $patterns,
-		?string $singleReflectionInsteadOfFile
+		?string $singleReflectionInsteadOfFile,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

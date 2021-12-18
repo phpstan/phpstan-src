@@ -97,7 +97,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		PhpVersion $phpVersion,
 		NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
 		StubPhpDocProvider $stubPhpDocProvider,
-		PhpStormStubsSourceStubber $phpStormStubsSourceStubber
+		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 	)
 	{
 		$this->reflectionProviderProvider = $reflectionProviderProvider;
@@ -170,7 +170,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 	public function getAnonymousClassReflection(
 		Node\Stmt\Class_ $classNode,
-		Scope $scope
+		Scope $scope,
 	): ClassReflection
 	{
 		throw new ShouldNotHappenException();
@@ -386,7 +386,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	private function resolveName(
 		Node\Name $nameNode,
 		Closure $existsCallback,
-		?Scope $scope
+		?Scope $scope,
 	): ?string
 	{
 		$name = (string) $nameNode;

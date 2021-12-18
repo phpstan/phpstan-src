@@ -271,7 +271,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 	public function testAccepts(
 		GenericClassStringType $acceptingType,
 		Type $acceptedType,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$actualResult = $acceptingType->accepts($acceptedType, true);

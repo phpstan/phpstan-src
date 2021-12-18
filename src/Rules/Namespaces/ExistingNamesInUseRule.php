@@ -30,7 +30,7 @@ class ExistingNamesInUseRule implements Rule
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		bool $checkFunctionNameCase
+		bool $checkFunctionNameCase,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

@@ -61,7 +61,7 @@ class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 		string $analysedPath,
 		?string $configFile,
 		string $errorFormatter = 'json',
-		?string $baselineFile = null
+		?string $baselineFile = null,
 	): string
 	{
 		$originalDir = getcwd();

@@ -35,7 +35,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 	}
 
 	public function isFunctionSupported(
-		FunctionReflection $functionReflection
+		FunctionReflection $functionReflection,
 	): bool
 	{
 		return $this->reflectionProvider->hasConstant(new FullyQualified('JSON_THROW_ON_ERROR'), null) && in_array(
@@ -51,7 +51,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		$argumentPosition = $this->argumentPositions[$functionReflection->getName()];

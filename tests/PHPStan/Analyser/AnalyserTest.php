@@ -445,7 +445,7 @@ class AnalyserTest extends PHPStanTestCase
 		array $ignoreErrors,
 		bool $reportUnmatchedIgnoredErrors,
 		$filePaths,
-		bool $onlyFiles
+		bool $onlyFiles,
 	): array
 	{
 		$analyser = $this->createAnalyser($reportUnmatchedIgnoredErrors);

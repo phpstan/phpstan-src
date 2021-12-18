@@ -30,7 +30,7 @@ class InterfaceAncestorsRule implements Rule
 	public function __construct(
 		FileTypeMapper $fileTypeMapper,
 		GenericAncestorsCheck $genericAncestorsCheck,
-		CrossCheckInterfacesHelper $crossCheckInterfacesHelper
+		CrossCheckInterfacesHelper $crossCheckInterfacesHelper,
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;

@@ -19,7 +19,7 @@ class DynamicMethodThrowTypeExtensionTest extends TypeInferenceTestCase
 	public function testFileAsserts(
 		string $assertType,
 		string $file,
-		...$args
+		...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

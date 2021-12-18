@@ -130,7 +130,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		array $parameters,
 		Type $returnType,
 		Type $nativeReturnType,
-		bool $variadic
+		bool $variadic,
 	): void
 	{
 		$provider = $this->createProvider();
@@ -251,7 +251,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		array $parameters,
 		Type $returnType,
 		Type $nativeReturnType,
-		bool $variadic
+		bool $variadic,
 	): void
 	{
 		$provider = $this->createProvider();
@@ -267,7 +267,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		Type $expectedReturnType,
 		Type $expectedNativeReturnType,
 		bool $expectedVariadic,
-		FunctionSignature $actualSignature
+		FunctionSignature $actualSignature,
 	): void
 	{
 		$this->assertCount(count($expectedParameters), $actualSignature->getParameters());

@@ -116,7 +116,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	public function testAddNull(
 		Type $type,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$result = TypeCombinator::addNull($type);
@@ -131,7 +131,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	public function testUnionWithNull(
 		Type $type,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$result = TypeCombinator::union($type, new NullType());
@@ -234,7 +234,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	public function testRemoveNull(
 		Type $type,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$result = TypeCombinator::removeNull($type);
@@ -1889,7 +1889,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	public function testUnion(
 		array $types,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$actualType = TypeCombinator::union(...$types);
@@ -1935,7 +1935,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	public function testUnionInversed(
 		array $types,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$types = array_reverse($types);
@@ -3117,7 +3117,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	public function testIntersect(
 		array $types,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$actualType = TypeCombinator::intersect(...$types);
@@ -3141,7 +3141,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 	public function testIntersectInversed(
 		array $types,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$actualType = TypeCombinator::intersect(...array_reverse($types));
@@ -3628,7 +3628,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		Type $fromType,
 		Type $type,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$result = TypeCombinator::remove($fromType, $type);

@@ -29,7 +29,7 @@ class FunctionVariant implements ParametersAcceptor
 		?TemplateTypeMap $resolvedTemplateTypeMap,
 		array $parameters,
 		bool $isVariadic,
-		Type $returnType
+		Type $returnType,
 	)
 	{
 		$this->templateTypeMap = $templateTypeMap;

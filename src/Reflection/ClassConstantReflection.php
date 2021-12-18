@@ -37,7 +37,7 @@ class ClassConstantReflection implements ConstantReflection
 		PhpVersion $phpVersion,
 		?string $deprecatedDescription,
 		bool $isDeprecated,
-		bool $isInternal
+		bool $isInternal,
 	)
 	{
 		$this->declaringClass = $declaringClass;

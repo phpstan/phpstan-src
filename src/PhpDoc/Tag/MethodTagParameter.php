@@ -24,7 +24,7 @@ class MethodTagParameter
 		PassedByReference $passedByReference,
 		bool $isOptional,
 		bool $isVariadic,
-		?Type $defaultValue
+		?Type $defaultValue,
 	)
 	{
 		$this->type = $type;

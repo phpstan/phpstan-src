@@ -10,7 +10,7 @@ class MissingConstantFromReflectionException extends Exception
 
 	public function __construct(
 		string $className,
-		string $constantName
+		string $constantName,
 	)
 	{
 		parent::__construct(

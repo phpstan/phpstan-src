@@ -42,7 +42,7 @@ class TestCaseSourceLocatorFactory
 		Parser $phpParser,
 		Parser $php8Parser,
 		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
-		ReflectionSourceStubber $reflectionSourceStubber
+		ReflectionSourceStubber $reflectionSourceStubber,
 	)
 	{
 		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;

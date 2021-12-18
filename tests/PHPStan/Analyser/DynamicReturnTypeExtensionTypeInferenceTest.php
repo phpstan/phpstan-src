@@ -20,7 +20,7 @@ class DynamicReturnTypeExtensionTypeInferenceTest extends TypeInferenceTestCase
 	public function testAsserts(
 		string $assertType,
 		string $file,
-		...$args
+		...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

@@ -351,7 +351,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	public function testLoopInitialAssignments(
 		bool $polluteScopeWithLoopInitialAssignments,
 		bool $checkMaybeUndefinedVariables,
-		array $expectedErrors
+		array $expectedErrors,
 	): void
 	{
 		$this->cliArgumentsVariablesRegistered = false;

@@ -19,7 +19,7 @@ class ConstantArrayTypeAndMethod
 	private function __construct(
 		?Type $type,
 		?string $method,
-		TrinaryLogic $certainty
+		TrinaryLogic $certainty,
 	)
 	{
 		$this->type = $type;
@@ -30,7 +30,7 @@ class ConstantArrayTypeAndMethod
 	public static function createConcrete(
 		Type $type,
 		string $method,
-		TrinaryLogic $certainty
+		TrinaryLogic $certainty,
 	): self
 	{
 		if ($certainty->no()) {

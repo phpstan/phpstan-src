@@ -45,7 +45,7 @@ class MixinRule implements Rule
 		GenericObjectTypeCheck $genericObjectTypeCheck,
 		MissingTypehintCheck $missingTypehintCheck,
 		UnresolvableTypeHelper $unresolvableTypeHelper,
-		bool $checkClassCaseSensitivity
+		bool $checkClassCaseSensitivity,
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;

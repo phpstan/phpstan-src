@@ -32,7 +32,7 @@ class ExpressionResult
 		bool $hasYield,
 		array $throwPoints,
 		?callable $truthyScopeCallback = null,
-		?callable $falseyScopeCallback = null
+		?callable $falseyScopeCallback = null,
 	)
 	{
 		$this->scope = $scope;

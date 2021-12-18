@@ -20,7 +20,7 @@ class ObjectWithoutClassType implements SubtractableType
 
 	/** @api */
 	public function __construct(
-		?Type $subtractedType = null
+		?Type $subtractedType = null,
 	)
 	{
 		if ($subtractedType instanceof NeverType) {

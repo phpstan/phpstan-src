@@ -45,7 +45,7 @@ class WorkerCommand extends Command
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
-		array $composerAutoloaderProjectPaths
+		array $composerAutoloaderProjectPaths,
 	)
 	{
 		parent::__construct();
@@ -174,7 +174,7 @@ class WorkerCommand extends Command
 		OutputInterface $output,
 		array $analysedFiles,
 		?string $tmpFile,
-		?string $insteadOfFile
+		?string $insteadOfFile,
 	): void
 	{
 		$handleError = function (Throwable $error) use ($out, $output): void {
@@ -256,7 +256,7 @@ class WorkerCommand extends Command
 	private function switchTmpFile(
 		array $analysedFiles,
 		?string $insteadOfFile,
-		?string $tmpFile
+		?string $tmpFile,
 	): array
 	{
 		$analysedFiles = array_values(array_filter($analysedFiles, static function (string $file) use ($insteadOfFile): bool {

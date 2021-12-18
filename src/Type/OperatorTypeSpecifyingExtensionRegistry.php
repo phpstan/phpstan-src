@@ -18,7 +18,7 @@ class OperatorTypeSpecifyingExtensionRegistry
 	 */
 	public function __construct(
 		Broker $broker,
-		array $extensions
+		array $extensions,
 	)
 	{
 		foreach ($extensions as $extension) {

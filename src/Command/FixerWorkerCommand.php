@@ -30,7 +30,7 @@ class FixerWorkerCommand extends Command
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
-		array $composerAutoloaderProjectPaths
+		array $composerAutoloaderProjectPaths,
 	)
 	{
 		parent::__construct();
@@ -196,7 +196,7 @@ class FixerWorkerCommand extends Command
 	private function switchTmpFileInAnalyserResult(
 		AnalyserResult $analyserResult,
 		?string $insteadOfFile,
-		?string $tmpFile
+		?string $tmpFile,
 	): AnalyserResult
 	{
 		$fileSpecificErrors = [];

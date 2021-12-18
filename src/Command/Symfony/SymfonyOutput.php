@@ -18,7 +18,7 @@ class SymfonyOutput implements Output
 
 	public function __construct(
 		OutputInterface $symfonyOutput,
-		OutputStyle $style
+		OutputStyle $style,
 	)
 	{
 		$this->symfonyOutput = $symfonyOutput;

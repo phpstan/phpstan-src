@@ -42,7 +42,7 @@ class AnalyseApplication
 		ResultCacheManagerFactory $resultCacheManagerFactory,
 		IgnoredErrorHelper $ignoredErrorHelper,
 		string $memoryLimitFile,
-		int $internalErrorsCountLimit
+		int $internalErrorsCountLimit,
 	)
 	{
 		$this->analyserRunner = $analyserRunner;
@@ -66,7 +66,7 @@ class AnalyseApplication
 		bool $debug,
 		?string $projectConfigFile,
 		?array $projectConfigArray,
-		InputInterface $input
+		InputInterface $input,
 	): AnalysisResult
 	{
 		$this->updateMemoryLimitFile();
@@ -159,7 +159,7 @@ class AnalyseApplication
 		?string $projectConfigFile,
 		Output $stdOutput,
 		Output $errorOutput,
-		InputInterface $input
+		InputInterface $input,
 	): AnalyserResult
 	{
 		$filesCount = count($files);

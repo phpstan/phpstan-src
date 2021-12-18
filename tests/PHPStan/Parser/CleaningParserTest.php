@@ -27,7 +27,7 @@ class CleaningParserTest extends PHPStanTestCase
 	 */
 	public function testParse(
 		string $beforeFile,
-		string $afterFile
+		string $afterFile,
 	): void
 	{
 		$parser = new CleaningParser(

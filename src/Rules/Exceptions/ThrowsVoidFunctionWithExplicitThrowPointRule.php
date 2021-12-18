@@ -27,7 +27,7 @@ class ThrowsVoidFunctionWithExplicitThrowPointRule implements Rule
 
 	public function __construct(
 		ExceptionTypeResolver $exceptionTypeResolver,
-		bool $missingCheckedExceptionInThrows
+		bool $missingCheckedExceptionInThrows,
 	)
 	{
 		$this->exceptionTypeResolver = $exceptionTypeResolver;

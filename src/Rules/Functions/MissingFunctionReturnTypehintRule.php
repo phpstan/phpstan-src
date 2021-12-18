@@ -24,7 +24,7 @@ final class MissingFunctionReturnTypehintRule implements Rule
 	private MissingTypehintCheck $missingTypehintCheck;
 
 	public function __construct(
-		MissingTypehintCheck $missingTypehintCheck
+		MissingTypehintCheck $missingTypehintCheck,
 	)
 	{
 		$this->missingTypehintCheck = $missingTypehintCheck;

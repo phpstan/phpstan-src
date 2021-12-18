@@ -18,7 +18,7 @@ class TypeAlias
 
 	public function __construct(
 		TypeNode $typeNode,
-		NameScope $nameScope
+		NameScope $nameScope,
 	)
 	{
 		$this->typeNode = $typeNode;

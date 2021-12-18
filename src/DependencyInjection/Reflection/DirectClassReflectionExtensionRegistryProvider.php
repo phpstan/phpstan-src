@@ -27,7 +27,7 @@ class DirectClassReflectionExtensionRegistryProvider implements ClassReflectionE
 	 */
 	public function __construct(
 		array $propertiesClassReflectionExtensions,
-		array $methodsClassReflectionExtensions
+		array $methodsClassReflectionExtensions,
 	)
 	{
 		$this->propertiesClassReflectionExtensions = $propertiesClassReflectionExtensions;

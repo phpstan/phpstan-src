@@ -14,7 +14,7 @@ class FileExcluderTest extends PHPStanTestCase
 	public function testFilesAreExcludedFromAnalysingOnWindows(
 		string $filePath,
 		array $analyseExcludes,
-		bool $isExcluded
+		bool $isExcluded,
 	): void
 	{
 		$this->skipIfNotOnWindows();
@@ -122,7 +122,7 @@ class FileExcluderTest extends PHPStanTestCase
 	public function testFilesAreExcludedFromAnalysingOnUnix(
 		string $filePath,
 		array $analyseExcludes,
-		bool $isExcluded
+		bool $isExcluded,
 	): void
 	{
 		$this->skipIfNotOnUnix();

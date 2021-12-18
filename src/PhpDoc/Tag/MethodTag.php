@@ -21,7 +21,7 @@ class MethodTag
 	public function __construct(
 		Type $returnType,
 		bool $isStatic,
-		array $parameters
+		array $parameters,
 	)
 	{
 		$this->returnType = $returnType;

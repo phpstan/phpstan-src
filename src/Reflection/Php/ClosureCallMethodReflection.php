@@ -24,7 +24,7 @@ final class ClosureCallMethodReflection implements MethodReflection
 
 	public function __construct(
 		MethodReflection $nativeMethodReflection,
-		ClosureType $closureType
+		ClosureType $closureType,
 	)
 	{
 		$this->nativeMethodReflection = $nativeMethodReflection;

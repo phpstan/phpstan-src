@@ -28,7 +28,7 @@ class IssetCheck
 		PropertyDescriptor $propertyDescriptor,
 		PropertyReflectionFinder $propertyReflectionFinder,
 		bool $checkAdvancedIsset,
-		bool $treatPhpDocTypesAsCertain
+		bool $treatPhpDocTypesAsCertain,
 	)
 	{
 		$this->propertyDescriptor = $propertyDescriptor;

@@ -17,7 +17,7 @@ class ScopeContext
 	private function __construct(
 		string $file,
 		?ClassReflection $classReflection,
-		?ClassReflection $traitReflection
+		?ClassReflection $traitReflection,
 	)
 	{
 		$this->file = $file;

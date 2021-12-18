@@ -20,7 +20,7 @@ class LoaderFactory
 		FileHelper $fileHelper,
 		string $rootDir,
 		string $currentWorkingDirectory,
-		?string $generateBaselineFile
+		?string $generateBaselineFile,
 	)
 	{
 		$this->fileHelper = $fileHelper;

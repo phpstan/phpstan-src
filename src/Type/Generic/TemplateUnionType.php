@@ -17,7 +17,7 @@ final class TemplateUnionType extends UnionType implements TemplateType
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		UnionType $bound
+		UnionType $bound,
 	)
 	{
 		parent::__construct($bound->getTypes());

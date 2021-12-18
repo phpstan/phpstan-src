@@ -29,7 +29,7 @@ class CaughtExceptionExistenceRule implements Rule
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		bool $checkClassCaseSensitivity
+		bool $checkClassCaseSensitivity,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

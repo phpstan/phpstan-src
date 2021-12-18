@@ -38,7 +38,7 @@ interface ScopeFactory
 		array $nativeExpressionTypes = [],
 		array $inFunctionCallsStack = [],
 		bool $afterExtractCall = false,
-		?Scope $parentScope = null
+		?Scope $parentScope = null,
 	): MutatingScope;
 
 }

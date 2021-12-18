@@ -12,7 +12,7 @@ class PhpDocInheritanceResolver
 	private FileTypeMapper $fileTypeMapper;
 
 	public function __construct(
-		FileTypeMapper $fileTypeMapper
+		FileTypeMapper $fileTypeMapper,
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;
@@ -23,7 +23,7 @@ class PhpDocInheritanceResolver
 		ClassReflection $classReflection,
 		string $classReflectionFileName,
 		?string $declaringTraitName,
-		string $propertyName
+		string $propertyName,
 	): ResolvedPhpDocBlock
 	{
 		$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForProperty(
@@ -44,7 +44,7 @@ class PhpDocInheritanceResolver
 		?string $docComment,
 		ClassReflection $classReflection,
 		string $classReflectionFileName,
-		string $constantName
+		string $constantName,
 	): ResolvedPhpDocBlock
 	{
 		$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForConstant(
@@ -70,7 +70,7 @@ class PhpDocInheritanceResolver
 		ClassReflection $classReflection,
 		?string $declaringTraitName,
 		string $methodName,
-		array $positionalParameterNames
+		array $positionalParameterNames,
 	): ResolvedPhpDocBlock
 	{
 		$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(

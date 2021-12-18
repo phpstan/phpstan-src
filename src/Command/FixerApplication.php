@@ -113,7 +113,7 @@ class FixerApplication
 		array $analysedPaths,
 		string $currentWorkingDirectory,
 		string $fixerTmpDir,
-		int $maximumNumberOfProcesses
+		int $maximumNumberOfProcesses,
 	)
 	{
 		$this->fileMonitor = $fileMonitor;
@@ -140,7 +140,7 @@ class FixerApplication
 		array $fileSpecificErrors,
 		array $notFileSpecificErrors,
 		int $filesCount,
-		string $mainScript
+		string $mainScript,
 	): int
 	{
 		$loop = new StreamSelectLoop();
@@ -373,7 +373,7 @@ class FixerApplication
 	private function downloadPhar(
 		OutputInterface $output,
 		string $pharPath,
-		string $infoPath
+		string $infoPath,
 	): void
 	{
 		$currentVersion = null;
@@ -488,7 +488,7 @@ class FixerApplication
 		string $tmpFile,
 		string $insteadOfFile,
 		string $fixerSuggestionId,
-		InputInterface $input
+		InputInterface $input,
 	): PromiseInterface
 	{
 		$resultCacheManager = $this->resultCacheManagerFactory->create([$insteadOfFile => $tmpFile]);
@@ -521,7 +521,7 @@ class FixerApplication
 		string $mainScript,
 		?string $projectConfigFile,
 		?string $fixerSuggestionId,
-		InputInterface $input
+		InputInterface $input,
 	): PromiseInterface
 	{
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();

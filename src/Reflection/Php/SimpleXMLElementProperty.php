@@ -21,7 +21,7 @@ class SimpleXMLElementProperty implements PropertyReflection
 
 	public function __construct(
 		ClassReflection $declaringClass,
-		Type $type
+		Type $type,
 	)
 	{
 		$this->declaringClass = $declaringClass;

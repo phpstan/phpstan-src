@@ -18,7 +18,7 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 
 	public function __construct(
 		string $methodName,
-		ReflectionClass $declaringClass
+		ReflectionClass $declaringClass,
 	)
 	{
 		$this->methodName = $methodName;

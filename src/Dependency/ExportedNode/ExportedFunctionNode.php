@@ -31,7 +31,7 @@ class ExportedFunctionNode implements ExportedNode, JsonSerializable
 		?ExportedPhpDocNode $phpDoc,
 		bool $byRef,
 		?string $returnType,
-		array $parameters
+		array $parameters,
 	)
 	{
 		$this->name = $name;

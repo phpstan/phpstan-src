@@ -45,7 +45,7 @@ class IgnoredErrorHelperResult
 		array $otherIgnoreErrors,
 		array $ignoreErrorsByFile,
 		array $ignoreErrors,
-		bool $reportUnmatchedIgnoredErrors
+		bool $reportUnmatchedIgnoredErrors,
 	)
 	{
 		$this->fileHelper = $fileHelper;
@@ -73,7 +73,7 @@ class IgnoredErrorHelperResult
 		array $errors,
 		bool $onlyFiles,
 		array $analysedFiles,
-		bool $hasInternalErrors
+		bool $hasInternalErrors,
 	): array
 	{
 		$unmatchedIgnoredErrors = $this->ignoreErrors;

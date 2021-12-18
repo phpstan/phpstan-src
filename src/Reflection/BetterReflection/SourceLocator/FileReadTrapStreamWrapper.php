@@ -51,7 +51,7 @@ final class FileReadTrapStreamWrapper
 	 */
 	public static function withStreamWrapperOverride(
 		callable $executeMeWithinStreamWrapperOverride,
-		array $streamWrapperProtocols = self::DEFAULT_STREAM_WRAPPER_PROTOCOLS
+		array $streamWrapperProtocols = self::DEFAULT_STREAM_WRAPPER_PROTOCOLS,
 	)
 	{
 		self::$registeredStreamWrapperProtocols = $streamWrapperProtocols;

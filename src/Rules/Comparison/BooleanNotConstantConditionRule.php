@@ -21,7 +21,7 @@ class BooleanNotConstantConditionRule implements Rule
 
 	public function __construct(
 		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain
+		bool $treatPhpDocTypesAsCertain,
 	)
 	{
 		$this->helper = $helper;
@@ -35,7 +35,7 @@ class BooleanNotConstantConditionRule implements Rule
 
 	public function processNode(
 		Node $node,
-		Scope $scope
+		Scope $scope,
 	): array
 	{
 		$exprType = $this->helper->getBooleanType($scope, $node->expr);

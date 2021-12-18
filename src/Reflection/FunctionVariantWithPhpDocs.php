@@ -24,7 +24,7 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 		bool $isVariadic,
 		Type $returnType,
 		Type $phpDocReturnType,
-		Type $nativeReturnType
+		Type $nativeReturnType,
 	)
 	{
 		parent::__construct(

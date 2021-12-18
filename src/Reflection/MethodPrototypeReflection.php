@@ -38,7 +38,7 @@ class MethodPrototypeReflection implements ClassMemberReflection
 		bool $isAbstract,
 		bool $isFinal,
 		array $variants,
-		?Type $tentativeReturnType
+		?Type $tentativeReturnType,
 	)
 	{
 		$this->name = $name;

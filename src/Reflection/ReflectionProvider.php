@@ -19,7 +19,7 @@ interface ReflectionProvider
 
 	public function getAnonymousClassReflection(
 		Node\Stmt\Class_ $classNode,
-		Scope $scope
+		Scope $scope,
 	): ClassReflection;
 
 	public function hasFunction(Node\Name $nameNode, ?Scope $scope): bool;

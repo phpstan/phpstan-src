@@ -24,7 +24,7 @@ class MatchExpressionNode extends NodeAbstract implements VirtualNode
 		Expr $condition,
 		array $arms,
 		Expr\Match_ $originalNode,
-		Scope $endScope
+		Scope $endScope,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());

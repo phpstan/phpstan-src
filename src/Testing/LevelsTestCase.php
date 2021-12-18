@@ -51,7 +51,7 @@ abstract class LevelsTestCase extends TestCase
 	 * @dataProvider dataTopics
 	 */
 	public function testLevels(
-		string $topic
+		string $topic,
 	): void
 	{
 		$file = sprintf('%s' . DIRECTORY_SEPARATOR . '%s.php', $this->getDataPath(), $topic);

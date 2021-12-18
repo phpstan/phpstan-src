@@ -22,7 +22,7 @@ class JunitErrorFormatter implements ErrorFormatter
 
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		Output $output
+		Output $output,
 	): int
 	{
 		$result = '<?xml version="1.0" encoding="UTF-8"?>';

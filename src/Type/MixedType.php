@@ -37,7 +37,7 @@ class MixedType implements CompoundType, SubtractableType
 	/** @api */
 	public function __construct(
 		bool $isExplicitMixed = false,
-		?Type $subtractedType = null
+		?Type $subtractedType = null,
 	)
 	{
 		if ($subtractedType instanceof NeverType) {

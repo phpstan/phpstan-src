@@ -57,7 +57,7 @@ class MissingTypehintCheck
 		bool $checkMissingIterableValueType,
 		bool $checkGenericClassInNonGenericObjectType,
 		bool $checkMissingCallableSignature,
-		array $skipCheckGenericClasses
+		array $skipCheckGenericClasses,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

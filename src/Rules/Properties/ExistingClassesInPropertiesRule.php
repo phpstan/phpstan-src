@@ -41,7 +41,7 @@ class ExistingClassesInPropertiesRule implements Rule
 		UnresolvableTypeHelper $unresolvableTypeHelper,
 		PhpVersion $phpVersion,
 		bool $checkClassCaseSensitivity,
-		bool $checkThisOnly
+		bool $checkThisOnly,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

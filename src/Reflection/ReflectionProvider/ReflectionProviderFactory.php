@@ -17,7 +17,7 @@ class ReflectionProviderFactory
 	public function __construct(
 		ReflectionProvider $runtimeReflectionProvider,
 		ReflectionProvider $staticReflectionProvider,
-		bool $disableRuntimeReflectionProvider
+		bool $disableRuntimeReflectionProvider,
 	)
 	{
 		$this->runtimeReflectionProvider = $runtimeReflectionProvider;

@@ -377,7 +377,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 	public function testGetFunctions(
 		array $map,
 		?string $className,
-		FunctionSignature $expectedSignature
+		FunctionSignature $expectedSignature,
 	): void
 	{
 		/** @var SignatureMapParser $parser */

@@ -8,7 +8,7 @@ interface BetterReflectionProviderFactory
 {
 
 	public function create(
-		Reflector $reflector
+		Reflector $reflector,
 	): BetterReflectionProvider;
 
 }

@@ -19,7 +19,7 @@ class ClassTemplateTypeRule implements Rule
 	private TemplateTypeCheck $templateTypeCheck;
 
 	public function __construct(
-		TemplateTypeCheck $templateTypeCheck
+		TemplateTypeCheck $templateTypeCheck,
 	)
 	{
 		$this->templateTypeCheck = $templateTypeCheck;

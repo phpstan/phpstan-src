@@ -44,7 +44,7 @@ class NativeMethodReflection implements MethodReflection
 		array $variants,
 		TrinaryLogic $hasSideEffects,
 		?string $stubPhpDocString,
-		?Type $throwType
+		?Type $throwType,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

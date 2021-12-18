@@ -35,7 +35,7 @@ class WrongVariableNameInVarTagRule implements Rule
 	private FileTypeMapper $fileTypeMapper;
 
 	public function __construct(
-		FileTypeMapper $fileTypeMapper
+		FileTypeMapper $fileTypeMapper,
 	)
 	{
 		$this->fileTypeMapper = $fileTypeMapper;

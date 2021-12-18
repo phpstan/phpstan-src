@@ -26,7 +26,7 @@ class ImpossibleInstanceOfRule implements Rule
 
 	public function __construct(
 		bool $checkAlwaysTrueInstanceof,
-		bool $treatPhpDocTypesAsCertain
+		bool $treatPhpDocTypesAsCertain,
 	)
 	{
 		$this->checkAlwaysTrueInstanceof = $checkAlwaysTrueInstanceof;

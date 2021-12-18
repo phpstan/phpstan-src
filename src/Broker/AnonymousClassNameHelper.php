@@ -18,7 +18,7 @@ class AnonymousClassNameHelper
 
 	public function __construct(
 		FileHelper $fileHelper,
-		RelativePathHelper $relativePathHelper
+		RelativePathHelper $relativePathHelper,
 	)
 	{
 		$this->fileHelper = $fileHelper;
@@ -27,7 +27,7 @@ class AnonymousClassNameHelper
 
 	public function getAnonymousClassName(
 		Node\Stmt\Class_ $classNode,
-		string $filename
+		string $filename,
 	): string
 	{
 		if (isset($classNode->namespacedName)) {

@@ -57,7 +57,7 @@ class FunctionDefinitionCheck
 		UnresolvableTypeHelper $unresolvableTypeHelper,
 		PhpVersion $phpVersion,
 		bool $checkClassCaseSensitivity,
-		bool $checkThisOnly
+		bool $checkThisOnly,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -79,7 +79,7 @@ class FunctionDefinitionCheck
 		string $unionTypesMessage,
 		string $templateTypeMissingInParameterMessage,
 		string $unresolvableParameterTypeMessage,
-		string $unresolvableReturnTypeMessage
+		string $unresolvableReturnTypeMessage,
 	): array
 	{
 		$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
@@ -109,7 +109,7 @@ class FunctionDefinitionCheck
 		string $returnMessage,
 		string $unionTypesMessage,
 		string $unresolvableParameterTypeMessage,
-		string $unresolvableReturnTypeMessage
+		string $unresolvableReturnTypeMessage,
 	): array
 	{
 		$errors = [];
@@ -206,7 +206,7 @@ class FunctionDefinitionCheck
 		string $unionTypesMessage,
 		string $templateTypeMissingInParameterMessage,
 		string $unresolvableParameterTypeMessage,
-		string $unresolvableReturnTypeMessage
+		string $unresolvableReturnTypeMessage,
 	): array
 	{
 		/** @var ParametersAcceptorWithPhpDocs $parametersAcceptor */
@@ -235,7 +235,7 @@ class FunctionDefinitionCheck
 		string $unionTypesMessage,
 		string $templateTypeMissingInParameterMessage,
 		string $unresolvableParameterTypeMessage,
-		string $unresolvableReturnTypeMessage
+		string $unresolvableReturnTypeMessage,
 	): array
 	{
 		$errors = [];
@@ -412,7 +412,7 @@ class FunctionDefinitionCheck
 	 */
 	private function getParameterNode(
 		string $parameterName,
-		array $parameterNodes
+		array $parameterNodes,
 	): Param
 	{
 		foreach ($parameterNodes as $param) {

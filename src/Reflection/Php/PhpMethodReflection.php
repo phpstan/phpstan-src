@@ -111,7 +111,7 @@ class PhpMethodReflection implements MethodReflection
 		bool $isInternal,
 		bool $isFinal,
 		?string $stubPhpDocString,
-		?bool $isPure
+		?bool $isPure,
 	)
 	{
 		$this->declaringClass = $declaringClass;

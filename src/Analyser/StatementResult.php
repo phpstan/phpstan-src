@@ -29,7 +29,7 @@ class StatementResult
 		bool $hasYield,
 		bool $isAlwaysTerminating,
 		array $exitPoints,
-		array $throwPoints
+		array $throwPoints,
 	)
 	{
 		$this->scope = $scope;

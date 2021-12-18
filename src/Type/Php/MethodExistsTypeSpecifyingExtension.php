@@ -33,7 +33,7 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection,
 		FuncCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		return $functionReflection->getName() === 'method_exists'
@@ -45,7 +45,7 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 		FunctionReflection $functionReflection,
 		FuncCall $node,
 		Scope $scope,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		$objectType = $scope->getType($node->getArgs()[0]->value);

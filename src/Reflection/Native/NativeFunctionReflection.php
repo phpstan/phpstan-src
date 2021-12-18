@@ -30,7 +30,7 @@ class NativeFunctionReflection implements FunctionReflection
 		array $variants,
 		?Type $throwType,
 		TrinaryLogic $hasSideEffects,
-		bool $isDeprecated
+		bool $isDeprecated,
 	)
 	{
 		$this->name = $name;

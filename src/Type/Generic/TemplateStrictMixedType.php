@@ -19,7 +19,7 @@ final class TemplateStrictMixedType extends StrictMixedType implements TemplateT
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		StrictMixedType $bound
+		StrictMixedType $bound,
 	)
 	{
 		$this->scope = $scope;

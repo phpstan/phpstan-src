@@ -34,7 +34,7 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 	private function findClassReflectionWithProperty(
 		ClassReflection $classReflection,
 		ClassReflection $declaringClass,
-		string $propertyName
+		string $propertyName,
 	): ?PropertyReflection
 	{
 		$propertyTags = $classReflection->getPropertyTags();

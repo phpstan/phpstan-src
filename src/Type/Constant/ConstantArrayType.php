@@ -81,7 +81,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		array $keyTypes,
 		array $valueTypes,
 		int $nextAutoIndex = 0,
-		array $optionalKeys = []
+		array $optionalKeys = [],
 	)
 	{
 		assert(count($keyTypes) === count($valueTypes));

@@ -41,7 +41,7 @@ class AnalysisResult
 		array $warnings,
 		bool $defaultLevelUsed,
 		?string $projectConfigFile,
-		bool $savedResultCache
+		bool $savedResultCache,
 	)
 	{
 		usort(

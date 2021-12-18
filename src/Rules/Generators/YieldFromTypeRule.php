@@ -29,7 +29,7 @@ class YieldFromTypeRule implements Rule
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,
-		bool $reportMaybes
+		bool $reportMaybes,
 	)
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;

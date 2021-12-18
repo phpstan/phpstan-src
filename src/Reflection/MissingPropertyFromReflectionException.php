@@ -10,7 +10,7 @@ class MissingPropertyFromReflectionException extends Exception
 
 	public function __construct(
 		string $className,
-		string $propertyName
+		string $propertyName,
 	)
 	{
 		parent::__construct(

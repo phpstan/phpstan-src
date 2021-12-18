@@ -23,7 +23,7 @@ class CachedParser implements Parser
 
 	public function __construct(
 		Parser $originalParser,
-		int $cachedNodesByStringCountMax
+		int $cachedNodesByStringCountMax,
 	)
 	{
 		$this->originalParser = $originalParser;

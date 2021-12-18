@@ -24,7 +24,7 @@ class WhileLoopAlwaysTrueConditionRule implements Rule
 
 	public function __construct(
 		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain
+		bool $treatPhpDocTypesAsCertain,
 	)
 	{
 		$this->helper = $helper;
@@ -38,7 +38,7 @@ class WhileLoopAlwaysTrueConditionRule implements Rule
 
 	public function processNode(
 		Node $node,
-		Scope $scope
+		Scope $scope,
 	): array
 	{
 		foreach ($node->getExitPoints() as $exitPoint) {

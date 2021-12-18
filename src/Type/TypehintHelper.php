@@ -77,7 +77,7 @@ class TypehintHelper
 		?ReflectionType $reflectionType,
 		?Type $phpDocType = null,
 		?string $selfClass = null,
-		bool $isVariadic = false
+		bool $isVariadic = false,
 	): Type
 	{
 		if ($reflectionType === null) {
@@ -140,7 +140,7 @@ class TypehintHelper
 
 	public static function decideType(
 		Type $type,
-		?Type $phpDocType = null
+		?Type $phpDocType = null,
 	): Type
 	{
 		if ($phpDocType !== null && !$phpDocType instanceof ErrorType) {

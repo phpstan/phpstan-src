@@ -29,7 +29,7 @@ class InvalidBinaryOperationRule implements Rule
 
 	public function __construct(
 		Standard $printer,
-		RuleLevelHelper $ruleLevelHelper
+		RuleLevelHelper $ruleLevelHelper,
 	)
 	{
 		$this->printer = $printer;

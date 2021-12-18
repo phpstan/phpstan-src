@@ -29,7 +29,7 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 		PropertyReflection $propertyReflection,
 		ClassReflection $resolvedDeclaringClass,
 		bool $resolveTemplateTypeMapToBounds,
-		Type $fetchedOnType
+		Type $fetchedOnType,
 	)
 	{
 		$this->propertyReflection = $propertyReflection;

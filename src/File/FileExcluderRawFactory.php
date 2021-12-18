@@ -9,7 +9,7 @@ interface FileExcluderRawFactory
 	 * @param string[] $analyseExcludes
 	 */
 	public function create(
-		array $analyseExcludes
+		array $analyseExcludes,
 	): FileExcluder;
 
 }

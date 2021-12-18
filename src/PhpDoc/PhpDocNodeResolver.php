@@ -47,7 +47,7 @@ class PhpDocNodeResolver
 	public function __construct(
 		TypeNodeResolver $typeNodeResolver,
 		ConstExprNodeResolver $constExprNodeResolver,
-		UnresolvableTypeHelper $unresolvableTypeHelper
+		UnresolvableTypeHelper $unresolvableTypeHelper,
 	)
 	{
 		$this->typeNodeResolver = $typeNodeResolver;

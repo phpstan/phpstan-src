@@ -25,7 +25,7 @@ class FileExcluderFactory
 	public function __construct(
 		FileExcluderRawFactory $fileExcluderRawFactory,
 		array $obsoleteExcludesAnalyse,
-		?array $excludePaths
+		?array $excludePaths,
 	)
 	{
 		$this->fileExcluderRawFactory = $fileExcluderRawFactory;

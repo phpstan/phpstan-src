@@ -29,7 +29,7 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,
 		NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck,
-		bool $reportMaybes
+		bool $reportMaybes,
 	)
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;

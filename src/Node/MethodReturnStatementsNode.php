@@ -28,7 +28,7 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 		ClassMethod $method,
 		array $returnStatements,
 		StatementResult $statementResult,
-		array $executionEnds
+		array $executionEnds,
 	)
 	{
 		parent::__construct($method->getAttributes());

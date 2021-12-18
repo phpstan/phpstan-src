@@ -19,7 +19,7 @@ final class TemplateArrayType extends ArrayType implements TemplateType
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		ArrayType $bound
+		ArrayType $bound,
 	)
 	{
 		parent::__construct($bound->getKeyType(), $bound->getItemType());

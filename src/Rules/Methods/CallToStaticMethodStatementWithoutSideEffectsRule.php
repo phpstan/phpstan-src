@@ -29,7 +29,7 @@ class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 
 	public function __construct(
 		RuleLevelHelper $ruleLevelHelper,
-		ReflectionProvider $reflectionProvider
+		ReflectionProvider $reflectionProvider,
 	)
 	{
 		$this->ruleLevelHelper = $ruleLevelHelper;

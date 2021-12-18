@@ -23,7 +23,7 @@ class UnionTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPr
 	 */
 	public function __construct(
 		string $methodName,
-		array $methodPrototypes
+		array $methodPrototypes,
 	)
 	{
 		$this->methodName = $methodName;

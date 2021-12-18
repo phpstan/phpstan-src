@@ -108,7 +108,7 @@ class ResolvedPhpDocBlock
 		NameScope $nameScope,
 		TemplateTypeMap $templateTypeMap,
 		array $templateTags,
-		PhpDocNodeResolver $phpDocNodeResolver
+		PhpDocNodeResolver $phpDocNodeResolver,
 	): self
 	{
 		// new property also needs to be added to createEmpty() and merge()

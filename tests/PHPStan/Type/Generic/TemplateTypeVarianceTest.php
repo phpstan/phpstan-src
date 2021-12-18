@@ -84,7 +84,7 @@ class TemplateTypeVarianceTest extends TestCase
 		Type $a,
 		Type $b,
 		TrinaryLogic $expected,
-		TrinaryLogic $expectedInversed
+		TrinaryLogic $expectedInversed,
 	): void
 	{
 		$this->assertSame(

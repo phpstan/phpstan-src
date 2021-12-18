@@ -59,7 +59,7 @@ class AnalyseCommand extends Command
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
-		array $composerAutoloaderProjectPaths
+		array $composerAutoloaderProjectPaths,
 	)
 	{
 		parent::__construct();

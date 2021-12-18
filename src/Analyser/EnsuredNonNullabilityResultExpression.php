@@ -17,7 +17,7 @@ class EnsuredNonNullabilityResultExpression
 	public function __construct(
 		Expr $expression,
 		Type $originalType,
-		Type $originalNativeType
+		Type $originalNativeType,
 	)
 	{
 		$this->expression = $expression;

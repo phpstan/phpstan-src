@@ -119,7 +119,7 @@ class ClassReflectionTest extends PHPStanTestCase
 	 */
 	public function testClassHierarchyDistances(
 		string $class,
-		array $expectedDistances
+		array $expectedDistances,
 	): void
 	{
 		$broker = $this->createReflectionProvider();

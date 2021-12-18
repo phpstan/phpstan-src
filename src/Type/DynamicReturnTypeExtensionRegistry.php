@@ -37,7 +37,7 @@ class DynamicReturnTypeExtensionRegistry
 		ReflectionProvider $reflectionProvider,
 		array $dynamicMethodReturnTypeExtensions,
 		array $dynamicStaticMethodReturnTypeExtensions,
-		array $dynamicFunctionReturnTypeExtensions
+		array $dynamicFunctionReturnTypeExtensions,
 	)
 	{
 		foreach (array_merge($dynamicMethodReturnTypeExtensions, $dynamicStaticMethodReturnTypeExtensions, $dynamicFunctionReturnTypeExtensions) as $extension) {

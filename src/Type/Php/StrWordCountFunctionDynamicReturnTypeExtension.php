@@ -27,7 +27,7 @@ class StrWordCountFunctionDynamicReturnTypeExtension implements DynamicFunctionR
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		Node\Expr\FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		$argsCount = count($functionCall->getArgs());

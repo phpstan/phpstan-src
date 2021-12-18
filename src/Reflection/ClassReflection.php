@@ -148,7 +148,7 @@ class ClassReflection
 		?string $anonymousFilename,
 		?TemplateTypeMap $resolvedTemplateTypeMap,
 		?ResolvedPhpDocBlock $stubPhpDocBlock,
-		?string $extraCacheKey = null
+		?string $extraCacheKey = null,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

@@ -381,7 +381,7 @@ class StatementResultTest extends PHPStanTestCase
 	 */
 	public function testIsAlwaysTerminating(
 		string $code,
-		bool $expectedIsAlwaysTerminating
+		bool $expectedIsAlwaysTerminating,
 	): void
 	{
 		/** @var Parser $parser */

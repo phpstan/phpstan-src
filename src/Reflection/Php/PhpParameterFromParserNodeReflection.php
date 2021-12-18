@@ -36,7 +36,7 @@ class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhp
 		?Type $phpDocType,
 		PassedByReference $passedByReference,
 		?Type $defaultValue,
-		bool $variadic
+		bool $variadic,
 	)
 	{
 		$this->name = $name;

@@ -28,7 +28,7 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 
 	public function __construct(
 		FileNodesFetcher $fileNodesFetcher,
-		string $fileName
+		string $fileName,
 	)
 	{
 		$this->fileNodesFetcher = $fileNodesFetcher;

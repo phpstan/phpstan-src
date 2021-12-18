@@ -23,7 +23,7 @@ class IntersectionTypeUnresolvedMethodPrototypeReflection implements UnresolvedM
 	 */
 	public function __construct(
 		string $methodName,
-		array $methodPrototypes
+		array $methodPrototypes,
 	)
 	{
 		$this->methodName = $methodName;

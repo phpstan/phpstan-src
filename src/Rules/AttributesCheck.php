@@ -26,7 +26,7 @@ class AttributesCheck
 	public function __construct(
 		ReflectionProvider $reflectionProvider,
 		FunctionCallParametersCheck $functionCallParametersCheck,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck
+		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -43,7 +43,7 @@ class AttributesCheck
 		Scope $scope,
 		array $attrGroups,
 		int $requiredTarget,
-		string $targetName
+		string $targetName,
 	): array
 	{
 		$errors = [];

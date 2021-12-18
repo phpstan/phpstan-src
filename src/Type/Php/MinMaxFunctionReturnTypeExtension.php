@@ -122,7 +122,7 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 	 */
 	private function processType(
 		string $functionName,
-		array $types
+		array $types,
 	): Type
 	{
 		$resultType = null;
@@ -157,7 +157,7 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 	private function compareTypes(
 		Type $firstType,
-		Type $secondType
+		Type $secondType,
 	): ?Type
 	{
 		if (

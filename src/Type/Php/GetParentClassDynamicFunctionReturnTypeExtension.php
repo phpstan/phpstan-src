@@ -30,7 +30,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctio
 	}
 
 	public function isFunctionSupported(
-		FunctionReflection $functionReflection
+		FunctionReflection $functionReflection,
 	): bool
 	{
 		return $functionReflection->getName() === 'get_parent_class';
@@ -39,7 +39,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctio
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle(
@@ -89,7 +89,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctio
 	}
 
 	private function findParentClassType(
-		ClassReflection $classReflection
+		ClassReflection $classReflection,
 	): Type
 	{
 		$parentClass = $classReflection->getParentClass();

@@ -20,7 +20,7 @@ class ParserErrorsException extends Exception
 	 */
 	public function __construct(
 		array $errors,
-		?string $parsedFile
+		?string $parsedFile,
 	)
 	{
 		parent::__construct(implode(', ', array_map(static fn (Error $error): string => $error->getMessage(), $errors)));

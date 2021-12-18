@@ -43,7 +43,7 @@ class ParallelAnalyser
 	public function __construct(
 		int $internalErrorsCountLimit,
 		float $processTimeout,
-		int $decoderBufferSize
+		int $decoderBufferSize,
 	)
 	{
 		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
@@ -61,7 +61,7 @@ class ParallelAnalyser
 		?string $projectConfigFile,
 		?string $tmpFile,
 		?string $insteadOfFile,
-		InputInterface $input
+		InputInterface $input,
 	): AnalyserResult
 	{
 		$jobs = array_reverse($schedule->getJobs());

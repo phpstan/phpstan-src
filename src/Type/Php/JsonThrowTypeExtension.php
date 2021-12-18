@@ -33,7 +33,7 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 	}
 
 	public function isFunctionSupported(
-		FunctionReflection $functionReflection
+		FunctionReflection $functionReflection,
 	): bool
 	{
 		return $this->reflectionProvider->hasConstant(new Name\FullyQualified('JSON_THROW_ON_ERROR'), null) && in_array(
@@ -49,7 +49,7 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 	public function getThrowTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): ?Type
 	{
 		$argumentPosition = $this->argumentPositions[$functionReflection->getName()];

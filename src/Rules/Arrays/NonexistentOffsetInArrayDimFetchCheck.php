@@ -37,7 +37,7 @@ class NonexistentOffsetInArrayDimFetchCheck
 		Scope $scope,
 		Expr $var,
 		string $unknownClassPattern,
-		Type $dimType
+		Type $dimType,
 	): array
 	{
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(

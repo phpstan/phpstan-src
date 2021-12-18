@@ -510,7 +510,7 @@ class TypeCombinator
 
 	private static function unionWithSubtractedType(
 		Type $type,
-		?Type $subtractedType
+		?Type $subtractedType,
 	): Type
 	{
 		if ($subtractedType === null) {
@@ -542,7 +542,7 @@ class TypeCombinator
 
 	private static function intersectWithSubtractedType(
 		SubtractableType $subtractableType,
-		?Type $subtractedType
+		?Type $subtractedType,
 	): Type
 	{
 		if ($subtractableType->getSubtractedType() === null) {

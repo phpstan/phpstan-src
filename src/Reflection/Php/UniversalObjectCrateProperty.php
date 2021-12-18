@@ -19,7 +19,7 @@ class UniversalObjectCrateProperty implements PropertyReflection
 	public function __construct(
 		ClassReflection $declaringClass,
 		Type $readableType,
-		Type $writableType
+		Type $writableType,
 	)
 	{
 		$this->declaringClass = $declaringClass;

@@ -46,7 +46,7 @@ class ExportedMethodNode implements ExportedNode, JsonSerializable
 		bool $final,
 		bool $static,
 		?string $returnType,
-		array $parameters
+		array $parameters,
 	)
 	{
 		$this->name = $name;

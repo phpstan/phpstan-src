@@ -46,7 +46,7 @@ class Process
 	public function __construct(
 		string $command,
 		LoopInterface $loop,
-		float $timeoutSeconds
+		float $timeoutSeconds,
 	)
 	{
 		$this->command = $command;

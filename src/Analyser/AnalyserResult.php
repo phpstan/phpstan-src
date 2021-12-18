@@ -36,7 +36,7 @@ class AnalyserResult
 		array $internalErrors,
 		?array $dependencies,
 		array $exportedNodes,
-		bool $reachedInternalErrorsCountLimit
+		bool $reachedInternalErrorsCountLimit,
 	)
 	{
 		$this->unorderedErrors = $errors;

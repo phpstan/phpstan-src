@@ -147,7 +147,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
-		string $expected
+		string $expected,
 	): void
 	{
 		if (PHP_VERSION_ID >= 80100) {

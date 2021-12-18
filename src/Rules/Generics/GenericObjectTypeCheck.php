@@ -28,7 +28,7 @@ class GenericObjectTypeCheck
 		string $classNotGenericMessage,
 		string $notEnoughTypesMessage,
 		string $extraTypesMessage,
-		string $typeIsNotSubtypeMessage
+		string $typeIsNotSubtypeMessage,
 	): array
 	{
 		$genericTypes = $this->getGenericTypes($phpDocType);

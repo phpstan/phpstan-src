@@ -16,7 +16,7 @@ class SignatureMapProviderFactory
 	public function __construct(
 		PhpVersion $phpVersion,
 		FunctionSignatureMapProvider $functionSignatureMapProvider,
-		Php8SignatureMapProvider $php8SignatureMapProvider
+		Php8SignatureMapProvider $php8SignatureMapProvider,
 	)
 	{
 		$this->phpVersion = $phpVersion;

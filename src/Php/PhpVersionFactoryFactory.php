@@ -24,7 +24,7 @@ class PhpVersionFactoryFactory
 	 */
 	public function __construct(
 		?int $versionId,
-		array $composerAutoloaderProjectPaths
+		array $composerAutoloaderProjectPaths,
 	)
 	{
 		$this->versionId = $versionId;

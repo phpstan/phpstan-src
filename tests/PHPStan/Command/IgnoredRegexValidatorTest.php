@@ -123,7 +123,7 @@ class IgnoredRegexValidatorTest extends PHPStanTestCase
 		string $regex,
 		array $expectedTypes,
 		bool $expectedHasAnchors,
-		bool $expectAllErrorsIgnored
+		bool $expectAllErrorsIgnored,
 	): void
 	{
 		$grammar = new Read('hoa://Library/Regex/Grammar.pp');

@@ -26,7 +26,7 @@ class ImpossibleCheckTypeMethodCallRule implements Rule
 	public function __construct(
 		ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 		bool $checkAlwaysTrueCheckTypeFunctionCall,
-		bool $treatPhpDocTypesAsCertain
+		bool $treatPhpDocTypesAsCertain,
 	)
 	{
 		$this->impossibleCheckTypeHelper = $impossibleCheckTypeHelper;
@@ -91,7 +91,7 @@ class ImpossibleCheckTypeMethodCallRule implements Rule
 	private function getMethod(
 		Expr $var,
 		string $methodName,
-		Scope $scope
+		Scope $scope,
 	): MethodReflection
 	{
 		$calledOnType = $scope->getType($var);

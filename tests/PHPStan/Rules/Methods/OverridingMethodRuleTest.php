@@ -224,7 +224,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 	public function testParameterContravariance(
 		string $file,
 		int $phpVersion,
-		array $expectedErrors
+		array $expectedErrors,
 	): void
 	{
 		if (!self::$useStaticReflectionProvider) {
@@ -285,7 +285,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 	 */
 	public function testReturnTypeCovariance(
 		int $phpVersion,
-		array $expectedErrors
+		array $expectedErrors,
 	): void
 	{
 		if (!self::$useStaticReflectionProvider) {

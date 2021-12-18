@@ -347,7 +347,7 @@ class CallableTypeTest extends PHPStanTestCase
 	public function testAccepts(
 		CallableType $type,
 		Type $acceptedType,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$this->assertSame(

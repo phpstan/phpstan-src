@@ -43,7 +43,7 @@ class GenericAncestorsCheck
 		GenericObjectTypeCheck $genericObjectTypeCheck,
 		VarianceCheck $varianceCheck,
 		bool $checkGenericClassInNonGenericObjectType,
-		array $skipCheckGenericClasses
+		array $skipCheckGenericClasses,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;
@@ -70,7 +70,7 @@ class GenericAncestorsCheck
 		string $typeIsNotSubtypeMessage,
 		string $invalidTypeMessage,
 		string $genericClassInNonGenericObjectType,
-		string $invalidVarianceMessage
+		string $invalidVarianceMessage,
 	): array
 	{
 		$names = array_fill_keys(array_map(static fn (Name $nameNode): string => $nameNode->toString(), $nameNodes), true);

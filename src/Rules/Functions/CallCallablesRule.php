@@ -36,7 +36,7 @@ class CallCallablesRule implements Rule
 	public function __construct(
 		FunctionCallParametersCheck $check,
 		RuleLevelHelper $ruleLevelHelper,
-		bool $reportMaybes
+		bool $reportMaybes,
 	)
 	{
 		$this->check = $check;
@@ -51,7 +51,7 @@ class CallCallablesRule implements Rule
 
 	public function processNode(
 		Node $node,
-		Scope $scope
+		Scope $scope,
 	): array
 	{
 		if (!$node->name instanceof Node\Expr) {

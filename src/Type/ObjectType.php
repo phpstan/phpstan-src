@@ -78,7 +78,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function __construct(
 		string $className,
 		?Type $subtractedType = null,
-		?ClassReflection $classReflection = null
+		?ClassReflection $classReflection = null,
 	)
 	{
 		if ($subtractedType instanceof NeverType) {

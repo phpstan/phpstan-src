@@ -144,7 +144,7 @@ class VerbosityLevel
 		callable $typeOnlyCallback,
 		callable $valueCallback,
 		?callable $preciseCallback = null,
-		?callable $cacheCallback = null
+		?callable $cacheCallback = null,
 	): string
 	{
 		if ($this->value === self::TYPE_ONLY) {

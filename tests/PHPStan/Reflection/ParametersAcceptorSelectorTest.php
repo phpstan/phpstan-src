@@ -458,7 +458,7 @@ class ParametersAcceptorSelectorTest extends PHPStanTestCase
 		array $types,
 		array $variants,
 		bool $unpack,
-		ParametersAcceptor $expected
+		ParametersAcceptor $expected,
 	): void
 	{
 		$selectedAcceptor = ParametersAcceptorSelector::selectFromTypes($types, $variants, $unpack);

@@ -112,7 +112,7 @@ class ResultCacheManager
 		array $scanFiles,
 		array $scanDirectories,
 		array $fileReplacements,
-		bool $checkDependenciesOfProjectExtensionFiles
+		bool $checkDependenciesOfProjectExtensionFiles,
 	)
 	{
 		$this->exportedNodeFetcher = $exportedNodeFetcher;
@@ -523,7 +523,7 @@ class ResultCacheManager
 		array $errors,
 		array $dependencies,
 		array $exportedNodes,
-		array $meta
+		array $meta,
 	): void
 	{
 		$invertedDependencies = [];

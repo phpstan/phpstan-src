@@ -19,7 +19,7 @@ final class TemplateBooleanType extends BooleanType implements TemplateType
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		BooleanType $bound
+		BooleanType $bound,
 	)
 	{
 		parent::__construct();

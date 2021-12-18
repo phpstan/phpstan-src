@@ -19,7 +19,7 @@ class TypeAliasTag
 	public function __construct(
 		string $aliasName,
 		TypeNode $typeNode,
-		NameScope $nameScope
+		NameScope $nameScope,
 	)
 	{
 		$this->aliasName = $aliasName;

@@ -24,7 +24,7 @@ class IgnoredRegexValidatorResult
 		bool $anchorsInTheMiddle,
 		bool $allErrorsIgnored,
 		?string $wrongSequence = null,
-		?string $escapedWrongSequence = null
+		?string $escapedWrongSequence = null,
 	)
 	{
 		$this->ignoredTypes = $ignoredTypes;

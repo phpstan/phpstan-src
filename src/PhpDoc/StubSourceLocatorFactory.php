@@ -30,7 +30,7 @@ class StubSourceLocatorFactory
 		Parser $php8Parser,
 		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
-		array $stubFiles
+		array $stubFiles,
 	)
 	{
 		$this->php8Parser = $php8Parser;

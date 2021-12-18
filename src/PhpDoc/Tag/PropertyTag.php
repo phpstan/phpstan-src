@@ -17,7 +17,7 @@ class PropertyTag
 	public function __construct(
 		Type $type,
 		bool $readable,
-		bool $writable
+		bool $writable,
 	)
 	{
 		$this->type = $type;

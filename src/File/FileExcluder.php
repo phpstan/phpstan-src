@@ -37,7 +37,7 @@ class FileExcluder
 	public function __construct(
 		FileHelper $fileHelper,
 		array $analyseExcludes,
-		array $stubFiles
+		array $stubFiles,
 	)
 	{
 		foreach (array_merge($analyseExcludes, $stubFiles) as $exclude) {

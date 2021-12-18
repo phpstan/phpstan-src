@@ -23,7 +23,7 @@ class FunctionSignature
 		array $parameters,
 		Type $returnType,
 		Type $nativeReturnType,
-		bool $variadic
+		bool $variadic,
 	)
 	{
 		$this->parameters = $parameters;

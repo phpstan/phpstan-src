@@ -24,7 +24,7 @@ class OverridingConstantRule implements Rule
 	private bool $checkPhpDocMethodSignatures;
 
 	public function __construct(
-		bool $checkPhpDocMethodSignatures
+		bool $checkPhpDocMethodSignatures,
 	)
 	{
 		$this->checkPhpDocMethodSignatures = $checkPhpDocMethodSignatures;

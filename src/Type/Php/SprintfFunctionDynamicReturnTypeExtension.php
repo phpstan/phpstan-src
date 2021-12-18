@@ -29,7 +29,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		$args = $functionCall->getArgs();

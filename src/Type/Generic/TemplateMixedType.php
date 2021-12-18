@@ -19,7 +19,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		MixedType $bound
+		MixedType $bound,
 	)
 	{
 		parent::__construct(true);

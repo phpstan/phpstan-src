@@ -35,7 +35,7 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 	private function findClassReflectionWithMethod(
 		ClassReflection $classReflection,
 		ClassReflection $declaringClass,
-		string $methodName
+		string $methodName,
 	): ?MethodReflection
 	{
 		$methodTags = $classReflection->getMethodTags();

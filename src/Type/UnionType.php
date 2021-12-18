@@ -208,7 +208,7 @@ class UnionType implements CompoundType
 	 */
 	private function hasInternal(
 		callable $canCallback,
-		callable $hasCallback
+		callable $hasCallback,
 	): TrinaryLogic
 	{
 		$results = [];
@@ -229,7 +229,7 @@ class UnionType implements CompoundType
 	 */
 	private function getInternal(
 		callable $hasCallback,
-		callable $getCallback
+		callable $getCallback,
 	): object
 	{
 		/** @var TrinaryLogic|null $result */

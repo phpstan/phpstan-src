@@ -31,7 +31,7 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 		Closure $closureExpr,
 		array $returnStatements,
 		array $yieldStatements,
-		StatementResult $statementResult
+		StatementResult $statementResult,
 	)
 	{
 		parent::__construct($closureExpr->getAttributes());

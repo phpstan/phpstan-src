@@ -35,7 +35,7 @@ class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 		array $uncheckedExceptionRegexes,
 		array $uncheckedExceptionClasses,
 		array $checkedExceptionRegexes,
-		array $checkedExceptionClasses
+		array $checkedExceptionClasses,
 	)
 	{
 		$this->reflectionProvider = $reflectionProvider;

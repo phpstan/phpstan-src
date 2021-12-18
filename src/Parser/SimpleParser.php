@@ -18,7 +18,7 @@ class SimpleParser implements Parser
 
 	public function __construct(
 		\PhpParser\Parser $parser,
-		NameResolver $nameResolver
+		NameResolver $nameResolver,
 	)
 	{
 		$this->parser = $parser;

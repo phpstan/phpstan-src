@@ -35,7 +35,7 @@ class ConstantFloatTypeTest extends PHPStanTestCase
 	 */
 	public function testDescribe(
 		ConstantFloatType $type,
-		string $expectedDescription
+		string $expectedDescription,
 	): void
 	{
 		$this->assertSame($expectedDescription, $type->describe(VerbosityLevel::precise()));

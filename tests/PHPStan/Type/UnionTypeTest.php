@@ -687,7 +687,7 @@ class UnionTypeTest extends PHPStanTestCase
 	public function testDescribe(
 		Type $type,
 		string $expectedValueDescription,
-		string $expectedTypeOnlyDescription
+		string $expectedTypeOnlyDescription,
 	): void
 	{
 		$this->assertSame($expectedValueDescription, $type->describe(VerbosityLevel::precise()));
@@ -773,7 +773,7 @@ class UnionTypeTest extends PHPStanTestCase
 	public function testAccepts(
 		UnionType $type,
 		Type $acceptedType,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$this->assertSame(
@@ -815,7 +815,7 @@ class UnionTypeTest extends PHPStanTestCase
 	public function testHasMethod(
 		UnionType $type,
 		string $methodName,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$this->assertSame($expectedResult->describe(), $type->hasMethod($methodName)->describe());

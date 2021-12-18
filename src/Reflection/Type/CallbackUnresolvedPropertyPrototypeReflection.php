@@ -31,7 +31,7 @@ class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropert
 		PropertyReflection $propertyReflection,
 		ClassReflection $resolvedDeclaringClass,
 		bool $resolveTemplateTypeMapToBounds,
-		callable $transformStaticTypeCallback
+		callable $transformStaticTypeCallback,
 	)
 	{
 		$this->propertyReflection = $propertyReflection;

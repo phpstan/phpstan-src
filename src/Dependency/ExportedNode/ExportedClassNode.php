@@ -49,7 +49,7 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 		array $implements,
 		array $usedTraits,
 		array $traitUseAdaptations,
-		array $statements
+		array $statements,
 	)
 	{
 		$this->name = $name;

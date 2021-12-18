@@ -17,7 +17,7 @@ class FileNodesFetcher
 
 	public function __construct(
 		CachingVisitor $cachingVisitor,
-		Parser $parser
+		Parser $parser,
 	)
 	{
 		$this->cachingVisitor = $cachingVisitor;

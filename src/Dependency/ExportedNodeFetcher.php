@@ -16,7 +16,7 @@ class ExportedNodeFetcher
 
 	public function __construct(
 		Parser $parser,
-		ExportedNodeVisitor $visitor
+		ExportedNodeVisitor $visitor,
 	)
 	{
 		$this->parser = $parser;

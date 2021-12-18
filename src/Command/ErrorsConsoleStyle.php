@@ -74,22 +74,14 @@ class ErrorsConsoleStyle extends SymfonyStyle
 		parent::table($headers, $wrap($rows));
 	}
 
-	/**
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
-	 * @param int $max
-	 */
-	public function createProgressBar($max = 0): ProgressBar
+	public function createProgressBar(int $max = 0): ProgressBar
 	{
 		$this->progressBar = parent::createProgressBar($max);
 		$this->progressBar->setOverwrite(!$this->isCiDetected());
 		return $this->progressBar;
 	}
 
-	/**
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
-	 * @param int $max
-	 */
-	public function progressStart($max = 0): void
+	public function progressStart(int $max = 0): void
 	{
 		if (!$this->showProgress) {
 			return;
@@ -97,11 +89,7 @@ class ErrorsConsoleStyle extends SymfonyStyle
 		parent::progressStart($max);
 	}
 
-	/**
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
-	 * @param int $step
-	 */
-	public function progressAdvance($step = 1): void
+	public function progressAdvance(int $step = 1): void
 	{
 		if (!$this->showProgress) {
 			return;

@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Rector\Core\Configuration\Option;
+use Rector\Core\ValueObject\PhpVersion;
 use Rector\DowngradePhp72\Rector\FunctionLike\DowngradeObjectTypeDeclarationRector;
 use Rector\DowngradePhp73\Rector\FuncCall\DowngradeTrailingCommasInFunctionCallsRector;
 use Rector\DowngradePhp74\Rector\Coalesce\DowngradeNullCoalescingOperatorRector;
@@ -11,6 +12,7 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 return static function (ContainerConfigurator $containerConfigurator): void {
 	$parameters = $containerConfigurator->parameters();
 
+	$parameters->set(Option::PHP_VERSION_FEATURES, PhpVersion::PHP_71);
 	$parameters->set(Option::SKIP, [
 		'tests/*/data/*',
 		'tests/PHPStan/Analyser/traits/*',

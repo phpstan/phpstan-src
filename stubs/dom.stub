@@ -34,6 +34,8 @@ class DOMNode
 
 class DOMElement extends DOMNode
 {
+	/** @var DOMNode|null */
+	public $firstChild;
 
 	/** @var DOMDocument */
 	public $ownerDocument;

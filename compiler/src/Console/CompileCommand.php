@@ -258,7 +258,7 @@ php;
 	private function transformSource(): void
 	{
 		chdir(__DIR__ . '/../../..');
-		exec(escapeshellarg(__DIR__ . '/../../../build/transform-source'), $outputLines, $exitCode);
+		exec(escapeshellarg(__DIR__ . '/../../../build/transform-source') . ' 7.1', $outputLines, $exitCode);
 		if ($exitCode === 0) {
 			return;
 		}

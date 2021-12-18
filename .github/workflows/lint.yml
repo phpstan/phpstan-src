@@ -53,7 +53,7 @@ jobs:
 
       - name: "Transform source code"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0' && matrix.php-version != '8.1'
-        run: build/transform-source
+        run: "build/transform-source ${{ matrix.php-version }}"
 
       - name: "Reinstall matrix PHP version"
         if: matrix.php-version != '7.4' && matrix.php-version != '8.0' && matrix.php-version != '8.1'

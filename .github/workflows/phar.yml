@@ -35,9 +35,6 @@ jobs:
       - name: "Install compiler dependencies"
         run: "composer install --no-interaction --no-progress --working-dir=compiler"
 
-      - name: "Transform source code"
-        run: build/transform-source
-
       - name: "Compile PHAR"
         run: php compiler/bin/compile
 

@@ -60,7 +60,7 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $var of function count expects array|Countable, string given.",
+        "message": "Parameter #1 $value of function count expects array|Countable, string given.",
         "line": 170,
         "ignorable": true
     },
@@ -200,7 +200,7 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #2 $pieces of function implode expects array, int given.",
+        "message": "Parameter #2 $array of function implode expects array|null, int given.",
         "line": 763,
         "ignorable": true
     }

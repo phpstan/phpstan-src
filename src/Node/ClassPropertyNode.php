@@ -13,15 +13,10 @@ use PhpParser\NodeAbstract;
 class ClassPropertyNode extends NodeAbstract implements VirtualNode
 {
 
-	private Identifier|Name|Node\ComplexType|null $type = null;
-
-	/**
-	 * @param Identifier|Name|Node\ComplexType|null $type
-	 */
 	public function __construct(
 		private string $name,
 		private int $flags,
-		$type,
+		private Identifier|Name|Node\ComplexType|null $type,
 		private ?Expr $default,
 		private ?string $phpDoc,
 		private bool $isPromoted,
@@ -29,7 +24,6 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 	)
 	{
 		parent::__construct($originalNode->getAttributes());
-		$this->type = $type;
 	}
 
 	public function getName(): string

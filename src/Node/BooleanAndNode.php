@@ -11,15 +11,9 @@ use PHPStan\Analyser\Scope;
 class BooleanAndNode extends NodeAbstract implements VirtualNode
 {
 
-	private BooleanAnd|LogicalAnd $originalNode;
-
-	/**
-	 * @param BooleanAnd|LogicalAnd $originalNode
-	 */
-	public function __construct($originalNode, private Scope $rightScope)
+	public function __construct(private BooleanAnd|LogicalAnd $originalNode, private Scope $rightScope)
 	{
 		parent::__construct($originalNode->getAttributes());
-		$this->originalNode = $originalNode;
 	}
 
 	/**

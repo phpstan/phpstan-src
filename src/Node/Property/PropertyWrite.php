@@ -10,16 +10,8 @@ use PHPStan\Analyser\Scope;
 class PropertyWrite
 {
 
-	private PropertyFetch|StaticPropertyFetch $fetch;
-
-	/**
-	 * PropertyWrite constructor.
-	 *
-	 * @param PropertyFetch|StaticPropertyFetch $fetch
-	 */
-	public function __construct($fetch, private Scope $scope)
+	public function __construct(private PropertyFetch|StaticPropertyFetch $fetch, private Scope $scope)
 	{
-		$this->fetch = $fetch;
 	}
 
 	/**

@@ -9,16 +9,12 @@ use PhpParser\Node\Name;
 class FunctionCallableNode extends Expr implements VirtualNode
 {
 
-	private Name|Expr $name;
-
 	/**
-	 * @param Expr|Name $name
 	 * @param mixed[] $attributes
 	 */
-	public function __construct($name, array $attributes = [])
+	public function __construct(private Name|Expr $name, array $attributes = [])
 	{
 		parent::__construct($attributes);
-		$this->name = $name;
 	}
 
 	/**

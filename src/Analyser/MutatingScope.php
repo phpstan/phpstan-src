@@ -146,17 +146,11 @@ class MutatingScope implements Scope
 	/** @var Type[] */
 	private array $resolvedTypes = [];
 
-	private FunctionReflection|MethodReflection|null $function = null;
-
 	private ?string $namespace;
-
-	/** @var VariableTypeHolder[] */
-	private array $variableTypes;
 
 	/**
 	 * @param array<string, Type> $constantTypes
-	 * @param FunctionReflection|MethodReflection|null $function
-	 * @param VariableTypeHolder[] $variablesTypes
+	 * @param VariableTypeHolder[] $variableTypes
 	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
@@ -178,9 +172,9 @@ class MutatingScope implements Scope
 		private PhpVersion $phpVersion,
 		private bool $declareStrictTypes = false,
 		private array $constantTypes = [],
-		$function = null,
+		private FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
-		array $variablesTypes = [],
+		private array $variableTypes = [],
 		private array $moreSpecificTypes = [],
 		private array $conditionalExpressions = [],
 		private ?string $inClosureBindScopeClass = null,
@@ -199,9 +193,7 @@ class MutatingScope implements Scope
 			$namespace = null;
 		}
 
-		$this->function = $function;
 		$this->namespace = $namespace;
-		$this->variableTypes = $variablesTypes;
 	}
 
 	/** @api */

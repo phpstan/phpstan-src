@@ -16,7 +16,7 @@ class InceptionResult
 
 	/**
 	 * @param callable(): (array{string[], bool}) $filesCallback
-	 * @param mixed[] $projectConfigArray
+	 * @param mixed[]|null $projectConfigArray
 	 */
 	public function __construct(
 		callable $filesCallback,

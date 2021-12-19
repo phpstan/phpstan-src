@@ -10,19 +10,13 @@ use PhpParser\Node\Name;
 class StaticMethodCallableNode extends Expr implements VirtualNode
 {
 
-	private Name|Expr $class;
-
-	private Identifier|Expr $name;
-
-	/**
-	 * @param Name|Expr $class
-	 * @param Identifier|Expr $name
-	 */
-	public function __construct($class, $name, private Expr\StaticCall $originalNode)
+	public function __construct(
+		private Name|Expr $class,
+		private Identifier|Expr $name,
+		private Expr\StaticCall $originalNode,
+	)
 	{
 		parent::__construct($originalNode->getAttributes());
-		$this->class = $class;
-		$this->name = $name;
 	}
 
 	/**

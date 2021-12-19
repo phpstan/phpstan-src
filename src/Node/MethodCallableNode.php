@@ -9,15 +9,13 @@ use PhpParser\Node\Identifier;
 class MethodCallableNode extends Expr implements VirtualNode
 {
 
-	private Identifier|Expr $name;
-
-	/**
-	 * @param Expr|Identifier $name
-	 */
-	public function __construct(private Expr $var, $name, private Expr\MethodCall $originalNode)
+	public function __construct(
+		private Expr $var,
+		private Identifier|Expr $name,
+		private Expr\MethodCall $originalNode,
+	)
 	{
 		parent::__construct($originalNode->getAttributes());
-		$this->name = $name;
 	}
 
 	public function getVar(): Expr

@@ -9,16 +9,12 @@ use PhpParser\Node\Name;
 class InstantiationCallableNode extends Expr implements VirtualNode
 {
 
-	private Name|Expr $class;
-
 	/**
-	 * @param Expr|Name $class
 	 * @param mixed[] $attributes
 	 */
-	public function __construct($class, array $attributes = [])
+	public function __construct(private Name|Expr $class, array $attributes = [])
 	{
 		parent::__construct($attributes);
-		$this->class = $class;
 	}
 
 	/**

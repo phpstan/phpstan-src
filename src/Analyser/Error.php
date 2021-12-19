@@ -14,15 +14,12 @@ use function is_bool;
 class Error implements JsonSerializable
 {
 
-	private bool|Throwable $canBeIgnored;
-
 	/** @phpstan-var class-string<Node>|null */
 	private ?string $nodeType;
 
 	/**
 	 * Error constructor.
 	 *
-	 * @param bool|Throwable $canBeIgnored
 	 * @param class-string<Node>|null $nodeType
 	 * @param mixed[] $metadata
 	 */
@@ -30,7 +27,7 @@ class Error implements JsonSerializable
 		private string $message,
 		private string $file,
 		private ?int $line = null,
-		$canBeIgnored = true,
+		private bool|Throwable $canBeIgnored = true,
 		private ?string $filePath = null,
 		private ?string $traitFilePath = null,
 		private ?string $tip = null,
@@ -40,7 +37,6 @@ class Error implements JsonSerializable
 		private array $metadata = [],
 	)
 	{
-		$this->canBeIgnored = $canBeIgnored;
 		$this->nodeType = $nodeType;
 	}
 

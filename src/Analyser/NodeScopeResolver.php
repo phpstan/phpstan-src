@@ -154,9 +154,6 @@ class NodeScopeResolver
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
 
-	/** @var string[][] className(string) => methods(string[]) */
-	private array $earlyTerminatingMethodCalls;
-
 	/** @var bool[] filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
@@ -178,12 +175,11 @@ class NodeScopeResolver
 		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
 		private bool $polluteScopeWithLoopInitialAssignments,
 		private bool $polluteScopeWithAlwaysIterableForeach,
-		array $earlyTerminatingMethodCalls,
+		private array $earlyTerminatingMethodCalls,
 		private array $earlyTerminatingFunctionCalls,
 		private bool $implicitThrows,
 	)
 	{
-		$this->earlyTerminatingMethodCalls = $earlyTerminatingMethodCalls;
 	}
 
 	/**

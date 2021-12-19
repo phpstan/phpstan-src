@@ -23,7 +23,7 @@ class ConstantArrayTypeBuilder
 	private bool $degradeToGeneralArray = false;
 
 	/**
-	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
+	 * @param array<int, Type> $keyTypes
 	 * @param array<int, Type> $valueTypes
 	 * @param array<int> $optionalKeys
 	 */

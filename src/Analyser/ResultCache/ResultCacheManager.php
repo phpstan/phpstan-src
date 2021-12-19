@@ -74,7 +74,7 @@ class ResultCacheManager
 		private array $bootstrapFiles,
 		private array $scanFiles,
 		private array $scanDirectories,
-		private array $fileReplacements = [],
+		private array $fileReplacements,
 		private bool $checkDependenciesOfProjectExtensionFiles,
 	)
 	{

@@ -8,6 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
+use function array_slice;
 
 class CallUserFuncDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

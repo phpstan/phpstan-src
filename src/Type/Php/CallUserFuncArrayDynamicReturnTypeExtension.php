@@ -14,6 +14,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use function count;
 
 class CallUserFuncArrayDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

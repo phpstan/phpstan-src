@@ -70,7 +70,7 @@ jobs:
 
       - name: "Downgrade PHPUnit"
         if: matrix.php-version == '7.1' || matrix.php-version == '7.2'
-        run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies"
+        run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "PHPStan"
         run: ${{ matrix.script }}

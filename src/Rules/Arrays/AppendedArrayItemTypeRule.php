@@ -85,7 +85,13 @@ class AppendedArrayItemTypeRule implements Rule
 					'Array (%s) does not accept %s.',
 					$assignedToType->describe($verbosityLevel),
 					$assignedValueType->describe($verbosityLevel),
-				))->build(),
+				))
+					->identifier('arrays.doesNotAcceptType')
+					->metadata([
+						'assignedToType' => $assignedToType,
+						'assignedValueType' => $assignedValueType,
+					])
+					->build(),
 			];
 		}
 

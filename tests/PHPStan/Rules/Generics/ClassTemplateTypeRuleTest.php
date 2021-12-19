@@ -102,4 +102,9 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5446(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5446.php'], []);
+	}
+
 }

@@ -242,9 +242,9 @@ class TypeCombinatorTest extends PHPStanTestCase
 		$this->assertInstanceOf($expectedTypeClass, $result);
 	}
 
-	public function dataUnion(): array
+	public function dataUnion(): iterable
 	{
-		return [
+		yield from [
 			[
 				[
 					new StringType(),
@@ -1959,11 +1959,11 @@ class TypeCombinatorTest extends PHPStanTestCase
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
 
-	public function dataIntersect(): array
+	public function dataIntersect(): iterable
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
-		return [
+		yield from [
 			[
 				[
 					new IterableType(new MixedType(), new StringType()),

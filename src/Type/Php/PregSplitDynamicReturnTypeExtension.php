@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Arg;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
@@ -57,28 +58,25 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	}
 
 
-	private function hasFlag(int $flag, ?Arg $expression, Scope $scope): bool
+	private function hasFlag(int $flag, ?Arg $arg, Scope $scope): bool
 	{
-		if ($expression === null) {
+		if ($arg === null) {
 			return false;
 		}
 
-		if ($expression->value instanceof BitwiseOr) {
-			$left = $expression->value->left;
-			$right = $expression->value->right;
+		return $this->isConstantFlag($flag, $arg->value, $scope);
+	}
 
-			$leftType = $scope->getType($left);
-			$rightType = $scope->getType($right);
+	private function isConstantFlag(int $flag, Expr $expression, Scope $scope)
+	{
+		if ($expression instanceof BitwiseOr) {
+			$left = $expression->left;
+			$right = $expression->right;
 
-			if ($leftType instanceof ConstantIntegerType && ($leftType->getValue() & $flag) === $flag) {
-				return true;
-			}
-			if ($rightType instanceof ConstantIntegerType && ($rightType->getValue() & $flag) === $flag) {
-				return true;
-			}
+			return $this->isConstantFlag($flag, $left, $scope) || $this->isConstantFlag($flag, $right, $scope);
 		}
 
-		$type = $scope->getType($expression->value);
+		$type = $scope->getType($expression);
 		return $type instanceof ConstantIntegerType && ($type->getValue() & $flag) === $flag;
 	}
 

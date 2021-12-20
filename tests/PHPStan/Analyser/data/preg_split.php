@@ -21,5 +21,7 @@ class HelloWorld
     {
         assertType('array<int, array{string, int<0, max>}>|false', preg_split($pattern, $subject, $limit, $flags | PREG_SPLIT_OFFSET_CAPTURE));
         assertType('array<int, array{string, int<0, max>}>|false', preg_split($pattern, $subject, $limit, PREG_SPLIT_OFFSET_CAPTURE | $flags));
+
+		assertType('array<int, array{string, int<0, max>}>|false', preg_split($pattern, $subject, $limit, PREG_SPLIT_OFFSET_CAPTURE | $flags | PREG_SPLIT_NO_EMPTY));
     }
 }

@@ -1479,6 +1479,11 @@ services:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\ReflectionClassConstantsReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\ReflectionGetAttributesMethodReturnTypeExtension
 		arguments:
 			className: ReflectionClass

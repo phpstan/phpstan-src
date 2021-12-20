@@ -15,6 +15,8 @@ if (PHP_VERSION_ID >= 80000) {
 }
 if (PHP_VERSION_ID >= 80100) {
 	$config = array_merge_recursive($config, $adapter->load(__DIR__ . '/baseline-8.1.neon'));
+} else {
+	$config = array_merge_recursive($config, $adapter->load(__DIR__ . '/enums.neon'));
 }
 
 if (PHP_VERSION_ID >= 70400) {

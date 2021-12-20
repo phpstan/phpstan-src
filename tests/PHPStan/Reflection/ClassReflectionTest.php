@@ -28,7 +28,6 @@ use NestedTraits\BazChild;
 use NestedTraits\BazTrait;
 use NestedTraits\NoTrait;
 use PHPStan\Broker\Broker;
-use PHPStan\Fixture\TestEnum;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -333,9 +332,9 @@ class ClassReflectionTest extends PHPStanTestCase
 		}
 
 		$reflectionProvider = $this->createReflectionProvider();
-		$enum = $reflectionProvider->getClass(TestEnum::class);
+		$enum = $reflectionProvider->getClass('PHPStan\Fixture\TestEnum');
 		$this->assertTrue($enum->isEnum());
-		$this->assertInstanceOf(ReflectionEnum::class, $enum->getNativeReflection());
+		$this->assertInstanceOf('ReflectionEnum', $enum->getNativeReflection());
 		$this->assertTrue($enum->isFinal());
 		$this->assertTrue($enum->isFinalByKeyword());
 	}

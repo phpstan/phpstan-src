@@ -8,7 +8,7 @@
         "nette/neon": "^3.0.0",
         "symfony/console": "^5.2.2",
         "symfony/process": "^5.2.2",
-        "symfony/filesystem": "^5.2.2",
+        "symfony/filesystem": "^6.0.0",
         "symfony/finder": "^5.2.2"
     },
     "autoload": {

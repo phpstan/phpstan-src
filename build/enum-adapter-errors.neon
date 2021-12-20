@@ -11,6 +11,6 @@ parameters:
 			path: ../src/Analyser/NodeScopeResolver.php
 
 		-
-			message: "#^Class ReflectionEnum not found\.$#"
+			message: "#^Class ReflectionEnum not found\\.$#"
 			count: 1
 			path: ../tests/PHPStan/Reflection/ClassReflectionTest.php

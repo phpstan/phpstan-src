@@ -67,7 +67,7 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return $this->isConstantFlag($flag, $arg->value, $scope);
 	}
 
-	private function isConstantFlag(int $flag, Expr $expression, Scope $scope)
+	private function isConstantFlag(int $flag, Expr $expression, Scope $scope): bool
 	{
 		if ($expression instanceof BitwiseOr) {
 			$left = $expression->left;

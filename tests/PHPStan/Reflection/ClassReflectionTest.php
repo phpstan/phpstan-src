@@ -28,12 +28,14 @@ use NestedTraits\BazChild;
 use NestedTraits\BazTrait;
 use NestedTraits\NoTrait;
 use PHPStan\Broker\Broker;
+use PHPStan\Fixture\TestEnum;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
 use ReflectionClass;
+use ReflectionEnum;
 use WrongClassConstantFile\SecuredRouter;
 use function array_map;
 use function array_values;
@@ -322,6 +324,20 @@ class ClassReflectionTest extends PHPStanTestCase
 				true,
 			],
 		];
+	}
+
+	public function testEnumIsFinal(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$enum = $reflectionProvider->getClass(TestEnum::class);
+		$this->assertTrue($enum->isEnum());
+		$this->assertInstanceOf(ReflectionEnum::class, $enum->getNativeReflection());
+		$this->assertTrue($enum->isFinal());
+		$this->assertTrue($enum->isFinalByKeyword());
 	}
 
 }

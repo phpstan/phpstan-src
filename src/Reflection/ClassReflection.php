@@ -945,10 +945,13 @@ class ClassReflection
 
 	public function isFinal(): bool
 	{
+		if ($this->isFinalByKeyword()) {
+			return true;
+		}
+
 		if ($this->isFinal === null) {
 			$resolvedPhpDoc = $this->getResolvedPhpDoc();
-			$this->isFinal = $this->reflection->isFinal()
-				|| ($resolvedPhpDoc !== null && $resolvedPhpDoc->isFinal());
+			$this->isFinal = $resolvedPhpDoc !== null && $resolvedPhpDoc->isFinal();
 		}
 
 		return $this->isFinal;

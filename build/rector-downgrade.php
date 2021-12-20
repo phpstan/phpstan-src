@@ -27,6 +27,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 	$parameters->set(Option::PHP_VERSION_FEATURES, $targetPhpVersionId);
 	$parameters->set(Option::SKIP, [
 		'tests/*/data/*',
+		'tests/*/Fixture/*',
 		'tests/PHPStan/Analyser/traits/*',
 		'tests/PHPStan/Generics/functions.php',
 		'tests/e2e/resultCache_1.php',

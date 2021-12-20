@@ -334,7 +334,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 		$enum = $reflectionProvider->getClass('PHPStan\Fixture\TestEnum');
 		$this->assertTrue($enum->isEnum());
-		$this->assertInstanceOf('ReflectionEnum', $enum->getNativeReflection());
+		$this->assertInstanceOf(ReflectionEnum::class, $enum->getNativeReflection());
 		$this->assertTrue($enum->isFinal());
 		$this->assertTrue($enum->isFinalByKeyword());
 	}

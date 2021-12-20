@@ -28,10 +28,12 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use Traversable;
+use function array_keys;
 use function array_map;
 use function array_values;
 use function count;
@@ -981,6 +983,42 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
+		$classReflection = $this->getClassReflection();
+		if ($classReflection !== null && $classReflection->isEnum() && $subtractedType !== null) {
+			$constants = $classReflection->getNativeReflection()->getConstants();
+			$cases = [];
+			foreach (array_keys($constants) as $constantName) {
+				if (!$classReflection->hasEnumCase($constantName)) {
+					continue;
+				}
+
+				$cases[$constantName] = new EnumCaseObjectType($classReflection->getName(), $constantName);
+			}
+
+			foreach (TypeUtils::flattenTypes($subtractedType) as $subType) {
+				if (!$subType instanceof EnumCaseObjectType) {
+					return new self($this->className, $subtractedType);
+				}
+
+				if ($subType->getClassName() !== $this->getClassName()) {
+					return new self($this->className, $subtractedType);
+				}
+
+				unset($cases[$subType->getEnumCaseName()]);
+			}
+
+			$cases = array_values($cases);
+			if (count($cases) === 0) {
+				return new NeverType();
+			}
+
+			if (count($cases) === 1) {
+				return $cases[0];
+			}
+
+			return new UnionType(array_values($cases));
+		}
+
 		return new self($this->className, $subtractedType);
 	}
 

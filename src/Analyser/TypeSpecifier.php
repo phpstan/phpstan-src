@@ -34,6 +34,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerRangeType;
@@ -294,8 +295,10 @@ class TypeSpecifier
 				$types = null;
 
 				if (
-					$exprLeftType instanceof ConstantType
-					&& !$expr->right instanceof Node\Scalar
+					(
+						$exprLeftType instanceof ConstantType
+						&& !$expr->right instanceof Node\Scalar
+					) || $exprLeftType instanceof EnumCaseObjectType
 				) {
 					$types = $this->create(
 						$expr->right,
@@ -306,8 +309,10 @@ class TypeSpecifier
 					);
 				}
 				if (
-					$exprRightType instanceof ConstantType
-					&& !$expr->left instanceof Node\Scalar
+					(
+						$exprRightType instanceof ConstantType
+						&& !$expr->left instanceof Node\Scalar
+					) || $exprRightType instanceof EnumCaseObjectType
 				) {
 					$leftType = $this->create(
 						$expr->left,

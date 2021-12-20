@@ -11,6 +11,7 @@ use DateTimeInterface;
 use Exception;
 use InvalidArgumentException;
 use Iterator;
+use PHPStan\Fixture\FinalClass;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -23,6 +24,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
@@ -43,6 +45,7 @@ use function array_map;
 use function array_reverse;
 use function implode;
 use function sprintf;
+use const PHP_VERSION_ID;
 
 class TypeCombinatorTest extends PHPStanTestCase
 {
@@ -1879,6 +1882,91 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'mixed=implicit',
 			],
 		];
+
+		if (PHP_VERSION_ID < 80100) {
+			return;
+		}
+
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			ObjectType::class,
+			'PHPStan\Fixture\TestEnum',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'ONE'),
+			],
+			UnionType::class,
+			'PHPStan\Fixture\AnotherTestEnum::ONE|PHPStan\Fixture\TestEnum',
+		];
+		yield [
+			[
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+			],
+			UnionType::class,
+			'PHPStan\Fixture\TestEnum::ONE|PHPStan\Fixture\TestEnum::TWO',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+			],
+			ObjectType::class,
+			'PHPStan\Fixture\TestEnumInterface',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			ObjectType::class,
+			'PHPStan\Fixture\TestEnumInterface',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+				new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'ONE'),
+			],
+			UnionType::class,
+			'PHPStan\Fixture\AnotherTestEnum::ONE|PHPStan\Fixture\TestEnumInterface',
+		];
+		yield [
+			[
+				new ObjectWithoutClassType(),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			ObjectWithoutClassType::class,
+			'object',
+		];
+		yield [
+			[
+				new ObjectType('stdClass'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			UnionType::class,
+			'PHPStan\Fixture\TestEnum::ONE|stdClass',
+		];
+		yield [
+			[
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'ONE'),
+			],
+			UnionType::class,
+			'PHPStan\Fixture\AnotherTestEnum::ONE|PHPStan\Fixture\TestEnum::ONE',
+		];
 	}
 
 	/**
@@ -3106,6 +3194,99 @@ class TypeCombinatorTest extends PHPStanTestCase
 				StrictMixedType::class,
 				'mixed',
 			],
+		];
+
+		if (PHP_VERSION_ID < 80100) {
+			return;
+		}
+
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new EnumCaseObjectType(stdClass::class, 'ONE'),
+			],
+			NeverType::class,
+			'*NEVER*',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+			],
+			NeverType::class,
+			'*NEVER*',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+			],
+			ObjectType::class,
+			'PHPStan\Fixture\TestEnum',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+				new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'ONE'),
+			],
+			NeverType::class,
+			'*NEVER*',
+		];
+		yield [
+			[
+				new ObjectType(FinalClass::class),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			NeverType::class,
+			'*NEVER*',
+		];
+		yield [
+			[
+				new ObjectWithoutClassType(),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new ObjectType('stdClass'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			NeverType::class,
+			'*NEVER*',
 		];
 	}
 

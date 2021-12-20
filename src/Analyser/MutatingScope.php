@@ -73,6 +73,7 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
@@ -2145,7 +2146,7 @@ class MutatingScope implements Scope
 				}
 
 				if ($constantClassReflection->isEnum() && $constantClassReflection->hasEnumCase($constantName)) {
-					$types[] = new ObjectType($constantClassReflection->getName());
+					$types[] = new EnumCaseObjectType($constantClassReflection->getName(), $constantName, $constantClassReflection);
 					continue;
 				}
 

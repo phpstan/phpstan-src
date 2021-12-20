@@ -48,6 +48,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -738,6 +739,11 @@ class TypeNodeResolver
 						continue;
 					}
 
+					if ($classReflection->isEnum() && $classReflection->hasEnumCase($classConstantName)) {
+						$constantTypes[] = new EnumCaseObjectType($classReflection->getName(), $classConstantName, $classReflection);
+						continue;
+					}
+
 					$constantTypes[] = ConstantTypeHelper::getTypeFromValue($constantValue);
 				}
 
@@ -750,6 +756,10 @@ class TypeNodeResolver
 
 			if (!$classReflection->hasConstant($constantName)) {
 				return new ErrorType();
+			}
+
+			if ($classReflection->isEnum() && $classReflection->hasEnumCase($constantName)) {
+				return new EnumCaseObjectType($classReflection->getName(), $constantName, $classReflection);
 			}
 
 			return ConstantTypeHelper::getTypeFromValue($classReflection->getConstant($constantName)->getValue());

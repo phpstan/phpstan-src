@@ -474,11 +474,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		}
 
 		$errors = $this->runAnalyse(__DIR__ . '/data/enums.php');
-		$this->assertCount(2, $errors);
-		$this->assertSame('Access to an undefined property EnumTypeAssertions\Foo::$value.', $errors[0]->getMessage());
+		$this->assertCount(3, $errors);
+		$this->assertSame('Access to an undefined property EnumTypeAssertions\Foo::TWO::$value.', $errors[0]->getMessage());
 		$this->assertSame(23, $errors[0]->getLine());
 		$this->assertSame('Access to undefined constant EnumTypeAssertions\Baz::NONEXISTENT.', $errors[1]->getMessage());
 		$this->assertSame(78, $errors[1]->getLine());
+		$this->assertSame('Strict comparison using === between EnumTypeAssertions\Foo::ONE and EnumTypeAssertions\Foo::TWO will always evaluate to false.', $errors[2]->getMessage());
+		$this->assertSame(141, $errors[2]->getLine());
 	}
 
 	/**

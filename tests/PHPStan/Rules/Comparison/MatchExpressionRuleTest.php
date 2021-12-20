@@ -132,4 +132,22 @@ class MatchExpressionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5454.php'], []);
 	}
 
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/match-enums.php'], [
+			[
+				'Match expression does not handle remaining value: MatchEnums\Foo::THREE',
+				19,
+			],
+			[
+				'Match arm comparison between *NEVER* and MatchEnums\Foo is always false.',
+				40,
+			],
+		]);
+	}
+
 }

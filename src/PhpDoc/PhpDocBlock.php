@@ -327,7 +327,7 @@ class PhpDocBlock
 		array $positionalParameterNames,
 	): ?self
 	{
-		if ($classReflection->getFileNameWithPhpDocs() !== null && $classReflection->$hasMethodName($name)) {
+		if ($classReflection->getFileName() !== null && $classReflection->$hasMethodName($name)) {
 			/** @var PropertyReflection|MethodReflection|ConstantReflection $parentReflection */
 			$parentReflection = $classReflection->$getMethodName($name);
 			if ($parentReflection->isPrivate()) {
@@ -371,7 +371,7 @@ class PhpDocBlock
 				$classReflection,
 				$trait,
 				$name,
-				$classReflection->getFileNameWithPhpDocs(),
+				$classReflection->getFileName(),
 				$explicit,
 				$positionalParameterNames,
 				$positionalMethodParameterNames,

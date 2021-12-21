@@ -202,6 +202,10 @@ class ResolvedPhpDocBlock
 	 */
 	public function changeParameterNamesByMapping(array $parameterNameMapping): self
 	{
+		if (count($this->phpDocNodes) === 0) {
+			return $this;
+		}
+
 		$paramTags = $this->getParamTags();
 
 		$newParamTags = [];

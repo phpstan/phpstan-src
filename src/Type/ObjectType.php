@@ -1046,14 +1046,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if ($this->classReflection !== null) {
 			return $this->classReflection;
 		}
+
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 		if (!$reflectionProvider->hasClass($this->className)) {
 			return null;
 		}
 
-		$this->classReflection = $reflectionProvider->getClass($this->className);
-
-		return $this->classReflection;
+		return $reflectionProvider->getClass($this->className);
 	}
 
 	public function getClassReflection(): ?ClassReflection
@@ -1061,6 +1060,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		if ($this->classReflection !== null) {
 			return $this->classReflection;
 		}
+
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 		if (!$reflectionProvider->hasClass($this->className)) {
 			return null;
@@ -1068,10 +1068,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		$classReflection = $reflectionProvider->getClass($this->className);
 		if ($classReflection->isGeneric()) {
-			return $this->classReflection = $classReflection->withTypes(array_values($classReflection->getTemplateTypeMap()->resolveToBounds()->getTypes()));
+			return $classReflection->withTypes(array_values($classReflection->getTemplateTypeMap()->resolveToBounds()->getTypes()));
 		}
 
-		return $this->classReflection = $classReflection;
+		return $classReflection;
 	}
 
 	/**

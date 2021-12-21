@@ -740,7 +740,7 @@ class TypeNodeResolver
 					}
 
 					if ($classReflection->isEnum() && $classReflection->hasEnumCase($classConstantName)) {
-						$constantTypes[] = new EnumCaseObjectType($classReflection->getName(), $classConstantName, $classReflection);
+						$constantTypes[] = new EnumCaseObjectType($classReflection->getName(), $classConstantName);
 						continue;
 					}
 
@@ -759,7 +759,7 @@ class TypeNodeResolver
 			}
 
 			if ($classReflection->isEnum() && $classReflection->hasEnumCase($constantName)) {
-				return new EnumCaseObjectType($classReflection->getName(), $constantName, $classReflection);
+				return new EnumCaseObjectType($classReflection->getName(), $constantName);
 			}
 
 			return ConstantTypeHelper::getTypeFromValue($classReflection->getConstant($constantName)->getValue());

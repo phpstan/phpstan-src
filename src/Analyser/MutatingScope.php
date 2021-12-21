@@ -2146,7 +2146,7 @@ class MutatingScope implements Scope
 				}
 
 				if ($constantClassReflection->isEnum() && $constantClassReflection->hasEnumCase($constantName)) {
-					$types[] = new EnumCaseObjectType($constantClassReflection->getName(), $constantName, $constantClassReflection);
+					$types[] = new EnumCaseObjectType($constantClassReflection->getName(), $constantName);
 					continue;
 				}
 

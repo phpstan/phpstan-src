@@ -4,6 +4,9 @@ namespace NonEmptyStringReplaceFunctions;
 
 use function PHPStan\Testing\assertType;
 use str_replace;
+use str_ireplace;
+use preg_replace;
+use substr_replace;
 
 class Foo {
     /**

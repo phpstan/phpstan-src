@@ -221,7 +221,6 @@ class PhpClassReflectionExtension
 			$declaringClassName,
 			$propertyReflection->getName(),
 		);
-		$stubPhpDocString = null;
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClassReflection->getFileName() !== null) {
 				$declaringTraitName = $this->findPropertyTrait($propertyReflection);
@@ -253,7 +252,6 @@ class PhpClassReflectionExtension
 			}
 		} else {
 			$phpDocBlockClassReflection = $declaringClassReflection;
-			$stubPhpDocString = $resolvedPhpDoc->getPhpDocString();
 		}
 
 		if ($resolvedPhpDoc !== null) {
@@ -338,7 +336,6 @@ class PhpClassReflectionExtension
 			$deprecatedDescription,
 			$isDeprecated,
 			$isInternal,
-			$stubPhpDocString,
 		);
 	}
 
@@ -463,7 +460,6 @@ class PhpClassReflectionExtension
 				$i++;
 			}
 
-			$stubPhpDocString = null;
 			$variants = [];
 			$reflectionMethod = null;
 			$throwType = null;
@@ -491,7 +487,6 @@ class PhpClassReflectionExtension
 					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
 					if ($stubPhpDocPair !== null) {
 						[$stubPhpDoc, $stubDeclaringClass] = $stubPhpDocPair;
-						$stubPhpDocString = $stubPhpDoc->getPhpDocString();
 						$templateTypeMap = $stubDeclaringClass->getActiveTemplateTypeMap();
 						$returnTag = $stubPhpDoc->getReturnTag();
 						if ($returnTag !== null) {
@@ -561,7 +556,6 @@ class PhpClassReflectionExtension
 				$methodReflection,
 				$variants,
 				$hasSideEffects,
-				$stubPhpDocString,
 				$throwType,
 			);
 		}
@@ -573,7 +567,6 @@ class PhpClassReflectionExtension
 		if ($stubPhpDocPair !== null) {
 			[$resolvedPhpDoc, $phpDocBlockClassReflection] = $stubPhpDocPair;
 		}
-		$stubPhpDocString = null;
 
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClass->getFileName() !== null) {
@@ -590,8 +583,6 @@ class PhpClassReflectionExtension
 				);
 				$phpDocBlockClassReflection = $declaringClass;
 			}
-		} else {
-			$stubPhpDocString = $resolvedPhpDoc->getPhpDocString();
 		}
 
 		$declaringTrait = null;
@@ -692,7 +683,6 @@ class PhpClassReflectionExtension
 			$isDeprecated,
 			$isInternal,
 			$isFinal,
-			$stubPhpDocString,
 			$isPure,
 		);
 	}

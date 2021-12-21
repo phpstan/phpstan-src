@@ -86,8 +86,6 @@ class PhpMethodReflection implements MethodReflection
 
 	private ?bool $isPure;
 
-	private ?string $stubPhpDocString;
-
 	/** @var FunctionVariantWithPhpDocs[]|null */
 	private ?array $variants = null;
 
@@ -110,7 +108,6 @@ class PhpMethodReflection implements MethodReflection
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		?string $stubPhpDocString,
 		?bool $isPure,
 	)
 	{
@@ -129,7 +126,6 @@ class PhpMethodReflection implements MethodReflection
 		$this->isDeprecated = $isDeprecated;
 		$this->isInternal = $isInternal;
 		$this->isFinal = $isFinal;
-		$this->stubPhpDocString = $stubPhpDocString;
 		$this->isPure = $isPure;
 	}
 
@@ -145,10 +141,6 @@ class PhpMethodReflection implements MethodReflection
 
 	public function getDocComment(): ?string
 	{
-		if ($this->stubPhpDocString !== null) {
-			return $this->stubPhpDocString;
-		}
-
 		return $this->reflection->getDocComment();
 	}
 
@@ -159,7 +151,10 @@ class PhpMethodReflection implements MethodReflection
 	{
 		try {
 			$prototypeMethod = $this->reflection->getPrototype();
-			$prototypeDeclaringClass = $this->reflectionProvider->getClass($prototypeMethod->getDeclaringClass()->getName());
+			$prototypeDeclaringClass = $this->declaringClass->getAncestorWithClassName($prototypeMethod->getDeclaringClass()->getName());
+			if ($prototypeDeclaringClass === null) {
+				$prototypeDeclaringClass = $this->reflectionProvider->getClass($prototypeMethod->getDeclaringClass()->getName());
+			}
 
 			$tentativeReturnType = null;
 			if ($prototypeMethod->getTentativeReturnType() !== null) {

@@ -30,8 +30,6 @@ class NativeMethodReflection implements MethodReflection
 
 	private TrinaryLogic $hasSideEffects;
 
-	private ?string $stubPhpDocString;
-
 	private ?Type $throwType;
 
 	/**
@@ -43,7 +41,6 @@ class NativeMethodReflection implements MethodReflection
 		BuiltinMethodReflection $reflection,
 		array $variants,
 		TrinaryLogic $hasSideEffects,
-		?string $stubPhpDocString,
 		?Type $throwType,
 	)
 	{
@@ -52,7 +49,6 @@ class NativeMethodReflection implements MethodReflection
 		$this->reflection = $reflection;
 		$this->variants = $variants;
 		$this->hasSideEffects = $hasSideEffects;
-		$this->stubPhpDocString = $stubPhpDocString;
 		$this->throwType = $throwType;
 	}
 
@@ -85,7 +81,10 @@ class NativeMethodReflection implements MethodReflection
 	{
 		try {
 			$prototypeMethod = $this->reflection->getPrototype();
-			$prototypeDeclaringClass = $this->reflectionProvider->getClass($prototypeMethod->getDeclaringClass()->getName());
+			$prototypeDeclaringClass = $this->declaringClass->getAncestorWithClassName($prototypeMethod->getDeclaringClass()->getName());
+			if ($prototypeDeclaringClass === null) {
+				$prototypeDeclaringClass = $this->reflectionProvider->getClass($prototypeMethod->getDeclaringClass()->getName());
+			}
 
 			$tentativeReturnType = null;
 			if ($prototypeMethod->getTentativeReturnType() !== null) {
@@ -173,10 +172,6 @@ class NativeMethodReflection implements MethodReflection
 
 	public function getDocComment(): ?string
 	{
-		if ($this->stubPhpDocString !== null) {
-			return $this->stubPhpDocString;
-		}
-
 		return $this->reflection->getDocComment();
 	}
 

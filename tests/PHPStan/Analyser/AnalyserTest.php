@@ -492,7 +492,7 @@ class AnalyserTest extends PHPStanTestCase
 
 		$typeSpecifier = self::getContainer()->getService('typeSpecifier');
 		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
-		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
+		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper, self::getContainer()->getByType(StubPhpDocProvider::class));
 
 		$nodeScopeResolver = new NodeScopeResolver(
 			$reflectionProvider,

@@ -36,8 +36,6 @@ class PhpPropertyReflection implements PropertyReflection
 
 	private bool $isInternal;
 
-	private ?string $stubPhpDocString;
-
 	public function __construct(
 		ClassReflection $declaringClass,
 		?ClassReflection $declaringTrait,
@@ -47,7 +45,6 @@ class PhpPropertyReflection implements PropertyReflection
 		?string $deprecatedDescription,
 		bool $isDeprecated,
 		bool $isInternal,
-		?string $stubPhpDocString,
 	)
 	{
 		$this->declaringClass = $declaringClass;
@@ -58,7 +55,6 @@ class PhpPropertyReflection implements PropertyReflection
 		$this->deprecatedDescription = $deprecatedDescription;
 		$this->isDeprecated = $isDeprecated;
 		$this->isInternal = $isInternal;
-		$this->stubPhpDocString = $stubPhpDocString;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -73,10 +69,6 @@ class PhpPropertyReflection implements PropertyReflection
 
 	public function getDocComment(): ?string
 	{
-		if ($this->stubPhpDocString !== null) {
-			return $this->stubPhpDocString;
-		}
-
 		$docComment = $this->reflection->getDocComment();
 		if ($docComment === false) {
 			return null;

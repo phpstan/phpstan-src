@@ -10,7 +10,7 @@ use substr_replace;
 
 class Foo {
     /**
-     * @param non-empty-string $search
+     * @param string $search
      * @param non-empty-string $replacement
      * @param non-empty-string $subject
      */

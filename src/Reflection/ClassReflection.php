@@ -190,12 +190,11 @@ class ClassReflection
 		return $this->filename = $fileName;
 	}
 
+	/**
+	 * @deprecated Use getFileName()
+	 */
 	public function getFileNameWithPhpDocs(): ?string
 	{
-		if ($this->stubPhpDocBlock !== null) {
-			return $this->stubPhpDocBlock->getFilename();
-		}
-
 		return $this->getFileName();
 	}
 

@@ -88,7 +88,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 	$version = 'Version unknown';
 	try {
-		$version = \Jean85\PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
+		$version = \Jean85\PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion() ?: $version;
 	} catch (\OutOfBoundsException $e) {
 
 	}

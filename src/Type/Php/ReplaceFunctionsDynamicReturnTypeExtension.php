@@ -6,8 +6,10 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -20,7 +22,7 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 {
 
 	/** @var array<string, int> */
-	private array $functions = [
+	private array $functionsSubjectPosition = [
 		'preg_replace' => 2,
 		'preg_replace_callback' => 2,
 		'preg_replace_callback_array' => 1,
@@ -29,9 +31,17 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 		'substr_replace' => 0,
 	];
 
+	/** @var array<string, int> */
+	private array $functionsReplacePosition = [
+		'preg_replace' => 1,
+		'str_replace' => 1,
+		'str_ireplace' => 1,
+		'substr_replace' => 1,
+	];
+
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return array_key_exists($functionReflection->getName(), $this->functions);
+		return array_key_exists($functionReflection->getName(), $this->functionsSubjectPosition);
 	}
 
 	public function getTypeFromFunctionCall(
@@ -57,7 +67,7 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 		Scope $scope,
 	): Type
 	{
-		$argumentPosition = $this->functions[$functionReflection->getName()];
+		$argumentPosition = $this->functionsSubjectPosition[$functionReflection->getName()];
 		if (count($functionCall->getArgs()) <= $argumentPosition) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
@@ -67,6 +77,19 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 		if ($subjectArgumentType instanceof MixedType) {
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
+
+		if ($subjectArgumentType->isNonEmptyString()->yes() && array_key_exists($functionReflection->getName(), $this->functionsReplacePosition)) {
+			$replaceArgumentPosition = $this->functionsReplacePosition[$functionReflection->getName()];
+
+			if (count($functionCall->getArgs()) > $replaceArgumentPosition) {
+				$replaceArgumentType = $scope->getType($functionCall->getArgs()[$replaceArgumentPosition]->value);
+
+				if ($replaceArgumentType->isNonEmptyString()->yes()) {
+					return new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
+				}
+			}
+		}
+
 		$stringType = new StringType();
 		$arrayType = new ArrayType(new MixedType(), new MixedType());
 

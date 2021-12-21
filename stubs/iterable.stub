@@ -43,15 +43,6 @@ interface Iterator extends Traversable
 	 */
 	public function key();
 
-	/** @return void */
-	public function next(): void;
-
-	/** @return void */
-	public function rewind(): void;
-
-	/** @return bool */
-	public function valid(): bool;
-
 }
 
 /**

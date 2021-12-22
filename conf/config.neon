@@ -99,6 +99,7 @@ parameters:
 		- '#^Symfony\\Polyfill\\Intl\\Normalizer\\#'
 		- '#^Symfony\\Polyfill\\Php73\\#'
 		- '#^Symfony\\Polyfill\\Php74\\#'
+		- '#^Symfony\\Polyfill\\Php72\\#'
 		- '#^Composer\\#'
 	dynamicConstantNames:
 		- ICONV_IMPL

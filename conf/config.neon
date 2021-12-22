@@ -615,6 +615,8 @@ services:
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator
+		arguments:
+			disableRuntimeReflectionProvider: %featureToggles.disableRuntimeReflectionProvider%
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker

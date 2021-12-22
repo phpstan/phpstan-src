@@ -100,6 +100,7 @@ parameters:
 		- '#^Symfony\\Polyfill\\Php73\\#'
 		- '#^Symfony\\Polyfill\\Php74\\#'
 		- '#^Symfony\\Polyfill\\Php72\\#'
+		- '#^Symfony\\Polyfill\\Intl\\Grapheme\\#'
 		- '#^Composer\\#'
 	dynamicConstantNames:
 		- ICONV_IMPL

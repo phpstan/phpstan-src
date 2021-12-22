@@ -98,6 +98,7 @@ parameters:
 		- '#^Symfony\\Polyfill\\Mbstring\\#'
 		- '#^Symfony\\Polyfill\\Intl\\Normalizer\\#'
 		- '#^Symfony\\Polyfill\\Php73\\#'
+		- '#^Symfony\\Polyfill\\Php74\\#'
 		- '#^Composer\\#'
 	dynamicConstantNames:
 		- ICONV_IMPL

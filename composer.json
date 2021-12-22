@@ -34,6 +34,9 @@
 		"react/stream": "^1.1",
 		"symfony/console": "^5.4.1",
 		"symfony/finder": "^5.4.0",
+		"symfony/polyfill-intl-normalizer": "^1.23",
+		"symfony/polyfill-mbstring": "^1.23",
+		"symfony/polyfill-php80": "^1.23",
 		"symfony/service-contracts": "^2.5.0"
 	},
 	"replace": {

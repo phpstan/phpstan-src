@@ -9446,7 +9446,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'*ERROR*',
+				'mixed',
 				'password_algos()',
 			],
 		];

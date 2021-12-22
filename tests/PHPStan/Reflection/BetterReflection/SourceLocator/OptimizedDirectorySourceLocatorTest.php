@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-use BFoo;
+use OptimizedDirectory\BFoo;
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Testing\PHPStanTestCase;
@@ -32,7 +32,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 				'b.php',
 			],
 			[
-				'bfOO',
+				'OptimizedDirectory\\bfOO',
 				BFoo::class,
 				'b.php',
 			],
@@ -67,28 +67,28 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 				'a.php',
 			],
 			[
-				'doBar',
-				'doBar',
+				'OptimizedDirectory\\doBar',
+				'OptimizedDirectory\\doBar',
 				'b.php',
 			],
 			[
-				'doBaz',
-				'doBaz',
+				'OptimizedDirectory\\doBaz',
+				'OptimizedDirectory\\doBaz',
 				'b.php',
 			],
 			[
-				'dobaz',
-				'doBaz',
+				'OptimizedDirectory\\dobaz',
+				'OptimizedDirectory\\doBaz',
 				'b.php',
 			],
 			[
-				'get_smarty',
-				'get_smarty',
+				'OptimizedDirectory\\get_smarty',
+				'OptimizedDirectory\\get_smarty',
 				'b.php',
 			],
 			[
-				'get_smarty2',
-				'get_smarty2',
+				'OptimizedDirectory\\get_smarty2',
+				'OptimizedDirectory\\get_smarty2',
 				'b.php',
 			],
 		];

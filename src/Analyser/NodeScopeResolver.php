@@ -49,7 +49,7 @@ use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\Unset_;
 use PhpParser\Node\Stmt\While_;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
+use PHPStan\BetterReflection\Reflection\ReflectionEnum;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
@@ -137,6 +137,7 @@ use function array_merge;
 use function array_pop;
 use function array_reverse;
 use function array_slice;
+use function base64_decode;
 use function count;
 use function in_array;
 use function is_array;
@@ -1483,6 +1484,8 @@ class NodeScopeResolver
 			throw new ShouldNotHappenException();
 		}
 
+		$enumAdapter = base64_decode('UEhQU3RhblxCZXR0ZXJSZWZsZWN0aW9uXFJlZmxlY3Rpb25cQWRhcHRlclxSZWZsZWN0aW9uRW51bQ==', true);
+
 		return new ClassReflection(
 			$this->reflectionProvider,
 			$this->fileTypeMapper,
@@ -1492,7 +1495,7 @@ class NodeScopeResolver
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
 			$betterReflectionClass->getName(),
-			$betterReflectionClass instanceof \PHPStan\BetterReflection\Reflection\ReflectionEnum && PHP_VERSION_ID >= 80000 ? new ReflectionEnum($betterReflectionClass) : new ReflectionClass($betterReflectionClass),
+			$betterReflectionClass instanceof ReflectionEnum && PHP_VERSION_ID >= 80000 ? new $enumAdapter($betterReflectionClass) : new ReflectionClass($betterReflectionClass),
 			null,
 			null,
 			null,

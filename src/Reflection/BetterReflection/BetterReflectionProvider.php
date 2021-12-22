@@ -9,10 +9,10 @@ use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Exception\NotAClassReflection;
 use PHPStan\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
+use PHPStan\BetterReflection\Reflection\ReflectionEnum;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
@@ -46,6 +46,7 @@ use PHPStan\Type\Type;
 use ReflectionParameter;
 use function array_key_exists;
 use function array_map;
+use function base64_decode;
 use function sprintf;
 use function strtolower;
 use const PHP_VERSION_ID;
@@ -164,6 +165,8 @@ class BetterReflectionProvider implements ReflectionProvider
 			return $this->classReflections[$reflectionClassName];
 		}
 
+		$enumAdapter = base64_decode('UEhQU3RhblxCZXR0ZXJSZWZsZWN0aW9uXFJlZmxlY3Rpb25cQWRhcHRlclxSZWZsZWN0aW9uRW51bQ==', true);
+
 		$classReflection = new ClassReflection(
 			$this->reflectionProviderProvider->getReflectionProvider(),
 			$this->fileTypeMapper,
@@ -173,7 +176,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
 			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
 			$reflectionClass->getName(),
-			$reflectionClass instanceof \PHPStan\BetterReflection\Reflection\ReflectionEnum && PHP_VERSION_ID >= 80000 ? new ReflectionEnum($reflectionClass) : new ReflectionClass($reflectionClass),
+			$reflectionClass instanceof ReflectionEnum && PHP_VERSION_ID >= 80000 ? new $enumAdapter($reflectionClass) : new ReflectionClass($reflectionClass),
 			null,
 			null,
 			$this->stubPhpDocProvider->findClassPhpDoc($reflectionClass->getName()),

@@ -23,10 +23,5 @@
         "message": "Anonymous function should return int but returns string.",
         "line": 128,
         "ignorable": true
-    },
-    {
-        "message": "Method StubsIntegrationTest\\YetYetAnotherFoo::doFoo() should return stdClass but returns string.",
-        "line": 219,
-        "ignorable": true
     }
 ]

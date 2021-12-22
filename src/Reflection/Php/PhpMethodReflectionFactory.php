@@ -25,7 +25,6 @@ interface PhpMethodReflectionFactory
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		?string $stubPhpDocString,
 		?bool $isPure = null,
 	): PhpMethodReflection;
 

@@ -63,6 +63,8 @@ class FileTypeMapper
 	/** @var NameScope[][] */
 	private array $memoryCache = [];
 
+	private int $memoryCacheCount = 0;
+
 	/** @var (false|callable(): NameScope|NameScope)[][] */
 	private array $inProcess = [];
 
@@ -211,7 +213,18 @@ class FileTypeMapper
 				$this->cache->save($cacheKey, $variableCacheKey, $map);
 			}
 
+			if ($this->memoryCacheCount >= 512) {
+				$this->memoryCache = array_slice(
+					$this->memoryCache,
+					1,
+					null,
+					true,
+				);
+				$this->memoryCacheCount--;
+			}
+
 			$this->memoryCache[$fileName] = $map;
+			$this->memoryCacheCount++;
 		}
 
 		return $this->memoryCache[$fileName];

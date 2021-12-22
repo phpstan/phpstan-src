@@ -15,11 +15,9 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
-use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use function dirname;
 use function is_file;
-use function sprintf;
 
 class TestCaseSourceLocatorFactory
 {
@@ -64,12 +62,12 @@ class TestCaseSourceLocatorFactory
 			foreach ($classLoaders as $classLoader) {
 				$composerProjectPath = dirname($vendorDirProperty->getValue($classLoader));
 				if (!is_file($composerProjectPath . '/composer.json')) {
-					throw new ShouldNotHappenException(sprintf('composer.json not found in directory %s', $composerProjectPath));
+					continue;
 				}
 
 				$composerSourceLocator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerProjectPath);
 				if ($composerSourceLocator === null) {
-					throw new ShouldNotHappenException('Could not create composer source locator');
+					continue;
 				}
 				$locators[] = $composerSourceLocator;
 			}

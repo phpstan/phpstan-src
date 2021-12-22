@@ -11,6 +11,7 @@ rules:
 	- PHPStan\Rules\Arrays\UnpackIterableInArrayRule
 	- PHPStan\Rules\Functions\ArrowFunctionReturnTypeRule
 	- PHPStan\Rules\Functions\ClosureReturnTypeRule
+	- PHPStan\Rules\Functions\ReturnTypeRule
 	- PHPStan\Rules\Generators\YieldTypeRule
 	- PHPStan\Rules\Methods\ReturnTypeRule
 	- PHPStan\Rules\Properties\DefaultValueTypesAssignedToPropertiesRule
@@ -63,13 +64,6 @@ services:
 		arguments:
 			exceptionTypeResolver: @exceptionTypeResolver
 			missingCheckedExceptionInThrows: %exceptions.check.missingCheckedExceptionInThrows%
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Functions\ReturnTypeRule
-		arguments:
-			reflector: @betterReflectionReflector
 		tags:
 			- phpstan.rules.rule
 

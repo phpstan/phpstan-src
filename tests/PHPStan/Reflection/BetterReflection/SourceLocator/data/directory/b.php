@@ -1,5 +1,7 @@
 <?php
 
+namespace OptimizedDirectory;
+
 class BFoo
 {
 

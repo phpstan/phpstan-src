@@ -1,20 +1,20 @@
 <?php
+namespace DateTimeInstantiation;
+new \DateTime('2020.11.17');
 
-new DateTime('2020.11.17');
+new \DateTimeImmutable('asdfasdf');
 
-new DateTimeImmutable('asdfasdf');
-
-new DateTime('');
+new \DateTime('');
 
 $test = '2020.11.17';
-new DateTimeImmutable($test);
+new \DateTimeImmutable($test);
 
 /**
  * @param '2020.11.18' $date2
  */
 function foo(string $date, string $date2): void {
-	new DateTime($date);
-	new DateTimeImmutable($date2);
+	new \DateTime($date);
+	new \DateTimeImmutable($date2);
 }
 
-new DateTime('2020-04-31');
+new \DateTime('2020-04-31');

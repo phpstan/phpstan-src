@@ -71,6 +71,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 
 		$classMapPaths = array_merge(
 			$this->prefixPaths($this->packageToClassMapPaths($composer), $projectInstallationPath . '/'),
+			$this->prefixPaths($this->packageToClassMapPaths($composer, 'autoload-dev'), $projectInstallationPath . '/'),
 			...array_map(fn (array $package): array => $this->prefixPaths(
 				$this->packageToClassMapPaths($package),
 				$this->packagePrefixPath($projectInstallationPath, $installedJsonDirectoryPath, $package),
@@ -80,6 +81,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		$classMapDirectories = array_filter($classMapPaths, 'is_dir');
 		$filePaths = array_merge(
 			$this->prefixPaths($this->packageToFilePaths($composer), $projectInstallationPath . '/'),
+			$this->prefixPaths($this->packageToFilePaths($composer, 'autoload-dev'), $projectInstallationPath . '/'),
 			...array_map(fn (array $package): array => $this->prefixPaths(
 				$this->packageToFilePaths($package),
 				$this->packagePrefixPath($projectInstallationPath, $installedJsonDirectoryPath, $package),
@@ -90,6 +92,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		$locators[] = $this->optimizedPsrAutoloaderLocatorFactory->create(
 			Psr4Mapping::fromArrayMappings(array_merge_recursive(
 				$this->prefixWithInstallationPath($this->packageToPsr4AutoloadNamespaces($composer), $projectInstallationPath),
+				$this->prefixWithInstallationPath($this->packageToPsr4AutoloadNamespaces($composer, 'autoload-dev'), $projectInstallationPath),
 				...array_map(fn (array $package): array => $this->prefixWithPackagePath(
 					$this->packageToPsr4AutoloadNamespaces($package),
 					$projectInstallationPath,
@@ -102,6 +105,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		$locators[] = $this->optimizedPsrAutoloaderLocatorFactory->create(
 			Psr0Mapping::fromArrayMappings(array_merge_recursive(
 				$this->prefixWithInstallationPath($this->packageToPsr0AutoloadNamespaces($composer), $projectInstallationPath),
+				$this->prefixWithInstallationPath($this->packageToPsr0AutoloadNamespaces($composer, 'autoload-dev'), $projectInstallationPath),
 				...array_map(fn (array $package): array => $this->prefixWithPackagePath(
 					$this->packageToPsr0AutoloadNamespaces($package),
 					$projectInstallationPath,
@@ -139,9 +143,9 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 *
 	 * @return array<string, array<int, string>>
 	 */
-	private function packageToPsr4AutoloadNamespaces(array $package): array
+	private function packageToPsr4AutoloadNamespaces(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return array_map(static fn ($namespacePaths): array => (array) $namespacePaths, $package['autoload']['psr-4'] ?? []);
+		return array_map(static fn ($namespacePaths): array => (array) $namespacePaths, $package[$autoloadSection]['psr-4'] ?? []);
 	}
 
 	/**
@@ -149,9 +153,9 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 *
 	 * @return array<string, array<int, string>>
 	 */
-	private function packageToPsr0AutoloadNamespaces(array $package): array
+	private function packageToPsr0AutoloadNamespaces(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return array_map(static fn ($namespacePaths): array => (array) $namespacePaths, $package['autoload']['psr-0'] ?? []);
+		return array_map(static fn ($namespacePaths): array => (array) $namespacePaths, $package[$autoloadSection]['psr-0'] ?? []);
 	}
 
 	/**
@@ -159,9 +163,9 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 *
 	 * @return array<int, string>
 	 */
-	private function packageToClassMapPaths(array $package): array
+	private function packageToClassMapPaths(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return $package['autoload']['classmap'] ?? [];
+		return $package[$autoloadSection]['classmap'] ?? [];
 	}
 
 	/**
@@ -169,9 +173,9 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 *
 	 * @return array<int, string>
 	 */
-	private function packageToFilePaths(array $package): array
+	private function packageToFilePaths(array $package, string $autoloadSection = 'autoload'): array
 	{
-		return $package['autoload']['files'] ?? [];
+		return $package[$autoloadSection]['files'] ?? [];
 	}
 
 	/**

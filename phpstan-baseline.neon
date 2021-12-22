@@ -16,6 +16,11 @@ parameters:
 			path: src/Analyser/NodeScopeResolver.php
 
 		-
+			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects ReflectionClass, object given\\.$#"
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
 			message: "#^Anonymous function has an unused use \\$container\\.$#"
 			count: 1
 			path: src/Command/CommandHelper.php
@@ -125,6 +130,11 @@ parameters:
 
 		-
 			message: "#^Dead catch \\- PHPStan\\\\BetterReflection\\\\NodeCompiler\\\\Exception\\\\UnableToCompileNode\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Exception\\\\NotAClassReflection\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Exception\\\\NotAnInterfaceReflection is never thrown in the try block\\.$#"
+			count: 1
+			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
+
+		-
+			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects ReflectionClass, object given\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 

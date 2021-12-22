@@ -35,6 +35,7 @@ class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionRetur
 			'htmlentities',
 			'urlencode',
 			'urldecode',
+			'preg_quote',
 			'rawurlencode',
 			'rawurldecode',
 			'vsprintf',

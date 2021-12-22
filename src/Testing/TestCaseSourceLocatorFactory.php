@@ -55,24 +55,26 @@ class TestCaseSourceLocatorFactory
 
 	public function create(): SourceLocator
 	{
+		$classLoaders = ClassLoader::getRegisteredLoaders();
 		$classLoaderReflection = new ReflectionClass(ClassLoader::class);
-		if ($classLoaderReflection->getFileName() === false) {
-			throw new ShouldNotHappenException('Unknown ClassLoader filename');
+		$locators = [];
+		if ($classLoaderReflection->hasProperty('vendorDir')) {
+			$vendorDirProperty = $classLoaderReflection->getProperty('vendorDir');
+			$vendorDirProperty->setAccessible(true);
+			foreach ($classLoaders as $classLoader) {
+				$composerProjectPath = dirname($vendorDirProperty->getValue($classLoader));
+				if (!is_file($composerProjectPath . '/composer.json')) {
+					throw new ShouldNotHappenException(sprintf('composer.json not found in directory %s', $composerProjectPath));
+				}
+
+				$composerSourceLocator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerProjectPath);
+				if ($composerSourceLocator === null) {
+					throw new ShouldNotHappenException('Could not create composer source locator');
+				}
+				$locators[] = $composerSourceLocator;
+			}
 		}
 
-		$composerProjectPath = dirname($classLoaderReflection->getFileName(), 3);
-		if (!is_file($composerProjectPath . '/composer.json')) {
-			throw new ShouldNotHappenException(sprintf('composer.json not found in directory %s', $composerProjectPath));
-		}
-
-		$composerSourceLocator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerProjectPath);
-		if ($composerSourceLocator === null) {
-			throw new ShouldNotHappenException('Could not create composer source locator');
-		}
-
-		$locators = [
-			$composerSourceLocator,
-		];
 		$astLocator = new Locator($this->phpParser);
 		$astPhp8Locator = new Locator($this->php8Parser);
 

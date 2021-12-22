@@ -5,15 +5,11 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
-use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
-use ReflectionFunction;
-use function function_exists;
 use function sprintf;
 
 /**
@@ -24,15 +20,11 @@ class ReturnTypeRule implements Rule
 
 	private FunctionReturnTypeCheck $returnTypeCheck;
 
-	private Reflector $reflector;
-
 	public function __construct(
 		FunctionReturnTypeCheck $returnTypeCheck,
-		Reflector $reflector,
 	)
 	{
 		$this->returnTypeCheck = $returnTypeCheck;
-		$this->reflector = $reflector;
 	}
 
 	public function getNodeType(): string
@@ -58,17 +50,6 @@ class ReturnTypeRule implements Rule
 			return [];
 		}
 
-		$reflection = null;
-		if (function_exists($function->getName())) {
-			$reflection = new ReflectionFunction($function->getName());
-		} else {
-			try {
-				$reflection = $this->reflector->reflectFunction($function->getName());
-			} catch (IdentifierNotFound) {
-				// pass
-			}
-		}
-
 		return $this->returnTypeCheck->checkReturnType(
 			$scope,
 			ParametersAcceptorSelector::selectSingle($function->getVariants())->getReturnType(),
@@ -90,7 +71,7 @@ class ReturnTypeRule implements Rule
 				'Function %s() should never return but return statement found.',
 				$function->getName(),
 			),
-			$reflection !== null && $reflection->isGenerator(),
+			$function->isGenerator(),
 		);
 	}
 

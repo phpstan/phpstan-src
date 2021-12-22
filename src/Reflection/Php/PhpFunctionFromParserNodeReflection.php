@@ -20,6 +20,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
 use function array_reverse;
+use function is_array;
 use function is_string;
 
 class PhpFunctionFromParserNodeReflection implements FunctionReflection
@@ -240,6 +241,42 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 
 	public function isBuiltin(): bool
 	{
+		return false;
+	}
+
+	public function isGenerator(): bool
+	{
+		return $this->nodeIsOrContainsYield($this->functionLike);
+	}
+
+	private function nodeIsOrContainsYield(Node $node): bool
+	{
+		if ($node instanceof Node\Expr\Yield_) {
+			return true;
+		}
+
+		if ($node instanceof Node\Expr\YieldFrom) {
+			return true;
+		}
+
+		foreach ($node->getSubNodeNames() as $nodeName) {
+			$nodeProperty = $node->$nodeName;
+
+			if ($nodeProperty instanceof Node && $this->nodeIsOrContainsYield($nodeProperty)) {
+				return true;
+			}
+
+			if (!is_array($nodeProperty)) {
+				continue;
+			}
+
+			foreach ($nodeProperty as $nodePropertyArrayItem) {
+				if ($nodePropertyArrayItem instanceof Node && $this->nodeIsOrContainsYield($nodePropertyArrayItem)) {
+					return true;
+				}
+			}
+		}
+
 		return false;
 	}
 

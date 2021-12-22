@@ -5,8 +5,8 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use function sprintf;
@@ -40,13 +40,8 @@ class ReturnTypeRule implements Rule
 		}
 
 		$method = $scope->getFunction();
-		if (!($method instanceof MethodReflection)) {
+		if (!$method instanceof PhpMethodFromParserNodeReflection) {
 			return [];
-		}
-
-		$reflection = null;
-		if ($method->getDeclaringClass()->getNativeReflection()->hasMethod($method->getName())) {
-			$reflection = $method->getDeclaringClass()->getNativeReflection()->getMethod($method->getName());
 		}
 
 		return $this->returnTypeCheck->checkReturnType(
@@ -74,7 +69,7 @@ class ReturnTypeRule implements Rule
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 			),
-			$reflection !== null && $reflection->isGenerator(),
+			$method->isGenerator(),
 		);
 	}
 

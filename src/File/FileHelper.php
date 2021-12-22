@@ -9,6 +9,7 @@ use function implode;
 use function ltrim;
 use function rtrim;
 use function str_replace;
+use function str_starts_with;
 use function strpos;
 use function substr;
 use function trim;
@@ -41,7 +42,7 @@ class FileHelper
 				return $path;
 			}
 		}
-		if (Strings::startsWith($path, 'phar://')) {
+		if (str_starts_with($path, 'phar://')) {
 			return $path;
 		}
 

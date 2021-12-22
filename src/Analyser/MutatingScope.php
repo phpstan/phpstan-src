@@ -124,6 +124,7 @@ use function is_string;
 use function ltrim;
 use function max;
 use function sprintf;
+use function str_starts_with;
 use function strlen;
 use function strtolower;
 use function substr;
@@ -450,7 +451,7 @@ class MutatingScope implements Scope
 				'filetype',
 				'fileperms',
 			] as $functionName) {
-				if (!Strings::startsWith((string) $exprString, $functionName . '(') && !Strings::startsWith((string) $exprString, '\\' . $functionName . '(')) {
+				if (!str_starts_with((string) $exprString, $functionName . '(') && !str_starts_with((string) $exprString, '\\' . $functionName . '(')) {
 					continue;
 				}
 

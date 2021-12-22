@@ -13,6 +13,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\TypeUtils;
 use function in_array;
 use function sprintf;
+use function str_starts_with;
 use function strtolower;
 
 /**
@@ -52,7 +53,7 @@ class RegularExpressionPatternRule implements Rule
 			return [];
 		}
 		$functionName = strtolower((string) $functionCall->name);
-		if (!Strings::startsWith($functionName, 'preg_')) {
+		if (!str_starts_with($functionName, 'preg_')) {
 			return [];
 		}
 

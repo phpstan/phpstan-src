@@ -55,6 +55,7 @@ use function mkdir;
 use function pcntl_async_signals;
 use function pcntl_signal;
 use function sprintf;
+use function str_ends_with;
 use function sys_get_temp_dir;
 use function unlink;
 use const DIRECTORY_SEPARATOR;
@@ -569,7 +570,7 @@ class CommandHelper
 			return [];
 		}
 
-		if (Strings::endsWith($configFile, '.php')) {
+		if (str_ends_with($configFile, '.php')) {
 			$data = $phpAdapter->load($configFile);
 		} else {
 			$data = $neonAdapter->load($configFile);

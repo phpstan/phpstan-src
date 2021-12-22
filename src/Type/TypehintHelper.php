@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use Nette\Utils\Strings;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -15,6 +14,7 @@ use function array_map;
 use function count;
 use function get_class;
 use function sprintf;
+use function str_ends_with;
 use function strtolower;
 
 class TypehintHelper
@@ -112,19 +112,19 @@ class TypehintHelper
 		}
 
 		$reflectionTypeString = $reflectionType->getName();
-		if (Strings::endsWith(strtolower($reflectionTypeString), '\\object')) {
+		if (str_ends_with(strtolower($reflectionTypeString), '\\object')) {
 			$reflectionTypeString = 'object';
 		}
-		if (Strings::endsWith(strtolower($reflectionTypeString), '\\mixed')) {
+		if (str_ends_with(strtolower($reflectionTypeString), '\\mixed')) {
 			$reflectionTypeString = 'mixed';
 		}
-		if (Strings::endsWith(strtolower($reflectionTypeString), '\\false')) {
+		if (str_ends_with(strtolower($reflectionTypeString), '\\false')) {
 			$reflectionTypeString = 'false';
 		}
-		if (Strings::endsWith(strtolower($reflectionTypeString), '\\null')) {
+		if (str_ends_with(strtolower($reflectionTypeString), '\\null')) {
 			$reflectionTypeString = 'null';
 		}
-		if (Strings::endsWith(strtolower($reflectionTypeString), '\\never')) {
+		if (str_ends_with(strtolower($reflectionTypeString), '\\never')) {
 			$reflectionTypeString = 'never';
 		}
 

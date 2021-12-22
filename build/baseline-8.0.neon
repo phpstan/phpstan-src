@@ -3,11 +3,6 @@ parameters:
 		-
 			message: "#^Strict comparison using \\=\\=\\= between array and false will always evaluate to false\\.$#"
 			count: 1
-			path: ../src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php
-
-		-
-			message: "#^Strict comparison using \\=\\=\\= between array and false will always evaluate to false\\.$#"
-			count: 1
 			path: ../src/Type/Php/MbFunctionsReturnTypeExtension.php
 
 		-

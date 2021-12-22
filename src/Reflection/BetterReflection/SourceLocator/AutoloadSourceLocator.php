@@ -28,9 +28,6 @@ use function function_exists;
 use function interface_exists;
 use function is_file;
 use function is_string;
-use function restore_error_handler;
-use function set_error_handler;
-use function spl_autoload_functions;
 use function strtolower;
 use function trait_exists;
 use const PHP_VERSION_ID;
@@ -180,8 +177,10 @@ class AutoloadSourceLocator implements SourceLocator
 					);
 				}
 			}
+
 			return null;
 		}
+
 		[$potentiallyLocatedFile, $className, $startLine] = $locateResult;
 
 		return $this->findReflection($reflector, $potentiallyLocatedFile, new Identifier($className, $identifier->getType()), $startLine);
@@ -259,23 +258,11 @@ class AutoloadSourceLocator implements SourceLocator
 	}
 
 	/**
-	 * Attempt to locate a class by name.
-	 *
-	 * If class already exists, simply use internal reflection API to get the
-	 * filename and store it.
-	 *
-	 * If class does not exist, we make an assumption that whatever autoloaders
-	 * that are registered will be loading a file. We then override the file://
-	 * protocol stream wrapper to "capture" the filename we expect the class to
-	 * be in, and then restore it. Note that class_exists will cause an error
-	 * that it cannot find the file, so we squelch the errors by overriding the
-	 * error handler temporarily.
-	 *
 	 * @return array{string, string, int|null}|null
 	 */
 	private function locateClassByName(string $className): ?array
 	{
-		if (class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false)) {
+		if (class_exists($className) || interface_exists($className) || trait_exists($className)) {
 			$reflection = new ReflectionClass($className);
 			$filename = $reflection->getFileName();
 
@@ -290,42 +277,7 @@ class AutoloadSourceLocator implements SourceLocator
 			return [$filename, $reflection->getName(), $reflection->getStartLine() !== false ? $reflection->getStartLine() : null];
 		}
 
-		$this->silenceErrors();
-
-		try {
-			/** @var array{string, string, null}|null */
-			return FileReadTrapStreamWrapper::withStreamWrapperOverride(
-				static function () use ($className): ?array {
-					$functions = spl_autoload_functions();
-					if ($functions === false) {
-						return null;
-					}
-
-					foreach ($functions as $preExistingAutoloader) {
-						$preExistingAutoloader($className);
-
-						/**
-						 * This static variable is populated by the side-effect of the stream wrapper
-						 * trying to read the file path when `include()` is used by an autoloader.
-						 *
-						 * This will not be `null` when the autoloader tried to read a file.
-						 */
-						if (FileReadTrapStreamWrapper::$autoloadLocatedFile !== null) {
-							return [FileReadTrapStreamWrapper::$autoloadLocatedFile, $className, null];
-						}
-					}
-
-					return null;
-				},
-			);
-		} finally {
-			restore_error_handler();
-		}
-	}
-
-	private function silenceErrors(): void
-	{
-		set_error_handler(static fn (): bool => true);
+		return null;
 	}
 
 }

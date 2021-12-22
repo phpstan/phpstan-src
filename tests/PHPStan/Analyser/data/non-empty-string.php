@@ -344,6 +344,9 @@ class MoreNonEmptyStringFunctions
 		assertType('string', rawurldecode($s));
 		assertType('non-empty-string', rawurldecode($nonEmpty));
 
+		assertType('string', preg_quote($s));
+		assertType('non-empty-string', preg_quote($nonEmpty));
+
 		assertType('string', sprintf($s));
 		assertType('non-empty-string', sprintf($nonEmpty));
 		assertType('string', vsprintf($s, []));

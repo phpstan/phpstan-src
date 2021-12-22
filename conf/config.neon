@@ -96,6 +96,7 @@ parameters:
 		- '#^Hoa\\#'
 		- '#^Symfony\\Polyfill\\Php80\\#'
 		- '#^Symfony\\Polyfill\\Mbstring\\#'
+		- '#^Symfony\\Polyfill\\Intl\\Normalizer\\#'
 		- '#^Composer\\#'
 	dynamicConstantNames:
 		- ICONV_IMPL

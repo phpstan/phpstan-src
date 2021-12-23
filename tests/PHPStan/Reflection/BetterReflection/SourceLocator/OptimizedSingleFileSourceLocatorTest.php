@@ -9,13 +9,14 @@ use SingleFileSourceLocatorTestClass;
 use stdClass;
 use TestSingleFileSourceLocator\AFoo;
 use function str_replace;
+use const PHP_VERSION_ID;
 
 class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 {
 
-	public function dataClass(): array
+	public function dataClass(): iterable
 	{
-		return [
+		yield from [
 			[
 				AFoo::class,
 				AFoo::class,
@@ -36,6 +37,16 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 				SingleFileSourceLocatorTestClass::class,
 				__DIR__ . '/data/b.php',
 			],
+		];
+
+		if (PHP_VERSION_ID < 80100) {
+			return;
+		}
+
+		yield [
+			'OptimizedDirectory\\TestEnum',
+			'OptimizedDirectory\\TestEnum',
+			__DIR__ . '/data/directory/enum.php',
 		];
 	}
 

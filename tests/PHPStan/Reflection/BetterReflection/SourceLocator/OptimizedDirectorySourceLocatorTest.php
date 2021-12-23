@@ -13,9 +13,9 @@ use const PHP_VERSION_ID;
 class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 {
 
-	public function dataClass(): array
+	public function dataClass(): iterable
 	{
-		return [
+		yield from [
 			[
 				AFoo::class,
 				AFoo::class,
@@ -36,6 +36,16 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 				BFoo::class,
 				'b.php',
 			],
+		];
+
+		if (PHP_VERSION_ID < 80100) {
+			return;
+		}
+
+		yield [
+			'OptimizedDirectory\\TestEnum',
+			'OptimizedDirectory\\TestEnum',
+			'enum.php',
 		];
 	}
 

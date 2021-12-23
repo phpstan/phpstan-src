@@ -15,7 +15,7 @@ jobs:
   static-analysis:
     name: "PHPStan"
     runs-on: ${{ matrix.operating-system }}
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     strategy:
       fail-fast: false
@@ -79,7 +79,7 @@ jobs:
     name: "PHPStan with result cache"
 
     runs-on: "ubuntu-latest"
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     strategy:
       matrix:
@@ -125,7 +125,7 @@ jobs:
     name: "Generate baseline"
 
     runs-on: "ubuntu-latest"
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     strategy:
       matrix:

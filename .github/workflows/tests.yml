@@ -15,7 +15,7 @@ jobs:
   tests:
     name: "Tests"
     runs-on: ${{ matrix.operating-system }}
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     strategy:
       fail-fast: false
@@ -76,7 +76,7 @@ jobs:
   tests-old-phpunit:
     name: "Tests with old PHPUnit"
     runs-on: ${{ matrix.operating-system }}
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     strategy:
       fail-fast: false

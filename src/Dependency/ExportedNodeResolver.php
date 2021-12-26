@@ -100,7 +100,7 @@ class ExportedNodeResolver
 
 					throw new ShouldNotHappenException();
 				}, $adaptations),
-				$this->exportClassStatements($node->stmts, $fileName, $node, $className),
+				$this->exportClassStatements($node->stmts, $fileName, $className),
 			);
 		}
 
@@ -119,7 +119,7 @@ class ExportedNodeResolver
 					$docComment !== null ? $docComment->getText() : null,
 				),
 				$extendsNames,
-				$this->exportClassStatements($node->stmts, $fileName, $node, $interfaceName),
+				$this->exportClassStatements($node->stmts, $fileName, $interfaceName),
 			);
 		}
 
@@ -143,7 +143,7 @@ class ExportedNodeResolver
 					$docComment !== null ? $docComment->getText() : null,
 				),
 				$implementsNames,
-				$this->exportClassStatements($node->stmts, $fileName, $node, $enumName),
+				$this->exportClassStatements($node->stmts, $fileName, $enumName),
 			);
 		}
 
@@ -286,11 +286,11 @@ class ExportedNodeResolver
 	 * @param Node\Stmt[] $statements
 	 * @return ExportedNode[]
 	 */
-	private function exportClassStatements(array $statements, string $fileName, Node\Stmt\ClassLike $classNode, string $namespacedName): array
+	private function exportClassStatements(array $statements, string $fileName, string $namespacedName): array
 	{
 		$exportedNodes = [];
 		foreach ($statements as $statement) {
-			$exportedNode = $this->exportClassStatement($statement, $fileName, $classNode, $namespacedName);
+			$exportedNode = $this->exportClassStatement($statement, $fileName, $namespacedName);
 			if ($exportedNode === null) {
 				continue;
 			}
@@ -301,7 +301,7 @@ class ExportedNodeResolver
 		return $exportedNodes;
 	}
 
-	private function exportClassStatement(Node\Stmt $node, string $fileName, Node\Stmt\ClassLike $classNode, string $namespacedName): ?ExportedNode
+	private function exportClassStatement(Node\Stmt $node, string $fileName, string $namespacedName): ?ExportedNode
 	{
 		if ($node instanceof ClassMethod) {
 			if ($node->isAbstract() || $node->isFinal() || !$node->isPrivate()) {
@@ -333,10 +333,6 @@ class ExportedNodeResolver
 				return null;
 			}
 
-			if (!$classNode instanceof Class_) {
-				return null;
-			}
-
 			$docComment = $node->getDocComment();
 
 			return new ExportedPropertiesNode(
@@ -357,10 +353,6 @@ class ExportedNodeResolver
 
 		if ($node instanceof Node\Stmt\ClassConst) {
 			if ($node->isPrivate()) {
-				return null;
-			}
-
-			if (!$classNode instanceof Class_) {
 				return null;
 			}
 

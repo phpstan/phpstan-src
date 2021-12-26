@@ -124,7 +124,6 @@ class ExportedNodeResolver
 		}
 
 		if ($node instanceof Node\Stmt\Enum_ && $node->namespacedName !== null) {
-			// todo scalarType
 			$implementsNames = array_map(static fn (Name $name): string => (string) $name, $node->implements);
 			$docComment = $node->getDocComment();
 

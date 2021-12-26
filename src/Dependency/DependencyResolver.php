@@ -60,6 +60,10 @@ class DependencyResolver
 			foreach ($node->extends as $className) {
 				$this->addClassToDependencies($className->toString(), $dependenciesReflections);
 			}
+		} elseif ($node instanceof Node\Stmt\Enum_) {
+			foreach ($node->implements as $className) {
+				$this->addClassToDependencies($className->toString(), $dependenciesReflections);
+			}
 		} elseif ($node instanceof InClassMethodNode) {
 			$nativeMethod = $scope->getFunction();
 			if ($nativeMethod !== null) {

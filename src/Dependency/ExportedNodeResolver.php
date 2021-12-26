@@ -11,6 +11,8 @@ use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassNode;
+use PHPStan\Dependency\ExportedNode\ExportedEnumCaseNode;
+use PHPStan\Dependency\ExportedNode\ExportedEnumNode;
 use PHPStan\Dependency\ExportedNode\ExportedFunctionNode;
 use PHPStan\Dependency\ExportedNode\ExportedInterfaceNode;
 use PHPStan\Dependency\ExportedNode\ExportedMethodNode;
@@ -118,6 +120,31 @@ class ExportedNodeResolver
 				),
 				$extendsNames,
 				$this->exportClassStatements($node->stmts, $fileName, $node, $interfaceName),
+			);
+		}
+
+		if ($node instanceof Node\Stmt\Enum_ && $node->namespacedName !== null) {
+			// todo scalarType
+			$implementsNames = array_map(static fn (Name $name): string => (string) $name, $node->implements);
+			$docComment = $node->getDocComment();
+
+			$enumName = $node->namespacedName->toString();
+			$scalarType = null;
+			if ($node->scalarType !== null) {
+				$scalarType = $node->scalarType->toString();
+			}
+
+			return new ExportedEnumNode(
+				$enumName,
+				$scalarType,
+				$this->exportPhpDocNode(
+					$fileName,
+					$enumName,
+					null,
+					$docComment !== null ? $docComment->getText() : null,
+				),
+				$implementsNames,
+				$this->exportClassStatements($node->stmts, $fileName, $node, $enumName),
 			);
 		}
 
@@ -353,6 +380,21 @@ class ExportedNodeResolver
 				$node->isPublic(),
 				$node->isPrivate(),
 				$node->isFinal(),
+				$this->exportPhpDocNode(
+					$fileName,
+					$namespacedName,
+					null,
+					$docComment !== null ? $docComment->getText() : null,
+				),
+			);
+		}
+
+		if ($node instanceof Node\Stmt\EnumCase) {
+			$docComment = $node->getDocComment();
+
+			return new ExportedEnumCaseNode(
+				$node->name->toString(),
+				$node->expr !== null ? $this->printer->prettyPrintExpr($node->expr) : null,
 				$this->exportPhpDocNode(
 					$fileName,
 					$namespacedName,

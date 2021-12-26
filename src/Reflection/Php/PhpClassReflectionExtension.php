@@ -217,40 +217,33 @@ class PhpClassReflectionExtension
 
 		$declaringTraitName = null;
 		$phpDocType = null;
-		$resolvedPhpDoc = $this->stubPhpDocProvider->findPropertyPhpDoc(
-			$declaringClassName,
-			$propertyReflection->getName(),
-		);
-		if ($resolvedPhpDoc === null) {
-			if ($declaringClassReflection->getFileName() !== null) {
-				$declaringTraitName = $this->findPropertyTrait($propertyReflection);
-				$constructorName = null;
-				if (method_exists($propertyReflection, 'isPromoted') && $propertyReflection->isPromoted()) {
-					if ($declaringClassReflection->hasConstructor()) {
-						$constructorName = $declaringClassReflection->getConstructor()->getName();
-					}
+		$resolvedPhpDoc = null;
+		if ($declaringClassReflection->getFileName() !== null) {
+			$declaringTraitName = $this->findPropertyTrait($propertyReflection);
+			$constructorName = null;
+			if (method_exists($propertyReflection, 'isPromoted') && $propertyReflection->isPromoted()) {
+				if ($declaringClassReflection->hasConstructor()) {
+					$constructorName = $declaringClassReflection->getConstructor()->getName();
 				}
-
-				if ($constructorName === null) {
-					$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
-						$docComment,
-						$declaringClassReflection,
-						$declaringClassReflection->getFileName(),
-						$declaringTraitName,
-						$propertyName,
-					);
-				} elseif ($docComment !== null) {
-					$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-						$declaringClassReflection->getFileName(),
-						$declaringClassName,
-						$declaringTraitName,
-						$constructorName,
-						$docComment,
-					);
-				}
-				$phpDocBlockClassReflection = $declaringClassReflection;
 			}
-		} else {
+
+			if ($constructorName === null) {
+				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
+					$docComment,
+					$declaringClassReflection,
+					$declaringClassReflection->getFileName(),
+					$declaringTraitName,
+					$propertyName,
+				);
+			} elseif ($docComment !== null) {
+				$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+					$declaringClassReflection->getFileName(),
+					$declaringClassName,
+					$declaringTraitName,
+					$constructorName,
+					$docComment,
+				);
+			}
 			$phpDocBlockClassReflection = $declaringClassReflection;
 		}
 

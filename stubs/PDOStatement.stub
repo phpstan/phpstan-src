@@ -1,8 +1,9 @@
 <?php
 
 /**
- * @implements Traversable<array<int|string, mixed>>
- * @implements IteratorAggregate<array<int|string, mixed>>
+ * @template RowType of array
+ * @implements Traversable<int, RowType>
+ * @implements IteratorAggregate<int, RowType>
  * @link https://php.net/manual/en/class.pdostatement.php
  */
 class PDOStatement implements Traversable, IteratorAggregate

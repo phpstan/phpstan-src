@@ -158,28 +158,6 @@ class TypehintHelper
 				return $phpDocType;
 			}
 
-			if (TypeCombinator::removeNull($type) instanceof IterableType) {
-				if ($phpDocType instanceof UnionType) {
-					$innerTypes = [];
-					foreach ($phpDocType->getTypes() as $innerType) {
-						if ($innerType instanceof ArrayType) {
-							$innerTypes[] = new IterableType(
-								$innerType->getKeyType(),
-								$innerType->getItemType(),
-							);
-						} else {
-							$innerTypes[] = $innerType;
-						}
-					}
-					$phpDocType = new UnionType($innerTypes);
-				} elseif ($phpDocType instanceof ArrayType) {
-					$phpDocType = new IterableType(
-						$phpDocType->getKeyType(),
-						$phpDocType->getItemType(),
-					);
-				}
-			}
-
 			if (
 				(!$phpDocType instanceof NeverType || ($type instanceof MixedType && !$type->isExplicitMixed()))
 				&& $type->isSuperTypeOf(TemplateTypeHelper::resolveToBounds($phpDocType))->yes()

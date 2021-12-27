@@ -320,7 +320,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/returnTypes-iterable.php'], [
 			[
-				'Method ReturnTypesIterable\Foo::stringIterable() should return iterable<string> but returns array<int, int>.',
+				'Method ReturnTypesIterable\Foo::stringIterable() should return array<string> but returns array<int, int>.',
 				27,
 			],
 			[

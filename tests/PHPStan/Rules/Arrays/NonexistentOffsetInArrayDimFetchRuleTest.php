@@ -348,4 +348,9 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testAccessOnPhpDocTypeUnionOfArrayAndArrayLikeObjectWithNativeTypeIterable(): void
+	{
+		$this->analyse([__DIR__ . '/data/access-on-phpdoc-type-union-of-array-and-array-like-object-with-native-type-iterable.php'], []);
+	}
+
 }

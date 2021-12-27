@@ -19,6 +19,7 @@ use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\CircularTypeAliasDefinitionException;
+use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -30,6 +31,8 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeAlias;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionClass;
+use ReflectionEnum;
+use ReflectionEnumBackedCase;
 use ReflectionException;
 use ReflectionMethod;
 use function array_diff;
@@ -533,6 +536,15 @@ class ClassReflection
 		return false;
 	}
 
+	public function isBackedEnum(): bool
+	{
+		if (!$this->reflection instanceof ReflectionEnum) {
+			return false;
+		}
+
+		return $this->reflection->isBacked();
+	}
+
 	public function hasEnumCase(string $name): bool
 	{
 		if (!$this->isEnum()) {
@@ -544,6 +556,25 @@ class ClassReflection
 		}
 
 		return $this->reflection->hasCase($name);
+	}
+
+	public function getEnumCase(string $name): EnumCaseReflection
+	{
+		if (!$this->hasEnumCase($name)) {
+			throw new ShouldNotHappenException(sprintf('Enum case %s::%s does not exist.', $this->getDisplayName(), $name));
+		}
+
+		if (!$this->reflection instanceof ReflectionEnum) {
+			throw new ShouldNotHappenException();
+		}
+
+		$case = $this->reflection->getCase($name);
+		$valueType = null;
+		if ($case instanceof ReflectionEnumBackedCase) {
+			$valueType = ConstantTypeHelper::getTypeFromValue($case->getBackingValue());
+		}
+
+		return new EnumCaseReflection($this, $name, $valueType);
 	}
 
 	public function isClass(): bool

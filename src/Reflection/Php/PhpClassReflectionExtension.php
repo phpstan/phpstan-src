@@ -34,6 +34,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\GeneralizePrecision;
@@ -42,11 +43,13 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeUtils;
 use ReflectionClass;
 use ReflectionParameter;
 use function array_key_exists;
+use function array_keys;
 use function array_map;
 use function array_shift;
 use function array_slice;
@@ -184,6 +187,35 @@ class PhpClassReflectionExtension
 				$declaringClassName,
 				$classReflection->getName(),
 			));
+		}
+
+		if ($declaringClassReflection->isEnum()) {
+			if (
+				$propertyName === 'name'
+				|| ($declaringClassReflection->isBackedEnum() && $propertyName === 'value')
+			) {
+				$types = [];
+				foreach (array_keys($classReflection->getNativeReflection()->getConstants()) as $name) {
+					if (!$classReflection->hasEnumCase($name)) {
+						continue;
+					}
+
+					if ($propertyName === 'name') {
+						$types[] = new ConstantStringType($name);
+						continue;
+					}
+
+					$case = $classReflection->getEnumCase($name);
+					$value = $case->getBackingValueType();
+					if ($value === null) {
+						throw new ShouldNotHappenException();
+					}
+
+					$types[] = $value;
+				}
+
+				return new EnumPropertyReflection($declaringClassReflection, TypeCombinator::union(...$types));
+			}
 		}
 
 		$deprecatedDescription = null;

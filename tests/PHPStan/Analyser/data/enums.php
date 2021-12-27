@@ -16,12 +16,15 @@ enum Foo
 class FooClass
 {
 
-	public function doFoo(): void
+	public function doFoo(Foo $foo): void
 	{
 		assertType(Foo::class . '::ONE' , Foo::ONE);
 		assertType(Foo::class . '::TWO', Foo::TWO);
 		assertType('*ERROR*', Foo::TWO->value);
 		assertType('array<' . Foo::class . '>', Foo::cases());
+		assertType("'ONE'|'TWO'", $foo->name);
+		assertType("'ONE'", Foo::ONE->name);
+		assertType("'TWO'", Foo::TWO->name);
 	}
 
 }
@@ -37,15 +40,17 @@ enum Bar : string
 class BarClass
 {
 
-	public function doFoo(string $s): void
+	public function doFoo(string $s, Bar $bar): void
 	{
 		assertType(Bar::class . '::ONE', Bar::ONE);
 		assertType(Bar::class . '::TWO', Bar::TWO);
-		assertType('string', Bar::TWO->value);
+		assertType('\'two\'', Bar::TWO->value);
 		assertType('array<' . Bar::class . '>', Bar::cases());
 
 		assertType(Bar::class, Bar::from($s));
 		assertType(Bar::class . '|null', Bar::tryFrom($s));
+
+		assertType("'one'|'two'", $bar->value);
 	}
 
 }
@@ -63,11 +68,11 @@ enum Baz : int
 class BazClass
 {
 
-	public function doFoo(int $i): void
+	public function doFoo(int $i, Baz $baz): void
 	{
 		assertType(Baz::class . '::ONE', Baz::ONE);
 		assertType(Baz::class . '::TWO', Baz::TWO);
-		assertType('int', Baz::TWO->value);
+		assertType('2', Baz::TWO->value);
 		assertType('array<' . Baz::class . '>', Baz::cases());
 
 		assertType(Baz::class, Baz::from($i));
@@ -76,6 +81,10 @@ class BazClass
 		assertType('3', Baz::THREE);
 		assertType('4', Baz::FOUR);
 		assertType('*ERROR*', Baz::NONEXISTENT);
+
+		assertType('1|2', $baz->value);
+		assertType('1', Baz::ONE->value);
+		assertType('2', Baz::TWO->value);
 	}
 
 	/**

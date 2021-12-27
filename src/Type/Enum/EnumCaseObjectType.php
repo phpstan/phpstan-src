@@ -2,9 +2,14 @@
 
 namespace PHPStan\Type\Enum;
 
+use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\Php\EnumPropertyReflection;
+use PHPStan\Reflection\PropertyReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -87,6 +92,32 @@ class EnumCaseObjectType extends ObjectType
 	public function getSubtractedType(): ?Type
 	{
 		return null;
+	}
+
+	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
+	{
+		$classReflection = $this->getClassReflection();
+		if ($classReflection === null) {
+			return parent::getProperty($propertyName, $scope);
+
+		}
+		if ($propertyName === 'name') {
+			return new EnumPropertyReflection($classReflection, new ConstantStringType($this->enumCaseName));
+		}
+
+		if ($classReflection->isBackedEnum() && $propertyName === 'value') {
+			if ($classReflection->hasEnumCase($this->enumCaseName)) {
+				$enumCase = $classReflection->getEnumCase($this->enumCaseName);
+				$valueType = $enumCase->getBackingValueType();
+				if ($valueType === null) {
+					throw new ShouldNotHappenException();
+				}
+
+				return new EnumPropertyReflection($classReflection, $valueType);
+			}
+		}
+
+		return parent::getProperty($propertyName, $scope);
 	}
 
 	/**

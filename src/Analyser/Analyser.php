@@ -135,7 +135,7 @@ class Analyser
 	{
 		$this->collectedErrors = [];
 		set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use ($analysedFiles): bool {
-			if (error_reporting() === 0) {
+			if ((error_reporting() & $errno) === 0) {
 				// silence @ operator
 				return true;
 			}

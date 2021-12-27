@@ -473,14 +473,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 
-		$errors = $this->runAnalyse(__DIR__ . '/data/enums.php');
+		$errors = $this->runAnalyse(__DIR__ . '/data/enums-integration.php');
 		$this->assertCount(3, $errors);
-		$this->assertSame('Access to an undefined property EnumTypeAssertions\Foo::TWO::$value.', $errors[0]->getMessage());
-		$this->assertSame(23, $errors[0]->getLine());
-		$this->assertSame('Access to undefined constant EnumTypeAssertions\Baz::NONEXISTENT.', $errors[1]->getMessage());
-		$this->assertSame(78, $errors[1]->getLine());
-		$this->assertSame('Strict comparison using === between EnumTypeAssertions\Foo::ONE and EnumTypeAssertions\Foo::TWO will always evaluate to false.', $errors[2]->getMessage());
-		$this->assertSame(141, $errors[2]->getLine());
+		$this->assertSame('Access to an undefined property EnumIntegrationTest\Foo::TWO::$value.', $errors[0]->getMessage());
+		$this->assertSame(22, $errors[0]->getLine());
+		$this->assertSame('Access to undefined constant EnumIntegrationTest\Bar::NONEXISTENT.', $errors[1]->getMessage());
+		$this->assertSame(49, $errors[1]->getLine());
+		$this->assertSame('Strict comparison using === between EnumIntegrationTest\Foo::ONE and EnumIntegrationTest\Foo::TWO will always evaluate to false.', $errors[2]->getMessage());
+		$this->assertSame(79, $errors[2]->getLine());
 	}
 
 	/**

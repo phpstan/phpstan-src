@@ -34,7 +34,9 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\GeneralizePrecision;
@@ -62,6 +64,7 @@ use function is_array;
 use function method_exists;
 use function reset;
 use function sprintf;
+use function strtolower;
 
 class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension
@@ -475,6 +478,23 @@ class PhpClassReflectionExtension
 				$declaringClassName,
 				$classReflection->getName(),
 			));
+		}
+
+		if (
+			$declaringClass->isEnum()
+			&& $declaringClass->getName() !== 'UnitEnum'
+			&& strtolower($methodReflection->getName()) === 'cases'
+		) {
+			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+			foreach (array_keys($classReflection->getNativeReflection()->getConstants()) as $name) {
+				if (!$classReflection->hasEnumCase($name)) {
+					continue;
+				}
+
+				$arrayBuilder->setOffsetValueType(null, new EnumCaseObjectType($classReflection->getName(), $name));
+			}
+
+			return new EnumCasesMethodReflection($declaringClass, $arrayBuilder->getArray());
 		}
 
 		if ($this->signatureMapProvider->hasMethodSignature($declaringClassName, $methodReflection->getName())) {

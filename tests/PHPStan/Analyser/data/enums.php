@@ -21,7 +21,7 @@ class FooClass
 		assertType(Foo::class . '::ONE' , Foo::ONE);
 		assertType(Foo::class . '::TWO', Foo::TWO);
 		assertType('*ERROR*', Foo::TWO->value);
-		assertType('array<' . Foo::class . '>', Foo::cases());
+		assertType('array{EnumTypeAssertions\Foo::ONE, EnumTypeAssertions\Foo::TWO}', Foo::cases());
 		assertType("'ONE'|'TWO'", $foo->name);
 		assertType("'ONE'", Foo::ONE->name);
 		assertType("'TWO'", Foo::TWO->name);
@@ -45,7 +45,7 @@ class BarClass
 		assertType(Bar::class . '::ONE', Bar::ONE);
 		assertType(Bar::class . '::TWO', Bar::TWO);
 		assertType('\'two\'', Bar::TWO->value);
-		assertType('array<' . Bar::class . '>', Bar::cases());
+		assertType('array{EnumTypeAssertions\Bar::ONE, EnumTypeAssertions\Bar::TWO}', Bar::cases());
 
 		assertType(Bar::class, Bar::from($s));
 		assertType(Bar::class . '|null', Bar::tryFrom($s));
@@ -73,7 +73,7 @@ class BazClass
 		assertType(Baz::class . '::ONE', Baz::ONE);
 		assertType(Baz::class . '::TWO', Baz::TWO);
 		assertType('2', Baz::TWO->value);
-		assertType('array<' . Baz::class . '>', Baz::cases());
+		assertType('array{EnumTypeAssertions\Baz::ONE, EnumTypeAssertions\Baz::TWO}', Baz::cases());
 
 		assertType(Baz::class, Baz::from($i));
 		assertType(Baz::class . '|null', Baz::tryFrom($i));

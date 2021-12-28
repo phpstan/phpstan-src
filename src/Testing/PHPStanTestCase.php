@@ -4,6 +4,7 @@ namespace PHPStan\Testing;
 
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\DirectScopeFactory;
+use PHPStan\Analyser\Error;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeFactory;
@@ -26,11 +27,13 @@ use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\TypeAliasResolver;
+use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
 use function array_merge;
 use function implode;
 use function is_dir;
 use function mkdir;
+use function rtrim;
 use function sha1;
 use function sprintf;
 use function sys_get_temp_dir;
@@ -197,6 +200,27 @@ abstract class PHPStanTestCase extends TestCase
 		$actual = $this->getFileHelper()->normalizePath($actual);
 
 		$this->assertSame($expected, $actual, $message);
+	}
+
+	/**
+	 * @param Error[]|string[] $errors
+	 */
+	protected function assertNoErrors(array $errors): void
+	{
+		try {
+			$this->assertCount(0, $errors);
+		} catch (ExpectationFailedException $e) {
+			$messages = [];
+			foreach ($errors as $error) {
+				if ($error instanceof Error) {
+					$messages[] = sprintf("- %s\n  in %s on line %d\n", rtrim($error->getMessage(), '.'), $error->getFile(), $error->getLine());
+				} else {
+					$messages[] = $error;
+				}
+			}
+
+			$this->fail($e->getMessage() . "\n\nEmitted errors:\n" . implode("\n", $messages));
+		}
 	}
 
 	protected function skipIfNotOnWindows(): void

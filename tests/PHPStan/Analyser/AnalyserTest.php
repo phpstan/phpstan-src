@@ -87,7 +87,7 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertCount(0, $result);
+		$this->assertNoErrors($result);
 	}
 
 	public function testIgnoreErrorByPathAndCount(): void
@@ -100,7 +100,7 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-fails.php', false);
-		$this->assertCount(0, $result);
+		$this->assertNoErrors($result);
 	}
 
 	public function dataTrueAndFalse(): array
@@ -204,7 +204,7 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertCount(0, $result);
+		$this->assertNoErrors($result);
 	}
 
 	public function testIgnoreErrorByPathsMultipleUnmatched(): void
@@ -277,7 +277,7 @@ class AnalyserTest extends PHPStanTestCase
 			__DIR__ . '/data/traits-ignore/Foo.php',
 			__DIR__ . '/data/traits-ignore/FooTrait.php',
 		], true);
-		$this->assertCount(0, $result);
+		$this->assertNoErrors($result);
 	}
 
 	public function testIgnoredErrorMissingMessage(): void
@@ -358,7 +358,7 @@ class AnalyserTest extends PHPStanTestCase
 		$result = $this->runAnalyser($ignoreErrors, true, [
 			__DIR__ . '/data/two-fails.php',
 		], $onlyFiles);
-		$this->assertCount(0, $result);
+		$this->assertNoErrors($result);
 	}
 
 	/**
@@ -381,7 +381,7 @@ class AnalyserTest extends PHPStanTestCase
 		$result = $this->runAnalyser($ignoreErrors, true, [
 			__DIR__ . '/data/two-fails.php',
 		], $onlyFiles);
-		$this->assertCount(0, $result);
+		$this->assertNoErrors($result);
 	}
 
 	/**

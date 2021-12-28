@@ -160,7 +160,7 @@ class StubValidator
 			new FunctionTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new FunctionSignatureVarianceRule($varianceCheck),
 			new InterfaceAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper),
-			new InterfaceTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
+			new InterfaceTemplateTypeRule($templateTypeCheck),
 			new MethodTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new MethodSignatureVarianceRule($varianceCheck),
 			new TraitTemplateTypeRule($fileTypeMapper, $templateTypeCheck),

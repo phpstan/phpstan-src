@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Generics;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use PHPStan\Type\FileTypeMapper;
 
 /**
  * @extends RuleTestCase<InterfaceTemplateTypeRule>
@@ -19,7 +18,6 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 		$typeAliasResolver = $this->createTypeAliasResolver(['TypeAlias' => 'int'], $broker);
 
 		return new InterfaceTemplateTypeRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
 			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker, true), new GenericObjectTypeCheck(), $typeAliasResolver, true),
 		);
 	}

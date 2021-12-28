@@ -30,8 +30,6 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		require_once __DIR__ . '/data/class-template.php';
-
 		$this->analyse([__DIR__ . '/data/class-template.php'], [
 			[
 				'PHPDoc tag @template for class ClassTemplateType\Foo cannot have existing class stdClass as its name.',

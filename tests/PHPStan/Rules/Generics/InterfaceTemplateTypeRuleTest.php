@@ -50,4 +50,9 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testInClass(): void
+	{
+		$this->analyse([__DIR__ . '/data/class-template.php'], []);
+	}
+
 }

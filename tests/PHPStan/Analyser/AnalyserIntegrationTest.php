@@ -36,13 +36,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testMissingPropertyAndMethod(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/../../notAutoloaded/Foo.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testMissingClassErrorAboutMisconfiguredAutoloader(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/../../notAutoloaded/Bar.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testMissingFunctionErrorAboutMisconfiguredAutoloader(): void
@@ -56,7 +56,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testAnonymousClassWithInheritedConstructor(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/anonymous-class-with-inherited-constructor.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testNestedFunctionCallsDoNotCauseExcessiveFunctionNesting(): void
@@ -65,7 +65,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			$this->markTestSkipped('This test takes too long with XDebug enabled.');
 		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/nested-functions.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testExtendingUnknownClass(): void
@@ -85,7 +85,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testExtendingKnownClassWithCheck(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/extending-known-class-with-check.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 
 		$reflectionProvider = $this->createReflectionProvider();
 		$this->assertTrue($reflectionProvider->hasClass(Foo::class));
@@ -94,7 +94,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testInfiniteRecursionWithCallable(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/Foo-callable.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testClassThatExtendsUnknownClassIn3rdPartyPropertyTypeShouldNotCauseAutoloading(): void
@@ -131,7 +131,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		}
 		require_once __DIR__ . '/data/custom-function-in-signature-map.php';
 		$errors = $this->runAnalyse(__DIR__ . '/data/custom-function-in-signature-map.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testAnonymousClassWithWrongFilename(): void
@@ -159,13 +159,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			$this->markTestSkipped();
 		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/extends-pdo-statement.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testArrayDestructuringArrayDimFetch(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/array-destructuring-array-dim-fetch.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testNestedNamespaces(): void
@@ -181,7 +181,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testClassExistsAutoloadingError(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/class-exists.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testCollectWarnings(): void
@@ -213,13 +213,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testPropertyAssignIntersectionStaticTypeBug(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/property-assign-intersection-static-type-bug.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug2823(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-2823.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testTwoSameClassesInSingleFile(): void
@@ -251,31 +251,31 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug3405(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3405.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug3415(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/../Rules/Methods/data/bug-3415.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug3415Two(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/../Rules/Methods/data/bug-3415-2.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug3468(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3468.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug3686(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3686.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug3379(): void
@@ -291,19 +291,19 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug3798(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3798.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug3909(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3909.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug4097(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4097.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug4300(): void
@@ -317,38 +317,38 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug4513(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4513.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug1871(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-1871.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug3309(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3309.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug3769(): void
 	{
 		require_once __DIR__ . '/../Rules/Generics/data/bug-3769.php';
 		$errors = $this->runAnalyse(__DIR__ . '/../Rules/Generics/data/bug-3769.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug3922(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3922-integration.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug1843(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-1843.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug4713(): void
@@ -368,7 +368,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug4288(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4288.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 
 		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(MyClass::class);
@@ -388,14 +388,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug4702(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4702.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testFunctionThatExistsOn72AndLater(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/ldap-exop-passwd.php');
 		if (PHP_VERSION_ID >= 70200) {
-			$this->assertCount(0, $errors);
+			$this->assertNoErrors($errors);
 			return;
 		}
 
@@ -409,7 +409,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4715.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug4734(): void
@@ -437,25 +437,25 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug5529(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5529.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug5527(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5527.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug5639(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5639.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug5657(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5657.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug5951(): void
@@ -464,7 +464,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-5951.php');
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testEnums(): void

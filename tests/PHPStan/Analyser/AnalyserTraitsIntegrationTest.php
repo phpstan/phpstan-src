@@ -112,7 +112,7 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 	public function testDuplicateMethodDefinition(): void
 	{
 		$errors = $this->runAnalyse([__DIR__ . '/traits/duplicateMethod/Lesson.php']);
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testWrongPropertyType(): void
@@ -147,13 +147,13 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 	public function testTraitInEval(): void
 	{
 		$errors = $this->runAnalyse([__DIR__ . '/traits/TraitInEvalUse.php']);
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testParameterNotFoundCrash(): void
 	{
 		$errors = $this->runAnalyse([__DIR__ . '/traits/parameter-not-found.php']);
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testMissingReturnInAbstractTraitMethod(): void
@@ -162,7 +162,7 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 			__DIR__ . '/traits/TraitWithAbstractMethod.php',
 			__DIR__ . '/traits/ClassImplementingTraitWithAbstractMethod.php',
 		]);
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	/**

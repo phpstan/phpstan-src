@@ -167,3 +167,15 @@ class Lorem
 	}
 
 }
+
+class EnumInConst
+{
+
+	const TEST = [Foo::ONE];
+
+	public function doFoo()
+	{
+		assertType('array{EnumTypeAssertions\Foo::ONE}', self::TEST);
+	}
+
+}

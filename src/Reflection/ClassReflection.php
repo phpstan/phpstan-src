@@ -369,6 +369,10 @@ class ClassReflection
 
 	public function hasProperty(string $propertyName): bool
 	{
+		if ($this->isEnum()) {
+			return $this->hasNativeProperty($propertyName);
+		}
+
 		foreach ($this->propertiesClassReflectionExtensions as $extension) {
 			if ($extension->hasProperty($this, $propertyName)) {
 				return true;
@@ -473,6 +477,10 @@ class ClassReflection
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
+		if ($this->isEnum()) {
+			return $this->getNativeProperty($propertyName);
+		}
+
 		$key = $propertyName;
 		if ($scope->isInClass()) {
 			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());

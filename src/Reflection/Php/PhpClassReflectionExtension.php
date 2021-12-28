@@ -217,7 +217,7 @@ class PhpClassReflectionExtension
 					$types[] = $value;
 				}
 
-				return new EnumPropertyReflection($declaringClassReflection, TypeCombinator::union(...$types));
+				return new PhpPropertyReflection($declaringClassReflection, null, null, TypeCombinator::union(...$types), $classReflection->getNativeReflection()->getProperty($propertyName), null, false, false);
 			}
 		}
 
@@ -225,7 +225,11 @@ class PhpClassReflectionExtension
 		$isDeprecated = false;
 		$isInternal = false;
 
-		if ($includingAnnotations && $this->annotationsPropertiesClassReflectionExtension->hasProperty($classReflection, $propertyName)) {
+		if (
+			$includingAnnotations
+			&& !$declaringClassReflection->isEnum()
+			&& $this->annotationsPropertiesClassReflectionExtension->hasProperty($classReflection, $propertyName)
+		) {
 			$hierarchyDistances = $classReflection->getClassHierarchyDistances();
 			$annotationProperty = $this->annotationsPropertiesClassReflectionExtension->getProperty($classReflection, $propertyName);
 			if (!isset($hierarchyDistances[$annotationProperty->getDeclaringClass()->getName()])) {

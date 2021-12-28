@@ -14,8 +14,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use function class_exists;
-use function in_array;
-use function strtolower;
 
 class ClassBlacklistReflectionProvider implements ReflectionProvider
 {
@@ -83,19 +81,6 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 		if ($this->phpStormStubsSourceStubber->hasClass($className)) {
 			// check that userland class isn't aliased to the same name as a class from stubs
 			if (!class_exists($className, false)) {
-				return true;
-			}
-			if (in_array(strtolower($className), [
-				'reflectionuniontype',
-				'attribute',
-				'returntypewillchange',
-				'reflectionintersectiontype',
-				'unitenum',
-				'backedenum',
-				'reflectionenum',
-				'reflectionenumunitcase',
-				'reflectionenumbackedcase',
-			], true)) {
 				return true;
 			}
 			$reflection = new ReflectionClass($className);

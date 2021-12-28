@@ -36,6 +36,9 @@ class ClassTemplateTypeRule implements Rule
 			return [];
 		}
 		$classReflection = $scope->getClassReflection();
+		if (!$classReflection->isClass()) {
+			return [];
+		}
 		$className = $classReflection->getName();
 		if ($classReflection->isAnonymous()) {
 			$displayName = 'anonymous class';

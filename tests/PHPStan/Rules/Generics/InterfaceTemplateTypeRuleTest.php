@@ -26,8 +26,6 @@ class InterfaceTemplateTypeRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		require_once __DIR__ . '/data/interface-template.php';
-
 		$this->analyse([__DIR__ . '/data/interface-template.php'], [
 			[
 				'PHPDoc tag @template for interface InterfaceTemplateType\Foo cannot have existing class stdClass as its name.',

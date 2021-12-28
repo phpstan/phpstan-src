@@ -107,4 +107,9 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5446.php'], []);
 	}
 
+	public function testInInterface(): void
+	{
+		$this->analyse([__DIR__ . '/data/interface-template.php'], []);
+	}
+
 }

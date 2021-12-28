@@ -91,17 +91,17 @@ parameters:
 	resultCachePath: %tmpDir%/resultCache.php
 	resultCacheChecksProjectExtensionFilesDependencies: false
 	staticReflectionClassNamePatterns:
-		- '#^PhpParser\\#'
-		- '#^PHPStan\\#'
-		- '#^Hoa\\#'
-		- '#^Symfony\\Polyfill\\Php80\\#'
-		- '#^Symfony\\Polyfill\\Mbstring\\#'
-		- '#^Symfony\\Polyfill\\Intl\\Normalizer\\#'
-		- '#^Symfony\\Polyfill\\Php73\\#'
-		- '#^Symfony\\Polyfill\\Php74\\#'
-		- '#^Symfony\\Polyfill\\Php72\\#'
-		- '#^Symfony\\Polyfill\\Intl\\Grapheme\\#'
-		- '#^Composer\\#'
+		- '#^PhpParser\\#i'
+		- '#^PHPStan\\#i'
+		- '#^Hoa\\#i'
+		- '#^Symfony\\Polyfill\\Php80\\#i'
+		- '#^Symfony\\Polyfill\\Mbstring\\#i'
+		- '#^Symfony\\Polyfill\\Intl\\Normalizer\\#i'
+		- '#^Symfony\\Polyfill\\Php73\\#i'
+		- '#^Symfony\\Polyfill\\Php74\\#i'
+		- '#^Symfony\\Polyfill\\Php72\\#i'
+		- '#^Symfony\\Polyfill\\Intl\\Grapheme\\#i'
+		- '#^Composer\\#i'
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- LIBXML_VERSION

@@ -1034,8 +1034,8 @@ class StaticClassConstant
 	public function doFoo()
 	{
 		$staticClassName = static::class;
-		assertType('class-string<static(PHPStan\Generics\FunctionsAssertType\StaticClassConstant)>', $staticClassName);
-		assertType('static(PHPStan\Generics\FunctionsAssertType\StaticClassConstant)', new $staticClassName);
+		assertType('class-string<static(PHPStan\Generics\FunctionsAssertType\StaticClassConstant<T (class PHPStan\Generics\FunctionsAssertType\StaticClassConstant, argument)>)>', $staticClassName);
+		assertType('static(PHPStan\Generics\FunctionsAssertType\StaticClassConstant<T (class PHPStan\Generics\FunctionsAssertType\StaticClassConstant, argument)>)', new $staticClassName);
 	}
 
 	/**

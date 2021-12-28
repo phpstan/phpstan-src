@@ -140,12 +140,20 @@ class MatchExpressionRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/match-enums.php'], [
 			[
-				'Match expression does not handle remaining value: MatchEnums\Foo::THREE',
+				'Match expression does not handle remaining values: MatchEnums\Foo::THREE|MatchEnums\Foo::TWO',
 				19,
 			],
 			[
+				'Match expression does not handle remaining values: MatchEnums\Foo::THREE|MatchEnums\Foo::TWO',
+				35,
+			],
+			[
+				'Match expression does not handle remaining value: MatchEnums\Foo::THREE',
+				56,
+			],
+			[
 				'Match arm comparison between *NEVER* and MatchEnums\Foo is always false.',
-				40,
+				77,
 			],
 		]);
 	}

@@ -13,19 +13,22 @@ class ThisType extends StaticType
 	/**
 	 * @api
 	 */
-	public function __construct(ClassReflection $classReflection)
+	public function __construct(
+		ClassReflection $classReflection,
+		?Type $subtractedType = null,
+	)
 	{
-		parent::__construct($classReflection);
+		parent::__construct($classReflection, $subtractedType);
 	}
 
 	public function changeBaseClass(ClassReflection $classReflection): StaticType
 	{
-		return new self($classReflection);
+		return new self($classReflection, $this->getSubtractedType());
 	}
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return sprintf('$this(%s)', $this->getClassName());
+		return sprintf('$this(%s)', $this->getStaticObjectType()->describe($level));
 	}
 
 	/**
@@ -35,7 +38,7 @@ class ThisType extends StaticType
 	{
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 		if ($reflectionProvider->hasClass($properties['baseClass'])) {
-			return new self($reflectionProvider->getClass($properties['baseClass']));
+			return new self($reflectionProvider->getClass($properties['baseClass']), $properties['subtractedType'] ?? null);
 		}
 
 		return new ErrorType();

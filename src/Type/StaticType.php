@@ -14,21 +14,27 @@ use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function array_keys;
+use function array_values;
+use function count;
 use function get_class;
 use function sprintf;
 
 /** @api */
-class StaticType implements TypeWithClassName
+class StaticType implements TypeWithClassName, SubtractableType
 {
 
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
 	private ClassReflection $classReflection;
+
+	private ?Type $subtractedType;
 
 	private ?ObjectType $staticObjectType = null;
 
@@ -37,9 +43,17 @@ class StaticType implements TypeWithClassName
 	/**
 	 * @api
 	 */
-	public function __construct(ClassReflection $classReflection)
+	public function __construct(
+		ClassReflection $classReflection,
+		?Type $subtractedType = null,
+	)
 	{
+		if ($subtractedType instanceof NeverType) {
+			$subtractedType = null;
+		}
+
 		$this->classReflection = $classReflection;
+		$this->subtractedType = $subtractedType;
 		$this->baseClass = $classReflection->getName();
 	}
 
@@ -76,10 +90,11 @@ class StaticType implements TypeWithClassName
 				return $this->staticObjectType = new GenericObjectType(
 					$this->classReflection->getName(),
 					$this->classReflection->typeMapToList($typeMap),
+					$this->subtractedType,
 				);
 			}
 
-			return $this->staticObjectType = new ObjectType($this->classReflection->getName(), null, $this->classReflection);
+			return $this->staticObjectType = new ObjectType($this->classReflection->getName(), $this->subtractedType, $this->classReflection);
 		}
 
 		return $this->staticObjectType;
@@ -146,7 +161,7 @@ class StaticType implements TypeWithClassName
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return sprintf('static(%s)', $this->getClassName());
+		return sprintf('static(%s)', $this->getStaticObjectType()->describe($level));
 	}
 
 	public function canAccessProperties(): TrinaryLogic
@@ -262,7 +277,7 @@ class StaticType implements TypeWithClassName
 
 	public function changeBaseClass(ClassReflection $classReflection): self
 	{
-		return new self($classReflection);
+		return new self($classReflection, $this->subtractedType);
 	}
 
 	public function isIterable(): TrinaryLogic
@@ -378,6 +393,66 @@ class StaticType implements TypeWithClassName
 		return $this;
 	}
 
+	public function subtract(Type $type): Type
+	{
+		if ($this->subtractedType !== null) {
+			$type = TypeCombinator::union($this->subtractedType, $type);
+		}
+
+		return $this->changeSubtractedType($type);
+	}
+
+	public function getTypeWithoutSubtractedType(): Type
+	{
+		return $this->changeSubtractedType(null);
+	}
+
+	public function changeSubtractedType(?Type $subtractedType): Type
+	{
+		$classReflection = $this->getClassReflection();
+		if ($classReflection !== null && $classReflection->isEnum() && $subtractedType !== null) {
+			$constants = $classReflection->getNativeReflection()->getConstants();
+			$cases = [];
+			foreach (array_keys($constants) as $constantName) {
+				if (!$classReflection->hasEnumCase($constantName)) {
+					continue;
+				}
+
+				$cases[$constantName] = new EnumCaseObjectType($classReflection->getName(), $constantName);
+			}
+
+			foreach (TypeUtils::flattenTypes($subtractedType) as $subType) {
+				if (!$subType instanceof EnumCaseObjectType) {
+					return new self($this->classReflection, $subtractedType);
+				}
+
+				if ($subType->getClassName() !== $this->getClassName()) {
+					return new self($this->classReflection, $subtractedType);
+				}
+
+				unset($cases[$subType->getEnumCaseName()]);
+			}
+
+			$cases = array_values($cases);
+			if (count($cases) === 0) {
+				return new NeverType();
+			}
+
+			if (count($cases) === 1) {
+				return $cases[0];
+			}
+
+			return new UnionType(array_values($cases));
+		}
+
+		return new self($this->classReflection, $subtractedType);
+	}
+
+	public function getSubtractedType(): ?Type
+	{
+		return $this->subtractedType;
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */
@@ -385,7 +460,7 @@ class StaticType implements TypeWithClassName
 	{
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 		if ($reflectionProvider->hasClass($properties['baseClass'])) {
-			return new self($reflectionProvider->getClass($properties['baseClass']));
+			return new self($reflectionProvider->getClass($properties['baseClass']), $properties['subtractedType'] ?? null);
 		}
 
 		return new ErrorType();

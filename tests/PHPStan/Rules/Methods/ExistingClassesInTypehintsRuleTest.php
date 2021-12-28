@@ -131,7 +131,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				113,
 			],
 			[
-				'Template type U of method TestMethodTypehints\TemplateTypeMissingInParameter::doFoo() is not referenced in a parameter.',
+				'Template type U of method TestMethodTypehints\TemplateTypeMissingInParameter::doFoo() is neither referenced in a parameter nor in the return type.',
 				130,
 			],
 		]);
@@ -242,7 +242,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-4641.php'], [
 			[
-				'Template type U of method Bug4641\I::getRepository() is not referenced in a parameter.',
+				'Template type U of method Bug4641\I::getRepository() is neither referenced in a parameter nor in the return type.',
 				26,
 			],
 		]);

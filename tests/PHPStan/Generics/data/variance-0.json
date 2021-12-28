@@ -1,11 +1,11 @@
 [
     {
-        "message": "Template type T of function PHPStan\\Generics\\Variance\\returnOut() is not referenced in a parameter.",
+        "message": "Template type T of function PHPStan\\Generics\\Variance\\returnOut() is neither referenced in a parameter nor in the return type.",
         "line": 109,
         "ignorable": true
     },
     {
-        "message": "Template type T of function PHPStan\\Generics\\Variance\\returnInvariant() is not referenced in a parameter.",
+        "message": "Template type T of function PHPStan\\Generics\\Variance\\returnInvariant() is neither referenced in a parameter nor in the return type.",
         "line": 117,
         "ignorable": true
     }

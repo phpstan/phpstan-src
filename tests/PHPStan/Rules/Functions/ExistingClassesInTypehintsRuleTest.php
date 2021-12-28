@@ -89,7 +89,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				87,
 			],
 			[
-				'Template type T of function TestFunctionTypehints\templateTypeMissingInParameter() is not referenced in a parameter.',
+				'Template type T of function TestFunctionTypehints\templateTypeMissingInParameter() is neither referenced in a parameter nor in the return type.',
 				96,
 			],
 		]);

@@ -77,7 +77,7 @@ class FunctionDefinitionCheck
 		string $parameterMessage,
 		string $returnMessage,
 		string $unionTypesMessage,
-		string $templateTypeMissingInParameterMessage,
+		string $unusedTemplateTypeMessage,
 		string $unresolvableParameterTypeMessage,
 		string $unresolvableReturnTypeMessage,
 	): array
@@ -90,7 +90,7 @@ class FunctionDefinitionCheck
 			$parameterMessage,
 			$returnMessage,
 			$unionTypesMessage,
-			$templateTypeMissingInParameterMessage,
+			$unusedTemplateTypeMessage,
 			$unresolvableParameterTypeMessage,
 			$unresolvableReturnTypeMessage,
 		);
@@ -204,7 +204,7 @@ class FunctionDefinitionCheck
 		string $parameterMessage,
 		string $returnMessage,
 		string $unionTypesMessage,
-		string $templateTypeMissingInParameterMessage,
+		string $unusedTemplateTypeMessage,
 		string $unresolvableParameterTypeMessage,
 		string $unresolvableReturnTypeMessage,
 	): array
@@ -218,7 +218,7 @@ class FunctionDefinitionCheck
 			$parameterMessage,
 			$returnMessage,
 			$unionTypesMessage,
-			$templateTypeMissingInParameterMessage,
+			$unusedTemplateTypeMessage,
 			$unresolvableParameterTypeMessage,
 			$unresolvableReturnTypeMessage,
 		);
@@ -233,7 +233,7 @@ class FunctionDefinitionCheck
 		string $parameterMessage,
 		string $returnMessage,
 		string $unionTypesMessage,
-		string $templateTypeMissingInParameterMessage,
+		string $unusedTemplateTypeMessage,
 		string $unresolvableParameterTypeMessage,
 		string $unresolvableReturnTypeMessage,
 	): array
@@ -363,7 +363,7 @@ class FunctionDefinitionCheck
 			});
 
 			foreach (array_keys($templateTypes) as $templateTypeName) {
-				$errors[] = RuleErrorBuilder::message(sprintf($templateTypeMissingInParameterMessage, $templateTypeName))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf($unusedTemplateTypeMessage, $templateTypeName))->build();
 			}
 		}
 

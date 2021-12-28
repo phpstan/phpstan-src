@@ -353,6 +353,15 @@ class FunctionDefinitionCheck
 				});
 			}
 
+			TypeTraverser::map($parametersAcceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
+				if ($type instanceof TemplateType) {
+					unset($templateTypes[$type->getName()]);
+					return $traverse($type);
+				}
+
+				return $traverse($type);
+			});
+
 			foreach (array_keys($templateTypes) as $templateTypeName) {
 				$errors[] = RuleErrorBuilder::message(sprintf($templateTypeMissingInParameterMessage, $templateTypeName))->build();
 			}

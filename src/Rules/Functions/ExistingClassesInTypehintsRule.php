@@ -49,7 +49,7 @@ class ExistingClassesInTypehintsRule implements Rule
 				$functionName,
 			),
 			sprintf('Function %s() uses native union types but they\'re supported only on PHP 8.0 and later.', $functionName),
-			sprintf('Template type %%s of function %s() is not referenced in a parameter.', $functionName),
+			sprintf('Template type %%s of function %s() is neither referenced in a parameter nor in the return type.', $functionName),
 			sprintf(
 				'Parameter $%%s of function %s() has unresolvable native type.',
 				$functionName,

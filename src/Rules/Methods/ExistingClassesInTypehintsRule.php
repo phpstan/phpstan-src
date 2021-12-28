@@ -57,7 +57,7 @@ class ExistingClassesInTypehintsRule implements Rule
 				$methodName,
 			),
 			sprintf('Method %s::%s() uses native union types but they\'re supported only on PHP 8.0 and later.', $className, $methodName),
-			sprintf('Template type %%s of method %s::%s() is not referenced in a parameter.', $className, $methodName),
+			sprintf('Template type %%s of method %s::%s() is neither referenced in a parameter nor in the return type.', $className, $methodName),
 			sprintf(
 				'Parameter $%%s of method %s::%s() has unresolvable native type.',
 				$className,

@@ -97,3 +97,12 @@ function templateTypeMissingInParameter(string $a)
 {
 
 }
+
+/**
+ * @template T
+ * @return class-string<T>
+ */
+function genericTemplateReturnClassString(string $string)
+{
+
+}

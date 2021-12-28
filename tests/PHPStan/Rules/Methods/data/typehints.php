@@ -141,4 +141,13 @@ class TemplateTypeMissingInParameter
 
 	}
 
+    /**
+     * @template U of object
+     * @return class-string<U>
+     */
+    public function doBarReturn(string $class): string
+    {
+        return get_class($class);
+    }
+
 }

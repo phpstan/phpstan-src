@@ -10,6 +10,16 @@ enum Foo
 	case ONE;
 	case TWO;
 
+	public function doFoo(): void
+	{
+		if ($this === self::ONE) {
+			assertType(self::class . '::ONE', $this);
+			return;
+		}
+
+		assertType(self::class . '::TWO', $this);
+	}
+
 }
 
 

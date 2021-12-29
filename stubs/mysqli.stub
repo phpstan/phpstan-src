@@ -51,7 +51,7 @@ class mysqli_stmt
 }
 
 /**
- * @template TValue of object
+ * @template TValue
  * @implements Traversable<int, TValue>
  * @implements IteratorAggregate<int, TValue>
  * @link https://www.php.net/manual/en/mysqli-result.fetch-object.php

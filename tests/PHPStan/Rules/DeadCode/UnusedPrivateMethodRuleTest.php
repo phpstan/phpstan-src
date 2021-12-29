@@ -66,4 +66,18 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/callable-unused-private-method.php'], []);
 	}
 
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/unused-private-method-enum.php'], [
+			[
+				'Method UnusedPrivateMethodEnunm\Foo::doBaz() is unused.',
+				18,
+			],
+		]);
+	}
+
 }

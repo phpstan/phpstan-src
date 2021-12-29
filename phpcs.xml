@@ -165,6 +165,11 @@
 			<property name="nullPosition" value="last"/>
 		</properties>
 	</rule>
+	<rule ref="SlevomatCodingStandard.Classes.RequireConstructorPropertyPromotion">
+		<properties>
+			<property name="enable" value="true"/>
+		</properties>
+	</rule>
 	<exclude-pattern>tests/*/data</exclude-pattern>
 	<exclude-pattern>tests/*/Fixture</exclude-pattern>
 	<exclude-pattern>tests/e2e/resultCache_1.php</exclude-pattern>

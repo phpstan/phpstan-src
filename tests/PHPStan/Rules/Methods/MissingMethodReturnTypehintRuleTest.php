@@ -81,7 +81,13 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 
 	public function testBug5436(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-5436.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-5436.php'], [
+			[
+				'Method Bug5436\PDO::query() return type with generic class PDOStatement does not specify its types: TValue',
+				8,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
 	}
 
 }

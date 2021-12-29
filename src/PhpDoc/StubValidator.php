@@ -155,11 +155,11 @@ class StubValidator
 			new OverridingMethodRule($phpVersion, new MethodSignatureRule(true, true), true),
 
 			// level 2
-			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper),
+			new ClassAncestorsRule($genericAncestorsCheck, $crossCheckInterfacesHelper),
 			new ClassTemplateTypeRule($templateTypeCheck),
 			new FunctionTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new FunctionSignatureVarianceRule($varianceCheck),
-			new InterfaceAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper),
+			new InterfaceAncestorsRule($genericAncestorsCheck, $crossCheckInterfacesHelper),
 			new InterfaceTemplateTypeRule($templateTypeCheck),
 			new MethodTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new MethodSignatureVarianceRule($varianceCheck),

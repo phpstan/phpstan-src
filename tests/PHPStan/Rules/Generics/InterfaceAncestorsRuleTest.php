@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Generics;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use PHPStan\Type\FileTypeMapper;
 
 /**
  * @extends RuleTestCase<InterfaceAncestorsRule>
@@ -15,7 +14,6 @@ class InterfaceAncestorsRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new InterfaceAncestorsRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
 			new GenericAncestorsCheck(
 				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),

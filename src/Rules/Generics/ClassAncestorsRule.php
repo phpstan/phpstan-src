@@ -9,7 +9,6 @@ use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\Rules\Rule;
-use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use function array_map;
 use function array_merge;
@@ -21,19 +20,15 @@ use function sprintf;
 class ClassAncestorsRule implements Rule
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
 	private GenericAncestorsCheck $genericAncestorsCheck;
 
 	private CrossCheckInterfacesHelper $crossCheckInterfacesHelper;
 
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
 		GenericAncestorsCheck $genericAncestorsCheck,
 		CrossCheckInterfacesHelper $crossCheckInterfacesHelper,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
 		$this->genericAncestorsCheck = $genericAncestorsCheck;
 		$this->crossCheckInterfacesHelper = $crossCheckInterfacesHelper;
 	}
@@ -57,27 +52,11 @@ class ClassAncestorsRule implements Rule
 			return [];
 		}
 		$className = $classReflection->getName();
-
-		$extendsTags = [];
-		$implementsTags = [];
-		$docComment = $originalNode->getDocComment();
-		if ($docComment !== null) {
-			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-				$scope->getFile(),
-				$className,
-				null,
-				null,
-				$docComment->getText(),
-			);
-			$extendsTags = $resolvedPhpDoc->getExtendsTags();
-			$implementsTags = $resolvedPhpDoc->getImplementsTags();
-		}
-
 		$escapedClassName = SprintfHelper::escapeFormatString($className);
 
 		$extendsErrors = $this->genericAncestorsCheck->check(
 			$originalNode->extends !== null ? [$originalNode->extends] : [],
-			array_map(static fn (ExtendsTag $tag): Type => $tag->getType(), $extendsTags),
+			array_map(static fn (ExtendsTag $tag): Type => $tag->getType(), $classReflection->getExtendsTags()),
 			sprintf('Class %s @extends tag contains incompatible type %%s.', $escapedClassName),
 			sprintf('Class %s has @extends tag, but does not extend any class.', $escapedClassName),
 			sprintf('The @extends tag of class %s describes %%s but the class extends %%s.', $escapedClassName),
@@ -92,7 +71,7 @@ class ClassAncestorsRule implements Rule
 
 		$implementsErrors = $this->genericAncestorsCheck->check(
 			$originalNode->implements,
-			array_map(static fn (ImplementsTag $tag): Type => $tag->getType(), $implementsTags),
+			array_map(static fn (ImplementsTag $tag): Type => $tag->getType(), $classReflection->getImplementsTags()),
 			sprintf('Class %s @implements tag contains incompatible type %%s.', $escapedClassName),
 			sprintf('Class %s has @implements tag, but does not implement any interface.', $escapedClassName),
 			sprintf('The @implements tag of class %s describes %%s but the class implements: %%s', $escapedClassName),

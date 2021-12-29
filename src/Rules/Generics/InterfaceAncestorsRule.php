@@ -9,7 +9,6 @@ use PHPStan\Node\InClassNode;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\Rules\Rule;
-use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use function array_map;
 use function array_merge;
@@ -21,19 +20,15 @@ use function sprintf;
 class InterfaceAncestorsRule implements Rule
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
 	private GenericAncestorsCheck $genericAncestorsCheck;
 
 	private CrossCheckInterfacesHelper $crossCheckInterfacesHelper;
 
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
 		GenericAncestorsCheck $genericAncestorsCheck,
 		CrossCheckInterfacesHelper $crossCheckInterfacesHelper,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
 		$this->genericAncestorsCheck = $genericAncestorsCheck;
 		$this->crossCheckInterfacesHelper = $crossCheckInterfacesHelper;
 	}
@@ -55,26 +50,11 @@ class InterfaceAncestorsRule implements Rule
 		$classReflection = $scope->getClassReflection();
 
 		$interfaceName = $classReflection->getName();
-		$extendsTags = [];
-		$implementsTags = [];
-		$docComment = $originalNode->getDocComment();
-		if ($docComment !== null) {
-			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-				$scope->getFile(),
-				$interfaceName,
-				null,
-				null,
-				$docComment->getText(),
-			);
-			$extendsTags = $resolvedPhpDoc->getExtendsTags();
-			$implementsTags = $resolvedPhpDoc->getImplementsTags();
-		}
-
 		$escapedInterfaceName = SprintfHelper::escapeFormatString($interfaceName);
 
 		$extendsErrors = $this->genericAncestorsCheck->check(
 			$originalNode->extends,
-			array_map(static fn (ExtendsTag $tag): Type => $tag->getType(), $extendsTags),
+			array_map(static fn (ExtendsTag $tag): Type => $tag->getType(), $classReflection->getExtendsTags()),
 			sprintf('Interface %s @extends tag contains incompatible type %%s.', $escapedInterfaceName),
 			sprintf('Interface %s has @extends tag, but does not extend any interface.', $escapedInterfaceName),
 			sprintf('The @extends tag of interface %s describes %%s but the interface extends: %%s', $escapedInterfaceName),
@@ -89,7 +69,7 @@ class InterfaceAncestorsRule implements Rule
 
 		$implementsErrors = $this->genericAncestorsCheck->check(
 			[],
-			array_map(static fn (ImplementsTag $tag): Type => $tag->getType(), $implementsTags),
+			array_map(static fn (ImplementsTag $tag): Type => $tag->getType(), $classReflection->getImplementsTags()),
 			sprintf('Interface %s @implements tag contains incompatible type %%s.', $escapedInterfaceName),
 			sprintf('Interface %s has @implements tag, but can not implement any interface, must extend from it.', $escapedInterfaceName),
 			'',

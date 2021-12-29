@@ -339,7 +339,7 @@ class StubPhpDocProvider
 			return;
 		}
 
-		if (!$node instanceof Class_ && !$node instanceof Interface_ && !$node instanceof Trait_) {
+		if (!$node instanceof Class_ && !$node instanceof Interface_ && !$node instanceof Trait_ && !$node instanceof Node\Stmt\Enum_) {
 			return;
 		}
 

@@ -189,3 +189,36 @@ class EnumInConst
 	}
 
 }
+
+/** @template T */
+interface GenericInterface
+{
+
+	/** @return T */
+	public function doFoo();
+
+}
+
+/** @implements GenericInterface<int> */
+enum EnumImplementsGeneric: int implements GenericInterface
+{
+
+	case ONE = 1;
+
+	public function doFoo()
+	{
+		return 1;
+	}
+
+}
+
+class TestEnumImplementsGeneric
+{
+
+	public function doFoo(EnumImplementsGeneric $e): void
+	{
+		assertType('int', $e->doFoo());
+		assertType('int', EnumImplementsGeneric::ONE->doFoo());
+	}
+
+}

@@ -61,6 +61,8 @@ class ClassCaseSensitivityCheck
 			return 'Interface';
 		} elseif ($classReflection->isTrait()) {
 			return 'Trait';
+		} elseif ($classReflection->isEnum()) {
+			return 'Enum';
 		}
 
 		return 'Class';

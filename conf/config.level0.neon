@@ -24,6 +24,7 @@ rules:
 	- PHPStan\Rules\Classes\DuplicateDeclarationRule
 	- PHPStan\Rules\Classes\EnumSanityRule
 	- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
+	- PHPStan\Rules\Classes\ExistingClassesInEnumImplementsRule
 	- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
 	- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
 	- PHPStan\Rules\Classes\InstantiationRule

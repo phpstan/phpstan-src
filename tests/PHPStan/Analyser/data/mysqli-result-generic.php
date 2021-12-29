@@ -1,6 +1,6 @@
 <?php
 
-namespace MysqliStatementGeneric;
+namespace MysqliResultGeneric;
 
 use mysqli;
 use mysqli_result;

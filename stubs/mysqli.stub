@@ -59,12 +59,12 @@ class mysqli_stmt
 class mysqli_result implements Traversable, IteratorAggregate
 {
     /**
-     * @template of object
+     * @template T of object
      * @param class-string<T> $class
      * @param array<mixed> $constructor_args
-     * @return false|null|T
+     * @return T|null|false
      */
-    public function fetch_object($class = stdclass::class, array $constructor_args = array()): object|false|null {}
+    function fetch_object(string $class = stdClass::class, array $constructor_args = []): object|false|null {}
 }
 
 /**

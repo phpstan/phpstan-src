@@ -22,7 +22,9 @@ parameters:
 	featureToggles:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
-		skipCheckGenericClasses: []
+		skipCheckGenericClasses: [
+			'mysqli'
+		]
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

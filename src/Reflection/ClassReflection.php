@@ -1063,6 +1063,10 @@ class ClassReflection
 	public function isGeneric(): bool
 	{
 		if ($this->isGeneric === null) {
+			if ($this->isEnum()) {
+				return $this->isGeneric = false;
+			}
+
 			$this->isGeneric = count($this->getTemplateTags()) > 0;
 		}
 

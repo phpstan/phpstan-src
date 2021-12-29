@@ -121,10 +121,10 @@ class InvalidPhpDocVarTagTypeRule implements Rule
 			$escapedIdentifier = SprintfHelper::escapeFormatString($identifier);
 			$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
 				$varTagType,
-				sprintf('%s contains generic type %%s but class %%s is not generic.', $escapedIdentifier),
-				sprintf('Generic type %%s in %s does not specify all template types of class %%s: %%s', $escapedIdentifier),
-				sprintf('Generic type %%s in %s specifies %%d template types, but class %%s supports only %%d: %%s', $escapedIdentifier),
-				sprintf('Type %%s in generic type %%s in %s is not subtype of template type %%s of class %%s.', $escapedIdentifier),
+				sprintf('%s contains generic type %%s but %%s %%s is not generic.', $escapedIdentifier),
+				sprintf('Generic type %%s in %s does not specify all template types of %%s %%s: %%s', $escapedIdentifier),
+				sprintf('Generic type %%s in %s specifies %%d template types, but %%s %%s supports only %%d: %%s', $escapedIdentifier),
+				sprintf('Type %%s in generic type %%s in %s is not subtype of template type %%s of %%s %%s.', $escapedIdentifier),
 			));
 
 			foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($varTagType) as [$innerName, $genericTypeNames]) {

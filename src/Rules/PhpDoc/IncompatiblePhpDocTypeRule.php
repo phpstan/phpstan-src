@@ -108,19 +108,19 @@ class IncompatiblePhpDocTypeRule implements Rule
 				$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
 					$phpDocParamType,
 					sprintf(
-						'PHPDoc tag @param for parameter $%s contains generic type %%s but class %%s is not generic.',
+						'PHPDoc tag @param for parameter $%s contains generic type %%s but %%s %%s is not generic.',
 						$escapedParameterName,
 					),
 					sprintf(
-						'Generic type %%s in PHPDoc tag @param for parameter $%s does not specify all template types of class %%s: %%s',
+						'Generic type %%s in PHPDoc tag @param for parameter $%s does not specify all template types of %%s %%s: %%s',
 						$escapedParameterName,
 					),
 					sprintf(
-						'Generic type %%s in PHPDoc tag @param for parameter $%s specifies %%d template types, but class %%s supports only %%d: %%s',
+						'Generic type %%s in PHPDoc tag @param for parameter $%s specifies %%d template types, but %%s %%s supports only %%d: %%s',
 						$escapedParameterName,
 					),
 					sprintf(
-						'Type %%s in generic type %%s in PHPDoc tag @param for parameter $%s is not subtype of template type %%s of class %%s.',
+						'Type %%s in generic type %%s in PHPDoc tag @param for parameter $%s is not subtype of template type %%s of %%s %%s.',
 						$escapedParameterName,
 					),
 				));
@@ -161,10 +161,10 @@ class IncompatiblePhpDocTypeRule implements Rule
 				$isReturnSuperType = $nativeReturnType->isSuperTypeOf($phpDocReturnType);
 				$errors = array_merge($errors, $this->genericObjectTypeCheck->check(
 					$phpDocReturnType,
-					'PHPDoc tag @return contains generic type %s but class %s is not generic.',
-					'Generic type %s in PHPDoc tag @return does not specify all template types of class %s: %s',
-					'Generic type %s in PHPDoc tag @return specifies %d template types, but class %s supports only %d: %s',
-					'Type %s in generic type %s in PHPDoc tag @return is not subtype of template type %s of class %s.',
+					'PHPDoc tag @return contains generic type %s but %s %s is not generic.',
+					'Generic type %s in PHPDoc tag @return does not specify all template types of %s %s: %s',
+					'Generic type %s in PHPDoc tag @return specifies %d template types, but %s %s supports only %d: %s',
+					'Type %s in generic type %s in PHPDoc tag @return is not subtype of template type %s of %s %s.',
 				));
 				if ($isReturnSuperType->no()) {
 					$errors[] = RuleErrorBuilder::message(sprintf(

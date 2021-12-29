@@ -47,7 +47,7 @@ class MixinRuleTest extends RuleTestCase
 				34,
 			],
 			[
-				'Generic type Traversable<int, int, int> in PHPDoc tag @mixin specifies 3 template types, but class Traversable supports only 2: TKey, TValue',
+				'Generic type Traversable<int, int, int> in PHPDoc tag @mixin specifies 3 template types, but interface Traversable supports only 2: TKey, TValue',
 				34,
 			],
 			[

@@ -137,10 +137,10 @@ class TemplateTypeCheck
 			$escapedTemplateTagName = SprintfHelper::escapeFormatString($templateTagName);
 			$genericObjectErrors = $this->genericObjectTypeCheck->check(
 				$boundType,
-				sprintf('PHPDoc tag @template %s bound contains generic type %%s but class %%s is not generic.', $escapedTemplateTagName),
-				sprintf('PHPDoc tag @template %s bound has type %%s which does not specify all template types of class %%s: %%s', $escapedTemplateTagName),
-				sprintf('PHPDoc tag @template %s bound has type %%s which specifies %%d template types, but class %%s supports only %%d: %%s', $escapedTemplateTagName),
-				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s is not subtype of template type %%s of class %%s.', $escapedTemplateTagName),
+				sprintf('PHPDoc tag @template %s bound contains generic type %%s but %%s %%s is not generic.', $escapedTemplateTagName),
+				sprintf('PHPDoc tag @template %s bound has type %%s which does not specify all template types of %%s %%s: %%s', $escapedTemplateTagName),
+				sprintf('PHPDoc tag @template %s bound has type %%s which specifies %%d template types, but %%s %%s supports only %%d: %%s', $escapedTemplateTagName),
+				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s is not subtype of template type %%s of %%s %%s.', $escapedTemplateTagName),
 			);
 			foreach ($genericObjectErrors as $genericObjectError) {
 				$messages[] = $genericObjectError;

@@ -111,22 +111,22 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 		return array_merge($errors, $this->genericObjectTypeCheck->check(
 			$phpDocType,
 			sprintf(
-				'PHPDoc tag @var for constant %s::%s contains generic type %%s but class %%s is not generic.',
+				'PHPDoc tag @var for constant %s::%s contains generic type %%s but %%s %%s is not generic.',
 				$className,
 				$escapedConstantName,
 			),
 			sprintf(
-				'Generic type %%s in PHPDoc tag @var for constant %s::%s does not specify all template types of class %%s: %%s',
+				'Generic type %%s in PHPDoc tag @var for constant %s::%s does not specify all template types of %%s %%s: %%s',
 				$className,
 				$escapedConstantName,
 			),
 			sprintf(
-				'Generic type %%s in PHPDoc tag @var for constant %s::%s specifies %%d template types, but class %%s supports only %%d: %%s',
+				'Generic type %%s in PHPDoc tag @var for constant %s::%s specifies %%d template types, but %%s %%s supports only %%d: %%s',
 				$className,
 				$escapedConstantName,
 			),
 			sprintf(
-				'Type %%s in generic type %%s in PHPDoc tag @var for constant %s::%s is not subtype of template type %%s of class %%s.',
+				'Type %%s in generic type %%s in PHPDoc tag @var for constant %s::%s is not subtype of template type %%s of %%s %%s.',
 				$className,
 				$escapedConstantName,
 			),

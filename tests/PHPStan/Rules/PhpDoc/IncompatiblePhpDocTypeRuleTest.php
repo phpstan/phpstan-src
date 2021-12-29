@@ -190,4 +190,18 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/generic-enum-param.php'], [
+			[
+				'PHPDoc tag @param for parameter $e contains generic type GenericEnumParam\FooEnum<int> but enum GenericEnumParam\FooEnum is not generic.',
+				16,
+			],
+		]);
+	}
+
 }

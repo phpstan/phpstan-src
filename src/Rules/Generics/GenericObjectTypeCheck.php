@@ -38,8 +38,17 @@ class GenericObjectTypeCheck
 			if ($classReflection === null) {
 				continue;
 			}
+
+			$classLikeDescription = 'class';
+			if ($classReflection->isInterface()) {
+				$classLikeDescription = 'interface';
+			} elseif ($classReflection->isTrait()) {
+				$classLikeDescription = 'trait';
+			} elseif ($classReflection->isEnum()) {
+				$classLikeDescription = 'enum';
+			}
 			if (!$classReflection->isGeneric()) {
-				$messages[] = RuleErrorBuilder::message(sprintf($classNotGenericMessage, $genericType->describe(VerbosityLevel::typeOnly()), $classReflection->getDisplayName()))->build();
+				$messages[] = RuleErrorBuilder::message(sprintf($classNotGenericMessage, $genericType->describe(VerbosityLevel::typeOnly()), $classLikeDescription, $classReflection->getDisplayName()))->build();
 				continue;
 			}
 
@@ -52,6 +61,7 @@ class GenericObjectTypeCheck
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$notEnoughTypesMessage,
 					$genericType->describe(VerbosityLevel::typeOnly()),
+					$classLikeDescription,
 					$classReflection->getDisplayName(false),
 					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes())),
 				))->build();
@@ -60,6 +70,7 @@ class GenericObjectTypeCheck
 					$extraTypesMessage,
 					$genericType->describe(VerbosityLevel::typeOnly()),
 					$genericTypeTypesCount,
+					$classLikeDescription,
 					$classReflection->getDisplayName(false),
 					$templateTypesCount,
 					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes())),
@@ -95,6 +106,7 @@ class GenericObjectTypeCheck
 					$genericTypeType->describe(VerbosityLevel::typeOnly()),
 					$genericType->describe(VerbosityLevel::typeOnly()),
 					$templateType->describe(VerbosityLevel::typeOnly()),
+					$classLikeDescription,
 					$classReflection->getDisplayName(false),
 				))->build();
 			}

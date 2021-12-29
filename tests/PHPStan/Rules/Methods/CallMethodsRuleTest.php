@@ -2251,4 +2251,26 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/first-class-method-callable.php'], []);
 	}
 
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+
+		$this->analyse([__DIR__ . '/data/call-method-in-enum.php'], [
+			[
+				'Call to an undefined method CallMethodInEnum\Foo::doNonexistent().',
+				11,
+			],
+			[
+				'Call to an undefined method CallMethodInEnum\Bar::doNonexistent().',
+				22,
+			],
+		]);
+	}
+
 }

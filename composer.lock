@@ -5199,7 +5199,7 @@
         },
         {
             "name": "phpstan/phpstan-php-parser",
-            "version": "dev-master",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-php-parser.git",
@@ -5221,7 +5221,6 @@
                 "phpstan/phpstan-strict-rules": "^1.0",
                 "phpunit/phpunit": "^9.5"
             },
-            "default-branch": true,
             "type": "phpstan-extension",
             "extra": {
                 "branch-alias": {
@@ -5245,7 +5244,7 @@
             "description": "PHP-Parser extensions for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-php-parser/issues",
-                "source": "https://github.com/phpstan/phpstan-php-parser/tree/master"
+                "source": "https://github.com/phpstan/phpstan-php-parser/tree/1.1.0"
             },
             "time": "2021-12-16T19:43:32+00:00"
         },
@@ -5306,21 +5305,21 @@
         },
         {
             "name": "phpstan/phpstan-strict-rules",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan-strict-rules.git",
-                "reference": "7f50eb112f37fda2ef956813d3f1e9b1e69d7940"
+                "reference": "e12d55f74a8cca18c6e684c6450767e055ba7717"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/7f50eb112f37fda2ef956813d3f1e9b1e69d7940",
-                "reference": "7f50eb112f37fda2ef956813d3f1e9b1e69d7940",
+                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/e12d55f74a8cca18c6e684c6450767e055ba7717",
+                "reference": "e12d55f74a8cca18c6e684c6450767e055ba7717",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1 || ^8.0",
-                "phpstan/phpstan": "^1.0"
+                "phpstan/phpstan": "^1.2.0"
             },
             "require-dev": {
                 "nikic/php-parser": "^4.13.0",
@@ -5351,9 +5350,9 @@
             "description": "Extra strict and opinionated rules for PHPStan",
             "support": {
                 "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
-                "source": "https://github.com/phpstan/phpstan-strict-rules/tree/1.0.0"
+                "source": "https://github.com/phpstan/phpstan-strict-rules/tree/1.1.0"
             },
-            "time": "2021-10-11T06:57:58+00:00"
+            "time": "2021-11-18T09:30:29+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

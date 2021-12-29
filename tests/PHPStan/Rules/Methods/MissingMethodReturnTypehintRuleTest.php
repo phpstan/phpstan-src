@@ -81,17 +81,10 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 
 	public function testBug5436(): void
 	{
-		$errorLine = 7;
-
-		// compensate the ReturnTypeWillChange attribute
-		if (PHP_VERSION_ID >= 80100) {
-			$errorLine = 8;
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-5436.php'], [
 			[
 				'Method Bug5436\PDO::query() return type with generic class PDOStatement does not specify its types: TValue',
-				$errorLine,
+				7,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);

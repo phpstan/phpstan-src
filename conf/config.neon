@@ -23,7 +23,7 @@ parameters:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
 		skipCheckGenericClasses: [
-			'mysqli'
+			'mysqli_result'
 		]
 	fileExtensions:
 		- php

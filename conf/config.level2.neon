@@ -14,9 +14,11 @@ rules:
 	- PHPStan\Rules\Classes\AccessPrivateConstantThroughStaticRule
 	- PHPStan\Rules\Comparison\UsageOfVoidMatchExpressionRule
 	- PHPStan\Rules\Functions\IncompatibleDefaultParameterTypeRule
+	- PHPStan\Rules\Generics\ClassAncestorsRule
 	- PHPStan\Rules\Generics\ClassTemplateTypeRule
 	- PHPStan\Rules\Generics\FunctionTemplateTypeRule
 	- PHPStan\Rules\Generics\FunctionSignatureVarianceRule
+	- PHPStan\Rules\Generics\InterfaceAncestorsRule
 	- PHPStan\Rules\Generics\InterfaceTemplateTypeRule
 	- PHPStan\Rules\Generics\MethodTemplateTypeRule
 	- PHPStan\Rules\Generics\MethodSignatureVarianceRule
@@ -47,14 +49,6 @@ services:
 		class: PHPStan\Rules\Functions\CallCallablesRule
 		arguments:
 			reportMaybes: %reportMaybes%
-		tags:
-			- phpstan.rules.rule
-	-
-		class: PHPStan\Rules\Generics\ClassAncestorsRule
-		tags:
-			- phpstan.rules.rule
-	-
-		class: PHPStan\Rules\Generics\InterfaceAncestorsRule
 		tags:
 			- phpstan.rules.rule
 	-

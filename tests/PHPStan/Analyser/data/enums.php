@@ -242,3 +242,25 @@ enum EnumWithMixin
 function (EnumWithMixin $i): void {
 	assertType('int', $i->doFoo());
 };
+
+/**
+ * @phpstan-type TypeAlias array{foo: int, bar: string}
+ */
+enum EnumWithTypeAliases
+{
+
+	/**
+	 * @param TypeAlias $p
+	 * @return TypeAlias
+	 */
+	public function doFoo($p)
+	{
+		assertType('array{foo: int, bar: string}', $p);
+	}
+
+	public function doBar()
+	{
+		assertType('array{foo: int, bar: string}', $this->doFoo());
+	}
+
+}

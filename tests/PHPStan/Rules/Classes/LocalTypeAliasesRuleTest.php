@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<LocalTypeAliasesRule>
@@ -87,6 +88,20 @@ class LocalTypeAliasesRuleTest extends RuleTestCase
 			[
 				'Invalid type definition detected in type alias InvalidTypeAlias.',
 				62,
+			],
+		]);
+	}
+
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/local-type-aliases-enums.php'], [
+			[
+				'Cannot import type alias Test: class LocalTypeAliasesEnums\NonexistentClass does not exist.',
+				8,
 			],
 		]);
 	}

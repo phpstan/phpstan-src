@@ -93,8 +93,18 @@ class LocalTypeAliasesRule implements Rule
 				continue;
 			}
 
+			$resolvedName = $resolveName($aliasName);
 			if ($this->reflectionProvider->hasClass($resolveName($aliasName))) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as a class in scope of %s.', $aliasName, $className))->build();
+				$classReflection = $this->reflectionProvider->getClass($resolvedName);
+				$classLikeDescription = 'a class';
+				if ($classReflection->isInterface()) {
+					$classLikeDescription = 'an interface';
+				} elseif ($classReflection->isTrait()) {
+					$classLikeDescription = 'a trait';
+				} elseif ($classReflection->isEnum()) {
+					$classLikeDescription = 'an enum';
+				}
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as %s in scope of %s.', $aliasName, $classLikeDescription, $className))->build();
 				continue;
 			}
 
@@ -120,8 +130,18 @@ class LocalTypeAliasesRule implements Rule
 				continue;
 			}
 
-			if ($this->reflectionProvider->hasClass($resolveName($aliasName))) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as a class in scope of %s.', $aliasName, $className))->build();
+			$resolvedName = $resolveName($aliasName);
+			if ($this->reflectionProvider->hasClass($resolvedName)) {
+				$classReflection = $this->reflectionProvider->getClass($resolvedName);
+				$classLikeDescription = 'a class';
+				if ($classReflection->isInterface()) {
+					$classLikeDescription = 'an interface';
+				} elseif ($classReflection->isTrait()) {
+					$classLikeDescription = 'a trait';
+				} elseif ($classReflection->isEnum()) {
+					$classLikeDescription = 'an enum';
+				}
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as %s in scope of %s.', $aliasName, $classLikeDescription, $className))->build();
 				continue;
 			}
 

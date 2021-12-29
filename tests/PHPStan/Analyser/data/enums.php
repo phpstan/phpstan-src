@@ -222,3 +222,23 @@ class TestEnumImplementsGeneric
 	}
 
 }
+
+class MixedMethod
+{
+
+	public function doFoo(): int
+	{
+		return 1;
+	}
+
+}
+
+/** @mixin MixedMethod */
+enum EnumWithMixin
+{
+
+}
+
+function (EnumWithMixin $i): void {
+	assertType('int', $i->doFoo());
+};

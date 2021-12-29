@@ -28,3 +28,23 @@ class User extends Model
 function (): void {
 	assertType('array<int, ModelMixin\User>', User::all());
 };
+
+class MixedMethod
+{
+
+	public function doFoo(): int
+	{
+		return 1;
+	}
+
+}
+
+/** @mixin MixedMethod */
+interface InterfaceWithMixin
+{
+
+}
+
+function (InterfaceWithMixin $i): void {
+	assertType('int', $i->doFoo());
+};

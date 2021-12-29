@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InClassNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
@@ -12,19 +13,16 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function implode;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Stmt\Class_>
+ * @implements Rule<InClassNode>
  */
 class MixinRule implements Rule
 {
-
-	private FileTypeMapper $fileTypeMapper;
 
 	private ReflectionProvider $reflectionProvider;
 
@@ -39,7 +37,6 @@ class MixinRule implements Rule
 	private bool $checkClassCaseSensitivity;
 
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
 		ReflectionProvider $reflectionProvider,
 		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 		GenericObjectTypeCheck $genericObjectTypeCheck,
@@ -48,7 +45,6 @@ class MixinRule implements Rule
 		bool $checkClassCaseSensitivity,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
 		$this->reflectionProvider = $reflectionProvider;
 		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
@@ -59,29 +55,16 @@ class MixinRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt\Class_::class;
+		return InClassNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!isset($node->namespacedName)) {
-			// anonymous class
+		if (!$scope->isInClass()) {
 			return [];
 		}
-
-		$className = (string) $node->namespacedName;
-		$docComment = $node->getDocComment();
-		if ($docComment === null) {
-			return [];
-		}
-		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-			$scope->getFile(),
-			$className,
-			null,
-			null,
-			$docComment->getText(),
-		);
-		$mixinTags = $resolvedPhpDoc->getMixinTags();
+		$classReflection = $scope->getClassReflection();
+		$mixinTags = $classReflection->getMixinTags();
 		$errors = [];
 		foreach ($mixinTags as $mixinTag) {
 			$type = $mixinTag->getType();

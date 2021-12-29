@@ -291,4 +291,18 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/intersection-types.php'], $errors);
 	}
 
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/enums-typehints.php'], [
+			[
+				'Parameter $int of method EnumsTypehints\Foo::doFoo() has invalid type EnumsTypehints\intt.',
+				8,
+			],
+		]);
+	}
+
 }

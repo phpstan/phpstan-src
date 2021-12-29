@@ -74,6 +74,8 @@ class ExistingClassInTraitUseRule implements Rule
 						$messages[] = RuleErrorBuilder::message(sprintf('%s uses class %s.', $currentName, $reflection->getDisplayName()))->nonIgnorable()->build();
 					} elseif ($reflection->isInterface()) {
 						$messages[] = RuleErrorBuilder::message(sprintf('%s uses interface %s.', $currentName, $reflection->getDisplayName()))->nonIgnorable()->build();
+					} elseif ($reflection->isEnum()) {
+						$messages[] = RuleErrorBuilder::message(sprintf('%s uses enum %s.', $currentName, $reflection->getDisplayName()))->nonIgnorable()->build();
 					}
 				}
 			}

@@ -58,7 +58,16 @@ class AttributesCheck
 
 				$attributeClass = $this->reflectionProvider->getClass($name);
 				if (!$attributeClass->isAttributeClass()) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Class %s is not an Attribute class.', $attributeClass->getDisplayName()))->line($attribute->getLine())->build();
+					$classLikeDescription = 'Class';
+					if ($attributeClass->isInterface()) {
+						$classLikeDescription = 'Interface';
+					} elseif ($attributeClass->isTrait()) {
+						$classLikeDescription = 'Trait';
+					} elseif ($attributeClass->isEnum()) {
+						$classLikeDescription = 'Enum';
+					}
+
+					$errors[] = RuleErrorBuilder::message(sprintf('%s %s is not an Attribute class.', $classLikeDescription, $attributeClass->getDisplayName()))->line($attribute->getLine())->build();
 					continue;
 				}
 

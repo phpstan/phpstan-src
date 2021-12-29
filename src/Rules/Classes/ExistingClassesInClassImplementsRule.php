@@ -71,6 +71,12 @@ class ExistingClassesInClassImplementsRule implements Rule
 						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 						$reflection->getDisplayName(),
 					))->nonIgnorable()->build();
+				} elseif ($reflection->isEnum()) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'%s implements enum %s.',
+						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
+						$reflection->getDisplayName(),
+					))->nonIgnorable()->build();
 				}
 			}
 		}

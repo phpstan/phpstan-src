@@ -68,6 +68,12 @@ class ExistingClassInClassExtendsRule implements Rule
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
 					$reflection->getDisplayName(),
 				))->nonIgnorable()->build();
+			} elseif ($reflection->isEnum()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'%s extends enum %s.',
+					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
+					$reflection->getDisplayName(),
+				))->nonIgnorable()->build();
 			} elseif ($reflection->isFinalByKeyword()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends final class %s.',

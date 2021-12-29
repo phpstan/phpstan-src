@@ -1007,7 +1007,7 @@ class ClassReflection
 
 	private function findAttributeClass(): ?Attribute
 	{
-		if ($this->isInterface() || $this->isTrait()) {
+		if ($this->isInterface() || $this->isTrait() || $this->isEnum()) {
 			return null;
 		}
 

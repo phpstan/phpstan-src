@@ -25,3 +25,15 @@ enum EnumWithInvalidClassAttribute
 {
 
 }
+
+#[\Attribute]
+enum EnumAsAttribute
+{
+
+}
+
+#[EnumAsAttribute]
+class ClassWithEnumAttribute
+{
+
+}

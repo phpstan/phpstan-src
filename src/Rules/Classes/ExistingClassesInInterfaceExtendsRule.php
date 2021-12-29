@@ -67,6 +67,12 @@ class ExistingClassesInInterfaceExtendsRule implements Rule
 						$currentInterfaceName,
 						$reflection->getDisplayName(),
 					))->nonIgnorable()->build();
+				} elseif ($reflection->isEnum()) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'Interface %s extends enum %s.',
+						$currentInterfaceName,
+						$reflection->getDisplayName(),
+					))->nonIgnorable()->build();
 				}
 			}
 

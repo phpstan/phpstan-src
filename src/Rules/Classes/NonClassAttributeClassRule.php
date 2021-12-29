@@ -48,7 +48,10 @@ class NonClassAttributeClassRule implements Rule
 		$classReflection = $scope->getClassReflection();
 		if (!$classReflection->isClass()) {
 			return [
-				RuleErrorBuilder::message('Interface cannot be an Attribute class.')->build(),
+				RuleErrorBuilder::message(sprintf(
+					'%s cannot be an Attribute class.',
+					$classReflection->isInterface() ? 'Interface' : 'Enum',
+				))->build(),
 			];
 		}
 		if ($classReflection->isAbstract()) {

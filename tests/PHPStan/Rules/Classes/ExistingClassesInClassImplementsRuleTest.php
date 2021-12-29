@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Classes;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ExistingClassesInClassImplementsRule>
@@ -54,6 +55,24 @@ class ExistingClassesInClassImplementsRuleTest extends RuleTestCase
 			[
 				'Anonymous class implements trait ImplementsError\DolorTrait.',
 				25,
+			],
+		]);
+	}
+
+	public function testEnums(): void
+	{
+		if (!self::$useStaticReflectionProvider || PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs static reflection and PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/class-implements-enum.php'], [
+			[
+				'Class ClassImplementsEnum\Foo implements enum ClassImplementsEnum\FooEnum.',
+				10,
+			],
+			[
+				'Anonymous class implements enum ClassImplementsEnum\FooEnum.',
+				16,
 			],
 		]);
 	}

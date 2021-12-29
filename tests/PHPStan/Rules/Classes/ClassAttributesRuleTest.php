@@ -95,6 +95,14 @@ class ClassAttributesRuleTest extends RuleTestCase
 				'Unknown parameter $r in call to ClassAttributes\AttributeWithConstructor constructor.',
 				120,
 			],
+			[
+				'Interface ClassAttributes\InterfaceAsAttribute is not an Attribute class.',
+				132,
+			],
+			[
+				'Trait ClassAttributes\TraitAsAttribute is not an Attribute class.',
+				142,
+			],
 		]);
 	}
 
@@ -108,6 +116,10 @@ class ClassAttributesRuleTest extends RuleTestCase
 			[
 				'Attribute class EnumAttributes\AttributeWithPropertyTarget does not have the class target.',
 				23,
+			],
+			[
+				'Enum EnumAttributes\EnumAsAttribute is not an Attribute class.',
+				35,
 			],
 		]);
 	}

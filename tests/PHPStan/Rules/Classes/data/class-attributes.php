@@ -122,3 +122,23 @@ class Blebleh
 {
 
 }
+
+#[\Attribute]
+interface InterfaceAsAttribute
+{
+
+}
+
+#[InterfaceAsAttribute]
+class ClassWithInterfaceAttribute
+{}
+
+#[\Attribute]
+trait TraitAsAttribute
+{
+
+}
+
+#[TraitAsAttribute]
+class ClassWithTraitAttribute
+{}

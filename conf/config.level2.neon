@@ -17,6 +17,7 @@ rules:
 	- PHPStan\Rules\Generics\ClassAncestorsRule
 	- PHPStan\Rules\Generics\ClassTemplateTypeRule
 	- PHPStan\Rules\Generics\EnumAncestorsRule
+	- PHPStan\Rules\Generics\EnumTemplateTypeRule
 	- PHPStan\Rules\Generics\FunctionTemplateTypeRule
 	- PHPStan\Rules\Generics\FunctionSignatureVarianceRule
 	- PHPStan\Rules\Generics\InterfaceAncestorsRule

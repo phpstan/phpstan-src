@@ -107,6 +107,8 @@ class WrongVariableNameInVarTagRule implements Rule
 				$description = 'an interface';
 			} elseif ($originalNode instanceof Node\Stmt\Class_) {
 				$description = 'a class';
+			} elseif ($originalNode instanceof Node\Stmt\Enum_) {
+				$description = 'an enum';
 			} elseif ($originalNode instanceof Node\Stmt\Trait_) {
 				throw new ShouldNotHappenException();
 			} elseif ($originalNode instanceof Node\Stmt\ClassMethod) {

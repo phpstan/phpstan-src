@@ -45,8 +45,14 @@ class MissingMethodImplementationRule implements Rule
 
 			$declaringClass = $method->getDeclaringClass();
 
+			$classLikeDescription = 'Non-abstract class';
+			if ($classReflection->isEnum()) {
+				$classLikeDescription = 'Enum';
+			}
+
 			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Non-abstract class %s contains abstract method %s() from %s %s.',
+				'%s %s contains abstract method %s() from %s %s.',
+				$classLikeDescription,
 				$classReflection->getDisplayName(),
 				$method->getName(),
 				$declaringClass->isInterface() ? 'interface' : 'class',

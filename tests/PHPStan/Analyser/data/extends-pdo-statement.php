@@ -2,9 +2,6 @@
 
 namespace ExtendsPdoStatementCrash;
 
-/**
- * @extends \PDOStatement<array<array-key, mixed>>
- */
 class CrashOne extends \PDOStatement
 {
 	/**
@@ -18,9 +15,6 @@ class CrashOne extends \PDOStatement
 	}
 }
 
-/**
- * @extends \PDOStatement<array<array-key, mixed>>
- */
 class CrashTwo extends \PDOStatement
 {
 
@@ -36,9 +30,6 @@ class CrashTwo extends \PDOStatement
 
 }
 
-/**
- * @extends \PDOStatement<array<array-key, mixed>>
- */
 class CrashThree extends \PDOStatement
 {
 
@@ -54,9 +45,6 @@ class CrashThree extends \PDOStatement
 
 }
 
-/**
- * @extends \PDOStatement<array<array-key, mixed>>
- */
 class CrashFour extends \PDOStatement
 {
 
@@ -73,9 +61,6 @@ class CrashFour extends \PDOStatement
 
 }
 
-/**
- * @extends \PDOStatement<array<array-key, mixed>>
- */
 class CrashFive extends \PDOStatement
 {
 
@@ -92,9 +77,6 @@ class CrashFive extends \PDOStatement
 
 }
 
-/**
- * @extends \PDOStatement<array<array-key, mixed>>
- */
 class CrashSix extends \PDOStatement
 {
 

@@ -1,12 +1,18 @@
 <?php
 
 /**
- * @template RowType of array
- * @implements Traversable<int, RowType>
- * @implements IteratorAggregate<int, RowType>
+ * @template TValue
+ * @implements Traversable<int, TValue>
+ * @implements IteratorAggregate<int, TValue>
  * @link https://php.net/manual/en/class.pdostatement.php
  */
 class PDOStatement implements Traversable, IteratorAggregate
 {
-
+    /**
+     * @template T
+     * @param class-string<T> $class
+     * @param array $ctorArgs
+     * @return false|T
+     */
+    public function fetchObject($class = \stdclass::class, array $ctorArgs = array()) {}
 }

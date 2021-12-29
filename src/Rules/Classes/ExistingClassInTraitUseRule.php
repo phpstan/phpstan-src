@@ -71,9 +71,9 @@ class ExistingClassInTraitUseRule implements Rule
 				} else {
 					$reflection = $this->reflectionProvider->getClass($traitName);
 					if ($reflection->isClass()) {
-						$messages[] = RuleErrorBuilder::message(sprintf('%s uses class %s.', $currentName, $traitName))->nonIgnorable()->build();
+						$messages[] = RuleErrorBuilder::message(sprintf('%s uses class %s.', $currentName, $reflection->getDisplayName()))->nonIgnorable()->build();
 					} elseif ($reflection->isInterface()) {
-						$messages[] = RuleErrorBuilder::message(sprintf('%s uses interface %s.', $currentName, $traitName))->nonIgnorable()->build();
+						$messages[] = RuleErrorBuilder::message(sprintf('%s uses interface %s.', $currentName, $reflection->getDisplayName()))->nonIgnorable()->build();
 					}
 				}
 			}

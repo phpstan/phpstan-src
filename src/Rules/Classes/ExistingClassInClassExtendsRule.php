@@ -60,25 +60,25 @@ class ExistingClassInClassExtendsRule implements Rule
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends interface %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-					$extendedClassName,
+					$reflection->getDisplayName(),
 				))->nonIgnorable()->build();
 			} elseif ($reflection->isTrait()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends trait %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-					$extendedClassName,
+					$reflection->getDisplayName(),
 				))->nonIgnorable()->build();
 			} elseif ($reflection->isFinalByKeyword()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends final class %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-					$extendedClassName,
+					$reflection->getDisplayName(),
 				))->nonIgnorable()->build();
 			} elseif ($reflection->isFinal()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends @final class %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-					$extendedClassName,
+					$reflection->getDisplayName(),
 				))->build();
 			}
 		}

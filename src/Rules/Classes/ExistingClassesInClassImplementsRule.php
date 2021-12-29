@@ -63,13 +63,13 @@ class ExistingClassesInClassImplementsRule implements Rule
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'%s implements class %s.',
 						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-						$implementedClassName,
+						$reflection->getDisplayName(),
 					))->nonIgnorable()->build();
 				} elseif ($reflection->isTrait()) {
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'%s implements trait %s.',
 						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-						$implementedClassName,
+						$reflection->getDisplayName(),
 					))->nonIgnorable()->build();
 				}
 			}

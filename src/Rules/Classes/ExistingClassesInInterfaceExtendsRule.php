@@ -59,13 +59,13 @@ class ExistingClassesInInterfaceExtendsRule implements Rule
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'Interface %s extends class %s.',
 						$currentInterfaceName,
-						$extendedInterfaceName,
+						$reflection->getDisplayName(),
 					))->nonIgnorable()->build();
 				} elseif ($reflection->isTrait()) {
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'Interface %s extends trait %s.',
 						$currentInterfaceName,
-						$extendedInterfaceName,
+						$reflection->getDisplayName(),
 					))->nonIgnorable()->build();
 				}
 			}

@@ -635,7 +635,7 @@ class FileTypeMapper
 	 */
 	private function getCachedDependentFilesWithTimestamps(string $fileName): array
 	{
-		$cacheKey = sprintf('dependentFilesTimestamps-%s', $fileName);
+		$cacheKey = sprintf('dependentFilesTimestamps-%s-v2-enum', $fileName);
 		$fileModifiedTime = filemtime($fileName);
 		if ($fileModifiedTime === false) {
 			$fileModifiedTime = time();
@@ -712,7 +712,7 @@ class FileTypeMapper
 					return null;
 				}
 
-				if (!$node instanceof Node\Stmt\Class_ && !$node instanceof Node\Stmt\Trait_) {
+				if (!$node instanceof Node\Stmt\Class_ && !$node instanceof Node\Stmt\Trait_ && !$node instanceof Node\Stmt\Enum_) {
 					return null;
 				}
 

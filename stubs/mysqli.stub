@@ -68,8 +68,8 @@ class mysqli_result implements Traversable, IteratorAggregate
 }
 
 /**
- * @template TValue of object
  * @template T of object
+ * @template TValue
  *
  * @param mysqli_result<TValue> $result
  * @param class-string<T> $class

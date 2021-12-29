@@ -51,7 +51,7 @@ class mysqli_stmt
 }
 
 /**
- * @template TValue
+ * @template TValue of object
  * @implements Traversable<int, TValue>
  * @implements IteratorAggregate<int, TValue>
  * @link https://www.php.net/manual/en/mysqli-result.fetch-object.php
@@ -59,7 +59,7 @@ class mysqli_stmt
 class mysqli_result implements Traversable, IteratorAggregate
 {
     /**
-     * @template T
+     * @template of object
      * @param class-string<T> $class
      * @param array<mixed> $constructor_args
      * @return false|null|T
@@ -68,9 +68,12 @@ class mysqli_result implements Traversable, IteratorAggregate
 }
 
 /**
+ * @template TValue of object
  * @template T of object
+ *
+ * @param mysqli_result<TValue> $result
  * @param class-string<T> $class
- * @param array $constructor_args
+ * @param array<mixed> $constructor_args
  * @return T|null|false
  */
 function mysqli_fetch_object(mysqli_result $result, string $class = stdClass::class, array $constructor_args = []): object|false|null {}

@@ -15,6 +15,8 @@
  */
 return [
 	'new' => [
+		'array_is_list' => ['bool', 'array'=>'array'],
+		'fsync' => ['bool', 'stream'=>'resource'],
 		'ini_set' => ['string|false', 'option'=>'string', 'value'=>'scalar|null'],
 	],
 	'old' => [

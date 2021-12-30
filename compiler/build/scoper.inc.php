@@ -6,6 +6,7 @@ $stubs = [
 	'../../resources/functionMap.php',
 	'../../resources/functionMap_php74delta.php',
 	'../../resources/functionMap_php80delta.php',
+	'../../resources/functionMap_php81delta.php',
 	'../../resources/functionMetadata.php',
 	'../../vendor/hoa/consistency/Prelude.php',
 	'../../vendor/composer/InstalledVersions.php',

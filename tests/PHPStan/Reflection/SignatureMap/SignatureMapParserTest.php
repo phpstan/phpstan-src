@@ -434,6 +434,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 		return [
 			[70400],
 			[80000],
+			[80100],
 		];
 	}
 

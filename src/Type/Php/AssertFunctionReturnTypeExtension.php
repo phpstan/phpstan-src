@@ -7,9 +7,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use Throwable;
+use function count;
 
 class AssertFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -25,12 +24,7 @@ class AssertFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$customThrow = $scope->getType($functionCall->args[1]->value);
-		if((new ObjectType(Throwable::class))->isSuperTypeOf($customThrow)) {
-			return $customThrow;
-		}
-
-		return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		return $scope->getType($functionCall->getArgs()[1]->value);
 	}
 
 }

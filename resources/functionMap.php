@@ -302,7 +302,7 @@ return [
 'array_search' => ['int|string|false', 'needle'=>'mixed', 'haystack'=>'array', 'strict='=>'bool'],
 'array_shift' => ['mixed', '&rw_stack'=>'array'],
 'array_slice' => ['array', 'input'=>'array', 'offset'=>'int', 'length='=>'?int', 'preserve_keys='=>'bool'],
-'array_splice' => ['array', '&rw_input'=>'array', 'offset'=>'int', 'length='=>'int', 'replacement='=>'array|string'],
+'array_splice' => ['array', '&rw_input'=>'array', 'offset'=>'int', 'length='=>'int', 'replacement='=>'mixed'],
 'array_sum' => ['int|float', 'input'=>'array'],
 'array_udiff' => ['array', 'arr1'=>'array', 'arr2'=>'array', 'data_comp_func'=>'callable(mixed,mixed):int'],
 'array_udiff\'1' => ['array', 'arr1'=>'array', 'arr2'=>'array', 'arr3'=>'array', 'arg4'=>'array|callable(mixed,mixed):int', '...rest='=>'array|callable(mixed,mixed):int'],

@@ -43,7 +43,7 @@ class CallUserFuncArrayDynamicReturnTypeExtension implements DynamicFunctionRetu
 		}
 
 		if (count($args) <= 1) {
-			return new NeverType();
+			return $defaultReturn;
 		}
 
 		$callbackType = $scope->getType($args[0]->value);

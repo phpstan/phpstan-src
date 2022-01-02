@@ -62,8 +62,6 @@ class Foo {
 	 * @param string[] $strings
 	 */
 	function doArray($strings) {
-		assertType('*NEVER*', call_user_func_array('single-arg-only'));
-
 		assertType('bool', call_user_func_array('CallUserFuncArray\generic', [true]));
 		assertType('string', call_user_func_array('CallUserFuncArray\generic', ['hello']));
 		assertType('string', call_user_func_array('CallUserFuncArray\generic', $strings));

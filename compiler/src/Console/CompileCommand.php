@@ -222,21 +222,6 @@ php;
 		@unlink($vendorDir . '/nikic/php-parser/bin/php-parse');
 	}
 
-	private function patchFile(OutputInterface $output, string $originalFile, string $patchFile): void
-	{
-		exec(sprintf(
-			'patch -d %s %s %s',
-			escapeshellarg($this->buildDir),
-			escapeshellarg($originalFile),
-			escapeshellarg($patchFile),
-		), $outputLines, $exitCode);
-		if ($exitCode === 0) {
-			return;
-		}
-
-		$output->writeln(sprintf('Patching failed: %s', implode("\n", $outputLines)));
-	}
-
 	private function transformSource(): void
 	{
 		chdir(__DIR__ . '/../../..');

@@ -2275,6 +2275,10 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug6239(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('This test needs PHP 8.0');
+		}
+
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;

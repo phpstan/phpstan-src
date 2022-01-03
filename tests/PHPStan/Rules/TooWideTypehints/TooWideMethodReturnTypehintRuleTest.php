@@ -88,4 +88,9 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6158(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6158.php'], []);
+	}
+
 }

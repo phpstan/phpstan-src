@@ -9,7 +9,7 @@
 class PDOStatement implements Traversable, IteratorAggregate
 {
     /**
-     * @template T
+     * @template T of object
      * @param class-string<T> $class
      * @param array<mixed> $ctorArgs
      * @return false|T

@@ -17,6 +17,18 @@ class Foo {
 			assertType('int', $question['question_id']);
 			assertType('string', $question['title']);
 		}
+
+		assertType('MysqliResultGeneric\Foo|false|null', $questions->fetch_object(Foo::class));
+		assertType('MysqliResultGeneric\Foo|false|null', $questions->fetch_object(__CLASS__));
+	}
+
+	/**
+	 * @param mysqli_result<array{question_id: int, title: string}> $result
+	 * @return void
+	 */
+	public function fn(mysqli_result $result) {
+		assertType('MysqliResultGeneric\Foo|false|null', mysqli_fetch_object($result, Foo::class));
+		assertType('MysqliResultGeneric\Foo|false|null', mysqli_fetch_object($result, __CLASS__));
 	}
 }
 

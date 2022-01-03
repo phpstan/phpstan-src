@@ -22,6 +22,8 @@ class Foo {
 
 	public function foobar(PDOStatement $statement) {
 		assertType('PdoStatementGeneric\Foo|false', $statement->fetchObject(Foo::class));
+		assertType('PdoStatementGeneric\Foo|false', $statement->fetchObject('PdoStatementGeneric\Foo'));
+		assertType('PdoStatementGeneric\Foo|false', $statement->fetchObject(__CLASS__));
 	}
 }
 

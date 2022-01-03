@@ -1,0 +1,14 @@
+@package jetbrains/phpstorm-stubs
+@version dev-master
+
+--- PDO/PDO.php	2021-12-26 15:44:39.000000000 +0100
++++ PDO/PDO.php	2022-01-03 22:54:21.000000000 +0100
+@@ -1415,7 +1415,7 @@
+      * @return array|false if one or more notifications is pending, returns a single row,
+      * with fields message and pid, otherwise <b>FALSE</b>.
+      */
+-    public function pgsqlGetNotify(int $fetchMode = PDO::FETCH_DEFAULT, int $timeoutMilliseconds = 0): array|false {}
++    public function pgsqlGetNotify(int $fetchMode = 1, int $timeoutMilliseconds = 0): array|false {}
+
+     /**
+      * (PHP 5 &gt;= 5.6.0, PHP 7, PHP 8)<br/>

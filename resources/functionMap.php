@@ -8442,7 +8442,7 @@ return [
 'PDO::pgsqlCopyFromFile' => ['bool', 'table_name'=>'string', 'filename'=>'string', 'delimiter'=>'string', 'null_as'=>'string', 'fields'=>'string'],
 'PDO::pgsqlCopyToArray' => ['array', 'table_name'=>'string', 'delimiter'=>'string', 'null_as'=>'string', 'fields'=>'string'],
 'PDO::pgsqlCopyToFile' => ['bool', 'table_name'=>'string', 'filename'=>'string', 'delimiter'=>'string', 'null_as'=>'string', 'fields'=>'string'],
-'PDO::pgsqlGetNotify' => ['array', 'result_type'=>'int', 'ms_timeout'=>'int'],
+'PDO::pgsqlGetNotify' => ['array', 'result_type='=>'int', 'ms_timeout='=>'int'],
 'PDO::pgsqlGetPid' => ['int'],
 'PDO::pgsqlLOBCreate' => ['string'],
 'PDO::pgsqlLOBOpen' => ['resource', 'oid'=>'string', 'mode='=>'string'],

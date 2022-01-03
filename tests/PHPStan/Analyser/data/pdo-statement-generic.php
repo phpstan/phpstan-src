@@ -19,5 +19,10 @@ class Foo {
             assertType('string', $question['title']);
         }
     }
+
+	public function foobar(PDOStatement $statement) {
+		assertType('PdoStatementGeneric\Foo|false', $statement->fetchObject(Foo::class));
+	}
 }
+
 

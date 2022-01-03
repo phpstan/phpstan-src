@@ -10,7 +10,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
-use function basename;
 use function chdir;
 use function dirname;
 use function escapeshellarg;
@@ -71,7 +70,6 @@ final class CompileCommand extends Command
 		$this->deleteUnnecessaryVendorCode();
 		$this->fixComposerJson($this->buildDir);
 		$this->renamePhpStormStubs();
-		$this->patchPhpStormStubs($output);
 		$this->renamePhp8Stubs();
 		$this->transformSource();
 
@@ -173,22 +171,6 @@ final class CompileCommand extends Command
 		$putSuccess = file_put_contents($stubsMapPath, $stubsMapContents);
 		if ($putSuccess === false) {
 			throw new ShouldNotHappenException(sprintf('Could not write %s', $stubsMapPath));
-		}
-	}
-
-	private function patchPhpStormStubs(OutputInterface $output): void
-	{
-		$stubFinder = Finder::create();
-		$stubsDirectory = __DIR__ . '/../../../vendor/jetbrains/phpstorm-stubs';
-		foreach ($stubFinder->files()->name('*.patch')->in(__DIR__ . '/../../patches/stubs') as $patchFile) {
-			$absolutePatchPath = $patchFile->getPathname();
-			$patchPath = $patchFile->getRelativePathname();
-			$stubPath = realpath($stubsDirectory . '/' . dirname($patchPath) . '/' . basename($patchPath, '.patch'));
-			if ($stubPath === false) {
-				$output->writeln(sprintf('Stub %s not found.', $stubPath));
-				continue;
-			}
-			$this->patchFile($output, $stubPath, $absolutePatchPath);
 		}
 	}
 

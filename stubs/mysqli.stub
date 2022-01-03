@@ -64,7 +64,7 @@ class mysqli_result implements Traversable, IteratorAggregate
      * @param array<mixed> $constructor_args
      * @return T|null|false
      */
-    function fetch_object(string $class = stdClass::class, array $constructor_args = []): object|false|null {}
+    function fetch_object(string $class = 'stdClass', array $constructor_args = []) {}
 }
 
 /**
@@ -76,4 +76,4 @@ class mysqli_result implements Traversable, IteratorAggregate
  * @param array<mixed> $constructor_args
  * @return T|null|false
  */
-function mysqli_fetch_object(mysqli_result $result, string $class = stdClass::class, array $constructor_args = []): object|false|null {}
+function mysqli_fetch_object(mysqli_result $result, string $class = 'stdClass', array $constructor_args = []) {}

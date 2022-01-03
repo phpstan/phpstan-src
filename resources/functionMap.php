@@ -12630,7 +12630,7 @@ return [
 'UnexpectedValueException::getPrevious' => ['Throwable|UnexpectedValueException|null'],
 'UnexpectedValueException::getTrace' => ['array'],
 'UnexpectedValueException::getTraceAsString' => ['string'],
-'uniqid' => ['string', 'prefix='=>'string', 'more_entropy='=>'bool'],
+'uniqid' => ['non-empty-string', 'prefix='=>'string', 'more_entropy='=>'bool'],
 'unixtojd' => ['int|false', 'timestamp='=>'int'],
 'unlink' => ['bool', 'filename'=>'string', 'context='=>'resource'],
 'unpack' => ['array|false', 'format'=>'string', 'data'=>'string', 'offset='=>'int'],

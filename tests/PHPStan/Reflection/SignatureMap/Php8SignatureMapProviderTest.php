@@ -225,7 +225,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						'variadic' => false,
 					],
 				],
-				new VoidType(),
+				new ConstantBooleanType(true),
 				new MixedType(),
 				false,
 			],
@@ -245,7 +245,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 						'variadic' => false,
 					],
 				],
-				new VoidType(),
+				new ConstantBooleanType(true),
 				new MixedType(), // todo - because uasort is not found in file with RecursiveArrayIterator
 				false,
 			],

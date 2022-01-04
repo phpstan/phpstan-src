@@ -1,0 +1,13 @@
+@package rector/rector
+
+--- rules/DowngradePhp73/Rector/FuncCall/DowngradeTrailingCommasInFunctionCallsRector.php	2021-12-17 08:20:27.000000000 +0100
++++ rules/DowngradePhp73/Rector/FuncCall/DowngradeTrailingCommasInFunctionCallsRector.php	2021-12-17 08:20:45.000000000 +0100
+@@ -58,7 +58,7 @@
+      */
+     public function getNodeTypes() : array
+     {
+-        return [\PhpParser\Node\Expr\FuncCall::class, \PhpParser\Node\Expr\MethodCall::class, \PhpParser\Node\Expr\StaticCall::class];
++        return [\PhpParser\Node\Expr\FuncCall::class, \PhpParser\Node\Expr\MethodCall::class, \PhpParser\Node\Expr\StaticCall::class, Node\Expr\New_::class];
+     }
+     /**
+      * @param FuncCall|MethodCall|StaticCall $node

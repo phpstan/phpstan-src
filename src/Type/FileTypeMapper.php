@@ -204,7 +204,7 @@ class FileTypeMapper
 	private function getNameScopeMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v14-filename', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v15-shebang', $fileName);
 			$variableCacheKey = implode(',', array_map(static fn (array $file): string => sprintf('%s-%d', $file['filename'], $file['modifiedTime']), $this->getCachedDependentFilesWithTimestamps($fileName)));
 			$map = $this->cache->load($cacheKey, $variableCacheKey);
 
@@ -382,6 +382,7 @@ class FileTypeMapper
 					&& !$node instanceof Node\Stmt\GroupUse
 					&& !$node instanceof Node\Stmt\TraitUse
 					&& !$node instanceof Node\Stmt\TraitUseAdaptation
+					&& !$node instanceof Node\Stmt\InlineHTML
 					&& !array_key_exists($nameScopeKey, $nameScopeMap)
 				) {
 					$nameScopeMap[$nameScopeKey] = static fn (): NameScope => new NameScope(

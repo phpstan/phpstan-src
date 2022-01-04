@@ -137,4 +137,9 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6252(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6252.php'], []);
+	}
+
 }

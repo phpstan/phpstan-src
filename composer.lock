@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f8d52b52f0eceb209beab407f63d2a9",
+    "content-hash": "886b912d42d02d217110cf59cb654a08",
     "packages": [
         {
             "name": "clue/block-react",
@@ -2178,7 +2178,7 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "dev-ng",
+            "version": "5.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
@@ -2242,7 +2242,7 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/ng"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/5.0.3"
             },
             "time": "2022-01-04T21:32:45+00:00"
         },
@@ -7196,8 +7196,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20,
-        "ondrejmirtes/better-reflection": 20
+        "jetbrains/phpstorm-stubs": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

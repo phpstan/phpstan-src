@@ -102,15 +102,6 @@ parameters:
 		- '#^Symfony\\Polyfill\\Php72\\#i'
 		- '#^Symfony\\Polyfill\\Intl\\Grapheme\\#i'
 		- '#^Composer\\#i'
-		- '#^ReflectionUnionType$#i'
-		- '#^Attribute$#i'
-		- '#^ReturnTypeWillChange$#i'
-		- '#^ReflectionIntersectionType$#i'
-		- '#^UnitEnum$#i'
-		- '#^BackedEnum$#i'
-		- '#^ReflectionEnum$#i'
-		- '#^ReflectionEnumUnitCase$#i'
-		- '#^ReflectionEnumBackedCase$#i'
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- LIBXML_VERSION

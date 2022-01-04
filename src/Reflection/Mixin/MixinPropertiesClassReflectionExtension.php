@@ -8,6 +8,7 @@ use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\VerbosityLevel;
 use function array_intersect;
 use function count;
 
@@ -16,6 +17,9 @@ class MixinPropertiesClassReflectionExtension implements PropertiesClassReflecti
 
 	/** @var string[] */
 	private array $mixinExcludeClasses;
+
+	/** @var array<string, array<string, true>> */
+	private array $inProcess = [];
 
 	/**
 	 * @param string[] $mixinExcludeClasses
@@ -48,11 +52,22 @@ class MixinPropertiesClassReflectionExtension implements PropertiesClassReflecti
 				continue;
 			}
 
-			if (!$type->hasProperty($propertyName)->yes()) {
+			$typeDescription = $type->describe(VerbosityLevel::typeOnly());
+			if (isset($this->inProcess[$typeDescription][$propertyName])) {
 				continue;
 			}
 
-			return $type->getProperty($propertyName, new OutOfClassScope());
+			$this->inProcess[$typeDescription][$propertyName] = true;
+
+			if (!$type->hasProperty($propertyName)->yes()) {
+				unset($this->inProcess[$typeDescription][$propertyName]);
+				continue;
+			}
+
+			$property = $type->getProperty($propertyName, new OutOfClassScope());
+			unset($this->inProcess[$typeDescription][$propertyName]);
+
+			return $property;
 		}
 
 		foreach ($classReflection->getParents() as $parentClass) {

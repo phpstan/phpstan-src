@@ -489,6 +489,17 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug6300(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6300.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Call to an undefined method Bug6300\Bar::get().', $errors[0]->getMessage());
+		$this->assertSame(23, $errors[0]->getLine());
+
+		$this->assertSame('Access to an undefined property Bug6300\Bar::$fooProp.', $errors[1]->getMessage());
+		$this->assertSame(24, $errors[1]->getLine());
+	}
+
 	/**
 	 * @return Error[]
 	 */

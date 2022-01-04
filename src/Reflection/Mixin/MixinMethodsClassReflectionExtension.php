@@ -8,6 +8,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\VerbosityLevel;
 use function array_intersect;
 use function count;
 
@@ -16,6 +17,9 @@ class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExte
 
 	/** @var string[] */
 	private array $mixinExcludeClasses;
+
+	/** @var array<string, array<string, true>> */
+	private array $inProcess = [];
 
 	/**
 	 * @param string[] $mixinExcludeClasses
@@ -48,11 +52,22 @@ class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExte
 				continue;
 			}
 
+			$typeDescription = $type->describe(VerbosityLevel::typeOnly());
+			if (isset($this->inProcess[$typeDescription][$methodName])) {
+				continue;
+			}
+
+			$this->inProcess[$typeDescription][$methodName] = true;
+
 			if (!$type->hasMethod($methodName)->yes()) {
+				unset($this->inProcess[$typeDescription][$methodName]);
 				continue;
 			}
 
 			$method = $type->getMethod($methodName, new OutOfClassScope());
+
+			unset($this->inProcess[$typeDescription][$methodName]);
+
 			$static = $method->isStatic();
 			if (
 				!$static

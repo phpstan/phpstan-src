@@ -32,8 +32,6 @@ class StaticType implements TypeWithClassName, SubtractableType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
-	private ClassReflection $classReflection;
-
 	private ?Type $subtractedType;
 
 	private ?ObjectType $staticObjectType = null;
@@ -44,7 +42,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 	 * @api
 	 */
 	public function __construct(
-		ClassReflection $classReflection,
+		private ClassReflection $classReflection,
 		?Type $subtractedType = null,
 	)
 	{
@@ -52,7 +50,6 @@ class StaticType implements TypeWithClassName, SubtractableType
 			$subtractedType = null;
 		}
 
-		$this->classReflection = $classReflection;
 		$this->subtractedType = $subtractedType;
 		$this->baseClass = $classReflection->getName();
 	}

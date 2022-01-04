@@ -17,11 +17,8 @@ use function sprintf;
 class ReturnTypeRule implements Rule
 {
 
-	private FunctionReturnTypeCheck $returnTypeCheck;
-
-	public function __construct(FunctionReturnTypeCheck $returnTypeCheck)
+	public function __construct(private FunctionReturnTypeCheck $returnTypeCheck)
 	{
-		$this->returnTypeCheck = $returnTypeCheck;
 	}
 
 	public function getNodeType(): string

@@ -14,29 +14,16 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceL
 class StubSourceLocatorFactory
 {
 
-	private Parser $php8Parser;
-
-	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
-
-	private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
-
-	/** @var string[] */
-	private array $stubFiles;
-
 	/**
 	 * @param string[] $stubFiles
 	 */
 	public function __construct(
-		Parser $php8Parser,
-		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
-		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
-		array $stubFiles,
+		private Parser $php8Parser,
+		private PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
+		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
+		private array $stubFiles,
 	)
 	{
-		$this->php8Parser = $php8Parser;
-		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
-		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
-		$this->stubFiles = $stubFiles;
 	}
 
 	public function create(): SourceLocator

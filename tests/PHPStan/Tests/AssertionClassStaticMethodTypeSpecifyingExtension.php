@@ -13,11 +13,8 @@ use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 class AssertionClassStaticMethodTypeSpecifyingExtension implements StaticMethodTypeSpecifyingExtension
 {
 
-	private ?bool $nullContext = null;
-
-	public function __construct(?bool $nullContext)
+	public function __construct(private ?bool $nullContext = null)
 	{
-		$this->nullContext = $nullContext;
 	}
 
 	public function getClass(): string

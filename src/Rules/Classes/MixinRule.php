@@ -24,33 +24,15 @@ use function sprintf;
 class MixinRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private GenericObjectTypeCheck $genericObjectTypeCheck;
-
-	private MissingTypehintCheck $missingTypehintCheck;
-
-	private UnresolvableTypeHelper $unresolvableTypeHelper;
-
-	private bool $checkClassCaseSensitivity;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		GenericObjectTypeCheck $genericObjectTypeCheck,
-		MissingTypehintCheck $missingTypehintCheck,
-		UnresolvableTypeHelper $unresolvableTypeHelper,
-		bool $checkClassCaseSensitivity,
+		private ReflectionProvider $reflectionProvider,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		private MissingTypehintCheck $missingTypehintCheck,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private bool $checkClassCaseSensitivity,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
-		$this->missingTypehintCheck = $missingTypehintCheck;
-		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
-		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 	}
 
 	public function getNodeType(): string

@@ -11,14 +11,8 @@ use PHPStan\Type\Type;
 class MixinMethodReflection implements MethodReflection
 {
 
-	private MethodReflection $reflection;
-
-	private bool $static;
-
-	public function __construct(MethodReflection $reflection, bool $static)
+	public function __construct(private MethodReflection $reflection, private bool $static)
 	{
-		$this->reflection = $reflection;
-		$this->static = $static;
 	}
 
 	public function getDeclaringClass(): ClassReflection

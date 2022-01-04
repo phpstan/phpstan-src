@@ -11,24 +11,13 @@ use PHPStan\Node\Method\MethodCall;
 class ClassMethodsNode extends NodeAbstract implements VirtualNode
 {
 
-	private ClassLike $class;
-
-	/** @var ClassMethod[] */
-	private array $methods;
-
-	/** @var array<int, MethodCall> */
-	private array $methodCalls;
-
 	/**
 	 * @param ClassMethod[] $methods
 	 * @param array<int, MethodCall> $methodCalls
 	 */
-	public function __construct(ClassLike $class, array $methods, array $methodCalls)
+	public function __construct(private ClassLike $class, private array $methods, private array $methodCalls)
 	{
 		parent::__construct($class->getAttributes());
-		$this->class = $class;
-		$this->methods = $methods;
-		$this->methodCalls = $methodCalls;
 	}
 
 	public function getClass(): ClassLike

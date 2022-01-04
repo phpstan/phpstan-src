@@ -20,17 +20,11 @@ use function sprintf;
 class ImpossibleInstanceOfRule implements Rule
 {
 
-	private bool $checkAlwaysTrueInstanceof;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		bool $checkAlwaysTrueInstanceof,
-		bool $treatPhpDocTypesAsCertain,
+		private bool $checkAlwaysTrueInstanceof,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->checkAlwaysTrueInstanceof = $checkAlwaysTrueInstanceof;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string

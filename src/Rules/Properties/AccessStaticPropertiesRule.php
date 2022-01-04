@@ -36,21 +36,12 @@ use function strtolower;
 class AccessStaticPropertiesRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		RuleLevelHelper $ruleLevelHelper,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 	}
 
 	public function getNodeType(): string

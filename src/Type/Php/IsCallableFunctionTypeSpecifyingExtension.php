@@ -22,13 +22,10 @@ use function strtolower;
 class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	private MethodExistsTypeSpecifyingExtension $methodExistsExtension;
-
 	private TypeSpecifier $typeSpecifier;
 
-	public function __construct(MethodExistsTypeSpecifyingExtension $methodExistsExtension)
+	public function __construct(private MethodExistsTypeSpecifyingExtension $methodExistsExtension)
 	{
-		$this->methodExistsExtension = $methodExistsExtension;
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool

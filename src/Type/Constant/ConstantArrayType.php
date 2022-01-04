@@ -57,17 +57,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	private const DESCRIBE_LIMIT = 8;
 
-	/** @var array<int, ConstantIntegerType|ConstantStringType> */
-	private array $keyTypes;
-
-	/** @var array<int, Type> */
-	private array $valueTypes;
-
-	private int $nextAutoIndex;
-
-	/** @var int[] */
-	private array $optionalKeys;
-
 	/** @var self[]|null */
 	private ?array $allArrays = null;
 
@@ -78,10 +67,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 * @param int[] $optionalKeys
 	 */
 	public function __construct(
-		array $keyTypes,
-		array $valueTypes,
-		int $nextAutoIndex = 0,
-		array $optionalKeys = [],
+		private array $keyTypes,
+		private array $valueTypes,
+		private int $nextAutoIndex = 0,
+		private array $optionalKeys = [],
 	)
 	{
 		assert(count($keyTypes) === count($valueTypes));
@@ -90,11 +79,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			count($keyTypes) > 0 ? TypeCombinator::union(...$keyTypes) : new NeverType(),
 			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType(),
 		);
-
-		$this->keyTypes = $keyTypes;
-		$this->valueTypes = $valueTypes;
-		$this->nextAutoIndex = $nextAutoIndex;
-		$this->optionalKeys = $optionalKeys;
 	}
 
 	public function isEmpty(): bool

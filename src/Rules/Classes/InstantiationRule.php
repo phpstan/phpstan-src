@@ -31,21 +31,12 @@ use function strtolower;
 class InstantiationRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private FunctionCallParametersCheck $check;
-
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		FunctionCallParametersCheck $check,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ReflectionProvider $reflectionProvider,
+		private FunctionCallParametersCheck $check,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->check = $check;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 	}
 
 	public function getNodeType(): string

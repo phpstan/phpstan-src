@@ -11,11 +11,8 @@ use Symfony\Component\Console\Style\StyleInterface;
 class SymfonyStyle implements OutputStyle
 {
 
-	private StyleInterface $symfonyStyle;
-
-	public function __construct(StyleInterface $symfonyStyle)
+	public function __construct(private StyleInterface $symfonyStyle)
 	{
-		$this->symfonyStyle = $symfonyStyle;
 	}
 
 	public function getSymfonyStyle(): StyleInterface

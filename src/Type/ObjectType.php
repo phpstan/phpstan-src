@@ -50,11 +50,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	private const EXTRA_OFFSET_CLASSES = ['SimpleXMLElement', 'DOMNodeList', 'Threaded'];
 
-	private string $className;
-
 	private ?Type $subtractedType;
-
-	private ?ClassReflection $classReflection;
 
 	/** @var array<string, array<string, TrinaryLogic>> */
 	private static array $superTypes = [];
@@ -78,18 +74,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	/** @api */
 	public function __construct(
-		string $className,
+		private string $className,
 		?Type $subtractedType = null,
-		?ClassReflection $classReflection = null,
+		private ?ClassReflection $classReflection = null,
 	)
 	{
 		if ($subtractedType instanceof NeverType) {
 			$subtractedType = null;
 		}
 
-		$this->className = $className;
 		$this->subtractedType = $subtractedType;
-		$this->classReflection = $classReflection;
 	}
 
 	public static function resetCaches(): void

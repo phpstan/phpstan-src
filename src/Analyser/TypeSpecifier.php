@@ -67,19 +67,6 @@ use function strtolower;
 class TypeSpecifier
 {
 
-	private Standard $printer;
-
-	private ReflectionProvider $reflectionProvider;
-
-	/** @var FunctionTypeSpecifyingExtension[] */
-	private array $functionTypeSpecifyingExtensions;
-
-	/** @var MethodTypeSpecifyingExtension[] */
-	private array $methodTypeSpecifyingExtensions;
-
-	/** @var StaticMethodTypeSpecifyingExtension[] */
-	private array $staticMethodTypeSpecifyingExtensions;
-
 	/** @var MethodTypeSpecifyingExtension[][]|null */
 	private ?array $methodTypeSpecifyingExtensionsByClass = null;
 
@@ -92,16 +79,13 @@ class TypeSpecifier
 	 * @param StaticMethodTypeSpecifyingExtension[] $staticMethodTypeSpecifyingExtensions
 	 */
 	public function __construct(
-		Standard $printer,
-		ReflectionProvider $reflectionProvider,
-		array $functionTypeSpecifyingExtensions,
-		array $methodTypeSpecifyingExtensions,
-		array $staticMethodTypeSpecifyingExtensions,
+		private Standard $printer,
+		private ReflectionProvider $reflectionProvider,
+		private array $functionTypeSpecifyingExtensions,
+		private array $methodTypeSpecifyingExtensions,
+		private array $staticMethodTypeSpecifyingExtensions,
 	)
 	{
-		$this->printer = $printer;
-		$this->reflectionProvider = $reflectionProvider;
-
 		foreach (array_merge($functionTypeSpecifyingExtensions, $methodTypeSpecifyingExtensions, $staticMethodTypeSpecifyingExtensions) as $extension) {
 			if (!($extension instanceof TypeSpecifierAwareExtension)) {
 				continue;
@@ -109,10 +93,6 @@ class TypeSpecifier
 
 			$extension->setTypeSpecifier($this);
 		}
-
-		$this->functionTypeSpecifyingExtensions = $functionTypeSpecifyingExtensions;
-		$this->methodTypeSpecifyingExtensions = $methodTypeSpecifyingExtensions;
-		$this->staticMethodTypeSpecifyingExtensions = $staticMethodTypeSpecifyingExtensions;
 	}
 
 	/** @api */

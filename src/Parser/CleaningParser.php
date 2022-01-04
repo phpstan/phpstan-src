@@ -8,13 +8,10 @@ use PhpParser\NodeTraverser;
 class CleaningParser implements Parser
 {
 
-	private Parser $wrappedParser;
-
 	private NodeTraverser $traverser;
 
-	public function __construct(Parser $wrappedParser)
+	public function __construct(private Parser $wrappedParser)
 	{
-		$this->wrappedParser = $wrappedParser;
 		$this->traverser = new NodeTraverser();
 		$this->traverser->addVisitor(new CleaningVisitor());
 	}

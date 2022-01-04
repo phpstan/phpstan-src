@@ -13,15 +13,12 @@ class MethodCall
 
 	private Node\Expr\MethodCall|StaticCall|Array_ $node;
 
-	private Scope $scope;
-
 	/**
 	 * @param Node\Expr\MethodCall|StaticCall|Array_ $node
 	 */
-	public function __construct($node, Scope $scope)
+	public function __construct($node, private Scope $scope)
 	{
 		$this->node = $node;
-		$this->scope = $scope;
 	}
 
 	/**

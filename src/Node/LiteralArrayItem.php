@@ -9,14 +9,8 @@ use PHPStan\Analyser\Scope;
 class LiteralArrayItem
 {
 
-	private Scope $scope;
-
-	private ?ArrayItem $arrayItem;
-
-	public function __construct(Scope $scope, ?ArrayItem $arrayItem)
+	public function __construct(private Scope $scope, private ?ArrayItem $arrayItem)
 	{
-		$this->scope = $scope;
-		$this->arrayItem = $arrayItem;
 	}
 
 	public function getScope(): Scope

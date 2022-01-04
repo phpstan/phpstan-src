@@ -14,11 +14,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 class UnsetCastRule implements Rule
 {
 
-	private PhpVersion $phpVersion;
-
-	public function __construct(PhpVersion $phpVersion)
+	public function __construct(private PhpVersion $phpVersion)
 	{
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function getNodeType(): string

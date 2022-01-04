@@ -11,12 +11,8 @@ use const PHP_VERSION_ID;
 class Configurator extends \Nette\Bootstrap\Configurator
 {
 
-	private LoaderFactory $loaderFactory;
-
-	public function __construct(LoaderFactory $loaderFactory)
+	public function __construct(private LoaderFactory $loaderFactory)
 	{
-		$this->loaderFactory = $loaderFactory;
-
 		parent::__construct();
 	}
 

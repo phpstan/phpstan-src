@@ -10,14 +10,8 @@ use PHPStan\Type\Type;
 class EnumPropertyReflection implements PropertyReflection
 {
 
-	private ClassReflection $declaringClass;
-
-	private Type $type;
-
-	public function __construct(ClassReflection $declaringClass, Type $type)
+	public function __construct(private ClassReflection $declaringClass, private Type $type)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->type = $type;
 	}
 
 	public function getDeclaringClass(): ClassReflection

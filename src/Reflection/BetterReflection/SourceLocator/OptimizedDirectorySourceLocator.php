@@ -22,14 +22,7 @@ use function strtolower;
 class OptimizedDirectorySourceLocator implements SourceLocator
 {
 
-	private FileNodesFetcher $fileNodesFetcher;
-
-	private PhpVersion $phpVersion;
-
 	private PhpFileCleaner $cleaner;
-
-	/** @var string[] */
-	private array $files;
 
 	private string $extraTypes;
 
@@ -49,15 +42,11 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	 * @param string[] $files
 	 */
 	public function __construct(
-		FileNodesFetcher $fileNodesFetcher,
-		PhpVersion $phpVersion,
-		array $files,
+		private FileNodesFetcher $fileNodesFetcher,
+		private PhpVersion $phpVersion,
+		private array $files,
 	)
 	{
-		$this->fileNodesFetcher = $fileNodesFetcher;
-		$this->phpVersion = $phpVersion;
-		$this->files = $files;
-
 		$extraTypes = '';
 		$extraTypesArray = [];
 		if ($this->phpVersion->supportsEnums()) {

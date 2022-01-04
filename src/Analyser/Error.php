@@ -14,29 +14,10 @@ use function is_bool;
 class Error implements JsonSerializable
 {
 
-	private string $message;
-
-	private string $file;
-
-	private ?int $line;
-
 	private bool|Throwable $canBeIgnored;
-
-	private ?string $filePath;
-
-	private ?string $traitFilePath;
-
-	private ?string $tip;
-
-	private ?int $nodeLine;
 
 	/** @phpstan-var class-string<Node>|null */
 	private ?string $nodeType;
-
-	private ?string $identifier;
-
-	/** @var mixed[] */
-	private array $metadata;
 
 	/**
 	 * Error constructor.
@@ -46,30 +27,21 @@ class Error implements JsonSerializable
 	 * @param mixed[] $metadata
 	 */
 	public function __construct(
-		string $message,
-		string $file,
-		?int $line = null,
+		private string $message,
+		private string $file,
+		private ?int $line = null,
 		$canBeIgnored = true,
-		?string $filePath = null,
-		?string $traitFilePath = null,
-		?string $tip = null,
-		?int $nodeLine = null,
+		private ?string $filePath = null,
+		private ?string $traitFilePath = null,
+		private ?string $tip = null,
+		private ?int $nodeLine = null,
 		?string $nodeType = null,
-		?string $identifier = null,
-		array $metadata = [],
+		private ?string $identifier = null,
+		private array $metadata = [],
 	)
 	{
-		$this->message = $message;
-		$this->file = $file;
-		$this->line = $line;
 		$this->canBeIgnored = $canBeIgnored;
-		$this->filePath = $filePath;
-		$this->traitFilePath = $traitFilePath;
-		$this->tip = $tip;
-		$this->nodeLine = $nodeLine;
 		$this->nodeType = $nodeType;
-		$this->identifier = $identifier;
-		$this->metadata = $metadata;
 	}
 
 	public function getMessage(): string

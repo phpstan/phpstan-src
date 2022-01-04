@@ -19,13 +19,7 @@ use function tmpfile;
 class Process
 {
 
-	private string $command;
-
 	public \React\ChildProcess\Process $process;
-
-	private LoopInterface $loop;
-
-	private float $timeoutSeconds;
 
 	private WritableStreamInterface $in;
 
@@ -44,14 +38,11 @@ class Process
 	private ?TimerInterface $timer = null;
 
 	public function __construct(
-		string $command,
-		LoopInterface $loop,
-		float $timeoutSeconds,
+		private string $command,
+		private LoopInterface $loop,
+		private float $timeoutSeconds,
 	)
 	{
-		$this->command = $command;
-		$this->loop = $loop;
-		$this->timeoutSeconds = $timeoutSeconds;
 	}
 
 	/**

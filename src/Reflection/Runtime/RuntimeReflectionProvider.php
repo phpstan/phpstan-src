@@ -52,26 +52,8 @@ use const DEBUG_BACKTRACE_IGNORE_ARGS;
 class RuntimeReflectionProvider implements ReflectionProvider
 {
 
-	private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider;
-
-	private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
-
 	/** @var ClassReflection[] */
 	private array $classReflections = [];
-
-	private FunctionReflectionFactory $functionReflectionFactory;
-
-	private FileTypeMapper $fileTypeMapper;
-
-	private PhpVersion $phpVersion;
-
-	private NativeFunctionReflectionProvider $nativeFunctionReflectionProvider;
-
-	private StubPhpDocProvider $stubPhpDocProvider;
-
-	private PhpDocInheritanceResolver $phpDocInheritanceResolver;
-
-	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
 
 	/** @var FunctionReflection[] */
 	private array $functionReflections = [];
@@ -89,26 +71,17 @@ class RuntimeReflectionProvider implements ReflectionProvider
 	private array $cachedConstants = [];
 
 	public function __construct(
-		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
-		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
-		FunctionReflectionFactory $functionReflectionFactory,
-		FileTypeMapper $fileTypeMapper,
-		PhpDocInheritanceResolver $phpDocInheritanceResolver,
-		PhpVersion $phpVersion,
-		NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
-		StubPhpDocProvider $stubPhpDocProvider,
-		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
+		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
+		private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
+		private FunctionReflectionFactory $functionReflectionFactory,
+		private FileTypeMapper $fileTypeMapper,
+		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
+		private PhpVersion $phpVersion,
+		private NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
+		private StubPhpDocProvider $stubPhpDocProvider,
+		private PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 	)
 	{
-		$this->reflectionProviderProvider = $reflectionProviderProvider;
-		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
-		$this->functionReflectionFactory = $functionReflectionFactory;
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
-		$this->phpVersion = $phpVersion;
-		$this->nativeFunctionReflectionProvider = $nativeFunctionReflectionProvider;
-		$this->stubPhpDocProvider = $stubPhpDocProvider;
-		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 	}
 
 	public function getClass(string $className): ClassReflection

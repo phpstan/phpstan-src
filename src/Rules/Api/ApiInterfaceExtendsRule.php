@@ -20,17 +20,11 @@ use function sprintf;
 class ApiInterfaceExtendsRule implements Rule
 {
 
-	private ApiRuleHelper $apiRuleHelper;
-
-	private ReflectionProvider $reflectionProvider;
-
 	public function __construct(
-		ApiRuleHelper $apiRuleHelper,
-		ReflectionProvider $reflectionProvider,
+		private ApiRuleHelper $apiRuleHelper,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
-		$this->apiRuleHelper = $apiRuleHelper;
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string

@@ -20,13 +20,10 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	use ConstantScalarToBooleanTrait;
 	use ConstantNumericComparisonTypeTrait;
 
-	private float $value;
-
 	/** @api */
-	public function __construct(float $value)
+	public function __construct(private float $value)
 	{
 		parent::__construct();
-		$this->value = $value;
 	}
 
 	public function getValue(): float

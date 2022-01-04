@@ -17,11 +17,8 @@ use function strpos;
 class ApiMethodCallRule implements Rule
 {
 
-	private ApiRuleHelper $apiRuleHelper;
-
-	public function __construct(ApiRuleHelper $apiRuleHelper)
+	public function __construct(private ApiRuleHelper $apiRuleHelper)
 	{
-		$this->apiRuleHelper = $apiRuleHelper;
 	}
 
 	public function getNodeType(): string

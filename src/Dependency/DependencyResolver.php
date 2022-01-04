@@ -28,21 +28,12 @@ use function count;
 class DependencyResolver
 {
 
-	private FileHelper $fileHelper;
-
-	private ReflectionProvider $reflectionProvider;
-
-	private ExportedNodeResolver $exportedNodeResolver;
-
 	public function __construct(
-		FileHelper $fileHelper,
-		ReflectionProvider $reflectionProvider,
-		ExportedNodeResolver $exportedNodeResolver,
+		private FileHelper $fileHelper,
+		private ReflectionProvider $reflectionProvider,
+		private ExportedNodeResolver $exportedNodeResolver,
 	)
 	{
-		$this->fileHelper = $fileHelper;
-		$this->reflectionProvider = $reflectionProvider;
-		$this->exportedNodeResolver = $exportedNodeResolver;
 	}
 
 	public function resolveDependencies(Node $node, Scope $scope): NodeDependencies

@@ -11,26 +11,12 @@ use function count;
 class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private ?ExportedPhpDocNode $phpDoc;
-
-	/** @var string[] */
-	private array $extends;
-
-	/** @var ExportedNode[] */
-	private array $statements;
-
 	/**
 	 * @param string[] $extends
 	 * @param ExportedNode[] $statements
 	 */
-	public function __construct(string $name, ?ExportedPhpDocNode $phpDoc, array $extends, array $statements)
+	public function __construct(private string $name, private ?ExportedPhpDocNode $phpDoc, private array $extends, private array $statements)
 	{
-		$this->name = $name;
-		$this->phpDoc = $phpDoc;
-		$this->extends = $extends;
-		$this->statements = $statements;
 	}
 
 	public function equals(ExportedNode $node): bool

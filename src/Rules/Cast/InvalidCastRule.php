@@ -22,17 +22,11 @@ use function substr;
 class InvalidCastRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private RuleLevelHelper $ruleLevelHelper;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		RuleLevelHelper $ruleLevelHelper,
+		private ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string

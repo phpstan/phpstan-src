@@ -8,14 +8,8 @@ use PHPStan\Type\Type;
 class ParamTag implements TypedTag
 {
 
-	private Type $type;
-
-	private bool $isVariadic;
-
-	public function __construct(Type $type, bool $isVariadic)
+	public function __construct(private Type $type, private bool $isVariadic)
 	{
-		$this->type = $type;
-		$this->isVariadic = $isVariadic;
 	}
 
 	public function getType(): Type

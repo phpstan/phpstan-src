@@ -38,21 +38,12 @@ use function substr;
 class PhpDocNodeResolver
 {
 
-	private TypeNodeResolver $typeNodeResolver;
-
-	private ConstExprNodeResolver $constExprNodeResolver;
-
-	private UnresolvableTypeHelper $unresolvableTypeHelper;
-
 	public function __construct(
-		TypeNodeResolver $typeNodeResolver,
-		ConstExprNodeResolver $constExprNodeResolver,
-		UnresolvableTypeHelper $unresolvableTypeHelper,
+		private TypeNodeResolver $typeNodeResolver,
+		private ConstExprNodeResolver $constExprNodeResolver,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
 	)
 	{
-		$this->typeNodeResolver = $typeNodeResolver;
-		$this->constExprNodeResolver = $constExprNodeResolver;
-		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
 	}
 
 	/**

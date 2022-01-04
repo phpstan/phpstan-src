@@ -13,18 +13,11 @@ class UniversalObjectCratesClassReflectionExtension
 	implements PropertiesClassReflectionExtension
 {
 
-	/** @var string[] */
-	private array $classes;
-
-	private ReflectionProvider $reflectionProvider;
-
 	/**
 	 * @param string[] $classes
 	 */
-	public function __construct(ReflectionProvider $reflectionProvider, array $classes)
+	public function __construct(private ReflectionProvider $reflectionProvider, private array $classes)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->classes = $classes;
 	}
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool

@@ -34,29 +34,14 @@ use function strpos;
 class FileAnalyser
 {
 
-	private ScopeFactory $scopeFactory;
-
-	private NodeScopeResolver $nodeScopeResolver;
-
-	private Parser $parser;
-
-	private DependencyResolver $dependencyResolver;
-
-	private bool $reportUnmatchedIgnoredErrors;
-
 	public function __construct(
-		ScopeFactory $scopeFactory,
-		NodeScopeResolver $nodeScopeResolver,
-		Parser $parser,
-		DependencyResolver $dependencyResolver,
-		bool $reportUnmatchedIgnoredErrors,
+		private ScopeFactory $scopeFactory,
+		private NodeScopeResolver $nodeScopeResolver,
+		private Parser $parser,
+		private DependencyResolver $dependencyResolver,
+		private bool $reportUnmatchedIgnoredErrors,
 	)
 	{
-		$this->scopeFactory = $scopeFactory;
-		$this->nodeScopeResolver = $nodeScopeResolver;
-		$this->parser = $parser;
-		$this->dependencyResolver = $dependencyResolver;
-		$this->reportUnmatchedIgnoredErrors = $reportUnmatchedIgnoredErrors;
 	}
 
 	/**

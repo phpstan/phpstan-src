@@ -70,33 +70,6 @@ class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension
 {
 
-	private ScopeFactory $scopeFactory;
-
-	private NodeScopeResolver $nodeScopeResolver;
-
-	private PhpMethodReflectionFactory $methodReflectionFactory;
-
-	private PhpDocInheritanceResolver $phpDocInheritanceResolver;
-
-	private AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension;
-
-	private AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension;
-
-	private SignatureMapProvider $signatureMapProvider;
-
-	private Parser $parser;
-
-	private StubPhpDocProvider $stubPhpDocProvider;
-
-	private bool $inferPrivatePropertyTypeFromConstructor;
-
-	private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider;
-
-	private FileTypeMapper $fileTypeMapper;
-
-	/** @var string[] */
-	private array $universalObjectCratesClasses;
-
 	/** @var PropertyReflection[][] */
 	private array $propertiesIncludingAnnotations = [];
 
@@ -119,34 +92,21 @@ class PhpClassReflectionExtension
 	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(
-		ScopeFactory $scopeFactory,
-		NodeScopeResolver $nodeScopeResolver,
-		PhpMethodReflectionFactory $methodReflectionFactory,
-		PhpDocInheritanceResolver $phpDocInheritanceResolver,
-		AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension,
-		AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension,
-		SignatureMapProvider $signatureMapProvider,
-		Parser $parser,
-		StubPhpDocProvider $stubPhpDocProvider,
-		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
-		FileTypeMapper $fileTypeMapper,
-		bool $inferPrivatePropertyTypeFromConstructor,
-		array $universalObjectCratesClasses,
+		private ScopeFactory $scopeFactory,
+		private NodeScopeResolver $nodeScopeResolver,
+		private PhpMethodReflectionFactory $methodReflectionFactory,
+		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
+		private AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension,
+		private AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension,
+		private SignatureMapProvider $signatureMapProvider,
+		private Parser $parser,
+		private StubPhpDocProvider $stubPhpDocProvider,
+		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
+		private FileTypeMapper $fileTypeMapper,
+		private bool $inferPrivatePropertyTypeFromConstructor,
+		private array $universalObjectCratesClasses,
 	)
 	{
-		$this->scopeFactory = $scopeFactory;
-		$this->nodeScopeResolver = $nodeScopeResolver;
-		$this->methodReflectionFactory = $methodReflectionFactory;
-		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
-		$this->annotationsMethodsClassReflectionExtension = $annotationsMethodsClassReflectionExtension;
-		$this->annotationsPropertiesClassReflectionExtension = $annotationsPropertiesClassReflectionExtension;
-		$this->signatureMapProvider = $signatureMapProvider;
-		$this->parser = $parser;
-		$this->stubPhpDocProvider = $stubPhpDocProvider;
-		$this->reflectionProviderProvider = $reflectionProviderProvider;
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->inferPrivatePropertyTypeFromConstructor = $inferPrivatePropertyTypeFromConstructor;
-		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool

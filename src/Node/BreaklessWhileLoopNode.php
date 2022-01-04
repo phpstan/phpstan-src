@@ -10,19 +10,12 @@ use PHPStan\Analyser\StatementExitPoint;
 class BreaklessWhileLoopNode extends NodeAbstract implements VirtualNode
 {
 
-	private While_ $originalNode;
-
-	/** @var StatementExitPoint[] */
-	private array $exitPoints;
-
 	/**
 	 * @param StatementExitPoint[] $exitPoints
 	 */
-	public function __construct(While_ $originalNode, array $exitPoints)
+	public function __construct(private While_ $originalNode, private array $exitPoints)
 	{
 		parent::__construct($originalNode->getAttributes());
-		$this->originalNode = $originalNode;
-		$this->exitPoints = $exitPoints;
 	}
 
 	public function getOriginalNode(): While_

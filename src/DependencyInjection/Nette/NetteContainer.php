@@ -14,11 +14,8 @@ use function array_map;
 class NetteContainer implements Container
 {
 
-	private \Nette\DI\Container $container;
-
-	public function __construct(\Nette\DI\Container $container)
+	public function __construct(private \Nette\DI\Container $container)
 	{
-		$this->container = $container;
 	}
 
 	public function hasService(string $serviceName): bool

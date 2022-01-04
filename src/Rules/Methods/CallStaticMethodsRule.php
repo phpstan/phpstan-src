@@ -18,17 +18,11 @@ use function sprintf;
 class CallStaticMethodsRule implements Rule
 {
 
-	private StaticMethodCallCheck $methodCallCheck;
-
-	private FunctionCallParametersCheck $parametersCheck;
-
 	public function __construct(
-		StaticMethodCallCheck $methodCallCheck,
-		FunctionCallParametersCheck $parametersCheck,
+		private StaticMethodCallCheck $methodCallCheck,
+		private FunctionCallParametersCheck $parametersCheck,
 	)
 	{
-		$this->methodCallCheck = $methodCallCheck;
-		$this->parametersCheck = $parametersCheck;
 	}
 
 	public function getNodeType(): string

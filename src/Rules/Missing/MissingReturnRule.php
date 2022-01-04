@@ -27,17 +27,11 @@ use function sprintf;
 class MissingReturnRule implements Rule
 {
 
-	private bool $checkExplicitMixedMissingReturn;
-
-	private bool $checkPhpDocMissingReturn;
-
 	public function __construct(
-		bool $checkExplicitMixedMissingReturn,
-		bool $checkPhpDocMissingReturn,
+		private bool $checkExplicitMixedMissingReturn,
+		private bool $checkPhpDocMissingReturn,
 	)
 	{
-		$this->checkExplicitMixedMissingReturn = $checkExplicitMixedMissingReturn;
-		$this->checkPhpDocMissingReturn = $checkPhpDocMissingReturn;
 	}
 
 	public function getNodeType(): string

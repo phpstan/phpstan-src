@@ -22,33 +22,15 @@ use function is_file;
 class TestCaseSourceLocatorFactory
 {
 
-	private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker;
-
-	private AutoloadSourceLocator $autoloadSourceLocator;
-
-	private Parser $phpParser;
-
-	private Parser $php8Parser;
-
-	private PhpStormStubsSourceStubber $phpstormStubsSourceStubber;
-
-	private ReflectionSourceStubber $reflectionSourceStubber;
-
 	public function __construct(
-		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
-		AutoloadSourceLocator $autoloadSourceLocator,
-		Parser $phpParser,
-		Parser $php8Parser,
-		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
-		ReflectionSourceStubber $reflectionSourceStubber,
+		private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
+		private AutoloadSourceLocator $autoloadSourceLocator,
+		private Parser $phpParser,
+		private Parser $php8Parser,
+		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
+		private ReflectionSourceStubber $reflectionSourceStubber,
 	)
 	{
-		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;
-		$this->autoloadSourceLocator = $autoloadSourceLocator;
-		$this->phpParser = $phpParser;
-		$this->php8Parser = $php8Parser;
-		$this->phpstormStubsSourceStubber = $phpstormStubsSourceStubber;
-		$this->reflectionSourceStubber = $reflectionSourceStubber;
 	}
 
 	public function create(): SourceLocator

@@ -20,11 +20,8 @@ use function sprintf;
 final class MissingPropertyTypehintRule implements Rule
 {
 
-	private MissingTypehintCheck $missingTypehintCheck;
-
-	public function __construct(MissingTypehintCheck $missingTypehintCheck)
+	public function __construct(private MissingTypehintCheck $missingTypehintCheck)
 	{
-		$this->missingTypehintCheck = $missingTypehintCheck;
 	}
 
 	public function getNodeType(): string

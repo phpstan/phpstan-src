@@ -19,37 +19,18 @@ use function strtolower;
 class NativeMethodReflection implements MethodReflection
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private ClassReflection $declaringClass;
-
-	private BuiltinMethodReflection $reflection;
-
-	/** @var ParametersAcceptorWithPhpDocs[] */
-	private array $variants;
-
-	private TrinaryLogic $hasSideEffects;
-
-	private ?Type $throwType;
-
 	/**
 	 * @param ParametersAcceptorWithPhpDocs[] $variants
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		ClassReflection $declaringClass,
-		BuiltinMethodReflection $reflection,
-		array $variants,
-		TrinaryLogic $hasSideEffects,
-		?Type $throwType,
+		private ReflectionProvider $reflectionProvider,
+		private ClassReflection $declaringClass,
+		private BuiltinMethodReflection $reflection,
+		private array $variants,
+		private TrinaryLogic $hasSideEffects,
+		private ?Type $throwType,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->declaringClass = $declaringClass;
-		$this->reflection = $reflection;
-		$this->variants = $variants;
-		$this->hasSideEffects = $hasSideEffects;
-		$this->throwType = $throwType;
 	}
 
 	public function getDeclaringClass(): ClassReflection

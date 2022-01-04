@@ -10,14 +10,8 @@ use PHPStan\Type\Type;
 class ClosureCallUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 
-	private UnresolvedMethodPrototypeReflection $prototype;
-
-	private ClosureType $closure;
-
-	public function __construct(UnresolvedMethodPrototypeReflection $prototype, ClosureType $closure)
+	public function __construct(private UnresolvedMethodPrototypeReflection $prototype, private ClosureType $closure)
 	{
-		$this->prototype = $prototype;
-		$this->closure = $closure;
 	}
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedMethodPrototypeReflection

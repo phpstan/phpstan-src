@@ -14,15 +14,11 @@ use function implode;
 class UnionTypePropertyReflection implements PropertyReflection
 {
 
-	/** @var PropertyReflection[] */
-	private array $properties;
-
 	/**
 	 * @param PropertyReflection[] $properties
 	 */
-	public function __construct(array $properties)
+	public function __construct(private array $properties)
 	{
-		$this->properties = $properties;
 	}
 
 	public function getDeclaringClass(): ClassReflection

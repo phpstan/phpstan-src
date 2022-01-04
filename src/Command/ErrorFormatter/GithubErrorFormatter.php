@@ -17,17 +17,11 @@ use function str_replace;
 class GithubErrorFormatter implements ErrorFormatter
 {
 
-	private RelativePathHelper $relativePathHelper;
-
-	private ErrorFormatter $errorFormatter;
-
 	public function __construct(
-		RelativePathHelper $relativePathHelper,
-		ErrorFormatter $errorFormatter,
+		private RelativePathHelper $relativePathHelper,
+		private ErrorFormatter $errorFormatter,
 	)
 	{
-		$this->relativePathHelper = $relativePathHelper;
-		$this->errorFormatter = $errorFormatter;
 	}
 
 	public function formatErrors(AnalysisResult $analysisResult, Output $output): int

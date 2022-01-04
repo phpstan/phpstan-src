@@ -7,13 +7,10 @@ use PHPStan\DependencyInjection\Container;
 class LazyTypeNodeResolverExtensionRegistryProvider implements TypeNodeResolverExtensionRegistryProvider
 {
 
-	private Container $container;
-
 	private ?TypeNodeResolverExtensionRegistry $registry = null;
 
-	public function __construct(Container $container)
+	public function __construct(private Container $container)
 	{
-		$this->container = $container;
 	}
 
 	public function getRegistry(): TypeNodeResolverExtensionRegistry

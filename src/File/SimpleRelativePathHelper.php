@@ -10,11 +10,8 @@ use function substr;
 class SimpleRelativePathHelper implements RelativePathHelper
 {
 
-	private string $currentWorkingDirectory;
-
-	public function __construct(string $currentWorkingDirectory)
+	public function __construct(private string $currentWorkingDirectory)
 	{
-		$this->currentWorkingDirectory = $currentWorkingDirectory;
 	}
 
 	public function getRelativePath(string $filename): string

@@ -21,17 +21,11 @@ use function sprintf;
 class AppendedArrayKeyTypeRule implements Rule
 {
 
-	private PropertyReflectionFinder $propertyReflectionFinder;
-
-	private bool $checkUnionTypes;
-
 	public function __construct(
-		PropertyReflectionFinder $propertyReflectionFinder,
-		bool $checkUnionTypes,
+		private PropertyReflectionFinder $propertyReflectionFinder,
+		private bool $checkUnionTypes,
 	)
 	{
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
-		$this->checkUnionTypes = $checkUnionTypes;
 	}
 
 	public function getNodeType(): string

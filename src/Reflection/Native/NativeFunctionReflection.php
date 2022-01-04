@@ -11,33 +11,17 @@ use PHPStan\Type\VoidType;
 class NativeFunctionReflection implements FunctionReflection
 {
 
-	private string $name;
-
-	/** @var ParametersAcceptor[] */
-	private array $variants;
-
-	private ?Type $throwType;
-
-	private TrinaryLogic $hasSideEffects;
-
-	private bool $isDeprecated;
-
 	/**
 	 * @param ParametersAcceptor[] $variants
 	 */
 	public function __construct(
-		string $name,
-		array $variants,
-		?Type $throwType,
-		TrinaryLogic $hasSideEffects,
-		bool $isDeprecated,
+		private string $name,
+		private array $variants,
+		private ?Type $throwType,
+		private TrinaryLogic $hasSideEffects,
+		private bool $isDeprecated,
 	)
 	{
-		$this->name = $name;
-		$this->variants = $variants;
-		$this->throwType = $throwType;
-		$this->hasSideEffects = $hasSideEffects;
-		$this->isDeprecated = $isDeprecated;
 	}
 
 	public function getName(): string

@@ -26,11 +26,8 @@ use function strtolower;
 class UnusedConstructorParametersRule implements Rule
 {
 
-	private UnusedFunctionParametersCheck $check;
-
-	public function __construct(UnusedFunctionParametersCheck $check)
+	public function __construct(private UnusedFunctionParametersCheck $check)
 	{
-		$this->check = $check;
 	}
 
 	public function getNodeType(): string

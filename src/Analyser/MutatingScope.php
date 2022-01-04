@@ -143,35 +143,8 @@ class MutatingScope implements Scope
 		Node\Expr\AssignOp\Div::class => '/',
 	];
 
-	private ScopeFactory $scopeFactory;
-
-	private ReflectionProvider $reflectionProvider;
-
-	private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry;
-
-	private OperatorTypeSpecifyingExtensionRegistry $operatorTypeSpecifyingExtensionRegistry;
-
-	private Standard $printer;
-
-	private TypeSpecifier $typeSpecifier;
-
-	private PropertyReflectionFinder $propertyReflectionFinder;
-
-	private Parser $parser;
-
-	private NodeScopeResolver $nodeScopeResolver;
-
-	private ScopeContext $context;
-
-	private PhpVersion $phpVersion;
-
 	/** @var Type[] */
 	private array $resolvedTypes = [];
-
-	private bool $declareStrictTypes;
-
-	/** @var array<string, Type> */
-	private array $constantTypes;
 
 	private FunctionReflection|MethodReflection|null $function = null;
 
@@ -179,36 +152,6 @@ class MutatingScope implements Scope
 
 	/** @var VariableTypeHolder[] */
 	private array $variableTypes;
-
-	/** @var VariableTypeHolder[] */
-	private array $moreSpecificTypes;
-
-	/** @var array<string, ConditionalExpressionHolder[]> */
-	private array $conditionalExpressions;
-
-	private ?string $inClosureBindScopeClass;
-
-	private ?ParametersAcceptor $anonymousFunctionReflection;
-
-	private bool $inFirstLevelStatement;
-
-	/** @var array<string, true> */
-	private array $currentlyAssignedExpressions;
-
-	/** @var array<MethodReflection|FunctionReflection> */
-	private array $inFunctionCallsStack;
-
-	/** @var array<string, Type> */
-	private array $nativeExpressionTypes;
-
-	/** @var string[] */
-	private array $dynamicConstantNames;
-
-	private bool $treatPhpDocTypesAsCertain;
-
-	private bool $afterExtractCall;
-
-	private ?Scope $parentScope;
 
 	/**
 	 * @param array<string, Type> $constantTypes
@@ -222,68 +165,43 @@ class MutatingScope implements Scope
 	 * @param string[] $dynamicConstantNames
 	 */
 	public function __construct(
-		ScopeFactory $scopeFactory,
-		ReflectionProvider $reflectionProvider,
-		DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
-		OperatorTypeSpecifyingExtensionRegistry $operatorTypeSpecifyingExtensionRegistry,
-		Standard $printer,
-		TypeSpecifier $typeSpecifier,
-		PropertyReflectionFinder $propertyReflectionFinder,
-		Parser $parser,
-		NodeScopeResolver $nodeScopeResolver,
-		ScopeContext $context,
-		PhpVersion $phpVersion,
-		bool $declareStrictTypes = false,
-		array $constantTypes = [],
+		private ScopeFactory $scopeFactory,
+		private ReflectionProvider $reflectionProvider,
+		private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
+		private OperatorTypeSpecifyingExtensionRegistry $operatorTypeSpecifyingExtensionRegistry,
+		private Standard $printer,
+		private TypeSpecifier $typeSpecifier,
+		private PropertyReflectionFinder $propertyReflectionFinder,
+		private Parser $parser,
+		private NodeScopeResolver $nodeScopeResolver,
+		private ScopeContext $context,
+		private PhpVersion $phpVersion,
+		private bool $declareStrictTypes = false,
+		private array $constantTypes = [],
 		$function = null,
 		?string $namespace = null,
 		array $variablesTypes = [],
-		array $moreSpecificTypes = [],
-		array $conditionalExpressions = [],
-		?string $inClosureBindScopeClass = null,
-		?ParametersAcceptor $anonymousFunctionReflection = null,
-		bool $inFirstLevelStatement = true,
-		array $currentlyAssignedExpressions = [],
-		array $nativeExpressionTypes = [],
-		array $inFunctionCallsStack = [],
-		array $dynamicConstantNames = [],
-		bool $treatPhpDocTypesAsCertain = true,
-		bool $afterExtractCall = false,
-		?Scope $parentScope = null,
+		private array $moreSpecificTypes = [],
+		private array $conditionalExpressions = [],
+		private ?string $inClosureBindScopeClass = null,
+		private ?ParametersAcceptor $anonymousFunctionReflection = null,
+		private bool $inFirstLevelStatement = true,
+		private array $currentlyAssignedExpressions = [],
+		private array $nativeExpressionTypes = [],
+		private array $inFunctionCallsStack = [],
+		private array $dynamicConstantNames = [],
+		private bool $treatPhpDocTypesAsCertain = true,
+		private bool $afterExtractCall = false,
+		private ?Scope $parentScope = null,
 	)
 	{
 		if ($namespace === '') {
 			$namespace = null;
 		}
 
-		$this->scopeFactory = $scopeFactory;
-		$this->reflectionProvider = $reflectionProvider;
-		$this->dynamicReturnTypeExtensionRegistry = $dynamicReturnTypeExtensionRegistry;
-		$this->operatorTypeSpecifyingExtensionRegistry = $operatorTypeSpecifyingExtensionRegistry;
-		$this->printer = $printer;
-		$this->typeSpecifier = $typeSpecifier;
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
-		$this->parser = $parser;
-		$this->nodeScopeResolver = $nodeScopeResolver;
-		$this->context = $context;
-		$this->phpVersion = $phpVersion;
-		$this->declareStrictTypes = $declareStrictTypes;
-		$this->constantTypes = $constantTypes;
 		$this->function = $function;
 		$this->namespace = $namespace;
 		$this->variableTypes = $variablesTypes;
-		$this->moreSpecificTypes = $moreSpecificTypes;
-		$this->conditionalExpressions = $conditionalExpressions;
-		$this->inClosureBindScopeClass = $inClosureBindScopeClass;
-		$this->anonymousFunctionReflection = $anonymousFunctionReflection;
-		$this->inFirstLevelStatement = $inFirstLevelStatement;
-		$this->currentlyAssignedExpressions = $currentlyAssignedExpressions;
-		$this->nativeExpressionTypes = $nativeExpressionTypes;
-		$this->inFunctionCallsStack = $inFunctionCallsStack;
-		$this->dynamicConstantNames = $dynamicConstantNames;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
-		$this->afterExtractCall = $afterExtractCall;
-		$this->parentScope = $parentScope;
 	}
 
 	/** @api */

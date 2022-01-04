@@ -23,17 +23,11 @@ use function sprintf;
 class IncompatibleClassConstantPhpDocTypeRule implements Rule
 {
 
-	private GenericObjectTypeCheck $genericObjectTypeCheck;
-
-	private UnresolvableTypeHelper $unresolvableTypeHelper;
-
 	public function __construct(
-		GenericObjectTypeCheck $genericObjectTypeCheck,
-		UnresolvableTypeHelper $unresolvableTypeHelper,
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
 	)
 	{
-		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
-		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
 	}
 
 	public function getNodeType(): string

@@ -10,15 +10,12 @@ use function array_values;
 class OperatorTypeSpecifyingExtensionRegistry
 {
 
-	/** @var OperatorTypeSpecifyingExtension[] */
-	private array $extensions;
-
 	/**
 	 * @param OperatorTypeSpecifyingExtension[] $extensions
 	 */
 	public function __construct(
 		Broker $broker,
-		array $extensions,
+		private array $extensions,
 	)
 	{
 		foreach ($extensions as $extension) {
@@ -28,7 +25,6 @@ class OperatorTypeSpecifyingExtensionRegistry
 
 			$extension->setBroker($broker);
 		}
-		$this->extensions = $extensions;
 	}
 
 	/**

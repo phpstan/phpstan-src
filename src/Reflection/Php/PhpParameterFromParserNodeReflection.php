@@ -13,39 +13,18 @@ use PHPStan\Type\TypehintHelper;
 class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhpDocs
 {
 
-	private string $name;
-
-	private bool $optional;
-
-	private Type $realType;
-
-	private ?Type $phpDocType;
-
-	private PassedByReference $passedByReference;
-
-	private ?Type $defaultValue;
-
-	private bool $variadic;
-
 	private ?Type $type = null;
 
 	public function __construct(
-		string $name,
-		bool $optional,
-		Type $realType,
-		?Type $phpDocType,
-		PassedByReference $passedByReference,
-		?Type $defaultValue,
-		bool $variadic,
+		private string $name,
+		private bool $optional,
+		private Type $realType,
+		private ?Type $phpDocType,
+		private PassedByReference $passedByReference,
+		private ?Type $defaultValue,
+		private bool $variadic,
 	)
 	{
-		$this->name = $name;
-		$this->optional = $optional;
-		$this->realType = $realType;
-		$this->phpDocType = $phpDocType;
-		$this->passedByReference = $passedByReference;
-		$this->defaultValue = $defaultValue;
-		$this->variadic = $variadic;
 	}
 
 	public function getName(): string

@@ -16,11 +16,8 @@ use function sprintf;
 class InvalidIncDecOperationRule implements Rule
 {
 
-	private bool $checkThisOnly;
-
-	public function __construct(bool $checkThisOnly)
+	public function __construct(private bool $checkThisOnly)
 	{
-		$this->checkThisOnly = $checkThisOnly;
 	}
 
 	public function getNodeType(): string

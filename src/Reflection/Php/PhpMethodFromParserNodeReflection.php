@@ -22,15 +22,13 @@ use function strtolower;
 class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements MethodReflection
 {
 
-	private ClassReflection $declaringClass;
-
 	/**
 	 * @param Type[] $realParameterTypes
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $realParameterDefaultValues
 	 */
 	public function __construct(
-		ClassReflection $declaringClass,
+		private ClassReflection $declaringClass,
 		ClassMethod $classMethod,
 		string $fileName,
 		TemplateTypeMap $templateTypeMap,
@@ -86,7 +84,6 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$isFinal || $classMethod->isFinal(),
 			$isPure,
 		);
-		$this->declaringClass = $declaringClass;
 	}
 
 	public function getDeclaringClass(): ClassReflection

@@ -21,13 +21,10 @@ use function sprintf;
 class OverridingConstantRule implements Rule
 {
 
-	private bool $checkPhpDocMethodSignatures;
-
 	public function __construct(
-		bool $checkPhpDocMethodSignatures,
+		private bool $checkPhpDocMethodSignatures,
 	)
 	{
-		$this->checkPhpDocMethodSignatures = $checkPhpDocMethodSignatures;
 	}
 
 	public function getNodeType(): string

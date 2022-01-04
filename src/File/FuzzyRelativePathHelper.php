@@ -17,8 +17,6 @@ use const DIRECTORY_SEPARATOR;
 class FuzzyRelativePathHelper implements RelativePathHelper
 {
 
-	private RelativePathHelper $fallbackRelativePathHelper;
-
 	private string $directorySeparator;
 
 	private ?string $pathToTrim = null;
@@ -28,13 +26,12 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 	 * @param non-empty-string|null $directorySeparator
 	 */
 	public function __construct(
-		RelativePathHelper $fallbackRelativePathHelper,
+		private RelativePathHelper $fallbackRelativePathHelper,
 		string $currentWorkingDirectory,
 		array $analysedPaths,
 		?string $directorySeparator = null,
 	)
 	{
-		$this->fallbackRelativePathHelper = $fallbackRelativePathHelper;
 		if ($directorySeparator === null) {
 			$directorySeparator = DIRECTORY_SEPARATOR;
 		}

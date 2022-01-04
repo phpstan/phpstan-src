@@ -20,29 +20,14 @@ use const T_DOC_COMMENT;
 class RichParser implements Parser
 {
 
-	private \PhpParser\Parser $parser;
-
-	private Lexer $lexer;
-
-	private NameResolver $nameResolver;
-
-	private NodeConnectingVisitor $nodeConnectingVisitor;
-
-	private StatementOrderVisitor $statementOrderVisitor;
-
 	public function __construct(
-		\PhpParser\Parser $parser,
-		Lexer $lexer,
-		NameResolver $nameResolver,
-		NodeConnectingVisitor $nodeConnectingVisitor,
-		StatementOrderVisitor $statementOrderVisitor,
+		private \PhpParser\Parser $parser,
+		private Lexer $lexer,
+		private NameResolver $nameResolver,
+		private NodeConnectingVisitor $nodeConnectingVisitor,
+		private StatementOrderVisitor $statementOrderVisitor,
 	)
 	{
-		$this->parser = $parser;
-		$this->lexer = $lexer;
-		$this->nameResolver = $nameResolver;
-		$this->nodeConnectingVisitor = $nodeConnectingVisitor;
-		$this->statementOrderVisitor = $statementOrderVisitor;
 	}
 
 	/**

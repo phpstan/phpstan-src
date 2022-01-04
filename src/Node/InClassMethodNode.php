@@ -8,12 +8,9 @@ use PhpParser\Node;
 class InClassMethodNode extends Node\Stmt implements VirtualNode
 {
 
-	private Node\Stmt\ClassMethod $originalNode;
-
-	public function __construct(Node\Stmt\ClassMethod $originalNode)
+	public function __construct(private Node\Stmt\ClassMethod $originalNode)
 	{
 		parent::__construct($originalNode->getAttributes());
-		$this->originalNode = $originalNode;
 	}
 
 	public function getOriginalNode(): Node\Stmt\ClassMethod

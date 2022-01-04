@@ -19,17 +19,11 @@ use function substr;
 class IgnoredRegexValidator
 {
 
-	private Parser $parser;
-
-	private TypeStringResolver $typeStringResolver;
-
 	public function __construct(
-		Parser $parser,
-		TypeStringResolver $typeStringResolver,
+		private Parser $parser,
+		private TypeStringResolver $typeStringResolver,
 	)
 	{
-		$this->parser = $parser;
-		$this->typeStringResolver = $typeStringResolver;
 	}
 
 	public function validate(string $regex): IgnoredRegexValidatorResult

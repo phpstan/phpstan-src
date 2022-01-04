@@ -38,8 +38,6 @@ class CallableType implements CompoundType, ParametersAcceptor
 
 	private Type $returnType;
 
-	private bool $variadic;
-
 	private bool $isCommonCallable;
 
 	/**
@@ -49,12 +47,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function __construct(
 		?array $parameters = null,
 		?Type $returnType = null,
-		bool $variadic = true,
+		private bool $variadic = true,
 	)
 	{
 		$this->parameters = $parameters ?? [];
 		$this->returnType = $returnType ?? new MixedType();
-		$this->variadic = $variadic;
 		$this->isCommonCallable = $parameters === null && $returnType === null;
 	}
 

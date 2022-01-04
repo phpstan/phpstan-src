@@ -12,17 +12,11 @@ use ReflectionType;
 class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 {
 
-	private string $methodName;
-
-	private ReflectionClass $declaringClass;
-
 	public function __construct(
-		string $methodName,
-		ReflectionClass $declaringClass,
+		private string $methodName,
+		private ReflectionClass $declaringClass,
 	)
 	{
-		$this->methodName = $methodName;
-		$this->declaringClass = $declaringClass;
 	}
 
 	public function getName(): string

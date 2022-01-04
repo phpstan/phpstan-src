@@ -20,14 +20,8 @@ use function sprintf;
 class NonexistentOffsetInArrayDimFetchCheck
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private bool $reportMaybes;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper, bool $reportMaybes)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper, private bool $reportMaybes)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	/**

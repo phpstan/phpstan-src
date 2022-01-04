@@ -20,11 +20,8 @@ class TemplateTypeVariance
 	/** @var self[] */
 	private static array $registry;
 
-	private int $value;
-
-	private function __construct(int $value)
+	private function __construct(private int $value)
 	{
-		$this->value = $value;
 	}
 
 	private static function create(int $value): self

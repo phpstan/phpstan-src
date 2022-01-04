@@ -28,29 +28,14 @@ use function in_array;
 class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 {
 
-	private ClassLike $class;
-
-	/** @var ClassPropertyNode[] */
-	private array $properties;
-
-	/** @var array<int, PropertyRead|PropertyWrite> */
-	private array $propertyUsages;
-
-	/** @var array<int, MethodCall> */
-	private array $methodCalls;
-
 	/**
 	 * @param ClassPropertyNode[] $properties
 	 * @param array<int, PropertyRead|PropertyWrite> $propertyUsages
 	 * @param array<int, MethodCall> $methodCalls
 	 */
-	public function __construct(ClassLike $class, array $properties, array $propertyUsages, array $methodCalls)
+	public function __construct(private ClassLike $class, private array $properties, private array $propertyUsages, private array $methodCalls)
 	{
 		parent::__construct($class->getAttributes());
-		$this->class = $class;
-		$this->properties = $properties;
-		$this->propertyUsages = $propertyUsages;
-		$this->methodCalls = $methodCalls;
 	}
 
 	public function getClass(): ClassLike

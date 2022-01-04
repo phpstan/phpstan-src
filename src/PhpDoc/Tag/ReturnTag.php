@@ -8,14 +8,8 @@ use PHPStan\Type\Type;
 class ReturnTag implements TypedTag
 {
 
-	private Type $type;
-
-	private bool $isExplicit;
-
-	public function __construct(Type $type, bool $isExplicit)
+	public function __construct(private Type $type, private bool $isExplicit)
 	{
-		$this->type = $type;
-		$this->isExplicit = $isExplicit;
 	}
 
 	public function getType(): Type

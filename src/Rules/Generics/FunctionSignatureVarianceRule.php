@@ -16,11 +16,8 @@ use function sprintf;
 class FunctionSignatureVarianceRule implements Rule
 {
 
-	private VarianceCheck $varianceCheck;
-
-	public function __construct(VarianceCheck $varianceCheck)
+	public function __construct(private VarianceCheck $varianceCheck)
 	{
-		$this->varianceCheck = $varianceCheck;
 	}
 
 	public function getNodeType(): string

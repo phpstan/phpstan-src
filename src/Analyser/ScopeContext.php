@@ -8,21 +8,12 @@ use PHPStan\ShouldNotHappenException;
 class ScopeContext
 {
 
-	private string $file;
-
-	private ?ClassReflection $classReflection;
-
-	private ?ClassReflection $traitReflection;
-
 	private function __construct(
-		string $file,
-		?ClassReflection $classReflection,
-		?ClassReflection $traitReflection,
+		private string $file,
+		private ?ClassReflection $classReflection,
+		private ?ClassReflection $traitReflection,
 	)
 	{
-		$this->file = $file;
-		$this->classReflection = $classReflection;
-		$this->traitReflection = $traitReflection;
 	}
 
 	/** @api */

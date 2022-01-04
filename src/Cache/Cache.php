@@ -5,11 +5,8 @@ namespace PHPStan\Cache;
 class Cache
 {
 
-	private CacheStorage $storage;
-
-	public function __construct(CacheStorage $storage)
+	public function __construct(private CacheStorage $storage)
 	{
-		$this->storage = $storage;
 	}
 
 	/**

@@ -11,17 +11,11 @@ use PHPStan\Parser\ParserErrorsException;
 class FileNodesFetcher
 {
 
-	private CachingVisitor $cachingVisitor;
-
-	private Parser $parser;
-
 	public function __construct(
-		CachingVisitor $cachingVisitor,
-		Parser $parser,
+		private CachingVisitor $cachingVisitor,
+		private Parser $parser,
 	)
 	{
-		$this->cachingVisitor = $cachingVisitor;
-		$this->parser = $parser;
 	}
 
 	public function fetchNodes(string $fileName): FetchedNodesResult

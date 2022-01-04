@@ -8,11 +8,8 @@ use PHPStan\Reflection\ReflectionProvider;
 class LazyReflectionProviderProvider implements ReflectionProviderProvider
 {
 
-	private Container $container;
-
-	public function __construct(Container $container)
+	public function __construct(private Container $container)
 	{
-		$this->container = $container;
 	}
 
 	public function getReflectionProvider(): ReflectionProvider

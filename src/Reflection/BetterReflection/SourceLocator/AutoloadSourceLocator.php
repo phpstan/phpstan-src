@@ -46,10 +46,6 @@ use const PHP_VERSION_ID;
 class AutoloadSourceLocator implements SourceLocator
 {
 
-	private FileNodesFetcher $fileNodesFetcher;
-
-	private bool $disableRuntimeReflectionProvider;
-
 	/** @var array<string, array<FetchedNode<Node\Stmt\ClassLike>>> */
 	private array $classNodes = [];
 
@@ -65,10 +61,8 @@ class AutoloadSourceLocator implements SourceLocator
 	/** @var array<string, true> */
 	private array $fetchedNodesByFile = [];
 
-	public function __construct(FileNodesFetcher $fileNodesFetcher, bool $disableRuntimeReflectionProvider)
+	public function __construct(private FileNodesFetcher $fileNodesFetcher, private bool $disableRuntimeReflectionProvider)
 	{
-		$this->fileNodesFetcher = $fileNodesFetcher;
-		$this->disableRuntimeReflectionProvider = $disableRuntimeReflectionProvider;
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection

@@ -17,11 +17,8 @@ use function trim;
 class ParentDirectoryRelativePathHelper implements RelativePathHelper
 {
 
-	private string $parentDirectory;
-
-	public function __construct(string $parentDirectory)
+	public function __construct(private string $parentDirectory)
 	{
-		$this->parentDirectory = $parentDirectory;
 	}
 
 	public function getRelativePath(string $filename): string

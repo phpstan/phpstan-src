@@ -21,11 +21,8 @@ use function strpos;
 class PhpStanNamespaceIn3rdPartyPackageRule implements Rule
 {
 
-	private ApiRuleHelper $apiRuleHelper;
-
-	public function __construct(ApiRuleHelper $apiRuleHelper)
+	public function __construct(private ApiRuleHelper $apiRuleHelper)
 	{
-		$this->apiRuleHelper = $apiRuleHelper;
 	}
 
 	public function getNodeType(): string

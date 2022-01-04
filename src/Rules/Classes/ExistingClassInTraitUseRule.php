@@ -19,17 +19,11 @@ use function sprintf;
 class ExistingClassInTraitUseRule implements Rule
 {
 
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private ReflectionProvider $reflectionProvider;
-
 	public function __construct(
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		ReflectionProvider $reflectionProvider,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string

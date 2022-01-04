@@ -12,33 +12,17 @@ use function count;
 class ExportedFunctionNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private ?ExportedPhpDocNode $phpDoc;
-
-	private bool $byRef;
-
-	private ?string $returnType;
-
-	/** @var ExportedParameterNode[] */
-	private array $parameters;
-
 	/**
 	 * @param ExportedParameterNode[] $parameters
 	 */
 	public function __construct(
-		string $name,
-		?ExportedPhpDocNode $phpDoc,
-		bool $byRef,
-		?string $returnType,
-		array $parameters,
+		private string $name,
+		private ?ExportedPhpDocNode $phpDoc,
+		private bool $byRef,
+		private ?string $returnType,
+		private array $parameters,
 	)
 	{
-		$this->name = $name;
-		$this->phpDoc = $phpDoc;
-		$this->byRef = $byRef;
-		$this->returnType = $returnType;
-		$this->parameters = $parameters;
 	}
 
 	public function equals(ExportedNode $node): bool

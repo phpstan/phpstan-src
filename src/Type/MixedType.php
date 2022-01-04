@@ -30,13 +30,11 @@ class MixedType implements CompoundType, SubtractableType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private bool $isExplicitMixed;
-
 	private ?Type $subtractedType;
 
 	/** @api */
 	public function __construct(
-		bool $isExplicitMixed = false,
+		private bool $isExplicitMixed = false,
 		?Type $subtractedType = null,
 	)
 	{
@@ -44,7 +42,6 @@ class MixedType implements CompoundType, SubtractableType
 			$subtractedType = null;
 		}
 
-		$this->isExplicitMixed = $isExplicitMixed;
 		$this->subtractedType = $subtractedType;
 	}
 

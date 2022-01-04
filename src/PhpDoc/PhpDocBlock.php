@@ -17,43 +17,20 @@ use function strtolower;
 class PhpDocBlock
 {
 
-	private string $docComment;
-
-	private string $file;
-
-	private ClassReflection $classReflection;
-
-	private ?string $trait;
-
-	private bool $explicit;
-
-	/** @var array<string, string> */
-	private array $parameterNameMapping;
-
-	/** @var array<int, self> */
-	private array $parents;
-
 	/**
 	 * @param array<string, string> $parameterNameMapping
 	 * @param array<int, self> $parents
 	 */
 	private function __construct(
-		string $docComment,
-		string $file,
-		ClassReflection $classReflection,
-		?string $trait,
-		bool $explicit,
-		array $parameterNameMapping,
-		array $parents,
+		private string $docComment,
+		private string $file,
+		private ClassReflection $classReflection,
+		private ?string $trait,
+		private bool $explicit,
+		private array $parameterNameMapping,
+		private array $parents,
 	)
 	{
-		$this->docComment = $docComment;
-		$this->file = $file;
-		$this->classReflection = $classReflection;
-		$this->trait = $trait;
-		$this->explicit = $explicit;
-		$this->parameterNameMapping = $parameterNameMapping;
-		$this->parents = $parents;
 	}
 
 	public function getDocComment(): string

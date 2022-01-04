@@ -18,28 +18,16 @@ use const E_DEPRECATED;
 class Analyser
 {
 
-	private FileAnalyser $fileAnalyser;
-
-	private Registry $registry;
-
-	private NodeScopeResolver $nodeScopeResolver;
-
-	private int $internalErrorsCountLimit;
-
 	/** @var Error[] */
 	private array $collectedErrors = [];
 
 	public function __construct(
-		FileAnalyser $fileAnalyser,
-		Registry $registry,
-		NodeScopeResolver $nodeScopeResolver,
-		int $internalErrorsCountLimit,
+		private FileAnalyser $fileAnalyser,
+		private Registry $registry,
+		private NodeScopeResolver $nodeScopeResolver,
+		private int $internalErrorsCountLimit,
 	)
 	{
-		$this->fileAnalyser = $fileAnalyser;
-		$this->registry = $registry;
-		$this->nodeScopeResolver = $nodeScopeResolver;
-		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
 	}
 
 	/**

@@ -12,27 +12,11 @@ use function count;
 class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 {
 
-	/** @var ExportedClassConstantNode[] */
-	private array $constants;
-
-	private bool $public;
-
-	private bool $private;
-
-	private bool $final;
-
-	private ?ExportedPhpDocNode $phpDoc;
-
 	/**
 	 * @param ExportedClassConstantNode[] $constants
 	 */
-	public function __construct(array $constants, bool $public, bool $private, bool $final, ?ExportedPhpDocNode $phpDoc)
+	public function __construct(private array $constants, private bool $public, private bool $private, private bool $final, private ?ExportedPhpDocNode $phpDoc)
 	{
-		$this->constants = $constants;
-		$this->public = $public;
-		$this->private = $private;
-		$this->final = $final;
-		$this->phpDoc = $phpDoc;
 	}
 
 	public function equals(ExportedNode $node): bool

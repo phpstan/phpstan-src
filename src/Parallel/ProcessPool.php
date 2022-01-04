@@ -12,14 +12,11 @@ use function sprintf;
 class ProcessPool
 {
 
-	private TcpServer $server;
-
 	/** @var array<string, Process> */
 	private array $processes = [];
 
-	public function __construct(TcpServer $server)
+	public function __construct(private TcpServer $server)
 	{
-		$this->server = $server;
 	}
 
 	public function getProcess(string $identifier): Process

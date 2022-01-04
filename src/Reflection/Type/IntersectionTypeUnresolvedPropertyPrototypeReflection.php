@@ -9,11 +9,6 @@ use function array_map;
 class IntersectionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 
-	private string $propertyName;
-
-	/** @var UnresolvedPropertyPrototypeReflection[] */
-	private array $propertyPrototypes;
-
 	private ?PropertyReflection $transformedProperty = null;
 
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
@@ -22,12 +17,10 @@ class IntersectionTypeUnresolvedPropertyPrototypeReflection implements Unresolve
 	 * @param UnresolvedPropertyPrototypeReflection[] $propertyPrototypes
 	 */
 	public function __construct(
-		string $propertyName,
-		array $propertyPrototypes,
+		private string $propertyName,
+		private array $propertyPrototypes,
 	)
 	{
-		$this->propertyName = $propertyName;
-		$this->propertyPrototypes = $propertyPrototypes;
 	}
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedPropertyPrototypeReflection

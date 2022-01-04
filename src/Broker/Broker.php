@@ -14,23 +14,16 @@ use PHPStan\ShouldNotHappenException;
 class Broker implements ReflectionProvider
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	/** @var string[] */
-	private array $universalObjectCratesClasses;
-
 	private static ?Broker $instance = null;
 
 	/**
 	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		array $universalObjectCratesClasses,
+		private ReflectionProvider $reflectionProvider,
+		private array $universalObjectCratesClasses,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public static function registerInstance(Broker $broker): void

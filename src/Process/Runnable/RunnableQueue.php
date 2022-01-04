@@ -14,21 +14,14 @@ use function sprintf;
 class RunnableQueue
 {
 
-	private RunnableQueueLogger $logger;
-
-	private int $maxSize;
-
 	/** @var array<array{Runnable, int, Deferred}> */
 	private array $queue = [];
 
 	/** @var SplObjectStorage<Runnable, array{int, Deferred}> */
 	private SplObjectStorage $running;
 
-	public function __construct(RunnableQueueLogger $logger, int $maxSize)
+	public function __construct(private RunnableQueueLogger $logger, private int $maxSize)
 	{
-		$this->logger = $logger;
-		$this->maxSize = $maxSize;
-
 		/** @var SplObjectStorage<Runnable, array{int, Deferred}> $running */
 		$running = new SplObjectStorage();
 		$this->running = $running;

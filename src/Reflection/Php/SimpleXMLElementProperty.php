@@ -15,17 +15,11 @@ use PHPStan\Type\TypeCombinator;
 class SimpleXMLElementProperty implements PropertyReflection
 {
 
-	private ClassReflection $declaringClass;
-
-	private Type $type;
-
 	public function __construct(
-		ClassReflection $declaringClass,
-		Type $type,
+		private ClassReflection $declaringClass,
+		private Type $type,
 	)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->type = $type;
 	}
 
 	public function getDeclaringClass(): ClassReflection

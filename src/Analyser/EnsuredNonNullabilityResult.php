@@ -5,18 +5,11 @@ namespace PHPStan\Analyser;
 class EnsuredNonNullabilityResult
 {
 
-	private MutatingScope $scope;
-
-	/** @var EnsuredNonNullabilityResultExpression[] */
-	private array $specifiedExpressions;
-
 	/**
 	 * @param EnsuredNonNullabilityResultExpression[] $specifiedExpressions
 	 */
-	public function __construct(MutatingScope $scope, array $specifiedExpressions)
+	public function __construct(private MutatingScope $scope, private array $specifiedExpressions)
 	{
-		$this->scope = $scope;
-		$this->specifiedExpressions = $specifiedExpressions;
 	}
 
 	public function getScope(): MutatingScope

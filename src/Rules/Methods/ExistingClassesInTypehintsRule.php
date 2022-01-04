@@ -18,11 +18,8 @@ use function sprintf;
 class ExistingClassesInTypehintsRule implements Rule
 {
 
-	private FunctionDefinitionCheck $check;
-
-	public function __construct(FunctionDefinitionCheck $check)
+	public function __construct(private FunctionDefinitionCheck $check)
 	{
-		$this->check = $check;
 	}
 
 	public function getNodeType(): string

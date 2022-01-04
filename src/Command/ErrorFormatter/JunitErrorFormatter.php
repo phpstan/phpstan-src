@@ -13,11 +13,8 @@ use const ENT_XML1;
 class JunitErrorFormatter implements ErrorFormatter
 {
 
-	private RelativePathHelper $relativePathHelper;
-
-	public function __construct(RelativePathHelper $relativePathHelper)
+	public function __construct(private RelativePathHelper $relativePathHelper)
 	{
-		$this->relativePathHelper = $relativePathHelper;
 	}
 
 	public function formatErrors(

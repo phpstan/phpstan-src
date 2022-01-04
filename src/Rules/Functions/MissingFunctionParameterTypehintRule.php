@@ -24,13 +24,10 @@ use function sprintf;
 final class MissingFunctionParameterTypehintRule implements Rule
 {
 
-	private MissingTypehintCheck $missingTypehintCheck;
-
 	public function __construct(
-		MissingTypehintCheck $missingTypehintCheck,
+		private MissingTypehintCheck $missingTypehintCheck,
 	)
 	{
-		$this->missingTypehintCheck = $missingTypehintCheck;
 	}
 
 	public function getNodeType(): string

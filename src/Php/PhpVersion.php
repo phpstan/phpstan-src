@@ -8,11 +8,8 @@ use function floor;
 class PhpVersion
 {
 
-	private int $versionId;
-
-	public function __construct(int $versionId)
+	public function __construct(private int $versionId)
 	{
-		$this->versionId = $versionId;
 	}
 
 	public function getVersionId(): int

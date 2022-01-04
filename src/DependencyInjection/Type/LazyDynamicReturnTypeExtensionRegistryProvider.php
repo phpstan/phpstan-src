@@ -11,13 +11,10 @@ use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 class LazyDynamicReturnTypeExtensionRegistryProvider implements DynamicReturnTypeExtensionRegistryProvider
 {
 
-	private Container $container;
-
 	private ?DynamicReturnTypeExtensionRegistry $registry = null;
 
-	public function __construct(Container $container)
+	public function __construct(private Container $container)
 	{
-		$this->container = $container;
 	}
 
 	public function getRegistry(): DynamicReturnTypeExtensionRegistry

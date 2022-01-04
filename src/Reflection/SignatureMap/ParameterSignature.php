@@ -8,33 +8,15 @@ use PHPStan\Type\Type;
 class ParameterSignature
 {
 
-	private string $name;
-
-	private bool $optional;
-
-	private Type $type;
-
-	private Type $nativeType;
-
-	private PassedByReference $passedByReference;
-
-	private bool $variadic;
-
 	public function __construct(
-		string $name,
-		bool $optional,
-		Type $type,
-		Type $nativeType,
-		PassedByReference $passedByReference,
-		bool $variadic,
+		private string $name,
+		private bool $optional,
+		private Type $type,
+		private Type $nativeType,
+		private PassedByReference $passedByReference,
+		private bool $variadic,
 	)
 	{
-		$this->name = $name;
-		$this->optional = $optional;
-		$this->type = $type;
-		$this->nativeType = $nativeType;
-		$this->passedByReference = $passedByReference;
-		$this->variadic = $variadic;
 	}
 
 	public function getName(): string

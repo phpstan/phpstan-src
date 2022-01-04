@@ -13,11 +13,8 @@ use function class_exists;
 class SkipClassAliasSourceLocator implements SourceLocator
 {
 
-	private SourceLocator $sourceLocator;
-
-	public function __construct(SourceLocator $sourceLocator)
+	public function __construct(private SourceLocator $sourceLocator)
 	{
-		$this->sourceLocator = $sourceLocator;
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection

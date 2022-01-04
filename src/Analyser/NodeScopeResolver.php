@@ -154,39 +154,8 @@ class NodeScopeResolver
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
 
-	private ReflectionProvider $reflectionProvider;
-
-	private Reflector $reflector;
-
-	private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
-
-	private Parser $parser;
-
-	private FileTypeMapper $fileTypeMapper;
-
-	private StubPhpDocProvider $stubPhpDocProvider;
-
-	private PhpVersion $phpVersion;
-
-	private PhpDocInheritanceResolver $phpDocInheritanceResolver;
-
-	private FileHelper $fileHelper;
-
-	private TypeSpecifier $typeSpecifier;
-
-	private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider;
-
-	private bool $polluteScopeWithLoopInitialAssignments;
-
-	private bool $polluteScopeWithAlwaysIterableForeach;
-
 	/** @var string[][] className(string) => methods(string[]) */
 	private array $earlyTerminatingMethodCalls;
-
-	/** @var array<int, string> */
-	private array $earlyTerminatingFunctionCalls;
-
-	private bool $implicitThrows;
 
 	/** @var bool[] filePath(string) => bool(true) */
 	private array $analysedFiles = [];
@@ -196,40 +165,25 @@ class NodeScopeResolver
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		Reflector $reflector,
-		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
-		Parser $parser,
-		FileTypeMapper $fileTypeMapper,
-		StubPhpDocProvider $stubPhpDocProvider,
-		PhpVersion $phpVersion,
-		PhpDocInheritanceResolver $phpDocInheritanceResolver,
-		FileHelper $fileHelper,
-		TypeSpecifier $typeSpecifier,
-		DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
-		bool $polluteScopeWithLoopInitialAssignments,
-		bool $polluteScopeWithAlwaysIterableForeach,
+		private ReflectionProvider $reflectionProvider,
+		private Reflector $reflector,
+		private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
+		private Parser $parser,
+		private FileTypeMapper $fileTypeMapper,
+		private StubPhpDocProvider $stubPhpDocProvider,
+		private PhpVersion $phpVersion,
+		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
+		private FileHelper $fileHelper,
+		private TypeSpecifier $typeSpecifier,
+		private DynamicThrowTypeExtensionProvider $dynamicThrowTypeExtensionProvider,
+		private bool $polluteScopeWithLoopInitialAssignments,
+		private bool $polluteScopeWithAlwaysIterableForeach,
 		array $earlyTerminatingMethodCalls,
-		array $earlyTerminatingFunctionCalls,
-		bool $implicitThrows,
+		private array $earlyTerminatingFunctionCalls,
+		private bool $implicitThrows,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->reflector = $reflector;
-		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
-		$this->parser = $parser;
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->stubPhpDocProvider = $stubPhpDocProvider;
-		$this->phpVersion = $phpVersion;
-		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
-		$this->fileHelper = $fileHelper;
-		$this->typeSpecifier = $typeSpecifier;
-		$this->dynamicThrowTypeExtensionProvider = $dynamicThrowTypeExtensionProvider;
-		$this->polluteScopeWithLoopInitialAssignments = $polluteScopeWithLoopInitialAssignments;
-		$this->polluteScopeWithAlwaysIterableForeach = $polluteScopeWithAlwaysIterableForeach;
 		$this->earlyTerminatingMethodCalls = $earlyTerminatingMethodCalls;
-		$this->earlyTerminatingFunctionCalls = $earlyTerminatingFunctionCalls;
-		$this->implicitThrows = $implicitThrows;
 	}
 
 	/**

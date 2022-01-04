@@ -17,11 +17,8 @@ use function sprintf;
 class TooWideFunctionThrowTypeRule implements Rule
 {
 
-	private TooWideThrowTypeCheck $check;
-
-	public function __construct(TooWideThrowTypeCheck $check)
+	public function __construct(private TooWideThrowTypeCheck $check)
 	{
-		$this->check = $check;
 	}
 
 	public function getNodeType(): string

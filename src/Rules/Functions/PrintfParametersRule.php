@@ -25,11 +25,8 @@ use const PREG_SET_ORDER;
 class PrintfParametersRule implements Rule
 {
 
-	private PhpVersion $phpVersion;
-
-	public function __construct(PhpVersion $phpVersion)
+	public function __construct(private PhpVersion $phpVersion)
 	{
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function getNodeType(): string

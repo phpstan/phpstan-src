@@ -13,16 +13,13 @@ class BooleanOrNode extends NodeAbstract implements VirtualNode
 
 	private BooleanOr|LogicalOr $originalNode;
 
-	private Scope $rightScope;
-
 	/**
 	 * @param BooleanOr|LogicalOr $originalNode
 	 */
-	public function __construct($originalNode, Scope $rightScope)
+	public function __construct($originalNode, private Scope $rightScope)
 	{
 		parent::__construct($originalNode->getAttributes());
 		$this->originalNode = $originalNode;
-		$this->rightScope = $rightScope;
 	}
 
 	/**

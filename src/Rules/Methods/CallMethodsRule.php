@@ -17,17 +17,11 @@ use function array_merge;
 class CallMethodsRule implements Rule
 {
 
-	private MethodCallCheck $methodCallCheck;
-
-	private FunctionCallParametersCheck $parametersCheck;
-
 	public function __construct(
-		MethodCallCheck $methodCallCheck,
-		FunctionCallParametersCheck $parametersCheck,
+		private MethodCallCheck $methodCallCheck,
+		private FunctionCallParametersCheck $parametersCheck,
 	)
 	{
-		$this->methodCallCheck = $methodCallCheck;
-		$this->parametersCheck = $parametersCheck;
 	}
 
 	public function getNodeType(): string

@@ -20,19 +20,13 @@ use function strtolower;
 class OptimizedSingleFileSourceLocator implements SourceLocator
 {
 
-	private FileNodesFetcher $fileNodesFetcher;
-
-	private string $fileName;
-
 	private ?FetchedNodesResult $fetchedNodesResult = null;
 
 	public function __construct(
-		FileNodesFetcher $fileNodesFetcher,
-		string $fileName,
+		private FileNodesFetcher $fileNodesFetcher,
+		private string $fileName,
 	)
 	{
-		$this->fileNodesFetcher = $fileNodesFetcher;
-		$this->fileName = $fileName;
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection

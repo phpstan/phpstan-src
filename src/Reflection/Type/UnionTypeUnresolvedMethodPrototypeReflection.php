@@ -9,11 +9,6 @@ use function array_map;
 class UnionTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 
-	private string $methodName;
-
-	/** @var UnresolvedMethodPrototypeReflection[] */
-	private array $methodPrototypes;
-
 	private ?MethodReflection $transformedMethod = null;
 
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
@@ -22,12 +17,10 @@ class UnionTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPr
 	 * @param UnresolvedMethodPrototypeReflection[] $methodPrototypes
 	 */
 	public function __construct(
-		string $methodName,
-		array $methodPrototypes,
+		private string $methodName,
+		private array $methodPrototypes,
 	)
 	{
-		$this->methodName = $methodName;
-		$this->methodPrototypes = $methodPrototypes;
 	}
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedMethodPrototypeReflection

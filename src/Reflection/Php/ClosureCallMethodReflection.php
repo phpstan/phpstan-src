@@ -18,17 +18,11 @@ use function array_unshift;
 final class ClosureCallMethodReflection implements MethodReflection
 {
 
-	private MethodReflection $nativeMethodReflection;
-
-	private ClosureType $closureType;
-
 	public function __construct(
-		MethodReflection $nativeMethodReflection,
-		ClosureType $closureType,
+		private MethodReflection $nativeMethodReflection,
+		private ClosureType $closureType,
 	)
 	{
-		$this->nativeMethodReflection = $nativeMethodReflection;
-		$this->closureType = $closureType;
 	}
 
 	public function getDeclaringClass(): ClassReflection

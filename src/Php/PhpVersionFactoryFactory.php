@@ -14,21 +14,14 @@ use function is_string;
 class PhpVersionFactoryFactory
 {
 
-	private ?int $versionId;
-
-	/** @var string[] */
-	private array $composerAutoloaderProjectPaths;
-
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
-		?int $versionId,
-		array $composerAutoloaderProjectPaths,
+		private ?int $versionId,
+		private array $composerAutoloaderProjectPaths,
 	)
 	{
-		$this->versionId = $versionId;
-		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 	}
 
 	public function create(): PhpVersionFactory

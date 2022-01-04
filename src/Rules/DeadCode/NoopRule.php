@@ -15,11 +15,8 @@ use function sprintf;
 class NoopRule implements Rule
 {
 
-	private Standard $printer;
-
-	public function __construct(Standard $printer)
+	public function __construct(private Standard $printer)
 	{
-		$this->printer = $printer;
 	}
 
 	public function getNodeType(): string

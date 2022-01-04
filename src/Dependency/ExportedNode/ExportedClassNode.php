@@ -12,28 +12,6 @@ use function count;
 class ExportedClassNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private ?ExportedPhpDocNode $phpDoc;
-
-	private bool $abstract;
-
-	private bool $final;
-
-	private ?string $extends;
-
-	/** @var string[] */
-	private array $implements;
-
-	/** @var string[] */
-	private array $usedTraits;
-
-	/** @var ExportedTraitUseAdaptation[] */
-	private array $traitUseAdaptations;
-
-	/** @var ExportedNode[] */
-	private array $statements;
-
 	/**
 	 * @param string[] $implements
 	 * @param string[] $usedTraits
@@ -41,26 +19,17 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 	 * @param ExportedNode[] $statements
 	 */
 	public function __construct(
-		string $name,
-		?ExportedPhpDocNode $phpDoc,
-		bool $abstract,
-		bool $final,
-		?string $extends,
-		array $implements,
-		array $usedTraits,
-		array $traitUseAdaptations,
-		array $statements,
+		private string $name,
+		private ?ExportedPhpDocNode $phpDoc,
+		private bool $abstract,
+		private bool $final,
+		private ?string $extends,
+		private array $implements,
+		private array $usedTraits,
+		private array $traitUseAdaptations,
+		private array $statements,
 	)
 	{
-		$this->name = $name;
-		$this->phpDoc = $phpDoc;
-		$this->abstract = $abstract;
-		$this->final = $final;
-		$this->extends = $extends;
-		$this->implements = $implements;
-		$this->usedTraits = $usedTraits;
-		$this->traitUseAdaptations = $traitUseAdaptations;
-		$this->statements = $statements;
 	}
 
 	public function equals(ExportedNode $node): bool

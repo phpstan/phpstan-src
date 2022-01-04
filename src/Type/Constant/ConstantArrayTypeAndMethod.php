@@ -10,21 +10,12 @@ use PHPStan\Type\Type;
 class ConstantArrayTypeAndMethod
 {
 
-	private ?Type $type;
-
-	private ?string $method;
-
-	private TrinaryLogic $certainty;
-
 	private function __construct(
-		?Type $type,
-		?string $method,
-		TrinaryLogic $certainty,
+		private ?Type $type,
+		private ?string $method,
+		private TrinaryLogic $certainty,
 	)
 	{
-		$this->type = $type;
-		$this->method = $method;
-		$this->certainty = $certainty;
 	}
 
 	public static function createConcrete(

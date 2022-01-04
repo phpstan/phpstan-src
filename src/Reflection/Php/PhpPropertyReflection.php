@@ -16,45 +16,21 @@ use function method_exists;
 class PhpPropertyReflection implements PropertyReflection
 {
 
-	private ClassReflection $declaringClass;
-
-	private ?ClassReflection $declaringTrait;
-
-	private ?ReflectionType $nativeType;
-
 	private ?Type $finalNativeType = null;
-
-	private ?Type $phpDocType;
 
 	private ?Type $type = null;
 
-	private ReflectionProperty $reflection;
-
-	private ?string $deprecatedDescription;
-
-	private bool $isDeprecated;
-
-	private bool $isInternal;
-
 	public function __construct(
-		ClassReflection $declaringClass,
-		?ClassReflection $declaringTrait,
-		?ReflectionType $nativeType,
-		?Type $phpDocType,
-		ReflectionProperty $reflection,
-		?string $deprecatedDescription,
-		bool $isDeprecated,
-		bool $isInternal,
+		private ClassReflection $declaringClass,
+		private ?ClassReflection $declaringTrait,
+		private ?ReflectionType $nativeType,
+		private ?Type $phpDocType,
+		private ReflectionProperty $reflection,
+		private ?string $deprecatedDescription,
+		private bool $isDeprecated,
+		private bool $isInternal,
 	)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->declaringTrait = $declaringTrait;
-		$this->nativeType = $nativeType;
-		$this->phpDocType = $phpDocType;
-		$this->reflection = $reflection;
-		$this->deprecatedDescription = $deprecatedDescription;
-		$this->isDeprecated = $isDeprecated;
-		$this->isInternal = $isInternal;
 	}
 
 	public function getDeclaringClass(): ClassReflection

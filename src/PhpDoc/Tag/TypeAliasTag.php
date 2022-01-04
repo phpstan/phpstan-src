@@ -10,21 +10,12 @@ use PHPStan\Type\TypeAlias;
 class TypeAliasTag
 {
 
-	private string $aliasName;
-
-	private TypeNode $typeNode;
-
-	private NameScope $nameScope;
-
 	public function __construct(
-		string $aliasName,
-		TypeNode $typeNode,
-		NameScope $nameScope,
+		private string $aliasName,
+		private TypeNode $typeNode,
+		private NameScope $nameScope,
 	)
 	{
-		$this->aliasName = $aliasName;
-		$this->typeNode = $typeNode;
-		$this->nameScope = $nameScope;
 	}
 
 	public function getAliasName(): string

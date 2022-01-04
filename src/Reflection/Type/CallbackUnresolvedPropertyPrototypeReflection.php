@@ -11,12 +11,6 @@ use PHPStan\Type\Type;
 class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 
-	private PropertyReflection $propertyReflection;
-
-	private ClassReflection $resolvedDeclaringClass;
-
-	private bool $resolveTemplateTypeMapToBounds;
-
 	/** @var callable(Type): Type */
 	private $transformStaticTypeCallback;
 
@@ -28,15 +22,12 @@ class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropert
 	 * @param callable(Type): Type $transformStaticTypeCallback
 	 */
 	public function __construct(
-		PropertyReflection $propertyReflection,
-		ClassReflection $resolvedDeclaringClass,
-		bool $resolveTemplateTypeMapToBounds,
+		private PropertyReflection $propertyReflection,
+		private ClassReflection $resolvedDeclaringClass,
+		private bool $resolveTemplateTypeMapToBounds,
 		callable $transformStaticTypeCallback,
 	)
 	{
-		$this->propertyReflection = $propertyReflection;
-		$this->resolvedDeclaringClass = $resolvedDeclaringClass;
-		$this->resolveTemplateTypeMapToBounds = $resolveTemplateTypeMapToBounds;
 		$this->transformStaticTypeCallback = $transformStaticTypeCallback;
 	}
 

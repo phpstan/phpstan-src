@@ -17,13 +17,10 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 
 	use ConstantScalarTypeTrait;
 
-	private bool $value;
-
 	/** @api */
-	public function __construct(bool $value)
+	public function __construct(private bool $value)
 	{
 		parent::__construct();
-		$this->value = $value;
 	}
 
 	public function getValue(): bool

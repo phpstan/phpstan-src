@@ -10,22 +10,13 @@ use PHPStan\Analyser\StatementResult;
 class ExecutionEndNode extends NodeAbstract implements VirtualNode
 {
 
-	private Node $node;
-
-	private StatementResult $statementResult;
-
-	private bool $hasNativeReturnTypehint;
-
 	public function __construct(
-		Node $node,
-		StatementResult $statementResult,
-		bool $hasNativeReturnTypehint,
+		private Node $node,
+		private StatementResult $statementResult,
+		private bool $hasNativeReturnTypehint,
 	)
 	{
 		parent::__construct($node->getAttributes());
-		$this->node = $node;
-		$this->statementResult = $statementResult;
-		$this->hasNativeReturnTypehint = $hasNativeReturnTypehint;
 	}
 
 	public function getNode(): Node

@@ -12,11 +12,8 @@ use PHPStan\Rules\Rule;
 class AccessPropertiesInAssignRule implements Rule
 {
 
-	private AccessPropertiesRule $accessPropertiesRule;
-
-	public function __construct(AccessPropertiesRule $accessPropertiesRule)
+	public function __construct(private AccessPropertiesRule $accessPropertiesRule)
 	{
-		$this->accessPropertiesRule = $accessPropertiesRule;
 	}
 
 	public function getNodeType(): string

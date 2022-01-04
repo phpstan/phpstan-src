@@ -16,13 +16,10 @@ use function sprintf;
 class InterfaceTemplateTypeRule implements Rule
 {
 
-	private TemplateTypeCheck $templateTypeCheck;
-
 	public function __construct(
-		TemplateTypeCheck $templateTypeCheck,
+		private TemplateTypeCheck $templateTypeCheck,
 	)
 	{
-		$this->templateTypeCheck = $templateTypeCheck;
 	}
 
 	public function getNodeType(): string

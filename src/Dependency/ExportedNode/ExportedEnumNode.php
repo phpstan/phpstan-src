@@ -11,29 +11,12 @@ use function count;
 class ExportedEnumNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private ?string $scalarType;
-
-	private ?ExportedPhpDocNode $phpDoc;
-
-	/** @var string[] */
-	private array $implements;
-
-	/** @var ExportedNode[] */
-	private array $statements;
-
 	/**
 	 * @param string[] $implements
 	 * @param ExportedNode[] $statements
 	 */
-	public function __construct(string $name, ?string $scalarType, ?ExportedPhpDocNode $phpDoc, array $implements, array $statements)
+	public function __construct(private string $name, private ?string $scalarType, private ?ExportedPhpDocNode $phpDoc, private array $implements, private array $statements)
 	{
-		$this->name = $name;
-		$this->scalarType = $scalarType;
-		$this->phpDoc = $phpDoc;
-		$this->implements = $implements;
-		$this->statements = $statements;
 	}
 
 	public function equals(ExportedNode $node): bool

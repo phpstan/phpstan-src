@@ -22,11 +22,8 @@ use const DIRECTORY_SEPARATOR;
 class FileCacheStorage implements CacheStorage
 {
 
-	private string $directory;
-
-	public function __construct(string $directory)
+	public function __construct(private string $directory)
 	{
-		$this->directory = $directory;
 	}
 
 	private function makeDir(string $directory): void

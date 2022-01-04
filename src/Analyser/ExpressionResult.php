@@ -5,13 +5,6 @@ namespace PHPStan\Analyser;
 class ExpressionResult
 {
 
-	private MutatingScope $scope;
-
-	private bool $hasYield;
-
-	/** @var ThrowPoint[] $throwPoints */
-	private array $throwPoints;
-
 	/** @var (callable(): MutatingScope)|null */
 	private $truthyScopeCallback;
 
@@ -28,16 +21,13 @@ class ExpressionResult
 	 * @param (callable(): MutatingScope)|null $falseyScopeCallback
 	 */
 	public function __construct(
-		MutatingScope $scope,
-		bool $hasYield,
-		array $throwPoints,
+		private MutatingScope $scope,
+		private bool $hasYield,
+		private array $throwPoints,
 		?callable $truthyScopeCallback = null,
 		?callable $falseyScopeCallback = null,
 	)
 	{
-		$this->scope = $scope;
-		$this->hasYield = $hasYield;
-		$this->throwPoints = $throwPoints;
 		$this->truthyScopeCallback = $truthyScopeCallback;
 		$this->falseyScopeCallback = $falseyScopeCallback;
 	}

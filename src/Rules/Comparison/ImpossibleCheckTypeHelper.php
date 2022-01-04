@@ -36,29 +36,16 @@ use function strtolower;
 class ImpossibleCheckTypeHelper
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private TypeSpecifier $typeSpecifier;
-
-	/** @var string[] */
-	private array $universalObjectCratesClasses;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	/**
 	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		TypeSpecifier $typeSpecifier,
-		array $universalObjectCratesClasses,
-		bool $treatPhpDocTypesAsCertain,
+		private ReflectionProvider $reflectionProvider,
+		private TypeSpecifier $typeSpecifier,
+		private array $universalObjectCratesClasses,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->typeSpecifier = $typeSpecifier;
-		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function findSpecifiedType(

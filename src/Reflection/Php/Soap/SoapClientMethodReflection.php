@@ -15,14 +15,8 @@ use PHPStan\Type\Type;
 class SoapClientMethodReflection implements MethodReflection
 {
 
-	private ClassReflection $declaringClass;
-
-	private string $name;
-
-	public function __construct(ClassReflection $declaringClass, string $name)
+	public function __construct(private ClassReflection $declaringClass, private string $name)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->name = $name;
 	}
 
 	public function getDeclaringClass(): ClassReflection

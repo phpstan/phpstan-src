@@ -5,15 +5,12 @@ namespace PHPStan\PhpDoc;
 class TypeNodeResolverExtensionRegistry
 {
 
-	/** @var TypeNodeResolverExtension[] */
-	private array $extensions;
-
 	/**
 	 * @param TypeNodeResolverExtension[] $extensions
 	 */
 	public function __construct(
 		TypeNodeResolver $typeNodeResolver,
-		array $extensions,
+		private array $extensions,
 	)
 	{
 		foreach ($extensions as $extension) {
@@ -23,7 +20,6 @@ class TypeNodeResolverExtensionRegistry
 
 			$extension->setTypeNodeResolver($typeNodeResolver);
 		}
-		$this->extensions = $extensions;
 	}
 
 	/**

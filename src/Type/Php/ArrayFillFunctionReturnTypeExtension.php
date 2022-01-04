@@ -26,11 +26,8 @@ class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 	private const MAX_SIZE_USE_CONSTANT_ARRAY = 100;
 
-	private PhpVersion $phpVersion;
-
-	public function __construct(PhpVersion $phpVersion)
+	public function __construct(private PhpVersion $phpVersion)
 	{
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

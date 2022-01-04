@@ -20,11 +20,6 @@ use function sprintf;
 class UninitializedPropertyRule implements Rule
 {
 
-	private ReadWritePropertiesExtensionProvider $extensionProvider;
-
-	/** @var string[] */
-	private array $additionalConstructors;
-
 	/** @var array<string, string[]> */
 	private array $additionalConstructorsCache = [];
 
@@ -32,12 +27,10 @@ class UninitializedPropertyRule implements Rule
 	 * @param string[] $additionalConstructors
 	 */
 	public function __construct(
-		ReadWritePropertiesExtensionProvider $extensionProvider,
-		array $additionalConstructors,
+		private ReadWritePropertiesExtensionProvider $extensionProvider,
+		private array $additionalConstructors,
 	)
 	{
-		$this->extensionProvider = $extensionProvider;
-		$this->additionalConstructors = $additionalConstructors;
 	}
 
 	public function getNodeType(): string

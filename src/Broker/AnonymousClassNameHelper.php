@@ -12,17 +12,11 @@ use function sprintf;
 class AnonymousClassNameHelper
 {
 
-	private FileHelper $fileHelper;
-
-	private RelativePathHelper $relativePathHelper;
-
 	public function __construct(
-		FileHelper $fileHelper,
-		RelativePathHelper $relativePathHelper,
+		private FileHelper $fileHelper,
+		private RelativePathHelper $relativePathHelper,
 	)
 	{
-		$this->fileHelper = $fileHelper;
-		$this->relativePathHelper = $relativePathHelper;
 	}
 
 	public function getAnonymousClassName(

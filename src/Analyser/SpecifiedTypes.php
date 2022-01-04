@@ -9,17 +9,6 @@ use PHPStan\Type\TypeCombinator;
 class SpecifiedTypes
 {
 
-	/** @var array<string, array{Expr, Type}> */
-	private array $sureTypes;
-
-	/** @var array<string, array{Expr, Type}> */
-	private array $sureNotTypes;
-
-	private bool $overwrite;
-
-	/** @var array<string, ConditionalExpressionHolder[]> */
-	private array $newConditionalExpressionHolders;
-
 	/**
 	 * @api
 	 * @param array<string, array{Expr, Type}> $sureTypes
@@ -27,16 +16,12 @@ class SpecifiedTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $newConditionalExpressionHolders
 	 */
 	public function __construct(
-		array $sureTypes = [],
-		array $sureNotTypes = [],
-		bool $overwrite = false,
-		array $newConditionalExpressionHolders = [],
+		private array $sureTypes = [],
+		private array $sureNotTypes = [],
+		private bool $overwrite = false,
+		private array $newConditionalExpressionHolders = [],
 	)
 	{
-		$this->sureTypes = $sureTypes;
-		$this->sureNotTypes = $sureNotTypes;
-		$this->overwrite = $overwrite;
-		$this->newConditionalExpressionHolders = $newConditionalExpressionHolders;
 	}
 
 	/**

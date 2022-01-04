@@ -8,12 +8,9 @@ use PhpParser\Node;
 class InFunctionNode extends Node\Stmt implements VirtualNode
 {
 
-	private Node\Stmt\Function_ $originalNode;
-
-	public function __construct(Node\Stmt\Function_ $originalNode)
+	public function __construct(private Node\Stmt\Function_ $originalNode)
 	{
 		parent::__construct($originalNode->getAttributes());
-		$this->originalNode = $originalNode;
 	}
 
 	public function getOriginalNode(): Node\Stmt\Function_

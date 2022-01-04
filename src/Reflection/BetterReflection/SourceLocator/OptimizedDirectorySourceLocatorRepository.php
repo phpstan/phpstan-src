@@ -7,14 +7,11 @@ use function array_key_exists;
 class OptimizedDirectorySourceLocatorRepository
 {
 
-	private OptimizedDirectorySourceLocatorFactory $factory;
-
 	/** @var array<string, OptimizedDirectorySourceLocator> */
 	private array $locators = [];
 
-	public function __construct(OptimizedDirectorySourceLocatorFactory $factory)
+	public function __construct(private OptimizedDirectorySourceLocatorFactory $factory)
 	{
-		$this->factory = $factory;
 	}
 
 	public function getOrCreate(string $directory): OptimizedDirectorySourceLocator

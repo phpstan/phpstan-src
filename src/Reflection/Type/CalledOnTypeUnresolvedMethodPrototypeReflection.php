@@ -18,29 +18,17 @@ use function array_map;
 class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 
-	private MethodReflection $methodReflection;
-
-	private ClassReflection $resolvedDeclaringClass;
-
-	private bool $resolveTemplateTypeMapToBounds;
-
-	private Type $calledOnType;
-
 	private ?MethodReflection $transformedMethod = null;
 
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
 
 	public function __construct(
-		MethodReflection $methodReflection,
-		ClassReflection $resolvedDeclaringClass,
-		bool $resolveTemplateTypeMapToBounds,
-		Type $calledOnType,
+		private MethodReflection $methodReflection,
+		private ClassReflection $resolvedDeclaringClass,
+		private bool $resolveTemplateTypeMapToBounds,
+		private Type $calledOnType,
 	)
 	{
-		$this->methodReflection = $methodReflection;
-		$this->resolvedDeclaringClass = $resolvedDeclaringClass;
-		$this->resolveTemplateTypeMapToBounds = $resolveTemplateTypeMapToBounds;
-		$this->calledOnType = $calledOnType;
 	}
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedMethodPrototypeReflection

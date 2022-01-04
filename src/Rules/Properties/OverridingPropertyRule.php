@@ -22,17 +22,11 @@ use function sprintf;
 class OverridingPropertyRule implements Rule
 {
 
-	private bool $checkPhpDocMethodSignatures;
-
-	private bool $reportMaybes;
-
 	public function __construct(
-		bool $checkPhpDocMethodSignatures,
-		bool $reportMaybes,
+		private bool $checkPhpDocMethodSignatures,
+		private bool $reportMaybes,
 	)
 	{
-		$this->checkPhpDocMethodSignatures = $checkPhpDocMethodSignatures;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string

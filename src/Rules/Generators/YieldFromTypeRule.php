@@ -23,17 +23,11 @@ use function sprintf;
 class YieldFromTypeRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private bool $reportMaybes;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper,
-		bool $reportMaybes,
+		private RuleLevelHelper $ruleLevelHelper,
+		private bool $reportMaybes,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string

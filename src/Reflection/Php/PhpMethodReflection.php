@@ -46,45 +46,12 @@ use const PHP_VERSION_ID;
 class PhpMethodReflection implements MethodReflection
 {
 
-	private ClassReflection $declaringClass;
-
-	private ?ClassReflection $declaringTrait;
-
-	private BuiltinMethodReflection $reflection;
-
-	private ReflectionProvider $reflectionProvider;
-
-	private Parser $parser;
-
-	private FunctionCallStatementFinder $functionCallStatementFinder;
-
-	private Cache $cache;
-
-	private TemplateTypeMap $templateTypeMap;
-
-	/** @var Type[] */
-	private array $phpDocParameterTypes;
-
-	private ?Type $phpDocReturnType;
-
-	private ?Type $phpDocThrowType;
-
 	/** @var PhpParameterReflection[]|null */
 	private ?array $parameters = null;
 
 	private ?Type $returnType = null;
 
 	private ?Type $nativeReturnType = null;
-
-	private ?string $deprecatedDescription;
-
-	private bool $isDeprecated;
-
-	private bool $isInternal;
-
-	private bool $isFinal;
-
-	private ?bool $isPure;
 
 	/** @var FunctionVariantWithPhpDocs[]|null */
 	private ?array $variants = null;
@@ -93,40 +60,24 @@ class PhpMethodReflection implements MethodReflection
 	 * @param Type[] $phpDocParameterTypes
 	 */
 	public function __construct(
-		ClassReflection $declaringClass,
-		?ClassReflection $declaringTrait,
-		BuiltinMethodReflection $reflection,
-		ReflectionProvider $reflectionProvider,
-		Parser $parser,
-		FunctionCallStatementFinder $functionCallStatementFinder,
-		Cache $cache,
-		TemplateTypeMap $templateTypeMap,
-		array $phpDocParameterTypes,
-		?Type $phpDocReturnType,
-		?Type $phpDocThrowType,
-		?string $deprecatedDescription,
-		bool $isDeprecated,
-		bool $isInternal,
-		bool $isFinal,
-		?bool $isPure,
+		private ClassReflection $declaringClass,
+		private ?ClassReflection $declaringTrait,
+		private BuiltinMethodReflection $reflection,
+		private ReflectionProvider $reflectionProvider,
+		private Parser $parser,
+		private FunctionCallStatementFinder $functionCallStatementFinder,
+		private Cache $cache,
+		private TemplateTypeMap $templateTypeMap,
+		private array $phpDocParameterTypes,
+		private ?Type $phpDocReturnType,
+		private ?Type $phpDocThrowType,
+		private ?string $deprecatedDescription,
+		private bool $isDeprecated,
+		private bool $isInternal,
+		private bool $isFinal,
+		private ?bool $isPure,
 	)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->declaringTrait = $declaringTrait;
-		$this->reflection = $reflection;
-		$this->reflectionProvider = $reflectionProvider;
-		$this->parser = $parser;
-		$this->functionCallStatementFinder = $functionCallStatementFinder;
-		$this->cache = $cache;
-		$this->templateTypeMap = $templateTypeMap;
-		$this->phpDocParameterTypes = $phpDocParameterTypes;
-		$this->phpDocReturnType = $phpDocReturnType;
-		$this->phpDocThrowType = $phpDocThrowType;
-		$this->deprecatedDescription = $deprecatedDescription;
-		$this->isDeprecated = $isDeprecated;
-		$this->isInternal = $isInternal;
-		$this->isFinal = $isFinal;
-		$this->isPure = $isPure;
 	}
 
 	public function getDeclaringClass(): ClassReflection

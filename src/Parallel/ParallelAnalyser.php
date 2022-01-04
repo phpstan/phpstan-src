@@ -32,23 +32,17 @@ class ParallelAnalyser
 
 	private const DEFAULT_TIMEOUT = 600.0;
 
-	private int $internalErrorsCountLimit;
-
 	private float $processTimeout;
 
 	private ProcessPool $processPool;
 
-	private int $decoderBufferSize;
-
 	public function __construct(
-		int $internalErrorsCountLimit,
+		private int $internalErrorsCountLimit,
 		float $processTimeout,
-		int $decoderBufferSize,
+		private int $decoderBufferSize,
 	)
 	{
-		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
 		$this->processTimeout = max($processTimeout, self::DEFAULT_TIMEOUT);
-		$this->decoderBufferSize = $decoderBufferSize;
 	}
 
 	/**

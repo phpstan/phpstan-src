@@ -24,11 +24,8 @@ use function sprintf;
 class TooWideMethodReturnTypehintRule implements Rule
 {
 
-	private bool $checkProtectedAndPublicMethods;
-
-	public function __construct(bool $checkProtectedAndPublicMethods)
+	public function __construct(private bool $checkProtectedAndPublicMethods)
 	{
-		$this->checkProtectedAndPublicMethods = $checkProtectedAndPublicMethods;
 	}
 
 	public function getNodeType(): string

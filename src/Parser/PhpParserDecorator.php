@@ -11,11 +11,8 @@ use function sprintf;
 class PhpParserDecorator implements Parser
 {
 
-	private \PHPStan\Parser\Parser $wrappedParser;
-
-	public function __construct(\PHPStan\Parser\Parser $wrappedParser)
+	public function __construct(private \PHPStan\Parser\Parser $wrappedParser)
 	{
-		$this->wrappedParser = $wrappedParser;
 	}
 
 	/**

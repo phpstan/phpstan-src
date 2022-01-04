@@ -11,29 +11,16 @@ use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 class FetchedNode
 {
 
-	/** @var T */
-	private Node $node;
-
-	private ?Node\Stmt\Namespace_ $namespace;
-
-	private string $fileName;
-
-	private LocatedSource $locatedSource;
-
 	/**
 	 * @param T $node
 	 */
 	public function __construct(
-		Node $node,
-		?Node\Stmt\Namespace_ $namespace,
-		string $fileName,
-		LocatedSource $locatedSource,
+		private Node $node,
+		private ?Node\Stmt\Namespace_ $namespace,
+		private string $fileName,
+		private LocatedSource $locatedSource,
 	)
 	{
-		$this->node = $node;
-		$this->namespace = $namespace;
-		$this->fileName = $fileName;
-		$this->locatedSource = $locatedSource;
 	}
 
 	/**

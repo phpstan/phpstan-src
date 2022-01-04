@@ -15,18 +15,14 @@ use function count;
 class MixinPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
 
-	/** @var string[] */
-	private array $mixinExcludeClasses;
-
 	/** @var array<string, array<string, true>> */
 	private array $inProcess = [];
 
 	/**
 	 * @param string[] $mixinExcludeClasses
 	 */
-	public function __construct(array $mixinExcludeClasses)
+	public function __construct(private array $mixinExcludeClasses)
 	{
-		$this->mixinExcludeClasses = $mixinExcludeClasses;
 	}
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool

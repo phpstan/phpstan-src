@@ -27,25 +27,15 @@ use function sprintf;
 class LocalTypeAliasesRule implements Rule
 {
 
-	/** @var array<string, string> */
-	private array $globalTypeAliases;
-
-	private ReflectionProvider $reflectionProvider;
-
-	private TypeNodeResolver $typeNodeResolver;
-
 	/**
 	 * @param array<string, string> $globalTypeAliases
 	 */
 	public function __construct(
-		array $globalTypeAliases,
-		ReflectionProvider $reflectionProvider,
-		TypeNodeResolver $typeNodeResolver,
+		private array $globalTypeAliases,
+		private ReflectionProvider $reflectionProvider,
+		private TypeNodeResolver $typeNodeResolver,
 	)
 	{
-		$this->globalTypeAliases = $globalTypeAliases;
-		$this->reflectionProvider = $reflectionProvider;
-		$this->typeNodeResolver = $typeNodeResolver;
 	}
 
 	public function getNodeType(): string

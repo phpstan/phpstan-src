@@ -14,11 +14,8 @@ use PHPStan\Rules\Rule;
 class ClassAttributesRule implements Rule
 {
 
-	private AttributesCheck $attributesCheck;
-
-	public function __construct(AttributesCheck $attributesCheck)
+	public function __construct(private AttributesCheck $attributesCheck)
 	{
-		$this->attributesCheck = $attributesCheck;
 	}
 
 	public function getNodeType(): string

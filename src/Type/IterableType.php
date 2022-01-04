@@ -27,18 +27,12 @@ class IterableType implements CompoundType
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private Type $keyType;
-
-	private Type $itemType;
-
 	/** @api */
 	public function __construct(
-		Type $keyType,
-		Type $itemType,
+		private Type $keyType,
+		private Type $itemType,
 	)
 	{
-		$this->keyType = $keyType;
-		$this->itemType = $itemType;
 	}
 
 	public function getKeyType(): Type

@@ -23,58 +23,25 @@ use function is_a;
 class DirectScopeFactory implements ScopeFactory
 {
 
-	private string $scopeClass;
-
-	private ReflectionProvider $reflectionProvider;
-
-	private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider;
-
-	private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider;
-
-	private Standard $printer;
-
-	private TypeSpecifier $typeSpecifier;
-
-	private PropertyReflectionFinder $propertyReflectionFinder;
-
-	private Parser $parser;
-
-	private NodeScopeResolver $nodeScopeResolver;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	/** @var string[] */
 	private array $dynamicConstantNames;
 
-	private PhpVersion $phpVersion;
-
 	public function __construct(
-		string $scopeClass,
-		ReflectionProvider $reflectionProvider,
-		DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
-		OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
-		Standard $printer,
-		TypeSpecifier $typeSpecifier,
-		PropertyReflectionFinder $propertyReflectionFinder,
-		Parser $parser,
-		NodeScopeResolver $nodeScopeResolver,
-		bool $treatPhpDocTypesAsCertain,
+		private string $scopeClass,
+		private ReflectionProvider $reflectionProvider,
+		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
+		private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
+		private Standard $printer,
+		private TypeSpecifier $typeSpecifier,
+		private PropertyReflectionFinder $propertyReflectionFinder,
+		private Parser $parser,
+		private NodeScopeResolver $nodeScopeResolver,
+		private bool $treatPhpDocTypesAsCertain,
 		Container $container,
-		PhpVersion $phpVersion,
+		private PhpVersion $phpVersion,
 	)
 	{
-		$this->scopeClass = $scopeClass;
-		$this->reflectionProvider = $reflectionProvider;
-		$this->dynamicReturnTypeExtensionRegistryProvider = $dynamicReturnTypeExtensionRegistryProvider;
-		$this->operatorTypeSpecifyingExtensionRegistryProvider = $operatorTypeSpecifyingExtensionRegistryProvider;
-		$this->printer = $printer;
-		$this->typeSpecifier = $typeSpecifier;
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
-		$this->parser = $parser;
-		$this->nodeScopeResolver = $nodeScopeResolver;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
-		$this->phpVersion = $phpVersion;
 	}
 
 	/**

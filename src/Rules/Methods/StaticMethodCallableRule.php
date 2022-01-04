@@ -17,14 +17,8 @@ use function sprintf;
 class StaticMethodCallableRule implements Rule
 {
 
-	private StaticMethodCallCheck $methodCallCheck;
-
-	private PhpVersion $phpVersion;
-
-	public function __construct(StaticMethodCallCheck $methodCallCheck, PhpVersion $phpVersion)
+	public function __construct(private StaticMethodCallCheck $methodCallCheck, private PhpVersion $phpVersion)
 	{
-		$this->methodCallCheck = $methodCallCheck;
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function getNodeType(): string

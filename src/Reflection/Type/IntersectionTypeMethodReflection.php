@@ -17,18 +17,11 @@ use function implode;
 class IntersectionTypeMethodReflection implements MethodReflection
 {
 
-	private string $methodName;
-
-	/** @var MethodReflection[] */
-	private array $methods;
-
 	/**
 	 * @param MethodReflection[] $methods
 	 */
-	public function __construct(string $methodName, array $methods)
+	public function __construct(private string $methodName, private array $methods)
 	{
-		$this->methodName = $methodName;
-		$this->methods = $methods;
 	}
 
 	public function getDeclaringClass(): ClassReflection

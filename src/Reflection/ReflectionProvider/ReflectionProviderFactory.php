@@ -8,21 +8,12 @@ use function count;
 class ReflectionProviderFactory
 {
 
-	private ReflectionProvider $runtimeReflectionProvider;
-
-	private ReflectionProvider $staticReflectionProvider;
-
-	private bool $disableRuntimeReflectionProvider;
-
 	public function __construct(
-		ReflectionProvider $runtimeReflectionProvider,
-		ReflectionProvider $staticReflectionProvider,
-		bool $disableRuntimeReflectionProvider,
+		private ReflectionProvider $runtimeReflectionProvider,
+		private ReflectionProvider $staticReflectionProvider,
+		private bool $disableRuntimeReflectionProvider,
 	)
 	{
-		$this->runtimeReflectionProvider = $runtimeReflectionProvider;
-		$this->staticReflectionProvider = $staticReflectionProvider;
-		$this->disableRuntimeReflectionProvider = $disableRuntimeReflectionProvider;
 	}
 
 	public function create(): ReflectionProvider

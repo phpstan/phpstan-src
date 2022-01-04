@@ -12,24 +12,17 @@ use function sprintf;
 class ConditionalExpressionHolder
 {
 
-	/** @var array<string, Type> */
-	private array $conditionExpressionTypes;
-
-	private VariableTypeHolder $typeHolder;
-
 	/**
 	 * @param array<string, Type> $conditionExpressionTypes
 	 */
 	public function __construct(
-		array $conditionExpressionTypes,
-		VariableTypeHolder $typeHolder,
+		private array $conditionExpressionTypes,
+		private VariableTypeHolder $typeHolder,
 	)
 	{
 		if (count($conditionExpressionTypes) === 0) {
 			throw new ShouldNotHappenException();
 		}
-		$this->conditionExpressionTypes = $conditionExpressionTypes;
-		$this->typeHolder = $typeHolder;
 	}
 
 	/**

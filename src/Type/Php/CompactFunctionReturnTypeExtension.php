@@ -17,11 +17,8 @@ use function count;
 class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	private bool $checkMaybeUndefinedVariables;
-
-	public function __construct(bool $checkMaybeUndefinedVariables)
+	public function __construct(private bool $checkMaybeUndefinedVariables)
 	{
-		$this->checkMaybeUndefinedVariables = $checkMaybeUndefinedVariables;
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

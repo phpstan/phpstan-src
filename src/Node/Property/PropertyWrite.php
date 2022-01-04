@@ -12,17 +12,14 @@ class PropertyWrite
 
 	private PropertyFetch|StaticPropertyFetch $fetch;
 
-	private Scope $scope;
-
 	/**
 	 * PropertyWrite constructor.
 	 *
 	 * @param PropertyFetch|StaticPropertyFetch $fetch
 	 */
-	public function __construct($fetch, Scope $scope)
+	public function __construct($fetch, private Scope $scope)
 	{
 		$this->fetch = $fetch;
-		$this->scope = $scope;
 	}
 
 	/**

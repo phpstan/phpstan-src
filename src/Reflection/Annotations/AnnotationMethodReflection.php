@@ -14,19 +14,6 @@ use PHPStan\Type\Type;
 class AnnotationMethodReflection implements MethodReflection
 {
 
-	private string $name;
-
-	private ClassReflection $declaringClass;
-
-	private Type $returnType;
-
-	private bool $isStatic;
-
-	/** @var AnnotationsMethodParameterReflection[] */
-	private array $parameters;
-
-	private bool $isVariadic;
-
 	/** @var FunctionVariant[]|null */
 	private ?array $variants = null;
 
@@ -34,20 +21,14 @@ class AnnotationMethodReflection implements MethodReflection
 	 * @param AnnotationsMethodParameterReflection[] $parameters
 	 */
 	public function __construct(
-		string $name,
-		ClassReflection $declaringClass,
-		Type $returnType,
-		array $parameters,
-		bool $isStatic,
-		bool $isVariadic,
+		private string $name,
+		private ClassReflection $declaringClass,
+		private Type $returnType,
+		private array $parameters,
+		private bool $isStatic,
+		private bool $isVariadic,
 	)
 	{
-		$this->name = $name;
-		$this->declaringClass = $declaringClass;
-		$this->returnType = $returnType;
-		$this->parameters = $parameters;
-		$this->isStatic = $isStatic;
-		$this->isVariadic = $isVariadic;
 	}
 
 	public function getDeclaringClass(): ClassReflection

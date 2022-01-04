@@ -17,11 +17,8 @@ use function array_map;
 class MissingCheckedExceptionInThrowsCheck
 {
 
-	private ExceptionTypeResolver $exceptionTypeResolver;
-
-	public function __construct(ExceptionTypeResolver $exceptionTypeResolver)
+	public function __construct(private ExceptionTypeResolver $exceptionTypeResolver)
 	{
-		$this->exceptionTypeResolver = $exceptionTypeResolver;
 	}
 
 	/**

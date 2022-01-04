@@ -20,17 +20,11 @@ use function sprintf;
 class MethodTemplateTypeRule implements Rule
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
-	private TemplateTypeCheck $templateTypeCheck;
-
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
-		TemplateTypeCheck $templateTypeCheck,
+		private FileTypeMapper $fileTypeMapper,
+		private TemplateTypeCheck $templateTypeCheck,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->templateTypeCheck = $templateTypeCheck;
 	}
 
 	public function getNodeType(): string

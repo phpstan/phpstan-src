@@ -17,11 +17,8 @@ use function sprintf;
 class InvalidPromotedPropertiesRule implements Rule
 {
 
-	private PhpVersion $phpVersion;
-
-	public function __construct(PhpVersion $phpVersion)
+	public function __construct(private PhpVersion $phpVersion)
 	{
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function getNodeType(): string

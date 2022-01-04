@@ -20,17 +20,11 @@ use function ucfirst;
 class UsedTraitsRule implements Rule
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
-	private GenericAncestorsCheck $genericAncestorsCheck;
-
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
-		GenericAncestorsCheck $genericAncestorsCheck,
+		private FileTypeMapper $fileTypeMapper,
+		private GenericAncestorsCheck $genericAncestorsCheck,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->genericAncestorsCheck = $genericAncestorsCheck;
 	}
 
 	public function getNodeType(): string

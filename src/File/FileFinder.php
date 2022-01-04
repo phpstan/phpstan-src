@@ -12,25 +12,15 @@ use function is_file;
 class FileFinder
 {
 
-	private FileExcluder $fileExcluder;
-
-	private FileHelper $fileHelper;
-
-	/** @var string[] */
-	private array $fileExtensions;
-
 	/**
 	 * @param string[] $fileExtensions
 	 */
 	public function __construct(
-		FileExcluder $fileExcluder,
-		FileHelper $fileHelper,
-		array $fileExtensions,
+		private FileExcluder $fileExcluder,
+		private FileHelper $fileHelper,
+		private array $fileExtensions,
 	)
 	{
-		$this->fileExcluder = $fileExcluder;
-		$this->fileHelper = $fileHelper;
-		$this->fileExtensions = $fileExtensions;
 	}
 
 	/**

@@ -9,10 +9,6 @@ use PHPStan\Type\Type;
 class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAcceptorWithPhpDocs
 {
 
-	private Type $phpDocReturnType;
-
-	private Type $nativeReturnType;
-
 	/**
 	 * @api
 	 * @param array<int, ParameterReflectionWithPhpDocs> $parameters
@@ -23,8 +19,8 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 		array $parameters,
 		bool $isVariadic,
 		Type $returnType,
-		Type $phpDocReturnType,
-		Type $nativeReturnType,
+		private Type $phpDocReturnType,
+		private Type $nativeReturnType,
 	)
 	{
 		parent::__construct(
@@ -34,8 +30,6 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 			$isVariadic,
 			$returnType,
 		);
-		$this->phpDocReturnType = $phpDocReturnType;
-		$this->nativeReturnType = $nativeReturnType;
 	}
 
 	/**

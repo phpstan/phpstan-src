@@ -10,17 +10,6 @@ use function array_merge;
 class DynamicReturnTypeExtensionRegistry
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	/** @var DynamicMethodReturnTypeExtension[] */
-	private array $dynamicMethodReturnTypeExtensions;
-
-	/** @var DynamicStaticMethodReturnTypeExtension[] */
-	private array $dynamicStaticMethodReturnTypeExtensions;
-
-	/** @var DynamicFunctionReturnTypeExtension[] */
-	private array $dynamicFunctionReturnTypeExtensions;
-
 	/** @var DynamicMethodReturnTypeExtension[][]|null */
 	private ?array $dynamicMethodReturnTypeExtensionsByClass = null;
 
@@ -34,10 +23,10 @@ class DynamicReturnTypeExtensionRegistry
 	 */
 	public function __construct(
 		Broker $broker,
-		ReflectionProvider $reflectionProvider,
-		array $dynamicMethodReturnTypeExtensions,
-		array $dynamicStaticMethodReturnTypeExtensions,
-		array $dynamicFunctionReturnTypeExtensions,
+		private ReflectionProvider $reflectionProvider,
+		private array $dynamicMethodReturnTypeExtensions,
+		private array $dynamicStaticMethodReturnTypeExtensions,
+		private array $dynamicFunctionReturnTypeExtensions,
 	)
 	{
 		foreach (array_merge($dynamicMethodReturnTypeExtensions, $dynamicStaticMethodReturnTypeExtensions, $dynamicFunctionReturnTypeExtensions) as $extension) {
@@ -47,11 +36,6 @@ class DynamicReturnTypeExtensionRegistry
 
 			$extension->setBroker($broker);
 		}
-
-		$this->reflectionProvider = $reflectionProvider;
-		$this->dynamicMethodReturnTypeExtensions = $dynamicMethodReturnTypeExtensions;
-		$this->dynamicStaticMethodReturnTypeExtensions = $dynamicStaticMethodReturnTypeExtensions;
-		$this->dynamicFunctionReturnTypeExtensions = $dynamicFunctionReturnTypeExtensions;
 	}
 
 	/**

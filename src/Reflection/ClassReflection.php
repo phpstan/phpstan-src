@@ -57,28 +57,6 @@ use function strtolower;
 class ClassReflection
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private FileTypeMapper $fileTypeMapper;
-
-	private StubPhpDocProvider $stubPhpDocProvider;
-
-	private PhpDocInheritanceResolver $phpDocInheritanceResolver;
-
-	private PhpVersion $phpVersion;
-
-	/** @var PropertiesClassReflectionExtension[] */
-	private array $propertiesClassReflectionExtensions;
-
-	/** @var MethodsClassReflectionExtension[] */
-	private array $methodsClassReflectionExtensions;
-
-	private string $displayName;
-
-	private ReflectionClass $reflection;
-
-	private ?string $anonymousFilename;
-
 	/** @var MethodReflection[] */
 	private array $methods = [];
 
@@ -102,12 +80,6 @@ class ClassReflection
 	private ?bool $isFinal = null;
 
 	private ?TemplateTypeMap $templateTypeMap = null;
-
-	private ?TemplateTypeMap $resolvedTemplateTypeMap;
-
-	private ?ResolvedPhpDocBlock $stubPhpDocBlock;
-
-	private ?string $extraCacheKey;
 
 	/** @var array<string,ClassReflection>|null */
 	private ?array $ancestors = null;
@@ -137,34 +109,21 @@ class ClassReflection
 	 * @param MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		FileTypeMapper $fileTypeMapper,
-		StubPhpDocProvider $stubPhpDocProvider,
-		PhpDocInheritanceResolver $phpDocInheritanceResolver,
-		PhpVersion $phpVersion,
-		array $propertiesClassReflectionExtensions,
-		array $methodsClassReflectionExtensions,
-		string $displayName,
-		ReflectionClass $reflection,
-		?string $anonymousFilename,
-		?TemplateTypeMap $resolvedTemplateTypeMap,
-		?ResolvedPhpDocBlock $stubPhpDocBlock,
-		?string $extraCacheKey = null,
+		private ReflectionProvider $reflectionProvider,
+		private FileTypeMapper $fileTypeMapper,
+		private StubPhpDocProvider $stubPhpDocProvider,
+		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
+		private PhpVersion $phpVersion,
+		private array $propertiesClassReflectionExtensions,
+		private array $methodsClassReflectionExtensions,
+		private string $displayName,
+		private ReflectionClass $reflection,
+		private ?string $anonymousFilename,
+		private ?TemplateTypeMap $resolvedTemplateTypeMap,
+		private ?ResolvedPhpDocBlock $stubPhpDocBlock,
+		private ?string $extraCacheKey = null,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->stubPhpDocProvider = $stubPhpDocProvider;
-		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
-		$this->phpVersion = $phpVersion;
-		$this->propertiesClassReflectionExtensions = $propertiesClassReflectionExtensions;
-		$this->methodsClassReflectionExtensions = $methodsClassReflectionExtensions;
-		$this->displayName = $displayName;
-		$this->reflection = $reflection;
-		$this->anonymousFilename = $anonymousFilename;
-		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap;
-		$this->stubPhpDocBlock = $stubPhpDocBlock;
-		$this->extraCacheKey = $extraCacheKey;
 	}
 
 	public function getNativeReflection(): ReflectionClass

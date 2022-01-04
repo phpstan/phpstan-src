@@ -74,29 +74,8 @@ use const PHP_URL_PORT;
 class FixerApplication
 {
 
-	private FileMonitor $fileMonitor;
-
-	private ResultCacheManagerFactory $resultCacheManagerFactory;
-
-	private ResultCacheClearer $resultCacheClearer;
-
-	private IgnoredErrorHelper $ignoredErrorHelper;
-
-	private CpuCoreCounter $cpuCoreCounter;
-
-	private Scheduler $scheduler;
-
-	/** @var string[] */
-	private array $analysedPaths;
-
 	/** @var (ExtendedPromiseInterface&CancellablePromiseInterface)|null */
 	private $processInProgress;
-
-	private string $currentWorkingDirectory;
-
-	private string $fixerTmpDir;
-
-	private int $maximumNumberOfProcesses;
 
 	private ?string $fixerSuggestionId = null;
 
@@ -104,28 +83,18 @@ class FixerApplication
 	 * @param string[] $analysedPaths
 	 */
 	public function __construct(
-		FileMonitor $fileMonitor,
-		ResultCacheManagerFactory $resultCacheManagerFactory,
-		ResultCacheClearer $resultCacheClearer,
-		IgnoredErrorHelper $ignoredErrorHelper,
-		CpuCoreCounter $cpuCoreCounter,
-		Scheduler $scheduler,
-		array $analysedPaths,
-		string $currentWorkingDirectory,
-		string $fixerTmpDir,
-		int $maximumNumberOfProcesses,
+		private FileMonitor $fileMonitor,
+		private ResultCacheManagerFactory $resultCacheManagerFactory,
+		private ResultCacheClearer $resultCacheClearer,
+		private IgnoredErrorHelper $ignoredErrorHelper,
+		private CpuCoreCounter $cpuCoreCounter,
+		private Scheduler $scheduler,
+		private array $analysedPaths,
+		private string $currentWorkingDirectory,
+		private string $fixerTmpDir,
+		private int $maximumNumberOfProcesses,
 	)
 	{
-		$this->fileMonitor = $fileMonitor;
-		$this->resultCacheManagerFactory = $resultCacheManagerFactory;
-		$this->resultCacheClearer = $resultCacheClearer;
-		$this->ignoredErrorHelper = $ignoredErrorHelper;
-		$this->cpuCoreCounter = $cpuCoreCounter;
-		$this->scheduler = $scheduler;
-		$this->analysedPaths = $analysedPaths;
-		$this->currentWorkingDirectory = $currentWorkingDirectory;
-		$this->fixerTmpDir = $fixerTmpDir;
-		$this->maximumNumberOfProcesses = $maximumNumberOfProcesses;
 	}
 
 	/**

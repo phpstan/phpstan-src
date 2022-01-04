@@ -87,17 +87,11 @@ use function substr;
 class TypeNodeResolver
 {
 
-	private TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider;
-
-	private Container $container;
-
 	public function __construct(
-		TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,
-		Container $container,
+		private TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,
+		private Container $container,
 	)
 	{
-		$this->extensionRegistryProvider = $extensionRegistryProvider;
-		$this->container = $container;
 	}
 
 	/** @api */

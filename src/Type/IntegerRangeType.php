@@ -20,19 +20,12 @@ use const PHP_INT_MIN;
 class IntegerRangeType extends IntegerType implements CompoundType
 {
 
-	private ?int $min;
-
-	private ?int $max;
-
-	public function __construct(?int $min, ?int $max)
+	public function __construct(private ?int $min, private ?int $max)
 	{
 		// this constructor can be made private when PHP 7.2 is the minimum
 		parent::__construct();
 		assert($min === null || $max === null || $min <= $max);
 		assert($min !== null || $max !== null);
-
-		$this->min = $min;
-		$this->max = $max;
 	}
 
 	public static function fromInterval(?int $min, ?int $max, int $shift = 0): Type

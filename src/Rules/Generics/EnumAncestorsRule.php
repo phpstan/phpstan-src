@@ -20,17 +20,11 @@ use function sprintf;
 class EnumAncestorsRule implements Rule
 {
 
-	private GenericAncestorsCheck $genericAncestorsCheck;
-
-	private CrossCheckInterfacesHelper $crossCheckInterfacesHelper;
-
 	public function __construct(
-		GenericAncestorsCheck $genericAncestorsCheck,
-		CrossCheckInterfacesHelper $crossCheckInterfacesHelper,
+		private GenericAncestorsCheck $genericAncestorsCheck,
+		private CrossCheckInterfacesHelper $crossCheckInterfacesHelper,
 	)
 	{
-		$this->genericAncestorsCheck = $genericAncestorsCheck;
-		$this->crossCheckInterfacesHelper = $crossCheckInterfacesHelper;
 	}
 
 	public function getNodeType(): string

@@ -14,39 +14,18 @@ use const NAN;
 class ClassConstantReflection implements ConstantReflection
 {
 
-	private ClassReflection $declaringClass;
-
-	private ReflectionClassConstant $reflection;
-
-	private ?Type $phpDocType;
-
-	private PhpVersion $phpVersion;
-
-	private ?string $deprecatedDescription;
-
-	private bool $isDeprecated;
-
-	private bool $isInternal;
-
 	private ?Type $valueType = null;
 
 	public function __construct(
-		ClassReflection $declaringClass,
-		ReflectionClassConstant $reflection,
-		?Type $phpDocType,
-		PhpVersion $phpVersion,
-		?string $deprecatedDescription,
-		bool $isDeprecated,
-		bool $isInternal,
+		private ClassReflection $declaringClass,
+		private ReflectionClassConstant $reflection,
+		private ?Type $phpDocType,
+		private PhpVersion $phpVersion,
+		private ?string $deprecatedDescription,
+		private bool $isDeprecated,
+		private bool $isInternal,
 	)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->reflection = $reflection;
-		$this->phpDocType = $phpDocType;
-		$this->phpVersion = $phpVersion;
-		$this->deprecatedDescription = $deprecatedDescription;
-		$this->isDeprecated = $isDeprecated;
-		$this->isInternal = $isInternal;
 	}
 
 	public function getName(): string

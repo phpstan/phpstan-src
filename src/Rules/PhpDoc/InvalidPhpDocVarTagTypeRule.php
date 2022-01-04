@@ -26,41 +26,17 @@ use function sprintf;
 class InvalidPhpDocVarTagTypeRule implements Rule
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
-	private ReflectionProvider $reflectionProvider;
-
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private GenericObjectTypeCheck $genericObjectTypeCheck;
-
-	private MissingTypehintCheck $missingTypehintCheck;
-
-	private UnresolvableTypeHelper $unresolvableTypeHelper;
-
-	private bool $checkClassCaseSensitivity;
-
-	private bool $checkMissingVarTagTypehint;
-
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
-		ReflectionProvider $reflectionProvider,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		GenericObjectTypeCheck $genericObjectTypeCheck,
-		MissingTypehintCheck $missingTypehintCheck,
-		UnresolvableTypeHelper $unresolvableTypeHelper,
-		bool $checkClassCaseSensitivity,
-		bool $checkMissingVarTagTypehint,
+		private FileTypeMapper $fileTypeMapper,
+		private ReflectionProvider $reflectionProvider,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		private MissingTypehintCheck $missingTypehintCheck,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private bool $checkClassCaseSensitivity,
+		private bool $checkMissingVarTagTypehint,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->reflectionProvider = $reflectionProvider;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
-		$this->missingTypehintCheck = $missingTypehintCheck;
-		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
-		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
-		$this->checkMissingVarTagTypehint = $checkMissingVarTagTypehint;
 	}
 
 	public function getNodeType(): string

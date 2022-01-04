@@ -17,21 +17,12 @@ use function strtolower;
 class AttributesCheck
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private FunctionCallParametersCheck $functionCallParametersCheck;
-
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		FunctionCallParametersCheck $functionCallParametersCheck,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ReflectionProvider $reflectionProvider,
+		private FunctionCallParametersCheck $functionCallParametersCheck,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->functionCallParametersCheck = $functionCallParametersCheck;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 	}
 
 	/**

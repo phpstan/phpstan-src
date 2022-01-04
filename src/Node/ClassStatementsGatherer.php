@@ -22,8 +22,6 @@ use function count;
 class ClassStatementsGatherer
 {
 
-	private ClassReflection $classReflection;
-
 	/** @var callable(Node $node, Scope $scope): void */
 	private $nodeCallback;
 
@@ -49,11 +47,10 @@ class ClassStatementsGatherer
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function __construct(
-		ClassReflection $classReflection,
+		private ClassReflection $classReflection,
 		callable $nodeCallback,
 	)
 	{
-		$this->classReflection = $classReflection;
 		$this->nodeCallback = $nodeCallback;
 	}
 

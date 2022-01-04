@@ -27,12 +27,9 @@ class HasMethodType implements AccessoryType, CompoundType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private string $methodName;
-
 	/** @api */
-	public function __construct(string $methodName)
+	public function __construct(private string $methodName)
 	{
-		$this->methodName = $methodName;
 	}
 
 	public function getReferencedClasses(): array

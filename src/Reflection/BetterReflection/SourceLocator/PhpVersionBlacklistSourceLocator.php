@@ -12,17 +12,11 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 class PhpVersionBlacklistSourceLocator implements SourceLocator
 {
 
-	private SourceLocator $sourceLocator;
-
-	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
-
 	public function __construct(
-		SourceLocator $sourceLocator,
-		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
+		private SourceLocator $sourceLocator,
+		private PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 	)
 	{
-		$this->sourceLocator = $sourceLocator;
-		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection

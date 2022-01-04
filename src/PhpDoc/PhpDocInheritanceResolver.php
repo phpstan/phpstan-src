@@ -11,17 +11,11 @@ use function strtolower;
 class PhpDocInheritanceResolver
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
-	private StubPhpDocProvider $stubPhpDocProvider;
-
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
-		StubPhpDocProvider $stubPhpDocProvider,
+		private FileTypeMapper $fileTypeMapper,
+		private StubPhpDocProvider $stubPhpDocProvider,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->stubPhpDocProvider = $stubPhpDocProvider;
 	}
 
 	public function resolvePhpDocForProperty(

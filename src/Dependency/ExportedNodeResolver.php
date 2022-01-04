@@ -30,14 +30,8 @@ use function is_string;
 class ExportedNodeResolver
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
-	private Standard $printer;
-
-	public function __construct(FileTypeMapper $fileTypeMapper, Standard $printer)
+	public function __construct(private FileTypeMapper $fileTypeMapper, private Standard $printer)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->printer = $printer;
 	}
 
 	public function resolve(string $fileName, Node $node): ?ExportedNode

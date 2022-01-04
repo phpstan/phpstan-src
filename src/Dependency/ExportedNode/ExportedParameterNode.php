@@ -9,29 +9,14 @@ use ReturnTypeWillChange;
 class ExportedParameterNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private ?string $type;
-
-	private bool $byRef;
-
-	private bool $variadic;
-
-	private bool $hasDefault;
-
 	public function __construct(
-		string $name,
-		?string $type,
-		bool $byRef,
-		bool $variadic,
-		bool $hasDefault,
+		private string $name,
+		private ?string $type,
+		private bool $byRef,
+		private bool $variadic,
+		private bool $hasDefault,
 	)
 	{
-		$this->name = $name;
-		$this->type = $type;
-		$this->byRef = $byRef;
-		$this->variadic = $variadic;
-		$this->hasDefault = $hasDefault;
 	}
 
 	public function equals(ExportedNode $node): bool

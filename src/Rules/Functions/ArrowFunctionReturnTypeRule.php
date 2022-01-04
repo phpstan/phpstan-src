@@ -19,11 +19,8 @@ use PHPStan\Type\VoidType;
 class ArrowFunctionReturnTypeRule implements Rule
 {
 
-	private FunctionReturnTypeCheck $returnTypeCheck;
-
-	public function __construct(FunctionReturnTypeCheck $returnTypeCheck)
+	public function __construct(private FunctionReturnTypeCheck $returnTypeCheck)
 	{
-		$this->returnTypeCheck = $returnTypeCheck;
 	}
 
 	public function getNodeType(): string

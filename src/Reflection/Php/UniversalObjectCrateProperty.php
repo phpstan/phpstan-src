@@ -10,21 +10,12 @@ use PHPStan\Type\Type;
 class UniversalObjectCrateProperty implements PropertyReflection
 {
 
-	private ClassReflection $declaringClass;
-
-	private Type $readableType;
-
-	private Type $writableType;
-
 	public function __construct(
-		ClassReflection $declaringClass,
-		Type $readableType,
-		Type $writableType,
+		private ClassReflection $declaringClass,
+		private Type $readableType,
+		private Type $writableType,
 	)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->readableType = $readableType;
-		$this->writableType = $writableType;
 	}
 
 	public function getDeclaringClass(): ClassReflection

@@ -9,21 +9,12 @@ use PHPStan\Type\Type;
 class RuntimeConstantReflection implements GlobalConstantReflection
 {
 
-	private string $name;
-
-	private Type $valueType;
-
-	private ?string $fileName;
-
 	public function __construct(
-		string $name,
-		Type $valueType,
-		?string $fileName,
+		private string $name,
+		private Type $valueType,
+		private ?string $fileName,
 	)
 	{
-		$this->name = $name;
-		$this->valueType = $valueType;
-		$this->fileName = $fileName;
 	}
 
 	public function getName(): string

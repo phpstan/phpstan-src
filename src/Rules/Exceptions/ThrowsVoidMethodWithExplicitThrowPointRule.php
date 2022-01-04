@@ -21,17 +21,11 @@ use function sprintf;
 class ThrowsVoidMethodWithExplicitThrowPointRule implements Rule
 {
 
-	private ExceptionTypeResolver $exceptionTypeResolver;
-
-	private bool $missingCheckedExceptionInThrows;
-
 	public function __construct(
-		ExceptionTypeResolver $exceptionTypeResolver,
-		bool $missingCheckedExceptionInThrows,
+		private ExceptionTypeResolver $exceptionTypeResolver,
+		private bool $missingCheckedExceptionInThrows,
 	)
 	{
-		$this->exceptionTypeResolver = $exceptionTypeResolver;
-		$this->missingCheckedExceptionInThrows = $missingCheckedExceptionInThrows;
 	}
 
 	public function getNodeType(): string

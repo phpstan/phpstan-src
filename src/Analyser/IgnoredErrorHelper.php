@@ -19,29 +19,16 @@ use function sprintf;
 class IgnoredErrorHelper
 {
 
-	private IgnoredRegexValidator $ignoredRegexValidator;
-
-	private FileHelper $fileHelper;
-
-	/** @var (string|mixed[])[] */
-	private array $ignoreErrors;
-
-	private bool $reportUnmatchedIgnoredErrors;
-
 	/**
 	 * @param (string|mixed[])[] $ignoreErrors
 	 */
 	public function __construct(
-		IgnoredRegexValidator $ignoredRegexValidator,
-		FileHelper $fileHelper,
-		array $ignoreErrors,
-		bool $reportUnmatchedIgnoredErrors,
+		private IgnoredRegexValidator $ignoredRegexValidator,
+		private FileHelper $fileHelper,
+		private array $ignoreErrors,
+		private bool $reportUnmatchedIgnoredErrors,
 	)
 	{
-		$this->ignoredRegexValidator = $ignoredRegexValidator;
-		$this->fileHelper = $fileHelper;
-		$this->ignoreErrors = $ignoreErrors;
-		$this->reportUnmatchedIgnoredErrors = $reportUnmatchedIgnoredErrors;
 	}
 
 	public function initialize(): IgnoredErrorHelperResult

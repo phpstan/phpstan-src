@@ -27,21 +27,12 @@ use function ucfirst;
 class CallCallablesRule implements Rule
 {
 
-	private FunctionCallParametersCheck $check;
-
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private bool $reportMaybes;
-
 	public function __construct(
-		FunctionCallParametersCheck $check,
-		RuleLevelHelper $ruleLevelHelper,
-		bool $reportMaybes,
+		private FunctionCallParametersCheck $check,
+		private RuleLevelHelper $ruleLevelHelper,
+		private bool $reportMaybes,
 	)
 	{
-		$this->check = $check;
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string

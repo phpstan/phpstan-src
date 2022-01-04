@@ -38,16 +38,13 @@ class ArrayType implements Type
 
 	private Type $keyType;
 
-	private Type $itemType;
-
 	/** @api */
-	public function __construct(Type $keyType, Type $itemType)
+	public function __construct(Type $keyType, private Type $itemType)
 	{
 		if ($keyType->describe(VerbosityLevel::value()) === '(int|string)') {
 			$keyType = new MixedType();
 		}
 		$this->keyType = $keyType;
-		$this->itemType = $itemType;
 	}
 
 	public function getKeyType(): Type

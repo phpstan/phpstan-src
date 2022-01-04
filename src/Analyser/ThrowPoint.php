@@ -11,33 +11,17 @@ use Throwable;
 class ThrowPoint
 {
 
-	private MutatingScope $scope;
-
-	private Type $type;
-
-	/** @var Node\Expr|Node\Stmt */
-	private Node $node;
-
-	private bool $explicit;
-
-	private bool $canContainAnyThrowable;
-
 	/**
 	 * @param Node\Expr|Node\Stmt $node
 	 */
 	private function __construct(
-		MutatingScope $scope,
-		Type $type,
-		Node $node,
-		bool $explicit,
-		bool $canContainAnyThrowable,
+		private MutatingScope $scope,
+		private Type $type,
+		private Node $node,
+		private bool $explicit,
+		private bool $canContainAnyThrowable,
 	)
 	{
-		$this->scope = $scope;
-		$this->type = $type;
-		$this->node = $node;
-		$this->explicit = $explicit;
-		$this->canContainAnyThrowable = $canContainAnyThrowable;
 	}
 
 	/**

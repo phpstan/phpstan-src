@@ -7,49 +7,21 @@ use PHPStan\Type\Type;
 class MethodPrototypeReflection implements ClassMemberReflection
 {
 
-	private ClassReflection $declaringClass;
-
-	private string $name;
-
-	private bool $isStatic;
-
-	private bool $isPrivate;
-
-	private bool $isPublic;
-
-	private bool $isAbstract;
-
-	private bool $isFinal;
-
-	/** @var ParametersAcceptor[] */
-	private array $variants;
-
-	private ?Type $tentativeReturnType;
-
 	/**
 	 * @param ParametersAcceptor[] $variants
 	 */
 	public function __construct(
-		string $name,
-		ClassReflection $declaringClass,
-		bool $isStatic,
-		bool $isPrivate,
-		bool $isPublic,
-		bool $isAbstract,
-		bool $isFinal,
-		array $variants,
-		?Type $tentativeReturnType,
+		private string $name,
+		private ClassReflection $declaringClass,
+		private bool $isStatic,
+		private bool $isPrivate,
+		private bool $isPublic,
+		private bool $isAbstract,
+		private bool $isFinal,
+		private array $variants,
+		private ?Type $tentativeReturnType,
 	)
 	{
-		$this->name = $name;
-		$this->declaringClass = $declaringClass;
-		$this->isStatic = $isStatic;
-		$this->isPrivate = $isPrivate;
-		$this->isPublic = $isPublic;
-		$this->isAbstract = $isAbstract;
-		$this->isFinal = $isFinal;
-		$this->variants = $variants;
-		$this->tentativeReturnType = $tentativeReturnType;
 	}
 
 	public function getName(): string

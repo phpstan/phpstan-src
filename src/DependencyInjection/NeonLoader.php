@@ -8,17 +8,11 @@ use PHPStan\File\FileHelper;
 class NeonLoader extends Loader
 {
 
-	private FileHelper $fileHelper;
-
-	private ?string $generateBaselineFile;
-
 	public function __construct(
-		FileHelper $fileHelper,
-		?string $generateBaselineFile,
+		private FileHelper $fileHelper,
+		private ?string $generateBaselineFile,
 	)
 	{
-		$this->fileHelper = $fileHelper;
-		$this->generateBaselineFile = $generateBaselineFile;
 	}
 
 	/**

@@ -24,12 +24,9 @@ class NeverType implements CompoundType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private bool $isExplicit;
-
 	/** @api */
-	public function __construct(bool $isExplicit = false)
+	public function __construct(private bool $isExplicit = false)
 	{
-		$this->isExplicit = $isExplicit;
 	}
 
 	public function isExplicit(): bool

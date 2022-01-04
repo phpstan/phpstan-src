@@ -13,17 +13,11 @@ use function is_file;
 class OptimizedPsrAutoloaderLocator implements SourceLocator
 {
 
-	private PsrAutoloaderMapping $mapping;
-
-	private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository;
-
 	public function __construct(
-		PsrAutoloaderMapping $mapping,
-		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
+		private PsrAutoloaderMapping $mapping,
+		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
 	)
 	{
-		$this->mapping = $mapping;
-		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection

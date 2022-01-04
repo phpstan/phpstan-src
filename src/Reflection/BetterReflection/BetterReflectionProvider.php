@@ -54,34 +54,6 @@ use const PHP_VERSION_ID;
 class BetterReflectionProvider implements ReflectionProvider
 {
 
-	private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider;
-
-	private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider;
-
-	private Reflector $reflector;
-
-	private FileTypeMapper $fileTypeMapper;
-
-	private PhpDocInheritanceResolver $phpDocInheritanceResolver;
-
-	private PhpVersion $phpVersion;
-
-	private NativeFunctionReflectionProvider $nativeFunctionReflectionProvider;
-
-	private StubPhpDocProvider $stubPhpDocProvider;
-
-	private FunctionReflectionFactory $functionReflectionFactory;
-
-	private RelativePathHelper $relativePathHelper;
-
-	private AnonymousClassNameHelper $anonymousClassNameHelper;
-
-	private Standard $printer;
-
-	private FileHelper $fileHelper;
-
-	private PhpStormStubsSourceStubber $phpstormStubsSourceStubber;
-
 	/** @var FunctionReflection[] */
 	private array $functionReflections = [];
 
@@ -95,36 +67,22 @@ class BetterReflectionProvider implements ReflectionProvider
 	private array $cachedConstants = [];
 
 	public function __construct(
-		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
-		ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
-		Reflector $reflector,
-		FileTypeMapper $fileTypeMapper,
-		PhpDocInheritanceResolver $phpDocInheritanceResolver,
-		PhpVersion $phpVersion,
-		NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
-		StubPhpDocProvider $stubPhpDocProvider,
-		FunctionReflectionFactory $functionReflectionFactory,
-		RelativePathHelper $relativePathHelper,
-		AnonymousClassNameHelper $anonymousClassNameHelper,
-		Standard $printer,
-		FileHelper $fileHelper,
-		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
+		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
+		private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
+		private Reflector $reflector,
+		private FileTypeMapper $fileTypeMapper,
+		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
+		private PhpVersion $phpVersion,
+		private NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
+		private StubPhpDocProvider $stubPhpDocProvider,
+		private FunctionReflectionFactory $functionReflectionFactory,
+		private RelativePathHelper $relativePathHelper,
+		private AnonymousClassNameHelper $anonymousClassNameHelper,
+		private Standard $printer,
+		private FileHelper $fileHelper,
+		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 	)
 	{
-		$this->reflectionProviderProvider = $reflectionProviderProvider;
-		$this->classReflectionExtensionRegistryProvider = $classReflectionExtensionRegistryProvider;
-		$this->reflector = $reflector;
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
-		$this->phpVersion = $phpVersion;
-		$this->nativeFunctionReflectionProvider = $nativeFunctionReflectionProvider;
-		$this->stubPhpDocProvider = $stubPhpDocProvider;
-		$this->functionReflectionFactory = $functionReflectionFactory;
-		$this->relativePathHelper = $relativePathHelper;
-		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
-		$this->printer = $printer;
-		$this->fileHelper = $fileHelper;
-		$this->phpstormStubsSourceStubber = $phpstormStubsSourceStubber;
 	}
 
 	public function hasClass(string $className): bool

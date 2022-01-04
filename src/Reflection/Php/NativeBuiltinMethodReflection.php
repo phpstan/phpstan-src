@@ -12,11 +12,8 @@ use function method_exists;
 class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 {
 
-	private ReflectionMethod $reflection;
-
-	public function __construct(ReflectionMethod $reflection)
+	public function __construct(private ReflectionMethod $reflection)
 	{
-		$this->reflection = $reflection;
 	}
 
 	public function getName(): string

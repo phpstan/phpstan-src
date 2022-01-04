@@ -18,15 +18,6 @@ use function is_string;
 class StubPhpDocProvider
 {
 
-	private Parser $parser;
-
-	private FileTypeMapper $fileTypeMapper;
-
-	private Container $container;
-
-	/** @var string[] */
-	private array $stubFiles;
-
 	/** @var array<string, ResolvedPhpDocBlock|null> */
 	private array $classMap = [];
 
@@ -71,16 +62,12 @@ class StubPhpDocProvider
 	 * @param string[] $stubFiles
 	 */
 	public function __construct(
-		Parser $parser,
-		FileTypeMapper $fileTypeMapper,
-		Container $container,
-		array $stubFiles,
+		private Parser $parser,
+		private FileTypeMapper $fileTypeMapper,
+		private Container $container,
+		private array $stubFiles,
 	)
 	{
-		$this->parser = $parser;
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->container = $container;
-		$this->stubFiles = $stubFiles;
 	}
 
 	public function findClassPhpDoc(string $className): ?ResolvedPhpDocBlock

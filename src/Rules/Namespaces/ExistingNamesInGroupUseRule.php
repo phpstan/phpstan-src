@@ -22,21 +22,12 @@ use function strtolower;
 class ExistingNamesInGroupUseRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private bool $checkFunctionNameCase;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		bool $checkFunctionNameCase,
+		private ReflectionProvider $reflectionProvider,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private bool $checkFunctionNameCase,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->checkFunctionNameCase = $checkFunctionNameCase;
 	}
 
 	public function getNodeType(): string

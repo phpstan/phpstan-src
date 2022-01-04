@@ -6,11 +6,8 @@ namespace PHPStan\PhpDoc\Tag;
 class DeprecatedTag
 {
 
-	private ?string $message;
-
-	public function __construct(?string $message)
+	public function __construct(private ?string $message)
 	{
-		$this->message = $message;
 	}
 
 	public function getMessage(): ?string

@@ -19,11 +19,8 @@ use function sprintf;
 class DefaultValueTypesAssignedToPropertiesRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string

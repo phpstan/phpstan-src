@@ -19,22 +19,16 @@ use function is_a;
 class LazyScopeFactory implements ScopeFactory
 {
 
-	private string $scopeClass;
-
-	private Container $container;
-
 	/** @var string[] */
 	private array $dynamicConstantNames;
 
 	private bool $treatPhpDocTypesAsCertain;
 
 	public function __construct(
-		string $scopeClass,
-		Container $container,
+		private string $scopeClass,
+		private Container $container,
 	)
 	{
-		$this->scopeClass = $scopeClass;
-		$this->container = $container;
 		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 		$this->treatPhpDocTypesAsCertain = $container->getParameter('treatPhpDocTypesAsCertain');
 	}

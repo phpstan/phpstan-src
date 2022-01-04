@@ -33,17 +33,11 @@ use function sprintf;
 class MethodSignatureRule implements Rule
 {
 
-	private bool $reportMaybes;
-
-	private bool $reportStatic;
-
 	public function __construct(
-		bool $reportMaybes,
-		bool $reportStatic,
+		private bool $reportMaybes,
+		private bool $reportStatic,
 	)
 	{
-		$this->reportMaybes = $reportMaybes;
-		$this->reportStatic = $reportStatic;
 	}
 
 	public function getNodeType(): string

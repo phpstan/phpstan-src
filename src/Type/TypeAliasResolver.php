@@ -13,15 +13,6 @@ use function sprintf;
 class TypeAliasResolver
 {
 
-	/** @var array<string, string> */
-	private array $globalTypeAliases;
-
-	private TypeStringResolver $typeStringResolver;
-
-	private TypeNodeResolver $typeNodeResolver;
-
-	private ReflectionProvider $reflectionProvider;
-
 	/** @var array<string, Type> */
 	private array $resolvedGlobalTypeAliases = [];
 
@@ -38,16 +29,12 @@ class TypeAliasResolver
 	 * @param array<string, string> $globalTypeAliases
 	 */
 	public function __construct(
-		array $globalTypeAliases,
-		TypeStringResolver $typeStringResolver,
-		TypeNodeResolver $typeNodeResolver,
-		ReflectionProvider $reflectionProvider,
+		private array $globalTypeAliases,
+		private TypeStringResolver $typeStringResolver,
+		private TypeNodeResolver $typeNodeResolver,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
-		$this->globalTypeAliases = $globalTypeAliases;
-		$this->typeStringResolver = $typeStringResolver;
-		$this->typeNodeResolver = $typeNodeResolver;
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function hasTypeAlias(string $aliasName, ?string $classNameScope): bool

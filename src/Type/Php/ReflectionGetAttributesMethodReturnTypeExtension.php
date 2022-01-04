@@ -20,15 +20,11 @@ use function count;
 class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
-	/** @var class-string */
-	private string $className;
-
 	/**
 	 * @param class-string $className One of reflection classes: https://www.php.net/manual/en/book.reflection.php
 	 */
-	public function __construct(string $className)
+	public function __construct(private string $className)
 	{
-		$this->className = $className;
 	}
 
 	public function getClass(): string

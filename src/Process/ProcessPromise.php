@@ -17,23 +17,14 @@ use function tmpfile;
 class ProcessPromise implements Runnable
 {
 
-	private LoopInterface $loop;
-
-	private string $name;
-
-	private string $command;
-
 	private Deferred $deferred;
 
 	private ?Process $process = null;
 
 	private bool $canceled = false;
 
-	public function __construct(LoopInterface $loop, string $name, string $command)
+	public function __construct(private LoopInterface $loop, private string $name, private string $command)
 	{
-		$this->loop = $loop;
-		$this->name = $name;
-		$this->command = $command;
 		$this->deferred = new Deferred();
 	}
 

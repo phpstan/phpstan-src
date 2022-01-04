@@ -21,13 +21,10 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 	use ConstantScalarToBooleanTrait;
 	use ConstantNumericComparisonTypeTrait;
 
-	private int $value;
-
 	/** @api */
-	public function __construct(int $value)
+	public function __construct(private int $value)
 	{
 		parent::__construct();
-		$this->value = $value;
 	}
 
 	public function getValue(): int

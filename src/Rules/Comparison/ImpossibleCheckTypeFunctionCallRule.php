@@ -15,21 +15,12 @@ use function strtolower;
 class ImpossibleCheckTypeFunctionCallRule implements Rule
 {
 
-	private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper;
-
-	private bool $checkAlwaysTrueCheckTypeFunctionCall;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
-		bool $checkAlwaysTrueCheckTypeFunctionCall,
-		bool $treatPhpDocTypesAsCertain,
+		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
+		private bool $checkAlwaysTrueCheckTypeFunctionCall,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->impossibleCheckTypeHelper = $impossibleCheckTypeHelper;
-		$this->checkAlwaysTrueCheckTypeFunctionCall = $checkAlwaysTrueCheckTypeFunctionCall;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string

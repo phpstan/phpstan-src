@@ -23,17 +23,11 @@ use function strtolower;
 class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private ReflectionProvider $reflectionProvider;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper,
-		ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string

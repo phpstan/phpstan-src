@@ -29,35 +29,6 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 	/** @var Function_|ClassMethod */
 	private Node\FunctionLike $functionLike;
 
-	private string $fileName;
-
-	private TemplateTypeMap $templateTypeMap;
-
-	/** @var Type[] */
-	private array $realParameterTypes;
-
-	/** @var Type[] */
-	private array $phpDocParameterTypes;
-
-	/** @var Type[] */
-	private array $realParameterDefaultValues;
-
-	private Type $realReturnType;
-
-	private ?Type $phpDocReturnType;
-
-	private ?Type $throwType;
-
-	private ?string $deprecatedDescription;
-
-	private bool $isDeprecated;
-
-	private bool $isInternal;
-
-	private bool $isFinal;
-
-	private ?bool $isPure;
-
 	/** @var FunctionVariantWithPhpDocs[]|null */
 	private ?array $variants = null;
 
@@ -69,35 +40,22 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 	 */
 	public function __construct(
 		FunctionLike $functionLike,
-		string $fileName,
-		TemplateTypeMap $templateTypeMap,
-		array $realParameterTypes,
-		array $phpDocParameterTypes,
-		array $realParameterDefaultValues,
-		Type $realReturnType,
-		?Type $phpDocReturnType,
-		?Type $throwType,
-		?string $deprecatedDescription,
-		bool $isDeprecated,
-		bool $isInternal,
-		bool $isFinal,
-		?bool $isPure,
+		private string $fileName,
+		private TemplateTypeMap $templateTypeMap,
+		private array $realParameterTypes,
+		private array $phpDocParameterTypes,
+		private array $realParameterDefaultValues,
+		private Type $realReturnType,
+		private ?Type $phpDocReturnType,
+		private ?Type $throwType,
+		private ?string $deprecatedDescription,
+		private bool $isDeprecated,
+		private bool $isInternal,
+		private bool $isFinal,
+		private ?bool $isPure,
 	)
 	{
 		$this->functionLike = $functionLike;
-		$this->fileName = $fileName;
-		$this->templateTypeMap = $templateTypeMap;
-		$this->realParameterTypes = $realParameterTypes;
-		$this->phpDocParameterTypes = $phpDocParameterTypes;
-		$this->realParameterDefaultValues = $realParameterDefaultValues;
-		$this->realReturnType = $realReturnType;
-		$this->phpDocReturnType = $phpDocReturnType;
-		$this->throwType = $throwType;
-		$this->deprecatedDescription = $deprecatedDescription;
-		$this->isDeprecated = $isDeprecated;
-		$this->isInternal = $isInternal;
-		$this->isFinal = $isFinal;
-		$this->isPure = $isPure;
 	}
 
 	protected function getFunctionLike(): FunctionLike

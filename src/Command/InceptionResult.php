@@ -14,48 +14,23 @@ class InceptionResult
 	/** @var callable(): (array{string[], bool}) */
 	private $filesCallback;
 
-	private Output $stdOutput;
-
-	private Output $errorOutput;
-
-	private Container $container;
-
-	private bool $isDefaultLevelUsed;
-
-	private string $memoryLimitFile;
-
-	private ?string $projectConfigFile;
-
-	/** @var mixed[]|null */
-	private ?array $projectConfigArray;
-
-	private ?string $generateBaselineFile;
-
 	/**
 	 * @param callable(): (array{string[], bool}) $filesCallback
 	 * @param mixed[] $projectConfigArray
 	 */
 	public function __construct(
 		callable $filesCallback,
-		Output $stdOutput,
-		Output $errorOutput,
-		Container $container,
-		bool $isDefaultLevelUsed,
-		string $memoryLimitFile,
-		?string $projectConfigFile,
-		?array $projectConfigArray,
-		?string $generateBaselineFile,
+		private Output $stdOutput,
+		private Output $errorOutput,
+		private Container $container,
+		private bool $isDefaultLevelUsed,
+		private string $memoryLimitFile,
+		private ?string $projectConfigFile,
+		private ?array $projectConfigArray,
+		private ?string $generateBaselineFile,
 	)
 	{
 		$this->filesCallback = $filesCallback;
-		$this->stdOutput = $stdOutput;
-		$this->errorOutput = $errorOutput;
-		$this->container = $container;
-		$this->isDefaultLevelUsed = $isDefaultLevelUsed;
-		$this->memoryLimitFile = $memoryLimitFile;
-		$this->projectConfigFile = $projectConfigFile;
-		$this->projectConfigArray = $projectConfigArray;
-		$this->generateBaselineFile = $generateBaselineFile;
 	}
 
 	/**

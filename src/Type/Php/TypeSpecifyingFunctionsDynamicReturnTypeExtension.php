@@ -19,25 +19,15 @@ use function in_array;
 class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension, TypeSpecifierAwareExtension
 {
 
-	private bool $treatPhpDocTypesAsCertain;
-
-	private ReflectionProvider $reflectionProvider;
-
 	private TypeSpecifier $typeSpecifier;
 
 	private ?ImpossibleCheckTypeHelper $helper = null;
 
-	/** @var string[] */
-	private array $universalObjectCratesClasses;
-
 	/**
 	 * @param string[] $universalObjectCratesClasses
 	 */
-	public function __construct(ReflectionProvider $reflectionProvider, bool $treatPhpDocTypesAsCertain, array $universalObjectCratesClasses)
+	public function __construct(private ReflectionProvider $reflectionProvider, private bool $treatPhpDocTypesAsCertain, private array $universalObjectCratesClasses)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
-		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

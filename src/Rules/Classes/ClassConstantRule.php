@@ -31,25 +31,13 @@ use function strtolower;
 class ClassConstantRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private PhpVersion $phpVersion;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		RuleLevelHelper $ruleLevelHelper,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		PhpVersion $phpVersion,
+		private ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private PhpVersion $phpVersion,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function getNodeType(): string

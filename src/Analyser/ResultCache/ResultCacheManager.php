@@ -45,48 +45,11 @@ class ResultCacheManager
 
 	private const CACHE_VERSION = 'v9-project-extensions';
 
-	private ExportedNodeFetcher $exportedNodeFetcher;
-
-	private FileFinder $scanFileFinder;
-
-	private ReflectionProvider $reflectionProvider;
-
-	private string $cacheFilePath;
-
-	private string $tempResultCachePath;
-
-	/** @var string[] */
-	private array $analysedPaths;
-
-	/** @var string[] */
-	private array $composerAutoloaderProjectPaths;
-
-	/** @var string[] */
-	private array $stubFiles;
-
-	private string $usedLevel;
-
-	private ?string $cliAutoloadFile;
-
-	/** @var string[] */
-	private array $bootstrapFiles;
-
-	/** @var string[] */
-	private array $scanFiles;
-
-	/** @var string[] */
-	private array $scanDirectories;
-
 	/** @var array<string, string> */
 	private array $fileHashes = [];
 
-	/** @var array<string, string> */
-	private array $fileReplacements = [];
-
 	/** @var array<string, true> */
 	private array $alreadyProcessed = [];
-
-	private bool $checkDependenciesOfProjectExtensionFiles;
 
 	/**
 	 * @param string[] $analysedPaths
@@ -98,38 +61,23 @@ class ResultCacheManager
 	 * @param array<string, string> $fileReplacements
 	 */
 	public function __construct(
-		ExportedNodeFetcher $exportedNodeFetcher,
-		FileFinder $scanFileFinder,
-		ReflectionProvider $reflectionProvider,
-		string $cacheFilePath,
-		string $tempResultCachePath,
-		array $analysedPaths,
-		array $composerAutoloaderProjectPaths,
-		array $stubFiles,
-		string $usedLevel,
-		?string $cliAutoloadFile,
-		array $bootstrapFiles,
-		array $scanFiles,
-		array $scanDirectories,
-		array $fileReplacements,
-		bool $checkDependenciesOfProjectExtensionFiles,
+		private ExportedNodeFetcher $exportedNodeFetcher,
+		private FileFinder $scanFileFinder,
+		private ReflectionProvider $reflectionProvider,
+		private string $cacheFilePath,
+		private string $tempResultCachePath,
+		private array $analysedPaths,
+		private array $composerAutoloaderProjectPaths,
+		private array $stubFiles,
+		private string $usedLevel,
+		private ?string $cliAutoloadFile,
+		private array $bootstrapFiles,
+		private array $scanFiles,
+		private array $scanDirectories,
+		private array $fileReplacements = [],
+		private bool $checkDependenciesOfProjectExtensionFiles,
 	)
 	{
-		$this->exportedNodeFetcher = $exportedNodeFetcher;
-		$this->scanFileFinder = $scanFileFinder;
-		$this->reflectionProvider = $reflectionProvider;
-		$this->cacheFilePath = $cacheFilePath;
-		$this->tempResultCachePath = $tempResultCachePath;
-		$this->analysedPaths = $analysedPaths;
-		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
-		$this->stubFiles = $stubFiles;
-		$this->usedLevel = $usedLevel;
-		$this->cliAutoloadFile = $cliAutoloadFile;
-		$this->bootstrapFiles = $bootstrapFiles;
-		$this->scanFiles = $scanFiles;
-		$this->scanDirectories = $scanDirectories;
-		$this->fileReplacements = $fileReplacements;
-		$this->checkDependenciesOfProjectExtensionFiles = $checkDependenciesOfProjectExtensionFiles;
 	}
 
 	/**

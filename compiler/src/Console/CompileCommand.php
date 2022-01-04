@@ -34,26 +34,14 @@ use const JSON_UNESCAPED_SLASHES;
 final class CompileCommand extends Command
 {
 
-	private Filesystem $filesystem;
-
-	private ProcessFactory $processFactory;
-
-	private string $dataDir;
-
-	private string $buildDir;
-
 	public function __construct(
-		Filesystem $filesystem,
-		ProcessFactory $processFactory,
-		string $dataDir,
-		string $buildDir,
+		private Filesystem $filesystem,
+		private ProcessFactory $processFactory,
+		private string $dataDir,
+		private string $buildDir,
 	)
 	{
 		parent::__construct();
-		$this->filesystem = $filesystem;
-		$this->processFactory = $processFactory;
-		$this->dataDir = $dataDir;
-		$this->buildDir = $buildDir;
 	}
 
 	protected function configure(): void

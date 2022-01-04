@@ -29,21 +29,12 @@ use function sprintf;
 class AccessPropertiesRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private bool $reportMagicProperties;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		RuleLevelHelper $ruleLevelHelper,
-		bool $reportMagicProperties,
+		private ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
+		private bool $reportMagicProperties,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->reportMagicProperties = $reportMagicProperties;
 	}
 
 	public function getNodeType(): string

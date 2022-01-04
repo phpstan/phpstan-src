@@ -9,17 +9,8 @@ use ReturnTypeWillChange;
 class ExportedEnumCaseNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private ?string $value;
-
-	private ?ExportedPhpDocNode $phpDoc;
-
-	public function __construct(string $name, ?string $value, ?ExportedPhpDocNode $phpDoc)
+	public function __construct(private string $name, private ?string $value, private ?ExportedPhpDocNode $phpDoc)
 	{
-		$this->name = $name;
-		$this->value = $value;
-		$this->phpDoc = $phpDoc;
 	}
 
 	public function equals(ExportedNode $node): bool

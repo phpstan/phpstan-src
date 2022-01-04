@@ -9,17 +9,13 @@ use PhpParser\NodeAbstract;
 class FileNode extends NodeAbstract implements VirtualNode
 {
 
-	/** @var Node[] */
-	private array $nodes;
-
 	/**
 	 * @param Node[] $nodes
 	 */
-	public function __construct(array $nodes)
+	public function __construct(private array $nodes)
 	{
 		$firstNode = $nodes[0] ?? null;
 		parent::__construct($firstNode !== null ? $firstNode->getAttributes() : []);
-		$this->nodes = $nodes;
 	}
 
 	/**

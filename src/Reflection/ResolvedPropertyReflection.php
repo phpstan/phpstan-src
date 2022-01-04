@@ -11,18 +11,12 @@ use PHPStan\Type\Type;
 class ResolvedPropertyReflection implements WrapperPropertyReflection
 {
 
-	private PropertyReflection $reflection;
-
-	private TemplateTypeMap $templateTypeMap;
-
 	private ?Type $readableType = null;
 
 	private ?Type $writableType = null;
 
-	public function __construct(PropertyReflection $reflection, TemplateTypeMap $templateTypeMap)
+	public function __construct(private PropertyReflection $reflection, private TemplateTypeMap $templateTypeMap)
 	{
-		$this->reflection = $reflection;
-		$this->templateTypeMap = $templateTypeMap;
 	}
 
 	public function getOriginalReflection(): PropertyReflection

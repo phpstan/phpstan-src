@@ -19,13 +19,10 @@ use function sprintf;
 class UnpackIterableInArrayRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper,
+		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string

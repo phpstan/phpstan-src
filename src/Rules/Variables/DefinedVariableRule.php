@@ -17,17 +17,11 @@ use function sprintf;
 class DefinedVariableRule implements Rule
 {
 
-	private bool $cliArgumentsVariablesRegistered;
-
-	private bool $checkMaybeUndefinedVariables;
-
 	public function __construct(
-		bool $cliArgumentsVariablesRegistered,
-		bool $checkMaybeUndefinedVariables,
+		private bool $cliArgumentsVariablesRegistered,
+		private bool $checkMaybeUndefinedVariables,
 	)
 	{
-		$this->cliArgumentsVariablesRegistered = $cliArgumentsVariablesRegistered;
-		$this->checkMaybeUndefinedVariables = $checkMaybeUndefinedVariables;
 	}
 
 	public function getNodeType(): string

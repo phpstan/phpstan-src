@@ -10,41 +10,19 @@ use function count;
 class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 {
 
-	/** @var string[] */
-	private array $names;
-
-	private ?ExportedPhpDocNode $phpDoc;
-
-	private ?string $type;
-
-	private bool $public;
-
-	private bool $private;
-
-	private bool $static;
-
-	private bool $readonly;
-
 	/**
 	 * @param string[] $names
 	 */
 	public function __construct(
-		array $names,
-		?ExportedPhpDocNode $phpDoc,
-		?string $type,
-		bool $public,
-		bool $private,
-		bool $static,
-		bool $readonly,
+		private array $names,
+		private ?ExportedPhpDocNode $phpDoc,
+		private ?string $type,
+		private bool $public,
+		private bool $private,
+		private bool $static,
+		private bool $readonly,
 	)
 	{
-		$this->names = $names;
-		$this->phpDoc = $phpDoc;
-		$this->type = $type;
-		$this->public = $public;
-		$this->private = $private;
-		$this->static = $static;
-		$this->readonly = $readonly;
 	}
 
 	public function equals(ExportedNode $node): bool

@@ -12,21 +12,11 @@ use PHPStan\Type\Type;
 class ChangedTypeMethodReflection implements MethodReflection
 {
 
-	private ClassReflection $declaringClass;
-
-	private MethodReflection $reflection;
-
-	/** @var ParametersAcceptor[] */
-	private array $variants;
-
 	/**
 	 * @param ParametersAcceptor[] $variants
 	 */
-	public function __construct(ClassReflection $declaringClass, MethodReflection $reflection, array $variants)
+	public function __construct(private ClassReflection $declaringClass, private MethodReflection $reflection, private array $variants)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->reflection = $reflection;
-		$this->variants = $variants;
 	}
 
 	public function getDeclaringClass(): ClassReflection

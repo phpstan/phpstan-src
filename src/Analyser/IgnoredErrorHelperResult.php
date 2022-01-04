@@ -17,22 +17,6 @@ use function sprintf;
 class IgnoredErrorHelperResult
 {
 
-	private FileHelper $fileHelper;
-
-	/** @var string[] */
-	private array $errors;
-
-	/** @var array<array<mixed>> */
-	private array $otherIgnoreErrors;
-
-	/** @var array<string, array<array<mixed>>> */
-	private array $ignoreErrorsByFile;
-
-	/** @var (string|mixed[])[] */
-	private array $ignoreErrors;
-
-	private bool $reportUnmatchedIgnoredErrors;
-
 	/**
 	 * @param string[] $errors
 	 * @param array<array<mixed>> $otherIgnoreErrors
@@ -40,20 +24,14 @@ class IgnoredErrorHelperResult
 	 * @param (string|mixed[])[] $ignoreErrors
 	 */
 	public function __construct(
-		FileHelper $fileHelper,
-		array $errors,
-		array $otherIgnoreErrors,
-		array $ignoreErrorsByFile,
-		array $ignoreErrors,
-		bool $reportUnmatchedIgnoredErrors,
+		private FileHelper $fileHelper,
+		private array $errors,
+		private array $otherIgnoreErrors,
+		private array $ignoreErrorsByFile,
+		private array $ignoreErrors,
+		private bool $reportUnmatchedIgnoredErrors,
 	)
 	{
-		$this->fileHelper = $fileHelper;
-		$this->errors = $errors;
-		$this->otherIgnoreErrors = $otherIgnoreErrors;
-		$this->ignoreErrorsByFile = $ignoreErrorsByFile;
-		$this->ignoreErrors = $ignoreErrors;
-		$this->reportUnmatchedIgnoredErrors = $reportUnmatchedIgnoredErrors;
 	}
 
 	/**

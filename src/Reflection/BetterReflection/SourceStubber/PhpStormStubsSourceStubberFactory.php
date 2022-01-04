@@ -9,14 +9,8 @@ use PHPStan\Php\PhpVersion;
 class PhpStormStubsSourceStubberFactory
 {
 
-	private Parser $phpParser;
-
-	private PhpVersion $phpVersion;
-
-	public function __construct(Parser $phpParser, PhpVersion $phpVersion)
+	public function __construct(private Parser $phpParser, private PhpVersion $phpVersion)
 	{
-		$this->phpParser = $phpParser;
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function create(): PhpStormStubsSourceStubber

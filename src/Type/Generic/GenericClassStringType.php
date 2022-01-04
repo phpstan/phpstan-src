@@ -22,13 +22,10 @@ use function sprintf;
 class GenericClassStringType extends ClassStringType
 {
 
-	private Type $type;
-
 	/** @api */
-	public function __construct(Type $type)
+	public function __construct(private Type $type)
 	{
 		parent::__construct();
-		$this->type = $type;
 	}
 
 	public function getReferencedClasses(): array

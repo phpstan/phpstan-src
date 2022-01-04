@@ -19,14 +19,11 @@ class TrinaryLogic
 	private const MAYBE = 0;
 	private const NO = -1;
 
-	private int $value;
-
 	/** @var self[] */
 	private static array $registry = [];
 
-	private function __construct(int $value)
+	private function __construct(private int $value)
 	{
-		$this->value = $value;
 	}
 
 	public static function createYes(): self

@@ -24,33 +24,15 @@ use const E_ERROR;
 class AnalyseApplication
 {
 
-	private AnalyserRunner $analyserRunner;
-
-	private StubValidator $stubValidator;
-
-	private ResultCacheManagerFactory $resultCacheManagerFactory;
-
-	private IgnoredErrorHelper $ignoredErrorHelper;
-
-	private string $memoryLimitFile;
-
-	private int $internalErrorsCountLimit;
-
 	public function __construct(
-		AnalyserRunner $analyserRunner,
-		StubValidator $stubValidator,
-		ResultCacheManagerFactory $resultCacheManagerFactory,
-		IgnoredErrorHelper $ignoredErrorHelper,
-		string $memoryLimitFile,
-		int $internalErrorsCountLimit,
+		private AnalyserRunner $analyserRunner,
+		private StubValidator $stubValidator,
+		private ResultCacheManagerFactory $resultCacheManagerFactory,
+		private IgnoredErrorHelper $ignoredErrorHelper,
+		private string $memoryLimitFile,
+		private int $internalErrorsCountLimit,
 	)
 	{
-		$this->analyserRunner = $analyserRunner;
-		$this->stubValidator = $stubValidator;
-		$this->resultCacheManagerFactory = $resultCacheManagerFactory;
-		$this->ignoredErrorHelper = $ignoredErrorHelper;
-		$this->memoryLimitFile = $memoryLimitFile;
-		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
 	}
 
 	/**

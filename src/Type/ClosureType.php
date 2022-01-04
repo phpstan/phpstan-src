@@ -38,13 +38,6 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	private ObjectType $objectType;
 
-	/** @var array<int, ParameterReflection> */
-	private array $parameters;
-
-	private Type $returnType;
-
-	private bool $variadic;
-
 	private TemplateTypeMap $templateTypeMap;
 
 	private TemplateTypeMap $resolvedTemplateTypeMap;
@@ -54,17 +47,14 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	 * @param array<int, ParameterReflection> $parameters
 	 */
 	public function __construct(
-		array $parameters,
-		Type $returnType,
-		bool $variadic,
+		private array $parameters,
+		private Type $returnType,
+		private bool $variadic,
 		?TemplateTypeMap $templateTypeMap = null,
 		?TemplateTypeMap $resolvedTemplateTypeMap = null,
 	)
 	{
 		$this->objectType = new ObjectType(Closure::class);
-		$this->parameters = $parameters;
-		$this->returnType = $returnType;
-		$this->variadic = $variadic;
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
 	}

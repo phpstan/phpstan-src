@@ -19,11 +19,8 @@ use function strtolower;
 final class CompactVariablesRule implements Rule
 {
 
-	private bool $checkMaybeUndefinedVariables;
-
-	public function __construct(bool $checkMaybeUndefinedVariables)
+	public function __construct(private bool $checkMaybeUndefinedVariables)
 	{
-		$this->checkMaybeUndefinedVariables = $checkMaybeUndefinedVariables;
 	}
 
 	public function getNodeType(): string

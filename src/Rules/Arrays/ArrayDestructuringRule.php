@@ -27,17 +27,11 @@ use function sprintf;
 class ArrayDestructuringRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper,
-		NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck,
+		private RuleLevelHelper $ruleLevelHelper,
+		private NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->nonexistentOffsetInArrayDimFetchCheck = $nonexistentOffsetInArrayDimFetchCheck;
 	}
 
 	public function getNodeType(): string

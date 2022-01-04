@@ -19,16 +19,13 @@ use function sprintf;
 class EnumCaseObjectType extends ObjectType
 {
 
-	private string $enumCaseName;
-
 	public function __construct(
 		string $className,
-		string $enumCaseName,
+		private string $enumCaseName,
 		?ClassReflection $classReflection = null,
 	)
 	{
 		parent::__construct($className, null, $classReflection);
-		$this->enumCaseName = $enumCaseName;
 	}
 
 	public function getEnumCaseName(): string

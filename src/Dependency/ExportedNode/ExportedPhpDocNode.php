@@ -9,20 +9,14 @@ use ReturnTypeWillChange;
 class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 {
 
-	private string $phpDocString;
-
-	private ?string $namespace;
-
 	/** @var array<string, string> alias(string) => fullName(string) */
 	private array $uses;
 
 	/**
 	 * @param array<string, string> $uses
 	 */
-	public function __construct(string $phpDocString, ?string $namespace, array $uses)
+	public function __construct(private string $phpDocString, private ?string $namespace, array $uses)
 	{
-		$this->phpDocString = $phpDocString;
-		$this->namespace = $namespace;
 		$this->uses = $uses;
 	}
 

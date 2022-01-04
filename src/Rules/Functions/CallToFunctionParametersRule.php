@@ -17,14 +17,8 @@ use PHPStan\Rules\Rule;
 class CallToFunctionParametersRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private FunctionCallParametersCheck $check;
-
-	public function __construct(ReflectionProvider $reflectionProvider, FunctionCallParametersCheck $check)
+	public function __construct(private ReflectionProvider $reflectionProvider, private FunctionCallParametersCheck $check)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->check = $check;
 	}
 
 	public function getNodeType(): string

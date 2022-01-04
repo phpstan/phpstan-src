@@ -11,21 +11,12 @@ use function min;
 class Scheduler
 {
 
-	private int $jobSize;
-
-	private int $maximumNumberOfProcesses;
-
-	private int $minimumNumberOfJobsPerProcess;
-
 	public function __construct(
-		int $jobSize,
-		int $maximumNumberOfProcesses,
-		int $minimumNumberOfJobsPerProcess,
+		private int $jobSize,
+		private int $maximumNumberOfProcesses,
+		private int $minimumNumberOfJobsPerProcess,
 	)
 	{
-		$this->jobSize = $jobSize;
-		$this->maximumNumberOfProcesses = $maximumNumberOfProcesses;
-		$this->minimumNumberOfJobsPerProcess = $minimumNumberOfJobsPerProcess;
 	}
 
 	/**

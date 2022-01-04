@@ -7,14 +7,11 @@ use function array_key_exists;
 class MemoizingContainer implements Container
 {
 
-	private Container $originalContainer;
-
 	/** @var array<string, mixed> */
 	private array $servicesByType = [];
 
-	public function __construct(Container $originalContainer)
+	public function __construct(private Container $originalContainer)
 	{
-		$this->originalContainer = $originalContainer;
 	}
 
 	public function hasService(string $serviceName): bool

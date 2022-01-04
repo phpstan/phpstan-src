@@ -13,29 +13,14 @@ use PHPStan\Type\Type;
 class FoundPropertyReflection implements PropertyReflection
 {
 
-	private PropertyReflection $originalPropertyReflection;
-
-	private Scope $scope;
-
-	private string $propertyName;
-
-	private Type $readableType;
-
-	private Type $writableType;
-
 	public function __construct(
-		PropertyReflection $originalPropertyReflection,
-		Scope $scope,
-		string $propertyName,
-		Type $readableType,
-		Type $writableType,
+		private PropertyReflection $originalPropertyReflection,
+		private Scope $scope,
+		private string $propertyName,
+		private Type $readableType,
+		private Type $writableType,
 	)
 	{
-		$this->originalPropertyReflection = $originalPropertyReflection;
-		$this->scope = $scope;
-		$this->propertyName = $propertyName;
-		$this->readableType = $readableType;
-		$this->writableType = $writableType;
 	}
 
 	public function getScope(): Scope

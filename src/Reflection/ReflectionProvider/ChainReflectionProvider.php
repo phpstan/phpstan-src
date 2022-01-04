@@ -16,17 +16,13 @@ use PHPStan\ShouldNotHappenException;
 class ChainReflectionProvider implements ReflectionProvider
 {
 
-	/** @var ReflectionProvider[] */
-	private array $providers;
-
 	/**
 	 * @param ReflectionProvider[] $providers
 	 */
 	public function __construct(
-		array $providers,
+		private array $providers,
 	)
 	{
-		$this->providers = $providers;
 	}
 
 	public function hasClass(string $className): bool

@@ -35,29 +35,14 @@ use function strtolower;
 class StaticMethodCallCheck
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private bool $checkFunctionNameCase;
-
-	private bool $reportMagicMethods;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		RuleLevelHelper $ruleLevelHelper,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		bool $checkFunctionNameCase,
-		bool $reportMagicMethods,
+		private ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private bool $checkFunctionNameCase,
+		private bool $reportMagicMethods,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->checkFunctionNameCase = $checkFunctionNameCase;
-		$this->reportMagicMethods = $reportMagicMethods;
 	}
 	/**
 	 * @param Name|Expr $class

@@ -15,14 +15,8 @@ use PHPStan\Type\Type;
 class EnumCasesMethodReflection implements MethodReflection
 {
 
-	private ClassReflection $declaringClass;
-
-	private Type $returnType;
-
-	public function __construct(ClassReflection $declaringClass, Type $returnType)
+	public function __construct(private ClassReflection $declaringClass, private Type $returnType)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->returnType = $returnType;
 	}
 
 	public function getDeclaringClass(): ClassReflection

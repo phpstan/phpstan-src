@@ -24,33 +24,17 @@ use function sprintf;
 class GenericAncestorsCheck
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private GenericObjectTypeCheck $genericObjectTypeCheck;
-
-	private VarianceCheck $varianceCheck;
-
-	private bool $checkGenericClassInNonGenericObjectType;
-
-	/** @var string[] */
-	private array $skipCheckGenericClasses;
-
 	/**
 	 * @param string[] $skipCheckGenericClasses
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		GenericObjectTypeCheck $genericObjectTypeCheck,
-		VarianceCheck $varianceCheck,
-		bool $checkGenericClassInNonGenericObjectType,
-		array $skipCheckGenericClasses,
+		private ReflectionProvider $reflectionProvider,
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		private VarianceCheck $varianceCheck,
+		private bool $checkGenericClassInNonGenericObjectType,
+		private array $skipCheckGenericClasses,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
-		$this->varianceCheck = $varianceCheck;
-		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
-		$this->skipCheckGenericClasses = $skipCheckGenericClasses;
 	}
 
 	/**

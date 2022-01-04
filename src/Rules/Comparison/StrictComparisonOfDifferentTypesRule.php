@@ -16,11 +16,8 @@ use function sprintf;
 class StrictComparisonOfDifferentTypesRule implements Rule
 {
 
-	private bool $checkAlwaysTrueStrictComparison;
-
-	public function __construct(bool $checkAlwaysTrueStrictComparison)
+	public function __construct(private bool $checkAlwaysTrueStrictComparison)
 	{
-		$this->checkAlwaysTrueStrictComparison = $checkAlwaysTrueStrictComparison;
 	}
 
 	public function getNodeType(): string

@@ -21,13 +21,10 @@ use function var_export;
 class DuplicateKeysInLiteralArraysRule implements Rule
 {
 
-	private Standard $printer;
-
 	public function __construct(
-		Standard $printer,
+		private Standard $printer,
 	)
 	{
-		$this->printer = $printer;
 	}
 
 	public function getNodeType(): string

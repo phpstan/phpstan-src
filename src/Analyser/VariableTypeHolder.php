@@ -9,14 +9,8 @@ use PHPStan\Type\TypeCombinator;
 class VariableTypeHolder
 {
 
-	private Type $type;
-
-	private TrinaryLogic $certainty;
-
-	public function __construct(Type $type, TrinaryLogic $certainty)
+	public function __construct(private Type $type, private TrinaryLogic $certainty)
 	{
-		$this->type = $type;
-		$this->certainty = $certainty;
 	}
 
 	public static function createYes(Type $type): self

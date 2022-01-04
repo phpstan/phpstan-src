@@ -22,17 +22,11 @@ use function sprintf;
 class ImplodeFunctionRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private ReflectionProvider $reflectionProvider;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		RuleLevelHelper $ruleLevelHelper,
+		private ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string

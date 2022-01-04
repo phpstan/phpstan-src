@@ -35,29 +35,14 @@ use function sprintf;
 class TemplateTypeCheck
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private GenericObjectTypeCheck $genericObjectTypeCheck;
-
-	private TypeAliasResolver $typeAliasResolver;
-
-	private bool $checkClassCaseSensitivity;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		GenericObjectTypeCheck $genericObjectTypeCheck,
-		TypeAliasResolver $typeAliasResolver,
-		bool $checkClassCaseSensitivity,
+		private ReflectionProvider $reflectionProvider,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		private TypeAliasResolver $typeAliasResolver,
+		private bool $checkClassCaseSensitivity,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
-		$this->typeAliasResolver = $typeAliasResolver;
-		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 	}
 
 	/**

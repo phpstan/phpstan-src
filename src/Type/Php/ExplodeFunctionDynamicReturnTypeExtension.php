@@ -25,11 +25,8 @@ use function count;
 class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	private PhpVersion $phpVersion;
-
-	public function __construct(PhpVersion $phpVersion)
+	public function __construct(private PhpVersion $phpVersion)
 	{
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool

@@ -29,8 +29,6 @@ use function unlink;
 class ContainerFactory
 {
 
-	private string $currentWorkingDirectory;
-
 	private FileHelper $fileHelper;
 
 	private string $rootDirectory;
@@ -38,9 +36,8 @@ class ContainerFactory
 	private string $configDirectory;
 
 	/** @api */
-	public function __construct(string $currentWorkingDirectory)
+	public function __construct(private string $currentWorkingDirectory)
 	{
-		$this->currentWorkingDirectory = $currentWorkingDirectory;
 		$this->fileHelper = new FileHelper($currentWorkingDirectory);
 
 		$rootDir = __DIR__ . '/../..';

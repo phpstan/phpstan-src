@@ -20,21 +20,12 @@ use function sprintf;
 class NonexistentOffsetInArrayDimFetchRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck;
-
-	private bool $reportMaybes;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper,
-		NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck,
-		bool $reportMaybes,
+		private RuleLevelHelper $ruleLevelHelper,
+		private NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck,
+		private bool $reportMaybes,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->nonexistentOffsetInArrayDimFetchCheck = $nonexistentOffsetInArrayDimFetchCheck;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string

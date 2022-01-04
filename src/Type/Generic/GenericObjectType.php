@@ -28,25 +28,18 @@ use function sprintf;
 class GenericObjectType extends ObjectType
 {
 
-	/** @var array<int, Type> */
-	private array $types;
-
-	private ?ClassReflection $classReflection;
-
 	/**
 	 * @api
 	 * @param array<int, Type> $types
 	 */
 	public function __construct(
 		string $mainType,
-		array $types,
+		private array $types,
 		?Type $subtractedType = null,
-		?ClassReflection $classReflection = null,
+		private ?ClassReflection $classReflection = null,
 	)
 	{
 		parent::__construct($mainType, $subtractedType, $classReflection);
-		$this->types = $types;
-		$this->classReflection = $classReflection;
 	}
 
 	public function describe(VerbosityLevel $level): string

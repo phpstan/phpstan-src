@@ -9,11 +9,8 @@ use function file_put_contents;
 final class SymfonyFilesystem implements Filesystem
 {
 
-	private \Symfony\Component\Filesystem\Filesystem $filesystem;
-
-	public function __construct(\Symfony\Component\Filesystem\Filesystem $filesystem)
+	public function __construct(private \Symfony\Component\Filesystem\Filesystem $filesystem)
 	{
-		$this->filesystem = $filesystem;
 	}
 
 	public function exists(string $dir): bool

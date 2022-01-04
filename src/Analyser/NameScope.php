@@ -20,36 +20,20 @@ use function strtolower;
 class NameScope
 {
 
-	private ?string $namespace;
-
 	/** @var array<string, string> alias(string) => fullName(string) */
 	private array $uses;
 
-	private ?string $className;
-
-	private ?string $functionName;
-
 	private TemplateTypeMap $templateTypeMap;
-
-	/** @var array<string, true> */
-	private array $typeAliasesMap;
-
-	private bool $bypassTypeAliases;
 
 	/**
 	 * @api
 	 * @param array<string, string> $uses alias(string) => fullName(string)
 	 * @param array<string, true> $typeAliasesMap
 	 */
-	public function __construct(?string $namespace, array $uses, ?string $className = null, ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, array $typeAliasesMap = [], bool $bypassTypeAliases = false)
+	public function __construct(private ?string $namespace, array $uses, private ?string $className = null, private ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, private array $typeAliasesMap = [], private bool $bypassTypeAliases = false)
 	{
-		$this->namespace = $namespace;
 		$this->uses = $uses;
-		$this->className = $className;
-		$this->functionName = $functionName;
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
-		$this->typeAliasesMap = $typeAliasesMap;
-		$this->bypassTypeAliases = $bypassTypeAliases;
 	}
 
 	public function getNamespace(): ?string

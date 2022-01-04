@@ -17,17 +17,11 @@ use function sprintf;
 class BooleanOrConstantConditionRule implements Rule
 {
 
-	private ConstantConditionRuleHelper $helper;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain,
+		private ConstantConditionRuleHelper $helper,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->helper = $helper;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string

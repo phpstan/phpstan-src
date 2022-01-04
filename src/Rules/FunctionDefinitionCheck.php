@@ -39,33 +39,15 @@ use function sprintf;
 class FunctionDefinitionCheck
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private UnresolvableTypeHelper $unresolvableTypeHelper;
-
-	private PhpVersion $phpVersion;
-
-	private bool $checkClassCaseSensitivity;
-
-	private bool $checkThisOnly;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		UnresolvableTypeHelper $unresolvableTypeHelper,
-		PhpVersion $phpVersion,
-		bool $checkClassCaseSensitivity,
-		bool $checkThisOnly,
+		private ReflectionProvider $reflectionProvider,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private PhpVersion $phpVersion,
+		private bool $checkClassCaseSensitivity,
+		private bool $checkThisOnly,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
-		$this->phpVersion = $phpVersion;
-		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
-		$this->checkThisOnly = $checkThisOnly;
 	}
 
 	/**

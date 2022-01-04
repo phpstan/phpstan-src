@@ -17,11 +17,8 @@ use function sprintf;
 class UnusedPrivateConstantRule implements Rule
 {
 
-	private AlwaysUsedClassConstantsExtensionProvider $extensionProvider;
-
-	public function __construct(AlwaysUsedClassConstantsExtensionProvider $extensionProvider)
+	public function __construct(private AlwaysUsedClassConstantsExtensionProvider $extensionProvider)
 	{
-		$this->extensionProvider = $extensionProvider;
 	}
 
 	public function getNodeType(): string

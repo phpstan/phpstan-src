@@ -22,13 +22,10 @@ use function count;
 class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	private PropertyReflectionFinder $propertyReflectionFinder;
-
 	private TypeSpecifier $typeSpecifier;
 
-	public function __construct(PropertyReflectionFinder $propertyReflectionFinder)
+	public function __construct(private PropertyReflectionFinder $propertyReflectionFinder)
 	{
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

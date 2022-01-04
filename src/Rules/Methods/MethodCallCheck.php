@@ -21,25 +21,13 @@ use function strtolower;
 class MethodCallCheck
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private bool $checkFunctionNameCase;
-
-	private bool $reportMagicMethods;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		RuleLevelHelper $ruleLevelHelper,
-		bool $checkFunctionNameCase,
-		bool $reportMagicMethods,
+		private ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
+		private bool $checkFunctionNameCase,
+		private bool $reportMagicMethods,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->checkFunctionNameCase = $checkFunctionNameCase;
-		$this->reportMagicMethods = $reportMagicMethods;
 	}
 
 	/**

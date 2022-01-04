@@ -18,11 +18,8 @@ use function sprintf;
 class YieldInGeneratorRule implements Rule
 {
 
-	private bool $reportMaybes;
-
-	public function __construct(bool $reportMaybes)
+	public function __construct(private bool $reportMaybes)
 	{
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string

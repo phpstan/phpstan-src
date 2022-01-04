@@ -20,21 +20,12 @@ use function sprintf;
 class CaughtExceptionExistenceRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private bool $checkClassCaseSensitivity;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		bool $checkClassCaseSensitivity,
+		private ReflectionProvider $reflectionProvider,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private bool $checkClassCaseSensitivity,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 	}
 
 	public function getNodeType(): string

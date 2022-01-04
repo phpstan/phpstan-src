@@ -36,20 +36,16 @@ class WorkerCommand extends Command
 
 	private const NAME = 'worker';
 
-	/** @var string[] */
-	private array $composerAutoloaderProjectPaths;
-
 	private int $errorCount = 0;
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
-		array $composerAutoloaderProjectPaths,
+		private array $composerAutoloaderProjectPaths,
 	)
 	{
 		parent::__construct();
-		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 	}
 
 	protected function configure(): void

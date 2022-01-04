@@ -29,24 +29,15 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 
 	private const DIRECTORY = __DIR__ . '/../../../vendor/phpstan/php-8-stubs';
 
-	private FunctionSignatureMapProvider $functionSignatureMapProvider;
-
-	private FileNodesFetcher $fileNodesFetcher;
-
-	private FileTypeMapper $fileTypeMapper;
-
 	/** @var array<string, array<string, array{ClassMethod, string}>> */
 	private array $methodNodes = [];
 
 	public function __construct(
-		FunctionSignatureMapProvider $functionSignatureMapProvider,
-		FileNodesFetcher $fileNodesFetcher,
-		FileTypeMapper $fileTypeMapper,
+		private FunctionSignatureMapProvider $functionSignatureMapProvider,
+		private FileNodesFetcher $fileNodesFetcher,
+		private FileTypeMapper $fileTypeMapper,
 	)
 	{
-		$this->functionSignatureMapProvider = $functionSignatureMapProvider;
-		$this->fileNodesFetcher = $fileNodesFetcher;
-		$this->fileTypeMapper = $fileTypeMapper;
 	}
 
 	public function hasMethodSignature(string $className, string $methodName, int $variant = 0): bool

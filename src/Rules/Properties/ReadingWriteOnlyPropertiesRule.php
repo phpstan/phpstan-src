@@ -15,25 +15,13 @@ use function sprintf;
 class ReadingWriteOnlyPropertiesRule implements Rule
 {
 
-	private PropertyDescriptor $propertyDescriptor;
-
-	private PropertyReflectionFinder $propertyReflectionFinder;
-
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private bool $checkThisOnly;
-
 	public function __construct(
-		PropertyDescriptor $propertyDescriptor,
-		PropertyReflectionFinder $propertyReflectionFinder,
-		RuleLevelHelper $ruleLevelHelper,
-		bool $checkThisOnly,
+		private PropertyDescriptor $propertyDescriptor,
+		private PropertyReflectionFinder $propertyReflectionFinder,
+		private RuleLevelHelper $ruleLevelHelper,
+		private bool $checkThisOnly,
 	)
 	{
-		$this->propertyDescriptor = $propertyDescriptor;
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->checkThisOnly = $checkThisOnly;
 	}
 
 	public function getNodeType(): string

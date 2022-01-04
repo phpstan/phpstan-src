@@ -49,18 +49,6 @@ class FileTypeMapper
 	private const SKIP_NODE = 1;
 	private const POP_TYPE_MAP_STACK = 2;
 
-	private ReflectionProviderProvider $reflectionProviderProvider;
-
-	private Parser $phpParser;
-
-	private PhpDocStringResolver $phpDocStringResolver;
-
-	private PhpDocNodeResolver $phpDocNodeResolver;
-
-	private Cache $cache;
-
-	private AnonymousClassNameHelper $anonymousClassNameHelper;
-
 	/** @var NameScope[][] */
 	private array $memoryCache = [];
 
@@ -78,20 +66,14 @@ class FileTypeMapper
 	private array $alreadyProcessedDependentFiles = [];
 
 	public function __construct(
-		ReflectionProviderProvider $reflectionProviderProvider,
-		Parser $phpParser,
-		PhpDocStringResolver $phpDocStringResolver,
-		PhpDocNodeResolver $phpDocNodeResolver,
-		Cache $cache,
-		AnonymousClassNameHelper $anonymousClassNameHelper,
+		private ReflectionProviderProvider $reflectionProviderProvider,
+		private Parser $phpParser,
+		private PhpDocStringResolver $phpDocStringResolver,
+		private PhpDocNodeResolver $phpDocNodeResolver,
+		private Cache $cache,
+		private AnonymousClassNameHelper $anonymousClassNameHelper,
 	)
 	{
-		$this->reflectionProviderProvider = $reflectionProviderProvider;
-		$this->phpParser = $phpParser;
-		$this->phpDocStringResolver = $phpDocStringResolver;
-		$this->phpDocNodeResolver = $phpDocNodeResolver;
-		$this->cache = $cache;
-		$this->anonymousClassNameHelper = $anonymousClassNameHelper;
 	}
 
 	/** @api */

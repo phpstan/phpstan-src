@@ -18,14 +18,8 @@ use function sprintf;
 class TooWideMethodThrowTypeRule implements Rule
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
-	private TooWideThrowTypeCheck $check;
-
-	public function __construct(FileTypeMapper $fileTypeMapper, TooWideThrowTypeCheck $check)
+	public function __construct(private FileTypeMapper $fileTypeMapper, private TooWideThrowTypeCheck $check)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->check = $check;
 	}
 
 	public function getNodeType(): string

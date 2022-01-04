@@ -18,29 +18,16 @@ use function class_exists;
 class ClassBlacklistReflectionProvider implements ReflectionProvider
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
-
-	/** @var string[] */
-	private array $patterns;
-
-	private ?string $singleReflectionInsteadOfFile;
-
 	/**
 	 * @param string[] $patterns
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
-		array $patterns,
-		?string $singleReflectionInsteadOfFile,
+		private ReflectionProvider $reflectionProvider,
+		private PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
+		private array $patterns,
+		private ?string $singleReflectionInsteadOfFile,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
-		$this->patterns = $patterns;
-		$this->singleReflectionInsteadOfFile = $singleReflectionInsteadOfFile;
 	}
 
 	public function hasClass(string $className): bool

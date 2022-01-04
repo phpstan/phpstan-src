@@ -16,25 +16,13 @@ use function sprintf;
 class IssetCheck
 {
 
-	private PropertyDescriptor $propertyDescriptor;
-
-	private PropertyReflectionFinder $propertyReflectionFinder;
-
-	private bool $checkAdvancedIsset;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		PropertyDescriptor $propertyDescriptor,
-		PropertyReflectionFinder $propertyReflectionFinder,
-		bool $checkAdvancedIsset,
-		bool $treatPhpDocTypesAsCertain,
+		private PropertyDescriptor $propertyDescriptor,
+		private PropertyReflectionFinder $propertyReflectionFinder,
+		private bool $checkAdvancedIsset,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->propertyDescriptor = $propertyDescriptor;
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
-		$this->checkAdvancedIsset = $checkAdvancedIsset;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	/**

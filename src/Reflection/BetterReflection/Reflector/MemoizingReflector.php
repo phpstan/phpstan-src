@@ -15,8 +15,6 @@ use function strtolower;
 final class MemoizingReflector implements Reflector
 {
 
-	private Reflector $reflector;
-
 	/** @var array<string, ReflectionClass|null> */
 	private array $classReflections = [];
 
@@ -26,9 +24,8 @@ final class MemoizingReflector implements Reflector
 	/** @var array<string, ReflectionFunction|null> */
 	private array $functionReflections = [];
 
-	public function __construct(Reflector $reflector)
+	public function __construct(private Reflector $reflector)
 	{
-		$this->reflector = $reflector;
 	}
 
 	public function reflectClass(string $className): ReflectionClass

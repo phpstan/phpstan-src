@@ -17,25 +17,13 @@ use function is_file;
 class AnalyserRunner
 {
 
-	private Scheduler $scheduler;
-
-	private Analyser $analyser;
-
-	private ParallelAnalyser $parallelAnalyser;
-
-	private CpuCoreCounter $cpuCoreCounter;
-
 	public function __construct(
-		Scheduler $scheduler,
-		Analyser $analyser,
-		ParallelAnalyser $parallelAnalyser,
-		CpuCoreCounter $cpuCoreCounter,
+		private Scheduler $scheduler,
+		private Analyser $analyser,
+		private ParallelAnalyser $parallelAnalyser,
+		private CpuCoreCounter $cpuCoreCounter,
 	)
 	{
-		$this->scheduler = $scheduler;
-		$this->analyser = $analyser;
-		$this->parallelAnalyser = $parallelAnalyser;
-		$this->cpuCoreCounter = $cpuCoreCounter;
 	}
 
 	/**

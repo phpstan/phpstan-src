@@ -23,18 +23,14 @@ class FixerWorkerCommand extends Command
 
 	private const NAME = 'fixer:worker';
 
-	/** @var string[] */
-	private array $composerAutoloaderProjectPaths;
-
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
-		array $composerAutoloaderProjectPaths,
+		private array $composerAutoloaderProjectPaths,
 	)
 	{
 		parent::__construct();
-		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 	}
 
 	protected function configure(): void

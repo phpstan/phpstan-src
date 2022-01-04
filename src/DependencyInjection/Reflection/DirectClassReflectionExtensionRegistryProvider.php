@@ -13,12 +13,6 @@ use PHPStan\Reflection\PropertiesClassReflectionExtension;
 class DirectClassReflectionExtensionRegistryProvider implements ClassReflectionExtensionRegistryProvider
 {
 
-	/** @var PropertiesClassReflectionExtension[] */
-	private array $propertiesClassReflectionExtensions;
-
-	/** @var MethodsClassReflectionExtension[] */
-	private array $methodsClassReflectionExtensions;
-
 	private Broker $broker;
 
 	/**
@@ -26,12 +20,10 @@ class DirectClassReflectionExtensionRegistryProvider implements ClassReflectionE
 	 * @param MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
 	 */
 	public function __construct(
-		array $propertiesClassReflectionExtensions,
-		array $methodsClassReflectionExtensions,
+		private array $propertiesClassReflectionExtensions,
+		private array $methodsClassReflectionExtensions,
 	)
 	{
-		$this->propertiesClassReflectionExtensions = $propertiesClassReflectionExtensions;
-		$this->methodsClassReflectionExtensions = $methodsClassReflectionExtensions;
 	}
 
 	public function setBroker(Broker $broker): void

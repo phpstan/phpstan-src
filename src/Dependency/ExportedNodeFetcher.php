@@ -10,17 +10,11 @@ use PHPStan\Parser\ParserErrorsException;
 class ExportedNodeFetcher
 {
 
-	private Parser $parser;
-
-	private ExportedNodeVisitor $visitor;
-
 	public function __construct(
-		Parser $parser,
-		ExportedNodeVisitor $visitor,
+		private Parser $parser,
+		private ExportedNodeVisitor $visitor,
 	)
 	{
-		$this->parser = $parser;
-		$this->visitor = $visitor;
 	}
 
 	/**

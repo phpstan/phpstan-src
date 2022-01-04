@@ -13,38 +13,23 @@ use PhpParser\NodeAbstract;
 class ClassPropertyNode extends NodeAbstract implements VirtualNode
 {
 
-	private string $name;
-
-	private int $flags;
-
 	private Identifier|Name|Node\ComplexType|null $type = null;
-
-	private ?Expr $default;
-
-	private ?string $phpDoc;
-
-	private bool $isPromoted;
 
 	/**
 	 * @param Identifier|Name|Node\ComplexType|null $type
 	 */
 	public function __construct(
-		string $name,
-		int $flags,
+		private string $name,
+		private int $flags,
 		$type,
-		?Expr $default,
-		?string $phpDoc,
-		bool $isPromoted,
+		private ?Expr $default,
+		private ?string $phpDoc,
+		private bool $isPromoted,
 		Node $originalNode,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());
-		$this->name = $name;
-		$this->flags = $flags;
 		$this->type = $type;
-		$this->default = $default;
-		$this->isPromoted = $isPromoted;
-		$this->phpDoc = $phpDoc;
 	}
 
 	public function getName(): string

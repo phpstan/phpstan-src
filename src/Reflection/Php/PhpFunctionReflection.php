@@ -32,35 +32,6 @@ use function time;
 class PhpFunctionReflection implements FunctionReflection
 {
 
-	private ReflectionFunction $reflection;
-
-	private Parser $parser;
-
-	private FunctionCallStatementFinder $functionCallStatementFinder;
-
-	private Cache $cache;
-
-	private TemplateTypeMap $templateTypeMap;
-
-	/** @var Type[] */
-	private array $phpDocParameterTypes;
-
-	private ?Type $phpDocReturnType;
-
-	private ?Type $phpDocThrowType;
-
-	private ?string $deprecatedDescription;
-
-	private bool $isDeprecated;
-
-	private bool $isInternal;
-
-	private bool $isFinal;
-
-	private ?string $filename;
-
-	private ?bool $isPure;
-
 	/** @var FunctionVariantWithPhpDocs[]|null */
 	private ?array $variants = null;
 
@@ -68,36 +39,22 @@ class PhpFunctionReflection implements FunctionReflection
 	 * @param Type[] $phpDocParameterTypes
 	 */
 	public function __construct(
-		ReflectionFunction $reflection,
-		Parser $parser,
-		FunctionCallStatementFinder $functionCallStatementFinder,
-		Cache $cache,
-		TemplateTypeMap $templateTypeMap,
-		array $phpDocParameterTypes,
-		?Type $phpDocReturnType,
-		?Type $phpDocThrowType,
-		?string $deprecatedDescription,
-		bool $isDeprecated,
-		bool $isInternal,
-		bool $isFinal,
-		?string $filename,
-		?bool $isPure,
+		private ReflectionFunction $reflection,
+		private Parser $parser,
+		private FunctionCallStatementFinder $functionCallStatementFinder,
+		private Cache $cache,
+		private TemplateTypeMap $templateTypeMap,
+		private array $phpDocParameterTypes,
+		private ?Type $phpDocReturnType,
+		private ?Type $phpDocThrowType,
+		private ?string $deprecatedDescription,
+		private bool $isDeprecated,
+		private bool $isInternal,
+		private bool $isFinal,
+		private ?string $filename,
+		private ?bool $isPure,
 	)
 	{
-		$this->reflection = $reflection;
-		$this->parser = $parser;
-		$this->functionCallStatementFinder = $functionCallStatementFinder;
-		$this->cache = $cache;
-		$this->templateTypeMap = $templateTypeMap;
-		$this->phpDocParameterTypes = $phpDocParameterTypes;
-		$this->phpDocReturnType = $phpDocReturnType;
-		$this->phpDocThrowType = $phpDocThrowType;
-		$this->isDeprecated = $isDeprecated;
-		$this->deprecatedDescription = $deprecatedDescription;
-		$this->isInternal = $isInternal;
-		$this->isFinal = $isFinal;
-		$this->filename = $filename;
-		$this->isPure = $isPure;
 	}
 
 	public function getName(): string

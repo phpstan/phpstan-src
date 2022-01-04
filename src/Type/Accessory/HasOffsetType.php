@@ -29,12 +29,9 @@ class HasOffsetType implements CompoundType, AccessoryType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private Type $offsetType;
-
 	/** @api */
-	public function __construct(Type $offsetType)
+	public function __construct(private Type $offsetType)
 	{
-		$this->offsetType = $offsetType;
 	}
 
 	public function getOffsetType(): Type

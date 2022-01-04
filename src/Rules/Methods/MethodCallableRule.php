@@ -17,14 +17,8 @@ use function sprintf;
 class MethodCallableRule implements Rule
 {
 
-	private MethodCallCheck $methodCallCheck;
-
-	private PhpVersion $phpVersion;
-
-	public function __construct(MethodCallCheck $methodCallCheck, PhpVersion $phpVersion)
+	public function __construct(private MethodCallCheck $methodCallCheck, private PhpVersion $phpVersion)
 	{
-		$this->methodCallCheck = $methodCallCheck;
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function getNodeType(): string

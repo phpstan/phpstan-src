@@ -9,13 +9,10 @@ use function sprintf;
 class RunnableStub implements Runnable
 {
 
-	private string $name;
-
 	private Deferred $deferred;
 
-	public function __construct(string $name)
+	public function __construct(private string $name)
 	{
-		$this->name = $name;
 		$this->deferred = new Deferred();
 	}
 

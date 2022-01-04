@@ -9,41 +9,17 @@ use PHPStan\Type\Type;
 class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhpDocs
 {
 
-	private string $name;
-
-	private bool $optional;
-
-	private Type $type;
-
-	private Type $phpDocType;
-
-	private Type $nativeType;
-
-	private PassedByReference $passedByReference;
-
-	private bool $variadic;
-
-	private ?Type $defaultValue;
-
 	public function __construct(
-		string $name,
-		bool $optional,
-		Type $type,
-		Type $phpDocType,
-		Type $nativeType,
-		PassedByReference $passedByReference,
-		bool $variadic,
-		?Type $defaultValue,
+		private string $name,
+		private bool $optional,
+		private Type $type,
+		private Type $phpDocType,
+		private Type $nativeType,
+		private PassedByReference $passedByReference,
+		private bool $variadic,
+		private ?Type $defaultValue,
 	)
 	{
-		$this->name = $name;
-		$this->optional = $optional;
-		$this->type = $type;
-		$this->phpDocType = $phpDocType;
-		$this->nativeType = $nativeType;
-		$this->passedByReference = $passedByReference;
-		$this->variadic = $variadic;
-		$this->defaultValue = $defaultValue;
 	}
 
 	public function getName(): string

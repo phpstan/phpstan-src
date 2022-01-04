@@ -10,25 +10,15 @@ use function array_values;
 class NodeDependencies
 {
 
-	private FileHelper $fileHelper;
-
-	/** @var array<int, ClassReflection|FunctionReflection> */
-	private array $reflections;
-
-	private ?ExportedNode $exportedNode;
-
 	/**
 	 * @param array<int, ClassReflection|FunctionReflection> $reflections
 	 */
 	public function __construct(
-		FileHelper $fileHelper,
-		array $reflections,
-		?ExportedNode $exportedNode,
+		private FileHelper $fileHelper,
+		private array $reflections,
+		private ?ExportedNode $exportedNode,
 	)
 	{
-		$this->fileHelper = $fileHelper;
-		$this->reflections = $reflections;
-		$this->exportedNode = $exportedNode;
 	}
 
 	/**

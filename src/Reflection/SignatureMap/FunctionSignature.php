@@ -7,29 +7,16 @@ use PHPStan\Type\Type;
 class FunctionSignature
 {
 
-	/** @var ParameterSignature[] */
-	private array $parameters;
-
-	private Type $returnType;
-
-	private Type $nativeReturnType;
-
-	private bool $variadic;
-
 	/**
 	 * @param array<int, ParameterSignature> $parameters
 	 */
 	public function __construct(
-		array $parameters,
-		Type $returnType,
-		Type $nativeReturnType,
-		bool $variadic,
+		private array $parameters,
+		private Type $returnType,
+		private Type $nativeReturnType,
+		private bool $variadic,
 	)
 	{
-		$this->parameters = $parameters;
-		$this->returnType = $returnType;
-		$this->nativeReturnType = $nativeReturnType;
-		$this->variadic = $variadic;
 	}
 
 	/**

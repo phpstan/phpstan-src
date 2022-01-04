@@ -9,11 +9,8 @@ use ReturnTypeWillChange;
 class ExportedTraitNode implements ExportedNode, JsonSerializable
 {
 
-	private string $traitName;
-
-	public function __construct(string $traitName)
+	public function __construct(private string $traitName)
 	{
-		$this->traitName = $traitName;
 	}
 
 	public function equals(ExportedNode $node): bool

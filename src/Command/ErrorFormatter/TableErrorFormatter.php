@@ -16,21 +16,12 @@ use function str_replace;
 class TableErrorFormatter implements ErrorFormatter
 {
 
-	private RelativePathHelper $relativePathHelper;
-
-	private bool $showTipsOfTheDay;
-
-	private ?string $editorUrl;
-
 	public function __construct(
-		RelativePathHelper $relativePathHelper,
-		bool $showTipsOfTheDay,
-		?string $editorUrl,
+		private RelativePathHelper $relativePathHelper,
+		private bool $showTipsOfTheDay,
+		private ?string $editorUrl,
 	)
 	{
-		$this->relativePathHelper = $relativePathHelper;
-		$this->showTipsOfTheDay = $showTipsOfTheDay;
-		$this->editorUrl = $editorUrl;
 	}
 
 	/** @api */

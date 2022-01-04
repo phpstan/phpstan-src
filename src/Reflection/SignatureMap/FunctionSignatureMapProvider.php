@@ -18,20 +18,14 @@ use const CASE_LOWER;
 class FunctionSignatureMapProvider implements SignatureMapProvider
 {
 
-	private SignatureMapParser $parser;
-
-	private PhpVersion $phpVersion;
-
 	/** @var mixed[]|null */
 	private ?array $signatureMap = null;
 
 	/** @var array<string, array{hasSideEffects: bool}>|null */
 	private ?array $functionMetadata = null;
 
-	public function __construct(SignatureMapParser $parser, PhpVersion $phpVersion)
+	public function __construct(private SignatureMapParser $parser, private PhpVersion $phpVersion)
 	{
-		$this->parser = $parser;
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function hasMethodSignature(string $className, string $methodName, int $variant = 0): bool

@@ -15,25 +15,16 @@ use Throwable;
 class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 {
 
-	private ReflectionParameter $reflection;
-
-	private ?Type $phpDocType;
-
 	private ?Type $type = null;
 
 	private ?Type $nativeType = null;
 
-	private ?string $declaringClassName;
-
 	public function __construct(
-		ReflectionParameter $reflection,
-		?Type $phpDocType,
-		?string $declaringClassName,
+		private ReflectionParameter $reflection,
+		private ?Type $phpDocType,
+		private ?string $declaringClassName,
 	)
 	{
-		$this->reflection = $reflection;
-		$this->phpDocType = $phpDocType;
-		$this->declaringClassName = $declaringClassName;
 	}
 
 	public function isOptional(): bool

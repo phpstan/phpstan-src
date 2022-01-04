@@ -22,12 +22,9 @@ class HasPropertyType implements AccessoryType, CompoundType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private string $propertyName;
-
 	/** @api */
-	public function __construct(string $propertyName)
+	public function __construct(private string $propertyName)
 	{
-		$this->propertyName = $propertyName;
 	}
 
 	/**

@@ -11,11 +11,8 @@ use function count;
 class JsonErrorFormatter implements ErrorFormatter
 {
 
-	private bool $pretty;
-
-	public function __construct(bool $pretty)
+	public function __construct(private bool $pretty)
 	{
-		$this->pretty = $pretty;
 	}
 
 	public function formatErrors(AnalysisResult $analysisResult, Output $output): int

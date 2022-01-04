@@ -11,9 +11,6 @@ class UnionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedProper
 
 	private string $propertyName;
 
-	/** @var UnresolvedPropertyPrototypeReflection[] */
-	private array $propertyPrototypes;
-
 	private ?PropertyReflection $transformedProperty = null;
 
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
@@ -23,11 +20,10 @@ class UnionTypeUnresolvedPropertyPrototypeReflection implements UnresolvedProper
 	 */
 	public function __construct(
 		string $methodName,
-		array $propertyPrototypes,
+		private array $propertyPrototypes,
 	)
 	{
 		$this->propertyName = $methodName;
-		$this->propertyPrototypes = $propertyPrototypes;
 	}
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedPropertyPrototypeReflection

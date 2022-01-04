@@ -13,21 +13,6 @@ class AnalysisResult
 	/** @var Error[] sorted by their file name, line number and message */
 	private array $fileSpecificErrors;
 
-	/** @var string[] */
-	private array $notFileSpecificErrors;
-
-	/** @var string[] */
-	private array $internalErrors;
-
-	/** @var string[] */
-	private array $warnings;
-
-	private bool $defaultLevelUsed;
-
-	private ?string $projectConfigFile;
-
-	private bool $savedResultCache;
-
 	/**
 	 * @param Error[] $fileSpecificErrors
 	 * @param string[] $notFileSpecificErrors
@@ -36,12 +21,12 @@ class AnalysisResult
 	 */
 	public function __construct(
 		array $fileSpecificErrors,
-		array $notFileSpecificErrors,
-		array $internalErrors,
-		array $warnings,
-		bool $defaultLevelUsed,
-		?string $projectConfigFile,
-		bool $savedResultCache,
+		private array $notFileSpecificErrors,
+		private array $internalErrors,
+		private array $warnings,
+		private bool $defaultLevelUsed,
+		private ?string $projectConfigFile,
+		private bool $savedResultCache,
 	)
 	{
 		usort(
@@ -58,12 +43,6 @@ class AnalysisResult
 		);
 
 		$this->fileSpecificErrors = $fileSpecificErrors;
-		$this->notFileSpecificErrors = $notFileSpecificErrors;
-		$this->internalErrors = $internalErrors;
-		$this->warnings = $warnings;
-		$this->defaultLevelUsed = $defaultLevelUsed;
-		$this->projectConfigFile = $projectConfigFile;
-		$this->savedResultCache = $savedResultCache;
 	}
 
 	public function hasErrors(): bool

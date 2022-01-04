@@ -20,17 +20,6 @@ class ConstantArrayTypeBuilder
 
 	public const ARRAY_COUNT_LIMIT = 256;
 
-	/** @var array<int, Type> */
-	private array $keyTypes;
-
-	/** @var array<int, Type> */
-	private array $valueTypes;
-
-	/** @var array<int> */
-	private array $optionalKeys;
-
-	private int $nextAutoIndex;
-
 	private bool $degradeToGeneralArray = false;
 
 	/**
@@ -39,16 +28,12 @@ class ConstantArrayTypeBuilder
 	 * @param array<int> $optionalKeys
 	 */
 	private function __construct(
-		array $keyTypes,
-		array $valueTypes,
-		int $nextAutoIndex,
-		array $optionalKeys,
+		private array $keyTypes,
+		private array $valueTypes,
+		private int $nextAutoIndex,
+		private array $optionalKeys,
 	)
 	{
-		$this->keyTypes = $keyTypes;
-		$this->valueTypes = $valueTypes;
-		$this->nextAutoIndex = $nextAutoIndex;
-		$this->optionalKeys = $optionalKeys;
 	}
 
 	public static function createEmpty(): self

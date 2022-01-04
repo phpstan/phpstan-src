@@ -17,11 +17,8 @@ use function sprintf;
 class MissingCheckedExceptionInFunctionThrowsRule implements Rule
 {
 
-	private MissingCheckedExceptionInThrowsCheck $check;
-
-	public function __construct(MissingCheckedExceptionInThrowsCheck $check)
+	public function __construct(private MissingCheckedExceptionInThrowsCheck $check)
 	{
-		$this->check = $check;
 	}
 
 	public function getNodeType(): string

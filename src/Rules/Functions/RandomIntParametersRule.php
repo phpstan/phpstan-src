@@ -19,14 +19,8 @@ use function sprintf;
 class RandomIntParametersRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private bool $reportMaybes;
-
-	public function __construct(ReflectionProvider $reflectionProvider, bool $reportMaybes)
+	public function __construct(private ReflectionProvider $reflectionProvider, private bool $reportMaybes)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string

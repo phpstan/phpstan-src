@@ -19,11 +19,8 @@ use function sprintf;
 class InvalidThrowsPhpDocValueRule implements Rule
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
-	public function __construct(FileTypeMapper $fileTypeMapper)
+	public function __construct(private FileTypeMapper $fileTypeMapper)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
 	}
 
 	public function getNodeType(): string

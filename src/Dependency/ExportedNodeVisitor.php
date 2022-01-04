@@ -10,8 +10,6 @@ use PHPStan\ShouldNotHappenException;
 class ExportedNodeVisitor extends NodeVisitorAbstract
 {
 
-	private ExportedNodeResolver $exportedNodeResolver;
-
 	private ?string $fileName = null;
 
 	/** @var ExportedNode[] */
@@ -21,9 +19,8 @@ class ExportedNodeVisitor extends NodeVisitorAbstract
 	 * ExportedNodeVisitor constructor.
 	 *
 	 */
-	public function __construct(ExportedNodeResolver $exportedNodeResolver)
+	public function __construct(private ExportedNodeResolver $exportedNodeResolver)
 	{
-		$this->exportedNodeResolver = $exportedNodeResolver;
 	}
 
 	public function reset(string $fileName): void

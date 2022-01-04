@@ -23,21 +23,12 @@ use function is_file;
 class ComposerJsonAndInstalledJsonSourceLocatorMaker
 {
 
-	private OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository;
-
-	private OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory;
-
-	private OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory;
-
 	public function __construct(
-		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
-		OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
-		OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory,
+		private OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
+		private OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
+		private OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory,
 	)
 	{
-		$this->optimizedDirectorySourceLocatorRepository = $optimizedDirectorySourceLocatorRepository;
-		$this->optimizedPsrAutoloaderLocatorFactory = $optimizedPsrAutoloaderLocatorFactory;
-		$this->optimizedDirectorySourceLocatorFactory = $optimizedDirectorySourceLocatorFactory;
 	}
 
 	public function create(string $projectInstallationPath): ?SourceLocator

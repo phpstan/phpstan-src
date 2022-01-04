@@ -9,14 +9,8 @@ use ReturnTypeWillChange;
 class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private string $value;
-
-	public function __construct(string $name, string $value)
+	public function __construct(private string $name, private string $value)
 	{
-		$this->name = $name;
-		$this->value = $value;
 	}
 
 	public function equals(ExportedNode $node): bool

@@ -8,15 +8,9 @@ use function sprintf;
 class UndefinedVariableException extends AnalysedCodeException
 {
 
-	private Scope $scope;
-
-	private string $variableName;
-
-	public function __construct(Scope $scope, string $variableName)
+	public function __construct(private Scope $scope, private string $variableName)
 	{
 		parent::__construct(sprintf('Undefined variable: $%s', $variableName));
-		$this->scope = $scope;
-		$this->variableName = $variableName;
 	}
 
 	public function getScope(): Scope

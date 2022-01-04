@@ -35,21 +35,12 @@ use function strtolower;
 class OverridingMethodRule implements Rule
 {
 
-	private PhpVersion $phpVersion;
-
-	private MethodSignatureRule $methodSignatureRule;
-
-	private bool $checkPhpDocMethodSignatures;
-
 	public function __construct(
-		PhpVersion $phpVersion,
-		MethodSignatureRule $methodSignatureRule,
-		bool $checkPhpDocMethodSignatures,
+		private PhpVersion $phpVersion,
+		private MethodSignatureRule $methodSignatureRule,
+		private bool $checkPhpDocMethodSignatures,
 	)
 	{
-		$this->phpVersion = $phpVersion;
-		$this->methodSignatureRule = $methodSignatureRule;
-		$this->checkPhpDocMethodSignatures = $checkPhpDocMethodSignatures;
 	}
 
 	public function getNodeType(): string

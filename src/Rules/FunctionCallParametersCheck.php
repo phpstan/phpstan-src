@@ -28,41 +28,17 @@ use function sprintf;
 class FunctionCallParametersCheck
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private NullsafeCheck $nullsafeCheck;
-
-	private PhpVersion $phpVersion;
-
-	private UnresolvableTypeHelper $unresolvableTypeHelper;
-
-	private bool $checkArgumentTypes;
-
-	private bool $checkArgumentsPassedByReference;
-
-	private bool $checkExtraArguments;
-
-	private bool $checkMissingTypehints;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper,
-		NullsafeCheck $nullsafeCheck,
-		PhpVersion $phpVersion,
-		UnresolvableTypeHelper $unresolvableTypeHelper,
-		bool $checkArgumentTypes,
-		bool $checkArgumentsPassedByReference,
-		bool $checkExtraArguments,
-		bool $checkMissingTypehints,
+		private RuleLevelHelper $ruleLevelHelper,
+		private NullsafeCheck $nullsafeCheck,
+		private PhpVersion $phpVersion,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private bool $checkArgumentTypes,
+		private bool $checkArgumentsPassedByReference,
+		private bool $checkExtraArguments,
+		private bool $checkMissingTypehints,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->nullsafeCheck = $nullsafeCheck;
-		$this->phpVersion = $phpVersion;
-		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
-		$this->checkArgumentTypes = $checkArgumentTypes;
-		$this->checkArgumentsPassedByReference = $checkArgumentsPassedByReference;
-		$this->checkExtraArguments = $checkExtraArguments;
-		$this->checkMissingTypehints = $checkMissingTypehints;
 	}
 
 	/**

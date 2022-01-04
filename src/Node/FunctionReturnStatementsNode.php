@@ -10,32 +10,18 @@ use PHPStan\Analyser\StatementResult;
 class FunctionReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 
-	private Function_ $function;
-
-	/** @var ReturnStatement[] */
-	private array $returnStatements;
-
-	private StatementResult $statementResult;
-
-	/** @var ExecutionEndNode[] */
-	private array $executionEnds;
-
 	/**
 	 * @param ReturnStatement[] $returnStatements
 	 * @param ExecutionEndNode[] $executionEnds
 	 */
 	public function __construct(
-		Function_ $function,
-		array $returnStatements,
-		StatementResult $statementResult,
-		array $executionEnds,
+		private Function_ $function,
+		private array $returnStatements,
+		private StatementResult $statementResult,
+		private array $executionEnds,
 	)
 	{
 		parent::__construct($function->getAttributes());
-		$this->function = $function;
-		$this->returnStatements = $returnStatements;
-		$this->statementResult = $statementResult;
-		$this->executionEnds = $executionEnds;
 	}
 
 	/**

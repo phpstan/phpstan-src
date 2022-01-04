@@ -28,29 +28,14 @@ use function strpos;
 class RuleLevelHelper
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private bool $checkNullables;
-
-	private bool $checkThisOnly;
-
-	private bool $checkUnionTypes;
-
-	private bool $checkExplicitMixed;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		bool $checkNullables,
-		bool $checkThisOnly,
-		bool $checkUnionTypes,
-		bool $checkExplicitMixed,
+		private ReflectionProvider $reflectionProvider,
+		private bool $checkNullables,
+		private bool $checkThisOnly,
+		private bool $checkUnionTypes,
+		private bool $checkExplicitMixed,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->checkNullables = $checkNullables;
-		$this->checkThisOnly = $checkThisOnly;
-		$this->checkUnionTypes = $checkUnionTypes;
-		$this->checkExplicitMixed = $checkExplicitMixed;
 	}
 
 	/** @api */

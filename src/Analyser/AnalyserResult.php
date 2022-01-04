@@ -11,20 +11,6 @@ class AnalyserResult
 	/** @var Error[] */
 	private array $unorderedErrors;
 
-	/** @var Error[] */
-	private array $errors;
-
-	/** @var string[] */
-	private array $internalErrors;
-
-	/** @var array<string, array<string>>|null */
-	private ?array $dependencies;
-
-	/** @var array<string, array<ExportedNode>> */
-	private array $exportedNodes;
-
-	private bool $reachedInternalErrorsCountLimit;
-
 	/**
 	 * @param Error[] $errors
 	 * @param string[] $internalErrors
@@ -32,11 +18,11 @@ class AnalyserResult
 	 * @param array<string, array<ExportedNode>> $exportedNodes
 	 */
 	public function __construct(
-		array $errors,
-		array $internalErrors,
-		?array $dependencies,
-		array $exportedNodes,
-		bool $reachedInternalErrorsCountLimit,
+		private array $errors,
+		private array $internalErrors,
+		private ?array $dependencies,
+		private array $exportedNodes,
+		private bool $reachedInternalErrorsCountLimit,
 	)
 	{
 		$this->unorderedErrors = $errors;
@@ -53,12 +39,6 @@ class AnalyserResult
 				$b->getMessage(),
 			],
 		);
-
-		$this->errors = $errors;
-		$this->internalErrors = $internalErrors;
-		$this->dependencies = $dependencies;
-		$this->exportedNodes = $exportedNodes;
-		$this->reachedInternalErrorsCountLimit = $reachedInternalErrorsCountLimit;
 	}
 
 	/**

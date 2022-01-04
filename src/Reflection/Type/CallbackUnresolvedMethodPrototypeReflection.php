@@ -16,12 +16,6 @@ use function array_map;
 class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 
-	private MethodReflection $methodReflection;
-
-	private ClassReflection $resolvedDeclaringClass;
-
-	private bool $resolveTemplateTypeMapToBounds;
-
 	/** @var callable(Type): Type */
 	private $transformStaticTypeCallback;
 
@@ -33,15 +27,12 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 	 * @param callable(Type): Type $transformStaticTypeCallback
 	 */
 	public function __construct(
-		MethodReflection $methodReflection,
-		ClassReflection $resolvedDeclaringClass,
-		bool $resolveTemplateTypeMapToBounds,
+		private MethodReflection $methodReflection,
+		private ClassReflection $resolvedDeclaringClass,
+		private bool $resolveTemplateTypeMapToBounds,
 		callable $transformStaticTypeCallback,
 	)
 	{
-		$this->methodReflection = $methodReflection;
-		$this->resolvedDeclaringClass = $resolvedDeclaringClass;
-		$this->resolveTemplateTypeMapToBounds = $resolveTemplateTypeMapToBounds;
 		$this->transformStaticTypeCallback = $transformStaticTypeCallback;
 	}
 

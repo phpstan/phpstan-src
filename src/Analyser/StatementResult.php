@@ -8,35 +8,18 @@ use PhpParser\Node\Stmt;
 class StatementResult
 {
 
-	private MutatingScope $scope;
-
-	private bool $hasYield;
-
-	private bool $isAlwaysTerminating;
-
-	/** @var StatementExitPoint[] */
-	private array $exitPoints;
-
-	/** @var ThrowPoint[] */
-	private array $throwPoints;
-
 	/**
 	 * @param StatementExitPoint[] $exitPoints
 	 * @param ThrowPoint[] $throwPoints
 	 */
 	public function __construct(
-		MutatingScope $scope,
-		bool $hasYield,
-		bool $isAlwaysTerminating,
-		array $exitPoints,
-		array $throwPoints,
+		private MutatingScope $scope,
+		private bool $hasYield,
+		private bool $isAlwaysTerminating,
+		private array $exitPoints,
+		private array $throwPoints,
 	)
 	{
-		$this->scope = $scope;
-		$this->hasYield = $hasYield;
-		$this->isAlwaysTerminating = $isAlwaysTerminating;
-		$this->exitPoints = $exitPoints;
-		$this->throwPoints = $throwPoints;
 	}
 
 	public function getScope(): MutatingScope

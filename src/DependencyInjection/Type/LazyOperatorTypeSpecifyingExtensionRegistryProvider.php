@@ -10,13 +10,10 @@ use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 class LazyOperatorTypeSpecifyingExtensionRegistryProvider implements OperatorTypeSpecifyingExtensionRegistryProvider
 {
 
-	private Container $container;
-
 	private ?OperatorTypeSpecifyingExtensionRegistry $registry = null;
 
-	public function __construct(Container $container)
+	public function __construct(private Container $container)
 	{
-		$this->container = $container;
 	}
 
 	public function getRegistry(): OperatorTypeSpecifyingExtensionRegistry

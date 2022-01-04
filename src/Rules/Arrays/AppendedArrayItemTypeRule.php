@@ -22,17 +22,11 @@ use function sprintf;
 class AppendedArrayItemTypeRule implements Rule
 {
 
-	private PropertyReflectionFinder $propertyReflectionFinder;
-
-	private RuleLevelHelper $ruleLevelHelper;
-
 	public function __construct(
-		PropertyReflectionFinder $propertyReflectionFinder,
-		RuleLevelHelper $ruleLevelHelper,
+		private PropertyReflectionFinder $propertyReflectionFinder,
+		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string

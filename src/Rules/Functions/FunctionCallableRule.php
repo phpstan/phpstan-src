@@ -23,23 +23,8 @@ use function strtolower;
 class FunctionCallableRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private PhpVersion $phpVersion;
-
-	private bool $checkFunctionNameCase;
-
-	private bool $reportMaybes;
-
-	public function __construct(ReflectionProvider $reflectionProvider, RuleLevelHelper $ruleLevelHelper, PhpVersion $phpVersion, bool $checkFunctionNameCase, bool $reportMaybes)
+	public function __construct(private ReflectionProvider $reflectionProvider, private RuleLevelHelper $ruleLevelHelper, private PhpVersion $phpVersion, private bool $checkFunctionNameCase, private bool $reportMaybes)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->phpVersion = $phpVersion;
-		$this->checkFunctionNameCase = $checkFunctionNameCase;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string

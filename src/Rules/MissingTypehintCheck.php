@@ -38,33 +38,17 @@ class MissingTypehintCheck
 		Generator::class,
 	];
 
-	private ReflectionProvider $reflectionProvider;
-
-	private bool $checkMissingIterableValueType;
-
-	private bool $checkGenericClassInNonGenericObjectType;
-
-	private bool $checkMissingCallableSignature;
-
-	/** @var string[] */
-	private array $skipCheckGenericClasses;
-
 	/**
 	 * @param string[] $skipCheckGenericClasses
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		bool $checkMissingIterableValueType,
-		bool $checkGenericClassInNonGenericObjectType,
-		bool $checkMissingCallableSignature,
-		array $skipCheckGenericClasses,
+		private ReflectionProvider $reflectionProvider,
+		private bool $checkMissingIterableValueType,
+		private bool $checkGenericClassInNonGenericObjectType,
+		private bool $checkMissingCallableSignature,
+		private array $skipCheckGenericClasses,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->checkMissingIterableValueType = $checkMissingIterableValueType;
-		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
-		$this->checkMissingCallableSignature = $checkMissingCallableSignature;
-		$this->skipCheckGenericClasses = $skipCheckGenericClasses;
 	}
 
 	/**

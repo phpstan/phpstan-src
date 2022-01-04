@@ -19,14 +19,8 @@ use function strpos;
 class InvalidPhpDocTagValueRule implements Rule
 {
 
-	private Lexer $phpDocLexer;
-
-	private PhpDocParser $phpDocParser;
-
-	public function __construct(Lexer $phpDocLexer, PhpDocParser $phpDocParser)
+	public function __construct(private Lexer $phpDocLexer, private PhpDocParser $phpDocParser)
 	{
-		$this->phpDocLexer = $phpDocLexer;
-		$this->phpDocParser = $phpDocParser;
 	}
 
 	public function getNodeType(): string

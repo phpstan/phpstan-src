@@ -5,15 +5,11 @@ namespace PHPStan\Rules\Constants;
 class DirectAlwaysUsedClassConstantsExtensionProvider implements AlwaysUsedClassConstantsExtensionProvider
 {
 
-	/** @var AlwaysUsedClassConstantsExtension[] */
-	private array $extensions;
-
 	/**
 	 * @param AlwaysUsedClassConstantsExtension[] $extensions
 	 */
-	public function __construct(array $extensions)
+	public function __construct(private array $extensions)
 	{
-		$this->extensions = $extensions;
 	}
 
 	/**

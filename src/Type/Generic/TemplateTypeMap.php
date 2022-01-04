@@ -16,21 +16,13 @@ class TemplateTypeMap
 
 	private static ?TemplateTypeMap $empty = null;
 
-	/** @var array<string, Type> */
-	private array $types;
-
-	/** @var array<string, Type> */
-	private array $lowerBoundTypes;
-
 	/**
 	 * @api
 	 * @param array<string, Type> $types
 	 * @param array<string, Type> $lowerBoundTypes
 	 */
-	public function __construct(array $types, array $lowerBoundTypes = [])
+	public function __construct(private array $types, private array $lowerBoundTypes = [])
 	{
-		$this->types = $types;
-		$this->lowerBoundTypes = $lowerBoundTypes;
 	}
 
 	public function convertToLowerBoundTypes(): self

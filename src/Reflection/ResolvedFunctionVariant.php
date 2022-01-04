@@ -11,22 +11,16 @@ use function array_map;
 class ResolvedFunctionVariant implements ParametersAcceptor
 {
 
-	private ParametersAcceptor $parametersAcceptor;
-
-	private TemplateTypeMap $resolvedTemplateTypeMap;
-
 	/** @var ParameterReflection[]|null */
 	private ?array $parameters = null;
 
 	private ?Type $returnType = null;
 
 	public function __construct(
-		ParametersAcceptor $parametersAcceptor,
-		TemplateTypeMap $resolvedTemplateTypeMap,
+		private ParametersAcceptor $parametersAcceptor,
+		private TemplateTypeMap $resolvedTemplateTypeMap,
 	)
 	{
-		$this->parametersAcceptor = $parametersAcceptor;
-		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap;
 	}
 
 	public function getOriginalParametersAcceptor(): ParametersAcceptor

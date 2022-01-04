@@ -9,33 +9,15 @@ use PHPStan\Type\Type;
 class NativeParameterReflection implements ParameterReflection
 {
 
-	private string $name;
-
-	private bool $optional;
-
-	private Type $type;
-
-	private PassedByReference $passedByReference;
-
-	private bool $variadic;
-
-	private ?Type $defaultValue;
-
 	public function __construct(
-		string $name,
-		bool $optional,
-		Type $type,
-		PassedByReference $passedByReference,
-		bool $variadic,
-		?Type $defaultValue,
+		private string $name,
+		private bool $optional,
+		private Type $type,
+		private PassedByReference $passedByReference,
+		private bool $variadic,
+		private ?Type $defaultValue,
 	)
 	{
-		$this->name = $name;
-		$this->optional = $optional;
-		$this->type = $type;
-		$this->passedByReference = $passedByReference;
-		$this->variadic = $variadic;
-		$this->defaultValue = $defaultValue;
 	}
 
 	public function getName(): string

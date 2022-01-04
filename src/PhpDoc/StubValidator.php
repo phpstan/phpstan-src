@@ -59,13 +59,10 @@ use function sprintf;
 class StubValidator
 {
 
-	private DerivativeContainerFactory $derivativeContainerFactory;
-
 	public function __construct(
-		DerivativeContainerFactory $derivativeContainerFactory,
+		private DerivativeContainerFactory $derivativeContainerFactory,
 	)
 	{
-		$this->derivativeContainerFactory = $derivativeContainerFactory;
 	}
 
 	/**

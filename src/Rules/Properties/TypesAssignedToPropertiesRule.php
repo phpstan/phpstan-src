@@ -18,21 +18,12 @@ use function sprintf;
 class TypesAssignedToPropertiesRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private PropertyDescriptor $propertyDescriptor;
-
-	private PropertyReflectionFinder $propertyReflectionFinder;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper,
-		PropertyDescriptor $propertyDescriptor,
-		PropertyReflectionFinder $propertyReflectionFinder,
+		private RuleLevelHelper $ruleLevelHelper,
+		private PropertyDescriptor $propertyDescriptor,
+		private PropertyReflectionFinder $propertyReflectionFinder,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->propertyDescriptor = $propertyDescriptor;
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
 	}
 
 	public function getNodeType(): string

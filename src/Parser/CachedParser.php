@@ -9,25 +9,19 @@ use function array_slice;
 class CachedParser implements Parser
 {
 
-	private Parser $originalParser;
-
 	/** @var array<string, Node\Stmt[]>*/
 	private array $cachedNodesByString = [];
 
 	private int $cachedNodesByStringCount = 0;
 
-	private int $cachedNodesByStringCountMax;
-
 	/** @var array<string, true> */
 	private array $parsedByString = [];
 
 	public function __construct(
-		Parser $originalParser,
-		int $cachedNodesByStringCountMax,
+		private Parser $originalParser,
+		private int $cachedNodesByStringCountMax,
 	)
 	{
-		$this->originalParser = $originalParser;
-		$this->cachedNodesByStringCountMax = $cachedNodesByStringCountMax;
 	}
 
 	/**

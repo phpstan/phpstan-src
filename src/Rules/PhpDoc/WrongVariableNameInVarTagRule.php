@@ -32,13 +32,10 @@ use function sprintf;
 class WrongVariableNameInVarTagRule implements Rule
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
+		private FileTypeMapper $fileTypeMapper,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
 	}
 
 	public function getNodeType(): string

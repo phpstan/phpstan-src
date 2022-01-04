@@ -32,20 +32,8 @@ class NativeFunctionReflectionProvider
 	/** @var NativeFunctionReflection[] */
 	private static array $functionMap = [];
 
-	private SignatureMapProvider $signatureMapProvider;
-
-	private Reflector $reflector;
-
-	private FileTypeMapper $fileTypeMapper;
-
-	private StubPhpDocProvider $stubPhpDocProvider;
-
-	public function __construct(SignatureMapProvider $signatureMapProvider, Reflector $reflector, FileTypeMapper $fileTypeMapper, StubPhpDocProvider $stubPhpDocProvider)
+	public function __construct(private SignatureMapProvider $signatureMapProvider, private Reflector $reflector, private FileTypeMapper $fileTypeMapper, private StubPhpDocProvider $stubPhpDocProvider)
 	{
-		$this->signatureMapProvider = $signatureMapProvider;
-		$this->reflector = $reflector;
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->stubPhpDocProvider = $stubPhpDocProvider;
 	}
 
 	public function findFunctionReflection(string $functionName): ?NativeFunctionReflection

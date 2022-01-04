@@ -23,17 +23,11 @@ use function substr;
 class InvalidBinaryOperationRule implements Rule
 {
 
-	private Standard $printer;
-
-	private RuleLevelHelper $ruleLevelHelper;
-
 	public function __construct(
-		Standard $printer,
-		RuleLevelHelper $ruleLevelHelper,
+		private Standard $printer,
+		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
-		$this->printer = $printer;
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string

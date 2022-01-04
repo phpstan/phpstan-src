@@ -47,16 +47,10 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	use ConstantScalarTypeTrait;
 	use ConstantScalarToBooleanTrait;
 
-	private string $value;
-
-	private bool $isClassString;
-
 	/** @api */
-	public function __construct(string $value, bool $isClassString = false)
+	public function __construct(private string $value, private bool $isClassString = false)
 	{
 		parent::__construct();
-		$this->value = $value;
-		$this->isClassString = $isClassString;
 	}
 
 	public function getValue(): string

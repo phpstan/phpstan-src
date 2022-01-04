@@ -13,29 +13,17 @@ use PHPStan\Type\TypeTraverser;
 class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 
-	private PropertyReflection $propertyReflection;
-
-	private ClassReflection $resolvedDeclaringClass;
-
-	private bool $resolveTemplateTypeMapToBounds;
-
-	private Type $fetchedOnType;
-
 	private ?PropertyReflection $transformedProperty = null;
 
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
 
 	public function __construct(
-		PropertyReflection $propertyReflection,
-		ClassReflection $resolvedDeclaringClass,
-		bool $resolveTemplateTypeMapToBounds,
-		Type $fetchedOnType,
+		private PropertyReflection $propertyReflection,
+		private ClassReflection $resolvedDeclaringClass,
+		private bool $resolveTemplateTypeMapToBounds,
+		private Type $fetchedOnType,
 	)
 	{
-		$this->propertyReflection = $propertyReflection;
-		$this->resolvedDeclaringClass = $resolvedDeclaringClass;
-		$this->resolveTemplateTypeMapToBounds = $resolveTemplateTypeMapToBounds;
-		$this->fetchedOnType = $fetchedOnType;
 	}
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedPropertyPrototypeReflection

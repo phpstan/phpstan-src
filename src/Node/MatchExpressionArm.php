@@ -6,18 +6,11 @@ namespace PHPStan\Node;
 class MatchExpressionArm
 {
 
-	/** @var MatchExpressionArmCondition[] */
-	private array $conditions;
-
-	private int $line;
-
 	/**
 	 * @param MatchExpressionArmCondition[] $conditions
 	 */
-	public function __construct(array $conditions, int $line)
+	public function __construct(private array $conditions, private int $line)
 	{
-		$this->conditions = $conditions;
-		$this->line = $line;
 	}
 
 	/**

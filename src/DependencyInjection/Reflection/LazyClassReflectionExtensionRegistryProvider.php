@@ -14,13 +14,10 @@ use function array_merge;
 class LazyClassReflectionExtensionRegistryProvider implements ClassReflectionExtensionRegistryProvider
 {
 
-	private Container $container;
-
 	private ?ClassReflectionExtensionRegistry $registry = null;
 
-	public function __construct(Container $container)
+	public function __construct(private Container $container)
 	{
-		$this->container = $container;
 	}
 
 	public function getRegistry(): ClassReflectionExtensionRegistry

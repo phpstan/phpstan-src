@@ -12,17 +12,11 @@ use PHPStan\ShouldNotHappenException;
 class SimpleParser implements Parser
 {
 
-	private \PhpParser\Parser $parser;
-
-	private NameResolver $nameResolver;
-
 	public function __construct(
-		\PhpParser\Parser $parser,
-		NameResolver $nameResolver,
+		private \PhpParser\Parser $parser,
+		private NameResolver $nameResolver,
 	)
 	{
-		$this->parser = $parser;
-		$this->nameResolver = $nameResolver;
 	}
 
 	/**

@@ -36,17 +36,13 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	 */
 	private const VALIDATION_FILTER_BITMASK = 0x100;
 
-	private ReflectionProvider $reflectionProvider;
-
 	private ConstantStringType $flagsString;
 
 	/** @var array<int, Type>|null */
 	private ?array $filterTypeMap = null;
 
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-
 		$this->flagsString = new ConstantStringType('flags');
 	}
 

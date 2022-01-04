@@ -17,17 +17,11 @@ use function strtolower;
 class CallToNonExistentFunctionRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private bool $checkFunctionNameCase;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		bool $checkFunctionNameCase,
+		private ReflectionProvider $reflectionProvider,
+		private bool $checkFunctionNameCase,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->checkFunctionNameCase = $checkFunctionNameCase;
 	}
 
 	public function getNodeType(): string

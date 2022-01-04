@@ -8,25 +8,15 @@ use PHPStan\Type\Type;
 class MethodTag
 {
 
-	private Type $returnType;
-
-	private bool $isStatic;
-
-	/** @var array<string, MethodTagParameter> */
-	private array $parameters;
-
 	/**
 	 * @param array<string, MethodTagParameter> $parameters
 	 */
 	public function __construct(
-		Type $returnType,
-		bool $isStatic,
-		array $parameters,
+		private Type $returnType,
+		private bool $isStatic,
+		private array $parameters,
 	)
 	{
-		$this->returnType = $returnType;
-		$this->isStatic = $isStatic;
-		$this->parameters = $parameters;
 	}
 
 	public function getReturnType(): Type

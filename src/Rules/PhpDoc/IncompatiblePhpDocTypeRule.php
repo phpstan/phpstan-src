@@ -26,21 +26,12 @@ use function trim;
 class IncompatiblePhpDocTypeRule implements Rule
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
-	private GenericObjectTypeCheck $genericObjectTypeCheck;
-
-	private UnresolvableTypeHelper $unresolvableTypeHelper;
-
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
-		GenericObjectTypeCheck $genericObjectTypeCheck,
-		UnresolvableTypeHelper $unresolvableTypeHelper,
+		private FileTypeMapper $fileTypeMapper,
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
-		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
 	}
 
 	public function getNodeType(): string

@@ -8,17 +8,8 @@ use PHPStan\Php\PhpVersion;
 class OptimizedDirectorySourceLocatorFactory
 {
 
-	private FileNodesFetcher $fileNodesFetcher;
-
-	private FileFinder $fileFinder;
-
-	private PhpVersion $phpVersion;
-
-	public function __construct(FileNodesFetcher $fileNodesFetcher, FileFinder $fileFinder, PhpVersion $phpVersion)
+	public function __construct(private FileNodesFetcher $fileNodesFetcher, private FileFinder $fileFinder, private PhpVersion $phpVersion)
 	{
-		$this->fileNodesFetcher = $fileNodesFetcher;
-		$this->fileFinder = $fileFinder;
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function createByDirectory(string $directory): OptimizedDirectorySourceLocator

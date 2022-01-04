@@ -8,31 +8,17 @@ use PHPStan\Type\Type;
 class FoundTypeResult
 {
 
-	private Type $type;
-
-	/** @var string[] */
-	private array $referencedClasses;
-
-	/** @var RuleError[] */
-	private array $unknownClassErrors;
-
-	private ?string $tip;
-
 	/**
 	 * @param string[] $referencedClasses
 	 * @param RuleError[] $unknownClassErrors
 	 */
 	public function __construct(
-		Type $type,
-		array $referencedClasses,
-		array $unknownClassErrors,
-		?string $tip,
+		private Type $type,
+		private array $referencedClasses,
+		private array $unknownClassErrors,
+		private ?string $tip,
 	)
 	{
-		$this->type = $type;
-		$this->referencedClasses = $referencedClasses;
-		$this->unknownClassErrors = $unknownClassErrors;
-		$this->tip = $tip;
 	}
 
 	public function getType(): Type

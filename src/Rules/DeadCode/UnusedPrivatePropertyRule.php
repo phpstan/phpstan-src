@@ -26,31 +26,17 @@ use function strpos;
 class UnusedPrivatePropertyRule implements Rule
 {
 
-	private ReadWritePropertiesExtensionProvider $extensionProvider;
-
-	/** @var string[] */
-	private array $alwaysWrittenTags;
-
-	/** @var string[] */
-	private array $alwaysReadTags;
-
-	private bool $checkUninitializedProperties;
-
 	/**
 	 * @param string[] $alwaysWrittenTags
 	 * @param string[] $alwaysReadTags
 	 */
 	public function __construct(
-		ReadWritePropertiesExtensionProvider $extensionProvider,
-		array $alwaysWrittenTags,
-		array $alwaysReadTags,
-		bool $checkUninitializedProperties,
+		private ReadWritePropertiesExtensionProvider $extensionProvider,
+		private array $alwaysWrittenTags,
+		private array $alwaysReadTags,
+		private bool $checkUninitializedProperties,
 	)
 	{
-		$this->extensionProvider = $extensionProvider;
-		$this->alwaysWrittenTags = $alwaysWrittenTags;
-		$this->alwaysReadTags = $alwaysReadTags;
-		$this->checkUninitializedProperties = $checkUninitializedProperties;
 	}
 
 	public function getNodeType(): string

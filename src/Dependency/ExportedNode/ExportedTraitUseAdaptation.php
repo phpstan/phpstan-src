@@ -9,33 +9,17 @@ use ReturnTypeWillChange;
 class ExportedTraitUseAdaptation implements ExportedNode, JsonSerializable
 {
 
-	private ?string $traitName;
-
-	private string $method;
-
-	private ?int $newModifier;
-
-	private ?string $newName;
-
-	/** @var string[]|null */
-	private ?array $insteadOfs;
-
 	/**
 	 * @param string[]|null $insteadOfs
 	 */
 	private function __construct(
-		?string $traitName,
-		string $method,
-		?int $newModifier,
-		?string $newName,
-		?array $insteadOfs,
+		private ?string $traitName,
+		private string $method,
+		private ?int $newModifier,
+		private ?string $newName,
+		private ?array $insteadOfs,
 	)
 	{
-		$this->traitName = $traitName;
-		$this->method = $method;
-		$this->newModifier = $newModifier;
-		$this->newName = $newName;
-		$this->insteadOfs = $insteadOfs;
 	}
 
 	public static function createAlias(

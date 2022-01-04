@@ -10,14 +10,8 @@ use function strtolower;
 class ClassCaseSensitivityCheck
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private bool $checkInternalClassCaseSensitivity;
-
-	public function __construct(ReflectionProvider $reflectionProvider, bool $checkInternalClassCaseSensitivity)
+	public function __construct(private ReflectionProvider $reflectionProvider, private bool $checkInternalClassCaseSensitivity)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->checkInternalClassCaseSensitivity = $checkInternalClassCaseSensitivity;
 	}
 
 	/**

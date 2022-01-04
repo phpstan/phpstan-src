@@ -16,11 +16,8 @@ use PHPStan\Type\Type;
 class EmptyRule implements Rule
 {
 
-	private IssetCheck $issetCheck;
-
-	public function __construct(IssetCheck $issetCheck)
+	public function __construct(private IssetCheck $issetCheck)
 	{
-		$this->issetCheck = $issetCheck;
 	}
 
 	public function getNodeType(): string

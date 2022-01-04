@@ -8,11 +8,8 @@ use PHPStan\Type\Type;
 class ThrowsTag
 {
 
-	private Type $type;
-
-	public function __construct(Type $type)
+	public function __construct(private Type $type)
 	{
-		$this->type = $type;
 	}
 
 	public function getType(): Type

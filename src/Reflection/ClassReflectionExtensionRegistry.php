@@ -8,20 +8,14 @@ use function array_merge;
 class ClassReflectionExtensionRegistry
 {
 
-	/** @var PropertiesClassReflectionExtension[] */
-	private array $propertiesClassReflectionExtensions;
-
-	/** @var MethodsClassReflectionExtension[] */
-	private array $methodsClassReflectionExtensions;
-
 	/**
 	 * @param PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
 	 * @param MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
 	 */
 	public function __construct(
 		Broker $broker,
-		array $propertiesClassReflectionExtensions,
-		array $methodsClassReflectionExtensions,
+		private array $propertiesClassReflectionExtensions,
+		private array $methodsClassReflectionExtensions,
 	)
 	{
 		foreach (array_merge($propertiesClassReflectionExtensions, $methodsClassReflectionExtensions) as $extension) {
@@ -31,8 +25,6 @@ class ClassReflectionExtensionRegistry
 
 			$extension->setBroker($broker);
 		}
-		$this->propertiesClassReflectionExtensions = $propertiesClassReflectionExtensions;
-		$this->methodsClassReflectionExtensions = $methodsClassReflectionExtensions;
 	}
 
 	/**

@@ -38,6 +38,7 @@ use function is_file;
 use function ltrim;
 use function md5;
 use function sprintf;
+use function strpos;
 use function strtolower;
 use function time;
 use function trait_exists;
@@ -626,6 +627,10 @@ class FileTypeMapper
 	{
 		if ($class === null && $trait === null && $function === null) {
 			return md5(sprintf('%s', $file));
+		}
+
+		if ($class !== null && strpos($class, 'class@anonymous') !== false) {
+			throw new ShouldNotHappenException('Wrong anonymous class name, FilTypeMapper should be called with ClassReflection::getName().');
 		}
 
 		return md5(sprintf('%s-%s-%s-%s', $file, $class, $trait, $function));

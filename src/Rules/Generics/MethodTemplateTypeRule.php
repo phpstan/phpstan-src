@@ -54,7 +54,7 @@ class MethodTemplateTypeRule implements Rule
 		$methodName = $node->name->toString();
 		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 			$scope->getFile(),
-			$className,
+			$classReflection->getName(),
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 			$methodName,
 			$docComment->getText(),

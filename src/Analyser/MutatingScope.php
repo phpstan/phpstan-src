@@ -302,9 +302,9 @@ class MutatingScope implements Scope
 		/** @var ClassReflection $classReflection */
 		$classReflection = $this->context->getClassReflection();
 
-		$className = sprintf('class %s', $classReflection->getDisplayName());
-		if ($classReflection->isAnonymous()) {
-			$className = 'anonymous class';
+		$className = $classReflection->getDisplayName();
+		if (!$classReflection->isAnonymous()) {
+			$className = sprintf('class %s', $className);
 		}
 
 		$traitReflection = $this->context->getTraitReflection();

@@ -30,7 +30,7 @@ class Administration {}
 class Company
 {
 	/**
-	 * @var Collection<int, Administration>
+	 * @var Collection<int, Administration>|Administration[]
 	 */
 	protected Collection $administrations;
 
@@ -40,7 +40,7 @@ class Company
 	}
 
 	/**
-	 * @return Collection<int, Administration>
+	 * @return Collection<int, Administration>|Administration[]
 	 */
 	public function getAdministrations() : Collection
 	{

@@ -500,10 +500,23 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(24, $errors[1]->getLine());
 	}
 
+	public function testBug6253(): void
+	{
+		$errors = $this->runAnalyse(
+			__DIR__ . '/data/bug-6253.php',
+			[
+				__DIR__ . '/data/bug-6253.php',
+				__DIR__ . '/data/bug-6253-app-scope-trait.php',
+				__DIR__ . '/data/bug-6253-collection-trait.php',
+			],
+		);
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @return Error[]
 	 */
-	private function runAnalyse(string $file): array
+	private function runAnalyse(string $file, ?array $allAnalysedFiles = null): array
 	{
 		$file = $this->getFileHelper()->normalizePath($file);
 		/** @var Analyser $analyser */
@@ -511,7 +524,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		/** @var FileHelper $fileHelper */
 		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 		/** @var Error[] $errors */
-		$errors = $analyser->analyse([$file])->getErrors();
+		$errors = $analyser->analyse([$file], null, null, true, $allAnalysedFiles)->getErrors();
 		foreach ($errors as $error) {
 			$this->assertSame($fileHelper->normalizePath($file), $error->getFilePath());
 		}

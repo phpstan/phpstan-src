@@ -205,7 +205,7 @@ class FileTypeMapper
 	private function getNameScopeMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v15-shebang', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v16-look-for-trait', $fileName);
 			$variableCacheKey = implode(',', array_map(static fn (array $file): string => sprintf('%s-%d', $file['filename'], $file['modifiedTime']), $this->getCachedDependentFilesWithTimestamps($fileName)));
 			$map = $this->cache->load($cacheKey, $variableCacheKey);
 
@@ -284,20 +284,24 @@ class FileTypeMapper
 		}
 		$namespace = null;
 
+		$traitFound = false;
+
 		/** @var array<string|null> $functionStack */
 		$functionStack = [];
 		$uses = [];
 		$this->processNodes(
 			$this->phpParser->parseFile($fileName),
-			function (Node $node) use ($fileName, $lookForTrait, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
+			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
 				if ($node instanceof Node\Stmt\ClassLike) {
-					if ($lookForTrait !== null) {
+					if ($lookForTrait !== null && !$traitFound) {
 						if (!$node instanceof Node\Stmt\Trait_) {
 							return self::SKIP_NODE;
 						}
 						if ((string) $node->namespacedName !== $lookForTrait) {
 							return self::SKIP_NODE;
 						}
+
+						$traitFound = true;
 					} else {
 						if ($node->name === null) {
 							if (!$node instanceof Node\Stmt\Class_) {
@@ -308,6 +312,9 @@ class FileTypeMapper
 						} elseif ((bool) $node->getAttribute('anonymousClass', false)) {
 							$className = $node->name->name;
 						} else {
+							if ($traitFound) {
+								return self::SKIP_NODE;
+							}
 							$className = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
 						}
 						$classStack[] = $className;

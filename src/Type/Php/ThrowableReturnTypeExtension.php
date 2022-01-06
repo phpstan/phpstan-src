@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type\Php;
 
-use PDOException;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
@@ -37,7 +36,7 @@ final class ThrowableReturnTypeExtension implements DynamicMethodReturnTypeExten
 	{
 		$type = $scope->getType($methodCall->var);
 		$types = [];
-		$pdoException = new ObjectType(PDOException::class);
+		$pdoException = new ObjectType('PDOException');
 		foreach (TypeUtils::getDirectClassNames($type) as $class) {
 			$classType = new ObjectType($class);
 			if ($pdoException->isSuperTypeOf($classType)->yes()) {

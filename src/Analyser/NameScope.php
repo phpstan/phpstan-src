@@ -20,9 +20,6 @@ use function strtolower;
 class NameScope
 {
 
-	/** @var array<string, string> alias(string) => fullName(string) */
-	private array $uses;
-
 	private TemplateTypeMap $templateTypeMap;
 
 	/**
@@ -30,9 +27,8 @@ class NameScope
 	 * @param array<string, string> $uses alias(string) => fullName(string)
 	 * @param array<string, true> $typeAliasesMap
 	 */
-	public function __construct(private ?string $namespace, array $uses, private ?string $className = null, private ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, private array $typeAliasesMap = [], private bool $bypassTypeAliases = false)
+	public function __construct(private ?string $namespace, private array $uses, private ?string $className = null, private ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, private array $typeAliasesMap = [], private bool $bypassTypeAliases = false)
 	{
-		$this->uses = $uses;
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 	}
 

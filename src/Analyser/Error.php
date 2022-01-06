@@ -14,9 +14,6 @@ use function is_bool;
 class Error implements JsonSerializable
 {
 
-	/** @phpstan-var class-string<Node>|null */
-	private ?string $nodeType;
-
 	/**
 	 * Error constructor.
 	 *
@@ -32,12 +29,11 @@ class Error implements JsonSerializable
 		private ?string $traitFilePath = null,
 		private ?string $tip = null,
 		private ?int $nodeLine = null,
-		?string $nodeType = null,
+		private ?string $nodeType = null,
 		private ?string $identifier = null,
 		private array $metadata = [],
 	)
 	{
-		$this->nodeType = $nodeType;
 	}
 
 	public function getMessage(): string

@@ -28,7 +28,7 @@ class AnalyserResult
 		$this->unorderedErrors = $errors;
 
 		usort(
-			$errors,
+			$this->errors,
 			static fn (Error $a, Error $b): int => [
 				$a->getFile(),
 				$a->getLine(),

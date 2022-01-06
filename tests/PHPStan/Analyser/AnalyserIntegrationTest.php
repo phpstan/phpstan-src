@@ -514,6 +514,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	}
 
 	/**
+	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]
 	 */
 	private function runAnalyse(string $file, ?array $allAnalysedFiles = null): array

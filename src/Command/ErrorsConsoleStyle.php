@@ -10,8 +10,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Terminal;
 use function array_map;
 use function strlen;
-use function time;
 use function wordwrap;
+use const DIRECTORY_SEPARATOR;
 
 class ErrorsConsoleStyle extends SymfonyStyle
 {
@@ -77,7 +77,21 @@ class ErrorsConsoleStyle extends SymfonyStyle
 	public function createProgressBar(int $max = 0): ProgressBar
 	{
 		$this->progressBar = parent::createProgressBar($max);
-		$this->progressBar->setOverwrite(!$this->isCiDetected());
+
+		$ci = $this->isCiDetected();
+		$this->progressBar->setOverwrite(!$ci);
+
+		if ($ci) {
+			$this->progressBar->minSecondsBetweenRedraws(15);
+			$this->progressBar->maxSecondsBetweenRedraws(30);
+		} elseif (DIRECTORY_SEPARATOR === '\\') {
+			$this->progressBar->minSecondsBetweenRedraws(0.5);
+			$this->progressBar->maxSecondsBetweenRedraws(2);
+		} else {
+			$this->progressBar->minSecondsBetweenRedraws(0.1);
+			$this->progressBar->maxSecondsBetweenRedraws(0.5);
+		}
+
 		return $this->progressBar;
 	}
 
@@ -93,15 +107,6 @@ class ErrorsConsoleStyle extends SymfonyStyle
 	{
 		if (!$this->showProgress) {
 			return;
-		}
-
-		if (!$this->isCiDetected() && $step > 0) {
-			$stepTime = (time() - $this->progressBar->getStartTime()) / $step;
-			if ($stepTime > 0 && $stepTime < 1) {
-				$this->progressBar->setRedrawFrequency((int) (1 / $stepTime));
-			} else {
-				$this->progressBar->setRedrawFrequency(1);
-			}
 		}
 
 		parent::progressAdvance($step);

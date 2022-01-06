@@ -202,7 +202,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			'Declaration of DeclarationWarning\Bar::doFoo(int $i): void should be compatible with DeclarationWarning\Foo::doFoo(): void',
 			'Parameter #1 $i of method DeclarationWarning\Bar::doFoo() is not optional.',
 		];
-		if (PHP_VERSION_ID < 80000) {
+		if (PHP_VERSION_ID < 70400) {
 			$messages = array_reverse($messages);
 		}
 		foreach ($messages as $i => $message) {

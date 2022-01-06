@@ -568,7 +568,7 @@ final class TypeNodeResolver
 					continue;
 				}
 
-				if ($type instanceof ObjectType) {
+				if ($type instanceof ObjectType && !$type instanceof GenericObjectType) {
 					$type = new IntersectionType([$type, new IterableType(new MixedType(), $arrayTypeType)]);
 				} elseif ($type instanceof ArrayType) {
 					$type = new ArrayType(new MixedType(), $arrayTypeType);

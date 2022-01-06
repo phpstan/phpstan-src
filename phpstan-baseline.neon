@@ -181,6 +181,11 @@ parameters:
 			path: src/PhpDoc/TypeNodeResolver.php
 
 		-
+			message: "#^Doing instanceof PHPStan\\\\Type\\\\Generic\\\\GenericObjectType is error\\-prone and deprecated\\.$#"
+			count: 1
+			path: src/PhpDoc/TypeNodeResolver.php
+
+		-
 			message: "#^Doing instanceof PHPStan\\\\Type\\\\IterableType is error\\-prone and deprecated\\. Use Type\\:\\:isIterable\\(\\) instead\\.$#"
 			count: 1
 			path: src/PhpDoc/TypeNodeResolver.php

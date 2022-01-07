@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "975b4d6e65c7398e1e6bf7a5e34d32cd",
+    "content-hash": "f6393506545a3723a3a1b5199136c461",
     "packages": [
         {
             "name": "clue/block-react",
@@ -4594,9 +4594,6 @@
             },
             "require": {
                 "php": "^7.1 || ^8.0"
-            },
-            "replace": {
-                "myclabs/deep-copy": "self.version"
             },
             "require-dev": {
                 "doctrine/collections": "^1.0",

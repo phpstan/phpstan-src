@@ -100,15 +100,20 @@ class FoundPropertyReflection implements PropertyReflection
 
 	public function isNative(): bool
 	{
-		$reflection = $this->originalPropertyReflection;
-		while ($reflection instanceof WrapperPropertyReflection) {
-			$reflection = $reflection->getOriginalReflection();
-		}
-
-		return $reflection instanceof PhpPropertyReflection;
+		return $this->getNativeReflection() !== null;
 	}
 
 	public function getNativeType(): ?Type
+	{
+		$reflection = $this->getNativeReflection();
+		if ($reflection === null) {
+			return null;
+		}
+
+		return $reflection->getNativeType();
+	}
+
+	public function getNativeReflection(): ?PhpPropertyReflection
 	{
 		$reflection = $this->originalPropertyReflection;
 		while ($reflection instanceof WrapperPropertyReflection) {
@@ -119,7 +124,7 @@ class FoundPropertyReflection implements PropertyReflection
 			return null;
 		}
 
-		return $reflection->getNativeType();
+		return $reflection;
 	}
 
 }

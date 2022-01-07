@@ -1652,83 +1652,48 @@ class NodeScopeResolver
 				return $this->processExprNode($expr->name, $scope, $nodeCallback, $context->enterDeep());
 			}
 		} elseif ($expr instanceof Assign || $expr instanceof AssignRef) {
-			if (!$expr->var instanceof Array_ && !$expr->var instanceof List_) {
-				$result = $this->processAssignVar(
-					$scope,
-					$expr->var,
-					$expr->expr,
-					$nodeCallback,
-					$context,
-					function (MutatingScope $scope) use ($expr, $nodeCallback, $context): ExpressionResult {
-						if ($expr instanceof AssignRef) {
-							$scope = $scope->enterExpressionAssign($expr->expr);
-						}
+			$result = $this->processAssignVar(
+				$scope,
+				$expr->var,
+				$expr->expr,
+				$nodeCallback,
+				$context,
+				function (MutatingScope $scope) use ($expr, $nodeCallback, $context): ExpressionResult {
+					if ($expr instanceof AssignRef) {
+						$scope = $scope->enterExpressionAssign($expr->expr);
+					}
 
-						if ($expr->var instanceof Variable && is_string($expr->var->name)) {
-							$context = $context->enterRightSideAssign(
-								$expr->var->name,
-								$scope->getType($expr->expr),
-							);
-						}
+					if ($expr->var instanceof Variable && is_string($expr->var->name)) {
+						$context = $context->enterRightSideAssign(
+							$expr->var->name,
+							$scope->getType($expr->expr),
+						);
+					}
 
-						$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
-						$hasYield = $result->hasYield();
-						$throwPoints = $result->getThrowPoints();
-						$scope = $result->getScope();
+					$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
+					$hasYield = $result->hasYield();
+					$throwPoints = $result->getThrowPoints();
+					$scope = $result->getScope();
 
-						if ($expr instanceof AssignRef) {
-							$scope = $scope->exitExpressionAssign($expr->expr);
-						}
+					if ($expr instanceof AssignRef) {
+						$scope = $scope->exitExpressionAssign($expr->expr);
+					}
 
-						return new ExpressionResult($scope, $hasYield, $throwPoints);
-					},
-					true,
-				);
-				$scope = $result->getScope();
-				$hasYield = $result->hasYield();
-				$throwPoints = $result->getThrowPoints();
+					return new ExpressionResult($scope, $hasYield, $throwPoints);
+				},
+				true,
+			);
+			$scope = $result->getScope();
+			$hasYield = $result->hasYield();
+			$throwPoints = $result->getThrowPoints();
+			$vars = $this->getAssignedVariables($expr->var);
+			if (count($vars) > 0) {
 				$varChangedScope = false;
-				if ($expr->var instanceof Variable && is_string($expr->var->name)) {
-					$scope = $this->processVarAnnotation($scope, [$expr->var->name], $expr, $varChangedScope);
-				}
-
+				$scope = $this->processVarAnnotation($scope, $vars, $expr, $varChangedScope);
 				if (!$varChangedScope) {
 					$scope = $this->processStmtVarAnnotation($scope, new Node\Stmt\Expression($expr, [
 						'comments' => $expr->getAttribute('comments'),
 					]), null);
-				}
-			} else {
-				$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
-				$hasYield = $result->hasYield();
-				$throwPoints = $result->getThrowPoints();
-				$scope = $result->getScope();
-				foreach ($expr->var->items as $arrayItem) {
-					if ($arrayItem === null) {
-						continue;
-					}
-
-					$itemScope = $scope;
-					if ($arrayItem->value instanceof ArrayDimFetch && $arrayItem->value->dim === null) {
-						$itemScope = $itemScope->enterExpressionAssign($arrayItem->value);
-					}
-					$itemScope = $this->lookForEnterVariableAssign($itemScope, $arrayItem->value);
-
-					$itemResult = $this->processExprNode($arrayItem, $itemScope, $nodeCallback, $context->enterDeep());
-					$hasYield = $hasYield || $itemResult->hasYield();
-					$throwPoints = array_merge($throwPoints, $itemResult->getThrowPoints());
-					$scope = $result->getScope();
-				}
-				$scope = $this->lookForArrayDestructuringArray($scope, $expr->var, $scope->getType($expr->expr));
-				$vars = $this->getAssignedVariables($expr->var);
-
-				if (count($vars) > 0) {
-					$varChangedScope = false;
-					$scope = $this->processVarAnnotation($scope, $vars, $expr, $varChangedScope);
-					if (!$varChangedScope) {
-						$scope = $this->processStmtVarAnnotation($scope, new Node\Stmt\Expression($expr, [
-							'comments' => $expr->getAttribute('comments'),
-						]), null);
-					}
 				}
 			}
 		} elseif ($expr instanceof Expr\AssignOp) {
@@ -2990,51 +2955,6 @@ class NodeScopeResolver
 		return new ExpressionResult($scope, false, []);
 	}
 
-	private function lookForArrayDestructuringArray(MutatingScope $scope, Expr $expr, Type $valueType): MutatingScope
-	{
-		if ($expr instanceof Array_ || $expr instanceof List_) {
-			foreach ($expr->items as $key => $item) {
-				/** @var Node\Expr\ArrayItem|null $itemValue */
-				$itemValue = $item;
-				if ($itemValue === null) {
-					continue;
-				}
-
-				$keyType = $itemValue->key === null ? new ConstantIntegerType($key) : $scope->getType($itemValue->key);
-				$scope = $this->specifyItemFromArrayDestructuring($scope, $itemValue, $valueType, $keyType);
-			}
-		} elseif ($expr instanceof Variable && is_string($expr->name)) {
-			$scope = $scope->assignVariable($expr->name, new MixedType());
-		} elseif ($expr instanceof ArrayDimFetch && $expr->var instanceof Variable && is_string($expr->var->name)) {
-			$scope = $scope->assignVariable($expr->var->name, new MixedType());
-		}
-
-		return $scope;
-	}
-
-	private function specifyItemFromArrayDestructuring(MutatingScope $scope, ArrayItem $arrayItem, Type $valueType, Type $keyType): MutatingScope
-	{
-		$type = $valueType->getOffsetValueType($keyType);
-
-		$itemNode = $arrayItem->value;
-		if ($itemNode instanceof Variable && is_string($itemNode->name)) {
-			$scope = $scope->assignVariable($itemNode->name, $type);
-		} elseif ($itemNode instanceof ArrayDimFetch && $itemNode->var instanceof Variable && is_string($itemNode->var->name)) {
-			$currentType = $scope->hasVariableType($itemNode->var->name)->no()
-				? new ConstantArrayType([], [])
-				: $scope->getVariableType($itemNode->var->name);
-			$dimType = null;
-			if ($itemNode->dim !== null) {
-				$dimType = $scope->getType($itemNode->dim);
-			}
-			$scope = $scope->assignVariable($itemNode->var->name, $currentType->setOffsetValueType($dimType, $type));
-		} else {
-			$scope = $this->lookForArrayDestructuringArray($scope, $itemNode, $type);
-		}
-
-		return $scope;
-	}
-
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
@@ -3362,6 +3282,43 @@ class NodeScopeResolver
 				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
 				$scope = $scope->assignExpression($var, $assignedExprType);
 			}
+		} elseif ($var instanceof List_ || $var instanceof Array_) {
+			$result = $processExprCallback($scope);
+			$hasYield = $result->hasYield();
+			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+			$scope = $result->getScope();
+			foreach ($var->items as $i => $arrayItem) {
+				if ($arrayItem === null) {
+					continue;
+				}
+
+				$itemScope = $scope;
+				if ($arrayItem->value instanceof ArrayDimFetch && $arrayItem->value->dim === null) {
+					$itemScope = $itemScope->enterExpressionAssign($arrayItem->value);
+				}
+				$itemScope = $this->lookForEnterVariableAssign($itemScope, $arrayItem->value);
+				$itemResult = $this->processExprNode($arrayItem, $itemScope, $nodeCallback, $context->enterDeep());
+				$hasYield = $hasYield || $itemResult->hasYield();
+				$throwPoints = array_merge($throwPoints, $itemResult->getThrowPoints());
+
+				if ($arrayItem->key === null) {
+					$dimExpr = new Node\Scalar\LNumber($i);
+				} else {
+					$dimExpr = $arrayItem->key;
+				}
+				$result = $this->processAssignVar(
+					$scope,
+					$arrayItem->value,
+					new ArrayDimFetch($assignedExpr, $dimExpr),
+					$nodeCallback,
+					$context,
+					$processExprCallback, // TODO
+					$enterExpressionAssign,
+				);
+				$scope = $result->getScope();
+				$hasYield = $hasYield || $result->hasYield();
+				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+			}
 		}
 
 		return new ExpressionResult($scope, $hasYield, $throwPoints);
@@ -3589,9 +3546,16 @@ class NodeScopeResolver
 		}
 
 		if ($stmt->valueVar instanceof List_ || $stmt->valueVar instanceof Array_) {
-			$exprType = $scope->getType($stmt->expr);
-			$itemType = $exprType->getIterableValueType();
-			$scope = $this->lookForArrayDestructuringArray($scope, $stmt->valueVar, $itemType);
+			$scope = $this->processAssignVar(
+				$scope,
+				$stmt->valueVar,
+				new ArrayDimFetch($stmt->expr, new Variable('123')),
+				static function (): void {
+				}, // todo
+				ExpressionContext::createDeep(),
+				static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, []), // todo
+				true,
+			)->getScope();
 			$vars = array_merge($vars, $this->getAssignedVariables($stmt->valueVar));
 		}
 

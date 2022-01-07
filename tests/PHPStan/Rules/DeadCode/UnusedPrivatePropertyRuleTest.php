@@ -121,6 +121,16 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 				148,
 				$tip,
 			],
+			[
+				'Property UnusedPrivateProperty\ArrayAssign::$foo is never read, only written.',
+				162,
+				$tip,
+			],
+			[
+				'Property UnusedPrivateProperty\ListAssign::$foo is never read, only written.',
+				191,
+				$tip,
+			],
 		]);
 		$this->analyse([__DIR__ . '/data/TestExtension.php'], [
 			[

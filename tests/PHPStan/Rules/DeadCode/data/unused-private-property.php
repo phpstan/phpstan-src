@@ -155,3 +155,61 @@ class DolorWithAnonymous
 	}
 
 }
+
+class ArrayAssign
+{
+
+	private $foo;
+
+	public function doFoo(): void
+	{
+		[$this->foo] = [1];
+	}
+
+}
+
+class ArrayAssignAndRead
+{
+
+	private $foo;
+
+	public function doFoo(): void
+	{
+		[$this->foo] = [1];
+	}
+
+	public function getFoo()
+	{
+		return $this->foo;
+	}
+
+}
+
+class ListAssign
+{
+
+	private $foo;
+
+	public function doFoo(): void
+	{
+		list($this->foo) = [1];
+	}
+
+}
+
+class ListAssignAndRead
+{
+
+	private $foo;
+
+	public function doFoo(): void
+	{
+		list($this->foo) = [1];
+	}
+
+	public function getFoo()
+	{
+		return $this->foo;
+	}
+
+}

@@ -68,7 +68,7 @@ function () {
 
     }
 
-    /** @var iterable<array<string>> $iterableOverStringArrays */
+    /** @var array<array<string>> $iterableOverStringArrays */
     $iterableOverStringArrays = doFoo();
     foreach ($iterableOverStringArrays as [$stringFromIterable]) {
 

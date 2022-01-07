@@ -39,6 +39,17 @@ final class ThrowableReturnTypeExtension implements DynamicMethodReturnTypeExten
 		$pdoException = new ObjectType('PDOException');
 		foreach (TypeUtils::getDirectClassNames($type) as $class) {
 			$classType = new ObjectType($class);
+			if ($classType->getClassReflection() !== null) {
+				$classReflection = $classType->getClassReflection();
+				foreach ($classReflection->getMethodTags() as $methodName => $methodTag) {
+					if (strtolower($methodName) !== 'getcode') {
+						continue;
+					}
+
+					$types[] = $methodTag->getReturnType();
+					continue 2;
+				}
+			}
 			if ($pdoException->isSuperTypeOf($classType)->yes()) {
 				$types[] = new StringType();
 				continue;

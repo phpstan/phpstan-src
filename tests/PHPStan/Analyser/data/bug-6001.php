@@ -15,6 +15,7 @@ class Foo
 		assertType('string', (new \PDOException())->getCode());
 		assertType('int', (new MyException())->getCode());
 		assertType('string', (new SubPDOException())->getCode());
+		assertType('1|2|3', (new ExceptionWithMethodTag())->getCode());
 	}
 
 	/**
@@ -34,6 +35,14 @@ class MyException extends \Exception
 }
 
 class SubPDOException extends \PDOException
+{
+
+}
+
+/**
+ * @method 1|2|3 getCode()
+ */
+class ExceptionWithMethodTag extends \Exception
 {
 
 }

@@ -3545,7 +3545,7 @@ return [
 'gmp_clrbit' => ['void', 'a'=>'GMP|string|int', 'index'=>'int'],
 'gmp_cmp' => ['int', 'a'=>'GMP|string|int', 'b'=>'GMP|string|int'],
 'gmp_com' => ['GMP', 'a'=>'GMP|string|int'],
-'gmp_div' => ['GMP', 'a'=>'GMP|resource|string', 'b'=>'GMP|resource|string', 'round='=>'int'],
+'gmp_div' => ['GMP', 'a'=>'GMP|string|int', 'b'=>'GMP|string|int', 'round='=>'int'],
 'gmp_div_q' => ['GMP', 'a'=>'GMP|string|int', 'b'=>'GMP|string|int', 'round='=>'int'],
 'gmp_div_qr' => ['array', 'a'=>'GMP|string|int', 'b'=>'GMP|string|int', 'round='=>'int'],
 'gmp_div_r' => ['GMP', 'a'=>'GMP|string|int', 'b'=>'GMP|string|int', 'round='=>'int'],

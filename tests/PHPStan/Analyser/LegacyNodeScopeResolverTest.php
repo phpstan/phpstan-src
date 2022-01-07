@@ -9090,7 +9090,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array<array<int|string, array{hitCount: int, loadCount: int, removeCount: int, saveCount: int}>>',
+				'array<non-empty-array<int|string, array{hitCount: int, loadCount: int, removeCount: int, saveCount: int}>>',
 				'$statistics',
 			],
 		];

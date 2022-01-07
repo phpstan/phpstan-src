@@ -151,6 +151,10 @@ class ClassStatementsGatherer
 			$this->constantFetches[] = new ClassConstantFetch($node, $scope);
 			return;
 		}
+		if ($node instanceof PropertyAssignNode) {
+			$this->propertyUsages[] = new PropertyWrite($node->getPropertyFetch(), $scope);
+			return;
+		}
 		if (!$node instanceof Expr) {
 			return;
 		}
@@ -159,13 +163,24 @@ class ClassStatementsGatherer
 			return;
 		}
 		if ($node instanceof Expr\AssignRef) {
-			$this->gatherNodes($node->expr, $scope);
+			if (!$node->expr instanceof PropertyFetch && !$node->expr instanceof StaticPropertyFetch) {
+				$this->gatherNodes($node->expr, $scope);
+				return;
+			}
+
+			$this->propertyUsages[] = new PropertyRead($node->expr, $scope);
+			$this->propertyUsages[] = new PropertyWrite($node->expr, $scope);
 			return;
 		}
 		if ($node instanceof Node\Scalar\EncapsedStringPart) {
 			return;
 		}
+
 		$inAssign = $scope->isInExpressionAssign($node);
+		if ($inAssign) {
+			return;
+		}
+
 		while ($node instanceof ArrayDimFetch) {
 			$node = $node->var;
 		}
@@ -173,11 +188,7 @@ class ClassStatementsGatherer
 			return;
 		}
 
-		if ($inAssign) {
-			$this->propertyUsages[] = new PropertyWrite($node, $scope);
-		} else {
-			$this->propertyUsages[] = new PropertyRead($node, $scope);
-		}
+		$this->propertyUsages[] = new PropertyRead($node, $scope);
 	}
 
 }

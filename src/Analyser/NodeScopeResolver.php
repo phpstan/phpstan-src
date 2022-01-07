@@ -85,6 +85,7 @@ use PHPStan\Node\MatchExpressionArmCondition;
 use PHPStan\Node\MatchExpressionNode;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodReturnStatementsNode;
+use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\UnreachableStatementNode;
@@ -2440,34 +2441,29 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = [];
-			if (
-				$expr->var instanceof Variable
-				|| $expr->var instanceof ArrayDimFetch
-				|| $expr->var instanceof PropertyFetch
-				|| $expr->var instanceof StaticPropertyFetch
-			) {
-				$newExpr = $expr;
-				if ($expr instanceof Expr\PostInc) {
-					$newExpr = new Expr\PreInc($expr->var);
-				} elseif ($expr instanceof Expr\PostDec) {
-					$newExpr = new Expr\PreDec($expr->var);
-				}
 
-				if (!$scope->getType($expr->var)->equals($scope->getType($newExpr))) {
-					$scope = $this->processAssignVar(
-						$scope,
-						$expr->var,
-						$newExpr,
-						static function (): void {
-						},
-						$context,
-						static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, []),
-						false,
-					)->getScope();
-				} else {
-					$scope = $scope->invalidateExpression($expr->var);
-				}
+			$newExpr = $expr;
+			if ($expr instanceof Expr\PostInc) {
+				$newExpr = new Expr\PreInc($expr->var);
+			} elseif ($expr instanceof Expr\PostDec) {
+				$newExpr = new Expr\PreDec($expr->var);
 			}
+
+			$scope = $this->processAssignVar(
+				$scope,
+				$expr->var,
+				$newExpr,
+				static function (Node $node, Scope $scope) use ($nodeCallback): void {
+					if (!$node instanceof PropertyAssignNode) {
+						return;
+					}
+
+					$nodeCallback($node, $scope);
+				},
+				$context,
+				static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, []),
+				false,
+			)->getScope();
 		} elseif ($expr instanceof Ternary) {
 			$ternaryCondResult = $this->processExprNode($expr->cond, $scope, $nodeCallback, $context->enterDeep());
 			$throwPoints = $ternaryCondResult->getThrowPoints();
@@ -3238,35 +3234,44 @@ class NodeScopeResolver
 
 			$varType = $scope->getType($var);
 			if (!(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
-				// 4. compose types
-				if ($varType instanceof ErrorType) {
-					$varType = new ConstantArrayType([], []);
-				}
-				$offsetValueType = $varType;
-				$offsetValueTypeStack = [$offsetValueType];
-				foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
-					if ($offsetType === null) {
-						$offsetValueType = new ConstantArrayType([], []);
-
-					} else {
-						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
-						if ($offsetValueType instanceof ErrorType) {
+				$getValueToWrite = static function (Type $initialType) use ($offsetTypes, $valueToWrite): Type {
+					// 4. compose types
+					if ($initialType instanceof ErrorType) {
+						$initialType = new ConstantArrayType([], []);
+					}
+					$offsetValueType = $initialType;
+					$offsetValueTypeStack = [$offsetValueType];
+					foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
+						if ($offsetType === null) {
 							$offsetValueType = new ConstantArrayType([], []);
+
+						} else {
+							$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+							if ($offsetValueType instanceof ErrorType) {
+								$offsetValueType = new ConstantArrayType([], []);
+							}
 						}
+
+						$offsetValueTypeStack[] = $offsetValueType;
 					}
 
-					$offsetValueTypeStack[] = $offsetValueType;
-				}
+					foreach (array_reverse($offsetTypes) as $i => $offsetType) {
+						/** @var Type $offsetValueType */
+						$offsetValueType = array_pop($offsetValueTypeStack);
+						$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+					}
 
-				foreach (array_reverse($offsetTypes) as $i => $offsetType) {
-					/** @var Type $offsetValueType */
-					$offsetValueType = array_pop($offsetValueTypeStack);
-					$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
-				}
+					return $valueToWrite;
+				};
+
+				$valueToWrite = $getValueToWrite($varType);
 
 				if ($var instanceof Variable && is_string($var->name)) {
 					$scope = $scope->assignVariable($var->name, $valueToWrite);
 				} else {
+					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
+						$nodeCallback(new PropertyAssignNode($var, $getValueToWrite(new ErrorType())), $scope);
+					}
 					$scope = $scope->assignExpression(
 						$var,
 						$valueToWrite,
@@ -3307,12 +3312,16 @@ class NodeScopeResolver
 			$propertyHolderType = $scope->getType($var->var);
 			if ($propertyName !== null && $propertyHolderType->hasProperty($propertyName)->yes()) {
 				$propertyReflection = $propertyHolderType->getProperty($propertyName, $scope);
+				$assignedExprType = $scope->getType($assignedExpr);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
 				if ($propertyReflection->canChangeTypeAfterAssignment()) {
-					$scope = $scope->assignExpression($var, $scope->getType($assignedExpr));
+					$scope = $scope->assignExpression($var, $assignedExprType);
 				}
 			} else {
 				// fallback
-				$scope = $scope->assignExpression($var, $scope->getType($assignedExpr));
+				$assignedExprType = $scope->getType($assignedExpr);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
+				$scope = $scope->assignExpression($var, $assignedExprType);
 			}
 
 		} elseif ($var instanceof Expr\StaticPropertyFetch) {
@@ -3342,12 +3351,16 @@ class NodeScopeResolver
 
 			if ($propertyName !== null) {
 				$propertyReflection = $scope->getPropertyReflection($propertyHolderType, $propertyName);
+				$assignedExprType = $scope->getType($assignedExpr);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
 				if ($propertyReflection !== null && $propertyReflection->canChangeTypeAfterAssignment()) {
-					$scope = $scope->assignExpression($var, $scope->getType($assignedExpr));
+					$scope = $scope->assignExpression($var, $assignedExprType);
 				}
 			} else {
 				// fallback
-				$scope = $scope->assignExpression($var, $scope->getType($assignedExpr));
+				$assignedExprType = $scope->getType($assignedExpr);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
+				$scope = $scope->assignExpression($var, $assignedExprType);
 			}
 		}
 

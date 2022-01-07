@@ -21,7 +21,7 @@ class RuleErrorBuilder
 	private int $type;
 
 	/** @var mixed[] */
-	private array $properties;
+	private array $properties = [];
 
 	private function __construct(string $message)
 	{

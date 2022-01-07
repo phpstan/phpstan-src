@@ -391,7 +391,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 				isset($traceStep['function'])
 				&& isset($existsCallTypes[$traceStep['function']])
 				// We must ignore the self::hasClass calls
-				&& ($traceStep['file'] !== __FILE__)
+				&& (!isset($traceStep['file']) || $traceStep['file'] !== __FILE__)
 			) {
 				return true;
 			}

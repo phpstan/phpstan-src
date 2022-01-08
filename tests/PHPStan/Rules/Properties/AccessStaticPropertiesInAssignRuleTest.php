@@ -26,6 +26,10 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/access-static-properties-assign.php'], [
 			[
 				'Access to an undefined static property TestAccessStaticPropertiesAssign\AccessStaticPropertyWithDimFetch::$foo.',
+				10,
+			],
+			[
+				'Access to an undefined static property TestAccessStaticPropertiesAssign\AccessStaticPropertyWithDimFetch::$foo.',
 				15,
 			],
 		]);

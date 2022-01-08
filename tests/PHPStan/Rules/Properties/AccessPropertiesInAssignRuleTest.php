@@ -25,6 +25,10 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/access-properties-assign.php'], [
 			[
 				'Access to an undefined property TestAccessPropertiesAssign\AccessPropertyWithDimFetch::$foo.',
+				10,
+			],
+			[
+				'Access to an undefined property TestAccessPropertiesAssign\AccessPropertyWithDimFetch::$foo.',
 				15,
 			],
 		]);

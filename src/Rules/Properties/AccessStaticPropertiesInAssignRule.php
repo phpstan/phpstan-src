@@ -4,10 +4,11 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Rules\Rule;
 
 /**
- * @implements Rule<Node\Expr\Assign>
+ * @implements Rule<PropertyAssignNode>
  */
 class AccessStaticPropertiesInAssignRule implements Rule
 {
@@ -18,16 +19,16 @@ class AccessStaticPropertiesInAssignRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Expr\Assign::class;
+		return PropertyAssignNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->var instanceof Node\Expr\StaticPropertyFetch) {
+		if (!$node->getPropertyFetch() instanceof Node\Expr\StaticPropertyFetch) {
 			return [];
 		}
 
-		return $this->accessStaticPropertiesRule->processNode($node->var, $scope);
+		return $this->accessStaticPropertiesRule->processNode($node->getPropertyFetch(), $scope);
 	}
 
 }

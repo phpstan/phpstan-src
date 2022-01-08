@@ -3115,14 +3115,14 @@ class NodeScopeResolver
 			}
 
 			// 1. eval root expr
-			if ($enterExpressionAssign && $var instanceof Variable) {
+			if ($enterExpressionAssign) {
 				$scope = $scope->enterExpressionAssign($var);
 			}
 			$result = $this->processExprNode($var, $scope, $nodeCallback, $context->enterDeep());
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$scope = $result->getScope();
-			if ($enterExpressionAssign && $var instanceof Variable) {
+			if ($enterExpressionAssign) {
 				$scope = $scope->exitExpressionAssign($var);
 			}
 

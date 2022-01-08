@@ -7,7 +7,7 @@ class AccessPropertyWithDimFetch
 
 	public function doFoo()
 	{
-		$this->foo['foo'] = 'test'; // already reported by a separate rule
+		$this->foo['foo'] = 'test';
 	}
 
 	public function doBar()

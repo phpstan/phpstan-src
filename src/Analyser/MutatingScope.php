@@ -31,6 +31,8 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Node\ExecutionEndNode;
+use PHPStan\Node\GetIterableValueTypeExpr;
+use PHPStan\Node\GetOffsetValueTypeExpr;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Php\PhpVersion;
@@ -529,6 +531,13 @@ class MutatingScope implements Scope
 	/** @api */
 	public function getType(Expr $node): Type
 	{
+		if ($node instanceof GetIterableValueTypeExpr) {
+			return $this->getType($node->getExpr())->getIterableValueType();
+		}
+		if ($node instanceof GetOffsetValueTypeExpr) {
+			return $this->getType($node->getVar())->getOffsetValueType($this->getType($node->getDim()));
+		}
+
 		$key = $this->getNodeKey($node);
 
 		if (!array_key_exists($key, $this->resolvedTypes)) {

@@ -72,6 +72,8 @@ use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
+use PHPStan\Node\GetIterableValueTypeExpr;
+use PHPStan\Node\GetOffsetValueTypeExpr;
 use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InClassNode;
@@ -3309,7 +3311,7 @@ class NodeScopeResolver
 				$result = $this->processAssignVar(
 					$scope,
 					$arrayItem->value,
-					new ArrayDimFetch($assignedExpr, $dimExpr),
+					new GetOffsetValueTypeExpr($assignedExpr, $dimExpr),
 					$nodeCallback,
 					$context,
 					$processExprCallback, // TODO
@@ -3549,7 +3551,7 @@ class NodeScopeResolver
 			$scope = $this->processAssignVar(
 				$scope,
 				$stmt->valueVar,
-				new ArrayDimFetch($stmt->expr, new Variable('123')),
+				new GetIterableValueTypeExpr($stmt->expr),
 				static function (): void {
 				}, // todo
 				ExpressionContext::createDeep(),

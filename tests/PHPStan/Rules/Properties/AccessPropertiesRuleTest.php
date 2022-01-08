@@ -169,10 +169,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					'Cannot access property $array on stdClass|null.',
 					412,
 				],
-				[
-					'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
-					427,
-				],
 			],
 		);
 	}
@@ -299,12 +295,23 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
 					386,
 				],
-				[
-					'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
-					427,
-				],
 			],
 		);
+	}
+
+	public function testRuleAssignOp(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/access-properties-assign-op.php'], [
+			[
+				'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
+				10,
+			],
+		]);
 	}
 
 	public function testAccessPropertiesOnThisOnly(): void
@@ -325,10 +332,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
 					386,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
-					427,
 				],
 			],
 		);

@@ -418,18 +418,3 @@ class Bug1884
 	}
 
 }
-
-class AssignOpNonexistentProperty
-{
-
-	public function doFoo()
-	{
-		$this->flags |= 1;
-	}
-
-	public function doBar()
-	{
-		$this->flags ??= 2;
-	}
-
-}

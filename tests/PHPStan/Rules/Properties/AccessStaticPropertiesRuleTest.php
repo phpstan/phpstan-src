@@ -181,9 +181,18 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 				'Access to an undefined static property static(AccessWithStatic)::$nonexistent.',
 				224,
 			],
+		]);
+	}
+
+	public function testRuleAssignOp(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->analyse([__DIR__ . '/data/access-static-properties-assign-op.php'], [
 			[
-				'Access to an undefined static property AssignOpNonexistentProperty::$flags.',
-				234,
+				'Access to an undefined static property AccessStaticProperties\AssignOpNonexistentProperty::$flags.',
+				10,
 			],
 		]);
 	}

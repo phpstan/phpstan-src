@@ -2293,4 +2293,17 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6306.php'], []);
 	}
 
+	public function testRectorDoWhileVarIssue(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/rector-do-while-var-issue.php'], [
+			[
+				'Parameter #1 $cls of method RectorDoWhileVarIssue\Foo::processCharacterClass() expects string, int|string given.',
+				24,
+			],
+		]);
+	}
+
 }

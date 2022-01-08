@@ -3318,7 +3318,7 @@ class NodeScopeResolver
 					new GetOffsetValueTypeExpr($assignedExpr, $dimExpr),
 					$nodeCallback,
 					$context,
-					$processExprCallback, // TODO
+					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, []),
 					$enterExpressionAssign,
 				);
 				$scope = $result->getScope();
@@ -3557,9 +3557,9 @@ class NodeScopeResolver
 				$stmt->valueVar,
 				new GetIterableValueTypeExpr($stmt->expr),
 				static function (): void {
-				}, // todo
+				},
 				ExpressionContext::createDeep(),
-				static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, []), // todo
+				static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, []),
 				true,
 			)->getScope();
 			$vars = array_merge($vars, $this->getAssignedVariables($stmt->valueVar));

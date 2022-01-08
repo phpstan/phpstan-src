@@ -165,10 +165,6 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 				152,
 			],
 			[
-				'Access to an undefined static property AccessPropertyWithDimFetch::$foo.',
-				163,
-			],
-			[
 				'Access to an undefined static property AccessInIsset::$foo.',
 				185,
 			],

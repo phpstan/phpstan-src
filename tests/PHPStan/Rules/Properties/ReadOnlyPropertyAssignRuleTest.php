@@ -68,6 +68,14 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				'Readonly property ReadonlyPropertyAssign\PostInc::$foo is assigned outside of the constructor.',
 				105,
 			],
+			[
+				'Readonly property ReadonlyPropertyAssign\ListAssign::$foo is assigned outside of the constructor.',
+				122,
+			],
+			[
+				'Readonly property ReadonlyPropertyAssign\ListAssign::$foo is assigned outside of the constructor.',
+				127,
+			],
 		]);
 	}
 

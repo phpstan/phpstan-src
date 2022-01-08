@@ -106,3 +106,25 @@ class PostInc
 	}
 
 }
+
+class ListAssign
+{
+
+	private readonly int $foo;
+
+	public function __construct()
+	{
+		[$this->foo] = [1];
+	}
+
+	public function setFoo()
+	{
+		[$this->foo] = [1];
+	}
+
+	public function setBar()
+	{
+		list($this->foo) = [1];
+	}
+
+}

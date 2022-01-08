@@ -1145,6 +1145,11 @@ services:
 			- phpstan.dynamicFunctionThrowTypeExtension
 
 	-
+		class: PHPStan\Type\Php\PdoPrepareDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\ReflectionClassConstructorThrowTypeExtension
 		tags:
 			- phpstan.dynamicStaticMethodThrowTypeExtension

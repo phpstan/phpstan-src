@@ -28,6 +28,10 @@ class AccessPropertiesInAssignRule implements Rule
 			return [];
 		}
 
+		if ($node->isAssignOp()) {
+			return [];
+		}
+
 		return $this->accessPropertiesRule->processNode($node->getPropertyFetch(), $scope);
 	}
 

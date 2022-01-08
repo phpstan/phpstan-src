@@ -31,6 +31,10 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 				'Access to an undefined property TestAccessPropertiesAssign\AccessPropertyWithDimFetch::$foo.',
 				15,
 			],
+			[
+				'Access to an undefined property TestAccessPropertiesAssign\AssignOpNonexistentProperty::$flags.',
+				30,
+			],
 		]);
 	}
 

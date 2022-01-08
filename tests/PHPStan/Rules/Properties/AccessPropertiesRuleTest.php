@@ -169,6 +169,10 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					'Cannot access property $array on stdClass|null.',
 					412,
 				],
+				[
+					'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
+					427,
+				],
 			],
 		);
 	}
@@ -295,6 +299,10 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
 					386,
 				],
+				[
+					'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
+					427,
+				],
 			],
 		);
 	}
@@ -317,6 +325,10 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
 					386,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
+					427,
 				],
 			],
 		);

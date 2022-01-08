@@ -28,6 +28,10 @@ class AccessStaticPropertiesInAssignRule implements Rule
 			return [];
 		}
 
+		if ($node->isAssignOp()) {
+			return [];
+		}
+
 		return $this->accessStaticPropertiesRule->processNode($node->getPropertyFetch(), $scope);
 	}
 

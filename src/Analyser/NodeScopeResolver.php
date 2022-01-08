@@ -3083,6 +3083,7 @@ class NodeScopeResolver
 		$nodeCallback($var, $enterExpressionAssign ? $scope->enterExpressionAssign($var) : $scope);
 		$hasYield = false;
 		$throwPoints = [];
+		$isAssignOp = $assignedExpr instanceof Expr\AssignOp && !$enterExpressionAssign;
 		if ($var instanceof Variable && is_string($var->name)) {
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
@@ -3196,7 +3197,7 @@ class NodeScopeResolver
 					$scope = $scope->assignVariable($var->name, $valueToWrite);
 				} else {
 					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
-						$nodeCallback(new PropertyAssignNode($var, $getValueToWrite(new ErrorType())), $scope);
+						$nodeCallback(new PropertyAssignNode($var, $getValueToWrite(new ErrorType()), $isAssignOp), $scope);
 					}
 					$scope = $scope->assignExpression(
 						$var,
@@ -3215,7 +3216,7 @@ class NodeScopeResolver
 				}
 			} else {
 				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
-					$nodeCallback(new PropertyAssignNode($var, $getValueToWrite(new ErrorType())), $scope);
+					$nodeCallback(new PropertyAssignNode($var, $getValueToWrite(new ErrorType()), $isAssignOp), $scope);
 				}
 			}
 		} elseif ($var instanceof PropertyFetch) {
@@ -3243,14 +3244,14 @@ class NodeScopeResolver
 			if ($propertyName !== null && $propertyHolderType->hasProperty($propertyName)->yes()) {
 				$propertyReflection = $propertyHolderType->getProperty($propertyName, $scope);
 				$assignedExprType = $scope->getType($assignedExpr);
-				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExprType, $isAssignOp), $scope);
 				if ($propertyReflection->canChangeTypeAfterAssignment()) {
 					$scope = $scope->assignExpression($var, $assignedExprType);
 				}
 			} else {
 				// fallback
 				$assignedExprType = $scope->getType($assignedExpr);
-				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExprType, $isAssignOp), $scope);
 				$scope = $scope->assignExpression($var, $assignedExprType);
 			}
 
@@ -3282,14 +3283,14 @@ class NodeScopeResolver
 			if ($propertyName !== null) {
 				$propertyReflection = $scope->getPropertyReflection($propertyHolderType, $propertyName);
 				$assignedExprType = $scope->getType($assignedExpr);
-				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExprType, $isAssignOp), $scope);
 				if ($propertyReflection !== null && $propertyReflection->canChangeTypeAfterAssignment()) {
 					$scope = $scope->assignExpression($var, $assignedExprType);
 				}
 			} else {
 				// fallback
 				$assignedExprType = $scope->getType($assignedExpr);
-				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExprType, $isAssignOp), $scope);
 				$scope = $scope->assignExpression($var, $assignedExprType);
 			}
 		} elseif ($var instanceof List_ || $var instanceof Array_) {

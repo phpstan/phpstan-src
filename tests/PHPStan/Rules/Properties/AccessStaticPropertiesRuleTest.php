@@ -181,6 +181,10 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 				'Access to an undefined static property static(AccessWithStatic)::$nonexistent.',
 				224,
 			],
+			[
+				'Access to an undefined static property AssignOpNonexistentProperty::$flags.',
+				234,
+			],
 		]);
 	}
 

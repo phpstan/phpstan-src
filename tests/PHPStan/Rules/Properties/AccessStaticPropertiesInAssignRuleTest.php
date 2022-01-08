@@ -32,6 +32,10 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 				'Access to an undefined static property TestAccessStaticPropertiesAssign\AccessStaticPropertyWithDimFetch::$foo.',
 				15,
 			],
+			[
+				'Access to an undefined static property TestAccessStaticPropertiesAssign\AssignOpNonexistentProperty::$flags.',
+				30,
+			],
 		]);
 	}
 

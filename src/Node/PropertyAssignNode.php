@@ -12,6 +12,7 @@ class PropertyAssignNode extends NodeAbstract implements VirtualNode
 	public function __construct(
 		private Expr\PropertyFetch|Expr\StaticPropertyFetch $propertyFetch,
 		private Type $assignedType,
+		private bool $assignOp,
 	)
 	{
 		parent::__construct($propertyFetch->getAttributes());
@@ -25,6 +26,11 @@ class PropertyAssignNode extends NodeAbstract implements VirtualNode
 	public function getAssignedType(): Type
 	{
 		return $this->assignedType;
+	}
+
+	public function isAssignOp(): bool
+	{
+		return $this->assignOp;
 	}
 
 	public function getType(): string

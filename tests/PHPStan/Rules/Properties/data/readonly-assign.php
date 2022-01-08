@@ -128,3 +128,28 @@ class ListAssign
 	}
 
 }
+
+enum FooEnum: string
+{
+
+	case ONE = 'one';
+	case TWO = 'two';
+
+	public function doFoo(): void
+	{
+		$this->name = 'ONE';
+		$this->value = 'one';
+	}
+
+}
+
+class TestFooEnum
+{
+
+	public function doFoo(FooEnum $foo): void
+	{
+		$foo->name = 'ONE';
+		$foo->value = 'one';
+	}
+
+}

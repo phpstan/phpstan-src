@@ -230,4 +230,26 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5935.php'], []);
 	}
 
+	public function testBug5337(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+		$this->analyse([__DIR__ . '/data/bug-5337.php'], [
+			[
+				'Property Bug5337\Clazz::$prefix is never read, only written.',
+				7,
+				'See: https://phpstan.org/developing-extensions/always-read-written-properties',
+			],
+			[
+				'Property Bug5337\Foo::$field is unused.',
+				20,
+				'See: https://phpstan.org/developing-extensions/always-read-written-properties',
+			],
+		]);
+	}
+
 }

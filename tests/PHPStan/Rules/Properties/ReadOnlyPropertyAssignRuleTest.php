@@ -19,7 +19,7 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+		if (PHP_VERSION_ID < 80100) {
 			self::markTestSkipped('Test requires PHP 8.1');
 		}
 

@@ -18,15 +18,25 @@ class Foo
 
 	public function doBar()
 	{
-		foreach ([1, 2, 3] as $this->foo) {
-			//assertType('1|2|3', $this->foo);
+		foreach ([1, 2, 3] as $key => $this->foo) {
+			assertType('0|1|2', $key);
+			assertType('1|2|3', $this->foo);
 		}
 	}
 
 	public function doBaz()
 	{
-		foreach ([[1], [2], [3]] as [$this->foo]) {
+		foreach ([[1], [2], [3]] as $key => [$this->foo]) {
+			assertType('0|1|2', $key);
 			assertType('1|2|3', $this->foo);
+		}
+	}
+
+	public function doLorem()
+	{
+		foreach ([[1]] as $key => [$this->foo]) {
+			assertType('0', $key);
+			assertType('1', $this->foo);
 		}
 	}
 

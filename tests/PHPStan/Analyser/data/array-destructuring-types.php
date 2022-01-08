@@ -31,3 +31,30 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	public function doFoo()
+	{
+
+		$matrix = $this->preprocessOpeningHours();
+		if ($matrix === []) {
+			return null;
+		}
+
+		/** @var string[][] $matrix */
+		$matrix[] = end($matrix);
+
+		assertType('array<array<string>>', $matrix);
+	}
+
+	/**
+	 * @return string[][]
+	 */
+	private function preprocessOpeningHours(): array
+	{
+		return [];
+	}
+
+}

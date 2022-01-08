@@ -2778,6 +2778,10 @@ class NodeScopeResolver
 			return $names;
 		}
 
+		if ($expr instanceof ArrayDimFetch) {
+			return $this->getAssignedVariables($expr->var);
+		}
+
 		return [];
 	}
 

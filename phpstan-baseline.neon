@@ -378,3 +378,35 @@ parameters:
 			count: 1
 			path: tests/PHPStan/Node/FileNodeTest.php
 
+		-
+			message: """
+				#^Instantiation of deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRule\\:
+				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayItemTypeRuleTest.php
+
+		-
+			message: """
+				#^Return type of method PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRuleTest\\:\\:getRule\\(\\) has typehint with deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRule\\:
+				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayItemTypeRuleTest.php
+
+		-
+			message: """
+				#^Instantiation of deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRule\\:
+				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
+
+		-
+			message: """
+				#^Return type of method PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRuleTest\\:\\:getRule\\(\\) has typehint with deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRule\\:
+				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
+

@@ -80,6 +80,26 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				'Property PropertiesAssignedTypes\AssignRefFoo::$stringProperty (string) does not accept int.',
 				312,
 			],
+			[
+				'Property PropertiesAssignedTypes\PostInc::$foo (int<min, 3>) does not accept int<min, 4>.',
+				334,
+			],
+			[
+				'Property PropertiesAssignedTypes\PostInc::$bar (int<3, max>) does not accept int<2, max>.',
+				335,
+			],
+			[
+				'Property PropertiesAssignedTypes\PostInc::$foo (int<min, 3>) does not accept int<min, 4>.',
+				346,
+			],
+			[
+				'Property PropertiesAssignedTypes\PostInc::$bar (int<3, max>) does not accept int<2, max>.',
+				347,
+			],
+			[
+				'Property PropertiesAssignedTypes\ListAssign::$foo (string) does not accept int.',
+				360,
+			],
 		]);
 	}
 
@@ -187,6 +207,135 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Property Bug3777\Ipsum3::$ipsum3 (Bug3777\Lorem3<stdClass, Exception>) does not accept Bug3777\Lorem3<Exception, stdClass>.',
 				168,
+			],
+		]);
+	}
+
+	public function testAppendendArrayKey(): void
+	{
+		$this->analyse([__DIR__ . '/../Arrays/data/appended-array-key.php'], [
+			[
+				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<int|string, int>.',
+				27,
+			],
+			[
+				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<int|string, int>.',
+				28,
+			],
+			[
+				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<string, int>.',
+				30,
+			],
+			[
+				'Property AppendedArrayKey\Foo::$stringArray (array<string, mixed>) does not accept array<int, int>.',
+				31,
+			],
+			[
+				'Property AppendedArrayKey\Foo::$stringArray (array<string, mixed>) does not accept array<int|string, int>.',
+				33,
+			],
+			[
+				'Property AppendedArrayKey\Foo::$stringArray (array<string, mixed>) does not accept array<int, int>.',
+				38,
+			],
+			[
+				'Property AppendedArrayKey\Foo::$stringArray (array<string, mixed>) does not accept array<int, false>.',
+				46,
+			],
+			[
+				'Property AppendedArrayKey\MorePreciseKey::$test (array<1|2|3, string>) does not accept non-empty-array<int, \'foo\'>.',
+				80,
+			],
+			[
+				'Property AppendedArrayKey\MorePreciseKey::$test (array<1|2|3, string>) does not accept array{4: \'foo\'}.',
+				85,
+			],
+		]);
+	}
+
+	public function testBug5372Two(): void
+	{
+		$this->analyse([__DIR__ . '/../Arrays/data/bug-5372_2.php'], []);
+	}
+
+	public function testBug5447(): void
+	{
+		$this->analyse([__DIR__ . '/../Arrays/data/bug-5447.php'], []);
+	}
+
+	public function testAppendedArrayItemType(): void
+	{
+		$this->analyse(
+			[__DIR__ . '/../Arrays/data/appended-array-item.php'],
+			[
+				[
+					'Property AppendedArrayItem\Foo::$integers (array<int>) does not accept array<int, string>.',
+					18,
+				],
+				[
+					'Property AppendedArrayItem\Foo::$callables (array<callable(): mixed>) does not accept array{array{1, 2, 3}}.',
+					20,
+				],
+				[
+					'Property AppendedArrayItem\Foo::$callables (array<callable(): mixed>) does not accept array{array{\'AppendedArrayItem\\\\Foo\', \'classMethod\'}}.',
+					23,
+				],
+				[
+					'Property AppendedArrayItem\Foo::$callables (array<callable(): mixed>) does not accept array{array{\'Foo\', \'Hello world\'}}.',
+					25,
+				],
+				[
+					'Property AppendedArrayItem\Foo::$integers (array<int>) does not accept array<int, string>.',
+					27,
+				],
+				[
+					'Property AppendedArrayItem\Foo::$integers (array<int>) does not accept array<int, string>.',
+					32,
+				],
+				[
+					'Property AppendedArrayItem\Bar::$stringCallables (array<callable(): string>) does not accept array{Closure(): 1}.',
+					45,
+				],
+				[
+					'Property AppendedArrayItem\Baz::$staticProperty (array<AppendedArrayItem\Lorem>) does not accept array<int, AppendedArrayItem\Baz>.',
+					79,
+				],
+			],
+		);
+	}
+
+	public function testBug5804(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5804.php'], [
+			[
+				'Property Bug5804\Blah::$value (array<int>|null) does not accept array<int, string>.',
+				12,
+			],
+			[
+				'Property Bug5804\Blah::$value (array<int>|null) does not accept array<int, Bug5804\Blah>.',
+				17,
+			],
+		]);
+	}
+
+	public function testBug6286(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6286.php'], [
+			[
+				'Property Bug6286\HelloWorld::$details (array{name: string, age: int}) does not accept array{name: \'Douglas Adams\'}.',
+				18,
+			],
+			[
+				'Property Bug6286\HelloWorld::$details (array{name: string, age: int}) does not accept array{age: \'Forty-two\'}.',
+				19,
+			],
+			[
+				'Property Bug6286\HelloWorld::$nestedDetails (array<array{name: string, age: int}>) does not accept array{array{name: \'Bilbo Baggins\'}}.',
+				21,
+			],
+			[
+				'Property Bug6286\HelloWorld::$nestedDetails (array<array{name: string, age: int}>) does not accept array{array{age: \'Eleventy-one\'}}.',
+				22,
 			],
 		]);
 	}

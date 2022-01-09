@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -13,7 +14,7 @@ use function array_merge;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Expr>
+ * @implements Rule<PropertyAssignNode>
  */
 class TypesAssignedToPropertiesRule implements Rule
 {
@@ -28,35 +29,18 @@ class TypesAssignedToPropertiesRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Expr::class;
+		return PropertyAssignNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (
-			!$node instanceof Node\Expr\Assign
-			&& !$node instanceof Node\Expr\AssignOp
-			&& !$node instanceof Node\Expr\AssignRef
-		) {
-			return [];
-		}
-
-		if (
-			!($node->var instanceof Node\Expr\PropertyFetch)
-			&& !($node->var instanceof Node\Expr\StaticPropertyFetch)
-		) {
-			return [];
-		}
-
-		/** @var Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch */
-		$propertyFetch = $node->var;
-		$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($propertyFetch, $scope);
+		$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($node->getPropertyFetch(), $scope);
 
 		$errors = [];
 		foreach ($propertyReflections as $propertyReflection) {
 			$errors = array_merge($errors, $this->processSingleProperty(
 				$propertyReflection,
-				$node,
+				$node->getAssignedExpr(),
 			));
 		}
 
@@ -68,17 +52,13 @@ class TypesAssignedToPropertiesRule implements Rule
 	 */
 	private function processSingleProperty(
 		FoundPropertyReflection $propertyReflection,
-		Node\Expr $node,
+		Node\Expr $assignedExpr,
 	): array
 	{
 		$propertyType = $propertyReflection->getWritableType();
 		$scope = $propertyReflection->getScope();
+		$assignedValueType = $scope->getType($assignedExpr);
 
-		if ($node instanceof Node\Expr\Assign || $node instanceof Node\Expr\AssignRef) {
-			$assignedValueType = $scope->getType($node->expr);
-		} else {
-			$assignedValueType = $scope->getType($node);
-		}
 		if (!$this->ruleLevelHelper->accepts($propertyType, $assignedValueType, $scope->isDeclareStrictTypes())) {
 			$propertyDescription = $this->propertyDescriptor->describePropertyByName($propertyReflection, $propertyReflection->getName());
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType, $assignedValueType);

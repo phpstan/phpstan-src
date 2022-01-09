@@ -16,6 +16,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /**
+ * @deprecated Replaced by PHPStan\Rules\Properties\TypesAssignedToPropertiesRule
  * @implements Rule<Node\Expr\Assign>
  */
 class AppendedArrayKeyTypeRule implements Rule

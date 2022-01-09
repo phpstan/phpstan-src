@@ -4,10 +4,8 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function array_filter;
 use function array_values;
 use function count;
@@ -89,7 +87,7 @@ class ConstantArrayTypeBuilder
 			return;
 		}
 
-		$this->keyTypes[] = TypeUtils::generalizeType($offsetType, GeneralizePrecision::moreSpecific());
+		$this->keyTypes[] = $offsetType;
 		$this->valueTypes[] = $valueType;
 		if ($optional) {
 			$this->optionalKeys[] = count($this->keyTypes) - 1;

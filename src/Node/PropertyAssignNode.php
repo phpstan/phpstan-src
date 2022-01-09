@@ -4,14 +4,13 @@ namespace PHPStan\Node;
 
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
-use PHPStan\Type\Type;
 
 class PropertyAssignNode extends NodeAbstract implements VirtualNode
 {
 
 	public function __construct(
 		private Expr\PropertyFetch|Expr\StaticPropertyFetch $propertyFetch,
-		private Type $assignedType,
+		private Expr $assignedExpr,
 		private bool $assignOp,
 	)
 	{
@@ -23,9 +22,9 @@ class PropertyAssignNode extends NodeAbstract implements VirtualNode
 		return $this->propertyFetch;
 	}
 
-	public function getAssignedType(): Type
+	public function getAssignedExpr(): Expr
 	{
-		return $this->assignedType;
+		return $this->assignedExpr;
 	}
 
 	public function isAssignOp(): bool

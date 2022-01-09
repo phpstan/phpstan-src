@@ -313,3 +313,51 @@ class AssignRefFoo
 	}
 
 }
+
+class PostInc
+{
+
+	/** @var int<min, 3> */
+	private $foo;
+
+	/** @var int<3, max> */
+	private $bar;
+
+	public function doFoo(): void
+	{
+		$this->foo--;
+		$this->bar++;
+	}
+
+	public function doBar(): void
+	{
+		$this->foo++;
+		$this->bar--;
+	}
+
+	public function doFoo2(): void
+	{
+		--$this->foo;
+		++$this->bar;
+	}
+
+	public function doBar2(): void
+	{
+		++$this->foo;
+		--$this->bar;
+	}
+
+}
+
+class ListAssign
+{
+
+	/** @var string */
+	private $foo;
+
+	public function doFoo()
+	{
+		[$this->foo] = [1];
+	}
+
+}

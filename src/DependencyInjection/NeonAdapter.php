@@ -28,7 +28,7 @@ use function substr;
 class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v14-update-nette';
+	public const CACHE_KEY = 'v15-symfony-camel-case';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 
@@ -116,7 +116,9 @@ class NeonAdapter implements Adapter
 				'[parameters][benchmarkFile]',
 				'[parameters][stubFiles][]',
 				'[parameters][symfony][console_application_loader]',
+				'[parameters][symfony][consoleApplicationLoader]',
 				'[parameters][symfony][container_xml_path]',
+				'[parameters][symfony][containerXmlPath]',
 				'[parameters][doctrine][objectManagerLoader]',
 			], true) && is_string($val) && strpos($val, '%') === false && strpos($val, '*') !== 0) {
 				$fileHelper = $this->createFileHelperByFile($file);

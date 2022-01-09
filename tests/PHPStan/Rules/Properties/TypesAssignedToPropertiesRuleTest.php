@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<TypesAssignedToPropertiesRule>
@@ -320,6 +321,9 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	public function testBug6286(): void
 	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
 		$this->analyse([__DIR__ . '/data/bug-6286.php'], [
 			[
 				'Property Bug6286\HelloWorld::$details (array{name: string, age: int}) does not accept array{name: \'Douglas Adams\'}.',

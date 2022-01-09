@@ -10,7 +10,7 @@ class PropertyAssignNode extends NodeAbstract implements VirtualNode
 
 	public function __construct(
 		private Expr\PropertyFetch|Expr\StaticPropertyFetch $propertyFetch,
-		private Expr $assignedExpr,
+		private ?Expr $assignedExpr,
 		private bool $assignOp,
 	)
 	{
@@ -22,7 +22,7 @@ class PropertyAssignNode extends NodeAbstract implements VirtualNode
 		return $this->propertyFetch;
 	}
 
-	public function getAssignedExpr(): Expr
+	public function getAssignedExpr(): ?Expr
 	{
 		return $this->assignedExpr;
 	}

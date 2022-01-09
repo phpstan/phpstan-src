@@ -3220,7 +3220,7 @@ class NodeScopeResolver
 				}
 			} else {
 				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
-					$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
+					$nodeCallback(new PropertyAssignNode($var, null, $isAssignOp), $scope);
 				}
 			}
 		} elseif ($var instanceof PropertyFetch) {

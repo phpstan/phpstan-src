@@ -344,4 +344,32 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4906(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4906.php'], []);
+	}
+
+	public function testBug4910(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4910.php'], []);
+	}
+
+	public function testBug3703(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3703.php'], [
+			[
+				'Property Bug3703\Foo::$bar (array<string, array<string, array<int>>>) does not accept array<string, array<string, array<int, string>>>.',
+				15,
+			],
+			[
+				'Property Bug3703\Foo::$bar (array<string, array<string, array<int>>>) does not accept array<string, array<string, int>>.',
+				18,
+			],
+			[
+				'Property Bug3703\Foo::$bar (array<string, array<string, array<int>>>) does not accept array<string, string>.',
+				21,
+			],
+		]);
+	}
+
 }

@@ -1,8 +1,9 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Node;
+namespace PHPStan\Node\Expr;
 
 use PhpParser\Node\Expr;
+use PHPStan\Node\VirtualNode;
 
 class GetOffsetValueTypeExpr extends Expr implements VirtualNode
 {

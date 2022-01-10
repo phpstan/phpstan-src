@@ -11,7 +11,6 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
-use function count;
 use function sprintf;
 
 /**

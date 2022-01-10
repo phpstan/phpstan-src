@@ -9,7 +9,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
-use function count;
 use function in_array;
 
 class StrvalFamilyFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension

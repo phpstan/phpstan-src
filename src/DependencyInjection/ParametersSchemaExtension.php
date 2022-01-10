@@ -11,7 +11,6 @@ use Nette\Schema\Expect;
 use Nette\Schema\Schema;
 use PHPStan\ShouldNotHappenException;
 use function array_map;
-use function count;
 use function is_array;
 
 class ParametersSchemaExtension extends CompilerExtension

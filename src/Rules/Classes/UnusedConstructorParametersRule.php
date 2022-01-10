@@ -15,7 +15,6 @@ use PHPStan\ShouldNotHappenException;
 use function array_filter;
 use function array_map;
 use function array_values;
-use function count;
 use function is_string;
 use function sprintf;
 use function strtolower;

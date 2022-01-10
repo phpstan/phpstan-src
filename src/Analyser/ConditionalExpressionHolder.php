@@ -5,7 +5,6 @@ namespace PHPStan\Analyser;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
-use function count;
 use function implode;
 use function sprintf;
 

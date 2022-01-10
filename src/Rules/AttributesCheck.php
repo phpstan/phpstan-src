@@ -10,7 +10,6 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_key_exists;
-use function count;
 use function sprintf;
 use function strtolower;
 

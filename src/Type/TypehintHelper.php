@@ -11,7 +11,6 @@ use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
 use function array_map;
-use function count;
 use function get_class;
 use function sprintf;
 use function str_ends_with;

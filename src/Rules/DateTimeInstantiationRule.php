@@ -8,7 +8,6 @@ use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\Constant\ConstantStringType;
 use Throwable;
-use function count;
 use function in_array;
 use function sprintf;
 use function strtolower;

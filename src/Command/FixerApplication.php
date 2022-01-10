@@ -49,7 +49,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 use function Clue\React\Block\await;
-use function count;
 use function defined;
 use function escapeshellarg;
 use function fclose;

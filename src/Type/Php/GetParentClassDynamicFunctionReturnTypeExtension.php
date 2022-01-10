@@ -17,7 +17,6 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function array_map;
-use function count;
 
 class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

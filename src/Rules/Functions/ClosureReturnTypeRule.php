@@ -9,7 +9,6 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function count;
 
 /**
  * @implements Rule<ClosureReturnStatementsNode>

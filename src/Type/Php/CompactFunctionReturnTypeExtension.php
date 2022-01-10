@@ -12,7 +12,6 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use function array_merge;
-use function count;
 
 class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

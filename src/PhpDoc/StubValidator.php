@@ -53,7 +53,6 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
 use Throwable;
 use function array_fill_keys;
-use function count;
 use function sprintf;
 
 class StubValidator

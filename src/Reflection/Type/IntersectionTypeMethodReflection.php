@@ -11,7 +11,6 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_map;
-use function count;
 use function implode;
 
 class IntersectionTypeMethodReflection implements MethodReflection

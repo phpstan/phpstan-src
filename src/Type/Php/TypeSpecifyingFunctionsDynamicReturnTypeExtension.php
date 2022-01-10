@@ -13,7 +13,6 @@ use PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
-use function count;
 use function in_array;
 
 class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension, TypeSpecifierAwareExtension

@@ -6,7 +6,6 @@ use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
-use function count;
 use function htmlspecialchars;
 use function sprintf;
 use const ENT_COMPAT;

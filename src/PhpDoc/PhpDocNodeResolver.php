@@ -30,7 +30,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_map;
 use function array_reverse;
-use function count;
 use function in_array;
 use function strpos;
 use function substr;

@@ -18,7 +18,6 @@ use Throwable;
 use function array_map;
 use function array_pop;
 use function array_reverse;
-use function count;
 use function defined;
 use function escapeshellarg;
 use function is_string;

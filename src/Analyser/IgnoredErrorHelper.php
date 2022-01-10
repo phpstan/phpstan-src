@@ -10,7 +10,6 @@ use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\File\FileHelper;
 use function array_keys;
 use function array_map;
-use function count;
 use function implode;
 use function is_array;
 use function is_file;

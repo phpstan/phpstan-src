@@ -5,7 +5,6 @@ namespace PHPStan\Type;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use function array_map;
-use function count;
 
 /** @api */
 class BenevolentUnionType extends UnionType

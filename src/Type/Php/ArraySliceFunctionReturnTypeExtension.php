@@ -17,7 +17,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_map;
-use function count;
 
 class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

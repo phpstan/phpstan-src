@@ -10,7 +10,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_intersect;
-use function count;
 
 class MixinMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {

@@ -22,7 +22,6 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use function array_key_exists;
-use function count;
 use function is_bool;
 
 /** @api */

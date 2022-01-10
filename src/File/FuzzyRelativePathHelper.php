@@ -2,7 +2,6 @@
 
 namespace PHPStan\File;
 
-use function count;
 use function explode;
 use function implode;
 use function in_array;

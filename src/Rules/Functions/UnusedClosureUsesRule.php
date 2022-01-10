@@ -8,7 +8,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
 use PHPStan\ShouldNotHappenException;
 use function array_map;
-use function count;
 use function is_string;
 
 /**

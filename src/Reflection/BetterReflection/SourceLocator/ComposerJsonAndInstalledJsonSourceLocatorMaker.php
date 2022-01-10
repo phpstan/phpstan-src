@@ -15,7 +15,6 @@ use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function array_merge_recursive;
-use function count;
 use function dirname;
 use function is_dir;
 use function is_file;

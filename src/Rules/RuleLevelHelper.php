@@ -21,7 +21,6 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
-use function count;
 use function sprintf;
 use function strpos;
 

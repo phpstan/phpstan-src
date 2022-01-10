@@ -8,7 +8,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
-use function count;
 use function sprintf;
 use function strtolower;
 

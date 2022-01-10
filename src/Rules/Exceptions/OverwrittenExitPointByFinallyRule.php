@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use function count;
 use function sprintf;
 
 /**

@@ -8,7 +8,6 @@ use React\Promise\Deferred;
 use SplObjectStorage;
 use Throwable;
 use function array_shift;
-use function count;
 use function sprintf;
 
 class RunnableQueue

@@ -16,7 +16,6 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeUtils;
 use function array_map;
-use function count;
 use function sprintf;
 use function strtolower;
 

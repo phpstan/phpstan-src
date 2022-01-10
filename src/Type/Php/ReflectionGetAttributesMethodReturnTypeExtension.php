@@ -15,7 +15,6 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use ReflectionAttribute;
-use function count;
 
 class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {

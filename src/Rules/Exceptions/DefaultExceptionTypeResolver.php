@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Exceptions;
 use Nette\Utils\Strings;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
-use function count;
 
 class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 {

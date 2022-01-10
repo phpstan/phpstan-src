@@ -6,7 +6,6 @@ use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
-use function count;
 use function end;
 use function is_file;
 use function is_string;

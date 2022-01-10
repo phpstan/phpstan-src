@@ -12,7 +12,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
-use function count;
 use function in_array;
 
 class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension

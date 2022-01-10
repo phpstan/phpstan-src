@@ -6,7 +6,6 @@ use PHPStan\ShouldNotHappenException;
 use React\Socket\TcpServer;
 use function array_key_exists;
 use function array_keys;
-use function count;
 use function sprintf;
 
 class ProcessPool

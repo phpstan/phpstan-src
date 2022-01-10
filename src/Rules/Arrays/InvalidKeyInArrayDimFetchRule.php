@@ -9,7 +9,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
-use function count;
 use function sprintf;
 
 /**

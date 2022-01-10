@@ -18,7 +18,6 @@ use PHPStan\Rules\Registry;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
 use function array_map;
-use function count;
 use function implode;
 use function sprintf;
 

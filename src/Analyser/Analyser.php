@@ -7,7 +7,6 @@ use PHPStan\Rules\Registry;
 use Throwable;
 use function array_fill_keys;
 use function array_merge;
-use function count;
 use function error_reporting;
 use function in_array;
 use function restore_error_handler;

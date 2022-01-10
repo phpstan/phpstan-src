@@ -14,7 +14,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use Throwable;
 use function array_shift;
-use function count;
 use function is_string;
 use function sprintf;
 

@@ -32,7 +32,6 @@ use PHPStan\Type\VoidType;
 use function array_keys;
 use function array_map;
 use function array_merge;
-use function count;
 use function is_string;
 use function sprintf;
 

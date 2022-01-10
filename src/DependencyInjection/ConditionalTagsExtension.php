@@ -10,7 +10,6 @@ use PHPStan\Broker\BrokerFactory;
 use PHPStan\PhpDoc\TypeNodeResolverExtension;
 use PHPStan\Rules\RegistryFactory;
 use PHPStan\ShouldNotHappenException;
-use function count;
 use function sprintf;
 
 class ConditionalTagsExtension extends CompilerExtension

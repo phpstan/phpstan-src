@@ -7,7 +7,6 @@ use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
 use function array_keys;
 use function array_values;
-use function count;
 use function is_string;
 use function preg_replace;
 use const PHP_EOL;

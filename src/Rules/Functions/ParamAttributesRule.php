@@ -7,7 +7,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
-use function count;
 
 /**
  * @implements Rule<Node\Param>

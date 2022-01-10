@@ -21,7 +21,6 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use function array_map;
 use function array_merge;
-use function count;
 use function sprintf;
 use function strtolower;
 

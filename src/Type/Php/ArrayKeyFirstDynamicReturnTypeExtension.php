@@ -11,7 +11,6 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
-use function count;
 
 class ArrayKeyFirstDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

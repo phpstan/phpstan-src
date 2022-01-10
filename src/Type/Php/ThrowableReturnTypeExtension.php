@@ -15,7 +15,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use Throwable;
-use function count;
 use function in_array;
 use function strtolower;
 

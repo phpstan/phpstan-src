@@ -33,6 +33,8 @@ use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Php\PhpVersion;
@@ -536,6 +538,20 @@ class MutatingScope implements Scope
 		}
 		if ($node instanceof GetOffsetValueTypeExpr) {
 			return $this->getType($node->getVar())->getOffsetValueType($this->getType($node->getDim()));
+		}
+		if ($node instanceof SetOffsetValueTypeExpr) {
+			return $this->getType($node->getVar())->setOffsetValueType(
+				$node->getDim() !== null ? $this->getType($node->getDim()) : null,
+				$this->getType($node->getValue()),
+			);
+		}
+		if ($node instanceof OriginalPropertyTypeExpr) {
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node->getPropertyFetch(), $this);
+			if ($propertyReflection === null) {
+				return new ErrorType();
+			}
+
+			return $propertyReflection->getReadableType();
 		}
 
 		$key = $this->getNodeKey($node);

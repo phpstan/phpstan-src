@@ -34,10 +34,6 @@ class TypesAssignedToPropertiesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($node->getAssignedExpr() === null) {
-			return [];
-		}
-
 		$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($node->getPropertyFetch(), $scope);
 
 		$errors = [];

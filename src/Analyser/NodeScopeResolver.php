@@ -71,6 +71,8 @@ use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
@@ -3141,9 +3143,15 @@ class NodeScopeResolver
 			$originalVar = $var;
 			$assignedPropertyExpr = $assignedExpr;
 			while ($var instanceof ArrayDimFetch) {
-				$assignedPropertyExpr = new Array_([
-					new ArrayItem($assignedPropertyExpr, $var->dim),
-				]);
+				$varForSetOffsetValue = $var->var;
+				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
+					$varForSetOffsetValue = new OriginalPropertyTypeExpr($varForSetOffsetValue);
+				}
+				$assignedPropertyExpr = new SetOffsetValueTypeExpr(
+					$varForSetOffsetValue,
+					$var->dim,
+					$assignedPropertyExpr,
+				);
 				$dimExprStack[] = $var->dim;
 				$var = $var->var;
 			}
@@ -3193,37 +3201,32 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 
 			$varType = $scope->getType($var);
-			$getValueToWrite = static function (Type $initialType) use ($offsetTypes, $valueToWrite): Type {
-				// 4. compose types
-				if ($initialType instanceof ErrorType) {
-					$initialType = new ConstantArrayType([], []);
-				}
-				$offsetValueType = $initialType;
-				$offsetValueTypeStack = [$offsetValueType];
-				foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
-					if ($offsetType === null) {
+
+			// 4. compose types
+			if ($varType instanceof ErrorType) {
+				$varType = new ConstantArrayType([], []);
+			}
+			$offsetValueType = $varType;
+			$offsetValueTypeStack = [$offsetValueType];
+			foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
+				if ($offsetType === null) {
+					$offsetValueType = new ConstantArrayType([], []);
+
+				} else {
+					$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+					if ($offsetValueType instanceof ErrorType) {
 						$offsetValueType = new ConstantArrayType([], []);
-
-					} else {
-						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
-						if ($offsetValueType instanceof ErrorType) {
-							$offsetValueType = new ConstantArrayType([], []);
-						}
 					}
-
-					$offsetValueTypeStack[] = $offsetValueType;
 				}
 
-				foreach (array_reverse($offsetTypes) as $i => $offsetType) {
-					/** @var Type $offsetValueType */
-					$offsetValueType = array_pop($offsetValueTypeStack);
-					$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
-				}
+				$offsetValueTypeStack[] = $offsetValueType;
+			}
 
-				return $valueToWrite;
-			};
-
-			$valueToWrite = $getValueToWrite($varType);
+			foreach (array_reverse($offsetTypes) as $i => $offsetType) {
+				/** @var Type $offsetValueType */
+				$offsetValueType = array_pop($offsetValueTypeStack);
+				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+			}
 
 			if (!(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
 				if ($var instanceof Variable && is_string($var->name)) {
@@ -3249,7 +3252,7 @@ class NodeScopeResolver
 				}
 			} else {
 				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
-					$nodeCallback(new PropertyAssignNode($var, null, $isAssignOp), $scope);
+					$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
 				}
 			}
 		} elseif ($var instanceof PropertyFetch) {

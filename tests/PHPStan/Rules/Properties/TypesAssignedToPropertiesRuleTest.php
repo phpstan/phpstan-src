@@ -101,6 +101,10 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				'Property PropertiesAssignedTypes\ListAssign::$foo (string) does not accept int.',
 				360,
 			],
+			[
+				'Property PropertiesAssignedTypes\AppendToArrayAccess::$collection2 (ArrayAccess<int, string>&Countable) does not accept Countable.',
+				376,
+			],
 		]);
 	}
 
@@ -216,39 +220,39 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/../Arrays/data/appended-array-key.php'], [
 			[
-				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<int|string, int>.',
+				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<int|string, mixed>.',
 				27,
 			],
 			[
-				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<int|string, int>.',
+				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<int|string, mixed>.',
 				28,
 			],
 			[
-				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<string, int>.',
+				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<int|string, mixed>.',
 				30,
 			],
 			[
-				'Property AppendedArrayKey\Foo::$stringArray (array<string, mixed>) does not accept array<int, int>.',
+				'Property AppendedArrayKey\Foo::$stringArray (array<string, mixed>) does not accept array<int|string, mixed>.',
 				31,
 			],
 			[
-				'Property AppendedArrayKey\Foo::$stringArray (array<string, mixed>) does not accept array<int|string, int>.',
+				'Property AppendedArrayKey\Foo::$stringArray (array<string, mixed>) does not accept array<int|string, mixed>.',
 				33,
 			],
 			[
-				'Property AppendedArrayKey\Foo::$stringArray (array<string, mixed>) does not accept array<int, int>.',
+				'Property AppendedArrayKey\Foo::$stringArray (array<string, mixed>) does not accept array<int|string, mixed>.',
 				38,
 			],
 			[
-				'Property AppendedArrayKey\Foo::$stringArray (array<string, mixed>) does not accept array<int, false>.',
+				'Property AppendedArrayKey\Foo::$stringArray (array<string, mixed>) does not accept array<int|string, mixed>.',
 				46,
 			],
 			[
-				'Property AppendedArrayKey\MorePreciseKey::$test (array<1|2|3, string>) does not accept non-empty-array<int, \'foo\'>.',
+				'Property AppendedArrayKey\MorePreciseKey::$test (array<1|2|3, string>) does not accept non-empty-array<int, string>.',
 				80,
 			],
 			[
-				'Property AppendedArrayKey\MorePreciseKey::$test (array<1|2|3, string>) does not accept array{4: \'foo\'}.',
+				'Property AppendedArrayKey\MorePreciseKey::$test (array<1|2|3, string>) does not accept non-empty-array<1|2|3|4, string>.',
 				85,
 			],
 		]);
@@ -270,35 +274,35 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[__DIR__ . '/../Arrays/data/appended-array-item.php'],
 			[
 				[
-					'Property AppendedArrayItem\Foo::$integers (array<int>) does not accept array<int, string>.',
+					'Property AppendedArrayItem\Foo::$integers (array<int>) does not accept array<int|string>.',
 					18,
 				],
 				[
-					'Property AppendedArrayItem\Foo::$callables (array<callable(): mixed>) does not accept array{array{1, 2, 3}}.',
+					'Property AppendedArrayItem\Foo::$callables (array<callable(): mixed>) does not accept non-empty-array<array{1, 2, 3}|(callable(): mixed)>.',
 					20,
 				],
 				[
-					'Property AppendedArrayItem\Foo::$callables (array<callable(): mixed>) does not accept array{array{\'AppendedArrayItem\\\\Foo\', \'classMethod\'}}.',
+					'Property AppendedArrayItem\Foo::$callables (array<callable(): mixed>) does not accept non-empty-array<array{\'AppendedArrayItem\\\\Foo\', \'classMethod\'}|(callable(): mixed)>.',
 					23,
 				],
 				[
-					'Property AppendedArrayItem\Foo::$callables (array<callable(): mixed>) does not accept array{array{\'Foo\', \'Hello world\'}}.',
+					'Property AppendedArrayItem\Foo::$callables (array<callable(): mixed>) does not accept non-empty-array<array{\'Foo\', \'Hello world\'}|(callable(): mixed)>.',
 					25,
 				],
 				[
-					'Property AppendedArrayItem\Foo::$integers (array<int>) does not accept array<int, string>.',
+					'Property AppendedArrayItem\Foo::$integers (array<int>) does not accept array<int|string>.',
 					27,
 				],
 				[
-					'Property AppendedArrayItem\Foo::$integers (array<int>) does not accept array<int, string>.',
+					'Property AppendedArrayItem\Foo::$integers (array<int>) does not accept array<int|string>.',
 					32,
 				],
 				[
-					'Property AppendedArrayItem\Bar::$stringCallables (array<callable(): string>) does not accept array{Closure(): 1}.',
+					'Property AppendedArrayItem\Bar::$stringCallables (array<callable(): string>) does not accept non-empty-array<(callable(): string)|(Closure(): 1)>.',
 					45,
 				],
 				[
-					'Property AppendedArrayItem\Baz::$staticProperty (array<AppendedArrayItem\Lorem>) does not accept array<int, AppendedArrayItem\Baz>.',
+					'Property AppendedArrayItem\Baz::$staticProperty (array<AppendedArrayItem\Lorem>) does not accept array<AppendedArrayItem\Baz>.',
 					79,
 				],
 			],
@@ -309,11 +313,11 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-5804.php'], [
 			[
-				'Property Bug5804\Blah::$value (array<int>|null) does not accept array<int, string>.',
+				'Property Bug5804\Blah::$value (array<int>|null) does not accept array<int|string>.',
 				12,
 			],
 			[
-				'Property Bug5804\Blah::$value (array<int>|null) does not accept array<int, Bug5804\Blah>.',
+				'Property Bug5804\Blah::$value (array<int>|null) does not accept array<Bug5804\Blah|int>.',
 				17,
 			],
 		]);
@@ -326,19 +330,11 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		}
 		$this->analyse([__DIR__ . '/data/bug-6286.php'], [
 			[
-				'Property Bug6286\HelloWorld::$details (array{name: string, age: int}) does not accept array{name: \'Douglas Adams\'}.',
-				18,
-			],
-			[
-				'Property Bug6286\HelloWorld::$details (array{name: string, age: int}) does not accept array{age: \'Forty-two\'}.',
+				'Property Bug6286\HelloWorld::$details (array{name: string, age: int}) does not accept array{name: string, age: \'Forty-two\'}.',
 				19,
 			],
 			[
-				'Property Bug6286\HelloWorld::$nestedDetails (array<array{name: string, age: int}>) does not accept array{array{name: \'Bilbo Baggins\'}}.',
-				21,
-			],
-			[
-				'Property Bug6286\HelloWorld::$nestedDetails (array<array{name: string, age: int}>) does not accept array{array{age: \'Eleventy-one\'}}.',
+				'Property Bug6286\HelloWorld::$nestedDetails (array<array{name: string, age: int}>) does not accept non-empty-array<array{name: string, age: \'Eleventy-one\'|int}>.',
 				22,
 			],
 		]);
@@ -358,18 +354,28 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-3703.php'], [
 			[
-				'Property Bug3703\Foo::$bar (array<string, array<string, array<int>>>) does not accept array<string, array<string, array<int, string>>>.',
+				'Property Bug3703\Foo::$bar (array<string, array<string, array<int>>>) does not accept array<string, array<string, array<int|string>>>.',
 				15,
 			],
 			[
-				'Property Bug3703\Foo::$bar (array<string, array<string, array<int>>>) does not accept array<string, array<string, int>>.',
+				'Property Bug3703\Foo::$bar (array<string, array<string, array<int>>>) does not accept array<string, array<string, array<int|string>|int>>.',
 				18,
 			],
 			[
-				'Property Bug3703\Foo::$bar (array<string, array<string, array<int>>>) does not accept array<string, string>.',
+				'Property Bug3703\Foo::$bar (array<string, array<string, array<int>>>) does not accept array<string, array<string, array<int>>|string>.',
 				21,
 			],
 		]);
+	}
+
+	public function testBug6333(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6333.php'], []);
+	}
+
+	public function testBug3339(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3339.php'], []);
 	}
 
 }

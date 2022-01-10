@@ -37,7 +37,7 @@ class ParamAttributesRule implements Rule
 				$targetName,
 			);
 
-			if (count($propertyTargetErrors) === 0) {
+			if ($propertyTargetErrors === []) {
 				return $propertyTargetErrors;
 			}
 		}

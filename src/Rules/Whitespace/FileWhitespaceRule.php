@@ -26,7 +26,7 @@ class FileWhitespaceRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$nodes = $node->getNodes();
-		if (count($nodes) === 0) {
+		if ($nodes === []) {
 			return [];
 		}
 
@@ -54,7 +54,7 @@ class FileWhitespaceRule implements Rule
 					return null;
 				}
 				if ($node instanceof Node\Stmt\Namespace_) {
-					if (count($node->stmts) > 0) {
+					if ($node->stmts !== []) {
 						$this->lastNodes[] = $node->stmts[count($node->stmts) - 1];
 					}
 					return null;

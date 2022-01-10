@@ -31,7 +31,7 @@ class DateTimeInstantiationRule implements Rule
 	{
 		if (
 			!($node->class instanceof Node\Name)
-			|| count($node->getArgs()) === 0
+			|| $node->getArgs() === []
 			|| !in_array(strtolower((string) $node->class), ['datetime', 'datetimeimmutable'], true)
 		) {
 			return [];

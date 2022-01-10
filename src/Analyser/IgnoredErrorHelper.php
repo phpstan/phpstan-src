@@ -81,7 +81,7 @@ class IgnoredErrorHelper
 					}
 					$validationResult = $this->ignoredRegexValidator->validate($ignoreMessage);
 					$ignoredTypes = $validationResult->getIgnoredTypes();
-					if (count($ignoredTypes) > 0) {
+					if ($ignoredTypes !== []) {
 						$errors[] = $this->createIgnoredTypesError($ignoreMessage, $ignoredTypes);
 					}
 
@@ -101,7 +101,7 @@ class IgnoredErrorHelper
 					Strings::match('', $ignoreMessage);
 					$validationResult = $this->ignoredRegexValidator->validate($ignoreMessage);
 					$ignoredTypes = $validationResult->getIgnoredTypes();
-					if (count($ignoredTypes) > 0) {
+					if ($ignoredTypes !== []) {
 						$errors[] = $this->createIgnoredTypesError($ignoreMessage, $ignoredTypes);
 					}
 

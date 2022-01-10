@@ -69,14 +69,14 @@ class PhpDocNodeResolver
 				}
 			}
 
-			if (count($tagResolved) === 0) {
+			if ($tagResolved === []) {
 				continue;
 			}
 
 			$resolvedByTag[] = $tagResolved;
 		}
 
-		if (count($resolvedByTag) > 0) {
+		if ($resolvedByTag !== []) {
 			return array_reverse($resolvedByTag)[0];
 		}
 
@@ -344,7 +344,7 @@ class PhpDocNodeResolver
 				$types[] = $type;
 			}
 
-			if (count($types) > 0) {
+			if ($types !== []) {
 				return new ThrowsTag(TypeCombinator::union(...$types));
 			}
 		}
@@ -413,21 +413,21 @@ class PhpDocNodeResolver
 	{
 		$deprecatedTags = $phpDocNode->getTagsByName('@deprecated');
 
-		return count($deprecatedTags) > 0;
+		return $deprecatedTags !== [];
 	}
 
 	public function resolveIsInternal(PhpDocNode $phpDocNode): bool
 	{
 		$internalTags = $phpDocNode->getTagsByName('@internal');
 
-		return count($internalTags) > 0;
+		return $internalTags !== [];
 	}
 
 	public function resolveIsFinal(PhpDocNode $phpDocNode): bool
 	{
 		$finalTags = $phpDocNode->getTagsByName('@final');
 
-		return count($finalTags) > 0;
+		return $finalTags !== [];
 	}
 
 	public function resolveIsPure(PhpDocNode $phpDocNode): bool

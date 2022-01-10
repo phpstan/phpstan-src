@@ -34,11 +34,11 @@ class ArrayKeyLastDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		$constantArrays = TypeUtils::getConstantArrays($argType);
-		if (count($constantArrays) > 0) {
+		if ($constantArrays !== []) {
 			$keyTypes = [];
 			foreach ($constantArrays as $constantArray) {
 				$arrayKeyTypes = $constantArray->getKeyTypes();
-				if (count($arrayKeyTypes) === 0) {
+				if ($arrayKeyTypes === []) {
 					$keyTypes[] = new NullType();
 					continue;
 				}

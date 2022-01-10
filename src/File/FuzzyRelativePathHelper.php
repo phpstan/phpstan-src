@@ -91,7 +91,7 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 			$pathToTrimArray = $pathTempParts;
 		}
 
-		if ($pathToTrimArray === null || count($pathToTrimArray) === 0) {
+		if ($pathToTrimArray === null || $pathToTrimArray === []) {
 			return;
 		}
 

@@ -43,7 +43,7 @@ class StatementOrderVisitor extends NodeVisitorAbstract
 
 		if (
 			($node instanceof Node\Expr || $node instanceof Node\Arg)
-			&& count($this->expressionOrderStack) > 0
+			&& $this->expressionOrderStack !== []
 		) {
 			$expressionOrder = $this->expressionOrderStack[count($this->expressionOrderStack) - 1];
 			$node->setAttribute('expressionOrder', $expressionOrder);

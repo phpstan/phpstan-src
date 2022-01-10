@@ -108,7 +108,7 @@ class ExistingNamesInGroupUseRule implements Rule
 		$errors = $this->classCaseSensitivityCheck->checkClassNames([
 			new ClassNameNodePair((string) $name, $name),
 		]);
-		if (count($errors) === 0) {
+		if ($errors === []) {
 			return null;
 		} elseif (count($errors) === 1) {
 			return $errors[0];

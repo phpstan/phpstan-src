@@ -23,9 +23,9 @@ class FileMonitorResult
 
 	public function hasAnyChanges(): bool
 	{
-		return count($this->newFiles) > 0
-			|| count($this->changedFiles) > 0
-			|| count($this->deletedFiles) > 0;
+		return $this->newFiles !== []
+			|| $this->changedFiles !== []
+			|| $this->deletedFiles !== [];
 	}
 
 	public function getTotalFilesCount(): int

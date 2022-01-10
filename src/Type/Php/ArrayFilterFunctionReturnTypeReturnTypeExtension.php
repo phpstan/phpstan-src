@@ -62,13 +62,13 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			if ($flagArg === null) {
 				$var = null;
 				$expr = null;
-				if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
+				if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && $callbackArg->params !== []) {
 					$statement = $callbackArg->stmts[0];
 					if ($statement instanceof Return_ && $statement->expr !== null) {
 						$var = $callbackArg->params[0]->var;
 						$expr = $statement->expr;
 					}
-				} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
+				} elseif ($callbackArg instanceof ArrowFunction && $callbackArg->params !== []) {
 					$var = $callbackArg->params[0]->var;
 					$expr = $callbackArg->expr;
 				}

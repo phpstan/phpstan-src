@@ -73,7 +73,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			}
 		}
 
-		if (count($varTags) === 0) {
+		if ($varTags === []) {
 			return [];
 		}
 
@@ -318,7 +318,7 @@ class WrongVariableNameInVarTagRule implements Rule
 		}
 
 		if (count($variableLessVarTags) !== 1 || $defaultExpr === null) {
-			if (count($variableLessVarTags) > 0) {
+			if ($variableLessVarTags !== []) {
 				$errors[] = RuleErrorBuilder::message('PHPDoc tag @var does not specify variable name.')->build();
 			}
 		}

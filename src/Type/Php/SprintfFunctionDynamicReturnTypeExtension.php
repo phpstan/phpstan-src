@@ -33,7 +33,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 	): Type
 	{
 		$args = $functionCall->getArgs();
-		if (count($args) === 0) {
+		if ($args === []) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 

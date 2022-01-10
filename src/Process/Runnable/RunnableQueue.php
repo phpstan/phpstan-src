@@ -66,7 +66,7 @@ class RunnableQueue
 
 	private function drainQueue(): void
 	{
-		if (count($this->queue) === 0) {
+		if ($this->queue === []) {
 			$this->logger->log('Queue empty');
 			return;
 		}

@@ -46,11 +46,11 @@ class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		$arraysType = $scope->getType($functionCall->getArgs()[0]->value);
 		$constantArrays = TypeUtils::getConstantArrays($arraysType);
-		if (count($constantArrays) > 0) {
+		if ($constantArrays !== []) {
 			$onlyEmpty = true;
 			$onlyNonEmpty = true;
 			foreach ($constantArrays as $constantArray) {
-				$isEmpty = count($constantArray->getValueTypes()) === 0;
+				$isEmpty = $constantArray->getValueTypes() === [];
 				$onlyEmpty = $onlyEmpty && $isEmpty;
 				$onlyNonEmpty = $onlyNonEmpty && !$isEmpty;
 			}

@@ -91,8 +91,8 @@ class RuleLevelHelper
 			$acceptedType->isArray()->yes()
 			&& $acceptingType->isArray()->yes()
 			&& !$acceptingType->isIterableAtLeastOnce()->yes()
-			&& count(TypeUtils::getConstantArrays($acceptedType)) === 0
-			&& count(TypeUtils::getConstantArrays($acceptingType)) === 0
+			&& TypeUtils::getConstantArrays($acceptedType) === []
+			&& TypeUtils::getConstantArrays($acceptingType) === []
 		) {
 			return self::accepts(
 				$acceptingType->getIterableKeyType(),
@@ -162,7 +162,7 @@ class RuleLevelHelper
 			$errors[] = RuleErrorBuilder::message(sprintf($unknownClassErrorPattern, $referencedClass))->line($var->getLine())->discoveringSymbolsTip()->build();
 		}
 
-		if (count($errors) > 0 || $hasClassExistsClass) {
+		if ($errors !== [] || $hasClassExistsClass) {
 			return new FoundTypeResult(new ErrorType(), [], $errors, null);
 		}
 
@@ -180,7 +180,7 @@ class RuleLevelHelper
 					$newTypes[] = $innerType;
 				}
 
-				if (count($newTypes) > 0) {
+				if ($newTypes !== []) {
 					return new FoundTypeResult(TypeCombinator::union(...$newTypes), $directClassNames, [], null);
 				}
 			}

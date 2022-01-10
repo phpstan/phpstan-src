@@ -313,7 +313,7 @@ class ResultCacheManager
 				return false;
 			}
 
-			if (count($internalErrors) > 0) {
+			if ($internalErrors !== []) {
 				if ($output->isDebug()) {
 					$output->writeLineFormatted('Result cache was not saved because of internal errors.');
 				}

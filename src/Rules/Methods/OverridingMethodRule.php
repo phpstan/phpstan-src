@@ -470,7 +470,7 @@ class OverridingMethodRule implements Rule
 		Scope $scope,
 	): array
 	{
-		if (count($errors) > 0) {
+		if ($errors !== []) {
 			return $errors;
 		}
 

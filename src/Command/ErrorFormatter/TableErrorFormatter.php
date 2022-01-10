@@ -87,7 +87,7 @@ class TableErrorFormatter implements ErrorFormatter
 			$style->table(['Line', $relativeFilePath], $rows);
 		}
 
-		if (count($analysisResult->getNotFileSpecificErrors()) > 0) {
+		if ($analysisResult->getNotFileSpecificErrors() !== []) {
 			$style->table(['', 'Error'], array_map(static fn (string $error): array => ['', $error], $analysisResult->getNotFileSpecificErrors()));
 		}
 

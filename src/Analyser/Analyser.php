@@ -74,7 +74,7 @@ class Analyser
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
 
 				$fileExportedNodes = $fileAnalyserResult->getExportedNodes();
-				if (count($fileExportedNodes) > 0) {
+				if ($fileExportedNodes !== []) {
 					$exportedNodes[$file] = $fileExportedNodes;
 				}
 			} catch (Throwable $t) {

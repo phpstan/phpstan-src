@@ -70,7 +70,7 @@ class GenericAncestorsCheck
 
 			$ancestorTypeClassName = $ancestorType->getClassName();
 			if (!isset($names[$ancestorTypeClassName])) {
-				if (count($names) === 0) {
+				if ($names === []) {
 					$messages[] = RuleErrorBuilder::message($noNamesMessage)->build();
 				} else {
 					$messages[] = RuleErrorBuilder::message(sprintf($noRelatedNameMessage, $ancestorTypeClassName, implode(', ', array_keys($names))))->build();

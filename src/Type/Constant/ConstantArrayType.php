@@ -76,14 +76,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		assert(count($keyTypes) === count($valueTypes));
 
 		parent::__construct(
-			count($keyTypes) > 0 ? TypeCombinator::union(...$keyTypes) : new NeverType(),
-			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType(),
+			$keyTypes !== [] ? TypeCombinator::union(...$keyTypes) : new NeverType(),
+			$valueTypes !== [] ? TypeCombinator::union(...$valueTypes) : new NeverType(),
 		);
 	}
 
 	public function isEmpty(): bool
 	{
-		return count($this->keyTypes) === 0;
+		return $this->keyTypes === [];
 	}
 
 	public function getNextAutoIndex(): int
@@ -206,8 +206,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		if ($type instanceof self && count($this->keyTypes) === 0) {
-			return TrinaryLogic::createFromBoolean(count($type->keyTypes) === 0);
+		if ($type instanceof self && $this->keyTypes === []) {
+			return TrinaryLogic::createFromBoolean($type->keyTypes === []);
 		}
 
 		$result = TrinaryLogic::createYes();
@@ -239,9 +239,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof self) {
-			if (count($this->keyTypes) === 0) {
-				if (count($type->keyTypes) > 0) {
-					if (count($type->optionalKeys) > 0) {
+			if ($this->keyTypes === []) {
+				if ($type->keyTypes !== []) {
+					if ($type->optionalKeys !== []) {
 						return TrinaryLogic::createMaybe();
 					}
 					return TrinaryLogic::createNo();
@@ -269,7 +269,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		if ($type instanceof ArrayType) {
 			$result = TrinaryLogic::createMaybe();
-			if (count($this->keyTypes) === 0) {
+			if ($this->keyTypes === []) {
 				return $result;
 			}
 
@@ -444,7 +444,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$matchingValueTypes[] = $this->valueTypes[$i];
 		}
 
-		if (count($matchingValueTypes) > 0) {
+		if ($matchingValueTypes !== []) {
 			$type = TypeCombinator::union(...$matchingValueTypes);
 			if ($type instanceof ErrorType) {
 				return new MixedType();
@@ -519,7 +519,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function removeLast(): self
 	{
-		if (count($this->keyTypes) === 0) {
+		if ($this->keyTypes === []) {
 			return $this;
 		}
 
@@ -565,7 +565,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function slice(int $offset, ?int $limit, bool $preserveKeys = false): self
 	{
-		if (count($this->keyTypes) === 0) {
+		if ($this->keyTypes === []) {
 			return $this;
 		}
 
@@ -621,7 +621,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function generalize(GeneralizePrecision $precision): Type
 	{
-		if (count($this->keyTypes) === 0) {
+		if ($this->keyTypes === []) {
 			return $this;
 		}
 
@@ -827,11 +827,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isKeysSupersetOf(self $otherArray): bool
 	{
-		if (count($this->keyTypes) === 0) {
-			return count($otherArray->keyTypes) === 0;
+		if ($this->keyTypes === []) {
+			return $otherArray->keyTypes === [];
 		}
 
-		if (count($otherArray->keyTypes) === 0) {
+		if ($otherArray->keyTypes === []) {
 			return false;
 		}
 
@@ -847,7 +847,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			}
 		}
 
-		return count($otherKeys) === 0;
+		return $otherKeys === [];
 	}
 
 	public function mergeWith(self $otherArray): self

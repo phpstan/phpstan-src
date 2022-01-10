@@ -330,7 +330,7 @@ class AnalyseCommand extends Command
 
 			if (
 				$unignorableCount === 0
-				&& count($analysisResult->getNotFileSpecificErrors()) === 0
+				&& $analysisResult->getNotFileSpecificErrors() === []
 			) {
 				$inceptionResult->getStdOutput()->getStyle()->success($message);
 			} else {
@@ -358,7 +358,7 @@ class AnalyseCommand extends Command
 				$nonIgnorableErrorsByException[] = $fileSpecificError;
 			}
 
-			if ($hasInternalErrors || count($nonIgnorableErrorsByException) > 0) {
+			if ($hasInternalErrors || $nonIgnorableErrorsByException !== []) {
 				$fixerAnalysisResult = new AnalysisResult(
 					$nonIgnorableErrorsByException,
 					$analysisResult->getInternalErrors(),
@@ -389,7 +389,7 @@ class AnalyseCommand extends Command
 			if (!$analysisResult->isResultCacheSaved() && !$onlyFiles) {
 				// this can happen only if there are some regex-related errors in ignoreErrors configuration
 				$stdOutput = $inceptionResult->getStdOutput();
-				if (count($analysisResult->getFileSpecificErrors()) > 0) {
+				if ($analysisResult->getFileSpecificErrors() !== []) {
 					$stdOutput->getStyle()->error('Unknown error. Please report this as a bug.');
 					return $inceptionResult->handleReturn(1);
 				}

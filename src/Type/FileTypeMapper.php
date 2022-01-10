@@ -515,18 +515,18 @@ class FileTypeMapper
 			},
 			static function (Node $node, $callbackResult) use ($lookForTrait, &$namespace, &$functionStack, &$classStack, &$typeAliasStack, &$uses, &$typeMapStack): void {
 				if ($node instanceof Node\Stmt\ClassLike && $lookForTrait === null) {
-					if (count($classStack) === 0) {
+					if ($classStack === []) {
 						throw new ShouldNotHappenException();
 					}
 					array_pop($classStack);
 
-					if (count($typeAliasStack) === 0) {
+					if ($typeAliasStack === []) {
 						throw new ShouldNotHappenException();
 					}
 
 					array_pop($typeAliasStack);
 
-					if (count($functionStack) === 0) {
+					if ($functionStack === []) {
 						throw new ShouldNotHappenException();
 					}
 
@@ -535,7 +535,7 @@ class FileTypeMapper
 					$namespace = null;
 					$uses = [];
 				} elseif ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
-					if (count($functionStack) === 0) {
+					if ($functionStack === []) {
 						throw new ShouldNotHappenException();
 					}
 
@@ -545,14 +545,14 @@ class FileTypeMapper
 					return;
 				}
 
-				if (count($typeMapStack) === 0) {
+				if ($typeMapStack === []) {
 					throw new ShouldNotHappenException();
 				}
 				array_pop($typeMapStack);
 			},
 		);
 
-		if (count($typeMapStack) > 0) {
+		if ($typeMapStack !== []) {
 			throw new ShouldNotHappenException();
 		}
 

@@ -20,7 +20,7 @@ class ConditionalExpressionHolder
 		private VariableTypeHolder $typeHolder,
 	)
 	{
-		if (count($conditionExpressionTypes) === 0) {
+		if ($conditionExpressionTypes === []) {
 			throw new ShouldNotHappenException();
 		}
 	}

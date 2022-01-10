@@ -71,7 +71,7 @@ class StubValidator
 	 */
 	public function validate(array $stubFiles, bool $debug): array
 	{
-		if (count($stubFiles) === 0) {
+		if ($stubFiles === []) {
 			return [];
 		}
 

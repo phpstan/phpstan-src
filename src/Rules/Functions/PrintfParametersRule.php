@@ -121,13 +121,13 @@ class PrintfParametersRule implements Rule
 
 		$matches = Strings::matchAll($format, $pattern, PREG_SET_ORDER);
 
-		if (count($matches) === 0) {
+		if ($matches === []) {
 			return 0;
 		}
 
 		$placeholders = array_filter($matches, static fn (array $match): bool => strlen($match['before']) % 2 === 0);
 
-		if (count($placeholders) === 0) {
+		if ($placeholders === []) {
 			return 0;
 		}
 

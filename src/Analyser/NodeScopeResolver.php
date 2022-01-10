@@ -868,7 +868,7 @@ class NodeScopeResolver
 			$nodeCallback(new BreaklessWhileLoopNode($stmt, $finalScopeResult->getExitPoints()), $bodyScopeMaybeRan);
 
 			if ($alwaysIterates) {
-				$isAlwaysTerminating = count($finalScopeResult->getExitPointsByType(Break_::class)) === 0;
+				$isAlwaysTerminating = $finalScopeResult->getExitPointsByType(Break_::class) === [];
 			} elseif ($isIterableAtLeastOnce) {
 				$isAlwaysTerminating = $finalScopeResult->isAlwaysTerminating();
 			} else {
@@ -939,7 +939,7 @@ class NodeScopeResolver
 			$nodeCallback(new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->getExitPoints()), $bodyScope);
 
 			if ($alwaysIterates) {
-				$alwaysTerminating = count($bodyScopeResult->getExitPointsByType(Break_::class)) === 0;
+				$alwaysTerminating = $bodyScopeResult->getExitPointsByType(Break_::class) === [];
 			} else {
 				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 			}
@@ -1164,7 +1164,7 @@ class NodeScopeResolver
 					}
 					$matchingThrowPoints[] = $throwPoint;
 				}
-				$hasExplicit = count($matchingThrowPoints) > 0;
+				$hasExplicit = $matchingThrowPoints !== [];
 				foreach ($throwPoints as $throwPoint) {
 					$isSuperType = $catchType->isSuperTypeOf($throwPoint->getType());
 					if (!$hasExplicit && !$isSuperType->no()) {
@@ -1177,7 +1177,7 @@ class NodeScopeResolver
 				}
 				$throwPoints = $newThrowPoints;
 
-				if (count($matchingThrowPoints) === 0) {
+				if ($matchingThrowPoints === []) {
 					$throwableThrowPoints = [];
 					if ($originalCatchType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
 						foreach ($branchScopeResult->getThrowPoints() as $originalThrowPoint) {
@@ -1189,7 +1189,7 @@ class NodeScopeResolver
 						}
 					}
 
-					if (count($throwableThrowPoints) === 0) {
+					if ($throwableThrowPoints === []) {
 						$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType, $originalCatchType), $scope);
 						continue;
 					}
@@ -1265,7 +1265,7 @@ class NodeScopeResolver
 				$throwPointsForLater = array_merge($throwPointsForLater, $finallyResult->getThrowPoints());
 				$finallyScope = $finallyResult->getScope();
 				$finalScope = $finallyResult->isAlwaysTerminating() ? $finalScope : $finalScope->processFinallyScope($finallyScope, $originalFinallyScope);
-				if (count($finallyResult->getExitPoints()) > 0) {
+				if ($finallyResult->getExitPoints() !== []) {
 					$nodeCallback(new FinallyExitPointsNode(
 						$finallyResult->getExitPoints(),
 						$finallyExitPoints,
@@ -1579,7 +1579,7 @@ class NodeScopeResolver
 	private function findEarlyTerminatingExpr(Expr $expr, Scope $scope): ?Expr
 	{
 		if (($expr instanceof MethodCall || $expr instanceof Expr\StaticCall) && $expr->name instanceof Node\Identifier) {
-			if (count($this->earlyTerminatingMethodCalls) > 0) {
+			if ($this->earlyTerminatingMethodCalls !== []) {
 				if ($expr instanceof MethodCall) {
 					$methodCalledOnType = $scope->getType($expr->var);
 				} else {
@@ -1689,7 +1689,7 @@ class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$vars = $this->getAssignedVariables($expr->var);
-			if (count($vars) > 0) {
+			if ($vars !== []) {
 				$varChangedScope = false;
 				$scope = $this->processVarAnnotation($scope, $vars, $expr, $varChangedScope);
 				if (!$varChangedScope) {
@@ -1767,7 +1767,7 @@ class NodeScopeResolver
 				$arrayArg = $expr->getArgs()[0]->value;
 				$constantArrays = TypeUtils::getConstantArrays($scope->getType($arrayArg));
 				$scope = $scope->invalidateExpression($arrayArg);
-				if (count($constantArrays) > 0) {
+				if ($constantArrays !== []) {
 					$resultArrayTypes = [];
 
 					foreach ($constantArrays as $constantArray) {
@@ -1784,7 +1784,7 @@ class NodeScopeResolver
 					);
 				} else {
 					$arrays = TypeUtils::getAnyArrays($scope->getType($arrayArg));
-					if (count($arrays) > 0) {
+					if ($arrays !== []) {
 						$scope = $scope->specifyExpressionType($arrayArg, TypeCombinator::union(...$arrays));
 					}
 				}
@@ -1818,7 +1818,7 @@ class NodeScopeResolver
 				$constantArrays = TypeUtils::getConstantArrays($originalArrayType);
 				if (
 					$functionReflection->getName() === 'array_push'
-					|| ($originalArrayType->isArray()->yes() && count($constantArrays) === 0)
+					|| ($originalArrayType->isArray()->yes() && $constantArrays === [])
 				) {
 					$arrayType = $originalArrayType;
 					foreach ($argumentTypes as $argType) {
@@ -1826,7 +1826,7 @@ class NodeScopeResolver
 					}
 
 					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, TypeCombinator::intersect($arrayType, new NonEmptyArrayType()));
-				} elseif (count($constantArrays) > 0) {
+				} elseif ($constantArrays !== []) {
 					$defaultArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach ($argumentTypes as $argType) {
 						$defaultArrayBuilder->setOffsetValueType(null, $argType);
@@ -2640,7 +2640,7 @@ class NodeScopeResolver
 				!$functionReflection->isBuiltin()
 				|| $requiredParameters === null
 				|| $requiredParameters > 0
-				|| count($funcCall->getArgs()) > 0
+				|| $funcCall->getArgs() !== []
 			) {
 				$functionReturnedType = $scope->getType($funcCall);
 				if (!(new ObjectType(Throwable::class))->isSuperTypeOf($functionReturnedType)->yes()) {
@@ -2885,7 +2885,7 @@ class NodeScopeResolver
 
 			$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 		};
-		if (count($byRefUses) === 0) {
+		if ($byRefUses === []) {
 			$statementResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, $closureStmtsCallback);
 			$nodeCallback(new ClosureReturnStatementsNode(
 				$expr,
@@ -3020,7 +3020,7 @@ class NodeScopeResolver
 				if (isset($parameters[$i])) {
 					$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
 					$parameterType = $parameters[$i]->getType();
-				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
+				} elseif ($parameters !== [] && $parametersAcceptor->isVariadic()) {
 					$lastParameter = $parameters[count($parameters) - 1];
 					$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
 					$parameterType = $lastParameter->getType();
@@ -3490,7 +3490,7 @@ class NodeScopeResolver
 			}
 		}
 
-		if (count($varTags) === 0) {
+		if ($varTags === []) {
 			return $scope;
 		}
 

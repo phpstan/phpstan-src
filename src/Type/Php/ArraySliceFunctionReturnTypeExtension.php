@@ -63,9 +63,9 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 		}
 
 		$constantArrays = TypeUtils::getConstantArrays($valueType);
-		if (count($constantArrays) === 0) {
+		if ($constantArrays === []) {
 			$arrays = TypeUtils::getArrays($valueType);
-			if (count($arrays) !== 0) {
+			if ($arrays !== []) {
 				return TypeCombinator::union(...$arrays);
 			}
 			return new ArrayType(

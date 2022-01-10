@@ -33,7 +33,7 @@ class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 	): Type
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-		if (count($functionCall->getArgs()) === 0) {
+		if ($functionCall->getArgs() === []) {
 			return $defaultReturnType;
 		}
 

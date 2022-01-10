@@ -34,7 +34,7 @@ class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFunction
 		Scope $scope,
 	): Type
 	{
-		if (count($functionCall->getArgs()) === 0) {
+		if ($functionCall->getArgs() === []) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
@@ -45,11 +45,11 @@ class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFunction
 		}
 
 		$constantArrays = TypeUtils::getConstantArrays($argType);
-		if (count($constantArrays) > 0) {
+		if ($constantArrays !== []) {
 			$keyTypes = [];
 			foreach ($constantArrays as $constantArray) {
 				$arrayKeyTypes = $constantArray->getKeyTypes();
-				if (count($arrayKeyTypes) === 0) {
+				if ($arrayKeyTypes === []) {
 					$keyTypes[] = new ConstantBooleanType(false);
 					continue;
 				}

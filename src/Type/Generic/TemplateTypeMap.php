@@ -104,7 +104,7 @@ class TemplateTypeMap
 		unset($types[$name]);
 		unset($lowerBoundTypes[$name]);
 
-		if (count($types) === 0 && count($lowerBoundTypes) === 0) {
+		if ($types === [] && $lowerBoundTypes === []) {
 			return self::createEmpty();
 		}
 

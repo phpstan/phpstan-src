@@ -30,7 +30,7 @@ class StrtotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-		if (count($functionCall->getArgs()) === 0) {
+		if ($functionCall->getArgs() === []) {
 			return $defaultReturnType;
 		}
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);

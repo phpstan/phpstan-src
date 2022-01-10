@@ -323,7 +323,7 @@ class FunctionDefinitionCheck
 
 		$templateTypeMap = $parametersAcceptor->getTemplateTypeMap();
 		$templateTypes = $templateTypeMap->getTypes();
-		if (count($templateTypes) > 0) {
+		if ($templateTypes !== []) {
 			foreach ($parametersAcceptor->getParameters() as $parameter) {
 				TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
 					if ($type instanceof TemplateType) {

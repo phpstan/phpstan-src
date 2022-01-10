@@ -53,7 +53,7 @@ class ClosureReturnTypeRule implements Rule
 				'Anonymous function with return type void returns %s but should not return anything.',
 				'Anonymous function should return %s but returns %s.',
 				'Anonymous function should never return but return statement found.',
-				count($node->getYieldStatements()) > 0,
+				$node->getYieldStatements() !== [],
 			);
 
 			foreach ($returnMessages as $returnMessage) {

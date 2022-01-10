@@ -74,7 +74,7 @@ class UnusedPrivateMethodRule implements Rule
 			} else {
 				$methodNameType = $callScope->getType($methodCallNode->name);
 				$strings = TypeUtils::getConstantStrings($methodNameType);
-				if (count($strings) === 0) {
+				if ($strings === []) {
 					return [];
 				}
 
@@ -108,7 +108,7 @@ class UnusedPrivateMethodRule implements Rule
 			}
 		}
 
-		if (count($methods) > 0) {
+		if ($methods !== []) {
 			foreach ($arrayCalls as $arrayCall) {
 				/** @var Node\Expr\Array_ $array */
 				$array = $arrayCall->getNode();

@@ -51,7 +51,7 @@ class UnusedConstructorParametersRule implements Rule
 			return [];
 		}
 
-		if (count($originalNode->params) === 0) {
+		if ($originalNode->params === []) {
 			return [];
 		}
 

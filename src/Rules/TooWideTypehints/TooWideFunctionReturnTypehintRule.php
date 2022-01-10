@@ -45,7 +45,7 @@ class TooWideFunctionReturnTypehintRule implements Rule
 		}
 
 		$returnStatements = $node->getReturnStatements();
-		if (count($returnStatements) === 0) {
+		if ($returnStatements === []) {
 			return [];
 		}
 
@@ -59,7 +59,7 @@ class TooWideFunctionReturnTypehintRule implements Rule
 			$returnTypes[] = $returnStatement->getScope()->getType($returnNode->expr);
 		}
 
-		if (count($returnTypes) === 0) {
+		if ($returnTypes === []) {
 			return [];
 		}
 

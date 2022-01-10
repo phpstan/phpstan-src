@@ -89,7 +89,7 @@ class AnalysisResult
 
 	public function hasWarnings(): bool
 	{
-		return count($this->warnings) > 0;
+		return $this->warnings !== [];
 	}
 
 	public function isDefaultLevelUsed(): bool
@@ -104,7 +104,7 @@ class AnalysisResult
 
 	public function hasInternalErrors(): bool
 	{
-		return count($this->internalErrors) > 0;
+		return $this->internalErrors !== [];
 	}
 
 	public function isResultCacheSaved(): bool

@@ -47,7 +47,7 @@ class ProcessPool
 		$process = $this->getProcess($identifier);
 		$process->quit();
 		unset($this->processes[$identifier]);
-		if (count($this->processes) !== 0) {
+		if ($this->processes !== []) {
 			return;
 		}
 

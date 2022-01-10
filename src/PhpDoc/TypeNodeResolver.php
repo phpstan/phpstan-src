@@ -399,7 +399,7 @@ class TypeNodeResolver
 		}
 
 		$otherTypeTypes = $this->resolveMultiple($otherTypeNodes, $nameScope);
-		if (count($iterableTypeNodes) > 0) {
+		if ($iterableTypeNodes !== []) {
 			$arrayTypeTypes = $this->resolveMultiple($iterableTypeNodes, $nameScope);
 			$arrayTypeType = TypeCombinator::union(...$arrayTypeTypes);
 			$addArray = true;
@@ -741,7 +741,7 @@ class TypeNodeResolver
 					$constantTypes[] = ConstantTypeHelper::getTypeFromValue($constantValue);
 				}
 
-				if (count($constantTypes) === 0) {
+				if ($constantTypes === []) {
 					return new ErrorType();
 				}
 

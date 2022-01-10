@@ -42,7 +42,7 @@ class ConditionalTagsExtension extends CompilerExtension
 
 		foreach ($config as $type => $tags) {
 			$services = $builder->findByType($type);
-			if (count($services) === 0) {
+			if ($services === []) {
 				throw new ShouldNotHappenException(sprintf('No services of type "%s" found.', $type));
 			}
 			foreach ($services as $service) {

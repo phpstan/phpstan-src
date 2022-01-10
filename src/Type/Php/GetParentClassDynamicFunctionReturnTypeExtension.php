@@ -42,7 +42,7 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctio
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle(
 			$functionReflection->getVariants(),
 		)->getReturnType();
-		if (count($functionCall->getArgs()) === 0) {
+		if ($functionCall->getArgs() === []) {
 			if ($scope->isInTrait()) {
 				return $defaultReturnType;
 			}
@@ -61,12 +61,12 @@ class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicFunctio
 		}
 
 		$constantStrings = TypeUtils::getConstantStrings($argType);
-		if (count($constantStrings) > 0) {
+		if ($constantStrings !== []) {
 			return TypeCombinator::union(...array_map(fn (ConstantStringType $stringType): Type => $this->findParentClassNameType($stringType->getValue()), $constantStrings));
 		}
 
 		$classNames = TypeUtils::getDirectClassNames($argType);
-		if (count($classNames) > 0) {
+		if ($classNames !== []) {
 			return TypeCombinator::union(...array_map(fn (string $classNames): Type => $this->findParentClassNameType($classNames), $classNames));
 		}
 

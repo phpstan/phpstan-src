@@ -202,7 +202,7 @@ class ResolvedPhpDocBlock
 	 */
 	public function changeParameterNamesByMapping(array $parameterNameMapping): self
 	{
-		if (count($this->phpDocNodes) === 0) {
+		if ($this->phpDocNodes === []) {
 			return $this;
 		}
 
@@ -527,7 +527,7 @@ class ResolvedPhpDocBlock
 	private static function mergeVarTags(array $varTags, array $parents, array $parentPhpDocBlocks): array
 	{
 		// Only allow one var tag per comment. Check the parent if child does not have this tag.
-		if (count($varTags) > 0) {
+		if ($varTags !== []) {
 			return $varTags;
 		}
 

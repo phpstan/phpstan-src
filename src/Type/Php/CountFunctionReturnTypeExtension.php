@@ -43,7 +43,7 @@ class CountFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 		$constantArrays = TypeUtils::getConstantArrays($scope->getType($functionCall->getArgs()[0]->value));
-		if (count($constantArrays) === 0) {
+		if ($constantArrays === []) {
 			if ($argType->isIterableAtLeastOnce()->yes()) {
 				return IntegerRangeType::fromInterval(1, null);
 			}

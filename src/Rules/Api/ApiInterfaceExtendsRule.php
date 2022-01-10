@@ -76,7 +76,7 @@ class ApiInterfaceExtendsRule implements Rule
 
 		foreach ($docBlock->getPhpDocNodes() as $phpDocNode) {
 			$apiTags = $phpDocNode->getTagsByName('@api');
-			if (count($apiTags) > 0) {
+			if ($apiTags !== []) {
 				return [];
 			}
 		}

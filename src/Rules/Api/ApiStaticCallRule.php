@@ -80,7 +80,7 @@ class ApiStaticCallRule implements Rule
 		if ($methodReflection->getName() !== '__construct' && $classDocBlock !== null) {
 			foreach ($classDocBlock->getPhpDocNodes() as $phpDocNode) {
 				$apiTags = $phpDocNode->getTagsByName('@api');
-				if (count($apiTags) > 0) {
+				if ($apiTags !== []) {
 					return true;
 				}
 			}

@@ -216,7 +216,7 @@ class AutoloadSourceLocator implements SourceLocator
 			$classNodesCount = count($this->classNodes[$identifierName]);
 			foreach ($this->classNodes[$identifierName] as $classNode) {
 				if ($classNodesCount > 1 && $startLine !== null) {
-					if (count($classNode->getNode()->attrGroups) > 0 && PHP_VERSION_ID < 80000) {
+					if ($classNode->getNode()->attrGroups !== [] && PHP_VERSION_ID < 80000) {
 						$startLine--;
 					}
 					if ($startLine !== $classNode->getNode()->getStartLine()) {

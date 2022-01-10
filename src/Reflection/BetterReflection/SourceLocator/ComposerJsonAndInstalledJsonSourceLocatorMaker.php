@@ -123,7 +123,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			$files[] = $file;
 		}
 
-		if (count($files) > 0) {
+		if ($files !== []) {
 			$locators[] = $this->optimizedDirectorySourceLocatorFactory->createByFiles($files);
 		}
 

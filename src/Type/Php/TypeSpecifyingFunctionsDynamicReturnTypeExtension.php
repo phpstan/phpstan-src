@@ -65,7 +65,7 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 		Scope $scope,
 	): Type
 	{
-		if (count($functionCall->getArgs()) === 0) {
+		if ($functionCall->getArgs() === []) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 

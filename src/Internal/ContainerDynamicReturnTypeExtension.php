@@ -33,7 +33,7 @@ class ContainerDynamicReturnTypeExtension implements DynamicMethodReturnTypeExte
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
-		if (count($methodCall->getArgs()) === 0) {
+		if ($methodCall->getArgs() === []) {
 			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
 		}
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);

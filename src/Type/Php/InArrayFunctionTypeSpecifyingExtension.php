@@ -45,7 +45,7 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 
 		if (
 			$context->truthy()
-			|| count(TypeUtils::getConstantScalars($arrayValueType)) > 0
+			|| TypeUtils::getConstantScalars($arrayValueType) !== []
 		) {
 			return $this->typeSpecifier->create(
 				$node->getArgs()[0]->value,

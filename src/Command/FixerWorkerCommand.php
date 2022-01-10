@@ -127,7 +127,7 @@ class FixerWorkerCommand extends Command
 		/** @var IgnoredErrorHelper $ignoredErrorHelper */
 		$ignoredErrorHelper = $container->getByType(IgnoredErrorHelper::class);
 		$ignoredErrorHelperResult = $ignoredErrorHelper->initialize();
-		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
+		if ($ignoredErrorHelperResult->getErrors() !== []) {
 			throw new ShouldNotHappenException();
 		}
 
@@ -168,7 +168,7 @@ class FixerWorkerCommand extends Command
 			$result->getErrors(),
 			$isOnlyFiles,
 			$inceptionFiles,
-			count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit(),
+			$result->getInternalErrors() !== [] || $result->hasReachedInternalErrorsCountLimit(),
 		);
 		$finalFileSpecificErrors = [];
 		$finalNotFileSpecificErrors = [];

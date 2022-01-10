@@ -143,7 +143,7 @@ abstract class LevelsTestCase extends TestCase
 			$exceptions[] = $exception;
 		}
 
-		if (count($exceptions) > 0) {
+		if ($exceptions !== []) {
 			throw $exceptions[0];
 		}
 	}
@@ -161,7 +161,7 @@ abstract class LevelsTestCase extends TestCase
 	 */
 	private function compareFiles(string $expectedJsonFile, array $expectedMessages): ?AssertionFailedError
 	{
-		if (count($expectedMessages) === 0) {
+		if ($expectedMessages === []) {
 			try {
 				self::assertFileDoesNotExist($expectedJsonFile);
 				return null;

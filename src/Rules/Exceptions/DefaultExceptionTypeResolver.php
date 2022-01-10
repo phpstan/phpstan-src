@@ -75,7 +75,7 @@ class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 		}
 
 		if (!$this->reflectionProvider->hasClass($className)) {
-			return count($this->checkedExceptionRegexes) === 0 && count($this->checkedExceptionClasses) === 0;
+			return $this->checkedExceptionRegexes === [] && $this->checkedExceptionClasses === [];
 		}
 
 		$classReflection = $this->reflectionProvider->getClass($className);
@@ -91,7 +91,7 @@ class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 			return true;
 		}
 
-		return count($this->checkedExceptionRegexes) === 0 && count($this->checkedExceptionClasses) === 0;
+		return $this->checkedExceptionRegexes === [] && $this->checkedExceptionClasses === [];
 	}
 
 }

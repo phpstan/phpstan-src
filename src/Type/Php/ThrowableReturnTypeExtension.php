@@ -66,7 +66,7 @@ final class ThrowableReturnTypeExtension implements DynamicMethodReturnTypeExten
 			$types[] = new IntegerType();
 		}
 
-		if (count($types) === 0) {
+		if ($types === []) {
 			return new ErrorType();
 		}
 

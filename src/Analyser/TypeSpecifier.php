@@ -736,7 +736,7 @@ class TypeSpecifier
 			return $this->specifyTypesInCondition($scope->exitFirstLevelStatements(), $expr->var, $context);
 		} elseif (
 			$expr instanceof Expr\Isset_
-			&& count($expr->vars) > 0
+			&& $expr->vars !== []
 			&& $context->true()
 		) {
 			$vars = [];
@@ -763,7 +763,7 @@ class TypeSpecifier
 				$vars = array_merge($vars, array_reverse($tmpVars));
 			}
 
-			if (count($vars) === 0) {
+			if ($vars === []) {
 				throw new ShouldNotHappenException();
 			}
 
@@ -916,7 +916,7 @@ class TypeSpecifier
 			$conditionExpressionTypes[$exprString] = TypeCombinator::intersect($scope->getType($expr), $type);
 		}
 
-		if (count($conditionExpressionTypes) > 0) {
+		if ($conditionExpressionTypes !== []) {
 			$holders = [];
 			foreach ($rightTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
 				if (!$expr instanceof Expr\Variable) {

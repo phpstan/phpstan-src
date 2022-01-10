@@ -193,7 +193,7 @@ class CommandHelper
 			if (isset($projectConfig['parameters']['paths'])) {
 				$analysedPathsFromConfig = Helpers::expand($projectConfig['parameters']['paths'], $defaultParameters);
 			}
-			if (count($paths) === 0) {
+			if ($paths === []) {
 				$paths = $analysedPathsFromConfig;
 			}
 		}

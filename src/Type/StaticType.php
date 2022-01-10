@@ -431,7 +431,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 			}
 
 			$cases = array_values($cases);
-			if (count($cases) === 0) {
+			if ($cases === []) {
 				return new NeverType();
 			}
 

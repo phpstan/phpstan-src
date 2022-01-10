@@ -55,7 +55,7 @@ class ImpossibleCheckTypeHelper
 	{
 		if (
 			$node instanceof FuncCall
-			&& count($node->getArgs()) > 0
+			&& $node->getArgs() !== []
 		) {
 			if ($node->name instanceof Node\Name) {
 				$functionName = strtolower((string) $node->name);
@@ -91,7 +91,7 @@ class ImpossibleCheckTypeHelper
 						return null;
 					}
 
-					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {
+					if (!$haystackType instanceof ConstantArrayType || $haystackType->getValueTypes() !== []) {
 						$needleType = $scope->getType($node->getArgs()[0]->value);
 
 						$haystackArrayTypes = TypeUtils::getArrays($haystackType);
@@ -115,8 +115,8 @@ class ImpossibleCheckTypeHelper
 						}
 
 						if ($isNeedleSupertype->yes()) {
-							$hasConstantNeedleTypes = count(TypeUtils::getConstantScalars($needleType)) > 0;
-							$hasConstantHaystackTypes = count(TypeUtils::getConstantScalars($valueType)) > 0;
+							$hasConstantNeedleTypes = TypeUtils::getConstantScalars($needleType) !== [];
+							$hasConstantHaystackTypes = TypeUtils::getConstantScalars($valueType) !== [];
 							if (
 								(
 									!$hasConstantNeedleTypes
@@ -177,7 +177,7 @@ class ImpossibleCheckTypeHelper
 			) && $scope->isSpecified($expr);
 		};
 
-		if (count($sureTypes) === 1 && count($sureNotTypes) === 0) {
+		if (count($sureTypes) === 1 && $sureNotTypes === []) {
 			$sureType = reset($sureTypes);
 			if ($isSpecified($sureType[0])) {
 				return null;
@@ -200,7 +200,7 @@ class ImpossibleCheckTypeHelper
 			}
 
 			return null;
-		} elseif (count($sureNotTypes) === 1 && count($sureTypes) === 0) {
+		} elseif (count($sureNotTypes) === 1 && $sureTypes === []) {
 			$sureNotType = reset($sureNotTypes);
 			if ($isSpecified($sureNotType[0])) {
 				return null;
@@ -225,7 +225,7 @@ class ImpossibleCheckTypeHelper
 			return null;
 		}
 
-		if (count($sureTypes) > 0) {
+		if ($sureTypes !== []) {
 			foreach ($sureTypes as $sureType) {
 				if ($isSpecified($sureType[0])) {
 					return null;
@@ -239,7 +239,7 @@ class ImpossibleCheckTypeHelper
 			}
 		}
 
-		if (count($sureNotTypes) > 0) {
+		if ($sureNotTypes !== []) {
 			foreach ($sureNotTypes as $sureNotType) {
 				if ($isSpecified($sureNotType[0])) {
 					return null;
@@ -264,7 +264,7 @@ class ImpossibleCheckTypeHelper
 		array $args,
 	): string
 	{
-		if (count($args) === 0) {
+		if ($args === []) {
 			return '';
 		}
 

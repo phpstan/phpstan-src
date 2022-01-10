@@ -27,7 +27,7 @@ class PhpVersionFactoryFactory
 	public function create(): PhpVersionFactory
 	{
 		$composerPhpVersion = null;
-		if (count($this->composerAutoloaderProjectPaths) > 0) {
+		if ($this->composerAutoloaderProjectPaths !== []) {
 			$composerJsonPath = end($this->composerAutoloaderProjectPaths) . '/composer.json';
 			if (is_file($composerJsonPath)) {
 				try {

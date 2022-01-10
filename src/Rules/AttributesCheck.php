@@ -85,7 +85,7 @@ class AttributesCheck
 				}
 
 				if (!$attributeClass->hasConstructor()) {
-					if (count($attribute->args) > 0) {
+					if ($attribute->args !== []) {
 						$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not have a constructor and must be instantiated without any parameters.', $name))->line($attribute->getLine())->build();
 					}
 					continue;

@@ -79,7 +79,7 @@ class IntersectionTypePropertyReflection implements PropertyReflection
 			$descriptions[] = $description;
 		}
 
-		if (count($descriptions) === 0) {
+		if ($descriptions === []) {
 			return null;
 		}
 

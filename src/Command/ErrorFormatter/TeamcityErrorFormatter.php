@@ -29,7 +29,7 @@ class TeamcityErrorFormatter implements ErrorFormatter
 		$notFileSpecificErrors = $analysisResult->getNotFileSpecificErrors();
 		$warnings = $analysisResult->getWarnings();
 
-		if (count($fileSpecificErrors) === 0 && count($notFileSpecificErrors) === 0 && count($warnings) === 0) {
+		if ($fileSpecificErrors === [] && $notFileSpecificErrors === [] && $warnings === []) {
 			return 0;
 		}
 

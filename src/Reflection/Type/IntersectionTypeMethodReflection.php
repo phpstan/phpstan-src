@@ -105,7 +105,7 @@ class IntersectionTypeMethodReflection implements MethodReflection
 			$descriptions[] = $description;
 		}
 
-		if (count($descriptions) === 0) {
+		if ($descriptions === []) {
 			return null;
 		}
 
@@ -135,7 +135,7 @@ class IntersectionTypeMethodReflection implements MethodReflection
 			$types[] = $type;
 		}
 
-		if (count($types) === 0) {
+		if ($types === []) {
 			return null;
 		}
 

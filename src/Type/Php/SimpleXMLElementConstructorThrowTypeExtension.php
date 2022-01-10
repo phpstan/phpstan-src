@@ -23,7 +23,7 @@ class SimpleXMLElementConstructorThrowTypeExtension implements DynamicStaticMeth
 
 	public function getThrowTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		if (count($methodCall->getArgs()) === 0) {
+		if ($methodCall->getArgs() === []) {
 			return $methodReflection->getThrowType();
 		}
 

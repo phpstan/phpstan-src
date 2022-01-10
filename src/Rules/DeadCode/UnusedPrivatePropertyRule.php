@@ -123,7 +123,7 @@ class UnusedPrivatePropertyRule implements Rule
 			} else {
 				$propertyNameType = $usage->getScope()->getType($fetch->name);
 				$strings = TypeUtils::getConstantStrings($propertyNameType);
-				if (count($strings) === 0) {
+				if ($strings === []) {
 					return [];
 				}
 

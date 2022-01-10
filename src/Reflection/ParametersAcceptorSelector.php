@@ -63,8 +63,8 @@ class ParametersAcceptorSelector
 		$types = [];
 		$unpack = false;
 		if (
-			count($args) > 0
-			&& count($parametersAcceptors) > 0
+			$args !== []
+			&& $parametersAcceptors !== []
 		) {
 			$functionName = null;
 			$argParent = $args[0]->getAttribute('parent');
@@ -188,7 +188,7 @@ class ParametersAcceptorSelector
 			return GenericParametersAcceptorResolver::resolve($types, $parametersAcceptors[0]);
 		}
 
-		if (count($parametersAcceptors) === 0) {
+		if ($parametersAcceptors === []) {
 			throw new ShouldNotHappenException(
 				'getVariants() must return at least one variant.',
 			);
@@ -227,7 +227,7 @@ class ParametersAcceptorSelector
 			$acceptableAcceptors[] = $parametersAcceptor;
 		}
 
-		if (count($acceptableAcceptors) === 0) {
+		if ($acceptableAcceptors === []) {
 			return GenericParametersAcceptorResolver::resolve($types, self::combineAcceptors($parametersAcceptors));
 		}
 
@@ -276,7 +276,7 @@ class ParametersAcceptorSelector
 			}
 		}
 
-		if (count($winningAcceptors) === 0) {
+		if ($winningAcceptors === []) {
 			return GenericParametersAcceptorResolver::resolve($types, self::combineAcceptors($acceptableAcceptors));
 		}
 
@@ -288,7 +288,7 @@ class ParametersAcceptorSelector
 	 */
 	public static function combineAcceptors(array $acceptors): ParametersAcceptor
 	{
-		if (count($acceptors) === 0) {
+		if ($acceptors === []) {
 			throw new ShouldNotHappenException(
 				'getVariants() must return at least one variant.',
 			);

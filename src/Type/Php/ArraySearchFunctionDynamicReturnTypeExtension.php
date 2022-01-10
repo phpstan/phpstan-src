@@ -63,7 +63,7 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 		}
 
 		$haystackArrays = $this->pickArrays($haystackArgType);
-		if (count($haystackArrays) === 0) {
+		if ($haystackArrays === []) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
@@ -120,7 +120,7 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 			$matchesByType[] = new ConstantBooleanType(false);
 		}
 
-		if (count($matchesByType) > 0) {
+		if ($matchesByType !== []) {
 			if (
 				$haystack->getIterableValueType()->accepts($needle, true)->yes()
 				&& $needle->isSuperTypeOf(new ObjectWithoutClassType())->no()

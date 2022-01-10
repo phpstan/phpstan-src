@@ -62,7 +62,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		$resolver->setAnalysedFiles(array_map(static fn (string $file): string => $fileHelper->normalizePath($file), array_merge([$file], $this->getAdditionalAnalysedFiles())));
 
 		$scopeFactory = $this->createScopeFactory($reflectionProvider, $typeSpecifier);
-		if (count($dynamicConstantNames) > 0) {
+		if ($dynamicConstantNames !== []) {
 			$reflectionProperty = new ReflectionProperty(DirectScopeFactory::class, 'dynamicConstantNames');
 			$reflectionProperty->setAccessible(true);
 			$reflectionProperty->setValue($scopeFactory, $dynamicConstantNames);

@@ -23,7 +23,7 @@ class OverwrittenExitPointByFinallyRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (count($node->getTryCatchExitPoints()) === 0) {
+		if ($node->getTryCatchExitPoints() === []) {
 			return [];
 		}
 

@@ -99,7 +99,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			null,
 			true,
 		);
-		if (count($analyserResult->getInternalErrors()) > 0) {
+		if ($analyserResult->getInternalErrors() !== []) {
 			$this->fail(implode("\n", $analyserResult->getInternalErrors()));
 		}
 		$actualErrors = $analyserResult->getUnorderedErrors();

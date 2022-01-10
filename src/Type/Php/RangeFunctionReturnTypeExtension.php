@@ -89,7 +89,7 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			}
 		}
 
-		if (count($constantReturnTypes) > 0) {
+		if ($constantReturnTypes !== []) {
 			return TypeCombinator::union(...$constantReturnTypes);
 		}
 

@@ -49,7 +49,7 @@ class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionRetur
 	): Type
 	{
 		$args = $functionCall->getArgs();
-		if (count($args) === 0) {
+		if ($args === []) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 

@@ -54,7 +54,7 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			);
 		}
 
-		if (count(array_filter($counts, static fn (int $count): bool => $count === 0)) > 0) {
+		if (array_filter($counts, static fn (int $count): bool => $count === 0) !== []) {
 			return $returnType; // one of the arguments is not a constant string
 		}
 

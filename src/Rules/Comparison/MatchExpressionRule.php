@@ -42,7 +42,7 @@ class MatchExpressionRule implements Rule
 				continue;
 			}
 			$armConditions = $arm->getConditions();
-			if (count($armConditions) === 0) {
+			if ($armConditions === []) {
 				$hasDefault = true;
 			}
 			foreach ($armConditions as $armCondition) {

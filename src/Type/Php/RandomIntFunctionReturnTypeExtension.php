@@ -28,7 +28,7 @@ class RandomIntFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if ($functionReflection->getName() === 'rand' && count($functionCall->getArgs()) === 0) {
+		if ($functionReflection->getName() === 'rand' && $functionCall->getArgs() === []) {
 			return IntegerRangeType::fromInterval(0, null);
 		}
 
@@ -70,8 +70,8 @@ class RandomIntFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			$maxType instanceof UnionType ? $maxType->getTypes() : [$maxType],
 		);
 
-		assert(count($minValues) > 0);
-		assert(count($maxValues) > 0);
+		assert($minValues !== []);
+		assert($maxValues !== []);
 
 		return IntegerRangeType::fromInterval(
 			in_array(null, $minValues, true) ? null : min($minValues),

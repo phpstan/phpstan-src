@@ -44,7 +44,7 @@ class MixinPropertiesClassReflectionExtension implements PropertiesClassReflecti
 	{
 		$mixinTypes = $classReflection->getResolvedMixinTypes();
 		foreach ($mixinTypes as $type) {
-			if (count(array_intersect(TypeUtils::getDirectClassNames($type), $this->mixinExcludeClasses)) > 0) {
+			if (array_intersect(TypeUtils::getDirectClassNames($type), $this->mixinExcludeClasses) !== []) {
 				continue;
 			}
 

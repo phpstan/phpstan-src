@@ -93,7 +93,7 @@ class FunctionCallParametersCheck
 			}
 			if ($arg->unpack) {
 				$arrays = TypeUtils::getConstantArrays($type);
-				if (count($arrays) > 0) {
+				if ($arrays !== []) {
 					$minKeys = null;
 					foreach ($arrays as $array) {
 						$keysCount = count($array->getKeyTypes());
@@ -285,7 +285,7 @@ class FunctionCallParametersCheck
 		if ($this->checkMissingTypehints && $parametersAcceptor instanceof ResolvedFunctionVariant) {
 			$originalParametersAcceptor = $parametersAcceptor->getOriginalParametersAcceptor();
 			$resolvedTypes = $parametersAcceptor->getResolvedTemplateTypeMap()->getTypes();
-			if (count($resolvedTypes) > 0) {
+			if ($resolvedTypes !== []) {
 				$returnTemplateTypes = [];
 				TypeTraverser::map($originalParametersAcceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$returnTemplateTypes): Type {
 					if ($type instanceof TemplateType) {
@@ -376,7 +376,7 @@ class FunctionCallParametersCheck
 		foreach ($arguments as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine]) {
 			if ($argumentName === null) {
 				if (!isset($parameters[$i])) {
-					if (!$parametersAcceptor->isVariadic() || count($parameters) === 0) {
+					if (!$parametersAcceptor->isVariadic() || $parameters === []) {
 						$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, null];
 						break;
 					}

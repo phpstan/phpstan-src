@@ -862,7 +862,7 @@ class PhpClassReflectionExtension
 		$traits = [];
 		$traitsLeftToAnalyze = $class->getTraits();
 
-		while (count($traitsLeftToAnalyze) !== 0) {
+		while ($traitsLeftToAnalyze !== []) {
 			$trait = reset($traitsLeftToAnalyze);
 			$traits[] = $trait;
 

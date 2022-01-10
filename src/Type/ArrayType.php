@@ -351,7 +351,7 @@ class ArrayType implements Type
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 
-		if ($receivedType instanceof ConstantArrayType && count($receivedType->getKeyTypes()) === 0) {
+		if ($receivedType instanceof ConstantArrayType && $receivedType->getKeyTypes() === []) {
 			$keyType = $this->getKeyType();
 			$typeMap = TemplateTypeMap::createEmpty();
 			if ($keyType instanceof TemplateType) {

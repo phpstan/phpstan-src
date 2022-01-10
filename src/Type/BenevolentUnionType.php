@@ -28,7 +28,7 @@ class BenevolentUnionType extends UnionType
 			$resultTypes[] = $result;
 		}
 
-		if (count($resultTypes) === 0) {
+		if ($resultTypes === []) {
 			return new ErrorType();
 		}
 

@@ -937,7 +937,7 @@ class MutatingScope implements Scope
 			$type = $this->getType($node->expr)->toNumber();
 			$scalarValues = TypeUtils::getConstantScalars($type);
 
-			if (count($scalarValues) > 0) {
+			if ($scalarValues !== []) {
 				$newTypes = [];
 				foreach ($scalarValues as $scalarValue) {
 					if ($scalarValue instanceof ConstantIntegerType) {
@@ -1202,7 +1202,7 @@ class MutatingScope implements Scope
 				$leftConstantArrays = TypeUtils::getConstantArrays($leftType);
 				$rightConstantArrays = TypeUtils::getConstantArrays($rightType);
 
-				if (count($leftConstantArrays) > 0 && count($rightConstantArrays) > 0) {
+				if ($leftConstantArrays !== [] && $rightConstantArrays !== []) {
 					$resultTypes = [];
 					foreach ($rightConstantArrays as $rightConstantArray) {
 						foreach ($leftConstantArrays as $leftConstantArray) {
@@ -1310,7 +1310,7 @@ class MutatingScope implements Scope
 					$extensionTypes[] = $extension->specifyType($operatorSigil, $leftType, $rightType);
 				}
 
-				if (count($extensionTypes) > 0) {
+				if ($extensionTypes !== []) {
 					return TypeCombinator::union(...$extensionTypes);
 				}
 			}
@@ -1567,7 +1567,7 @@ class MutatingScope implements Scope
 								break;
 							}
 
-							if (count($node->getStatementResult()->getExitPoints()) === 0) {
+							if ($node->getStatementResult()->getExitPoints() === []) {
 								$closureExecutionEnds[] = $node;
 							}
 						}
@@ -1597,14 +1597,14 @@ class MutatingScope implements Scope
 					$returnTypes[] = $returnScope->getType($returnNode->expr);
 				}
 
-				if (count($returnTypes) === 0) {
-					if (count($closureExecutionEnds) > 0 && !$hasNull) {
+				if ($returnTypes === []) {
+					if ($closureExecutionEnds !== [] && !$hasNull) {
 						$returnType = new NeverType(true);
 					} else {
 						$returnType = new VoidType();
 					}
 				} else {
-					if (count($closureExecutionEnds) > 0) {
+					if ($closureExecutionEnds !== []) {
 						$returnTypes[] = new NeverType(true);
 					}
 					if ($hasNull) {
@@ -1613,7 +1613,7 @@ class MutatingScope implements Scope
 					$returnType = TypeCombinator::union(...$returnTypes);
 				}
 
-				if (count($closureYieldStatements) > 0) {
+				if ($closureYieldStatements !== []) {
 					$keyTypes = [];
 					$valueTypes = [];
 					foreach ($closureYieldStatements as [$yieldNode, $yieldScope]) {
@@ -1808,7 +1808,7 @@ class MutatingScope implements Scope
 			$varType = $this->getType($node->var);
 			$varScalars = TypeUtils::getConstantScalars($varType);
 			$stringType = new StringType();
-			if (count($varScalars) > 0) {
+			if ($varScalars !== []) {
 				$newTypes = [];
 
 				foreach ($varScalars as $scalar) {
@@ -2061,7 +2061,7 @@ class MutatingScope implements Scope
 
 			$referencedClasses = TypeUtils::getDirectClassNames($constantClassType);
 			if (strtolower($constantName) === 'class') {
-				if (count($referencedClasses) === 0) {
+				if ($referencedClasses === []) {
 					return new ErrorType();
 				}
 				$classTypes = [];
@@ -2118,7 +2118,7 @@ class MutatingScope implements Scope
 				$types[] = $constantType;
 			}
 
-			if (count($types) > 0) {
+			if ($types !== []) {
 				return TypeCombinator::union(...$types);
 			}
 
@@ -3166,7 +3166,7 @@ class MutatingScope implements Scope
 			if ($callableParameters !== null) {
 				if (isset($callableParameters[$i])) {
 					$parameterType = TypehintHelper::decideType($parameterType, $callableParameters[$i]->getType());
-				} elseif (count($callableParameters) > 0) {
+				} elseif ($callableParameters !== []) {
 					$lastParameter = $callableParameters[count($callableParameters) - 1];
 					if ($lastParameter->isVariadic()) {
 						$parameterType = TypehintHelper::decideType($parameterType, $lastParameter->getType());
@@ -3294,7 +3294,7 @@ class MutatingScope implements Scope
 			if ($callableParameters !== null) {
 				if (isset($callableParameters[$i])) {
 					$parameterType = TypehintHelper::decideType($parameterType, $callableParameters[$i]->getType());
-				} elseif (count($callableParameters) > 0) {
+				} elseif ($callableParameters !== []) {
 					$lastParameter = $callableParameters[count($callableParameters) - 1];
 					if ($lastParameter->isVariadic()) {
 						$parameterType = TypehintHelper::decideType($parameterType, $lastParameter->getType());
@@ -3341,7 +3341,7 @@ class MutatingScope implements Scope
 				$newHolders[] = $holder;
 			}
 
-			if (count($newHolders) === 0) {
+			if ($newHolders === []) {
 				continue;
 			}
 
@@ -3365,7 +3365,7 @@ class MutatingScope implements Scope
 					$newHolders[] = $holder;
 				}
 
-				if (count($newHolders) === 0) {
+				if ($newHolders === []) {
 					continue;
 				}
 
@@ -3655,7 +3655,7 @@ class MutatingScope implements Scope
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$varType = $this->getType($expr->var);
 			$constantArrays = TypeUtils::getConstantArrays($varType);
-			if (count($constantArrays) > 0) {
+			if ($constantArrays !== []) {
 				$unsetArrays = [];
 				$dimType = $this->getType($expr->dim);
 				foreach ($constantArrays as $constantArray) {
@@ -3669,7 +3669,7 @@ class MutatingScope implements Scope
 
 			$arrays = TypeUtils::getArrays($varType);
 			$scope = $this;
-			if (count($arrays) > 0) {
+			if ($arrays !== []) {
 				$scope = $scope->specifyExpressionType($expr->var, TypeCombinator::union(...$arrays));
 			}
 
@@ -3748,7 +3748,7 @@ class MutatingScope implements Scope
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$constantArrays = TypeUtils::getConstantArrays($this->getType($expr->var));
-			if (count($constantArrays) > 0) {
+			if ($constantArrays !== []) {
 				$setArrays = [];
 				$dimType = $this->getType($expr->dim);
 				foreach ($constantArrays as $constantArray) {
@@ -4053,7 +4053,7 @@ class MutatingScope implements Scope
 					$matchingConditions[$conditionExprString] = $conditionalType;
 				}
 
-				if (count($matchingConditions) === 0) {
+				if ($matchingConditions === []) {
 					$newConditionalExpressions[$variableExprString][$conditionalExpression->getKey()] = $conditionalExpression;
 					continue;
 				}
@@ -4336,7 +4336,7 @@ class MutatingScope implements Scope
 			$typeGuards['$' . $name] = $holder->getType();
 		}
 
-		if (count($typeGuards) === 0) {
+		if ($typeGuards === []) {
 			return $conditionalExpressions;
 		}
 
@@ -4352,7 +4352,7 @@ class MutatingScope implements Scope
 			$variableTypeGuards = $typeGuards;
 			unset($variableTypeGuards[$exprString]);
 
-			if (count($variableTypeGuards) === 0) {
+			if ($variableTypeGuards === []) {
 				continue;
 			}
 
@@ -4483,7 +4483,7 @@ class MutatingScope implements Scope
 	{
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		$variableTypes = $this->variableTypes;
-		if (count($byRefUses) === 0) {
+		if ($byRefUses === []) {
 			return $this;
 		}
 
@@ -4706,10 +4706,10 @@ class MutatingScope implements Scope
 			$constantBooleans,
 			$constantStrings,
 		] as $constantTypes) {
-			if (count($constantTypes['a']) === 0) {
+			if ($constantTypes['a'] === []) {
 				continue;
 			}
-			if (count($constantTypes['b']) === 0) {
+			if ($constantTypes['b'] === []) {
 				$resultTypes[] = TypeCombinator::union(...$constantTypes['a']);
 				continue;
 			}
@@ -4724,8 +4724,8 @@ class MutatingScope implements Scope
 			$resultTypes[] = TypeUtils::generalizeType($constantTypes['a'][0], GeneralizePrecision::moreSpecific());
 		}
 
-		if (count($constantArrays['a']) > 0) {
-			if (count($constantArrays['b']) === 0) {
+		if ($constantArrays['a'] !== []) {
+			if ($constantArrays['b'] === []) {
 				$resultTypes[] = TypeCombinator::union(...$constantArrays['a']);
 			} else {
 				$constantArraysA = TypeCombinator::union(...$constantArrays['a']);
@@ -4752,8 +4752,8 @@ class MutatingScope implements Scope
 			}
 		}
 
-		if (count($generalArrays['a']) > 0) {
-			if (count($generalArrays['b']) === 0) {
+		if ($generalArrays['a'] !== []) {
+			if ($generalArrays['b'] === []) {
 				$resultTypes[] = TypeCombinator::union(...$generalArrays['a']);
 			} else {
 				$generalArraysA = TypeCombinator::union(...$generalArrays['a']);
@@ -4982,7 +4982,7 @@ class MutatingScope implements Scope
 			$resolvedTypes[] = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall($constructorMethod, $methodCall, $this);
 		}
 
-		if (count($resolvedTypes) > 0) {
+		if ($resolvedTypes !== []) {
 			return TypeCombinator::union(...$resolvedTypes);
 		}
 
@@ -5097,7 +5097,7 @@ class MutatingScope implements Scope
 
 				$newTypes[] = $innerType;
 			}
-			if (count($newTypes) === 0) {
+			if ($newTypes === []) {
 				return null;
 			}
 			$typeWithMethod = TypeCombinator::union(...$newTypes);
@@ -5141,7 +5141,7 @@ class MutatingScope implements Scope
 			}
 		}
 
-		if (count($resolvedTypes) > 0) {
+		if ($resolvedTypes !== []) {
 			return TypeCombinator::union(...$resolvedTypes);
 		}
 
@@ -5164,7 +5164,7 @@ class MutatingScope implements Scope
 
 				$newTypes[] = $innerType;
 			}
-			if (count($newTypes) === 0) {
+			if ($newTypes === []) {
 				return null;
 			}
 			$typeWithProperty = TypeCombinator::union(...$newTypes);

@@ -218,7 +218,7 @@ class ClassReflection
 		if (
 			$withTemplateTypes === false
 			|| $this->resolvedTemplateTypeMap === null
-			|| count($this->resolvedTemplateTypeMap->getTypes()) === 0
+			|| $this->resolvedTemplateTypeMap->getTypes() === []
 		) {
 			return $name;
 		}
@@ -308,7 +308,7 @@ class ClassReflection
 		$traits = [];
 		$traitsLeftToAnalyze = $class->getTraits();
 
-		while (count($traitsLeftToAnalyze) !== 0) {
+		while ($traitsLeftToAnalyze !== []) {
 			$trait = reset($traitsLeftToAnalyze);
 			$traits[] = $trait;
 
@@ -1026,7 +1026,7 @@ class ClassReflection
 				return $this->isGeneric = false;
 			}
 
-			$this->isGeneric = count($this->getTemplateTags()) > 0;
+			$this->isGeneric = $this->getTemplateTags() !== [];
 		}
 
 		return $this->isGeneric;

@@ -32,13 +32,13 @@ class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtens
 		Scope $scope,
 	): Type
 	{
-		if (count($functionCall->getArgs()) === 0) {
+		if ($functionCall->getArgs() === []) {
 			return new StringType();
 		}
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
 		$constantStrings = TypeUtils::getConstantStrings($argType);
 
-		if (count($constantStrings) === 0) {
+		if ($constantStrings === []) {
 			return new StringType();
 		}
 

@@ -165,7 +165,7 @@ class GenericObjectType extends ObjectType
 			$results[] = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i]);
 		}
 
-		if (count($results) === 0) {
+		if ($results === []) {
 			return $nakedSuperTypeOf;
 		}
 

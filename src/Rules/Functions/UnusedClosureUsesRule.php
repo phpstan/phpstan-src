@@ -28,7 +28,7 @@ class UnusedClosureUsesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (count($node->uses) === 0) {
+		if ($node->uses === []) {
 			return [];
 		}
 

@@ -66,7 +66,7 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 				return $types[0];
 			}
 
-			if (count($types) === 0) {
+			if ($types === []) {
 				return $returnType;
 			}
 

@@ -81,7 +81,7 @@ class ParallelAnalyser
 				$identifier = $data['identifier'];
 				$process = $this->processPool->getProcess($identifier);
 				$process->bindConnection($decoder, $encoder);
-				if (count($jobs) === 0) {
+				if ($jobs === []) {
 					$this->processPool->tryQuitProcess($identifier);
 					return;
 				}
@@ -110,7 +110,7 @@ class ParallelAnalyser
 		$dependencies = [];
 		$exportedNodes = [];
 		for ($i = 0; $i < $numberOfProcesses; $i++) {
-			if (count($jobs) === 0) {
+			if ($jobs === []) {
 				break;
 			}
 
@@ -159,7 +159,7 @@ class ParallelAnalyser
 				 * @var array<mixed[]> $fileExportedNodes
 				 */
 				foreach ($json['exportedNodes'] as $file => $fileExportedNodes) {
-					if (count($fileExportedNodes) === 0) {
+					if ($fileExportedNodes === []) {
 						continue;
 					}
 					$exportedNodes[$file] = array_map(static function (array $node): ExportedNode {
@@ -179,7 +179,7 @@ class ParallelAnalyser
 					$this->processPool->quitAll();
 				}
 
-				if (count($jobs) === 0) {
+				if ($jobs === []) {
 					$this->processPool->tryQuitProcess($processIdentifier);
 					return;
 				}
@@ -203,7 +203,7 @@ class ParallelAnalyser
 
 		$loop->run();
 
-		if (count($jobs) > 0 && $internalErrorsCount === 0) {
+		if ($jobs !== [] && $internalErrorsCount === 0) {
 			$internalErrors[] = 'Some parallel worker jobs have not finished.';
 			$internalErrorsCount++;
 		}

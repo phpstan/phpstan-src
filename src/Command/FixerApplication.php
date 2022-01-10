@@ -497,7 +497,7 @@ class FixerApplication
 	): PromiseInterface
 	{
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
-		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
+		if ($ignoredErrorHelperResult->getErrors() !== []) {
 			throw new ShouldNotHappenException();
 		}
 
@@ -506,7 +506,7 @@ class FixerApplication
 		$resultCacheManager = $this->resultCacheManagerFactory->create([]);
 		[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
 		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput(), $fixerSuggestionId);
-		if (count($resultCache->getFilesToAnalyse()) === 0) {
+		if ($resultCache->getFilesToAnalyse() === []) {
 			$result = $resultCacheManager->process(
 				new AnalyserResult([], [], [], [], false),
 				$resultCache,
@@ -518,7 +518,7 @@ class FixerApplication
 				$result->getErrors(),
 				$isOnlyFiles,
 				$inceptionFiles,
-				count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit(),
+				$result->getInternalErrors() !== [] || $result->hasReachedInternalErrorsCountLimit(),
 			);
 			$finalFileSpecificErrors = [];
 			$finalNotFileSpecificErrors = [];

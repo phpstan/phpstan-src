@@ -417,7 +417,7 @@ class UnionType implements CompoundType
 			$types[] = $valueType;
 		}
 
-		if (count($types) === 0) {
+		if ($types === []) {
 			return new ErrorType();
 		}
 
@@ -554,7 +554,7 @@ class UnionType implements CompoundType
 				}
 				$remainingReceivedTypes[] = $receivedInnerType;
 			}
-			if (count($remainingReceivedTypes) === 0) {
+			if ($remainingReceivedTypes === []) {
 				return $types;
 			}
 			$receivedType = TypeCombinator::union(...$remainingReceivedTypes);

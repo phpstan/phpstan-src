@@ -42,7 +42,7 @@ class DumpTypeRule implements Rule
 			return [];
 		}
 
-		if (count($node->getArgs()) === 0) {
+		if ($node->getArgs() === []) {
 			return [
 				RuleErrorBuilder::message(sprintf('Missing argument for %s() function call.', $functionName))
 					->nonIgnorable()

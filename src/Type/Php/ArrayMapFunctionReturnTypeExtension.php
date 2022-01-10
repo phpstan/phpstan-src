@@ -64,7 +64,7 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 				return $arrayType;
 			}
 			$constantArrays = TypeUtils::getConstantArrays($arrayType);
-			if (count($constantArrays) > 0) {
+			if ($constantArrays !== []) {
 				$arrayTypes = [];
 				foreach ($constantArrays as $constantArray) {
 					$returnedArrayBuilder = ConstantArrayTypeBuilder::createEmpty();

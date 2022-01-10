@@ -199,7 +199,7 @@ class TypehintHelper
 					$addToUnionTypes[] = $innerType;
 				}
 
-				if (count($addToUnionTypes) > 0) {
+				if ($addToUnionTypes !== []) {
 					$type = TypeCombinator::union($resultType, ...$addToUnionTypes);
 				} else {
 					$type = $resultType;

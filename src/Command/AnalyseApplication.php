@@ -77,7 +77,7 @@ class AnalyseApplication
 		$resultCacheManager = $this->resultCacheManagerFactory->create([]);
 
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
-		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
+		if ($ignoredErrorHelperResult->getErrors() !== []) {
 			$errors = $ignoredErrorHelperResult->getErrors();
 			$internalErrors = [];
 			$savedResultCache = false;
@@ -98,7 +98,7 @@ class AnalyseApplication
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
 			$analyserResult = $resultCacheResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
-			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $files, count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit());
+			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $files, $internalErrors !== [] || $analyserResult->hasReachedInternalErrorsCountLimit());
 			$savedResultCache = $resultCacheResult->isSaved();
 			if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
 				$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);

@@ -40,7 +40,7 @@ class ParametersSchemaExtension extends CompilerExtension
 	 */
 	private function processSchema(array $statements): Schema
 	{
-		if (count($statements) === 0) {
+		if ($statements === []) {
 			throw new ShouldNotHappenException();
 		}
 
@@ -77,7 +77,7 @@ class ParametersSchemaExtension extends CompilerExtension
 					$arguments[] = $schemaArgument;
 				}
 
-				if (count($arguments) === 0) {
+				if ($arguments === []) {
 					throw new ShouldNotHappenException('schema() should have at least one argument.');
 				}
 

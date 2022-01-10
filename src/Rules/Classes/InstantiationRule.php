@@ -157,7 +157,7 @@ class InstantiationRule implements Rule
 		}
 
 		if (!$classReflection->hasConstructor()) {
-			if (count($node->getArgs()) > 0) {
+			if ($node->getArgs() !== []) {
 				return array_merge($messages, [
 					RuleErrorBuilder::message(sprintf(
 						'Class %s does not have a constructor and must be instantiated without any parameters.',

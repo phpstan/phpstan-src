@@ -34,11 +34,11 @@ class ArrayPopFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		$constantArrays = TypeUtils::getConstantArrays($argType);
-		if (count($constantArrays) > 0) {
+		if ($constantArrays !== []) {
 			$valueTypes = [];
 			foreach ($constantArrays as $constantArray) {
 				$arrayKeyTypes = $constantArray->getKeyTypes();
-				if (count($arrayKeyTypes) === 0) {
+				if ($arrayKeyTypes === []) {
 					$valueTypes[] = new NullType();
 					continue;
 				}

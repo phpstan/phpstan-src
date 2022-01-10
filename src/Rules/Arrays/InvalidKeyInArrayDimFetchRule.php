@@ -34,7 +34,7 @@ class InvalidKeyInArrayDimFetchRule implements Rule
 		}
 
 		$varType = $scope->getType($node->var);
-		if (count(TypeUtils::getArrays($varType)) === 0) {
+		if (TypeUtils::getArrays($varType) === []) {
 			return [];
 		}
 

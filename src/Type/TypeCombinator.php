@@ -282,7 +282,7 @@ class TypeCombinator
 		$arrayAccessoryTypesToProcess = [];
 		if (count($arrayAccessoryTypes) > 1) {
 			$arrayAccessoryTypesToProcess = array_values(array_intersect_key(...$arrayAccessoryTypes));
-		} elseif (count($arrayAccessoryTypes) > 0) {
+		} elseif ($arrayAccessoryTypes !== []) {
 			$arrayAccessoryTypesToProcess = array_values($arrayAccessoryTypes[0]);
 		}
 
@@ -575,7 +575,7 @@ class TypeCombinator
 			if (!$arrayType instanceof ConstantArrayType) {
 				continue;
 			}
-			if (count($arrayType->getKeyTypes()) > 0) {
+			if ($arrayType->getKeyTypes() !== []) {
 				continue;
 			}
 

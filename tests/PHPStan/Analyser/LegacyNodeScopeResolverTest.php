@@ -284,19 +284,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'i',
 				TrinaryLogic::createYes(),
-				'int<min, 4>',
+				'int<0, 4>',
 			],
 			[
 				$testScope,
 				'f',
 				TrinaryLogic::createMaybe(),
-				'int',
+				'int<1, max>',
 			],
 			[
 				$testScope,
 				'anotherF',
 				TrinaryLogic::createYes(),
-				'int',
+				'int<1, max>',
 			],
 			[
 				$testScope,
@@ -816,7 +816,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				$testScope,
 				'incrementInForLoop',
-				'int',
+				'int<1, max>',
 			],
 			[
 				$testScope,
@@ -826,7 +826,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				$testScope,
 				'arrayOverwrittenInForLoop',
-				'array{a: int, b: \'bar\'|\'foo\'}',
+				'array{a: int<1, max>, b: \'bar\'|\'foo\'}',
 			],
 			[
 				$testScope,
@@ -836,12 +836,12 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				$testScope,
 				'intProperty',
-				'int',
+				'int<1, max>',
 			],
 			[
 				$testScope,
 				'staticIntProperty',
-				'int',
+				'int<1, max>',
 			],
 			[
 				$testScope,
@@ -856,7 +856,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				$testScope,
 				'variableIncrementedInClosurePassedByReference',
-				'int',
+				'int<0, max>',
 			],
 			[
 				$testScope,
@@ -866,7 +866,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				$testScope,
 				'yetAnotherVariableInClosurePassedByReference',
-				'int',
+				'int<0, max>', // could be 0|1
 			],
 			[
 				$testScope,
@@ -3146,11 +3146,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$coalesceArray',
 			],
 			[
-				'array<int, int>',
+				'array<int<0, max>, int<1, max>>',
 				'$arrayToBeUnset',
 			],
 			[
-				'array<int, int>',
+				'array<int<0, max>, int<1, max>>',
 				'$arrayToBeUnset2',
 			],
 			[
@@ -4649,7 +4649,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_intersect_key($integers, [])',
 			],
 			[
-				'array<int, int>',
+				'array<int<0, max>, int<1, max>>',
 				'array_intersect_key(...[$integers, [4, 5, 6]])',
 			],
 			[
@@ -4737,7 +4737,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_values($generalStringKeys)',
 			],
 			[
-				'non-empty-array<int|(literal-string&non-empty-string), stdClass>',
+				'non-empty-array<int<1, max>|(literal-string&non-empty-string), stdClass>',
 				'array_merge($stringOrIntegerKeys)',
 			],
 			[
@@ -4745,23 +4745,23 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_merge($generalStringKeys, $generalDateTimeValues)',
 			],
 			[
-				'non-empty-array<int|string, int|stdClass>',
+				'non-empty-array<int<1, max>|string, int|stdClass>',
 				'array_merge($generalStringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				'non-empty-array<int|string, int|stdClass>',
+				'non-empty-array<int<1, max>|string, int|stdClass>',
 				'array_merge($stringOrIntegerKeys, $generalStringKeys)',
 			],
 			[
-				'non-empty-array<int|(literal-string&non-empty-string), \'foo\'|stdClass>',
+				'non-empty-array<int<1, max>|(literal-string&non-empty-string), \'foo\'|stdClass>',
 				'array_merge($stringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				'non-empty-array<int|(literal-string&non-empty-string), \'foo\'|stdClass>',
+				'non-empty-array<int<1, max>|(literal-string&non-empty-string), \'foo\'|stdClass>',
 				'array_merge($stringOrIntegerKeys, $stringKeys)',
 			],
 			[
-				'non-empty-array<int|(literal-string&non-empty-string), 2|4|\'a\'|\'b\'|\'green\'|\'red\'|\'trapezoid\'>',
+				'non-empty-array<int<0, max>|(literal-string&non-empty-string), 2|4|\'a\'|\'b\'|\'green\'|\'red\'|\'trapezoid\'>',
 				'array_merge(array("color" => "red", 2, 4), array("a", "b", "color" => "green", "shape" => "trapezoid", 4))',
 			],
 			[
@@ -5793,7 +5793,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'range(3, -1)',
 			],
 			[
-				'non-empty-array<int, int>',
+				'non-empty-array<int, int<0, 50>>',
 				'range(0, 50)',
 			],
 		];
@@ -6928,7 +6928,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'afterLoop'",
 			],
 			[
-				'int|null',
+				'int<1, max>|null',
 				'$nullableVal',
 				"'begin'",
 			],
@@ -6938,12 +6938,12 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'nullableValIf'",
 			],
 			[
-				'int',
+				'int<10, max>',
 				'$nullableVal',
 				"'nullableValElse'",
 			],
 			[
-				'int|null',
+				'1|int<10, max>|null',
 				'$nullableVal',
 				"'afterLoop'",
 			],
@@ -7029,17 +7029,17 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'afterLoop'",
 			],
 			[
-				'int',
+				'int<0, max>',
 				'$i',
 				"'begin'",
 			],
 			[
-				'int',
+				'int<0, max>',
 				'$i',
 				"'end'",
 			],
 			[
-				'int',
+				'int<0, max>',
 				'$i',
 				"'afterLoop'",
 			],
@@ -7050,17 +7050,17 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'int<min, 10>',
+				'int<1, 10>',
 				'$i',
 				"'begin'",
 			],
 			[
-				'int<min, 10>',
+				'int<1, 10>',
 				'$i',
 				"'end'",
 			],
 			[
-				'int<min, 10>',
+				'int<0, 10>',
 				'$i',
 				"'afterLoop'",
 			],
@@ -7072,17 +7072,17 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'int<min, 9>',
+				'int<0, 9>',
 				'$i',
 				"'begin'",
 			],
 			[
-				'int<min, 9>',
+				'int<0, 9>',
 				'$i',
 				"'end'",
 			],
 			[
-				'int<min, 10>',
+				'int<0, 10>',
 				'$i',
 				"'afterLoop'",
 			],
@@ -7169,22 +7169,22 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'afterLoop'",
 			],
 			[
-				'int',
+				'int<0, max>',
 				'$i',
 				"'begin'",
 			],
 			[
-				'int',
+				'int<1, max>',
 				'$i',
 				"'end'",
 			],
 			[
-				'int',
+				'int<0, max>',
 				'$i',
 				"'afterLoop'",
 			],
 			[
-				'int|null',
+				'int<1, max>|null',
 				'$nullableVal',
 				"'begin'",
 			],
@@ -7194,12 +7194,12 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'nullableValIf'",
 			],
 			[
-				'int',
+				'int<10, max>',
 				'$nullableVal',
 				"'nullableValElse'",
 			],
 			[
-				'int',
+				'1|int<10, max>',
 				'$nullableVal',
 				"'afterLoop'",
 			],
@@ -7721,17 +7721,17 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'beforeCallback'",
 			],
 			[
-				'int',
+				'int<1, max>',
 				'$incrementedInside',
 				"'inCallbackBeforeAssign'",
 			],
 			[
-				'int',
+				'int<2, max>',
 				'$incrementedInside',
 				"'inCallbackAfterAssign'",
 			],
 			[
-				'int',
+				'int<1, max>',
 				'$incrementedInside',
 				"'afterCallback'",
 			],
@@ -8087,7 +8087,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array{i: int, j: int, k: int, key: DateTimeImmutable, l: 1, m: 5, n?: \'str\'}',
+				'array{i: int<1, max>, j: int, k: int<1, max>, key: DateTimeImmutable, l: 1, m: 5, n?: \'str\'}',
 				'$array',
 			],
 			[
@@ -8107,7 +8107,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrayAppendedInForeach',
 			],
 			[
-				'array<int, literal-string&non-empty-string>', // could be 'array<int, \'bar\'|\'baz\'|\'foo\'>'
+				'array<int<0, max>, literal-string&non-empty-string>', // could be 'array<int<0, max>, \'bar\'|\'baz\'|\'foo\'>'
 				'$anotherArrayAppendedInForeach',
 			],
 			[
@@ -8115,7 +8115,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$array[\'n\']',
 			],
 			[
-				'int',
+				'int<0, max>',
 				'$incremented',
 			],
 			[
@@ -8485,7 +8485,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherArrayCopy',
 			],
 			[
-				'array<literal-string&non-empty-string, int|null>',
+				'array<literal-string&non-empty-string, int<1, max>|null>',
 				'$yetAnotherArrayCopy',
 			],
 			[
@@ -9090,7 +9090,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array<non-empty-array<int|string, array{hitCount: int, loadCount: int, removeCount: int, saveCount: int}>>',
+				'array<non-empty-array<int|string, array{hitCount: int<0, max>, loadCount: int<0, max>, removeCount: int<0, max>, saveCount: int<0, max>}>>',
 				'$statistics',
 			],
 		];

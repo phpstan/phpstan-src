@@ -27,12 +27,12 @@ class Foo
 			assertType('Generator&iterable', $associationData);
 			foreach ($associationData as $row) {
 				$itemsCounter++;
-				assertType('int', $itemsCounter);
+				assertType('int<1, max>', $itemsCounter);
 			}
 
 			assertType('Generator&iterable', $associationData);
 
-			assertType('int', $itemsCounter);
+			assertType('int<0, max>', $itemsCounter);
 		}
 	}
 

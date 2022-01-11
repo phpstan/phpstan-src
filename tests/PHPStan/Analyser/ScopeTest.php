@@ -33,7 +33,7 @@ class ScopeTest extends PHPStanTestCase
 			[
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
-				'int',
+				'int<0, max>',
 			],
 			[
 				new UnionType([
@@ -45,7 +45,7 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(1),
 					new ConstantIntegerType(2),
 				]),
-				'int',
+				'int<0, max>',
 			],
 			[
 				new UnionType([
@@ -72,7 +72,7 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(2),
 					new ConstantStringType('foo'),
 				]),
-				'\'foo\'|int',
+				'\'foo\'|int<0, max>',
 			],
 			[
 				new ConstantBooleanType(false),
@@ -123,7 +123,7 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(2),
 					new ConstantIntegerType(1),
 				]),
-				'array{a: int, b: 1}',
+				'array{a: int<1, max>, b: 1}',
 			],
 			[
 				new ConstantArrayType([
@@ -153,7 +153,7 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(1),
 					new ConstantIntegerType(2),
 				]),
-				'array<literal-string&non-empty-string, int>',
+				'array<literal-string&non-empty-string, int<1, max>>',
 			],
 		];
 	}

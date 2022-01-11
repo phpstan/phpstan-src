@@ -4721,7 +4721,7 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$resultTypes[] = TypeUtils::generalizeType($constantTypes['a'][0], GeneralizePrecision::moreSpecific());
+			$resultTypes[] = TypeUtils::generalizeType(TypeCombinator::union(...$constantTypes['a'], ...$constantTypes['b']), GeneralizePrecision::moreSpecific());
 		}
 
 		if (count($constantArrays['a']) > 0) {

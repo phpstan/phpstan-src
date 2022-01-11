@@ -155,7 +155,10 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return sprintf('int<%s, %s>', $this->min ?? 'min', $this->max ?? 'max');
+		return $level->handle(
+			static fn (): string => 'int',
+			fn (): string => sprintf('int<%s, %s>', $this->min ?? 'min', $this->max ?? 'max'),
+		);
 	}
 
 

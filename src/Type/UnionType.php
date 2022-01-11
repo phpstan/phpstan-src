@@ -186,7 +186,7 @@ class UnionType implements CompoundType
 						$type instanceof ConstantType
 						&& !$type instanceof ConstantBooleanType
 					) {
-						return $type->generalize(GeneralizePrecision::moreSpecific());
+						return $type->generalize(GeneralizePrecision::lessSpecific());
 					}
 
 					return $type;

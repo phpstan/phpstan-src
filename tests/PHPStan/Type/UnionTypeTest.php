@@ -26,9 +26,11 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use stdClass;
+use function array_map;
 use function array_merge;
 use function array_reverse;
 use function get_class;
+use function implode;
 use function sprintf;
 
 class UnionTypeTest extends PHPStanTestCase
@@ -848,6 +850,12 @@ class UnionTypeTest extends PHPStanTestCase
 
 		$type1 = new UnionType($types);
 		$type2 = new UnionType(array_reverse($types));
+
+		$this->assertSame(
+			implode("\n", array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $type1->getTypes())),
+			implode("\n", array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $type2->getTypes())),
+			'UnionType sorting always produces the same order',
+		);
 
 		$this->assertTrue(
 			$type1->equals($type2),

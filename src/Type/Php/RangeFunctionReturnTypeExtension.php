@@ -16,6 +16,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -68,6 +69,21 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 
 					$rangeValues = range($startConstant->getValue(), $endConstant->getValue(), $stepConstant->getValue());
 					if (count($rangeValues) > self::RANGE_LENGTH_THRESHOLD) {
+						if ($startConstant instanceof ConstantIntegerType && $endConstant instanceof ConstantIntegerType) {
+							if ($startConstant->getValue() > $endConstant->getValue()) {
+								$tmp = $startConstant;
+								$startConstant = $endConstant;
+								$endConstant = $tmp;
+							}
+							return new IntersectionType([
+								new ArrayType(
+									new IntegerType(),
+									IntegerRangeType::fromInterval($startConstant->getValue(), $endConstant->getValue()),
+								),
+								new NonEmptyArrayType(),
+							]);
+						}
+
 						return new IntersectionType([
 							new ArrayType(
 								new IntegerType(),

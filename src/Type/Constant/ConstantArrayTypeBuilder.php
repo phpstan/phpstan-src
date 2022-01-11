@@ -2,10 +2,12 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use function array_filter;
 use function array_values;
 use function count;
@@ -85,6 +87,40 @@ class ConstantArrayTypeBuilder
 				$this->nextAutoIndex = $newNextAutoIndex;
 			}
 			return;
+		}
+
+		$scalarTypes = TypeUtils::getConstantScalars($offsetType);
+		if (!$this->degradeToGeneralArray && count($scalarTypes) > 0) {
+			$match = true;
+			$valueTypes = $this->valueTypes;
+			foreach ($scalarTypes as $scalarType) {
+				$scalarOffsetType = ArrayType::castToArrayKeyType($scalarType);
+				if (!$scalarOffsetType instanceof ConstantIntegerType && !$scalarOffsetType instanceof ConstantStringType) {
+					throw new ShouldNotHappenException();
+				}
+				$offsetMatch = false;
+
+				/** @var ConstantIntegerType|ConstantStringType $keyType */
+				foreach ($this->keyTypes as $i => $keyType) {
+					if ($keyType->getValue() !== $scalarOffsetType->getValue()) {
+						continue;
+					}
+
+					$valueTypes[$i] = TypeCombinator::union($valueTypes[$i], $valueType);
+					$offsetMatch = true;
+				}
+
+				if ($offsetMatch) {
+					continue;
+				}
+
+				$match = false;
+			}
+
+			if ($match) {
+				$this->valueTypes = $valueTypes;
+				return;
+			}
 		}
 
 		$this->keyTypes[] = $offsetType;

@@ -34,6 +34,12 @@ class Foo
 		$offset3 = doFoo();
 		$e[$offset3] = true;
 		assertType('non-empty-array<0|1|2|3, bool>', $e);
+
+		$f = [false, false, false];
+		/** @var 0|1 $offset4 */
+		$offset4 = doFoo();
+		$f[$offset4] = true;
+		assertType('array{bool, bool, false}', $f);
 	}
 
 }

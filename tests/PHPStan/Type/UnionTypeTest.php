@@ -680,6 +680,14 @@ class UnionTypeTest extends PHPStanTestCase
 				'int|numeric-string',
 				'int|string',
 			],
+			[
+				TypeCombinator::union(
+					IntegerRangeType::fromInterval(0, 4),
+					IntegerRangeType::fromInterval(6, 10),
+				),
+				'int<0, 4>|int<6, 10>',
+				'int<0, 4>|int<6, 10>',
+			],
 		];
 	}
 
@@ -692,7 +700,7 @@ class UnionTypeTest extends PHPStanTestCase
 		string $expectedTypeOnlyDescription,
 	): void
 	{
-		$this->assertSame($expectedValueDescription, $type->describe(VerbosityLevel::precise()));
+		$this->assertSame($expectedValueDescription, $type->describe(VerbosityLevel::value()));
 		$this->assertSame($expectedTypeOnlyDescription, $type->describe(VerbosityLevel::typeOnly()));
 	}
 

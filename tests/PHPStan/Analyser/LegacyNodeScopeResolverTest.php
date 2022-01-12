@@ -421,7 +421,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'previousI',
 				TrinaryLogic::createYes(),
-				'0|1',
+				'int<1, max>',
 			],
 			[
 				$testScope,
@@ -582,14 +582,14 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				$testScope,
 				'nonexistentVariableOutsideFor',
-				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createYes(),
 				'1',
 			],
 			[
 				$testScope,
 				'integerOrNullFromFor',
 				TrinaryLogic::createYes(),
-				'1|null',
+				'1',
 			],
 			[
 				$testScope,
@@ -816,17 +816,17 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				$testScope,
 				'incrementInForLoop',
-				'int<1, max>',
+				'int<2, max>',
 			],
 			[
 				$testScope,
 				'valueOverwrittenInForLoop',
-				'1|2',
+				'2',
 			],
 			[
 				$testScope,
 				'arrayOverwrittenInForLoop',
-				'array{a: int<1, max>, b: \'bar\'|\'foo\'}',
+				'array{a: int<2, max>, b: \'bar\'}',
 			],
 			[
 				$testScope,
@@ -836,12 +836,12 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				$testScope,
 				'intProperty',
-				'int<1, max>',
+				'int<2, max>',
 			],
 			[
 				$testScope,
 				'staticIntProperty',
-				'int<1, max>',
+				'int<2, max>',
 			],
 			[
 				$testScope,
@@ -6923,11 +6923,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'end'",
 			],
 			[
-				'LoopVariables\Bar|LoopVariables\Foo|LoopVariables\Lorem|null',
-				'$foo',
-				"'afterLoop'",
-			],
-			[
 				'int<1, max>|null',
 				'$nullableVal',
 				"'begin'",
@@ -6943,11 +6938,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'nullableValElse'",
 			],
 			[
-				'1|int<10, max>|null',
-				'$nullableVal',
-				"'afterLoop'",
-			],
-			[
 				'LoopVariables\Foo|false',
 				'$falseOrObject',
 				"'begin'",
@@ -6956,11 +6946,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'LoopVariables\Foo',
 				'$falseOrObject',
 				"'end'",
-			],
-			[
-				'LoopVariables\Foo|false',
-				'$falseOrObject',
-				"'afterLoop'",
 			],
 		];
 	}
@@ -7043,6 +7028,21 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$i',
 				"'afterLoop'",
 			],
+			[
+				'LoopVariables\Bar|LoopVariables\Foo|LoopVariables\Lorem|null',
+				'$foo',
+				"'afterLoop'",
+			],
+			[
+				'1|int<10, max>|null',
+				'$nullableVal',
+				"'afterLoop'",
+			],
+			[
+				'LoopVariables\Foo|false',
+				'$falseOrObject',
+				"'afterLoop'",
+			],
 		];
 	}
 
@@ -7062,6 +7062,21 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				'int<0, 10>',
 				'$i',
+				"'afterLoop'",
+			],
+			[
+				'LoopVariables\Bar|LoopVariables\Foo|LoopVariables\Lorem|null',
+				'$foo',
+				"'afterLoop'",
+			],
+			[
+				'1|int<10, max>|null',
+				'$nullableVal',
+				"'afterLoop'",
+			],
+			[
+				'LoopVariables\Foo|false',
+				'$falseOrObject',
 				"'afterLoop'",
 			],
 		];
@@ -7084,6 +7099,21 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				'int<0, 10>',
 				'$i',
+				"'afterLoop'",
+			],
+			[
+				'LoopVariables\Bar|LoopVariables\Foo|LoopVariables\Lorem',
+				'$foo',
+				"'afterLoop'",
+			],
+			[
+				'1|int<10, max>',
+				'$nullableVal',
+				"'afterLoop'",
+			],
+			[
+				'LoopVariables\Foo',
+				'$falseOrObject',
 				"'afterLoop'",
 			],
 		];

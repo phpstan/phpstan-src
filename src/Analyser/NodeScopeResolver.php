@@ -1029,18 +1029,23 @@ class NodeScopeResolver
 			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 				$finalScope = $continueExitPoint->getScope()->mergeWith($finalScope);
 			}
+
+			$loopScope = $finalScope;
 			foreach ($stmt->loop as $loopExpr) {
-				$finalScope = $this->processExprNode($loopExpr, $finalScope, $nodeCallback, ExpressionContext::createTopLevel())->getScope();
+				$loopScope = $this->processExprNode($loopExpr, $loopScope, $nodeCallback, ExpressionContext::createTopLevel())->getScope();
 			}
+			$finalScope = $loopScope->generalizeWith($finalScope);
+			foreach ($stmt->cond as $condExpr) {
+				$finalScope = $finalScope->filterByFalseyValue($condExpr);
+			}
+
 			foreach ($finalScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
 			}
 
-			if ($this->polluteScopeWithLoopInitialAssignments) {
-				$scope = $initScope;
+			if (!$this->polluteScopeWithLoopInitialAssignments) {
+				$finalScope = $finalScope->mergeWith($scope);
 			}
-
-			$finalScope = $finalScope->mergeWith($scope);
 
 			return new StatementResult(
 				$finalScope,

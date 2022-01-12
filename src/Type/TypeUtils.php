@@ -151,6 +151,14 @@ class TypeUtils
 	}
 
 	/**
+	 * @return IntegerRangeType[]
+	 */
+	public static function getIntegerRanges(Type $type): array
+	{
+		return self::map(IntegerRangeType::class, $type, false);
+	}
+
+	/**
 	 * @return ConstantScalarType[]
 	 */
 	public static function getConstantScalars(Type $type): array

@@ -978,9 +978,17 @@ class NodeScopeResolver
 			}
 
 			$bodyScope = $initScope;
+			$isIterableAtLeastOnce = TrinaryLogic::createYes();
 			foreach ($stmt->cond as $condExpr) {
 				$condResult = $this->processExprNode($condExpr, $bodyScope, static function (): void {
 				}, ExpressionContext::createDeep());
+				$condTruthiness = $condResult->getScope()->getType($condExpr)->toBoolean();
+				if ($condTruthiness instanceof ConstantBooleanType) {
+					$condTruthinessTrinary = TrinaryLogic::createFromBoolean($condTruthiness->getValue());
+				} else {
+					$condTruthinessTrinary = TrinaryLogic::createMaybe();
+				}
+				$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthinessTrinary);
 				$hasYield = $hasYield || $condResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 				$bodyScope = $condResult->getTruthyScope();
@@ -1043,8 +1051,23 @@ class NodeScopeResolver
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
 			}
 
-			if (!$this->polluteScopeWithLoopInitialAssignments) {
-				$finalScope = $finalScope->mergeWith($scope);
+			if ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
+				if ($this->polluteScopeWithLoopInitialAssignments) {
+					$finalScope = $initScope;
+				} else {
+					$finalScope = $scope;
+				}
+
+			} elseif ($isIterableAtLeastOnce->maybe()) {
+				if ($this->polluteScopeWithLoopInitialAssignments) {
+					$finalScope = $finalScope->mergeWith($initScope);
+				} else {
+					$finalScope = $finalScope->mergeWith($scope);
+				}
+			} else {
+				if (!$this->polluteScopeWithLoopInitialAssignments) {
+					$finalScope = $finalScope->mergeWith($scope);
+				}
 			}
 
 			return new StatementResult(

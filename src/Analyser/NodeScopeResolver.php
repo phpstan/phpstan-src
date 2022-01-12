@@ -982,6 +982,7 @@ class NodeScopeResolver
 			foreach ($stmt->cond as $condExpr) {
 				$condResult = $this->processExprNode($condExpr, $bodyScope, static function (): void {
 				}, ExpressionContext::createDeep());
+				$initScope = $condResult->getScope();
 				$condTruthiness = $condResult->getScope()->getType($condExpr)->toBoolean();
 				if ($condTruthiness instanceof ConstantBooleanType) {
 					$condTruthinessTrinary = TrinaryLogic::createFromBoolean($condTruthiness->getValue());

@@ -5,7 +5,6 @@ namespace PHPStan\Type\Constant;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
@@ -77,23 +76,6 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 	public function toString(): Type
 	{
 		return new ConstantStringType((string) $this->value);
-	}
-
-	public function generalize(GeneralizePrecision $precision): Type
-	{
-		if ($precision->isMoreSpecific()) {
-			if ($this->getValue() > 0) {
-				return IntegerRangeType::fromInterval(1, null);
-			}
-
-			if ($this->getValue() < 0) {
-				return IntegerRangeType::fromInterval(null, -1);
-			}
-
-			return $this;
-		}
-
-		return new parent();
 	}
 
 	/**

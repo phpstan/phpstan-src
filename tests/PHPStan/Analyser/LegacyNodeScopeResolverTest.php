@@ -3146,11 +3146,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$coalesceArray',
 			],
 			[
-				'array<int<0, max>, int<1, max>>',
+				'array<int, int>',
 				'$arrayToBeUnset',
 			],
 			[
-				'array<int<0, max>, int<1, max>>',
+				'array<int, int>',
 				'$arrayToBeUnset2',
 			],
 			[
@@ -4649,7 +4649,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_intersect_key($integers, [])',
 			],
 			[
-				'array<int<0, max>, int<1, max>>',
+				'array<int, int>',
 				'array_intersect_key(...[$integers, [4, 5, 6]])',
 			],
 			[
@@ -4737,7 +4737,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_values($generalStringKeys)',
 			],
 			[
-				'non-empty-array<int<1, max>|(literal-string&non-empty-string), stdClass>',
+				'non-empty-array<int|(literal-string&non-empty-string), stdClass>',
 				'array_merge($stringOrIntegerKeys)',
 			],
 			[
@@ -4745,23 +4745,23 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_merge($generalStringKeys, $generalDateTimeValues)',
 			],
 			[
-				'non-empty-array<int<1, max>|string, int|stdClass>',
+				'non-empty-array<int|string, int|stdClass>',
 				'array_merge($generalStringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				'non-empty-array<int<1, max>|string, int|stdClass>',
+				'non-empty-array<int|string, int|stdClass>',
 				'array_merge($stringOrIntegerKeys, $generalStringKeys)',
 			],
 			[
-				'non-empty-array<int<1, max>|(literal-string&non-empty-string), \'foo\'|stdClass>',
+				'non-empty-array<int|(literal-string&non-empty-string), \'foo\'|stdClass>',
 				'array_merge($stringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				'non-empty-array<int<1, max>|(literal-string&non-empty-string), \'foo\'|stdClass>',
+				'non-empty-array<int|(literal-string&non-empty-string), \'foo\'|stdClass>',
 				'array_merge($stringOrIntegerKeys, $stringKeys)',
 			],
 			[
-				'non-empty-array<int<0, max>|(literal-string&non-empty-string), 2|4|\'a\'|\'b\'|\'green\'|\'red\'|\'trapezoid\'>',
+				'non-empty-array<int|(literal-string&non-empty-string), 2|4|\'a\'|\'b\'|\'green\'|\'red\'|\'trapezoid\'>',
 				'array_merge(array("color" => "red", 2, 4), array("a", "b", "color" => "green", "shape" => "trapezoid", 4))',
 			],
 			[
@@ -8515,7 +8515,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherArrayCopy',
 			],
 			[
-				'array<literal-string&non-empty-string, int<1, max>|null>',
+				'array<literal-string&non-empty-string, int|null>',
 				'$yetAnotherArrayCopy',
 			],
 			[

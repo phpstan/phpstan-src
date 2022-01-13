@@ -4922,6 +4922,13 @@ class MutatingScope implements Scope
 						$gotSmaller = true;
 					}
 
+					if ($min === PHP_INT_MIN) {
+						$min = null;
+					}
+					if ($max === PHP_INT_MAX) {
+						$max = null;
+					}
+
 					if ($gotGreater && $gotSmaller) {
 						$resultTypes[] = new IntegerType();
 					} elseif ($gotGreater) {
@@ -5498,7 +5505,7 @@ class MutatingScope implements Scope
 			}
 		}
 
-		return IntegerRangeType::fromInterval($min !== null ? (int) $min : null, $max !== null ? (int) $max : null);
+		return IntegerRangeType::fromInterval($min, $max);
 	}
 
 }

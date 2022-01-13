@@ -14,14 +14,14 @@ class Foo
 			assertType('int<1, 49>', $i);
 		}
 
-		assertType('50', $i);
+		assertType('int<50, max>', $i);
 		assertType(\stdClass::class, $foo);
 
 		for($i = 50; $i > 0; $i--) {
 			assertType('int<1, 50>', $i);
 		}
 
-		assertType('0', $i);
+		assertType('int<min, 0>', $i);
 	}
 
 	public function doCount(array $a) {
@@ -59,7 +59,7 @@ class Foo
 			break;
 		}
 
-		assertType('int<1, 50>', $i);
+		assertType('int<1, max>', $i);
 	}
 
 }

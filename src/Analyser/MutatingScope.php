@@ -133,6 +133,8 @@ use function strlen;
 use function strtolower;
 use function substr;
 use function usort;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
 class MutatingScope implements Scope
 {
@@ -4679,6 +4681,7 @@ class MutatingScope implements Scope
 		$constantStrings = ['a' => [], 'b' => []];
 		$constantArrays = ['a' => [], 'b' => []];
 		$generalArrays = ['a' => [], 'b' => []];
+		$integerRanges = ['a' => [], 'b' => []];
 		$otherTypes = [];
 
 		foreach ([
@@ -4708,6 +4711,10 @@ class MutatingScope implements Scope
 				}
 				if ($type->isArray()->yes()) {
 					$generalArrays[$key][] = $type;
+					continue;
+				}
+				if ($type instanceof IntegerRangeType) {
+					$integerRanges[$key][] = $type;
 					continue;
 				}
 
@@ -4855,6 +4862,79 @@ class MutatingScope implements Scope
 			}
 		} elseif (count($constantIntegers['b']) > 0) {
 			$resultTypes[] = TypeCombinator::union(...$constantIntegers['b']);
+		}
+
+		if (count($integerRanges['a']) > 0) {
+			if (count($integerRanges['b']) === 0) {
+				$resultTypes[] = TypeCombinator::union(...$integerRanges['a']);
+			} else {
+				$integerRangesA = TypeCombinator::union(...$integerRanges['a']);
+				$integerRangesB = TypeCombinator::union(...$integerRanges['b']);
+
+				if ($integerRangesA->equals($integerRangesB)) {
+					$resultTypes[] = $integerRangesA;
+				} else {
+					$min = null;
+					$max = null;
+					foreach ($integerRanges['a'] as $range) {
+						if ($range->getMin() === null) {
+							$rangeMin = PHP_INT_MIN;
+						} else {
+							$rangeMin = $range->getMin();
+						}
+						if ($range->getMax() === null) {
+							$rangeMax = PHP_INT_MAX;
+						} else {
+							$rangeMax = $range->getMax();
+						}
+
+						if ($min === null || $rangeMin < $min) {
+							$min = $rangeMin;
+						}
+						if ($max !== null && $rangeMax <= $max) {
+							continue;
+						}
+
+						$max = $rangeMax;
+					}
+
+					$gotGreater = false;
+					$gotSmaller = false;
+					foreach ($integerRanges['b'] as $range) {
+						if ($range->getMin() === null) {
+							$rangeMin = PHP_INT_MIN;
+						} else {
+							$rangeMin = $range->getMin();
+						}
+						if ($range->getMax() === null) {
+							$rangeMax = PHP_INT_MAX;
+						} else {
+							$rangeMax = $range->getMax();
+						}
+
+						if ($rangeMax > $max) {
+							$gotGreater = true;
+						}
+						if ($rangeMin >= $min) {
+							continue;
+						}
+
+						$gotSmaller = true;
+					}
+
+					if ($gotGreater && $gotSmaller) {
+						$resultTypes[] = new IntegerType();
+					} elseif ($gotGreater) {
+						$resultTypes[] = IntegerRangeType::fromInterval($min, null);
+					} elseif ($gotSmaller) {
+						$resultTypes[] = IntegerRangeType::fromInterval(null, $max);
+					} else {
+						$resultTypes[] = TypeCombinator::union($integerRangesA, $integerRangesB);
+					}
+				}
+			}
+		} elseif (count($integerRanges['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$integerRanges['b']);
 		}
 
 		return TypeCombinator::union(...$resultTypes, ...$otherTypes);

@@ -7097,7 +7097,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'end'",
 			],
 			[
-				'int<0, 10>',
+				'int<0, max>',
 				'$i',
 				"'afterLoop'",
 			],

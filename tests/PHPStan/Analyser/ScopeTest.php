@@ -9,6 +9,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -154,6 +155,72 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(2),
 				]),
 				'array<literal-string&non-empty-string, int<1, max>>',
+			],
+			[
+				new UnionType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+				]),
+				new UnionType([
+					new ConstantIntegerType(-1),
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+				]),
+				'int<min, 1>',
+			],
+			[
+				new UnionType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(2),
+				]),
+				new UnionType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+					new ConstantIntegerType(2),
+				]),
+				'0|1|2',
+			],
+			[
+				new UnionType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+					new ConstantIntegerType(2),
+				]),
+				new UnionType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(2),
+				]),
+				'0|1|2',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 16),
+				IntegerRangeType::fromInterval(1, 17),
+				'int<0, max>',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 16),
+				IntegerRangeType::fromInterval(-1, 15),
+				'int<min, 16>',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 16),
+				IntegerRangeType::fromInterval(1, null),
+				'int<0, max>',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 16),
+				IntegerRangeType::fromInterval(null, 15),
+				'int<min, 16>',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 16),
+				IntegerRangeType::fromInterval(0, null),
+				'int<0, max>',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 16),
+				IntegerRangeType::fromInterval(null, 16),
+				'int<min, 16>',
 			],
 		];
 	}

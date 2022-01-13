@@ -73,4 +73,14 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3867.php'], []);
 	}
 
+	public function testIntegerRangeGeneralization(): void
+	{
+		$this->analyse([__DIR__ . '/data/integer-range-generalization.php'], []);
+	}
+
+	public function testBug3153(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3153.php'], []);
+	}
+
 }

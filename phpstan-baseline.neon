@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Casting to int something that's already int\\.$#"
+			count: 2
+			path: src/Analyser/MutatingScope.php
+
+		-
 			message: "#^Only numeric types are allowed in pre\\-decrement, bool\\|float\\|int\\|string\\|null given\\.$#"
 			count: 1
 			path: src/Analyser/MutatingScope.php

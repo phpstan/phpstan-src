@@ -866,7 +866,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				$testScope,
 				'yetAnotherVariableInClosurePassedByReference',
-				'int<0, max>', // could be 0|1
+				'0|1',
 			],
 			[
 				$testScope,

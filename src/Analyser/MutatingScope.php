@@ -4717,7 +4717,6 @@ class MutatingScope implements Scope
 
 		$resultTypes = [];
 		foreach ([
-			$constantIntegers,
 			$constantFloats,
 			$constantBooleans,
 			$constantStrings,
@@ -4766,6 +4765,8 @@ class MutatingScope implements Scope
 					);
 				}
 			}
+		} elseif (count($constantArrays['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$constantArrays['b']);
 		}
 
 		if (count($generalArrays['a']) > 0) {
@@ -4801,6 +4802,59 @@ class MutatingScope implements Scope
 					TypeCombinator::union(self::generalizeType($aValueType, $bValueType)),
 				);
 			}
+		} elseif (count($generalArrays['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$generalArrays['b']);
+		}
+
+		if (count($constantIntegers['a']) > 0) {
+			if (count($constantIntegers['b']) === 0) {
+				$resultTypes[] = TypeCombinator::union(...$constantIntegers['a']);
+			} else {
+				$constantIntegersA = TypeCombinator::union(...$constantIntegers['a']);
+				$constantIntegersB = TypeCombinator::union(...$constantIntegers['b']);
+
+				if ($constantIntegersA->equals($constantIntegersB)) {
+					$resultTypes[] = $constantIntegersA;
+				} else {
+					$min = null;
+					$max = null;
+					foreach ($constantIntegers['a'] as $int) {
+						if ($min === null || $int->getValue() < $min) {
+							$min = $int->getValue();
+						}
+						if ($max !== null && $int->getValue() <= $max) {
+							continue;
+						}
+
+						$max = $int->getValue();
+					}
+
+					$gotGreater = false;
+					$gotSmaller = false;
+					foreach ($constantIntegers['b'] as $int) {
+						if ($int->getValue() > $max) {
+							$gotGreater = true;
+						}
+						if ($int->getValue() >= $min) {
+							continue;
+						}
+
+						$gotSmaller = true;
+					}
+
+					if ($gotGreater && $gotSmaller) {
+						$resultTypes[] = new IntegerType();
+					} elseif ($gotGreater) {
+						$resultTypes[] = IntegerRangeType::fromInterval($min, null);
+					} elseif ($gotSmaller) {
+						$resultTypes[] = IntegerRangeType::fromInterval(null, $max);
+					} else {
+						$resultTypes[] = TypeCombinator::union($constantIntegersA, $constantIntegersB);
+					}
+				}
+			}
+		} elseif (count($constantIntegers['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$constantIntegers['b']);
 		}
 
 		return TypeCombinator::union(...$resultTypes, ...$otherTypes);

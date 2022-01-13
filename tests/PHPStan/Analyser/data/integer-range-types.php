@@ -76,12 +76,12 @@ function () {
 
 	$i = 5;
 	while ($i-- > 0) {
-		assertType('int<0, max>', $i); // should improved to be int<0, 4>
+		assertType('int<0, 4>', $i);
 	}
 
 	$i = 5;
 	while (--$i > 0) {
-		assertType('int<1, max>', $i); // should improved to be int<1, 4>
+		assertType('int<1, 4>', $i);
 	}
 };
 

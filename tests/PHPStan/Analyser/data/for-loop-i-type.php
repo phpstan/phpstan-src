@@ -18,7 +18,7 @@ class Foo
 		assertType(\stdClass::class, $foo);
 
 		for($i = 50; $i > 0; $i--) {
-			assertType('int<1, max>', $i); // could be int<1, 50>
+			assertType('int<1, 50>', $i);
 		}
 
 		assertType('0', $i);
@@ -48,10 +48,10 @@ class Foo
 
 	public function doBaz() {
 		for($i = 1; $i < 50; $i += 2) {
-			assertType('int<1, 49>', $i);
+			assertType('1|int<3, 49>', $i);
 		}
 
-		assertType('int<50, 51>', $i);
+		assertType('int<50, max>', $i);
 	}
 
 	public function doLOrem() {

@@ -2943,6 +2943,9 @@ class NodeScopeResolver
 			if ($closureScope->equals($prevScope)) {
 				break;
 			}
+			if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+				$closureScope = $prevScope->generalizeWith($closureScope);
+			}
 			$count++;
 		} while ($count < self::LOOP_SCOPE_ITERATIONS);
 

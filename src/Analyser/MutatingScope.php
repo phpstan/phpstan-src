@@ -4765,6 +4765,8 @@ class MutatingScope implements Scope
 					);
 				}
 			}
+		} elseif (count($constantArrays['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$constantArrays['b']);
 		}
 
 		if (count($generalArrays['a']) > 0) {
@@ -4800,6 +4802,8 @@ class MutatingScope implements Scope
 					TypeCombinator::union(self::generalizeType($aValueType, $bValueType)),
 				);
 			}
+		} elseif (count($generalArrays['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$generalArrays['b']);
 		}
 
 		if (count($constantIntegers['a']) > 0) {
@@ -4849,6 +4853,8 @@ class MutatingScope implements Scope
 					}
 				}
 			}
+		} elseif (count($constantIntegers['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$constantIntegers['b']);
 		}
 
 		return TypeCombinator::union(...$resultTypes, ...$otherTypes);

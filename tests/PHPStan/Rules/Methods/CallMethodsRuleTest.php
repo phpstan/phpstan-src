@@ -399,11 +399,11 @@ class CallMethodsRuleTest extends RuleTestCase
 				942,
 			],
 			[
-				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int given.',
+				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int<0, max> given.',
 				964,
 			],
 			[
-				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int given.',
+				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int<1, max> given.',
 				987,
 			],
 			[
@@ -714,11 +714,11 @@ class CallMethodsRuleTest extends RuleTestCase
 				921,
 			],
 			[
-				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int given.',
+				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int<0, max> given.',
 				964,
 			],
 			[
-				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int given.',
+				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int<1, max> given.',
 				987,
 			],
 			[

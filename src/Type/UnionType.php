@@ -22,11 +22,9 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
-use function array_key_exists;
 use function array_map;
 use function count;
 use function implode;
-use function md5;
 use function sprintf;
 use function strpos;
 
@@ -161,49 +159,24 @@ class UnionType implements CompoundType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		$getTypeName = static function (Type $type, VerbosityLevel $level): string {
-			if ($type instanceof ClosureType || $type instanceof CallableType || $type instanceof TemplateUnionType) {
-				return sprintf('(%s)', $type->describe($level));
-			} elseif ($type instanceof IntersectionType) {
-				$intersectionDescription = $type->describe($level);
-				if (strpos($intersectionDescription, '&') !== false) {
-					return sprintf('(%s)', $type->describe($level));
-				}
-
-				return $intersectionDescription;
-			}
-
-			return $type->describe($level);
-		};
-		$joinTypes = static function (array $types) use ($getTypeName, $level): string {
+		$joinTypes = static function (array $types) use ($level): string {
 			$typeNames = [];
 			foreach ($types as $type) {
-				$typeName = $getTypeName($type, $level);
-				$typeNameHash = md5($typeName);
-				if (!$level->isTypeOnly()) {
-					$typeNames[$typeNameHash] = [$type, $typeName];
-					continue;
+				if ($type instanceof ClosureType || $type instanceof CallableType || $type instanceof TemplateUnionType) {
+					$typeNames[] = sprintf('(%s)', $type->describe($level));
+				} elseif ($type instanceof IntersectionType) {
+					$intersectionDescription = $type->describe($level);
+					if (strpos($intersectionDescription, '&') !== false) {
+						$typeNames[] = sprintf('(%s)', $type->describe($level));
+					} else {
+						$typeNames[] = $intersectionDescription;
+					}
+				} else {
+					$typeNames[] = $type->describe($level);
 				}
-
-				if (!array_key_exists($typeNameHash, $typeNames)) {
-					$typeNames[$typeNameHash] = [$type, $typeName];
-					continue;
-				}
-
-				[$otherType] = $typeNames[$typeNameHash];
-				unset($typeNames[$typeNameHash]);
-
-				$newOtherTypeName = $getTypeName($otherType, VerbosityLevel::value());
-				$newOtherTypeNameHash = md5($newOtherTypeName);
-
-				$typeNames[$newOtherTypeNameHash] = [$otherType, $newOtherTypeName];
-
-				$typeName = $getTypeName($type, VerbosityLevel::value());
-				$typeNameHash = md5($typeName);
-				$typeNames[$typeNameHash] = [$type, $typeName];
 			}
 
-			return implode('|', array_map(static fn (array $types): string => $types[1], $typeNames));
+			return implode('|', $typeNames);
 		};
 
 		return $level->handle(

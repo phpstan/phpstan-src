@@ -781,7 +781,7 @@ class NodeScopeResolver
 				}
 
 				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $bodyScope->generalizeWith($prevScope);
+					$bodyScope = $prevScope->generalizeWith($bodyScope);
 				}
 				$count++;
 			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
@@ -844,7 +844,7 @@ class NodeScopeResolver
 				}
 
 				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $bodyScope->generalizeWith($prevScope);
+					$bodyScope = $prevScope->generalizeWith($bodyScope);
 				}
 				$count++;
 			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
@@ -923,7 +923,7 @@ class NodeScopeResolver
 				}
 
 				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $bodyScope->generalizeWith($prevScope);
+					$bodyScope = $prevScope->generalizeWith($bodyScope);
 				}
 				$count++;
 			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
@@ -1025,7 +1025,7 @@ class NodeScopeResolver
 				}
 
 				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $bodyScope->generalizeWith($prevScope);
+					$bodyScope = $prevScope->generalizeWith($bodyScope);
 				}
 				$count++;
 			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
@@ -1045,7 +1045,7 @@ class NodeScopeResolver
 			foreach ($stmt->loop as $loopExpr) {
 				$loopScope = $this->processExprNode($loopExpr, $loopScope, $nodeCallback, ExpressionContext::createTopLevel())->getScope();
 			}
-			$finalScope = $loopScope->generalizeWith($finalScope);
+			$finalScope = $finalScope->generalizeWith($loopScope);
 			foreach ($stmt->cond as $condExpr) {
 				$finalScope = $finalScope->filterByFalseyValue($condExpr);
 			}

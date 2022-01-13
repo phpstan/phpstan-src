@@ -334,7 +334,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 
-		if ($receivedType->isCallable()->no()) {
+		if ($receivedType->isCallable()->no() || ! $receivedType instanceof self) {
 			return TemplateTypeMap::createEmpty();
 		}
 

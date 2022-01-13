@@ -218,7 +218,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 
-		if ($receivedType->isCallable()->no()) {
+		if (! $receivedType->isCallable()->yes()) {
 			return TemplateTypeMap::createEmpty();
 		}
 

@@ -94,7 +94,7 @@ class ScopeTest extends PHPStanTestCase
 			[
 				new ObjectType('Foo'),
 				new ConstantBooleanType(false),
-				'Foo',
+				'Foo|false',
 			],
 			[
 				new ConstantArrayType([

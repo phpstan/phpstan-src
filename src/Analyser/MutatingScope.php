@@ -4729,9 +4729,11 @@ class MutatingScope implements Scope
 			$constantStrings,
 		] as $constantTypes) {
 			if (count($constantTypes['a']) === 0) {
+				if (count($constantTypes['b']) > 0) {
+					$resultTypes[] = TypeCombinator::union(...$constantTypes['b']);
+				}
 				continue;
-			}
-			if (count($constantTypes['b']) === 0) {
+			} elseif (count($constantTypes['b']) === 0) {
 				$resultTypes[] = TypeCombinator::union(...$constantTypes['a']);
 				continue;
 			}

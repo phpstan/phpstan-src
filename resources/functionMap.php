@@ -12298,7 +12298,7 @@ return [
 'tidyNode::isJste' => ['bool'],
 'tidyNode::isPhp' => ['bool'],
 'tidyNode::isText' => ['bool'],
-'time' => ['positive-int'],
+'time' => ['int'],
 'time_nanosleep' => ['array{0:0|positive-int,1:0|positive-int}|bool', 'seconds'=>'int', 'nanoseconds'=>'int'],
 'time_sleep_until' => ['bool', 'timestamp'=>'float'],
 'timezone_abbreviations_list' => ['array'],

@@ -11,6 +11,15 @@ use function count;
 class BenevolentUnionType extends UnionType
 {
 
+	/**
+	 * @api
+	 * @param Type[] $types
+	 */
+	public function __construct(array $types)
+	{
+		parent::__construct($types);
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return '(' . parent::describe($level) . ')';

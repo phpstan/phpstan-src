@@ -3827,7 +3827,19 @@ class MutatingScope implements Scope
 			if (!$expr instanceof Node\Stmt\Expression) {
 				throw new ShouldNotHappenException();
 			}
-			$found = $nodeFinder->findFirst([$expr->expr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
+
+			$exprExpr = $expr->expr;
+			if ($exprExpr instanceof PropertyFetch) {
+				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($exprExpr, $this);
+				if ($propertyReflection !== null) {
+					$nativePropertyReflection = $propertyReflection->getNativeReflection();
+					if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
+						continue;
+					}
+				}
+			}
+
+			$found = $nodeFinder->findFirst([$exprExpr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
 				if (!$node instanceof $expressionToInvalidateClass) {
 					return false;
 				}

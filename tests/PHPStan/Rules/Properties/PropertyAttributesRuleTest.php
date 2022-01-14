@@ -30,6 +30,7 @@ class PropertyAttributesRuleTest extends RuleTestCase
 					new NullsafeCheck(),
 					new PhpVersion(80000),
 					new UnresolvableTypeHelper(),
+					new PropertyReflectionFinder(),
 					true,
 					true,
 					true,

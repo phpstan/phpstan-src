@@ -10,6 +10,7 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\NeverType;
@@ -33,6 +34,7 @@ class FunctionCallParametersCheck
 		private NullsafeCheck $nullsafeCheck,
 		private PhpVersion $phpVersion,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private PropertyReflectionFinder $propertyReflectionFinder,
 		private bool $checkArgumentTypes,
 		private bool $checkArgumentsPassedByReference,
 		private bool $checkExtraArguments,
@@ -266,6 +268,34 @@ class FunctionCallParametersCheck
 					$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
 				))->line($argumentLine)->build();
 				continue;
+			}
+
+			if (
+				$argumentValue instanceof Node\Expr\PropertyFetch
+				|| $argumentValue instanceof Node\Expr\StaticPropertyFetch) {
+				$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($argumentValue, $scope);
+				foreach ($propertyReflections as $propertyReflection) {
+					$nativePropertyReflection = $propertyReflection->getNativeReflection();
+					if ($nativePropertyReflection === null) {
+						continue;
+					}
+					if (!$nativePropertyReflection->isReadOnly()) {
+						continue;
+					}
+
+					if ($nativePropertyReflection->isStatic()) {
+						$propertyDescription = sprintf('static readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+					} else {
+						$propertyDescription = sprintf('readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+					}
+
+					$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Parameter %s is passed by reference so it does not accept %s.',
+						$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
+						$propertyDescription,
+					))->line($argumentLine)->build();
+				}
 			}
 
 			if ($argumentValue instanceof Node\Expr\Variable

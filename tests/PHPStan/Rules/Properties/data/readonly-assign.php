@@ -153,3 +153,14 @@ class TestFooEnum
 	}
 
 }
+
+class AssignRefOutsideClass
+{
+
+	public function doFoo(Foo $foo, int $i)
+	{
+		$foo->baz = 5;
+		$foo->baz = &$i;
+	}
+
+}

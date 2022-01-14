@@ -92,6 +92,14 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				'Readonly property ReadonlyPropertyAssign\FooEnum::$value is assigned outside of its declaring class.',
 				152,
 			],
+			[
+				'Readonly property ReadonlyPropertyAssign\Foo::$baz is assigned outside of its declaring class.',
+				162,
+			],
+			[
+				'Readonly property ReadonlyPropertyAssign\Foo::$baz is assigned outside of its declaring class.',
+				163,
+			],
 		]);
 	}
 

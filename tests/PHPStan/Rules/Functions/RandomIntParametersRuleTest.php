@@ -58,4 +58,9 @@ class RandomIntParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6361(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6361.php'], []);
+	}
+
 }

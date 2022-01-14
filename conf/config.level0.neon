@@ -165,6 +165,13 @@ services:
 			- phpstan.rules.rule
 
 	-
+		class: PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule
+		arguments:
+			additionalConstructors: %additionalConstructors%
+		tags:
+			- phpstan.rules.rule
+
+	-
 		class: PHPStan\Rules\Properties\OverridingPropertyRule
 		arguments:
 			checkPhpDocMethodSignatures: %checkPhpDocMethodSignatures%

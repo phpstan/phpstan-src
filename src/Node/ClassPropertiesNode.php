@@ -75,7 +75,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @param string[] $constructors
 	 * @param ReadWritePropertiesExtension[] $extensions
-	 * @return array{array<string, ClassPropertyNode>, array<array{string, int}>}
+	 * @return array{array<string, ClassPropertyNode>, array<array{string, int, ClassPropertyNode}>}
 	 */
 	public function getUninitializedProperties(
 		Scope $scope,
@@ -166,6 +166,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				$prematureAccess[] = [
 					$propertyName,
 					$fetch->getLine(),
+					$properties[$propertyName],
 				];
 			}
 		}

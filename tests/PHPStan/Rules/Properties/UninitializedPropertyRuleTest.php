@@ -80,5 +80,14 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/uninitialized-property-promoted.php'], []);
 	}
+	public function testReadOnly(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1');
+		}
+
+		// reported by a different rule
+		$this->analyse([__DIR__ . '/data/uninitialized-property-readonly.php'], []);
+	}
 
 }

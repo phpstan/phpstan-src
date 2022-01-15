@@ -237,6 +237,9 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	 */
 	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
 	{
+		if (PHP_VERSION_ID >= 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection on PHP 8.0 and higher.');
+		}
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/required-parameter-after-optional.php'], $errors);
 	}

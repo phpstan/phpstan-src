@@ -2080,6 +2080,9 @@ class MutatingScope implements Scope
 			$referencedClasses = TypeUtils::getDirectClassNames($constantClassType);
 			if (strtolower($constantName) === 'class') {
 				if (count($referencedClasses) === 0) {
+					if ((new ObjectWithoutClassType())->isSuperTypeOf($constantClassType)->yes()) {
+						return new ClassStringType();
+					}
 					return new ErrorType();
 				}
 				$classTypes = [];

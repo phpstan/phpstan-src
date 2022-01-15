@@ -2171,6 +2171,7 @@ return [
 'Ds\Set::join' => ['string', 'glue='=>'string'],
 'Ds\Set::jsonSerialize' => ['array'],
 'Ds\Set::last' => ['mixed'],
+'Ds\Set::map' => ['Ds\Set', 'callback='=>'callable'],
 'Ds\Set::merge' => ['Ds\Set', 'values'=>'mixed'],
 'Ds\Set::reduce' => ['mixed', 'callback'=>'callable', 'initial='=>'mixed'],
 'Ds\Set::remove' => ['void', '...values='=>'mixed'],

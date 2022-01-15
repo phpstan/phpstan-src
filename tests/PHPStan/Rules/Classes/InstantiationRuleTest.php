@@ -384,4 +384,14 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6370(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6370.php'], [
+			[
+				'Parameter #1 $something of class Bug6370\A constructor expects string, int given.',
+				45,
+			],
+		]);
+	}
+
 }

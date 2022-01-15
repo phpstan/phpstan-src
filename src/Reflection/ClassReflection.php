@@ -29,6 +29,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAlias;
+use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionClass;
 use ReflectionEnum;
@@ -510,6 +511,24 @@ class ClassReflection
 		}
 
 		return $this->reflection->isBacked();
+	}
+
+	public function getBackedEnumType(): ?Type
+	{
+		if (!$this->reflection instanceof ReflectionEnum) {
+			return null;
+		}
+
+		if (!$this->reflection->isBacked()) {
+			return null;
+		}
+
+		$reflectionType = $this->reflection->getBackingType();
+		if ($reflectionType === null) {
+			return null;
+		}
+
+		return TypehintHelper::decideTypeFromReflection($reflectionType);
 	}
 
 	public function hasEnumCase(string $name): bool

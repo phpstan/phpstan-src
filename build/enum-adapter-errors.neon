@@ -31,11 +31,6 @@ parameters:
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Access to an undefined property UnitEnum\\:\\:\\$name\\.$#"
-			count: 1
-			path: ../src/Type/ConstantTypeHelper.php
-
-		-
 			message: "#^Class ReflectionEnum not found\\.$#"
 			count: 1
 			path: ../tests/PHPStan/Reflection/ClassReflectionTest.php

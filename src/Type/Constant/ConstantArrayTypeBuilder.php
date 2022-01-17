@@ -44,12 +44,18 @@ class ConstantArrayTypeBuilder
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
 	{
-		return new self(
+		$builder = new self(
 			$startArrayType->getKeyTypes(),
 			$startArrayType->getValueTypes(),
 			$startArrayType->getNextAutoIndex(),
 			$startArrayType->getOptionalKeys(),
 		);
+
+		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
+			$builder->degradeToGeneralArray();
+		}
+
+		return $builder;
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $optional = false): void
@@ -85,6 +91,11 @@ class ConstantArrayTypeBuilder
 				if (!is_float($newNextAutoIndex)) {
 					$this->nextAutoIndex = $newNextAutoIndex;
 				}
+
+				if (count($this->keyTypes) > self::ARRAY_COUNT_LIMIT) {
+					$this->degradeToGeneralArray = true;
+				}
+
 				return;
 			}
 

@@ -164,3 +164,23 @@ class AssignRefOutsideClass
 	}
 
 }
+
+class Unserialization
+{
+
+	private readonly int $foo;
+
+	public function __construct(int $foo)
+	{
+		$this->foo = $foo; // constructor - fine
+	}
+
+	/**
+	 * @param array<int, int> $data
+	 */
+	public function __unserialize(array $data) : void
+	{
+		[$this->foo] = $data; // __unserialize - fine
+	}
+
+}

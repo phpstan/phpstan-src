@@ -27,10 +27,6 @@ if (PHP_VERSION_ID < 80000) {
 	$config = array_merge_recursive($config, $adapter->load(__DIR__ . '/enum-adapter-errors.neon'));
 }
 
-if (PHP_VERSION_ID >= 80000 && PHP_VERSION_ID < 80100) {
-	$config = array_merge_recursive($config, $adapter->load(__DIR__ . '/unit-enum.neon'));
-}
-
 $config['parameters']['phpVersion'] = PHP_VERSION_ID;
 
 return $config;

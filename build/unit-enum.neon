@@ -1,7 +1,0 @@
-parameters:
-	ignoreErrors:
-		-
-			message: "#^Access to an undefined property UnitEnum\\:\\:\\$name\\.$#"
-			count: 1
-			path: ../src/Type/ConstantTypeHelper.php
-

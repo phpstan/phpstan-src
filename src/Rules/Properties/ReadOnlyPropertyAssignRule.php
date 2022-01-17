@@ -67,7 +67,7 @@ class ReadOnlyPropertyAssignRule implements Rule
 				throw new ShouldNotHappenException();
 			}
 
-			if (strtolower($scopeMethod->getName()) === '__construct') {
+			if (strtolower($scopeMethod->getName()) === '__construct' || strtolower($scopeMethod->getName()) === '__unserialize') {
 				if (!$scope->getType($propertyFetch->var) instanceof ThisType) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is not assigned on $this.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
 				}

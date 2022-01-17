@@ -1111,11 +1111,6 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
-		class: PHPStan\Type\Php\GetoptFunctionDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicFunctionReturnTypeExtension
-
-	-
 		class: PHPStan\Type\Php\GetParentClassDynamicFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
@@ -1143,11 +1138,6 @@ services:
 		class: PHPStan\Type\Php\JsonThrowTypeExtension
 		tags:
 			- phpstan.dynamicFunctionThrowTypeExtension
-
-	-
-		class: PHPStan\Type\Php\PdoPrepareDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicMethodReturnTypeExtension
 
 	-
 		class: PHPStan\Type\Php\ReflectionClassConstructorThrowTypeExtension

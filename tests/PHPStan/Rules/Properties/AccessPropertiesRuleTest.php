@@ -523,4 +523,24 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6385(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-6385.php'], [
+			[
+				'Access to an undefined property UnitEnum::$value.',
+				43,
+			],
+			[
+				'Access to an undefined property Bug6385\ActualUnitEnum::$value.',
+				47,
+			],
+		]);
+	}
+
 }

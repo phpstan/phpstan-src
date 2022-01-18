@@ -327,6 +327,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return false;
 		}
 
+		if ($type instanceof EnumCaseObjectType) {
+			return false;
+		}
+
 		if ($this->className !== $type->className) {
 			return false;
 		}

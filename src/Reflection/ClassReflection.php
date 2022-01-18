@@ -559,7 +559,9 @@ class ClassReflection
 			if ($case instanceof ReflectionEnumBackedCase) {
 				$valueType = ConstantTypeHelper::getTypeFromValue($case->getBackingValue());
 			}
-			$cases[$case->getName()] = new EnumCaseReflection($this, $case->getName(), $valueType);
+			/** @var string $caseName */
+			$caseName = $case->getName();
+			$cases[$caseName] = new EnumCaseReflection($this, $caseName, $valueType);
 		}
 
 		return $cases;

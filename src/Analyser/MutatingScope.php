@@ -3036,7 +3036,16 @@ class MutatingScope implements Scope
 				}
 			}
 			$variableTypes[$parameter->getName()] = VariableTypeHolder::createYes($parameterType);
-			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $parameter->getNativeType();
+
+			$nativeParameterType = $parameter->getNativeType();
+			if ($parameter->isVariadic()) {
+				if ($this->phpVersion->supportsNamedArguments()) {
+					$nativeParameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $nativeParameterType);
+				} else {
+					$nativeParameterType = new ArrayType(new IntegerType(), $nativeParameterType);
+				}
+			}
+			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $nativeParameterType;
 		}
 
 		if ($preserveThis && array_key_exists('this', $this->variableTypes)) {

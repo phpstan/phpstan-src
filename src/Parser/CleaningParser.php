@@ -4,16 +4,18 @@ namespace PHPStan\Parser;
 
 use PhpParser\Node\Stmt;
 use PhpParser\NodeTraverser;
+use PHPStan\Php\PhpVersion;
 
 class CleaningParser implements Parser
 {
 
 	private NodeTraverser $traverser;
 
-	public function __construct(private Parser $wrappedParser)
+	public function __construct(private Parser $wrappedParser, PhpVersion $phpVersion)
 	{
 		$this->traverser = new NodeTraverser();
 		$this->traverser->addVisitor(new CleaningVisitor());
+		$this->traverser->addVisitor(new RemoveUnusedCodeByPhpVersionIdVisitor($phpVersion->getVersionString()));
 	}
 
 	public function parseFile(string $file): array

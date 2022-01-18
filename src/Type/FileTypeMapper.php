@@ -10,6 +10,7 @@ use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -72,6 +73,7 @@ class FileTypeMapper
 		private PhpDocNodeResolver $phpDocNodeResolver,
 		private Cache $cache,
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -187,8 +189,8 @@ class FileTypeMapper
 	private function getNameScopeMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v17-require-once', $fileName);
-			$variableCacheKey = implode(',', array_map(static fn (array $file): string => sprintf('%s-%d', $file['filename'], $file['modifiedTime']), $this->getCachedDependentFilesWithTimestamps($fileName)));
+			$cacheKey = sprintf('%s-phpdocstring', $fileName);
+			$variableCacheKey = sprintf('%s-%s-v17-require-once', implode(',', array_map(static fn (array $file): string => sprintf('%s-%d', $file['filename'], $file['modifiedTime']), $this->getCachedDependentFilesWithTimestamps($fileName))), $this->phpVersion->getVersionString());
 			$map = $this->cache->load($cacheKey, $variableCacheKey);
 
 			if ($map === null) {
@@ -631,12 +633,12 @@ class FileTypeMapper
 	 */
 	private function getCachedDependentFilesWithTimestamps(string $fileName): array
 	{
-		$cacheKey = sprintf('dependentFilesTimestamps-%s-v2-enum', $fileName);
+		$cacheKey = sprintf('dependentFilesTimestamps-%s', $fileName);
 		$fileModifiedTime = filemtime($fileName);
 		if ($fileModifiedTime === false) {
 			$fileModifiedTime = time();
 		}
-		$variableCacheKey = sprintf('%d', $fileModifiedTime);
+		$variableCacheKey = sprintf('%d-%s-v2-enum', $fileModifiedTime, $this->phpVersion->getVersionString());
 		/** @var array<array{filename: string, modifiedTime: int}>|null $cachedFilesTimestamps */
 		$cachedFilesTimestamps = $this->cache->load($cacheKey, $variableCacheKey);
 		if ($cachedFilesTimestamps !== null) {

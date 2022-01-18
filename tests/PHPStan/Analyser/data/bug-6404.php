@@ -22,7 +22,7 @@ class Bar
 	/**
 	 * @var array<int, bool>
 	 */
-	private array $someMap = [];
+	private $someMap = [];
 
 	public function build(): void
 	{

@@ -2235,10 +2235,21 @@ class MutatingScope implements Scope
 				if ($node->class instanceof Name) {
 					$staticMethodCalledOnType = $this->resolveTypeByName($node->class);
 				} else {
-					$staticMethodCalledOnType = $this->getType($node->class);
-					if ($staticMethodCalledOnType instanceof GenericClassStringType) {
-						$staticMethodCalledOnType = $staticMethodCalledOnType->getGenericType();
-					}
+					$staticMethodCalledOnType = TypeTraverser::map($this->getType($node->class), static function (Type $type, callable $traverse): Type {
+						if ($type instanceof UnionType) {
+							return $traverse($type);
+						}
+
+						if ($type instanceof GenericClassStringType) {
+							return $type->getGenericType();
+						}
+
+						if ($type instanceof ConstantStringType && $type->isClassString()) {
+							return new ObjectType($type->getValue());
+						}
+
+						return $type;
+					});
 				}
 
 				$returnType = $this->methodCallReturnType(

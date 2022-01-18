@@ -544,6 +544,27 @@ class ClassReflection
 		return $this->reflection->hasCase($name);
 	}
 
+	/**
+	 * @return array<string, EnumCaseReflection>
+	 */
+	public function getEnumCases(): array
+	{
+		if (!$this->reflection instanceof ReflectionEnum) {
+			throw new ShouldNotHappenException();
+		}
+
+		$cases = [];
+		foreach ($this->reflection->getCases() as $case) {
+			$valueType = null;
+			if ($case instanceof ReflectionEnumBackedCase) {
+				$valueType = ConstantTypeHelper::getTypeFromValue($case->getBackingValue());
+			}
+			$cases[$case->getName()] = new EnumCaseReflection($this, $case->getName(), $valueType);
+		}
+
+		return $cases;
+	}
+
 	public function getEnumCase(string $name): EnumCaseReflection
 	{
 		if (!$this->hasEnumCase($name)) {

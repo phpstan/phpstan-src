@@ -979,14 +979,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	{
 		$classReflection = $this->getClassReflection();
 		if ($classReflection !== null && $classReflection->isEnum() && $subtractedType !== null) {
-			$constants = $classReflection->getNativeReflection()->getConstants();
 			$cases = [];
-			foreach (array_keys($constants) as $constantName) {
-				if (!$classReflection->hasEnumCase($constantName)) {
-					continue;
-				}
-
-				$cases[$constantName] = new EnumCaseObjectType($classReflection->getName(), $constantName);
+			foreach (array_keys($classReflection->getEnumCases()) as $name) {
+				$cases[$name] = new EnumCaseObjectType($classReflection->getName(), $name);
 			}
 
 			foreach (TypeUtils::flattenTypes($subtractedType) as $subType) {

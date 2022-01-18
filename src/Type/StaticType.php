@@ -408,13 +408,8 @@ class StaticType implements TypeWithClassName, SubtractableType
 	{
 		$classReflection = $this->getClassReflection();
 		if ($classReflection !== null && $classReflection->isEnum() && $subtractedType !== null) {
-			$constants = $classReflection->getNativeReflection()->getConstants();
 			$cases = [];
-			foreach (array_keys($constants) as $constantName) {
-				if (!$classReflection->hasEnumCase($constantName)) {
-					continue;
-				}
-
+			foreach (array_keys($classReflection->getEnumCases()) as $constantName) {
 				$cases[$constantName] = new EnumCaseObjectType($classReflection->getName(), $constantName);
 			}
 

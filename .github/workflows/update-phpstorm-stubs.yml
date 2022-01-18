@@ -10,6 +10,7 @@ on:
 jobs:
   update-phpstorm-stubs:
     name: "Update PhpStorm stubs"
+    if: ${{ github.repository == 'phpstan/phpstan-src' }}
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout"

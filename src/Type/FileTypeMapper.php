@@ -189,7 +189,7 @@ class FileTypeMapper
 	private function getNameScopeMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v17-require-once', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v18-filter-ast', $fileName);
 			$variableCacheKey = sprintf('%s-%s', implode(',', array_map(static fn (array $file): string => sprintf('%s-%d', $file['filename'], $file['modifiedTime']), $this->getCachedDependentFilesWithTimestamps($fileName))), $this->phpVersion->getVersionString());
 			$map = $this->cache->load($cacheKey, $variableCacheKey);
 
@@ -633,7 +633,7 @@ class FileTypeMapper
 	 */
 	private function getCachedDependentFilesWithTimestamps(string $fileName): array
 	{
-		$cacheKey = sprintf('dependentFilesTimestamps-%s-v2-enum', $fileName);
+		$cacheKey = sprintf('dependentFilesTimestamps-%s-v3-filter-ast', $fileName);
 		$fileModifiedTime = filemtime($fileName);
 		if ($fileModifiedTime === false) {
 			$fileModifiedTime = time();

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use Error;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PhpParser\Node\Name;
@@ -290,7 +291,12 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			&& $valueStringType instanceof ConstantStringType
 		) {
 			$value = $this->value;
-			$value[$offsetType->getValue()] = $valueStringType->getValue();
+
+			try {
+				$value[$offsetType->getValue()] = $valueStringType->getValue();
+			} catch (Error) {
+				return new ErrorType();
+			}
 
 			return new self($value);
 		}

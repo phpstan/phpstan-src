@@ -6,11 +6,13 @@ use Exception;
 use InvalidArgumentException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
@@ -167,6 +169,13 @@ class ConstantStringTypeTest extends PHPStanTestCase
 	public function testShortTextInvalidEncoding(): void
 	{
 		$this->assertSame("'\xc3Lorem ipsum dolor'", (new ConstantStringType("\xc3Lorem ipsum dolor"))->describe(VerbosityLevel::value()));
+	}
+
+	public function testSetInvalidValue(): void
+	{
+		$string = new ConstantStringType('internal:/node/add');
+		$result = $string->setOffsetValueType(new ConstantIntegerType(0), new NullType());
+		$this->assertInstanceOf(ErrorType::class, $result);
 	}
 
 }

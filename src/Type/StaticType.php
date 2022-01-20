@@ -317,6 +317,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->setOffsetValueType($offsetType, $valueType, $unionValues);
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this->getStaticObjectType()->unsetOffset($offsetType);
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isCallable();

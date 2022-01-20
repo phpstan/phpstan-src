@@ -255,6 +255,11 @@ class ArrayType implements Type
 		), new NonEmptyArrayType());
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this;
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe()->and((new StringType())->isSuperTypeOf($this->itemType));

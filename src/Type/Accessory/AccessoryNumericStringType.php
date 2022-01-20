@@ -112,6 +112,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function isArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

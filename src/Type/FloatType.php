@@ -10,6 +10,7 @@ use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
+use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function get_class;
@@ -24,6 +25,7 @@ class FloatType implements Type
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonGenericTypeTrait;
+	use NonOffsetAccessibleTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -107,26 +109,6 @@ class FloatType implements Type
 			[$this],
 			1,
 		);
-	}
-
-	public function isOffsetAccessible(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function getOffsetValueType(Type $offsetType): Type
-	{
-		return new ErrorType();
-	}
-
-	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
-	{
-		return new ErrorType();
 	}
 
 	public function isArray(): TrinaryLogic

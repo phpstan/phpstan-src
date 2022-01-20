@@ -107,6 +107,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

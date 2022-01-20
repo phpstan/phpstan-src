@@ -3694,27 +3694,12 @@ class MutatingScope implements Scope
 				$this->parentScope,
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			$varType = $this->getType($expr->var);
-			$constantArrays = TypeUtils::getConstantArrays($varType);
-			if (count($constantArrays) > 0) {
-				$unsetArrays = [];
-				$dimType = $this->getType($expr->dim);
-				foreach ($constantArrays as $constantArray) {
-					$unsetArrays[] = $constantArray->unsetOffset($dimType);
-				}
-				return $this->specifyExpressionType(
-					$expr->var,
-					TypeCombinator::union(...$unsetArrays),
-				);
-			}
-
-			$arrays = TypeUtils::getArrays($varType);
-			$scope = $this;
-			if (count($arrays) > 0) {
-				$scope = $scope->specifyExpressionType($expr->var, TypeCombinator::union(...$arrays));
-			}
-
-			return $scope->invalidateExpression($expr->var);
+			return $this->specifyExpressionType(
+				$expr->var,
+				$this->getType($expr->var)->unsetOffset($this->getType($expr->dim)),
+			)->invalidateExpression(
+				new FuncCall(new FullyQualified('count'), [new Arg($expr->var)]),
+			);
 		}
 
 		return $this;

@@ -380,6 +380,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->setOffsetValueType($offsetType, $valueType, $unionValues));
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isCallable());

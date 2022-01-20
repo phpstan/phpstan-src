@@ -71,6 +71,8 @@ interface Type
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type;
 
+	public function unsetOffset(Type $offsetType): Type;
+
 	public function isCallable(): TrinaryLogic;
 
 	/**

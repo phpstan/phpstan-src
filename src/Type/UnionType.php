@@ -429,6 +429,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->setOffsetValueType($offsetType, $valueType, $unionValues));
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isCallable());

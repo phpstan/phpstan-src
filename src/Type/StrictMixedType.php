@@ -172,6 +172,11 @@ class StrictMixedType implements CompoundType
 		return new ErrorType();
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

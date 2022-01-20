@@ -23,6 +23,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_map;
 use function array_merge;
@@ -35,6 +36,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
+	use NonOffsetAccessibleTypeTrait;
 
 	private ObjectType $objectType;
 
@@ -224,26 +226,6 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	}
 
 	public function getIterableValueType(): Type
-	{
-		return new ErrorType();
-	}
-
-	public function isOffsetAccessible(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function getOffsetValueType(Type $offsetType): Type
-	{
-		return new ErrorType();
-	}
-
-	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		return new ErrorType();
 	}

@@ -114,6 +114,14 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		if ($this->offsetType->isSuperTypeOf($offsetType)->yes()) {
+			return new ErrorType();
+		}
+		return $this;
+	}
+
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

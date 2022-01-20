@@ -174,6 +174,11 @@ class Baz implements Type
 		// TODO: Implement setOffsetValueType() method.
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		// TODO: Implement unsetOffset() method.
+	}
+
 	public function isCallable(): \PHPStan\TrinaryLogic
 	{
 		// TODO: Implement isCallable() method.

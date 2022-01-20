@@ -72,6 +72,11 @@ class StringType implements Type
 		return new ErrorType();
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof self) {

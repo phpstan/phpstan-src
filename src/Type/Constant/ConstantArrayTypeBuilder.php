@@ -104,14 +104,17 @@ class ConstantArrayTypeBuilder
 				$integerRanges = TypeUtils::getIntegerRanges($offsetType);
 				if (count($integerRanges) > 0) {
 					foreach ($integerRanges as $integerRange) {
-						if ($integerRange->getMin() === null) {
-							break;
-						}
-						if ($integerRange->getMax() === null) {
+						$minRange = $integerRange->getMin();
+						if ($minRange === null || $minRange <= -self::ARRAY_COUNT_LIMIT) {
 							break;
 						}
 
-						foreach (range($integerRange->getMin(), $integerRange->getMax()) as $rangeValue) {
+						$maxRange = $integerRange->getMax();
+                        if ($maxRange === null || $maxRange >= self::ARRAY_COUNT_LIMIT) {
+							break;
+						}
+
+						foreach (range($minRange, $maxRange) as $rangeValue) {
 							$scalarTypes[] = new ConstantIntegerType($rangeValue);
 						}
 					}

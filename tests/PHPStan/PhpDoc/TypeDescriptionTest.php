@@ -9,9 +9,12 @@ use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -67,6 +70,15 @@ class TypeDescriptionTest extends PHPStanTestCase
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		$builder->setOffsetValueType(new ConstantStringType('"foo"'), new IntegerType());
 		yield ['array{\'"foo"\': int}', $builder->getArray()];
+
+		$builder = ConstantArrayTypeBuilder::createFromConstantArray(
+			new ConstantArrayType(
+				[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+				[new StringType(), new StringType()],
+			),
+		);
+		$builder->setOffsetValueType(IntegerRangeType::fromInterval(-2147483648, 2147483647), new StringType());
+		yield ['non-empty-array<int<-2147483648, 2147483647>, string>', $builder->getArray()];
 	}
 
 	/**

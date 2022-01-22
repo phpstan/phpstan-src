@@ -1101,6 +1101,29 @@ class MutatingScope implements Scope
 				return $leftStringType->append($rightStringType);
 			}
 
+			if ($leftStringType instanceof UnionType && $rightStringType instanceof ConstantStringType) {
+				$constantStrings = TypeUtils::getConstantStrings($leftStringType);
+				if (count($constantStrings) > 0) {
+					$strings = [];
+					foreach($constantStrings as $constantString) {
+						$strings[] = $constantString;
+						$strings[] = $constantString->append($rightStringType);
+					}
+					return TypeCombinator::union(...$strings);
+				}
+			}
+			if ($rightStringType instanceof UnionType && $leftStringType instanceof ConstantStringType) {
+				$constantStrings = TypeUtils::getConstantStrings($rightStringType);
+				if (count($constantStrings) > 0) {
+					$strings = [];
+					foreach($constantStrings as $constantString) {
+						$strings[] = $constantString;
+						$strings[] = $constantString->append($leftStringType);
+					}
+					return TypeCombinator::union(...$strings);
+				}
+			}
+
 			$accessoryTypes = [];
 			if ($leftStringType->isNonEmptyString()->or($rightStringType->isNonEmptyString())->yes()) {
 				$accessoryTypes[] = new AccessoryNonEmptyStringType();

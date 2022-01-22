@@ -1118,7 +1118,7 @@ class MutatingScope implements Scope
 					$strings = [];
 					foreach ($constantStrings as $constantString) {
 						$strings[] = $constantString;
-						$strings[] = $constantString->append($leftStringType);
+						$strings[] = $leftStringType->append($constantString);
 					}
 					return TypeCombinator::union(...$strings);
 				}

@@ -30,6 +30,6 @@ class HelloWorld
 		if (null !== $adaid) {
 			$string = 'branch-b ' . $string;
 		}
-		assertType("'branch-a general'|'branch-a generalbranch-b '|'general'|'generalbranch-b '", $string);
+		assertType("'branch-a general'|'branch-b branch-a general'|'general'|'branch-b general'", $string);
 	}
 }

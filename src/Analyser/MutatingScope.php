@@ -1105,7 +1105,7 @@ class MutatingScope implements Scope
 				$constantStrings = TypeUtils::getConstantStrings($leftStringType);
 				if (count($constantStrings) > 0) {
 					$strings = [];
-					foreach($constantStrings as $constantString) {
+					foreach ($constantStrings as $constantString) {
 						$strings[] = $constantString;
 						$strings[] = $constantString->append($rightStringType);
 					}
@@ -1116,7 +1116,7 @@ class MutatingScope implements Scope
 				$constantStrings = TypeUtils::getConstantStrings($rightStringType);
 				if (count($constantStrings) > 0) {
 					$strings = [];
-					foreach($constantStrings as $constantString) {
+					foreach ($constantStrings as $constantString) {
 						$strings[] = $constantString;
 						$strings[] = $constantString->append($leftStringType);
 					}

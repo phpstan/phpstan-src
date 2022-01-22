@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;
@@ -9,6 +10,8 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Error;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
@@ -74,6 +77,10 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 				}
 			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
 				[$itemType, $keyType] = $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $itemType, null, $keyType, $callbackArg->expr);
+			} elseif ($callbackArg instanceof String_) {
+				$itemVar = new Variable('item');
+				$expr = new FuncCall(new Name($callbackArg->value), [new Arg($itemVar)]);
+				[$itemType, $keyType] = $this->filterByTruthyValue($scope, $itemVar, $itemType, null, $keyType, $expr);
 			}
 		}
 
@@ -85,6 +92,10 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 				}
 			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
 				[$itemType, $keyType] = $this->filterByTruthyValue($scope, null, $itemType, $callbackArg->params[0]->var, $keyType, $callbackArg->expr);
+			} elseif ($callbackArg instanceof String_) {
+				$keyVar = new Variable('key');
+				$expr = new FuncCall(new Name($callbackArg->value), [new Arg($keyVar)]);
+				[$itemType, $keyType] = $this->filterByTruthyValue($scope, null, $itemType, $keyVar, $keyType, $expr);
 			}
 		}
 
@@ -96,6 +107,11 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 				}
 			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
 				[$itemType, $keyType] = $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $itemType, $callbackArg->params[1]->var ?? null, $keyType, $callbackArg->expr);
+			} elseif ($callbackArg instanceof String_) {
+				$itemVar = new Variable('item');
+				$keyVar = new Variable('key');
+				$expr = new FuncCall(new Name($callbackArg->value), [new Arg($itemVar), new Arg($keyVar)]);
+				[$itemType, $keyType] = $this->filterByTruthyValue($scope, $itemVar, $itemType, $keyVar, $keyType, $expr);
 			}
 		}
 

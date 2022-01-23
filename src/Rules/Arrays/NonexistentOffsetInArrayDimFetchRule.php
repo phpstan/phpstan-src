@@ -2,44 +2,38 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PhpParser\Node;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ArrayDimFetch>
+ * @implements Rule<Node\Expr\ArrayDimFetch>
  */
-class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
+class NonexistentOffsetInArrayDimFetchRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck;
-
-	private bool $reportMaybes;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper,
-		NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck,
-		bool $reportMaybes
+		private RuleLevelHelper $ruleLevelHelper,
+		private NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck,
+		private bool $reportMaybes,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->nonexistentOffsetInArrayDimFetchCheck = $nonexistentOffsetInArrayDimFetchCheck;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\ArrayDimFetch::class;
+		return Node\Expr\ArrayDimFetch::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($node->dim !== null) {
 			$dimType = $scope->getType($node->dim);
@@ -51,11 +45,9 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 
 		$isOffsetAccessibleTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($node->var),
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->var),
 			$unknownClassPattern,
-			static function (Type $type): bool {
-				return $type->isOffsetAccessible()->yes();
-			}
+			static fn (Type $type): bool => $type->isOffsetAccessible()->yes(),
 		);
 		$isOffsetAccessibleType = $isOffsetAccessibleTypeResult->getType();
 		if ($isOffsetAccessibleType instanceof ErrorType) {
@@ -75,7 +67,7 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 						RuleErrorBuilder::message(sprintf(
 							'Cannot access offset %s on %s.',
 							$dimType->describe(VerbosityLevel::value()),
-							$isOffsetAccessibleType->describe(VerbosityLevel::value())
+							$isOffsetAccessibleType->describe(VerbosityLevel::value()),
 						))->build(),
 					];
 				}
@@ -83,7 +75,7 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Cannot access an offset on %s.',
-						$isOffsetAccessibleType->describe(VerbosityLevel::typeOnly())
+						$isOffsetAccessibleType->describe(VerbosityLevel::typeOnly()),
 					))->build(),
 				];
 			}
@@ -99,7 +91,7 @@ class NonexistentOffsetInArrayDimFetchRule implements \PHPStan\Rules\Rule
 			$scope,
 			$node->var,
 			$unknownClassPattern,
-			$dimType
+			$dimType,
 		);
 	}
 

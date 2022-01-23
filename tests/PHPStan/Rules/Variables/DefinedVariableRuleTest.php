@@ -2,29 +2,29 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<DefinedVariableRule>
+ * @extends RuleTestCase<DefinedVariableRule>
  */
-class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
+class DefinedVariableRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $cliArgumentsVariablesRegistered;
+	private bool $cliArgumentsVariablesRegistered;
 
-	/** @var bool */
-	private $checkMaybeUndefinedVariables;
+	private bool $checkMaybeUndefinedVariables;
 
-	/** @var bool */
-	private $polluteScopeWithLoopInitialAssignments;
+	private bool $polluteScopeWithLoopInitialAssignments;
 
-	/** @var bool */
-	private $polluteScopeWithAlwaysIterableForeach;
+	private bool $polluteScopeWithAlwaysIterableForeach;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new DefinedVariableRule(
 			$this->cliArgumentsVariablesRegistered,
-			$this->checkMaybeUndefinedVariables
+			$this->checkMaybeUndefinedVariables,
 		);
 	}
 
@@ -346,14 +346,12 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataLoopInitialAssignments
-	 * @param bool $polluteScopeWithLoopInitialAssignments
-	 * @param bool $checkMaybeUndefinedVariables
 	 * @param mixed[][] $expectedErrors
 	 */
 	public function testLoopInitialAssignments(
 		bool $polluteScopeWithLoopInitialAssignments,
 		bool $checkMaybeUndefinedVariables,
-		array $expectedErrors
+		array $expectedErrors,
 	): void
 	{
 		$this->cliArgumentsVariablesRegistered = false;
@@ -571,7 +569,6 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 	/**
 	 * @dataProvider dataForeachPolluteScopeWithAlwaysIterableForeach
 	 *
-	 * @param bool $polluteScopeWithAlwaysIterableForeach
 	 * @param mixed[] $errors
 	 */
 	public function testForeachPolluteScopeWithAlwaysIterableForeach(bool $polluteScopeWithAlwaysIterableForeach, array $errors): void
@@ -816,6 +813,44 @@ class DefinedVariableRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkMaybeUndefinedVariables = true;
 		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-3283.php'], []);
+	}
+
+	public function testFirstClassCallables(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			self::markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/first-class-callables.php'], [
+			[
+				'Undefined variable: $foo',
+				10,
+			],
+			[
+				'Undefined variable: $foo',
+				11,
+			],
+			[
+				'Undefined variable: $foo',
+				29,
+			],
+			[
+				'Undefined variable: $foo',
+				30,
+			],
+			[
+				'Undefined variable: $foo',
+				48,
+			],
+			[
+				'Undefined variable: $foo',
+				49,
+			],
+		]);
 	}
 
 }

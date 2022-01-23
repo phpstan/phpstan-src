@@ -2,15 +2,19 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp;
+use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\BinaryOp>
+ * @implements Rule<Node\Expr\BinaryOp>
  */
-class NumberComparisonOperatorsConstantConditionRule implements \PHPStan\Rules\Rule
+class NumberComparisonOperatorsConstantConditionRule implements Rule
 {
 
 	public function getNodeType(): string
@@ -19,8 +23,8 @@ class NumberComparisonOperatorsConstantConditionRule implements \PHPStan\Rules\R
 	}
 
 	public function processNode(
-		\PhpParser\Node $node,
-		\PHPStan\Analyser\Scope $scope
+		Node $node,
+		Scope $scope,
 	): array
 	{
 		if (
@@ -40,7 +44,7 @@ class NumberComparisonOperatorsConstantConditionRule implements \PHPStan\Rules\R
 					$node->getOperatorSigil(),
 					$scope->getType($node->left)->describe(VerbosityLevel::value()),
 					$scope->getType($node->right)->describe(VerbosityLevel::value()),
-					$exprType->getValue() ? 'true' : 'false'
+					$exprType->getValue() ? 'true' : 'false',
 				))->build(),
 			];
 		}

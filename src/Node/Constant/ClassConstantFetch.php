@@ -9,14 +9,8 @@ use PHPStan\Analyser\Scope;
 class ClassConstantFetch
 {
 
-	private ClassConstFetch $node;
-
-	private Scope $scope;
-
-	public function __construct(ClassConstFetch $node, Scope $scope)
+	public function __construct(private ClassConstFetch $node, private Scope $scope)
 	{
-		$this->node = $node;
-		$this->scope = $scope;
 	}
 
 	public function getNode(): ClassConstFetch

@@ -7,7 +7,9 @@ use Clue\React\NDJson\Encoder;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\File\PathNotFoundException;
 use PHPStan\Rules\Registry;
+use PHPStan\ShouldNotHappenException;
 use React\EventLoop\StreamSelectLoop;
 use React\Socket\ConnectionInterface;
 use React\Socket\TcpConnector;
@@ -18,14 +20,21 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
+use function array_fill_keys;
+use function array_filter;
+use function array_values;
+use function count;
+use function defined;
+use function is_array;
+use function is_bool;
+use function is_string;
+use function sprintf;
 
 class WorkerCommand extends Command
 {
 
 	private const NAME = 'worker';
-
-	/** @var string[] */
-	private array $composerAutoloaderProjectPaths;
 
 	private int $errorCount = 0;
 
@@ -33,11 +42,10 @@ class WorkerCommand extends Command
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
-		array $composerAutoloaderProjectPaths
+		private array $composerAutoloaderProjectPaths,
 	)
 	{
 		parent::__construct();
-		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 	}
 
 	protected function configure(): void
@@ -79,7 +87,7 @@ class WorkerCommand extends Command
 			|| !is_string($port)
 			|| !is_string($identifier)
 		) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		/** @var string|null $tmpFile */
@@ -109,9 +117,9 @@ class WorkerCommand extends Command
 				false,
 				$singleReflectionFile,
 				null,
-				false
+				false,
 			);
-		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException $e) {
 			return 1;
 		}
 		$loop = new StreamSelectLoop();
@@ -121,7 +129,7 @@ class WorkerCommand extends Command
 		try {
 			[$analysedFiles] = $inceptionResult->getFiles();
 			$analysedFiles = $this->switchTmpFile($analysedFiles, $insteadOfFile, $tmpFile);
-		} catch (\PHPStan\File\PathNotFoundException $e) {
+		} catch (PathNotFoundException $e) {
 			$inceptionResult->getErrorOutput()->writeLineFormatted(sprintf('<error>%s</error>', $e->getMessage()));
 			return 1;
 		}
@@ -134,8 +142,11 @@ class WorkerCommand extends Command
 
 		$tcpConector = new TcpConnector($loop);
 		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->done(function (ConnectionInterface $connection) use ($container, $identifier, $output, $analysedFiles, $tmpFile, $insteadOfFile): void {
-			$out = new Encoder($connection, defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0);
-			$in = new Decoder($connection, true, 512, defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0, $container->getParameter('parallel')['buffer']);
+			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
+			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
+			// phpcs:enable
+			$out = new Encoder($connection, $jsonInvalidUtf8Ignore);
+			$in = new Decoder($connection, true, 512, $jsonInvalidUtf8Ignore, $container->getParameter('parallel')['buffer']);
 			$out->write(['action' => 'hello', 'identifier' => $identifier]);
 			$this->runWorker($container, $out, $in, $output, $analysedFiles, $tmpFile, $insteadOfFile);
 		});
@@ -150,13 +161,7 @@ class WorkerCommand extends Command
 	}
 
 	/**
-	 * @param Container $container
-	 * @param WritableStreamInterface $out
-	 * @param ReadableStreamInterface $in
-	 * @param OutputInterface $output
 	 * @param array<string, true> $analysedFiles
-	 * @param string|null $tmpFile
-	 * @param string|null $insteadOfFile
 	 */
 	private function runWorker(
 		Container $container,
@@ -165,10 +170,10 @@ class WorkerCommand extends Command
 		OutputInterface $output,
 		array $analysedFiles,
 		?string $tmpFile,
-		?string $insteadOfFile
+		?string $insteadOfFile,
 	): void
 	{
-		$handleError = function (\Throwable $error) use ($out, $output): void {
+		$handleError = function (Throwable $error) use ($out, $output): void {
 			$this->errorCount++;
 			$output->writeln(sprintf('Error: %s', $error->getMessage()));
 			$out->write([
@@ -213,7 +218,7 @@ class WorkerCommand extends Command
 					foreach ($fileErrors as $fileError) {
 						$errors[] = $fileError;
 					}
-				} catch (\Throwable $t) {
+				} catch (Throwable $t) {
 					$this->errorCount++;
 					$internalErrorsCount++;
 					$internalErrorMessage = sprintf('Internal error: %s in file %s', $t->getMessage(), $file);
@@ -221,7 +226,7 @@ class WorkerCommand extends Command
 						'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
 						"\n",
 						"\n",
-						'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md'
+						'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md',
 					);
 					$errors[] = $internalErrorMessage;
 				}
@@ -242,14 +247,12 @@ class WorkerCommand extends Command
 
 	/**
 	 * @param string[] $analysedFiles
-	 * @param string|null $insteadOfFile
-	 * @param string|null $tmpFile
 	 * @return string[]
 	 */
 	private function switchTmpFile(
 		array $analysedFiles,
 		?string $insteadOfFile,
-		?string $tmpFile
+		?string $tmpFile,
 	): array
 	{
 		$analysedFiles = array_values(array_filter($analysedFiles, static function (string $file) use ($insteadOfFile): bool {

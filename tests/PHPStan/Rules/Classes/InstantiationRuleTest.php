@@ -7,21 +7,25 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<InstantiationRule>
+ * @extends RuleTestCase<InstantiationRule>
  */
-class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
+class InstantiationRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new InstantiationRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), true, true, true, true),
-			new ClassCaseSensitivityCheck($broker, true)
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
+			new ClassCaseSensitivityCheck($broker, true),
 		);
 	}
 
@@ -190,7 +194,7 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Class TestInstantiation\ClassExtendingAbstractConstructor constructor invoked with 0 parameters, 1 required.',
 					273,
 				],
-			]
+			],
 		);
 	}
 
@@ -203,7 +207,7 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Parameter #2 $string of class SoapFault constructor expects string, int given.',
 					6,
 				],
-			]
+			],
 		);
 	}
 
@@ -346,6 +350,48 @@ class InstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-4681.php'], []);
+	}
+
+	public function testFirstClassCallable(): void
+	{
+		if (PHP_VERSION_ID < 80100 || !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1 and static reflection.');
+		}
+
+		// handled by a different rule
+		$this->analyse([__DIR__ . '/data/first-class-instantiation-callable.php'], []);
+	}
+
+	public function testEnumInstantiation(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/enum-instantiation.php'], [
+			[
+				'Cannot instantiate enum EnumInstantiation\Foo.',
+				9,
+			],
+			[
+				'Cannot instantiate enum EnumInstantiation\Foo.',
+				14,
+			],
+			[
+				'Cannot instantiate enum EnumInstantiation\Foo.',
+				21,
+			],
+		]);
+	}
+
+	public function testBug6370(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6370.php'], [
+			[
+				'Parameter #1 $something of class Bug6370\A constructor expects string, int given.',
+				45,
+			],
+		]);
 	}
 
 }

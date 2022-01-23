@@ -5,40 +5,28 @@ namespace PHPStan\Type;
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\BrokerAwareExtension;
 use PHPStan\Reflection\ReflectionProvider;
+use function array_merge;
 
 class DynamicReturnTypeExtensionRegistry
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	/** @var \PHPStan\Type\DynamicMethodReturnTypeExtension[] */
-	private array $dynamicMethodReturnTypeExtensions;
-
-	/** @var \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[] */
-	private array $dynamicStaticMethodReturnTypeExtensions;
-
-	/** @var \PHPStan\Type\DynamicFunctionReturnTypeExtension[] */
-	private array $dynamicFunctionReturnTypeExtensions;
-
-	/** @var \PHPStan\Type\DynamicMethodReturnTypeExtension[][]|null */
+	/** @var DynamicMethodReturnTypeExtension[][]|null */
 	private ?array $dynamicMethodReturnTypeExtensionsByClass = null;
 
-	/** @var \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[][]|null */
+	/** @var DynamicStaticMethodReturnTypeExtension[][]|null */
 	private ?array $dynamicStaticMethodReturnTypeExtensionsByClass = null;
 
 	/**
-	 * @param \PHPStan\Broker\Broker $broker
-	 * @param ReflectionProvider $reflectionProvider
-	 * @param \PHPStan\Type\DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
-	 * @param \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[] $dynamicStaticMethodReturnTypeExtensions
-	 * @param \PHPStan\Type\DynamicFunctionReturnTypeExtension[] $dynamicFunctionReturnTypeExtensions
+	 * @param DynamicMethodReturnTypeExtension[] $dynamicMethodReturnTypeExtensions
+	 * @param DynamicStaticMethodReturnTypeExtension[] $dynamicStaticMethodReturnTypeExtensions
+	 * @param DynamicFunctionReturnTypeExtension[] $dynamicFunctionReturnTypeExtensions
 	 */
 	public function __construct(
 		Broker $broker,
-		ReflectionProvider $reflectionProvider,
-		array $dynamicMethodReturnTypeExtensions,
-		array $dynamicStaticMethodReturnTypeExtensions,
-		array $dynamicFunctionReturnTypeExtensions
+		private ReflectionProvider $reflectionProvider,
+		private array $dynamicMethodReturnTypeExtensions,
+		private array $dynamicStaticMethodReturnTypeExtensions,
+		private array $dynamicFunctionReturnTypeExtensions,
 	)
 	{
 		foreach (array_merge($dynamicMethodReturnTypeExtensions, $dynamicStaticMethodReturnTypeExtensions, $dynamicFunctionReturnTypeExtensions) as $extension) {
@@ -48,16 +36,10 @@ class DynamicReturnTypeExtensionRegistry
 
 			$extension->setBroker($broker);
 		}
-
-		$this->reflectionProvider = $reflectionProvider;
-		$this->dynamicMethodReturnTypeExtensions = $dynamicMethodReturnTypeExtensions;
-		$this->dynamicStaticMethodReturnTypeExtensions = $dynamicStaticMethodReturnTypeExtensions;
-		$this->dynamicFunctionReturnTypeExtensions = $dynamicFunctionReturnTypeExtensions;
 	}
 
 	/**
-	 * @param string $className
-	 * @return \PHPStan\Type\DynamicMethodReturnTypeExtension[]
+	 * @return DynamicMethodReturnTypeExtension[]
 	 */
 	public function getDynamicMethodReturnTypeExtensionsForClass(string $className): array
 	{
@@ -73,8 +55,7 @@ class DynamicReturnTypeExtensionRegistry
 	}
 
 	/**
-	 * @param string $className
-	 * @return \PHPStan\Type\DynamicStaticMethodReturnTypeExtension[]
+	 * @return DynamicStaticMethodReturnTypeExtension[]
 	 */
 	public function getDynamicStaticMethodReturnTypeExtensionsForClass(string $className): array
 	{
@@ -90,8 +71,7 @@ class DynamicReturnTypeExtensionRegistry
 	}
 
 	/**
-	 * @param \PHPStan\Type\DynamicMethodReturnTypeExtension[][]|\PHPStan\Type\DynamicStaticMethodReturnTypeExtension[][] $extensions
-	 * @param string $className
+	 * @param DynamicMethodReturnTypeExtension[][]|DynamicStaticMethodReturnTypeExtension[][] $extensions
 	 * @return mixed[]
 	 */
 	private function getDynamicExtensionsForType(array $extensions, string $className): array
@@ -114,7 +94,7 @@ class DynamicReturnTypeExtensionRegistry
 	}
 
 	/**
-	 * @return \PHPStan\Type\DynamicFunctionReturnTypeExtension[]
+	 * @return DynamicFunctionReturnTypeExtension[]
 	 */
 	public function getDynamicFunctionReturnTypeExtensions(): array
 	{

@@ -4,24 +4,27 @@ namespace PHPStan\Process;
 
 use PHPStan\Command\AnalyseCommand;
 use Symfony\Component\Console\Input\InputInterface;
+use function array_merge;
+use function escapeshellarg;
+use function implode;
+use function ini_get;
+use function is_bool;
+use function php_ini_loaded_file;
+use function sprintf;
+use const PHP_BINARY;
 
 class ProcessHelper
 {
 
 	/**
-	 * @param string $mainScript
-	 * @param string $commandName
-	 * @param string|null $projectConfigFile
 	 * @param string[] $additionalItems
-	 * @param InputInterface $input
-	 * @return string
 	 */
 	public static function getWorkerCommand(
 		string $mainScript,
 		string $commandName,
 		?string $projectConfigFile,
 		array $additionalItems,
-		InputInterface $input
+		InputInterface $input,
 	): string
 	{
 		$phpIni = php_ini_loaded_file();

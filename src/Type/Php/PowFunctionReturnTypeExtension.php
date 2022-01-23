@@ -13,6 +13,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function count;
 
 class PowFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

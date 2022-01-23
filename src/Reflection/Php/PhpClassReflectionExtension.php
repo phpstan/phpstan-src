@@ -30,9 +30,13 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\FunctionSignature;
 use PHPStan\Reflection\SignatureMap\ParameterSignature;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\GeneralizePrecision;
@@ -41,50 +45,41 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeUtils;
+use ReflectionClass;
+use ReflectionParameter;
+use function array_key_exists;
+use function array_keys;
+use function array_map;
+use function array_shift;
+use function array_slice;
+use function class_exists;
+use function count;
+use function explode;
+use function implode;
+use function in_array;
+use function is_array;
+use function method_exists;
+use function reset;
+use function sprintf;
+use function strtolower;
 
 class PhpClassReflectionExtension
 	implements PropertiesClassReflectionExtension, MethodsClassReflectionExtension
 {
 
-	private ScopeFactory $scopeFactory;
-
-	private NodeScopeResolver $nodeScopeResolver;
-
-	private \PHPStan\Reflection\Php\PhpMethodReflectionFactory $methodReflectionFactory;
-
-	private \PHPStan\PhpDoc\PhpDocInheritanceResolver $phpDocInheritanceResolver;
-
-	private \PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension;
-
-	private \PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension;
-
-	private \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider;
-
-	private \PHPStan\Parser\Parser $parser;
-
-	private \PHPStan\PhpDoc\StubPhpDocProvider $stubPhpDocProvider;
-
-	private bool $inferPrivatePropertyTypeFromConstructor;
-
-	private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider;
-
-	private FileTypeMapper $fileTypeMapper;
-
-	/** @var string[] */
-	private array $universalObjectCratesClasses;
-
-	/** @var \PHPStan\Reflection\PropertyReflection[][] */
+	/** @var PropertyReflection[][] */
 	private array $propertiesIncludingAnnotations = [];
 
-	/** @var \PHPStan\Reflection\Php\PhpPropertyReflection[][] */
+	/** @var PhpPropertyReflection[][] */
 	private array $nativeProperties = [];
 
-	/** @var \PHPStan\Reflection\MethodReflection[][] */
+	/** @var MethodReflection[][] */
 	private array $methodsIncludingAnnotations = [];
 
-	/** @var \PHPStan\Reflection\MethodReflection[][] */
+	/** @var MethodReflection[][] */
 	private array $nativeMethods = [];
 
 	/** @var array<string, array<string, Type>> */
@@ -94,49 +89,24 @@ class PhpClassReflectionExtension
 	private array $inferClassConstructorPropertyTypesInProcess = [];
 
 	/**
-	 * @param \PHPStan\Analyser\ScopeFactory $scopeFactory
-	 * @param \PHPStan\Analyser\NodeScopeResolver $nodeScopeResolver
-	 * @param \PHPStan\Reflection\Php\PhpMethodReflectionFactory $methodReflectionFactory
-	 * @param \PHPStan\PhpDoc\PhpDocInheritanceResolver $phpDocInheritanceResolver
-	 * @param \PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension
-	 * @param \PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension
-	 * @param \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider
-	 * @param \PHPStan\Parser\Parser $parser
-	 * @param \PHPStan\PhpDoc\StubPhpDocProvider $stubPhpDocProvider
-	 * @param ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider
-	 * @param FileTypeMapper $fileTypeMapper
-	 * @param bool $inferPrivatePropertyTypeFromConstructor
 	 * @param string[] $universalObjectCratesClasses
 	 */
 	public function __construct(
-		ScopeFactory $scopeFactory,
-		NodeScopeResolver $nodeScopeResolver,
-		PhpMethodReflectionFactory $methodReflectionFactory,
-		PhpDocInheritanceResolver $phpDocInheritanceResolver,
-		AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension,
-		AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension,
-		SignatureMapProvider $signatureMapProvider,
-		Parser $parser,
-		StubPhpDocProvider $stubPhpDocProvider,
-		ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
-		FileTypeMapper $fileTypeMapper,
-		bool $inferPrivatePropertyTypeFromConstructor,
-		array $universalObjectCratesClasses
+		private ScopeFactory $scopeFactory,
+		private NodeScopeResolver $nodeScopeResolver,
+		private PhpMethodReflectionFactory $methodReflectionFactory,
+		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
+		private AnnotationsMethodsClassReflectionExtension $annotationsMethodsClassReflectionExtension,
+		private AnnotationsPropertiesClassReflectionExtension $annotationsPropertiesClassReflectionExtension,
+		private SignatureMapProvider $signatureMapProvider,
+		private Parser $parser,
+		private StubPhpDocProvider $stubPhpDocProvider,
+		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
+		private FileTypeMapper $fileTypeMapper,
+		private bool $inferPrivatePropertyTypeFromConstructor,
+		private array $universalObjectCratesClasses,
 	)
 	{
-		$this->scopeFactory = $scopeFactory;
-		$this->nodeScopeResolver = $nodeScopeResolver;
-		$this->methodReflectionFactory = $methodReflectionFactory;
-		$this->phpDocInheritanceResolver = $phpDocInheritanceResolver;
-		$this->annotationsMethodsClassReflectionExtension = $annotationsMethodsClassReflectionExtension;
-		$this->annotationsPropertiesClassReflectionExtension = $annotationsPropertiesClassReflectionExtension;
-		$this->signatureMapProvider = $signatureMapProvider;
-		$this->parser = $parser;
-		$this->stubPhpDocProvider = $stubPhpDocProvider;
-		$this->reflectionProviderProvider = $reflectionProviderProvider;
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->inferPrivatePropertyTypeFromConstructor = $inferPrivatePropertyTypeFromConstructor;
-		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
@@ -156,7 +126,7 @@ class PhpClassReflectionExtension
 	public function getNativeProperty(ClassReflection $classReflection, string $propertyName): PhpPropertyReflection
 	{
 		if (!isset($this->nativeProperties[$classReflection->getCacheKey()][$propertyName])) {
-			/** @var \PHPStan\Reflection\Php\PhpPropertyReflection $property */
+			/** @var PhpPropertyReflection $property */
 			$property = $this->createProperty($classReflection, $propertyName, false);
 			$this->nativeProperties[$classReflection->getCacheKey()][$propertyName] = $property;
 		}
@@ -167,7 +137,7 @@ class PhpClassReflectionExtension
 	private function createProperty(
 		ClassReflection $classReflection,
 		string $propertyName,
-		bool $includingAnnotations
+		bool $includingAnnotations,
 	): PropertyReflection
 	{
 		$propertyReflection = $classReflection->getNativeReflection()->getProperty($propertyName);
@@ -175,22 +145,51 @@ class PhpClassReflectionExtension
 		$declaringClassName = $propertyReflection->getDeclaringClass()->getName();
 		$declaringClassReflection = $classReflection->getAncestorWithClassName($declaringClassName);
 		if ($declaringClassReflection === null) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf(
+			throw new ShouldNotHappenException(sprintf(
 				'Internal error: Expected to find an ancestor with class name %s on %s, but none was found.',
 				$declaringClassName,
-				$classReflection->getName()
+				$classReflection->getName(),
 			));
+		}
+
+		if ($declaringClassReflection->isEnum()) {
+			if (
+				$propertyName === 'name'
+				|| ($declaringClassReflection->isBackedEnum() && $propertyName === 'value')
+			) {
+				$types = [];
+				foreach (array_keys($classReflection->getEnumCases()) as $name) {
+					if ($propertyName === 'name') {
+						$types[] = new ConstantStringType($name);
+						continue;
+					}
+
+					$case = $classReflection->getEnumCase($name);
+					$value = $case->getBackingValueType();
+					if ($value === null) {
+						throw new ShouldNotHappenException();
+					}
+
+					$types[] = $value;
+				}
+
+				return new PhpPropertyReflection($declaringClassReflection, null, null, TypeCombinator::union(...$types), $classReflection->getNativeReflection()->getProperty($propertyName), null, false, false);
+			}
 		}
 
 		$deprecatedDescription = null;
 		$isDeprecated = false;
 		$isInternal = false;
 
-		if ($includingAnnotations && $this->annotationsPropertiesClassReflectionExtension->hasProperty($classReflection, $propertyName)) {
+		if (
+			$includingAnnotations
+			&& !$declaringClassReflection->isEnum()
+			&& $this->annotationsPropertiesClassReflectionExtension->hasProperty($classReflection, $propertyName)
+		) {
 			$hierarchyDistances = $classReflection->getClassHierarchyDistances();
 			$annotationProperty = $this->annotationsPropertiesClassReflectionExtension->getProperty($classReflection, $propertyName);
 			if (!isset($hierarchyDistances[$annotationProperty->getDeclaringClass()->getName()])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$distanceDeclaringClass = $propertyReflection->getDeclaringClass()->getName();
@@ -199,7 +198,7 @@ class PhpClassReflectionExtension
 				$distanceDeclaringClass = $propertyTrait;
 			}
 			if (!isset($hierarchyDistances[$distanceDeclaringClass])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			if ($hierarchyDistances[$annotationProperty->getDeclaringClass()->getName()] < $hierarchyDistances[$distanceDeclaringClass]) {
@@ -213,43 +212,34 @@ class PhpClassReflectionExtension
 
 		$declaringTraitName = null;
 		$phpDocType = null;
-		$resolvedPhpDoc = $this->stubPhpDocProvider->findPropertyPhpDoc(
-			$declaringClassName,
-			$propertyReflection->getName()
-		);
-		$stubPhpDocString = null;
-		if ($resolvedPhpDoc === null) {
-			if ($declaringClassReflection->getFileName() !== null) {
-				$declaringTraitName = $this->findPropertyTrait($propertyReflection);
-				$constructorName = null;
-				if (method_exists($propertyReflection, 'isPromoted') && $propertyReflection->isPromoted()) {
-					if ($declaringClassReflection->hasConstructor()) {
-						$constructorName = $declaringClassReflection->getConstructor()->getName();
-					}
+		$resolvedPhpDoc = null;
+		if ($declaringClassReflection->getFileName() !== null) {
+			$declaringTraitName = $this->findPropertyTrait($propertyReflection);
+			$constructorName = null;
+			if (method_exists($propertyReflection, 'isPromoted') && $propertyReflection->isPromoted()) {
+				if ($declaringClassReflection->hasConstructor()) {
+					$constructorName = $declaringClassReflection->getConstructor()->getName();
 				}
-
-				if ($constructorName === null) {
-					$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
-						$docComment,
-						$declaringClassReflection,
-						$declaringClassReflection->getFileName(),
-						$declaringTraitName,
-						$propertyName
-					);
-				} elseif ($docComment !== null) {
-					$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-						$declaringClassReflection->getFileName(),
-						$declaringClassName,
-						$declaringTraitName,
-						$constructorName,
-						$docComment
-					);
-				}
-				$phpDocBlockClassReflection = $declaringClassReflection;
 			}
-		} else {
+
+			if ($constructorName === null) {
+				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
+					$docComment,
+					$declaringClassReflection,
+					$declaringClassReflection->getFileName(),
+					$declaringTraitName,
+					$propertyName,
+				);
+			} elseif ($docComment !== null) {
+				$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+					$declaringClassReflection->getFileName(),
+					$declaringClassName,
+					$declaringTraitName,
+					$constructorName,
+					$docComment,
+				);
+			}
 			$phpDocBlockClassReflection = $declaringClassReflection;
-			$stubPhpDocString = $resolvedPhpDoc->getPhpDocString();
 		}
 
 		if ($resolvedPhpDoc !== null) {
@@ -267,9 +257,7 @@ class PhpClassReflectionExtension
 				$nativeClassReflection = $declaringClassReflection->getNativeReflection();
 				$positionalParameterNames = [];
 				if ($nativeClassReflection->getConstructor() !== null) {
-					$positionalParameterNames = array_map(static function (\ReflectionParameter $parameter): string {
-						return $parameter->getName();
-					}, $nativeClassReflection->getConstructor()->getParameters());
+					$positionalParameterNames = array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $nativeClassReflection->getConstructor()->getParameters());
 				}
 				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 					$constructorDocComment,
@@ -277,7 +265,7 @@ class PhpClassReflectionExtension
 					$declaringClassReflection,
 					$declaringTraitName,
 					$constructorName,
-					$positionalParameterNames
+					$positionalParameterNames,
 				);
 				$paramTags = $resolvedPhpDoc->getParamTags();
 				if (isset($paramTags[$propertyReflection->getName()])) {
@@ -288,11 +276,11 @@ class PhpClassReflectionExtension
 
 		if ($resolvedPhpDoc !== null) {
 			if (!isset($phpDocBlockClassReflection)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$phpDocType = $phpDocType !== null ? TemplateTypeHelper::resolveTemplateTypes(
 				$phpDocType,
-				$phpDocBlockClassReflection->getActiveTemplateTypeMap()
+				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
 			) : null;
 			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
@@ -310,7 +298,7 @@ class PhpClassReflectionExtension
 		) {
 			$phpDocType = $this->inferPrivatePropertyType(
 				$propertyReflection->getName(),
-				$declaringClassReflection->getConstructor()
+				$declaringClassReflection->getConstructor(),
 			);
 		}
 
@@ -336,7 +324,6 @@ class PhpClassReflectionExtension
 			$deprecatedDescription,
 			$isDeprecated,
 			$isInternal,
-			$stubPhpDocString
 		);
 	}
 
@@ -373,7 +360,7 @@ class PhpClassReflectionExtension
 		if ($methodName === '__get' && UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
 			$this->reflectionProviderProvider->getReflectionProvider(),
 			$this->universalObjectCratesClasses,
-			$classReflection
+			$classReflection,
 		)) {
 			return true;
 		}
@@ -389,7 +376,7 @@ class PhpClassReflectionExtension
 
 		if ($classReflection->getNativeReflection()->hasMethod($methodName)) {
 			$nativeMethodReflection = new NativeBuiltinMethodReflection(
-				$classReflection->getNativeReflection()->getMethod($methodName)
+				$classReflection->getNativeReflection()->getMethod($methodName),
 			);
 		} else {
 			if (
@@ -397,14 +384,14 @@ class PhpClassReflectionExtension
 				|| !UniversalObjectCratesClassReflectionExtension::isUniversalObjectCrate(
 					$this->reflectionProviderProvider->getReflectionProvider(),
 					$this->universalObjectCratesClasses,
-					$classReflection
+					$classReflection,
 				)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$nativeMethodReflection = new FakeBuiltinMethodReflection(
 				$methodName,
-				$classReflection->getNativeReflection()
+				$classReflection->getNativeReflection(),
 			);
 		}
 
@@ -419,14 +406,14 @@ class PhpClassReflectionExtension
 	private function createMethod(
 		ClassReflection $classReflection,
 		BuiltinMethodReflection $methodReflection,
-		bool $includingAnnotations
+		bool $includingAnnotations,
 	): MethodReflection
 	{
 		if ($includingAnnotations && $this->annotationsMethodsClassReflectionExtension->hasMethod($classReflection, $methodReflection->getName())) {
 			$hierarchyDistances = $classReflection->getClassHierarchyDistances();
 			$annotationMethod = $this->annotationsMethodsClassReflectionExtension->getMethod($classReflection, $methodReflection->getName());
 			if (!isset($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$distanceDeclaringClass = $methodReflection->getDeclaringClass()->getName();
@@ -435,7 +422,7 @@ class PhpClassReflectionExtension
 				$distanceDeclaringClass = $methodTrait;
 			}
 			if (!isset($hierarchyDistances[$distanceDeclaringClass])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			if ($hierarchyDistances[$annotationMethod->getDeclaringClass()->getName()] < $hierarchyDistances[$distanceDeclaringClass]) {
@@ -446,11 +433,24 @@ class PhpClassReflectionExtension
 		$declaringClass = $classReflection->getAncestorWithClassName($declaringClassName);
 
 		if ($declaringClass === null) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf(
+			throw new ShouldNotHappenException(sprintf(
 				'Internal error: Expected to find an ancestor with class name %s on %s, but none was found.',
 				$declaringClassName,
-				$classReflection->getName()
+				$classReflection->getName(),
 			));
+		}
+
+		if (
+			$declaringClass->isEnum()
+			&& $declaringClass->getName() !== 'UnitEnum'
+			&& strtolower($methodReflection->getName()) === 'cases'
+		) {
+			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+			foreach (array_keys($classReflection->getEnumCases()) as $name) {
+				$arrayBuilder->setOffsetValueType(null, new EnumCaseObjectType($classReflection->getName(), $name));
+			}
+
+			return new EnumCasesMethodReflection($declaringClass, $arrayBuilder->getArray());
 		}
 
 		if ($this->signatureMapProvider->hasMethodSignature($declaringClassName, $methodReflection->getName())) {
@@ -461,14 +461,13 @@ class PhpClassReflectionExtension
 				$i++;
 			}
 
-			$stubPhpDocString = null;
 			$variants = [];
 			$reflectionMethod = null;
 			$throwType = null;
 			if ($classReflection->getNativeReflection()->hasMethod($methodReflection->getName())) {
 				$reflectionMethod = $classReflection->getNativeReflection()->getMethod($methodReflection->getName());
 			} elseif (class_exists($classReflection->getName(), false)) {
-				$reflectionClass = new \ReflectionClass($classReflection->getName());
+				$reflectionClass = new ReflectionClass($classReflection->getName());
 				if ($reflectionClass->hasMethod($methodReflection->getName())) {
 					$reflectionMethod = $reflectionClass->getMethod($methodReflection->getName());
 				}
@@ -486,25 +485,22 @@ class PhpClassReflectionExtension
 				$phpDocReturnType = null;
 				$stubPhpDocPair = null;
 				if (count($variantNumbers) === 1) {
-					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static function (ParameterSignature $parameterSignature): string {
-						return $parameterSignature->getName();
-					}, $methodSignature->getParameters()));
+					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
 					if ($stubPhpDocPair !== null) {
 						[$stubPhpDoc, $stubDeclaringClass] = $stubPhpDocPair;
-						$stubPhpDocString = $stubPhpDoc->getPhpDocString();
 						$templateTypeMap = $stubDeclaringClass->getActiveTemplateTypeMap();
 						$returnTag = $stubPhpDoc->getReturnTag();
 						if ($returnTag !== null) {
 							$stubPhpDocReturnType = TemplateTypeHelper::resolveTemplateTypes(
 								$returnTag->getType(),
-								$templateTypeMap
+								$templateTypeMap,
 							);
 						}
 
 						foreach ($stubPhpDoc->getParamTags() as $name => $paramTag) {
 							$stubPhpDocParameterTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
 								$paramTag->getType(),
-								$templateTypeMap
+								$templateTypeMap,
 							);
 							$stubPhpDocParameterVariadicity[$name] = $paramTag->isVariadic();
 						}
@@ -523,7 +519,7 @@ class PhpClassReflectionExtension
 							$declaringClassName,
 							null,
 							$reflectionMethod->getName(),
-							$reflectionMethod->getDocComment()
+							$reflectionMethod->getDocComment(),
 						);
 						$throwsTag = $phpDocBlock->getThrowsTag();
 						if ($throwsTag !== null) {
@@ -561,28 +557,22 @@ class PhpClassReflectionExtension
 				$methodReflection,
 				$variants,
 				$hasSideEffects,
-				$stubPhpDocString,
-				$throwType
+				$throwType,
 			);
 		}
 
 		$declaringTraitName = $this->findMethodTrait($methodReflection);
 		$resolvedPhpDoc = null;
-		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static function (\ReflectionParameter $parameter): string {
-			return $parameter->getName();
-		}, $methodReflection->getParameters()));
+		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
 		$phpDocBlockClassReflection = $declaringClass;
 		if ($stubPhpDocPair !== null) {
 			[$resolvedPhpDoc, $phpDocBlockClassReflection] = $stubPhpDocPair;
 		}
-		$stubPhpDocString = null;
 
 		if ($resolvedPhpDoc === null) {
 			if ($declaringClass->getFileName() !== null) {
 				$docComment = $methodReflection->getDocComment();
-				$positionalParameterNames = array_map(static function (\ReflectionParameter $parameter): string {
-					return $parameter->getName();
-				}, $methodReflection->getParameters());
+				$positionalParameterNames = array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters());
 
 				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 					$docComment,
@@ -590,12 +580,10 @@ class PhpClassReflectionExtension
 					$declaringClass,
 					$declaringTraitName,
 					$methodReflection->getName(),
-					$positionalParameterNames
+					$positionalParameterNames,
 				);
 				$phpDocBlockClassReflection = $declaringClass;
 			}
-		} else {
-			$stubPhpDocString = $resolvedPhpDoc->getPhpDocString();
 		}
 
 		$declaringTrait = null;
@@ -642,7 +630,7 @@ class PhpClassReflectionExtension
 					$declaringClassName,
 					$declaringTraitName,
 					$methodReflection->getName(),
-					$parameterProperty->getDocComment()
+					$parameterProperty->getDocComment(),
 				);
 				$varTags = $propertyDocblock->getVarTags();
 				if (isset($varTags[0]) && count($varTags) === 1) {
@@ -667,13 +655,13 @@ class PhpClassReflectionExtension
 			foreach ($phpDocParameterTypes as $paramName => $paramType) {
 				$phpDocParameterTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
 					$paramType,
-					$phpDocBlockClassReflection->getActiveTemplateTypeMap()
+					$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
 				);
 			}
 			$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 				$methodReflection->getReturnType(),
 				null,
-				$declaringClass->getName()
+				$declaringClass->getName(),
 			);
 			$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
 			$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
@@ -696,20 +684,15 @@ class PhpClassReflectionExtension
 			$isDeprecated,
 			$isInternal,
 			$isFinal,
-			$stubPhpDocString,
-			$isPure
+			$isPure,
 		);
 	}
 
 	/**
-	 * @param FunctionSignature $methodSignature
 	 * @param array<string, Type> $stubPhpDocParameterTypes
 	 * @param array<string, bool> $stubPhpDocParameterVariadicity
-	 * @param Type|null $stubPhpDocReturnType
 	 * @param array<string, Type> $phpDocParameterTypes
-	 * @param Type|null $phpDocReturnType
 	 * @param array<string, string> $phpDocParameterNameMapping
-	 * @return FunctionVariantWithPhpDocs
 	 */
 	private function createNativeMethodVariant(
 		FunctionSignature $methodSignature,
@@ -718,7 +701,7 @@ class PhpClassReflectionExtension
 		?Type $stubPhpDocReturnType,
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
-		array $phpDocParameterNameMapping
+		array $phpDocParameterNameMapping,
 	): FunctionVariantWithPhpDocs
 	{
 		$parameters = [];
@@ -743,7 +726,7 @@ class PhpClassReflectionExtension
 				$parameterSignature->getNativeType(),
 				$parameterSignature->passedByReference(),
 				$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
-				null
+				null,
 			);
 		}
 
@@ -760,7 +743,7 @@ class PhpClassReflectionExtension
 			$methodSignature->isVariadic(),
 			$returnType ?? $methodSignature->getReturnType(),
 			$phpDocReturnType ?? new MixedType(),
-			$methodSignature->getNativeReturnType()
+			$methodSignature->getNativeReturnType(),
 		);
 	}
 
@@ -788,13 +771,11 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param \ReflectionClass<object>[] $traits
-	 * @param \ReflectionProperty $propertyReflection
-	 * @return string|null
+	 * @param ReflectionClass<object>[] $traits
 	 */
 	private function deepScanTraitsForProperty(
 		array $traits,
-		\ReflectionProperty $propertyReflection
+		\ReflectionProperty $propertyReflection,
 	): ?string
 	{
 		foreach ($traits as $trait) {
@@ -817,7 +798,7 @@ class PhpClassReflectionExtension
 	}
 
 	private function findMethodTrait(
-		BuiltinMethodReflection $methodReflection
+		BuiltinMethodReflection $methodReflection,
 	): ?string
 	{
 		if ($methodReflection->getReflection() instanceof ReflectionMethod) {
@@ -866,10 +847,9 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param \ReflectionClass $class
-	 * @return \ReflectionClass[]
+	 * @return ReflectionClass[]
 	 */
-	private function collectTraits(\ReflectionClass $class): array
+	private function collectTraits(ReflectionClass $class): array
 	{
 		$traits = [];
 		$traitsLeftToAnalyze = $class->getTraits();
@@ -894,7 +874,7 @@ class PhpClassReflectionExtension
 
 	private function inferPrivatePropertyType(
 		string $propertyName,
-		MethodReflection $constructor
+		MethodReflection $constructor,
 	): ?Type
 	{
 		$declaringClassName = $constructor->getDeclaringClass()->getName();
@@ -912,11 +892,10 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\MethodReflection $constructor
 	 * @return array<string, Type>
 	 */
 	private function inferAndCachePropertyTypes(
-		MethodReflection $constructor
+		MethodReflection $constructor,
 	): array
 	{
 		$declaringClass = $constructor->getDeclaringClass();
@@ -950,7 +929,7 @@ class PhpClassReflectionExtension
 			false,
 			[],
 			$constructor,
-			$namespace
+			$namespace,
 		)->enterClass($declaringClass);
 		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
@@ -963,7 +942,7 @@ class PhpClassReflectionExtension
 			$isDeprecated,
 			$isInternal,
 			$isFinal,
-			$isPure
+			$isPure,
 		);
 
 		$propertyTypes = [];
@@ -1007,15 +986,14 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param string $className
-	 * @param \PhpParser\Node[] $nodes
-	 * @return \PhpParser\Node\Stmt\Class_|null
+	 * @param Node[] $nodes
 	 */
 	private function findClassNode(string $className, array $nodes): ?Class_
 	{
 		foreach ($nodes as $node) {
 			if (
 				$node instanceof Class_
+				&& $node->namespacedName !== null
 				&& $node->namespacedName->toString() === $className
 			) {
 				return $node;
@@ -1043,9 +1021,7 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param string $methodName
-	 * @param \PhpParser\Node\Stmt[] $classStatements
-	 * @return \PhpParser\Node\Stmt\ClassMethod|null
+	 * @param Node\Stmt[] $classStatements
 	 */
 	private function findConstructorNode(string $methodName, array $classStatements): ?ClassMethod
 	{
@@ -1071,7 +1047,7 @@ class PhpClassReflectionExtension
 		$phpDocReturnType = $returnTag->getType();
 		$phpDocReturnType = TemplateTypeHelper::resolveTemplateTypes(
 			$phpDocReturnType,
-			$phpDocBlockClassReflection->getActiveTemplateTypeMap()
+			$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
 		);
 
 		if ($returnTag->isExplicit() || $nativeReturnType->isSuperTypeOf($phpDocReturnType)->yes()) {
@@ -1082,10 +1058,8 @@ class PhpClassReflectionExtension
 	}
 
 	/**
-	 * @param ClassReflection $declaringClass
-	 * @param string $methodName
 	 * @param array<int, string> $positionalParameterNames
-	 * @return array{\PHPStan\PhpDoc\ResolvedPhpDocBlock, ClassReflection}|null
+	 * @return array{ResolvedPhpDocBlock, ClassReflection}|null
 	 */
 	private function findMethodPhpDocIncludingAncestors(ClassReflection $declaringClass, string $methodName, array $positionalParameterNames): ?array
 	{

@@ -2,16 +2,19 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<StrictComparisonOfDifferentTypesRule>
+ * @extends RuleTestCase<StrictComparisonOfDifferentTypesRule>
  */
-class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTestCase
+class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkAlwaysTrueStrictComparison;
+	private bool $checkAlwaysTrueStrictComparison;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new StrictComparisonOfDifferentTypesRule($this->checkAlwaysTrueStrictComparison);
 	}
@@ -123,19 +126,19 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					320,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<1, max> and \'string\' will always evaluate to false.',
 					335,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<0, max> and \'string\' will always evaluate to false.',
 					343,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<0, max> and \'string\' will always evaluate to false.',
 					360,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<1, max> and \'string\' will always evaluate to false.',
 					368,
 				],
 				[
@@ -155,10 +158,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					426,
 				],
 				[
-					'Strict comparison using === between int and null will always evaluate to false.', // todo remove with isDeterministic
-					438,
-				],
-				[
 					'Strict comparison using === between int<min, 0>|int<2, max>|string and 1.0 will always evaluate to false.',
 					464,
 				],
@@ -175,7 +174,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					624,
 				],
 				[
-					'Strict comparison using === between int and \'foo\' will always evaluate to false.',
+					'Strict comparison using === between int<10, max> and \'foo\' will always evaluate to false.',
 					635,
 				],
 				[
@@ -230,7 +229,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					'Strict comparison using === between 1000 and 1000 will always evaluate to true.',
 					910,
 				],
-			]
+			],
 		);
 	}
 
@@ -305,19 +304,19 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					320,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<1, max> and \'string\' will always evaluate to false.',
 					335,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<0, max> and \'string\' will always evaluate to false.',
 					343,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<0, max> and \'string\' will always evaluate to false.',
 					360,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<1, max> and \'string\' will always evaluate to false.',
 					368,
 				],
 				[
@@ -331,10 +330,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 				[
 					'Strict comparison using !== between null and null will always evaluate to false.',
 					408,
-				],
-				[
-					'Strict comparison using === between int and null will always evaluate to false.', // todo remove with isDeterministic
-					438,
 				],
 				[
 					'Strict comparison using === between int<min, 0>|int<2, max>|string and 1.0 will always evaluate to false.',
@@ -353,7 +348,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					624,
 				],
 				[
-					'Strict comparison using === between int and \'foo\' will always evaluate to false.',
+					'Strict comparison using === between int<10, max> and \'foo\' will always evaluate to false.',
 					635,
 				],
 				[
@@ -372,7 +367,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 					'Strict comparison using === between mixed and \'foo\' will always evaluate to false.',
 					808,
 				],
-			]
+			],
 		);
 	}
 
@@ -491,6 +486,17 @@ class StrictComparisonOfDifferentTypesRuleTest extends \PHPStan\Testing\RuleTest
 	{
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/bug-3366.php'], []);
+	}
+
+	public function testBug5362(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/data/bug-5362.php'], [
+			[
+				'Strict comparison using === between 0 and 1|2 will always evaluate to false.',
+				23,
+			],
+		]);
 	}
 
 }

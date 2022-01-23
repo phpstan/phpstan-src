@@ -15,11 +15,12 @@ use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function count;
 
 class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
 	{
@@ -29,7 +30,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection,
 		FuncCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		return $functionReflection->getName() === 'array_key_exists'
@@ -40,7 +41,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		FunctionReflection $functionReflection,
 		FuncCall $node,
 		Scope $scope,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		if (count($node->getArgs()) < 2) {
@@ -69,7 +70,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		if ($context->truthy()) {
 			$type = TypeCombinator::intersect(
 				new ArrayType(new MixedType(), new MixedType()),
-				new HasOffsetType($keyType)
+				new HasOffsetType($keyType),
 			);
 		} else {
 			$type = new HasOffsetType($keyType);
@@ -80,7 +81,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 			$type,
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

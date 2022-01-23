@@ -4,18 +4,13 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use ReturnTypeWillChange;
 
 class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private string $value;
-
-	public function __construct(string $name, string $value)
+	public function __construct(private string $name, private string $value)
 	{
-		$this->name = $name;
-		$this->value = $value;
 	}
 
 	public function equals(ExportedNode $node): bool
@@ -36,7 +31,7 @@ class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 	{
 		return new self(
 			$properties['name'],
-			$properties['value']
+			$properties['value'],
 		);
 	}
 
@@ -48,14 +43,14 @@ class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 	{
 		return new self(
 			$data['name'],
-			$data['value']
+			$data['value'],
 		);
 	}
 
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [

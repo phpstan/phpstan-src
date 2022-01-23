@@ -2,16 +2,17 @@
 
 namespace PHPStan\Process\Runnable;
 
+use PHPStan\ShouldNotHappenException;
 use React\Promise\CancellablePromiseInterface;
 use React\Promise\Deferred;
 use SplObjectStorage;
+use Throwable;
+use function array_shift;
+use function count;
+use function sprintf;
 
 class RunnableQueue
 {
-
-	private RunnableQueueLogger $logger;
-
-	private int $maxSize;
 
 	/** @var array<array{Runnable, int, Deferred}> */
 	private array $queue = [];
@@ -19,11 +20,8 @@ class RunnableQueue
 	/** @var SplObjectStorage<Runnable, array{int, Deferred}> */
 	private SplObjectStorage $running;
 
-	public function __construct(RunnableQueueLogger $logger, int $maxSize)
+	public function __construct(private RunnableQueueLogger $logger, private int $maxSize)
 	{
-		$this->logger = $logger;
-		$this->maxSize = $maxSize;
-
 		/** @var SplObjectStorage<Runnable, array{int, Deferred}> $running */
 		$running = new SplObjectStorage();
 		$this->running = $running;
@@ -53,7 +51,7 @@ class RunnableQueue
 	public function queue(Runnable $runnable, int $size): CancellablePromiseInterface
 	{
 		if ($size > $this->maxSize) {
-			throw new \PHPStan\ShouldNotHappenException('Runnable size exceeds queue maxSize.');
+			throw new ShouldNotHappenException('Runnable size exceeds queue maxSize.');
 		}
 
 		$deferred = new Deferred(static function () use ($runnable): void {
@@ -75,7 +73,7 @@ class RunnableQueue
 
 		$currentQueueSize = $this->getRunningSize();
 		if ($currentQueueSize > $this->maxSize) {
-			throw new \PHPStan\ShouldNotHappenException('Running overflow');
+			throw new ShouldNotHappenException('Running overflow');
 		}
 
 		if ($currentQueueSize === $this->maxSize) {
@@ -94,8 +92,8 @@ class RunnableQueue
 					'Canot remote first item from the queue - it has size %d, current queue size is %d, new size would be %d',
 					$runnableSize,
 					$currentQueueSize,
-					$newSize
-				)
+					$newSize,
+				),
 			);
 			return;
 		}
@@ -105,7 +103,7 @@ class RunnableQueue
 		/** @var array{Runnable, int, Deferred} $popped */
 		$popped = array_shift($this->queue);
 		if ($popped[0] !== $runnable || $popped[1] !== $runnableSize || $popped[2] !== $deferred) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$this->running->attach($runnable, [$runnableSize, $deferred]);
@@ -115,7 +113,7 @@ class RunnableQueue
 			$deferred->resolve($value);
 			$this->running->detach($runnable);
 			$this->drainQueue();
-		}, function (\Throwable $e) use ($runnable, $deferred): void {
+		}, function (Throwable $e) use ($runnable, $deferred): void {
 			$this->logger->log(sprintf('Process %s finished unsuccessfully: %s', $runnable->getName(), $e->getMessage()));
 			$deferred->reject($e);
 			$this->running->detach($runnable);

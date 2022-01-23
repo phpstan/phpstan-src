@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\ShouldNotHappenException;
+
 class ReflectionProviderStaticAccessor
 {
 
@@ -19,7 +21,7 @@ class ReflectionProviderStaticAccessor
 	public static function getInstance(): ReflectionProvider
 	{
 		if (self::$instance === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		return self::$instance;
 	}

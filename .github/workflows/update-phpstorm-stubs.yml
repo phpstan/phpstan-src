@@ -1,0 +1,50 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Update PhpStorm stubs"
+on:
+  workflow_dispatch:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: '0 0 * * 2'
+
+jobs:
+  update-phpstorm-stubs:
+    name: "Update PhpStorm stubs"
+    if: ${{ github.repository == 'phpstan/phpstan-src' }}
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: '0'
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.0"
+      - name: "Install dependencies"
+        run: "composer install  --no-interaction --no-progress"
+      - name: "Checkout stubs"
+        uses: "actions/checkout@v2"
+        with:
+          path: "phpstorm-stubs"
+          repository: "jetbrains/phpstorm-stubs"
+      - name: "Update stubs"
+        run: "composer require jetbrains/phpstorm-stubs:dev-master#$(git -C phpstorm-stubs rev-parse HEAD)"
+      - name: "Remove stubs repo"
+        run: "rm -r phpstorm-stubs"
+      - name: "Update function metadata"
+        run: "./bin/generate-function-metadata.php"
+      - name: "Create Pull Request"
+        id: create-pr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          branch-suffix: random
+          delete-branch: true
+          title: "Update PhpStorm stubs"
+          body: "Update PhpStorm stubs"
+          committer: "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
+          commit-message: "Update PhpStorm stubs"

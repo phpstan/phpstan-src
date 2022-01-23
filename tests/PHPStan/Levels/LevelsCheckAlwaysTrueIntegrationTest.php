@@ -2,10 +2,12 @@
 
 namespace PHPStan\Levels;
 
+use PHPStan\Testing\LevelsTestCase;
+
 /**
  * @group exec
  */
-class LevelsCheckAlwaysTrueIntegrationTest extends \PHPStan\Testing\LevelsTestCase
+class LevelsCheckAlwaysTrueIntegrationTest extends LevelsTestCase
 {
 
 	public function dataTopics(): array

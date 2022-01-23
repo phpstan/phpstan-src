@@ -8,6 +8,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
  * @template TBound of Type
@@ -53,16 +54,14 @@ trait TemplateTypeTrait
 			return sprintf(
 				'%s%s',
 				$this->name,
-				$boundDescription
+				$boundDescription,
 			);
 		};
 
 		return $level->handle(
 			$basicDescription,
 			$basicDescription,
-			function () use ($basicDescription): string {
-				return sprintf('%s (%s, %s)', $basicDescription(), $this->scope->describe(), $this->isArgument() ? 'argument' : 'parameter');
-			}
+			fn (): string => sprintf('%s (%s, %s)', $basicDescription(), $this->scope->describe(), $this->isArgument() ? 'argument' : 'parameter'),
 		);
 	}
 
@@ -78,7 +77,7 @@ trait TemplateTypeTrait
 			new TemplateTypeArgumentStrategy(),
 			$this->variance,
 			$this->name,
-			TemplateTypeHelper::toArgument($this->getBound())
+			TemplateTypeHelper::toArgument($this->getBound()),
 		);
 	}
 
@@ -202,7 +201,6 @@ trait TemplateTypeTrait
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{
@@ -211,7 +209,7 @@ trait TemplateTypeTrait
 			$properties['strategy'],
 			$properties['variance'],
 			$properties['name'],
-			$properties['bound']
+			$properties['bound'],
 		);
 	}
 

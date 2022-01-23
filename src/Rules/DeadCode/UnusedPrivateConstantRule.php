@@ -8,6 +8,8 @@ use PHPStan\Node\ClassConstantsNode;
 use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function sprintf;
 
 /**
  * @implements Rule<ClassConstantsNode>
@@ -15,11 +17,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 class UnusedPrivateConstantRule implements Rule
 {
 
-	private AlwaysUsedClassConstantsExtensionProvider $extensionProvider;
-
-	public function __construct(AlwaysUsedClassConstantsExtensionProvider $extensionProvider)
+	public function __construct(private AlwaysUsedClassConstantsExtensionProvider $extensionProvider)
 	{
-		$this->extensionProvider = $extensionProvider;
 	}
 
 	public function getNodeType(): string
@@ -29,11 +28,11 @@ class UnusedPrivateConstantRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->getClass() instanceof Node\Stmt\Class_) {
+		if (!$node->getClass() instanceof Node\Stmt\Class_ && !$node->getClass() instanceof Node\Stmt\Enum_) {
 			return [];
 		}
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$classReflection = $scope->getClassReflection();
@@ -85,6 +84,7 @@ class UnusedPrivateConstantRule implements Rule
 					'classStartLine' => $node->getClass()->getStartLine(),
 					'constantName' => $constantName,
 				])
+				->tip(sprintf('See: %s', 'https://phpstan.org/developing-extensions/always-used-class-constants'))
 				->build();
 		}
 

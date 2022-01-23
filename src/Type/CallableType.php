@@ -7,6 +7,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -17,6 +18,10 @@ use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
+use function array_map;
+use function array_merge;
+use function implode;
+use function sprintf;
 
 /** @api */
 class CallableType implements CompoundType, ParametersAcceptor
@@ -28,30 +33,25 @@ class CallableType implements CompoundType, ParametersAcceptor
 	use TruthyBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	/** @var array<int, \PHPStan\Reflection\ParameterReflection> */
+	/** @var array<int, ParameterReflection> */
 	private array $parameters;
 
 	private Type $returnType;
-
-	private bool $variadic;
 
 	private bool $isCommonCallable;
 
 	/**
 	 * @api
-	 * @param array<int, \PHPStan\Reflection\ParameterReflection> $parameters
-	 * @param Type $returnType
-	 * @param bool $variadic
+	 * @param array<int, ParameterReflection> $parameters
 	 */
 	public function __construct(
 		?array $parameters = null,
 		?Type $returnType = null,
-		bool $variadic = true
+		private bool $variadic = true,
 	)
 	{
 		$this->parameters = $parameters ?? [];
 		$this->returnType = $returnType ?? new MixedType();
-		$this->variadic = $variadic;
 		$this->isCommonCallable = $parameters === null && $returnType === null;
 	}
 
@@ -105,7 +105,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 		}
 
 		if ($variantsResult === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $isCallable->and($variantsResult);
@@ -134,21 +134,15 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			static function (): string {
-				return 'callable';
-			},
-			function () use ($level): string {
-				return sprintf(
-					'callable(%s): %s',
-					implode(', ', array_map(
-						static function (ParameterReflection $param) use ($level): string {
-							return sprintf('%s%s', $param->isVariadic() ? '...' : '', $param->getType()->describe($level));
-						},
-						$this->getParameters()
-					)),
-					$this->returnType->describe($level)
-				);
-			}
+			static fn (): string => 'callable',
+			fn (): string => sprintf(
+				'callable(%s): %s',
+				implode(', ', array_map(
+					static fn (ParameterReflection $param): string => sprintf('%s%s', $param->isVariadic() ? '...' : '', $param->getType()->describe($level)),
+					$this->getParameters(),
+				)),
+				$this->returnType->describe($level),
+			),
 		);
 	}
 
@@ -158,8 +152,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
@@ -202,7 +195,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	}
 
 	/**
-	 * @return array<int, \PHPStan\Reflection\ParameterReflection>
+	 * @return array<int, ParameterReflection>
 	 */
 	public function getParameters(): array
 	{
@@ -225,7 +218,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 
-		if ($receivedType->isCallable()->no()) {
+		if (! $receivedType->isCallable()->yes()) {
 			return TemplateTypeMap::createEmpty();
 		}
 
@@ -265,7 +258,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
 		$references = $this->getReturnType()->getReferencedTemplateTypes(
-			$positionVariance->compose(TemplateTypeVariance::createCovariant())
+			$positionVariance->compose(TemplateTypeVariance::createCovariant()),
 		);
 
 		$paramVariance = $positionVariance->compose(TemplateTypeVariance::createContravariant());
@@ -293,14 +286,14 @@ class CallableType implements CompoundType, ParametersAcceptor
 				$cb($param->getType()),
 				$param->passedByReference(),
 				$param->isVariadic(),
-				$defaultValue !== null ? $cb($defaultValue) : null
+				$defaultValue !== null ? $cb($defaultValue) : null,
 			);
 		}, $this->getParameters());
 
 		return new self(
 			$parameters,
 			$cb($this->getReturnType()),
-			$this->isVariadic()
+			$this->isVariadic(),
 		);
 	}
 
@@ -331,14 +324,13 @@ class CallableType implements CompoundType, ParametersAcceptor
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{
 		return new self(
 			(bool) $properties['isCommonCallable'] ? null : $properties['parameters'],
 			(bool) $properties['isCommonCallable'] ? null : $properties['returnType'],
-			$properties['variadic']
+			$properties['variadic'],
 		);
 	}
 

@@ -2,16 +2,18 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<TernaryOperatorConstantConditionRule>
+ * @extends RuleTestCase<TernaryOperatorConstantConditionRule>
  */
-class TernaryOperatorConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
+class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new TernaryOperatorConstantConditionRule(
 			new ConstantConditionRuleHelper(
@@ -19,11 +21,11 @@ class TernaryOperatorConstantConditionRuleTest extends \PHPStan\Testing\RuleTest
 					$this->createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
-					$this->treatPhpDocTypesAsCertain
+					$this->treatPhpDocTypesAsCertain,
 				),
-				$this->treatPhpDocTypesAsCertain
+				$this->treatPhpDocTypesAsCertain,
 			),
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		);
 	}
 

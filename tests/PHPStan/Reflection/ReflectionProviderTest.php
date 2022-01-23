@@ -2,12 +2,14 @@
 
 namespace PHPStan\Reflection;
 
+use DateTime;
 use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use const PHP_VERSION_ID;
 
 class ReflectionProviderTest extends PHPStanTestCase
 {
@@ -51,8 +53,6 @@ class ReflectionProviderTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFunctionThrowType
-	 * @param string $functionName
-	 * @param ?Type $expectedThrowType
 	 */
 	public function testFunctionThrowType(string $functionName, ?Type $expectedThrowType): void
 	{
@@ -66,7 +66,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 		$this->assertNotNull($throwType);
 		$this->assertSame(
 			$expectedThrowType->describe(VerbosityLevel::precise()),
-			$throwType->describe(VerbosityLevel::precise())
+			$throwType->describe(VerbosityLevel::precise()),
 		);
 	}
 
@@ -98,8 +98,6 @@ class ReflectionProviderTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFunctionDeprecated
-	 * @param string $functionName
-	 * @param bool $isDeprecated
 	 */
 	public function testFunctionDeprecated(string $functionName, bool $isDeprecated): void
 	{
@@ -112,12 +110,12 @@ class ReflectionProviderTest extends PHPStanTestCase
 	{
 		return [
 			[
-				\DateTime::class,
+				DateTime::class,
 				'__construct',
 				new ObjectType('Exception'),
 			],
 			[
-				\DateTime::class,
+				DateTime::class,
 				'format',
 				null,
 			],
@@ -126,9 +124,6 @@ class ReflectionProviderTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataMethodThrowType
-	 * @param string $className
-	 * @param string $methodName
-	 * @param ?Type $expectedThrowType
 	 */
 	public function testMethodThrowType(string $className, string $methodName, ?Type $expectedThrowType): void
 	{
@@ -143,7 +138,7 @@ class ReflectionProviderTest extends PHPStanTestCase
 		$this->assertNotNull($throwType);
 		$this->assertSame(
 			$expectedThrowType->describe(VerbosityLevel::precise()),
-			$throwType->describe(VerbosityLevel::precise())
+			$throwType->describe(VerbosityLevel::precise()),
 		);
 	}
 

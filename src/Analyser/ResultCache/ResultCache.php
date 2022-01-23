@@ -8,51 +8,23 @@ use PHPStan\Dependency\ExportedNode;
 class ResultCache
 {
 
-	private bool $fullAnalysis;
-
-	/** @var string[] */
-	private array $filesToAnalyse;
-
-	private int $lastFullAnalysisTime;
-
-	/** @var mixed[] */
-	private array $meta;
-
-	/** @var array<string, array<Error>> */
-	private array $errors;
-
-	/** @var array<string, array<string>> */
-	private array $dependencies;
-
-	/** @var array<string, array<ExportedNode>> */
-	private array $exportedNodes;
-
 	/**
 	 * @param string[] $filesToAnalyse
-	 * @param bool $fullAnalysis
-	 * @param int $lastFullAnalysisTime
 	 * @param mixed[] $meta
 	 * @param array<string, array<Error>> $errors
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
 	 */
 	public function __construct(
-		array $filesToAnalyse,
-		bool $fullAnalysis,
-		int $lastFullAnalysisTime,
-		array $meta,
-		array $errors,
-		array $dependencies,
-		array $exportedNodes
+		private array $filesToAnalyse,
+		private bool $fullAnalysis,
+		private int $lastFullAnalysisTime,
+		private array $meta,
+		private array $errors,
+		private array $dependencies,
+		private array $exportedNodes,
 	)
 	{
-		$this->filesToAnalyse = $filesToAnalyse;
-		$this->fullAnalysis = $fullAnalysis;
-		$this->lastFullAnalysisTime = $lastFullAnalysisTime;
-		$this->meta = $meta;
-		$this->errors = $errors;
-		$this->dependencies = $dependencies;
-		$this->exportedNodes = $exportedNodes;
 	}
 
 	/**

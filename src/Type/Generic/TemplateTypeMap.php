@@ -7,6 +7,8 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_key_exists;
+use function count;
 
 /** @api */
 class TemplateTypeMap
@@ -14,21 +16,13 @@ class TemplateTypeMap
 
 	private static ?TemplateTypeMap $empty = null;
 
-	/** @var array<string,\PHPStan\Type\Type> */
-	private array $types;
-
-	/** @var array<string,\PHPStan\Type\Type> */
-	private array $lowerBoundTypes;
-
 	/**
 	 * @api
-	 * @param array<string,\PHPStan\Type\Type> $types
-	 * @param array<string,\PHPStan\Type\Type> $lowerBoundTypes
+	 * @param array<string, Type> $types
+	 * @param array<string, Type> $lowerBoundTypes
 	 */
-	public function __construct(array $types, array $lowerBoundTypes = [])
+	public function __construct(private array $types, private array $lowerBoundTypes = [])
 	{
-		$this->types = $types;
-		$this->lowerBoundTypes = $lowerBoundTypes;
 	}
 
 	public function convertToLowerBoundTypes(): self
@@ -73,7 +67,7 @@ class TemplateTypeMap
 		return count($this->types + $this->lowerBoundTypes);
 	}
 
-	/** @return array<string,\PHPStan\Type\Type> */
+	/** @return array<string, Type> */
 	public function getTypes(): array
 	{
 		$types = $this->types;
@@ -227,7 +221,7 @@ class TemplateTypeMap
 	{
 		return new self(
 			$properties['types'],
-			$properties['lowerBoundTypes'] ?? []
+			$properties['lowerBoundTypes'] ?? [],
 		);
 	}
 

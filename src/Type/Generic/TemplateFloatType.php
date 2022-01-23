@@ -19,7 +19,7 @@ final class TemplateFloatType extends FloatType implements TemplateType
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		FloatType $bound
+		FloatType $bound,
 	)
 	{
 		parent::__construct();
@@ -39,7 +39,7 @@ final class TemplateFloatType extends FloatType implements TemplateType
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

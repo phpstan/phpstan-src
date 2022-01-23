@@ -5,28 +5,28 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use function htmlspecialchars;
 use function sprintf;
+use const ENT_COMPAT;
+use const ENT_XML1;
 
 class JunitErrorFormatter implements ErrorFormatter
 {
 
-	private \PHPStan\File\RelativePathHelper $relativePathHelper;
-
-	public function __construct(RelativePathHelper $relativePathHelper)
+	public function __construct(private RelativePathHelper $relativePathHelper)
 	{
-		$this->relativePathHelper = $relativePathHelper;
 	}
 
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		Output $output
+		Output $output,
 	): int
 	{
 		$result = '<?xml version="1.0" encoding="UTF-8"?>';
 		$result .= sprintf(
 			'<testsuite failures="%d" name="phpstan" tests="%d" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">',
 			$analysisResult->getTotalErrorsCount(),
-			$analysisResult->getTotalErrorsCount()
+			$analysisResult->getTotalErrorsCount(),
 		);
 
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
@@ -34,7 +34,7 @@ class JunitErrorFormatter implements ErrorFormatter
 			$result .= $this->createTestCase(
 				sprintf('%s:%s', $fileName, (string) $fileSpecificError->getLine()),
 				'ERROR',
-				$this->escape($fileSpecificError->getMessage())
+				$this->escape($fileSpecificError->getMessage()),
 			);
 		}
 
@@ -60,10 +60,7 @@ class JunitErrorFormatter implements ErrorFormatter
 	/**
 	 * Format a single test case
 	 *
-	 * @param string      $reference
-	 * @param string|null $message
 	 *
-	 * @return string
 	 */
 	private function createTestCase(string $reference, string $type, ?string $message = null): string
 	{
@@ -81,8 +78,6 @@ class JunitErrorFormatter implements ErrorFormatter
 	/**
 	 * Escapes values for using in XML
 	 *
-	 * @param string $string
-	 * @return string
 	 */
 	private function escape(string $string): string
 	{

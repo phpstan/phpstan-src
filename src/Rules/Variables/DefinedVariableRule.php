@@ -5,25 +5,23 @@ namespace PHPStan\Rules\Variables;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function in_array;
+use function is_string;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Variable>
+ * @implements Rule<Node\Expr\Variable>
  */
-class DefinedVariableRule implements \PHPStan\Rules\Rule
+class DefinedVariableRule implements Rule
 {
 
-	private bool $cliArgumentsVariablesRegistered;
-
-	private bool $checkMaybeUndefinedVariables;
-
 	public function __construct(
-		bool $cliArgumentsVariablesRegistered,
-		bool $checkMaybeUndefinedVariables
+		private bool $cliArgumentsVariablesRegistered,
+		private bool $checkMaybeUndefinedVariables,
 	)
 	{
-		$this->cliArgumentsVariablesRegistered = $cliArgumentsVariablesRegistered;
-		$this->checkMaybeUndefinedVariables = $checkMaybeUndefinedVariables;
 	}
 
 	public function getNodeType(): string
@@ -90,7 +88,6 @@ class DefinedVariableRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param Scope $scope
 	 * @return array<int, array<int, string>>
 	 */
 	private function getParentVariables(Scope $scope): array

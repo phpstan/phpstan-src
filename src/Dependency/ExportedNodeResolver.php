@@ -11,6 +11,8 @@ use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassNode;
+use PHPStan\Dependency\ExportedNode\ExportedEnumCaseNode;
+use PHPStan\Dependency\ExportedNode\ExportedEnumNode;
 use PHPStan\Dependency\ExportedNode\ExportedFunctionNode;
 use PHPStan\Dependency\ExportedNode\ExportedInterfaceNode;
 use PHPStan\Dependency\ExportedNode\ExportedMethodNode;
@@ -19,22 +21,20 @@ use PHPStan\Dependency\ExportedNode\ExportedPhpDocNode;
 use PHPStan\Dependency\ExportedNode\ExportedPropertiesNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitUseAdaptation;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
+use function array_map;
+use function implode;
+use function is_string;
 
 class ExportedNodeResolver
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
-	private Standard $printer;
-
-	public function __construct(FileTypeMapper $fileTypeMapper, Standard $printer)
+	public function __construct(private FileTypeMapper $fileTypeMapper, private Standard $printer)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->printer = $printer;
 	}
 
-	public function resolve(string $fileName, \PhpParser\Node $node): ?ExportedNode
+	public function resolve(string $fileName, Node $node): ?ExportedNode
 	{
 		if ($node instanceof Class_ && isset($node->namespacedName)) {
 			$docComment = $node->getDocComment();
@@ -67,7 +67,7 @@ class ExportedNodeResolver
 					$fileName,
 					$className,
 					null,
-					$docComment !== null ? $docComment->getText() : null
+					$docComment !== null ? $docComment->getText() : null,
 				),
 				$node->isAbstract(),
 				$node->isFinal(),
@@ -80,7 +80,7 @@ class ExportedNodeResolver
 							$adaptation->trait !== null ? $adaptation->trait->toString() : null,
 							$adaptation->method->toString(),
 							$adaptation->newModifier,
-							$adaptation->newName !== null ? $adaptation->newName->toString() : null
+							$adaptation->newName !== null ? $adaptation->newName->toString() : null,
 						);
 					}
 
@@ -88,22 +88,18 @@ class ExportedNodeResolver
 						return ExportedTraitUseAdaptation::createPrecedence(
 							$adaptation->trait !== null ? $adaptation->trait->toString() : null,
 							$adaptation->method->toString(),
-							array_map(static function (Name $name): string {
-								return $name->toString();
-							}, $adaptation->insteadof)
+							array_map(static fn (Name $name): string => $name->toString(), $adaptation->insteadof),
 						);
 					}
 
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}, $adaptations),
-				$this->exportClassStatements($node->stmts, $fileName, $node, $className)
+				$this->exportClassStatements($node->stmts, $fileName, $className),
 			);
 		}
 
-		if ($node instanceof \PhpParser\Node\Stmt\Interface_ && isset($node->namespacedName)) {
-			$extendsNames = array_map(static function (Name $name): string {
-				return (string) $name;
-			}, $node->extends);
+		if ($node instanceof Node\Stmt\Interface_ && isset($node->namespacedName)) {
+			$extendsNames = array_map(static fn (Name $name): string => (string) $name, $node->extends);
 			$docComment = $node->getDocComment();
 
 			$interfaceName = $node->namespacedName->toString();
@@ -114,10 +110,34 @@ class ExportedNodeResolver
 					$fileName,
 					$interfaceName,
 					null,
-					$docComment !== null ? $docComment->getText() : null
+					$docComment !== null ? $docComment->getText() : null,
 				),
 				$extendsNames,
-				$this->exportClassStatements($node->stmts, $fileName, $node, $interfaceName)
+				$this->exportClassStatements($node->stmts, $fileName, $interfaceName),
+			);
+		}
+
+		if ($node instanceof Node\Stmt\Enum_ && $node->namespacedName !== null) {
+			$implementsNames = array_map(static fn (Name $name): string => (string) $name, $node->implements);
+			$docComment = $node->getDocComment();
+
+			$enumName = $node->namespacedName->toString();
+			$scalarType = null;
+			if ($node->scalarType !== null) {
+				$scalarType = $node->scalarType->toString();
+			}
+
+			return new ExportedEnumNode(
+				$enumName,
+				$scalarType,
+				$this->exportPhpDocNode(
+					$fileName,
+					$enumName,
+					null,
+					$docComment !== null ? $docComment->getText() : null,
+				),
+				$implementsNames,
+				$this->exportClassStatements($node->stmts, $fileName, $enumName),
 			);
 		}
 
@@ -139,11 +159,11 @@ class ExportedNodeResolver
 					$fileName,
 					null,
 					$functionName,
-					$docComment !== null ? $docComment->getText() : null
+					$docComment !== null ? $docComment->getText() : null,
 				),
 				$node->byRef,
 				$this->printType($node->returnType),
-				$this->exportParameterNodes($node->params)
+				$this->exportParameterNodes($node->params),
 			);
 		}
 
@@ -152,7 +172,6 @@ class ExportedNodeResolver
 
 	/**
 	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $type
-	 * @return string|null
 	 */
 	private function printType($type): ?string
 	{
@@ -168,7 +187,7 @@ class ExportedNodeResolver
 			return implode('|', array_map(function ($innerType): string {
 				$printedType = $this->printType($innerType);
 				if ($printedType === null) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 
 				return $printedType;
@@ -179,7 +198,7 @@ class ExportedNodeResolver
 			return implode('&', array_map(function ($innerType): string {
 				$printedType = $this->printType($innerType);
 				if ($printedType === null) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 
 				return $printedType;
@@ -190,7 +209,7 @@ class ExportedNodeResolver
 			return $type->toString();
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	/**
@@ -202,7 +221,7 @@ class ExportedNodeResolver
 		$nodes = [];
 		foreach ($params as $param) {
 			if (!$param->var instanceof Node\Expr\Variable || !is_string($param->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$type = $param->type;
 			if (
@@ -223,7 +242,7 @@ class ExportedNodeResolver
 				$this->printType($type),
 				$param->byRef,
 				$param->variadic,
-				$param->default !== null
+				$param->default !== null,
 			);
 		}
 
@@ -234,7 +253,7 @@ class ExportedNodeResolver
 		string $file,
 		?string $className,
 		?string $functionName,
-		?string $text
+		?string $text,
 	): ?ExportedPhpDocNode
 	{
 		if ($text === null) {
@@ -246,7 +265,7 @@ class ExportedNodeResolver
 			$className,
 			null,
 			$functionName,
-			$text
+			$text,
 		);
 
 		$nameScope = $resolvedPhpDocBlock->getNullableNameScope();
@@ -261,11 +280,11 @@ class ExportedNodeResolver
 	 * @param Node\Stmt[] $statements
 	 * @return ExportedNode[]
 	 */
-	private function exportClassStatements(array $statements, string $fileName, Node\Stmt\ClassLike $classNode, string $namespacedName): array
+	private function exportClassStatements(array $statements, string $fileName, string $namespacedName): array
 	{
 		$exportedNodes = [];
 		foreach ($statements as $statement) {
-			$exportedNode = $this->exportClassStatement($statement, $fileName, $classNode, $namespacedName);
+			$exportedNode = $this->exportClassStatement($statement, $fileName, $namespacedName);
 			if ($exportedNode === null) {
 				continue;
 			}
@@ -276,7 +295,7 @@ class ExportedNodeResolver
 		return $exportedNodes;
 	}
 
-	private function exportClassStatement(Node\Stmt $node, string $fileName, Node\Stmt\ClassLike $classNode, string $namespacedName): ?ExportedNode
+	private function exportClassStatement(Node\Stmt $node, string $fileName, string $namespacedName): ?ExportedNode
 	{
 		if ($node instanceof ClassMethod) {
 			if ($node->isAbstract() || $node->isFinal() || !$node->isPrivate()) {
@@ -289,7 +308,7 @@ class ExportedNodeResolver
 						$fileName,
 						$namespacedName,
 						$methodName,
-						$docComment !== null ? $docComment->getText() : null
+						$docComment !== null ? $docComment->getText() : null,
 					),
 					$node->byRef,
 					$node->isPublic(),
@@ -298,7 +317,7 @@ class ExportedNodeResolver
 					$node->isFinal(),
 					$node->isStatic(),
 					$this->printType($node->returnType),
-					$this->exportParameterNodes($node->params)
+					$this->exportParameterNodes($node->params),
 				);
 			}
 		}
@@ -308,36 +327,26 @@ class ExportedNodeResolver
 				return null;
 			}
 
-			if (!$classNode instanceof Class_) {
-				return null;
-			}
-
 			$docComment = $node->getDocComment();
 
 			return new ExportedPropertiesNode(
-				array_map(static function (Node\Stmt\PropertyProperty $prop): string {
-					return $prop->name->toString();
-				}, $node->props),
+				array_map(static fn (Node\Stmt\PropertyProperty $prop): string => $prop->name->toString(), $node->props),
 				$this->exportPhpDocNode(
 					$fileName,
 					$namespacedName,
 					null,
-					$docComment !== null ? $docComment->getText() : null
+					$docComment !== null ? $docComment->getText() : null,
 				),
 				$this->printType($node->type),
 				$node->isPublic(),
 				$node->isPrivate(),
 				$node->isStatic(),
-				$node->isReadonly()
+				$node->isReadonly(),
 			);
 		}
 
 		if ($node instanceof Node\Stmt\ClassConst) {
 			if ($node->isPrivate()) {
-				return null;
-			}
-
-			if (!$classNode instanceof Class_) {
 				return null;
 			}
 
@@ -347,7 +356,7 @@ class ExportedNodeResolver
 			foreach ($node->consts as $const) {
 				$constants[] = new ExportedClassConstantNode(
 					$const->name->toString(),
-					$this->printer->prettyPrintExpr($const->value)
+					$this->printer->prettyPrintExpr($const->value),
 				);
 			}
 
@@ -360,8 +369,23 @@ class ExportedNodeResolver
 					$fileName,
 					$namespacedName,
 					null,
-					$docComment !== null ? $docComment->getText() : null
-				)
+					$docComment !== null ? $docComment->getText() : null,
+				),
+			);
+		}
+
+		if ($node instanceof Node\Stmt\EnumCase) {
+			$docComment = $node->getDocComment();
+
+			return new ExportedEnumCaseNode(
+				$node->name->toString(),
+				$node->expr !== null ? $this->printer->prettyPrintExpr($node->expr) : null,
+				$this->exportPhpDocNode(
+					$fileName,
+					$namespacedName,
+					null,
+					$docComment !== null ? $docComment->getText() : null,
+				),
 			);
 		}
 

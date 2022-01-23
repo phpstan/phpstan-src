@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use Attribute;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\AttributesCheck;
@@ -13,11 +14,8 @@ use PHPStan\Rules\Rule;
 class MethodAttributesRule implements Rule
 {
 
-	private AttributesCheck $attributesCheck;
-
-	public function __construct(AttributesCheck $attributesCheck)
+	public function __construct(private AttributesCheck $attributesCheck)
 	{
-		$this->attributesCheck = $attributesCheck;
 	}
 
 	public function getNodeType(): string
@@ -30,8 +28,8 @@ class MethodAttributesRule implements Rule
 		return $this->attributesCheck->check(
 			$scope,
 			$node->attrGroups,
-			\Attribute::TARGET_METHOD,
-			'method'
+			Attribute::TARGET_METHOD,
+			'method',
 		);
 	}
 

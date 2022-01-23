@@ -6,26 +6,22 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Rule;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Function_>
+ * @implements Rule<Node\Stmt\Function_>
  */
 class FunctionTemplateTypeRule implements Rule
 {
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
-
-	private \PHPStan\Rules\Generics\TemplateTypeCheck $templateTypeCheck;
-
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
-		TemplateTypeCheck $templateTypeCheck
+		private FileTypeMapper $fileTypeMapper,
+		private TemplateTypeCheck $templateTypeCheck,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->templateTypeCheck = $templateTypeCheck;
 	}
 
 	public function getNodeType(): string
@@ -41,7 +37,7 @@ class FunctionTemplateTypeRule implements Rule
 		}
 
 		if (!isset($node->namespacedName)) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$functionName = (string) $node->namespacedName;
@@ -50,7 +46,7 @@ class FunctionTemplateTypeRule implements Rule
 			null,
 			null,
 			$functionName,
-			$docComment->getText()
+			$docComment->getText(),
 		);
 
 		$escapedFunctionName = SprintfHelper::escapeFormatString($functionName);
@@ -62,7 +58,7 @@ class FunctionTemplateTypeRule implements Rule
 			sprintf('PHPDoc tag @template for function %s() cannot have existing class %%s as its name.', $escapedFunctionName),
 			sprintf('PHPDoc tag @template for function %s() cannot have existing type alias %%s as its name.', $escapedFunctionName),
 			sprintf('PHPDoc tag @template %%s for function %s() has invalid bound type %%s.', $escapedFunctionName),
-			sprintf('PHPDoc tag @template %%s for function %s() with bound type %%s is not supported.', $escapedFunctionName)
+			sprintf('PHPDoc tag @template %%s for function %s() with bound type %%s is not supported.', $escapedFunctionName),
 		);
 	}
 

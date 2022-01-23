@@ -5,24 +5,27 @@ namespace PHPStan\Type;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use function assert;
+use function ceil;
+use function floor;
+use function get_class;
+use function is_int;
+use function max;
+use function min;
+use function sprintf;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
 /** @api */
 class IntegerRangeType extends IntegerType implements CompoundType
 {
 
-	private ?int $min;
-
-	private ?int $max;
-
-	public function __construct(?int $min, ?int $max)
+	public function __construct(private ?int $min, private ?int $max)
 	{
 		// this constructor can be made private when PHP 7.2 is the minimum
 		parent::__construct();
 		assert($min === null || $max === null || $min <= $max);
 		assert($min !== null || $max !== null);
-
-		$this->min = $min;
-		$this->max = $max;
 	}
 
 	public static function fromInterval(?int $min, ?int $max, int $shift = 0): Type
@@ -54,7 +57,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	 * Return the range of integers smaller than the given value
 	 *
 	 * @param int|float $value
-	 * @return Type
 	 */
 	public static function createAllSmallerThan($value): Type
 	{
@@ -77,7 +79,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	 * Return the range of integers smaller than or equal to the given value
 	 *
 	 * @param int|float $value
-	 * @return Type
 	 */
 	public static function createAllSmallerThanOrEqualTo($value): Type
 	{
@@ -100,7 +101,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	 * Return the range of integers greater than the given value
 	 *
 	 * @param int|float $value
-	 * @return Type
 	 */
 	public static function createAllGreaterThan($value): Type
 	{
@@ -123,7 +123,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	 * Return the range of integers greater than or equal to the given value
 	 *
 	 * @param int|float $value
-	 * @return Type
 	 */
 	public static function createAllGreaterThanOrEqualTo($value): Type
 	{
@@ -417,8 +416,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	/**
 	 * Return the union with another type, but only if it can be expressed in a simpler way than using UnionType
 	 *
-	 * @param Type $otherType
-	 * @return Type|null
 	 */
 	public function tryUnion(Type $otherType): ?Type
 	{
@@ -437,7 +434,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 			return self::fromInterval(
 				$this->min !== null && $otherMin !== null ? min($this->min, $otherMin) : null,
-				$this->max !== null && $otherMax !== null ? max($this->max, $otherMax) : null
+				$this->max !== null && $otherMax !== null ? max($this->max, $otherMax) : null,
 			);
 		}
 
@@ -452,8 +449,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	 * Return the intersection with another type, but only if it can be expressed in a simpler way than using
 	 * IntersectionType
 	 *
-	 * @param Type $otherType
-	 * @return Type|null
 	 */
 	public function tryIntersect(Type $otherType): ?Type
 	{
@@ -499,8 +494,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	/**
 	 * Return the different with another type, or null if it cannot be represented.
 	 *
-	 * @param Type $typeToRemove
-	 * @return Type|null
 	 */
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
@@ -547,7 +540,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

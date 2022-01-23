@@ -3,21 +3,20 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\TrinaryLogic;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
+use ReflectionParameter;
+use ReflectionType;
 
 class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 {
 
-	private string $methodName;
-
-	private \ReflectionClass $declaringClass;
-
 	public function __construct(
-		string $methodName,
-		\ReflectionClass $declaringClass
+		private string $methodName,
+		private ReflectionClass $declaringClass,
 	)
 	{
-		$this->methodName = $methodName;
-		$this->declaringClass = $declaringClass;
 	}
 
 	public function getName(): string
@@ -25,7 +24,7 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->methodName;
 	}
 
-	public function getReflection(): ?\ReflectionMethod
+	public function getReflection(): ?ReflectionMethod
 	{
 		return null;
 	}
@@ -35,7 +34,7 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 		return null;
 	}
 
-	public function getDeclaringClass(): \ReflectionClass
+	public function getDeclaringClass(): ReflectionClass
 	{
 		return $this->declaringClass;
 	}
@@ -72,7 +71,7 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 
 	public function getPrototype(): BuiltinMethodReflection
 	{
-		throw new \ReflectionException();
+		throw new ReflectionException();
 	}
 
 	public function isDeprecated(): TrinaryLogic
@@ -100,18 +99,18 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 		return false;
 	}
 
-	public function getReturnType(): ?\ReflectionType
+	public function getReturnType(): ?ReflectionType
 	{
 		return null;
 	}
 
-	public function getTentativeReturnType(): ?\ReflectionType
+	public function getTentativeReturnType(): ?ReflectionType
 	{
 		return null;
 	}
 
 	/**
-	 * @return \ReflectionParameter[]
+	 * @return ReflectionParameter[]
 	 */
 	public function getParameters(): array
 	{

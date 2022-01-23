@@ -2,27 +2,20 @@
 
 namespace PHPStan\DependencyInjection;
 
+use Nette\DI\Config\Loader;
 use PHPStan\File\FileHelper;
 
-class NeonLoader extends \Nette\DI\Config\Loader
+class NeonLoader extends Loader
 {
 
-	private FileHelper $fileHelper;
-
-	private ?string $generateBaselineFile;
-
 	public function __construct(
-		FileHelper $fileHelper,
-		?string $generateBaselineFile
+		private FileHelper $fileHelper,
+		private ?string $generateBaselineFile,
 	)
 	{
-		$this->fileHelper = $fileHelper;
-		$this->generateBaselineFile = $generateBaselineFile;
 	}
 
 	/**
-	 * @param string $file
-	 * @param bool|null $merge
 	 * @return mixed[]
 	 */
 	public function load(string $file, ?bool $merge = true): array

@@ -7,25 +7,21 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Class_>
+ * @implements Rule<Node\Stmt\Class_>
  */
-class ExistingClassInClassExtendsRule implements \PHPStan\Rules\Rule
+class ExistingClassInClassExtendsRule implements Rule
 {
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private ReflectionProvider $reflectionProvider;
-
 	public function __construct(
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		ReflectionProvider $reflectionProvider
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -49,7 +45,7 @@ class ExistingClassInClassExtendsRule implements \PHPStan\Rules\Rule
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends unknown class %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-					$extendedClassName
+					$extendedClassName,
 				))->nonIgnorable()->discoveringSymbolsTip()->build();
 			}
 		} else {
@@ -58,25 +54,31 @@ class ExistingClassInClassExtendsRule implements \PHPStan\Rules\Rule
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends interface %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-					$extendedClassName
+					$reflection->getDisplayName(),
 				))->nonIgnorable()->build();
 			} elseif ($reflection->isTrait()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends trait %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-					$extendedClassName
+					$reflection->getDisplayName(),
+				))->nonIgnorable()->build();
+			} elseif ($reflection->isEnum()) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'%s extends enum %s.',
+					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
+					$reflection->getDisplayName(),
 				))->nonIgnorable()->build();
 			} elseif ($reflection->isFinalByKeyword()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends final class %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-					$extendedClassName
+					$reflection->getDisplayName(),
 				))->nonIgnorable()->build();
 			} elseif ($reflection->isFinal()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'%s extends @final class %s.',
 					$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-					$extendedClassName
+					$reflection->getDisplayName(),
 				))->build();
 			}
 		}

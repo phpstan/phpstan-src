@@ -8,54 +8,29 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
+use ReflectionProperty;
+use ReflectionType;
+use function method_exists;
 
 /** @api */
 class PhpPropertyReflection implements PropertyReflection
 {
 
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
+	private ?Type $finalNativeType = null;
 
-	private ?\PHPStan\Reflection\ClassReflection $declaringTrait;
-
-	private ?\ReflectionType $nativeType;
-
-	private ?\PHPStan\Type\Type $finalNativeType = null;
-
-	private ?\PHPStan\Type\Type $phpDocType;
-
-	private ?\PHPStan\Type\Type $type = null;
-
-	private \ReflectionProperty $reflection;
-
-	private ?string $deprecatedDescription;
-
-	private bool $isDeprecated;
-
-	private bool $isInternal;
-
-	private ?string $stubPhpDocString;
+	private ?Type $type = null;
 
 	public function __construct(
-		ClassReflection $declaringClass,
-		?ClassReflection $declaringTrait,
-		?\ReflectionType $nativeType,
-		?Type $phpDocType,
-		\ReflectionProperty $reflection,
-		?string $deprecatedDescription,
-		bool $isDeprecated,
-		bool $isInternal,
-		?string $stubPhpDocString
+		private ClassReflection $declaringClass,
+		private ?ClassReflection $declaringTrait,
+		private ?ReflectionType $nativeType,
+		private ?Type $phpDocType,
+		private ReflectionProperty $reflection,
+		private ?string $deprecatedDescription,
+		private bool $isDeprecated,
+		private bool $isInternal,
 	)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->declaringTrait = $declaringTrait;
-		$this->nativeType = $nativeType;
-		$this->phpDocType = $phpDocType;
-		$this->reflection = $reflection;
-		$this->deprecatedDescription = $deprecatedDescription;
-		$this->isDeprecated = $isDeprecated;
-		$this->isInternal = $isInternal;
-		$this->stubPhpDocString = $stubPhpDocString;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -70,10 +45,6 @@ class PhpPropertyReflection implements PropertyReflection
 
 	public function getDocComment(): ?string
 	{
-		if ($this->stubPhpDocString !== null) {
-			return $this->stubPhpDocString;
-		}
-
 		$docComment = $this->reflection->getDocComment();
 		if ($docComment === false) {
 			return null;
@@ -112,7 +83,7 @@ class PhpPropertyReflection implements PropertyReflection
 			$this->type = TypehintHelper::decideTypeFromReflection(
 				$this->nativeType,
 				$this->phpDocType,
-				$this->declaringClass->getName()
+				$this->declaringClass->getName(),
 			);
 		}
 
@@ -163,7 +134,7 @@ class PhpPropertyReflection implements PropertyReflection
 			$this->finalNativeType = TypehintHelper::decideTypeFromReflection(
 				$this->nativeType,
 				null,
-				$this->declaringClass->getName()
+				$this->declaringClass->getName(),
 			);
 		}
 
@@ -199,7 +170,7 @@ class PhpPropertyReflection implements PropertyReflection
 		return TrinaryLogic::createFromBoolean($this->isInternal);
 	}
 
-	public function getNativeReflection(): \ReflectionProperty
+	public function getNativeReflection(): ReflectionProperty
 	{
 		return $this->reflection;
 	}

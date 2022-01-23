@@ -12,6 +12,9 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function array_filter;
+use function array_values;
+use function count;
 
 final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
@@ -31,7 +34,7 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 		$returnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$methodCall->getArgs(),
-			$methodReflection->getVariants()
+			$methodReflection->getVariants(),
 		)->getReturnType();
 
 		if (count($methodCall->getArgs()) > 1) {
@@ -55,8 +58,8 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 						}
 
 						return true;
-					}
-				)
+					},
+				),
 			);
 
 			if (count($types) === 1) {

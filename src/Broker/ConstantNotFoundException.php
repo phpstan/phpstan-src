@@ -2,15 +2,15 @@
 
 namespace PHPStan\Broker;
 
-class ConstantNotFoundException extends \PHPStan\AnalysedCodeException
+use PHPStan\AnalysedCodeException;
+use function sprintf;
+
+class ConstantNotFoundException extends AnalysedCodeException
 {
 
-	private string $constantName;
-
-	public function __construct(string $constantName)
+	public function __construct(private string $constantName)
 	{
 		parent::__construct(sprintf('Constant %s not found.', $constantName));
-		$this->constantName = $constantName;
 	}
 
 	public function getConstantName(): string

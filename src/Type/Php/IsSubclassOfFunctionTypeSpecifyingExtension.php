@@ -25,11 +25,13 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
+use function count;
+use function strtolower;
 
 class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
@@ -52,7 +54,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 				if ($allowString) {
 					$type = TypeCombinator::union(
 						new ObjectWithoutClassType(),
-						new ClassStringType()
+						new ClassStringType(),
 					);
 				} else {
 					$type = new ObjectWithoutClassType();
@@ -63,7 +65,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 					$type,
 					$context,
 					false,
-					$scope
+					$scope,
 				);
 			}
 
@@ -90,7 +92,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 				if ($allowString) {
 					return TypeCombinator::union(
 						new GenericClassStringType($objectType),
-						$objectType
+						$objectType,
 					);
 				}
 
@@ -104,7 +106,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 			$type,
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

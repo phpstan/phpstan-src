@@ -9,19 +9,12 @@ use PHPStan\Analyser\StatementExitPoint;
 class DoWhileLoopConditionNode extends NodeAbstract implements VirtualNode
 {
 
-	private Expr $cond;
-
-	/** @var StatementExitPoint[] */
-	private array $exitPoints;
-
 	/**
 	 * @param StatementExitPoint[] $exitPoints
 	 */
-	public function __construct(Expr $cond, array $exitPoints)
+	public function __construct(private Expr $cond, private array $exitPoints)
 	{
 		parent::__construct($cond->getAttributes());
-		$this->cond = $cond;
-		$this->exitPoints = $exitPoints;
 	}
 
 	public function getCond(): Expr

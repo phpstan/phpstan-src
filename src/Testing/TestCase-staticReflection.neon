@@ -12,40 +12,13 @@ services:
 			options:
 				usedAttributes: [comments, startLine, endLine, startTokenPos, endTokenPos]
 
-	testCaseBetterReflectionProvider:
-		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
-		arguments:
-			classReflector: @testCaseClassReflector
-			functionReflector: @testCaseFunctionReflector
-			constantReflector: @testCaseConstantReflector
-		autowired: false
-
-	testCaseClassReflector:
-		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector
-		arguments:
-			sourceLocator: @testCaseSourceLocator
-		autowired: false
-
-	testCaseFunctionReflector:
-		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingFunctionReflector
-		arguments:
-			classReflector: @testCaseClassReflector
-			sourceLocator: @testCaseSourceLocator
-		autowired: false
-
-	testCaseConstantReflector:
-		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector
-		arguments:
-			classReflector: @testCaseClassReflector
-			sourceLocator: @testCaseSourceLocator
-		autowired: false
-
-	testCaseSourceLocator:
+	betterReflectionSourceLocator:
 		class: PHPStan\BetterReflection\SourceLocator\Type\SourceLocator
 		factory: @PHPStan\Testing\TestCaseSourceLocatorFactory::create()
 		autowired: false
 
 	reflectionProvider:
-		factory: @testCaseBetterReflectionProvider
+		factory: @betterReflectionProvider
+		arguments!: []
 		autowired:
 			- PHPStan\Reflection\ReflectionProvider

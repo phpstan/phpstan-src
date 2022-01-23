@@ -12,36 +12,23 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 
 	private ClassMethod $classMethod;
 
-	/** @var \PHPStan\Node\ReturnStatement[] */
-	private array $returnStatements;
-
-	private StatementResult $statementResult;
-
-	/** @var ExecutionEndNode[] */
-	private array $executionEnds;
-
 	/**
-	 * @param \PhpParser\Node\Stmt\ClassMethod $method
-	 * @param \PHPStan\Node\ReturnStatement[] $returnStatements
-	 * @param \PHPStan\Analyser\StatementResult $statementResult
+	 * @param ReturnStatement[] $returnStatements
 	 * @param ExecutionEndNode[] $executionEnds
 	 */
 	public function __construct(
 		ClassMethod $method,
-		array $returnStatements,
-		StatementResult $statementResult,
-		array $executionEnds
+		private array $returnStatements,
+		private StatementResult $statementResult,
+		private array $executionEnds,
 	)
 	{
 		parent::__construct($method->getAttributes());
 		$this->classMethod = $method;
-		$this->returnStatements = $returnStatements;
-		$this->statementResult = $statementResult;
-		$this->executionEnds = $executionEnds;
 	}
 
 	/**
-	 * @return \PHPStan\Node\ReturnStatement[]
+	 * @return ReturnStatement[]
 	 */
 	public function getReturnStatements(): array
 	{

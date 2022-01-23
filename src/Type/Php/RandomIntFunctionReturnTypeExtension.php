@@ -7,11 +7,18 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use function array_map;
+use function assert;
+use function count;
+use function in_array;
+use function max;
+use function min;
 
-class RandomIntFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class RandomIntFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -47,7 +54,7 @@ class RandomIntFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 				}
 				return null;
 			},
-			$minType instanceof UnionType ? $minType->getTypes() : [$minType]
+			$minType instanceof UnionType ? $minType->getTypes() : [$minType],
 		);
 
 		$maxValues = array_map(
@@ -60,7 +67,7 @@ class RandomIntFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 				}
 				return null;
 			},
-			$maxType instanceof UnionType ? $maxType->getTypes() : [$maxType]
+			$maxType instanceof UnionType ? $maxType->getTypes() : [$maxType],
 		);
 
 		assert(count($minValues) > 0);
@@ -68,7 +75,7 @@ class RandomIntFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 
 		return IntegerRangeType::fromInterval(
 			in_array(null, $minValues, true) ? null : min($minValues),
-			in_array(null, $maxValues, true) ? null : max($maxValues)
+			in_array(null, $maxValues, true) ? null : max($maxValues),
 		);
 	}
 

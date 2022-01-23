@@ -2,48 +2,29 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 
-class PhpParameterFromParserNodeReflection implements \PHPStan\Reflection\ParameterReflectionWithPhpDocs
+class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhpDocs
 {
 
-	private string $name;
-
-	private bool $optional;
-
-	private \PHPStan\Type\Type $realType;
-
-	private ?\PHPStan\Type\Type $phpDocType;
-
-	private \PHPStan\Reflection\PassedByReference $passedByReference;
-
-	private ?\PHPStan\Type\Type $defaultValue;
-
-	private bool $variadic;
-
-	private ?\PHPStan\Type\Type $type = null;
+	private ?Type $type = null;
 
 	public function __construct(
-		string $name,
-		bool $optional,
-		Type $realType,
-		?Type $phpDocType,
-		PassedByReference $passedByReference,
-		?Type $defaultValue,
-		bool $variadic
+		private string $name,
+		private bool $optional,
+		private Type $realType,
+		private ?Type $phpDocType,
+		private PassedByReference $passedByReference,
+		private ?Type $defaultValue,
+		private bool $variadic,
 	)
 	{
-		$this->name = $name;
-		$this->optional = $optional;
-		$this->realType = $realType;
-		$this->phpDocType = $phpDocType;
-		$this->passedByReference = $passedByReference;
-		$this->defaultValue = $defaultValue;
-		$this->variadic = $variadic;
 	}
 
 	public function getName(): string
@@ -64,7 +45,7 @@ class PhpParameterFromParserNodeReflection implements \PHPStan\Reflection\Parame
 				if ($this->defaultValue instanceof NullType) {
 					$inferred = $phpDocType->inferTemplateTypes($this->defaultValue);
 					if ($inferred->isEmpty()) {
-						$phpDocType = \PHPStan\Type\TypeCombinator::addNull($phpDocType);
+						$phpDocType = TypeCombinator::addNull($phpDocType);
 					}
 				}
 			}

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
@@ -20,16 +21,13 @@ class VerbosityLevel
 	/** @var self[] */
 	private static array $registry;
 
-	private int $value;
-
-	private function __construct(int $value)
+	private function __construct(private int $value)
 	{
-		$this->value = $value;
 	}
 
 	private static function create(int $value): self
 	{
-		self::$registry[$value] = self::$registry[$value] ?? new self($value);
+		self::$registry[$value] ??= new self($value);
 		return self::$registry[$value];
 	}
 
@@ -55,6 +53,11 @@ class VerbosityLevel
 	public static function cache(): self
 	{
 		return self::create(self::CACHE);
+	}
+
+	public function isTypeOnly(): bool
+	{
+		return $this->value === self::TYPE_ONLY;
 	}
 
 	/** @api */
@@ -138,13 +141,12 @@ class VerbosityLevel
 	 * @param callable(): string $valueCallback
 	 * @param callable(): string|null $preciseCallback
 	 * @param callable(): string|null $cacheCallback
-	 * @return string
 	 */
 	public function handle(
 		callable $typeOnlyCallback,
 		callable $valueCallback,
 		?callable $preciseCallback = null,
-		?callable $cacheCallback = null
+		?callable $cacheCallback = null,
 	): string
 	{
 		if ($this->value === self::TYPE_ONLY) {
@@ -175,7 +177,7 @@ class VerbosityLevel
 			return $valueCallback();
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 }

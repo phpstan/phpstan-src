@@ -19,7 +19,7 @@ final class TemplateStringType extends StringType implements TemplateType
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		StringType $bound
+		StringType $bound,
 	)
 	{
 		parent::__construct();
@@ -39,7 +39,7 @@ final class TemplateStringType extends StringType implements TemplateType
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

@@ -7,26 +7,24 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\Rules\Rule;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
+use function array_map;
+use function sprintf;
+use function ucfirst;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\TraitUse>
+ * @implements Rule<Node\Stmt\TraitUse>
  */
 class UsedTraitsRule implements Rule
 {
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
-
-	private \PHPStan\Rules\Generics\GenericAncestorsCheck $genericAncestorsCheck;
-
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
-		GenericAncestorsCheck $genericAncestorsCheck
+		private FileTypeMapper $fileTypeMapper,
+		private GenericAncestorsCheck $genericAncestorsCheck,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->genericAncestorsCheck = $genericAncestorsCheck;
 	}
 
 	public function getNodeType(): string
@@ -37,7 +35,7 @@ class UsedTraitsRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$className = $scope->getClassReflection()->getName();
@@ -53,7 +51,7 @@ class UsedTraitsRule implements Rule
 				$className,
 				$traitName,
 				null,
-				$docComment->getText()
+				$docComment->getText(),
 			);
 			$useTags = $resolvedPhpDoc->getUsesTags();
 		}
@@ -67,19 +65,17 @@ class UsedTraitsRule implements Rule
 
 		return $this->genericAncestorsCheck->check(
 			$node->traits,
-			array_map(static function (UsesTag $tag): Type {
-				return $tag->getType();
-			}, $useTags),
+			array_map(static fn (UsesTag $tag): Type => $tag->getType(), $useTags),
 			sprintf('%s @use tag contains incompatible type %%s.', ucfirst($description)),
 			sprintf('%s has @use tag, but does not use any trait.', ucfirst($description)),
 			sprintf('The @use tag of %s describes %%s but the %s uses %%s.', $description, $typeDescription),
-			'PHPDoc tag @use contains generic type %s but trait %s is not generic.',
-			'Generic type %s in PHPDoc tag @use does not specify all template types of trait %s: %s',
-			'Generic type %s in PHPDoc tag @use specifies %d template types, but trait %s supports only %d: %s',
-			'Type %s in generic type %s in PHPDoc tag @use is not subtype of template type %s of trait %s.',
+			'PHPDoc tag @use contains generic type %s but %s %s is not generic.',
+			'Generic type %s in PHPDoc tag @use does not specify all template types of %s %s: %s',
+			'Generic type %s in PHPDoc tag @use specifies %d template types, but %s %s supports only %d: %s',
+			'Type %s in generic type %s in PHPDoc tag @use is not subtype of template type %s of %s %s.',
 			'PHPDoc tag @use has invalid type %s.',
 			sprintf('%s uses generic trait %%s but does not specify its types: %%s', ucfirst($description)),
-			sprintf('in used type %%s of %s', $description)
+			sprintf('in used type %%s of %s', $description),
 		);
 	}
 

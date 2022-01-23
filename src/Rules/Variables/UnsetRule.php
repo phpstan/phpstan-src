@@ -4,14 +4,17 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
+use function is_string;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Unset_>
+ * @implements Rule<Node\Stmt\Unset_>
  */
-class UnsetRule implements \PHPStan\Rules\Rule
+class UnsetRule implements Rule
 {
 
 	public function getNodeType(): string
@@ -42,7 +45,7 @@ class UnsetRule implements \PHPStan\Rules\Rule
 			$hasVariable = $scope->hasVariableType($node->name);
 			if ($hasVariable->no()) {
 				return RuleErrorBuilder::message(
-					sprintf('Call to function unset() contains undefined variable $%s.', $node->name)
+					sprintf('Call to function unset() contains undefined variable $%s.', $node->name),
 				)->line($node->getLine())->build();
 			}
 		} elseif ($node instanceof Node\Expr\ArrayDimFetch && $node->dim !== null) {
@@ -54,8 +57,8 @@ class UnsetRule implements \PHPStan\Rules\Rule
 					sprintf(
 						'Cannot unset offset %s on %s.',
 						$dimType->describe(VerbosityLevel::value()),
-						$type->describe(VerbosityLevel::value())
-					)
+						$type->describe(VerbosityLevel::value()),
+					),
 				)->line($node->getLine())->build();
 			}
 

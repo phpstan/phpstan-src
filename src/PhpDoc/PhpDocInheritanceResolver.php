@@ -4,17 +4,18 @@ namespace PHPStan\PhpDoc;
 
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\FileTypeMapper;
+use ReflectionParameter;
+use function array_map;
+use function strtolower;
 
 class PhpDocInheritanceResolver
 {
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
-
 	public function __construct(
-		FileTypeMapper $fileTypeMapper
+		private FileTypeMapper $fileTypeMapper,
+		private StubPhpDocProvider $stubPhpDocProvider,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
 	}
 
 	public function resolvePhpDocForProperty(
@@ -22,7 +23,7 @@ class PhpDocInheritanceResolver
 		ClassReflection $classReflection,
 		string $classReflectionFileName,
 		?string $declaringTraitName,
-		string $propertyName
+		string $propertyName,
 	): ResolvedPhpDocBlock
 	{
 		$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForProperty(
@@ -33,17 +34,17 @@ class PhpDocInheritanceResolver
 			$classReflectionFileName,
 			null,
 			[],
-			[]
+			[],
 		);
 
-		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, $declaringTraitName, null);
+		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, $declaringTraitName, null, $propertyName, null);
 	}
 
 	public function resolvePhpDocForConstant(
 		?string $docComment,
 		ClassReflection $classReflection,
 		string $classReflectionFileName,
-		string $constantName
+		string $constantName,
 	): ResolvedPhpDocBlock
 	{
 		$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForConstant(
@@ -54,20 +55,14 @@ class PhpDocInheritanceResolver
 			$classReflectionFileName,
 			null,
 			[],
-			[]
+			[],
 		);
 
-		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, null, null);
+		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, null, null, null, $constantName);
 	}
 
 	/**
-	 * @param string|null $docComment
-	 * @param string $fileName
-	 * @param ClassReflection $classReflection
-	 * @param string|null $declaringTraitName
-	 * @param string $methodName
 	 * @param array<int, string> $positionalParameterNames
-	 * @return ResolvedPhpDocBlock
 	 */
 	public function resolvePhpDocForMethod(
 		?string $docComment,
@@ -75,7 +70,7 @@ class PhpDocInheritanceResolver
 		ClassReflection $classReflection,
 		?string $declaringTraitName,
 		string $methodName,
-		array $positionalParameterNames
+		array $positionalParameterNames,
 	): ResolvedPhpDocBlock
 	{
 		$phpDocBlock = PhpDocBlock::resolvePhpDocBlockForMethod(
@@ -86,13 +81,13 @@ class PhpDocInheritanceResolver
 			$fileName,
 			null,
 			$positionalParameterNames,
-			$positionalParameterNames
+			$positionalParameterNames,
 		);
 
-		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, $phpDocBlock->getTrait(), $methodName);
+		return $this->docBlockTreeToResolvedDocBlock($phpDocBlock, $phpDocBlock->getTrait(), $methodName, null, null);
 	}
 
-	private function docBlockTreeToResolvedDocBlock(PhpDocBlock $phpDocBlock, ?string $traitName, ?string $functionName): ResolvedPhpDocBlock
+	private function docBlockTreeToResolvedDocBlock(PhpDocBlock $phpDocBlock, ?string $traitName, ?string $functionName, ?string $propertyName, ?string $constantName): ResolvedPhpDocBlock
 	{
 		$parents = [];
 		$parentPhpDocBlocks = [];
@@ -108,25 +103,48 @@ class PhpDocInheritanceResolver
 			$parents[] = $this->docBlockTreeToResolvedDocBlock(
 				$parentPhpDocBlock,
 				$parentPhpDocBlock->getTrait(),
-				$functionName
+				$functionName,
+				$propertyName,
+				$constantName,
 			);
 			$parentPhpDocBlocks[] = $parentPhpDocBlock;
 		}
 
-		$oneResolvedDockBlock = $this->docBlockToResolvedDocBlock($phpDocBlock, $traitName, $functionName);
+		$oneResolvedDockBlock = $this->docBlockToResolvedDocBlock($phpDocBlock, $traitName, $functionName, $propertyName, $constantName);
 		return $oneResolvedDockBlock->merge($parents, $parentPhpDocBlocks);
 	}
 
-	private function docBlockToResolvedDocBlock(PhpDocBlock $phpDocBlock, ?string $traitName, ?string $functionName): ResolvedPhpDocBlock
+	private function docBlockToResolvedDocBlock(PhpDocBlock $phpDocBlock, ?string $traitName, ?string $functionName, ?string $propertyName, ?string $constantName): ResolvedPhpDocBlock
 	{
 		$classReflection = $phpDocBlock->getClassReflection();
+		if ($functionName !== null && $classReflection->getNativeReflection()->hasMethod($functionName)) {
+			$methodReflection = $classReflection->getNativeReflection()->getMethod($functionName);
+			$stub = $this->stubPhpDocProvider->findMethodPhpDoc($classReflection->getName(), $functionName, array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
+			if ($stub !== null) {
+				return $stub;
+			}
+		}
+
+		if ($propertyName !== null && $classReflection->getNativeReflection()->hasProperty($propertyName)) {
+			$stub = $this->stubPhpDocProvider->findPropertyPhpDoc($classReflection->getName(), $propertyName);
+			if ($stub !== null) {
+				return $stub;
+			}
+		}
+
+		if ($constantName !== null && $classReflection->getNativeReflection()->hasConstant($constantName)) {
+			$stub = $this->stubPhpDocProvider->findClassConstantPhpDoc($classReflection->getName(), $constantName);
+			if ($stub !== null) {
+				return $stub;
+			}
+		}
 
 		return $this->fileTypeMapper->getResolvedPhpDoc(
 			$phpDocBlock->getFile(),
 			$classReflection->getName(),
 			$traitName,
 			$functionName,
-			$phpDocBlock->getDocComment()
+			$phpDocBlock->getDocComment(),
 		);
 	}
 

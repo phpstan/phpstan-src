@@ -2,13 +2,16 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<InnerFunctionRule>
+ * @extends RuleTestCase<InnerFunctionRule>
  */
-class InnerFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
+class InnerFunctionRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new InnerFunctionRule();
 	}

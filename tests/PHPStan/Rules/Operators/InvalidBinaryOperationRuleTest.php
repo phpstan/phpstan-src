@@ -2,19 +2,23 @@
 
 namespace PHPStan\Rules\Operators;
 
+use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<InvalidBinaryOperationRule>
+ * @extends RuleTestCase<InvalidBinaryOperationRule>
  */
-class InvalidBinaryOperationRuleTest extends \PHPStan\Testing\RuleTestCase
+class InvalidBinaryOperationRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new InvalidBinaryOperationRule(
-			new \PhpParser\PrettyPrinter\Standard(),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)
+			new Standard(),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false),
 		);
 	}
 

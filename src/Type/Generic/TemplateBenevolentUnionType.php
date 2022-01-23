@@ -17,7 +17,7 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		BenevolentUnionType $bound
+		BenevolentUnionType $bound,
 	)
 	{
 		parent::__construct($bound->getTypes());
@@ -37,7 +37,7 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 			$this->strategy,
 			$this->variance,
 			$this->name,
-			new BenevolentUnionType($types)
+			new BenevolentUnionType($types),
 		);
 	}
 
@@ -50,7 +50,7 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

@@ -4,25 +4,29 @@ name: "E2E Tests"
 
 on:
   pull_request:
+    paths-ignore:
+      - 'compiler/**'
   push:
     branches:
       - "master"
+    paths-ignore:
+      - 'compiler/**'
 
 env:
-  COMPOSER_ROOT_VERSION: "1.0.x-dev"
+  COMPOSER_ROOT_VERSION: "1.3.x-dev"
 
 jobs:
   result-cache-e2e-tests:
     name: "Result cache E2E tests"
 
     runs-on: ${{ matrix.operating-system }}
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     strategy:
       fail-fast: false
       matrix:
         php-version:
-          - "7.4"
+          - "8.0"
         operating-system: [ubuntu-latest, windows-latest]
 
     steps:
@@ -38,7 +42,7 @@ jobs:
           ini-values: memory_limit=256M
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Tests"
         run: |
@@ -47,7 +51,7 @@ jobs:
   e2e-tests:
     name: "E2E tests"
     runs-on: "ubuntu-latest"
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     strategy:
       matrix:
@@ -70,12 +74,12 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "7.4"
+          php-version: "8.0"
           tools: ${{ matrix.tools }}
           extensions: ${{ matrix.extensions }}
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Test"
         run: ${{ matrix.script }}

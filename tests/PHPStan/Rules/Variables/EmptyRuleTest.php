@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Variables;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
@@ -13,16 +14,15 @@ use PHPStan\Testing\RuleTestCase;
 class EmptyRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new EmptyRule(new IssetCheck(
 			new PropertyDescriptor(),
 			new PropertyReflectionFinder(),
 			true,
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		));
 	}
 

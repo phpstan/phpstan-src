@@ -6,19 +6,19 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function count;
 
 /**
- * @implements \PHPStan\Rules\Rule<ClosureReturnStatementsNode>
+ * @implements Rule<ClosureReturnStatementsNode>
  */
-class ClosureReturnTypeRule implements \PHPStan\Rules\Rule
+class ClosureReturnTypeRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionReturnTypeCheck $returnTypeCheck;
-
-	public function __construct(FunctionReturnTypeCheck $returnTypeCheck)
+	public function __construct(private FunctionReturnTypeCheck $returnTypeCheck)
 	{
-		$this->returnTypeCheck = $returnTypeCheck;
 	}
 
 	public function getNodeType(): string
@@ -32,7 +32,7 @@ class ClosureReturnTypeRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		/** @var \PHPStan\Type\Type $returnType */
+		/** @var Type $returnType */
 		$returnType = $scope->getAnonymousFunctionReturnType();
 		$containsNull = TypeCombinator::containsNull($returnType);
 		$hasNativeTypehint = $node->getClosureExpr()->returnType !== null;
@@ -53,7 +53,7 @@ class ClosureReturnTypeRule implements \PHPStan\Rules\Rule
 				'Anonymous function with return type void returns %s but should not return anything.',
 				'Anonymous function should return %s but returns %s.',
 				'Anonymous function should never return but return statement found.',
-				count($node->getYieldStatements()) > 0
+				count($node->getYieldStatements()) > 0,
 			);
 
 			foreach ($returnMessages as $returnMessage) {

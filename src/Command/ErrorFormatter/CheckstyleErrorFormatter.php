@@ -2,23 +2,26 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use function count;
+use function htmlspecialchars;
+use function sprintf;
+use const ENT_COMPAT;
+use const ENT_XML1;
 
 class CheckstyleErrorFormatter implements ErrorFormatter
 {
 
-	private RelativePathHelper $relativePathHelper;
-
-	public function __construct(RelativePathHelper $relativePathHelper)
+	public function __construct(private RelativePathHelper $relativePathHelper)
 	{
-		$this->relativePathHelper = $relativePathHelper;
 	}
 
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		Output $output
+		Output $output,
 	): int
 	{
 		$output->writeRaw('<?xml version="1.0" encoding="UTF-8"?>');
@@ -29,7 +32,7 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 		foreach ($this->groupByFile($analysisResult) as $relativeFilePath => $errors) {
 			$output->writeRaw(sprintf(
 				'<file name="%s">',
-				$this->escape($relativeFilePath)
+				$this->escape($relativeFilePath),
 			));
 			$output->writeLineFormatted('');
 
@@ -37,7 +40,7 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 				$output->writeRaw(sprintf(
 					'  <error line="%d" column="1" severity="error" message="%s" />',
 					$this->escape((string) $error->getLine()),
-					$this->escape($error->getMessage())
+					$this->escape($error->getMessage()),
 				));
 				$output->writeLineFormatted('');
 			}
@@ -82,8 +85,6 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 	/**
 	 * Escapes values for using in XML
 	 *
-	 * @param string $string
-	 * @return string
 	 */
 	private function escape(string $string): string
 	{
@@ -93,22 +94,21 @@ class CheckstyleErrorFormatter implements ErrorFormatter
 	/**
 	 * Group errors by file
 	 *
-	 * @param AnalysisResult $analysisResult
-	 * @return array<string, array<\PHPStan\Analyser\Error>> Array that have as key the relative path of file
-	 *                              and as value an array with occurred errors.
+	 * @return array<string, array<Error>> Array that have as key the relative path of file
+	 * and as value an array with occurred errors.
 	 */
 	private function groupByFile(AnalysisResult $analysisResult): array
 	{
 		$files = [];
 
-		/** @var \PHPStan\Analyser\Error $fileSpecificError */
+		/** @var Error $fileSpecificError */
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			$absolutePath = $fileSpecificError->getFilePath();
 			if ($fileSpecificError->getTraitFilePath() !== null) {
 				$absolutePath = $fileSpecificError->getTraitFilePath();
 			}
 			$relativeFilePath = $this->relativePathHelper->getRelativePath(
-				$absolutePath
+				$absolutePath,
 			);
 
 			$files[$relativeFilePath][] = $fileSpecificError;

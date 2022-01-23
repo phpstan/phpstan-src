@@ -2,13 +2,16 @@
 
 namespace PHPStan\Rules\Operators;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<InvalidIncDecOperationRule>
+ * @extends RuleTestCase<InvalidIncDecOperationRule>
  */
-class InvalidIncDecOperationRuleTest extends \PHPStan\Testing\RuleTestCase
+class InvalidIncDecOperationRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new InvalidIncDecOperationRule(false);
 	}

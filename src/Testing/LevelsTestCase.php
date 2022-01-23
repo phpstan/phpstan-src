@@ -2,11 +2,28 @@
 
 namespace PHPStan\Testing;
 
+use Nette\Utils\Json;
+use Nette\Utils\JsonException;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileWriter;
+use PHPStan\ShouldNotHappenException;
+use PHPUnit\Framework\AssertionFailedError;
+use PHPUnit\Framework\TestCase;
+use function array_merge;
+use function count;
+use function escapeshellarg;
+use function escapeshellcmd;
+use function exec;
+use function implode;
+use function method_exists;
+use function range;
+use function sprintf;
+use function unlink;
+use const DIRECTORY_SEPARATOR;
+use const PHP_BINARY;
 
 /** @api */
-abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
+abstract class LevelsTestCase extends TestCase
 {
 
 	/**
@@ -32,10 +49,9 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @dataProvider dataTopics
-	 * @param string $topic
 	 */
 	public function testLevels(
-		string $topic
+		string $topic,
 	): void
 	{
 		$file = sprintf('%s' . DIRECTORY_SEPARATOR . '%s.php', $this->getDataPath(), $topic);
@@ -51,16 +67,16 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 			unset($outputLines);
 			exec(sprintf('%s %s clear-result-cache %s 2>&1', escapeshellarg(PHP_BINARY), $command, $configPath !== null ? '--configuration ' . escapeshellarg($configPath) : ''), $clearResultCacheOutputLines, $clearResultCacheExitCode);
 			if ($clearResultCacheExitCode !== 0) {
-				throw new \PHPStan\ShouldNotHappenException('Could not clear result cache: ' . implode("\n", $clearResultCacheOutputLines));
+				throw new ShouldNotHappenException('Could not clear result cache: ' . implode("\n", $clearResultCacheOutputLines));
 			}
 			exec(sprintf('%s %s analyse --no-progress --error-format=prettyJson --level=%d %s %s %s', escapeshellarg(PHP_BINARY), $command, $level, $configPath !== null ? '--configuration ' . escapeshellarg($configPath) : '', $this->shouldAutoloadAnalysedFile() ? sprintf('--autoload-file %s', escapeshellarg($file)) : '', escapeshellarg($file)), $outputLines);
 
 			$output = implode("\n", $outputLines);
 
 			try {
-				$actualJson = \Nette\Utils\Json::decode($output, \Nette\Utils\Json::FORCE_ARRAY);
-			} catch (\Nette\Utils\JsonException $e) {
-				throw new \Nette\Utils\JsonException(sprintf('Cannot decode: %s', $output));
+				$actualJson = Json::decode($output, Json::FORCE_ARRAY);
+			} catch (JsonException) {
+				throw new JsonException(sprintf('Cannot decode: %s', $output));
 			}
 			if (count($actualJson['files']) > 0) {
 				$normalizedFilePath = $fileHelper->normalizePath($file);
@@ -141,30 +157,28 @@ abstract class LevelsTestCase extends \PHPUnit\Framework\TestCase
 	}
 
 	/**
-	 * @param string $expectedJsonFile
 	 * @param string[] $expectedMessages
-	 * @return \PHPUnit\Framework\AssertionFailedError|null
 	 */
-	private function compareFiles(string $expectedJsonFile, array $expectedMessages): ?\PHPUnit\Framework\AssertionFailedError
+	private function compareFiles(string $expectedJsonFile, array $expectedMessages): ?AssertionFailedError
 	{
 		if (count($expectedMessages) === 0) {
 			try {
 				self::assertFileDoesNotExist($expectedJsonFile);
 				return null;
-			} catch (\PHPUnit\Framework\AssertionFailedError $e) {
+			} catch (AssertionFailedError $e) {
 				unlink($expectedJsonFile);
 				return $e;
 			}
 		}
 
-		$actualOutput = \Nette\Utils\Json::encode($expectedMessages, \Nette\Utils\Json::PRETTY);
+		$actualOutput = Json::encode($expectedMessages, Json::PRETTY);
 
 		try {
 			$this->assertJsonStringEqualsJsonFile(
 				$expectedJsonFile,
-				$actualOutput
+				$actualOutput,
 			);
-		} catch (\PHPUnit\Framework\AssertionFailedError $e) {
+		} catch (AssertionFailedError $e) {
 			FileWriter::write($expectedJsonFile, $actualOutput);
 			return $e;
 		}

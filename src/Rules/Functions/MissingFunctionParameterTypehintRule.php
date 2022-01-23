@@ -10,23 +10,24 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
+use function implode;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InFunctionNode>
+ * @implements Rule<InFunctionNode>
  */
-final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
+final class MissingFunctionParameterTypehintRule implements Rule
 {
 
-	private \PHPStan\Rules\MissingTypehintCheck $missingTypehintCheck;
-
 	public function __construct(
-		MissingTypehintCheck $missingTypehintCheck
+		private MissingTypehintCheck $missingTypehintCheck,
 	)
 	{
-		$this->missingTypehintCheck = $missingTypehintCheck;
 	}
 
 	public function getNodeType(): string
@@ -53,9 +54,7 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\FunctionReflection $functionReflection
-	 * @param \PHPStan\Reflection\ParameterReflection $parameterReflection
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @return RuleError[]
 	 */
 	private function checkFunctionParameter(FunctionReflection $functionReflection, ParameterReflection $parameterReflection): array
 	{
@@ -66,7 +65,7 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Function %s() has parameter $%s with no type specified.',
 					$functionReflection->getName(),
-					$parameterReflection->getName()
+					$parameterReflection->getName(),
 				))->build(),
 			];
 		}
@@ -78,7 +77,7 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 				'Function %s() has parameter $%s with no value type specified in iterable type %s.',
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
-				$iterableTypeDescription
+				$iterableTypeDescription,
 			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
@@ -88,7 +87,7 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
 				$name,
-				implode(', ', $genericTypeNames)
+				implode(', ', $genericTypeNames),
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
@@ -97,7 +96,7 @@ final class MissingFunctionParameterTypehintRule implements \PHPStan\Rules\Rule
 				'Function %s() has parameter $%s with no signature specified for %s.',
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
-				$callableType->describe(VerbosityLevel::typeOnly())
+				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

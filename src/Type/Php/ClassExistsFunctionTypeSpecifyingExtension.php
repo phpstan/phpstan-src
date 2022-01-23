@@ -16,8 +16,8 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\NeverType;
-use PHPStan\Type\TypeCombinator;
+use function in_array;
+use function ltrim;
 
 class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -27,7 +27,7 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection,
 		FuncCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		return in_array($functionReflection->getName(), [
@@ -41,20 +41,16 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 	{
 		$argType = $scope->getType($node->getArgs()[0]->value);
 		$classStringType = new ClassStringType();
-		if (TypeCombinator::intersect($argType, $classStringType) instanceof NeverType) {
-			if ($argType instanceof ConstantStringType) {
-				return $this->typeSpecifier->create(
-					new FuncCall(new FullyQualified('class_exists'), [
-						new Arg(new String_(ltrim($argType->getValue(), '\\'))),
-					]),
-					new ConstantBooleanType(true),
-					$context,
-					false,
-					$scope
-				);
-			}
-
-			return new SpecifiedTypes();
+		if ($argType instanceof ConstantStringType) {
+			return $this->typeSpecifier->create(
+				new FuncCall(new FullyQualified('class_exists'), [
+					new Arg(new String_(ltrim($argType->getValue(), '\\'))),
+				]),
+				new ConstantBooleanType(true),
+				$context,
+				false,
+				$scope,
+			);
 		}
 
 		return $this->typeSpecifier->create(
@@ -62,7 +58,7 @@ class ClassExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			$classStringType,
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

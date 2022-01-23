@@ -7,23 +7,20 @@ use Nette\Neon\Neon;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
-use const SORT_STRING;
 use function ksort;
 use function preg_quote;
+use const SORT_STRING;
 
 class BaselineNeonErrorFormatter implements ErrorFormatter
 {
 
-	private \PHPStan\File\RelativePathHelper $relativePathHelper;
-
-	public function __construct(RelativePathHelper $relativePathHelper)
+	public function __construct(private RelativePathHelper $relativePathHelper)
 	{
-		$this->relativePathHelper = $relativePathHelper;
 	}
 
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		Output $output
+		Output $output,
 	): int
 	{
 		if (!$analysisResult->hasErrors()) {

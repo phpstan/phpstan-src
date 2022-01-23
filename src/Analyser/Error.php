@@ -2,75 +2,38 @@
 
 namespace PHPStan\Analyser;
 
+use Exception;
+use JsonSerializable;
+use PhpParser\Node;
+use PHPStan\ShouldNotHappenException;
+use ReturnTypeWillChange;
+use Throwable;
+use function is_bool;
+
 /** @api */
-class Error implements \JsonSerializable
+class Error implements JsonSerializable
 {
-
-	private string $message;
-
-	private string $file;
-
-	private ?int $line;
-
-	/** @var bool|\Throwable */
-	private $canBeIgnored;
-
-	private ?string $filePath;
-
-	private ?string $traitFilePath;
-
-	private ?string $tip;
-
-	private ?int $nodeLine;
-
-	/** @phpstan-var class-string<\PhpParser\Node>|null */
-	private ?string $nodeType;
-
-	private ?string $identifier;
-
-	/** @var mixed[] */
-	private array $metadata;
 
 	/**
 	 * Error constructor.
 	 *
-	 * @param string $message
-	 * @param string $file
-	 * @param int|null $line
-	 * @param bool|\Throwable $canBeIgnored
-	 * @param string|null $filePath
-	 * @param string|null $traitFilePath
-	 * @param string|null $tip
-	 * @param int|null $nodeLine
-	 * @param class-string<\PhpParser\Node>|null $nodeType
-	 * @param string|null $identifier
+	 * @param class-string<Node>|null $nodeType
 	 * @param mixed[] $metadata
 	 */
 	public function __construct(
-		string $message,
-		string $file,
-		?int $line = null,
-		$canBeIgnored = true,
-		?string $filePath = null,
-		?string $traitFilePath = null,
-		?string $tip = null,
-		?int $nodeLine = null,
-		?string $nodeType = null,
-		?string $identifier = null,
-		array $metadata = []
+		private string $message,
+		private string $file,
+		private ?int $line = null,
+		private bool|Throwable $canBeIgnored = true,
+		private ?string $filePath = null,
+		private ?string $traitFilePath = null,
+		private ?string $tip = null,
+		private ?int $nodeLine = null,
+		private ?string $nodeType = null,
+		private ?string $identifier = null,
+		private array $metadata = [],
 	)
 	{
-		$this->message = $message;
-		$this->file = $file;
-		$this->line = $line;
-		$this->canBeIgnored = $canBeIgnored;
-		$this->filePath = $filePath;
-		$this->traitFilePath = $traitFilePath;
-		$this->tip = $tip;
-		$this->nodeLine = $nodeLine;
-		$this->nodeType = $nodeType;
-		$this->identifier = $identifier;
-		$this->metadata = $metadata;
 	}
 
 	public function getMessage(): string
@@ -95,7 +58,7 @@ class Error implements \JsonSerializable
 	public function changeFilePath(string $newFilePath): self
 	{
 		if ($this->traitFilePath !== null) {
-			throw new \PHPStan\ShouldNotHappenException('Errors in traits not yet supported');
+			throw new ShouldNotHappenException('Errors in traits not yet supported');
 		}
 
 		return new self(
@@ -109,7 +72,7 @@ class Error implements \JsonSerializable
 			$this->nodeLine,
 			$this->nodeType,
 			$this->identifier,
-			$this->metadata
+			$this->metadata,
 		);
 	}
 
@@ -126,7 +89,7 @@ class Error implements \JsonSerializable
 			$this->nodeLine,
 			$this->nodeType,
 			$this->identifier,
-			$this->metadata
+			$this->metadata,
 		);
 	}
 
@@ -147,7 +110,7 @@ class Error implements \JsonSerializable
 
 	public function hasNonIgnorableException(): bool
 	{
-		return $this->canBeIgnored instanceof \Throwable;
+		return $this->canBeIgnored instanceof Throwable;
 	}
 
 	public function getTip(): ?string
@@ -170,7 +133,7 @@ class Error implements \JsonSerializable
 			$this->traitFilePath,
 			null,
 			$this->nodeLine,
-			$this->nodeType
+			$this->nodeType,
 		);
 	}
 
@@ -180,7 +143,7 @@ class Error implements \JsonSerializable
 	}
 
 	/**
-	 * @return class-string<\PhpParser\Node>|null
+	 * @return class-string<Node>|null
 	 */
 	public function getNodeType(): ?string
 	{
@@ -203,7 +166,7 @@ class Error implements \JsonSerializable
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [
@@ -223,7 +186,6 @@ class Error implements \JsonSerializable
 
 	/**
 	 * @param mixed[] $json
-	 * @return self
 	 */
 	public static function decode(array $json): self
 	{
@@ -231,20 +193,19 @@ class Error implements \JsonSerializable
 			$json['message'],
 			$json['file'],
 			$json['line'],
-			$json['canBeIgnored'] === 'exception' ? new \Exception() : $json['canBeIgnored'],
+			$json['canBeIgnored'] === 'exception' ? new Exception() : $json['canBeIgnored'],
 			$json['filePath'],
 			$json['traitFilePath'],
 			$json['tip'],
 			$json['nodeLine'] ?? null,
 			$json['nodeType'] ?? null,
 			$json['identifier'] ?? null,
-			$json['metadata'] ?? []
+			$json['metadata'] ?? [],
 		);
 	}
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{
@@ -259,7 +220,7 @@ class Error implements \JsonSerializable
 			$properties['nodeLine'] ?? null,
 			$properties['nodeType'] ?? null,
 			$properties['identifier'] ?? null,
-			$properties['metadata'] ?? []
+			$properties['metadata'] ?? [],
 		);
 	}
 

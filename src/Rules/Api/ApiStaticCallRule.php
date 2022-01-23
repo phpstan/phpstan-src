@@ -8,6 +8,9 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function count;
+use function sprintf;
+use function strpos;
 
 /**
  * @implements Rule<Node\Expr\StaticCall>
@@ -15,17 +18,11 @@ use PHPStan\Rules\RuleErrorBuilder;
 class ApiStaticCallRule implements Rule
 {
 
-	private ApiRuleHelper $apiRuleHelper;
-
-	private ReflectionProvider $reflectionProvider;
-
 	public function __construct(
-		ApiRuleHelper $apiRuleHelper,
-		ReflectionProvider $reflectionProvider
+		private ApiRuleHelper $apiRuleHelper,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
-		$this->apiRuleHelper = $apiRuleHelper;
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -67,10 +64,10 @@ class ApiStaticCallRule implements Rule
 		$ruleError = RuleErrorBuilder::message(sprintf(
 			'Calling %s::%s() is not covered by backward compatibility promise. The method might change in a minor PHPStan version.',
 			$declaringClass->getDisplayName(),
-			$methodReflection->getName()
+			$methodReflection->getName(),
 		))->tip(sprintf(
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
-			'https://github.com/phpstan/phpstan/discussions'
+			'https://github.com/phpstan/phpstan/discussions',
 		))->build();
 
 		return [$ruleError];

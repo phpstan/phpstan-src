@@ -12,12 +12,14 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function count;
 
-class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	/** @var string[] */
@@ -59,7 +61,7 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 
 				return $this->processType(
 					$functionReflection->getName(),
-					$argumentTypes
+					$argumentTypes,
 				);
 			}
 
@@ -79,13 +81,13 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 					return $scope->getType(new Ternary(
 						new Smaller($args[0]->value, $args[1]->value),
 						$args[0]->value,
-						$args[1]->value
+						$args[1]->value,
 					));
 				} elseif ($functionName === 'max') {
 					return $scope->getType(new Ternary(
 						new Smaller($args[0]->value, $args[1]->value),
 						$args[1]->value,
-						$args[0]->value
+						$args[0]->value,
 					));
 				}
 			}
@@ -111,18 +113,16 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 
 		return $this->processType(
 			$functionName,
-			$argumentTypes
+			$argumentTypes,
 		);
 	}
 
 	/**
-	 * @param string $functionName
-	 * @param \PHPStan\Type\Type[] $types
-	 * @return Type
+	 * @param Type[] $types
 	 */
 	private function processType(
 		string $functionName,
-		array $types
+		array $types,
 	): Type
 	{
 		$resultType = null;
@@ -157,7 +157,7 @@ class MinMaxFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunction
 
 	private function compareTypes(
 		Type $firstType,
-		Type $secondType
+		Type $secondType,
 	): ?Type
 	{
 		if (

@@ -7,28 +7,27 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallStaticMethodsRule>
+ * @extends RuleTestCase<CallStaticMethodsRule>
  */
-class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
+class CallStaticMethodsRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($broker, true, $this->checkThisOnly, true, false);
+		$reflectionProvider = $this->createReflectionProvider();
+		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, false);
 		return new CallStaticMethodsRule(
-			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), true, true, true, true),
-			$ruleLevelHelper,
-			new ClassCaseSensitivityCheck($broker, true),
-			true,
-			true
+			new StaticMethodCallCheck($reflectionProvider, $ruleLevelHelper, new ClassCaseSensitivityCheck($reflectionProvider, true), true, true),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
 		);
 	}
 
@@ -455,6 +454,18 @@ class CallStaticMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-4886.php'], []);
+	}
+
+	public function testFirstClassCallables(): void
+	{
+		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkThisOnly = false;
+
+		// handled by a different rule
+		$this->analyse([__DIR__ . '/data/first-class-static-method-callable.php'], []);
 	}
 
 }

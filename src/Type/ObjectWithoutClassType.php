@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function sprintf;
 
 /** @api */
 class ObjectWithoutClassType implements SubtractableType
@@ -15,11 +16,11 @@ class ObjectWithoutClassType implements SubtractableType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
-	private ?\PHPStan\Type\Type $subtractedType;
+	private ?Type $subtractedType;
 
 	/** @api */
 	public function __construct(
-		?Type $subtractedType = null
+		?Type $subtractedType = null,
 	)
 	{
 		if ($subtractedType instanceof NeverType) {
@@ -44,7 +45,7 @@ class ObjectWithoutClassType implements SubtractableType
 		}
 
 		return TrinaryLogic::createFromBoolean(
-			$type instanceof self || $type instanceof TypeWithClassName
+			$type instanceof self || $type instanceof TypeWithClassName,
 		);
 	}
 
@@ -103,12 +104,8 @@ class ObjectWithoutClassType implements SubtractableType
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			static function (): string {
-				return 'object';
-			},
-			static function (): string {
-				return 'object';
-			},
+			static fn (): string => 'object',
+			static fn (): string => 'object',
 			function () use ($level): string {
 				$description = 'object';
 				if ($this->subtractedType !== null) {
@@ -116,7 +113,7 @@ class ObjectWithoutClassType implements SubtractableType
 				}
 
 				return $description;
-			}
+			},
 		);
 	}
 
@@ -161,7 +158,6 @@ class ObjectWithoutClassType implements SubtractableType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

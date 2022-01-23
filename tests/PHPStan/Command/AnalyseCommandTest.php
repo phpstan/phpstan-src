@@ -2,32 +2,38 @@
 
 namespace PHPStan\Command;
 
+use PHPStan\ShouldNotHappenException;
+use PHPStan\Testing\PHPStanTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
+use Throwable;
+use function chdir;
+use function getcwd;
+use function realpath;
+use function sprintf;
 use const DIRECTORY_SEPARATOR;
+use const PHP_EOL;
 
 /**
  * @group exec
  */
-class AnalyseCommandTest extends \PHPStan\Testing\PHPStanTestCase
+class AnalyseCommandTest extends PHPStanTestCase
 {
 
 	/**
-	 * @param string $dir
-	 * @param string $file
 	 * @dataProvider autoDiscoveryPathsProvider
 	 */
 	public function testConfigurationAutoDiscovery(string $dir, string $file): void
 	{
 		$originalDir = getcwd();
 		if ($originalDir === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		chdir($dir);
 
 		try {
 			$output = $this->runCommand(1);
 			$this->assertStringContainsString('Note: Using configuration file ' . $file . '.', $output);
-		} catch (\Throwable $e) {
+		} catch (Throwable $e) {
 			chdir($originalDir);
 			throw $e;
 		}
@@ -74,15 +80,10 @@ class AnalyseCommandTest extends \PHPStan\Testing\PHPStanTestCase
 	}
 
 	/**
-	 * @param int $expectedStatusCode
 	 * @param array<string, string> $parameters
-	 * @return string
 	 */
 	private function runCommand(int $expectedStatusCode, array $parameters = []): string
 	{
-		if (PHP_VERSION_ID >= 80000 && DIRECTORY_SEPARATOR === '\\') {
-			$this->markTestSkipped('Skipped because of https://github.com/symfony/symfony/issues/37508');
-		}
 		$commandTester = new CommandTester(new AnalyseCommand([]));
 
 		$commandTester->execute([

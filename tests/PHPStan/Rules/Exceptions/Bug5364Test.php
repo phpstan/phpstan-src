@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Exceptions;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
@@ -10,7 +11,7 @@ use PHPStan\Testing\RuleTestCase;
 class Bug5364Test extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new MissingCheckedExceptionInMethodThrowsRule(
 			new MissingCheckedExceptionInThrowsCheck(new DefaultExceptionTypeResolver(
@@ -18,8 +19,8 @@ class Bug5364Test extends RuleTestCase
 				[],
 				[],
 				[],
-				[]
-			))
+				[],
+			)),
 		);
 	}
 

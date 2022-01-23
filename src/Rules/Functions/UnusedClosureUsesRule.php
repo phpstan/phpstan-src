@@ -4,19 +4,21 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
+use PHPStan\ShouldNotHappenException;
+use function array_map;
+use function count;
+use function is_string;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Closure>
+ * @implements Rule<Node\Expr\Closure>
  */
-class UnusedClosureUsesRule implements \PHPStan\Rules\Rule
+class UnusedClosureUsesRule implements Rule
 {
 
-	private \PHPStan\Rules\UnusedFunctionParametersCheck $check;
-
-	public function __construct(UnusedFunctionParametersCheck $check)
+	public function __construct(private UnusedFunctionParametersCheck $check)
 	{
-		$this->check = $check;
 	}
 
 	public function getNodeType(): string
@@ -34,7 +36,7 @@ class UnusedClosureUsesRule implements \PHPStan\Rules\Rule
 			$scope,
 			array_map(static function (Node\Expr\ClosureUse $use): string {
 				if (!is_string($use->var->name)) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				return $use->var->name;
 			}, $node->uses),
@@ -46,7 +48,7 @@ class UnusedClosureUsesRule implements \PHPStan\Rules\Rule
 				'statementOrder' => $node->getAttribute('statementOrder'),
 				'depth' => $node->getAttribute('expressionDepth'),
 				'order' => $node->getAttribute('expressionOrder'),
-			]
+			],
 		);
 	}
 

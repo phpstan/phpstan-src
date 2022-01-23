@@ -2,13 +2,16 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<RandomIntParametersRule>
+ * @extends RuleTestCase<RandomIntParametersRule>
  */
-class RandomIntParametersRuleTest extends \PHPStan\Testing\RuleTestCase
+class RandomIntParametersRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new RandomIntParametersRule($this->createReflectionProvider(), true);
 	}
@@ -53,6 +56,11 @@ class RandomIntParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 				31,
 			],
 		]);
+	}
+
+	public function testBug6361(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6361.php'], []);
 	}
 
 }

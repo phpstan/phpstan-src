@@ -5,22 +5,22 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertyNode;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ClassPropertyNode>
+ * @implements Rule<ClassPropertyNode>
  */
-class DefaultValueTypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
+class DefaultValueTypesAssignedToPropertiesRule implements Rule
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
@@ -31,7 +31,7 @@ class DefaultValueTypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$classReflection = $scope->getClassReflection();
@@ -61,7 +61,7 @@ class DefaultValueTypesAssignedToPropertiesRule implements \PHPStan\Rules\Rule
 				$classReflection->getDisplayName(),
 				$node->getName(),
 				$propertyType->describe($verbosityLevel),
-				$defaultValueType->describe($verbosityLevel)
+				$defaultValueType->describe($verbosityLevel),
 			))->build(),
 		];
 	}

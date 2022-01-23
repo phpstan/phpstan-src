@@ -3,35 +3,32 @@
 namespace PHPStan\Rules\Cast;
 
 use PhpParser\Node;
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Scalar\Encapsed>
+ * @implements Rule<Node\Scalar\Encapsed>
  */
-class InvalidPartOfEncapsedStringRule implements \PHPStan\Rules\Rule
+class InvalidPartOfEncapsedStringRule implements Rule
 {
 
-	private \PhpParser\PrettyPrinter\Standard $printer;
-
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
 	public function __construct(
-		\PhpParser\PrettyPrinter\Standard $printer,
-		RuleLevelHelper $ruleLevelHelper
+		private Standard $printer,
+		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
-		$this->printer = $printer;
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Scalar\Encapsed::class;
+		return Node\Scalar\Encapsed::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -46,9 +43,7 @@ class InvalidPartOfEncapsedStringRule implements \PHPStan\Rules\Rule
 				$scope,
 				$part,
 				'',
-				static function (Type $type): bool {
-					return !$type->toString() instanceof ErrorType;
-				}
+				static fn (Type $type): bool => !$type->toString() instanceof ErrorType,
 			);
 			$partType = $typeResult->getType();
 			if ($partType instanceof ErrorType) {
@@ -62,7 +57,7 @@ class InvalidPartOfEncapsedStringRule implements \PHPStan\Rules\Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Part %s (%s) of encapsed string cannot be cast to string.',
 				$this->printer->prettyPrintExpr($part),
-				$partType->describe(VerbosityLevel::value())
+				$partType->describe(VerbosityLevel::value()),
 			))->line($part->getLine())->build();
 		}
 

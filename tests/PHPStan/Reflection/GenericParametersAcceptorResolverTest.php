@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -17,8 +18,11 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function get_class;
+use function sprintf;
 
-class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTestCase
+class GenericParametersAcceptorResolverTest  extends PHPStanTestCase
 {
 
 	/**
@@ -26,14 +30,12 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 	 */
 	public function dataResolve(): array
 	{
-		$templateType = static function (string $name, ?Type $type = null): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				$type,
-				TemplateTypeVariance::createInvariant()
-			);
-		};
+		$templateType = static fn (string $name, ?Type $type = null): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			$type,
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'one param, one arg' => [
@@ -52,11 +54,11 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					new NullType()
+					new NullType(),
 				),
 				new FunctionVariant(
 					new TemplateTypeMap([
@@ -70,11 +72,11 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					new NullType()
+					new NullType(),
 				),
 			],
 			'two params, two args, return type' => [
@@ -95,7 +97,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -103,11 +105,11 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					$templateType('U')
+					$templateType('U'),
 				),
 				new FunctionVariant(
 					new TemplateTypeMap([
@@ -122,7 +124,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -130,11 +132,11 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					new IntegerType()
+					new IntegerType(),
 				),
 			],
 			'mixed types' => [
@@ -154,7 +156,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -162,11 +164,11 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					$templateType('T')
+					$templateType('T'),
 				),
 				new FunctionVariant(
 					new TemplateTypeMap([
@@ -183,7 +185,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -194,14 +196,14 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
 					new UnionType([
 						new ObjectType('DateTime'),
 						new IntegerType(),
-					])
+					]),
 				),
 			],
 			'parameter default value' => [
@@ -221,7 +223,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -229,11 +231,11 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							true,
 							PassedByReference::createNo(),
 							false,
-							new IntegerType()
+							new IntegerType(),
 						),
 					],
 					false,
-					new NullType()
+					new NullType(),
 				),
 				new FunctionVariant(
 					new TemplateTypeMap([
@@ -248,7 +250,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -256,11 +258,11 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					new NullType()
+					new NullType(),
 				),
 			],
 			'variadic parameter' => [
@@ -283,7 +285,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -291,11 +293,11 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							true,
-							null
+							null,
 						),
 					],
 					true,
-					$templateType('U')
+					$templateType('U'),
 				),
 				new FunctionVariant(
 					new TemplateTypeMap([
@@ -310,7 +312,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -318,11 +320,11 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							true,
-							null
+							null,
 						),
 					],
 					false,
-					new IntegerType()
+					new IntegerType(),
 				),
 			],
 			'missing args' => [
@@ -342,7 +344,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -350,11 +352,11 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					new NullType()
+					new NullType(),
 				),
 				new FunctionVariant(
 					new TemplateTypeMap([
@@ -369,7 +371,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 						new DummyParameter(
 							'b',
@@ -377,11 +379,11 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 							false,
 							PassedByReference::createNo(),
 							false,
-							null
+							null,
 						),
 					],
 					false,
-					new NullType()
+					new NullType(),
 				),
 			],
 			'constant string arg resolved to constant string' => [
@@ -397,7 +399,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 						new DummyParameter('str', $templateType('T'), false, null, false, null),
 					],
 					false,
-					$templateType('T')
+					$templateType('T'),
 				),
 				new FunctionVariant(
 					TemplateTypeMap::createEmpty(),
@@ -406,7 +408,7 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 						new DummyParameter('str', new StringType(), false, null, false, null),
 					],
 					false,
-					new StringType()
+					new StringType(),
 				),
 			],
 		];
@@ -414,24 +416,24 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 
 	/**
 	 * @dataProvider dataResolve
-	 * @param \PHPStan\Type\Type[] $argTypes
+	 * @param Type[] $argTypes
 	 */
 	public function testResolve(array $argTypes, ParametersAcceptor $parametersAcceptor, ParametersAcceptor $expectedResult): void
 	{
 		$result = GenericParametersAcceptorResolver::resolve(
 			$argTypes,
-			$parametersAcceptor
+			$parametersAcceptor,
 		);
 
 		$this->assertInstanceOf(
 			get_class($expectedResult->getReturnType()),
 			$result->getReturnType(),
-			'Unexpected return type'
+			'Unexpected return type',
 		);
 		$this->assertSame(
 			$expectedResult->getReturnType()->describe(VerbosityLevel::precise()),
 			$result->getReturnType()->describe(VerbosityLevel::precise()),
-			'Unexpected return type'
+			'Unexpected return type',
 		);
 
 		$resultParameters = $result->getParameters();
@@ -443,12 +445,12 @@ class GenericParametersAcceptorResolverTest  extends \PHPStan\Testing\PHPStanTes
 			$this->assertInstanceOf(
 				get_class($param->getType()),
 				$resultParameters[$i]->getType(),
-				sprintf('Unexpected parameter %d', $i + 1)
+				sprintf('Unexpected parameter %d', $i + 1),
 			);
 			$this->assertSame(
 				$param->getType()->describe(VerbosityLevel::precise()),
 				$resultParameters[$i]->getType()->describe(VerbosityLevel::precise()),
-				sprintf('Unexpected parameter %d', $i + 1)
+				sprintf('Unexpected parameter %d', $i + 1),
 			);
 		}
 	}

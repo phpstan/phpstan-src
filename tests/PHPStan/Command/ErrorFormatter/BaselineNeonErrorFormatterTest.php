@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use Generator;
 use Nette\Neon\Neon;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
@@ -9,6 +10,7 @@ use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
 use function mt_srand;
 use function shuffle;
+use function sprintf;
 use function trim;
 
 class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
@@ -100,10 +102,6 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @dataProvider dataFormatterOutputProvider
 	 *
-	 * @param string $message
-	 * @param int    $exitCode
-	 * @param int    $numFileErrors
-	 * @param int    $numGenericErrors
 	 * @param mixed[] $expected
 	 */
 	public function testFormatErrors(
@@ -111,14 +109,14 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
-		array $expected
+		array $expected,
 	): void
 	{
 		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getOutput()
+			$this->getOutput(),
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertSame(trim(Neon::encode(['parameters' => ['ignoreErrors' => $expected]], Neon::BLOCK)), trim($this->getOutputContent()), sprintf('%s: output do not match', $message));
@@ -136,11 +134,11 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			[],
 			false,
 			null,
-			true
+			true,
 		);
 		$formatter->formatErrors(
 			$result,
-			$this->getOutput()
+			$this->getOutput(),
 		);
 
 		self::assertSame(
@@ -155,9 +153,9 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 							],
 						],
 					],
-				], Neon::BLOCK)
+				], Neon::BLOCK),
 			),
-			trim($this->getOutputContent())
+			trim($this->getOutputContent()),
 		);
 	}
 
@@ -171,12 +169,12 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			[],
 			false,
 			null,
-			true
+			true,
 		);
 
 		$formatter->formatErrors(
 			$result,
-			$this->getOutput()
+			$this->getOutput(),
 		);
 		self::assertSame(
 			trim(
@@ -190,16 +188,16 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 							],
 						],
 					],
-				], Neon::BLOCK)
+				], Neon::BLOCK),
 			),
-			trim($this->getOutputContent())
+			trim($this->getOutputContent()),
 		);
 	}
 
 	/**
-	 * @return \Generator<int, array{list<Error>}, void, void>
+	 * @return Generator<int, array{list<Error>}, void, void>
 	 */
-	public function outputOrderingProvider(): \Generator
+	public function outputOrderingProvider(): Generator
 	{
 		$errors = [
 			new Error('Error #2', 'TestfileA', 1),
@@ -233,12 +231,12 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			[],
 			false,
 			null,
-			true
+			true,
 		);
 
 		$formatter->formatErrors(
 			$result,
-			$this->getOutput()
+			$this->getOutput(),
 		);
 		self::assertSame(
 			trim(Neon::encode([
@@ -282,7 +280,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 					],
 				],
 			], Neon::BLOCK)),
-			$f = trim($this->getOutputContent())
+			$f = trim($this->getOutputContent()),
 		);
 	}
 

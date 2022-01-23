@@ -7,46 +7,42 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function array_map;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Use_>
+ * @implements Rule<Node\Stmt\Use_>
  */
-class ExistingNamesInUseRule implements \PHPStan\Rules\Rule
+class ExistingNamesInUseRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private bool $checkFunctionNameCase;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		bool $checkFunctionNameCase
+		private ReflectionProvider $reflectionProvider,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private bool $checkFunctionNameCase,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->checkFunctionNameCase = $checkFunctionNameCase;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt\Use_::class;
+		return Node\Stmt\Use_::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($node->type === Node\Stmt\Use_::TYPE_UNKNOWN) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		foreach ($node->uses as $use) {
 			if ($use->type !== Node\Stmt\Use_::TYPE_UNKNOWN) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 		}
 
@@ -62,7 +58,7 @@ class ExistingNamesInUseRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param \PhpParser\Node\Stmt\UseUse[] $uses
+	 * @param Node\Stmt\UseUse[] $uses
 	 * @return RuleError[]
 	 */
 	private function checkConstants(array $uses): array
@@ -80,7 +76,7 @@ class ExistingNamesInUseRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param \PhpParser\Node\Stmt\UseUse[] $uses
+	 * @param Node\Stmt\UseUse[] $uses
 	 * @return RuleError[]
 	 */
 	private function checkFunctions(array $uses): array
@@ -100,7 +96,7 @@ class ExistingNamesInUseRule implements \PHPStan\Rules\Rule
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Function %s used with incorrect case: %s.',
 						$realName,
-						$usedName
+						$usedName,
 					))->line($use->name->getLine())->build();
 				}
 			}
@@ -110,15 +106,13 @@ class ExistingNamesInUseRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param \PhpParser\Node\Stmt\UseUse[] $uses
+	 * @param Node\Stmt\UseUse[] $uses
 	 * @return RuleError[]
 	 */
 	private function checkClasses(array $uses): array
 	{
 		return $this->classCaseSensitivityCheck->checkClassNames(
-			array_map(static function (\PhpParser\Node\Stmt\UseUse $use): ClassNameNodePair {
-				return new ClassNameNodePair((string) $use->name, $use->name);
-			}, $uses)
+			array_map(static fn (Node\Stmt\UseUse $use): ClassNameNodePair => new ClassNameNodePair((string) $use->name, $use->name), $uses),
 		);
 	}
 

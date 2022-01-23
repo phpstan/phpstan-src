@@ -3,26 +3,26 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<OverridingMethodRule>
+ * @extends RuleTestCase<OverridingMethodRule>
  */
-class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
+class MethodSignatureRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $reportMaybes;
+	private bool $reportMaybes;
 
-	/** @var bool */
-	private $reportStatic;
+	private bool $reportStatic;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new OverridingMethodRule(
 			new PhpVersion(PHP_VERSION_ID),
 			new MethodSignatureRule($this->reportMaybes, $this->reportStatic),
-			true
+			true,
 		);
 	}
 
@@ -71,7 +71,7 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Parameter #1 $node (PhpParser\Node\Expr\StaticCall) of method MethodSignature\Rule::processNode() should be contravariant with parameter $node (PhpParser\Node) of method MethodSignature\GenericRule<PhpParser\Node>::processNode()',
 					454,
 				],
-			]
+			],
 		);
 	}
 
@@ -116,7 +116,7 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Return type (MethodSignature\Cat) of method MethodSignature\SubClassUsingTrait::returnTypeTest5() should be compatible with return type (MethodSignature\Dog) of method MethodSignature\BaseInterface::returnTypeTest5()',
 					103,
 				],
-			]
+			],
 		);
 	}
 
@@ -145,7 +145,7 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Return type (MethodSignature\Cat) of method MethodSignature\SubClassUsingTrait::returnTypeTest5() should be compatible with return type (MethodSignature\Dog) of method MethodSignature\BaseInterface::returnTypeTest5()',
 					103,
 				],
-			]
+			],
 		);
 	}
 
@@ -174,7 +174,7 @@ class MethodSignatureRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Return type (MethodSignature\Cat) of method MethodSignature\SubClass::returnTypeTest5() should be compatible with return type (MethodSignature\Dog) of method MethodSignature\BaseInterface::returnTypeTest5()',
 					358,
 				],
-			]
+			],
 		);
 	}
 

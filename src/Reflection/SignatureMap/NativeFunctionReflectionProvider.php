@@ -3,7 +3,8 @@
 namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
-use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\FunctionVariant;
@@ -22,6 +23,8 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\UnionType;
+use function array_map;
+use function strtolower;
 
 class NativeFunctionReflectionProvider
 {
@@ -29,20 +32,8 @@ class NativeFunctionReflectionProvider
 	/** @var NativeFunctionReflection[] */
 	private static array $functionMap = [];
 
-	private \PHPStan\Reflection\SignatureMap\SignatureMapProvider $signatureMapProvider;
-
-	private \PHPStan\BetterReflection\Reflector\FunctionReflector $functionReflector;
-
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
-
-	private StubPhpDocProvider $stubPhpDocProvider;
-
-	public function __construct(SignatureMapProvider $signatureMapProvider, FunctionReflector $functionReflector, FileTypeMapper $fileTypeMapper, StubPhpDocProvider $stubPhpDocProvider)
+	public function __construct(private SignatureMapProvider $signatureMapProvider, private Reflector $reflector, private FileTypeMapper $fileTypeMapper, private StubPhpDocProvider $stubPhpDocProvider)
 	{
-		$this->signatureMapProvider = $signatureMapProvider;
-		$this->functionReflector = $functionReflector;
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->stubPhpDocProvider = $stubPhpDocProvider;
 	}
 
 	public function findFunctionReflection(string $functionName): ?NativeFunctionReflection
@@ -57,9 +48,7 @@ class NativeFunctionReflectionProvider
 		}
 		$reflectionFunction = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null);
 
-		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static function (ParameterSignature $parameter): string {
-			return $parameter->getName();
-		}, $reflectionFunction->getParameters()));
+		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $reflectionFunction->getParameters()));
 
 		$variants = [];
 		$i = 0;
@@ -110,7 +99,7 @@ class NativeFunctionReflectionProvider
 								new FloatType(),
 								new NullType(),
 								new BooleanType(),
-							])
+							]),
 						);
 					}
 
@@ -127,11 +116,11 @@ class NativeFunctionReflectionProvider
 						TypehintHelper::decideType($type, $phpDocType),
 						$parameterSignature->passedByReference(),
 						$parameterSignature->isVariadic(),
-						$defaultValue
+						$defaultValue,
 					);
 				}, $functionSignature->getParameters()),
 				$functionSignature->isVariadic(),
-				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDoc !== null ? $this->getReturnTypeFromPhpDoc($phpDoc) : null)
+				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDoc !== null ? $this->getReturnTypeFromPhpDoc($phpDoc) : null),
 			);
 
 			$i++;
@@ -146,7 +135,7 @@ class NativeFunctionReflectionProvider
 		$throwType = null;
 		$isDeprecated = false;
 		try {
-			$reflectionFunction = $this->functionReflector->reflect($functionName);
+			$reflectionFunction = $this->reflector->reflectFunction($functionName);
 			if ($reflectionFunction->getFileName() !== null) {
 				$fileName = $reflectionFunction->getFileName();
 				$docComment = $reflectionFunction->getDocComment();
@@ -157,9 +146,9 @@ class NativeFunctionReflectionProvider
 				}
 				$isDeprecated = $reflectionFunction->isDeprecated();
 			}
-		} catch (\PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound $e) {
+		} catch (IdentifierNotFound) {
 			// pass
-		} catch (InvalidIdentifierName $e) {
+		} catch (InvalidIdentifierName) {
 			// pass
 		}
 
@@ -168,7 +157,7 @@ class NativeFunctionReflectionProvider
 			$variants,
 			$throwType,
 			$hasSideEffects,
-			$isDeprecated
+			$isDeprecated,
 		);
 		self::$functionMap[$lowerCasedFunctionName] = $functionReflection;
 

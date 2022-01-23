@@ -3,15 +3,17 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\TrinaryLogic;
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionParameter;
+use ReflectionType;
+use function method_exists;
 
 class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 {
 
-	private \ReflectionMethod $reflection;
-
-	public function __construct(\ReflectionMethod $reflection)
+	public function __construct(private ReflectionMethod $reflection)
 	{
-		$this->reflection = $reflection;
 	}
 
 	public function getName(): string
@@ -19,7 +21,7 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->reflection->getName();
 	}
 
-	public function getReflection(): ?\ReflectionMethod
+	public function getReflection(): ?ReflectionMethod
 	{
 		return $this->reflection;
 	}
@@ -34,7 +36,7 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $fileName;
 	}
 
-	public function getDeclaringClass(): \ReflectionClass
+	public function getDeclaringClass(): ReflectionClass
 	{
 		return $this->reflection->getDeclaringClass();
 	}
@@ -119,12 +121,12 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->reflection->isVariadic();
 	}
 
-	public function getReturnType(): ?\ReflectionType
+	public function getReturnType(): ?ReflectionType
 	{
 		return $this->reflection->getReturnType();
 	}
 
-	public function getTentativeReturnType(): ?\ReflectionType
+	public function getTentativeReturnType(): ?ReflectionType
 	{
 		if (method_exists($this->reflection, 'getTentativeReturnType')) {
 			return $this->reflection->getTentativeReturnType();
@@ -134,7 +136,7 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 	}
 
 	/**
-	 * @return \ReflectionParameter[]
+	 * @return ReflectionParameter[]
 	 */
 	public function getParameters(): array
 	{

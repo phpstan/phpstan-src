@@ -6,9 +6,9 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
-class AlwaysFailRule implements \PHPStan\Rules\Rule
+class AlwaysFailRule implements Rule
 {
 
 	public function getNodeType(): string

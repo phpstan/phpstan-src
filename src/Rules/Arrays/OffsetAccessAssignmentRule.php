@@ -2,34 +2,34 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PhpParser\Node;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ArrayDimFetch>
+ * @implements Rule<Node\Expr\ArrayDimFetch>
  */
-class OffsetAccessAssignmentRule implements \PHPStan\Rules\Rule
+class OffsetAccessAssignmentRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\ArrayDimFetch::class;
+		return Node\Expr\ArrayDimFetch::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInExpressionAssign($node)) {
 			return [];
@@ -42,12 +42,12 @@ class OffsetAccessAssignmentRule implements \PHPStan\Rules\Rule
 
 		$varTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($node->var),
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->var),
 			'',
 			static function (Type $varType) use ($potentialDimType): bool {
 				$arrayDimType = $varType->setOffsetValueType($potentialDimType, new MixedType());
 				return !($arrayDimType instanceof ErrorType);
-			}
+			},
 		);
 		$varType = $varTypeResult->getType();
 		if ($varType instanceof ErrorType) {
@@ -65,7 +65,7 @@ class OffsetAccessAssignmentRule implements \PHPStan\Rules\Rule
 				static function (Type $dimType) use ($varType): bool {
 					$arrayDimType = $varType->setOffsetValueType($dimType, new MixedType());
 					return !($arrayDimType instanceof ErrorType);
-				}
+				},
 			);
 			$dimType = $dimTypeResult->getType();
 		} else {
@@ -81,7 +81,7 @@ class OffsetAccessAssignmentRule implements \PHPStan\Rules\Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot assign new offset to %s.',
-					$varType->describe(VerbosityLevel::typeOnly())
+					$varType->describe(VerbosityLevel::typeOnly()),
 				))->build(),
 			];
 		}
@@ -90,7 +90,7 @@ class OffsetAccessAssignmentRule implements \PHPStan\Rules\Rule
 			RuleErrorBuilder::message(sprintf(
 				'Cannot assign offset %s to %s.',
 				$dimType->describe(VerbosityLevel::value()),
-				$varType->describe(VerbosityLevel::typeOnly())
+				$varType->describe(VerbosityLevel::typeOnly()),
 			))->build(),
 		];
 	}

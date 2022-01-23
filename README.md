@@ -1,7 +1,6 @@
 # PHPStan - PHP Static Analysis Tool
 
-[![Build](https://github.com/phpstan/phpstan-src/workflows/Build/badge.svg)](https://github.com/phpstan/phpstan-src/actions)
-[![Coverage Status](https://coveralls.io/repos/github/phpstan/phpstan-src/badge.svg)](https://coveralls.io/github/phpstan/phpstan-src)
+[![Build](https://github.com/phpstan/phpstan-src/workflows/Tests/badge.svg)](https://github.com/phpstan/phpstan-src/actions)
 [![PHPStan Enabled](https://img.shields.io/badge/PHPStan-enabled-brightgreen.svg?style=flat)](https://github.com/phpstan/phpstan)
 
 ---
@@ -14,9 +13,9 @@ Any contributions are welcome.
 
 ### Building
 
-PHPStan's source code is developed on PHP 7.4. For distribution in `phpstan/phpstan` package and as a PHAR file, the source code is transformed to run on PHP 7.1 and higher.
+PHPStan's source code is developed on PHP 8.0. For distribution in `phpstan/phpstan` package and as a PHAR file, the source code is transformed to run on PHP 7.1 and higher.
 
-Initially you need to run `composer install`, or `composer update` in case you aren't working in a directory which was built before.
+Initially you need to run `composer install` in case you aren't working in a directory which was built before.
 
 Afterwards you can either run the whole build including linting and coding standards using
 
@@ -39,8 +38,6 @@ To detect code style issues, run:
 ```bash
 make cs
 ```
-
-This requires PHP 7.4. On older versions the build target will be skipped and succeed silently.
 
 And then to fix code style, run:
 

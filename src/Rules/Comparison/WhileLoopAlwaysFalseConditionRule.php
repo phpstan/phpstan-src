@@ -2,27 +2,24 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node;
 use PhpParser\Node\Stmt\While_;
+use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 
 /**
- * @implements \PHPStan\Rules\Rule<While_>
+ * @implements Rule<While_>
  */
-class WhileLoopAlwaysFalseConditionRule implements \PHPStan\Rules\Rule
+class WhileLoopAlwaysFalseConditionRule implements Rule
 {
 
-	private ConstantConditionRuleHelper $helper;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain
+		private ConstantConditionRuleHelper $helper,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->helper = $helper;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string
@@ -31,8 +28,8 @@ class WhileLoopAlwaysFalseConditionRule implements \PHPStan\Rules\Rule
 	}
 
 	public function processNode(
-		\PhpParser\Node $node,
-		\PHPStan\Analyser\Scope $scope
+		Node $node,
+		Scope $scope,
 	): array
 	{
 		$exprType = $this->helper->getBooleanType($scope, $node->cond);

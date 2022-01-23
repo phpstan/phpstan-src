@@ -6,21 +6,22 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
+use function implode;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ClassPropertyNode>
+ * @implements Rule<ClassPropertyNode>
  */
-final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
+final class MissingPropertyTypehintRule implements Rule
 {
 
-	private \PHPStan\Rules\MissingTypehintCheck $missingTypehintCheck;
-
-	public function __construct(MissingTypehintCheck $missingTypehintCheck)
+	public function __construct(private MissingTypehintCheck $missingTypehintCheck)
 	{
-		$this->missingTypehintCheck = $missingTypehintCheck;
 	}
 
 	public function getNodeType(): string
@@ -31,7 +32,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$propertyReflection = $scope->getClassReflection()->getNativeProperty($node->getName());
@@ -41,7 +42,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Property %s::$%s has no type specified.',
 					$propertyReflection->getDeclaringClass()->getDisplayName(),
-					$node->getName()
+					$node->getName(),
 				))->build(),
 			];
 		}
@@ -53,7 +54,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 				'Property %s::$%s type has no value type specified in iterable type %s.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-				$iterableTypeDescription
+				$iterableTypeDescription,
 			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
@@ -63,7 +64,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
 				$name,
-				implode(', ', $genericTypeNames)
+				implode(', ', $genericTypeNames),
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
@@ -72,7 +73,7 @@ final class MissingPropertyTypehintRule implements \PHPStan\Rules\Rule
 				'Property %s::$%s type has no signature specified for %s.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-				$callableType->describe(VerbosityLevel::typeOnly())
+				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

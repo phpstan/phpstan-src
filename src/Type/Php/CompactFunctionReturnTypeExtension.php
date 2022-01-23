@@ -11,15 +11,14 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
+use function array_merge;
+use function count;
 
 class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	private bool $checkMaybeUndefinedVariables;
-
-	public function __construct(bool $checkMaybeUndefinedVariables)
+	public function __construct(private bool $checkMaybeUndefinedVariables)
 	{
-		$this->checkMaybeUndefinedVariables = $checkMaybeUndefinedVariables;
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -30,7 +29,7 @@ class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
@@ -63,7 +62,6 @@ class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 	}
 
 	/**
-	 * @param Type $type
 	 * @return array<int, ConstantStringType>|null
 	 */
 	private function findConstantStrings(Type $type): ?array

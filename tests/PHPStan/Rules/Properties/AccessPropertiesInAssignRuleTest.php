@@ -5,9 +5,10 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<AccessPropertiesInAssignRule>
+ * @extends RuleTestCase<AccessPropertiesInAssignRule>
  */
 class AccessPropertiesInAssignRuleTest extends RuleTestCase
 {
@@ -16,7 +17,7 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return new AccessPropertiesInAssignRule(
-			new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, false, true, false), true)
+			new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, false, true, false), true),
 		);
 	}
 
@@ -25,6 +26,23 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/access-properties-assign.php'], [
 			[
 				'Access to an undefined property TestAccessPropertiesAssign\AccessPropertyWithDimFetch::$foo.',
+				10,
+			],
+			[
+				'Access to an undefined property TestAccessPropertiesAssign\AccessPropertyWithDimFetch::$foo.',
+				15,
+			],
+		]);
+	}
+
+	public function testRuleAssignOp(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->analyse([__DIR__ . '/data/access-properties-assign-op.php'], [
+			[
+				'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
 				15,
 			],
 		]);

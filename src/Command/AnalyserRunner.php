@@ -2,61 +2,47 @@
 
 namespace PHPStan\Command;
 
+use Closure;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
 use PHPStan\Process\CpuCoreCounter;
 use Symfony\Component\Console\Input\InputInterface;
+use function array_filter;
+use function array_values;
+use function count;
+use function is_file;
 
 class AnalyserRunner
 {
 
-	private Scheduler $scheduler;
-
-	private Analyser $analyser;
-
-	private ParallelAnalyser $parallelAnalyser;
-
-	private CpuCoreCounter $cpuCoreCounter;
-
 	public function __construct(
-		Scheduler $scheduler,
-		Analyser $analyser,
-		ParallelAnalyser $parallelAnalyser,
-		CpuCoreCounter $cpuCoreCounter
+		private Scheduler $scheduler,
+		private Analyser $analyser,
+		private ParallelAnalyser $parallelAnalyser,
+		private CpuCoreCounter $cpuCoreCounter,
 	)
 	{
-		$this->scheduler = $scheduler;
-		$this->analyser = $analyser;
-		$this->parallelAnalyser = $parallelAnalyser;
-		$this->cpuCoreCounter = $cpuCoreCounter;
 	}
 
 	/**
 	 * @param string[] $files
 	 * @param string[] $allAnalysedFiles
-	 * @param (\Closure(string $file): void)|null $preFileCallback
-	 * @param (\Closure(int): void)|null $postFileCallback
-	 * @param bool $debug
-	 * @param bool $allowParallel
-	 * @param string|null $projectConfigFile
-	 * @param string|null $tmpFile
-	 * @param string|null $insteadOfFile
-	 * @param InputInterface $input
-	 * @return AnalyserResult
+	 * @param Closure(string $file): void|null $preFileCallback
+	 * @param Closure(int ): void|null $postFileCallback
 	 */
 	public function runAnalyser(
 		array $files,
 		array $allAnalysedFiles,
-		?\Closure $preFileCallback,
-		?\Closure $postFileCallback,
+		?Closure $preFileCallback,
+		?Closure $postFileCallback,
 		bool $debug,
 		bool $allowParallel,
 		?string $projectConfigFile,
 		?string $tmpFile,
 		?string $insteadOfFile,
-		InputInterface $input
+		InputInterface $input,
 	): AnalyserResult
 	{
 		$filesCount = count($files);
@@ -84,20 +70,18 @@ class AnalyserRunner
 			$preFileCallback,
 			$postFileCallback,
 			$debug,
-			$this->switchTmpFile($allAnalysedFiles, $insteadOfFile, $tmpFile)
+			$this->switchTmpFile($allAnalysedFiles, $insteadOfFile, $tmpFile),
 		);
 	}
 
 	/**
 	 * @param string[] $analysedFiles
-	 * @param string|null $insteadOfFile
-	 * @param string|null $tmpFile
 	 * @return string[]
 	 */
 	private function switchTmpFile(
 		array $analysedFiles,
 		?string $insteadOfFile,
-		?string $tmpFile
+		?string $tmpFile,
 	): array
 	{
 		$analysedFiles = array_values(array_filter($analysedFiles, static function (string $file) use ($insteadOfFile): bool {

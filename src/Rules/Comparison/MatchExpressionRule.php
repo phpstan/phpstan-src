@@ -11,6 +11,8 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function sprintf;
 
 /**
  * @implements Rule<MatchExpressionNode>
@@ -18,11 +20,8 @@ use PHPStan\Type\VerbosityLevel;
 class MatchExpressionRule implements Rule
 {
 
-	private bool $checkAlwaysTrueStrictComparison;
-
-	public function __construct(bool $checkAlwaysTrueStrictComparison)
+	public function __construct(private bool $checkAlwaysTrueStrictComparison)
 	{
-		$this->checkAlwaysTrueStrictComparison = $checkAlwaysTrueStrictComparison;
 	}
 
 	public function getNodeType(): string
@@ -50,7 +49,7 @@ class MatchExpressionRule implements Rule
 				$armConditionScope = $armCondition->getScope();
 				$armConditionExpr = new Node\Expr\BinaryOp\Identical(
 					$matchCondition,
-					$armCondition->getCondition()
+					$armCondition->getCondition(),
 				);
 				$armConditionResult = $armConditionScope->getType($armConditionExpr);
 				if (!$armConditionResult instanceof ConstantBooleanType) {
@@ -62,7 +61,7 @@ class MatchExpressionRule implements Rule
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Match arm comparison between %s and %s is always false.',
 						$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
-						$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value())
+						$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
 					))->line($armLine)->build();
 				} else {
 					$nextArmIsDead = true;
@@ -73,7 +72,7 @@ class MatchExpressionRule implements Rule
 						$errors[] = RuleErrorBuilder::message(sprintf(
 							'Match arm comparison between %s and %s is always true.',
 							$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
-							$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value())
+							$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
 						))->line($armLine)->build();
 					}
 				}
@@ -86,7 +85,7 @@ class MatchExpressionRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Match expression does not handle remaining %s: %s',
 					$remainingType instanceof UnionType ? 'values' : 'value',
-					$remainingType->describe(VerbosityLevel::value())
+					$remainingType->describe(VerbosityLevel::value()),
 				))->build();
 			}
 		}

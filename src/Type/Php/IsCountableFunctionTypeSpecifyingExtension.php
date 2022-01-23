@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use Countable;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -9,16 +10,18 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\UnionType;
+use function strtolower;
 
 class IsCountableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
@@ -29,7 +32,7 @@ class IsCountableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		if ($context->null()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if (!isset($node->getArgs()[0])) {
@@ -40,11 +43,11 @@ class IsCountableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			$node->getArgs()[0]->value,
 			new UnionType([
 				new ArrayType(new MixedType(), new MixedType()),
-				new ObjectType(\Countable::class),
+				new ObjectType(Countable::class),
 			]),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

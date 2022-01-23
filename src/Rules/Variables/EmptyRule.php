@@ -5,21 +5,19 @@ namespace PHPStan\Rules\Variables;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\IssetCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
 /**
- * @implements \PHPStan\Rules\Rule<Node\Expr\Empty_>
+ * @implements Rule<Node\Expr\Empty_>
  */
-class EmptyRule implements \PHPStan\Rules\Rule
+class EmptyRule implements Rule
 {
 
-	private IssetCheck $issetCheck;
-
-	public function __construct(IssetCheck $issetCheck)
+	public function __construct(private IssetCheck $issetCheck)
 	{
-		$this->issetCheck = $issetCheck;
 	}
 
 	public function getNodeType(): string

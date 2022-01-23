@@ -4,13 +4,14 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use function sprintf;
 
 class RawErrorFormatter implements ErrorFormatter
 {
 
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		Output $output
+		Output $output,
 	): int
 	{
 		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {
@@ -24,8 +25,8 @@ class RawErrorFormatter implements ErrorFormatter
 					'%s:%d:%s',
 					$fileSpecificError->getFile(),
 					$fileSpecificError->getLine() ?? '?',
-					$fileSpecificError->getMessage()
-				)
+					$fileSpecificError->getMessage(),
+				),
 			);
 			$output->writeLineFormatted('');
 		}

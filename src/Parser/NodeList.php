@@ -7,14 +7,8 @@ use PhpParser\Node;
 class NodeList
 {
 
-	private Node $node;
-
-	private ?self $next;
-
-	public function __construct(Node $node, ?self $next = null)
+	public function __construct(private Node $node, private ?self $next = null)
 	{
-		$this->node = $node;
-		$this->next = $next;
 	}
 
 	public function append(Node $node): self

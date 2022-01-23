@@ -2,8 +2,11 @@
 
 namespace PHPStan\Parser;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
+use function in_array;
+use function is_array;
 
 class FunctionCallStatementFinder
 {
@@ -11,9 +14,8 @@ class FunctionCallStatementFinder
 	/**
 	 * @param string[] $functionNames
 	 * @param mixed $statements
-	 * @return \PhpParser\Node|null
 	 */
-	public function findFunctionCallInStatements(array $functionNames, $statements): ?\PhpParser\Node
+	public function findFunctionCallInStatements(array $functionNames, $statements): ?Node
 	{
 		foreach ($statements as $statement) {
 			if (is_array($statement)) {
@@ -23,7 +25,7 @@ class FunctionCallStatementFinder
 				}
 			}
 
-			if (!($statement instanceof \PhpParser\Node)) {
+			if (!($statement instanceof Node)) {
 				continue;
 			}
 

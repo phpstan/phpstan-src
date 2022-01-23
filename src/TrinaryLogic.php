@@ -4,6 +4,9 @@ namespace PHPStan;
 
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use function array_column;
+use function max;
+use function min;
 
 /**
  * @api
@@ -16,14 +19,11 @@ class TrinaryLogic
 	private const MAYBE = 0;
 	private const NO = -1;
 
-	private int $value;
-
 	/** @var self[] */
 	private static array $registry = [];
 
-	private function __construct(int $value)
+	private function __construct(private int $value)
 	{
-		$this->value = $value;
 	}
 
 	public static function createYes(): self
@@ -48,7 +48,7 @@ class TrinaryLogic
 
 	private static function create(int $value): self
 	{
-		self::$registry[$value] = self::$registry[$value] ?? new self($value);
+		self::$registry[$value] ??= new self($value);
 		return self::$registry[$value];
 	}
 
@@ -138,7 +138,6 @@ class TrinaryLogic
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{

@@ -10,3 +10,10 @@ class Foo
 	private readonly int $baz = 0;
 
 }
+
+final class ErrorResponse
+{
+	public function __construct(public readonly string $message = '')
+	{
+	}
+}

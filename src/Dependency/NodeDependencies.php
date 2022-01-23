@@ -5,34 +5,23 @@ namespace PHPStan\Dependency;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
+use function array_values;
 
 class NodeDependencies
 {
 
-	private FileHelper $fileHelper;
-
-	/** @var array<int, ClassReflection|FunctionReflection> */
-	private array $reflections;
-
-	private ?ExportedNode $exportedNode;
-
 	/**
-	 * @param FileHelper $fileHelper
 	 * @param array<int, ClassReflection|FunctionReflection> $reflections
 	 */
 	public function __construct(
-		FileHelper $fileHelper,
-		array $reflections,
-		?ExportedNode $exportedNode
+		private FileHelper $fileHelper,
+		private array $reflections,
+		private ?ExportedNode $exportedNode,
 	)
 	{
-		$this->fileHelper = $fileHelper;
-		$this->reflections = $reflections;
-		$this->exportedNode = $exportedNode;
 	}
 
 	/**
-	 * @param string $currentFile
 	 * @param array<string, true> $analysedFiles
 	 * @return string[]
 	 */

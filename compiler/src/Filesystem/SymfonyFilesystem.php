@@ -2,15 +2,15 @@
 
 namespace PHPStan\Compiler\Filesystem;
 
+use RuntimeException;
+use function file_get_contents;
+use function file_put_contents;
+
 final class SymfonyFilesystem implements Filesystem
 {
 
-	/** @var \Symfony\Component\Filesystem\Filesystem */
-	private $filesystem;
-
-	public function __construct(\Symfony\Component\Filesystem\Filesystem $filesystem)
+	public function __construct(private \Symfony\Component\Filesystem\Filesystem $filesystem)
 	{
-		$this->filesystem = $filesystem;
 	}
 
 	public function exists(string $dir): bool
@@ -32,7 +32,7 @@ final class SymfonyFilesystem implements Filesystem
 	{
 		$content = file_get_contents($file);
 		if ($content === false) {
-			throw new \RuntimeException();
+			throw new RuntimeException();
 		}
 		return $content;
 	}

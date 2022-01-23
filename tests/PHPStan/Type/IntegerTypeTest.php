@@ -2,12 +2,14 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use function sprintf;
 
-class IntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class IntegerTypeTest extends PHPStanTestCase
 {
 
 	public function dataAccepts(): array
@@ -48,9 +50,6 @@ class IntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param IntegerType  $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(IntegerType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -58,7 +57,7 @@ class IntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -97,9 +96,6 @@ class IntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param IntegerType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(IntegerType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -107,7 +103,7 @@ class IntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -159,9 +155,6 @@ class IntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataEquals
-	 * @param IntegerType $type
-	 * @param Type $otherType
-	 * @param bool $expectedResult
 	 */
 	public function testEquals(IntegerType $type, Type $otherType, bool $expectedResult): void
 	{
@@ -169,7 +162,7 @@ class IntegerTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult,
 			$actualResult,
-			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 

@@ -11,25 +11,13 @@ use PHPStan\Node\Constant\ClassConstantFetch;
 class ClassConstantsNode extends NodeAbstract implements VirtualNode
 {
 
-	private ClassLike $class;
-
-	/** @var ClassConst[] */
-	private array $constants;
-
-	/** @var ClassConstantFetch[] */
-	private array $fetches;
-
 	/**
-	 * @param ClassLike $class
 	 * @param ClassConst[] $constants
 	 * @param ClassConstantFetch[] $fetches
 	 */
-	public function __construct(ClassLike $class, array $constants, array $fetches)
+	public function __construct(private ClassLike $class, private array $constants, private array $fetches)
 	{
 		parent::__construct($class->getAttributes());
-		$this->class = $class;
-		$this->constants = $constants;
-		$this->fetches = $fetches;
 	}
 
 	public function getClass(): ClassLike

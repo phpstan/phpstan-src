@@ -10,29 +10,19 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function is_string;
+use function sprintf;
 
 class IssetCheck
 {
 
-	private \PHPStan\Rules\Properties\PropertyDescriptor $propertyDescriptor;
-
-	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
-
-	private bool $checkAdvancedIsset;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		PropertyDescriptor $propertyDescriptor,
-		PropertyReflectionFinder $propertyReflectionFinder,
-		bool $checkAdvancedIsset,
-		bool $treatPhpDocTypesAsCertain
+		private PropertyDescriptor $propertyDescriptor,
+		private PropertyReflectionFinder $propertyReflectionFinder,
+		private bool $checkAdvancedIsset,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->propertyDescriptor = $propertyDescriptor;
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
-		$this->checkAdvancedIsset = $checkAdvancedIsset;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	/**
@@ -55,7 +45,7 @@ class IssetCheck
 					return $this->generateError(
 						$scope->getVariableType($expr->name),
 						sprintf('Variable $%s %s always exists and', $expr->name, $operatorDescription),
-						$typeMessageCallback
+						$typeMessageCallback,
 					);
 				}
 
@@ -89,8 +79,8 @@ class IssetCheck
 						'Offset %s on %s %s does not exist.',
 						$dimType->describe(VerbosityLevel::value()),
 						$type->describe(VerbosityLevel::value()),
-						$operatorDescription
-					)
+						$operatorDescription,
+					),
 				)->build();
 			}
 
@@ -113,7 +103,7 @@ class IssetCheck
 					'Offset %s on %s %s always exists and',
 					$dimType->describe(VerbosityLevel::value()),
 					$type->describe(VerbosityLevel::value()),
-					$operatorDescription
+					$operatorDescription,
 				), $typeMessageCallback);
 
 				if ($error !== null) {
@@ -187,7 +177,7 @@ class IssetCheck
 			$error = $this->generateError(
 				$propertyReflection->getWritableType(),
 				sprintf('%s (%s) %s', $propertyDescription, $propertyType->describe(VerbosityLevel::typeOnly()), $operatorDescription),
-				$typeMessageCallback
+				$typeMessageCallback,
 			);
 
 			if ($error !== null) {
@@ -242,8 +232,8 @@ class IssetCheck
 					'Offset %s on %s %s does not exist.',
 					$dimType->describe(VerbosityLevel::value()),
 					$type->describe(VerbosityLevel::value()),
-					$operatorDescription
-				)
+					$operatorDescription,
+				),
 			)->build();
 		}
 
@@ -269,7 +259,7 @@ class IssetCheck
 		}
 
 		return RuleErrorBuilder::message(
-			sprintf('%s %s.', $message, $typeMessage)
+			sprintf('%s %s.', $message, $typeMessage),
 		)->build();
 	}
 

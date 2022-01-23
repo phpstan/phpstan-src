@@ -122,3 +122,29 @@ class TestExtension
 	private int $uninited;
 
 }
+
+class ImplicitArrayCreation
+{
+
+	/** @var mixed[] */
+	private array $properties;
+
+	private function __construct(string $message)
+	{
+		$this->properties['message'] = $message;
+	}
+
+}
+
+class ImplicitArrayCreation2
+{
+
+	/** @var mixed[] */
+	private array $properties;
+
+	private function __construct(string $message)
+	{
+		$this->properties['foo']['message'] = $message;
+	}
+
+}

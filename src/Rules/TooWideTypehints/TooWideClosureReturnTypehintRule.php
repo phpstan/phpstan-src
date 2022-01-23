@@ -11,9 +11,11 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ClosureReturnStatementsNode>
+ * @implements Rule<ClosureReturnStatementsNode>
  */
 class TooWideClosureReturnTypehintRule implements Rule
 {
@@ -72,7 +74,7 @@ class TooWideClosureReturnTypehintRule implements Rule
 
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Anonymous function never returns %s so it can be removed from the return type.',
-				$type->describe(VerbosityLevel::getRecommendedLevelByType($type))
+				$type->describe(VerbosityLevel::getRecommendedLevelByType($type)),
 			))->build();
 		}
 

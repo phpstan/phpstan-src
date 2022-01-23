@@ -3,9 +3,10 @@
 namespace PHPStan\Reflection\Type;
 
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 
-class UnionTypeMethodReflectionTest extends \PHPStan\Testing\PHPStanTestCase
+class UnionTypeMethodReflectionTest extends PHPStanTestCase
 {
 
 	public function testCollectsDeprecatedMessages(): void
@@ -16,7 +17,7 @@ class UnionTypeMethodReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 				$this->createDeprecatedMethod(TrinaryLogic::createYes(), 'Deprecated'),
 				$this->createDeprecatedMethod(TrinaryLogic::createMaybe(), 'Maybe deprecated'),
 				$this->createDeprecatedMethod(TrinaryLogic::createNo(), 'Not deprecated'),
-			]
+			],
 		);
 
 		$this->assertSame('Deprecated', $reflection->getDeprecatedDescription());
@@ -29,7 +30,7 @@ class UnionTypeMethodReflectionTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				$this->createDeprecatedMethod(TrinaryLogic::createYes(), 'Deprecated #1'),
 				$this->createDeprecatedMethod(TrinaryLogic::createYes(), 'Deprecated #2'),
-			]
+			],
 		);
 
 		$this->assertSame('Deprecated #1 Deprecated #2', $reflection->getDeprecatedDescription());

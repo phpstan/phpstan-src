@@ -9,6 +9,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
@@ -19,7 +20,7 @@ use PHPStan\Type\UnionType;
 use function in_array;
 use function is_numeric;
 
-class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class BcMathStringOrNullReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -79,9 +80,6 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	 * https://www.php.net/manual/en/function.bcsqrt.php
 	 * > Returns the square root as a string, or NULL if operand is negative.
 	 *
-	 * @param FuncCall $functionCall
-	 * @param Scope $scope
-	 * @return Type
 	 */
 	private function getTypeForBcSqrt(FuncCall $functionCall, Scope $scope): Type
 	{
@@ -129,9 +127,6 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	 * bcpowmod()
 	 * https://www.php.net/manual/en/function.bcpowmod.php
 	 * > Returns the result as a string, or FALSE if modulus is 0 or exponent is negative.
-	 * @param FuncCall $functionCall
-	 * @param Scope $scope
-	 * @return Type
 	 */
 	private function getTypeForBcPowMod(FuncCall $functionCall, Scope $scope): Type
 	{
@@ -173,7 +168,6 @@ class BcMathStringOrNullReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	 * Utility to help us determine if value is zero. Handles cases where we pass "0.000" too.
 	 *
 	 * @param mixed $value
-	 * @return bool
 	 */
 	private function isZero($value): bool
 	{

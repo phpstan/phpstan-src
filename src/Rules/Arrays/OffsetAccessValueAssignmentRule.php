@@ -2,28 +2,28 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<Expr>
+ * @implements Rule<Expr>
  */
-class OffsetAccessValueAssignmentRule implements \PHPStan\Rules\Rule
+class OffsetAccessValueAssignmentRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
@@ -31,7 +31,7 @@ class OffsetAccessValueAssignmentRule implements \PHPStan\Rules\Rule
 		return Expr::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
 			!$node instanceof Assign
@@ -61,7 +61,7 @@ class OffsetAccessValueAssignmentRule implements \PHPStan\Rules\Rule
 			static function (Type $varType) use ($assignedValueType): bool {
 				$result = $varType->setOffsetValueType(new MixedType(), $assignedValueType);
 				return !($result instanceof ErrorType);
-			}
+			},
 		);
 		$arrayType = $arrayTypeResult->getType();
 		if ($arrayType instanceof ErrorType) {
@@ -80,7 +80,7 @@ class OffsetAccessValueAssignmentRule implements \PHPStan\Rules\Rule
 			RuleErrorBuilder::message(sprintf(
 				'%s does not accept %s.',
 				$originalArrayType->describe(VerbosityLevel::value()),
-				$assignedValueType->describe(VerbosityLevel::typeOnly())
+				$assignedValueType->describe(VerbosityLevel::typeOnly()),
 			))->build(),
 		];
 	}

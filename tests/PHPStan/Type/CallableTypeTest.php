@@ -2,8 +2,10 @@
 
 namespace PHPStan\Type;
 
+use Closure;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\HasMethodType;
@@ -14,8 +16,10 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use function array_map;
+use function sprintf;
 
-class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class CallableTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -51,9 +55,6 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param CallableType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(CallableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -61,7 +62,7 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -133,9 +134,6 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param CallableType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOf(CallableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -143,15 +141,12 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param CallableType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOfInversed(CallableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -159,31 +154,27 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
 	public function dataInferTemplateTypes(): array
 	{
-		$param = static function (Type $type): NativeParameterReflection {
-			return new NativeParameterReflection(
-				'',
-				false,
-				$type,
-				PassedByReference::createNo(),
-				false,
-				null
-			);
-		};
+		$param = static fn (Type $type): NativeParameterReflection => new NativeParameterReflection(
+			'',
+			false,
+			$type,
+			PassedByReference::createNo(),
+			false,
+			null,
+		);
 
-		$templateType = static function (string $name): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				new MixedType(),
-				TemplateTypeVariance::createInvariant()
-			);
-		};
+		$templateType = static fn (string $name): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'template param' => [
@@ -191,13 +182,13 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					[
 						$param(new StringType()),
 					],
-					new IntegerType()
+					new IntegerType(),
 				),
 				new CallableType(
 					[
 						$param($templateType('T')),
 					],
-					new IntegerType()
+					new IntegerType(),
 				),
 				['T' => 'string'],
 			],
@@ -206,13 +197,13 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					[
 						$param(new StringType()),
 					],
-					new IntegerType()
+					new IntegerType(),
 				),
 				new CallableType(
 					[
 						$param(new StringType()),
 					],
-					$templateType('T')
+					$templateType('T'),
 				),
 				['T' => 'int'],
 			],
@@ -222,14 +213,14 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 						$param(new StringType()),
 						$param(new ObjectType('DateTime')),
 					],
-					new IntegerType()
+					new IntegerType(),
 				),
 				new CallableType(
 					[
 						$param(new StringType()),
 						$param($templateType('A')),
 					],
-					$templateType('B')
+					$templateType('B'),
 				),
 				['B' => 'int', 'A' => 'DateTime'],
 			],
@@ -241,7 +232,7 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 							$param(new StringType()),
 							$param(new ObjectType('DateTime')),
 						],
-						new IntegerType()
+						new IntegerType(),
 					),
 				]),
 				new CallableType(
@@ -249,7 +240,7 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 						$param(new StringType()),
 						$param($templateType('A')),
 					],
-					$templateType('B')
+					$templateType('B'),
 				),
 				['B' => 'int', 'A' => 'DateTime'],
 			],
@@ -260,7 +251,7 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 						$param(new StringType()),
 						$param($templateType('A')),
 					],
-					$templateType('B')
+					$templateType('B'),
 				),
 				[],
 			],
@@ -277,9 +268,7 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$this->assertSame(
 			$expectedTypes,
-			array_map(static function (Type $type): string {
-				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes())
+			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
 	}
 
@@ -344,7 +333,7 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
 				], [
-					new GenericClassStringType(new ObjectType(\Closure::class)),
+					new GenericClassStringType(new ObjectType(Closure::class)),
 					new ConstantStringType('bind'),
 				]),
 				TrinaryLogic::createYes(),
@@ -354,20 +343,17 @@ class CallableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param \PHPStan\Type\CallableType $type
-	 * @param Type $acceptedType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(
 		CallableType $type,
 		Type $acceptedType,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$this->assertSame(
 			$expectedResult->describe(),
 			$type->accepts($acceptedType, true)->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
 		);
 	}
 

@@ -2,10 +2,16 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
+use PHPStan\Rules\FileRuleError;
+use PHPStan\Rules\MetadataRuleError;
+use PHPStan\Rules\NonIgnorableRuleError;
+use PHPStan\Rules\RuleError;
+use PHPStan\Rules\TipRuleError;
+
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError109 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\FileRuleError, \PHPStan\Rules\TipRuleError, \PHPStan\Rules\MetadataRuleError, \PHPStan\Rules\NonIgnorableRuleError
+class RuleError109 implements RuleError, FileRuleError, TipRuleError, MetadataRuleError, NonIgnorableRuleError
 {
 
 	public string $message;

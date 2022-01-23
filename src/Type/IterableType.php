@@ -13,6 +13,9 @@ use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
+use Traversable;
+use function array_merge;
+use function sprintf;
 
 /** @api */
 class IterableType implements CompoundType
@@ -24,18 +27,12 @@ class IterableType implements CompoundType
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private \PHPStan\Type\Type $keyType;
-
-	private \PHPStan\Type\Type $itemType;
-
 	/** @api */
 	public function __construct(
-		Type $keyType,
-		Type $itemType
+		private Type $keyType,
+		private Type $itemType,
 	)
 	{
-		$this->keyType = $keyType;
-		$this->itemType = $itemType;
 	}
 
 	public function getKeyType(): Type
@@ -55,7 +52,7 @@ class IterableType implements CompoundType
 	{
 		return array_merge(
 			$this->keyType->getReferencedClasses(),
-			$this->getItemType()->getReferencedClasses()
+			$this->getItemType()->getReferencedClasses(),
 		);
 	}
 
@@ -117,7 +114,7 @@ class IterableType implements CompoundType
 			return $otherType->isSuperTypeOf(new UnionType([
 				new ArrayType($this->keyType, $this->itemType),
 				new IntersectionType([
-					new ObjectType(\Traversable::class),
+					new ObjectType(Traversable::class),
 					$this,
 				]),
 			]));
@@ -136,7 +133,7 @@ class IterableType implements CompoundType
 		return $limit->and(
 			$otherType->isIterable(),
 			$otherType->getIterableValueType()->isSuperTypeOf($this->itemType),
-			$otherType->getIterableKeyType()->isSuperTypeOf($this->keyType)
+			$otherType->getIterableKeyType()->isSuperTypeOf($this->keyType),
 		);
 	}
 
@@ -265,7 +262,7 @@ class IterableType implements CompoundType
 	{
 		return array_merge(
 			$this->getIterableKeyType()->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant()),
-			$this->getIterableValueType()->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant())
+			$this->getIterableValueType()->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant()),
 		);
 	}
 
@@ -283,7 +280,6 @@ class IterableType implements CompoundType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

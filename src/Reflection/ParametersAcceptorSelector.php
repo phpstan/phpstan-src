@@ -2,19 +2,27 @@
 
 namespace PHPStan\Reflection;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function array_slice;
+use function count;
+use function sprintf;
+use const ARRAY_FILTER_USE_BOTH;
+use const ARRAY_FILTER_USE_KEY;
 
 /** @api */
 class ParametersAcceptorSelector
@@ -26,26 +34,30 @@ class ParametersAcceptorSelector
 	 * @return T
 	 */
 	public static function selectSingle(
-		array $parametersAcceptors
+		array $parametersAcceptors,
 	): ParametersAcceptor
 	{
-		if (count($parametersAcceptors) !== 1) {
-			throw new \PHPStan\ShouldNotHappenException();
+		$count = count($parametersAcceptors);
+		if ($count === 0) {
+			throw new ShouldNotHappenException(
+				'getVariants() must return at least one variant.',
+			);
+		}
+		if ($count !== 1) {
+			throw new ShouldNotHappenException('Multiple variants - use selectFromArgs() instead.');
 		}
 
 		return $parametersAcceptors[0];
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param \PhpParser\Node\Arg[] $args
+	 * @param Node\Arg[] $args
 	 * @param ParametersAcceptor[] $parametersAcceptors
-	 * @return ParametersAcceptor
 	 */
 	public static function selectFromArgs(
 		Scope $scope,
 		array $args,
-		array $parametersAcceptors
+		array $parametersAcceptors,
 	): ParametersAcceptor
 	{
 		$types = [];
@@ -88,7 +100,7 @@ class ParametersAcceptorSelector
 					]),
 					$parameters[0]->passedByReference(),
 					$parameters[0]->isVariadic(),
-					$parameters[0]->getDefaultValue()
+					$parameters[0]->getDefaultValue(),
 				);
 				$parametersAcceptors = [
 					new FunctionVariant(
@@ -96,7 +108,7 @@ class ParametersAcceptorSelector
 						$acceptor->getResolvedTemplateTypeMap(),
 						$parameters,
 						$acceptor->isVariadic(),
-						$acceptor->getReturnType()
+						$acceptor->getReturnType(),
 					),
 				];
 			}
@@ -131,11 +143,11 @@ class ParametersAcceptorSelector
 							new DummyParameter('item', $scope->getType($args[0]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
 						],
 						new MixedType(),
-						false
+						false,
 					),
 					$parameters[1]->passedByReference(),
 					$parameters[1]->isVariadic(),
-					$parameters[1]->getDefaultValue()
+					$parameters[1]->getDefaultValue(),
 				);
 				$parametersAcceptors = [
 					new FunctionVariant(
@@ -143,7 +155,7 @@ class ParametersAcceptorSelector
 						$acceptor->getResolvedTemplateTypeMap(),
 						$parameters,
 						$acceptor->isVariadic(),
-						$acceptor->getReturnType()
+						$acceptor->getReturnType(),
 					),
 				];
 			}
@@ -163,15 +175,13 @@ class ParametersAcceptorSelector
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type[] $types
+	 * @param Type[] $types
 	 * @param ParametersAcceptor[] $parametersAcceptors
-	 * @param bool $unpack
-	 * @return ParametersAcceptor
 	 */
 	public static function selectFromTypes(
 		array $types,
 		array $parametersAcceptors,
-		bool $unpack
+		bool $unpack,
 	): ParametersAcceptor
 	{
 		if (count($parametersAcceptors) === 1) {
@@ -179,8 +189,8 @@ class ParametersAcceptorSelector
 		}
 
 		if (count($parametersAcceptors) === 0) {
-			throw new \PHPStan\ShouldNotHappenException(
-				'getVariants() must return at least one variant.'
+			throw new ShouldNotHappenException(
+				'getVariants() must return at least one variant.',
 			);
 		}
 
@@ -275,13 +285,12 @@ class ParametersAcceptorSelector
 
 	/**
 	 * @param ParametersAcceptor[] $acceptors
-	 * @return ParametersAcceptor
 	 */
 	public static function combineAcceptors(array $acceptors): ParametersAcceptor
 	{
 		if (count($acceptors) === 0) {
-			throw new \PHPStan\ShouldNotHappenException(
-				'getVariants() must return at least one variant.'
+			throw new ShouldNotHappenException(
+				'getVariants() must return at least one variant.',
 			);
 		}
 		if (count($acceptors) === 1) {
@@ -326,7 +335,7 @@ class ParametersAcceptorSelector
 						$parameter->getType(),
 						$parameter->passedByReference(),
 						$parameter->isVariadic(),
-						$parameter->getDefaultValue()
+						$parameter->getDefaultValue(),
 					);
 					continue;
 				}
@@ -346,7 +355,7 @@ class ParametersAcceptorSelector
 					TypeCombinator::union($parameters[$i]->getType(), $parameter->getType()),
 					$parameters[$i]->passedByReference()->combine($parameter->passedByReference()),
 					$isVariadic,
-					$defaultValue
+					$defaultValue,
 				);
 
 				if ($isVariadic) {
@@ -361,7 +370,7 @@ class ParametersAcceptorSelector
 			null,
 			$parameters,
 			$isVariadic,
-			$returnType
+			$returnType,
 		);
 	}
 

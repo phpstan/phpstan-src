@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use ArrayAccess;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
@@ -14,8 +15,11 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function sprintf;
 
 /**
  * @implements Rule<Assign>
@@ -23,17 +27,11 @@ use PHPStan\Type\VerbosityLevel;
 class ArrayDestructuringRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper,
-		NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck
+		private RuleLevelHelper $ruleLevelHelper,
+		private NonexistentOffsetInArrayDimFetchCheck $nonexistentOffsetInArrayDimFetchCheck,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->nonexistentOffsetInArrayDimFetchCheck = $nonexistentOffsetInArrayDimFetchCheck;
 	}
 
 	public function getNodeType(): string
@@ -50,7 +48,7 @@ class ArrayDestructuringRule implements Rule
 		return $this->getErrors(
 			$scope,
 			$node->var,
-			$node->expr
+			$node->expr,
 		);
 	}
 
@@ -64,15 +62,13 @@ class ArrayDestructuringRule implements Rule
 			$scope,
 			$expr,
 			'',
-			static function (Type $varType): bool {
-				return $varType->isArray()->yes();
-			}
+			static fn (Type $varType): bool => $varType->isArray()->yes() || (new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes(),
 		);
 		$exprType = $exprTypeResult->getType();
 		if ($exprType instanceof ErrorType) {
 			return [];
 		}
-		if (!$exprType->isArray()->yes()) {
+		if (!$exprType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($exprType)->yes()) {
 			return [
 				RuleErrorBuilder::message(sprintf('Cannot use array destructuring on %s.', $exprType->describe(VerbosityLevel::typeOnly())))->build(),
 			];
@@ -103,7 +99,7 @@ class ArrayDestructuringRule implements Rule
 				$scope,
 				$expr,
 				'',
-				$keyType
+				$keyType,
 			);
 			$errors = array_merge($errors, $itemErrors);
 
@@ -120,7 +116,7 @@ class ArrayDestructuringRule implements Rule
 			$errors = array_merge($errors, $this->getErrors(
 				$scope,
 				$item->value,
-				new Expr\ArrayDimFetch($expr, $keyExpr)
+				new Expr\ArrayDimFetch($expr, $keyExpr),
 			));
 		}
 

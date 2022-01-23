@@ -7,7 +7,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ClassTemplateTypeRule>
+ * @extends RuleTestCase<ClassTemplateTypeRule>
  */
 class ClassTemplateTypeRuleTest extends RuleTestCase
 {
@@ -23,15 +23,13 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 				new ClassCaseSensitivityCheck($broker, true),
 				new GenericObjectTypeCheck(),
 				$typeAliasResolver,
-				true
-			)
+				true,
+			),
 		);
 	}
 
 	public function testRule(): void
 	{
-		require_once __DIR__ . '/data/class-template.php';
-
 		$this->analyse([__DIR__ . '/data/class-template.php'], [
 			[
 				'PHPDoc tag @template for class ClassTemplateType\Foo cannot have existing class stdClass as its name.',
@@ -80,26 +78,36 @@ class ClassTemplateTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/nested-generic-types.php'], [
 			[
-				'Type mixed in generic type NestedGenericTypesClassCheck\SomeObjectInterface<mixed> in PHPDoc tag @template U is not subtype of template type T of object of class NestedGenericTypesClassCheck\SomeObjectInterface.',
+				'Type mixed in generic type NestedGenericTypesClassCheck\SomeObjectInterface<mixed> in PHPDoc tag @template U is not subtype of template type T of object of interface NestedGenericTypesClassCheck\SomeObjectInterface.',
 				32,
 			],
 			[
-				'Type int in generic type NestedGenericTypesClassCheck\SomeObjectInterface<int> in PHPDoc tag @template U is not subtype of template type T of object of class NestedGenericTypesClassCheck\SomeObjectInterface.',
+				'Type int in generic type NestedGenericTypesClassCheck\SomeObjectInterface<int> in PHPDoc tag @template U is not subtype of template type T of object of interface NestedGenericTypesClassCheck\SomeObjectInterface.',
 				41,
 			],
 			[
-				'PHPDoc tag @template U bound contains generic type NestedGenericTypesClassCheck\NotGeneric<mixed> but class NestedGenericTypesClassCheck\NotGeneric is not generic.',
+				'PHPDoc tag @template U bound contains generic type NestedGenericTypesClassCheck\NotGeneric<mixed> but interface NestedGenericTypesClassCheck\NotGeneric is not generic.',
 				52,
 			],
 			[
-				'PHPDoc tag @template V bound has type NestedGenericTypesClassCheck\MultipleGenerics<stdClass> which does not specify all template types of class NestedGenericTypesClassCheck\MultipleGenerics: T, U',
+				'PHPDoc tag @template V bound has type NestedGenericTypesClassCheck\MultipleGenerics<stdClass> which does not specify all template types of interface NestedGenericTypesClassCheck\MultipleGenerics: T, U',
 				52,
 			],
 			[
-				'PHPDoc tag @template W bound has type NestedGenericTypesClassCheck\MultipleGenerics<stdClass, Exception, SplFileInfo> which specifies 3 template types, but class NestedGenericTypesClassCheck\MultipleGenerics supports only 2: T, U',
+				'PHPDoc tag @template W bound has type NestedGenericTypesClassCheck\MultipleGenerics<stdClass, Exception, SplFileInfo> which specifies 3 template types, but interface NestedGenericTypesClassCheck\MultipleGenerics supports only 2: T, U',
 				52,
 			],
 		]);
+	}
+
+	public function testBug5446(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5446.php'], []);
+	}
+
+	public function testInInterface(): void
+	{
+		$this->analyse([__DIR__ . '/data/interface-template.php'], []);
 	}
 
 }

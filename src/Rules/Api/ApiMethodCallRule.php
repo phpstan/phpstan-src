@@ -7,6 +7,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function count;
+use function sprintf;
+use function strpos;
 
 /**
  * @implements Rule<Node\Expr\MethodCall>
@@ -14,11 +17,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 class ApiMethodCallRule implements Rule
 {
 
-	private ApiRuleHelper $apiRuleHelper;
-
-	public function __construct(ApiRuleHelper $apiRuleHelper)
+	public function __construct(private ApiRuleHelper $apiRuleHelper)
 	{
-		$this->apiRuleHelper = $apiRuleHelper;
 	}
 
 	public function getNodeType(): string
@@ -49,10 +49,10 @@ class ApiMethodCallRule implements Rule
 		$ruleError = RuleErrorBuilder::message(sprintf(
 			'Calling %s::%s() is not covered by backward compatibility promise. The method might change in a minor PHPStan version.',
 			$declaringClass->getDisplayName(),
-			$methodReflection->getName()
+			$methodReflection->getName(),
 		))->tip(sprintf(
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
-			'https://github.com/phpstan/phpstan/discussions'
+			'https://github.com/phpstan/phpstan/discussions',
 		))->build();
 
 		return [$ruleError];

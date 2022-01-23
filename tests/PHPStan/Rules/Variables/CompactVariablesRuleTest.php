@@ -3,15 +3,15 @@
 namespace PHPStan\Rules\Variables;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CompactVariablesRule>
+ * @extends RuleTestCase<CompactVariablesRule>
  */
-class CompactVariablesRuleTest extends \PHPStan\Testing\RuleTestCase
+class CompactVariablesRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkMaybeUndefinedVariables;
+	private bool $checkMaybeUndefinedVariables;
 
 	protected function getRule(): Rule
 	{

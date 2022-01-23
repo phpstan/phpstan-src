@@ -3,38 +3,32 @@
 namespace PHPStan\Analyser;
 
 use Nette\Utils\Json;
+use Nette\Utils\JsonException;
+use Nette\Utils\RegexpException;
+use Nette\Utils\Strings;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\File\FileHelper;
+use function array_keys;
+use function array_map;
+use function count;
+use function implode;
+use function is_array;
+use function is_file;
+use function sprintf;
 
 class IgnoredErrorHelper
 {
 
-	private IgnoredRegexValidator $ignoredRegexValidator;
-
-	private \PHPStan\File\FileHelper $fileHelper;
-
-	/** @var (string|mixed[])[] */
-	private array $ignoreErrors;
-
-	private bool $reportUnmatchedIgnoredErrors;
-
 	/**
-	 * @param IgnoredRegexValidator $ignoredRegexValidator
-	 * @param FileHelper $fileHelper
 	 * @param (string|mixed[])[] $ignoreErrors
-	 * @param bool $reportUnmatchedIgnoredErrors
 	 */
 	public function __construct(
-		IgnoredRegexValidator $ignoredRegexValidator,
-		FileHelper $fileHelper,
-		array $ignoreErrors,
-		bool $reportUnmatchedIgnoredErrors
+		private IgnoredRegexValidator $ignoredRegexValidator,
+		private FileHelper $fileHelper,
+		private array $ignoreErrors,
+		private bool $reportUnmatchedIgnoredErrors,
 	)
 	{
-		$this->ignoredRegexValidator = $ignoredRegexValidator;
-		$this->fileHelper = $fileHelper;
-		$this->ignoreErrors = $ignoreErrors;
-		$this->reportUnmatchedIgnoredErrors = $reportUnmatchedIgnoredErrors;
 	}
 
 	public function initialize(): IgnoredErrorHelperResult
@@ -48,7 +42,7 @@ class IgnoredErrorHelper
 					if (!isset($ignoreError['message'])) {
 						$errors[] = sprintf(
 							'Ignored error %s is missing a message.',
-							Json::encode($ignoreError)
+							Json::encode($ignoreError),
 						);
 						continue;
 					}
@@ -56,7 +50,7 @@ class IgnoredErrorHelper
 						if (!isset($ignoreError['paths'])) {
 							$errors[] = sprintf(
 								'Ignored error %s is missing a path.',
-								Json::encode($ignoreError)
+								Json::encode($ignoreError),
 							);
 						}
 
@@ -81,7 +75,7 @@ class IgnoredErrorHelper
 					}
 
 					$ignoreMessage = $ignoreError['message'];
-					\Nette\Utils\Strings::match('', $ignoreMessage);
+					Strings::match('', $ignoreMessage);
 					if (isset($ignoreError['count'])) {
 						continue; // ignoreError coming from baseline will be correct
 					}
@@ -104,7 +98,7 @@ class IgnoredErrorHelper
 						'ignoreError' => $ignoreError,
 					];
 					$ignoreMessage = $ignoreError;
-					\Nette\Utils\Strings::match('', $ignoreMessage);
+					Strings::match('', $ignoreMessage);
 					$validationResult = $this->ignoredRegexValidator->validate($ignoreMessage);
 					$ignoredTypes = $validationResult->getIgnoredTypes();
 					if (count($ignoredTypes) > 0) {
@@ -119,9 +113,9 @@ class IgnoredErrorHelper
 						$errors[] = sprintf("Ignored error %s has an unescaped '%s' which leads to ignoring all errors. Use '%s' instead.", $ignoreMessage, $validationResult->getWrongSequence(), $validationResult->getEscapedWrongSequence());
 					}
 				}
-			} catch (\Nette\Utils\RegexpException $e) {
+			} catch (RegexpException $e) {
 				$errors[] = $e->getMessage();
-			} catch (\Nette\Utils\JsonException $e) {
+			} catch (JsonException $e) {
 				$errors[] = $e->getMessage();
 			}
 		}
@@ -130,9 +124,7 @@ class IgnoredErrorHelper
 	}
 
 	/**
-	 * @param string $regex
 	 * @param array<string, string> $ignoredTypes
-	 * @return string
 	 */
 	private function createIgnoredTypesError(string $regex, array $ignoredTypes): string
 	{
@@ -141,10 +133,8 @@ class IgnoredErrorHelper
 			$regex,
 			sprintf(
 				"It ignores all errors containing the following types:\n%s",
-				implode("\n", array_map(static function (string $typeDescription): string {
-					return sprintf('* %s', $typeDescription);
-				}, array_keys($ignoredTypes)))
-			)
+				implode("\n", array_map(static fn (string $typeDescription): string => sprintf('* %s', $typeDescription), array_keys($ignoredTypes))),
+			),
 		);
 	}
 

@@ -9,41 +9,17 @@ use PHPStan\Type\Type;
 class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhpDocs
 {
 
-	private string $name;
-
-	private bool $optional;
-
-	private \PHPStan\Type\Type $type;
-
-	private \PHPStan\Type\Type $phpDocType;
-
-	private \PHPStan\Type\Type $nativeType;
-
-	private \PHPStan\Reflection\PassedByReference $passedByReference;
-
-	private bool $variadic;
-
-	private ?\PHPStan\Type\Type $defaultValue;
-
 	public function __construct(
-		string $name,
-		bool $optional,
-		Type $type,
-		Type $phpDocType,
-		Type $nativeType,
-		PassedByReference $passedByReference,
-		bool $variadic,
-		?Type $defaultValue
+		private string $name,
+		private bool $optional,
+		private Type $type,
+		private Type $phpDocType,
+		private Type $nativeType,
+		private PassedByReference $passedByReference,
+		private bool $variadic,
+		private ?Type $defaultValue,
 	)
 	{
-		$this->name = $name;
-		$this->optional = $optional;
-		$this->type = $type;
-		$this->phpDocType = $phpDocType;
-		$this->nativeType = $nativeType;
-		$this->passedByReference = $passedByReference;
-		$this->variadic = $variadic;
-		$this->defaultValue = $defaultValue;
 	}
 
 	public function getName(): string
@@ -88,7 +64,6 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{
@@ -100,7 +75,7 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 			$properties['nativeType'],
 			$properties['passedByReference'],
 			$properties['variadic'],
-			$properties['defaultValue']
+			$properties['defaultValue'],
 		);
 	}
 

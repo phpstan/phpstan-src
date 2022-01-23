@@ -2,20 +2,23 @@
 
 namespace PHPStan\Reflection;
 
-class MissingMethodFromReflectionException extends \Exception
+use Exception;
+use function sprintf;
+
+class MissingMethodFromReflectionException extends Exception
 {
 
 	public function __construct(
 		string $className,
-		string $methodName
+		string $methodName,
 	)
 	{
 		parent::__construct(
 			sprintf(
 				'Method %s() was not found in reflection of class %s.',
 				$methodName,
-				$className
-			)
+				$className,
+			),
 		);
 	}
 

@@ -5,10 +5,12 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -22,12 +24,9 @@ class NeverType implements CompoundType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private bool $isExplicit;
-
 	/** @api */
-	public function __construct(bool $isExplicit = false)
+	public function __construct(private bool $isExplicit = false)
 	{
-		$this->isExplicit = $isExplicit;
 	}
 
 	public function isExplicit(): bool
@@ -89,12 +88,12 @@ class NeverType implements CompoundType
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function canCallMethods(): TrinaryLogic
@@ -109,12 +108,12 @@ class NeverType implements CompoundType
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function canAccessConstants(): TrinaryLogic
@@ -129,7 +128,7 @@ class NeverType implements CompoundType
 
 	public function getConstant(string $constantName): ConstantReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function isIterable(): TrinaryLogic
@@ -172,14 +171,18 @@ class NeverType implements CompoundType
 		return new NeverType();
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return new NeverType();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
@@ -243,7 +246,6 @@ class NeverType implements CompoundType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

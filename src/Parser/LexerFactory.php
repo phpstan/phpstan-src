@@ -4,15 +4,13 @@ namespace PHPStan\Parser;
 
 use PhpParser\Lexer;
 use PHPStan\Php\PhpVersion;
+use const PHP_VERSION_ID;
 
 class LexerFactory
 {
 
-	private PhpVersion $phpVersion;
-
-	public function __construct(PhpVersion $phpVersion)
+	public function __construct(private PhpVersion $phpVersion)
 	{
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function create(): Lexer

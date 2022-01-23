@@ -5,35 +5,17 @@ namespace PHPStan\Command;
 class IgnoredRegexValidatorResult
 {
 
-	/** @var array<string, string> */
-	private array $ignoredTypes;
-
-	private bool $anchorsInTheMiddle;
-
-	private bool $allErrorsIgnored;
-
-	private ?string $wrongSequence;
-
-	private ?string $escapedWrongSequence;
-
 	/**
 	 * @param array<string, string> $ignoredTypes
-	 * @param bool $anchorsInTheMiddle
-	 * @param bool $allErrorsIgnored
 	 */
 	public function __construct(
-		array $ignoredTypes,
-		bool $anchorsInTheMiddle,
-		bool $allErrorsIgnored,
-		?string $wrongSequence = null,
-		?string $escapedWrongSequence = null
+		private array $ignoredTypes,
+		private bool $anchorsInTheMiddle,
+		private bool $allErrorsIgnored,
+		private ?string $wrongSequence = null,
+		private ?string $escapedWrongSequence = null,
 	)
 	{
-		$this->ignoredTypes = $ignoredTypes;
-		$this->anchorsInTheMiddle = $anchorsInTheMiddle;
-		$this->allErrorsIgnored = $allErrorsIgnored;
-		$this->wrongSequence = $wrongSequence;
-		$this->escapedWrongSequence = $escapedWrongSequence;
 	}
 
 	/**

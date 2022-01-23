@@ -6,20 +6,23 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\VerbosityLevel;
+use function array_intersect;
+use function count;
 
 class MixinPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
 
-	/** @var string[] */
-	private array $mixinExcludeClasses;
+	/** @var array<string, array<string, true>> */
+	private array $inProcess = [];
 
 	/**
 	 * @param string[] $mixinExcludeClasses
 	 */
-	public function __construct(array $mixinExcludeClasses)
+	public function __construct(private array $mixinExcludeClasses)
 	{
-		$this->mixinExcludeClasses = $mixinExcludeClasses;
 	}
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
@@ -31,7 +34,7 @@ class MixinPropertiesClassReflectionExtension implements PropertiesClassReflecti
 	{
 		$property = $this->findProperty($classReflection, $propertyName);
 		if ($property === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $property;
@@ -45,11 +48,22 @@ class MixinPropertiesClassReflectionExtension implements PropertiesClassReflecti
 				continue;
 			}
 
-			if (!$type->hasProperty($propertyName)->yes()) {
+			$typeDescription = $type->describe(VerbosityLevel::typeOnly());
+			if (isset($this->inProcess[$typeDescription][$propertyName])) {
 				continue;
 			}
 
-			return $type->getProperty($propertyName, new OutOfClassScope());
+			$this->inProcess[$typeDescription][$propertyName] = true;
+
+			if (!$type->hasProperty($propertyName)->yes()) {
+				unset($this->inProcess[$typeDescription][$propertyName]);
+				continue;
+			}
+
+			$property = $type->getProperty($propertyName, new OutOfClassScope());
+			unset($this->inProcess[$typeDescription][$propertyName]);
+
+			return $property;
 		}
 
 		foreach ($classReflection->getParents() as $parentClass) {

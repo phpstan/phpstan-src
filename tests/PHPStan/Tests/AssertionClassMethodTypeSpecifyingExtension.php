@@ -13,12 +13,8 @@ use PHPStan\Type\StringType;
 class AssertionClassMethodTypeSpecifyingExtension implements MethodTypeSpecifyingExtension
 {
 
-	/** @var bool|null */
-	private $nullContext;
-
-	public function __construct(?bool $nullContext)
+	public function __construct(private ?bool $nullContext = null)
 	{
-		$this->nullContext = $nullContext;
 	}
 
 	public function getClass(): string
@@ -29,7 +25,7 @@ class AssertionClassMethodTypeSpecifyingExtension implements MethodTypeSpecifyin
 	public function isMethodSupported(
 		MethodReflection $methodReflection,
 		MethodCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		if ($this->nullContext === null) {
@@ -47,7 +43,7 @@ class AssertionClassMethodTypeSpecifyingExtension implements MethodTypeSpecifyin
 		MethodReflection $methodReflection,
 		MethodCall $node,
 		Scope $scope,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		return new SpecifiedTypes(['$foo' => [$node->getArgs()[0]->value, new StringType()]]);

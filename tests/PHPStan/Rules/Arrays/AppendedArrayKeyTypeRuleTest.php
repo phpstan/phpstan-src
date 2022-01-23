@@ -3,18 +3,20 @@
 namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<AppendedArrayKeyTypeRule>
+ * @extends RuleTestCase<AppendedArrayKeyTypeRule>
  */
-class AppendedArrayKeyTypeRuleTest extends \PHPStan\Testing\RuleTestCase
+class AppendedArrayKeyTypeRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new AppendedArrayKeyTypeRule(
 			new PropertyReflectionFinder(),
-			true
+			true,
 		);
 	}
 

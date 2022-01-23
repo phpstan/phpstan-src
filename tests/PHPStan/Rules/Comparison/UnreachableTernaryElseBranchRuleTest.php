@@ -6,13 +6,12 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<UnreachableTernaryElseBranchRule>
+ * @extends RuleTestCase<UnreachableTernaryElseBranchRule>
  */
 class UnreachableTernaryElseBranchRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	protected function getRule(): Rule
 	{
@@ -22,11 +21,11 @@ class UnreachableTernaryElseBranchRuleTest extends RuleTestCase
 					$this->createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
-					$this->treatPhpDocTypesAsCertain
+					$this->treatPhpDocTypesAsCertain,
 				),
-				$this->treatPhpDocTypesAsCertain
+				$this->treatPhpDocTypesAsCertain,
 			),
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		);
 	}
 

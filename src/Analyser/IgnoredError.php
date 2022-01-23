@@ -2,14 +2,20 @@
 
 namespace PHPStan\Analyser;
 
+use Nette\Utils\Strings;
 use PHPStan\File\FileExcluder;
 use PHPStan\File\FileHelper;
+use function count;
+use function implode;
+use function is_array;
+use function preg_quote;
+use function sprintf;
+use function str_replace;
 
 class IgnoredError
 {
 
 	/**
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
 	 * @param mixed[]|string $ignoredError
 	 * @return string Representation of the ignored error
 	 */
@@ -34,18 +40,13 @@ class IgnoredError
 	}
 
 	/**
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
-	 * @param FileHelper $fileHelper
-	 * @param Error $error
-	 * @param string $ignoredErrorPattern
-	 * @param string|null $path
 	 * @return bool To ignore or not to ignore?
 	 */
 	public static function shouldIgnore(
 		FileHelper $fileHelper,
 		Error $error,
 		string $ignoredErrorPattern,
-		?string $path
+		?string $path,
 	): bool
 	{
 		// normalize newlines to allow working with ignore-patterns independent of used OS newline-format
@@ -54,7 +55,7 @@ class IgnoredError
 		$ignoredErrorPattern = str_replace([preg_quote('\r\n'), preg_quote('\r')], preg_quote('\n'), $ignoredErrorPattern);
 
 		if ($path !== null) {
-			if (\Nette\Utils\Strings::match($errorMessage, $ignoredErrorPattern) === null) {
+			if (Strings::match($errorMessage, $ignoredErrorPattern) === null) {
 				return false;
 			}
 
@@ -67,7 +68,7 @@ class IgnoredError
 			return $isExcluded;
 		}
 
-		return \Nette\Utils\Strings::match($errorMessage, $ignoredErrorPattern) !== null;
+		return Strings::match($errorMessage, $ignoredErrorPattern) !== null;
 	}
 
 }

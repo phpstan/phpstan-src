@@ -6,23 +6,23 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Clone_;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function is_string;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Clone_>
+ * @implements Rule<Node\Expr\Clone_>
  */
-class VariableCloningRule implements \PHPStan\Rules\Rule
+class VariableCloningRule implements Rule
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
@@ -36,9 +36,7 @@ class VariableCloningRule implements \PHPStan\Rules\Rule
 			$scope,
 			$node->expr,
 			'Cloning object of an unknown class %s.',
-			static function (Type $type): bool {
-				return $type->isCloneable()->yes();
-			}
+			static fn (Type $type): bool => $type->isCloneable()->yes(),
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -53,7 +51,7 @@ class VariableCloningRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot clone non-object variable $%s of type %s.',
 					$node->expr->name,
-					$type->describe(VerbosityLevel::typeOnly())
+					$type->describe(VerbosityLevel::typeOnly()),
 				))->build(),
 			];
 		}
@@ -61,7 +59,7 @@ class VariableCloningRule implements \PHPStan\Rules\Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Cannot clone %s.',
-				$type->describe(VerbosityLevel::typeOnly())
+				$type->describe(VerbosityLevel::typeOnly()),
 			))->build(),
 		];
 	}

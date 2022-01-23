@@ -2,29 +2,32 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use stdClass;
+use const PHP_VERSION_ID;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ImpossibleCheckTypeFunctionCallRule>
+ * @extends RuleTestCase<ImpossibleCheckTypeFunctionCallRule>
  */
-class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestCase
+class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkAlwaysTrueCheckTypeFunctionCall;
+	private bool $checkAlwaysTrueCheckTypeFunctionCall;
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new ImpossibleCheckTypeFunctionCallRule(
 			new ImpossibleCheckTypeHelper(
 				$this->createReflectionProvider(),
 				$this->getTypeSpecifier(),
-				[\stdClass::class],
-				$this->treatPhpDocTypesAsCertain
+				[stdClass::class],
+				$this->treatPhpDocTypesAsCertain,
 			),
 			$this->checkAlwaysTrueCheckTypeFunctionCall,
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		);
 	}
 
@@ -238,7 +241,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					'Call to function property_exists() with CheckTypeFunctionCall\Bug2221 and \'foo\' will always evaluate to true.',
 					786,
 				],
-			]
+			],
 		);
 	}
 
@@ -338,7 +341,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
 					693,
 				],
-			]
+			],
 		);
 	}
 
@@ -419,6 +422,38 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends \PHPStan\Testing\RuleTestC
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = false;
 		$this->analyse([__DIR__ . '/data/bug-4999.php'], []);
+	}
+
+	public function testArrayIsList(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/array-is-list.php'], [
+			[
+				'Call to function array_is_list() with array<string, int> will always evaluate to false.',
+				13,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Call to function array_is_list() with array{foo: \'bar\', bar: \'baz\'} will always evaluate to false.',
+				40,
+			],
+			[
+				'Call to function array_is_list() with array{0: \'foo\', foo: \'bar\', bar: \'baz\'} will always evaluate to false.',
+				44,
+			],
+		]);
+	}
+
+	public function testBug3766(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-3766.php'], []);
 	}
 
 }

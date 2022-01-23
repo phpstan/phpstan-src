@@ -8,10 +8,12 @@ use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function sprintf;
 
 /**
  * @implements Rule<FunctionReturnStatementsNode>
@@ -19,17 +21,11 @@ use PHPStan\Type\VoidType;
 class ThrowsVoidFunctionWithExplicitThrowPointRule implements Rule
 {
 
-	private ExceptionTypeResolver $exceptionTypeResolver;
-
-	private bool $missingCheckedExceptionInThrows;
-
 	public function __construct(
-		ExceptionTypeResolver $exceptionTypeResolver,
-		bool $missingCheckedExceptionInThrows
+		private ExceptionTypeResolver $exceptionTypeResolver,
+		private bool $missingCheckedExceptionInThrows,
 	)
 	{
-		$this->exceptionTypeResolver = $exceptionTypeResolver;
-		$this->missingCheckedExceptionInThrows = $missingCheckedExceptionInThrows;
 	}
 
 	public function getNodeType(): string
@@ -42,7 +38,7 @@ class ThrowsVoidFunctionWithExplicitThrowPointRule implements Rule
 		$statementResult = $node->getStatementResult();
 		$functionReflection = $scope->getFunction();
 		if (!$functionReflection instanceof FunctionReflection) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if (!$functionReflection->getThrowType() instanceof VoidType) {
@@ -67,7 +63,7 @@ class ThrowsVoidFunctionWithExplicitThrowPointRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Function %s() throws exception %s but the PHPDoc contains @throws void.',
 					$functionReflection->getName(),
-					$throwPointType->describe(VerbosityLevel::typeOnly())
+					$throwPointType->describe(VerbosityLevel::typeOnly()),
 				))->line($throwPoint->getNode()->getLine())->build();
 			}
 		}

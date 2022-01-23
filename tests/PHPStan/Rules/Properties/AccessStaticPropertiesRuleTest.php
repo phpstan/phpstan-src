@@ -3,21 +3,24 @@
 namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<AccessStaticPropertiesRule>
+ * @extends RuleTestCase<AccessStaticPropertiesRule>
  */
-class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
+class AccessStaticPropertiesRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return new AccessStaticPropertiesRule(
 			$reflectionProvider,
 			new RuleLevelHelper($reflectionProvider, true, false, true, false),
-			new ClassCaseSensitivityCheck($reflectionProvider, true)
+			new ClassCaseSensitivityCheck($reflectionProvider, true),
 		);
 	}
 
@@ -162,10 +165,6 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 				152,
 			],
 			[
-				'Access to an undefined static property AccessPropertyWithDimFetch::$foo.',
-				163,
-			],
-			[
 				'Access to an undefined static property AccessInIsset::$foo.',
 				185,
 			],
@@ -181,6 +180,19 @@ class AccessStaticPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Access to an undefined static property static(AccessWithStatic)::$nonexistent.',
 				224,
+			],
+		]);
+	}
+
+	public function testRuleAssignOp(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->analyse([__DIR__ . '/data/access-static-properties-assign-op.php'], [
+			[
+				'Access to an undefined static property AccessStaticProperties\AssignOpNonexistentProperty::$flags.',
+				10,
 			],
 		]);
 	}

@@ -10,17 +10,11 @@ use PHPStan\Type\Type;
 class ResolvedMethodReflection implements MethodReflection
 {
 
-	private MethodReflection $reflection;
-
-	private TemplateTypeMap $resolvedTemplateTypeMap;
-
-	/** @var \PHPStan\Reflection\ParametersAcceptor[]|null */
+	/** @var ParametersAcceptor[]|null */
 	private ?array $variants = null;
 
-	public function __construct(MethodReflection $reflection, TemplateTypeMap $resolvedTemplateTypeMap)
+	public function __construct(private MethodReflection $reflection, private TemplateTypeMap $resolvedTemplateTypeMap)
 	{
-		$this->reflection = $reflection;
-		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap;
 	}
 
 	public function getName(): string
@@ -34,7 +28,7 @@ class ResolvedMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getVariants(): array
 	{
@@ -47,7 +41,7 @@ class ResolvedMethodReflection implements MethodReflection
 		foreach ($this->reflection->getVariants() as $variant) {
 			$variants[] = new ResolvedFunctionVariant(
 				$variant,
-				$this->resolvedTemplateTypeMap
+				$this->resolvedTemplateTypeMap,
 			);
 		}
 

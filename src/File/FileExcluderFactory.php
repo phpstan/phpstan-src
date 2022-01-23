@@ -2,31 +2,24 @@
 
 namespace PHPStan\File;
 
+use function array_key_exists;
+use function array_merge;
+use function array_unique;
+use function array_values;
+
 class FileExcluderFactory
 {
 
-	private FileExcluderRawFactory $fileExcluderRawFactory;
-
-	/** @var string[] */
-	private array $obsoleteExcludesAnalyse;
-
-	/** @var array{analyse?: array<int, string>, analyseAndScan?: array<int, string>}|null */
-	private ?array $excludePaths;
-
 	/**
-	 * @param FileExcluderRawFactory $fileExcluderRawFactory
 	 * @param string[] $obsoleteExcludesAnalyse
 	 * @param array{analyse?: array<int, string>, analyseAndScan?: array<int, string>}|null $excludePaths
 	 */
 	public function __construct(
-		FileExcluderRawFactory $fileExcluderRawFactory,
-		array $obsoleteExcludesAnalyse,
-		?array $excludePaths
+		private FileExcluderRawFactory $fileExcluderRawFactory,
+		private array $obsoleteExcludesAnalyse,
+		private ?array $excludePaths,
 	)
 	{
-		$this->fileExcluderRawFactory = $fileExcluderRawFactory;
-		$this->obsoleteExcludesAnalyse = $obsoleteExcludesAnalyse;
-		$this->excludePaths = $excludePaths;
 	}
 
 	public function createAnalyseFileExcluder(): FileExcluder

@@ -9,26 +9,23 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ClassPropertyNode>
+ * @implements Rule<ClassPropertyNode>
  */
 class IncompatiblePropertyPhpDocTypeRule implements Rule
 {
 
-	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
-
-	private UnresolvableTypeHelper $unresolvableTypeHelper;
-
 	public function __construct(
-		GenericObjectTypeCheck $genericObjectTypeCheck,
-		UnresolvableTypeHelper $unresolvableTypeHelper
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
 	)
 	{
-		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
-		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
 	}
 
 	public function getNodeType(): string
@@ -39,7 +36,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$propertyName = $node->getName();
@@ -63,7 +60,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 				'%s for property %s::$%s contains unresolvable type.',
 				$description,
 				$propertyReflection->getDeclaringClass()->getName(),
-				$propertyName
+				$propertyName,
 			))->build();
 		}
 
@@ -76,7 +73,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$propertyName,
 				$phpDocType->describe(VerbosityLevel::typeOnly()),
-				$nativeType->describe(VerbosityLevel::typeOnly())
+				$nativeType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 
 		} elseif ($isSuperType->maybe()) {
@@ -86,7 +83,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$propertyName,
 				$phpDocType->describe(VerbosityLevel::typeOnly()),
-				$nativeType->describe(VerbosityLevel::typeOnly())
+				$nativeType->describe(VerbosityLevel::typeOnly()),
 			));
 
 			if ($phpDocType instanceof TemplateType) {
@@ -102,29 +99,29 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 		$messages = array_merge($messages, $this->genericObjectTypeCheck->check(
 			$phpDocType,
 			sprintf(
-				'%s for property %s::$%s contains generic type %%s but class %%s is not generic.',
+				'%s for property %s::$%s contains generic type %%s but %%s %%s is not generic.',
 				$description,
 				$className,
-				$escapedPropertyName
+				$escapedPropertyName,
 			),
 			sprintf(
-				'Generic type %%s in %s for property %s::$%s does not specify all template types of class %%s: %%s',
+				'Generic type %%s in %s for property %s::$%s does not specify all template types of %%s %%s: %%s',
 				$description,
 				$className,
-				$escapedPropertyName
+				$escapedPropertyName,
 			),
 			sprintf(
-				'Generic type %%s in %s for property %s::$%s specifies %%d template types, but class %%s supports only %%d: %%s',
+				'Generic type %%s in %s for property %s::$%s specifies %%d template types, but %%s %%s supports only %%d: %%s',
 				$description,
 				$className,
-				$escapedPropertyName
+				$escapedPropertyName,
 			),
 			sprintf(
-				'Type %%s in generic type %%s in %s for property %s::$%s is not subtype of template type %%s of class %%s.',
+				'Type %%s in generic type %%s in %s for property %s::$%s is not subtype of template type %%s of %%s %%s.',
 				$description,
 				$className,
-				$escapedPropertyName
-			)
+				$escapedPropertyName,
+			),
 		));
 
 		return $messages;

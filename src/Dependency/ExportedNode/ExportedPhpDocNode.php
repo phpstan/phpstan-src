@@ -4,26 +4,19 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use ReturnTypeWillChange;
 
 class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 {
-
-	private string $phpDocString;
-
-	private ?string $namespace;
 
 	/** @var array<string, string> alias(string) => fullName(string) */
 	private array $uses;
 
 	/**
-	 * @param string $phpDocString
-	 * @param string|null $namespace
 	 * @param array<string, string> $uses
 	 */
-	public function __construct(string $phpDocString, ?string $namespace, array $uses)
+	public function __construct(private string $phpDocString, private ?string $namespace, array $uses)
 	{
-		$this->phpDocString = $phpDocString;
-		$this->namespace = $namespace;
 		$this->uses = $uses;
 	}
 
@@ -41,7 +34,7 @@ class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [

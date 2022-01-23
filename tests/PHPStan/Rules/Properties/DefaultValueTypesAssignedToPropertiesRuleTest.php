@@ -4,11 +4,12 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<DefaultValueTypesAssignedToPropertiesRule>
+ * @extends RuleTestCase<DefaultValueTypesAssignedToPropertiesRule>
  */
-class DefaultValueTypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
+class DefaultValueTypesAssignedToPropertiesRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
@@ -47,19 +48,11 @@ class DefaultValueTypesAssignedToPropertiesRuleTest extends \PHPStan\Testing\Rul
 		]);
 	}
 
-	public function testDefaultValueForPromotedProperty(): void
+	public function testBug5607(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
-		$this->analyse([__DIR__ . '/data/default-value-for-promoted-property.php'], [
+		$this->analyse([__DIR__ . '/data/bug-5607.php'], [
 			[
-				'Property DefaultValueForPromotedProperty\Foo::$foo (int) does not accept default value of type string.',
-				9,
-			],
-			[
-				'Property DefaultValueForPromotedProperty\Foo::$foo (int) does not accept default value of type string.',
+				'Property Bug5607\Cl::$u (Bug5607\A|null) does not accept default value of type array<int|string, string>.',
 				10,
 			],
 		]);

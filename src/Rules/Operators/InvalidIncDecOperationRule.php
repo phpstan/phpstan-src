@@ -2,51 +2,52 @@
 
 namespace PHPStan\Rules\Operators;
 
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ * @implements Rule<Node\Expr>
  */
-class InvalidIncDecOperationRule implements \PHPStan\Rules\Rule
+class InvalidIncDecOperationRule implements Rule
 {
 
-	private bool $checkThisOnly;
-
-	public function __construct(bool $checkThisOnly)
+	public function __construct(private bool $checkThisOnly)
 	{
-		$this->checkThisOnly = $checkThisOnly;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr::class;
+		return Node\Expr::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, \PHPStan\Analyser\Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
-			!$node instanceof \PhpParser\Node\Expr\PreInc
-			&& !$node instanceof \PhpParser\Node\Expr\PostInc
-			&& !$node instanceof \PhpParser\Node\Expr\PreDec
-			&& !$node instanceof \PhpParser\Node\Expr\PostDec
+			!$node instanceof Node\Expr\PreInc
+			&& !$node instanceof Node\Expr\PostInc
+			&& !$node instanceof Node\Expr\PreDec
+			&& !$node instanceof Node\Expr\PostDec
 		) {
 			return [];
 		}
 
-		$operatorString = $node instanceof \PhpParser\Node\Expr\PreInc || $node instanceof \PhpParser\Node\Expr\PostInc ? '++' : '--';
+		$operatorString = $node instanceof Node\Expr\PreInc || $node instanceof Node\Expr\PostInc ? '++' : '--';
 
 		if (
-			!$node->var instanceof \PhpParser\Node\Expr\Variable
-			&& !$node->var instanceof \PhpParser\Node\Expr\ArrayDimFetch
-			&& !$node->var instanceof \PhpParser\Node\Expr\PropertyFetch
-			&& !$node->var instanceof \PhpParser\Node\Expr\StaticPropertyFetch
+			!$node->var instanceof Node\Expr\Variable
+			&& !$node->var instanceof Node\Expr\ArrayDimFetch
+			&& !$node->var instanceof Node\Expr\PropertyFetch
+			&& !$node->var instanceof Node\Expr\StaticPropertyFetch
 		) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot use %s on a non-variable.',
-					$operatorString
+					$operatorString,
 				))->line($node->var->getLine())->build(),
 			];
 		}
@@ -64,7 +65,7 @@ class InvalidIncDecOperationRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot use %s on %s.',
 					$operatorString,
-					$varType->describe(VerbosityLevel::value())
+					$varType->describe(VerbosityLevel::value()),
 				))->line($node->var->getLine())->build(),
 			];
 		}

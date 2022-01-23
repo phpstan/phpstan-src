@@ -3,6 +3,9 @@
 namespace PHPStan\Parallel;
 
 use PHPUnit\Framework\TestCase;
+use function array_fill;
+use function array_map;
+use function count;
 
 class SchedulerTest extends TestCase
 {
@@ -69,12 +72,7 @@ class SchedulerTest extends TestCase
 
 	/**
 	 * @dataProvider dataSchedule
-	 * @param int $cpuCores
-	 * @param int $maximumNumberOfProcesses
-	 * @param int $minimumNumberOfJobsPerProcess
-	 * @param int $jobSize
 	 * @param 0|positive-int $numberOfFiles
-	 * @param int $expectedNumberOfProcesses
 	 * @param array<int> $expectedJobSizes
 	 */
 	public function testSchedule(
@@ -84,7 +82,7 @@ class SchedulerTest extends TestCase
 		int $jobSize,
 		int $numberOfFiles,
 		int $expectedNumberOfProcesses,
-		array $expectedJobSizes
+		array $expectedJobSizes,
 	): void
 	{
 		$files = array_fill(0, $numberOfFiles, 'file.php');
@@ -92,9 +90,7 @@ class SchedulerTest extends TestCase
 		$schedule = $scheduler->scheduleWork($cpuCores, $files);
 
 		$this->assertSame($expectedNumberOfProcesses, $schedule->getNumberOfProcesses());
-		$jobSizes = array_map(static function (array $job): int {
-			return count($job);
-		}, $schedule->getJobs());
+		$jobSizes = array_map(static fn (array $job): int => count($job), $schedule->getJobs());
 		$this->assertSame($expectedJobSizes, $jobSizes);
 	}
 

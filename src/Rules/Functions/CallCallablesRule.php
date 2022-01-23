@@ -2,63 +2,58 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PhpParser\Node;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function count;
+use function sprintf;
+use function ucfirst;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
-class CallCallablesRule implements \PHPStan\Rules\Rule
+class CallCallablesRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionCallParametersCheck $check;
-
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
-	private bool $reportMaybes;
-
 	public function __construct(
-		FunctionCallParametersCheck $check,
-		RuleLevelHelper $ruleLevelHelper,
-		bool $reportMaybes
+		private FunctionCallParametersCheck $check,
+		private RuleLevelHelper $ruleLevelHelper,
+		private bool $reportMaybes,
 	)
 	{
-		$this->check = $check;
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\FuncCall::class;
+		return Node\Expr\FuncCall::class;
 	}
 
 	public function processNode(
-		\PhpParser\Node $node,
-		Scope $scope
+		Node $node,
+		Scope $scope,
 	): array
 	{
-		if (!$node->name instanceof \PhpParser\Node\Expr) {
+		if (!$node->name instanceof Node\Expr) {
 			return [];
 		}
 
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($node->name),
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->name),
 			'Invoking callable on an unknown class %s.',
-			static function (Type $type): bool {
-				return $type->isCallable()->yes();
-			}
+			static fn (Type $type): bool => $type->isCallable()->yes(),
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -69,14 +64,14 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 		if ($isCallable->no()) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Trying to invoke %s but it\'s not a callable.', $type->describe(VerbosityLevel::value()))
+					sprintf('Trying to invoke %s but it\'s not a callable.', $type->describe(VerbosityLevel::value())),
 				)->build(),
 			];
 		}
 		if ($this->reportMaybes && $isCallable->maybe()) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Trying to invoke %s but it might not be a callable.', $type->describe(VerbosityLevel::value()))
+					sprintf('Trying to invoke %s but it might not be a callable.', $type->describe(VerbosityLevel::value())),
 				)->build(),
 			];
 		}
@@ -93,14 +88,14 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 				'Call to %s method %s() of class %s.',
 				$method->isPrivate() ? 'private' : 'protected',
 				$method->getName(),
-				$method->getDeclaringClass()->getDisplayName()
+				$method->getDeclaringClass()->getDisplayName(),
 			))->build();
 		}
 
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$node->getArgs(),
-			$parametersAcceptors
+			$parametersAcceptors,
 		);
 
 		if ($type instanceof ClosureType) {
@@ -130,8 +125,8 @@ class CallCallablesRule implements \PHPStan\Rules\Rule
 					'Missing parameter $%s in call to ' . $callableDescription . '.',
 					'Unknown parameter $%s in call to ' . $callableDescription . '.',
 					'Return type of call to ' . $callableDescription . ' contains unresolvable type.',
-				]
-			)
+				],
+			),
 		);
 	}
 

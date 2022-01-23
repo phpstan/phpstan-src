@@ -3,13 +3,17 @@
 namespace PHPStan\DependencyInjection;
 
 use Nette;
+use Nette\DI\CompilerExtension;
 use Nette\Schema\Expect;
 use PHPStan\Analyser\TypeSpecifierFactory;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\PhpDoc\TypeNodeResolverExtension;
 use PHPStan\Rules\RegistryFactory;
+use PHPStan\ShouldNotHappenException;
+use function count;
+use function sprintf;
 
-class ConditionalTagsExtension extends \Nette\DI\CompilerExtension
+class ConditionalTagsExtension extends CompilerExtension
 {
 
 	public function getConfigSchema(): Nette\Schema\Schema
@@ -39,7 +43,7 @@ class ConditionalTagsExtension extends \Nette\DI\CompilerExtension
 		foreach ($config as $type => $tags) {
 			$services = $builder->findByType($type);
 			if (count($services) === 0) {
-				throw new \PHPStan\ShouldNotHappenException(sprintf('No services of type "%s" found.', $type));
+				throw new ShouldNotHappenException(sprintf('No services of type "%s" found.', $type));
 			}
 			foreach ($services as $service) {
 				foreach ($tags as $tag => $parameter) {

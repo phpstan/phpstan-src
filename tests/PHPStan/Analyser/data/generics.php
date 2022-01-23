@@ -371,7 +371,7 @@ class C
 		/** @var T */
 		$v = $cb();
 
-		assertType('T (class PHPStan\Generics\FunctionsAssertType\C, argument)', $v);
+		assertType('T (class PHPStan\Generics\FunctionsAssertType\C, parameter)', $v); // should be argument
 
 		assertType('T (class PHPStan\Generics\FunctionsAssertType\C, argument)', $this->a);
 
@@ -1034,8 +1034,8 @@ class StaticClassConstant
 	public function doFoo()
 	{
 		$staticClassName = static::class;
-		assertType('class-string<static(PHPStan\Generics\FunctionsAssertType\StaticClassConstant)>', $staticClassName);
-		assertType('static(PHPStan\Generics\FunctionsAssertType\StaticClassConstant)', new $staticClassName);
+		assertType('class-string<static(PHPStan\Generics\FunctionsAssertType\StaticClassConstant<T (class PHPStan\Generics\FunctionsAssertType\StaticClassConstant, argument)>)>', $staticClassName);
+		assertType('static(PHPStan\Generics\FunctionsAssertType\StaticClassConstant<T (class PHPStan\Generics\FunctionsAssertType\StaticClassConstant, argument)>)', new $staticClassName);
 	}
 
 	/**
@@ -1400,7 +1400,7 @@ class CarFactoryProcessor {
 }
 
 function (\Throwable $e): void {
-	assertType('mixed', $e->getCode());
+	assertType('(int|string)', $e->getCode());
 };
 
 function (): void {

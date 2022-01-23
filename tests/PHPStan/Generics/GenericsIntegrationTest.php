@@ -2,10 +2,12 @@
 
 namespace PHPStan\Generics;
 
+use PHPStan\Testing\LevelsTestCase;
+
 /**
  * @group exec
  */
-class GenericsIntegrationTest extends \PHPStan\Testing\LevelsTestCase
+class GenericsIntegrationTest extends LevelsTestCase
 {
 
 	public function dataTopics(): array

@@ -16,6 +16,9 @@ use PHPStan\Type\Traits\ObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
+use function sprintf;
+use function strtolower;
 
 class HasMethodType implements AccessoryType, CompoundType
 {
@@ -24,12 +27,9 @@ class HasMethodType implements AccessoryType, CompoundType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private string $methodName;
-
 	/** @api */
-	public function __construct(string $methodName)
+	public function __construct(private string $methodName)
 	{
-		$this->methodName = $methodName;
 	}
 
 	public function getReferencedClasses(): array
@@ -78,7 +78,7 @@ class HasMethodType implements AccessoryType, CompoundType
 			&& $this->getCanonicalMethodName() === $type->getCanonicalMethodName();
 	}
 
-	public function describe(\PHPStan\Type\VerbosityLevel $level): string
+	public function describe(VerbosityLevel $level): string
 	{
 		return sprintf('hasMethod(%s)', $this->methodName);
 	}
@@ -104,9 +104,7 @@ class HasMethodType implements AccessoryType, CompoundType
 			$method,
 			$method->getDeclaringClass(),
 			false,
-			static function (Type $type): Type {
-				return $type;
-			}
+			static fn (Type $type): Type => $type,
 		);
 	}
 

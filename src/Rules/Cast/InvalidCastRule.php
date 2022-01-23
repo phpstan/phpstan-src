@@ -5,46 +5,45 @@ namespace PHPStan\Rules\Cast;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function get_class;
+use function sprintf;
+use function strtolower;
+use function substr;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Cast>
+ * @implements Rule<Node\Expr\Cast>
  */
-class InvalidCastRule implements \PHPStan\Rules\Rule
+class InvalidCastRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		RuleLevelHelper $ruleLevelHelper
+		private ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\Cast::class;
+		return Node\Expr\Cast::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$castTypeCallback = static function (Type $type) use ($node): ?Type {
-			if ($node instanceof \PhpParser\Node\Expr\Cast\Int_) {
+			if ($node instanceof Node\Expr\Cast\Int_) {
 				return $type->toInteger();
-			} elseif ($node instanceof \PhpParser\Node\Expr\Cast\Bool_) {
+			} elseif ($node instanceof Node\Expr\Cast\Bool_) {
 				return $type->toBoolean();
-			} elseif ($node instanceof \PhpParser\Node\Expr\Cast\Double) {
+			} elseif ($node instanceof Node\Expr\Cast\Double) {
 				return $type->toFloat();
-			} elseif ($node instanceof \PhpParser\Node\Expr\Cast\String_) {
+			} elseif ($node instanceof Node\Expr\Cast\String_) {
 				return $type->toString();
 			}
 
@@ -62,7 +61,7 @@ class InvalidCastRule implements \PHPStan\Rules\Rule
 				}
 
 				return !$castType instanceof ErrorType;
-			}
+			},
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -84,7 +83,7 @@ class InvalidCastRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot cast %s to %s.',
 					$scope->getType($node->expr)->describe(VerbosityLevel::value()),
-					$shortName
+					$shortName,
 				))->line($node->getLine())->build(),
 			];
 		}

@@ -4,9 +4,11 @@ namespace PHPStan\Rules\Generics;
 
 use PhpParser\Node;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -26,40 +28,26 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
+use function array_merge;
+use function get_class;
+use function sprintf;
 
 class TemplateTypeCheck
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private GenericObjectTypeCheck $genericObjectTypeCheck;
-
-	private TypeAliasResolver $typeAliasResolver;
-
-	private bool $checkClassCaseSensitivity;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		GenericObjectTypeCheck $genericObjectTypeCheck,
-		TypeAliasResolver $typeAliasResolver,
-		bool $checkClassCaseSensitivity
+		private ReflectionProvider $reflectionProvider,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		private TypeAliasResolver $typeAliasResolver,
+		private bool $checkClassCaseSensitivity,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
-		$this->typeAliasResolver = $typeAliasResolver;
-		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
 	}
 
 	/**
-	 * @param \PhpParser\Node $node
-	 * @param TemplateTypeScope $templateTypeScope
-	 * @param array<string, \PHPStan\PhpDoc\Tag\TemplateTag> $templateTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param array<string, TemplateTag> $templateTags
+	 * @return RuleError[]
 	 */
 	public function check(
 		Node $node,
@@ -68,7 +56,7 @@ class TemplateTypeCheck
 		string $sameTemplateTypeNameAsClassMessage,
 		string $sameTemplateTypeNameAsTypeMessage,
 		string $invalidBoundTypeMessage,
-		string $notSupportedBoundMessage
+		string $notSupportedBoundMessage,
 	): array
 	{
 		$messages = [];
@@ -77,13 +65,13 @@ class TemplateTypeCheck
 			if ($this->reflectionProvider->hasClass($templateTagName)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsClassMessage,
-					$templateTagName
+					$templateTagName,
 				))->build();
 			}
 			if ($this->typeAliasResolver->hasTypeAlias($templateTagName, $templateTypeScope->getClassName())) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$sameTemplateTypeNameAsTypeMessage,
-					$templateTagName
+					$templateTagName,
 				))->build();
 			}
 			$boundType = $templateTag->getBound();
@@ -98,14 +86,12 @@ class TemplateTypeCheck
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$invalidBoundTypeMessage,
 					$templateTagName,
-					$referencedClass
+					$referencedClass,
 				))->build();
 			}
 
 			if ($this->checkClassCaseSensitivity) {
-				$classNameNodePairs = array_map(static function (string $referencedClass) use ($node): ClassNameNodePair {
-					return new ClassNameNodePair($referencedClass, $node);
-				}, $boundType->getReferencedClasses());
+				$classNameNodePairs = array_map(static fn (string $referencedClass): ClassNameNodePair => new ClassNameNodePair($referencedClass, $node), $boundType->getReferencedClasses());
 				$messages = array_merge($messages, $this->classCaseSensitivityCheck->checkClassNames($classNameNodePairs));
 			}
 
@@ -136,10 +122,10 @@ class TemplateTypeCheck
 			$escapedTemplateTagName = SprintfHelper::escapeFormatString($templateTagName);
 			$genericObjectErrors = $this->genericObjectTypeCheck->check(
 				$boundType,
-				sprintf('PHPDoc tag @template %s bound contains generic type %%s but class %%s is not generic.', $escapedTemplateTagName),
-				sprintf('PHPDoc tag @template %s bound has type %%s which does not specify all template types of class %%s: %%s', $escapedTemplateTagName),
-				sprintf('PHPDoc tag @template %s bound has type %%s which specifies %%d template types, but class %%s supports only %%d: %%s', $escapedTemplateTagName),
-				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s is not subtype of template type %%s of class %%s.', $escapedTemplateTagName)
+				sprintf('PHPDoc tag @template %s bound contains generic type %%s but %%s %%s is not generic.', $escapedTemplateTagName),
+				sprintf('PHPDoc tag @template %s bound has type %%s which does not specify all template types of %%s %%s: %%s', $escapedTemplateTagName),
+				sprintf('PHPDoc tag @template %s bound has type %%s which specifies %%d template types, but %%s %%s supports only %%d: %%s', $escapedTemplateTagName),
+				sprintf('Type %%s in generic type %%s in PHPDoc tag @template %s is not subtype of template type %%s of %%s %%s.', $escapedTemplateTagName),
 			);
 			foreach ($genericObjectErrors as $genericObjectError) {
 				$messages[] = $genericObjectError;

@@ -2,6 +2,16 @@
 
 namespace PHPStan\File;
 
+use function array_merge;
+use function fnmatch;
+use function in_array;
+use function preg_match;
+use function strlen;
+use function strpos;
+use const DIRECTORY_SEPARATOR;
+use const FNM_CASEFOLD;
+use const FNM_NOESCAPE;
+
 class FileExcluder
 {
 
@@ -21,14 +31,13 @@ class FileExcluder
 	private int $fnmatchFlags;
 
 	/**
-	 * @param FileHelper $fileHelper
 	 * @param string[] $analyseExcludes
 	 * @param string[] $stubFiles
 	 */
 	public function __construct(
 		FileHelper $fileHelper,
 		array $analyseExcludes,
-		array $stubFiles
+		array $stubFiles,
 	)
 	{
 		foreach (array_merge($analyseExcludes, $stubFiles) as $exclude) {

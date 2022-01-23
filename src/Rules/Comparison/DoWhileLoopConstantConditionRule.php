@@ -11,6 +11,7 @@ use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use function sprintf;
 
 /**
  * @implements Rule<DoWhileLoopConditionNode>
@@ -18,17 +19,11 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 class DoWhileLoopConstantConditionRule implements Rule
 {
 
-	private ConstantConditionRuleHelper $helper;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain
+		private ConstantConditionRuleHelper $helper,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->helper = $helper;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string
@@ -82,7 +77,7 @@ class DoWhileLoopConstantConditionRule implements Rule
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Do-while loop condition is always %s.',
-					$exprType->getValue() ? 'true' : 'false'
+					$exprType->getValue() ? 'true' : 'false',
 				)))->line($node->getCond()->getLine())->build(),
 			];
 		}

@@ -8,23 +8,23 @@ use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
+use function implode;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InFunctionNode>
+ * @implements Rule<InFunctionNode>
  */
-final class MissingFunctionReturnTypehintRule implements \PHPStan\Rules\Rule
+final class MissingFunctionReturnTypehintRule implements Rule
 {
 
-	private \PHPStan\Rules\MissingTypehintCheck $missingTypehintCheck;
-
 	public function __construct(
-		MissingTypehintCheck $missingTypehintCheck
+		private MissingTypehintCheck $missingTypehintCheck,
 	)
 	{
-		$this->missingTypehintCheck = $missingTypehintCheck;
 	}
 
 	public function getNodeType(): string
@@ -45,7 +45,7 @@ final class MissingFunctionReturnTypehintRule implements \PHPStan\Rules\Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Function %s() has no return type specified.',
-					$functionReflection->getName()
+					$functionReflection->getName(),
 				))->build(),
 			];
 		}
@@ -61,7 +61,7 @@ final class MissingFunctionReturnTypehintRule implements \PHPStan\Rules\Rule
 				'Function %s() return type with generic %s does not specify its types: %s',
 				$functionReflection->getName(),
 				$name,
-				implode(', ', $genericTypeNames)
+				implode(', ', $genericTypeNames),
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
@@ -69,7 +69,7 @@ final class MissingFunctionReturnTypehintRule implements \PHPStan\Rules\Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Function %s() return type has no signature specified for %s.',
 				$functionReflection->getName(),
-				$callableType->describe(VerbosityLevel::typeOnly())
+				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

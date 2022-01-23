@@ -3,18 +3,20 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Rules\FunctionReturnTypeCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ReturnTypeRule>
+ * @extends RuleTestCase<ReturnTypeRule>
  */
-class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
+class ReturnTypeRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkExplicitMixed = false;
+	private bool $checkExplicitMixed = false;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed)));
 	}
@@ -555,13 +557,26 @@ class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataBug5218
-	 * @param bool $checkExplicitMixed
 	 * @param mixed[] $errors
 	 */
 	public function testBug5218(bool $checkExplicitMixed, array $errors): void
 	{
 		$this->checkExplicitMixed = $checkExplicitMixed;
 		$this->analyse([__DIR__ . '/data/bug-5218.php'], $errors);
+	}
+
+	public function testBug5979(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5979.php'], []);
+	}
+
+	public function testBug4165(): void
+	{
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-4165.php'], []);
 	}
 
 }

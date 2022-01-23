@@ -5,19 +5,11 @@ namespace PHPStan\Cache;
 class CacheItem
 {
 
-	private string $variableKey;
-
-	/** @var mixed */
-	private $data;
-
 	/**
-	 * @param string $variableKey
 	 * @param mixed $data
 	 */
-	public function __construct(string $variableKey, $data)
+	public function __construct(private string $variableKey, private $data)
 	{
-		$this->variableKey = $variableKey;
-		$this->data = $data;
 	}
 
 	public function isVariableKeyValid(string $variableKey): bool
@@ -35,7 +27,6 @@ class CacheItem
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{

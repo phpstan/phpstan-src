@@ -6,25 +6,22 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
-class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
+class CallToNonExistentFunctionRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private bool $checkFunctionNameCase;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		bool $checkFunctionNameCase
+		private ReflectionProvider $reflectionProvider,
+		private bool $checkFunctionNameCase,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->checkFunctionNameCase = $checkFunctionNameCase;
 	}
 
 	public function getNodeType(): string
@@ -34,11 +31,15 @@ class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!($node->name instanceof \PhpParser\Node\Name)) {
+		if (!($node->name instanceof Node\Name)) {
 			return [];
 		}
 
 		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
+			if ($scope->isInFunctionExists($node->name->toString())) {
+				return [];
+			}
+
 			return [
 				RuleErrorBuilder::message(sprintf('Function %s not found.', (string) $node->name))->discoveringSymbolsTip()->build(),
 			];
@@ -58,7 +59,7 @@ class CallToNonExistentFunctionRule implements \PHPStan\Rules\Rule
 					RuleErrorBuilder::message(sprintf(
 						'Call to function %s() with incorrect case: %s',
 						$function->getName(),
-						$name
+						$name,
 					))->build(),
 				];
 			}

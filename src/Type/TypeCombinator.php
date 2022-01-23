@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type;
 
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -18,6 +21,18 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateUnionType;
+use Traversable;
+use function array_intersect_key;
+use function array_key_exists;
+use function array_merge;
+use function array_slice;
+use function array_splice;
+use function array_values;
+use function count;
+use function get_class;
+use function is_int;
+use function md5;
+use function usort;
 
 /** @api */
 class TypeCombinator
@@ -68,13 +83,13 @@ class TypeCombinator
 		} elseif ($fromType instanceof IterableType) {
 			$arrayType = new ArrayType(new MixedType(), new MixedType());
 			if ($typeToRemove->isSuperTypeOf($arrayType)->yes()) {
-				return new GenericObjectType(\Traversable::class, [
+				return new GenericObjectType(Traversable::class, [
 					$fromType->getIterableKeyType(),
 					$fromType->getIterableValueType(),
 				]);
 			}
 
-			$traversableType = new ObjectType(\Traversable::class);
+			$traversableType = new ObjectType(Traversable::class);
 			if ($typeToRemove->isSuperTypeOf($traversableType)->yes()) {
 				return new ArrayType($fromType->getIterableKeyType(), $fromType->getIterableValueType());
 			}
@@ -118,13 +133,13 @@ class TypeCombinator
 			if ($typeToRemove instanceof AccessoryNonEmptyStringType) {
 				return new ConstantStringType('');
 			}
-		} elseif ($fromType instanceof ObjectType && $fromType->getClassName() === \DateTimeInterface::class) {
-			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === \DateTimeImmutable::class) {
-				return new ObjectType(\DateTime::class);
+		} elseif ($fromType instanceof ObjectType && $fromType->getClassName() === DateTimeInterface::class) {
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === DateTimeImmutable::class) {
+				return new ObjectType(DateTime::class);
 			}
 
-			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === \DateTime::class) {
-				return new ObjectType(\DateTimeImmutable::class);
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === DateTime::class) {
+				return new ObjectType(DateTimeImmutable::class);
 			}
 		}
 
@@ -274,8 +289,8 @@ class TypeCombinator
 		$types = array_values(
 			array_merge(
 				$types,
-				self::processArrayTypes($arrayTypes, $arrayAccessoryTypesToProcess)
-			)
+				self::processArrayTypes($arrayTypes, $arrayAccessoryTypesToProcess),
+			),
 		);
 		$typesCount = count($types);
 
@@ -285,7 +300,7 @@ class TypeCombinator
 				if ($types[$i] instanceof IterableType && $types[$j] instanceof IterableType) {
 					$types[$i] = new IterableType(
 						self::union($types[$i]->getIterableKeyType(), $types[$j]->getIterableKeyType()),
-						self::union($types[$i]->getIterableValueType(), $types[$j]->getIterableValueType())
+						self::union($types[$i]->getIterableValueType(), $types[$j]->getIterableValueType()),
 					);
 					array_splice($types, $j, 1);
 					$typesCount--;
@@ -404,8 +419,6 @@ class TypeCombinator
 	}
 
 	/**
-	 * @param Type $a
-	 * @param Type $b
 	 * @return array{Type, null}|array{null, Type}|null
 	 */
 	private static function compareTypesInUnion(Type $a, Type $b): ?array
@@ -497,7 +510,7 @@ class TypeCombinator
 
 	private static function unionWithSubtractedType(
 		Type $type,
-		?Type $subtractedType
+		?Type $subtractedType,
 	): Type
 	{
 		if ($subtractedType === null) {
@@ -511,7 +524,7 @@ class TypeCombinator
 
 			$subtractedType = self::union(
 				$type->getSubtractedType(),
-				$subtractedType
+				$subtractedType,
 			);
 			if ($subtractedType instanceof NeverType) {
 				$subtractedType = null;
@@ -529,7 +542,7 @@ class TypeCombinator
 
 	private static function intersectWithSubtractedType(
 		SubtractableType $subtractableType,
-		?Type $subtractedType
+		?Type $subtractedType,
 	): Type
 	{
 		if ($subtractableType->getSubtractedType() === null) {
@@ -542,7 +555,7 @@ class TypeCombinator
 
 		$subtractedType = self::intersect(
 			$subtractableType->getSubtractedType(),
-			$subtractedType
+			$subtractedType,
 		);
 		if ($subtractedType instanceof NeverType) {
 			$subtractedType = null;
@@ -623,7 +636,7 @@ class TypeCombinator
 			return [
 				self::intersect(new ArrayType(
 					self::union(...$keyTypesForGeneralArray),
-					self::union(...$valueTypesForGeneralArray)
+					self::union(...$valueTypesForGeneralArray),
 				), ...$accessoryTypes),
 			];
 		}
@@ -658,7 +671,7 @@ class TypeCombinator
 			foreach ($arrayTypeAgain->getKeyTypes() as $i => $keyType) {
 				$bucket[$keyType->getValue()]['valueType'] = self::union(
 					$bucket[$keyType->getValue()]['valueType'],
-					$arrayTypeAgain->getValueTypes()[$i]
+					$arrayTypeAgain->getValueTypes()[$i],
 				);
 				$bucket[$keyType->getValue()]['optional'] = $bucket[$keyType->getValue()]['optional'] || $arrayTypeAgain->isOptionalKey($i);
 			}
@@ -753,7 +766,7 @@ class TypeCombinator
 				$topLevelUnionSubTypes[] = self::intersect(
 					$innerUnionSubType,
 					...array_slice($types, 0, $i),
-					...array_slice($types, $i + 1)
+					...array_slice($types, $i + 1),
 				);
 			}
 
@@ -767,7 +780,7 @@ class TypeCombinator
 					$type->getScope(),
 					$type->getName(),
 					$union,
-					$type->getVariance()
+					$type->getVariance(),
 				);
 				if ($type->isArgument()) {
 					return TemplateTypeHelper::toArgument($union);

@@ -9,27 +9,11 @@ use PHPStan\Type\Type;
 class DummyParameter implements ParameterReflection
 {
 
-	private string $name;
+	private PassedByReference $passedByReference;
 
-	private \PHPStan\Type\Type $type;
-
-	private bool $optional;
-
-	private \PHPStan\Reflection\PassedByReference $passedByReference;
-
-	private bool $variadic;
-
-	/** @var ?\PHPStan\Type\Type */
-	private ?\PHPStan\Type\Type $defaultValue;
-
-	public function __construct(string $name, Type $type, bool $optional, ?PassedByReference $passedByReference, bool $variadic, ?Type $defaultValue)
+	public function __construct(private string $name, private Type $type, private bool $optional, ?PassedByReference $passedByReference, private bool $variadic, private ?Type $defaultValue)
 	{
-		$this->name = $name;
-		$this->type = $type;
-		$this->optional = $optional;
 		$this->passedByReference = $passedByReference ?? PassedByReference::createNo();
-		$this->variadic = $variadic;
-		$this->defaultValue = $defaultValue;
 	}
 
 	public function getName(): string

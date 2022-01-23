@@ -13,15 +13,13 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use ReflectionFunction;
+use function count;
 
 class ReflectionFunctionConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool

@@ -2,15 +2,17 @@
 
 namespace PHPStan\Rules\Functions;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ImplodeFunctionRule>
+ * @extends RuleTestCase<ImplodeFunctionRule>
  */
-class ImplodeFunctionRuleTest extends \PHPStan\Testing\RuleTestCase
+class ImplodeFunctionRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new ImplodeFunctionRule($broker, new RuleLevelHelper($broker, true, false, true, false));

@@ -2,17 +2,24 @@
 
 namespace PHPStan\Rules\Regexp;
 
+use Nette\Utils\RegexpException;
+use Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\TypeUtils;
+use function in_array;
+use function sprintf;
+use function str_starts_with;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
-class RegularExpressionPatternRule implements \PHPStan\Rules\Rule
+class RegularExpressionPatternRule implements Rule
 {
 
 	public function getNodeType(): string
@@ -38,8 +45,6 @@ class RegularExpressionPatternRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param FuncCall $functionCall
-	 * @param Scope $scope
 	 * @return string[]
 	 */
 	private function extractPatterns(FuncCall $functionCall, Scope $scope): array
@@ -48,7 +53,7 @@ class RegularExpressionPatternRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 		$functionName = strtolower((string) $functionCall->name);
-		if (!\Nette\Utils\Strings::startsWith($functionName, 'preg_')) {
+		if (!str_starts_with($functionName, 'preg_')) {
 			return [];
 		}
 
@@ -114,8 +119,8 @@ class RegularExpressionPatternRule implements \PHPStan\Rules\Rule
 	private function validatePattern(string $pattern): ?string
 	{
 		try {
-			\Nette\Utils\Strings::match('', $pattern);
-		} catch (\Nette\Utils\RegexpException $e) {
+			Strings::match('', $pattern);
+		} catch (RegexpException $e) {
 			return $e->getMessage();
 		}
 

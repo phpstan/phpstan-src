@@ -7,6 +7,8 @@ use PHPStan\Command\AnalysisResult;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use function sprintf;
+use const PHP_VERSION_ID;
 
 class TableErrorFormatterTest extends ErrorFormatterTestCase
 {
@@ -29,11 +31,12 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			1,
 			0,
-			' ------ -----------------------------------------------------------------
+			' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
- ------ -----------------------------------------------------------------
+ ------ -------------------------------------------------------------------
   4      Foo
- ------ -----------------------------------------------------------------
+ ------ -------------------------------------------------------------------
+
 
  [ERROR] Found 1 error
 
@@ -51,6 +54,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
      first generic error
  -- ---------------------
 
+
  [ERROR] Found 1 error
 
 ',
@@ -61,13 +65,13 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			4,
 			0,
-			' ------ -----------------------------------------------------------------
+			' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
- ------ -----------------------------------------------------------------
+ ------ -------------------------------------------------------------------
   2      Bar
          Bar2
   4      Foo
- ------ -----------------------------------------------------------------
+ ------ -------------------------------------------------------------------
 
  ------ ---------
   Line   foo.php
@@ -94,6 +98,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
      second generic error
  -- ----------------------
 
+
  [ERROR] Found 2 errors
 
 ',
@@ -104,13 +109,13 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			4,
 			2,
-			' ------ -----------------------------------------------------------------
+			' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
- ------ -----------------------------------------------------------------
+ ------ -------------------------------------------------------------------
   2      Bar
          Bar2
   4      Foo
- ------ -----------------------------------------------------------------
+ ------ -------------------------------------------------------------------
 
  ------ ---------
   Line   foo.php
@@ -136,18 +141,13 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @dataProvider dataFormatterOutputProvider
 	 *
-	 * @param string $message
-	 * @param int    $exitCode
-	 * @param int    $numFileErrors
-	 * @param int    $numGenericErrors
-	 * @param string $expected
 	 */
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
-		string $expected
+		string $expected,
 	): void
 	{
 		if (PHP_VERSION_ID >= 80100) {
@@ -157,7 +157,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getOutput()
+			$this->getOutput(),
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertEquals($expected, $this->getOutputContent(), sprintf('%s: output do not match', $message));

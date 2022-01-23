@@ -3,7 +3,9 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -18,6 +20,12 @@ use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function array_merge;
+use function count;
+use function is_float;
+use function is_int;
+use function key;
+use function sprintf;
 
 /** @api */
 class ArrayType implements Type
@@ -28,18 +36,15 @@ class ArrayType implements Type
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonTypeTrait;
 
-	private \PHPStan\Type\Type $keyType;
-
-	private \PHPStan\Type\Type $itemType;
+	private Type $keyType;
 
 	/** @api */
-	public function __construct(Type $keyType, Type $itemType)
+	public function __construct(Type $keyType, private Type $itemType)
 	{
 		if ($keyType->describe(VerbosityLevel::value()) === '(int|string)') {
 			$keyType = new MixedType();
 		}
 		$this->keyType = $keyType;
-		$this->itemType = $itemType;
 	}
 
 	public function getKeyType(): Type
@@ -59,7 +64,7 @@ class ArrayType implements Type
 	{
 		return array_merge(
 			$this->keyType->getReferencedClasses(),
-			$this->getItemType()->getReferencedClasses()
+			$this->getItemType()->getReferencedClasses(),
 		);
 	}
 
@@ -141,7 +146,7 @@ class ArrayType implements Type
 				}
 
 				return sprintf('array<%s, %s>', $this->keyType->describe($level), $this->itemType->describe($level));
-			}
+			},
 		);
 	}
 
@@ -246,8 +251,13 @@ class ArrayType implements Type
 
 		return TypeCombinator::intersect(new self(
 			TypeCombinator::union($this->keyType, self::castToArrayKeyType($offsetType)),
-			$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType
+			$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType,
 		), new NonEmptyArrayType());
+	}
+
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this;
 	}
 
 	public function isCallable(): TrinaryLogic
@@ -256,13 +266,12 @@ class ArrayType implements Type
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		if ($this->isCallable()->no()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return [new TrivialParametersAcceptor()];
@@ -282,7 +291,7 @@ class ArrayType implements Type
 	{
 		return TypeCombinator::union(
 			new ConstantIntegerType(0),
-			new ConstantIntegerType(1)
+			new ConstantIntegerType(1),
 		);
 	}
 
@@ -290,7 +299,7 @@ class ArrayType implements Type
 	{
 		return TypeCombinator::union(
 			new ConstantFloatType(0.0),
-			new ConstantFloatType(1.0)
+			new ConstantFloatType(1.0),
 		);
 	}
 
@@ -395,7 +404,7 @@ class ArrayType implements Type
 
 		return array_merge(
 			$this->getKeyType()->getReferencedTemplateTypes($keyVariance),
-			$this->getItemType()->getReferencedTemplateTypes($itemVariance)
+			$this->getItemType()->getReferencedTemplateTypes($itemVariance),
 		);
 	}
 
@@ -413,13 +422,12 @@ class ArrayType implements Type
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{
 		return new self(
 			$properties['keyType'],
-			$properties['itemType']
+			$properties['itemType'],
 		);
 	}
 

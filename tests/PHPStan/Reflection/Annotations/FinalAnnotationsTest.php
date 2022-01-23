@@ -2,10 +2,13 @@
 
 namespace PHPStan\Reflection\Annotations;
 
+use FinalAnnotations\FinalFoo;
+use FinalAnnotations\Foo;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\Testing\PHPStanTestCase;
 
-class FinalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
+class FinalAnnotationsTest extends PHPStanTestCase
 {
 
 	public function dataFinalAnnotations(): array
@@ -13,7 +16,7 @@ class FinalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 		return [
 			[
 				false,
-				\FinalAnnotations\Foo::class,
+				Foo::class,
 				[
 					'method' => [
 						'foo',
@@ -23,7 +26,7 @@ class FinalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				true,
-				\FinalAnnotations\FinalFoo::class,
+				FinalFoo::class,
 				[
 					'method' => [
 						'finalFoo',
@@ -36,8 +39,6 @@ class FinalAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFinalAnnotations
-	 * @param bool $final
-	 * @param string $className
 	 * @param array<string, mixed> $finalAnnotations
 	 */
 	public function testFinalAnnotations(bool $final, string $className, array $finalAnnotations): void

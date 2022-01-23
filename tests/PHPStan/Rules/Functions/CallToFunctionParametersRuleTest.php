@@ -6,24 +6,26 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallToFunctionParametersRule>
+ * @extends RuleTestCase<CallToFunctionParametersRule>
  */
-class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
+class CallToFunctionParametersRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkExplicitMixed = false;
+	private bool $checkExplicitMixed = false;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new CallToFunctionParametersRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), true, true, true, true)
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
 		);
 	}
 
@@ -789,7 +791,6 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataArrayMapMultiple
-	 * @param bool $checkExplicitMixed
 	 */
 	public function testArrayMapMultiple(bool $checkExplicitMixed): void
 	{
@@ -812,7 +813,6 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataArrayFilterCallback
-	 * @param bool $checkExplicitMixed
 	 */
 	public function testArrayFilterCallback(bool $checkExplicitMixed): void
 	{
@@ -918,6 +918,27 @@ class CallToFunctionParametersRuleTest extends \PHPStan\Testing\RuleTestCase
 			];
 		}
 		$this->analyse([__DIR__ . '/data/call-user-func-array.php'], $errors);
+	}
+
+	public function testFirstClassCallables(): void
+	{
+		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		// handled by a different rule
+		$this->analyse([__DIR__ . '/data/first-class-callables.php'], []);
+	}
+
+	public function testBug4413(): void
+	{
+		require_once __DIR__ . '/data/bug-4413.php';
+		$this->analyse([__DIR__ . '/data/bug-4413.php'], [
+			[
+				'Parameter #1 $date of function Bug4413\takesDate expects class-string<DateTime>, string given.',
+				18,
+			],
+		]);
 	}
 
 }

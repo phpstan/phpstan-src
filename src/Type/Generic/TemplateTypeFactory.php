@@ -15,6 +15,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use function get_class;
 
 final class TemplateTypeFactory
 {

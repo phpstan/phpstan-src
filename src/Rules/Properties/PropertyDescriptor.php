@@ -2,7 +2,9 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PhpParser\Node;
 use PHPStan\Reflection\PropertyReflection;
+use function sprintf;
 
 class PropertyDescriptor
 {
@@ -17,13 +19,11 @@ class PropertyDescriptor
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\PropertyReflection $property
-	 * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
-	 * @return string
+	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
 	 */
 	public function describeProperty(PropertyReflection $property, $propertyFetch): string
 	{
-		/** @var \PhpParser\Node\Identifier $name */
+		/** @var Node\Identifier $name */
 		$name = $propertyFetch->name;
 		if (!$property->isStatic()) {
 			return sprintf('Property %s::$%s', $property->getDeclaringClass()->getDisplayName(), $name->name);

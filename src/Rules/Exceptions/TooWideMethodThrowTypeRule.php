@@ -8,7 +8,9 @@ use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
+use function sprintf;
 
 /**
  * @implements Rule<MethodReturnStatementsNode>
@@ -16,14 +18,8 @@ use PHPStan\Type\FileTypeMapper;
 class TooWideMethodThrowTypeRule implements Rule
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
-	private TooWideThrowTypeCheck $check;
-
-	public function __construct(FileTypeMapper $fileTypeMapper, TooWideThrowTypeCheck $check)
+	public function __construct(private FileTypeMapper $fileTypeMapper, private TooWideThrowTypeCheck $check)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->check = $check;
 	}
 
 	public function getNodeType(): string
@@ -36,10 +32,10 @@ class TooWideMethodThrowTypeRule implements Rule
 		$statementResult = $node->getStatementResult();
 		$methodReflection = $scope->getFunction();
 		if (!$methodReflection instanceof MethodReflection) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$docComment = $node->getDocComment();
@@ -53,7 +49,7 @@ class TooWideMethodThrowTypeRule implements Rule
 			$classReflection->getName(),
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 			$methodReflection->getName(),
-			$docComment->getText()
+			$docComment->getText(),
 		);
 
 		if ($resolvedPhpDoc->getThrowsTag() === null) {
@@ -68,7 +64,7 @@ class TooWideMethodThrowTypeRule implements Rule
 				'Method %s::%s() has %s in PHPDoc @throws tag but it\'s not thrown.',
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
-				$throwClass
+				$throwClass,
 			))
 				->identifier('exceptions.tooWideThrowType')
 				->metadata([

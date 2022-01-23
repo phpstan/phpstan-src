@@ -2,6 +2,8 @@
 
 namespace PHPStan\Command;
 
+use Hoa\Compiler\Llk\Llk;
+use Hoa\File\Read;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Testing\PHPStanTestCase;
 
@@ -115,20 +117,17 @@ class IgnoredRegexValidatorTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataValidate
-	 * @param string $regex
 	 * @param string[] $expectedTypes
-	 * @param bool $expectedHasAnchors
-	 * @param bool $expectAllErrorsIgnored
 	 */
 	public function testValidate(
 		string $regex,
 		array $expectedTypes,
 		bool $expectedHasAnchors,
-		bool $expectAllErrorsIgnored
+		bool $expectAllErrorsIgnored,
 	): void
 	{
-		$grammar = new \Hoa\File\Read('hoa://Library/Regex/Grammar.pp');
-		$parser = \Hoa\Compiler\Llk\Llk::load($grammar);
+		$grammar = new Read('hoa://Library/Regex/Grammar.pp');
+		$parser = Llk::load($grammar);
 		$validator = new IgnoredRegexValidator($parser, self::getContainer()->getByType(TypeStringResolver::class));
 
 		$result = $validator->validate($regex);

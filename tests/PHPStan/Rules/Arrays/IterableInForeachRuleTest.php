@@ -2,18 +2,20 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<IterableInForeachRule>
+ * @extends RuleTestCase<IterableInForeachRule>
  */
-class IterableInForeachRuleTest extends \PHPStan\Testing\RuleTestCase
+class IterableInForeachRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkExplicitMixed = false;
+	private bool $checkExplicitMixed = false;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new IterableInForeachRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed));
 	}

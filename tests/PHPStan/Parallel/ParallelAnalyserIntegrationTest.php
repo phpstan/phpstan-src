@@ -4,7 +4,14 @@ namespace PHPStan\Parallel;
 
 use Nette\Utils\Json;
 use PHPStan\File\FileHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\TestCase;
+use function array_map;
+use function escapeshellarg;
+use function exec;
+use function implode;
+use function sprintf;
+use const PHP_BINARY;
 
 /**
  * @group exec
@@ -22,13 +29,12 @@ class ParallelAnalyserIntegrationTest extends TestCase
 
 	/**
 	 * @dataProvider dataRun
-	 * @param string $command
 	 */
 	public function testRun(string $command): void
 	{
 		exec(sprintf('%s %s clear-result-cache --configuration %s -q', escapeshellarg(PHP_BINARY), escapeshellarg(__DIR__ . '/../../../bin/phpstan'), escapeshellarg(__DIR__ . '/parallel-analyser.neon')), $clearResultCacheOutputLines, $clearResultCacheExitCode);
 		if ($clearResultCacheExitCode !== 0) {
-			throw new \PHPStan\ShouldNotHappenException('Could not clear result cache.');
+			throw new ShouldNotHappenException('Could not clear result cache.');
 		}
 
 		exec(sprintf(
@@ -37,12 +43,10 @@ class ParallelAnalyserIntegrationTest extends TestCase
 			escapeshellarg(__DIR__ . '/../../../bin/phpstan'),
 			$command,
 			escapeshellarg(__DIR__ . '/parallel-analyser.neon'),
-			implode(' ', array_map(static function (string $path): string {
-				return escapeshellarg($path);
-			}, [
+			implode(' ', array_map(static fn (string $path): string => escapeshellarg($path), [
 				__DIR__ . '/data/trait-definition.php',
 				__DIR__ . '/data/traits.php',
-			]))
+			])),
 		), $outputLines, $exitCode);
 		$output = implode("\n", $outputLines);
 

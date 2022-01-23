@@ -12,6 +12,8 @@ use PHPStan\Type\Traits\ObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 class HasPropertyType implements AccessoryType, CompoundType
 {
@@ -20,12 +22,9 @@ class HasPropertyType implements AccessoryType, CompoundType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private string $propertyName;
-
 	/** @api */
-	public function __construct(string $propertyName)
+	public function __construct(private string $propertyName)
 	{
-		$this->propertyName = $propertyName;
 	}
 
 	/**
@@ -77,7 +76,7 @@ class HasPropertyType implements AccessoryType, CompoundType
 			&& $this->propertyName === $type->propertyName;
 	}
 
-	public function describe(\PHPStan\Type\VerbosityLevel $level): string
+	public function describe(VerbosityLevel $level): string
 	{
 		return sprintf('hasProperty(%s)', $this->propertyName);
 	}

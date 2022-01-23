@@ -13,16 +13,18 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
+use function count;
+use function in_array;
 
 class CountFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection,
 		FuncCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		return !$context->null()
@@ -34,7 +36,7 @@ class CountFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExte
 		FunctionReflection $functionReflection,
 		FuncCall $node,
 		Scope $scope,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		if (!(new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($scope->getType($node->getArgs()[0]->value))->yes()) {

@@ -8,17 +8,17 @@ use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use ReflectionException;
+use function array_key_exists;
+use function explode;
+use function sprintf;
 
 /**
  * @implements Rule<ClassPropertiesNode>
  */
 class UninitializedPropertyRule implements Rule
 {
-
-	private ReadWritePropertiesExtensionProvider $extensionProvider;
-
-	/** @var string[] */
-	private array $additionalConstructors;
 
 	/** @var array<string, string[]> */
 	private array $additionalConstructorsCache = [];
@@ -27,12 +27,10 @@ class UninitializedPropertyRule implements Rule
 	 * @param string[] $additionalConstructors
 	 */
 	public function __construct(
-		ReadWritePropertiesExtensionProvider $extensionProvider,
-		array $additionalConstructors
+		private ReadWritePropertiesExtensionProvider $extensionProvider,
+		private array $additionalConstructors,
 	)
 	{
-		$this->extensionProvider = $extensionProvider;
-		$this->additionalConstructors = $additionalConstructors;
 	}
 
 	public function getNodeType(): string
@@ -43,25 +41,31 @@ class UninitializedPropertyRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
 		[$properties, $prematureAccess] = $node->getUninitializedProperties($scope, $this->getConstructors($classReflection), $this->extensionProvider->getExtensions());
 
 		$errors = [];
 		foreach ($properties as $propertyName => $propertyNode) {
+			if ($propertyNode->isReadOnly()) {
+				continue;
+			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Class %s has an uninitialized property $%s. Give it default value or assign it in the constructor.',
 				$classReflection->getDisplayName(),
-				$propertyName
+				$propertyName,
 			))->line($propertyNode->getLine())->build();
 		}
 
-		foreach ($prematureAccess as [$propertyName, $line]) {
+		foreach ($prematureAccess as [$propertyName, $line, $propertyNode]) {
+			if ($propertyNode->isReadOnly()) {
+				continue;
+			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Access to an uninitialized property %s::$%s.',
 				$classReflection->getDisplayName(),
-				$propertyName
+				$propertyName,
 			))->line($line)->build();
 		}
 
@@ -69,7 +73,6 @@ class UninitializedPropertyRule implements Rule
 	}
 
 	/**
-	 * @param ClassReflection $classReflection
 	 * @return string[]
 	 */
 	private function getConstructors(ClassReflection $classReflection): array
@@ -95,7 +98,7 @@ class UninitializedPropertyRule implements Rule
 
 			try {
 				$prototype = $nativeMethod->getPrototype();
-			} catch (\ReflectionException $e) {
+			} catch (ReflectionException) {
 				$prototype = $nativeMethod;
 			}
 

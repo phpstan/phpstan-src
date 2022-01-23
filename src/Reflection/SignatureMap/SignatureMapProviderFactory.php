@@ -7,21 +7,12 @@ use PHPStan\Php\PhpVersion;
 class SignatureMapProviderFactory
 {
 
-	private PhpVersion $phpVersion;
-
-	private FunctionSignatureMapProvider $functionSignatureMapProvider;
-
-	private Php8SignatureMapProvider $php8SignatureMapProvider;
-
 	public function __construct(
-		PhpVersion $phpVersion,
-		FunctionSignatureMapProvider $functionSignatureMapProvider,
-		Php8SignatureMapProvider $php8SignatureMapProvider
+		private PhpVersion $phpVersion,
+		private FunctionSignatureMapProvider $functionSignatureMapProvider,
+		private Php8SignatureMapProvider $php8SignatureMapProvider,
 	)
 	{
-		$this->phpVersion = $phpVersion;
-		$this->functionSignatureMapProvider = $functionSignatureMapProvider;
-		$this->php8SignatureMapProvider = $php8SignatureMapProvider;
 	}
 
 	public function create(): SignatureMapProvider

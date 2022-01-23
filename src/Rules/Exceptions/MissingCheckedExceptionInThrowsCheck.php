@@ -11,19 +11,17 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
+use Throwable;
+use function array_map;
 
 class MissingCheckedExceptionInThrowsCheck
 {
 
-	private ExceptionTypeResolver $exceptionTypeResolver;
-
-	public function __construct(ExceptionTypeResolver $exceptionTypeResolver)
+	public function __construct(private ExceptionTypeResolver $exceptionTypeResolver)
 	{
-		$this->exceptionTypeResolver = $exceptionTypeResolver;
 	}
 
 	/**
-	 * @param Type|null $throwType
 	 * @param ThrowPoint[] $throwPoints
 	 * @return array<int, array{string, Node\Expr|Node\Stmt, int|null}>
 	 */
@@ -40,7 +38,7 @@ class MissingCheckedExceptionInThrowsCheck
 			}
 
 			foreach (TypeUtils::flattenTypes($throwPoint->getType()) as $throwPointType) {
-				if ($throwPointType->isSuperTypeOf(new ObjectType(\Throwable::class))->yes()) {
+				if ($throwPointType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
 					continue;
 				}
 				if ($throwType->isSuperTypeOf($throwPointType)->yes()) {
@@ -74,9 +72,7 @@ class MissingCheckedExceptionInThrowsCheck
 
 		$position = 0;
 		foreach ($tryCatch->catches as $catch) {
-			$type = TypeCombinator::union(...array_map(static function (Node\Name $class): ObjectType {
-				return new ObjectType($class->toString());
-			}, $catch->types));
+			$type = TypeCombinator::union(...array_map(static fn (Node\Name $class): ObjectType => new ObjectType($class->toString()), $catch->types));
 			if (!$throwPointType->isSuperTypeOf($type)->yes()) {
 				continue;
 			}

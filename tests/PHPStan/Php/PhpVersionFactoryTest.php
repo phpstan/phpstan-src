@@ -3,6 +3,7 @@
 namespace PHPStan\Php;
 
 use PHPUnit\Framework\TestCase;
+use const PHP_VERSION_ID;
 
 class PhpVersionFactoryTest extends TestCase
 {
@@ -75,16 +76,12 @@ class PhpVersionFactoryTest extends TestCase
 
 	/**
 	 * @dataProvider dataCreate
-	 * @param int|null $versionId
-	 * @param string|null $composerPhpVersion
-	 * @param int $expectedVersion
-	 * @param string|null $expectedVersionString
 	 */
 	public function testCreate(
 		?int $versionId,
 		?string $composerPhpVersion,
 		int $expectedVersion,
-		?string $expectedVersionString
+		?string $expectedVersionString,
 	): void
 	{
 		$factory = new PhpVersionFactory($versionId, $composerPhpVersion);

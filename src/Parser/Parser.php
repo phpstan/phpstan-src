@@ -2,21 +2,22 @@
 
 namespace PHPStan\Parser;
 
+use PhpParser\Node;
+
 /** @api */
 interface Parser
 {
 
 	/**
 	 * @param string $file path to a file to parse
-	 * @return \PhpParser\Node\Stmt[]
-	 * @throws \PHPStan\Parser\ParserErrorsException
+	 * @return Node\Stmt[]
+	 * @throws ParserErrorsException
 	 */
 	public function parseFile(string $file): array;
 
 	/**
-	 * @param string $sourceCode
-	 * @return \PhpParser\Node\Stmt[]
-	 * @throws \PHPStan\Parser\ParserErrorsException
+	 * @return Node\Stmt[]
+	 * @throws ParserErrorsException
 	 */
 	public function parseString(string $sourceCode): array;
 

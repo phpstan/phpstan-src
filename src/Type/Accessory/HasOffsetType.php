@@ -16,6 +16,8 @@ use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 class HasOffsetType implements CompoundType, AccessoryType
 {
@@ -27,12 +29,9 @@ class HasOffsetType implements CompoundType, AccessoryType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private \PHPStan\Type\Type $offsetType;
-
 	/** @api */
-	public function __construct(Type $offsetType)
+	public function __construct(private Type $offsetType)
 	{
-		$this->offsetType = $offsetType;
 	}
 
 	public function getOffsetType(): Type
@@ -86,7 +85,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 			&& $this->offsetType->equals($type->offsetType);
 	}
 
-	public function describe(\PHPStan\Type\VerbosityLevel $level): string
+	public function describe(VerbosityLevel $level): string
 	{
 		return sprintf('hasOffset(%s)', $this->offsetType->describe($level));
 	}
@@ -112,6 +111,14 @@ class HasOffsetType implements CompoundType, AccessoryType
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
+		return $this;
+	}
+
+	public function unsetOffset(Type $offsetType): Type
+	{
+		if ($this->offsetType->isSuperTypeOf($offsetType)->yes()) {
+			return new ErrorType();
+		}
 		return $this;
 	}
 

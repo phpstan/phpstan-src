@@ -4,11 +4,13 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ExistingClassInClassExtendsRule>
+ * @extends RuleTestCase<ExistingClassInClassExtendsRule>
  */
-class ExistingClassInClassExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
+class ExistingClassInClassExtendsRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
@@ -16,7 +18,7 @@ class ExistingClassInClassExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassInClassExtendsRule(
 			new ClassCaseSensitivityCheck($broker, true),
-			$broker
+			$broker,
 		);
 	}
 
@@ -71,6 +73,24 @@ class ExistingClassInClassExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Class ExtendsFinalByTag\Bar2 extends @final class ExtendsFinalByTag\Bar.',
 				21,
+			],
+		]);
+	}
+
+	public function testEnums(): void
+	{
+		if (!self::$useStaticReflectionProvider || PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs static reflection and PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/class-extends-enum.php'], [
+			[
+				'Class ClassExtendsEnum\Foo extends enum ClassExtendsEnum\FooEnum.',
+				10,
+			],
+			[
+				'Anonymous class extends enum ClassExtendsEnum\FooEnum.',
+				16,
 			],
 		]);
 	}

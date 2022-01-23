@@ -3,15 +3,20 @@
 namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypehintHelper;
+use ReflectionMethod;
+use function array_change_key_case;
+use function array_key_exists;
+use function array_keys;
+use function is_array;
+use function sprintf;
+use function strtolower;
+use const CASE_LOWER;
 
 class FunctionSignatureMapProvider implements SignatureMapProvider
 {
-
-	private \PHPStan\Reflection\SignatureMap\SignatureMapParser $parser;
-
-	private PhpVersion $phpVersion;
 
 	/** @var mixed[]|null */
 	private ?array $signatureMap = null;
@@ -19,10 +24,8 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 	/** @var array<string, array{hasSideEffects: bool}>|null */
 	private ?array $functionMetadata = null;
 
-	public function __construct(SignatureMapParser $parser, PhpVersion $phpVersion)
+	public function __construct(private SignatureMapParser $parser, private PhpVersion $phpVersion)
 	{
-		$this->parser = $parser;
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function hasMethodSignature(string $className, string $methodName, int $variant = 0): bool
@@ -39,7 +42,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		return array_key_exists(strtolower($name), $signatureMap);
 	}
 
-	public function getMethodSignature(string $className, string $methodName, ?\ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature
+	public function getMethodSignature(string $className, string $methodName, ?ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature
 	{
 		$signature = $this->getFunctionSignature(sprintf('%s::%s', $className, $methodName), $className, $variant);
 		$parameters = [];
@@ -60,7 +63,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 				$parameter->getType(),
 				TypehintHelper::decideTypeFromReflection($nativeParameters[$i]->getType()),
 				$parameter->passedByReference(),
-				$parameter->isVariadic()
+				$parameter->isVariadic(),
 			);
 		}
 
@@ -74,7 +77,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 			$parameters,
 			$signature->getReturnType(),
 			$nativeReturnType,
-			$signature->isVariadic()
+			$signature->isVariadic(),
 		);
 	}
 
@@ -86,14 +89,14 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		}
 
 		if (!$this->hasFunctionSignature($functionName)) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$signatureMap = self::getSignatureMap();
 
 		return $this->parser->getFunctionSignature(
 			$signatureMap[$functionName],
-			$className
+			$className,
 		);
 	}
 
@@ -109,8 +112,6 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @param string $className
-	 * @param string $methodName
 	 * @return array{hasSideEffects: bool}
 	 */
 	public function getMethodMetadata(string $className, string $methodName): array
@@ -119,7 +120,6 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @param string $functionName
 	 * @return array{hasSideEffects: bool}
 	 */
 	public function getFunctionMetadata(string $functionName): array
@@ -127,7 +127,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		$functionName = strtolower($functionName);
 
 		if (!$this->hasFunctionMetadata($functionName)) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $this->getFunctionMetadataMap()[$functionName];
@@ -155,7 +155,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		if ($this->signatureMap === null) {
 			$signatureMap = require __DIR__ . '/../../../resources/functionMap.php';
 			if (!is_array($signatureMap)) {
-				throw new \PHPStan\ShouldNotHappenException('Signature map could not be loaded.');
+				throw new ShouldNotHappenException('Signature map could not be loaded.');
 			}
 
 			$signatureMap = array_change_key_case($signatureMap, CASE_LOWER);
@@ -163,7 +163,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 			if ($this->phpVersion->getVersionId() >= 70400) {
 				$php74MapDelta = require __DIR__ . '/../../../resources/functionMap_php74delta.php';
 				if (!is_array($php74MapDelta)) {
-					throw new \PHPStan\ShouldNotHappenException('Signature map could not be loaded.');
+					throw new ShouldNotHappenException('Signature map could not be loaded.');
 				}
 
 				$signatureMap = $this->computeSignatureMap($signatureMap, $php74MapDelta);
@@ -172,7 +172,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 			if ($this->phpVersion->getVersionId() >= 80000) {
 				$php80MapDelta = require __DIR__ . '/../../../resources/functionMap_php80delta.php';
 				if (!is_array($php80MapDelta)) {
-					throw new \PHPStan\ShouldNotHappenException('Signature map could not be loaded.');
+					throw new ShouldNotHappenException('Signature map could not be loaded.');
 				}
 
 				$signatureMap = $this->computeSignatureMap($signatureMap, $php80MapDelta);

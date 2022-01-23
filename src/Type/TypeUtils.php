@@ -6,14 +6,14 @@ use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
+use function array_merge;
 
 /** @api */
 class TypeUtils
 {
 
 	/**
-	 * @param \PHPStan\Type\Type $type
-	 * @return \PHPStan\Type\ArrayType[]
+	 * @return ArrayType[]
 	 */
 	public static function getArrays(Type $type): array
 	{
@@ -57,8 +57,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $type
-	 * @return \PHPStan\Type\Constant\ConstantArrayType[]
+	 * @return ConstantArrayType[]
 	 */
 	public static function getConstantArrays(Type $type): array
 	{
@@ -84,8 +83,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $type
-	 * @return \PHPStan\Type\Constant\ConstantStringType[]
+	 * @return ConstantStringType[]
 	 */
 	public static function getConstantStrings(Type $type): array
 	{
@@ -93,8 +91,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $type
-	 * @return \PHPStan\Type\ConstantType[]
+	 * @return ConstantType[]
 	 */
 	public static function getConstantTypes(Type $type): array
 	{
@@ -102,8 +99,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $type
-	 * @return \PHPStan\Type\ConstantType[]
+	 * @return ConstantType[]
 	 */
 	public static function getAnyConstantTypes(Type $type): array
 	{
@@ -111,8 +107,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $type
-	 * @return \PHPStan\Type\ArrayType[]
+	 * @return ArrayType[]
 	 */
 	public static function getAnyArrays(Type $type): array
 	{
@@ -131,7 +126,6 @@ class TypeUtils
 	}
 
 	/**
-	 * @param Type $type
 	 * @return string[]
 	 */
 	public static function getDirectClassNames(Type $type): array
@@ -157,8 +151,15 @@ class TypeUtils
 	}
 
 	/**
-	 * @param Type $type
-	 * @return \PHPStan\Type\ConstantScalarType[]
+	 * @return IntegerRangeType[]
+	 */
+	public static function getIntegerRanges(Type $type): array
+	{
+		return self::map(IntegerRangeType::class, $type, false);
+	}
+
+	/**
+	 * @return ConstantScalarType[]
 	 */
 	public static function getConstantScalars(Type $type): array
 	{
@@ -167,7 +168,6 @@ class TypeUtils
 
 	/**
 	 * @internal
-	 * @param Type $type
 	 * @return ConstantArrayType[]
 	 */
 	public static function getOldConstantArrays(Type $type): array
@@ -176,17 +176,13 @@ class TypeUtils
 	}
 
 	/**
-	 * @param string $typeClass
-	 * @param Type $type
-	 * @param bool $inspectIntersections
-	 * @param bool $stopOnUnmatched
 	 * @return mixed[]
 	 */
 	private static function map(
 		string $typeClass,
 		Type $type,
 		bool $inspectIntersections,
-		bool $stopOnUnmatched = true
+		bool $stopOnUnmatched = true,
 	): array
 	{
 		if ($type instanceof $typeClass) {
@@ -244,7 +240,6 @@ class TypeUtils
 	}
 
 	/**
-	 * @param Type $type
 	 * @return Type[]
 	 */
 	public static function flattenTypes(Type $type): array
@@ -291,7 +286,6 @@ class TypeUtils
 	}
 
 	/**
-	 * @param Type $type
 	 * @return HasPropertyType[]
 	 */
 	public static function getHasPropertyTypes(Type $type): array
@@ -313,8 +307,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $type
-	 * @return \PHPStan\Type\Accessory\AccessoryType[]
+	 * @return AccessoryType[]
 	 */
 	public static function getAccessoryTypes(Type $type): array
 	{

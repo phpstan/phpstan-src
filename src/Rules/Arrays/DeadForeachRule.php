@@ -8,7 +8,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Foreach_>
+ * @implements Rule<Node\Stmt\Foreach_>
  */
 class DeadForeachRule implements Rule
 {

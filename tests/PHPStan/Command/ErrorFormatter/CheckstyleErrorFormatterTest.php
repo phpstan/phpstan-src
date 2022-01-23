@@ -6,6 +6,7 @@ use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use function sprintf;
 
 class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 {
@@ -112,25 +113,20 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @dataProvider dataFormatterOutputProvider
 	 *
-	 * @param string $message
-	 * @param int    $exitCode
-	 * @param int    $numFileErrors
-	 * @param int    $numGenericErrors
-	 * @param string $expected
 	 */
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
-		string $expected
+		string $expected,
 	): void
 	{
 		$formatter = new CheckstyleErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getOutput()
+			$this->getOutput(),
 		), sprintf('%s: response code do not match', $message));
 
 		$outputContent = $this->getOutputContent();
@@ -147,7 +143,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			5,
 			true,
 			__DIR__ . '/Foo.php',
-			__DIR__ . '/FooTrait.php'
+			__DIR__ . '/FooTrait.php',
 		);
 		$formatter->formatErrors(new AnalysisResult(
 			[$error],
@@ -156,7 +152,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			[],
 			false,
 			null,
-			true
+			true,
 		), $this->getOutput());
 		$this->assertXmlStringEqualsXmlString('<checkstyle>
 	<file name="FooTrait.php">

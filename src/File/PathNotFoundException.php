@@ -2,15 +2,15 @@
 
 namespace PHPStan\File;
 
-class PathNotFoundException extends \Exception
+use Exception;
+use function sprintf;
+
+class PathNotFoundException extends Exception
 {
 
-	private string $path;
-
-	public function __construct(string $path)
+	public function __construct(private string $path)
 	{
 		parent::__construct(sprintf('Path %s does not exist', $path));
-		$this->path = $path;
 	}
 
 	public function getPath(): string

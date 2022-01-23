@@ -4,11 +4,12 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ExistingClassInInstanceOfRule>
+ * @extends RuleTestCase<ExistingClassInInstanceOfRule>
  */
-class ExistingClassInInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
+class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
@@ -17,7 +18,7 @@ class ExistingClassInInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 		return new ExistingClassInInstanceOfRule(
 			$broker,
 			new ClassCaseSensitivityCheck($broker, true),
-			true
+			true,
 		);
 	}
 
@@ -50,7 +51,7 @@ class ExistingClassInInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Using self outside of class scope.',
 					17,
 				],
-			]
+			],
 		);
 	}
 

@@ -9,17 +9,12 @@ use PhpParser\NodeAbstract;
 class LiteralArrayNode extends NodeAbstract implements VirtualNode
 {
 
-	/** @var LiteralArrayItem[] */
-	private array $itemNodes;
-
 	/**
-	 * @param Array_ $originalNode
 	 * @param LiteralArrayItem[] $itemNodes
 	 */
-	public function __construct(Array_ $originalNode, array $itemNodes)
+	public function __construct(Array_ $originalNode, private array $itemNodes)
 	{
 		parent::__construct($originalNode->getAttributes());
-		$this->itemNodes = $itemNodes;
 	}
 
 	/**

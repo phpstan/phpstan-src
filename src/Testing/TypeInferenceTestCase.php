@@ -17,20 +17,25 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
+use ReflectionProperty;
+use function array_map;
+use function array_merge;
+use function count;
+use function is_string;
+use function sprintf;
 
 /** @api */
-abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
+abstract class TypeInferenceTestCase extends PHPStanTestCase
 {
 
 	/**
-	 * @param string $file
-	 * @param callable(\PhpParser\Node, \PHPStan\Analyser\Scope): void $callback
+	 * @param callable(Node , Scope ): void $callback
 	 * @param string[] $dynamicConstantNames
 	 */
 	public function processFile(
 		string $file,
 		callable $callback,
-		array $dynamicConstantNames = []
+		array $dynamicConstantNames = [],
 	): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();
@@ -38,7 +43,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 		$resolver = new NodeScopeResolver(
 			$reflectionProvider,
-			self::getReflectors()[0],
+			self::getReflector(),
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
 			self::getContainer()->getByType(FileTypeMapper::class),
@@ -52,15 +57,13 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 			true,
 			$this->getEarlyTerminatingMethodCalls(),
 			$this->getEarlyTerminatingFunctionCalls(),
-			true
+			true,
 		);
-		$resolver->setAnalysedFiles(array_map(static function (string $file) use ($fileHelper): string {
-			return $fileHelper->normalizePath($file);
-		}, array_merge([$file], $this->getAdditionalAnalysedFiles())));
+		$resolver->setAnalysedFiles(array_map(static fn (string $file): string => $fileHelper->normalizePath($file), array_merge([$file], $this->getAdditionalAnalysedFiles())));
 
 		$scopeFactory = $this->createScopeFactory($reflectionProvider, $typeSpecifier);
 		if (count($dynamicConstantNames) > 0) {
-			$reflectionProperty = new \ReflectionProperty(DirectScopeFactory::class, 'dynamicConstantNames');
+			$reflectionProperty = new ReflectionProperty(DirectScopeFactory::class, 'dynamicConstantNames');
 			$reflectionProperty->setAccessible(true);
 			$reflectionProperty->setValue($scopeFactory, $dynamicConstantNames);
 		}
@@ -69,20 +72,18 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 		$resolver->processNodes(
 			$this->getParser()->parseFile($file),
 			$scope,
-			$callback
+			$callback,
 		);
 	}
 
 	/**
 	 * @api
-	 * @param string $assertType
-	 * @param string $file
 	 * @param mixed ...$args
 	 */
 	public function assertFileAsserts(
 		string $assertType,
 		string $file,
-		...$args
+		...$args,
 	): void
 	{
 		if ($assertType === 'type') {
@@ -93,7 +94,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 			$this->assertSame(
 				$expected,
 				$actual,
-				sprintf('Expected type %s, got type %s in %s on line %d.', $expected, $actual, $file, $args[2])
+				sprintf('Expected type %s, got type %s in %s on line %d.', $expected, $actual, $file, $args[2]),
 			);
 		} elseif ($assertType === 'variableCertainty') {
 			$expectedCertainty = $args[0];
@@ -101,14 +102,13 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 			$variableName = $args[2];
 			$this->assertTrue(
 				$expectedCertainty->equals($actualCertainty),
-				sprintf('Expected %s, actual certainty of variable $%s is %s', $expectedCertainty->describe(), $variableName, $actualCertainty->describe())
+				sprintf('Expected %s, actual certainty of variable $%s is %s', $expectedCertainty->describe(), $variableName, $actualCertainty->describe()),
 			);
 		}
 	}
 
 	/**
 	 * @api
-	 * @param string $file
 	 * @return array<string, mixed[]>
 	 */
 	public function gatherAssertTypes(string $file): array
@@ -171,7 +171,7 @@ abstract class TypeInferenceTestCase extends \PHPStan\Testing\PHPStanTestCase
 				$this->fail(sprintf(
 					'ERROR: Wrong %s() call on line %d.',
 					$functionName,
-					$node->getLine()
+					$node->getLine(),
 				));
 			}
 

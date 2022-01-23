@@ -5,13 +5,14 @@ namespace PHPStan\Reflection;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
+use function array_merge;
 
 class GenericParametersAcceptorResolver
 {
 
 	/**
 	 * @api
-	 * @param \PHPStan\Type\Type[] $argTypes
+	 * @param Type[] $argTypes
 	 */
 	public static function resolve(array $argTypes, ParametersAcceptor $parametersAcceptor): ParametersAcceptor
 	{
@@ -27,19 +28,15 @@ class GenericParametersAcceptorResolver
 			}
 
 			$paramType = $param->getType();
-
-			// todo zde "doaplikovat" typy, ktere se dosud nevyskytly - typicky callable(T) - parametr callable
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType));
 		}
 
 		return new ResolvedFunctionVariant(
 			$parametersAcceptor,
 			new TemplateTypeMap(array_merge(
-				$parametersAcceptor->getTemplateTypeMap()->map(static function (string $name, Type $type): Type {
-					return new ErrorType();
-				})->getTypes(),
-				$typeMap->getTypes()
-			))
+				$parametersAcceptor->getTemplateTypeMap()->map(static fn (string $name, Type $type): Type => new ErrorType())->getTypes(),
+				$typeMap->getTypes(),
+			)),
 		);
 	}
 

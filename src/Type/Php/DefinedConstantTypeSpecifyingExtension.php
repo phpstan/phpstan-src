@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -12,6 +13,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
+use function count;
 
 class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -26,7 +28,7 @@ class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection,
 		FuncCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		return $functionReflection->getName() === 'defined'
@@ -38,7 +40,7 @@ class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		FunctionReflection $functionReflection,
 		FuncCall $node,
 		Scope $scope,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		$constantName = $scope->getType($node->getArgs()[0]->value);
@@ -50,13 +52,13 @@ class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		}
 
 		return $this->typeSpecifier->create(
-			new \PhpParser\Node\Expr\ConstFetch(
-				new \PhpParser\Node\Name\FullyQualified($constantName->getValue())
+			new Node\Expr\ConstFetch(
+				new Node\Name\FullyQualified($constantName->getValue()),
 			),
 			new MixedType(),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

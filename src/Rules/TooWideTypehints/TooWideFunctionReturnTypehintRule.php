@@ -9,13 +9,16 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\NullType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\FunctionReturnStatementsNode>
+ * @implements Rule<FunctionReturnStatementsNode>
  */
 class TooWideFunctionReturnTypehintRule implements Rule
 {
@@ -29,7 +32,7 @@ class TooWideFunctionReturnTypehintRule implements Rule
 	{
 		$function = $scope->getFunction();
 		if (!$function instanceof FunctionReflection) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$functionReturnType = ParametersAcceptorSelector::selectSingle($function->getVariants())->getReturnType();
@@ -81,7 +84,7 @@ class TooWideFunctionReturnTypehintRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Function %s() never returns %s so it can be removed from the return type.',
 				$function->getName(),
-				$type->describe(VerbosityLevel::getRecommendedLevelByType($type))
+				$type->describe(VerbosityLevel::getRecommendedLevelByType($type)),
 			))->build();
 		}
 

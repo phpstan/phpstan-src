@@ -9,18 +9,16 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\VoidType;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
+ * @implements Rule<Node\Stmt\Expression>
  */
 class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -65,7 +63,7 @@ class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Call to %s::%s() on a separate line has no effect.',
 					$classReflection->getDisplayName(),
-					$constructor->getName()
+					$constructor->getName(),
 				))->build(),
 			];
 		}

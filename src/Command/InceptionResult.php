@@ -5,6 +5,8 @@ namespace PHPStan\Command;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Internal\BytesHelper;
 use function memory_get_peak_usage;
+use function sprintf;
+use function unlink;
 
 class InceptionResult
 {
@@ -12,55 +14,23 @@ class InceptionResult
 	/** @var callable(): (array{string[], bool}) */
 	private $filesCallback;
 
-	private Output $stdOutput;
-
-	private Output $errorOutput;
-
-	private \PHPStan\DependencyInjection\Container $container;
-
-	private bool $isDefaultLevelUsed;
-
-	private string $memoryLimitFile;
-
-	private ?string $projectConfigFile;
-
-	/** @var mixed[]|null */
-	private ?array $projectConfigArray;
-
-	private ?string $generateBaselineFile;
-
 	/**
 	 * @param callable(): (array{string[], bool}) $filesCallback
-	 * @param Output $stdOutput
-	 * @param Output $errorOutput
-	 * @param \PHPStan\DependencyInjection\Container $container
-	 * @param bool $isDefaultLevelUsed
-	 * @param string $memoryLimitFile
-	 * @param string|null $projectConfigFile
-	 * @param mixed[] $projectConfigArray
-	 * @param string|null $generateBaselineFile
+	 * @param mixed[]|null $projectConfigArray
 	 */
 	public function __construct(
 		callable $filesCallback,
-		Output $stdOutput,
-		Output $errorOutput,
-		Container $container,
-		bool $isDefaultLevelUsed,
-		string $memoryLimitFile,
-		?string $projectConfigFile,
-		?array $projectConfigArray,
-		?string $generateBaselineFile
+		private Output $stdOutput,
+		private Output $errorOutput,
+		private Container $container,
+		private bool $isDefaultLevelUsed,
+		private string $memoryLimitFile,
+		private ?string $projectConfigFile,
+		private ?array $projectConfigArray,
+		private ?string $generateBaselineFile,
 	)
 	{
 		$this->filesCallback = $filesCallback;
-		$this->stdOutput = $stdOutput;
-		$this->errorOutput = $errorOutput;
-		$this->container = $container;
-		$this->isDefaultLevelUsed = $isDefaultLevelUsed;
-		$this->memoryLimitFile = $memoryLimitFile;
-		$this->projectConfigFile = $projectConfigFile;
-		$this->projectConfigArray = $projectConfigArray;
-		$this->generateBaselineFile = $generateBaselineFile;
 	}
 
 	/**

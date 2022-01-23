@@ -3,20 +3,22 @@
 namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CaughtExceptionExistenceRule>
+ * @extends RuleTestCase<CaughtExceptionExistenceRule>
  */
-class CaughtExceptionExistenceRuleTest extends \PHPStan\Testing\RuleTestCase
+class CaughtExceptionExistenceRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new CaughtExceptionExistenceRule(
 			$broker,
 			new ClassCaseSensitivityCheck($broker, true),
-			true
+			true,
 		);
 	}
 

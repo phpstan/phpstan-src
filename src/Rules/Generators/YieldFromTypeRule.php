@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Generators;
 
+use Generator;
 use PhpParser\Node;
 use PhpParser\Node\Expr\YieldFrom;
 use PHPStan\Analyser\Scope;
@@ -14,24 +15,19 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\YieldFrom>
+ * @implements Rule<Node\Expr\YieldFrom>
  */
 class YieldFromTypeRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private bool $reportMaybes;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper,
-		bool $reportMaybes
+		private RuleLevelHelper $ruleLevelHelper,
+		private bool $reportMaybes,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string
@@ -48,7 +44,7 @@ class YieldFromTypeRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$messagePattern,
-					$exprType->describe(VerbosityLevel::typeOnly())
+					$exprType->describe(VerbosityLevel::typeOnly()),
 				))->line($node->expr->getLine())->build(),
 			];
 		} elseif (
@@ -59,7 +55,7 @@ class YieldFromTypeRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$messagePattern,
-					$exprType->describe(VerbosityLevel::typeOnly())
+					$exprType->describe(VerbosityLevel::typeOnly()),
 				))->line($node->expr->getLine())->build(),
 			];
 		}
@@ -84,7 +80,7 @@ class YieldFromTypeRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects key type %s, %s given.',
 				$returnType->getIterableKeyType()->describe($verbosityLevel),
-				$exprType->getIterableKeyType()->describe($verbosityLevel)
+				$exprType->getIterableKeyType()->describe($verbosityLevel),
 			))->line($node->expr->getLine())->build();
 		}
 		if (!$this->ruleLevelHelper->accepts($returnType->getIterableValueType(), $exprType->getIterableValueType(), $scope->isDeclareStrictTypes())) {
@@ -92,7 +88,7 @@ class YieldFromTypeRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects value type %s, %s given.',
 				$returnType->getIterableValueType()->describe($verbosityLevel),
-				$exprType->getIterableValueType()->describe($verbosityLevel)
+				$exprType->getIterableValueType()->describe($verbosityLevel),
 			))->line($node->expr->getLine())->build();
 		}
 
@@ -110,8 +106,8 @@ class YieldFromTypeRule implements Rule
 			return $messages;
 		}
 
-		$exprSendType = GenericTypeVariableResolver::getType($exprType, \Generator::class, 'TSend');
-		$thisSendType = GenericTypeVariableResolver::getType($currentReturnType, \Generator::class, 'TSend');
+		$exprSendType = GenericTypeVariableResolver::getType($exprType, Generator::class, 'TSend');
+		$thisSendType = GenericTypeVariableResolver::getType($currentReturnType, Generator::class, 'TSend');
 		if ($exprSendType === null || $thisSendType === null) {
 			return $messages;
 		}
@@ -121,13 +117,13 @@ class YieldFromTypeRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects delegated TSend type %s, %s given.',
 				$exprSendType->describe(VerbosityLevel::typeOnly()),
-				$thisSendType->describe(VerbosityLevel::typeOnly())
+				$thisSendType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		} elseif ($this->reportMaybes && !$isSuperType->yes()) {
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects delegated TSend type %s, %s given.',
 				$exprSendType->describe(VerbosityLevel::typeOnly()),
-				$thisSendType->describe(VerbosityLevel::typeOnly())
+				$thisSendType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

@@ -4,15 +4,16 @@ namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<OffsetAccessAssignOpRule>
+ * @extends RuleTestCase<OffsetAccessAssignOpRule>
  */
-class OffsetAccessAssignOpRuleTest extends \PHPStan\Testing\RuleTestCase
+class OffsetAccessAssignOpRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkUnions;
+	private bool $checkUnions;
 
 	protected function getRule(): Rule
 	{

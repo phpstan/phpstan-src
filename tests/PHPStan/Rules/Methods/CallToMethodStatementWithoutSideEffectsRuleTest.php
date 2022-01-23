@@ -5,9 +5,10 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallToMethodStatementWithoutSideEffectsRule>
+ * @extends RuleTestCase<CallToMethodStatementWithoutSideEffectsRule>
  */
 class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 {
@@ -83,6 +84,28 @@ class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 	public function testBug4455(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4455.php'], []);
+	}
+
+	public function testFirstClassCallables(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			self::markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/first-class-callable-method-without-side-effect.php'], [
+			[
+				'Call to method FirstClassCallableMethodWithoutSideEffect\Foo::doFoo() on a separate line has no effect.',
+				12,
+			],
+			[
+				'Call to method FirstClassCallableMethodWithoutSideEffect\Bar::doFoo() on a separate line has no effect.',
+				36,
+			],
+			[
+				'Call to method FirstClassCallableMethodWithoutSideEffect\Bar::doBar() on a separate line has no effect.',
+				39,
+			],
+		]);
 	}
 
 }

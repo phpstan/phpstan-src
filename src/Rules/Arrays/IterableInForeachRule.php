@@ -4,28 +4,27 @@ namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Foreach_>
+ * @implements Rule<Node\Stmt\Foreach_>
  */
-class IterableInForeachRule implements \PHPStan\Rules\Rule
+class IterableInForeachRule implements Rule
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt\Foreach_::class;
+		return Node\Stmt\Foreach_::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -34,9 +33,7 @@ class IterableInForeachRule implements \PHPStan\Rules\Rule
 			$scope,
 			$node->expr,
 			'Iterating over an object of an unknown class %s.',
-			static function (Type $type): bool {
-				return $type->isIterable()->yes();
-			}
+			static fn (Type $type): bool => $type->isIterable()->yes(),
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -49,7 +46,7 @@ class IterableInForeachRule implements \PHPStan\Rules\Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Argument of an invalid type %s supplied for foreach, only iterables are supported.',
-				$type->describe(VerbosityLevel::typeOnly())
+				$type->describe(VerbosityLevel::typeOnly()),
 			))->line($node->expr->getLine())->build(),
 		];
 	}

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<NonClassAttributeClassRule>
@@ -37,6 +38,20 @@ class NonClassAttributeClassRuleTest extends RuleTestCase
 			[
 				'Attribute class NonClassAttributeClass\Ipsum constructor must be public.',
 				29,
+			],
+		]);
+	}
+
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/enum-cannot-be-attribute.php'], [
+			[
+				'Enum cannot be an Attribute class.',
+				5,
 			],
 		]);
 	}

@@ -7,12 +7,16 @@ use PHPStan\Analyser\Scope;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function in_array;
+use function sprintf;
+use function strpos;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node>
+ * @implements Rule<Node>
  */
-class InvalidPHPStanDocTagRule implements \PHPStan\Rules\Rule
+class InvalidPHPStanDocTagRule implements Rule
 {
 
 	private const POSSIBLE_PHPSTAN_TAGS = [
@@ -33,21 +37,18 @@ class InvalidPHPStanDocTagRule implements \PHPStan\Rules\Rule
 		'@phpstan-impure',
 		'@phpstan-type',
 		'@phpstan-import-type',
+		'@phpstan-property',
+		'@phpstan-property-read',
+		'@phpstan-property-write',
 	];
 
-	private Lexer $phpDocLexer;
-
-	private PhpDocParser $phpDocParser;
-
-	public function __construct(Lexer $phpDocLexer, PhpDocParser $phpDocParser)
+	public function __construct(private Lexer $phpDocLexer, private PhpDocParser $phpDocParser)
 	{
-		$this->phpDocLexer = $phpDocLexer;
-		$this->phpDocParser = $phpDocParser;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node::class;
+		return Node::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -81,7 +82,7 @@ class InvalidPHPStanDocTagRule implements \PHPStan\Rules\Rule
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Unknown PHPDoc tag: %s',
-				$phpDocTag->name
+				$phpDocTag->name,
 			))->build();
 		}
 

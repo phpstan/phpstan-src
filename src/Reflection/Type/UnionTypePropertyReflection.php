@@ -7,19 +7,18 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_map;
+use function count;
+use function implode;
 
 class UnionTypePropertyReflection implements PropertyReflection
 {
 
-	/** @var PropertyReflection[] */
-	private array $properties;
-
 	/**
-	 * @param \PHPStan\Reflection\PropertyReflection[] $properties
+	 * @param PropertyReflection[] $properties
 	 */
-	public function __construct(array $properties)
+	public function __construct(private array $properties)
 	{
-		$this->properties = $properties;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -62,9 +61,7 @@ class UnionTypePropertyReflection implements PropertyReflection
 
 	public function isDeprecated(): TrinaryLogic
 	{
-		return TrinaryLogic::extremeIdentity(...array_map(static function (PropertyReflection $property): TrinaryLogic {
-			return $property->isDeprecated();
-		}, $this->properties));
+		return TrinaryLogic::extremeIdentity(...array_map(static fn (PropertyReflection $property): TrinaryLogic => $property->isDeprecated(), $this->properties));
 	}
 
 	public function getDeprecatedDescription(): ?string
@@ -91,9 +88,7 @@ class UnionTypePropertyReflection implements PropertyReflection
 
 	public function isInternal(): TrinaryLogic
 	{
-		return TrinaryLogic::extremeIdentity(...array_map(static function (PropertyReflection $property): TrinaryLogic {
-			return $property->isInternal();
-		}, $this->properties));
+		return TrinaryLogic::extremeIdentity(...array_map(static fn (PropertyReflection $property): TrinaryLogic => $property->isInternal(), $this->properties));
 	}
 
 	public function getDocComment(): ?string
@@ -103,16 +98,12 @@ class UnionTypePropertyReflection implements PropertyReflection
 
 	public function getReadableType(): Type
 	{
-		return TypeCombinator::union(...array_map(static function (PropertyReflection $property): Type {
-			return $property->getReadableType();
-		}, $this->properties));
+		return TypeCombinator::union(...array_map(static fn (PropertyReflection $property): Type => $property->getReadableType(), $this->properties));
 	}
 
 	public function getWritableType(): Type
 	{
-		return TypeCombinator::union(...array_map(static function (PropertyReflection $property): Type {
-			return $property->getWritableType();
-		}, $this->properties));
+		return TypeCombinator::union(...array_map(static fn (PropertyReflection $property): Type => $property->getWritableType(), $this->properties));
 	}
 
 	public function canChangeTypeAfterAssignment(): bool

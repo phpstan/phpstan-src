@@ -2,11 +2,13 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
@@ -29,7 +31,7 @@ interface Scope extends ClassMemberAccessAnswerer
 	public function getTraitReflection(): ?ClassReflection;
 
 	/**
-	 * @return \PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection|null
+	 * @return FunctionReflection|MethodReflection|null
 	 */
 	public function getFunction();
 
@@ -60,7 +62,7 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function getAnonymousFunctionReflection(): ?ParametersAcceptor;
 
-	public function getAnonymousFunctionReturnType(): ?\PHPStan\Type\Type;
+	public function getAnonymousFunctionReturnType(): ?Type;
 
 	public function getType(Expr $node): Type;
 
@@ -69,8 +71,6 @@ interface Scope extends ClassMemberAccessAnswerer
 	 * Works for function/method parameters only.
 	 *
 	 * @internal
-	 * @param Expr $expr
-	 * @return Type
 	 */
 	public function getNativeType(Expr $expr): Type;
 
@@ -89,15 +89,14 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function isInClassExists(string $className): bool;
 
+	public function isInFunctionExists(string $functionName): bool;
+
 	public function isInClosureBind(): bool;
 
 	public function isParameterValueNullable(Param $parameter): bool;
 
 	/**
-	 * @param \PhpParser\Node\Name|\PhpParser\Node\Identifier|\PhpParser\Node\ComplexType|null $type
-	 * @param bool $isNullable
-	 * @param bool $isVariadic
-	 * @return Type
+	 * @param Node\Name|Node\Identifier|Node\ComplexType|null $type
 	 */
 	public function getFunctionType($type, bool $isNullable, bool $isVariadic): Type;
 

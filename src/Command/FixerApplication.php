@@ -5,22 +5,32 @@ namespace PHPStan\Command;
 use Clue\React\NDJson\Decoder;
 use Clue\React\NDJson\Encoder;
 use Composer\CaBundle\CaBundle;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeZone;
+use Jean85\PrettyVersions;
 use Nette\Utils\Json;
+use OutOfBoundsException;
 use Phar;
 use PHPStan\Analyser\AnalyserResult;
+use PHPStan\Analyser\Error;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheClearer;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileMonitor;
 use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\Parallel\Scheduler;
 use PHPStan\Process\CpuCoreCounter;
+use PHPStan\Process\ProcessCanceledException;
+use PHPStan\Process\ProcessCrashedException;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\ProcessPromise;
 use PHPStan\Process\Runnable\RunnableQueue;
 use PHPStan\Process\Runnable\RunnableQueueLogger;
+use PHPStan\ShouldNotHappenException;
 use Psr\Http\Message\ResponseInterface;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
@@ -31,88 +41,65 @@ use React\Promise\ExtendedPromiseInterface;
 use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\Connector;
+use React\Socket\TcpServer;
+use React\Stream\ReadableStreamInterface;
+use RuntimeException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use const PHP_BINARY;
+use Throwable;
 use function Clue\React\Block\await;
+use function count;
+use function defined;
 use function escapeshellarg;
+use function fclose;
+use function fopen;
+use function fwrite;
+use function getenv;
+use function ini_get;
+use function is_dir;
 use function is_file;
+use function is_string;
+use function min;
+use function mkdir;
+use function parse_url;
 use function React\Promise\resolve;
+use function sprintf;
+use function strlen;
+use function strpos;
+use function unlink;
+use const PHP_BINARY;
+use const PHP_URL_PORT;
 
 class FixerApplication
 {
 
-	/** @var FileMonitor */
-	private $fileMonitor;
-
-	/** @var ResultCacheManagerFactory */
-	private $resultCacheManagerFactory;
-
-	/** @var ResultCacheClearer */
-	private $resultCacheClearer;
-
-	/** @var IgnoredErrorHelper */
-	private $ignoredErrorHelper;
-
-	/** @var CpuCoreCounter */
-	private $cpuCoreCounter;
-
-	/** @var Scheduler */
-	private $scheduler;
-
-	/** @var string[] */
-	private $analysedPaths;
-
 	/** @var (ExtendedPromiseInterface&CancellablePromiseInterface)|null */
 	private $processInProgress;
 
-	/** @var string */
-	private $currentWorkingDirectory;
-
-	/** @var string */
-	private $fixerTmpDir;
-
-	private int $maximumNumberOfProcesses;
-
-	/** @var string|null */
-	private $fixerSuggestionId;
+	private ?string $fixerSuggestionId = null;
 
 	/**
-	 * @param FileMonitor $fileMonitor
-	 * @param ResultCacheManagerFactory $resultCacheManagerFactory
 	 * @param string[] $analysedPaths
 	 */
 	public function __construct(
-		FileMonitor $fileMonitor,
-		ResultCacheManagerFactory $resultCacheManagerFactory,
-		ResultCacheClearer $resultCacheClearer,
-		IgnoredErrorHelper $ignoredErrorHelper,
-		CpuCoreCounter $cpuCoreCounter,
-		Scheduler $scheduler,
-		array $analysedPaths,
-		string $currentWorkingDirectory,
-		string $fixerTmpDir,
-		int $maximumNumberOfProcesses
+		private FileMonitor $fileMonitor,
+		private ResultCacheManagerFactory $resultCacheManagerFactory,
+		private ResultCacheClearer $resultCacheClearer,
+		private IgnoredErrorHelper $ignoredErrorHelper,
+		private CpuCoreCounter $cpuCoreCounter,
+		private Scheduler $scheduler,
+		private array $analysedPaths,
+		private string $currentWorkingDirectory,
+		private string $fixerTmpDir,
+		private int $maximumNumberOfProcesses,
 	)
 	{
-		$this->fileMonitor = $fileMonitor;
-		$this->resultCacheManagerFactory = $resultCacheManagerFactory;
-		$this->resultCacheClearer = $resultCacheClearer;
-		$this->ignoredErrorHelper = $ignoredErrorHelper;
-		$this->cpuCoreCounter = $cpuCoreCounter;
-		$this->scheduler = $scheduler;
-		$this->analysedPaths = $analysedPaths;
-		$this->currentWorkingDirectory = $currentWorkingDirectory;
-		$this->fixerTmpDir = $fixerTmpDir;
-		$this->maximumNumberOfProcesses = $maximumNumberOfProcesses;
 	}
 
 	/**
-	 * @param \Symfony\Component\Console\Output\OutputInterface $output
-	 * @param \PHPStan\Analyser\Error[] $fileSpecificErrors
+	 * @param Error[] $fileSpecificErrors
 	 * @param string[] $notFileSpecificErrors
-	 * @return int
 	 */
 	public function run(
 		?string $projectConfigFile,
@@ -122,11 +109,11 @@ class FixerApplication
 		array $fileSpecificErrors,
 		array $notFileSpecificErrors,
 		int $filesCount,
-		string $mainScript
+		string $mainScript,
 	): int
 	{
 		$loop = new StreamSelectLoop();
-		$server = new \React\Socket\TcpServer('127.0.0.1:0', $loop);
+		$server = new TcpServer('127.0.0.1:0', $loop);
 		/** @var string $serverAddress */
 		$serverAddress = $server->getAddress();
 
@@ -141,12 +128,15 @@ class FixerApplication
 				}
 
 			},
-			min($this->cpuCoreCounter->getNumberOfCpuCores(), $this->maximumNumberOfProcesses)
+			min($this->cpuCoreCounter->getNumberOfCpuCores(), $this->maximumNumberOfProcesses),
 		);
 
 		$server->on('connection', function (ConnectionInterface $connection) use ($loop, $projectConfigFile, $input, $output, $fileSpecificErrors, $notFileSpecificErrors, $mainScript, $filesCount, $reanalyseProcessQueue, $inceptionResult): void {
-			$decoder = new Decoder($connection, true, 512, defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0, 128 * 1024 * 1024);
-			$encoder = new Encoder($connection, defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0);
+			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
+			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
+			// phpcs:enable
+			$decoder = new Decoder($connection, true, 512, $jsonInvalidUtf8Ignore, 128 * 1024 * 1024);
+			$encoder = new Encoder($connection, $jsonInvalidUtf8Ignore);
 			$encoder->write(['action' => 'initialData', 'data' => [
 				'fileSpecificErrors' => $fileSpecificErrors,
 				'notFileSpecificErrors' => $notFileSpecificErrors,
@@ -189,16 +179,16 @@ class FixerApplication
 					$data['data']['tmpFile'],
 					$data['data']['insteadOfFile'],
 					$data['data']['fixerSuggestionId'],
-					$input
+					$input,
 				)->done(static function (string $output) use ($encoder, $id): void {
 					$encoder->write(['id' => $id, 'response' => Json::decode($output, Json::FORCE_ARRAY)]);
-				}, static function (\Throwable $e) use ($encoder, $id, $output): void {
-					if ($e instanceof \PHPStan\Process\ProcessCrashedException) {
+				}, static function (Throwable $e) use ($encoder, $id, $output): void {
+					if ($e instanceof ProcessCrashedException) {
 						$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
 						$encoder->write(['id' => $id, 'error' => $e->getMessage()]);
 						return;
 					}
-					if ($e instanceof \PHPStan\Process\ProcessCanceledException) {
+					if ($e instanceof ProcessCanceledException) {
 						$encoder->write(['id' => $id, 'error' => $e->getMessage()]);
 						return;
 					}
@@ -224,7 +214,7 @@ class FixerApplication
 					$mainScript,
 					$projectConfigFile,
 					$this->fixerSuggestionId,
-					$input
+					$input,
 				)->done(function (array $json) use ($encoder, $changes): void {
 					$this->processInProgress = null;
 					$this->fixerSuggestionId = null;
@@ -234,7 +224,7 @@ class FixerApplication
 						'filesCount' => $changes->getTotalFilesCount(),
 					]]);
 					$this->resultCacheClearer->clearTemporaryCaches();
-				}, function (\Throwable $e) use ($encoder, $output): void {
+				}, function (Throwable $e) use ($encoder, $output): void {
 					$this->processInProgress = null;
 					$this->fixerSuggestionId = null;
 					$output->writeln('<error>Worker process exited: ' . $e->getMessage() . '</error>');
@@ -247,7 +237,7 @@ class FixerApplication
 
 		try {
 			$fixerProcess = $this->getFixerProcess($output, $serverPort);
-		} catch (\PHPStan\Command\FixerProcessException $e) {
+		} catch (FixerProcessException) {
 			return 1;
 		}
 
@@ -275,7 +265,7 @@ class FixerApplication
 	{
 		if (!@mkdir($this->fixerTmpDir, 0777) && !is_dir($this->fixerTmpDir)) {
 			$output->writeln(sprintf('Cannot create a temp directory %s', $this->fixerTmpDir));
-			throw new \PHPStan\Command\FixerProcessException();
+			throw new FixerProcessException();
 		}
 
 		$pharPath = $this->fixerTmpDir . '/phpstan-fixer.phar';
@@ -283,12 +273,12 @@ class FixerApplication
 
 		try {
 			$this->downloadPhar($output, $pharPath, $infoPath);
-		} catch (\RuntimeException $e) {
+		} catch (RuntimeException $e) {
 			if (!is_file($pharPath)) {
 				$output->writeln('<fg=red>Could not download the PHPStan Pro executable.</>');
 				$output->writeln($e->getMessage());
 
-				throw new \PHPStan\Command\FixerProcessException();
+				throw new FixerProcessException();
 			}
 		}
 
@@ -297,12 +287,12 @@ class FixerApplication
 
 		try {
 			$phar = new Phar($pharPath);
-		} catch (\Throwable $e) {
+		} catch (Throwable) {
 			@unlink($pharPath);
 			@unlink($infoPath);
 			$output->writeln('<fg=red>PHPStan Pro PHAR signature is corrupted.</>');
 
-			throw new \PHPStan\Command\FixerProcessException();
+			throw new FixerProcessException();
 		}
 
 		if ($phar->getSignature()['hash_type'] !== 'OpenSSL') {
@@ -310,10 +300,10 @@ class FixerApplication
 			@unlink($infoPath);
 			$output->writeln('<fg=red>PHPStan Pro PHAR signature is corrupted.</>');
 
-			throw new \PHPStan\Command\FixerProcessException();
+			throw new FixerProcessException();
 		}
 
-		$env = null;
+		$env = getenv();
 		$forcedPort = $_SERVER['PHPSTAN_PRO_WEB_PORT'] ?? null;
 		if ($forcedPort !== null) {
 			$env['PHPSTAN_PRO_WEB_PORT'] = $_SERVER['PHPSTAN_PRO_WEB_PORT'];
@@ -352,7 +342,7 @@ class FixerApplication
 	private function downloadPhar(
 		OutputInterface $output,
 		string $pharPath,
-		string $infoPath
+		string $infoPath,
 	): void
 	{
 		$currentVersion = null;
@@ -360,11 +350,11 @@ class FixerApplication
 			/** @var array{version: string, date: string} $currentInfo */
 			$currentInfo = Json::decode(FileReader::read($infoPath), Json::FORCE_ARRAY);
 			$currentVersion = $currentInfo['version'];
-			$currentDate = \DateTime::createFromFormat(\DateTime::ATOM, $currentInfo['date']);
+			$currentDate = DateTime::createFromFormat(DateTime::ATOM, $currentInfo['date']);
 			if ($currentDate === false) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
-			if ((new \DateTimeImmutable('', new \DateTimeZone('UTC'))) <= $currentDate->modify('+24 hours')) {
+			if ((new DateTimeImmutable('', new DateTimeZone('UTC'))) <= $currentDate->modify('+24 hours')) {
 				return;
 			}
 
@@ -382,12 +372,15 @@ class FixerApplication
 						'cafile' => CaBundle::getBundledCaBundlePath(),
 					],
 					'dns' => '1.1.1.1',
-				]
-			)
+				],
+			),
 		);
 
-		/** @var array{url: string, version: string} $latestInfo */
-		$latestInfo = Json::decode((string) await($client->get('https://fixer-download-api.phpstan.com/latest'), $loop, 5.0)->getBody(), Json::FORCE_ARRAY); // @phpstan-ignore-line
+		/**
+		 * @var array{url: string, version: string} $latestInfo
+		 * @phpstan-ignore-next-line
+		 */
+		$latestInfo = Json::decode((string) await($client->get('https://fixer-download-api.phpstan.com/latest'), $loop, 5.0)->getBody(), Json::FORCE_ARRAY);
 		if ($currentVersion !== null && $latestInfo['version'] === $currentVersion) {
 			$this->writeInfoFile($infoPath, $latestInfo['version']);
 			$output->writeln('<fg=green>You\'re running the latest PHPStan Pro!</>');
@@ -398,13 +391,13 @@ class FixerApplication
 
 		$pharPathResource = fopen($pharPath, 'w');
 		if ($pharPathResource === false) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Could not open file %s for writing.', $pharPath));
+			throw new ShouldNotHappenException(sprintf('Could not open file %s for writing.', $pharPath));
 		}
 		$progressBar = new ProgressBar($output);
 		$client->requestStreaming('GET', $latestInfo['url'])->done(static function (ResponseInterface $response) use ($progressBar, $pharPathResource): void {
 			$body = $response->getBody();
-			if (!$body instanceof \React\Stream\ReadableStreamInterface) {
-				throw new \PHPStan\ShouldNotHappenException();
+			if (!$body instanceof ReadableStreamInterface) {
+				throw new ShouldNotHappenException();
 			}
 
 			$totalSize = (int) $response->getHeaderLine('Content-Length');
@@ -418,7 +411,7 @@ class FixerApplication
 				fwrite($pharPathResource, $chunk);
 				$progressBar->setProgress($bytes);
 			});
-		}, static function (\Throwable $e) use ($output): void {
+		}, static function (Throwable $e) use ($output): void {
 			$output->writeln(sprintf('<fg=red>Could not download the PHPStan Pro executable:</> %s', $e->getMessage()));
 		});
 
@@ -437,12 +430,11 @@ class FixerApplication
 	{
 		FileWriter::write($infoPath, Json::encode([
 			'version' => $version,
-			'date' => (new \DateTimeImmutable('', new \DateTimeZone('UTC')))->format(\DateTime::ATOM),
+			'date' => (new DateTimeImmutable('', new DateTimeZone('UTC')))->format(DateTime::ATOM),
 		]));
 	}
 
 	/**
-	 * @param LoopInterface $loop
 	 * @param callable(FileMonitorResult): void $hasChangesCallback
 	 */
 	private function monitorFileChanges(LoopInterface $loop, callable $hasChangesCallback): void
@@ -468,7 +460,7 @@ class FixerApplication
 		string $tmpFile,
 		string $insteadOfFile,
 		string $fixerSuggestionId,
-		InputInterface $input
+		InputInterface $input,
 	): PromiseInterface
 	{
 		$resultCacheManager = $this->resultCacheManagerFactory->create([$insteadOfFile => $tmpFile]);
@@ -489,7 +481,7 @@ class FixerApplication
 				escapeshellarg($fixerSuggestionId),
 				'--allow-parallel',
 			],
-			$input
+			$input,
 		));
 
 		return $runnableQueue->queue($process, $schedule->getNumberOfProcesses());
@@ -501,12 +493,12 @@ class FixerApplication
 		string $mainScript,
 		?string $projectConfigFile,
 		?string $fixerSuggestionId,
-		InputInterface $input
+		InputInterface $input,
 	): PromiseInterface
 	{
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$projectConfigArray = $inceptionResult->getProjectConfigArray();
@@ -520,13 +512,13 @@ class FixerApplication
 				$resultCache,
 				$inceptionResult->getErrorOutput(),
 				false,
-				true
+				true,
 			)->getAnalyserResult();
 			$intermediateErrors = $ignoredErrorHelperResult->process(
 				$result->getErrors(),
 				$isOnlyFiles,
 				$inceptionFiles,
-				count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit()
+				count($result->getInternalErrors()) > 0 || $result->hasReachedInternalErrorsCountLimit(),
 			);
 			$finalFileSpecificErrors = [];
 			$finalNotFileSpecificErrors = [];
@@ -555,20 +547,18 @@ class FixerApplication
 			'fixer:worker',
 			$projectConfigFile,
 			$options,
-			$input
+			$input,
 		));
 		$this->processInProgress = $process->run();
 
-		return $this->processInProgress->then(static function (string $output): array {
-			return Json::decode($output, Json::FORCE_ARRAY);
-		});
+		return $this->processInProgress->then(static fn (string $output): array => Json::decode($output, Json::FORCE_ARRAY));
 	}
 
 	private function getPhpstanVersion(): string
 	{
 		try {
-			return \Jean85\PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
-		} catch (\OutOfBoundsException $e) {
+			return PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
+		} catch (OutOfBoundsException) {
 			return 'Version unknown';
 		}
 	}
@@ -583,7 +573,7 @@ class FixerApplication
 			$contents = FileReader::read('/proc/1/cgroup');
 
 			return strpos($contents, 'docker') !== false;
-		} catch (\PHPStan\File\CouldNotReadFileException $e) {
+		} catch (CouldNotReadFileException) {
 			return false;
 		}
 	}

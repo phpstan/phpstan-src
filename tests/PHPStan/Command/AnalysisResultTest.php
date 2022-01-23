@@ -41,8 +41,8 @@ final class AnalysisResultTest extends PHPStanTestCase
 				[],
 				false,
 				null,
-				true
-			))->getFileSpecificErrors()
+				true,
+			))->getFileSpecificErrors(),
 		);
 	}
 

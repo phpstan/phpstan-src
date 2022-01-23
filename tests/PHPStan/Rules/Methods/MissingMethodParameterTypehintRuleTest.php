@@ -3,14 +3,17 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<MissingMethodParameterTypehintRule>
+ * @extends RuleTestCase<MissingMethodParameterTypehintRule>
  */
-class MissingMethodParameterTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
+class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck($broker, true, true, true, []));

@@ -3,18 +3,15 @@
 namespace PHPStan\Analyser\ResultCache;
 
 use Symfony\Component\Finder\Finder;
+use function dirname;
+use function is_file;
+use function unlink;
 
 class ResultCacheClearer
 {
 
-	private string $cacheFilePath;
-
-	private string $tempResultCachePath;
-
-	public function __construct(string $cacheFilePath, string $tempResultCachePath)
+	public function __construct(private string $cacheFilePath, private string $tempResultCachePath)
 	{
-		$this->cacheFilePath = $cacheFilePath;
-		$this->tempResultCachePath = $tempResultCachePath;
 	}
 
 	public function clear(): string

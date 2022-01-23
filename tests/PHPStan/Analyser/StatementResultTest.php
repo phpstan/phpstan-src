@@ -4,12 +4,14 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Stmt;
 use PHPStan\Parser\Parser;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
+use function sprintf;
 
-class StatementResultTest extends \PHPStan\Testing\PHPStanTestCase
+class StatementResultTest extends PHPStanTestCase
 {
 
 	public function dataIsAlwaysTerminating(): array
@@ -376,12 +378,10 @@ class StatementResultTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsAlwaysTerminating
-	 * @param string $code
-	 * @param bool $expectedIsAlwaysTerminating
 	 */
 	public function testIsAlwaysTerminating(
 		string $code,
-		bool $expectedIsAlwaysTerminating
+		bool $expectedIsAlwaysTerminating,
 	): void
 	{
 		/** @var Parser $parser */
@@ -404,7 +404,7 @@ class StatementResultTest extends \PHPStan\Testing\PHPStanTestCase
 			$stmts,
 			$scope,
 			static function (): void {
-			}
+			},
 		);
 		$this->assertSame($expectedIsAlwaysTerminating, $result->isAlwaysTerminating());
 	}

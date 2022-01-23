@@ -7,6 +7,7 @@ use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<IssetRule>
@@ -14,8 +15,7 @@ use PHPStan\Testing\RuleTestCase;
 class IssetRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
 	protected function getRule(): Rule
 	{
@@ -23,7 +23,7 @@ class IssetRuleTest extends RuleTestCase
 			new PropertyDescriptor(),
 			new PropertyReflectionFinder(),
 			true,
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		));
 	}
 

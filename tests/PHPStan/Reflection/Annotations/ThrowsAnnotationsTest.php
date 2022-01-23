@@ -4,56 +4,63 @@ namespace PHPStan\Reflection\Annotations;
 
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use RuntimeException;
+use ThrowsAnnotations\BarTrait;
+use ThrowsAnnotations\Foo;
+use ThrowsAnnotations\FooInterface;
+use ThrowsAnnotations\FooTrait;
+use ThrowsAnnotations\PhpstanFoo;
 
-class ThrowsAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
+class ThrowsAnnotationsTest extends PHPStanTestCase
 {
 
 	public function dataThrowsAnnotations(): array
 	{
 		return [
 			[
-				\ThrowsAnnotations\Foo::class,
+				Foo::class,
 				[
 					'withoutThrows' => null,
-					'throwsRuntime' => \RuntimeException::class,
-					'staticThrowsRuntime' => \RuntimeException::class,
+					'throwsRuntime' => RuntimeException::class,
+					'staticThrowsRuntime' => RuntimeException::class,
 
 				],
 			],
 			[
-				\ThrowsAnnotations\PhpstanFoo::class,
+				PhpstanFoo::class,
 				[
 					'withoutThrows' => 'void',
-					'throwsRuntime' => \RuntimeException::class,
-					'staticThrowsRuntime' => \RuntimeException::class,
+					'throwsRuntime' => RuntimeException::class,
+					'staticThrowsRuntime' => RuntimeException::class,
 
 				],
 			],
 			[
-				\ThrowsAnnotations\FooInterface::class,
+				FooInterface::class,
 				[
 					'withoutThrows' => null,
-					'throwsRuntime' => \RuntimeException::class,
-					'staticThrowsRuntime' => \RuntimeException::class,
+					'throwsRuntime' => RuntimeException::class,
+					'staticThrowsRuntime' => RuntimeException::class,
 
 				],
 			],
 			[
-				\ThrowsAnnotations\FooTrait::class,
+				FooTrait::class,
 				[
 					'withoutThrows' => null,
-					'throwsRuntime' => \RuntimeException::class,
-					'staticThrowsRuntime' => \RuntimeException::class,
+					'throwsRuntime' => RuntimeException::class,
+					'staticThrowsRuntime' => RuntimeException::class,
 
 				],
 			],
 			[
-				\ThrowsAnnotations\BarTrait::class,
+				BarTrait::class,
 				[
 					'withoutThrows' => null,
-					'throwsRuntime' => \RuntimeException::class,
-					'staticThrowsRuntime' => \RuntimeException::class,
+					'throwsRuntime' => RuntimeException::class,
+					'staticThrowsRuntime' => RuntimeException::class,
 
 				],
 			],
@@ -62,7 +69,6 @@ class ThrowsAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataThrowsAnnotations
-	 * @param string $className
 	 * @param array<string, mixed> $throwsAnnotations
 	 */
 	public function testThrowsAnnotations(string $className, array $throwsAnnotations): void
@@ -88,7 +94,7 @@ class ThrowsAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$throwType = $reflectionProvider->getFunction(new Name\FullyQualified('ThrowsAnnotations\throwsRuntime'), null)->getThrowType();
 		$this->assertNotNull($throwType);
-		$this->assertSame(\RuntimeException::class, $throwType->describe(VerbosityLevel::typeOnly()));
+		$this->assertSame(RuntimeException::class, $throwType->describe(VerbosityLevel::typeOnly()));
 	}
 
 }

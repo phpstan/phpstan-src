@@ -16,14 +16,12 @@ class TypeSpecifyingExtensionTypeInferenceTrueTest extends TypeInferenceTestCase
 
 	/**
 	 * @dataProvider dataTypeSpecifyingExtensionsTrue
-	 * @param string $assertType
-	 * @param string $file
 	 * @param mixed ...$args
 	 */
 	public function testTypeSpecifyingExtensionsTrue(
 		string $assertType,
 		string $file,
-		...$args
+		...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

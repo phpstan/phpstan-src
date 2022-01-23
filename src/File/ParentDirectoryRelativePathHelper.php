@@ -2,17 +2,23 @@
 
 namespace PHPStan\File;
 
+use PHPStan\ShouldNotHappenException;
+use function array_fill;
+use function array_merge;
 use function array_slice;
+use function count;
+use function explode;
+use function implode;
 use function str_replace;
+use function strpos;
+use function substr;
+use function trim;
 
 class ParentDirectoryRelativePathHelper implements RelativePathHelper
 {
 
-	private string $parentDirectory;
-
-	public function __construct(string $parentDirectory)
+	public function __construct(private string $parentDirectory)
 	{
-		$this->parentDirectory = $parentDirectory;
 	}
 
 	public function getRelativePath(string $filename): string
@@ -21,7 +27,6 @@ class ParentDirectoryRelativePathHelper implements RelativePathHelper
 	}
 
 	/**
-	 * @param string $filename
 	 * @return string[]
 	 */
 	public function getFilenameParts(string $filename): array
@@ -56,7 +61,7 @@ class ParentDirectoryRelativePathHelper implements RelativePathHelper
 		$dotsCount = $parentPartsCount - $i;
 
 		if ($dotsCount < 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return array_merge(array_fill(0, $dotsCount, '..'), array_slice($filenameParts, $i));

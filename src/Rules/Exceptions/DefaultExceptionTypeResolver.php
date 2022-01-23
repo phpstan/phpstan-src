@@ -5,44 +5,25 @@ namespace PHPStan\Rules\Exceptions;
 use Nette\Utils\Strings;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use function count;
 
 class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	/** @var string[] */
-	private array $uncheckedExceptionRegexes;
-
-	/** @var string[] */
-	private array $uncheckedExceptionClasses;
-
-	/** @var string[] */
-	private array $checkedExceptionRegexes;
-
-	/** @var string[] */
-	private array $checkedExceptionClasses;
-
 	/**
-	 * @param ReflectionProvider $reflectionProvider
 	 * @param string[] $uncheckedExceptionRegexes
 	 * @param string[] $uncheckedExceptionClasses
 	 * @param string[] $checkedExceptionRegexes
 	 * @param string[] $checkedExceptionClasses
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		array $uncheckedExceptionRegexes,
-		array $uncheckedExceptionClasses,
-		array $checkedExceptionRegexes,
-		array $checkedExceptionClasses
+		private ReflectionProvider $reflectionProvider,
+		private array $uncheckedExceptionRegexes,
+		private array $uncheckedExceptionClasses,
+		private array $checkedExceptionRegexes,
+		private array $checkedExceptionClasses,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->uncheckedExceptionRegexes = $uncheckedExceptionRegexes;
-		$this->uncheckedExceptionClasses = $uncheckedExceptionClasses;
-		$this->checkedExceptionRegexes = $checkedExceptionRegexes;
-		$this->checkedExceptionClasses = $checkedExceptionClasses;
 	}
 
 	public function isCheckedException(string $className, Scope $scope): bool

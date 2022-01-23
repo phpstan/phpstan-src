@@ -11,6 +11,7 @@ use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /** @api */
 class ConstantIntegerType extends IntegerType implements ConstantScalarType
@@ -20,13 +21,10 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 	use ConstantScalarToBooleanTrait;
 	use ConstantNumericComparisonTypeTrait;
 
-	private int $value;
-
 	/** @api */
-	public function __construct(int $value)
+	public function __construct(private int $value)
 	{
 		parent::__construct();
-		$this->value = $value;
 	}
 
 	public function getValue(): int
@@ -65,12 +63,8 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			static function (): string {
-				return 'int';
-			},
-			function (): string {
-				return sprintf('%s', $this->value);
-			}
+			static fn (): string => 'int',
+			fn (): string => sprintf('%s', $this->value),
 		);
 	}
 
@@ -86,7 +80,6 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

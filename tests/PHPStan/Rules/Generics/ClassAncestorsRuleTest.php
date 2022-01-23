@@ -4,10 +4,9 @@ namespace PHPStan\Rules\Generics;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use PHPStan\Type\FileTypeMapper;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ClassAncestorsRule>
+ * @extends RuleTestCase<ClassAncestorsRule>
  */
 class ClassAncestorsRuleTest extends RuleTestCase
 {
@@ -15,15 +14,14 @@ class ClassAncestorsRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new ClassAncestorsRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
 			new GenericAncestorsCheck(
 				$this->createReflectionProvider(),
 				new GenericObjectTypeCheck(),
 				new VarianceCheck(),
 				true,
-				[]
+				[],
 			),
-			new CrossCheckInterfacesHelper()
+			new CrossCheckInterfacesHelper(),
 		);
 	}
 

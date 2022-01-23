@@ -8,21 +8,12 @@ use PHPStan\Type\Type;
 class EnsuredNonNullabilityResultExpression
 {
 
-	private Expr $expression;
-
-	private Type $originalType;
-
-	private Type $originalNativeType;
-
 	public function __construct(
-		Expr $expression,
-		Type $originalType,
-		Type $originalNativeType
+		private Expr $expression,
+		private Type $originalType,
+		private Type $originalNativeType,
 	)
 	{
-		$this->expression = $expression;
-		$this->originalType = $originalType;
-		$this->originalNativeType = $originalNativeType;
 	}
 
 	public function getExpression(): Expr

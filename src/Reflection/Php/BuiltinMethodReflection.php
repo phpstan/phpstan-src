@@ -3,17 +3,21 @@
 namespace PHPStan\Reflection\Php;
 
 use PHPStan\TrinaryLogic;
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionParameter;
+use ReflectionType;
 
 interface BuiltinMethodReflection
 {
 
 	public function getName(): string;
 
-	public function getReflection(): ?\ReflectionMethod;
+	public function getReflection(): ?ReflectionMethod;
 
 	public function getFileName(): ?string;
 
-	public function getDeclaringClass(): \ReflectionClass;
+	public function getDeclaringClass(): ReflectionClass;
 
 	public function getStartLine(): ?int;
 
@@ -33,12 +37,12 @@ interface BuiltinMethodReflection
 
 	public function isVariadic(): bool;
 
-	public function getReturnType(): ?\ReflectionType;
+	public function getReturnType(): ?ReflectionType;
 
-	public function getTentativeReturnType(): ?\ReflectionType;
+	public function getTentativeReturnType(): ?ReflectionType;
 
 	/**
-	 * @return \ReflectionParameter[]
+	 * @return ReflectionParameter[]
 	 */
 	public function getParameters(): array;
 

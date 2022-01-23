@@ -2,35 +2,32 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use function array_map;
+use function count;
+use function is_string;
+use function sprintf;
+use function str_replace;
 
 class TableErrorFormatter implements ErrorFormatter
 {
 
-	private RelativePathHelper $relativePathHelper;
-
-	private bool $showTipsOfTheDay;
-
-	private ?string $editorUrl;
-
 	public function __construct(
-		RelativePathHelper $relativePathHelper,
-		bool $showTipsOfTheDay,
-		?string $editorUrl
+		private RelativePathHelper $relativePathHelper,
+		private bool $showTipsOfTheDay,
+		private ?string $editorUrl,
 	)
 	{
-		$this->relativePathHelper = $relativePathHelper;
-		$this->showTipsOfTheDay = $showTipsOfTheDay;
-		$this->editorUrl = $editorUrl;
 	}
 
 	/** @api */
 	public function formatErrors(
 		AnalysisResult $analysisResult,
-		Output $output
+		Output $output,
 	): int
 	{
 		$projectConfigFile = 'phpstan.neon';
@@ -48,7 +45,7 @@ class TableErrorFormatter implements ErrorFormatter
 					$output->writeLineFormatted(sprintf(
 						"PHPStan is performing only the most basic checks.\nYou can pass a higher rule level through the <fg=cyan>--%s</> option\n(the default and current level is %d) to analyse code more thoroughly.",
 						AnalyseCommand::OPTION_LEVEL,
-						AnalyseCommand::DEFAULT_LEVEL
+						AnalyseCommand::DEFAULT_LEVEL,
 					));
 					$output->writeLineFormatted('');
 				}
@@ -57,7 +54,7 @@ class TableErrorFormatter implements ErrorFormatter
 			return 0;
 		}
 
-		/** @var array<string, \PHPStan\Analyser\Error[]> $fileErrors */
+		/** @var array<string, Error[]> $fileErrors */
 		$fileErrors = [];
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			if (!isset($fileErrors[$fileSpecificError->getFile()])) {
@@ -91,16 +88,12 @@ class TableErrorFormatter implements ErrorFormatter
 		}
 
 		if (count($analysisResult->getNotFileSpecificErrors()) > 0) {
-			$style->table(['', 'Error'], array_map(static function (string $error): array {
-				return ['', $error];
-			}, $analysisResult->getNotFileSpecificErrors()));
+			$style->table(['', 'Error'], array_map(static fn (string $error): array => ['', $error], $analysisResult->getNotFileSpecificErrors()));
 		}
 
 		$warningsCount = count($analysisResult->getWarnings());
 		if ($warningsCount > 0) {
-			$style->table(['', 'Warning'], array_map(static function (string $warning): array {
-				return ['', $warning];
-			}, $analysisResult->getWarnings()));
+			$style->table(['', 'Warning'], array_map(static fn (string $warning): array => ['', $warning], $analysisResult->getWarnings()));
 		}
 
 		$finalMessage = sprintf($analysisResult->getTotalErrorsCount() === 1 ? 'Found %d error' : 'Found %d errors', $analysisResult->getTotalErrorsCount());

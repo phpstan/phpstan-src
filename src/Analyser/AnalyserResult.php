@@ -3,68 +3,46 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Dependency\ExportedNode;
+use function usort;
 
 class AnalyserResult
 {
 
-	/** @var \PHPStan\Analyser\Error[] */
+	/** @var Error[] */
 	private array $unorderedErrors;
 
-	/** @var \PHPStan\Analyser\Error[] */
-	private array $errors;
-
-	/** @var string[] */
-	private array $internalErrors;
-
-	/** @var array<string, array<string>>|null */
-	private ?array $dependencies;
-
-	/** @var array<string, array<ExportedNode>> */
-	private array $exportedNodes;
-
-	private bool $reachedInternalErrorsCountLimit;
-
 	/**
-	 * @param \PHPStan\Analyser\Error[] $errors
+	 * @param Error[] $errors
 	 * @param string[] $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
-	 * @param bool $reachedInternalErrorsCountLimit
 	 */
 	public function __construct(
-		array $errors,
-		array $internalErrors,
-		?array $dependencies,
-		array $exportedNodes,
-		bool $reachedInternalErrorsCountLimit
+		private array $errors,
+		private array $internalErrors,
+		private ?array $dependencies,
+		private array $exportedNodes,
+		private bool $reachedInternalErrorsCountLimit,
 	)
 	{
 		$this->unorderedErrors = $errors;
 
 		usort(
-			$errors,
-			static function (Error $a, Error $b): int {
-				return [
-					$a->getFile(),
-					$a->getLine(),
-					$a->getMessage(),
-				] <=> [
-					$b->getFile(),
-					$b->getLine(),
-					$b->getMessage(),
-				];
-			}
+			$this->errors,
+			static fn (Error $a, Error $b): int => [
+				$a->getFile(),
+				$a->getLine(),
+				$a->getMessage(),
+			] <=> [
+				$b->getFile(),
+				$b->getLine(),
+				$b->getMessage(),
+			],
 		);
-
-		$this->errors = $errors;
-		$this->internalErrors = $internalErrors;
-		$this->dependencies = $dependencies;
-		$this->exportedNodes = $exportedNodes;
-		$this->reachedInternalErrorsCountLimit = $reachedInternalErrorsCountLimit;
 	}
 
 	/**
-	 * @return \PHPStan\Analyser\Error[]
+	 * @return Error[]
 	 */
 	public function getUnorderedErrors(): array
 	{
@@ -72,7 +50,7 @@ class AnalyserResult
 	}
 
 	/**
-	 * @return \PHPStan\Analyser\Error[]
+	 * @return Error[]
 	 */
 	public function getErrors(): array
 	{

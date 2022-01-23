@@ -17,13 +17,10 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 
 	use ConstantScalarTypeTrait;
 
-	private bool $value;
-
 	/** @api */
-	public function __construct(bool $value)
+	public function __construct(private bool $value)
 	{
 		parent::__construct();
-		$this->value = $value;
 	}
 
 	public function getValue(): bool
@@ -95,7 +92,6 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

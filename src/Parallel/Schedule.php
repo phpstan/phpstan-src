@@ -5,19 +5,11 @@ namespace PHPStan\Parallel;
 class Schedule
 {
 
-	private int $numberOfProcesses;
-
-	/** @var array<array<string>> */
-	private array $jobs;
-
 	/**
-	 * @param int $numberOfProcesses
 	 * @param array<array<string>> $jobs
 	 */
-	public function __construct(int $numberOfProcesses, array $jobs)
+	public function __construct(private int $numberOfProcesses, private array $jobs)
 	{
-		$this->numberOfProcesses = $numberOfProcesses;
-		$this->jobs = $jobs;
 	}
 
 	public function getNumberOfProcesses(): int

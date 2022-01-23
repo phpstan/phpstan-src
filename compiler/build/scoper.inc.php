@@ -17,6 +17,12 @@ foreach ($stubFinder->files()->name('*.php')->in([
 	'../../vendor/jetbrains/phpstorm-stubs',
 	'../../vendor/phpstan/php-8-stubs/stubs',
 	'../../vendor/symfony/polyfill-php80',
+	'../../vendor/symfony/polyfill-mbstring',
+	'../../vendor/symfony/polyfill-intl-normalizer',
+	'../../vendor/symfony/polyfill-php73',
+	'../../vendor/symfony/polyfill-php74',
+	'../../vendor/symfony/polyfill-php72',
+	'../../vendor/symfony/polyfill-intl-grapheme',
 ]) as $file) {
 	if ($file->getPathName() === '../../vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php') {
 		continue;
@@ -162,6 +168,7 @@ return [
 			if (!in_array($filePath, [
 				'src/Testing/TestCaseSourceLocatorFactory.php',
 				'src/Testing/PHPStanTestCase.php',
+				'vendor/ondrejmirtes/better-reflection/src/SourceLocator/Type/ComposerSourceLocator.php',
 			], true)) {
 				return $content;
 			}
@@ -198,8 +205,24 @@ return [
 		},
 		function (string $filePath, string $prefix, string $content): string {
 			if (!in_array($filePath, [
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionClass.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionClassConstant.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionFunction.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionMethod.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionObject.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionParameter.php',
+				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionProperty.php',
+			], true)) {
+				return $content;
+			}
+
+			return str_replace(sprintf('%s\\ReturnTypeWillChange', $prefix), 'ReturnTypeWillChange', $content);
+		},
+		function (string $filePath, string $prefix, string $content): string {
+			if (!in_array($filePath, [
 				'src/Type/TypehintHelper.php',
 				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionIntersectionType.php',
+				'vendor/ondrejmirtes/better-reflection/src/SourceLocator/SourceStubber/ReflectionSourceStubber.php',
 			], true)) {
 				return $content;
 			}
@@ -212,6 +235,27 @@ return [
 			}
 
 			return str_replace(sprintf('%s\\Attribute', $prefix), 'Attribute', $content);
+		},
+		function (string $filePath, string $prefix, string $content): string {
+			if (strpos($filePath, 'src/') !== 0) {
+				return $content;
+			}
+
+			return str_replace(sprintf('%s\\ReturnTypeWillChange', $prefix), 'ReturnTypeWillChange', $content);
+		},
+		function (string $filePath, string $prefix, string $content): string {
+			if ($filePath !== 'vendor/ondrejmirtes/better-reflection/src/SourceLocator/SourceStubber/PhpStormStubsSourceStubber.php') {
+				return $content;
+			}
+
+			return str_replace('Core/Core_d.php', 'Core/Core_d.stub', $content);
+		},
+		function (string $filePath, string $prefix, string $content): string {
+			if ($filePath !== 'vendor/ondrejmirtes/better-reflection/src/SourceLocator/SourceStubber/PhpStormStubsSourceStubber.php') {
+				return $content;
+			}
+
+			return str_replace(sprintf('\'%s\\\\JetBrains\\\\', $prefix), '\'JetBrains\\\\', $content);
 		}
 	],
 	'whitelist' => [
@@ -219,6 +263,12 @@ return [
 		'PhpParser\*',
 		'Hoa\*',
 		'Symfony\Polyfill\Php80\*',
+		'Symfony\Polyfill\Mbstring\*',
+		'Symfony\Polyfill\Intl\Normalizer\*',
+		'Symfony\Polyfill\Php73\*',
+		'Symfony\Polyfill\Php74\*',
+		'Symfony\Polyfill\Php72\*',
+		'Symfony\Polyfill\Intl\Grapheme\*',
 	],
 	'whitelist-global-functions' => false,
 	'whitelist-global-classes' => false,

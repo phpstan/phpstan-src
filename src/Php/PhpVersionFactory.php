@@ -2,22 +2,19 @@
 
 namespace PHPStan\Php;
 
+use function explode;
+use function max;
+use function min;
 use const PHP_VERSION_ID;
 
 class PhpVersionFactory
 {
 
-	private ?int $versionId;
-
-	private ?string $composerPhpVersion;
-
 	public function __construct(
-		?int $versionId,
-		?string $composerPhpVersion
+		private ?int $versionId,
+		private ?string $composerPhpVersion,
 	)
 	{
-		$this->versionId = $versionId;
-		$this->composerPhpVersion = $composerPhpVersion;
 	}
 
 	public function create(): PhpVersion

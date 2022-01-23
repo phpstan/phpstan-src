@@ -13,12 +13,8 @@ use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 class AssertionClassStaticMethodTypeSpecifyingExtension implements StaticMethodTypeSpecifyingExtension
 {
 
-	/** @var bool|null */
-	private $nullContext;
-
-	public function __construct(?bool $nullContext)
+	public function __construct(private ?bool $nullContext = null)
 	{
-		$this->nullContext = $nullContext;
 	}
 
 	public function getClass(): string
@@ -29,7 +25,7 @@ class AssertionClassStaticMethodTypeSpecifyingExtension implements StaticMethodT
 	public function isStaticMethodSupported(
 		MethodReflection $staticMethodReflection,
 		StaticCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		if ($this->nullContext === null) {
@@ -47,7 +43,7 @@ class AssertionClassStaticMethodTypeSpecifyingExtension implements StaticMethodT
 		MethodReflection $staticMethodReflection,
 		StaticCall $node,
 		Scope $scope,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		return new SpecifiedTypes(['$bar' => [$node->getArgs()[0]->value, new IntegerType()]]);

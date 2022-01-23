@@ -3,32 +3,22 @@
 namespace PHPStan\Parser;
 
 use PHPStan\File\FileHelper;
+use function array_fill_keys;
+use function strpos;
 
 class PathRoutingParser implements Parser
 {
-
-	private FileHelper $fileHelper;
-
-	private Parser $currentPhpVersionRichParser;
-
-	private Parser $currentPhpVersionSimpleParser;
-
-	private Parser $php8Parser;
 
 	/** @var bool[] filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
 	public function __construct(
-		FileHelper $fileHelper,
-		Parser $currentPhpVersionRichParser,
-		Parser $currentPhpVersionSimpleParser,
-		Parser $php8Parser
+		private FileHelper $fileHelper,
+		private Parser $currentPhpVersionRichParser,
+		private Parser $currentPhpVersionSimpleParser,
+		private Parser $php8Parser,
 	)
 	{
-		$this->fileHelper = $fileHelper;
-		$this->currentPhpVersionRichParser = $currentPhpVersionRichParser;
-		$this->currentPhpVersionSimpleParser = $currentPhpVersionSimpleParser;
-		$this->php8Parser = $php8Parser;
 	}
 
 	/**

@@ -13,6 +13,8 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use function count;
+use function in_array;
 
 class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

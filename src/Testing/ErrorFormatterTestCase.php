@@ -8,10 +8,19 @@ use PHPStan\Command\ErrorsConsoleStyle;
 use PHPStan\Command\Output;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
+use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\StreamOutput;
+use function array_map;
+use function array_slice;
+use function explode;
+use function fopen;
+use function implode;
+use function rewind;
+use function rtrim;
+use function stream_get_contents;
 
-abstract class ErrorFormatterTestCase extends \PHPStan\Testing\PHPStanTestCase
+abstract class ErrorFormatterTestCase extends PHPStanTestCase
 {
 
 	protected const DIRECTORY_PATH = '/data/folder/with space/and unicode 😃/project';
@@ -25,9 +34,9 @@ abstract class ErrorFormatterTestCase extends \PHPStan\Testing\PHPStanTestCase
 		if ($this->outputStream === null) {
 			$resource = fopen('php://memory', 'w', false);
 			if ($resource === false) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
-			$this->outputStream = new StreamOutput($resource);
+			$this->outputStream = new StreamOutput($resource, StreamOutput::VERBOSITY_NORMAL, false);
 		}
 
 		return $this->outputStream;
@@ -49,7 +58,7 @@ abstract class ErrorFormatterTestCase extends \PHPStan\Testing\PHPStanTestCase
 
 		$contents = stream_get_contents($this->getOutputStream()->getStream());
 		if ($contents === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $this->rtrimMultiline($contents);
@@ -58,7 +67,7 @@ abstract class ErrorFormatterTestCase extends \PHPStan\Testing\PHPStanTestCase
 	protected function getAnalysisResult(int $numFileErrors, int $numGenericErrors): AnalysisResult
 	{
 		if ($numFileErrors > 5 || $numFileErrors < 0 || $numGenericErrors > 2 || $numGenericErrors < 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$fileErrors = array_slice([
@@ -81,15 +90,13 @@ abstract class ErrorFormatterTestCase extends \PHPStan\Testing\PHPStanTestCase
 			[],
 			false,
 			null,
-			true
+			true,
 		);
 	}
 
 	private function rtrimMultiline(string $output): string
 	{
-		$result = array_map(static function (string $line): string {
-			return rtrim($line, " \r\n");
-		}, explode("\n", $output));
+		$result = array_map(static fn (string $line): string => rtrim($line, " \r\n"), explode("\n", $output));
 
 		return implode("\n", $result);
 	}

@@ -9,21 +9,22 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
+use function implode;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InClassMethodNode>
+ * @implements Rule<InClassMethodNode>
  */
-final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
+final class MissingMethodParameterTypehintRule implements Rule
 {
 
-	private \PHPStan\Rules\MissingTypehintCheck $missingTypehintCheck;
-
-	public function __construct(MissingTypehintCheck $missingTypehintCheck)
+	public function __construct(private MissingTypehintCheck $missingTypehintCheck)
 	{
-		$this->missingTypehintCheck = $missingTypehintCheck;
 	}
 
 	public function getNodeType(): string
@@ -50,9 +51,7 @@ final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\MethodReflection $methodReflection
-	 * @param \PHPStan\Reflection\ParameterReflection $parameterReflection
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @return RuleError[]
 	 */
 	private function checkMethodParameter(MethodReflection $methodReflection, ParameterReflection $parameterReflection): array
 	{
@@ -64,7 +63,7 @@ final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 					'Method %s::%s() has parameter $%s with no type specified.',
 					$methodReflection->getDeclaringClass()->getDisplayName(),
 					$methodReflection->getName(),
-					$parameterReflection->getName()
+					$parameterReflection->getName(),
 				))->build(),
 			];
 		}
@@ -77,7 +76,7 @@ final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$parameterReflection->getName(),
-				$iterableTypeDescription
+				$iterableTypeDescription,
 			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
@@ -88,7 +87,7 @@ final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 				$methodReflection->getName(),
 				$parameterReflection->getName(),
 				$name,
-				implode(', ', $genericTypeNames)
+				implode(', ', $genericTypeNames),
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
@@ -98,7 +97,7 @@ final class MissingMethodParameterTypehintRule implements \PHPStan\Rules\Rule
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$parameterReflection->getName(),
-				$callableType->describe(VerbosityLevel::typeOnly())
+				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

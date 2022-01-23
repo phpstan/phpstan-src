@@ -1,0 +1,42 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Call to method getBackingValue\\(\\) on an unknown class ReflectionEnumBackedCase\\.$#"
+			count: 2
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getCase\\(\\) on an unknown class ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getCases\\(\\) on an unknown class ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method isBacked\\(\\) on an unknown class ReflectionEnum\\.$#"
+			count: 2
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getBackingType\\(\\) on an unknown class ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Class ReflectionEnum not found\\.$#"
+			count: 4
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Class ReflectionEnumBackedCase not found\\.$#"
+			count: 2
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Class ReflectionEnum not found\\.$#"
+			count: 1
+			path: ../tests/PHPStan/Reflection/ClassReflectionTest.php
+

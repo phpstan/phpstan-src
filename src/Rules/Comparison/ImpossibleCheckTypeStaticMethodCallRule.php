@@ -6,34 +6,28 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\StaticCall>
+ * @implements Rule<Node\Expr\StaticCall>
  */
-class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
+class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 {
 
-	private \PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper $impossibleCheckTypeHelper;
-
-	private bool $checkAlwaysTrueCheckTypeFunctionCall;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
-		bool $checkAlwaysTrueCheckTypeFunctionCall,
-		bool $treatPhpDocTypesAsCertain
+		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
+		private bool $checkAlwaysTrueCheckTypeFunctionCall,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->impossibleCheckTypeHelper = $impossibleCheckTypeHelper;
-		$this->checkAlwaysTrueCheckTypeFunctionCall = $checkAlwaysTrueCheckTypeFunctionCall;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\StaticCall::class;
+		return Node\Expr\StaticCall::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -68,7 +62,7 @@ class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
 					'Call to static method %s::%s()%s will always evaluate to false.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs())
+					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
@@ -79,7 +73,7 @@ class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
 					'Call to static method %s::%s()%s will always evaluate to true.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs())
+					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
 				)))->build(),
 			];
 		}
@@ -89,15 +83,12 @@ class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
 
 	/**
 	 * @param Node\Name|Expr $class
-	 * @param string $methodName
-	 * @param Scope $scope
-	 * @return MethodReflection
-	 * @throws \PHPStan\ShouldNotHappenException
+	 * @throws ShouldNotHappenException
 	 */
 	private function getMethod(
 		$class,
 		string $methodName,
-		Scope $scope
+		Scope $scope,
 	): MethodReflection
 	{
 		if ($class instanceof Node\Name) {
@@ -108,7 +99,7 @@ class ImpossibleCheckTypeStaticMethodCallRule implements \PHPStan\Rules\Rule
 
 		$method = $scope->getMethodReflection($calledOnType, $methodName);
 		if ($method === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $method;

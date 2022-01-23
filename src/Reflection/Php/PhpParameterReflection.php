@@ -7,30 +7,24 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
+use ReflectionParameter;
+use Throwable;
 
 class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 {
 
-	private \ReflectionParameter $reflection;
+	private ?Type $type = null;
 
-	private ?\PHPStan\Type\Type $phpDocType;
-
-	private ?\PHPStan\Type\Type $type = null;
-
-	private ?\PHPStan\Type\Type $nativeType = null;
-
-	private ?string $declaringClassName;
+	private ?Type $nativeType = null;
 
 	public function __construct(
-		\ReflectionParameter $reflection,
-		?Type $phpDocType,
-		?string $declaringClassName
+		private ReflectionParameter $reflection,
+		private ?Type $phpDocType,
+		private ?string $declaringClassName,
 	)
 	{
-		$this->reflection = $reflection;
-		$this->phpDocType = $phpDocType;
-		$this->declaringClassName = $declaringClassName;
 	}
 
 	public function isOptional(): bool
@@ -50,9 +44,9 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 			if ($phpDocType !== null) {
 				try {
 					if ($this->reflection->isDefaultValueAvailable() && $this->reflection->getDefaultValue() === null) {
-						$phpDocType = \PHPStan\Type\TypeCombinator::addNull($phpDocType);
+						$phpDocType = TypeCombinator::addNull($phpDocType);
 					}
-				} catch (\Throwable $e) {
+				} catch (Throwable) {
 					// pass
 				}
 			}
@@ -61,7 +55,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 				$this->reflection->getType(),
 				$phpDocType,
 				$this->declaringClassName,
-				$this->isVariadic()
+				$this->isVariadic(),
 			);
 		}
 
@@ -96,7 +90,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 				$this->reflection->getType(),
 				null,
 				$this->declaringClassName,
-				$this->isVariadic()
+				$this->isVariadic(),
 			);
 		}
 
@@ -110,7 +104,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 				$defaultValue = $this->reflection->getDefaultValue();
 				return ConstantTypeHelper::getTypeFromValue($defaultValue);
 			}
-		} catch (\Throwable $e) {
+		} catch (Throwable) {
 			return null;
 		}
 

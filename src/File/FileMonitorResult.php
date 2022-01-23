@@ -2,38 +2,23 @@
 
 namespace PHPStan\File;
 
+use function count;
+
 class FileMonitorResult
 {
-
-	/** @var string[] */
-	private $newFiles;
-
-	/** @var string[] */
-	private $changedFiles;
-
-	/** @var string[] */
-	private $deletedFiles;
-
-	/** @var int */
-	private $totalFilesCount;
 
 	/**
 	 * @param string[] $newFiles
 	 * @param string[] $changedFiles
 	 * @param string[] $deletedFiles
-	 * @param int $totalFilesCount
 	 */
 	public function __construct(
-		array $newFiles,
-		array $changedFiles,
-		array $deletedFiles,
-		int $totalFilesCount
+		private array $newFiles,
+		private array $changedFiles,
+		private array $deletedFiles,
+		private int $totalFilesCount,
 	)
 	{
-		$this->newFiles = $newFiles;
-		$this->changedFiles = $changedFiles;
-		$this->deletedFiles = $deletedFiles;
-		$this->totalFilesCount = $totalFilesCount;
 	}
 
 	public function hasAnyChanges(): bool

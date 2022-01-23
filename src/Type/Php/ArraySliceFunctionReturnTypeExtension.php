@@ -9,14 +9,17 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_map;
+use function count;
 
-class ArraySliceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -27,7 +30,7 @@ class ArraySliceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		$arrayArg = $functionCall->getArgs()[0]->value ?? null;
@@ -35,7 +38,7 @@ class ArraySliceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 		if ($arrayArg === null) {
 			return new ArrayType(
 				new IntegerType(),
-				new MixedType()
+				new MixedType(),
 			);
 		}
 
@@ -67,7 +70,7 @@ class ArraySliceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 			}
 			return new ArrayType(
 				new MixedType(),
-				new MixedType()
+				new MixedType(),
 			);
 		}
 
@@ -78,9 +81,7 @@ class ArraySliceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunc
 			$preserveKeys = false;
 		}
 
-		$arrayTypes = array_map(static function (ConstantArrayType $constantArray) use ($offset, $limit, $preserveKeys): ConstantArrayType {
-			return $constantArray->slice($offset->getValue(), $limit->getValue(), $preserveKeys);
-		}, $constantArrays);
+		$arrayTypes = array_map(static fn (ConstantArrayType $constantArray): ConstantArrayType => $constantArray->slice($offset->getValue(), $limit->getValue(), $preserveKeys), $constantArrays);
 
 		return TypeCombinator::union(...$arrayTypes);
 	}

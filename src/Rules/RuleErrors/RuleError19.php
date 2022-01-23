@@ -2,10 +2,14 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
+use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\LineRuleError;
+use PHPStan\Rules\RuleError;
+
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError19 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\LineRuleError, \PHPStan\Rules\IdentifierRuleError
+class RuleError19 implements RuleError, LineRuleError, IdentifierRuleError
 {
 
 	public string $message;

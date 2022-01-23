@@ -9,14 +9,16 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
+use function strtolower;
 
 class IsArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
@@ -30,7 +32,7 @@ class IsArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			return new SpecifiedTypes();
 		}
 		if ($context->null()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $this->typeSpecifier->create($node->getArgs()[0]->value, new ArrayType(new MixedType(), new MixedType()), $context, false, $scope);

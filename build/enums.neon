@@ -1,0 +1,4 @@
+parameters:
+	excludePaths:
+		- ../tests/PHPStan/Fixture/TestEnum.php
+		- ../tests/PHPStan/Fixture/AnotherTestEnum.php

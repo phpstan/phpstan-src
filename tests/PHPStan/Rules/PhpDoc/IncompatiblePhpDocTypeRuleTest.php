@@ -3,20 +3,23 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<IncompatiblePhpDocTypeRule>
+ * @extends RuleTestCase<IncompatiblePhpDocTypeRule>
  */
-class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
+class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new IncompatiblePhpDocTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
 			new GenericObjectTypeCheck(),
-			new UnresolvableTypeHelper()
+			new UnresolvableTypeHelper(),
 		);
 	}
 
@@ -183,6 +186,20 @@ class IncompatiblePhpDocTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 				'PHPDoc tag @return with type T is not subtype of native type object.',
 				23,
 				'Write @template T of object to fix this.',
+			],
+		]);
+	}
+
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/generic-enum-param.php'], [
+			[
+				'PHPDoc tag @param for parameter $e contains generic type GenericEnumParam\FooEnum<int> but enum GenericEnumParam\FooEnum is not generic.',
+				16,
 			],
 		]);
 	}

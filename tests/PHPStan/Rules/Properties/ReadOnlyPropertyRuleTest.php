@@ -12,8 +12,7 @@ use PHPStan\Testing\RuleTestCase;
 class ReadOnlyPropertyRuleTest extends RuleTestCase
 {
 
-	/** @var int */
-	private $phpVersionId;
+	private int $phpVersionId;
 
 	protected function getRule(): Rule
 	{
@@ -46,6 +45,10 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 						'Readonly property cannot have a default value.',
 						10,
 					],
+					[
+						'Readonly properties are supported only on PHP 8.1 and later.',
+						16,
+					],
 				],
 			],
 			[
@@ -66,7 +69,6 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRule
-	 * @param int $phpVersionId
 	 * @param mixed[] $errors
 	 */
 	public function testRule(int $phpVersionId, array $errors): void

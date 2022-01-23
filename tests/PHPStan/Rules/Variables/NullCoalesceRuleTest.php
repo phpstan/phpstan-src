@@ -5,23 +5,25 @@ namespace PHPStan\Rules\Variables;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<NullCoalesceRule>
+ * @extends RuleTestCase<NullCoalesceRule>
  */
-class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
+class NullCoalesceRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new NullCoalesceRule(new IssetCheck(
 			new PropertyDescriptor(),
 			new PropertyReflectionFinder(),
 			true,
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		));
 	}
 
@@ -33,7 +35,7 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 	public function testCoalesceRule(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/null-coalesce.php'], [
+		$errors = [
 			[
 				'Property CoalesceRule\FooCoalesce::$string (string) on left side of ?? is not nullable.',
 				32,
@@ -118,19 +120,22 @@ class NullCoalesceRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Static property CoalesceRule\FooCoalesce::$staticString (string) on left side of ?? is not nullable.',
 				131,
 			],
-			[
+		];
+		if (PHP_VERSION_ID < 80100) {
+			$errors[] = [
 				'Property ReflectionClass<object>::$name (class-string<object>) on left side of ?? is not nullable.',
 				136,
-			],
-			[
-				'Variable $foo on left side of ?? is never defined.',
-				141,
-			],
-			[
-				'Variable $bar on left side of ?? is never defined.',
-				143,
-			],
-		]);
+			];
+		}
+		$errors[] = [
+			'Variable $foo on left side of ?? is never defined.',
+			141,
+		];
+		$errors[] = [
+			'Variable $bar on left side of ?? is never defined.',
+			143,
+		];
+		$this->analyse([__DIR__ . '/data/null-coalesce.php'], $errors);
 	}
 
 	public function testCoalesceAssignRule(): void

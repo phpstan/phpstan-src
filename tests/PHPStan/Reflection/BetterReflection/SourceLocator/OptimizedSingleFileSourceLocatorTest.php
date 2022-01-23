@@ -2,19 +2,21 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-use PHPStan\BetterReflection\Reflector\ClassReflector;
-use PHPStan\BetterReflection\Reflector\ConstantReflector;
+use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use PHPStan\BetterReflection\Reflector\FunctionReflector;
 use PHPStan\Testing\PHPStanTestCase;
+use SingleFileSourceLocatorTestClass;
+use stdClass;
 use TestSingleFileSourceLocator\AFoo;
+use function str_replace;
+use const PHP_VERSION_ID;
 
 class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 {
 
-	public function dataClass(): array
+	public function dataClass(): iterable
 	{
-		return [
+		yield from [
 			[
 				AFoo::class,
 				AFoo::class,
@@ -26,30 +28,37 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 				__DIR__ . '/data/a.php',
 			],
 			[
-				\SingleFileSourceLocatorTestClass::class,
-				\SingleFileSourceLocatorTestClass::class,
+				SingleFileSourceLocatorTestClass::class,
+				SingleFileSourceLocatorTestClass::class,
 				__DIR__ . '/data/b.php',
 			],
 			[
 				'SinglefilesourceLocatortestClass',
-				\SingleFileSourceLocatorTestClass::class,
+				SingleFileSourceLocatorTestClass::class,
 				__DIR__ . '/data/b.php',
 			],
+		];
+
+		if (PHP_VERSION_ID < 80100) {
+			return;
+		}
+
+		yield [
+			'OptimizedDirectory\\TestEnum',
+			'OptimizedDirectory\\TestEnum',
+			__DIR__ . '/data/directory/enum.php',
 		];
 	}
 
 	/**
 	 * @dataProvider dataClass
-	 * @param string $className
-	 * @param string $expectedClassName
-	 * @param string $file
 	 */
 	public function testClass(string $className, string $expectedClassName, string $file): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
 		$locator = $factory->create($file);
-		$classReflector = new ClassReflector($locator);
-		$classReflection = $classReflector->reflect($className);
+		$reflector = new DefaultReflector($locator);
+		$classReflection = $reflector->reflectClass($className);
 		$this->assertSame($expectedClassName, $classReflection->getName());
 	}
 
@@ -81,17 +90,13 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataFunction
-	 * @param string $functionName
-	 * @param string $expectedFunctionName
-	 * @param string $file
 	 */
 	public function testFunction(string $functionName, string $expectedFunctionName, string $file): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
 		$locator = $factory->create($file);
-		$classReflector = new ClassReflector($locator);
-		$functionReflector = new FunctionReflector($locator, $classReflector);
-		$functionReflection = $functionReflector->reflect($functionName);
+		$reflector = new DefaultReflector($locator);
+		$functionReflection = $reflector->reflectFunction($functionName);
 		$this->assertSame($expectedFunctionName, $functionReflection->getName());
 	}
 
@@ -114,23 +119,25 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 				'const_with_dir_const',
 				str_replace('\\', '/', __DIR__ . '/data'),
 			],
+			[
+				'OPTIMIZED_SFSL_OBJECT_CONSTANT',
+				new stdClass(),
+			],
 		];
 	}
 
 	/**
 	 * @dataProvider dataConst
-	 * @param string $constantName
 	 * @param mixed $value
 	 */
 	public function testConst(string $constantName, $value): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
 		$locator = $factory->create(__DIR__ . '/data/const.php');
-		$classReflector = new ClassReflector($locator);
-		$constantReflector = new ConstantReflector($locator, $classReflector);
-		$constant = $constantReflector->reflect($constantName);
+		$reflector = new DefaultReflector($locator);
+		$constant = $reflector->reflectConstant($constantName);
 		$this->assertSame($constantName, $constant->getName());
-		$this->assertSame($value, $constant->getValue());
+		$this->assertEquals($value, $constant->getValue());
 	}
 
 	public function dataConstUnknown(): array
@@ -142,16 +149,14 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataConstUnknown
-	 * @param string $constantName
 	 */
 	public function testConstUnknown(string $constantName): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
 		$locator = $factory->create(__DIR__ . '/data/const.php');
-		$classReflector = new ClassReflector($locator);
-		$constantReflector = new ConstantReflector($locator, $classReflector);
+		$reflector = new DefaultReflector($locator);
 		$this->expectException(IdentifierNotFound::class);
-		$constantReflector->reflect($constantName);
+		$reflector->reflectConstant($constantName);
 	}
 
 }

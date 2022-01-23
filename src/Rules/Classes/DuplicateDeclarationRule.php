@@ -3,17 +3,22 @@
 namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
+use PhpParser\Node\Stmt\ClassConst;
+use PhpParser\Node\Stmt\EnumCase;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassNode;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use function is_string;
 use function sprintf;
 use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\InClassNode>
+ * @implements Rule<InClassNode>
  */
-class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
+class DuplicateDeclarationRule implements Rule
 {
 
 	public function getNodeType(): string
@@ -25,22 +30,34 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 	{
 		$classReflection = $scope->getClassReflection();
 		if ($classReflection === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$errors = [];
 
-		$declaredClassConstants = [];
-		foreach ($node->getOriginalNode()->getConstants() as $constDecl) {
-			foreach ($constDecl->consts as $const) {
-				if (array_key_exists($const->name->name, $declaredClassConstants)) {
+		$declaredClassConstantsOrEnumCases = [];
+		foreach ($node->getOriginalNode()->stmts as $stmtNode) {
+			if ($stmtNode instanceof EnumCase) {
+				if (array_key_exists($stmtNode->name->name, $declaredClassConstantsOrEnumCases)) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
-						'Cannot redeclare constant %s::%s.',
+						'Cannot redeclare enum case %s::%s.',
 						$classReflection->getDisplayName(),
-						$const->name->name
-					))->line($const->getLine())->nonIgnorable()->build();
+						$stmtNode->name->name,
+					))->line($stmtNode->getLine())->nonIgnorable()->build();
 				} else {
-					$declaredClassConstants[$const->name->name] = true;
+					$declaredClassConstantsOrEnumCases[$stmtNode->name->name] = true;
+				}
+			} elseif ($stmtNode instanceof ClassConst) {
+				foreach ($stmtNode->consts as $classConstNode) {
+					if (array_key_exists($classConstNode->name->name, $declaredClassConstantsOrEnumCases)) {
+						$errors[] = RuleErrorBuilder::message(sprintf(
+							'Cannot redeclare constant %s::%s.',
+							$classReflection->getDisplayName(),
+							$classConstNode->name->name,
+						))->line($classConstNode->getLine())->nonIgnorable()->build();
+					} else {
+						$declaredClassConstantsOrEnumCases[$classConstNode->name->name] = true;
+					}
 				}
 			}
 		}
@@ -52,7 +69,7 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Cannot redeclare property %s::$%s.',
 						$classReflection->getDisplayName(),
-						$property->name->name
+						$property->name->name,
 					))->line($property->getLine())->nonIgnorable()->build();
 				} else {
 					$declaredProperties[$property->name->name] = true;
@@ -69,7 +86,7 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 					}
 
 					if (!$param->var instanceof Node\Expr\Variable || !is_string($param->var->name)) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 
 					$propertyName = $param->var->name;
@@ -78,7 +95,7 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 						$errors[] = RuleErrorBuilder::message(sprintf(
 							'Cannot redeclare property %s::$%s.',
 							$classReflection->getDisplayName(),
-							$propertyName
+							$propertyName,
 						))->line($param->getLine())->nonIgnorable()->build();
 					} else {
 						$declaredProperties[$propertyName] = true;
@@ -89,7 +106,7 @@ class DuplicateDeclarationRule implements \PHPStan\Rules\Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Cannot redeclare method %s::%s().',
 					$classReflection->getDisplayName(),
-					$method->name->name
+					$method->name->name,
 				))->line($method->getStartLine())->nonIgnorable()->build();
 			} else {
 				$declaredFunctions[strtolower($method->name->name)] = true;

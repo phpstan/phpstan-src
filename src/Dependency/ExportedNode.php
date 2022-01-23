@@ -9,13 +9,11 @@ interface ExportedNode
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self;
 
 	/**
 	 * @param mixed[] $data
-	 * @return self
 	 */
 	public static function decode(array $data): self;
 

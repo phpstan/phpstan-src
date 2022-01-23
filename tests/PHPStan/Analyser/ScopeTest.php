@@ -9,6 +9,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -33,7 +34,7 @@ class ScopeTest extends PHPStanTestCase
 			[
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
-				'int',
+				'int<0, max>',
 			],
 			[
 				new UnionType([
@@ -45,7 +46,7 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(1),
 					new ConstantIntegerType(2),
 				]),
-				'int',
+				'int<0, max>',
 			],
 			[
 				new UnionType([
@@ -72,7 +73,7 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(2),
 					new ConstantStringType('foo'),
 				]),
-				'\'foo\'|int',
+				'\'foo\'|int<0, max>',
 			],
 			[
 				new ConstantBooleanType(false),
@@ -93,7 +94,7 @@ class ScopeTest extends PHPStanTestCase
 			[
 				new ObjectType('Foo'),
 				new ConstantBooleanType(false),
-				'Foo',
+				'Foo|false',
 			],
 			[
 				new ConstantArrayType([
@@ -123,7 +124,7 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(2),
 					new ConstantIntegerType(1),
 				]),
-				'array{a: int, b: 1}',
+				'array{a: int<1, max>, b: 1}',
 			],
 			[
 				new ConstantArrayType([
@@ -153,16 +154,79 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(1),
 					new ConstantIntegerType(2),
 				]),
-				'array<literal-string&non-empty-string, int>',
+				'array<literal-string&non-empty-string, int<1, max>>',
+			],
+			[
+				new UnionType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+				]),
+				new UnionType([
+					new ConstantIntegerType(-1),
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+				]),
+				'int<min, 1>',
+			],
+			[
+				new UnionType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(2),
+				]),
+				new UnionType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+					new ConstantIntegerType(2),
+				]),
+				'0|1|2',
+			],
+			[
+				new UnionType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+					new ConstantIntegerType(2),
+				]),
+				new UnionType([
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(2),
+				]),
+				'0|1|2',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 16),
+				IntegerRangeType::fromInterval(1, 17),
+				'int<0, max>',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 16),
+				IntegerRangeType::fromInterval(-1, 15),
+				'int<min, 16>',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 16),
+				IntegerRangeType::fromInterval(1, null),
+				'int<0, max>',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 16),
+				IntegerRangeType::fromInterval(null, 15),
+				'int<min, 16>',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 16),
+				IntegerRangeType::fromInterval(0, null),
+				'int<0, max>',
+			],
+			[
+				IntegerRangeType::fromInterval(0, 16),
+				IntegerRangeType::fromInterval(null, 16),
+				'int<min, 16>',
 			],
 		];
 	}
 
 	/**
 	 * @dataProvider dataGeneralize
-	 * @param Type $a
-	 * @param Type $b
-	 * @param string $expectedTypeDescription
 	 */
 	public function testGeneralize(Type $a, Type $b, string $expectedTypeDescription): void
 	{

@@ -55,33 +55,33 @@ function (int $i) {
 
 function () {
 	for ($i = 0; $i < 5; $i++) {
-		assertType('int<min, 4>', $i); // should improved to be int<0, 4>
+		assertType('int<0, 4>', $i);
 	}
 
 	$i = 0;
 	while ($i < 5) {
-		assertType('int<min, 4>', $i); // should improved to be int<0, 4>
+		assertType('int<0, 4>', $i);
 		$i++;
 	}
 
 	$i = 0;
 	while ($i++ < 5) {
-		assertType('int<min, 5>', $i); // should improved to be int<1, 5>
+		assertType('int<1, 5>', $i);
 	}
 
 	$i = 0;
 	while (++$i < 5) {
-		assertType('int<min, 4>', $i); // should improved to be int<1, 4>
+		assertType('int<1, 4>', $i);
 	}
 
 	$i = 5;
 	while ($i-- > 0) {
-		assertType('int<0, max>', $i); // should improved to be int<0, 4>
+		assertType('int<0, 4>', $i);
 	}
 
 	$i = 5;
 	while (--$i > 0) {
-		assertType('int<1, max>', $i); // should improved to be int<1, 4>
+		assertType('int<1, 4>', $i);
 	}
 };
 

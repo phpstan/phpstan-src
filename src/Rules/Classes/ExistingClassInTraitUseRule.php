@@ -7,42 +7,38 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function array_map;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\TraitUse>
+ * @implements Rule<Node\Stmt\TraitUse>
  */
-class ExistingClassInTraitUseRule implements \PHPStan\Rules\Rule
+class ExistingClassInTraitUseRule implements Rule
 {
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private ReflectionProvider $reflectionProvider;
-
 	public function __construct(
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		ReflectionProvider $reflectionProvider
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt\TraitUse::class;
+		return Node\Stmt\TraitUse::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$messages = $this->classCaseSensitivityCheck->checkClassNames(
-			array_map(static function (Node\Name $traitName): ClassNameNodePair {
-				return new ClassNameNodePair((string) $traitName, $traitName);
-			}, $node->traits)
+			array_map(static fn (Node\Name $traitName): ClassNameNodePair => new ClassNameNodePair((string) $traitName, $traitName), $node->traits),
 		);
 
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$classReflection = $scope->getClassReflection();
@@ -69,9 +65,11 @@ class ExistingClassInTraitUseRule implements \PHPStan\Rules\Rule
 				} else {
 					$reflection = $this->reflectionProvider->getClass($traitName);
 					if ($reflection->isClass()) {
-						$messages[] = RuleErrorBuilder::message(sprintf('%s uses class %s.', $currentName, $traitName))->nonIgnorable()->build();
+						$messages[] = RuleErrorBuilder::message(sprintf('%s uses class %s.', $currentName, $reflection->getDisplayName()))->nonIgnorable()->build();
 					} elseif ($reflection->isInterface()) {
-						$messages[] = RuleErrorBuilder::message(sprintf('%s uses interface %s.', $currentName, $traitName))->nonIgnorable()->build();
+						$messages[] = RuleErrorBuilder::message(sprintf('%s uses interface %s.', $currentName, $reflection->getDisplayName()))->nonIgnorable()->build();
+					} elseif ($reflection->isEnum()) {
+						$messages[] = RuleErrorBuilder::message(sprintf('%s uses enum %s.', $currentName, $reflection->getDisplayName()))->nonIgnorable()->build();
 					}
 				}
 			}

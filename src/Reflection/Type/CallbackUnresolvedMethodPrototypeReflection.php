@@ -11,15 +11,10 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Type\Type;
+use function array_map;
 
 class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
-
-	private MethodReflection $methodReflection;
-
-	private ClassReflection $resolvedDeclaringClass;
-
-	private bool $resolveTemplateTypeMapToBounds;
 
 	/** @var callable(Type): Type */
 	private $transformStaticTypeCallback;
@@ -29,21 +24,15 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
 
 	/**
-	 * @param MethodReflection $methodReflection
-	 * @param ClassReflection $resolvedDeclaringClass
-	 * @param bool $resolveTemplateTypeMapToBounds
 	 * @param callable(Type): Type $transformStaticTypeCallback
 	 */
 	public function __construct(
-		MethodReflection $methodReflection,
-		ClassReflection $resolvedDeclaringClass,
-		bool $resolveTemplateTypeMapToBounds,
-		callable $transformStaticTypeCallback
+		private MethodReflection $methodReflection,
+		private ClassReflection $resolvedDeclaringClass,
+		private bool $resolveTemplateTypeMapToBounds,
+		callable $transformStaticTypeCallback,
 	)
 	{
-		$this->methodReflection = $methodReflection;
-		$this->resolvedDeclaringClass = $resolvedDeclaringClass;
-		$this->resolveTemplateTypeMapToBounds = $resolveTemplateTypeMapToBounds;
 		$this->transformStaticTypeCallback = $transformStaticTypeCallback;
 	}
 
@@ -57,7 +46,7 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 			$this->methodReflection,
 			$this->resolvedDeclaringClass,
 			false,
-			$this->transformStaticTypeCallback
+			$this->transformStaticTypeCallback,
 		);
 	}
 
@@ -75,7 +64,7 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 
 		return $this->transformedMethod = new ResolvedMethodReflection(
 			$this->transformMethodWithStaticType($this->resolvedDeclaringClass, $this->methodReflection),
-			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap
+			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap,
 		);
 	}
 
@@ -85,30 +74,26 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 			$this->methodReflection,
 			$this->resolvedDeclaringClass,
 			$this->resolveTemplateTypeMapToBounds,
-			$type
+			$type,
 		);
 	}
 
 	private function transformMethodWithStaticType(ClassReflection $declaringClass, MethodReflection $method): MethodReflection
 	{
-		$variants = array_map(function (ParametersAcceptor $acceptor): ParametersAcceptor {
-			return new FunctionVariant(
-				$acceptor->getTemplateTypeMap(),
-				$acceptor->getResolvedTemplateTypeMap(),
-				array_map(function (ParameterReflection $parameter): ParameterReflection {
-					return new DummyParameter(
-						$parameter->getName(),
-						$this->transformStaticType($parameter->getType()),
-						$parameter->isOptional(),
-						$parameter->passedByReference(),
-						$parameter->isVariadic(),
-						$parameter->getDefaultValue()
-					);
-				}, $acceptor->getParameters()),
-				$acceptor->isVariadic(),
-				$this->transformStaticType($acceptor->getReturnType())
-			);
-		}, $method->getVariants());
+		$variants = array_map(fn (ParametersAcceptor $acceptor): ParametersAcceptor => new FunctionVariant(
+			$acceptor->getTemplateTypeMap(),
+			$acceptor->getResolvedTemplateTypeMap(),
+			array_map(fn (ParameterReflection $parameter): ParameterReflection => new DummyParameter(
+				$parameter->getName(),
+				$this->transformStaticType($parameter->getType()),
+				$parameter->isOptional(),
+				$parameter->passedByReference(),
+				$parameter->isVariadic(),
+				$parameter->getDefaultValue(),
+			), $acceptor->getParameters()),
+			$acceptor->isVariadic(),
+			$this->transformStaticType($acceptor->getReturnType()),
+		), $method->getVariants());
 
 		return new ChangedTypeMethodReflection($declaringClass, $method, $variants);
 	}

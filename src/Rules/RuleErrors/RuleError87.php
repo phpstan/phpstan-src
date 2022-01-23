@@ -2,10 +2,16 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
+use PHPStan\Rules\FileRuleError;
+use PHPStan\Rules\IdentifierRuleError;
+use PHPStan\Rules\LineRuleError;
+use PHPStan\Rules\NonIgnorableRuleError;
+use PHPStan\Rules\RuleError;
+
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError87 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\LineRuleError, \PHPStan\Rules\FileRuleError, \PHPStan\Rules\IdentifierRuleError, \PHPStan\Rules\NonIgnorableRuleError
+class RuleError87 implements RuleError, LineRuleError, FileRuleError, IdentifierRuleError, NonIgnorableRuleError
 {
 
 	public string $message;

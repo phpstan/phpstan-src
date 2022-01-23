@@ -3,19 +3,21 @@
 namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<AppendedArrayItemTypeRule>
+ * @extends RuleTestCase<AppendedArrayItemTypeRule>
  */
-class AppendedArrayItemTypeRuleTest extends \PHPStan\Testing\RuleTestCase
+class AppendedArrayItemTypeRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new AppendedArrayItemTypeRule(
 			new PropertyReflectionFinder(),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false),
 		);
 	}
 
@@ -56,7 +58,7 @@ class AppendedArrayItemTypeRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Array (array<AppendedArrayItem\Lorem>) does not accept AppendedArrayItem\Baz.',
 					79,
 				],
-			]
+			],
 		);
 	}
 

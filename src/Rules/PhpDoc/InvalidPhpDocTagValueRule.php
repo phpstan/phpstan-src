@@ -8,27 +8,24 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
+use function strpos;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node>
+ * @implements Rule<Node>
  */
-class InvalidPhpDocTagValueRule implements \PHPStan\Rules\Rule
+class InvalidPhpDocTagValueRule implements Rule
 {
 
-	private Lexer $phpDocLexer;
-
-	private PhpDocParser $phpDocParser;
-
-	public function __construct(Lexer $phpDocLexer, PhpDocParser $phpDocParser)
+	public function __construct(private Lexer $phpDocLexer, private PhpDocParser $phpDocParser)
 	{
-		$this->phpDocLexer = $phpDocLexer;
-		$this->phpDocParser = $phpDocParser;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node::class;
+		return Node::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -68,7 +65,7 @@ class InvalidPhpDocTagValueRule implements \PHPStan\Rules\Rule
 				'PHPDoc tag %s has invalid value (%s): %s',
 				$phpDocTag->name,
 				$phpDocTag->value->value,
-				$phpDocTag->value->exception->getMessage()
+				$phpDocTag->value->exception->getMessage(),
 			))->build();
 		}
 

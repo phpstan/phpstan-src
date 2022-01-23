@@ -2,16 +2,18 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<BooleanOrConstantConditionRule>
+ * @extends RuleTestCase<BooleanOrConstantConditionRule>
  */
-class BooleanOrConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
+class BooleanOrConstantConditionRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new BooleanOrConstantConditionRule(
 			new ConstantConditionRuleHelper(
@@ -19,11 +21,11 @@ class BooleanOrConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 					$this->createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
-					$this->treatPhpDocTypesAsCertain
+					$this->treatPhpDocTypesAsCertain,
 				),
-				$this->treatPhpDocTypesAsCertain
+				$this->treatPhpDocTypesAsCertain,
 			),
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		);
 	}
 
@@ -166,7 +168,6 @@ class BooleanOrConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataTreatPhpDocTypesAsCertainRegression
-	 * @param bool $treatPhpDocTypesAsCertain
 	 */
 	public function testTreatPhpDocTypesAsCertainRegression(bool $treatPhpDocTypesAsCertain): void
 	{

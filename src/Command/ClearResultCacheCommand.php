@@ -3,28 +3,26 @@
 namespace PHPStan\Command;
 
 use PHPStan\Analyser\ResultCache\ResultCacheClearer;
+use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use function is_string;
 
 class ClearResultCacheCommand extends Command
 {
 
 	private const NAME = 'clear-result-cache';
 
-	/** @var string[] */
-	private array $composerAutoloaderProjectPaths;
-
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
-		array $composerAutoloaderProjectPaths
+		private array $composerAutoloaderProjectPaths,
 	)
 	{
 		parent::__construct();
-		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 	}
 
 	protected function configure(): void
@@ -34,6 +32,7 @@ class ClearResultCacheCommand extends Command
 			->setDefinition([
 				new InputOption('configuration', 'c', InputOption::VALUE_REQUIRED, 'Path to project configuration file'),
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
+				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for clearing result cache'),
 			]);
 	}
 
@@ -41,12 +40,14 @@ class ClearResultCacheCommand extends Command
 	{
 		$autoloadFile = $input->getOption('autoload-file');
 		$configuration = $input->getOption('configuration');
+		$memoryLimit = $input->getOption('memory-limit');
 
 		if (
 			(!is_string($autoloadFile) && $autoloadFile !== null)
 			|| (!is_string($configuration) && $configuration !== null)
+			|| (!is_string($memoryLimit) && $memoryLimit !== null)
 		) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		try {
@@ -54,16 +55,16 @@ class ClearResultCacheCommand extends Command
 				$input,
 				$output,
 				['.'],
-				null,
+				$memoryLimit,
 				$autoloadFile,
 				$this->composerAutoloaderProjectPaths,
 				$configuration,
 				null,
 				'0',
 				false,
-				false
+				false,
 			);
-		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException) {
 			return 1;
 		}
 

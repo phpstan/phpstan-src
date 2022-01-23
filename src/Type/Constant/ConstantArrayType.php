@@ -4,8 +4,10 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -23,13 +25,29 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_keys;
+use function array_map;
+use function array_merge;
+use function array_pop;
+use function array_slice;
 use function array_unique;
+use function array_values;
+use function assert;
+use function count;
+use function implode;
+use function in_array;
+use function is_string;
+use function max;
+use function pow;
+use function sprintf;
+use function strpos;
 
 /**
  * @api
@@ -39,17 +57,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	private const DESCRIBE_LIMIT = 8;
 
-	/** @var array<int, ConstantIntegerType|ConstantStringType> */
-	private array $keyTypes;
-
-	/** @var array<int, Type> */
-	private array $valueTypes;
-
-	private int $nextAutoIndex;
-
-	/** @var int[] */
-	private array $optionalKeys;
-
 	/** @var self[]|null */
 	private ?array $allArrays = null;
 
@@ -57,27 +64,21 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 * @api
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
-	 * @param int $nextAutoIndex
 	 * @param int[] $optionalKeys
 	 */
 	public function __construct(
-		array $keyTypes,
-		array $valueTypes,
-		int $nextAutoIndex = 0,
-		array $optionalKeys = []
+		private array $keyTypes,
+		private array $valueTypes,
+		private int $nextAutoIndex = 0,
+		private array $optionalKeys = [],
 	)
 	{
 		assert(count($keyTypes) === count($valueTypes));
 
 		parent::__construct(
 			count($keyTypes) > 0 ? TypeCombinator::union(...$keyTypes) : new NeverType(),
-			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType()
+			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType(),
 		);
-
-		$this->keyTypes = $keyTypes;
-		$this->valueTypes = $valueTypes;
-		$this->nextAutoIndex = $nextAutoIndex;
-		$this->optionalKeys = $optionalKeys;
 	}
 
 	public function isEmpty(): bool
@@ -134,7 +135,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 			$array = $builder->getArray();
 			if (!$array instanceof ConstantArrayType) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$arrays[] = $array;
@@ -274,7 +275,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 			return $result->and(
 				$this->getKeyType()->isSuperTypeOf($type->getKeyType()),
-				$this->getItemType()->isSuperTypeOf($type->getItemType())
+				$this->getItemType()->isSuperTypeOf($type->getItemType()),
 			);
 		}
 
@@ -323,14 +324,13 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		$typeAndMethodName = $this->findTypeAndMethodName();
 		if ($typeAndMethodName === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if ($typeAndMethodName->isUnknown() || !$typeAndMethodName->getCertainty()->yes()) {
@@ -375,7 +375,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$type = new ObjectType($reflectionProvider->getClass($classOrObject->getValue())->getName());
 		} elseif ($classOrObject instanceof GenericClassStringType) {
 			$type = $classOrObject->getGenericType();
-		} elseif ((new \PHPStan\Type\ObjectWithoutClassType())->isSuperTypeOf($classOrObject)->yes()) {
+		} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($classOrObject)->yes()) {
 			$type = $classOrObject;
 		} else {
 			return ConstantArrayTypeAndMethod::createUnknown();
@@ -540,7 +540,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$keyTypes,
 			$valueTypes,
 			$nextAutoindex,
-			array_values($optionalKeys)
+			array_values($optionalKeys),
 		);
 	}
 
@@ -600,7 +600,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$keyTypes,
 			$valueTypes,
 			(int) $nextAutoIndex,
-			[]
+			[],
 		);
 	}
 
@@ -627,7 +627,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$arrayType = new ArrayType(
 			TypeUtils::generalizeType($this->getKeyType(), $precision),
-			TypeUtils::generalizeType($this->getItemType(), $precision)
+			TypeUtils::generalizeType($this->getItemType(), $precision),
 		);
 
 		if (count($this->keyTypes) > count($this->optionalKeys)) {
@@ -751,19 +751,13 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return sprintf(
 				'array{%s%s}',
 				implode(', ', $exportValuesOnly ? $values : $items),
-				$append
+				$append,
 			);
 		};
 		return $level->handle(
-			function () use ($level): string {
-				return parent::describe($level);
-			},
-			static function () use ($describeValue): string {
-				return $describeValue(true);
-			},
-			static function () use ($describeValue): string {
-				return $describeValue(false);
-			}
+			fn (): string => parent::describe($level),
+			static fn (): string => $describeValue(true),
+			static fn (): string => $describeValue(false),
 		);
 	}
 
@@ -881,7 +875,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	/**
 	 * @param ConstantIntegerType|ConstantStringType $otherKeyType
-	 * @return int|null
 	 */
 	private function getKeyIndex($otherKeyType): ?int
 	{
@@ -918,7 +911,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

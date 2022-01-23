@@ -2,10 +2,15 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PHPStan\ShouldNotHappenException;
 use function stat;
 use function stream_wrapper_register;
 use function stream_wrapper_restore;
 use function stream_wrapper_unregister;
+use const SEEK_CUR;
+use const SEEK_END;
+use const SEEK_SET;
+use const STREAM_URL_STAT_QUIET;
 
 /**
  * This class will operate as a stream wrapper, intercepting any access to a file while
@@ -46,7 +51,7 @@ final class FileReadTrapStreamWrapper
 	 */
 	public static function withStreamWrapperOverride(
 		callable $executeMeWithinStreamWrapperOverride,
-		array $streamWrapperProtocols = self::DEFAULT_STREAM_WRAPPER_PROTOCOLS
+		array $streamWrapperProtocols = self::DEFAULT_STREAM_WRAPPER_PROTOCOLS,
 	)
 	{
 		self::$registeredStreamWrapperProtocols = $streamWrapperProtocols;
@@ -101,7 +106,6 @@ final class FileReadTrapStreamWrapper
 	 *
 	 * @param int $count
 	 *
-	 * @return string
 	 */
 	public function stream_read($count): string
 	{
@@ -117,7 +121,6 @@ final class FileReadTrapStreamWrapper
 	 * Since we allowed the open to succeed, we should allow the close to occur
 	 * as well.
 	 *
-	 * @return void
 	 */
 	public function stream_close(): void
 	{
@@ -160,7 +163,7 @@ final class FileReadTrapStreamWrapper
 	public function url_stat($path, $flags)
 	{
 		if (self::$registeredStreamWrapperProtocols === null) {
-			throw new \PHPStan\ShouldNotHappenException(self::class . ' not registered: cannot operate. Do not call this method directly.');
+			throw new ShouldNotHappenException(self::class . ' not registered: cannot operate. Do not call this method directly.');
 		}
 
 		foreach (self::$registeredStreamWrapperProtocols as $protocol) {
@@ -184,7 +187,6 @@ final class FileReadTrapStreamWrapper
 	/**
 	 * Simulates behavior of reading from an empty file.
 	 *
-	 * @return bool
 	 */
 	public function stream_eof(): bool
 	{
@@ -204,7 +206,6 @@ final class FileReadTrapStreamWrapper
 	/**
 	 * @param   int  $offset
 	 * @param   int  $whence
-	 * @return  bool
 	 */
 	public function stream_seek($offset, $whence): bool
 	{
@@ -234,7 +235,6 @@ final class FileReadTrapStreamWrapper
 	 * @param int  $option
 	 * @param int  $arg1
 	 * @param int  $arg2
-	 * @return bool
 	 */
 	public function stream_set_option($option, $arg1, $arg2): bool
 	{

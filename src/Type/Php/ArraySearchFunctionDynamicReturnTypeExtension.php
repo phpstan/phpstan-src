@@ -18,6 +18,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function count;
 
 final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -90,7 +91,7 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 		return TypeCombinator::union(
 			$iterableKeyType,
 			new ConstantBooleanType(false),
-			...$typesFromConstantArrays
+			...$typesFromConstantArrays,
 		);
 	}
 
@@ -134,7 +135,6 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 	}
 
 	/**
-	 * @param Type $type
 	 * @return Type[]
 	 */
 	private function pickArrays(Type $type): array

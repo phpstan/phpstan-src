@@ -11,6 +11,16 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
+			message: "#^Parameter \\#2 \\$node of method PHPStan\\\\BetterReflection\\\\SourceLocator\\\\Ast\\\\Strategy\\\\NodeToReflection\\:\\:__invoke\\(\\) expects PhpParser\\\\Node\\\\Expr\\\\ArrowFunction\\|PhpParser\\\\Node\\\\Expr\\\\Closure\\|PhpParser\\\\Node\\\\Expr\\\\FuncCall\\|PhpParser\\\\Node\\\\Stmt\\\\Class_\\|PhpParser\\\\Node\\\\Stmt\\\\Const_\\|PhpParser\\\\Node\\\\Stmt\\\\Enum_\\|PhpParser\\\\Node\\\\Stmt\\\\Function_\\|PhpParser\\\\Node\\\\Stmt\\\\Interface_\\|PhpParser\\\\Node\\\\Stmt\\\\Trait_, PhpParser\\\\Node\\\\Stmt\\\\ClassLike given\\.$#"
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
+			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects ReflectionClass, object given\\.$#"
+			count: 1
+			path: src/Analyser/NodeScopeResolver.php
+
+		-
 			message: "#^Anonymous function has an unused use \\$container\\.$#"
 			count: 1
 			path: src/Command/CommandHelper.php
@@ -46,7 +56,7 @@ parameters:
 			path: src/Command/FixerApplication.php
 
 		-
-			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\<Psr\\\\Http\\\\Message\\\\ResponseInterface, React\\\\Http\\\\Exception\\>\\:\\:done\\(\\)\\.$#"
+			message: "#^Call to an undefined method React\\\\Promise\\\\PromiseInterface\\<Psr\\\\Http\\\\Message\\\\ResponseInterface, Exception\\>\\:\\:done\\(\\)\\.$#"
 			count: 1
 			path: src/Command/FixerApplication.php
 
@@ -91,11 +101,10 @@ parameters:
 			path: src/PhpDoc/ResolvedPhpDocBlock.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-					Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
-				"""
+			message: """
+				#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+				Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
+			"""
 			count: 1
 			path: src/PhpDoc/StubValidator.php
 
@@ -125,14 +134,29 @@ parameters:
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
 		-
+			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects ReflectionClass, object given\\.$#"
+			count: 1
+			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
+
+		-
+			message: "#^Parameter \\#2 \\$node of method PHPStan\\\\BetterReflection\\\\SourceLocator\\\\Ast\\\\Strategy\\\\NodeToReflection\\:\\:__invoke\\(\\) expects PhpParser\\\\Node\\\\Expr\\\\ArrowFunction\\|PhpParser\\\\Node\\\\Expr\\\\Closure\\|PhpParser\\\\Node\\\\Expr\\\\FuncCall\\|PhpParser\\\\Node\\\\Stmt\\\\Class_\\|PhpParser\\\\Node\\\\Stmt\\\\Const_\\|PhpParser\\\\Node\\\\Stmt\\\\Enum_\\|PhpParser\\\\Node\\\\Stmt\\\\Function_\\|PhpParser\\\\Node\\\\Stmt\\\\Interface_\\|PhpParser\\\\Node\\\\Stmt\\\\Trait_, PhpParser\\\\Node\\\\Stmt\\\\ClassLike given\\.$#"
+			count: 2
+			path: src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php
+
+		-
 			message: "#^Construct empty\\(\\) is not allowed\\. Use more strict comparison\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
 
 		-
-			message: "#^Only booleans are allowed in a negated boolean, int\\|false\\|null given\\.$#"
+			message: "#^Parameter \\#2 \\$node of method PHPStan\\\\BetterReflection\\\\SourceLocator\\\\Ast\\\\Strategy\\\\NodeToReflection\\:\\:__invoke\\(\\) expects PhpParser\\\\Node\\\\Expr\\\\ArrowFunction\\|PhpParser\\\\Node\\\\Expr\\\\Closure\\|PhpParser\\\\Node\\\\Expr\\\\FuncCall\\|PhpParser\\\\Node\\\\Stmt\\\\Class_\\|PhpParser\\\\Node\\\\Stmt\\\\Const_\\|PhpParser\\\\Node\\\\Stmt\\\\Enum_\\|PhpParser\\\\Node\\\\Stmt\\\\Function_\\|PhpParser\\\\Node\\\\Stmt\\\\Interface_\\|PhpParser\\\\Node\\\\Stmt\\\\Trait_, PhpParser\\\\Node\\\\Stmt\\\\ClassLike\\|PhpParser\\\\Node\\\\Stmt\\\\Function_ given\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
+
+		-
+			message: "#^Parameter \\#2 \\$node of method PHPStan\\\\BetterReflection\\\\SourceLocator\\\\Ast\\\\Strategy\\\\NodeToReflection\\:\\:__invoke\\(\\) expects PhpParser\\\\Node\\\\Expr\\\\ArrowFunction\\|PhpParser\\\\Node\\\\Expr\\\\Closure\\|PhpParser\\\\Node\\\\Expr\\\\FuncCall\\|PhpParser\\\\Node\\\\Stmt\\\\Class_\\|PhpParser\\\\Node\\\\Stmt\\\\Const_\\|PhpParser\\\\Node\\\\Stmt\\\\Enum_\\|PhpParser\\\\Node\\\\Stmt\\\\Function_\\|PhpParser\\\\Node\\\\Stmt\\\\Interface_\\|PhpParser\\\\Node\\\\Stmt\\\\Trait_, PhpParser\\\\Node\\\\Stmt\\\\ClassLike given\\.$#"
+			count: 1
+			path: src/Reflection/BetterReflection/SourceLocator/OptimizedSingleFileSourceLocator.php
 
 		-
 			message: "#^Only booleans are allowed in &&, int\\|false given on the right side\\.$#"
@@ -265,20 +289,18 @@ parameters:
 			path: src/Type/IntersectionType.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-					Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
-				"""
+			message: """
+				#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+				Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
+			"""
 			count: 1
 			path: src/Type/ObjectType.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method getUniversalObjectCratesClasses\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-					Inject %%universalObjectCratesClasses%% parameter instead\\.$#
-				"""
+			message: """
+				#^Call to deprecated method getUniversalObjectCratesClasses\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+				Inject %%universalObjectCratesClasses%% parameter instead\\.$#
+			"""
 			count: 1
 			path: src/Type/ObjectType.php
 
@@ -318,29 +340,26 @@ parameters:
 			path: tests/PHPStan/Analyser/EvaluationOrderTest.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method getClass\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-					Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
-				"""
+			message: """
+				#^Call to deprecated method getClass\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+				Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
+			"""
 			count: 1
 			path: tests/PHPStan/Broker/BrokerTest.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method getFunction\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-					Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
-				"""
+			message: """
+				#^Call to deprecated method getFunction\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+				Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
+			"""
 			count: 1
 			path: tests/PHPStan/Broker/BrokerTest.php
 
 		-
-			message:
-				"""
-					#^Call to deprecated method hasClass\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-					Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
-				"""
+			message: """
+				#^Call to deprecated method hasClass\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
+				Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
+			"""
 			count: 1
 			path: tests/PHPStan/Broker/BrokerTest.php
 
@@ -358,4 +377,36 @@ parameters:
 			message: "#^Method PHPStan\\\\Node\\\\FileNodeTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
 			path: tests/PHPStan/Node/FileNodeTest.php
+
+		-
+			message: """
+				#^Instantiation of deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRule\\:
+				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayItemTypeRuleTest.php
+
+		-
+			message: """
+				#^Return type of method PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRuleTest\\:\\:getRule\\(\\) has typehint with deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRule\\:
+				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayItemTypeRuleTest.php
+
+		-
+			message: """
+				#^Instantiation of deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRule\\:
+				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
+
+		-
+			message: """
+				#^Return type of method PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRuleTest\\:\\:getRule\\(\\) has typehint with deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRule\\:
+				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
 

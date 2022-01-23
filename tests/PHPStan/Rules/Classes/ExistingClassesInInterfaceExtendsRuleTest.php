@@ -4,11 +4,13 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ExistingClassesInInterfaceExtendsRule>
+ * @extends RuleTestCase<ExistingClassesInInterfaceExtendsRule>
  */
-class ExistingClassesInInterfaceExtendsRuleTest extends \PHPStan\Testing\RuleTestCase
+class ExistingClassesInInterfaceExtendsRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
@@ -16,7 +18,7 @@ class ExistingClassesInInterfaceExtendsRuleTest extends \PHPStan\Testing\RuleTes
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassesInInterfaceExtendsRule(
 			new ClassCaseSensitivityCheck($broker, true),
-			$broker
+			$broker,
 		);
 	}
 
@@ -49,6 +51,20 @@ class ExistingClassesInInterfaceExtendsRuleTest extends \PHPStan\Testing\RuleTes
 			[
 				'Interface InterfaceExtendsError\Ipsum extends trait InterfaceExtendsError\DolorTrait.',
 				25,
+			],
+		]);
+	}
+
+	public function testEnums(): void
+	{
+		if (!self::$useStaticReflectionProvider || PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs static reflection and PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/interface-extends-enum.php'], [
+			[
+				'Interface InterfaceExtendsEnum\Foo extends enum InterfaceExtendsEnum\FooEnum.',
+				10,
 			],
 		]);
 	}

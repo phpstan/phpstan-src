@@ -2,11 +2,13 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use function sprintf;
 
-class BooleanTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class BooleanTypeTest extends PHPStanTestCase
 {
 
 	public function dataAccepts(): array
@@ -47,9 +49,6 @@ class BooleanTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param BooleanType  $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(BooleanType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -57,7 +56,7 @@ class BooleanTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -96,9 +95,6 @@ class BooleanTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param BooleanType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(BooleanType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -106,7 +102,7 @@ class BooleanTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -153,9 +149,6 @@ class BooleanTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataEquals
-	 * @param BooleanType $type
-	 * @param Type $otherType
-	 * @param bool $expectedResult
 	 */
 	public function testEquals(BooleanType $type, Type $otherType, bool $expectedResult): void
 	{
@@ -163,7 +156,7 @@ class BooleanTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult,
 			$actualResult,
-			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 

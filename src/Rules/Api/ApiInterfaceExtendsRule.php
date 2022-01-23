@@ -10,6 +10,9 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
+use function array_merge;
+use function count;
+use function sprintf;
 
 /**
  * @implements Rule<Interface_>
@@ -17,17 +20,11 @@ use PHPStan\Type\Type;
 class ApiInterfaceExtendsRule implements Rule
 {
 
-	private ApiRuleHelper $apiRuleHelper;
-
-	private ReflectionProvider $reflectionProvider;
-
 	public function __construct(
-		ApiRuleHelper $apiRuleHelper,
-		ReflectionProvider $reflectionProvider
+		private ApiRuleHelper $apiRuleHelper,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
-		$this->apiRuleHelper = $apiRuleHelper;
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -46,8 +43,6 @@ class ApiInterfaceExtendsRule implements Rule
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param Node\Name $name
 	 * @return RuleError[]
 	 */
 	private function checkName(Scope $scope, Node\Name $name): array
@@ -64,10 +59,10 @@ class ApiInterfaceExtendsRule implements Rule
 
 		$ruleError = RuleErrorBuilder::message(sprintf(
 			'Extending %s is not covered by backward compatibility promise. The interface might change in a minor PHPStan version.',
-			$extendedInterfaceReflection->getDisplayName()
+			$extendedInterfaceReflection->getDisplayName(),
 		))->tip(sprintf(
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
-			'https://github.com/phpstan/phpstan/discussions'
+			'https://github.com/phpstan/phpstan/discussions',
 		))->build();
 
 		if ($extendedInterfaceReflection->getName() === Type::class) {

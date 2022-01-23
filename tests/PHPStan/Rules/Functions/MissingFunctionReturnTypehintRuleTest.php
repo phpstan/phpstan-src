@@ -3,14 +3,16 @@
 namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<MissingFunctionReturnTypehintRule>
+ * @extends RuleTestCase<MissingFunctionReturnTypehintRule>
  */
-class MissingFunctionReturnTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
+class MissingFunctionReturnTypehintRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new MissingFunctionReturnTypehintRule(new MissingTypehintCheck($broker, true, true, true, []));

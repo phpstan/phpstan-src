@@ -5,6 +5,10 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use function array_walk;
+use function implode;
+use function sprintf;
+use function str_replace;
 
 /**
  * Allow errors to be reported in pull-requests diff when run in a GitHub Action
@@ -13,22 +17,16 @@ use PHPStan\File\RelativePathHelper;
 class GithubErrorFormatter implements ErrorFormatter
 {
 
-	private RelativePathHelper $relativePathHelper;
-
-	private TableErrorFormatter $tableErrorformatter;
-
 	public function __construct(
-		RelativePathHelper $relativePathHelper,
-		TableErrorFormatter $tableErrorformatter
+		private RelativePathHelper $relativePathHelper,
+		private ErrorFormatter $errorFormatter,
 	)
 	{
-		$this->relativePathHelper = $relativePathHelper;
-		$this->tableErrorformatter = $tableErrorformatter;
 	}
 
 	public function formatErrors(AnalysisResult $analysisResult, Output $output): int
 	{
-		$this->tableErrorformatter->formatErrors($analysisResult, $output);
+		$this->errorFormatter->formatErrors($analysisResult, $output);
 
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			$metas = [

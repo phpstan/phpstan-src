@@ -10,6 +10,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\TestCase;
+use function sprintf;
 
 class TemplateTypeVarianceTest extends TestCase
 {
@@ -83,18 +84,18 @@ class TemplateTypeVarianceTest extends TestCase
 		Type $a,
 		Type $b,
 		TrinaryLogic $expected,
-		TrinaryLogic $expectedInversed
+		TrinaryLogic $expectedInversed,
 	): void
 	{
 		$this->assertSame(
 			$expected->describe(),
 			$variance->isValidVariance($a, $b)->describe(),
-			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $a->describe(VerbosityLevel::precise()), $b->describe(VerbosityLevel::precise()))
+			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $a->describe(VerbosityLevel::precise()), $b->describe(VerbosityLevel::precise())),
 		);
 		$this->assertSame(
 			$expectedInversed->describe(),
 			$variance->isValidVariance($b, $a)->describe(),
-			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $b->describe(VerbosityLevel::precise()), $a->describe(VerbosityLevel::precise()))
+			sprintf('%s->isValidVariance(%s, %s)', $variance->describe(), $b->describe(VerbosityLevel::precise()), $a->describe(VerbosityLevel::precise())),
 		);
 	}
 

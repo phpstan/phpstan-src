@@ -2,21 +2,23 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ArrayDimFetch>
+ * @implements Rule<Node\Expr\ArrayDimFetch>
  */
-class OffsetAccessWithoutDimForReadingRule implements \PHPStan\Rules\Rule
+class OffsetAccessWithoutDimForReadingRule implements Rule
 {
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\ArrayDimFetch::class;
+		return Node\Expr\ArrayDimFetch::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($scope->isInExpressionAssign($node)) {
 			return [];

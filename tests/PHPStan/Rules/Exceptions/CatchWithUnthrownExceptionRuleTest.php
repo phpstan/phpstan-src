@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CatchWithUnthrownExceptionRule>
@@ -177,6 +178,20 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 			[
 				'Dead catch - TypeError is already caught above.',
 				27,
+			],
+		]);
+	}
+
+	public function testFirstClassCallables(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			self::markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/dead-catch-first-class-callables.php'], [
+			[
+				'Dead catch - InvalidArgumentException is never thrown in the try block.',
+				29,
 			],
 		]);
 	}

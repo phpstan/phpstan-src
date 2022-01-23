@@ -9,17 +9,8 @@ use PHPStan\Analyser\Scope;
 class MatchExpressionArmCondition
 {
 
-	private Expr $condition;
-
-	private Scope $scope;
-
-	private int $line;
-
-	public function __construct(Expr $condition, Scope $scope, int $line)
+	public function __construct(private Expr $condition, private Scope $scope, private int $line)
 	{
-		$this->condition = $condition;
-		$this->scope = $scope;
-		$this->line = $line;
 	}
 
 	public function getCondition(): Expr

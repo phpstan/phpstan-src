@@ -8,12 +8,18 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
+use function array_map;
+use function array_unique;
+use function count;
+use function is_int;
+use function strtotime;
 
-class StrtotimeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class StrtotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -31,9 +37,7 @@ class StrtotimeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 		if ($argType instanceof MixedType) {
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
-		$result = array_unique(array_map(static function (ConstantStringType $string): bool {
-			return is_int(strtotime($string->getValue()));
-		}, TypeUtils::getConstantStrings($argType)));
+		$result = array_unique(array_map(static fn (ConstantStringType $string): bool => is_int(strtotime($string->getValue())), TypeUtils::getConstantStrings($argType)));
 
 		if (count($result) !== 1) {
 			return $defaultReturnType;

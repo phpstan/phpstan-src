@@ -13,8 +13,10 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -22,8 +24,10 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use function count;
+use function range;
 
-class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	private const RANGE_LENGTH_THRESHOLD = 50;
@@ -65,13 +69,28 @@ class RangeFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionR
 
 					$rangeValues = range($startConstant->getValue(), $endConstant->getValue(), $stepConstant->getValue());
 					if (count($rangeValues) > self::RANGE_LENGTH_THRESHOLD) {
+						if ($startConstant instanceof ConstantIntegerType && $endConstant instanceof ConstantIntegerType) {
+							if ($startConstant->getValue() > $endConstant->getValue()) {
+								$tmp = $startConstant;
+								$startConstant = $endConstant;
+								$endConstant = $tmp;
+							}
+							return new IntersectionType([
+								new ArrayType(
+									new IntegerType(),
+									IntegerRangeType::fromInterval($startConstant->getValue(), $endConstant->getValue()),
+								),
+								new NonEmptyArrayType(),
+							]);
+						}
+
 						return new IntersectionType([
 							new ArrayType(
 								new IntegerType(),
 								TypeCombinator::union(
 									$startConstant->generalize(GeneralizePrecision::moreSpecific()),
-									$endConstant->generalize(GeneralizePrecision::moreSpecific())
-								)
+									$endConstant->generalize(GeneralizePrecision::moreSpecific()),
+								),
 							),
 							new NonEmptyArrayType(),
 						]);

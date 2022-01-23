@@ -20,6 +20,7 @@ use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
 
 class AccessoryLiteralStringType implements CompoundType, AccessoryType
 {
@@ -85,7 +86,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		return $type instanceof self;
 	}
 
-	public function describe(\PHPStan\Type\VerbosityLevel $level): string
+	public function describe(VerbosityLevel $level): string
 	{
 		return 'literal-string';
 	}
@@ -112,6 +113,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		return $this;
+	}
+
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return new ErrorType();
 	}
 
 	public function isArray(): TrinaryLogic
@@ -152,7 +158,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		return new ConstantArrayType(
 			[new ConstantIntegerType(0)],
 			[$this],
-			1
+			1,
 		);
 	}
 

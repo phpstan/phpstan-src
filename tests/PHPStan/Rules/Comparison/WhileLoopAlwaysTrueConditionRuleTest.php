@@ -2,16 +2,18 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<WhileLoopAlwaysTrueConditionRule>
+ * @extends RuleTestCase<WhileLoopAlwaysTrueConditionRule>
  */
-class WhileLoopAlwaysTrueConditionRuleTest extends \PHPStan\Testing\RuleTestCase
+class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain = true;
+	private bool $treatPhpDocTypesAsCertain = true;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new WhileLoopAlwaysTrueConditionRule(
 			new ConstantConditionRuleHelper(
@@ -19,11 +21,11 @@ class WhileLoopAlwaysTrueConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 					$this->createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
-					$this->treatPhpDocTypesAsCertain
+					$this->treatPhpDocTypesAsCertain,
 				),
-				$this->treatPhpDocTypesAsCertain
+				$this->treatPhpDocTypesAsCertain,
 			),
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		);
 	}
 

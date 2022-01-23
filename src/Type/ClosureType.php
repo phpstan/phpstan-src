@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use Closure;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
@@ -22,7 +23,12 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function array_map;
+use function array_merge;
+use function implode;
+use function sprintf;
 
 /** @api */
 class ClosureType implements TypeWithClassName, ParametersAcceptor
@@ -30,32 +36,29 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
+	use NonOffsetAccessibleTypeTrait;
 
 	private ObjectType $objectType;
 
-	/** @var array<int, \PHPStan\Reflection\ParameterReflection> */
-	private array $parameters;
+	private TemplateTypeMap $templateTypeMap;
 
-	private Type $returnType;
-
-	private bool $variadic;
+	private TemplateTypeMap $resolvedTemplateTypeMap;
 
 	/**
 	 * @api
-	 * @param array<int, \PHPStan\Reflection\ParameterReflection> $parameters
-	 * @param Type $returnType
-	 * @param bool $variadic
+	 * @param array<int, ParameterReflection> $parameters
 	 */
 	public function __construct(
-		array $parameters,
-		Type $returnType,
-		bool $variadic
+		private array $parameters,
+		private Type $returnType,
+		private bool $variadic,
+		?TemplateTypeMap $templateTypeMap = null,
+		?TemplateTypeMap $resolvedTemplateTypeMap = null,
 	)
 	{
-		$this->objectType = new ObjectType(\Closure::class);
-		$this->parameters = $parameters;
-		$this->returnType = $returnType;
-		$this->variadic = $variadic;
+		$this->objectType = new ObjectType(Closure::class);
+		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
+		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap ?? TemplateTypeMap::createEmpty();
 	}
 
 	public function getClassName(): string
@@ -110,13 +113,13 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			return CallableTypeHelper::isParametersAcceptorSuperTypeOf(
 				$this,
 				$type,
-				$treatMixedAsAny
+				$treatMixedAsAny,
 			);
 		}
 
 		if (
 			$type instanceof TypeWithClassName
-			&& $type->getClassName() === \Closure::class
+			&& $type->getClassName() === Closure::class
 		) {
 			return TrinaryLogic::createMaybe();
 		}
@@ -136,18 +139,12 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			static function (): string {
-				return 'Closure';
-			},
-			function () use ($level): string {
-				return sprintf(
-					'Closure(%s): %s',
-					implode(', ', array_map(static function (ParameterReflection $parameter) use ($level): string {
-						return sprintf('%s%s', $parameter->isVariadic() ? '...' : '', $parameter->getType()->describe($level));
-					}, $this->parameters)),
-					$this->returnType->describe($level)
-				);
-			}
+			static fn (): string => 'Closure',
+			fn (): string => sprintf(
+				'Closure(%s): %s',
+				implode(', ', array_map(static fn (ParameterReflection $parameter): string => sprintf('%s%s', $parameter->isVariadic() ? '...' : '', $parameter->getType()->describe($level)), $this->parameters)),
+				$this->returnType->describe($level),
+			),
 		);
 	}
 
@@ -191,7 +188,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		if ($methodName === 'call') {
 			return new ClosureCallUnresolvedMethodPrototypeReflection(
 				$this->objectType->getUnresolvedMethodPrototype($methodName, $scope),
-				$this
+				$this,
 			);
 		}
 
@@ -233,34 +230,13 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return new ErrorType();
 	}
 
-	public function isOffsetAccessible(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function getOffsetValueType(Type $offsetType): Type
-	{
-		return new ErrorType();
-	}
-
-	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
-	{
-		return new ErrorType();
-	}
-
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
@@ -302,22 +278,22 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return new ConstantArrayType(
 			[new ConstantIntegerType(0)],
 			[$this],
-			1
+			1,
 		);
 	}
 
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
-		return TemplateTypeMap::createEmpty();
+		return $this->templateTypeMap;
 	}
 
 	public function getResolvedTemplateTypeMap(): TemplateTypeMap
 	{
-		return TemplateTypeMap::createEmpty();
+		return $this->resolvedTemplateTypeMap;
 	}
 
 	/**
-	 * @return array<int, \PHPStan\Reflection\ParameterReflection>
+	 * @return array<int, ParameterReflection>
 	 */
 	public function getParameters(): array
 	{
@@ -340,7 +316,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 
-		if ($receivedType->isCallable()->no()) {
+		if ($receivedType->isCallable()->no() || ! $receivedType instanceof self) {
 			return TemplateTypeMap::createEmpty();
 		}
 
@@ -388,11 +364,13 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 					$cb($param->getType()),
 					$param->passedByReference(),
 					$param->isVariadic(),
-					$defaultValue !== null ? $cb($defaultValue) : null
+					$defaultValue !== null ? $cb($defaultValue) : null,
 				);
 			}, $this->getParameters()),
 			$cb($this->getReturnType()),
-			$this->isVariadic()
+			$this->isVariadic(),
+			$this->templateTypeMap,
+			$this->resolvedTemplateTypeMap,
 		);
 	}
 
@@ -418,14 +396,15 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{
 		return new self(
 			$properties['parameters'],
 			$properties['returnType'],
-			$properties['variadic']
+			$properties['variadic'],
+			$properties['templateTypeMap'],
+			$properties['resolvedTemplateTypeMap'],
 		);
 	}
 

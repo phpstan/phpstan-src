@@ -2,6 +2,9 @@
 
 namespace PHPStan\Rules\Exceptions;
 
+use DomainException;
+use InvalidArgumentException;
+use LogicException;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Testing\PHPStanTestCase;
@@ -17,7 +20,7 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 				[],
 				[],
 				[],
-				\InvalidArgumentException::class,
+				InvalidArgumentException::class,
 				true,
 			],
 			[
@@ -27,47 +30,47 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 				[],
 				[],
 				[],
-				\InvalidArgumentException::class,
+				InvalidArgumentException::class,
 				false,
 			],
 			[
 				[],
 				[
-					\InvalidArgumentException::class,
+					InvalidArgumentException::class,
 				],
 				[],
 				[],
-				\InvalidArgumentException::class,
+				InvalidArgumentException::class,
 				false,
 			],
 			[
 				[],
 				[
-					\LogicException::class,
+					LogicException::class,
 				],
 				[],
 				[],
-				\LogicException::class,
+				LogicException::class,
 				false,
 			],
 			[
 				[],
 				[
-					\LogicException::class,
+					LogicException::class,
 				],
 				[],
 				[],
-				\DomainException::class,
+				DomainException::class,
 				false,
 			],
 			[
 				[],
 				[
-					\DomainException::class,
+					DomainException::class,
 				],
 				[],
 				[],
-				\LogicException::class,
+				LogicException::class,
 				true,
 			],
 			[
@@ -77,7 +80,7 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 					'#^Exception$#',
 				],
 				[],
-				\InvalidArgumentException::class,
+				InvalidArgumentException::class,
 				false,
 			],
 			[
@@ -87,7 +90,7 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 					'#^InvalidArgumentException#',
 				],
 				[],
-				\InvalidArgumentException::class,
+				InvalidArgumentException::class,
 				true,
 			],
 			[
@@ -95,9 +98,9 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 				[],
 				[],
 				[
-					\DomainException::class,
+					DomainException::class,
 				],
-				\InvalidArgumentException::class,
+				InvalidArgumentException::class,
 				false,
 			],
 			[
@@ -105,9 +108,9 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 				[],
 				[],
 				[
-					\InvalidArgumentException::class,
+					InvalidArgumentException::class,
 				],
-				\InvalidArgumentException::class,
+				InvalidArgumentException::class,
 				true,
 			],
 			[
@@ -115,9 +118,9 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 				[],
 				[],
 				[
-					\LogicException::class,
+					LogicException::class,
 				],
-				\InvalidArgumentException::class,
+				InvalidArgumentException::class,
 				true,
 			],
 		];
@@ -129,8 +132,6 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 	 * @param string[] $uncheckedExceptionClasses
 	 * @param string[] $checkedExceptionRegexes
 	 * @param string[] $checkedExceptionClasses
-	 * @param string $className
-	 * @param bool $expectedResult
 	 */
 	public function testIsCheckedException(
 		array $uncheckedExceptionRegexes,
@@ -138,7 +139,7 @@ class DefaultExceptionTypeResolverTest extends PHPStanTestCase
 		array $checkedExceptionRegexes,
 		array $checkedExceptionClasses,
 		string $className,
-		bool $expectedResult
+		bool $expectedResult,
 	): void
 	{
 		$resolver = new DefaultExceptionTypeResolver($this->createReflectionProvider(), $uncheckedExceptionRegexes, $uncheckedExceptionClasses, $checkedExceptionRegexes, $checkedExceptionClasses);

@@ -2,20 +2,29 @@
 
 namespace PHPStan\Reflection\Annotations;
 
+use AnnotationsMethods\Bar;
+use AnnotationsMethods\Baz;
+use AnnotationsMethods\BazBaz;
+use AnnotationsMethods\Foo;
+use AnnotationsMethods\FooInterface;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\PhpMethodReflection;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function count;
+use function sprintf;
 
-class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PHPStanTestCase
+class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 {
 
 	public function dataMethods(): array
 	{
 		$fooMethods = [
 			'getInteger' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'int',
 				'isStatic' => false,
 				'isVariadic' => false,
@@ -37,7 +46,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 				],
 			],
 			'doSomething' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'void',
 				'isStatic' => false,
 				'isVariadic' => false,
@@ -59,21 +68,21 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 				],
 			],
 			'getFooOrBar' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'AnnotationsMethods\Foo',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'methodWithNoReturnType' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'mixed',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'getIntegerStatically' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'int',
 				'isStatic' => true,
 				'isVariadic' => false,
@@ -95,7 +104,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 				],
 			],
 			'doSomethingStatically' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'void',
 				'isStatic' => true,
 				'isVariadic' => false,
@@ -117,21 +126,21 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 				],
 			],
 			'getFooOrBarStatically' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'AnnotationsMethods\Foo',
 				'isStatic' => true,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'methodWithNoReturnTypeStatically' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'static(AnnotationsMethods\Foo)',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'getIntegerWithDescription' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'int',
 				'isStatic' => false,
 				'isVariadic' => false,
@@ -153,7 +162,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 				],
 			],
 			'doSomethingWithDescription' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'void',
 				'isStatic' => false,
 				'isVariadic' => false,
@@ -175,21 +184,21 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 				],
 			],
 			'getFooOrBarWithDescription' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'AnnotationsMethods\Foo',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'methodWithNoReturnTypeWithDescription' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'mixed',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'getIntegerStaticallyWithDescription' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'int',
 				'isStatic' => true,
 				'isVariadic' => false,
@@ -211,7 +220,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 				],
 			],
 			'doSomethingStaticallyWithDescription' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'void',
 				'isStatic' => true,
 				'isVariadic' => false,
@@ -233,154 +242,154 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 				],
 			],
 			'getFooOrBarStaticallyWithDescription' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'AnnotationsMethods\Foo',
 				'isStatic' => true,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'methodWithNoReturnTypeStaticallyWithDescription' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'static(AnnotationsMethods\Foo)',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'aStaticMethodThatHasAUniqueReturnTypeInThisClass' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'bool',
 				'isStatic' => true,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'aStaticMethodThatHasAUniqueReturnTypeInThisClassWithDescription' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'string',
 				'isStatic' => true,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'getIntegerNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'int',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'doSomethingNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'void',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'getFooOrBarNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'AnnotationsMethods\Foo',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'methodWithNoReturnTypeNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'mixed',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'getIntegerStaticallyNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'int',
 				'isStatic' => true,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'doSomethingStaticallyNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'void',
 				'isStatic' => true,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'getFooOrBarStaticallyNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'AnnotationsMethods\Foo',
 				'isStatic' => true,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'methodWithNoReturnTypeStaticallyNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'static(AnnotationsMethods\Foo)',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'getIntegerWithDescriptionNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'int',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'doSomethingWithDescriptionNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'void',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'getFooOrBarWithDescriptionNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'AnnotationsMethods\Foo',
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'getIntegerStaticallyWithDescriptionNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'int',
 				'isStatic' => true,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'doSomethingStaticallyWithDescriptionNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'void',
 				'isStatic' => true,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'getFooOrBarStaticallyWithDescriptionNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'AnnotationsMethods\Foo',
 				'isStatic' => true,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'aStaticMethodThatHasAUniqueReturnTypeInThisClassNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'bool|string',
 				'isStatic' => true,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'aStaticMethodThatHasAUniqueReturnTypeInThisClassWithDescriptionNoParams' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'float|string',
 				'isStatic' => true,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'methodFromInterface' => [
-				'class' => \AnnotationsMethods\FooInterface::class,
-				'returnType' => \AnnotationsMethods\FooInterface::class,
+				'class' => FooInterface::class,
+				'returnType' => FooInterface::class,
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'publish' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'Aws\Result',
 				'isStatic' => false,
 				'isVariadic' => false,
@@ -395,7 +404,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 				],
 			],
 			'rotate' => [
-				'class' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
 				'returnType' => 'AnnotationsMethods\Image',
 				'isStatic' => false,
 				'isVariadic' => false,
@@ -417,15 +426,15 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 				],
 			],
 			'overridenMethod' => [
-				'class' => \AnnotationsMethods\Foo::class,
-				'returnType' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
+				'returnType' => Foo::class,
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
 			],
 			'overridenMethodWithAnnotation' => [
-				'class' => \AnnotationsMethods\Foo::class,
-				'returnType' => \AnnotationsMethods\Foo::class,
+				'class' => Foo::class,
+				'returnType' => Foo::class,
 				'isStatic' => false,
 				'isVariadic' => false,
 				'parameters' => [],
@@ -435,33 +444,33 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 			$fooMethods,
 			[
 				'overridenMethod' => [
-					'class' => \AnnotationsMethods\Bar::class,
-					'returnType' => \AnnotationsMethods\Bar::class,
+					'class' => Bar::class,
+					'returnType' => Bar::class,
 					'isStatic' => false,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
 				'overridenMethodWithAnnotation' => [
-					'class' => \AnnotationsMethods\Bar::class,
-					'returnType' => \AnnotationsMethods\Bar::class,
+					'class' => Bar::class,
+					'returnType' => Bar::class,
 					'isStatic' => false,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
 				'conflictingMethod' => [
-					'class' => \AnnotationsMethods\Bar::class,
-					'returnType' => \AnnotationsMethods\Bar::class,
+					'class' => Bar::class,
+					'returnType' => Bar::class,
 					'isStatic' => false,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
-			]
+			],
 		);
 		$bazMethods = array_merge(
 			$barMethods,
 			[
 				'doSomething' => [
-					'class' => \AnnotationsMethods\Baz::class,
+					'class' => Baz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => false,
@@ -483,7 +492,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'getIpsum' => [
-					'class' => \AnnotationsMethods\Baz::class,
+					'class' => Baz::class,
 					'returnType' => 'OtherNamespace\Ipsum',
 					'isStatic' => false,
 					'isVariadic' => false,
@@ -498,7 +507,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'getIpsumStatically' => [
-					'class' => \AnnotationsMethods\Baz::class,
+					'class' => Baz::class,
 					'returnType' => 'OtherNamespace\Ipsum',
 					'isStatic' => true,
 					'isVariadic' => false,
@@ -513,7 +522,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'getIpsumWithDescription' => [
-					'class' => \AnnotationsMethods\Baz::class,
+					'class' => Baz::class,
 					'returnType' => 'OtherNamespace\Ipsum',
 					'isStatic' => false,
 					'isVariadic' => false,
@@ -528,7 +537,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'getIpsumStaticallyWithDescription' => [
-					'class' => \AnnotationsMethods\Baz::class,
+					'class' => Baz::class,
 					'returnType' => 'OtherNamespace\Ipsum',
 					'isStatic' => true,
 					'isVariadic' => false,
@@ -543,7 +552,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'doSomethingStatically' => [
-					'class' => \AnnotationsMethods\Baz::class,
+					'class' => Baz::class,
 					'returnType' => 'void',
 					'isStatic' => true,
 					'isVariadic' => false,
@@ -565,7 +574,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'doSomethingWithDescription' => [
-					'class' => \AnnotationsMethods\Baz::class,
+					'class' => Baz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => false,
@@ -587,7 +596,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'doSomethingStaticallyWithDescription' => [
-					'class' => \AnnotationsMethods\Baz::class,
+					'class' => Baz::class,
 					'returnType' => 'void',
 					'isStatic' => true,
 					'isVariadic' => false,
@@ -609,75 +618,75 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'doSomethingNoParams' => [
-					'class' => \AnnotationsMethods\Baz::class,
+					'class' => Baz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
 				'doSomethingStaticallyNoParams' => [
-					'class' => \AnnotationsMethods\Baz::class,
+					'class' => Baz::class,
 					'returnType' => 'void',
 					'isStatic' => true,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
 				'doSomethingWithDescriptionNoParams' => [
-					'class' => \AnnotationsMethods\Baz::class,
+					'class' => Baz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
 				'doSomethingStaticallyWithDescriptionNoParams' => [
-					'class' => \AnnotationsMethods\Baz::class,
+					'class' => Baz::class,
 					'returnType' => 'void',
 					'isStatic' => true,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
 				'methodFromTrait' => [
-					'class' => \AnnotationsMethods\Baz::class,
-					'returnType' => \AnnotationsMethods\BazBaz::class,
+					'class' => Baz::class,
+					'returnType' => BazBaz::class,
 					'isStatic' => false,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
-			]
+			],
 		);
 		$bazBazMethods = array_merge(
 			$bazMethods,
 			[
 				'getTest' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'OtherNamespace\Test',
 					'isStatic' => false,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
 				'getTestStatically' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'OtherNamespace\Test',
 					'isStatic' => true,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
 				'getTestWithDescription' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'OtherNamespace\Test',
 					'isStatic' => false,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
 				'getTestStaticallyWithDescription' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'OtherNamespace\Test',
 					'isStatic' => true,
 					'isVariadic' => false,
 					'parameters' => [],
 				],
 				'doSomethingWithSpecificScalarParamsWithoutDefault' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => false,
@@ -713,7 +722,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'doSomethingWithSpecificScalarParamsWithDefault' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => false,
@@ -749,7 +758,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'doSomethingWithSpecificObjectParamsWithoutDefault' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => false,
@@ -785,7 +794,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'doSomethingWithSpecificObjectParamsWithDefault' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => false,
@@ -821,7 +830,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'doSomethingWithSpecificVariadicScalarParamsNotNullable' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => true,
@@ -836,7 +845,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'doSomethingWithSpecificVariadicScalarParamsNullable' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => true,
@@ -851,7 +860,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'doSomethingWithSpecificVariadicObjectParamsNotNullable' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => true,
@@ -866,7 +875,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'doSomethingWithSpecificVariadicObjectParamsNullable' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => true,
@@ -881,7 +890,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'doSomethingWithComplicatedParameters' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'void',
 					'isStatic' => false,
 					'isVariadic' => false,
@@ -917,7 +926,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 					],
 				],
 				'paramMultipleTypesWithExtraSpaces' => [
-					'class' => \AnnotationsMethods\BazBaz::class,
+					'class' => BazBaz::class,
 					'returnType' => 'float|int',
 					'isStatic' => false,
 					'isVariadic' => false,
@@ -938,20 +947,19 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 						],
 					],
 				],
-			]
+			],
 		);
 
 		return [
-			[\AnnotationsMethods\Foo::class, $fooMethods],
-			[\AnnotationsMethods\Bar::class, $barMethods],
-			[\AnnotationsMethods\Baz::class, $bazMethods],
-			[\AnnotationsMethods\BazBaz::class, $bazBazMethods],
+			[Foo::class, $fooMethods],
+			[Bar::class, $barMethods],
+			[Baz::class, $bazMethods],
+			[BazBaz::class, $bazBazMethods],
 		];
 	}
 
 	/**
 	 * @dataProvider dataMethods
-	 * @param string $className
 	 * @param array<string, mixed> $methods
 	 */
 	public function testMethods(string $className, array $methods): void
@@ -970,47 +978,47 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 			$this->assertSame(
 				$expectedMethodData['class'],
 				$method->getDeclaringClass()->getName(),
-				sprintf('Declaring class of method %s() does not match.', $methodName)
+				sprintf('Declaring class of method %s() does not match.', $methodName),
 			);
 			$this->assertSame(
 				$expectedMethodData['returnType'],
 				$selectedParametersAcceptor->getReturnType()->describe(VerbosityLevel::precise()),
-				sprintf('Return type of method %s::%s() does not match', $className, $methodName)
+				sprintf('Return type of method %s::%s() does not match', $className, $methodName),
 			);
 			$this->assertSame(
 				$expectedMethodData['isStatic'],
 				$method->isStatic(),
-				sprintf('Scope of method %s::%s() does not match', $className, $methodName)
+				sprintf('Scope of method %s::%s() does not match', $className, $methodName),
 			);
 			$this->assertSame(
 				$expectedMethodData['isVariadic'],
 				$selectedParametersAcceptor->isVariadic(),
-				sprintf('Method %s::%s() does not match expected variadicity', $className, $methodName)
+				sprintf('Method %s::%s() does not match expected variadicity', $className, $methodName),
 			);
 			$this->assertCount(
 				count($expectedMethodData['parameters']),
 				$selectedParametersAcceptor->getParameters(),
-				sprintf('Method %s::%s() does not match expected count of parameters', $className, $methodName)
+				sprintf('Method %s::%s() does not match expected count of parameters', $className, $methodName),
 			);
 			foreach ($selectedParametersAcceptor->getParameters() as $i => $parameter) {
 				$this->assertSame(
 					$expectedMethodData['parameters'][$i]['name'],
-					$parameter->getName()
+					$parameter->getName(),
 				);
 				$this->assertSame(
 					$expectedMethodData['parameters'][$i]['type'],
-					$parameter->getType()->describe(VerbosityLevel::precise())
+					$parameter->getType()->describe(VerbosityLevel::precise()),
 				);
 				$this->assertTrue(
-					$expectedMethodData['parameters'][$i]['passedByReference']->equals($parameter->passedByReference())
+					$expectedMethodData['parameters'][$i]['passedByReference']->equals($parameter->passedByReference()),
 				);
 				$this->assertSame(
 					$expectedMethodData['parameters'][$i]['isOptional'],
-					$parameter->isOptional()
+					$parameter->isOptional(),
 				);
 				$this->assertSame(
 					$expectedMethodData['parameters'][$i]['isVariadic'],
-					$parameter->isVariadic()
+					$parameter->isVariadic(),
 				);
 			}
 		}
@@ -1019,7 +1027,7 @@ class AnnotationsMethodsClassReflectionExtensionTest extends \PHPStan\Testing\PH
 	public function testOverridingNativeMethodsWithAnnotationsDoesNotBreakGetNativeMethod(): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$class = $reflectionProvider->getClass(\AnnotationsMethods\Bar::class);
+		$class = $reflectionProvider->getClass(Bar::class);
 		$this->assertTrue($class->hasNativeMethod('overridenMethodWithAnnotation'));
 		$this->assertInstanceOf(PhpMethodReflection::class, $class->getNativeMethod('overridenMethodWithAnnotation'));
 	}

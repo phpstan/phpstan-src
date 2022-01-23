@@ -22,15 +22,19 @@ rules:
 	- PHPStan\Rules\Classes\ClassConstantAttributesRule
 	- PHPStan\Rules\Classes\ClassConstantRule
 	- PHPStan\Rules\Classes\DuplicateDeclarationRule
+	- PHPStan\Rules\Classes\EnumSanityRule
 	- PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule
+	- PHPStan\Rules\Classes\ExistingClassesInEnumImplementsRule
 	- PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule
 	- PHPStan\Rules\Classes\ExistingClassInTraitUseRule
 	- PHPStan\Rules\Classes\InstantiationRule
+	- PHPStan\Rules\Classes\InstantiationCallableRule
 	- PHPStan\Rules\Classes\InvalidPromotedPropertiesRule
 	- PHPStan\Rules\Classes\NewStaticRule
 	- PHPStan\Rules\Classes\NonClassAttributeClassRule
 	- PHPStan\Rules\Classes\TraitAttributeClassRule
 	- PHPStan\Rules\Constants\FinalConstantRule
+	- PHPStan\Rules\EnumCases\EnumCaseAttributesRule
 	- PHPStan\Rules\Exceptions\ThrowExpressionRule
 	- PHPStan\Rules\Functions\ArrowFunctionAttributesRule
 	- PHPStan\Rules\Functions\ArrowFunctionReturnNullsafeByRefRule
@@ -47,9 +51,13 @@ rules:
 	- PHPStan\Rules\Functions\ReturnNullsafeByRefRule
 	- PHPStan\Rules\Keywords\ContinueBreakInLoopRule
 	- PHPStan\Rules\Methods\AbstractMethodInNonAbstractClassRule
+	- PHPStan\Rules\Methods\CallMethodsRule
+	- PHPStan\Rules\Methods\CallStaticMethodsRule
 	- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+	- PHPStan\Rules\Methods\MethodCallableRule
 	- PHPStan\Rules\Methods\MissingMethodImplementationRule
 	- PHPStan\Rules\Methods\MethodAttributesRule
+	- PHPStan\Rules\Methods\StaticMethodCallableRule
 	- PHPStan\Rules\Operators\InvalidAssignVarRule
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule
@@ -84,22 +92,6 @@ services:
 			- phpstan.rules.rule
 		arguments:
 			checkFunctionNameCase: %checkFunctionNameCase%
-
-	-
-		class: PHPStan\Rules\Methods\CallMethodsRule
-		tags:
-			- phpstan.rules.rule
-		arguments:
-			checkFunctionNameCase: %checkFunctionNameCase%
-			reportMagicMethods: %reportMagicMethods%
-
-	-
-		class: PHPStan\Rules\Methods\CallStaticMethodsRule
-		tags:
-			- phpstan.rules.rule
-		arguments:
-			checkFunctionNameCase: %checkFunctionNameCase%
-			reportMagicMethods: %reportMagicMethods%
 
 	-
 		class: PHPStan\Rules\Constants\OverridingConstantRule
@@ -163,6 +155,21 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkThisOnly: %checkThisOnly%
+
+	-
+		class: PHPStan\Rules\Functions\FunctionCallableRule
+		arguments:
+			checkFunctionNameCase: %checkFunctionNameCase%
+			reportMaybes: %reportMaybes%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule
+		arguments:
+			additionalConstructors: %additionalConstructors%
+		tags:
+			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Properties\OverridingPropertyRule

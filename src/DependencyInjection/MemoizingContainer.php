@@ -2,17 +2,16 @@
 
 namespace PHPStan\DependencyInjection;
 
+use function array_key_exists;
+
 class MemoizingContainer implements Container
 {
-
-	private Container $originalContainer;
 
 	/** @var array<string, mixed> */
 	private array $servicesByType = [];
 
-	public function __construct(Container $originalContainer)
+	public function __construct(private Container $originalContainer)
 	{
-		$this->originalContainer = $originalContainer;
 	}
 
 	public function hasService(string $serviceName): bool
@@ -20,19 +19,11 @@ class MemoizingContainer implements Container
 		return $this->originalContainer->hasService($serviceName);
 	}
 
-	/**
-	 * @param string $serviceName
-	 * @return mixed
-	 */
 	public function getService(string $serviceName)
 	{
 		return $this->originalContainer->getService($serviceName);
 	}
 
-	/**
-	 * @param string $className
-	 * @return mixed
-	 */
 	public function getByType(string $className)
 	{
 		if (array_key_exists($className, $this->servicesByType)) {
@@ -65,11 +56,6 @@ class MemoizingContainer implements Container
 		return $this->originalContainer->hasParameter($parameterName);
 	}
 
-	/**
-	 * @param string $parameterName
-	 * @return mixed
-	 * @throws ParameterNotFoundException
-	 */
 	public function getParameter(string $parameterName)
 	{
 		return $this->originalContainer->getParameter($parameterName);

@@ -10,35 +10,34 @@ use PHPStan\Php8StubsMap;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
+use ReflectionMethod;
+use function array_key_exists;
+use function array_map;
+use function count;
+use function is_string;
+use function sprintf;
+use function strtolower;
 
 class Php8SignatureMapProvider implements SignatureMapProvider
 {
 
 	private const DIRECTORY = __DIR__ . '/../../../vendor/phpstan/php-8-stubs';
 
-	private FunctionSignatureMapProvider $functionSignatureMapProvider;
-
-	private FileNodesFetcher $fileNodesFetcher;
-
-	private FileTypeMapper $fileTypeMapper;
-
 	/** @var array<string, array<string, array{ClassMethod, string}>> */
 	private array $methodNodes = [];
 
 	public function __construct(
-		FunctionSignatureMapProvider $functionSignatureMapProvider,
-		FileNodesFetcher $fileNodesFetcher,
-		FileTypeMapper $fileTypeMapper
+		private FunctionSignatureMapProvider $functionSignatureMapProvider,
+		private FileNodesFetcher $fileNodesFetcher,
+		private FileTypeMapper $fileTypeMapper,
 	)
 	{
-		$this->functionSignatureMapProvider = $functionSignatureMapProvider;
-		$this->fileNodesFetcher = $fileNodesFetcher;
-		$this->fileTypeMapper = $fileTypeMapper;
 	}
 
 	public function hasMethodSignature(string $className, string $methodName, int $variant = 0): bool
@@ -60,10 +59,8 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @param string $className
-	 * @param string $methodName
 	 * @return array{ClassMethod, string}|null
-	 * @throws \PHPStan\ShouldNotHappenException
+	 * @throws ShouldNotHappenException
 	 */
 	private function findMethodNode(string $className, string $methodName): ?array
 	{
@@ -77,12 +74,12 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
 		$classes = $nodes->getClassNodes();
 		if (count($classes) !== 1) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
+			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
 		}
 
 		$class = $classes[$lowerClassName];
 		if (count($class) !== 1) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
+			throw new ShouldNotHappenException(sprintf('Class %s stub not found in %s.', $className, $stubFile));
 		}
 
 		foreach ($class[0]->getNode()->stmts as $stmt) {
@@ -112,7 +109,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		return true;
 	}
 
-	public function getMethodSignature(string $className, string $methodName, ?\ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature
+	public function getMethodSignature(string $className, string $methodName, ?ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature
 	{
 		$lowerClassName = strtolower($className);
 		if (!array_key_exists($lowerClassName, Php8StubsMap::CLASSES)) {
@@ -138,7 +135,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		if ($this->functionSignatureMapProvider->hasMethodSignature($className, $methodName)) {
 			return $this->mergeSignatures(
 				$signature,
-				$this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant)
+				$this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant),
 			);
 		}
 
@@ -164,14 +161,14 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
 		$functions = $nodes->getFunctionNodes();
 		if (count($functions) !== 1) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Function %s stub not found in %s.', $functionName, $stubFile));
+			throw new ShouldNotHappenException(sprintf('Function %s stub not found in %s.', $functionName, $stubFile));
 		}
 
 		$signature = $this->getSignature($functions[$lowerName]->getNode(), null, $stubFile);
 		if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName)) {
 			return $this->mergeSignatures(
 				$signature,
-				$this->functionSignatureMapProvider->getFunctionSignature($functionName, $className)
+				$this->functionSignatureMapProvider->getFunctionSignature($functionName, $className),
 			);
 		}
 
@@ -196,12 +193,12 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 					$nativeParameterType,
 					TypehintHelper::decideType(
 						$nativeParameter->getType(),
-						$functionMapParameter->getType()
-					)
+						$functionMapParameter->getType(),
+					),
 				),
 				$nativeParameterType,
 				$nativeParameter->passedByReference()->yes() ? $functionMapParameter->passedByReference() : $nativeParameter->passedByReference(),
-				$nativeParameter->isVariadic()
+				$nativeParameter->isVariadic(),
 			);
 		}
 
@@ -213,8 +210,8 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$nativeReturnType,
 				TypehintHelper::decideType(
 					$nativeSignature->getReturnType(),
-					$functionMapSignature->getReturnType()
-				)
+					$functionMapSignature->getReturnType(),
+				),
 			);
 		}
 
@@ -222,7 +219,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			$parameters,
 			$returnType,
 			$nativeReturnType,
-			$nativeSignature->isVariadic()
+			$nativeSignature->isVariadic(),
 		);
 	}
 
@@ -237,8 +234,6 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @param string $className
-	 * @param string $methodName
 	 * @return array{hasSideEffects: bool}
 	 */
 	public function getMethodMetadata(string $className, string $methodName): array
@@ -247,7 +242,6 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @param string $functionName
 	 * @return array{hasSideEffects: bool}
 	 */
 	public function getFunctionMetadata(string $functionName): array
@@ -257,28 +251,31 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 
 	/**
 	 * @param ClassMethod|Function_ $function
-	 * @param string $stubFile
-	 * @return FunctionSignature
 	 */
 	private function getSignature(
 		FunctionLike $function,
 		?string $className,
-		string $stubFile
+		string $stubFile,
 	): FunctionSignature
 	{
 		$phpDocParameterTypes = null;
 		$phpDocReturnType = null;
 		if ($function->getDocComment() !== null) {
+			if ($function instanceof ClassMethod) {
+				$functionName = $function->name->toString();
+			} elseif ($function->namespacedName !== null) {
+				$functionName = $function->namespacedName->toString();
+			} else {
+				throw new ShouldNotHappenException();
+			}
 			$phpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 				$stubFile,
 				$className,
 				null,
-				$function instanceof ClassMethod ? $function->name->toString() : $function->namespacedName->toString(),
-				$function->getDocComment()->getText()
+				$functionName,
+				$function->getDocComment()->getText(),
 			);
-			$phpDocParameterTypes = array_map(static function (ParamTag $param): Type {
-				return $param->getType();
-			}, $phpDoc->getParamTags());
+			$phpDocParameterTypes = array_map(static fn (ParamTag $param): Type => $param->getType(), $phpDoc->getParamTags());
 			if ($phpDoc->getReturnTag() !== null) {
 				$phpDocReturnType = $phpDoc->getReturnTag()->getType();
 			}
@@ -288,7 +285,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		foreach ($function->getParams() as $param) {
 			$name = $param->var;
 			if (!$name instanceof Variable || !is_string($name->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$parameterType = ParserNodeTypeToPHPStanType::resolve($param->type, null);
 			$parameters[] = new ParameterSignature(
@@ -297,7 +294,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				TypehintHelper::decideType($parameterType, $phpDocParameterTypes[$name->name] ?? null),
 				$parameterType,
 				$param->byRef ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),
-				$param->variadic
+				$param->variadic,
 			);
 
 			$variadic = $variadic || $param->variadic;
@@ -309,7 +306,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			$parameters,
 			TypehintHelper::decideType($returnType, $phpDocReturnType ?? null),
 			$returnType,
-			$variadic
+			$variadic,
 		);
 	}
 

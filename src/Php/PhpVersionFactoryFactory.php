@@ -3,26 +3,25 @@
 namespace PHPStan\Php;
 
 use Nette\Utils\Json;
+use Nette\Utils\JsonException;
+use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
+use function count;
+use function end;
+use function is_file;
+use function is_string;
 
 class PhpVersionFactoryFactory
 {
-
-	private ?int $versionId;
-
-	/** @var string[] */
-	private array $composerAutoloaderProjectPaths;
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
 	 */
 	public function __construct(
-		?int $versionId,
-		array $composerAutoloaderProjectPaths
+		private ?int $versionId,
+		private array $composerAutoloaderProjectPaths,
 	)
 	{
-		$this->versionId = $versionId;
-		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
 	}
 
 	public function create(): PhpVersionFactory
@@ -38,7 +37,7 @@ class PhpVersionFactoryFactory
 					if (is_string($platformVersion)) {
 						$composerPhpVersion = $platformVersion;
 					}
-				} catch (\PHPStan\File\CouldNotReadFileException | \Nette\Utils\JsonException $e) {
+				} catch (CouldNotReadFileException | JsonException) {
 					// pass
 				}
 			}

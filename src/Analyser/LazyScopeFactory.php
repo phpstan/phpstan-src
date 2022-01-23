@@ -7,17 +7,17 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
+use function is_a;
 
 class LazyScopeFactory implements ScopeFactory
 {
-
-	private string $scopeClass;
-
-	private Container $container;
 
 	/** @var string[] */
 	private array $dynamicConstantNames;
@@ -25,41 +25,29 @@ class LazyScopeFactory implements ScopeFactory
 	private bool $treatPhpDocTypesAsCertain;
 
 	public function __construct(
-		string $scopeClass,
-		Container $container
+		private string $scopeClass,
+		private Container $container,
 	)
 	{
-		$this->scopeClass = $scopeClass;
-		$this->container = $container;
 		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 		$this->treatPhpDocTypesAsCertain = $container->getParameter('treatPhpDocTypesAsCertain');
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\ScopeContext $context
-	 * @param bool $declareStrictTypes
 	 * @param array<string, Type> $constantTypes
-	 * @param \PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection|null $function
-	 * @param string|null $namespace
-	 * @param \PHPStan\Analyser\VariableTypeHolder[] $variablesTypes
-	 * @param \PHPStan\Analyser\VariableTypeHolder[] $moreSpecificTypes
+	 * @param VariableTypeHolder[] $variablesTypes
+	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param string|null $inClosureBindScopeClass
-	 * @param \PHPStan\Reflection\ParametersAcceptor|null $anonymousFunctionReflection
-	 * @param bool $inFirstLevelStatement
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
-	 * @param array<\PHPStan\Reflection\FunctionReflection|\PHPStan\Reflection\MethodReflection> $inFunctionCallsStack
-	 * @param bool $afterExtractCall
-	 * @param Scope|null $parentScope
+	 * @param array<(FunctionReflection|MethodReflection)> $inFunctionCallsStack
 	 *
-	 * @return MutatingScope
 	 */
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
 		array $constantTypes = [],
-		$function = null,
+		FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
 		array $variablesTypes = [],
 		array $moreSpecificTypes = [],
@@ -71,12 +59,12 @@ class LazyScopeFactory implements ScopeFactory
 		array $nativeExpressionTypes = [],
 		array $inFunctionCallsStack = [],
 		bool $afterExtractCall = false,
-		?Scope $parentScope = null
+		?Scope $parentScope = null,
 	): MutatingScope
 	{
 		$scopeClass = $this->scopeClass;
 		if (!is_a($scopeClass, MutatingScope::class, true)) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return new $scopeClass(
@@ -107,7 +95,7 @@ class LazyScopeFactory implements ScopeFactory
 			$this->dynamicConstantNames,
 			$this->treatPhpDocTypesAsCertain,
 			$afterExtractCall,
-			$parentScope
+			$parentScope,
 		);
 	}
 

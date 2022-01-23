@@ -12,17 +12,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 class SymfonyOutput implements Output
 {
 
-	private \Symfony\Component\Console\Output\OutputInterface $symfonyOutput;
-
-	private OutputStyle $style;
-
 	public function __construct(
-		OutputInterface $symfonyOutput,
-		OutputStyle $style
+		private OutputInterface $symfonyOutput,
+		private OutputStyle $style,
 	)
 	{
-		$this->symfonyOutput = $symfonyOutput;
-		$this->style = $style;
 	}
 
 	public function writeFormatted(string $message): void

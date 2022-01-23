@@ -10,18 +10,16 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ * @implements Rule<Node\Expr>
  */
 class YieldInGeneratorRule implements Rule
 {
 
-	private bool $reportMaybes;
-
-	public function __construct(bool $reportMaybes)
+	public function __construct(private bool $reportMaybes)
 	{
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string
@@ -53,7 +51,7 @@ class YieldInGeneratorRule implements Rule
 			$isSuperType = TrinaryLogic::createNo();
 		} else {
 			$isSuperType = $returnType->isIterable()->and(TrinaryLogic::createFromBoolean(
-				!$returnType->isArray()->yes()
+				!$returnType->isArray()->yes(),
 			));
 		}
 		if ($isSuperType->yes()) {
@@ -67,7 +65,7 @@ class YieldInGeneratorRule implements Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Yield can be used only with these return types: %s.',
-				'Generator, Iterator, Traversable, iterable'
+				'Generator, Iterator, Traversable, iterable',
 			))->build(),
 		];
 	}

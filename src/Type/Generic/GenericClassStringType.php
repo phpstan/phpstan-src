@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
@@ -17,18 +16,16 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /** @api */
 class GenericClassStringType extends ClassStringType
 {
 
-	private Type $type;
-
 	/** @api */
-	public function __construct(Type $type)
+	public function __construct(private Type $type)
 	{
 		parent::__construct();
-		$this->type = $type;
 	}
 
 	public function getReferencedClasses(): array
@@ -53,8 +50,7 @@ class GenericClassStringType extends ClassStringType
 		}
 
 		if ($type instanceof ConstantStringType) {
-			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-			if (!$reflectionProvider->hasClass($type->getValue())) {
+			if (!$type->isClassString()) {
 				return TrinaryLogic::createNo();
 			}
 
@@ -174,7 +170,6 @@ class GenericClassStringType extends ClassStringType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

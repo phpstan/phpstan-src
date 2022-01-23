@@ -9,7 +9,7 @@ class GenericTypeVariableResolver
 	public static function getType(
 		TypeWithClassName $type,
 		string $genericClassName,
-		string $typeVariableName
+		string $typeVariableName,
 	): ?Type
 	{
 		$ancestor = $type->getAncestorWithClassName($genericClassName);

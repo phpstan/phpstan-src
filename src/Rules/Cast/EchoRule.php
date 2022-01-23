@@ -10,18 +10,16 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Echo_>
+ * @implements Rule<Node\Stmt\Echo_>
  */
 class EchoRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
@@ -38,9 +36,7 @@ class EchoRule implements Rule
 				$scope,
 				$expr,
 				'',
-				static function (Type $type): bool {
-					return !$type->toString() instanceof ErrorType;
-				}
+				static fn (Type $type): bool => !$type->toString() instanceof ErrorType,
 			);
 
 			if ($typeResult->getType() instanceof ErrorType
@@ -52,7 +48,7 @@ class EchoRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Parameter #%d (%s) of echo cannot be converted to string.',
 				$key + 1,
-				$typeResult->getType()->describe(VerbosityLevel::value())
+				$typeResult->getType()->describe(VerbosityLevel::value()),
 			))->line($expr->getLine())->build();
 		}
 		return $messages;

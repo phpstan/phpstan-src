@@ -7,21 +7,18 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @api
- * @phpstan-template TNodeType of \PhpParser\Node
+ * @phpstan-template TNodeType of Node
  */
 interface Rule
 {
 
 	/**
 	 * @phpstan-return class-string<TNodeType>
-	 * @return string
 	 */
 	public function getNodeType(): string;
 
 	/**
 	 * @phpstan-param TNodeType $node
-	 * @param \PhpParser\Node $node
-	 * @param \PHPStan\Analyser\Scope $scope
 	 * @return (string|RuleError)[] errors
 	 */
 	public function processNode(Node $node, Scope $scope): array;

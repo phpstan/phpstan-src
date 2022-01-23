@@ -7,27 +7,24 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\VerbosityLevel;
+use function array_keys;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\ClassMethod>
+ * @implements Rule<Node\Stmt\ClassMethod>
  */
 class MethodTemplateTypeRule implements Rule
 {
 
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
-
-	private \PHPStan\Rules\Generics\TemplateTypeCheck $templateTypeCheck;
-
 	public function __construct(
-		FileTypeMapper $fileTypeMapper,
-		TemplateTypeCheck $templateTypeCheck
+		private FileTypeMapper $fileTypeMapper,
+		private TemplateTypeCheck $templateTypeCheck,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->templateTypeCheck = $templateTypeCheck;
 	}
 
 	public function getNodeType(): string
@@ -43,7 +40,7 @@ class MethodTemplateTypeRule implements Rule
 		}
 
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$classReflection = $scope->getClassReflection();
@@ -51,10 +48,10 @@ class MethodTemplateTypeRule implements Rule
 		$methodName = $node->name->toString();
 		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
 			$scope->getFile(),
-			$className,
+			$classReflection->getName(),
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 			$methodName,
-			$docComment->getText()
+			$docComment->getText(),
 		);
 
 		$methodTemplateTags = $resolvedPhpDoc->getTemplateTags();
@@ -67,7 +64,7 @@ class MethodTemplateTypeRule implements Rule
 			sprintf('PHPDoc tag @template for method %s::%s() cannot have existing class %%s as its name.', $escapedClassName, $escapedMethodName),
 			sprintf('PHPDoc tag @template for method %s::%s() cannot have existing type alias %%s as its name.', $escapedClassName, $escapedMethodName),
 			sprintf('PHPDoc tag @template %%s for method %s::%s() has invalid bound type %%s.', $escapedClassName, $escapedMethodName),
-			sprintf('PHPDoc tag @template %%s for method %s::%s() with bound type %%s is not supported.', $escapedClassName, $escapedMethodName)
+			sprintf('PHPDoc tag @template %%s for method %s::%s() with bound type %%s is not supported.', $escapedClassName, $escapedMethodName),
 		);
 
 		$classTemplateTypes = $classReflection->getTemplateTypeMap()->getTypes();

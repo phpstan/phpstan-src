@@ -2,16 +2,18 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<DoWhileLoopConstantConditionRule>
+ * @extends RuleTestCase<DoWhileLoopConstantConditionRule>
  */
-class DoWhileLoopConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
+class DoWhileLoopConstantConditionRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain = true;
+	private bool $treatPhpDocTypesAsCertain = true;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new DoWhileLoopConstantConditionRule(
 			new ConstantConditionRuleHelper(
@@ -19,11 +21,11 @@ class DoWhileLoopConstantConditionRuleTest extends \PHPStan\Testing\RuleTestCase
 					$this->createReflectionProvider(),
 					$this->getTypeSpecifier(),
 					[],
-					$this->treatPhpDocTypesAsCertain
+					$this->treatPhpDocTypesAsCertain,
 				),
-				$this->treatPhpDocTypesAsCertain
+				$this->treatPhpDocTypesAsCertain,
 			),
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		);
 	}
 

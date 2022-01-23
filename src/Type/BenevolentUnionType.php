@@ -4,10 +4,21 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use function array_map;
+use function count;
 
 /** @api */
 class BenevolentUnionType extends UnionType
 {
+
+	/**
+	 * @api
+	 * @param Type[] $types
+	 */
+	public function __construct(array $types)
+	{
+		parent::__construct($types);
+	}
 
 	public function describe(VerbosityLevel $level): string
 	{
@@ -92,7 +103,6 @@ class BenevolentUnionType extends UnionType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

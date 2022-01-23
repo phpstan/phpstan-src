@@ -8,11 +8,8 @@ use PHPStan\Type\Type;
 class VarTag implements TypedTag
 {
 
-	private \PHPStan\Type\Type $type;
-
-	public function __construct(Type $type)
+	public function __construct(private Type $type)
 	{
-		$this->type = $type;
 	}
 
 	public function getType(): Type
@@ -21,7 +18,6 @@ class VarTag implements TypedTag
 	}
 
 	/**
-	 * @param Type $type
 	 * @return self
 	 */
 	public function withType(Type $type): TypedTag

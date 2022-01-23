@@ -9,11 +9,14 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\VerbosityLevel;
+use function is_string;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\InFunctionNode>
+ * @implements Rule<InFunctionNode>
  */
 class IncompatibleDefaultParameterTypeRule implements Rule
 {
@@ -40,7 +43,7 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 				$param->var instanceof Node\Expr\Error
 				|| !is_string($param->var->name)
 			) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$defaultValueType = $scope->getType($param->default);
@@ -59,7 +62,7 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 				$param->var->name,
 				$defaultValueType->describe($verbosityLevel),
 				$function->getName(),
-				$parameterType->describe($verbosityLevel)
+				$parameterType->describe($verbosityLevel),
 			))->line($param->getLine())->build();
 		}
 

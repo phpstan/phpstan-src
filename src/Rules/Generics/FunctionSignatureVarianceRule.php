@@ -8,18 +8,16 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InFunctionNode>
+ * @implements Rule<InFunctionNode>
  */
 class FunctionSignatureVarianceRule implements Rule
 {
 
-	private \PHPStan\Rules\Generics\VarianceCheck $varianceCheck;
-
-	public function __construct(VarianceCheck $varianceCheck)
+	public function __construct(private VarianceCheck $varianceCheck)
 	{
-		$this->varianceCheck = $varianceCheck;
 	}
 
 	public function getNodeType(): string
@@ -41,7 +39,7 @@ class FunctionSignatureVarianceRule implements Rule
 			sprintf('in parameter %%s of function %s()', SprintfHelper::escapeFormatString($functionName)),
 			sprintf('in return type of function %s()', $functionName),
 			sprintf('in function %s()', $functionName),
-			false
+			false,
 		);
 	}
 

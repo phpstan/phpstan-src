@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules;
 
+use Generator;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
@@ -11,25 +12,16 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function sprintf;
 
 class FunctionReturnTypeCheck
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param \PHPStan\Type\Type $returnType
-	 * @param \PhpParser\Node\Expr|null $returnValue
-	 * @param string $emptyReturnStatementMessage
-	 * @param string $voidMessage
-	 * @param string $typeMismatchMessage
-	 * @param bool $isGenerator
 	 * @return RuleError[]
 	 */
 	public function checkReturnType(
@@ -41,7 +33,7 @@ class FunctionReturnTypeCheck
 		string $voidMessage,
 		string $typeMismatchMessage,
 		string $neverMessage,
-		bool $isGenerator
+		bool $isGenerator,
 	): array
 	{
 		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
@@ -59,8 +51,8 @@ class FunctionReturnTypeCheck
 
 			$returnType = GenericTypeVariableResolver::getType(
 				$returnType,
-				\Generator::class,
-				'TReturn'
+				Generator::class,
+				'TReturn',
 			);
 			if ($returnType === null) {
 				return [];
@@ -77,7 +69,7 @@ class FunctionReturnTypeCheck
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$emptyReturnStatementMessage,
-					$returnType->describe($verbosityLevel)
+					$returnType->describe($verbosityLevel),
 				))->line($returnNode->getLine())->build(),
 			];
 		}
@@ -89,7 +81,7 @@ class FunctionReturnTypeCheck
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$voidMessage,
-					$returnValueType->describe($verbosityLevel)
+					$returnValueType->describe($verbosityLevel),
 				))->line($returnNode->getLine())->build(),
 			];
 		}
@@ -99,7 +91,7 @@ class FunctionReturnTypeCheck
 				RuleErrorBuilder::message(sprintf(
 					$typeMismatchMessage,
 					$returnType->describe($verbosityLevel),
-					$returnValueType->describe($verbosityLevel)
+					$returnValueType->describe($verbosityLevel),
 				))->line($returnNode->getLine())->build(),
 			];
 		}

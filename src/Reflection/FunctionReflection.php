@@ -14,7 +14,7 @@ interface FunctionReflection
 	public function getFileName(): ?string;
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getVariants(): array;
 

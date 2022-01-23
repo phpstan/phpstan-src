@@ -7,25 +7,22 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function array_map;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Class_>
+ * @implements Rule<Node\Stmt\Class_>
  */
-class ExistingClassesInClassImplementsRule implements \PHPStan\Rules\Rule
+class ExistingClassesInClassImplementsRule implements Rule
 {
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private ReflectionProvider $reflectionProvider;
-
 	public function __construct(
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		ReflectionProvider $reflectionProvider
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -36,9 +33,7 @@ class ExistingClassesInClassImplementsRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$messages = $this->classCaseSensitivityCheck->checkClassNames(
-			array_map(static function (Node\Name $interfaceName): ClassNameNodePair {
-				return new ClassNameNodePair((string) $interfaceName, $interfaceName);
-			}, $node->implements)
+			array_map(static fn (Node\Name $interfaceName): ClassNameNodePair => new ClassNameNodePair((string) $interfaceName, $interfaceName), $node->implements),
 		);
 
 		$currentClassName = null;
@@ -53,7 +48,7 @@ class ExistingClassesInClassImplementsRule implements \PHPStan\Rules\Rule
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'%s implements unknown interface %s.',
 						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-						$implementedClassName
+						$implementedClassName,
 					))->nonIgnorable()->discoveringSymbolsTip()->build();
 				}
 			} else {
@@ -62,13 +57,19 @@ class ExistingClassesInClassImplementsRule implements \PHPStan\Rules\Rule
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'%s implements class %s.',
 						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-						$implementedClassName
+						$reflection->getDisplayName(),
 					))->nonIgnorable()->build();
 				} elseif ($reflection->isTrait()) {
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'%s implements trait %s.',
 						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
-						$implementedClassName
+						$reflection->getDisplayName(),
+					))->nonIgnorable()->build();
+				} elseif ($reflection->isEnum()) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'%s implements enum %s.',
+						$currentClassName !== null ? sprintf('Class %s', $currentClassName) : 'Anonymous class',
+						$reflection->getDisplayName(),
 					))->nonIgnorable()->build();
 				}
 			}

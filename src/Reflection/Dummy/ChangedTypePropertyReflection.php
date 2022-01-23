@@ -11,20 +11,8 @@ use PHPStan\Type\Type;
 class ChangedTypePropertyReflection implements WrapperPropertyReflection
 {
 
-	private ClassReflection $declaringClass;
-
-	private PropertyReflection $reflection;
-
-	private Type $readableType;
-
-	private Type $writableType;
-
-	public function __construct(ClassReflection $declaringClass, PropertyReflection $reflection, Type $readableType, Type $writableType)
+	public function __construct(private ClassReflection $declaringClass, private PropertyReflection $reflection, private Type $readableType, private Type $writableType)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->reflection = $reflection;
-		$this->readableType = $readableType;
-		$this->writableType = $writableType;
 	}
 
 	public function getDeclaringClass(): ClassReflection

@@ -2,27 +2,22 @@
 
 namespace PHPStan\Dependency;
 
+use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\ParserErrorsException;
 
 class ExportedNodeFetcher
 {
 
-	private Parser $parser;
-
-	private ExportedNodeVisitor $visitor;
-
 	public function __construct(
-		Parser $parser,
-		ExportedNodeVisitor $visitor
+		private Parser $parser,
+		private ExportedNodeVisitor $visitor,
 	)
 	{
-		$this->parser = $parser;
-		$this->visitor = $visitor;
 	}
 
 	/**
-	 * @param string $fileName
 	 * @return ExportedNode[]
 	 */
 	public function fetchNodes(string $fileName): array
@@ -31,9 +26,9 @@ class ExportedNodeFetcher
 		$nodeTraverser->addVisitor($this->visitor);
 
 		try {
-			/** @var \PhpParser\Node[] $ast */
+			/** @var Node[] $ast */
 			$ast = $this->parser->parseFile($fileName);
-		} catch (\PHPStan\Parser\ParserErrorsException $e) {
+		} catch (ParserErrorsException) {
 			return [];
 		}
 		$this->visitor->reset($fileName);

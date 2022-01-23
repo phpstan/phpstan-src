@@ -2,9 +2,13 @@
 
 namespace PHPStan\Reflection;
 
+use DateInterval;
+use DateTimeInterface;
+use Generator;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -19,13 +23,15 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
 
-class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
+class ParametersAcceptorSelectorTest extends PHPStanTestCase
 {
 
-	public function dataSelectFromTypes(): \Generator
+	public function dataSelectFromTypes(): Generator
 	{
 		require_once __DIR__ . '/data/function-definitions.php';
 		$reflectionProvider = $this->createReflectionProvider();
@@ -53,8 +59,8 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 		$datePeriodConstructorVariants = $reflectionProvider->getClass('DatePeriod')->getNativeMethod('__construct')->getVariants();
 		yield [
 			[
-				new ObjectType(\DateTimeInterface::class),
-				new ObjectType(\DateInterval::class),
+				new ObjectType(DateTimeInterface::class),
+				new ObjectType(DateInterval::class),
 				new IntegerType(),
 				new IntegerType(),
 			],
@@ -64,9 +70,9 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 		];
 		yield [
 			[
-				new ObjectType(\DateTimeInterface::class),
-				new ObjectType(\DateInterval::class),
-				new ObjectType(\DateTimeInterface::class),
+				new ObjectType(DateTimeInterface::class),
+				new ObjectType(DateInterval::class),
+				new ObjectType(DateTimeInterface::class),
 				new IntegerType(),
 			],
 			$datePeriodConstructorVariants,
@@ -120,7 +126,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						new MixedType(),
 						PassedByReference::createNo(),
 						false,
-						null
+						null,
 					),
 					new NativeParameterReflection(
 						'event|args',
@@ -128,11 +134,11 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						new MixedType(),
 						PassedByReference::createNo(),
 						true,
-						null
+						null,
 					),
 				],
 				true,
-				new StringType()
+				new StringType(),
 			),
 		];
 
@@ -180,7 +186,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						new StringType(),
 						PassedByReference::createNo(),
 						false,
-						null
+						null,
 					),
 					new NativeParameterReflection(
 						'token',
@@ -188,11 +194,11 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						new StringType(),
 						PassedByReference::createNo(),
 						false,
-						null
+						null,
 					),
 				],
 				false,
-				new UnionType([new StringType(), new ConstantBooleanType(false)])
+				new UnionType([new StringType(), new ConstantBooleanType(false)]),
 			),
 		];
 		yield [
@@ -215,7 +221,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						new IntegerType(),
 						PassedByReference::createNo(),
 						false,
-						null
+						null,
 					),
 					new NativeParameterReflection(
 						'intVariadic',
@@ -223,11 +229,11 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						new IntegerType(),
 						PassedByReference::createNo(),
 						true,
-						null
+						null,
 					),
 				],
 				true,
-				new IntegerType()
+				new IntegerType(),
 			),
 			new FunctionVariant(
 				TemplateTypeMap::createEmpty(),
@@ -239,7 +245,7 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						new IntegerType(),
 						PassedByReference::createNo(),
 						false,
-						null
+						null,
 					),
 					new NativeParameterReflection(
 						'floatVariadic',
@@ -247,11 +253,11 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						new FloatType(),
 						PassedByReference::createNo(),
 						true,
-						null
+						null,
 					),
 				],
 				true,
-				new IntegerType()
+				new IntegerType(),
 			),
 		];
 
@@ -284,11 +290,11 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						false,
 						PassedByReference::createNo(),
 						false,
-						new ConstantIntegerType(1)
+						new ConstantIntegerType(1),
 					),
 				],
 				false,
-				new NullType()
+				new NullType(),
 			),
 			new FunctionVariant(
 				TemplateTypeMap::createEmpty(),
@@ -300,11 +306,11 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						false,
 						PassedByReference::createNo(),
 						false,
-						new ConstantIntegerType(2)
+						new ConstantIntegerType(2),
 					),
 				],
 				false,
-				new NullType()
+				new NullType(),
 			),
 		];
 
@@ -327,11 +333,11 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						new UnionType([
 							new ConstantIntegerType(1),
 							new ConstantIntegerType(2),
-						])
+						]),
 					),
 				],
 				false,
-				new NullType()
+				new NullType(),
 			),
 		];
 
@@ -346,11 +352,11 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						false,
 						PassedByReference::createNo(),
 						false,
-						new ConstantIntegerType(1)
+						new ConstantIntegerType(1),
 					),
 				],
 				false,
-				new NullType()
+				new NullType(),
 			),
 			new FunctionVariant(
 				TemplateTypeMap::createEmpty(),
@@ -362,11 +368,11 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						false,
 						PassedByReference::createNo(),
 						false,
-						null
+						null,
 					),
 				],
 				false,
-				new NullType()
+				new NullType(),
 			),
 		];
 
@@ -386,11 +392,11 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						false,
 						PassedByReference::createNo(),
 						false,
-						null
+						null,
 					),
 				],
 				false,
-				new NullType()
+				new NullType(),
 			),
 		];
 
@@ -405,16 +411,16 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 							TemplateTypeScope::createWithFunction('a'),
 							'T',
 							null,
-							TemplateTypeVariance::createInvariant()
+							TemplateTypeVariance::createInvariant(),
 						),
 						false,
 						PassedByReference::createNo(),
 						false,
-						null
+						null,
 					),
 				],
 				false,
-				new NullType()
+				new NullType(),
 			),
 		];
 
@@ -434,27 +440,25 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 						false,
 						PassedByReference::createNo(),
 						false,
-						null
+						null,
 					),
 				],
 				false,
-				new NullType()
+				new NullType(),
 			),
 		];
 	}
 
 	/**
 	 * @dataProvider dataSelectFromTypes
-	 * @param \PHPStan\Type\Type[] $types
+	 * @param Type[] $types
 	 * @param ParametersAcceptor[] $variants
-	 * @param bool $unpack
-	 * @param ParametersAcceptor $expected
 	 */
 	public function testSelectFromTypes(
 		array $types,
 		array $variants,
 		bool $unpack,
-		ParametersAcceptor $expected
+		ParametersAcceptor $expected,
 	): void
 	{
 		$selectedAcceptor = ParametersAcceptorSelector::selectFromTypes($types, $variants, $unpack);
@@ -463,36 +467,36 @@ class ParametersAcceptorSelectorTest extends \PHPStan\Testing\PHPStanTestCase
 			$expectedParameter = $expected->getParameters()[$i];
 			$this->assertSame(
 				$expectedParameter->getName(),
-				$parameter->getName()
+				$parameter->getName(),
 			);
 			$this->assertSame(
 				$expectedParameter->isOptional(),
-				$parameter->isOptional()
+				$parameter->isOptional(),
 			);
 			$this->assertSame(
 				$expectedParameter->getType()->describe(VerbosityLevel::precise()),
-				$parameter->getType()->describe(VerbosityLevel::precise())
+				$parameter->getType()->describe(VerbosityLevel::precise()),
 			);
 			$this->assertTrue(
-				$expectedParameter->passedByReference()->equals($parameter->passedByReference())
+				$expectedParameter->passedByReference()->equals($parameter->passedByReference()),
 			);
 			$this->assertSame(
 				$expectedParameter->isVariadic(),
-				$parameter->isVariadic()
+				$parameter->isVariadic(),
 			);
 			if ($expectedParameter->getDefaultValue() === null) {
 				$this->assertNull($parameter->getDefaultValue());
 			} else {
 				$this->assertSame(
 					$expectedParameter->getDefaultValue()->describe(VerbosityLevel::precise()),
-					$parameter->getDefaultValue() !== null ? $parameter->getDefaultValue()->describe(VerbosityLevel::precise()) : null
+					$parameter->getDefaultValue() !== null ? $parameter->getDefaultValue()->describe(VerbosityLevel::precise()) : null,
 				);
 			}
 		}
 
 		$this->assertSame(
 			$expected->getReturnType()->describe(VerbosityLevel::precise()),
-			$selectedAcceptor->getReturnType()->describe(VerbosityLevel::precise())
+			$selectedAcceptor->getReturnType()->describe(VerbosityLevel::precise()),
 		);
 		$this->assertSame($expected->isVariadic(), $selectedAcceptor->isVariadic());
 	}

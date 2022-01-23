@@ -2,7 +2,12 @@
 
 namespace PHPStan\File;
 
-class RelativePathHelperTest extends \PHPUnit\Framework\TestCase
+use PHPUnit\Framework\TestCase;
+use function array_map;
+use function str_replace;
+use function substr;
+
+class RelativePathHelperTest extends TestCase
 {
 
 	public function dataGetRelativePath(): array
@@ -142,37 +147,31 @@ class RelativePathHelperTest extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @dataProvider dataGetRelativePath
-	 * @param string $currentWorkingDirectory
 	 * @param string[] $analysedPaths
-	 * @param string $filenameToRelativize
-	 * @param string $expectedResult
 	 */
 	public function testGetRelativePathOnUnix(
 		string $currentWorkingDirectory,
 		array $analysedPaths,
 		string $filenameToRelativize,
-		string $expectedResult
+		string $expectedResult,
 	): void
 	{
 		$helper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), $currentWorkingDirectory, $analysedPaths, '/');
 		$this->assertSame(
 			$expectedResult,
-			$helper->getRelativePath($filenameToRelativize)
+			$helper->getRelativePath($filenameToRelativize),
 		);
 	}
 
 	/**
 	 * @dataProvider dataGetRelativePath
-	 * @param string $currentWorkingDirectory
 	 * @param string[] $analysedPaths
-	 * @param string $filenameToRelativize
-	 * @param string $expectedResult
 	 */
 	public function testGetRelativePathOnWindows(
 		string $currentWorkingDirectory,
 		array $analysedPaths,
 		string $filenameToRelativize,
-		string $expectedResult
+		string $expectedResult,
 	): void
 	{
 		$sanitize = static function (string $path): string {
@@ -185,7 +184,7 @@ class RelativePathHelperTest extends \PHPUnit\Framework\TestCase
 		$helper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), $sanitize($currentWorkingDirectory), array_map($sanitize, $analysedPaths), '\\');
 		$this->assertSame(
 			$sanitize($expectedResult),
-			$helper->getRelativePath($sanitize($filenameToRelativize))
+			$helper->getRelativePath($sanitize($filenameToRelativize)),
 		);
 	}
 
@@ -215,22 +214,19 @@ class RelativePathHelperTest extends \PHPUnit\Framework\TestCase
 
 	/**
 	 * @dataProvider dataGetRelativePathWindowsSpecific
-	 * @param string $currentWorkingDirectory
 	 * @param string[] $analysedPaths
-	 * @param string $filenameToRelativize
-	 * @param string $expectedResult
 	 */
 	public function testGetRelativePathWindowsSpecific(
 		string $currentWorkingDirectory,
 		array $analysedPaths,
 		string $filenameToRelativize,
-		string $expectedResult
+		string $expectedResult,
 	): void
 	{
 		$helper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), $currentWorkingDirectory, $analysedPaths, '\\');
 		$this->assertSame(
 			$expectedResult,
-			$helper->getRelativePath($filenameToRelativize)
+			$helper->getRelativePath($filenameToRelativize),
 		);
 	}
 

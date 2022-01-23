@@ -3,6 +3,10 @@
 namespace PHPStan\DependencyInjection\Nette;
 
 use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ParameterNotFoundException;
+use function array_key_exists;
+use function array_keys;
+use function array_map;
 
 /**
  * @internal
@@ -10,11 +14,8 @@ use PHPStan\DependencyInjection\Container;
 class NetteContainer implements Container
 {
 
-	private \Nette\DI\Container $container;
-
-	public function __construct(\Nette\DI\Container $container)
+	public function __construct(private \Nette\DI\Container $container)
 	{
-		$this->container = $container;
 	}
 
 	public function hasService(string $serviceName): bool
@@ -23,7 +24,6 @@ class NetteContainer implements Container
 	}
 
 	/**
-	 * @param string $serviceName
 	 * @return mixed
 	 */
 	public function getService(string $serviceName)
@@ -32,7 +32,9 @@ class NetteContainer implements Container
 	}
 
 	/**
-	 * @param string $className
+	 * @phpstan-template T of object
+	 * @phpstan-param class-string<T> $className
+	 * @phpstan-return T
 	 * @return mixed
 	 */
 	public function getByType(string $className)
@@ -41,7 +43,7 @@ class NetteContainer implements Container
 	}
 
 	/**
-	 * @param string $className
+	 * @param class-string $className
 	 * @return string[]
 	 */
 	public function findServiceNamesByType(string $className): array
@@ -50,7 +52,6 @@ class NetteContainer implements Container
 	}
 
 	/**
-	 * @param string $tagName
 	 * @return mixed[]
 	 */
 	public function getServicesByTag(string $tagName): array
@@ -72,13 +73,12 @@ class NetteContainer implements Container
 	}
 
 	/**
-	 * @param string $parameterName
 	 * @return mixed
 	 */
 	public function getParameter(string $parameterName)
 	{
 		if (!$this->hasParameter($parameterName)) {
-			throw new \PHPStan\DependencyInjection\ParameterNotFoundException($parameterName);
+			throw new ParameterNotFoundException($parameterName);
 		}
 
 		return $this->container->parameters[$parameterName];
@@ -90,9 +90,7 @@ class NetteContainer implements Container
 	 */
 	private function tagsToServices(array $tags): array
 	{
-		return array_map(function (string $serviceName) {
-			return $this->getService($serviceName);
-		}, array_keys($tags));
+		return array_map(fn (string $serviceName) => $this->getService($serviceName), array_keys($tags));
 	}
 
 }

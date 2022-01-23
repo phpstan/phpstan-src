@@ -7,6 +7,18 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
+use UnitEnum;
+use function count;
+use function function_exists;
+use function get_class;
+use function is_array;
+use function is_bool;
+use function is_float;
+use function is_int;
+use function is_nan;
+use function is_object;
+use function is_string;
 
 /** @api */
 class ConstantTypeHelper
@@ -39,6 +51,16 @@ class ConstantTypeHelper
 				$arrayBuilder->setOffsetValueType(self::getTypeFromValue($k), self::getTypeFromValue($v));
 			}
 			return $arrayBuilder->getArray();
+		} elseif (is_object($value)) {
+			$class = get_class($value);
+			/** phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly.ReferenceViaFullyQualifiedName */
+			if (function_exists('enum_exists') && \enum_exists($class)) {
+				/** @var UnitEnum $value */
+				return new EnumCaseObjectType($class, $value->name);
+			}
+			/** phpcs:enable */
+
+			return new ObjectType(get_class($value));
 		}
 
 		return new MixedType();

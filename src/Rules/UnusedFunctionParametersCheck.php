@@ -6,23 +6,23 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantStringType;
+use function array_fill_keys;
+use function array_keys;
+use function array_merge;
+use function is_array;
+use function is_string;
+use function sprintf;
 
 class UnusedFunctionParametersCheck
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
 	 * @param string[] $parameterNames
-	 * @param \PhpParser\Node[] $statements
-	 * @param string $unusedParameterMessage
-	 * @param string $identifier
+	 * @param Node[] $statements
 	 * @param mixed[] $additionalMetadata
 	 * @return RuleError[]
 	 */
@@ -32,7 +32,7 @@ class UnusedFunctionParametersCheck
 		array $statements,
 		string $unusedParameterMessage,
 		string $identifier,
-		array $additionalMetadata
+		array $additionalMetadata,
 	): array
 	{
 		$unusedParameters = array_fill_keys($parameterNames, true);
@@ -46,7 +46,7 @@ class UnusedFunctionParametersCheck
 		$errors = [];
 		foreach (array_keys($unusedParameters) as $name) {
 			$errors[] = RuleErrorBuilder::message(
-				sprintf($unusedParameterMessage, $name)
+				sprintf($unusedParameterMessage, $name),
 			)->identifier($identifier)->metadata($additionalMetadata + ['variableName' => $name])->build();
 		}
 
@@ -54,8 +54,7 @@ class UnusedFunctionParametersCheck
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param \PhpParser\Node[]|\PhpParser\Node|scalar $node
+	 * @param Node[]|Node|scalar $node
 	 * @return string[]
 	 */
 	private function getUsedVariables(Scope $scope, $node): array

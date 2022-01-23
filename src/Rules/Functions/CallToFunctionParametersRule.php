@@ -9,21 +9,16 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\Rule;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
-class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
+class CallToFunctionParametersRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Rules\FunctionCallParametersCheck $check;
-
-	public function __construct(ReflectionProvider $reflectionProvider, FunctionCallParametersCheck $check)
+	public function __construct(private ReflectionProvider $reflectionProvider, private FunctionCallParametersCheck $check)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->check = $check;
 	}
 
 	public function getNodeType(): string
@@ -33,7 +28,7 @@ class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!($node->name instanceof \PhpParser\Node\Name)) {
+		if (!($node->name instanceof Node\Name)) {
 			return [];
 		}
 
@@ -48,7 +43,7 @@ class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$node->getArgs(),
-				$function->getVariants()
+				$function->getVariants(),
 			),
 			$scope,
 			$function->isBuiltin(),
@@ -67,7 +62,7 @@ class CallToFunctionParametersRule implements \PHPStan\Rules\Rule
 				'Missing parameter $%s in call to function ' . $functionName . '.',
 				'Unknown parameter $%s in call to function ' . $functionName . '.',
 				'Return type of call to function ' . $functionName . ' contains unresolvable type.',
-			]
+			],
 		);
 	}
 

@@ -10,21 +10,8 @@ interface PhpMethodReflectionFactory
 {
 
 	/**
-	 * @param \PHPStan\Reflection\ClassReflection $declaringClass
-	 * @param \PHPStan\Reflection\ClassReflection|null $declaringTrait
-	 * @param BuiltinMethodReflection $reflection
-	 * @param TemplateTypeMap $templateTypeMap
-	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
-	 * @param \PHPStan\Type\Type|null $phpDocReturnType
-	 * @param \PHPStan\Type\Type|null $phpDocThrowType
-	 * @param string|null $deprecatedDescription
-	 * @param bool $isDeprecated
-	 * @param bool $isInternal
-	 * @param bool $isFinal
-	 * @param string|null $stubPhpDocString
-	 * @param bool|null $isPure
+	 * @param Type[] $phpDocParameterTypes
 	 *
-	 * @return \PHPStan\Reflection\Php\PhpMethodReflection
 	 */
 	public function create(
 		ClassReflection $declaringClass,
@@ -38,8 +25,7 @@ interface PhpMethodReflectionFactory
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		?string $stubPhpDocString,
-		?bool $isPure = null
+		?bool $isPure = null,
 	): PhpMethodReflection;
 
 }

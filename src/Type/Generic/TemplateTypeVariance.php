@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\MixedType;
@@ -19,16 +20,13 @@ class TemplateTypeVariance
 	/** @var self[] */
 	private static array $registry;
 
-	private int $value;
-
-	private function __construct(int $value)
+	private function __construct(private int $value)
 	{
-		$this->value = $value;
 	}
 
 	private static function create(int $value): self
 	{
-		self::$registry[$value] = self::$registry[$value] ?? new self($value);
+		self::$registry[$value] ??= new self($value);
 		return self::$registry[$value];
 	}
 
@@ -131,7 +129,7 @@ class TemplateTypeVariance
 			return $b->isSuperTypeOf($a);
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function equals(self $other): bool
@@ -159,12 +157,11 @@ class TemplateTypeVariance
 				return 'static';
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	/**
 	 * @param array{value: int} $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{

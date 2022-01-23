@@ -1,55 +1,67 @@
 <?xml version="1.0"?>
 <ruleset name="PHPStan">
+	<config name="php_version" value="70100"/>
 	<arg name="colors"/>
 	<arg name="extensions" value="php"/>
 	<arg name="encoding" value="utf-8"/>
 	<arg name="tab-width" value="4"/>
 	<arg name="cache" value="tmp/cache/phpcs"/>
-	<arg name="ignore" value="tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter,tests/e2e/anon-class"/>
+	<arg name="ignore" value="compiler/tests/*/data,tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter,tests/e2e/anon-class"/>
 	<arg value="sp"/>
 	<file>src</file>
 	<file>tests</file>
 	<file>compiler/src</file>
+	<file>compiler/tests</file>
 
 	<rule ref="build-cs/vendor/consistence-community/coding-standard/Consistence/ruleset.xml">
 		<exclude name="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.InvalidFormat"/>
 		<exclude name="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.MissingVariable"/>
-		<exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedClassNameAfterKeyword"/>
 		<exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedClassNameInAnnotation"/>
-		<exclude name="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly"/>
+		<exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedExceptions"/>
 		<exclude name="Consistence.Exceptions.ExceptionDeclaration"/>
-		<exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
-		<exclude name="Squiz.Commenting.FunctionComment.ParamNameNoMatch"/>
+		<exclude name="Squiz.Commenting.FunctionComment"/>
 		<exclude name="Squiz.PHP.Heredoc.NotAllowed"/>
 		<exclude name="Squiz.WhiteSpace.FunctionSpacing.Before"/>
 	</rule>
 	<rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses">
 		<properties>
 			<property name="caseSensitive" value="false"/>
+			<property name="psr12Compatible" value="true"/>
 		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes">
 		<properties>
-			<property name="newlinesCountBetweenOpenTagAndDeclare" value="0"/>
+			<property name="declareOnFirstLine" value="true"/>
 		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint">
-		<properties>
-			<property name="enableObjectTypeHint" value="false"/>
-		</properties>
 		<exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingTraversableTypeHintSpecification"/>
+		<properties>
+			<property name="enableObjectTypeHint" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint.UselessAnnotation">
+		<severity>10</severity>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint">
-		<properties>
-			<property name="enableNativeTypeHint" value="false"/>
-		</properties>
 		<exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingTraversableTypeHintSpecification"/>
+		<properties>
+			<property name="enableNativeTypeHint" value="true"/>
+			<property name="enableUnionTypeHint" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint.UselessAnnotation">
+		<severity>10</severity>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint">
-		<properties>
-			<property name="enableObjectTypeHint" value="false"/>
-		</properties>
 		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingTraversableTypeHintSpecification"/>
+		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingAnyTypeHint"/>
+		<properties>
+			<property name="enableObjectTypeHint" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.UselessAnnotation">
+		<severity>10</severity>
 	</rule>
 	<rule ref="SlevomatCodingStandard.Functions.UnusedInheritedVariablePassedToClosure.UnusedInheritedVariable">
 		<exclude-pattern>src/Command/CommandHelper.php</exclude-pattern>
@@ -63,6 +75,11 @@
 	</rule>
 	<rule ref="SlevomatCodingStandard.ControlStructures.AssignmentInCondition"/>
 	<rule ref="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceOperator"/>
+	<rule ref="SlevomatCodingStandard.ControlStructures.RequireNullCoalesceEqualOperator">
+		<properties>
+			<property name="enable" value="true"/>
+		</properties>
+	</rule>
 	<rule ref="SlevomatCodingStandard.ControlStructures.EarlyExit">
 		<exclude name="SlevomatCodingStandard.ControlStructures.EarlyExit.UselessElseIf"/>
 	</rule>
@@ -70,7 +87,13 @@
 	<rule ref="SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming"/>
 	<rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
 		<properties>
-			<property name="rootNamespaces" type="array" value="compiler/src =>PHPStan\Compiler,src=>PHPStan,tests/PHPStan=>PHPStan, tests/e2e => PHPStan\Tests"/>
+			<property name="rootNamespaces" type="array">
+				<element key="compiler/src" value="PHPStan\Compiler"/>
+				<element key="compiler/tests" value="PHPStan\Compiler"/>
+				<element key="src" value="PHPStan"/>
+				<element key="tests/PHPStan" value="PHPStan"/>
+				<element key="tests/e2e" value="PHPStan\Tests"/>
+			</property>
 		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference"/>
@@ -84,7 +107,21 @@
 	<rule ref="SlevomatCodingStandard.Variables.UselessVariable"/>
 	<!--<rule ref="SlevomatCodingStandard.Functions.UnusedParameter"/>-->
 	<rule ref="SlevomatCodingStandard.Functions.UnusedInheritedVariablePassedToClosure"/>
+	<rule ref="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly">
+		<properties>
+			<property name="searchAnnotations" value="true"/>
+			<property name="namespacesRequiredToUse" value=""/>
+			<property name="allowPartialUses" value="true"/>
+			<property name="allowFallbackGlobalFunctions" value="false"/>
+			<property name="allowFallbackGlobalConstants" value="false"/>
+			<property name="allowFullyQualifiedExceptions" value="false"/>
+			<property name="allowFullyQualifiedNameForCollidingClasses" value="true"/>
+			<property name="allowFullyQualifiedNameForCollidingFunctions" value="true"/>
+			<property name="allowFullyQualifiedNameForCollidingConstants" value="true"/>
+		</properties>
+	</rule>
 	<rule ref="SlevomatCodingStandard.Namespaces.UselessAlias"/>
+	<rule ref="SlevomatCodingStandard.Namespaces.UseSpacing"/>
 	<rule ref="SlevomatCodingStandard.PHP.UselessSemicolon"/>
 	<rule ref="SlevomatCodingStandard.PHP.UselessParentheses"/>
 	<rule ref="Squiz.WhiteSpace.FunctionSpacing">
@@ -100,7 +137,41 @@
 	<rule ref="Consistence.NamingConventions.ValidVariableName.NotCamelCaps">
 		<exclude-pattern>src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php</exclude-pattern>
 	</rule>
+	<rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInCall">
+		<properties>
+			<property name="enable" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.Functions.RequireArrowFunction">
+		<properties>
+			<property name="enable" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.Functions.ArrowFunctionDeclaration"/>
+	<rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInDeclaration">
+		<properties>
+			<property name="enable" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.Exceptions.RequireNonCapturingCatch">
+		<properties>
+			<property name="enable" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.TypeHints.UnionTypeHintFormat">
+		<properties>
+			<property name="enable" value="true"/>
+			<property name="withSpaces" value="no"/>
+			<property name="nullPosition" value="last"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.Classes.RequireConstructorPropertyPromotion">
+		<properties>
+			<property name="enable" value="true"/>
+		</properties>
+	</rule>
 	<exclude-pattern>tests/*/data</exclude-pattern>
+	<exclude-pattern>tests/*/Fixture</exclude-pattern>
 	<exclude-pattern>tests/e2e/resultCache_1.php</exclude-pattern>
 	<exclude-pattern>tests/e2e/resultCache_2.php</exclude-pattern>
 	<exclude-pattern>tests/e2e/resultCache_3.php</exclude-pattern>

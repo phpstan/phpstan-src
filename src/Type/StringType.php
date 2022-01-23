@@ -72,6 +72,11 @@ class StringType implements Type
 		return new ErrorType();
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof self) {
@@ -90,7 +95,7 @@ class StringType implements Type
 
 			$typeClass = $reflectionProvider->getClass($type->getClassName());
 			return TrinaryLogic::createFromBoolean(
-				$typeClass->hasNativeMethod('__toString')
+				$typeClass->hasNativeMethod('__toString'),
 			);
 		}
 
@@ -122,7 +127,7 @@ class StringType implements Type
 		return new ConstantArrayType(
 			[new ConstantIntegerType(0)],
 			[$this],
-			1
+			1,
 		);
 	}
 
@@ -143,7 +148,6 @@ class StringType implements Type
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

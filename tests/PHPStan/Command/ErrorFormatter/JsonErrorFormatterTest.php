@@ -3,6 +3,7 @@
 namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Testing\ErrorFormatterTestCase;
+use function sprintf;
 
 class JsonErrorFormatterTest extends ErrorFormatterTestCase
 {
@@ -190,25 +191,20 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @dataProvider dataFormatterOutputProvider
 	 *
-	 * @param string $message
-	 * @param int    $exitCode
-	 * @param int    $numFileErrors
-	 * @param int    $numGenericErrors
-	 * @param string $expected
 	 */
 	public function testPrettyFormatErrors(
 		string $message,
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
-		string $expected
+		string $expected,
 	): void
 	{
 		$formatter = new JsonErrorFormatter(true);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getOutput()
+			$this->getOutput(),
 		), $message);
 
 		$this->assertJsonStringEqualsJsonString($expected, $this->getOutputContent());
@@ -217,11 +213,6 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @dataProvider dataFormatterOutputProvider
 	 *
-	 * @param string $message
-	 * @param int    $exitCode
-	 * @param int    $numFileErrors
-	 * @param int    $numGenericErrors
-	 * @param string $expected
 	 *
 	 */
 	public function testFormatErrors(
@@ -229,14 +220,14 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
-		string $expected
+		string $expected,
 	): void
 	{
 		$formatter = new JsonErrorFormatter(false);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getOutput()
+			$this->getOutput(),
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertJsonStringEqualsJsonString($expected, $this->getOutputContent(), sprintf('%s: JSON do not match', $message));

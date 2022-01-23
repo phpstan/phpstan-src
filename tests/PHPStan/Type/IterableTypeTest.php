@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -10,8 +11,10 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use function array_map;
+use function sprintf;
 
-class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class IterableTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -57,9 +60,6 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param IterableType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(IterableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -67,7 +67,7 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -159,9 +159,6 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param IterableType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOf(IterableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -169,15 +166,12 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param IterableType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOfInversed(IterableType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -185,41 +179,39 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
 	public function dataInferTemplateTypes(): array
 	{
-		$templateType = static function (string $name): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				new MixedType(),
-				TemplateTypeVariance::createInvariant()
-			);
-		};
+		$templateType = static fn (string $name): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'receive iterable' => [
 				new IterableType(
 					new MixedType(),
-					new ObjectType('DateTime')
+					new ObjectType('DateTime'),
 				),
 				new IterableType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				['T' => 'DateTime'],
 			],
 			'receive iterable template key' => [
 				new IterableType(
 					new StringType(),
-					new ObjectType('DateTime')
+					new ObjectType('DateTime'),
 				),
 				new IterableType(
 					$templateType('U'),
-					$templateType('T')
+					$templateType('T'),
 				),
 				['U' => 'string', 'T' => 'DateTime'],
 			],
@@ -227,7 +219,7 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				new MixedType(),
 				new IterableType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				[],
 			],
@@ -235,7 +227,7 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				new StringType(),
 				new IterableType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				[],
 			],
@@ -252,9 +244,7 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$this->assertSame(
 			$expectedTypes,
-			array_map(static function (Type $type): string {
-				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes())
+			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
 	}
 
@@ -264,7 +254,7 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			TemplateTypeScope::createWithFunction('a'),
 			'T',
 			null,
-			TemplateTypeVariance::createInvariant()
+			TemplateTypeVariance::createInvariant(),
 		);
 
 		return [
@@ -312,13 +302,13 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			TemplateTypeScope::createWithFunction('foo'),
 			'T',
 			null,
-			TemplateTypeVariance::createInvariant()
+			TemplateTypeVariance::createInvariant(),
 		);
 		return [
 			[
 				new IterableType(
 					new MixedType(),
-					$t
+					$t,
 				),
 				new ConstantArrayType([], []),
 				TrinaryLogic::createYes(),
@@ -326,7 +316,7 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new IterableType(
 					new MixedType(),
-					$t->toArgument()
+					$t->toArgument(),
 				),
 				new ConstantArrayType([], []),
 				TrinaryLogic::createYes(),
@@ -336,9 +326,6 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param IterableType $iterableType
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(IterableType $iterableType, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -346,7 +333,7 @@ class IterableTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $iterableType->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $iterableType->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 

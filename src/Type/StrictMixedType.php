@@ -8,6 +8,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -32,7 +33,7 @@ class StrictMixedType implements CompoundType
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean(
-			$acceptingType instanceof MixedType && !$acceptingType instanceof TemplateMixedType
+			$acceptingType instanceof MixedType && !$acceptingType instanceof TemplateMixedType,
 		);
 	}
 
@@ -68,12 +69,12 @@ class StrictMixedType implements CompoundType
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function getUnresolvedPropertyPrototype(string $propertyName, ClassMemberAccessAnswerer $scope): UnresolvedPropertyPrototypeReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function canCallMethods(): TrinaryLogic
@@ -88,12 +89,12 @@ class StrictMixedType implements CompoundType
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function canAccessConstants(): TrinaryLogic
@@ -108,7 +109,7 @@ class StrictMixedType implements CompoundType
 
 	public function getConstant(string $constantName): ConstantReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function isIterable(): TrinaryLogic
@@ -167,6 +168,11 @@ class StrictMixedType implements CompoundType
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
+	{
+		return new ErrorType();
+	}
+
+	public function unsetOffset(Type $offsetType): Type
 	{
 		return new ErrorType();
 	}
@@ -233,7 +239,6 @@ class StrictMixedType implements CompoundType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

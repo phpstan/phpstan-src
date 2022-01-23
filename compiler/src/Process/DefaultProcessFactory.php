@@ -8,8 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class DefaultProcessFactory implements ProcessFactory
 {
 
-	/** @var OutputInterface */
-	private $output;
+	private OutputInterface $output;
 
 	public function __construct()
 	{
@@ -18,8 +17,6 @@ final class DefaultProcessFactory implements ProcessFactory
 
 	/**
 	 * @param string[] $command
-	 * @param string $cwd
-	 * @return \PHPStan\Compiler\Process\Process
 	 */
 	public function create(array $command, string $cwd): Process
 	{

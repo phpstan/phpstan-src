@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function sprintf;
 
 /**
  * @extends RuleTestCase<OverridingPropertyRule>
@@ -11,8 +12,7 @@ use PHPStan\Testing\RuleTestCase;
 class OverridingPropertyRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $reportMaybes;
+	private bool $reportMaybes;
 
 	protected function getRule(): Rule
 	{
@@ -96,7 +96,7 @@ class OverridingPropertyRuleTest extends RuleTestCase
 				158,
 				sprintf(
 					"You can fix 3rd party PHPDoc types with stub files:\n   %s",
-					'<fg=cyan>https://phpstan.org/user-guide/stub-files</>'
+					'<fg=cyan>https://phpstan.org/user-guide/stub-files</>',
 				),
 			],
 		]);
@@ -106,12 +106,12 @@ class OverridingPropertyRuleTest extends RuleTestCase
 	{
 		$tip = sprintf(
 			"You can fix 3rd party PHPDoc types with stub files:\n   %s",
-			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>'
+			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>',
 		);
 		$tipWithOption = sprintf(
 			"You can fix 3rd party PHPDoc types with stub files:\n   %s\n   This error can be turned off by setting\n   %s",
 			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>',
-			'<fg=cyan>reportMaybesInPropertyPhpDocTypes: false</> in your <fg=cyan>%configurationFile%</>.'
+			'<fg=cyan>reportMaybesInPropertyPhpDocTypes: false</> in your <fg=cyan>%configurationFile%</>.',
 		);
 
 		return [
@@ -155,7 +155,6 @@ class OverridingPropertyRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRulePHPDocTypes
-	 * @param bool $reportMaybes
 	 * @param mixed[] $errors
 	 */
 	public function testRulePHPDocTypes(bool $reportMaybes, array $errors): void

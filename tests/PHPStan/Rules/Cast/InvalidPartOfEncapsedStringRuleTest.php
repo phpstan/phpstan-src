@@ -2,19 +2,23 @@
 
 namespace PHPStan\Rules\Cast;
 
+use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<InvalidPartOfEncapsedStringRule>
+ * @extends RuleTestCase<InvalidPartOfEncapsedStringRule>
  */
-class InvalidPartOfEncapsedStringRuleTest extends \PHPStan\Testing\RuleTestCase
+class InvalidPartOfEncapsedStringRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new InvalidPartOfEncapsedStringRule(
-			new \PhpParser\PrettyPrinter\Standard(),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)
+			new Standard(),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false),
 		);
 	}
 

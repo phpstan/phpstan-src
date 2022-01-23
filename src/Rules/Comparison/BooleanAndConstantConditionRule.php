@@ -2,27 +2,26 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
 use PHPStan\Node\BooleanAndNode;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use function count;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<BooleanAndNode>
+ * @implements Rule<BooleanAndNode>
  */
-class BooleanAndConstantConditionRule implements \PHPStan\Rules\Rule
+class BooleanAndConstantConditionRule implements Rule
 {
 
-	private ConstantConditionRuleHelper $helper;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain
+		private ConstantConditionRuleHelper $helper,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->helper = $helper;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string
@@ -31,8 +30,8 @@ class BooleanAndConstantConditionRule implements \PHPStan\Rules\Rule
 	}
 
 	public function processNode(
-		\PhpParser\Node $node,
-		\PHPStan\Analyser\Scope $scope
+		Node $node,
+		Scope $scope,
 	): array
 	{
 		$errors = [];
@@ -54,14 +53,14 @@ class BooleanAndConstantConditionRule implements \PHPStan\Rules\Rule
 			};
 			$errors[] = $addTipLeft(RuleErrorBuilder::message(sprintf(
 				'Left side of && is always %s.',
-				$leftType->getValue() ? 'true' : 'false'
+				$leftType->getValue() ? 'true' : 'false',
 			)))->line($originalNode->left->getLine())->build();
 		}
 
 		$rightScope = $node->getRightScope();
 		$rightType = $this->helper->getBooleanType(
 			$rightScope,
-			$originalNode->right
+			$originalNode->right,
 		);
 		if ($rightType instanceof ConstantBooleanType) {
 			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($rightScope, $originalNode, $tipText): RuleErrorBuilder {
@@ -71,7 +70,7 @@ class BooleanAndConstantConditionRule implements \PHPStan\Rules\Rule
 
 				$booleanNativeType = $this->helper->getNativeBooleanType(
 					$rightScope->doNotTreatPhpDocTypesAsCertain(),
-					$originalNode->right
+					$originalNode->right,
 				);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
 					return $ruleErrorBuilder;
@@ -81,7 +80,7 @@ class BooleanAndConstantConditionRule implements \PHPStan\Rules\Rule
 			};
 			$errors[] = $addTipRight(RuleErrorBuilder::message(sprintf(
 				'Right side of && is always %s.',
-				$rightType->getValue() ? 'true' : 'false'
+				$rightType->getValue() ? 'true' : 'false',
 			)))->line($originalNode->right->getLine())->build();
 		}
 
@@ -103,7 +102,7 @@ class BooleanAndConstantConditionRule implements \PHPStan\Rules\Rule
 
 				$errors[] = $addTip(RuleErrorBuilder::message(sprintf(
 					'Result of && is always %s.',
-					$nodeType->getValue() ? 'true' : 'false'
+					$nodeType->getValue() ? 'true' : 'false',
 				)))->build();
 			}
 		}

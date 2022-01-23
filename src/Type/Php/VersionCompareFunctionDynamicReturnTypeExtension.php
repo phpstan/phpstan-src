@@ -9,11 +9,15 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_filter;
+use function count;
+use function version_compare;
 
-class VersionCompareFunctionDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -24,7 +28,7 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements \PHPStan\Type\
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		if (count($functionCall->getArgs()) < 2) {
@@ -46,19 +50,15 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements \PHPStan\Type\
 			$returnType = TypeCombinator::union(
 				new ConstantIntegerType(-1),
 				new ConstantIntegerType(0),
-				new ConstantIntegerType(1)
+				new ConstantIntegerType(1),
 			);
 		}
 
-		if (count(array_filter($counts, static function (int $count): bool {
-				return $count === 0;
-		})) > 0) {
+		if (count(array_filter($counts, static fn (int $count): bool => $count === 0)) > 0) {
 			return $returnType; // one of the arguments is not a constant string
 		}
 
-		if (count(array_filter($counts, static function (int $count): bool {
-				return $count > 1;
-		})) > 1) {
+		if (count(array_filter($counts, static fn (int $count): bool => $count > 1)) > 1) {
 			return $returnType; // more than one argument can have multiple possibilities, avoid combinatorial explosion
 		}
 

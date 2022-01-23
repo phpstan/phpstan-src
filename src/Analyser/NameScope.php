@@ -5,43 +5,31 @@ namespace PHPStan\Analyser;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
+use function array_key_exists;
+use function array_merge;
+use function array_shift;
+use function count;
+use function explode;
+use function implode;
+use function ltrim;
+use function sprintf;
+use function strpos;
+use function strtolower;
 
 /** @api */
 class NameScope
 {
 
-	private ?string $namespace;
-
-	/** @var array<string, string> alias(string) => fullName(string) */
-	private array $uses;
-
-	private ?string $className;
-
-	private ?string $functionName;
-
 	private TemplateTypeMap $templateTypeMap;
-
-	/** @var array<string, true> */
-	private array $typeAliasesMap;
-
-	private bool $bypassTypeAliases;
 
 	/**
 	 * @api
-	 * @param string|null $namespace
 	 * @param array<string, string> $uses alias(string) => fullName(string)
-	 * @param string|null $className
 	 * @param array<string, true> $typeAliasesMap
 	 */
-	public function __construct(?string $namespace, array $uses, ?string $className = null, ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, array $typeAliasesMap = [], bool $bypassTypeAliases = false)
+	public function __construct(private ?string $namespace, private array $uses, private ?string $className = null, private ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, private array $typeAliasesMap = [], private bool $bypassTypeAliases = false)
 	{
-		$this->namespace = $namespace;
-		$this->uses = $uses;
-		$this->className = $className;
-		$this->functionName = $functionName;
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
-		$this->typeAliasesMap = $typeAliasesMap;
-		$this->bypassTypeAliases = $bypassTypeAliases;
 	}
 
 	public function getNamespace(): ?string
@@ -130,9 +118,9 @@ class NameScope
 			$this->functionName,
 			new TemplateTypeMap(array_merge(
 				$this->templateTypeMap->getTypes(),
-				$map->getTypes()
+				$map->getTypes(),
 			)),
-			$this->typeAliasesMap
+			$this->typeAliasesMap,
 		);
 	}
 
@@ -149,7 +137,7 @@ class NameScope
 			$this->className,
 			$this->functionName,
 			$this->templateTypeMap->unsetType($name),
-			$this->typeAliasesMap
+			$this->typeAliasesMap,
 		);
 	}
 
@@ -170,7 +158,6 @@ class NameScope
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{
@@ -180,7 +167,7 @@ class NameScope
 			$properties['className'],
 			$properties['functionName'],
 			$properties['templateTypeMap'],
-			$properties['typeAliasesMap']
+			$properties['typeAliasesMap'],
 		);
 	}
 

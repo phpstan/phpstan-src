@@ -2,16 +2,21 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use InvalidThrowsPhpDocMergeInherited\Four;
+use InvalidThrowsPhpDocMergeInherited\Three;
+use InvalidThrowsPhpDocMergeInherited\Two;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<InvalidThrowsPhpDocValueRule>
+ * @extends RuleTestCase<InvalidThrowsPhpDocValueRule>
  */
-class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
+class InvalidThrowsPhpDocValueRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new InvalidThrowsPhpDocValueRule(self::getContainer()->getByType(FileTypeMapper::class));
 	}
@@ -76,17 +81,17 @@ class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
 	{
 		return [
 			[
-				\InvalidThrowsPhpDocMergeInherited\Two::class,
+				Two::class,
 				'method',
 				'InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D',
 			],
 			[
-				\InvalidThrowsPhpDocMergeInherited\Three::class,
+				Three::class,
 				'method',
 				'InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D',
 			],
 			[
-				\InvalidThrowsPhpDocMergeInherited\Four::class,
+				Four::class,
 				'method',
 				'InvalidThrowsPhpDocMergeInherited\C|InvalidThrowsPhpDocMergeInherited\D',
 			],
@@ -95,14 +100,11 @@ class InvalidThrowsPhpDocValueRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataMergeInheritedPhpDocs
-	 * @param string $className
-	 * @param string $method
-	 * @param string $expectedType
 	 */
 	public function testMergeInheritedPhpDocs(
 		string $className,
 		string $method,
-		string $expectedType
+		string $expectedType,
 	): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();

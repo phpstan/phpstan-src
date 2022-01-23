@@ -4,26 +4,21 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\If_>
+ * @implements Rule<Node\Stmt\If_>
  */
-class UnreachableIfBranchesRule implements \PHPStan\Rules\Rule
+class UnreachableIfBranchesRule implements Rule
 {
 
-	private ConstantConditionRuleHelper $helper;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain
+		private ConstantConditionRuleHelper $helper,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->helper = $helper;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string

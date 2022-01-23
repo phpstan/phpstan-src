@@ -8,12 +8,10 @@ final class SymfonyProcess implements Process
 {
 
 	/** @var \Symfony\Component\Process\Process<string, string> */
-	private $process;
+	private \Symfony\Component\Process\Process $process;
 
 	/**
 	 * @param string[] $command
-	 * @param string $cwd
-	 * @param \Symfony\Component\Console\Output\OutputInterface $output
 	 */
 	public function __construct(array $command, string $cwd, OutputInterface $output)
 	{

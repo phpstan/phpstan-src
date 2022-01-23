@@ -2,21 +2,24 @@
 
 namespace PHPStan\Parallel;
 
+use Exception;
+use PHPStan\ShouldNotHappenException;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
 use React\Stream\ReadableStreamInterface;
 use React\Stream\WritableStreamInterface;
+use Throwable;
+use function fclose;
+use function is_string;
+use function rewind;
+use function sprintf;
+use function stream_get_contents;
+use function tmpfile;
 
 class Process
 {
 
-	private string $command;
-
 	public \React\ChildProcess\Process $process;
-
-	private LoopInterface $loop;
-
-	private float $timeoutSeconds;
 
 	private WritableStreamInterface $in;
 
@@ -29,36 +32,33 @@ class Process
 	/** @var callable(mixed[] $json) : void */
 	private $onData;
 
-	/** @var callable(\Throwable $exception) : void */
+	/** @var callable(Throwable $exception): void */
 	private $onError;
 
 	private ?TimerInterface $timer = null;
 
 	public function __construct(
-		string $command,
-		LoopInterface $loop,
-		float $timeoutSeconds
+		private string $command,
+		private LoopInterface $loop,
+		private float $timeoutSeconds,
 	)
 	{
-		$this->command = $command;
-		$this->loop = $loop;
-		$this->timeoutSeconds = $timeoutSeconds;
 	}
 
 	/**
 	 * @param callable(mixed[] $json) : void $onData
-	 * @param callable(\Throwable $exception) : void $onError
+	 * @param callable(Throwable $exception): void $onError
 	 * @param callable(?int $exitCode, string $output) : void $onExit
 	 */
 	public function start(callable $onData, callable $onError, callable $onExit): void
 	{
 		$tmpStdOut = tmpfile();
 		if ($tmpStdOut === false) {
-			throw new \PHPStan\ShouldNotHappenException('Failed creating temp file for stdout.');
+			throw new ShouldNotHappenException('Failed creating temp file for stdout.');
 		}
 		$tmpStdErr = tmpfile();
 		if ($tmpStdErr === false) {
-			throw new \PHPStan\ShouldNotHappenException('Failed creating temp file for stderr.');
+			throw new ShouldNotHappenException('Failed creating temp file for stderr.');
 		}
 		$this->stdOut = $tmpStdOut;
 		$this->stdErr = $tmpStdErr;
@@ -109,7 +109,7 @@ class Process
 		$this->in->write($data);
 		$this->timer = $this->loop->addTimer($this->timeoutSeconds, function (): void {
 			$onError = $this->onError;
-			$onError(new \Exception(sprintf('Child process timed out after %.1f seconds. Try making it longer with parallel.processTimeout setting.', $this->timeoutSeconds)));
+			$onError(new Exception(sprintf('Child process timed out after %.1f seconds. Try making it longer with parallel.processTimeout setting.', $this->timeoutSeconds)));
 		});
 	}
 
@@ -139,11 +139,11 @@ class Process
 			$onData($json['result']);
 		});
 		$this->in = $in;
-		$out->on('error', function (\Throwable $error): void {
+		$out->on('error', function (Throwable $error): void {
 			$onError = $this->onError;
 			$onError($error);
 		});
-		$in->on('error', function (\Throwable $error): void {
+		$in->on('error', function (Throwable $error): void {
 			$onError = $this->onError;
 			$onError($error);
 		});

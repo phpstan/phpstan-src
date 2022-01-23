@@ -158,6 +158,11 @@ class NullType implements ConstantScalarType
 		return $array->setOffsetValueType($offsetType, $valueType, $unionValues);
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this;
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;
@@ -221,7 +226,6 @@ class NullType implements ConstantScalarType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

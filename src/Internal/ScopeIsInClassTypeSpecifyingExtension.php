@@ -18,23 +18,14 @@ use PHPStan\Type\TypeCombinator;
 class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	private string $isInMethodName;
-
-	private string $removeNullMethodName;
-
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
 	public function __construct(
-		string $isInMethodName,
-		string $removeNullMethodName,
-		ReflectionProvider $reflectionProvider
+		private string $isInMethodName,
+		private string $removeNullMethodName,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
-		$this->isInMethodName = $isInMethodName;
-		$this->removeNullMethodName = $removeNullMethodName;
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
@@ -50,7 +41,7 @@ class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 	public function isMethodSupported(
 		MethodReflection $methodReflection,
 		MethodCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		return $methodReflection->getName() === $this->isInMethodName
@@ -61,7 +52,7 @@ class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 		MethodReflection $methodReflection,
 		MethodCall $node,
 		Scope $scope,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		$scopeClass = $this->reflectionProvider->getClass(Scope::class);
@@ -72,11 +63,11 @@ class ScopeIsInClassTypeSpecifyingExtension implements MethodTypeSpecifyingExten
 		return $this->typeSpecifier->create(
 			new MethodCall($node->var, $this->removeNullMethodName),
 			TypeCombinator::removeNull(
-				ParametersAcceptorSelector::selectSingle($methodVariants)->getReturnType()
+				ParametersAcceptorSelector::selectSingle($methodVariants)->getReturnType(),
 			),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

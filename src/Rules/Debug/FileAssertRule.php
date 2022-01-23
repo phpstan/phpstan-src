@@ -12,6 +12,9 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function is_string;
+use function sprintf;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -19,11 +22,8 @@ use PHPStan\Type\VerbosityLevel;
 class FileAssertRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -59,7 +59,6 @@ class FileAssertRule implements Rule
 
 	/**
 	 * @param Node\Arg[] $args
-	 * @param Scope $scope
 	 * @return RuleError[]
 	 */
 	private function processAssertType(array $args, Scope $scope): array
@@ -87,7 +86,6 @@ class FileAssertRule implements Rule
 
 	/**
 	 * @param Node\Arg[] $args
-	 * @param Scope $scope
 	 * @return RuleError[]
 	 */
 	private function processAssertNativeType(array $args, Scope $scope): array
@@ -116,7 +114,6 @@ class FileAssertRule implements Rule
 
 	/**
 	 * @param Node\Arg[] $args
-	 * @param Scope $scope
 	 * @return RuleError[]
 	 */
 	private function processAssertVariableCertainty(array $args, Scope $scope): array

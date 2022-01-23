@@ -2,18 +2,20 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ReadingWriteOnlyPropertiesRule>
+ * @extends RuleTestCase<ReadingWriteOnlyPropertiesRule>
  */
-class ReadingWriteOnlyPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
+class ReadingWriteOnlyPropertiesRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new ReadingWriteOnlyPropertiesRule(new PropertyDescriptor(), new PropertyReflectionFinder(), new RuleLevelHelper($this->createReflectionProvider(), true, $this->checkThisOnly, true, false), $this->checkThisOnly);
 	}

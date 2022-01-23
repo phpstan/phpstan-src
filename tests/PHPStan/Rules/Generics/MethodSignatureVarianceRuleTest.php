@@ -6,7 +6,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<MethodSignatureVarianceRule>
+ * @extends RuleTestCase<MethodSignatureVarianceRule>
  */
 class MethodSignatureVarianceRuleTest extends RuleTestCase
 {
@@ -14,7 +14,7 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new MethodSignatureVarianceRule(
-			self::getContainer()->getByType(VarianceCheck::class)
+			self::getContainer()->getByType(VarianceCheck::class),
 		);
 	}
 

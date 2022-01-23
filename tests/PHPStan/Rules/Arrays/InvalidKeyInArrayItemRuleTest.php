@@ -2,13 +2,16 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<InvalidKeyInArrayItemRule>
+ * @extends RuleTestCase<InvalidKeyInArrayItemRule>
  */
-class InvalidKeyInArrayItemRuleTest extends \PHPStan\Testing\RuleTestCase
+class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new InvalidKeyInArrayItemRule(true);
 	}

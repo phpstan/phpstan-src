@@ -6,17 +6,19 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ExistingClassesInArrowFunctionTypehintsRule>
+ * @extends RuleTestCase<ExistingClassesInArrowFunctionTypehintsRule>
  */
-class ExistingClassesInArrowFunctionTypehintsRuleTest extends \PHPStan\Testing\RuleTestCase
+class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 {
 
-	/** @var int */
-	private $phpVersionId = PHP_VERSION_ID;
+	private int $phpVersionId = PHP_VERSION_ID;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassesInArrowFunctionTypehintsRule(new FunctionDefinitionCheck($broker, new ClassCaseSensitivityCheck($broker, true), new UnresolvableTypeHelper(), new PhpVersion($this->phpVersionId), true, false));
@@ -64,7 +66,6 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends \PHPStan\Testing\R
 
 	/**
 	 * @dataProvider dataNativeUnionTypes
-	 * @param int $phpVersionId
 	 * @param mixed[] $errors
 	 */
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
@@ -106,7 +107,6 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends \PHPStan\Testing\R
 
 	/**
 	 * @dataProvider dataRequiredParameterAfterOptional
-	 * @param int $phpVersionId
 	 * @param mixed[] $errors
 	 */
 	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
@@ -149,7 +149,6 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends \PHPStan\Testing\R
 
 	/**
 	 * @dataProvider dataIntersectionTypes
-	 * @param int $phpVersion
 	 * @param mixed[] $errors
 	 */
 	public function testIntersectionTypes(int $phpVersion, array $errors): void

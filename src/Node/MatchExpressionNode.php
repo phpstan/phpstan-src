@@ -10,28 +10,17 @@ use PHPStan\Analyser\Scope;
 class MatchExpressionNode extends NodeAbstract implements VirtualNode
 {
 
-	private Expr $condition;
-
-	/** @var MatchExpressionArm[] */
-	private array $arms;
-
-	private Scope $endScope;
-
 	/**
-	 * @param Expr $condition
 	 * @param MatchExpressionArm[] $arms
 	 */
 	public function __construct(
-		Expr $condition,
-		array $arms,
+		private Expr $condition,
+		private array $arms,
 		Expr\Match_ $originalNode,
-		Scope $endScope
+		private Scope $endScope,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());
-		$this->condition = $condition;
-		$this->arms = $arms;
-		$this->endScope = $endScope;
 	}
 
 	public function getCondition(): Expr

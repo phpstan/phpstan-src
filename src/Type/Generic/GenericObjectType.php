@@ -9,6 +9,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
@@ -18,15 +19,14 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_map;
+use function count;
+use function implode;
+use function sprintf;
 
 /** @api */
 class GenericObjectType extends ObjectType
 {
-
-	/** @var array<int, Type> */
-	private array $types;
-
-	private ?ClassReflection $classReflection;
 
 	/**
 	 * @api
@@ -34,14 +34,12 @@ class GenericObjectType extends ObjectType
 	 */
 	public function __construct(
 		string $mainType,
-		array $types,
+		private array $types,
 		?Type $subtractedType = null,
-		?ClassReflection $classReflection = null
+		private ?ClassReflection $classReflection = null,
 	)
 	{
 		parent::__construct($mainType, $subtractedType, $classReflection);
-		$this->types = $types;
-		$this->classReflection = $classReflection;
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -49,9 +47,7 @@ class GenericObjectType extends ObjectType
 		return sprintf(
 			'%s<%s>',
 			parent::describe($level),
-			implode(', ', array_map(static function (Type $type) use ($level): string {
-				return $type->describe($level);
-			}, $this->types))
+			implode(', ', array_map(static fn (Type $type): string => $type->describe($level), $this->types)),
 		);
 	}
 
@@ -163,7 +159,7 @@ class GenericObjectType extends ObjectType
 				continue;
 			}
 			if (!$templateType instanceof TemplateType) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$results[] = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i]);
@@ -260,7 +256,7 @@ class GenericObjectType extends ObjectType
 			$variance = $positionVariance->compose(
 				isset($typeList[$i]) && $typeList[$i] instanceof TemplateType
 					? $typeList[$i]->getVariance()
-					: TemplateTypeVariance::createInvariant()
+					: TemplateTypeVariance::createInvariant(),
 			);
 			foreach ($type->getReferencedTemplateTypes($variance) as $reference) {
 				$references[] = $reference;
@@ -294,17 +290,14 @@ class GenericObjectType extends ObjectType
 	}
 
 	/**
-	 * @param string $className
 	 * @param Type[] $types
-	 * @param Type|null $subtractedType
-	 * @return self
 	 */
 	protected function recreate(string $className, array $types, ?Type $subtractedType): self
 	{
 		return new self(
 			$className,
 			$types,
-			$subtractedType
+			$subtractedType,
 		);
 	}
 
@@ -315,14 +308,13 @@ class GenericObjectType extends ObjectType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{
 		return new self(
 			$properties['className'],
 			$properties['types'],
-			$properties['subtractedType'] ?? null
+			$properties['subtractedType'] ?? null,
 		);
 	}
 

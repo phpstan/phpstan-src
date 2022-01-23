@@ -2,13 +2,17 @@
 
 namespace PHPStan\Rules\Constants;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use function define;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ConstantRule>
+ * @extends RuleTestCase<ConstantRule>
  */
-class ConstantRuleTest extends \PHPStan\Testing\RuleTestCase
+class ConstantRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new ConstantRule();
 	}

@@ -4,6 +4,8 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use function get_class;
+use function sprintf;
 
 /**
  * @implements Rule<Node\Stmt\Echo_>
@@ -23,7 +25,7 @@ class NodeConnectingRule implements Rule
 				'Parent: %s, previous: %s, next: %s',
 				get_class($node->getAttribute('parent')),
 				get_class($node->getAttribute('previous')),
-				get_class($node->getAttribute('next'))
+				get_class($node->getAttribute('next')),
 			),
 		];
 	}

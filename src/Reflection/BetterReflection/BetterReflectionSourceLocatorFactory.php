@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection\BetterReflection;
 
+use PhpParser\Node;
+
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
@@ -12,7 +14,6 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLo
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
-use PHPStan\BetterReflection\Reflector\FunctionReflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
@@ -49,9 +50,6 @@ class BetterReflectionSourceLocatorFactory
 
 	/** @var AutoloadSourceLocator */
 	private $autoloadSourceLocator;
-
-	/** @var \PHPStan\DependencyInjection\Container */
-	private $container;
 
 	/** @var string[] */
 	private $scanFiles;
@@ -92,7 +90,6 @@ class BetterReflectionSourceLocatorFactory
 		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
 		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		AutoloadSourceLocator $autoloadSourceLocator,
-		Container $container,
 		array $scanFiles,
 		array $scanDirectories,
 		array $analysedPaths,
@@ -110,7 +107,6 @@ class BetterReflectionSourceLocatorFactory
 		$this->optimizedDirectorySourceLocatorRepository = $optimizedDirectorySourceLocatorRepository;
 		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;
 		$this->autoloadSourceLocator = $autoloadSourceLocator;
-		$this->container = $container;
 		$this->scanFiles = $scanFiles;
 		$this->scanDirectories = $scanDirectories;
 		$this->analysedPaths = $analysedPaths;
@@ -154,13 +150,8 @@ class BetterReflectionSourceLocatorFactory
 			$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory);
 		}
 
-		$astLocator = new Locator($this->parser, function (): FunctionReflector {
-			return $this->container->getService('betterReflectionFunctionReflector');
-		});
-
-		$astPhp8Locator = new Locator($this->php8Parser, function (): FunctionReflector {
-			return $this->container->getService('betterReflectionFunctionReflector');
-		});
+		$astLocator = new Locator($this->parser);
+		$astPhp8Locator = new Locator($this->php8Parser);
 
 		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
 		$locators[] = new ClassBlacklistSourceLocator($this->autoloadSourceLocator, $this->staticReflectionClassNamePatterns);

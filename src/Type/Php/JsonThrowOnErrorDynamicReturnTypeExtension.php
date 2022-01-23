@@ -13,10 +13,12 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function in_array;
 
-class JsonThrowOnErrorDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	/** @var array<string, int> */
@@ -25,15 +27,12 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 		'json_decode' => 3,
 	];
 
-	private ReflectionProvider $reflectionProvider;
-
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function isFunctionSupported(
-		FunctionReflection $functionReflection
+		FunctionReflection $functionReflection,
 	): bool
 	{
 		return $this->reflectionProvider->hasConstant(new FullyQualified('JSON_THROW_ON_ERROR'), null) && in_array(
@@ -42,14 +41,14 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 				'json_encode',
 				'json_decode',
 			],
-			true
+			true,
 		);
 	}
 
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		$argumentPosition = $this->argumentPositions[$functionReflection->getName()];

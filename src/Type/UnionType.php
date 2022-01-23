@@ -2,14 +2,19 @@
 
 namespace PHPStan\Type;
 
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnionTypeUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnionTypeUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -17,12 +22,17 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
+use function array_map;
+use function count;
+use function implode;
+use function sprintf;
+use function strpos;
 
 /** @api */
 class UnionType implements CompoundType
 {
 
-	/** @var \PHPStan\Type\Type[] */
+	/** @var Type[] */
 	private array $types;
 
 	/**
@@ -32,12 +42,10 @@ class UnionType implements CompoundType
 	public function __construct(array $types)
 	{
 		$throwException = static function () use ($types): void {
-			throw new \PHPStan\ShouldNotHappenException(sprintf(
+			throw new ShouldNotHappenException(sprintf(
 				'Cannot create %s with: %s',
 				self::class,
-				implode(', ', array_map(static function (Type $type): string {
-					return $type->describe(VerbosityLevel::value());
-				}, $types))
+				implode(', ', array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::value()), $types)),
 			));
 		};
 		if (count($types) < 2) {
@@ -57,7 +65,7 @@ class UnionType implements CompoundType
 	}
 
 	/**
-	 * @return \PHPStan\Type\Type[]
+	 * @return Type[]
 	 */
 	public function getTypes(): array
 	{
@@ -75,10 +83,10 @@ class UnionType implements CompoundType
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if (
-			$type->equals(new ObjectType(\DateTimeInterface::class))
+			$type->equals(new ObjectType(DateTimeInterface::class))
 			&& $this->accepts(
-				new UnionType([new ObjectType(\DateTime::class), new ObjectType(\DateTimeImmutable::class)]),
-				$strictTypes
+				new UnionType([new ObjectType(DateTime::class), new ObjectType(DateTimeImmutable::class)]),
+				$strictTypes,
 			)->yes()
 		) {
 			return TrinaryLogic::createYes();
@@ -178,7 +186,7 @@ class UnionType implements CompoundType
 						$type instanceof ConstantType
 						&& !$type instanceof ConstantBooleanType
 					) {
-						return $type->generalize(GeneralizePrecision::moreSpecific());
+						return $type->generalize(GeneralizePrecision::lessSpecific());
 					}
 
 					return $type;
@@ -190,20 +198,17 @@ class UnionType implements CompoundType
 
 				return $joinTypes([$types]);
 			},
-			function () use ($joinTypes): string {
-				return $joinTypes($this->types);
-			}
+			fn (): string => $joinTypes($this->types),
 		);
 	}
 
 	/**
 	 * @param callable(Type $type): TrinaryLogic $canCallback
 	 * @param callable(Type $type): TrinaryLogic $hasCallback
-	 * @return TrinaryLogic
 	 */
 	private function hasInternal(
 		callable $canCallback,
-		callable $hasCallback
+		callable $hasCallback,
 	): TrinaryLogic
 	{
 		$results = [];
@@ -221,12 +226,11 @@ class UnionType implements CompoundType
 	/**
 	 * @param callable(Type $type): TrinaryLogic $hasCallback
 	 * @param callable(Type $type): object $getCallback
-	 * @return object
 	 */
 	private function getInternal(
 		callable $hasCallback,
-		callable $getCallback
-	)
+		callable $getCallback,
+	): object
 	{
 		/** @var TrinaryLogic|null $result */
 		$result = null;
@@ -248,7 +252,7 @@ class UnionType implements CompoundType
 		}
 
 		if ($object === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return $object;
@@ -256,16 +260,12 @@ class UnionType implements CompoundType
 
 	public function canAccessProperties(): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			return $type->canAccessProperties();
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->canAccessProperties());
 	}
 
 	public function hasProperty(string $propertyName): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type) use ($propertyName): TrinaryLogic {
-			return $type->hasProperty($propertyName);
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->hasProperty($propertyName));
 	}
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
@@ -286,7 +286,7 @@ class UnionType implements CompoundType
 
 		$propertiesCount = count($propertyPrototypes);
 		if ($propertiesCount === 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if ($propertiesCount === 1) {
@@ -298,16 +298,12 @@ class UnionType implements CompoundType
 
 	public function canCallMethods(): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			return $type->canCallMethods();
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->canCallMethods());
 	}
 
 	public function hasMethod(string $methodName): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type) use ($methodName): TrinaryLogic {
-			return $type->hasMethod($methodName);
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->hasMethod($methodName));
 	}
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
@@ -328,7 +324,7 @@ class UnionType implements CompoundType
 
 		$methodsCount = count($methodPrototypes);
 		if ($methodsCount === 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if ($methodsCount === 1) {
@@ -340,103 +336,73 @@ class UnionType implements CompoundType
 
 	public function canAccessConstants(): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			return $type->canAccessConstants();
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->canAccessConstants());
 	}
 
 	public function hasConstant(string $constantName): TrinaryLogic
 	{
 		return $this->hasInternal(
-			static function (Type $type): TrinaryLogic {
-				return $type->canAccessConstants();
-			},
-			static function (Type $type) use ($constantName): TrinaryLogic {
-				return $type->hasConstant($constantName);
-			}
+			static fn (Type $type): TrinaryLogic => $type->canAccessConstants(),
+			static fn (Type $type): TrinaryLogic => $type->hasConstant($constantName),
 		);
 	}
 
 	public function getConstant(string $constantName): ConstantReflection
 	{
 		return $this->getInternal(
-			static function (Type $type) use ($constantName): TrinaryLogic {
-				return $type->hasConstant($constantName);
-			},
-			static function (Type $type) use ($constantName): ConstantReflection {
-				return $type->getConstant($constantName);
-			}
+			static fn (Type $type): TrinaryLogic => $type->hasConstant($constantName),
+			static fn (Type $type): ConstantReflection => $type->getConstant($constantName),
 		);
 	}
 
 	public function isIterable(): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			return $type->isIterable();
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isIterable());
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			return $type->isIterableAtLeastOnce();
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce());
 	}
 
 	public function getIterableKeyType(): Type
 	{
-		return $this->unionTypes(static function (Type $type): Type {
-			return $type->getIterableKeyType();
-		});
+		return $this->unionTypes(static fn (Type $type): Type => $type->getIterableKeyType());
 	}
 
 	public function getIterableValueType(): Type
 	{
-		return $this->unionTypes(static function (Type $type): Type {
-			return $type->getIterableValueType();
-		});
+		return $this->unionTypes(static fn (Type $type): Type => $type->getIterableValueType());
 	}
 
 	public function isArray(): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			return $type->isArray();
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isArray());
 	}
 
 	public function isNumericString(): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			return $type->isNumericString();
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isNumericString());
 	}
 
 	public function isNonEmptyString(): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			return $type->isNonEmptyString();
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isNonEmptyString());
 	}
 
 	public function isLiteralString(): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			return $type->isLiteralString();
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isLiteralString());
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			return $type->isOffsetAccessible();
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isOffsetAccessible());
 	}
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type) use ($offsetType): TrinaryLogic {
-			return $type->hasOffsetValueType($offsetType);
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->hasOffsetValueType($offsetType));
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type
@@ -460,21 +426,21 @@ class UnionType implements CompoundType
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
-		return $this->unionTypes(static function (Type $type) use ($offsetType, $valueType, $unionValues): Type {
-			return $type->setOffsetValueType($offsetType, $valueType, $unionValues);
-		});
+		return $this->unionTypes(static fn (Type $type): Type => $type->setOffsetValueType($offsetType, $valueType, $unionValues));
+	}
+
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));
 	}
 
 	public function isCallable(): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			return $type->isCallable();
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isCallable());
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
@@ -486,123 +452,93 @@ class UnionType implements CompoundType
 			return $type->getCallableParametersAcceptors($scope);
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function isCloneable(): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type): TrinaryLogic {
-			return $type->isCloneable();
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isCloneable());
 	}
 
 	public function isSmallerThan(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type) use ($otherType): TrinaryLogic {
-			return $type->isSmallerThan($otherType);
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThan($otherType));
 	}
 
 	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type) use ($otherType): TrinaryLogic {
-			return $type->isSmallerThanOrEqual($otherType);
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThanOrEqual($otherType));
 	}
 
 	public function getSmallerType(): Type
 	{
-		return $this->unionTypes(static function (Type $type): Type {
-			return $type->getSmallerType();
-		});
+		return $this->unionTypes(static fn (Type $type): Type => $type->getSmallerType());
 	}
 
 	public function getSmallerOrEqualType(): Type
 	{
-		return $this->unionTypes(static function (Type $type): Type {
-			return $type->getSmallerOrEqualType();
-		});
+		return $this->unionTypes(static fn (Type $type): Type => $type->getSmallerOrEqualType());
 	}
 
 	public function getGreaterType(): Type
 	{
-		return $this->unionTypes(static function (Type $type): Type {
-			return $type->getGreaterType();
-		});
+		return $this->unionTypes(static fn (Type $type): Type => $type->getGreaterType());
 	}
 
 	public function getGreaterOrEqualType(): Type
 	{
-		return $this->unionTypes(static function (Type $type): Type {
-			return $type->getGreaterOrEqualType();
-		});
+		return $this->unionTypes(static fn (Type $type): Type => $type->getGreaterOrEqualType());
 	}
 
 	public function isGreaterThan(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type) use ($otherType): TrinaryLogic {
-			return $otherType->isSmallerThan($type);
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThan($type));
 	}
 
 	public function isGreaterThanOrEqual(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static function (Type $type) use ($otherType): TrinaryLogic {
-			return $otherType->isSmallerThanOrEqual($type);
-		});
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThanOrEqual($type));
 	}
 
 	public function toBoolean(): BooleanType
 	{
 		/** @var BooleanType $type */
-		$type = $this->unionTypes(static function (Type $type): BooleanType {
-			return $type->toBoolean();
-		});
+		$type = $this->unionTypes(static fn (Type $type): BooleanType => $type->toBoolean());
 
 		return $type;
 	}
 
 	public function toNumber(): Type
 	{
-		$type = $this->unionTypes(static function (Type $type): Type {
-			return $type->toNumber();
-		});
+		$type = $this->unionTypes(static fn (Type $type): Type => $type->toNumber());
 
 		return $type;
 	}
 
 	public function toString(): Type
 	{
-		$type = $this->unionTypes(static function (Type $type): Type {
-			return $type->toString();
-		});
+		$type = $this->unionTypes(static fn (Type $type): Type => $type->toString());
 
 		return $type;
 	}
 
 	public function toInteger(): Type
 	{
-		$type = $this->unionTypes(static function (Type $type): Type {
-			return $type->toInteger();
-		});
+		$type = $this->unionTypes(static fn (Type $type): Type => $type->toInteger());
 
 		return $type;
 	}
 
 	public function toFloat(): Type
 	{
-		$type = $this->unionTypes(static function (Type $type): Type {
-			return $type->toFloat();
-		});
+		$type = $this->unionTypes(static fn (Type $type): Type => $type->toFloat());
 
 		return $type;
 	}
 
 	public function toArray(): Type
 	{
-		$type = $this->unionTypes(static function (Type $type): Type {
-			return $type->toArray();
-		});
+		$type = $this->unionTypes(static fn (Type $type): Type => $type->toArray());
 
 		return $type;
 	}
@@ -697,7 +633,6 @@ class UnionType implements CompoundType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{
@@ -706,7 +641,6 @@ class UnionType implements CompoundType
 
 	/**
 	 * @param callable(Type $type): TrinaryLogic $getResult
-	 * @return TrinaryLogic
 	 */
 	protected function unionResults(callable $getResult): TrinaryLogic
 	{
@@ -715,7 +649,6 @@ class UnionType implements CompoundType
 
 	/**
 	 * @param callable(Type $type): Type $getType
-	 * @return Type
 	 */
 	protected function unionTypes(callable $getType): Type
 	{

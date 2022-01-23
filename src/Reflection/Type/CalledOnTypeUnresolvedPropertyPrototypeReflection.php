@@ -13,29 +13,17 @@ use PHPStan\Type\TypeTraverser;
 class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 
-	private PropertyReflection $propertyReflection;
-
-	private ClassReflection $resolvedDeclaringClass;
-
-	private bool $resolveTemplateTypeMapToBounds;
-
-	private Type $fetchedOnType;
-
 	private ?PropertyReflection $transformedProperty = null;
 
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
 
 	public function __construct(
-		PropertyReflection $propertyReflection,
-		ClassReflection $resolvedDeclaringClass,
-		bool $resolveTemplateTypeMapToBounds,
-		Type $fetchedOnType
+		private PropertyReflection $propertyReflection,
+		private ClassReflection $resolvedDeclaringClass,
+		private bool $resolveTemplateTypeMapToBounds,
+		private Type $fetchedOnType,
 	)
 	{
-		$this->propertyReflection = $propertyReflection;
-		$this->resolvedDeclaringClass = $resolvedDeclaringClass;
-		$this->resolveTemplateTypeMapToBounds = $resolveTemplateTypeMapToBounds;
-		$this->fetchedOnType = $fetchedOnType;
 	}
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedPropertyPrototypeReflection
@@ -48,7 +36,7 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 			$this->propertyReflection,
 			$this->resolvedDeclaringClass,
 			false,
-			$this->fetchedOnType
+			$this->fetchedOnType,
 		);
 	}
 
@@ -66,7 +54,7 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 
 		return $this->transformedProperty = new ResolvedPropertyReflection(
 			$this->transformPropertyWithStaticType($this->resolvedDeclaringClass, $this->propertyReflection),
-			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap
+			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap,
 		);
 	}
 
@@ -76,7 +64,7 @@ class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPro
 			$this->propertyReflection,
 			$this->resolvedDeclaringClass,
 			$this->resolveTemplateTypeMapToBounds,
-			$type
+			$type,
 		);
 	}
 

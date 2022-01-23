@@ -9,20 +9,14 @@ use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Trait_;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Parser\Parser;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use function array_key_exists;
+use function array_map;
+use function is_string;
 
 class StubPhpDocProvider
 {
-
-	private \PHPStan\Parser\Parser $parser;
-
-	private \PHPStan\Type\FileTypeMapper $fileTypeMapper;
-
-	private Container $container;
-
-	/** @var string[] */
-	private array $stubFiles;
 
 	/** @var array<string, ResolvedPhpDocBlock|null> */
 	private array $classMap = [];
@@ -65,20 +59,15 @@ class StubPhpDocProvider
 	private array $knownFunctionParameterNames = [];
 
 	/**
-	 * @param \PHPStan\Parser\Parser $parser
 	 * @param string[] $stubFiles
 	 */
 	public function __construct(
-		Parser $parser,
-		FileTypeMapper $fileTypeMapper,
-		Container $container,
-		array $stubFiles
+		private Parser $parser,
+		private FileTypeMapper $fileTypeMapper,
+		private Container $container,
+		private array $stubFiles,
 	)
 	{
-		$this->parser = $parser;
-		$this->fileTypeMapper = $fileTypeMapper;
-		$this->container = $container;
-		$this->stubFiles = $stubFiles;
 	}
 
 	public function findClassPhpDoc(string $className): ?ResolvedPhpDocBlock
@@ -98,7 +87,7 @@ class StubPhpDocProvider
 				$className,
 				null,
 				null,
-				$docComment
+				$docComment,
 			);
 
 			return $this->classMap[$className];
@@ -124,7 +113,7 @@ class StubPhpDocProvider
 				$className,
 				null,
 				null,
-				$docComment
+				$docComment,
 			);
 
 			return $this->propertyMap[$className][$propertyName];
@@ -150,7 +139,7 @@ class StubPhpDocProvider
 				$className,
 				null,
 				null,
-				$docComment
+				$docComment,
 			);
 
 			return $this->constantMap[$className][$constantName];
@@ -160,10 +149,7 @@ class StubPhpDocProvider
 	}
 
 	/**
-	 * @param string $className
-	 * @param string $methodName
 	 * @param array<int, string> $positionalParameterNames
-	 * @return \PHPStan\PhpDoc\ResolvedPhpDocBlock|null
 	 */
 	public function findMethodPhpDoc(string $className, string $methodName, array $positionalParameterNames): ?ResolvedPhpDocBlock
 	{
@@ -182,11 +168,11 @@ class StubPhpDocProvider
 				$className,
 				null,
 				$methodName,
-				$docComment
+				$docComment,
 			);
 
 			if (!isset($this->knownMethodsParameterNames[$className][$methodName])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$methodParameterNames = $this->knownMethodsParameterNames[$className][$methodName];
@@ -205,10 +191,8 @@ class StubPhpDocProvider
 	}
 
 	/**
-	 * @param string $functionName
 	 * @param array<int, string> $positionalParameterNames
-	 * @return ResolvedPhpDocBlock|null
-	 * @throws \PHPStan\ShouldNotHappenException
+	 * @throws ShouldNotHappenException
 	 */
 	public function findFunctionPhpDoc(string $functionName, array $positionalParameterNames): ?ResolvedPhpDocBlock
 	{
@@ -227,11 +211,11 @@ class StubPhpDocProvider
 				null,
 				null,
 				$functionName,
-				$docComment
+				$docComment,
 			);
 
 			if (!isset($this->knownFunctionParameterNames[$functionName])) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$functionParameterNames = $this->knownFunctionParameterNames[$functionName];
@@ -276,7 +260,7 @@ class StubPhpDocProvider
 	private function initializeKnownElements(): void
 	{
 		if ($this->initializing) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		if ($this->initialized) {
 			return;
@@ -332,7 +316,7 @@ class StubPhpDocProvider
 			}
 			$this->knownFunctionParameterNames[$functionName] = array_map(static function (Node\Param $param): string {
 				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 
 				return $param->var->name;
@@ -342,7 +326,7 @@ class StubPhpDocProvider
 			return;
 		}
 
-		if (!$node instanceof Class_ && !$node instanceof Interface_ && !$node instanceof Trait_) {
+		if (!$node instanceof Class_ && !$node instanceof Interface_ && !$node instanceof Trait_ && !$node instanceof Node\Stmt\Enum_) {
 			return;
 		}
 
@@ -393,7 +377,7 @@ class StubPhpDocProvider
 				$this->knownMethodsDocComments[$className][$methodName] = [$stubFile, $docComment->getText()];
 				$this->knownMethodsParameterNames[$className][$methodName] = array_map(static function (Node\Param $param): string {
 					if (!$param->var instanceof Variable || !is_string($param->var->name)) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 
 					return $param->var->name;

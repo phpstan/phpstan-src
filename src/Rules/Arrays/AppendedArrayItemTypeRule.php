@@ -2,42 +2,40 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
 use PhpParser\Node\Expr\AssignRef;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ * @deprecated Replaced by PHPStan\Rules\Properties\TypesAssignedToPropertiesRule
+ * @implements Rule<Node\Expr>
  */
-class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
+class AppendedArrayItemTypeRule implements Rule
 {
 
-	private \PHPStan\Rules\Properties\PropertyReflectionFinder $propertyReflectionFinder;
-
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
 	public function __construct(
-		PropertyReflectionFinder $propertyReflectionFinder,
-		RuleLevelHelper $ruleLevelHelper
+		private PropertyReflectionFinder $propertyReflectionFinder,
+		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr::class;
+		return Node\Expr::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
 			!$node instanceof Assign
@@ -52,8 +50,8 @@ class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 		}
 
 		if (
-			!$node->var->var instanceof \PhpParser\Node\Expr\PropertyFetch
-			&& !$node->var->var instanceof \PhpParser\Node\Expr\StaticPropertyFetch
+			!$node->var->var instanceof Node\Expr\PropertyFetch
+			&& !$node->var->var instanceof Node\Expr\StaticPropertyFetch
 		) {
 			return [];
 		}
@@ -81,7 +79,7 @@ class AppendedArrayItemTypeRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Array (%s) does not accept %s.',
 					$assignedToType->describe($verbosityLevel),
-					$assignedValueType->describe($verbosityLevel)
+					$assignedValueType->describe($verbosityLevel),
 				))->build(),
 			];
 		}

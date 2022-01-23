@@ -2,43 +2,26 @@
 
 namespace PHPStan\Reflection\Native;
 
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
 
-class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
+class NativeFunctionReflection implements FunctionReflection
 {
 
-	private string $name;
-
-	/** @var \PHPStan\Reflection\ParametersAcceptor[] */
-	private array $variants;
-
-	private ?\PHPStan\Type\Type $throwType;
-
-	private TrinaryLogic $hasSideEffects;
-
-	private bool $isDeprecated;
-
 	/**
-	 * @param string $name
-	 * @param \PHPStan\Reflection\ParametersAcceptor[] $variants
-	 * @param \PHPStan\Type\Type|null $throwType
-	 * @param \PHPStan\TrinaryLogic $hasSideEffects
+	 * @param ParametersAcceptor[] $variants
 	 */
 	public function __construct(
-		string $name,
-		array $variants,
-		?Type $throwType,
-		TrinaryLogic $hasSideEffects,
-		bool $isDeprecated
+		private string $name,
+		private array $variants,
+		private ?Type $throwType,
+		private TrinaryLogic $hasSideEffects,
+		private bool $isDeprecated,
 	)
 	{
-		$this->name = $name;
-		$this->variants = $variants;
-		$this->throwType = $throwType;
-		$this->hasSideEffects = $hasSideEffects;
-		$this->isDeprecated = $isDeprecated;
 	}
 
 	public function getName(): string
@@ -52,7 +35,7 @@ class NativeFunctionReflection implements \PHPStan\Reflection\FunctionReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getVariants(): array
 	{

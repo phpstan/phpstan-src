@@ -9,18 +9,17 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\VoidType;
+use function in_array;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
+ * @implements Rule<Node\Stmt\Expression>
  */
 class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -35,7 +34,7 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$funcCall = $node->expr;
-		if (!($funcCall->name instanceof \PhpParser\Node\Name)) {
+		if (!($funcCall->name instanceof Node\Name)) {
 			return [];
 		}
 
@@ -44,10 +43,12 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$function = $this->reflectionProvider->getFunction($funcCall->name, $scope);
-		if ($function->hasSideEffects()->no()) {
-			$throwsType = $function->getThrowType();
-			if ($throwsType !== null && !$throwsType instanceof VoidType) {
-				return [];
+		if ($function->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
+			if (!$node->expr->isFirstClassCallable()) {
+				$throwsType = $function->getThrowType();
+				if ($throwsType !== null && !$throwsType instanceof VoidType) {
+					return [];
+				}
 			}
 
 			$functionResult = $scope->getType($funcCall);
@@ -66,7 +67,7 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Call to function %s() on a separate line has no effect.',
-					$function->getName()
+					$function->getName(),
 				))->build(),
 			];
 		}

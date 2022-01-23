@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
 
@@ -9,13 +10,10 @@ use PHPStan\Analyser\Scope;
 class ReturnStatement
 {
 
-	private Scope $scope;
+	private Node\Stmt\Return_ $returnNode;
 
-	private \PhpParser\Node\Stmt\Return_ $returnNode;
-
-	public function __construct(Scope $scope, Return_ $returnNode)
+	public function __construct(private Scope $scope, Return_ $returnNode)
 	{
-		$this->scope = $scope;
 		$this->returnNode = $returnNode;
 	}
 

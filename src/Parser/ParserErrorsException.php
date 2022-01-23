@@ -2,34 +2,27 @@
 
 namespace PHPStan\Parser;
 
+use Exception;
 use PhpParser\Error;
+use function array_map;
+use function implode;
 
-class ParserErrorsException extends \Exception
+class ParserErrorsException extends Exception
 {
 
-	/** @var \PhpParser\Error[] */
-	private array $errors;
-
-	private ?string $parsedFile;
-
 	/**
-	 * @param \PhpParser\Error[] $errors
-	 * @param string|null $parsedFile
+	 * @param Error[] $errors
 	 */
 	public function __construct(
-		array $errors,
-		?string $parsedFile
+		private array $errors,
+		private ?string $parsedFile,
 	)
 	{
-		parent::__construct(implode(', ', array_map(static function (Error $error): string {
-			return $error->getMessage();
-		}, $errors)));
-		$this->errors = $errors;
-		$this->parsedFile = $parsedFile;
+		parent::__construct(implode(', ', array_map(static fn (Error $error): string => $error->getMessage(), $errors)));
 	}
 
 	/**
-	 * @return \PhpParser\Error[]
+	 * @return Error[]
 	 */
 	public function getErrors(): array
 	{

@@ -2,19 +2,20 @@
 
 namespace PHPStan\Rules\Classes;
 
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ImpossibleInstanceOfRule>
+ * @extends RuleTestCase<ImpossibleInstanceOfRule>
  */
-class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
+class ImpossibleInstanceOfRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkAlwaysTrueInstanceOf;
+	private bool $checkAlwaysTrueInstanceOf;
 
-	/** @var bool */
-	private $treatPhpDocTypesAsCertain;
+	private bool $treatPhpDocTypesAsCertain;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new ImpossibleInstanceOfRule($this->checkAlwaysTrueInstanceOf, $this->treatPhpDocTypesAsCertain);
 	}
@@ -178,7 +179,7 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 					433,
 					$tipText,
 				],
-			]
+			],
 		);
 	}
 
@@ -271,7 +272,7 @@ class ImpossibleInstanceOfRuleTest extends \PHPStan\Testing\RuleTestCase
 					432,
 					$tipText,
 				],
-			]
+			],
 		);
 	}
 

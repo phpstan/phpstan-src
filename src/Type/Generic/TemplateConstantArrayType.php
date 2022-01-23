@@ -19,7 +19,7 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		ConstantArrayType $bound
+		ConstantArrayType $bound,
 	)
 	{
 		parent::__construct($bound->getKeyTypes(), $bound->getValueTypes(), $bound->getNextAutoIndex(), $bound->getOptionalKeys());
@@ -39,7 +39,7 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

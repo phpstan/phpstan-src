@@ -7,25 +7,13 @@ use PHPStan\Dependency\ExportedNode;
 class FileAnalyserResult
 {
 
-	/** @var Error[] */
-	private array $errors;
-
-	/** @var array<int, string> */
-	private array $dependencies;
-
-	/** @var array<int, ExportedNode> */
-	private array $exportedNodes;
-
 	/**
 	 * @param Error[] $errors
 	 * @param array<int, string> $dependencies
 	 * @param array<int, ExportedNode> $exportedNodes
 	 */
-	public function __construct(array $errors, array $dependencies, array $exportedNodes)
+	public function __construct(private array $errors, private array $dependencies, private array $exportedNodes)
 	{
-		$this->errors = $errors;
-		$this->dependencies = $dependencies;
-		$this->exportedNodes = $exportedNodes;
 	}
 
 	/**

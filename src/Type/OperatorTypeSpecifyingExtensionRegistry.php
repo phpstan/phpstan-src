@@ -4,19 +4,18 @@ namespace PHPStan\Type;
 
 use PHPStan\Broker\Broker;
 use PHPStan\Reflection\BrokerAwareExtension;
+use function array_filter;
+use function array_values;
 
 class OperatorTypeSpecifyingExtensionRegistry
 {
 
-	/** @var OperatorTypeSpecifyingExtension[] */
-	private array $extensions;
-
 	/**
-	 * @param \PHPStan\Type\OperatorTypeSpecifyingExtension[] $extensions
+	 * @param OperatorTypeSpecifyingExtension[] $extensions
 	 */
 	public function __construct(
 		Broker $broker,
-		array $extensions
+		private array $extensions,
 	)
 	{
 		foreach ($extensions as $extension) {
@@ -26,7 +25,6 @@ class OperatorTypeSpecifyingExtensionRegistry
 
 			$extension->setBroker($broker);
 		}
-		$this->extensions = $extensions;
 	}
 
 	/**
@@ -34,9 +32,7 @@ class OperatorTypeSpecifyingExtensionRegistry
 	 */
 	public function getOperatorTypeSpecifyingExtensions(string $operator, Type $leftType, Type $rightType): array
 	{
-		return array_values(array_filter($this->extensions, static function (OperatorTypeSpecifyingExtension $extension) use ($operator, $leftType, $rightType): bool {
-			return $extension->isOperatorSupported($operator, $leftType, $rightType);
-		}));
+		return array_values(array_filter($this->extensions, static fn (OperatorTypeSpecifyingExtension $extension): bool => $extension->isOperatorSupported($operator, $leftType, $rightType)));
 	}
 
 }

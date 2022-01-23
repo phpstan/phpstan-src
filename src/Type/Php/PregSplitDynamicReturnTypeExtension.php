@@ -3,30 +3,33 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Arg;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function sprintf;
+use function strtolower;
 
 class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 
@@ -43,7 +46,7 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		if ($this->hasFlag($this->getConstant('PREG_SPLIT_OFFSET_CAPTURE'), $flagsArg, $scope)) {
 			$type = new ArrayType(
 				new IntegerType(),
-				new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new StringType(), new IntegerType()])
+				new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new StringType(), IntegerRangeType::fromInterval(0, null)]),
 			);
 			return TypeCombinator::union($type, new ConstantBooleanType(false));
 		}
@@ -52,13 +55,25 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	}
 
 
-	private function hasFlag(int $flag, ?Arg $expression, Scope $scope): bool
+	private function hasFlag(int $flag, ?Arg $arg, Scope $scope): bool
 	{
-		if ($expression === null) {
+		if ($arg === null) {
 			return false;
 		}
 
-		$type = $scope->getType($expression->value);
+		return $this->isConstantFlag($flag, $arg->value, $scope);
+	}
+
+	private function isConstantFlag(int $flag, Expr $expression, Scope $scope): bool
+	{
+		if ($expression instanceof BitwiseOr) {
+			$left = $expression->left;
+			$right = $expression->right;
+
+			return $this->isConstantFlag($flag, $left, $scope) || $this->isConstantFlag($flag, $right, $scope);
+		}
+
+		$type = $scope->getType($expression);
 		return $type instanceof ConstantIntegerType && ($type->getValue() & $flag) === $flag;
 	}
 
@@ -68,7 +83,7 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$constant = $this->reflectionProvider->getConstant(new Name($constantName), null);
 		$valueType = $constant->getValueType();
 		if (!$valueType instanceof ConstantIntegerType) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Constant %s does not have integer type.', $constantName));
+			throw new ShouldNotHappenException(sprintf('Constant %s does not have integer type.', $constantName));
 		}
 
 		return $valueType->getValue();

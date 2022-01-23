@@ -28,31 +28,26 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_map;
+use function array_reverse;
+use function count;
+use function in_array;
+use function strpos;
+use function substr;
 
 class PhpDocNodeResolver
 {
 
-	private TypeNodeResolver $typeNodeResolver;
-
-	private ConstExprNodeResolver $constExprNodeResolver;
-
-	private UnresolvableTypeHelper $unresolvableTypeHelper;
-
 	public function __construct(
-		TypeNodeResolver $typeNodeResolver,
-		ConstExprNodeResolver $constExprNodeResolver,
-		UnresolvableTypeHelper $unresolvableTypeHelper
+		private TypeNodeResolver $typeNodeResolver,
+		private ConstExprNodeResolver $constExprNodeResolver,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
 	)
 	{
-		$this->typeNodeResolver = $typeNodeResolver;
-		$this->constExprNodeResolver = $constExprNodeResolver;
-		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
 	}
 
 	/**
-	 * @param PhpDocNode $phpDocNode
-	 * @param NameScope $nameScope
-	 * @return array<string|int, \PHPStan\PhpDoc\Tag\VarTag>
+	 * @return array<(string|int), VarTag>
 	 */
 	public function resolveVarTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -89,54 +84,56 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @param PhpDocNode $phpDocNode
-	 * @param NameScope $nameScope
-	 * @return array<string, \PHPStan\PhpDoc\Tag\PropertyTag>
+	 * @return array<string, PropertyTag>
 	 */
 	public function resolvePropertyTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
 		$resolved = [];
 
-		foreach ($phpDocNode->getPropertyTagValues() as $tagValue) {
-			$propertyName = substr($tagValue->propertyName, 1);
-			$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
+		foreach (['@property', '@phpstan-property'] as $tagName) {
+			foreach ($phpDocNode->getPropertyTagValues($tagName) as $tagValue) {
+				$propertyName = substr($tagValue->propertyName, 1);
+				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
-			$resolved[$propertyName] = new PropertyTag(
-				$propertyType,
-				true,
-				true
-			);
+				$resolved[$propertyName] = new PropertyTag(
+					$propertyType,
+					true,
+					true,
+				);
+			}
 		}
 
-		foreach ($phpDocNode->getPropertyReadTagValues() as $tagValue) {
-			$propertyName = substr($tagValue->propertyName, 1);
-			$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
+		foreach (['@property-read', '@phpstan-property-read'] as $tagName) {
+			foreach ($phpDocNode->getPropertyReadTagValues($tagName) as $tagValue) {
+				$propertyName = substr($tagValue->propertyName, 1);
+				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
-			$resolved[$propertyName] = new PropertyTag(
-				$propertyType,
-				true,
-				false
-			);
+				$resolved[$propertyName] = new PropertyTag(
+					$propertyType,
+					true,
+					false,
+				);
+			}
 		}
 
-		foreach ($phpDocNode->getPropertyWriteTagValues() as $tagValue) {
-			$propertyName = substr($tagValue->propertyName, 1);
-			$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
+		foreach (['@property-write', '@phpstan-property-write'] as $tagName) {
+			foreach ($phpDocNode->getPropertyWriteTagValues($tagName) as $tagValue) {
+				$propertyName = substr($tagValue->propertyName, 1);
+				$propertyType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
 
-			$resolved[$propertyName] = new PropertyTag(
-				$propertyType,
-				false,
-				true
-			);
+				$resolved[$propertyName] = new PropertyTag(
+					$propertyType,
+					false,
+					true,
+				);
+			}
 		}
 
 		return $resolved;
 	}
 
 	/**
-	 * @param PhpDocNode $phpDocNode
-	 * @param NameScope $nameScope
-	 * @return array<string, \PHPStan\PhpDoc\Tag\MethodTag>
+	 * @return array<string, MethodTag>
 	 */
 	public function resolveMethodTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -165,7 +162,7 @@ class PhpDocNodeResolver
 							: PassedByReference::createNo(),
 						$parameterNode->isVariadic || $parameterNode->defaultValue !== null,
 						$parameterNode->isVariadic,
-						$defaultValue
+						$defaultValue,
 					);
 				}
 
@@ -174,7 +171,7 @@ class PhpDocNodeResolver
 						? $this->typeNodeResolver->resolve($tagValue->returnType, $nameScope)
 						: new MixedType(),
 					$tagValue->isStatic,
-					$parameters
+					$parameters,
 				);
 			}
 		}
@@ -183,7 +180,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @return array<string, \PHPStan\PhpDoc\Tag\ExtendsTag>
+	 * @return array<string, ExtendsTag>
 	 */
 	public function resolveExtendsTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -192,7 +189,7 @@ class PhpDocNodeResolver
 		foreach (['@extends', '@template-extends', '@phpstan-extends'] as $tagName) {
 			foreach ($phpDocNode->getExtendsTagValues($tagName) as $tagValue) {
 				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new ExtendsTag(
-					$this->typeNodeResolver->resolve($tagValue->type, $nameScope)
+					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
 				);
 			}
 		}
@@ -201,7 +198,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @return array<string, \PHPStan\PhpDoc\Tag\ImplementsTag>
+	 * @return array<string, ImplementsTag>
 	 */
 	public function resolveImplementsTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -210,7 +207,7 @@ class PhpDocNodeResolver
 		foreach (['@implements', '@template-implements', '@phpstan-implements'] as $tagName) {
 			foreach ($phpDocNode->getImplementsTagValues($tagName) as $tagValue) {
 				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new ImplementsTag(
-					$this->typeNodeResolver->resolve($tagValue->type, $nameScope)
+					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
 				);
 			}
 		}
@@ -219,7 +216,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @return array<string, \PHPStan\PhpDoc\Tag\UsesTag>
+	 * @return array<string, UsesTag>
 	 */
 	public function resolveUsesTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -228,7 +225,7 @@ class PhpDocNodeResolver
 		foreach (['@use', '@template-use', '@phpstan-use'] as $tagName) {
 			foreach ($phpDocNode->getUsesTagValues($tagName) as $tagValue) {
 				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new UsesTag(
-					$this->typeNodeResolver->resolve($tagValue->type, $nameScope)
+					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
 				);
 			}
 		}
@@ -237,9 +234,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @param PhpDocNode $phpDocNode
-	 * @param NameScope $nameScope
-	 * @return array<string, \PHPStan\PhpDoc\Tag\TemplateTag>
+	 * @return array<string, TemplateTag>
 	 */
 	public function resolveTemplateTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -285,7 +280,7 @@ class PhpDocNodeResolver
 			$resolved[$valueNode->name] = new TemplateTag(
 				$valueNode->name,
 				$valueNode->bound !== null ? $this->typeNodeResolver->resolve($valueNode->bound, $nameScope->unsetTemplateType($valueNode->name)) : new MixedType(),
-				$variance
+				$variance,
 			);
 			$resolvedPrefix[$valueNode->name] = $prefix;
 		}
@@ -294,9 +289,7 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @param PhpDocNode $phpDocNode
-	 * @param NameScope $nameScope
-	 * @return array<string, \PHPStan\PhpDoc\Tag\ParamTag>
+	 * @return array<string, ParamTag>
 	 */
 	public function resolveParamTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
@@ -312,7 +305,7 @@ class PhpDocNodeResolver
 
 				$resolved[$parameterName] = new ParamTag(
 					$parameterType,
-					$tagValue->isVariadic
+					$tagValue->isVariadic,
 				);
 			}
 		}
@@ -320,7 +313,7 @@ class PhpDocNodeResolver
 		return $resolved;
 	}
 
-	public function resolveReturnTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?\PHPStan\PhpDoc\Tag\ReturnTag
+	public function resolveReturnTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?ReturnTag
 	{
 		$resolved = null;
 
@@ -337,7 +330,7 @@ class PhpDocNodeResolver
 		return $resolved;
 	}
 
-	public function resolveThrowsTags(PhpDocNode $phpDocNode, NameScope $nameScope): ?\PHPStan\PhpDoc\Tag\ThrowsTag
+	public function resolveThrowsTags(PhpDocNode $phpDocNode, NameScope $nameScope): ?ThrowsTag
 	{
 		foreach (['@phpstan-throws', '@throws'] as $tagName) {
 			$types = [];
@@ -360,17 +353,13 @@ class PhpDocNodeResolver
 	}
 
 	/**
-	 * @param PhpDocNode $phpDocNode
-	 * @param NameScope $nameScope
 	 * @return array<MixinTag>
 	 */
 	public function resolveMixinTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
-		return array_map(function (MixinTagValueNode $mixinTagValueNode) use ($nameScope): MixinTag {
-			return new MixinTag(
-				$this->typeNodeResolver->resolve($mixinTagValueNode->type, $nameScope)
-			);
-		}, $phpDocNode->getMixinTagValues());
+		return array_map(fn (MixinTagValueNode $mixinTagValueNode): MixinTag => new MixinTag(
+			$this->typeNodeResolver->resolve($mixinTagValueNode->type, $nameScope),
+		), $phpDocNode->getMixinTagValues());
 	}
 
 	/**
@@ -410,7 +399,7 @@ class PhpDocNodeResolver
 		return $resolved;
 	}
 
-	public function resolveDeprecatedTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?\PHPStan\PhpDoc\Tag\DeprecatedTag
+	public function resolveDeprecatedTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?DeprecatedTag
 	{
 		foreach ($phpDocNode->getDeprecatedTagValues() as $deprecatedTagValue) {
 			$description = (string) $deprecatedTagValue;

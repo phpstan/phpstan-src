@@ -2,49 +2,46 @@
 
 namespace PHPStan\Analyser;
 
+use Closure;
 use PHPStan\Rules\Registry;
+use Throwable;
+use function array_fill_keys;
+use function array_merge;
+use function count;
+use function error_reporting;
+use function in_array;
+use function restore_error_handler;
+use function set_error_handler;
+use function sprintf;
+use const E_DEPRECATED;
 
 class Analyser
 {
 
-	private \PHPStan\Analyser\FileAnalyser $fileAnalyser;
-
-	private Registry $registry;
-
-	private \PHPStan\Analyser\NodeScopeResolver $nodeScopeResolver;
-
-	private int $internalErrorsCountLimit;
-
-	/** @var \PHPStan\Analyser\Error[] */
+	/** @var Error[] */
 	private array $collectedErrors = [];
 
 	public function __construct(
-		FileAnalyser $fileAnalyser,
-		Registry $registry,
-		NodeScopeResolver $nodeScopeResolver,
-		int $internalErrorsCountLimit
+		private FileAnalyser $fileAnalyser,
+		private Registry $registry,
+		private NodeScopeResolver $nodeScopeResolver,
+		private int $internalErrorsCountLimit,
 	)
 	{
-		$this->fileAnalyser = $fileAnalyser;
-		$this->registry = $registry;
-		$this->nodeScopeResolver = $nodeScopeResolver;
-		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
 	}
 
 	/**
 	 * @param string[] $files
-	 * @param \Closure(string $file): void|null $preFileCallback
-	 * @param \Closure(int): void|null $postFileCallback
-	 * @param bool $debug
+	 * @param Closure(string $file): void|null $preFileCallback
+	 * @param Closure(int ): void|null $postFileCallback
 	 * @param string[]|null $allAnalysedFiles
-	 * @return AnalyserResult
 	 */
 	public function analyse(
 		array $files,
-		?\Closure $preFileCallback = null,
-		?\Closure $postFileCallback = null,
+		?Closure $preFileCallback = null,
+		?Closure $postFileCallback = null,
 		bool $debug = false,
-		?array $allAnalysedFiles = null
+		?array $allAnalysedFiles = null,
 	): AnalyserResult
 	{
 		if ($allAnalysedFiles === null) {
@@ -71,7 +68,7 @@ class Analyser
 					$file,
 					$allAnalysedFiles,
 					$this->registry,
-					null
+					null,
 				);
 				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
@@ -80,7 +77,7 @@ class Analyser
 				if (count($fileExportedNodes) > 0) {
 					$exportedNodes[$file] = $fileExportedNodes;
 				}
-			} catch (\Throwable $t) {
+			} catch (Throwable $t) {
 				if ($debug) {
 					throw $t;
 				}
@@ -90,7 +87,7 @@ class Analyser
 					'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
 					"\n",
 					"\n",
-					'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md'
+					'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md',
 				);
 				$errors[] = new Error($internalErrorMessage, $file, null, $t);
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
@@ -115,7 +112,7 @@ class Analyser
 			[],
 			$internalErrorsCount === 0 ? $dependencies : null,
 			$exportedNodes,
-			$reachedInternalErrorsCountLimit
+			$reachedInternalErrorsCountLimit,
 		);
 	}
 
@@ -126,7 +123,7 @@ class Analyser
 	{
 		$this->collectedErrors = [];
 		set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use ($analysedFiles): bool {
-			if (error_reporting() === 0) {
+			if ((error_reporting() & $errno) === 0) {
 				// silence @ operator
 				return true;
 			}

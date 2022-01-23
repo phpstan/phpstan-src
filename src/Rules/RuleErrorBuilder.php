@@ -2,6 +2,10 @@
 
 namespace PHPStan\Rules;
 
+use PHPStan\ShouldNotHappenException;
+use function class_exists;
+use function sprintf;
+
 /** @api */
 class RuleErrorBuilder
 {
@@ -141,7 +145,7 @@ class RuleErrorBuilder
 		/** @var class-string<RuleError> $className */
 		$className = sprintf('PHPStan\\Rules\\RuleErrors\\RuleError%d', $this->type);
 		if (!class_exists($className)) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Class %s does not exist.', $className));
+			throw new ShouldNotHappenException(sprintf('Class %s does not exist.', $className));
 		}
 
 		$ruleError = new $className();

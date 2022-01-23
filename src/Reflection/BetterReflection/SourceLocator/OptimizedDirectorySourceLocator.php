@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PhpParser\Node;
 use PHPStan\BetterReflection\Identifier\Identifier;
 use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
@@ -9,19 +10,19 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Php\PhpVersion;
+use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use function array_merge;
+use function count;
+use function php_strip_whitespace;
+use function preg_match_all;
+use function sprintf;
+use function strtolower;
 
 class OptimizedDirectorySourceLocator implements SourceLocator
 {
 
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher $fileNodesFetcher;
-
-	private PhpVersion $phpVersion;
-
 	private PhpFileCleaner $cleaner;
-
-	/** @var string[] */
-	private array $files;
 
 	private string $extraTypes;
 
@@ -31,29 +32,21 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	/** @var array<string, array<int, string>>|null */
 	private ?array $functionToFiles = null;
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\ClassLike>> */
+	/** @var array<string, FetchedNode<Node\Stmt\ClassLike>> */
 	private array $classNodes = [];
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
+	/** @var array<string, FetchedNode<Node\Stmt\Function_>> */
 	private array $functionNodes = [];
 
-	/** @var array<string, \PHPStan\BetterReflection\SourceLocator\Located\LocatedSource> */
-	private array $locatedSourcesByFile = [];
-
 	/**
-	 * @param FileNodesFetcher $fileNodesFetcher
 	 * @param string[] $files
 	 */
 	public function __construct(
-		FileNodesFetcher $fileNodesFetcher,
-		PhpVersion $phpVersion,
-		array $files
+		private FileNodesFetcher $fileNodesFetcher,
+		private PhpVersion $phpVersion,
+		private array $files,
 	)
 	{
-		$this->fileNodesFetcher = $fileNodesFetcher;
-		$this->phpVersion = $phpVersion;
-		$this->files = $files;
-
 		$extraTypes = '';
 		$extraTypesArray = [];
 		if ($this->phpVersion->supportsEnums()) {
@@ -80,8 +73,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			}
 
 			$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
-			$locatedSource = $fetchedNodesResult->getLocatedSource();
-			$this->locatedSourcesByFile[$file] = $locatedSource;
 			foreach ($fetchedNodesResult->getClassNodes() as $identifierName => $fetchedClassNodes) {
 				foreach ($fetchedClassNodes as $fetchedClassNode) {
 					$this->classNodes[$identifierName] = $fetchedClassNode;
@@ -105,8 +96,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			$files = $this->findFilesByFunction($functionName);
 			foreach ($files as $file) {
 				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
-				$locatedSource = $fetchedNodesResult->getLocatedSource();
-				$this->locatedSourcesByFile[$file] = $locatedSource;
 				foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
 					$this->functionNodes[$identifierName] = $fetchedFunctionNode;
 				}
@@ -123,25 +112,17 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	}
 
 	/**
-	 * @param Reflector $reflector
-	 * @param FetchedNode<\PhpParser\Node\Stmt\ClassLike>|FetchedNode<\PhpParser\Node\Stmt\Function_> $fetchedNode
-	 * @return Reflection
+	 * @param FetchedNode<Node\Stmt\ClassLike>|FetchedNode<Node\Stmt\Function_> $fetchedNode
 	 */
 	private function nodeToReflection(Reflector $reflector, FetchedNode $fetchedNode): Reflection
 	{
 		$nodeToReflection = new NodeToReflection();
-		$reflection = $nodeToReflection->__invoke(
+		return $nodeToReflection->__invoke(
 			$reflector,
 			$fetchedNode->getNode(),
-			$this->locatedSourcesByFile[$fetchedNode->getFileName()],
-			$fetchedNode->getNamespace()
+			$fetchedNode->getLocatedSource(),
+			$fetchedNode->getNamespace(),
 		);
-
-		if ($reflection === null) {
-			throw new \PHPStan\ShouldNotHappenException();
-		}
-
-		return $reflection;
 	}
 
 	private function findFileByClass(string $className): ?string
@@ -149,7 +130,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		if ($this->classToFile === null) {
 			$this->init();
 			if ($this->classToFile === null) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 		}
 
@@ -161,7 +142,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	}
 
 	/**
-	 * @param string $functionName
 	 * @return string[]
 	 */
 	private function findFilesByFunction(string $functionName): array
@@ -169,7 +149,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		if ($this->functionToFiles === null) {
 			$this->init();
 			if ($this->functionToFiles === null) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 		}
 
@@ -207,7 +187,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	 * Inspired by Composer\Autoload\ClassMapGenerator::findClasses()
 	 * @link https://github.com/composer/composer/blob/45d3e133a4691eccb12e9cd6f9dfd76eddc1906d/src/Composer/Autoload/ClassMapGenerator.php#L216
 	 *
-	 * @param string $file
 	 * @return array{classes: string[], functions: string[]}
 	 */
 	private function findSymbols(string $file): array
@@ -217,7 +196,8 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			return ['classes' => [], 'functions' => []];
 		}
 
-		if (!preg_match_all(sprintf('{\b(?:class|interface|trait|function%s)\s}i', $this->extraTypes), $contents, $matches)) {
+		$matchResults = (bool) preg_match_all(sprintf('{\b(?:class|interface|trait|function%s)\s}i', $this->extraTypes), $contents, $matches);
+		if (!$matchResults) {
 			return ['classes' => [], 'functions' => []];
 		}
 
@@ -248,6 +228,9 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				if ($matches['type'][$i] === 'function') {
 					$functions[] = $namespacedName;
 				} else {
+					if ($matches['type'][$i] === 'enum') {
+						$namespacedName = rtrim($namespacedName, ':');
+					}
 					$classes[] = $namespacedName;
 				}
 			}

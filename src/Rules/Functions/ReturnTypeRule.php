@@ -5,30 +5,23 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
-use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use PHPStan\BetterReflection\Reflector\FunctionReflector;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionReturnTypeCheck;
+use PHPStan\Rules\Rule;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Return_>
+ * @implements Rule<Node\Stmt\Return_>
  */
-class ReturnTypeRule implements \PHPStan\Rules\Rule
+class ReturnTypeRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionReturnTypeCheck $returnTypeCheck;
-
-	private FunctionReflector $functionReflector;
-
 	public function __construct(
-		FunctionReturnTypeCheck $returnTypeCheck,
-		FunctionReflector $functionReflector
+		private FunctionReturnTypeCheck $returnTypeCheck,
 	)
 	{
-		$this->returnTypeCheck = $returnTypeCheck;
-		$this->functionReflector = $functionReflector;
 	}
 
 	public function getNodeType(): string
@@ -54,17 +47,6 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$reflection = null;
-		if (function_exists($function->getName())) {
-			$reflection = new \ReflectionFunction($function->getName());
-		} else {
-			try {
-				$reflection = $this->functionReflector->reflect($function->getName());
-			} catch (IdentifierNotFound $e) {
-				// pass
-			}
-		}
-
 		return $this->returnTypeCheck->checkReturnType(
 			$scope,
 			ParametersAcceptorSelector::selectSingle($function->getVariants())->getReturnType(),
@@ -72,21 +54,21 @@ class ReturnTypeRule implements \PHPStan\Rules\Rule
 			$node,
 			sprintf(
 				'Function %s() should return %%s but empty return statement found.',
-				$function->getName()
+				$function->getName(),
 			),
 			sprintf(
 				'Function %s() with return type void returns %%s but should not return anything.',
-				$function->getName()
+				$function->getName(),
 			),
 			sprintf(
 				'Function %s() should return %%s but returns %%s.',
-				$function->getName()
+				$function->getName(),
 			),
 			sprintf(
 				'Function %s() should never return but return statement found.',
-				$function->getName()
+				$function->getName(),
 			),
-			$reflection !== null && $reflection->isGenerator()
+			$function->isGenerator(),
 		);
 	}
 

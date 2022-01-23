@@ -12,20 +12,20 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use function count;
+use function strtolower;
 
 class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	private \PHPStan\Type\Php\MethodExistsTypeSpecifyingExtension $methodExistsExtension;
+	private TypeSpecifier $typeSpecifier;
 
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
-
-	public function __construct(MethodExistsTypeSpecifyingExtension $methodExistsExtension)
+	public function __construct(private MethodExistsTypeSpecifyingExtension $methodExistsExtension)
 	{
-		$this->methodExistsExtension = $methodExistsExtension;
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
@@ -37,7 +37,7 @@ class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		if ($context->null()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		if (!isset($node->getArgs()[0])) {
@@ -53,7 +53,7 @@ class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			&& !$valueType->isCallable()->no()
 		) {
 			if ($value->items[0] === null || $value->items[1] === null) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$functionCall = new FuncCall(new Name('method_exists'), [

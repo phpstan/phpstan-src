@@ -2,7 +2,9 @@
 
 namespace PHPStan\Rules\Api;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function sprintf;
 
 /**
  * @extends RuleTestCase<ApiMethodCallRule>
@@ -10,7 +12,7 @@ use PHPStan\Testing\RuleTestCase;
 class ApiMethodCallRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new ApiMethodCallRule(new ApiRuleHelper());
 	}
@@ -24,7 +26,7 @@ class ApiMethodCallRuleTest extends RuleTestCase
 	{
 		$tip = sprintf(
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
-			'https://github.com/phpstan/phpstan/discussions'
+			'https://github.com/phpstan/phpstan/discussions',
 		);
 
 		$this->analyse([__DIR__ . '/data/method-call-out-of-phpstan.php'], [

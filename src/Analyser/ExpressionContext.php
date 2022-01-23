@@ -7,21 +7,12 @@ use PHPStan\Type\Type;
 class ExpressionContext
 {
 
-	private bool $isDeep;
-
-	private ?string $inAssignRightSideVariableName;
-
-	private ?Type $inAssignRightSideType;
-
 	private function __construct(
-		bool $isDeep,
-		?string $inAssignRightSideVariableName,
-		?Type $inAssignRightSideType
+		private bool $isDeep,
+		private ?string $inAssignRightSideVariableName,
+		private ?Type $inAssignRightSideType,
 	)
 	{
-		$this->isDeep = $isDeep;
-		$this->inAssignRightSideVariableName = $inAssignRightSideVariableName;
-		$this->inAssignRightSideType = $inAssignRightSideType;
 	}
 
 	public static function createTopLevel(): self

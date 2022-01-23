@@ -2,7 +2,9 @@
 
 namespace PHPStan\Command;
 
-class InceptionNotSuccessfulException extends \Exception
+use Exception;
+
+class InceptionNotSuccessfulException extends Exception
 {
 
 }

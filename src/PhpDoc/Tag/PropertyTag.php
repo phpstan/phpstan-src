@@ -8,21 +8,12 @@ use PHPStan\Type\Type;
 class PropertyTag
 {
 
-	private \PHPStan\Type\Type $type;
-
-	private bool $readable;
-
-	private bool $writable;
-
 	public function __construct(
-		Type $type,
-		bool $readable,
-		bool $writable
+		private Type $type,
+		private bool $readable,
+		private bool $writable,
 	)
 	{
-		$this->type = $type;
-		$this->readable = $readable;
-		$this->writable = $writable;
 	}
 
 	public function getType(): Type

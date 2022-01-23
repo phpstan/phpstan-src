@@ -2,7 +2,9 @@
 
 namespace PHPStan;
 
-abstract class AnalysedCodeException extends \Exception
+use Exception;
+
+abstract class AnalysedCodeException extends Exception
 {
 
 	abstract public function getTip(): ?string;

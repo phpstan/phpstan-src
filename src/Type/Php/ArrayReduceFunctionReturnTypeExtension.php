@@ -6,12 +6,14 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function count;
 
-class ArrayReduceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -33,7 +35,7 @@ class ArrayReduceFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFun
 		$callbackReturnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$functionCall->getArgs(),
-			$callbackType->getCallableParametersAcceptors($scope)
+			$callbackType->getCallableParametersAcceptors($scope),
 		)->getReturnType();
 
 		if (isset($functionCall->getArgs()[2])) {

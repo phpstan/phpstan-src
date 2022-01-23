@@ -28,6 +28,8 @@ lint:
 		--exclude tests/PHPStan/Rules/Operators/data/invalid-inc-dec.php \
 		--exclude tests/PHPStan/Rules/Arrays/data/offset-access-without-dim-for-reading.php \
 		--exclude tests/PHPStan/Rules/Classes/data/duplicate-declarations.php \
+		--exclude tests/PHPStan/Rules/Classes/data/duplicate-enum-cases.php \
+		--exclude tests/PHPStan/Rules/Classes/data/enum-sanity.php \
 		--exclude tests/PHPStan/Rules/Classes/data/extends-error.php \
 		--exclude tests/PHPStan/Rules/Classes/data/implements-error.php \
 		--exclude tests/PHPStan/Rules/Classes/data/interface-extends-error.php \
@@ -45,7 +47,9 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/overriding-property.php \
 		--exclude tests/PHPStan/Rules/Constants/data/overriding-final-constant.php \
 		--exclude tests/PHPStan/Rules/Properties/data/intersection-types.php \
-		src tests compiler/src
+		--exclude tests/PHPStan/Rules/Classes/data/first-class-instantiation-callable.php \
+		--exclude tests/PHPStan/Rules/Classes/data/instantiation-callable.php \
+		src tests
 
 cs:
 	composer install --working-dir build-cs && php build-cs/vendor/bin/phpcs

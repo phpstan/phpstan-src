@@ -2,12 +2,15 @@
 
 namespace PHPStan\Rules;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\NeverType;
@@ -17,51 +20,31 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function array_key_exists;
+use function count;
+use function is_string;
+use function max;
+use function sprintf;
 
 class FunctionCallParametersCheck
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
-	private NullsafeCheck $nullsafeCheck;
-
-	private PhpVersion $phpVersion;
-
-	private UnresolvableTypeHelper $unresolvableTypeHelper;
-
-	private bool $checkArgumentTypes;
-
-	private bool $checkArgumentsPassedByReference;
-
-	private bool $checkExtraArguments;
-
-	private bool $checkMissingTypehints;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper,
-		NullsafeCheck $nullsafeCheck,
-		PhpVersion $phpVersion,
-		UnresolvableTypeHelper $unresolvableTypeHelper,
-		bool $checkArgumentTypes,
-		bool $checkArgumentsPassedByReference,
-		bool $checkExtraArguments,
-		bool $checkMissingTypehints
+		private RuleLevelHelper $ruleLevelHelper,
+		private NullsafeCheck $nullsafeCheck,
+		private PhpVersion $phpVersion,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private PropertyReflectionFinder $propertyReflectionFinder,
+		private bool $checkArgumentTypes,
+		private bool $checkArgumentsPassedByReference,
+		private bool $checkExtraArguments,
+		private bool $checkMissingTypehints,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->nullsafeCheck = $nullsafeCheck;
-		$this->phpVersion = $phpVersion;
-		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
-		$this->checkArgumentTypes = $checkArgumentTypes;
-		$this->checkArgumentsPassedByReference = $checkArgumentsPassedByReference;
-		$this->checkExtraArguments = $checkExtraArguments;
-		$this->checkMissingTypehints = $checkMissingTypehints;
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ParametersAcceptor $parametersAcceptor
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param \PhpParser\Node\Expr\FuncCall|\PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall|\PhpParser\Node\Expr\New_ $funcCall
+	 * @param Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall
 	 * @param array{string, string, string, string, string, string, string, string, string, string, string, string, string} $messages
 	 * @return RuleError[]
 	 */
@@ -70,7 +53,7 @@ class FunctionCallParametersCheck
 		Scope $scope,
 		bool $isBuiltin,
 		$funcCall,
-		array $messages
+		array $messages,
 	): array
 	{
 		$functionParametersMinCount = 0;
@@ -89,7 +72,7 @@ class FunctionCallParametersCheck
 
 		/** @var array<int, array{Expr, Type, bool, string|null, int}> $arguments */
 		$arguments = [];
-		/** @var array<int, \PhpParser\Node\Arg> $args */
+		/** @var array<int, Node\Arg> $args */
 		$args = $funcCall->getArgs();
 		$hasNamedArguments = false;
 		$hasUnpackedArgument = false;
@@ -169,7 +152,7 @@ class FunctionCallParametersCheck
 			];
 		}
 
-		if ($hasNamedArguments && !$this->phpVersion->supportsNamedArguments()) {
+		if ($hasNamedArguments && !$this->phpVersion->supportsNamedArguments() && !(bool) $funcCall->getAttribute('isAttribute', false)) {
 			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')->line($funcCall->getLine())->nonIgnorable()->build();
 		}
 
@@ -190,20 +173,20 @@ class FunctionCallParametersCheck
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						$invokedParametersCount === 1 ? $messages[0] : $messages[1],
 						$invokedParametersCount,
-						$functionParametersMinCount
+						$functionParametersMinCount,
 					))->line($funcCall->getLine())->build();
 				} elseif ($functionParametersMaxCount === -1 && $invokedParametersCount < $functionParametersMinCount) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						$invokedParametersCount === 1 ? $messages[2] : $messages[3],
 						$invokedParametersCount,
-						$functionParametersMinCount
+						$functionParametersMinCount,
 					))->line($funcCall->getLine())->build();
 				} elseif ($functionParametersMaxCount !== -1) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						$invokedParametersCount === 1 ? $messages[4] : $messages[5],
 						$invokedParametersCount,
 						$functionParametersMinCount,
-						$functionParametersMaxCount
+						$functionParametersMaxCount,
 					))->line($funcCall->getLine())->build();
 				}
 			}
@@ -212,7 +195,7 @@ class FunctionCallParametersCheck
 		if (
 			$scope->getType($funcCall) instanceof VoidType
 			&& !$scope->isInFirstLevelStatement()
-			&& !$funcCall instanceof \PhpParser\Node\Expr\New_
+			&& !$funcCall instanceof Node\Expr\New_
 		) {
 			$errors[] = RuleErrorBuilder::message($messages[7])->line($funcCall->getLine())->build();
 		}
@@ -232,9 +215,7 @@ class FunctionCallParametersCheck
 					$scope,
 					$argumentValue,
 					'',
-					static function (Type $type): bool {
-						return $type->isIterable()->yes();
-					}
+					static fn (Type $type): bool => $type->isIterable()->yes(),
 				);
 				$iterableTypeResultType = $iterableTypeResult->getType();
 				if (
@@ -244,7 +225,7 @@ class FunctionCallParametersCheck
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Only iterables can be unpacked, %s given in argument #%d.',
 						$iterableTypeResultType->describe(VerbosityLevel::typeOnly()),
-						$i + 1
+						$i + 1,
 					))->line($argumentLine)->build();
 				}
 			}
@@ -266,10 +247,10 @@ class FunctionCallParametersCheck
 					$argumentName === null ? sprintf(
 						'#%d %s',
 						$i + 1,
-						$parameterDescription
+						$parameterDescription,
 					) : $parameterDescription,
 					$parameterType->describe($verbosityLevel),
-					$argumentValueType->describe($verbosityLevel)
+					$argumentValueType->describe($verbosityLevel),
 				))->line($argumentLine)->build();
 			}
 
@@ -284,22 +265,50 @@ class FunctionCallParametersCheck
 				$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[8],
-					$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription
+					$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
 				))->line($argumentLine)->build();
 				continue;
 			}
 
-			if ($argumentValue instanceof \PhpParser\Node\Expr\Variable
-				|| $argumentValue instanceof \PhpParser\Node\Expr\ArrayDimFetch
-				|| $argumentValue instanceof \PhpParser\Node\Expr\PropertyFetch
-				|| $argumentValue instanceof \PhpParser\Node\Expr\StaticPropertyFetch) {
+			if (
+				$argumentValue instanceof Node\Expr\PropertyFetch
+				|| $argumentValue instanceof Node\Expr\StaticPropertyFetch) {
+				$propertyReflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($argumentValue, $scope);
+				foreach ($propertyReflections as $propertyReflection) {
+					$nativePropertyReflection = $propertyReflection->getNativeReflection();
+					if ($nativePropertyReflection === null) {
+						continue;
+					}
+					if (!$nativePropertyReflection->isReadOnly()) {
+						continue;
+					}
+
+					if ($nativePropertyReflection->isStatic()) {
+						$propertyDescription = sprintf('static readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+					} else {
+						$propertyDescription = sprintf('readonly property %s::$%s', $propertyReflection->getDeclaringClass()->getDisplayName(), $propertyReflection->getName());
+					}
+
+					$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Parameter %s is passed by reference so it does not accept %s.',
+						$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
+						$propertyDescription,
+					))->line($argumentLine)->build();
+				}
+			}
+
+			if ($argumentValue instanceof Node\Expr\Variable
+				|| $argumentValue instanceof Node\Expr\ArrayDimFetch
+				|| $argumentValue instanceof Node\Expr\PropertyFetch
+				|| $argumentValue instanceof Node\Expr\StaticPropertyFetch) {
 				continue;
 			}
 
 			$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				$messages[8],
-				$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription
+				$argumentName === null ? sprintf('#%d %s', $i + 1, $parameterDescription) : $parameterDescription,
 			))->line($argumentLine)->build();
 		}
 
@@ -364,12 +373,8 @@ class FunctionCallParametersCheck
 	}
 
 	/**
-	 * @param ParametersAcceptor $parametersAcceptor
 	 * @param array<int, array{Expr, Type, bool, string|null, int}> $arguments
-	 * @param bool $hasNamedArguments
-	 * @param string $missingParameterMessage
-	 * @param string $unknownParameterMessage
-	 * @return array{RuleError[], array<int, array{Expr, Type, bool, string|null, int, \PHPStan\Reflection\ParameterReflection|null}>}
+	 * @return array{RuleError[], array<int, array{Expr, Type, bool, (string|null), int, (ParameterReflection|null)}>}
 	 */
 	private function processArguments(
 		ParametersAcceptor $parametersAcceptor,
@@ -378,7 +383,7 @@ class FunctionCallParametersCheck
 		array $arguments,
 		bool $hasNamedArguments,
 		string $missingParameterMessage,
-		string $unknownParameterMessage
+		string $unknownParameterMessage,
 	): array
 	{
 		$parameters = $parametersAcceptor->getParameters();

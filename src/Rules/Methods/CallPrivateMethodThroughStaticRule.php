@@ -8,6 +8,7 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
 
 /**
  * @implements Rule<StaticCall>
@@ -53,7 +54,7 @@ class CallPrivateMethodThroughStaticRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Unsafe call to private method %s::%s() through static::.',
 				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName()
+				$method->getName(),
 			))->build(),
 		];
 	}

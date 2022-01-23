@@ -4,18 +4,15 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 
 class AnonymousClassNameRule implements Rule
 {
 
-	/** @var ReflectionProvider */
-	private $reflectionProvider;
-
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -25,7 +22,6 @@ class AnonymousClassNameRule implements Rule
 
 	/**
 	 * @param Class_ $node
-	 * @param Scope $scope
 	 * @return string[]
 	 */
 	public function processNode(Node $node, Scope $scope): array
@@ -35,7 +31,7 @@ class AnonymousClassNameRule implements Rule
 			: (string) $node->name;
 		try {
 			$this->reflectionProvider->getClass($className);
-		} catch (\PHPStan\Broker\ClassNotFoundException $e) {
+		} catch (ClassNotFoundException) {
 			return ['not found'];
 		}
 

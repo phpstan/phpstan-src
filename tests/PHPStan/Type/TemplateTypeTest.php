@@ -2,26 +2,33 @@
 
 namespace PHPStan\Type;
 
+use DateTime;
+use DateTimeInterface;
+use Exception;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use stdClass;
+use Throwable;
+use function array_map;
+use function assert;
+use function sprintf;
 
-class TemplateTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class TemplateTypeTest extends PHPStanTestCase
 {
 
 	public function dataAccepts(): array
 	{
-		$templateType = static function (string $name, ?Type $bound, ?string $functionName = null): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction($functionName ?? '_'),
-				$name,
-				$bound,
-				TemplateTypeVariance::createInvariant()
-			);
-		};
+		$templateType = static fn (string $name, ?Type $bound, ?string $functionName = null): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction($functionName ?? '_'),
+			$name,
+			$bound,
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			[
@@ -73,7 +80,7 @@ class TemplateTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		Type $type,
 		Type $otherType,
 		TrinaryLogic $expectedAccept,
-		TrinaryLogic $expectedAcceptArg
+		TrinaryLogic $expectedAcceptArg,
 	): void
 	{
 		assert($type instanceof TemplateType);
@@ -82,7 +89,7 @@ class TemplateTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedAccept->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 
 		$type = $type->toArgument();
@@ -91,20 +98,18 @@ class TemplateTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedAcceptArg->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s) (Argument strategy)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s) (Argument strategy)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
 	public function dataIsSuperTypeOf(): array
 	{
-		$templateType = static function (string $name, ?Type $bound, ?string $functionName = null): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction($functionName ?? '_'),
-				$name,
-				$bound,
-				TemplateTypeVariance::createInvariant()
-			);
-		};
+		$templateType = static fn (string $name, ?Type $bound, ?string $functionName = null): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction($functionName ?? '_'),
+			$name,
+			$bound,
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			0 => [
@@ -184,7 +189,7 @@ class TemplateTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			11 => [
 				$templateType('T', null),
-				new ObjectType(\DateTimeInterface::class),
+				new ObjectType(DateTimeInterface::class),
 				TrinaryLogic::createMaybe(), // T isSuperTypeTo DateTimeInterface
 				TrinaryLogic::createMaybe(), // DateTimeInterface isSuperTypeTo T
 			],
@@ -196,13 +201,13 @@ class TemplateTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			13 => [
 				$templateType('T', new ObjectWithoutClassType()),
-				new ObjectType(\DateTimeInterface::class),
+				new ObjectType(DateTimeInterface::class),
 				TrinaryLogic::createMaybe(),
 				TrinaryLogic::createMaybe(),
 			],
 			14 => [
-				$templateType('T', new ObjectType(\Throwable::class)),
-				new ObjectType(\Exception::class),
+				$templateType('T', new ObjectType(Throwable::class)),
+				new ObjectType(Exception::class),
 				TrinaryLogic::createMaybe(),
 				TrinaryLogic::createMaybe(),
 			],
@@ -219,7 +224,7 @@ class TemplateTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				TrinaryLogic::createMaybe(),
 			],
 			[
-				$templateType('T', new ObjectType(\stdClass::class)),
+				$templateType('T', new ObjectType(stdClass::class)),
 				$templateType('U', new BenevolentUnionType([new IntegerType(), new StringType()])),
 				TrinaryLogic::createNo(),
 				TrinaryLogic::createNo(),
@@ -264,7 +269,7 @@ class TemplateTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		Type $type,
 		Type $otherType,
 		TrinaryLogic $expectedIsSuperType,
-		TrinaryLogic $expectedIsSuperTypeInverse
+		TrinaryLogic $expectedIsSuperTypeInverse,
 	): void
 	{
 		assert($type instanceof TemplateType);
@@ -273,28 +278,26 @@ class TemplateTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedIsSuperType->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 
 		$actualResult = $otherType->isSuperTypeOf($type);
 		$this->assertSame(
 			$expectedIsSuperTypeInverse->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
 	/** @return array<string,array{Type,Type,array<string,string>}> */
 	public function dataInferTemplateTypes(): array
 	{
-		$templateType = static function (string $name, ?Type $bound = null, ?string $functionName = null): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction($functionName ?? '_'),
-				$name,
-				$bound,
-				TemplateTypeVariance::createInvariant()
-			);
-		};
+		$templateType = static fn (string $name, ?Type $bound = null, ?string $functionName = null): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction($functionName ?? '_'),
+			$name,
+			$bound,
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'simple' => [
@@ -303,33 +306,33 @@ class TemplateTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				['T' => 'int'],
 			],
 			'object' => [
-				new ObjectType(\DateTime::class),
+				new ObjectType(DateTime::class),
 				$templateType('T'),
 				['T' => 'DateTime'],
 			],
 			'object with bound' => [
-				new ObjectType(\DateTime::class),
-				$templateType('T', new ObjectType(\DateTimeInterface::class)),
+				new ObjectType(DateTime::class),
+				$templateType('T', new ObjectType(DateTimeInterface::class)),
 				['T' => 'DateTime'],
 			],
 			'wrong object with bound' => [
-				new ObjectType(\stdClass::class),
-				$templateType('T', new ObjectType(\DateTimeInterface::class)),
+				new ObjectType(stdClass::class),
+				$templateType('T', new ObjectType(DateTimeInterface::class)),
 				[],
 			],
 			'template type' => [
-				TemplateTypeHelper::toArgument($templateType('T', new ObjectType(\DateTimeInterface::class))),
-				$templateType('T', new ObjectType(\DateTimeInterface::class)),
+				TemplateTypeHelper::toArgument($templateType('T', new ObjectType(DateTimeInterface::class))),
+				$templateType('T', new ObjectType(DateTimeInterface::class)),
 				['T' => 'T of DateTimeInterface (function _(), argument)'],
 			],
 			'foreign template type' => [
-				TemplateTypeHelper::toArgument($templateType('T', new ObjectType(\DateTimeInterface::class), 'a')),
-				$templateType('T', new ObjectType(\DateTimeInterface::class), 'b'),
+				TemplateTypeHelper::toArgument($templateType('T', new ObjectType(DateTimeInterface::class), 'a')),
+				$templateType('T', new ObjectType(DateTimeInterface::class), 'b'),
 				['T' => 'T of DateTimeInterface (function a(), argument)'],
 			],
 			'foreign template type, imcompatible bound' => [
-				TemplateTypeHelper::toArgument($templateType('T', new ObjectType(\stdClass::class), 'a')),
-				$templateType('T', new ObjectType(\DateTime::class), 'b'),
+				TemplateTypeHelper::toArgument($templateType('T', new ObjectType(stdClass::class), 'a')),
+				$templateType('T', new ObjectType(DateTime::class), 'b'),
 				[],
 			],
 		];
@@ -345,9 +348,7 @@ class TemplateTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$this->assertSame(
 			$expectedTypes,
-			array_map(static function (Type $type): string {
-				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes())
+			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
 	}
 

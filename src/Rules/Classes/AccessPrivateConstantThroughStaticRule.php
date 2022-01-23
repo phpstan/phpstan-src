@@ -7,6 +7,7 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
 
 /**
  * @implements Rule<Node\Expr\ClassConstFetch>
@@ -52,7 +53,7 @@ class AccessPrivateConstantThroughStaticRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Unsafe access to private constant %s::%s through static::.',
 				$constant->getDeclaringClass()->getDisplayName(),
-				$constantName
+				$constantName,
 			))->build(),
 		];
 	}

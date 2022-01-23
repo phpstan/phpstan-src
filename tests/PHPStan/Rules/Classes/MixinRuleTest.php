@@ -8,7 +8,7 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use PHPStan\Type\FileTypeMapper;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MixinRule>
@@ -21,13 +21,12 @@ class MixinRuleTest extends RuleTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 
 		return new MixinRule(
-			self::getContainer()->getByType(FileTypeMapper::class),
 			$reflectionProvider,
 			new ClassCaseSensitivityCheck($reflectionProvider, true),
 			new GenericObjectTypeCheck(),
 			new MissingTypehintCheck($reflectionProvider, true, true, true, []),
 			new UnresolvableTypeHelper(),
-			true
+			true,
 		);
 	}
 
@@ -47,7 +46,7 @@ class MixinRuleTest extends RuleTestCase
 				34,
 			],
 			[
-				'Generic type Traversable<int, int, int> in PHPDoc tag @mixin specifies 3 template types, but class Traversable supports only 2: TKey, TValue',
+				'Generic type Traversable<int, int, int> in PHPDoc tag @mixin specifies 3 template types, but interface Traversable supports only 2: TKey, TValue',
 				34,
 			],
 			[
@@ -80,6 +79,24 @@ class MixinRuleTest extends RuleTestCase
 			[
 				'Class MixinRule\Foo referenced with incorrect case: MixinRule\foo.',
 				84,
+			],
+			[
+				'PHPDoc tag @mixin contains non-object type int.',
+				92,
+			],
+		]);
+	}
+
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/mixin-enums.php'], [
+			[
+				'PHPDoc tag @mixin contains non-object type int.',
+				16,
 			],
 		]);
 	}

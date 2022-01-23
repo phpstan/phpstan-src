@@ -12,22 +12,14 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 class ClassWhitelistSourceLocator implements SourceLocator
 {
 
-	private SourceLocator $sourceLocator;
-
-	/** @var string[] */
-	private array $patterns;
-
 	/**
-	 * @param SourceLocator $sourceLocator
 	 * @param string[] $patterns
 	 */
 	public function __construct(
-		SourceLocator $sourceLocator,
-		array $patterns
+		private SourceLocator $sourceLocator,
+		private array $patterns,
 	)
 	{
-		$this->sourceLocator = $sourceLocator;
-		$this->patterns = $patterns;
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection

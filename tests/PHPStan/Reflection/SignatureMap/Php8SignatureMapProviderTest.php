@@ -25,6 +25,9 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function array_map;
+use function array_merge;
+use function count;
 
 class Php8SignatureMapProviderTest extends PHPStanTestCase
 {
@@ -127,7 +130,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		array $parameters,
 		Type $returnType,
 		Type $nativeReturnType,
-		bool $variadic
+		bool $variadic,
 	): void
 	{
 		$provider = $this->createProvider();
@@ -140,10 +143,10 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		return new Php8SignatureMapProvider(
 			new FunctionSignatureMapProvider(
 				self::getContainer()->getByType(SignatureMapParser::class),
-				new PhpVersion(80000)
+				new PhpVersion(80000),
 			),
 			self::getContainer()->getByType(FileNodesFetcher::class),
-			self::getContainer()->getByType(FileTypeMapper::class)
+			self::getContainer()->getByType(FileTypeMapper::class),
 		);
 	}
 
@@ -248,7 +251,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		array $parameters,
 		Type $returnType,
 		Type $nativeReturnType,
-		bool $variadic
+		bool $variadic,
 	): void
 	{
 		$provider = $this->createProvider();
@@ -258,17 +261,13 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 
 	/**
 	 * @param mixed[] $expectedParameters
-	 * @param Type $expectedReturnType
-	 * @param Type $expectedNativeReturnType
-	 * @param bool $expectedVariadic
-	 * @param FunctionSignature $actualSignature
 	 */
 	private function assertSignature(
 		array $expectedParameters,
 		Type $expectedReturnType,
 		Type $expectedNativeReturnType,
 		bool $expectedVariadic,
-		FunctionSignature $actualSignature
+		FunctionSignature $actualSignature,
 	): void
 	{
 		$this->assertCount(count($expectedParameters), $actualSignature->getParameters());
@@ -289,14 +288,11 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 
 	public function dataParseAll(): array
 	{
-		return array_map(static function (string $file): array {
-			return [__DIR__ . '/../../../../vendor/phpstan/php-8-stubs/' . $file];
-		}, array_merge(Php8StubsMap::CLASSES, Php8StubsMap::FUNCTIONS));
+		return array_map(static fn (string $file): array => [__DIR__ . '/../../../../vendor/phpstan/php-8-stubs/' . $file], array_merge(Php8StubsMap::CLASSES, Php8StubsMap::FUNCTIONS));
 	}
 
 	/**
 	 * @dataProvider dataParseAll
-	 * @param string $stubFile
 	 */
 	public function testParseAll(string $stubFile): void
 	{

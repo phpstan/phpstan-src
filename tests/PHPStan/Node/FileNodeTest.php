@@ -6,8 +6,12 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Testing\RuleTestCase;
+use function get_class;
+use function sprintf;
+use const DIRECTORY_SEPARATOR;
 
 class FileNodeTest extends RuleTestCase
 {
@@ -22,9 +26,8 @@ class FileNodeTest extends RuleTestCase
 			}
 
 			/**
-			 * @param \PHPStan\Node\FileNode $node
-			 * @param \PHPStan\Analyser\Scope $scope
-			 * @return \PHPStan\Rules\RuleError[]
+			 * @param FileNode $node
+			 * @return RuleError[]
 			 */
 			public function processNode(Node $node, Scope $scope): array
 			{
@@ -38,7 +41,7 @@ class FileNodeTest extends RuleTestCase
 
 				return [
 					RuleErrorBuilder::message(
-						sprintf('First node in file %s is: %s', $pathHelper->getRelativePath($scope->getFile()), get_class($nodes[0]))
+						sprintf('First node in file %s is: %s', $pathHelper->getRelativePath($scope->getFile()), get_class($nodes[0])),
 					)->build(),
 				];
 			}
@@ -69,9 +72,6 @@ class FileNodeTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRule
-	 * @param string $file
-	 * @param string $expectedError
-	 * @param int $line
 	 */
 	public function testRule(string $file, string $expectedError, int $line): void
 	{

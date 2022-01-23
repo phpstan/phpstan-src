@@ -18,13 +18,14 @@ use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\ReflectionProvider\SetterReflectionProviderProvider;
 use PHPStan\Reflection\Runtime\RuntimeReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
+use function spl_autoload_register;
 
-class BrokerTest extends \PHPStan\Testing\PHPStanTestCase
+class BrokerTest extends PHPStanTestCase
 {
 
-	/** @var \PHPStan\Broker\Broker */
-	private $broker;
+	private Broker $broker;
 
 	protected function setUp(): void
 	{
@@ -43,31 +44,31 @@ class BrokerTest extends \PHPStan\Testing\PHPStanTestCase
 			$setterReflectionProviderProvider,
 			$classReflectionExtensionRegistryProvider,
 			$this->createMock(FunctionReflectionFactory::class),
-			new FileTypeMapper($setterReflectionProviderProvider, $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper),
+			new FileTypeMapper($setterReflectionProviderProvider, $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper, self::getContainer()->getByType(PhpVersion::class)),
 			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 			self::getContainer()->getByType(PhpVersion::class),
 			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),
 			self::getContainer()->getByType(StubPhpDocProvider::class),
-			self::getContainer()->getByType(PhpStormStubsSourceStubber::class)
+			self::getContainer()->getByType(PhpStormStubsSourceStubber::class),
 		);
 		$setterReflectionProviderProvider->setReflectionProvider($reflectionProvider);
 		$this->broker = new Broker(
 			$reflectionProvider,
-			[]
+			[],
 		);
 		$classReflectionExtensionRegistryProvider->setBroker($this->broker);
 	}
 
 	public function testClassNotFound(): void
 	{
-		$this->expectException(\PHPStan\Broker\ClassNotFoundException::class);
+		$this->expectException(ClassNotFoundException::class);
 		$this->expectExceptionMessage('NonexistentClass');
 		$this->broker->getClass('NonexistentClass');
 	}
 
 	public function testFunctionNotFound(): void
 	{
-		$this->expectException(\PHPStan\Broker\FunctionNotFoundException::class);
+		$this->expectException(FunctionNotFoundException::class);
 		$this->expectExceptionMessage('Function nonexistentFunction not found while trying to analyse it - discovering symbols is probably not configured properly.');
 
 		$scope = $this->createMock(Scope::class);
@@ -78,7 +79,7 @@ class BrokerTest extends \PHPStan\Testing\PHPStanTestCase
 
 	public function testClassAutoloadingException(): void
 	{
-		$this->expectException(\PHPStan\Broker\ClassAutoloadingException::class);
+		$this->expectException(ClassAutoloadingException::class);
 		$this->expectExceptionMessage('thrown while looking for class NonexistentClass.');
 		spl_autoload_register(static function (): void {
 			require_once __DIR__ . '/../Analyser/data/parse-error.php';

@@ -9,19 +9,25 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
+use PHPStan\ShouldNotHappenException;
+use function array_filter;
+use function array_map;
+use function array_values;
+use function count;
+use function is_string;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<InClassMethodNode>
+ * @implements Rule<InClassMethodNode>
  */
-class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
+class UnusedConstructorParametersRule implements Rule
 {
 
-	private \PHPStan\Rules\UnusedFunctionParametersCheck $check;
-
-	public function __construct(UnusedFunctionParametersCheck $check)
+	public function __construct(private UnusedFunctionParametersCheck $check)
 	{
-		$this->check = $check;
 	}
 
 	public function getNodeType(): string
@@ -32,7 +38,7 @@ class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$method = $scope->getFunction();
@@ -51,7 +57,7 @@ class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 
 		$message = sprintf(
 			'Constructor of class %s has an unused parameter $%%s.',
-			SprintfHelper::escapeFormatString($scope->getClassReflection()->getDisplayName())
+			SprintfHelper::escapeFormatString($scope->getClassReflection()->getDisplayName()),
 		);
 		if ($scope->getClassReflection()->isAnonymous()) {
 			$message = 'Constructor of an anonymous class has an unused parameter $%s.';
@@ -61,16 +67,14 @@ class UnusedConstructorParametersRule implements \PHPStan\Rules\Rule
 			$scope,
 			array_map(static function (Param $parameter): string {
 				if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				return $parameter->var->name;
-			}, array_values(array_filter($originalNode->params, static function (Param $parameter): bool {
-				return $parameter->flags === 0;
-			}))),
+			}, array_values(array_filter($originalNode->params, static fn (Param $parameter): bool => $parameter->flags === 0))),
 			$originalNode->stmts,
 			$message,
 			'constructor.unusedParameter',
-			[]
+			[],
 		);
 	}
 

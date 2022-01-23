@@ -9,29 +9,14 @@ use PHPStan\Type\Type;
 class MethodTagParameter
 {
 
-	private \PHPStan\Type\Type $type;
-
-	private \PHPStan\Reflection\PassedByReference $passedByReference;
-
-	private bool $isOptional;
-
-	private bool $isVariadic;
-
-	private ?\PHPStan\Type\Type $defaultValue;
-
 	public function __construct(
-		Type $type,
-		PassedByReference $passedByReference,
-		bool $isOptional,
-		bool $isVariadic,
-		?Type $defaultValue
+		private Type $type,
+		private PassedByReference $passedByReference,
+		private bool $isOptional,
+		private bool $isVariadic,
+		private ?Type $defaultValue,
 	)
 	{
-		$this->type = $type;
-		$this->passedByReference = $passedByReference;
-		$this->isOptional = $isOptional;
-		$this->isVariadic = $isVariadic;
-		$this->defaultValue = $defaultValue;
 	}
 
 	public function getType(): Type

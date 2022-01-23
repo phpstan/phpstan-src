@@ -6,6 +6,7 @@ use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
+use function array_merge;
 
 class TypeSpecifierFactory
 {
@@ -14,11 +15,8 @@ class TypeSpecifierFactory
 	public const METHOD_TYPE_SPECIFYING_EXTENSION_TAG = 'phpstan.typeSpecifier.methodTypeSpecifyingExtension';
 	public const STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG = 'phpstan.typeSpecifier.staticMethodTypeSpecifyingExtension';
 
-	private \PHPStan\DependencyInjection\Container $container;
-
-	public function __construct(Container $container)
+	public function __construct(private Container $container)
 	{
-		$this->container = $container;
 	}
 
 	public function create(): TypeSpecifier
@@ -28,7 +26,7 @@ class TypeSpecifierFactory
 			$this->container->getByType(ReflectionProvider::class),
 			$this->container->getServicesByTag(self::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG),
 			$this->container->getServicesByTag(self::METHOD_TYPE_SPECIFYING_EXTENSION_TAG),
-			$this->container->getServicesByTag(self::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG)
+			$this->container->getServicesByTag(self::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG),
 		);
 
 		foreach (array_merge(
@@ -36,7 +34,7 @@ class TypeSpecifierFactory
 			$this->container->getServicesByTag(BrokerFactory::METHODS_CLASS_REFLECTION_EXTENSION_TAG),
 			$this->container->getServicesByTag(BrokerFactory::DYNAMIC_METHOD_RETURN_TYPE_EXTENSION_TAG),
 			$this->container->getServicesByTag(BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG),
-			$this->container->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG)
+			$this->container->getServicesByTag(BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG),
 		) as $extension) {
 			if (!($extension instanceof TypeSpecifierAwareExtension)) {
 				continue;

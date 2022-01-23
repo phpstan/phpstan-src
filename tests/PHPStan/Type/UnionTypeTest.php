@@ -2,8 +2,13 @@
 
 namespace PHPStan\Type;
 
+use DateTime;
+use DateTimeImmutable;
+use Exception;
+use Iterator;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
@@ -20,8 +25,15 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use stdClass;
+use function array_map;
+use function array_merge;
+use function array_reverse;
+use function get_class;
+use function implode;
+use function sprintf;
 
-class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class UnionTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsCallable(): array
@@ -31,9 +43,9 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				TypeCombinator::union(
 					new ConstantArrayType(
 						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
-						[new ConstantStringType('Closure'), new ConstantStringType('bind')]
+						[new ConstantStringType('Closure'), new ConstantStringType('bind')],
 					),
-					new ConstantStringType('array_push')
+					new ConstantStringType('array_push'),
 				),
 				TrinaryLogic::createYes(),
 			],
@@ -63,8 +75,6 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsCallable
-	 * @param UnionType $type
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsCallable(UnionType $type, TrinaryLogic $expectedResult): void
 	{
@@ -72,11 +82,11 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
-	public function dataSelfCompare(): \Iterator
+	public function dataSelfCompare(): Iterator
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
@@ -106,7 +116,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		yield [$constantStringType];
 		yield [new ErrorType()];
 		yield [new FloatType()];
-		yield [new GenericClassStringType(new ObjectType(\Exception::class))];
+		yield [new GenericClassStringType(new ObjectType(Exception::class))];
 		yield [new GenericObjectType('Foo', [new ObjectType('DateTime')])];
 		yield [new HasMethodType('Foo')];
 		yield [new HasOffsetType($constantStringType)];
@@ -138,28 +148,27 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 	/**
 	 * @dataProvider dataSelfCompare
 	 *
-	 * @param  Type $type
 	 */
 	public function testSelfCompare(Type $type): void
 	{
 		$description = $type->describe(VerbosityLevel::precise());
 		$this->assertTrue(
 			$type->equals($type),
-			sprintf('%s -> equals(itself)', $description)
+			sprintf('%s -> equals(itself)', $description),
 		);
 		$this->assertEquals(
 			'Yes',
 			$type->isSuperTypeOf($type)->describe(),
-			sprintf('%s -> isSuperTypeOf(itself)', $description)
+			sprintf('%s -> isSuperTypeOf(itself)', $description),
 		);
 		$this->assertInstanceOf(
 			get_class($type),
 			TypeCombinator::union($type, $type),
-			sprintf('%s -> union with itself is same type', $description)
+			sprintf('%s -> union with itself is same type', $description),
 		);
 	}
 
-	public function dataIsSuperTypeOf(): \Iterator
+	public function dataIsSuperTypeOf(): Iterator
 	{
 		$unionTypeA = new UnionType([
 			new IntegerType(),
@@ -308,7 +317,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		yield [
 			$unionTypeB,
-			new ObjectType(\stdClass::class),
+			new ObjectType(stdClass::class),
 			TrinaryLogic::createNo(),
 		];
 
@@ -339,9 +348,6 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param UnionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(UnionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -349,11 +355,11 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
-	public function dataIsSubTypeOf(): \Iterator
+	public function dataIsSubTypeOf(): Iterator
 	{
 		$unionTypeA = new UnionType([
 			new IntegerType(),
@@ -503,16 +509,13 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		yield [
 			$unionTypeB,
-			new ObjectType(\stdClass::class),
+			new ObjectType(stdClass::class),
 			TrinaryLogic::createNo(),
 		];
 	}
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param UnionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOf(UnionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -520,15 +523,12 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param UnionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOfInversed(UnionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -536,7 +536,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -565,7 +565,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					new ConstantFloatType(2.2),
 					new NullType(),
 					new ConstantStringType('10'),
-					new ObjectType(\stdClass::class),
+					new ObjectType(stdClass::class),
 					new ConstantBooleanType(true),
 					new ConstantStringType('foo'),
 					new ConstantStringType('2'),
@@ -590,7 +590,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 						new IntegerType(),
 						new FloatType(),
 					]),
-					new ConstantStringType('aaa')
+					new ConstantStringType('aaa'),
 				),
 				'\'aaa\'|array{a: int|string, b: bool|float}',
 				'array<string, bool|float|int|string>|string',
@@ -611,7 +611,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 						new IntegerType(),
 						new FloatType(),
 					]),
-					new ConstantStringType('aaa')
+					new ConstantStringType('aaa'),
 				),
 				'\'aaa\'|array{a: string, b: bool}|array{b: int, c: float}',
 				'array<string, bool|float|int|string>|string',
@@ -632,7 +632,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 						new IntegerType(),
 						new FloatType(),
 					]),
-					new ConstantStringType('aaa')
+					new ConstantStringType('aaa'),
 				),
 				'\'aaa\'|array{a: string, b: bool}|array{c: int, d: float}',
 				'array<string, bool|float|int|string>|string',
@@ -652,7 +652,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 						new IntegerType(),
 						new BooleanType(),
 						new FloatType(),
-					])
+					]),
 				),
 				'array{0: int|string, 1?: bool, 2?: float}',
 				'array<int, bool|float|int|string>',
@@ -664,7 +664,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 						new ConstantStringType('foooo'),
 					], [
 						new ConstantStringType('barrr'),
-					])
+					]),
 				),
 				'array{}|array{foooo: \'barrr\'}',
 				'array<string, string>',
@@ -675,27 +675,32 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					new IntersectionType([
 						new StringType(),
 						new AccessoryNumericStringType(),
-					])
+					]),
 				),
 				'int|numeric-string',
 				'int|string',
+			],
+			[
+				TypeCombinator::union(
+					IntegerRangeType::fromInterval(0, 4),
+					IntegerRangeType::fromInterval(6, 10),
+				),
+				'int<0, 4>|int<6, 10>',
+				'int<0, 4>|int<6, 10>',
 			],
 		];
 	}
 
 	/**
 	 * @dataProvider dataDescribe
-	 * @param Type $type
-	 * @param string $expectedValueDescription
-	 * @param string $expectedTypeOnlyDescription
 	 */
 	public function testDescribe(
 		Type $type,
 		string $expectedValueDescription,
-		string $expectedTypeOnlyDescription
+		string $expectedTypeOnlyDescription,
 	): void
 	{
-		$this->assertSame($expectedValueDescription, $type->describe(VerbosityLevel::precise()));
+		$this->assertSame($expectedValueDescription, $type->describe(VerbosityLevel::value()));
 		$this->assertSame($expectedTypeOnlyDescription, $type->describe(VerbosityLevel::typeOnly()));
 	}
 
@@ -774,20 +779,17 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param UnionType $type
-	 * @param Type $acceptedType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(
 		UnionType $type,
 		Type $acceptedType,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$this->assertSame(
 			$expectedResult->describe(),
 			$type->accepts($acceptedType, true)->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -795,12 +797,12 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 	{
 		return [
 			[
-				new UnionType([new ObjectType(\DateTimeImmutable::class), new IntegerType()]),
+				new UnionType([new ObjectType(DateTimeImmutable::class), new IntegerType()]),
 				'format',
 				TrinaryLogic::createMaybe(),
 			],
 			[
-				new UnionType([new ObjectType(\DateTimeImmutable::class), new ObjectType(\DateTime::class)]),
+				new UnionType([new ObjectType(DateTimeImmutable::class), new ObjectType(DateTime::class)]),
 				'format',
 				TrinaryLogic::createYes(),
 			],
@@ -810,7 +812,7 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				TrinaryLogic::createNo(),
 			],
 			[
-				new UnionType([new ObjectType(\DateTimeImmutable::class), new NullType()]),
+				new UnionType([new ObjectType(DateTimeImmutable::class), new NullType()]),
 				'format',
 				TrinaryLogic::createMaybe(),
 			],
@@ -819,14 +821,11 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataHasMethod
-	 * @param UnionType $type
-	 * @param string $methodName
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testHasMethod(
 		UnionType $type,
 		string $methodName,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$this->assertSame($expectedResult->describe(), $type->hasMethod($methodName)->describe());
@@ -860,9 +859,15 @@ class UnionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$type1 = new UnionType($types);
 		$type2 = new UnionType(array_reverse($types));
 
+		$this->assertSame(
+			implode("\n", array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $type1->getTypes())),
+			implode("\n", array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $type2->getTypes())),
+			'UnionType sorting always produces the same order',
+		);
+
 		$this->assertTrue(
 			$type1->equals($type2),
-			'UnionType sorting always produces the same order'
+			'UnionType sorting always produces the same order',
 		);
 	}
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
@@ -14,11 +15,25 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use ReflectionFunction;
 use function array_key_exists;
+use function array_keys;
+use function class_exists;
+use function constant;
+use function count;
+use function defined;
+use function function_exists;
+use function interface_exists;
 use function is_file;
+use function is_string;
 use function restore_error_handler;
+use function set_error_handler;
+use function spl_autoload_functions;
+use function strtolower;
+use function trait_exists;
+use const PHP_VERSION_ID;
 
 /**
  * Use PHP's built in autoloader to locate a class, without actually loading.
@@ -31,26 +46,23 @@ use function restore_error_handler;
 class AutoloadSourceLocator implements SourceLocator
 {
 
-	private FileNodesFetcher $fileNodesFetcher;
-
-	/** @var array<string, array<FetchedNode<\PhpParser\Node\Stmt\ClassLike>>> */
+	/** @var array<string, array<FetchedNode<Node\Stmt\ClassLike>>> */
 	private array $classNodes = [];
 
 	/** @var array<string, Reflection|null> */
 	private array $classReflections = [];
 
-	/** @var array<string, FetchedNode<\PhpParser\Node\Stmt\Function_>> */
+	/** @var array<string, FetchedNode<Node\Stmt\Function_>> */
 	private array $functionNodes = [];
 
-	/** @var array<int, FetchedNode<\PhpParser\Node\Stmt\Const_|\PhpParser\Node\Expr\FuncCall>> */
+	/** @var array<int, FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>> */
 	private array $constantNodes = [];
 
-	/** @var array<string, \PHPStan\BetterReflection\SourceLocator\Located\LocatedSource> */
-	private array $locatedSourcesByFile = [];
+	/** @var array<string, true> */
+	private array $fetchedNodesByFile = [];
 
-	public function __construct(FileNodesFetcher $fileNodesFetcher)
+	public function __construct(private FileNodesFetcher $fileNodesFetcher, private bool $disableRuntimeReflectionProvider)
 	{
-		$this->fileNodesFetcher = $fileNodesFetcher;
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
@@ -63,8 +75,8 @@ class AutoloadSourceLocator implements SourceLocator
 				return $nodeToReflection->__invoke(
 					$reflector,
 					$this->functionNodes[$loweredFunctionName]->getNode(),
-					$this->locatedSourcesByFile[$this->functionNodes[$loweredFunctionName]->getFileName()],
-					$this->functionNodes[$loweredFunctionName]->getNamespace()
+					$this->functionNodes[$loweredFunctionName]->getLocatedSource(),
+					$this->functionNodes[$loweredFunctionName]->getNamespace(),
 				);
 			}
 			if (!function_exists($functionName)) {
@@ -92,14 +104,11 @@ class AutoloadSourceLocator implements SourceLocator
 					$constantReflection = $nodeToReflection->__invoke(
 						$reflector,
 						$stmtConst->getNode(),
-						$this->locatedSourcesByFile[$stmtConst->getFileName()],
-						$stmtConst->getNamespace()
+						$stmtConst->getLocatedSource(),
+						$stmtConst->getNamespace(),
 					);
-					if ($constantReflection === null) {
-						continue;
-					}
 					if (!$constantReflection instanceof ReflectionConstant) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 					if ($constantReflection->getName() !== $identifier->getName()) {
 						continue;
@@ -112,15 +121,12 @@ class AutoloadSourceLocator implements SourceLocator
 					$constantReflection = $nodeToReflection->__invoke(
 						$reflector,
 						$stmtConst->getNode(),
-						$this->locatedSourcesByFile[$stmtConst->getFileName()],
+						$stmtConst->getLocatedSource(),
 						$stmtConst->getNamespace(),
-						$i
+						$i,
 					);
-					if ($constantReflection === null) {
-						continue;
-					}
 					if (!$constantReflection instanceof ReflectionConstant) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 					if ($constantReflection->getName() !== $identifier->getName()) {
 						continue;
@@ -140,9 +146,9 @@ class AutoloadSourceLocator implements SourceLocator
 					new Arg(new String_($constantName)),
 					new Arg(new String_('')), // not actually used
 				]),
-				new LocatedSource('', null),
+				new LocatedSource('', $constantName, null),
 				null,
-				null
+				null,
 			);
 			$reflection->populateValue(@constant($constantName));
 
@@ -166,8 +172,8 @@ class AutoloadSourceLocator implements SourceLocator
 					return $this->classReflections[$loweredClassName] = $nodeToReflection->__invoke(
 						$reflector,
 						$classNode->getNode(),
-						$this->locatedSourcesByFile[$classNode->getFileName()],
-						$classNode->getNamespace()
+						$classNode->getLocatedSource(),
+						$classNode->getNamespace(),
 					);
 				}
 			}
@@ -180,9 +186,8 @@ class AutoloadSourceLocator implements SourceLocator
 
 	private function findReflection(Reflector $reflector, string $file, Identifier $identifier, ?int $startLine): ?Reflection
 	{
-		if (!array_key_exists($file, $this->locatedSourcesByFile)) {
+		if (!array_key_exists($file, $this->fetchedNodesByFile)) {
 			$result = $this->fileNodesFetcher->fetchNodes($file);
-			$this->locatedSourcesByFile[$file] = $result->getLocatedSource();
 			foreach ($result->getClassNodes() as $className => $fetchedClassNodes) {
 				foreach ($fetchedClassNodes as $fetchedClassNode) {
 					$this->classNodes[$className][] = $fetchedClassNode;
@@ -194,9 +199,8 @@ class AutoloadSourceLocator implements SourceLocator
 			foreach ($result->getConstantNodes() as $fetchedConstantNode) {
 				$this->constantNodes[] = $fetchedConstantNode;
 			}
-			$locatedSource = $result->getLocatedSource();
-		} else {
-			$locatedSource = $this->locatedSourcesByFile[$file];
+
+			$this->fetchedNodesByFile[$file] = true;
 		}
 
 		$nodeToReflection = new NodeToReflection();
@@ -209,8 +213,9 @@ class AutoloadSourceLocator implements SourceLocator
 				return null;
 			}
 
+			$classNodesCount = count($this->classNodes[$identifierName]);
 			foreach ($this->classNodes[$identifierName] as $classNode) {
-				if ($startLine !== null) {
+				if ($classNodesCount > 1 && $startLine !== null) {
 					if (count($classNode->getNode()->attrGroups) > 0 && PHP_VERSION_ID < 80000) {
 						$startLine--;
 					}
@@ -222,8 +227,8 @@ class AutoloadSourceLocator implements SourceLocator
 				return $this->classReflections[$identifierName] = $nodeToReflection->__invoke(
 					$reflector,
 					$classNode->getNode(),
-					$locatedSource,
-					$classNode->getNamespace()
+					$classNode->getLocatedSource(),
+					$classNode->getNamespace(),
 				);
 			}
 
@@ -238,8 +243,8 @@ class AutoloadSourceLocator implements SourceLocator
 			return $nodeToReflection->__invoke(
 				$reflector,
 				$this->functionNodes[$identifierName]->getNode(),
-				$locatedSource,
-				$this->functionNodes[$identifierName]->getNamespace()
+				$this->functionNodes[$identifierName]->getLocatedSource(),
+				$this->functionNodes[$identifierName]->getNamespace(),
 			);
 		}
 
@@ -268,7 +273,7 @@ class AutoloadSourceLocator implements SourceLocator
 	 */
 	private function locateClassByName(string $className): ?array
 	{
-		if (class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false)) {
+		if (class_exists($className, !$this->disableRuntimeReflectionProvider) || interface_exists($className, !$this->disableRuntimeReflectionProvider) || trait_exists($className, !$this->disableRuntimeReflectionProvider)) {
 			$reflection = new ReflectionClass($className);
 			$filename = $reflection->getFileName();
 
@@ -281,6 +286,10 @@ class AutoloadSourceLocator implements SourceLocator
 			}
 
 			return [$filename, $reflection->getName(), $reflection->getStartLine() !== false ? $reflection->getStartLine() : null];
+		}
+
+		if (!$this->disableRuntimeReflectionProvider) {
+			return null;
 		}
 
 		$this->silenceErrors();
@@ -309,7 +318,7 @@ class AutoloadSourceLocator implements SourceLocator
 					}
 
 					return null;
-				}
+				},
 			);
 		} finally {
 			restore_error_handler();
@@ -318,9 +327,7 @@ class AutoloadSourceLocator implements SourceLocator
 
 	private function silenceErrors(): void
 	{
-		set_error_handler(static function (): bool {
-			return true;
-		});
+		set_error_handler(static fn (): bool => true);
 	}
 
 }

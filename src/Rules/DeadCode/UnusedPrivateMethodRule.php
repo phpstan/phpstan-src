@@ -9,11 +9,16 @@ use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeUtils;
+use function array_map;
+use function count;
+use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<ClassMethodsNode>
@@ -28,11 +33,11 @@ class UnusedPrivateMethodRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->getClass() instanceof Node\Stmt\Class_) {
+		if (!$node->getClass() instanceof Node\Stmt\Class_ && !$node->getClass() instanceof Node\Stmt\Enum_) {
 			return [];
 		}
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
 		$constructor = null;
@@ -73,9 +78,7 @@ class UnusedPrivateMethodRule implements Rule
 					return [];
 				}
 
-				$methodNames = array_map(static function (ConstantStringType $type): string {
-					return $type->getValue();
-				}, $strings);
+				$methodNames = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $strings);
 			}
 
 			if ($methodCallNode instanceof Node\Expr\MethodCall) {

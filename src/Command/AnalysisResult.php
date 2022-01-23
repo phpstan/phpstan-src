@@ -3,70 +3,46 @@
 namespace PHPStan\Command;
 
 use PHPStan\Analyser\Error;
+use function count;
+use function usort;
 
 /** @api */
 class AnalysisResult
 {
 
-	/** @var \PHPStan\Analyser\Error[] sorted by their file name, line number and message */
+	/** @var Error[] sorted by their file name, line number and message */
 	private array $fileSpecificErrors;
 
-	/** @var string[] */
-	private array $notFileSpecificErrors;
-
-	/** @var string[] */
-	private array $internalErrors;
-
-	/** @var string[] */
-	private array $warnings;
-
-	private bool $defaultLevelUsed;
-
-	private ?string $projectConfigFile;
-
-	private bool $savedResultCache;
-
 	/**
-	 * @param \PHPStan\Analyser\Error[] $fileSpecificErrors
+	 * @param Error[] $fileSpecificErrors
 	 * @param string[] $notFileSpecificErrors
 	 * @param string[] $internalErrors
 	 * @param string[] $warnings
-	 * @param bool $defaultLevelUsed
-	 * @param string|null $projectConfigFile
-	 * @param bool $savedResultCache
 	 */
 	public function __construct(
 		array $fileSpecificErrors,
-		array $notFileSpecificErrors,
-		array $internalErrors,
-		array $warnings,
-		bool $defaultLevelUsed,
-		?string $projectConfigFile,
-		bool $savedResultCache
+		private array $notFileSpecificErrors,
+		private array $internalErrors,
+		private array $warnings,
+		private bool $defaultLevelUsed,
+		private ?string $projectConfigFile,
+		private bool $savedResultCache,
 	)
 	{
 		usort(
 			$fileSpecificErrors,
-			static function (Error $a, Error $b): int {
-				return [
-					$a->getFile(),
-					$a->getLine(),
-					$a->getMessage(),
-				] <=> [
-					$b->getFile(),
-					$b->getLine(),
-					$b->getMessage(),
-				];
-			}
+			static fn (Error $a, Error $b): int => [
+				$a->getFile(),
+				$a->getLine(),
+				$a->getMessage(),
+			] <=> [
+				$b->getFile(),
+				$b->getLine(),
+				$b->getMessage(),
+			],
 		);
 
 		$this->fileSpecificErrors = $fileSpecificErrors;
-		$this->notFileSpecificErrors = $notFileSpecificErrors;
-		$this->internalErrors = $internalErrors;
-		$this->warnings = $warnings;
-		$this->defaultLevelUsed = $defaultLevelUsed;
-		$this->projectConfigFile = $projectConfigFile;
-		$this->savedResultCache = $savedResultCache;
 	}
 
 	public function hasErrors(): bool
@@ -80,7 +56,7 @@ class AnalysisResult
 	}
 
 	/**
-	 * @return \PHPStan\Analyser\Error[] sorted by their file name, line number and message
+	 * @return Error[] sorted by their file name, line number and message
 	 */
 	public function getFileSpecificErrors(): array
 	{

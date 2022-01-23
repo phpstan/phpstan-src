@@ -7,11 +7,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 
-class ArgumentBasedFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	/** @var int[] */
@@ -60,7 +61,7 @@ class ArgumentBasedFunctionReturnTypeExtension implements \PHPStan\Type\DynamicF
 
 		return new ArrayType(
 			$argumentKeyType,
-			$argumentValueType
+			$argumentValueType,
 		);
 	}
 

@@ -7,14 +7,11 @@ use PHPStan\DependencyInjection\Container;
 class LazyAlwaysUsedClassConstantsExtensionProvider implements AlwaysUsedClassConstantsExtensionProvider
 {
 
-	private Container $container;
-
 	/** @var AlwaysUsedClassConstantsExtension[]|null */
 	private ?array $extensions = null;
 
-	public function __construct(Container $container)
+	public function __construct(private Container $container)
 	{
-		$this->container = $container;
 	}
 
 	public function getExtensions(): array

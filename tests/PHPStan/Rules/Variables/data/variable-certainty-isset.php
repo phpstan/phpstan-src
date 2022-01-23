@@ -1,5 +1,5 @@
 <?php
-
+namespace VariableCertaintyIsset;
 function foo()
 {
 

@@ -2,7 +2,15 @@
 
 namespace PHPStan\Type;
 
-class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
+use DependentPhpDocs\Foo;
+use PHPStan\Broker\Broker;
+use PHPStan\PhpDoc\Tag\ReturnTag;
+use PHPStan\ShouldNotHappenException;
+use PHPStan\Testing\PHPStanTestCase;
+use RuntimeException;
+use function realpath;
+
+class FileTypeMapperTest extends PHPStanTestCase
 {
 
 	public function testGetResolvedPhpDoc(): void
@@ -85,21 +93,21 @@ class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$realpath = realpath(__DIR__ . '/data/dependent-phpdocs.php');
 		if ($realpath === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$resolved = $fileTypeMapper->getResolvedPhpDoc(
 			$realpath,
-			\DependentPhpDocs\Foo::class,
+			Foo::class,
 			null,
 			'addPages',
-			'/** @param Foo[]|Foo|\Iterator $pages */'
+			'/** @param Foo[]|Foo|\Iterator $pages */',
 		);
 
 		$this->assertCount(1, $resolved->getParamTags());
 		$this->assertSame(
 			'(DependentPhpDocs\Foo&iterable<DependentPhpDocs\Foo>)|(iterable<DependentPhpDocs\Foo>&Iterator)',
-			$resolved->getParamTags()['pages']->getType()->describe(VerbosityLevel::precise())
+			$resolved->getParamTags()['pages']->getType()->describe(VerbosityLevel::precise()),
 		);
 	}
 
@@ -110,7 +118,7 @@ class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$realpath = realpath(__DIR__ . '/data/throws-phpdocs.php');
 		if ($realpath === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$resolved = $fileTypeMapper->getResolvedPhpDoc($realpath, \ThrowsPhpDocs\Foo::class, null, 'throwRuntimeException', '/**
@@ -119,8 +127,8 @@ class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$this->assertNotNull($resolved->getThrowsTag());
 		$this->assertSame(
-			\RuntimeException::class,
-			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise())
+			RuntimeException::class,
+			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise()),
 		);
 
 		$resolved = $fileTypeMapper->getResolvedPhpDoc($realpath, \ThrowsPhpDocs\Foo::class, null, 'throwRuntimeAndLogicException', '/**
@@ -130,7 +138,7 @@ class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertNotNull($resolved->getThrowsTag());
 		$this->assertSame(
 			'LogicException|RuntimeException',
-			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise())
+			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise()),
 		);
 
 		$resolved = $fileTypeMapper->getResolvedPhpDoc($realpath, \ThrowsPhpDocs\Foo::class, null, 'throwRuntimeAndLogicException2', '/**
@@ -141,20 +149,20 @@ class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertNotNull($resolved->getThrowsTag());
 		$this->assertSame(
 			'LogicException|RuntimeException',
-			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise())
+			$resolved->getThrowsTag()->getType()->describe(VerbosityLevel::precise()),
 		);
 	}
 
 	public function testFileWithCyclicPhpDocs(): void
 	{
-		self::getContainer()->getByType(\PHPStan\Broker\Broker::class);
+		self::getContainer()->getByType(Broker::class);
 
 		/** @var FileTypeMapper $fileTypeMapper */
 		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
 
 		$realpath = realpath(__DIR__ . '/data/cyclic-phpdocs.php');
 		if ($realpath === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$resolved = $fileTypeMapper->getResolvedPhpDoc(
@@ -162,10 +170,10 @@ class FileTypeMapperTest extends \PHPStan\Testing\PHPStanTestCase
 			\CyclicPhpDocs\Foo::class,
 			null,
 			'getIterator',
-			'/** @return iterable<Foo> | Foo */'
+			'/** @return iterable<Foo> | Foo */',
 		);
 
-		/** @var \PHPStan\PhpDoc\Tag\ReturnTag $returnTag */
+		/** @var ReturnTag $returnTag */
 		$returnTag = $resolved->getReturnTag();
 		$this->assertSame('CyclicPhpDocs\Foo|iterable<CyclicPhpDocs\Foo>', $returnTag->getType()->describe(VerbosityLevel::precise()));
 	}

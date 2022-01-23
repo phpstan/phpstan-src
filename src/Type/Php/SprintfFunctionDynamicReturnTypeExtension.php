@@ -12,6 +12,11 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use Throwable;
+use function array_shift;
+use function count;
+use function is_string;
+use function sprintf;
 
 class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -24,7 +29,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		$args = $functionCall->getArgs();
@@ -59,7 +64,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 
 		try {
 			$value = @sprintf($format, ...$values);
-		} catch (\Throwable $e) {
+		} catch (Throwable) {
 			return $returnType;
 		}
 

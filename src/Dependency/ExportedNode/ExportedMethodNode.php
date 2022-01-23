@@ -4,66 +4,30 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\ShouldNotHappenException;
+use ReturnTypeWillChange;
+use function array_map;
+use function count;
 
 class ExportedMethodNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private ?ExportedPhpDocNode $phpDoc;
-
-	private bool $byRef;
-
-	private bool $public;
-
-	private bool $private;
-
-	private bool $abstract;
-
-	private bool $final;
-
-	private bool $static;
-
-	private ?string $returnType;
-
-	/** @var ExportedParameterNode[] */
-	private array $parameters;
-
 	/**
-	 * @param string $name
-	 * @param ExportedPhpDocNode|null $phpDoc
-	 * @param bool $byRef
-	 * @param bool $public
-	 * @param bool $private
-	 * @param bool $abstract
-	 * @param bool $final
-	 * @param bool $static
-	 * @param string|null $returnType
 	 * @param ExportedParameterNode[] $parameters
 	 */
 	public function __construct(
-		string $name,
-		?ExportedPhpDocNode $phpDoc,
-		bool $byRef,
-		bool $public,
-		bool $private,
-		bool $abstract,
-		bool $final,
-		bool $static,
-		?string $returnType,
-		array $parameters
+		private string $name,
+		private ?ExportedPhpDocNode $phpDoc,
+		private bool $byRef,
+		private bool $public,
+		private bool $private,
+		private bool $abstract,
+		private bool $final,
+		private bool $static,
+		private ?string $returnType,
+		private array $parameters,
 	)
 	{
-		$this->name = $name;
-		$this->phpDoc = $phpDoc;
-		$this->byRef = $byRef;
-		$this->public = $public;
-		$this->private = $private;
-		$this->abstract = $abstract;
-		$this->final = $final;
-		$this->static = $static;
-		$this->returnType = $returnType;
-		$this->parameters = $parameters;
 	}
 
 	public function equals(ExportedNode $node): bool
@@ -121,14 +85,14 @@ class ExportedMethodNode implements ExportedNode, JsonSerializable
 			$properties['final'],
 			$properties['static'],
 			$properties['returnType'],
-			$properties['parameters']
+			$properties['parameters'],
 		);
 	}
 
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [
@@ -166,10 +130,10 @@ class ExportedMethodNode implements ExportedNode, JsonSerializable
 			$data['returnType'],
 			array_map(static function (array $parameterData): ExportedParameterNode {
 				if ($parameterData['type'] !== ExportedParameterNode::class) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				return ExportedParameterNode::decode($parameterData['data']);
-			}, $data['parameters'])
+			}, $data['parameters']),
 		);
 	}
 

@@ -5,6 +5,8 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use function sprintf;
+use const PHP_VERSION_ID;
 
 class GithubErrorFormatterTest extends ErrorFormatterTestCase
 {
@@ -27,11 +29,12 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			1,
 			0,
-			' ------ -----------------------------------------------------------------
+			' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
- ------ -----------------------------------------------------------------
+ ------ -------------------------------------------------------------------
   4      Foo
- ------ -----------------------------------------------------------------
+ ------ -------------------------------------------------------------------
+
 
  [ERROR] Found 1 error
 
@@ -50,6 +53,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
      first generic error
  -- ---------------------
 
+
  [ERROR] Found 1 error
 
 ::error ::first generic error
@@ -61,13 +65,13 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			4,
 			0,
-			' ------ -----------------------------------------------------------------
+			' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
- ------ -----------------------------------------------------------------
+ ------ -------------------------------------------------------------------
   2      Bar
          Bar2
   4      Foo
- ------ -----------------------------------------------------------------
+ ------ -------------------------------------------------------------------
 
  ------ ---------
   Line   foo.php
@@ -98,6 +102,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
      second generic error
  -- ----------------------
 
+
  [ERROR] Found 2 errors
 
 ::error ::first generic error
@@ -110,13 +115,13 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			4,
 			2,
-			' ------ -----------------------------------------------------------------
+			' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
- ------ -----------------------------------------------------------------
+ ------ -------------------------------------------------------------------
   2      Bar
          Bar2
   4      Foo
- ------ -----------------------------------------------------------------
+ ------ -------------------------------------------------------------------
 
  ------ ---------
   Line   foo.php
@@ -148,18 +153,13 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 	/**
 	 * @dataProvider dataFormatterOutputProvider
 	 *
-	 * @param string $message
-	 * @param int    $exitCode
-	 * @param int    $numFileErrors
-	 * @param int    $numGenericErrors
-	 * @param string $expected
 	 */
 	public function testFormatErrors(
 		string $message,
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
-		string $expected
+		string $expected,
 	): void
 	{
 		if (PHP_VERSION_ID >= 80100) {
@@ -168,12 +168,12 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
 		$formatter = new GithubErrorFormatter(
 			$relativePathHelper,
-			new TableErrorFormatter($relativePathHelper, false, null)
+			new TableErrorFormatter($relativePathHelper, false, null),
 		);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
-			$this->getOutput()
+			$this->getOutput(),
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertEquals($expected, $this->getOutputContent(), sprintf('%s: output do not match', $message));

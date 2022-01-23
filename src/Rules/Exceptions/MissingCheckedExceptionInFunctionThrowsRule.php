@@ -8,6 +8,8 @@ use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function sprintf;
 
 /**
  * @implements Rule<FunctionReturnStatementsNode>
@@ -15,11 +17,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 class MissingCheckedExceptionInFunctionThrowsRule implements Rule
 {
 
-	private MissingCheckedExceptionInThrowsCheck $check;
-
-	public function __construct(MissingCheckedExceptionInThrowsCheck $check)
+	public function __construct(private MissingCheckedExceptionInThrowsCheck $check)
 	{
-		$this->check = $check;
 	}
 
 	public function getNodeType(): string
@@ -32,7 +31,7 @@ class MissingCheckedExceptionInFunctionThrowsRule implements Rule
 		$statementResult = $node->getStatementResult();
 		$functionReflection = $scope->getFunction();
 		if (!$functionReflection instanceof FunctionReflection) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$errors = [];
@@ -40,7 +39,7 @@ class MissingCheckedExceptionInFunctionThrowsRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Function %s() throws checked exception %s but it\'s missing from the PHPDoc @throws tag.',
 				$functionReflection->getName(),
-				$className
+				$className,
 			))
 				->line($throwPointNode->getLine())
 				->identifier('exceptions.missingThrowsTag')

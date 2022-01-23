@@ -3,23 +3,19 @@
 namespace PHPStan\Process;
 
 use PHPStan\Process\Runnable\Runnable;
+use PHPStan\ShouldNotHappenException;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
 use React\Promise\CancellablePromiseInterface;
 use React\Promise\Deferred;
 use React\Promise\ExtendedPromiseInterface;
+use function fclose;
+use function rewind;
+use function stream_get_contents;
+use function tmpfile;
 
 class ProcessPromise implements Runnable
 {
-
-	/** @var LoopInterface */
-	private $loop;
-
-	/** @var string */
-	private $name;
-
-	/** @var string */
-	private $command;
 
 	private Deferred $deferred;
 
@@ -27,11 +23,8 @@ class ProcessPromise implements Runnable
 
 	private bool $canceled = false;
 
-	public function __construct(LoopInterface $loop, string $name, string $command)
+	public function __construct(private LoopInterface $loop, private string $name, private string $command)
 	{
-		$this->loop = $loop;
-		$this->name = $name;
-		$this->command = $command;
 		$this->deferred = new Deferred();
 	}
 
@@ -47,11 +40,11 @@ class ProcessPromise implements Runnable
 	{
 		$tmpStdOutResource = tmpfile();
 		if ($tmpStdOutResource === false) {
-			throw new \PHPStan\ShouldNotHappenException('Failed creating temp file for stdout.');
+			throw new ShouldNotHappenException('Failed creating temp file for stdout.');
 		}
 		$tmpStdErrResource = tmpfile();
 		if ($tmpStdErrResource === false) {
-			throw new \PHPStan\ShouldNotHappenException('Failed creating temp file for stderr.');
+			throw new ShouldNotHappenException('Failed creating temp file for stderr.');
 		}
 
 		$this->process = new Process($this->command, null, null, [
@@ -75,7 +68,7 @@ class ProcessPromise implements Runnable
 			fclose($tmpStdErrResource);
 
 			if ($exitCode === null) {
-				$this->deferred->reject(new \PHPStan\Process\ProcessCrashedException($stdOut . $stdErr));
+				$this->deferred->reject(new ProcessCrashedException($stdOut . $stdErr));
 				return;
 			}
 
@@ -84,7 +77,7 @@ class ProcessPromise implements Runnable
 				return;
 			}
 
-			$this->deferred->reject(new \PHPStan\Process\ProcessCrashedException($stdOut . $stdErr));
+			$this->deferred->reject(new ProcessCrashedException($stdOut . $stdErr));
 		});
 
 		/** @var ExtendedPromiseInterface&CancellablePromiseInterface */
@@ -94,11 +87,11 @@ class ProcessPromise implements Runnable
 	public function cancel(): void
 	{
 		if ($this->process === null) {
-			throw new \PHPStan\ShouldNotHappenException('Cancelling process before running');
+			throw new ShouldNotHappenException('Cancelling process before running');
 		}
 		$this->canceled = true;
 		$this->process->terminate();
-		$this->deferred->reject(new \PHPStan\Process\ProcessCanceledException());
+		$this->deferred->reject(new ProcessCanceledException());
 	}
 
 }

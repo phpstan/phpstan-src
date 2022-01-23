@@ -12,8 +12,7 @@ use PHPStan\Testing\RuleTestCase;
 class UnsetCastRuleTest extends RuleTestCase
 {
 
-	/** @var int */
-	private $phpVersion;
+	private int $phpVersion;
 
 	protected function getRule(): Rule
 	{
@@ -41,7 +40,6 @@ class UnsetCastRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRule
-	 * @param int $phpVersion
 	 * @param mixed[] $errors
 	 */
 	public function testRule(int $phpVersion, array $errors): void

@@ -4,41 +4,25 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\ShouldNotHappenException;
+use ReturnTypeWillChange;
+use function array_map;
+use function count;
 
 class ExportedFunctionNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private ?ExportedPhpDocNode $phpDoc;
-
-	private bool $byRef;
-
-	private ?string $returnType;
-
-	/** @var ExportedParameterNode[] */
-	private array $parameters;
-
 	/**
-	 * @param string $name
-	 * @param ExportedPhpDocNode|null $phpDoc
-	 * @param bool $byRef
-	 * @param string|null $returnType
 	 * @param ExportedParameterNode[] $parameters
 	 */
 	public function __construct(
-		string $name,
-		?ExportedPhpDocNode $phpDoc,
-		bool $byRef,
-		?string $returnType,
-		array $parameters
+		private string $name,
+		private ?ExportedPhpDocNode $phpDoc,
+		private bool $byRef,
+		private ?string $returnType,
+		private array $parameters,
 	)
 	{
-		$this->name = $name;
-		$this->phpDoc = $phpDoc;
-		$this->byRef = $byRef;
-		$this->returnType = $returnType;
-		$this->parameters = $parameters;
 	}
 
 	public function equals(ExportedNode $node): bool
@@ -86,14 +70,14 @@ class ExportedFunctionNode implements ExportedNode, JsonSerializable
 			$properties['phpDoc'],
 			$properties['byRef'],
 			$properties['returnType'],
-			$properties['parameters']
+			$properties['parameters'],
 		);
 	}
 
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [
@@ -121,10 +105,10 @@ class ExportedFunctionNode implements ExportedNode, JsonSerializable
 			$data['returnType'],
 			array_map(static function (array $parameterData): ExportedParameterNode {
 				if ($parameterData['type'] !== ExportedParameterNode::class) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				return ExportedParameterNode::decode($parameterData['data']);
-			}, $data['parameters'])
+			}, $data['parameters']),
 		);
 	}
 

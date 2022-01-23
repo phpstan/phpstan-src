@@ -2,6 +2,17 @@
 
 namespace PHPStan\Process;
 
+use function count;
+use function fgets;
+use function file_get_contents;
+use function function_exists;
+use function is_file;
+use function is_resource;
+use function pclose;
+use function popen;
+use function preg_match_all;
+use const DIRECTORY_SEPARATOR;
+
 class CpuCoreCounter
 {
 
@@ -27,7 +38,7 @@ class CpuCoreCounter
 			}
 		}
 
-		if (\DIRECTORY_SEPARATOR === '\\') {
+		if (DIRECTORY_SEPARATOR === '\\') {
 			// Windows
 			$process = @popen('wmic cpu get NumberOfLogicalProcessors', 'rb');
 			if (is_resource($process)) {
@@ -39,7 +50,7 @@ class CpuCoreCounter
 			}
 		}
 
-		$process = @\popen('sysctl -n hw.ncpu', 'rb');
+		$process = @popen('sysctl -n hw.ncpu', 'rb');
 		if (is_resource($process)) {
 			// *nix (Linux, BSD and Mac)
 			$cores = (int) fgets($process);

@@ -2,16 +2,21 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use function define;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<DuplicateKeysInLiteralArraysRule>
+ * @extends RuleTestCase<DuplicateKeysInLiteralArraysRule>
  */
-class DuplicateKeysInLiteralArraysRuleTest extends \PHPStan\Testing\RuleTestCase
+class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new DuplicateKeysInLiteralArraysRule(
-			new \PhpParser\PrettyPrinter\Standard()
+			new Standard(),
 		);
 	}
 

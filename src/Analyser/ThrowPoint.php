@@ -6,49 +6,26 @@ use PhpParser\Node;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use Throwable;
 
 class ThrowPoint
 {
 
-	private MutatingScope $scope;
-
-	private Type $type;
-
-	/** @var Node\Expr|Node\Stmt */
-	private Node $node;
-
-	private bool $explicit;
-
-	private bool $canContainAnyThrowable;
-
 	/**
-	 * @param MutatingScope $scope
-	 * @param Type $type
 	 * @param Node\Expr|Node\Stmt $node
-	 * @param bool $explicit
-	 * @param bool $canContainAnyThrowable
 	 */
 	private function __construct(
-		MutatingScope $scope,
-		Type $type,
-		Node $node,
-		bool $explicit,
-		bool $canContainAnyThrowable
+		private MutatingScope $scope,
+		private Type $type,
+		private Node $node,
+		private bool $explicit,
+		private bool $canContainAnyThrowable,
 	)
 	{
-		$this->scope = $scope;
-		$this->type = $type;
-		$this->node = $node;
-		$this->explicit = $explicit;
-		$this->canContainAnyThrowable = $canContainAnyThrowable;
 	}
 
 	/**
-	 * @param MutatingScope $scope
-	 * @param Type $type
 	 * @param Node\Expr|Node\Stmt $node
-	 * @param bool $canContainAnyThrowable
-	 * @return self
 	 */
 	public static function createExplicit(MutatingScope $scope, Type $type, Node $node, bool $canContainAnyThrowable): self
 	{
@@ -56,13 +33,11 @@ class ThrowPoint
 	}
 
 	/**
-	 * @param MutatingScope $scope
 	 * @param Node\Expr|Node\Stmt $node
-	 * @return self
 	 */
 	public static function createImplicit(MutatingScope $scope, Node $node): self
 	{
-		return new self($scope, new ObjectType(\Throwable::class), $node, false, true);
+		return new self($scope, new ObjectType(Throwable::class), $node, false, true);
 	}
 
 	public function getScope(): MutatingScope

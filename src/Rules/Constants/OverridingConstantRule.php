@@ -10,7 +10,10 @@ use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function sprintf;
 
 /**
  * @implements Rule<Node\Stmt\ClassConst>
@@ -18,13 +21,10 @@ use PHPStan\Type\VerbosityLevel;
 class OverridingConstantRule implements Rule
 {
 
-	private bool $checkPhpDocMethodSignatures;
-
 	public function __construct(
-		bool $checkPhpDocMethodSignatures
+		private bool $checkPhpDocMethodSignatures,
 	)
 	{
-		$this->checkPhpDocMethodSignatures = $checkPhpDocMethodSignatures;
 	}
 
 	public function getNodeType(): string
@@ -35,7 +35,7 @@ class OverridingConstantRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$errors = [];
@@ -48,7 +48,6 @@ class OverridingConstantRule implements Rule
 	}
 
 	/**
-	 * @param string $constantName
 	 * @return RuleError[]
 	 */
 	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
@@ -70,7 +69,7 @@ class OverridingConstantRule implements Rule
 				$classReflection->getDisplayName(),
 				$constantReflection->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$prototype->getName()
+				$prototype->getName(),
 			))->nonIgnorable()->build();
 		}
 
@@ -82,7 +81,7 @@ class OverridingConstantRule implements Rule
 					$constantReflection->getDeclaringClass()->getDisplayName(),
 					$constantReflection->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$prototype->getName()
+					$prototype->getName(),
 				))->nonIgnorable()->build();
 			}
 		} elseif ($constantReflection->isPrivate()) {
@@ -91,7 +90,7 @@ class OverridingConstantRule implements Rule
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantReflection->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$prototype->getName()
+				$prototype->getName(),
 			))->nonIgnorable()->build();
 		}
 
@@ -115,7 +114,7 @@ class OverridingConstantRule implements Rule
 				$constantReflection->getName(),
 				$prototype->getValueType()->describe(VerbosityLevel::value()),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$prototype->getName()
+				$prototype->getName(),
 			))->build();
 		}
 

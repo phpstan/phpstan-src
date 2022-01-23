@@ -10,6 +10,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -17,8 +18,10 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_slice;
+use function count;
 
-class ArrayMapFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -46,7 +49,7 @@ class ArrayMapFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFuncti
 			foreach (array_slice($functionCall->getArgs(), 1) as $index => $arg) {
 				$arrayBuilder->setOffsetValueType(
 					new ConstantIntegerType($index),
-					$scope->getType($arg->value)->getIterableValueType()
+					$scope->getType($arg->value)->getIterableValueType(),
 				);
 			}
 			$valueType = $arrayBuilder->getArray();
@@ -68,7 +71,7 @@ class ArrayMapFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFuncti
 					foreach ($constantArray->getKeyTypes() as $keyType) {
 						$returnedArrayBuilder->setOffsetValueType(
 							$keyType,
-							$valueType
+							$valueType,
 						);
 					}
 					$arrayTypes[] = $returnedArrayBuilder->getArray();
@@ -78,18 +81,18 @@ class ArrayMapFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFuncti
 			} elseif ($arrayType->isArray()->yes()) {
 				$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 					$arrayType->getIterableKeyType(),
-					$valueType
+					$valueType,
 				), ...TypeUtils::getAccessoryTypes($arrayType));
 			} else {
 				$mappedArrayType = new ArrayType(
 					new MixedType(),
-					$valueType
+					$valueType,
 				);
 			}
 		} else {
 			$mappedArrayType = TypeCombinator::intersect(new ArrayType(
 				new IntegerType(),
-				$valueType
+				$valueType,
 			), ...TypeUtils::getAccessoryTypes($arrayType));
 		}
 

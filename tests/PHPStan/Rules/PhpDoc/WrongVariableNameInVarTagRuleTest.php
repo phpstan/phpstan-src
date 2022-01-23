@@ -5,9 +5,10 @@ namespace PHPStan\Rules\PhpDoc;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<WrongVariableNameInVarTagRule>
+ * @extends RuleTestCase<WrongVariableNameInVarTagRule>
  */
 class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 {
@@ -15,7 +16,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new WrongVariableNameInVarTagRule(
-			self::getContainer()->getByType(FileTypeMapper::class)
+			self::getContainer()->getByType(FileTypeMapper::class),
 		);
 	}
 
@@ -171,6 +172,20 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	public function testBug4505(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4505.php'], []);
+	}
+
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/wrong-var-enum.php'], [
+			[
+				'PHPDoc tag @var above an enum has no effect.',
+				13,
+			],
+		]);
 	}
 
 }

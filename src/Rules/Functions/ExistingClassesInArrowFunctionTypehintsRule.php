@@ -5,18 +5,16 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\FunctionDefinitionCheck;
+use PHPStan\Rules\Rule;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ArrowFunction>
+ * @implements Rule<Node\Expr\ArrowFunction>
  */
-class ExistingClassesInArrowFunctionTypehintsRule implements \PHPStan\Rules\Rule
+class ExistingClassesInArrowFunctionTypehintsRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionDefinitionCheck $check;
-
-	public function __construct(FunctionDefinitionCheck $check)
+	public function __construct(private FunctionDefinitionCheck $check)
 	{
-		$this->check = $check;
 	}
 
 	public function getNodeType(): string
@@ -34,7 +32,7 @@ class ExistingClassesInArrowFunctionTypehintsRule implements \PHPStan\Rules\Rule
 			'Anonymous function has invalid return type %s.',
 			'Anonymous function uses native union types but they\'re supported only on PHP 8.0 and later.',
 			'Parameter $%s of anonymous function has unresolvable native type.',
-			'Anonymous function has unresolvable native return type.'
+			'Anonymous function has unresolvable native return type.',
 		);
 	}
 

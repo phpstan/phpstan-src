@@ -3,12 +3,14 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\File\FileHelper;
+use PHPStan\Testing\PHPStanTestCase;
+use function array_map;
+use function sprintf;
 
-class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
+class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 {
 
-	/** @var \PHPStan\File\FileHelper */
-	private $fileHelper;
+	private FileHelper $fileHelper;
 
 	protected function setUp(): void
 	{
@@ -35,7 +37,7 @@ class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame('Call to an undefined method AnalyseTraits\Bar::doFoo().', $error->getMessage());
 		$this->assertSame(
 			sprintf('%s (in context of class AnalyseTraits\Bar)', $this->fileHelper->normalizePath(__DIR__ . '/traits/FooTrait.php')),
-			$error->getFile()
+			$error->getFile(),
 		);
 		$this->assertSame(10, $error->getLine());
 	}
@@ -52,7 +54,7 @@ class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame('Call to an undefined method AnalyseTraits\NestedBar::doFoo().', $firstError->getMessage());
 		$this->assertSame(
 			sprintf('%s (in context of class AnalyseTraits\NestedBar)', $this->fileHelper->normalizePath(__DIR__ . '/traits/FooTrait.php')),
-			$firstError->getFile()
+			$firstError->getFile(),
 		);
 		$this->assertSame(10, $firstError->getLine());
 
@@ -60,7 +62,7 @@ class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame('Call to an undefined method AnalyseTraits\NestedBar::doNestedFoo().', $secondError->getMessage());
 		$this->assertSame(
 			sprintf('%s (in context of class AnalyseTraits\NestedBar)', $this->fileHelper->normalizePath(__DIR__ . '/traits/NestedFooTrait.php')),
-			$secondError->getFile()
+			$secondError->getFile(),
 		);
 		$this->assertSame(12, $secondError->getLine());
 	}
@@ -100,7 +102,7 @@ class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				__DIR__ . '/traits/AnonymousClassUsingTrait.php',
 				__DIR__ . '/traits/TraitWithTypeSpecification.php',
-			]
+			],
 		);
 		$this->assertCount(1, $errors);
 		$this->assertStringContainsString('Access to an undefined property', $errors[0]->getMessage());
@@ -110,7 +112,7 @@ class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 	public function testDuplicateMethodDefinition(): void
 	{
 		$errors = $this->runAnalyse([__DIR__ . '/traits/duplicateMethod/Lesson.php']);
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testWrongPropertyType(): void
@@ -120,14 +122,14 @@ class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(15, $errors[0]->getLine());
 		$this->assertSame(
 			$this->fileHelper->normalizePath(__DIR__ . '/traits/wrongProperty/Foo.php'),
-			$errors[0]->getFile()
+			$errors[0]->getFile(),
 		);
 		$this->assertSame('Property TraitsWrongProperty\Foo::$id (int) does not accept string.', $errors[0]->getMessage());
 
 		$this->assertSame(17, $errors[1]->getLine());
 		$this->assertSame(
 			$this->fileHelper->normalizePath(__DIR__ . '/traits/wrongProperty/Foo.php'),
-			$errors[1]->getFile()
+			$errors[1]->getFile(),
 		);
 		$this->assertSame('Property TraitsWrongProperty\Foo::$bar (Ipsum) does not accept int.', $errors[1]->getMessage());
 	}
@@ -145,13 +147,13 @@ class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 	public function testTraitInEval(): void
 	{
 		$errors = $this->runAnalyse([__DIR__ . '/traits/TraitInEvalUse.php']);
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testParameterNotFoundCrash(): void
 	{
 		$errors = $this->runAnalyse([__DIR__ . '/traits/parameter-not-found.php']);
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	public function testMissingReturnInAbstractTraitMethod(): void
@@ -160,21 +162,19 @@ class AnalyserTraitsIntegrationTest extends \PHPStan\Testing\PHPStanTestCase
 			__DIR__ . '/traits/TraitWithAbstractMethod.php',
 			__DIR__ . '/traits/ClassImplementingTraitWithAbstractMethod.php',
 		]);
-		$this->assertCount(0, $errors);
+		$this->assertNoErrors($errors);
 	}
 
 	/**
 	 * @param string[] $files
-	 * @return \PHPStan\Analyser\Error[]
+	 * @return Error[]
 	 */
 	private function runAnalyse(array $files): array
 	{
-		$files = array_map(function (string $file): string {
-			return $this->getFileHelper()->normalizePath($file);
-		}, $files);
-		/** @var \PHPStan\Analyser\Analyser $analyser */
+		$files = array_map(fn (string $file): string => $this->getFileHelper()->normalizePath($file), $files);
+		/** @var Analyser $analyser */
 		$analyser = self::getContainer()->getByType(Analyser::class);
-		/** @var \PHPStan\Analyser\Error[] $errors */
+		/** @var Error[] $errors */
 		$errors = $analyser->analyse($files)->getErrors();
 		return $errors;
 	}

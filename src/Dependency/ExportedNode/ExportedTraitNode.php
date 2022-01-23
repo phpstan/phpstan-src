@@ -4,15 +4,13 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use ReturnTypeWillChange;
 
 class ExportedTraitNode implements ExportedNode, JsonSerializable
 {
 
-	private string $traitName;
-
-	public function __construct(string $traitName)
+	public function __construct(private string $traitName)
 	{
-		$this->traitName = $traitName;
 	}
 
 	public function equals(ExportedNode $node): bool
@@ -41,7 +39,7 @@ class ExportedTraitNode implements ExportedNode, JsonSerializable
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [

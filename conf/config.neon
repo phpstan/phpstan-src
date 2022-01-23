@@ -91,11 +91,26 @@ parameters:
 	resultCachePath: %tmpDir%/resultCache.php
 	resultCacheChecksProjectExtensionFilesDependencies: false
 	staticReflectionClassNamePatterns:
-		- '#^PhpParser\\#'
-		- '#^PHPStan\\#'
-		- '#^Hoa\\#'
-		- '#^Symfony\\Polyfill\\Php80\\#'
-		- '#^Composer\\#'
+		- '#^PhpParser\\#i'
+		- '#^PHPStan\\#i'
+		- '#^Hoa\\#i'
+		- '#^Symfony\\Polyfill\\Php80\\#i'
+		- '#^Symfony\\Polyfill\\Mbstring\\#i'
+		- '#^Symfony\\Polyfill\\Intl\\Normalizer\\#i'
+		- '#^Symfony\\Polyfill\\Php73\\#i'
+		- '#^Symfony\\Polyfill\\Php74\\#i'
+		- '#^Symfony\\Polyfill\\Php72\\#i'
+		- '#^Symfony\\Polyfill\\Intl\\Grapheme\\#i'
+		- '#^Composer\\#i'
+		- '#^ReflectionUnionType$#i'
+		- '#^Attribute$#i'
+		- '#^ReturnTypeWillChange$#i'
+		- '#^ReflectionIntersectionType$#i'
+		- '#^UnitEnum$#i'
+		- '#^BackedEnum$#i'
+		- '#^ReflectionEnum$#i'
+		- '#^ReflectionEnumUnitCase$#i'
+		- '#^ReflectionEnumBackedCase$#i'
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- LIBXML_VERSION
@@ -413,7 +428,7 @@ services:
 		class: PHPStan\Analyser\NodeScopeResolver
 		arguments:
 			parser: @defaultAnalysisParser
-			classReflector: @nodeScopeResolverClassReflector
+			reflector: @nodeScopeResolverReflector
 			polluteScopeWithLoopInitialAssignments: %polluteScopeWithLoopInitialAssignments%
 			polluteScopeWithAlwaysIterableForeach: %polluteScopeWithAlwaysIterableForeach%
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
@@ -614,6 +629,8 @@ services:
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator
+		arguments:
+			disableRuntimeReflectionProvider: %featureToggles.disableRuntimeReflectionProvider%
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker
@@ -680,7 +697,7 @@ services:
 	-
 		class: PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider
 		arguments:
-			functionReflector: @betterReflectionFunctionReflector
+			reflector: @betterReflectionReflector
 
 	-
 		class: PHPStan\Reflection\SignatureMap\SignatureMapParser
@@ -801,6 +818,18 @@ services:
 		arguments:
 			checkAdvancedIsset: %checkAdvancedIsset%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+
+	-
+		class: PHPStan\Rules\Methods\MethodCallCheck
+		arguments:
+			checkFunctionNameCase: %checkFunctionNameCase%
+			reportMagicMethods: %reportMagicMethods%
+
+	-
+		class: PHPStan\Rules\Methods\StaticMethodCallCheck
+		arguments:
+			checkFunctionNameCase: %checkFunctionNameCase%
+			reportMagicMethods: %reportMagicMethods%
 
 	-
 		# checked as part of OverridingMethodRule
@@ -1082,11 +1111,6 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
-		class: PHPStan\Type\Php\GetoptFunctionDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicFunctionReturnTypeExtension
-
-	-
 		class: PHPStan\Type\Php\GetParentClassDynamicFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
@@ -1257,7 +1281,17 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\ThrowableReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\ParseUrlFunctionDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\TriggerErrorDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
@@ -1303,6 +1337,11 @@ services:
 
 	-
 		class: PHPStan\Type\Php\DefinedConstantTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+
+	-
+		class: PHPStan\Type\Php\FunctionExistsFunctionTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
@@ -1388,6 +1427,11 @@ services:
 
 	-
 		class: PHPStan\Type\Php\IsAFunctionTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+
+	-
+		class: PHPStan\Type\Php\ArrayIsListFunctionTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
@@ -1532,6 +1576,7 @@ services:
 		class: PHPStan\Parser\RichParser
 		arguments:
 			parser: @currentPhpVersionPhpParser
+			lexer: @currentPhpVersionLexer
 		autowired: no
 
 	currentPhpVersionSimpleParser:
@@ -1599,36 +1644,46 @@ services:
 		factory: @PHPStan\Reflection\BetterReflection\BetterReflectionSourceLocatorFactory::create
 		autowired: false
 
+	originalBetterReflectionReflector:
+		class: PHPStan\BetterReflection\Reflector\DefaultReflector
+		arguments:
+			sourceLocator: @betterReflectionSourceLocator
+
+	betterReflectionReflector:
+		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingReflector
+		arguments:
+			reflector: @originalBetterReflectionReflector
+		autowired: false
+
+	# deprecated
 	betterReflectionClassReflector:
-		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingClassReflector
+		class: PHPStan\BetterReflection\Reflector\ClassReflector
 		arguments:
 			sourceLocator: @betterReflectionSourceLocator
 		autowired: false
 
-	nodeScopeResolverClassReflector:
-		factory: @betterReflectionClassReflector
-		autowired: false
-
+	# deprecated
 	betterReflectionFunctionReflector:
-		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingFunctionReflector
+		class: PHPStan\BetterReflection\Reflector\FunctionReflector
 		arguments:
-			classReflector: @betterReflectionClassReflector
 			sourceLocator: @betterReflectionSourceLocator
 		autowired: false
 
+	# deprecated
 	betterReflectionConstantReflector:
-		class: PHPStan\Reflection\BetterReflection\Reflector\MemoizingConstantReflector
+		class: PHPStan\BetterReflection\Reflector\ConstantReflector
 		arguments:
-			classReflector: @betterReflectionClassReflector
 			sourceLocator: @betterReflectionSourceLocator
+		autowired: false
+
+	nodeScopeResolverReflector:
+		factory: @betterReflectionReflector
 		autowired: false
 
 	betterReflectionProvider:
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
 		arguments:
-			classReflector: @betterReflectionClassReflector
-			functionReflector: @betterReflectionFunctionReflector
-			constantReflector: @betterReflectionConstantReflector
+			reflector: @betterReflectionReflector
 		autowired: false
 
 	regexParser:
@@ -1668,10 +1723,12 @@ services:
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory
 
 	-
-		class: PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
+		class: PHPStan\Reflection\BetterReflection\SourceStubber\PhpStormStubsSourceStubberFactory
 		arguments:
 			phpParser: @php8PhpParser
-			phpVersionId: %phpVersion%
+
+	-
+		factory: @PHPStan\Reflection\BetterReflection\SourceStubber\PhpStormStubsSourceStubberFactory::create()
 		autowired:
 			- PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber
 
@@ -1744,6 +1801,7 @@ services:
 		class: PHPStan\Command\ErrorFormatter\GithubErrorFormatter
 		arguments:
 			relativePathHelper: @simpleRelativePathHelper
+			errorFormatter: @errorFormatter.table
 
 	errorFormatter.teamcity:
 		class: PHPStan\Command\ErrorFormatter\TeamcityErrorFormatter

@@ -12,18 +12,16 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
+ * @implements Rule<Node\Stmt\Expression>
  */
 class CallToMethodStatementWithoutSideEffectsRule implements Rule
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
@@ -47,11 +45,9 @@ class CallToMethodStatementWithoutSideEffectsRule implements Rule
 
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($methodCall->var),
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $methodCall->var),
 			'',
-			static function (Type $type) use ($methodName): bool {
-				return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();
-			}
+			static fn (Type $type): bool => $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes(),
 		);
 		$calledOnType = $typeResult->getType();
 		if ($calledOnType instanceof ErrorType) {
@@ -66,10 +62,12 @@ class CallToMethodStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$method = $calledOnType->getMethod($methodName, $scope);
-		if ($method->hasSideEffects()->no()) {
-			$throwsType = $method->getThrowType();
-			if ($throwsType !== null && !$throwsType instanceof VoidType) {
-				return [];
+		if ($method->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
+			if (!$node->expr->isFirstClassCallable()) {
+				$throwsType = $method->getThrowType();
+				if ($throwsType !== null && !$throwsType instanceof VoidType) {
+					return [];
+				}
 			}
 
 			$methodResult = $scope->getType($methodCall);
@@ -82,7 +80,7 @@ class CallToMethodStatementWithoutSideEffectsRule implements Rule
 					'Call to %s %s::%s() on a separate line has no effect.',
 					$method->isStatic() ? 'static method' : 'method',
 					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName()
+					$method->getName(),
 				))->build(),
 			];
 		}

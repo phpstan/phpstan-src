@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -10,8 +11,10 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use function array_map;
+use function sprintf;
 
-class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class ArrayTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -67,9 +70,6 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param ArrayType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(ArrayType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -77,7 +77,7 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -92,7 +92,7 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					new ConstantArrayType([], []),
 					new ConstantArrayType(
 						[new ConstantIntegerType(0)],
-						[new MixedType()]
+						[new MixedType()],
 					),
 					new ConstantArrayType([
 						new ConstantIntegerType(0),
@@ -100,7 +100,7 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					], [
 						new StringType(),
 						new MixedType(),
-					])
+					]),
 				),
 				TrinaryLogic::createYes(),
 			],
@@ -132,21 +132,18 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param ArrayType $acceptingType
-	 * @param Type $acceptedType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(
 		ArrayType $acceptingType,
 		Type $acceptedType,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$actualResult = $acceptingType->accepts($acceptedType, true);
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -165,12 +162,10 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataDescribe
-	 * @param ArrayType $type
-	 * @param string $expectedDescription
 	 */
 	public function testDescribe(
 		ArrayType $type,
-		string $expectedDescription
+		string $expectedDescription,
 	): void
 	{
 		$this->assertSame($expectedDescription, $type->describe(VerbosityLevel::precise()));
@@ -178,24 +173,22 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	public function dataInferTemplateTypes(): array
 	{
-		$templateType = static function (string $name): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				new MixedType(),
-				TemplateTypeVariance::createInvariant()
-			);
-		};
+		$templateType = static fn (string $name): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'valid templated item' => [
 				new ArrayType(
 					new MixedType(),
-					new ObjectType('DateTime')
+					new ObjectType('DateTime'),
 				),
 				new ArrayType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				['T' => 'DateTime'],
 			],
@@ -203,7 +196,7 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				new MixedType(),
 				new ArrayType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				[],
 			],
@@ -211,7 +204,7 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				new StringType(),
 				new ArrayType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				[],
 			],
@@ -221,11 +214,11 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					new UnionType([
 						new StringType(),
 						new IntegerType(),
-					])
+					]),
 				),
 				new ArrayType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				['T' => 'int|string'],
 			],
@@ -234,16 +227,16 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					new StringType(),
 					new ArrayType(
 						new MixedType(),
-						new StringType()
+						new StringType(),
 					),
 					new ArrayType(
 						new MixedType(),
-						new IntegerType()
+						new IntegerType(),
 					),
 				]),
 				new ArrayType(
 					new MixedType(),
-					$templateType('T')
+					$templateType('T'),
 				),
 				['T' => 'int|string'],
 			],
@@ -260,9 +253,7 @@ class ArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$this->assertSame(
 			$expectedTypes,
-			array_map(static function (Type $type): string {
-				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes())
+			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
 	}
 

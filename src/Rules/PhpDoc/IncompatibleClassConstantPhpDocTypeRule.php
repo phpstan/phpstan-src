@@ -11,26 +11,23 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<Node\Stmt\ClassConst>
+ * @implements Rule<Node\Stmt\ClassConst>
  */
 class IncompatibleClassConstantPhpDocTypeRule implements Rule
 {
 
-	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
-
-	private UnresolvableTypeHelper $unresolvableTypeHelper;
-
 	public function __construct(
-		GenericObjectTypeCheck $genericObjectTypeCheck,
-		UnresolvableTypeHelper $unresolvableTypeHelper
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
 	)
 	{
-		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
-		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
 	}
 
 	public function getNodeType(): string
@@ -41,7 +38,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$errors = [];
@@ -54,7 +51,6 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 	}
 
 	/**
-	 * @param string $constantName
 	 * @return RuleError[]
 	 */
 	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
@@ -77,7 +73,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag @var for constant %s::%s contains unresolvable type.',
 				$constantReflection->getDeclaringClass()->getName(),
-				$constantName
+				$constantName,
 			))->build();
 		} else {
 			$nativeType = ConstantTypeHelper::getTypeFromValue($constantReflection->getValue());
@@ -89,7 +85,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 					$constantReflection->getDeclaringClass()->getDisplayName(),
 					$constantName,
 					$phpDocType->describe($verbosity),
-					$nativeType->describe(VerbosityLevel::value())
+					$nativeType->describe(VerbosityLevel::value()),
 				))->build();
 
 			} elseif ($isSuperType->maybe()) {
@@ -98,7 +94,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 					$constantReflection->getDeclaringClass()->getDisplayName(),
 					$constantName,
 					$phpDocType->describe($verbosity),
-					$nativeType->describe(VerbosityLevel::value())
+					$nativeType->describe(VerbosityLevel::value()),
 				))->build();
 			}
 		}
@@ -109,25 +105,25 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 		return array_merge($errors, $this->genericObjectTypeCheck->check(
 			$phpDocType,
 			sprintf(
-				'PHPDoc tag @var for constant %s::%s contains generic type %%s but class %%s is not generic.',
+				'PHPDoc tag @var for constant %s::%s contains generic type %%s but %%s %%s is not generic.',
 				$className,
-				$escapedConstantName
+				$escapedConstantName,
 			),
 			sprintf(
-				'Generic type %%s in PHPDoc tag @var for constant %s::%s does not specify all template types of class %%s: %%s',
+				'Generic type %%s in PHPDoc tag @var for constant %s::%s does not specify all template types of %%s %%s: %%s',
 				$className,
-				$escapedConstantName
+				$escapedConstantName,
 			),
 			sprintf(
-				'Generic type %%s in PHPDoc tag @var for constant %s::%s specifies %%d template types, but class %%s supports only %%d: %%s',
+				'Generic type %%s in PHPDoc tag @var for constant %s::%s specifies %%d template types, but %%s %%s supports only %%d: %%s',
 				$className,
-				$escapedConstantName
+				$escapedConstantName,
 			),
 			sprintf(
-				'Type %%s in generic type %%s in PHPDoc tag @var for constant %s::%s is not subtype of template type %%s of class %%s.',
+				'Type %%s in generic type %%s in PHPDoc tag @var for constant %s::%s is not subtype of template type %%s of %%s %%s.',
 				$className,
-				$escapedConstantName
-			)
+				$escapedConstantName,
+			),
 		));
 	}
 

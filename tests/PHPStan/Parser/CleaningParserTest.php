@@ -7,7 +7,9 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\File\FileReader;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Testing\PHPStanTestCase;
+use const PHP_VERSION_ID;
 
 class CleaningParserTest extends PHPStanTestCase
 {
@@ -18,25 +20,56 @@ class CleaningParserTest extends PHPStanTestCase
 			[
 				__DIR__ . '/data/cleaning-1-before.php',
 				__DIR__ . '/data/cleaning-1-after.php',
+				PHP_VERSION_ID,
+			],
+			[
+				__DIR__ . '/data/cleaning-php-version-before.php',
+				__DIR__ . '/data/cleaning-php-version-after-81.php',
+				80100,
+			],
+			[
+				__DIR__ . '/data/cleaning-php-version-before.php',
+				__DIR__ . '/data/cleaning-php-version-after-81.php',
+				80200,
+			],
+			[
+				__DIR__ . '/data/cleaning-php-version-before.php',
+				__DIR__ . '/data/cleaning-php-version-after-74.php',
+				70400,
+			],
+			[
+				__DIR__ . '/data/cleaning-php-version-before2.php',
+				__DIR__ . '/data/cleaning-php-version-after-81.php',
+				80100,
+			],
+			[
+				__DIR__ . '/data/cleaning-php-version-before2.php',
+				__DIR__ . '/data/cleaning-php-version-after-81.php',
+				80200,
+			],
+			[
+				__DIR__ . '/data/cleaning-php-version-before2.php',
+				__DIR__ . '/data/cleaning-php-version-after-74.php',
+				70400,
 			],
 		];
 	}
 
 	/**
 	 * @dataProvider dataParse
-	 * @param string $beforeFile
-	 * @param string $afterFile
 	 */
 	public function testParse(
 		string $beforeFile,
-		string $afterFile
+		string $afterFile,
+		int $phpVersionId,
 	): void
 	{
 		$parser = new CleaningParser(
 			new SimpleParser(
 				new Php7(new Emulative()),
-				new NameResolver()
-			)
+				new NameResolver(),
+			),
+			new PhpVersion($phpVersionId),
 		);
 		$printer = new Standard();
 		$ast = $parser->parseFile($beforeFile);

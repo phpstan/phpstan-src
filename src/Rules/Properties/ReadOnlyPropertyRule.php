@@ -15,11 +15,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 class ReadOnlyPropertyRule implements Rule
 {
 
-	private PhpVersion $phpVersion;
-
-	public function __construct(PhpVersion $phpVersion)
+	public function __construct(private PhpVersion $phpVersion)
 	{
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function getNodeType(): string

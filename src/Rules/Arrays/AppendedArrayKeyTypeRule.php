@@ -2,33 +2,31 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Assign>
+ * @deprecated Replaced by PHPStan\Rules\Properties\TypesAssignedToPropertiesRule
+ * @implements Rule<Node\Expr\Assign>
  */
-class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
+class AppendedArrayKeyTypeRule implements Rule
 {
 
-	private PropertyReflectionFinder $propertyReflectionFinder;
-
-	private bool $checkUnionTypes;
-
 	public function __construct(
-		PropertyReflectionFinder $propertyReflectionFinder,
-		bool $checkUnionTypes
+		private PropertyReflectionFinder $propertyReflectionFinder,
+		private bool $checkUnionTypes,
 	)
 	{
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
-		$this->checkUnionTypes = $checkUnionTypes;
 	}
 
 	public function getNodeType(): string
@@ -36,15 +34,15 @@ class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
 		return Assign::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!($node->var instanceof ArrayDimFetch)) {
 			return [];
 		}
 
 		if (
-			!$node->var->var instanceof \PhpParser\Node\Expr\PropertyFetch
-			&& !$node->var->var instanceof \PhpParser\Node\Expr\StaticPropertyFetch
+			!$node->var->var instanceof Node\Expr\PropertyFetch
+			&& !$node->var->var instanceof Node\Expr\StaticPropertyFetch
 		) {
 			return [];
 		}
@@ -81,7 +79,7 @@ class AppendedArrayKeyTypeRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Array (%s) does not accept key %s.',
 					$arrayType->describe($verbosity),
-					$keyType->describe(VerbosityLevel::value())
+					$keyType->describe(VerbosityLevel::value()),
 				))->build(),
 			];
 		}

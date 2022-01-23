@@ -9,17 +9,8 @@ use PHPStan\Type\Type;
 class TemplateTag
 {
 
-	private string $name;
-
-	private \PHPStan\Type\Type $bound;
-
-	private TemplateTypeVariance $variance;
-
-	public function __construct(string $name, Type $bound, TemplateTypeVariance $variance)
+	public function __construct(private string $name, private Type $bound, private TemplateTypeVariance $variance)
 	{
-		$this->name = $name;
-		$this->bound = $bound;
-		$this->variance = $variance;
 	}
 
 	public function getName(): string

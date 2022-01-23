@@ -2,7 +2,9 @@
 
 namespace PHPStan\Process\Runnable;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
+use function sprintf;
 
 class RunnableQueueTest extends TestCase
 {
@@ -104,7 +106,7 @@ class RunnableQueueTest extends TestCase
 
 		$promise->then(static function () use ($logger): void {
 			$logger->log('Should not happen');
-		}, static function (\Exception $e) use ($logger): void {
+		}, static function (Exception $e) use ($logger): void {
 			$logger->log(sprintf('Else callback in test called: %s', $e->getMessage()));
 		});
 		$promise->cancel();

@@ -5,12 +5,10 @@ namespace PHPStan\Cache;
 class MemoryCacheStorage implements CacheStorage
 {
 
-	/** @var array<string, \PHPStan\Cache\CacheItem> */
+	/** @var array<string, CacheItem> */
 	private array $storage = [];
 
 	/**
-	 * @param string $key
-	 * @param string $variableKey
 	 * @return mixed|null
 	 */
 	public function load(string $key, string $variableKey)
@@ -28,10 +26,7 @@ class MemoryCacheStorage implements CacheStorage
 	}
 
 	/**
-	 * @param string $key
-	 * @param string $variableKey
 	 * @param mixed $data
-	 * @return void
 	 */
 	public function save(string $key, string $variableKey, $data): void
 	{

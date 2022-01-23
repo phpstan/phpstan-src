@@ -4,33 +4,35 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Rules\Rule;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Assign>
+ * @implements Rule<PropertyAssignNode>
  */
 class AccessPropertiesInAssignRule implements Rule
 {
 
-	private \PHPStan\Rules\Properties\AccessPropertiesRule $accessPropertiesRule;
-
-	public function __construct(AccessPropertiesRule $accessPropertiesRule)
+	public function __construct(private AccessPropertiesRule $accessPropertiesRule)
 	{
-		$this->accessPropertiesRule = $accessPropertiesRule;
 	}
 
 	public function getNodeType(): string
 	{
-		return Node\Expr\Assign::class;
+		return PropertyAssignNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->var instanceof Node\Expr\PropertyFetch) {
+		if (!$node->getPropertyFetch() instanceof Node\Expr\PropertyFetch) {
 			return [];
 		}
 
-		return $this->accessPropertiesRule->processNode($node->var, $scope);
+		if ($node->isAssignOp()) {
+			return [];
+		}
+
+		return $this->accessPropertiesRule->processNode($node->getPropertyFetch(), $scope);
 	}
 
 }

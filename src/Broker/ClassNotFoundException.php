@@ -2,15 +2,15 @@
 
 namespace PHPStan\Broker;
 
-class ClassNotFoundException extends \PHPStan\AnalysedCodeException
+use PHPStan\AnalysedCodeException;
+use function sprintf;
+
+class ClassNotFoundException extends AnalysedCodeException
 {
 
-	private string $className;
-
-	public function __construct(string $functionName)
+	public function __construct(private string $className)
 	{
-		parent::__construct(sprintf('Class %s was not found while trying to analyse it - discovering symbols is probably not configured properly.', $functionName));
-		$this->className = $functionName;
+		parent::__construct(sprintf('Class %s was not found while trying to analyse it - discovering symbols is probably not configured properly.', $className));
 	}
 
 	public function getClassName(): string

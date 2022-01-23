@@ -11,9 +11,11 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\StringType;
@@ -22,28 +24,24 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
+use function array_map;
+use function array_merge;
+use function in_array;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\StaticPropertyFetch>
+ * @implements Rule<Node\Expr\StaticPropertyFetch>
  */
-class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
+class AccessStaticPropertiesRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		RuleLevelHelper $ruleLevelHelper,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck
+		private ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 	}
 
 	public function getNodeType(): string
@@ -56,9 +54,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 		if ($node->name instanceof Node\VarLikeIdentifier) {
 			$names = [$node->name->name];
 		} else {
-			$names = array_map(static function (ConstantStringType $type): string {
-				return $type->getValue();
-			}, TypeUtils::getConstantStrings($scope->getType($node->name)));
+			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), TypeUtils::getConstantStrings($scope->getType($node->name)));
 		}
 
 		$errors = [];
@@ -70,9 +66,6 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param StaticPropertyFetch $node
-	 * @param string $name
 	 * @return RuleError[]
 	 */
 	private function processSingleProperty(Scope $scope, StaticPropertyFetch $node, string $name): array
@@ -87,7 +80,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 						RuleErrorBuilder::message(sprintf(
 							'Accessing %s::$%s outside of class scope.',
 							$class,
-							$name
+							$name,
 						))->build(),
 					];
 				}
@@ -98,7 +91,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 						RuleErrorBuilder::message(sprintf(
 							'Accessing %s::$%s outside of class scope.',
 							$class,
-							$name
+							$name,
 						))->build(),
 					];
 				}
@@ -109,13 +102,13 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 							$scope->getClassReflection()->getDisplayName(),
 							$scope->getFunctionName(),
 							$name,
-							$scope->getClassReflection()->getDisplayName()
+							$scope->getClassReflection()->getDisplayName(),
 						))->build(),
 					];
 				}
 
 				if ($scope->getFunctionName() === null) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 
 				$currentMethodReflection = $scope->getClassReflection()->getNativeMethod($scope->getFunctionName());
@@ -135,7 +128,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 						RuleErrorBuilder::message(sprintf(
 							'Access to static property $%s on an unknown class %s.',
 							$name,
-							$class
+							$class,
 						))->discoveringSymbolsTip()->build(),
 					];
 				} else {
@@ -147,11 +140,9 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 		} else {
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($node->class),
+				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->class),
 				sprintf('Access to static property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
-				static function (Type $type) use ($name): bool {
-					return $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes();
-				}
+				static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes(),
 			);
 			$classType = $classTypeResult->getType();
 			if ($classType instanceof ErrorType) {
@@ -178,7 +169,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access static property $%s on %s.',
 					$name,
-					$typeForDescribe->describe(VerbosityLevel::typeOnly())
+					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 				))->build(),
 			]);
 		}
@@ -192,7 +183,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Access to an undefined static property %s::$%s.',
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
-					$name
+					$name,
 				))->build(),
 			]);
 		}
@@ -210,7 +201,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Static access to instance property %s::$%s.',
 					$property->getDeclaringClass()->getDisplayName(),
-					$name
+					$name,
 				))->build(),
 			]);
 		}
@@ -221,7 +212,7 @@ class AccessStaticPropertiesRule implements \PHPStan\Rules\Rule
 					'Access to %s property $%s of class %s.',
 					$property->isPrivate() ? 'private' : 'protected',
 					$name,
-					$property->getDeclaringClass()->getDisplayName()
+					$property->getDeclaringClass()->getDisplayName(),
 				))->build(),
 			]);
 		}

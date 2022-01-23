@@ -2,37 +2,40 @@
 
 namespace PHPStan\Rules\Operators;
 
+use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr>
+ * @implements Rule<Node\Expr>
  */
-class InvalidUnaryOperationRule implements \PHPStan\Rules\Rule
+class InvalidUnaryOperationRule implements Rule
 {
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr::class;
+		return Node\Expr::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
-			!$node instanceof \PhpParser\Node\Expr\UnaryPlus
-			&& !$node instanceof \PhpParser\Node\Expr\UnaryMinus
-			&& !$node instanceof \PhpParser\Node\Expr\BitwiseNot
+			!$node instanceof Node\Expr\UnaryPlus
+			&& !$node instanceof Node\Expr\UnaryMinus
+			&& !$node instanceof Node\Expr\BitwiseNot
 		) {
 			return [];
 		}
 
 		if ($scope->getType($node) instanceof ErrorType) {
 
-			if ($node instanceof \PhpParser\Node\Expr\UnaryPlus) {
+			if ($node instanceof Node\Expr\UnaryPlus) {
 				$operator = '+';
-			} elseif ($node instanceof \PhpParser\Node\Expr\UnaryMinus) {
+			} elseif ($node instanceof Node\Expr\UnaryMinus) {
 				$operator = '-';
 			} else {
 				$operator = '~';
@@ -41,7 +44,7 @@ class InvalidUnaryOperationRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Unary operation "%s" on %s results in an error.',
 					$operator,
-					$scope->getType($node->expr)->describe(VerbosityLevel::value())
+					$scope->getType($node->expr)->describe(VerbosityLevel::value()),
 				))->line($node->expr->getLine())->build(),
 			];
 		}

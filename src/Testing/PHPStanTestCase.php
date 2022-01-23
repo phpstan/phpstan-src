@@ -2,7 +2,9 @@
 
 namespace PHPStan\Testing;
 
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\DirectScopeFactory;
+use PHPStan\Analyser\Error;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeFactory;
@@ -10,6 +12,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\BetterReflection\Reflector\ClassReflector;
 use PHPStan\BetterReflection\Reflector\ConstantReflector;
 use PHPStan\BetterReflection\Reflector\FunctionReflector;
+use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\Broker\Broker;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
@@ -24,13 +27,24 @@ use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\TypeAliasResolver;
+use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\TestCase;
+use function array_merge;
+use function implode;
+use function is_dir;
+use function mkdir;
+use function rtrim;
+use function sha1;
+use function sprintf;
+use function sys_get_temp_dir;
+use const DIRECTORY_SEPARATOR;
+use const PHP_VERSION_ID;
 
 /** @api */
-abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
+abstract class PHPStanTestCase extends TestCase
 {
 
-	/** @var bool */
-	public static $useStaticReflectionProvider = false;
+	public static bool $useStaticReflectionProvider = false;
 
 	/** @var array<string, Container> */
 	private static array $containers = [];
@@ -64,6 +78,14 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 				(static function (string $file) use ($container): void {
 					require_once $file;
 				})($bootstrapFile);
+			}
+
+			if (PHP_VERSION_ID >= 80000) {
+				require_once __DIR__ . '/../../stubs/runtime/Enum/UnitEnum.php';
+				require_once __DIR__ . '/../../stubs/runtime/Enum/BackedEnum.php';
+				require_once __DIR__ . '/../../stubs/runtime/Enum/ReflectionEnum.php';
+				require_once __DIR__ . '/../../stubs/runtime/Enum/ReflectionEnumUnitCase.php';
+				require_once __DIR__ . '/../../stubs/runtime/Enum/ReflectionEnumBackedCase.php';
 			}
 		}
 
@@ -100,7 +122,13 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 		return self::getContainer()->getByType(ReflectionProvider::class);
 	}
 
+	public static function getReflector(): Reflector
+	{
+		return self::getContainer()->getService('betterReflectionReflector');
+	}
+
 	/**
+	 * @deprecated Use getReflector() instead.
 	 * @return array{ClassReflector, FunctionReflector, ConstantReflector}
 	 */
 	public static function getReflectors(): array
@@ -126,14 +154,14 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 			$reflectionProvider,
 			$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
 			$container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
-			new \PhpParser\PrettyPrinter\Standard(),
+			new Standard(),
 			$typeSpecifier,
 			new PropertyReflectionFinder(),
 			$this->getParser(),
 			self::getContainer()->getByType(NodeScopeResolver::class),
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container,
-			$container->getByType(PhpVersion::class)
+			$container->getByType(PhpVersion::class),
 		);
 	}
 
@@ -148,7 +176,7 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 			$globalTypeAliases,
 			$container->getByType(TypeStringResolver::class),
 			$container->getByType(TypeNodeResolver::class),
-			$reflectionProvider
+			$reflectionProvider,
 		);
 	}
 
@@ -165,9 +193,6 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 	/**
 	 * Provides a DIRECTORY_SEPARATOR agnostic assertion helper, to compare file paths.
 	 *
-	 * @param string $expected
-	 * @param string $actual
-	 * @param string $message
 	 */
 	protected function assertSamePaths(string $expected, string $actual, string $message = ''): void
 	{
@@ -175,6 +200,27 @@ abstract class PHPStanTestCase extends \PHPUnit\Framework\TestCase
 		$actual = $this->getFileHelper()->normalizePath($actual);
 
 		$this->assertSame($expected, $actual, $message);
+	}
+
+	/**
+	 * @param Error[]|string[] $errors
+	 */
+	protected function assertNoErrors(array $errors): void
+	{
+		try {
+			$this->assertCount(0, $errors);
+		} catch (ExpectationFailedException $e) {
+			$messages = [];
+			foreach ($errors as $error) {
+				if ($error instanceof Error) {
+					$messages[] = sprintf("- %s\n  in %s on line %d\n", rtrim($error->getMessage(), '.'), $error->getFile(), $error->getLine());
+				} else {
+					$messages[] = $error;
+				}
+			}
+
+			$this->fail($e->getMessage() . "\n\nEmitted errors:\n" . implode("\n", $messages));
+		}
 	}
 
 	protected function skipIfNotOnWindows(): void

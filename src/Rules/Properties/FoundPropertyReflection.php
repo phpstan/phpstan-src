@@ -13,29 +13,14 @@ use PHPStan\Type\Type;
 class FoundPropertyReflection implements PropertyReflection
 {
 
-	private PropertyReflection $originalPropertyReflection;
-
-	private Scope $scope;
-
-	private string $propertyName;
-
-	private Type $readableType;
-
-	private Type $writableType;
-
 	public function __construct(
-		PropertyReflection $originalPropertyReflection,
-		Scope $scope,
-		string $propertyName,
-		Type $readableType,
-		Type $writableType
+		private PropertyReflection $originalPropertyReflection,
+		private Scope $scope,
+		private string $propertyName,
+		private Type $readableType,
+		private Type $writableType,
 	)
 	{
-		$this->originalPropertyReflection = $originalPropertyReflection;
-		$this->scope = $scope;
-		$this->propertyName = $propertyName;
-		$this->readableType = $readableType;
-		$this->writableType = $writableType;
 	}
 
 	public function getScope(): Scope
@@ -115,15 +100,20 @@ class FoundPropertyReflection implements PropertyReflection
 
 	public function isNative(): bool
 	{
-		$reflection = $this->originalPropertyReflection;
-		while ($reflection instanceof WrapperPropertyReflection) {
-			$reflection = $reflection->getOriginalReflection();
-		}
-
-		return $reflection instanceof PhpPropertyReflection;
+		return $this->getNativeReflection() !== null;
 	}
 
 	public function getNativeType(): ?Type
+	{
+		$reflection = $this->getNativeReflection();
+		if ($reflection === null) {
+			return null;
+		}
+
+		return $reflection->getNativeType();
+	}
+
+	public function getNativeReflection(): ?PhpPropertyReflection
 	{
 		$reflection = $this->originalPropertyReflection;
 		while ($reflection instanceof WrapperPropertyReflection) {
@@ -134,7 +124,7 @@ class FoundPropertyReflection implements PropertyReflection
 			return null;
 		}
 
-		return $reflection->getNativeType();
+		return $reflection;
 	}
 
 }

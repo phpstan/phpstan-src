@@ -18,15 +18,14 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function in_array;
+use function strtolower;
 
 class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	private PhpVersion $phpVersion;
-
-	public function __construct(PhpVersion $phpVersion)
+	public function __construct(private PhpVersion $phpVersion)
 	{
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -53,7 +52,7 @@ class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFunction
 				new ConstantStringType('none'),
 				new ConstantStringType('long'),
 				new ConstantStringType('entity'),
-				...$ranges
+				...$ranges,
 			);
 		}
 

@@ -2,19 +2,19 @@
 
 namespace PHPStan\File;
 
-class FileExcluderTest extends \PHPStan\Testing\PHPStanTestCase
+use PHPStan\Testing\PHPStanTestCase;
+
+class FileExcluderTest extends PHPStanTestCase
 {
 
 	/**
 	 * @dataProvider dataExcludeOnWindows
-	 * @param string $filePath
 	 * @param string[] $analyseExcludes
-	 * @param bool $isExcluded
 	 */
 	public function testFilesAreExcludedFromAnalysingOnWindows(
 		string $filePath,
 		array $analyseExcludes,
-		bool $isExcluded
+		bool $isExcluded,
 	): void
 	{
 		$this->skipIfNotOnWindows();
@@ -117,14 +117,12 @@ class FileExcluderTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataExcludeOnUnix
-	 * @param string $filePath
 	 * @param string[] $analyseExcludes
-	 * @param bool $isExcluded
 	 */
 	public function testFilesAreExcludedFromAnalysingOnUnix(
 		string $filePath,
 		array $analyseExcludes,
-		bool $isExcluded
+		bool $isExcluded,
 	): void
 	{
 		$this->skipIfNotOnUnix();

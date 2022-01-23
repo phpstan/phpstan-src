@@ -4,8 +4,10 @@ namespace PHPStan\Rules\Operators;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
@@ -15,18 +17,16 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\BinaryOp>
+ * @implements Rule<Node\Expr\BinaryOp>
  */
-class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
+class InvalidComparisonOperationRule implements Rule
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
@@ -61,7 +61,7 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 					'Comparison operation "%s" between %s and %s results in an error.',
 					$node->getOperatorSigil(),
 					$scope->getType($node->left)->describe(VerbosityLevel::value()),
-					$scope->getType($node->right)->describe(VerbosityLevel::value())
+					$scope->getType($node->right)->describe(VerbosityLevel::value()),
 				))->line($node->left->getLine())->build(),
 			];
 		}
@@ -72,9 +72,7 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 	private function isNumberType(Scope $scope, Node\Expr $expr): bool
 	{
 		$acceptedType = new UnionType([new IntegerType(), new FloatType()]);
-		$onlyNumber = static function (Type $type) use ($acceptedType): bool {
-			return $acceptedType->accepts($type, true)->yes();
-		};
+		$onlyNumber = static fn (Type $type): bool => $acceptedType->accepts($type, true)->yes();
 
 		$type = $this->ruleLevelHelper->findTypeToCheck($scope, $expr, '', $onlyNumber)->getType();
 
@@ -96,9 +94,7 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 			$scope,
 			$expr,
 			'',
-			static function (Type $type) use ($acceptedType): bool {
-				return $acceptedType->isSuperTypeOf($type)->yes();
-			}
+			static fn (Type $type): bool => $acceptedType->isSuperTypeOf($type)->yes(),
 		)->getType();
 
 		if ($type instanceof ErrorType) {
@@ -110,7 +106,7 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 		}
 
 		$isSuperType = $acceptedType->isSuperTypeOf($type);
-		if ($type instanceof \PHPStan\Type\BenevolentUnionType) {
+		if ($type instanceof BenevolentUnionType) {
 			return !$isSuperType->no();
 		}
 
@@ -123,9 +119,7 @@ class InvalidComparisonOperationRule implements \PHPStan\Rules\Rule
 			$scope,
 			$expr,
 			'',
-			static function (Type $type): bool {
-				return $type->isArray()->yes();
-			}
+			static fn (Type $type): bool => $type->isArray()->yes(),
 		)->getType();
 
 		if (TypeCombinator::containsNull($type) && !$type instanceof NullType) {

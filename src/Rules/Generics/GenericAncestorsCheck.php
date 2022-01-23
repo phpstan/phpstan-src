@@ -2,50 +2,45 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PhpParser\Node;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_fill_keys;
+use function array_keys;
+use function array_map;
+use function array_merge;
+use function count;
+use function implode;
+use function in_array;
+use function sprintf;
 
 class GenericAncestorsCheck
 {
-
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Rules\Generics\GenericObjectTypeCheck $genericObjectTypeCheck;
-
-	private \PHPStan\Rules\Generics\VarianceCheck $varianceCheck;
-
-	private bool $checkGenericClassInNonGenericObjectType;
-
-	/** @var string[] */
-	private array $skipCheckGenericClasses;
 
 	/**
 	 * @param string[] $skipCheckGenericClasses
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		GenericObjectTypeCheck $genericObjectTypeCheck,
-		VarianceCheck $varianceCheck,
-		bool $checkGenericClassInNonGenericObjectType,
-		array $skipCheckGenericClasses
+		private ReflectionProvider $reflectionProvider,
+		private GenericObjectTypeCheck $genericObjectTypeCheck,
+		private VarianceCheck $varianceCheck,
+		private bool $checkGenericClassInNonGenericObjectType,
+		private array $skipCheckGenericClasses,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->genericObjectTypeCheck = $genericObjectTypeCheck;
-		$this->varianceCheck = $varianceCheck;
-		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
-		$this->skipCheckGenericClasses = $skipCheckGenericClasses;
 	}
 
 	/**
-	 * @param array<\PhpParser\Node\Name> $nameNodes
-	 * @param array<\PHPStan\Type\Type> $ancestorTypes
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param array<Node\Name> $nameNodes
+	 * @param array<Type> $ancestorTypes
+	 * @return RuleError[]
 	 */
 	public function check(
 		array $nameNodes,
@@ -59,12 +54,10 @@ class GenericAncestorsCheck
 		string $typeIsNotSubtypeMessage,
 		string $invalidTypeMessage,
 		string $genericClassInNonGenericObjectType,
-		string $invalidVarianceMessage
+		string $invalidVarianceMessage,
 	): array
 	{
-		$names = array_fill_keys(array_map(static function (Name $nameNode): string {
-			return $nameNode->toString();
-		}, $nameNodes), true);
+		$names = array_fill_keys(array_map(static fn (Name $nameNode): string => $nameNode->toString(), $nameNodes), true);
 
 		$unusedNames = $names;
 
@@ -93,7 +86,7 @@ class GenericAncestorsCheck
 				$classNotGenericMessage,
 				$notEnoughTypesMessage,
 				$extraTypesMessage,
-				$typeIsNotSubtypeMessage
+				$typeIsNotSubtypeMessage,
 			);
 			$messages = array_merge($messages, $genericObjectTypeCheckMessages);
 
@@ -108,7 +101,7 @@ class GenericAncestorsCheck
 			$variance = TemplateTypeVariance::createInvariant();
 			$messageContext = sprintf(
 				$invalidVarianceMessage,
-				$ancestorType->describe(VerbosityLevel::typeOnly())
+				$ancestorType->describe(VerbosityLevel::typeOnly()),
 			);
 			foreach ($this->varianceCheck->check($variance, $ancestorType, $messageContext) as $message) {
 				$messages[] = $message;
@@ -132,7 +125,7 @@ class GenericAncestorsCheck
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$genericClassInNonGenericObjectType,
 					$unusedName,
-					implode(', ', array_keys($unusedNameClassReflection->getTemplateTypeMap()->getTypes()))
+					implode(', ', array_keys($unusedNameClassReflection->getTemplateTypeMap()->getTypes())),
 				))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 			}
 		}

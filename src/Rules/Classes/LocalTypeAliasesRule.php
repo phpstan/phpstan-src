@@ -15,7 +15,11 @@ use PHPStan\Type\CircularTypeAliasErrorType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use function array_key_exists;
+use function in_array;
+use function sprintf;
 
 /**
  * @implements Rule<InClassNode>
@@ -23,25 +27,15 @@ use PHPStan\Type\TypeTraverser;
 class LocalTypeAliasesRule implements Rule
 {
 
-	/** @var array<string, string> */
-	private array $globalTypeAliases;
-
-	private ReflectionProvider $reflectionProvider;
-
-	private TypeNodeResolver $typeNodeResolver;
-
 	/**
 	 * @param array<string, string> $globalTypeAliases
 	 */
 	public function __construct(
-		array $globalTypeAliases,
-		ReflectionProvider $reflectionProvider,
-		TypeNodeResolver $typeNodeResolver
+		private array $globalTypeAliases,
+		private ReflectionProvider $reflectionProvider,
+		private TypeNodeResolver $typeNodeResolver,
 	)
 	{
-		$this->globalTypeAliases = $globalTypeAliases;
-		$this->reflectionProvider = $reflectionProvider;
-		$this->typeNodeResolver = $typeNodeResolver;
 	}
 
 	public function getNodeType(): string
@@ -89,8 +83,18 @@ class LocalTypeAliasesRule implements Rule
 				continue;
 			}
 
+			$resolvedName = $resolveName($aliasName);
 			if ($this->reflectionProvider->hasClass($resolveName($aliasName))) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as a class in scope of %s.', $aliasName, $className))->build();
+				$classReflection = $this->reflectionProvider->getClass($resolvedName);
+				$classLikeDescription = 'a class';
+				if ($classReflection->isInterface()) {
+					$classLikeDescription = 'an interface';
+				} elseif ($classReflection->isTrait()) {
+					$classLikeDescription = 'a trait';
+				} elseif ($classReflection->isEnum()) {
+					$classLikeDescription = 'an enum';
+				}
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as %s in scope of %s.', $aliasName, $classLikeDescription, $className))->build();
 				continue;
 			}
 
@@ -116,8 +120,18 @@ class LocalTypeAliasesRule implements Rule
 				continue;
 			}
 
-			if ($this->reflectionProvider->hasClass($resolveName($aliasName))) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as a class in scope of %s.', $aliasName, $className))->build();
+			$resolvedName = $resolveName($aliasName);
+			if ($this->reflectionProvider->hasClass($resolvedName)) {
+				$classReflection = $this->reflectionProvider->getClass($resolvedName);
+				$classLikeDescription = 'a class';
+				if ($classReflection->isInterface()) {
+					$classLikeDescription = 'an interface';
+				} elseif ($classReflection->isTrait()) {
+					$classLikeDescription = 'a trait';
+				} elseif ($classReflection->isEnum()) {
+					$classLikeDescription = 'an enum';
+				}
+				$errors[] = RuleErrorBuilder::message(sprintf('Type alias %s already exists as %s in scope of %s.', $aliasName, $classLikeDescription, $className))->build();
 				continue;
 			}
 
@@ -133,7 +147,7 @@ class LocalTypeAliasesRule implements Rule
 
 			$resolvedType = $typeAliasTag->getTypeAlias()->resolve($this->typeNodeResolver);
 			$foundError = false;
-			TypeTraverser::map($resolvedType, static function (\PHPStan\Type\Type $type, callable $traverse) use (&$errors, &$foundError, $aliasName): \PHPStan\Type\Type {
+			TypeTraverser::map($resolvedType, static function (Type $type, callable $traverse) use (&$errors, &$foundError, $aliasName): Type {
 				if ($foundError) {
 					return $type;
 				}

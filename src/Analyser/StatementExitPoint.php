@@ -7,14 +7,8 @@ use PhpParser\Node\Stmt;
 class StatementExitPoint
 {
 
-	private Stmt $statement;
-
-	private MutatingScope $scope;
-
-	public function __construct(Stmt $statement, MutatingScope $scope)
+	public function __construct(private Stmt $statement, private MutatingScope $scope)
 	{
-		$this->statement = $statement;
-		$this->scope = $scope;
 	}
 
 	public function getStatement(): Stmt

@@ -2,101 +2,60 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Function_;
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
+use function array_reverse;
+use function is_array;
+use function is_string;
 
-class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\FunctionReflection
+class PhpFunctionFromParserNodeReflection implements FunctionReflection
 {
 
-	private \PhpParser\Node\FunctionLike $functionLike;
-
-	private string $fileName;
-
-	private \PHPStan\Type\Generic\TemplateTypeMap $templateTypeMap;
-
-	/** @var \PHPStan\Type\Type[] */
-	private array $realParameterTypes;
-
-	/** @var \PHPStan\Type\Type[] */
-	private array $phpDocParameterTypes;
-
-	/** @var \PHPStan\Type\Type[] */
-	private array $realParameterDefaultValues;
-
-	private \PHPStan\Type\Type $realReturnType;
-
-	private ?\PHPStan\Type\Type $phpDocReturnType;
-
-	private ?\PHPStan\Type\Type $throwType;
-
-	private ?string $deprecatedDescription;
-
-	private bool $isDeprecated;
-
-	private bool $isInternal;
-
-	private bool $isFinal;
-
-	private ?bool $isPure;
+	/** @var Function_|ClassMethod */
+	private Node\FunctionLike $functionLike;
 
 	/** @var FunctionVariantWithPhpDocs[]|null */
 	private ?array $variants = null;
 
 	/**
-	 * @param FunctionLike $functionLike
-	 * @param TemplateTypeMap $templateTypeMap
-	 * @param \PHPStan\Type\Type[] $realParameterTypes
-	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
-	 * @param \PHPStan\Type\Type[] $realParameterDefaultValues
-	 * @param Type $realReturnType
-	 * @param Type|null $phpDocReturnType
-	 * @param Type|null $throwType
-	 * @param string|null $deprecatedDescription
-	 * @param bool $isDeprecated
-	 * @param bool $isInternal
-	 * @param bool $isFinal
-	 * @param bool|null $isPure
+	 * @param Function_|ClassMethod $functionLike
+	 * @param Type[] $realParameterTypes
+	 * @param Type[] $phpDocParameterTypes
+	 * @param Type[] $realParameterDefaultValues
 	 */
 	public function __construct(
 		FunctionLike $functionLike,
-		string $fileName,
-		TemplateTypeMap $templateTypeMap,
-		array $realParameterTypes,
-		array $phpDocParameterTypes,
-		array $realParameterDefaultValues,
-		Type $realReturnType,
-		?Type $phpDocReturnType,
-		?Type $throwType,
-		?string $deprecatedDescription,
-		bool $isDeprecated,
-		bool $isInternal,
-		bool $isFinal,
-		?bool $isPure
+		private string $fileName,
+		private TemplateTypeMap $templateTypeMap,
+		private array $realParameterTypes,
+		private array $phpDocParameterTypes,
+		private array $realParameterDefaultValues,
+		private Type $realReturnType,
+		private ?Type $phpDocReturnType,
+		private ?Type $throwType,
+		private ?string $deprecatedDescription,
+		private bool $isDeprecated,
+		private bool $isInternal,
+		private bool $isFinal,
+		private ?bool $isPure,
 	)
 	{
 		$this->functionLike = $functionLike;
-		$this->fileName = $fileName;
-		$this->templateTypeMap = $templateTypeMap;
-		$this->realParameterTypes = $realParameterTypes;
-		$this->phpDocParameterTypes = $phpDocParameterTypes;
-		$this->realParameterDefaultValues = $realParameterDefaultValues;
-		$this->realReturnType = $realReturnType;
-		$this->phpDocReturnType = $phpDocReturnType;
-		$this->throwType = $throwType;
-		$this->deprecatedDescription = $deprecatedDescription;
-		$this->isDeprecated = $isDeprecated;
-		$this->isInternal = $isInternal;
-		$this->isFinal = $isFinal;
-		$this->isPure = $isPure;
 	}
 
 	protected function getFunctionLike(): FunctionLike
@@ -115,11 +74,15 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 			return $this->functionLike->name->name;
 		}
 
+		if ($this->functionLike->namespacedName === null) {
+			throw new ShouldNotHappenException();
+		}
+
 		return (string) $this->functionLike->namespacedName;
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[]
+	 * @return ParametersAcceptorWithPhpDocs[]
 	 */
 	public function getVariants(): array
 	{
@@ -132,7 +95,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 					$this->isVariadic(),
 					$this->getReturnType(),
 					$this->phpDocReturnType ?? new MixedType(),
-					$this->realReturnType
+					$this->realReturnType,
 				),
 			];
 		}
@@ -141,21 +104,21 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParameterReflectionWithPhpDocs[]
+	 * @return ParameterReflectionWithPhpDocs[]
 	 */
 	private function getParameters(): array
 	{
 		$parameters = [];
 		$isOptional = true;
 
-		/** @var \PhpParser\Node\Param $parameter */
+		/** @var Node\Param $parameter */
 		foreach (array_reverse($this->functionLike->getParams()) as $parameter) {
 			if ($parameter->default === null && !$parameter->variadic) {
 				$isOptional = false;
 			}
 
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$parameters[] = new PhpParameterFromParserNodeReflection(
 				$parameter->var->name,
@@ -166,7 +129,7 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 					? PassedByReference::createCreatesNewVariable()
 					: PassedByReference::createNo(),
 				$this->realParameterDefaultValues[$parameter->var->name] ?? null,
-				$parameter->variadic
+				$parameter->variadic,
 			);
 		}
 
@@ -236,6 +199,42 @@ class PhpFunctionFromParserNodeReflection implements \PHPStan\Reflection\Functio
 
 	public function isBuiltin(): bool
 	{
+		return false;
+	}
+
+	public function isGenerator(): bool
+	{
+		return $this->nodeIsOrContainsYield($this->functionLike);
+	}
+
+	private function nodeIsOrContainsYield(Node $node): bool
+	{
+		if ($node instanceof Node\Expr\Yield_) {
+			return true;
+		}
+
+		if ($node instanceof Node\Expr\YieldFrom) {
+			return true;
+		}
+
+		foreach ($node->getSubNodeNames() as $nodeName) {
+			$nodeProperty = $node->$nodeName;
+
+			if ($nodeProperty instanceof Node && $this->nodeIsOrContainsYield($nodeProperty)) {
+				return true;
+			}
+
+			if (!is_array($nodeProperty)) {
+				continue;
+			}
+
+			foreach ($nodeProperty as $nodePropertyArrayItem) {
+				if ($nodePropertyArrayItem instanceof Node && $this->nodeIsOrContainsYield($nodePropertyArrayItem)) {
+					return true;
+				}
+			}
+		}
+
 		return false;
 	}
 

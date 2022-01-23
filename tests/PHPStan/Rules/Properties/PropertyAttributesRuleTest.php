@@ -11,6 +11,7 @@ use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<PropertyAttributesRule>
@@ -29,13 +30,14 @@ class PropertyAttributesRuleTest extends RuleTestCase
 					new NullsafeCheck(),
 					new PhpVersion(80000),
 					new UnresolvableTypeHelper(),
+					new PropertyReflectionFinder(),
 					true,
 					true,
 					true,
-					true
+					true,
 				),
-				new ClassCaseSensitivityCheck($reflectionProvider, false)
-			)
+				new ClassCaseSensitivityCheck($reflectionProvider, false),
+			),
 		);
 	}
 

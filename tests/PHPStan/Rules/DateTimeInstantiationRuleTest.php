@@ -2,13 +2,15 @@
 
 namespace PHPStan\Rules;
 
+use PHPStan\Testing\RuleTestCase;
+
 /**
- * @extends \PHPStan\Testing\RuleTestCase<DateTimeInstantiationRule>
+ * @extends RuleTestCase<DateTimeInstantiationRule>
  */
-class DateTimeInstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
+class DateTimeInstantiationRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new DateTimeInstantiationRule();
 	}
@@ -42,7 +44,7 @@ class DateTimeInstantiationRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Instantiating DateTime with 2020-04-31 produces a warning: The parsed date was invalid',
 					20,
 				],*/
-			]
+			],
 		);
 	}
 

@@ -5,11 +5,10 @@ namespace PHPStan\Dependency;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\ShouldNotHappenException;
 
 class ExportedNodeVisitor extends NodeVisitorAbstract
 {
-
-	private ExportedNodeResolver $exportedNodeResolver;
 
 	private ?string $fileName = null;
 
@@ -19,11 +18,9 @@ class ExportedNodeVisitor extends NodeVisitorAbstract
 	/**
 	 * ExportedNodeVisitor constructor.
 	 *
-	 * @param ExportedNodeResolver $exportedNodeResolver
 	 */
-	public function __construct(ExportedNodeResolver $exportedNodeResolver)
+	public function __construct(private ExportedNodeResolver $exportedNodeResolver)
 	{
-		$this->exportedNodeResolver = $exportedNodeResolver;
 	}
 
 	public function reset(string $fileName): void
@@ -43,7 +40,7 @@ class ExportedNodeVisitor extends NodeVisitorAbstract
 	public function enterNode(Node $node): ?int
 	{
 		if ($this->fileName === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$exportedNode = $this->exportedNodeResolver->resolve($this->fileName, $node);
 		if ($exportedNode !== null) {

@@ -11,17 +11,11 @@ use PHPStan\Type\BooleanType;
 class ConstantConditionRuleHelper
 {
 
-	private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
-		bool $treatPhpDocTypesAsCertain
+		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->impossibleCheckTypeHelper = $impossibleCheckTypeHelper;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function shouldReportAlwaysTrueByDefault(Expr $expr): bool

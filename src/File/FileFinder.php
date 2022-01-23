@@ -3,36 +3,28 @@
 namespace PHPStan\File;
 
 use Symfony\Component\Finder\Finder;
+use function array_filter;
+use function array_values;
+use function file_exists;
+use function implode;
+use function is_file;
 
 class FileFinder
 {
 
-	private FileExcluder $fileExcluder;
-
-	private FileHelper $fileHelper;
-
-	/** @var string[] */
-	private array $fileExtensions;
-
 	/**
-	 * @param FileExcluder $fileExcluder
-	 * @param FileHelper $fileHelper
 	 * @param string[] $fileExtensions
 	 */
 	public function __construct(
-		FileExcluder $fileExcluder,
-		FileHelper $fileHelper,
-		array $fileExtensions
+		private FileExcluder $fileExcluder,
+		private FileHelper $fileHelper,
+		private array $fileExtensions,
 	)
 	{
-		$this->fileExcluder = $fileExcluder;
-		$this->fileHelper = $fileHelper;
-		$this->fileExtensions = $fileExtensions;
 	}
 
 	/**
 	 * @param string[] $paths
-	 * @return FileFinderResult
 	 */
 	public function findFiles(array $paths): FileFinderResult
 	{
@@ -42,7 +34,7 @@ class FileFinder
 			if (is_file($path)) {
 				$files[] = $this->fileHelper->normalizePath($path);
 			} elseif (!file_exists($path)) {
-				throw new \PHPStan\File\PathNotFoundException($path);
+				throw new PathNotFoundException($path);
 			} else {
 				$finder = new Finder();
 				$finder->followLinks();
@@ -53,9 +45,7 @@ class FileFinder
 			}
 		}
 
-		$files = array_values(array_filter($files, function (string $file): bool {
-			return !$this->fileExcluder->isExcludedFromAnalysing($file);
-		}));
+		$files = array_values(array_filter($files, fn (string $file): bool => !$this->fileExcluder->isExcludedFromAnalysing($file)));
 
 		return new FileFinderResult($files, $onlyFiles);
 	}

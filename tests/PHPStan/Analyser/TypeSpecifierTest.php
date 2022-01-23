@@ -16,6 +16,8 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\VarLikeIdentifier;
+use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -26,8 +28,12 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function implode;
+use function sprintf;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
-class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
+class TypeSpecifierTest extends PHPStanTestCase
 {
 
 	private const FALSEY_TYPE_DESCRIPTION = '0|0.0|\'\'|\'0\'|array{}|false|null';
@@ -35,19 +41,17 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 	private const SURE_NOT_FALSEY = '~' . self::FALSEY_TYPE_DESCRIPTION;
 	private const SURE_NOT_TRUTHY = '~' . self::TRUTHY_TYPE_DESCRIPTION;
 
-	/** @var \PhpParser\PrettyPrinter\Standard() */
-	private $printer;
+	/** @var Standard () */
+	private Standard $printer;
 
-	/** @var \PHPStan\Analyser\TypeSpecifier */
-	private $typeSpecifier;
+	private TypeSpecifier $typeSpecifier;
 
-	/** @var Scope */
-	private $scope;
+	private Scope $scope;
 
 	protected function setUp(): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$this->printer = new \PhpParser\PrettyPrinter\Standard();
+		$this->printer = new Standard();
 		$this->typeSpecifier = self::getContainer()->getService('typeSpecifier');
 		$this->scope = $this->createScopeFactory($reflectionProvider, $this->typeSpecifier)->create(ScopeContext::create(''));
 		$this->scope = $this->scope->enterClass($reflectionProvider->getClass('DateTime'));
@@ -65,7 +69,6 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataCondition
-	 * @param Expr  $expr
 	 * @param mixed[] $expectedPositiveResult
 	 * @param mixed[] $expectedNegatedResult
 	 */
@@ -101,7 +104,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanAnd(
 					$this->createFunctionCall('is_int'),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				['$foo' => 'int'],
 				[],
@@ -109,7 +112,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					$this->createFunctionCall('is_int'),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				[],
 				['$foo' => '~int'],
@@ -117,7 +120,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\LogicalAnd(
 					$this->createFunctionCall('is_int'),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				['$foo' => 'int'],
 				[],
@@ -125,7 +128,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\LogicalOr(
 					$this->createFunctionCall('is_int'),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				[],
 				['$foo' => '~int'],
@@ -139,7 +142,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanAnd(
 					new Expr\BooleanNot($this->createFunctionCall('is_int')),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				['$foo' => '~int'],
 				[],
@@ -147,7 +150,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					new Expr\BooleanNot($this->createFunctionCall('is_int')),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				[],
 				['$foo' => 'int'],
@@ -170,7 +173,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\Instanceof_(
 					new Variable('foo'),
-					new Variable('className')
+					new Variable('className'),
 				),
 				['$foo' => 'object'],
 				[],
@@ -180,7 +183,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 					new FuncCall(new Name('get_class'), [
 						new Arg(new Variable('foo')),
 					]),
-					new String_('Foo')
+					new String_('Foo'),
 				),
 				['$foo' => 'Foo'],
 				['$foo' => '~Foo'],
@@ -190,7 +193,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 					new String_('Foo'),
 					new FuncCall(new Name('get_class'), [
 						new Arg(new Variable('foo')),
-					])
+					]),
 				),
 				['$foo' => 'Foo'],
 				['$foo' => '~Foo'],
@@ -199,8 +202,8 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new BooleanNot(
 					new Expr\Instanceof_(
 						new Variable('foo'),
-						new Variable('className')
-					)
+						new Variable('className'),
+					),
 				),
 				[],
 				['$foo' => 'object'],
@@ -213,7 +216,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanAnd(
 					new Variable('foo'),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				['$foo' => self::SURE_NOT_FALSEY],
 				[],
@@ -221,7 +224,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					new Variable('foo'),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				[],
 				['$foo' => self::SURE_NOT_TRUTHY],
@@ -240,7 +243,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanAnd(
 					new PropertyFetch(new Variable('this'), 'foo'),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				['$this->foo' => self::SURE_NOT_FALSEY],
 				[],
@@ -248,7 +251,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					new PropertyFetch(new Variable('this'), 'foo'),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				[],
 				['$this->foo' => self::SURE_NOT_TRUTHY],
@@ -262,7 +265,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					$this->createFunctionCall('is_int'),
-					$this->createFunctionCall('is_string')
+					$this->createFunctionCall('is_string'),
 				),
 				['$foo' => 'int|string'],
 				['$foo' => '~int|string'],
@@ -272,8 +275,8 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 					$this->createFunctionCall('is_int'),
 					new Expr\BinaryOp\BooleanOr(
 						$this->createFunctionCall('is_string'),
-						$this->createFunctionCall('is_bool')
-					)
+						$this->createFunctionCall('is_bool'),
+					),
 				),
 				['$foo' => 'bool|int|string'],
 				['$foo' => '~bool|int|string'],
@@ -281,7 +284,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\BooleanOr(
 					$this->createFunctionCall('is_int', 'foo'),
-					$this->createFunctionCall('is_string', 'bar')
+					$this->createFunctionCall('is_string', 'bar'),
 				),
 				[],
 				['$foo' => '~int', '$bar' => '~string'],
@@ -290,9 +293,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Expr\BinaryOp\BooleanAnd(
 					new Expr\BinaryOp\BooleanOr(
 						$this->createFunctionCall('is_int', 'foo'),
-						$this->createFunctionCall('is_string', 'foo')
+						$this->createFunctionCall('is_string', 'foo'),
 					),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				['$foo' => 'int|string'],
 				[],
@@ -301,9 +304,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Expr\BinaryOp\BooleanOr(
 					new Expr\BinaryOp\BooleanAnd(
 						$this->createFunctionCall('is_int', 'foo'),
-						$this->createFunctionCall('is_string', 'foo')
+						$this->createFunctionCall('is_string', 'foo'),
 					),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				[],
 				['$foo' => '~*NEVER*'],
@@ -312,9 +315,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Expr\BinaryOp\BooleanOr(
 					new Expr\BinaryOp\BooleanAnd(
 						$this->createFunctionCall('is_int', 'foo'),
-						$this->createFunctionCall('is_string', 'bar')
+						$this->createFunctionCall('is_string', 'bar'),
 					),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				[],
 				[],
@@ -323,9 +326,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Expr\BinaryOp\BooleanOr(
 					new Expr\BinaryOp\BooleanAnd(
 						new Expr\BooleanNot($this->createFunctionCall('is_int', 'foo')),
-						new Expr\BooleanNot($this->createFunctionCall('is_string', 'foo'))
+						new Expr\BooleanNot($this->createFunctionCall('is_string', 'foo')),
 					),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				[],
 				['$foo' => 'int|string'],
@@ -334,9 +337,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Expr\BinaryOp\BooleanAnd(
 					new Expr\BinaryOp\BooleanOr(
 						new Expr\BooleanNot($this->createFunctionCall('is_int', 'foo')),
-						new Expr\BooleanNot($this->createFunctionCall('is_string', 'foo'))
+						new Expr\BooleanNot($this->createFunctionCall('is_string', 'foo')),
 					),
-					$this->createFunctionCall('random')
+					$this->createFunctionCall('random'),
 				),
 				['$foo' => '~*NEVER*'],
 				[],
@@ -345,7 +348,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Identical(
 					new Variable('foo'),
-					new Expr\ConstFetch(new Name('true'))
+					new Expr\ConstFetch(new Name('true')),
 				),
 				['$foo' => 'true & ~' . self::FALSEY_TYPE_DESCRIPTION],
 				['$foo' => '~true'],
@@ -353,7 +356,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Identical(
 					new Variable('foo'),
-					new Expr\ConstFetch(new Name('false'))
+					new Expr\ConstFetch(new Name('false')),
 				),
 				['$foo' => 'false & ~' . self::TRUTHY_TYPE_DESCRIPTION],
 				['$foo' => '~false'],
@@ -361,7 +364,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Identical(
 					$this->createFunctionCall('is_int'),
-					new Expr\ConstFetch(new Name('true'))
+					new Expr\ConstFetch(new Name('true')),
 				),
 				['is_int($foo)' => 'true', '$foo' => 'int'],
 				['is_int($foo)' => '~true', '$foo' => '~int'],
@@ -369,7 +372,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Identical(
 					$this->createFunctionCall('is_int'),
-					new Expr\ConstFetch(new Name('false'))
+					new Expr\ConstFetch(new Name('false')),
 				),
 				['is_int($foo)' => 'false', '$foo' => '~int'],
 				['$foo' => 'int', 'is_int($foo)' => '~false'],
@@ -377,7 +380,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Equal(
 					$this->createFunctionCall('is_int'),
-					new Expr\ConstFetch(new Name('true'))
+					new Expr\ConstFetch(new Name('true')),
 				),
 				['$foo' => 'int'],
 				['$foo' => '~int'],
@@ -385,7 +388,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Equal(
 					$this->createFunctionCall('is_int'),
-					new Expr\ConstFetch(new Name('false'))
+					new Expr\ConstFetch(new Name('false')),
 				),
 				['$foo' => '~int'],
 				['$foo' => 'int'],
@@ -393,7 +396,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Equal(
 					new Variable('foo'),
-					new Expr\ConstFetch(new Name('false'))
+					new Expr\ConstFetch(new Name('false')),
 				),
 				['$foo' => self::SURE_NOT_TRUTHY],
 				['$foo' => self::SURE_NOT_FALSEY],
@@ -401,7 +404,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Equal(
 					new Variable('foo'),
-					new Expr\ConstFetch(new Name('null'))
+					new Expr\ConstFetch(new Name('null')),
 				),
 				['$foo' => self::SURE_NOT_TRUTHY],
 				['$foo' => self::SURE_NOT_FALSEY],
@@ -409,7 +412,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\Identical(
 					new Variable('foo'),
-					new Variable('bar')
+					new Variable('bar'),
 				),
 				['$foo' => 'Bar', '$bar' => 'Bar'],
 				[],
@@ -435,7 +438,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 					new Arg(new Variable('foo')),
 					new Arg(new Expr\ClassConstFetch(
 						new Name('static'),
-						'class'
+						'class',
 					)),
 				]),
 				['$foo' => 'static(DateTime)'],
@@ -496,7 +499,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\Assign(
 					new Variable('foo'),
-					new Variable('stringOrNull')
+					new Variable('stringOrNull'),
 				),
 				['$foo' => self::SURE_NOT_FALSEY],
 				['$foo' => self::SURE_NOT_TRUTHY],
@@ -504,7 +507,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\Assign(
 					new Variable('foo'),
-					new Variable('stringOrFalse')
+					new Variable('stringOrFalse'),
 				),
 				['$foo' => self::SURE_NOT_FALSEY],
 				['$foo' => self::SURE_NOT_TRUTHY],
@@ -512,7 +515,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\Assign(
 					new Variable('foo'),
-					new Variable('bar')
+					new Variable('bar'),
 				),
 				['$foo' => self::SURE_NOT_FALSEY],
 				['$foo' => self::SURE_NOT_TRUTHY],
@@ -540,7 +543,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\Identical(
 					new Variable('foo'),
-					new LNumber(123)
+					new LNumber(123),
 				),
 				[
 					'$foo' => '123',
@@ -628,9 +631,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Equal(
 					new Expr\Instanceof_(
 						new Variable('foo'),
-						new Variable('className')
+						new Variable('className'),
 					),
-					new LNumber(1)
+					new LNumber(1),
 				),
 				['$foo' => 'object'],
 				[],
@@ -639,9 +642,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Equal(
 					new Expr\Instanceof_(
 						new Variable('foo'),
-						new Variable('className')
+						new Variable('className'),
 					),
-					new LNumber(0)
+					new LNumber(0),
 				),
 				[],
 				[
@@ -652,7 +655,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Expr\Isset_(
 					[
 						new PropertyFetch(new Variable('foo'), new Identifier('bar')),
-					]
+					],
 				),
 				[
 					'$foo' => 'object&hasProperty(bar) & ~null',
@@ -666,7 +669,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Expr\Isset_(
 					[
 						new Expr\StaticPropertyFetch(new Name('Foo'), new VarLikeIdentifier('bar')),
-					]
+					],
 				),
 				[
 					'Foo::$bar' => '~null',
@@ -678,7 +681,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Identical(
 					new Variable('barOrNull'),
-					new Expr\ConstFetch(new Name('null'))
+					new Expr\ConstFetch(new Name('null')),
 				),
 				[
 					'$barOrNull' => 'null',
@@ -691,9 +694,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Identical(
 					new Expr\Assign(
 						new Variable('notNullBar'),
-						new Variable('barOrNull')
+						new Variable('barOrNull'),
 					),
-					new Expr\ConstFetch(new Name('null'))
+					new Expr\ConstFetch(new Name('null')),
 				),
 				[
 					'$notNullBar' => 'null',
@@ -705,7 +708,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new NotIdentical(
 					new Variable('barOrNull'),
-					new Expr\ConstFetch(new Name('null'))
+					new Expr\ConstFetch(new Name('null')),
 				),
 				[
 					'$barOrNull' => '~null',
@@ -717,7 +720,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\Smaller(
 					new Variable('n'),
-					new LNumber(3)
+					new LNumber(3),
 				),
 				[
 					'$n' => 'mixed~int<3, max>|true',
@@ -729,7 +732,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\Smaller(
 					new Variable('n'),
-					new LNumber(PHP_INT_MIN)
+					new LNumber(PHP_INT_MIN),
 				),
 				[
 					'$n' => 'mixed~int<' . PHP_INT_MIN . ', max>|true',
@@ -741,7 +744,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\Greater(
 					new Variable('n'),
-					new LNumber(PHP_INT_MAX)
+					new LNumber(PHP_INT_MAX),
 				),
 				[
 					'$n' => 'mixed~bool|int<min, ' . PHP_INT_MAX . '>|null',
@@ -753,7 +756,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\SmallerOrEqual(
 					new Variable('n'),
-					new LNumber(PHP_INT_MIN)
+					new LNumber(PHP_INT_MIN),
 				),
 				[
 					'$n' => 'mixed~int<' . (PHP_INT_MIN + 1) . ', max>',
@@ -765,7 +768,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Expr\BinaryOp\GreaterOrEqual(
 					new Variable('n'),
-					new LNumber(PHP_INT_MAX)
+					new LNumber(PHP_INT_MAX),
 				),
 				[
 					'$n' => 'mixed~int<min, ' . (PHP_INT_MAX - 1) . '>|false|null',
@@ -778,12 +781,12 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Expr\BinaryOp\BooleanAnd(
 					new Expr\BinaryOp\GreaterOrEqual(
 						new Variable('n'),
-						new LNumber(3)
+						new LNumber(3),
 					),
 					new Expr\BinaryOp\SmallerOrEqual(
 						new Variable('n'),
-						new LNumber(5)
-					)
+						new LNumber(5),
+					),
 				),
 				[
 					'$n' => 'mixed~int<min, 2>|int<6, max>|false|null',
@@ -796,12 +799,12 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Expr\BinaryOp\BooleanAnd(
 					new Expr\Assign(
 						new Variable('foo'),
-						new LNumber(1)
+						new LNumber(1),
 					),
 					new Expr\BinaryOp\SmallerOrEqual(
 						new Variable('n'),
-						new LNumber(5)
-					)
+						new LNumber(5),
+					),
 				),
 				[
 					'$n' => 'mixed~int<6, max>',
@@ -813,9 +816,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new NotIdentical(
 					new Expr\Assign(
 						new Variable('notNullBar'),
-						new Variable('barOrNull')
+						new Variable('barOrNull'),
 					),
-					new Expr\ConstFetch(new Name('null'))
+					new Expr\ConstFetch(new Name('null')),
 				),
 				[
 					'$notNullBar' => '~null',
@@ -827,7 +830,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new Identical(
 					new Variable('barOrFalse'),
-					new Expr\ConstFetch(new Name('false'))
+					new Expr\ConstFetch(new Name('false')),
 				),
 				[
 					'$barOrFalse' => 'false & ' . self::SURE_NOT_TRUTHY,
@@ -840,9 +843,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Identical(
 					new Expr\Assign(
 						new Variable('notFalseBar'),
-						new Variable('barOrFalse')
+						new Variable('barOrFalse'),
 					),
-					new Expr\ConstFetch(new Name('false'))
+					new Expr\ConstFetch(new Name('false')),
 				),
 				[
 					'$notFalseBar' => 'false & ' . self::SURE_NOT_TRUTHY,
@@ -854,7 +857,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new NotIdentical(
 					new Variable('barOrFalse'),
-					new Expr\ConstFetch(new Name('false'))
+					new Expr\ConstFetch(new Name('false')),
 				),
 				[
 					'$barOrFalse' => '~false',
@@ -867,9 +870,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new NotIdentical(
 					new Expr\Assign(
 						new Variable('notFalseBar'),
-						new Variable('barOrFalse')
+						new Variable('barOrFalse'),
 					),
-					new Expr\ConstFetch(new Name('false'))
+					new Expr\ConstFetch(new Name('false')),
 				),
 				[
 					'$notFalseBar' => '~false',
@@ -882,9 +885,9 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 				new Expr\Instanceof_(
 					new Expr\Assign(
 						new Variable('notFalseBar'),
-						new Variable('barOrFalse')
+						new Variable('barOrFalse'),
 					),
-					new Name('Bar')
+					new Name('Bar'),
 				),
 				[
 					'$notFalseBar' => 'Bar',
@@ -902,7 +905,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 					new FuncCall(new Name('array_key_exists'), [
 						new Arg(new String_('bar')),
 						new Arg(new Variable('array')),
-					])
+					]),
 				),
 				[
 					'$array' => 'array',
@@ -920,7 +923,7 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 					new FuncCall(new Name('array_key_exists'), [
 						new Arg(new String_('bar')),
 						new Arg(new Variable('array')),
-					])
+					]),
 				)),
 				[
 					'$array' => '~hasOffset(\'bar\')|hasOffset(\'foo\')',
@@ -966,7 +969,6 @@ class TypeSpecifierTest extends \PHPStan\Testing\PHPStanTestCase
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\SpecifiedTypes $specifiedTypes
 	 * @return mixed[]
 	 */
 	private function toReadableResult(SpecifiedTypes $specifiedTypes): array

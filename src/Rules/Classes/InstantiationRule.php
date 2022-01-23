@@ -12,33 +12,31 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
+use function array_map;
+use function array_merge;
+use function count;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\New_>
+ * @implements Rule<Node\Expr\New_>
  */
-class InstantiationRule implements \PHPStan\Rules\Rule
+class InstantiationRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Rules\FunctionCallParametersCheck $check;
-
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		FunctionCallParametersCheck $check,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck
+		private ReflectionProvider $reflectionProvider,
+		private FunctionCallParametersCheck $check,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->check = $check;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 	}
 
 	public function getNodeType(): string
@@ -56,9 +54,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param string $class
-	 * @param \PhpParser\Node\Expr\New_ $node
-	 * @param Scope $scope
+	 * @param Node\Expr\New_ $node
 	 * @return RuleError[]
 	 */
 	private function checkClassName(string $class, bool $isName, Node $node, Scope $scope): array
@@ -109,7 +105,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 						'%s::%s() calls new parent but %s does not extend any class.',
 						$scope->getClassReflection()->getDisplayName(),
 						$scope->getFunctionName(),
-						$scope->getClassReflection()->getDisplayName()
+						$scope->getClassReflection()->getDisplayName(),
 					))->build(),
 				];
 			}
@@ -132,10 +128,18 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 			$classReflection = $this->reflectionProvider->getClass($class);
 		}
 
+		if ($classReflection->isEnum() && $isName) {
+			return [
+				RuleErrorBuilder::message(
+					sprintf('Cannot instantiate enum %s.', $classReflection->getDisplayName()),
+				)->build(),
+			];
+		}
+
 		if (!$isStatic && $classReflection->isInterface() && $isName) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Cannot instantiate interface %s.', $classReflection->getDisplayName())
+					sprintf('Cannot instantiate interface %s.', $classReflection->getDisplayName()),
 				)->build(),
 			];
 		}
@@ -143,7 +147,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 		if (!$isStatic && $classReflection->isAbstract() && $isName) {
 			return [
 				RuleErrorBuilder::message(
-					sprintf('Instantiated class %s is abstract.', $classReflection->getDisplayName())
+					sprintf('Instantiated class %s is abstract.', $classReflection->getDisplayName()),
 				)->build(),
 			];
 		}
@@ -157,7 +161,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 				return array_merge($messages, [
 					RuleErrorBuilder::message(sprintf(
 						'Class %s does not have a constructor and must be instantiated without any parameters.',
-						$classReflection->getDisplayName()
+						$classReflection->getDisplayName(),
 					))->build(),
 				]);
 			}
@@ -172,7 +176,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 				$classReflection->getDisplayName(),
 				$constructorReflection->isPrivate() ? 'private' : 'protected',
 				$constructorReflection->getDeclaringClass()->getDisplayName(),
-				$constructorReflection->getName()
+				$constructorReflection->getName(),
 			))->build();
 		}
 
@@ -182,7 +186,7 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 			ParametersAcceptorSelector::selectFromArgs(
 				$scope,
 				$node->getArgs(),
-				$constructorReflection->getVariants()
+				$constructorReflection->getVariants(),
 			),
 			$scope,
 			$constructorReflection->getDeclaringClass()->isBuiltin(),
@@ -201,25 +205,24 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 				'Missing parameter $%s in call to ' . $classDisplayName . ' constructor.',
 				'Unknown parameter $%s in call to ' . $classDisplayName . ' constructor.',
 				'Return type of call to ' . $classDisplayName . ' constructor contains unresolvable type.',
-			]
+			],
 		));
 	}
 
 	/**
-	 * @param \PhpParser\Node\Expr\New_ $node $node
-	 * @param Scope $scope
+	 * @param Node\Expr\New_ $node $node
 	 * @return array<int, array{string, bool}>
 	 */
 	private function getClassNames(Node $node, Scope $scope): array
 	{
-		if ($node->class instanceof \PhpParser\Node\Name) {
+		if ($node->class instanceof Node\Name) {
 			return [[(string) $node->class, true]];
 		}
 
 		if ($node->class instanceof Node\Stmt\Class_) {
 			$anonymousClassType = $scope->getType($node);
 			if (!$anonymousClassType instanceof TypeWithClassName) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			return [[$anonymousClassType->getClassName(), true]];
@@ -229,17 +232,13 @@ class InstantiationRule implements \PHPStan\Rules\Rule
 
 		return array_merge(
 			array_map(
-				static function (ConstantStringType $type): array {
-					return [$type->getValue(), true];
-				},
-				TypeUtils::getConstantStrings($type)
+				static fn (ConstantStringType $type): array => [$type->getValue(), true],
+				TypeUtils::getConstantStrings($type),
 			),
 			array_map(
-				static function (string $name): array {
-					return [$name, false];
-				},
-				TypeUtils::getDirectClassNames($type)
-			)
+				static fn (string $name): array => [$name, false],
+				TypeUtils::getDirectClassNames($type),
+			),
 		);
 	}
 

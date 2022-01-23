@@ -15,11 +15,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 class ReturnNullsafeByRefRule implements Rule
 {
 
-	private NullsafeCheck $nullsafeCheck;
-
-	public function __construct(NullsafeCheck $nullsafeCheck)
+	public function __construct(private NullsafeCheck $nullsafeCheck)
 	{
-		$this->nullsafeCheck = $nullsafeCheck;
 	}
 
 	public function getNodeType(): string

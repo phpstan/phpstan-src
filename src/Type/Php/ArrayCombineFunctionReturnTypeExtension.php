@@ -14,19 +14,18 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function count;
 
-class ArrayCombineFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	private PhpVersion $phpVersion;
-
-	public function __construct(PhpVersion $phpVersion)
+	public function __construct(private PhpVersion $phpVersion)
 	{
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -61,14 +60,14 @@ class ArrayCombineFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFu
 			if ($keyTypes !== null) {
 				return new ConstantArrayType(
 					$keyTypes,
-					$valueTypes
+					$valueTypes,
 				);
 			}
 		}
 
 		$arrayType = new ArrayType(
 			$keysParamType instanceof ArrayType ? $keysParamType->getItemType() : new MixedType(),
-			$valuesParamType instanceof ArrayType ? $valuesParamType->getItemType() : new MixedType()
+			$valuesParamType instanceof ArrayType ? $valuesParamType->getItemType() : new MixedType(),
 		);
 
 		if ($keysParamType->isIterableAtLeastOnce()->yes() && $valuesParamType->isIterableAtLeastOnce()->yes()) {

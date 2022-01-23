@@ -4,18 +4,16 @@ namespace PHPStan\DependencyInjection\Type;
 
 use PHPStan\Broker\Broker;
 use PHPStan\Broker\BrokerFactory;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 
 class LazyOperatorTypeSpecifyingExtensionRegistryProvider implements OperatorTypeSpecifyingExtensionRegistryProvider
 {
 
-	private \PHPStan\DependencyInjection\Container $container;
+	private ?OperatorTypeSpecifyingExtensionRegistry $registry = null;
 
-	private ?\PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry $registry = null;
-
-	public function __construct(\PHPStan\DependencyInjection\Container $container)
+	public function __construct(private Container $container)
 	{
-		$this->container = $container;
 	}
 
 	public function getRegistry(): OperatorTypeSpecifyingExtensionRegistry
@@ -23,7 +21,7 @@ class LazyOperatorTypeSpecifyingExtensionRegistryProvider implements OperatorTyp
 		if ($this->registry === null) {
 			$this->registry = new OperatorTypeSpecifyingExtensionRegistry(
 				$this->container->getByType(Broker::class),
-				$this->container->getServicesByTag(BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG)
+				$this->container->getServicesByTag(BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG),
 			);
 		}
 

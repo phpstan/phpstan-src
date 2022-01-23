@@ -6,7 +6,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<YieldInGeneratorRule>
+ * @extends RuleTestCase<YieldInGeneratorRule>
  */
 class YieldInGeneratorRuleTest extends RuleTestCase
 {

@@ -12,23 +12,22 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function count;
 
-class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	private const MAX_SIZE_USE_CONSTANT_ARRAY = 100;
 
-	private PhpVersion $phpVersion;
-
-	public function __construct(PhpVersion $phpVersion)
+	public function __construct(private PhpVersion $phpVersion)
 	{
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -50,7 +49,7 @@ class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 			if ($numberType->getMin() < 0) {
 				return TypeCombinator::union(
 					new ArrayType(new IntegerType(), $valueType),
-					new ConstantBooleanType(false)
+					new ConstantBooleanType(false),
 				);
 			}
 		}
@@ -73,7 +72,7 @@ class ArrayFillFunctionReturnTypeExtension implements \PHPStan\Type\DynamicFunct
 			for ($i = 0; $i < $numberType->getValue(); $i++) {
 				$arrayBuilder->setOffsetValueType(
 					new ConstantIntegerType($nextIndex),
-					$valueType
+					$valueType,
 				);
 				if ($nextIndex < 0) {
 					$nextIndex = 0;

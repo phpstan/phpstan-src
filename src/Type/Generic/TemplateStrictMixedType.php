@@ -19,7 +19,7 @@ final class TemplateStrictMixedType extends StrictMixedType implements TemplateT
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		StrictMixedType $bound
+		StrictMixedType $bound,
 	)
 	{
 		$this->scope = $scope;
@@ -48,7 +48,7 @@ final class TemplateStrictMixedType extends StrictMixedType implements TemplateT
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

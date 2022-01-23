@@ -2,36 +2,34 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\ElseIf_>
+ * @implements Rule<Node\Stmt\ElseIf_>
  */
-class ElseIfConstantConditionRule implements \PHPStan\Rules\Rule
+class ElseIfConstantConditionRule implements Rule
 {
 
-	private ConstantConditionRuleHelper $helper;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain
+		private ConstantConditionRuleHelper $helper,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->helper = $helper;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt\ElseIf_::class;
+		return Node\Stmt\ElseIf_::class;
 	}
 
 	public function processNode(
-		\PhpParser\Node $node,
-		\PHPStan\Analyser\Scope $scope
+		Node $node,
+		Scope $scope,
 	): array
 	{
 		$exprType = $this->helper->getBooleanType($scope, $node->cond);
@@ -51,7 +49,7 @@ class ElseIfConstantConditionRule implements \PHPStan\Rules\Rule
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Elseif condition is always %s.',
-					$exprType->getValue() ? 'true' : 'false'
+					$exprType->getValue() ? 'true' : 'false',
 				)))->line($node->cond->getLine())
 					->identifier('deadCode.elseifConstantCondition')
 					->metadata([

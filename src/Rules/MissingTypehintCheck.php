@@ -2,7 +2,12 @@
 
 namespace PHPStan\Rules;
 
+use Closure;
+use Generator;
+use Iterator;
+use IteratorAggregate;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -14,6 +19,10 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeWithClassName;
+use Traversable;
+use function array_keys;
+use function in_array;
+use function sprintf;
 
 class MissingTypehintCheck
 {
@@ -23,44 +32,27 @@ class MissingTypehintCheck
 	public const TURN_OFF_NON_GENERIC_CHECK_TIP = 'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.';
 
 	private const ITERABLE_GENERIC_CLASS_NAMES = [
-		\Traversable::class,
-		\Iterator::class,
-		\IteratorAggregate::class,
-		\Generator::class,
+		Traversable::class,
+		Iterator::class,
+		IteratorAggregate::class,
+		Generator::class,
 	];
-
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private bool $checkMissingIterableValueType;
-
-	private bool $checkGenericClassInNonGenericObjectType;
-
-	private bool $checkMissingCallableSignature;
-
-	/** @var string[] */
-	private array $skipCheckGenericClasses;
 
 	/**
 	 * @param string[] $skipCheckGenericClasses
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		bool $checkMissingIterableValueType,
-		bool $checkGenericClassInNonGenericObjectType,
-		bool $checkMissingCallableSignature,
-		array $skipCheckGenericClasses
+		private ReflectionProvider $reflectionProvider,
+		private bool $checkMissingIterableValueType,
+		private bool $checkGenericClassInNonGenericObjectType,
+		private bool $checkMissingCallableSignature,
+		private array $skipCheckGenericClasses,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->checkMissingIterableValueType = $checkMissingIterableValueType;
-		$this->checkGenericClassInNonGenericObjectType = $checkGenericClassInNonGenericObjectType;
-		$this->checkMissingCallableSignature = $checkMissingCallableSignature;
-		$this->skipCheckGenericClasses = $skipCheckGenericClasses;
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $type
-	 * @return \PHPStan\Type\Type[]
+	 * @return Type[]
 	 */
 	public function getIterableTypesWithMissingValueTypehint(Type $type): array
 	{
@@ -104,7 +96,6 @@ class MissingTypehintCheck
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $type
 	 * @return array<int, array{string, string[]}>
 	 */
 	public function getNonGenericObjectTypesWithGenericClass(Type $type): array
@@ -143,7 +134,7 @@ class MissingTypehintCheck
 
 				$resolvedType = TemplateTypeHelper::resolveToBounds($type);
 				if (!$resolvedType instanceof ObjectType) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				$objectTypes[] = [
 					sprintf('%s %s', $classReflection->isInterface() ? 'interface' : 'class', $classReflection->getDisplayName(false)),
@@ -159,8 +150,7 @@ class MissingTypehintCheck
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $type
-	 * @return \PHPStan\Type\Type[]
+	 * @return Type[]
 	 */
 	public function getCallablesWithMissingSignature(Type $type): array
 	{
@@ -172,7 +162,7 @@ class MissingTypehintCheck
 		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$result): Type {
 			if (
 				($type instanceof CallableType && $type->isCommonCallable()) ||
-				($type instanceof ObjectType && $type->getClassName() === \Closure::class)) {
+				($type instanceof ObjectType && $type->getClassName() === Closure::class)) {
 				$result[] = $type;
 			}
 			return $traverse($type);

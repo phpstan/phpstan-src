@@ -2,6 +2,11 @@
 
 namespace PHPStan\Type\Generic;
 
+use DateTime;
+use DateTimeInterface;
+use Exception;
+use Iterator;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -15,8 +20,13 @@ use PHPStan\Type\Test\D;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use ReflectionClass;
+use stdClass;
+use Traversable;
+use function array_map;
+use function sprintf;
 
-class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class GenericObjectTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -88,43 +98,43 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				TrinaryLogic::createMaybe(),
 			],
 			[
-				new ObjectType(\ReflectionClass::class),
-				new GenericObjectType(\ReflectionClass::class, [
-					new ObjectType(\stdClass::class),
+				new ObjectType(ReflectionClass::class),
+				new GenericObjectType(ReflectionClass::class, [
+					new ObjectType(stdClass::class),
 				]),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new GenericObjectType(\ReflectionClass::class, [
-					new ObjectType(\stdClass::class),
+				new GenericObjectType(ReflectionClass::class, [
+					new ObjectType(stdClass::class),
 				]),
-				new ObjectType(\ReflectionClass::class),
+				new ObjectType(ReflectionClass::class),
 				TrinaryLogic::createMaybe(),
 			],
 			[
-				new GenericObjectType(\ReflectionClass::class, [
+				new GenericObjectType(ReflectionClass::class, [
 					new ObjectWithoutClassType(),
 				]),
-				new GenericObjectType(\ReflectionClass::class, [
-					new ObjectType(\stdClass::class),
+				new GenericObjectType(ReflectionClass::class, [
+					new ObjectType(stdClass::class),
 				]),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new GenericObjectType(\ReflectionClass::class, [
-					new ObjectType(\stdClass::class),
+				new GenericObjectType(ReflectionClass::class, [
+					new ObjectType(stdClass::class),
 				]),
-				new GenericObjectType(\ReflectionClass::class, [
+				new GenericObjectType(ReflectionClass::class, [
 					new ObjectWithoutClassType(),
 				]),
 				TrinaryLogic::createMaybe(),
 			],
 			[
-				new GenericObjectType(\ReflectionClass::class, [
-					new ObjectType(\Exception::class),
+				new GenericObjectType(ReflectionClass::class, [
+					new ObjectType(Exception::class),
 				]),
-				new GenericObjectType(\ReflectionClass::class, [
-					new ObjectType(\stdClass::class),
+				new GenericObjectType(ReflectionClass::class, [
+					new ObjectType(stdClass::class),
 				]),
 				TrinaryLogic::createNo(),
 			],
@@ -140,7 +150,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -183,18 +193,18 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				TrinaryLogic::createNo(),
 			],
 			'generic object accepts normal object of same type' => [
-				new GenericObjectType(\Traversable::class, [new MixedType(true), new ObjectType('DateTimeInteface')]),
-				new ObjectType(\Traversable::class),
+				new GenericObjectType(Traversable::class, [new MixedType(true), new ObjectType('DateTimeInteface')]),
+				new ObjectType(Traversable::class),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new GenericObjectType(\Iterator::class, [new MixedType(true), new MixedType(true)]),
-				new ObjectType(\Iterator::class),
+				new GenericObjectType(Iterator::class, [new MixedType(true), new MixedType(true)]),
+				new ObjectType(Iterator::class),
 				TrinaryLogic::createYes(),
 			],
 			[
-				new GenericObjectType(\Iterator::class, [new MixedType(true), new MixedType(true)]),
-				new IntersectionType([new ObjectType(\Iterator::class), new ObjectType(\DateTimeInterface::class)]),
+				new GenericObjectType(Iterator::class, [new MixedType(true), new MixedType(true)]),
+				new IntersectionType([new ObjectType(Iterator::class), new ObjectType(DateTimeInterface::class)]),
 				TrinaryLogic::createYes(),
 			],
 		];
@@ -206,33 +216,31 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 	public function testAccepts(
 		Type $acceptingType,
 		Type $acceptedType,
-		TrinaryLogic $expectedResult
+		TrinaryLogic $expectedResult,
 	): void
 	{
 		$actualResult = $acceptingType->accepts($acceptedType, true);
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $acceptingType->describe(VerbosityLevel::precise()), $acceptedType->describe(VerbosityLevel::precise())),
 		);
 	}
 
 	/** @return array<string,array{Type,Type,array<string,string>}> */
 	public function dataInferTemplateTypes(): array
 	{
-		$templateType = static function (string $name, ?Type $bound = null): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				$bound ?? new MixedType(),
-				TemplateTypeVariance::createInvariant()
-			);
-		};
+		$templateType = static fn (string $name, ?Type $bound = null): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			$bound ?? new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'simple' => [
 				new GenericObjectType(A\A::class, [
-					new ObjectType(\DateTime::class),
+					new ObjectType(DateTime::class),
 				]),
 				new GenericObjectType(A\A::class, [
 					$templateType('T'),
@@ -241,7 +249,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			'two types' => [
 				new GenericObjectType(A\A2::class, [
-					new ObjectType(\DateTime::class),
+					new ObjectType(DateTime::class),
 					new IntegerType(),
 				]),
 				new GenericObjectType(A\A2::class, [
@@ -253,12 +261,12 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			'union' => [
 				new UnionType([
 					new GenericObjectType(A\A2::class, [
-						new ObjectType(\DateTime::class),
+						new ObjectType(DateTime::class),
 						new IntegerType(),
 					]),
 					new GenericObjectType(A\A2::class, [
 						new IntegerType(),
-						new ObjectType(\DateTime::class),
+						new ObjectType(DateTime::class),
 					]),
 				]),
 				new GenericObjectType(A\A2::class, [
@@ -270,7 +278,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			'nested' => [
 				new GenericObjectType(A\A::class, [
 					new GenericObjectType(A\A2::class, [
-						new ObjectType(\DateTime::class),
+						new ObjectType(DateTime::class),
 						new IntegerType(),
 					]),
 				]),
@@ -284,27 +292,27 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			'missing type' => [
 				new GenericObjectType(A\A2::class, [
-					new ObjectType(\DateTime::class),
+					new ObjectType(DateTime::class),
 				]),
 				new GenericObjectType(A\A2::class, [
-					$templateType('K', new ObjectType(\DateTimeInterface::class)),
-					$templateType('V', new ObjectType(\DateTimeInterface::class)),
+					$templateType('K', new ObjectType(DateTimeInterface::class)),
+					$templateType('V', new ObjectType(DateTimeInterface::class)),
 				]),
 				['K' => 'DateTime'],
 			],
 			'wrong class' => [
 				new GenericObjectType(B\I::class, [
-					new ObjectType(\DateTime::class),
+					new ObjectType(DateTime::class),
 				]),
 				new GenericObjectType(A\A::class, [
-					$templateType('T', new ObjectType(\DateTimeInterface::class)),
+					$templateType('T', new ObjectType(DateTimeInterface::class)),
 				]),
 				[],
 			],
 			'wrong type' => [
 				new IntegerType(),
 				new GenericObjectType(A\A::class, [
-					$templateType('T', new ObjectType(\DateTimeInterface::class)),
+					$templateType('T', new ObjectType(DateTimeInterface::class)),
 				]),
 				[],
 			],
@@ -328,23 +336,19 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$this->assertSame(
 			$expectedTypes,
-			array_map(static function (Type $type): string {
-				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes())
+			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
 	}
 
 	/** @return array<array{TemplateTypeVariance,Type,array<TemplateTypeReference>}> */
 	public function dataGetReferencedTypeArguments(): array
 	{
-		$templateType = static function (string $name, ?Type $bound = null): TemplateType {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				$bound ?? new MixedType(),
-				TemplateTypeVariance::createInvariant()
-			);
-		};
+		$templateType = static fn (string $name, ?Type $bound = null): TemplateType => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			$bound ?? new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'param: Invariant<T>' => [
@@ -355,7 +359,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 			],
@@ -367,7 +371,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createContravariant()
+						TemplateTypeVariance::createContravariant(),
 					),
 				],
 			],
@@ -381,7 +385,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createContravariant()
+						TemplateTypeVariance::createContravariant(),
 					),
 				],
 			],
@@ -397,7 +401,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createContravariant()
+						TemplateTypeVariance::createContravariant(),
 					),
 				],
 			],
@@ -409,7 +413,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 			],
@@ -421,7 +425,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createCovariant()
+						TemplateTypeVariance::createCovariant(),
 					),
 				],
 			],
@@ -435,7 +439,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createCovariant()
+						TemplateTypeVariance::createCovariant(),
 					),
 				],
 			],
@@ -451,7 +455,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createCovariant()
+						TemplateTypeVariance::createCovariant(),
 					),
 				],
 			],
@@ -465,7 +469,7 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new TemplateTypeReference(
 						$templateType('T'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 			],
@@ -484,19 +488,15 @@ class GenericObjectTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			$result[] = $r;
 		}
 
-		$comparableResult = array_map(static function (TemplateTypeReference $ref): array {
-			return [
-				'type' => $ref->getType()->describe(VerbosityLevel::typeOnly()),
-				'positionVariance' => $ref->getPositionVariance()->describe(),
-			];
-		}, $result);
+		$comparableResult = array_map(static fn (TemplateTypeReference $ref): array => [
+			'type' => $ref->getType()->describe(VerbosityLevel::typeOnly()),
+			'positionVariance' => $ref->getPositionVariance()->describe(),
+		], $result);
 
-		$comparableExpect = array_map(static function (TemplateTypeReference $ref): array {
-			return [
-				'type' => $ref->getType()->describe(VerbosityLevel::typeOnly()),
-				'positionVariance' => $ref->getPositionVariance()->describe(),
-			];
-		}, $expectedReferences);
+		$comparableExpect = array_map(static fn (TemplateTypeReference $ref): array => [
+			'type' => $ref->getType()->describe(VerbosityLevel::typeOnly()),
+			'positionVariance' => $ref->getPositionVariance()->describe(),
+		], $expectedReferences);
 
 		$this->assertSame($comparableExpect, $comparableResult);
 	}

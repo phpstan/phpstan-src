@@ -15,18 +15,15 @@ class BrokerFactory
 	public const DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG = 'phpstan.broker.dynamicFunctionReturnTypeExtension';
 	public const OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG = 'phpstan.broker.operatorTypeSpecifyingExtension';
 
-	private \PHPStan\DependencyInjection\Container $container;
-
-	public function __construct(Container $container)
+	public function __construct(private Container $container)
 	{
-		$this->container = $container;
 	}
 
 	public function create(): Broker
 	{
 		return new Broker(
 			$this->container->getByType(ReflectionProvider::class),
-			$this->container->getParameter('universalObjectCratesClasses')
+			$this->container->getParameter('universalObjectCratesClasses'),
 		);
 	}
 

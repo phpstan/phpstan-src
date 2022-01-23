@@ -2,7 +2,9 @@
 
 namespace PHPStan;
 
-class TrinaryLogicTest extends \PHPStan\Testing\PHPStanTestCase
+use PHPStan\Testing\PHPStanTestCase;
+
+class TrinaryLogicTest extends PHPStanTestCase
 {
 
 	public function dataAnd(): array
@@ -28,14 +30,11 @@ class TrinaryLogicTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAnd
-	 * @param TrinaryLogic $expectedResult
-	 * @param TrinaryLogic $value
-	 * @param TrinaryLogic ...$operands
 	 */
 	public function testAnd(
 		TrinaryLogic $expectedResult,
 		TrinaryLogic $value,
-		TrinaryLogic ...$operands
+		TrinaryLogic ...$operands,
 	): void
 	{
 		$this->assertTrue($expectedResult->equals($value->and(...$operands)));
@@ -64,14 +63,11 @@ class TrinaryLogicTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataOr
-	 * @param TrinaryLogic $expectedResult
-	 * @param TrinaryLogic $value
-	 * @param TrinaryLogic ...$operands
 	 */
 	public function testOr(
 		TrinaryLogic $expectedResult,
 		TrinaryLogic $value,
-		TrinaryLogic ...$operands
+		TrinaryLogic ...$operands,
 	): void
 	{
 		$this->assertTrue($expectedResult->equals($value->or(...$operands)));
@@ -88,8 +84,6 @@ class TrinaryLogicTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataNegate
-	 * @param TrinaryLogic $expectedResult
-	 * @param TrinaryLogic $operand
 	 */
 	public function testNegate(TrinaryLogic $expectedResult, TrinaryLogic $operand): void
 	{
@@ -137,29 +131,23 @@ class TrinaryLogicTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataCompareTo
-	 * @param TrinaryLogic $first
-	 * @param TrinaryLogic $second
-	 * @param TrinaryLogic|null $expected
 	 */
 	public function testCompareTo(TrinaryLogic $first, TrinaryLogic $second, ?TrinaryLogic $expected): void
 	{
 		$this->assertSame(
 			$expected,
-			$first->compareTo($second)
+			$first->compareTo($second),
 		);
 	}
 
 	/**
 	 * @dataProvider dataCompareTo
-	 * @param TrinaryLogic $first
-	 * @param TrinaryLogic $second
-	 * @param TrinaryLogic|null $expected
 	 */
 	public function testCompareToInversed(TrinaryLogic $first, TrinaryLogic $second, ?TrinaryLogic $expected): void
 	{
 		$this->assertSame(
 			$expected,
-			$second->compareTo($first)
+			$second->compareTo($first),
 		);
 	}
 

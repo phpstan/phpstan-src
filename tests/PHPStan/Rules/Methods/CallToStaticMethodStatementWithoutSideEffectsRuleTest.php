@@ -5,9 +5,10 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallToStaticMethodStatementWithoutSideEffectsRule>
+ * @extends RuleTestCase<CallToStaticMethodStatementWithoutSideEffectsRule>
  */
 class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 {
@@ -17,7 +18,7 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new CallToStaticMethodStatementWithoutSideEffectsRule(
 			new RuleLevelHelper($broker, true, false, true, false),
-			$broker
+			$broker,
 		);
 	}
 
@@ -64,6 +65,28 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 	public function testBug4455(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4455-static.php'], []);
+	}
+
+	public function testFirstClassCallables(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			self::markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/first-class-callable-static-method-without-side-effect.php'], [
+			[
+				'Call to static method FirstClassCallableStaticMethodWithoutSideEffect\Foo::doFoo() on a separate line has no effect.',
+				12,
+			],
+			[
+				'Call to static method FirstClassCallableStaticMethodWithoutSideEffect\Bar::doFoo() on a separate line has no effect.',
+				36,
+			],
+			[
+				'Call to static method FirstClassCallableStaticMethodWithoutSideEffect\Bar::doBar() on a separate line has no effect.',
+				39,
+			],
+		]);
 	}
 
 }

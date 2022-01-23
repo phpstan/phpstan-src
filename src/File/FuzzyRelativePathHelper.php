@@ -2,29 +2,36 @@
 
 namespace PHPStan\File;
 
+use function count;
+use function explode;
+use function implode;
+use function in_array;
+use function ltrim;
+use function realpath;
+use function str_ends_with;
+use function strlen;
+use function strpos;
+use function substr;
+use const DIRECTORY_SEPARATOR;
+
 class FuzzyRelativePathHelper implements RelativePathHelper
 {
-
-	private RelativePathHelper $fallbackRelativePathHelper;
 
 	private string $directorySeparator;
 
 	private ?string $pathToTrim = null;
 
 	/**
-	 * @param RelativePathHelper $fallbackRelativePathHelper
-	 * @param string $currentWorkingDirectory
 	 * @param string[] $analysedPaths
 	 * @param non-empty-string|null $directorySeparator
 	 */
 	public function __construct(
-		RelativePathHelper $fallbackRelativePathHelper,
+		private RelativePathHelper $fallbackRelativePathHelper,
 		string $currentWorkingDirectory,
 		array $analysedPaths,
-		?string $directorySeparator = null
+		?string $directorySeparator = null,
 	)
 	{
-		$this->fallbackRelativePathHelper = $fallbackRelativePathHelper;
 		if ($directorySeparator === null) {
 			$directorySeparator = DIRECTORY_SEPARATOR;
 		}
@@ -64,7 +71,7 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 			$pathArray = explode($directorySeparator, $path);
 			$pathTempParts = [];
 			foreach ($pathArray as $i => $pathPart) {
-				if (\Nette\Utils\Strings::endsWith($pathPart, '.php')) {
+				if (str_ends_with($pathPart, '.php')) {
 					continue;
 				}
 				if (!isset($pathToTrimArray[$i])) {

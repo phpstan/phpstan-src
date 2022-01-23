@@ -2,12 +2,14 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -16,28 +18,23 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
+use function array_map;
+use function array_merge;
+use function count;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\PropertyFetch>
+ * @implements Rule<Node\Expr\PropertyFetch>
  */
-class AccessPropertiesRule implements \PHPStan\Rules\Rule
+class AccessPropertiesRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
-	private bool $reportMagicProperties;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		RuleLevelHelper $ruleLevelHelper,
-		bool $reportMagicProperties
+		private ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
+		private bool $reportMagicProperties,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->reportMagicProperties = $reportMagicProperties;
 	}
 
 	public function getNodeType(): string
@@ -45,14 +42,12 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 		return PropertyFetch::class;
 	}
 
-	public function processNode(\PhpParser\Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope $scope): array
 	{
 		if ($node->name instanceof Identifier) {
 			$names = [$node->name->name];
 		} else {
-			$names = array_map(static function (ConstantStringType $type): string {
-				return $type->getValue();
-			}, TypeUtils::getConstantStrings($scope->getType($node->name)));
+			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), TypeUtils::getConstantStrings($scope->getType($node->name)));
 		}
 
 		$errors = [];
@@ -64,20 +59,15 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param PropertyFetch $node
-	 * @param string $name
 	 * @return RuleError[]
 	 */
 	private function processSingleProperty(Scope $scope, PropertyFetch $node, string $name): array
 	{
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($node->var),
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->var),
 			sprintf('Access to property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
-			static function (Type $type) use ($name): bool {
-				return $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes();
-			}
+			static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasProperty($name)->yes(),
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {
@@ -93,7 +83,7 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access property $%s on %s.',
 					$name,
-					$type->describe(VerbosityLevel::typeOnly())
+					$type->describe(VerbosityLevel::typeOnly()),
 				))->build(),
 			];
 		}
@@ -130,7 +120,7 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 							RuleErrorBuilder::message(sprintf(
 								'Access to private property $%s of parent class %s.',
 								$name,
-								$parentClassReflection->getDisplayName()
+								$parentClassReflection->getDisplayName(),
 							))->build(),
 						];
 					}
@@ -142,7 +132,7 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 			$ruleErrorBuilder = RuleErrorBuilder::message(sprintf(
 				'Access to an undefined property %s::$%s.',
 				$type->describe(VerbosityLevel::typeOnly()),
-				$name
+				$name,
 			));
 			if ($typeResult->getTip() !== null) {
 				$ruleErrorBuilder->tip($typeResult->getTip());
@@ -160,7 +150,7 @@ class AccessPropertiesRule implements \PHPStan\Rules\Rule
 					'Access to %s property %s::$%s.',
 					$propertyReflection->isPrivate() ? 'private' : 'protected',
 					$type->describe(VerbosityLevel::typeOnly()),
-					$name
+					$name,
 				))->build(),
 			];
 		}

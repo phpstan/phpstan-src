@@ -7,11 +7,16 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\Constant\ConstantStringType;
+use Throwable;
+use function count;
+use function in_array;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\New_>
+ * @implements Rule<Node\Expr\New_>
  */
-class DateTimeInstantiationRule implements \PHPStan\Rules\Rule
+class DateTimeInstantiationRule implements Rule
 {
 
 	public function getNodeType(): string
@@ -25,9 +30,9 @@ class DateTimeInstantiationRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (
-			!($node->class instanceof \PhpParser\Node\Name)
-			|| \count($node->getArgs()) === 0
-			|| !\in_array(strtolower((string) $node->class), ['datetime', 'datetimeimmutable'], true)
+			!($node->class instanceof Node\Name)
+			|| count($node->getArgs()) === 0
+			|| !in_array(strtolower((string) $node->class), ['datetime', 'datetimeimmutable'], true)
 		) {
 			return [];
 		}
@@ -41,7 +46,7 @@ class DateTimeInstantiationRule implements \PHPStan\Rules\Rule
 		$dateString = $arg->getValue();
 		try {
 			new DateTime($dateString);
-		} catch (\Throwable $e) {
+		} catch (Throwable) {
 			// an exception is thrown for errors only but we want to catch warnings too
 		}
 		$lastErrors = DateTime::getLastErrors();
@@ -51,7 +56,7 @@ class DateTimeInstantiationRule implements \PHPStan\Rules\Rule
 					'Instantiating %s with %s produces an error: %s',
 					(string) $node->class,
 					$dateString,
-					$error
+					$error,
 				))->build();
 			}
 		}

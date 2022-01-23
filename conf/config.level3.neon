@@ -2,7 +2,6 @@ includes:
 	- config.level2.neon
 
 rules:
-	- PHPStan\Rules\Arrays\AppendedArrayItemTypeRule
 	- PHPStan\Rules\Arrays\ArrayDestructuringRule
 	- PHPStan\Rules\Arrays\IterableInForeachRule
 	- PHPStan\Rules\Arrays\OffsetAccessAssignmentRule
@@ -11,9 +10,12 @@ rules:
 	- PHPStan\Rules\Arrays\UnpackIterableInArrayRule
 	- PHPStan\Rules\Functions\ArrowFunctionReturnTypeRule
 	- PHPStan\Rules\Functions\ClosureReturnTypeRule
+	- PHPStan\Rules\Functions\ReturnTypeRule
 	- PHPStan\Rules\Generators\YieldTypeRule
 	- PHPStan\Rules\Methods\ReturnTypeRule
 	- PHPStan\Rules\Properties\DefaultValueTypesAssignedToPropertiesRule
+	- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRule
+	- PHPStan\Rules\Properties\ReadOnlyPropertyAssignRefRule
 	- PHPStan\Rules\Properties\TypesAssignedToPropertiesRule
 	- PHPStan\Rules\Variables\ThrowTypeRule
 	- PHPStan\Rules\Variables\VariableCloningRule
@@ -22,13 +24,6 @@ parameters:
 	checkPhpDocMethodSignatures: true
 
 services:
-	-
-		class: PHPStan\Rules\Arrays\AppendedArrayKeyTypeRule
-		arguments:
-			checkUnionTypes: %checkUnionTypes%
-		tags:
-			- phpstan.rules.rule
-
 	-
 		class: PHPStan\Rules\Arrays\InvalidKeyInArrayDimFetchRule
 		arguments:
@@ -63,13 +58,6 @@ services:
 		arguments:
 			exceptionTypeResolver: @exceptionTypeResolver
 			missingCheckedExceptionInThrows: %exceptions.check.missingCheckedExceptionInThrows%
-		tags:
-			- phpstan.rules.rule
-
-	-
-		class: PHPStan\Rules\Functions\ReturnTypeRule
-		arguments:
-			functionReflector: @betterReflectionFunctionReflector
 		tags:
 			- phpstan.rules.rule
 

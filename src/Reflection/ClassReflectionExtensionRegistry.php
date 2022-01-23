@@ -3,25 +3,19 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Broker\Broker;
+use function array_merge;
 
 class ClassReflectionExtensionRegistry
 {
 
-	/** @var \PHPStan\Reflection\PropertiesClassReflectionExtension[] */
-	private array $propertiesClassReflectionExtensions;
-
-	/** @var \PHPStan\Reflection\MethodsClassReflectionExtension[] */
-	private array $methodsClassReflectionExtensions;
-
 	/**
-	 * @param \PHPStan\Broker\Broker $broker
-	 * @param \PHPStan\Reflection\PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
-	 * @param \PHPStan\Reflection\MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
+	 * @param PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
+	 * @param MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
 	 */
 	public function __construct(
 		Broker $broker,
-		array $propertiesClassReflectionExtensions,
-		array $methodsClassReflectionExtensions
+		private array $propertiesClassReflectionExtensions,
+		private array $methodsClassReflectionExtensions,
 	)
 	{
 		foreach (array_merge($propertiesClassReflectionExtensions, $methodsClassReflectionExtensions) as $extension) {
@@ -31,12 +25,10 @@ class ClassReflectionExtensionRegistry
 
 			$extension->setBroker($broker);
 		}
-		$this->propertiesClassReflectionExtensions = $propertiesClassReflectionExtensions;
-		$this->methodsClassReflectionExtensions = $methodsClassReflectionExtensions;
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\PropertiesClassReflectionExtension[]
+	 * @return PropertiesClassReflectionExtension[]
 	 */
 	public function getPropertiesClassReflectionExtensions(): array
 	{
@@ -44,7 +36,7 @@ class ClassReflectionExtensionRegistry
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\MethodsClassReflectionExtension[]
+	 * @return MethodsClassReflectionExtension[]
 	 */
 	public function getMethodsClassReflectionExtensions(): array
 	{

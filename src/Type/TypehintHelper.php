@@ -3,12 +3,19 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
+use function array_map;
+use function count;
+use function get_class;
+use function sprintf;
+use function str_ends_with;
+use function strtolower;
 
 class TypehintHelper
 {
@@ -67,10 +74,10 @@ class TypehintHelper
 
 	/** @api */
 	public static function decideTypeFromReflection(
-		?\ReflectionType $reflectionType,
+		?ReflectionType $reflectionType,
 		?Type $phpDocType = null,
 		?string $selfClass = null,
-		bool $isVariadic = false
+		bool $isVariadic = false,
 	): Type
 	{
 		if ($reflectionType === null) {
@@ -81,9 +88,7 @@ class TypehintHelper
 		}
 
 		if ($reflectionType instanceof ReflectionUnionType) {
-			$type = TypeCombinator::union(...array_map(static function (ReflectionType $type) use ($selfClass): Type {
-				return self::decideTypeFromReflection($type, null, $selfClass, false);
-			}, $reflectionType->getTypes()));
+			$type = TypeCombinator::union(...array_map(static fn (ReflectionType $type): Type => self::decideTypeFromReflection($type, null, $selfClass, false), $reflectionType->getTypes()));
 
 			return self::decideType($type, $phpDocType);
 		}
@@ -103,23 +108,23 @@ class TypehintHelper
 		}
 
 		if (!$reflectionType instanceof ReflectionNamedType) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected type: %s', get_class($reflectionType)));
+			throw new ShouldNotHappenException(sprintf('Unexpected type: %s', get_class($reflectionType)));
 		}
 
 		$reflectionTypeString = $reflectionType->getName();
-		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\object')) {
+		if (str_ends_with(strtolower($reflectionTypeString), '\\object')) {
 			$reflectionTypeString = 'object';
 		}
-		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\mixed')) {
+		if (str_ends_with(strtolower($reflectionTypeString), '\\mixed')) {
 			$reflectionTypeString = 'mixed';
 		}
-		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\false')) {
+		if (str_ends_with(strtolower($reflectionTypeString), '\\false')) {
 			$reflectionTypeString = 'false';
 		}
-		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\null')) {
+		if (str_ends_with(strtolower($reflectionTypeString), '\\null')) {
 			$reflectionTypeString = 'null';
 		}
-		if (\Nette\Utils\Strings::endsWith(strtolower($reflectionTypeString), '\\never')) {
+		if (str_ends_with(strtolower($reflectionTypeString), '\\never')) {
 			$reflectionTypeString = 'never';
 		}
 
@@ -135,7 +140,7 @@ class TypehintHelper
 
 	public static function decideType(
 		Type $type,
-		?Type $phpDocType = null
+		?Type $phpDocType = null,
 	): Type
 	{
 		if ($phpDocType !== null && !$phpDocType instanceof ErrorType) {
@@ -160,7 +165,7 @@ class TypehintHelper
 						if ($innerType instanceof ArrayType) {
 							$innerTypes[] = new IterableType(
 								$innerType->getKeyType(),
-								$innerType->getItemType()
+								$innerType->getItemType(),
 							);
 						} else {
 							$innerTypes[] = $innerType;
@@ -170,7 +175,7 @@ class TypehintHelper
 				} elseif ($phpDocType instanceof ArrayType) {
 					$phpDocType = new IterableType(
 						$phpDocType->getKeyType(),
-						$phpDocType->getItemType()
+						$phpDocType->getItemType(),
 					);
 				}
 			}

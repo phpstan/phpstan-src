@@ -11,11 +11,8 @@ class LazyDynamicThrowTypeExtensionProvider implements DynamicThrowTypeExtension
 	public const METHOD_TAG = 'phpstan.dynamicMethodThrowTypeExtension';
 	public const STATIC_METHOD_TAG = 'phpstan.dynamicStaticMethodThrowTypeExtension';
 
-	private Container $container;
-
-	public function __construct(Container $container)
+	public function __construct(private Container $container)
 	{
-		$this->container = $container;
 	}
 
 	public function getDynamicFunctionThrowTypeExtensions(): array

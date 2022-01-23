@@ -6,6 +6,7 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
@@ -13,45 +14,21 @@ use PHPStan\Type\Type;
 class AnnotationMethodReflection implements MethodReflection
 {
 
-	private string $name;
-
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
-
-	private Type $returnType;
-
-	private bool $isStatic;
-
-	/** @var \PHPStan\Reflection\Annotations\AnnotationsMethodParameterReflection[] */
-	private array $parameters;
-
-	private bool $isVariadic;
-
 	/** @var FunctionVariant[]|null */
 	private ?array $variants = null;
 
 	/**
-	 * @param string $name
-	 * @param ClassReflection $declaringClass
-	 * @param Type $returnType
-	 * @param \PHPStan\Reflection\Annotations\AnnotationsMethodParameterReflection[] $parameters
-	 * @param bool $isStatic
-	 * @param bool $isVariadic
+	 * @param AnnotationsMethodParameterReflection[] $parameters
 	 */
 	public function __construct(
-		string $name,
-		ClassReflection $declaringClass,
-		Type $returnType,
-		array $parameters,
-		bool $isStatic,
-		bool $isVariadic
+		private string $name,
+		private ClassReflection $declaringClass,
+		private Type $returnType,
+		private array $parameters,
+		private bool $isStatic,
+		private bool $isVariadic,
 	)
 	{
-		$this->name = $name;
-		$this->declaringClass = $declaringClass;
-		$this->returnType = $returnType;
-		$this->parameters = $parameters;
-		$this->isStatic = $isStatic;
-		$this->isVariadic = $isVariadic;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -85,7 +62,7 @@ class AnnotationMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getVariants(): array
 	{
@@ -96,7 +73,7 @@ class AnnotationMethodReflection implements MethodReflection
 					null,
 					$this->parameters,
 					$this->isVariadic,
-					$this->returnType
+					$this->returnType,
 				),
 			];
 		}

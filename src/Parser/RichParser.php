@@ -3,62 +3,59 @@
 namespace PHPStan\Parser;
 
 use PhpParser\ErrorHandler\Collecting;
+use PhpParser\Lexer;
+use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
 use PHPStan\File\FileReader;
 use PHPStan\NodeVisitor\StatementOrderVisitor;
+use PHPStan\ShouldNotHappenException;
+use function is_string;
+use function strpos;
+use function substr_count;
+use const T_COMMENT;
+use const T_DOC_COMMENT;
 
 class RichParser implements Parser
 {
 
-	private \PhpParser\Parser $parser;
-
-	private NameResolver $nameResolver;
-
-	private NodeConnectingVisitor $nodeConnectingVisitor;
-
-	private StatementOrderVisitor $statementOrderVisitor;
-
 	public function __construct(
-		\PhpParser\Parser $parser,
-		NameResolver $nameResolver,
-		NodeConnectingVisitor $nodeConnectingVisitor,
-		StatementOrderVisitor $statementOrderVisitor
+		private \PhpParser\Parser $parser,
+		private Lexer $lexer,
+		private NameResolver $nameResolver,
+		private NodeConnectingVisitor $nodeConnectingVisitor,
+		private StatementOrderVisitor $statementOrderVisitor,
 	)
 	{
-		$this->parser = $parser;
-		$this->nameResolver = $nameResolver;
-		$this->nodeConnectingVisitor = $nodeConnectingVisitor;
-		$this->statementOrderVisitor = $statementOrderVisitor;
 	}
 
 	/**
 	 * @param string $file path to a file to parse
-	 * @return \PhpParser\Node\Stmt[]
+	 * @return Node\Stmt[]
 	 */
 	public function parseFile(string $file): array
 	{
 		try {
 			return $this->parseString(FileReader::read($file));
-		} catch (\PHPStan\Parser\ParserErrorsException $e) {
-			throw new \PHPStan\Parser\ParserErrorsException($e->getErrors(), $file);
+		} catch (ParserErrorsException $e) {
+			throw new ParserErrorsException($e->getErrors(), $file);
 		}
 	}
 
 	/**
-	 * @param string $sourceCode
-	 * @return \PhpParser\Node\Stmt[]
+	 * @return Node\Stmt[]
 	 */
 	public function parseString(string $sourceCode): array
 	{
 		$errorHandler = new Collecting();
 		$nodes = $this->parser->parse($sourceCode, $errorHandler);
+		$tokens = $this->lexer->getTokens();
 		if ($errorHandler->hasErrors()) {
-			throw new \PHPStan\Parser\ParserErrorsException($errorHandler->getErrors(), null);
+			throw new ParserErrorsException($errorHandler->getErrors(), null);
 		}
 		if ($nodes === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$nodeTraverser = new NodeTraverser();
@@ -66,8 +63,46 @@ class RichParser implements Parser
 		$nodeTraverser->addVisitor($this->nodeConnectingVisitor);
 		$nodeTraverser->addVisitor($this->statementOrderVisitor);
 
-		/** @var array<\PhpParser\Node\Stmt> */
-		return $nodeTraverser->traverse($nodes);
+		/** @var array<Node\Stmt> */
+		$nodes = $nodeTraverser->traverse($nodes);
+		if (isset($nodes[0])) {
+			$nodes[0]->setAttribute('linesToIgnore', $this->getLinesToIgnore($tokens));
+		}
+
+		return $nodes;
+	}
+
+	/**
+	 * @param mixed[] $tokens
+	 * @return int[]
+	 */
+	private function getLinesToIgnore(array $tokens): array
+	{
+		$lines = [];
+		foreach ($tokens as $token) {
+			if (is_string($token)) {
+				continue;
+			}
+
+			$type = $token[0];
+			if ($type !== T_COMMENT && $type !== T_DOC_COMMENT) {
+				continue;
+			}
+
+			$text = $token[1];
+			$line = $token[2];
+			if (strpos($text, '@phpstan-ignore-next-line') !== false) {
+				$line++;
+			} elseif (strpos($text, '@phpstan-ignore-line') === false) {
+				continue;
+			}
+
+			$line += substr_count($token[1], "\n");
+
+			$lines[] = $line;
+		}
+
+		return $lines;
 	}
 
 }

@@ -8,6 +8,9 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -15,11 +18,8 @@ use PHPStan\Type\VerbosityLevel;
 class DumpTypeRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -54,8 +54,8 @@ class DumpTypeRule implements Rule
 			RuleErrorBuilder::message(
 				sprintf(
 					'Dumped type: %s',
-					$scope->getType($node->getArgs()[0]->value)->describe(VerbosityLevel::precise())
-				)
+					$scope->getType($node->getArgs()[0]->value)->describe(VerbosityLevel::precise()),
+				),
 			)->nonIgnorable()->build(),
 		];
 	}

@@ -4,11 +4,13 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ExistingClassInTraitUseRule>
+ * @extends RuleTestCase<ExistingClassInTraitUseRule>
  */
-class ExistingClassInTraitUseRuleTest extends \PHPStan\Testing\RuleTestCase
+class ExistingClassInTraitUseRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
@@ -16,7 +18,7 @@ class ExistingClassInTraitUseRuleTest extends \PHPStan\Testing\RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new ExistingClassInTraitUseRule(
 			new ClassCaseSensitivityCheck($broker, true),
-			$broker
+			$broker,
 		);
 	}
 
@@ -62,6 +64,24 @@ class ExistingClassInTraitUseRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Anonymous class uses interface TraitUseError\Baz.',
 				28,
+			],
+		]);
+	}
+
+	public function testEnums(): void
+	{
+		if (!self::$useStaticReflectionProvider || PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs static reflection and PHP 8.1');
+		}
+
+		$this->analyse([__DIR__ . '/data/trait-use-enum.php'], [
+			[
+				'Class TraitUseEnum\Foo uses enum TraitUseEnum\FooEnum.',
+				13,
+			],
+			[
+				'Anonymous class uses enum TraitUseEnum\FooEnum.',
+				20,
 			],
 		]);
 	}

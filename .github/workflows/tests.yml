@@ -4,18 +4,22 @@ name: "Tests"
 
 on:
   pull_request:
+    paths-ignore:
+      - 'compiler/**'
   push:
     branches:
       - "master"
+    paths-ignore:
+      - 'compiler/**'
 
 env:
-  COMPOSER_ROOT_VERSION: "1.0.x-dev"
+  COMPOSER_ROOT_VERSION: "1.3.x-dev"
 
 jobs:
   tests:
     name: "Tests"
     runs-on: ${{ matrix.operating-system }}
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     strategy:
       fail-fast: false
@@ -45,11 +49,30 @@ jobs:
           ini-values: memory_limit=640M
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Install PHP for code transform"
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: 8.0
+          extensions: mbstring
 
       - name: "Transform source code"
-        if: matrix.php-version != '7.4' && matrix.php-version != '8.0' && matrix.php-version != '8.1'
-        run: php bin/transform-source.php
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        shell: bash
+        run: "build/transform-source ${{ matrix.php-version }}"
+
+      - name: "Reinstall matrix PHP version"
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-values: memory_limit=640M
 
       - name: "Tests"
         run: "${{ matrix.script }}"
@@ -57,7 +80,7 @@ jobs:
   tests-old-phpunit:
     name: "Tests with old PHPUnit"
     runs-on: ${{ matrix.operating-system }}
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     strategy:
       fail-fast: false
@@ -85,45 +108,29 @@ jobs:
           ini-values: memory_limit=640M
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
 
-      - name: "Downgrade PHPUnit"
-        run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies"
+      - name: "Install PHP for code transform"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.0"
 
       - name: "Transform source code"
-        run: php bin/transform-source.php
+        shell: bash
+        run: "build/transform-source ${{ matrix.php-version }}"
+
+      - name: "Reinstall matrix PHP version"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-values: memory_limit=640M
+
+      - name: "Downgrade PHPUnit"
+        run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "Tests"
         run: "${{ matrix.script }}"
-
-  tests-code-coverage:
-    name: "Tests with code coverage"
-
-    runs-on: "ubuntu-latest"
-    timeout-minutes: 30
-
-    steps:
-      - name: "Checkout"
-        uses: "actions/checkout@v2"
-
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
-        with:
-          coverage: "pcov"
-          php-version: "7.4"
-          tools: pecl
-          extensions: ds
-
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
-
-      - name: "Tests"
-        run: |
-          php -dpcov.enabled=1 -dpcov.directory=. -dpcov.exclude="~vendor~" vendor/bin/phpunit
-
-      - name: "Coveralls"
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          composer require twinh/php-coveralls --dev && \
-          vendor/bin/php-coveralls --verbose --coverage_clover=tests/tmp/clover.xml --json_path=tests/tmp/coveralls-upload.json

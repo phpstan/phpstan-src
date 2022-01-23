@@ -4,18 +4,14 @@ namespace PHPStan\Rules;
 
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use function sprintf;
+use function strtolower;
 
 class ClassCaseSensitivityCheck
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private bool $checkInternalClassCaseSensitivity;
-
-	public function __construct(ReflectionProvider $reflectionProvider, bool $checkInternalClassCaseSensitivity)
+	public function __construct(private ReflectionProvider $reflectionProvider, private bool $checkInternalClassCaseSensitivity)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->checkInternalClassCaseSensitivity = $checkInternalClassCaseSensitivity;
 	}
 
 	/**
@@ -46,7 +42,7 @@ class ClassCaseSensitivityCheck
 				'%s %s referenced with incorrect case: %s.',
 				$this->getTypeName($classReflection),
 				$realClassName,
-				$className
+				$className,
 			))->line($pair->getNode()->getLine())->build();
 		}
 
@@ -59,6 +55,8 @@ class ClassCaseSensitivityCheck
 			return 'Interface';
 		} elseif ($classReflection->isTrait()) {
 			return 'Trait';
+		} elseif ($classReflection->isEnum()) {
+			return 'Enum';
 		}
 
 		return 'Class';

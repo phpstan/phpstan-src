@@ -6,18 +6,21 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallCallablesRule>
+ * @extends RuleTestCase<CallCallablesRule>
  */
-class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
+class CallCallablesRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkExplicitMixed = false;
+	private bool $checkExplicitMixed = false;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed);
 		return new CallCallablesRule(
@@ -26,13 +29,14 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 				new NullsafeCheck(),
 				new PhpVersion(80000),
 				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
 				true,
 				true,
 				true,
-				true
+				true,
 			),
 			$ruleLevelHelper,
-			true
+			true,
 		);
 	}
 
@@ -189,7 +193,6 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataBug3566
-	 * @param bool $checkExplicitMixed
 	 * @param mixed[] $errors
 	 */
 	public function testBug3566(bool $checkExplicitMixed, array $errors): void
@@ -209,6 +212,31 @@ class CallCallablesRuleTest extends \PHPStan\Testing\RuleTestCase
 			[
 				'Parameter #1 $val of closure expects int, int|null given.',
 				18,
+			],
+		]);
+	}
+
+	public function testBug1849(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-1849.php'], []);
+	}
+
+	public function testFirstClassCallables(): void
+	{
+		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/call-first-class-callables.php'], [
+			[
+				'Unable to resolve the template type T in call to closure',
+				14,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
+			[
+				'Unable to resolve the template type T in call to closure',
+				17,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 		]);
 	}

@@ -13,31 +13,21 @@ use PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
+use function count;
+use function in_array;
 
 class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension, TypeSpecifierAwareExtension
 {
 
-	private bool $treatPhpDocTypesAsCertain;
+	private TypeSpecifier $typeSpecifier;
 
-	private ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
-
-	private ?\PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper $helper = null;
-
-	/** @var string[] */
-	private array $universalObjectCratesClasses;
+	private ?ImpossibleCheckTypeHelper $helper = null;
 
 	/**
-	 * @param ReflectionProvider $reflectionProvider
-	 * @param bool $treatPhpDocTypesAsCertain
 	 * @param string[] $universalObjectCratesClasses
 	 */
-	public function __construct(ReflectionProvider $reflectionProvider, bool $treatPhpDocTypesAsCertain, array $universalObjectCratesClasses)
+	public function __construct(private ReflectionProvider $reflectionProvider, private bool $treatPhpDocTypesAsCertain, private array $universalObjectCratesClasses)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
-		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
@@ -72,7 +62,7 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		if (count($functionCall->getArgs()) === 0) {
@@ -81,7 +71,7 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 
 		$isAlways = $this->getHelper()->findSpecifiedType(
 			$scope,
-			$functionCall
+			$functionCall,
 		);
 		if ($isAlways === null) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();

@@ -8,12 +8,9 @@ use PhpParser\Node\Stmt;
 class UnreachableStatementNode extends Stmt implements VirtualNode
 {
 
-	private Stmt $originalStatement;
-
-	public function __construct(Stmt $originalStatement)
+	public function __construct(private Stmt $originalStatement)
 	{
 		parent::__construct($originalStatement->getAttributes());
-		$this->originalStatement = $originalStatement;
 	}
 
 	public function getOriginalStatement(): Stmt

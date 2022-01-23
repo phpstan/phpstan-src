@@ -14,24 +14,20 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
+ * @implements Rule<Node\Stmt\Expression>
  */
 class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 {
 
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper,
-		ReflectionProvider $reflectionProvider
+		private RuleLevelHelper $ruleLevelHelper,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -61,11 +57,9 @@ class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 		} else {
 			$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($staticCall->class),
+				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $staticCall->class),
 				'',
-				static function (Type $type) use ($methodName): bool {
-					return $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes();
-				}
+				static fn (Type $type): bool => $type->canCallMethods()->yes() && $type->hasMethod($methodName)->yes(),
 			);
 			$calledOnType = $typeResult->getType();
 			if ($calledOnType instanceof ErrorType) {
@@ -91,10 +85,12 @@ class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 			return [];
 		}
 
-		if ($method->hasSideEffects()->no()) {
-			$throwsType = $method->getThrowType();
-			if ($throwsType !== null && !$throwsType instanceof VoidType) {
-				return [];
+		if ($method->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
+			if (!$node->expr->isFirstClassCallable()) {
+				$throwsType = $method->getThrowType();
+				if ($throwsType !== null && !$throwsType instanceof VoidType) {
+					return [];
+				}
 			}
 
 			$methodResult = $scope->getType($staticCall);
@@ -107,7 +103,7 @@ class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 					'Call to %s %s::%s() on a separate line has no effect.',
 					$method->isStatic() ? 'static method' : 'method',
 					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName()
+					$method->getName(),
 				))->build(),
 			];
 		}

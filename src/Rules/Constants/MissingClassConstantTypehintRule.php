@@ -6,21 +6,23 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function implode;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<Node\Stmt\ClassConst>
+ * @implements Rule<Node\Stmt\ClassConst>
  */
-final class MissingClassConstantTypehintRule implements \PHPStan\Rules\Rule
+final class MissingClassConstantTypehintRule implements Rule
 {
 
-	private \PHPStan\Rules\MissingTypehintCheck $missingTypehintCheck;
-
-	public function __construct(MissingTypehintCheck $missingTypehintCheck)
+	public function __construct(private MissingTypehintCheck $missingTypehintCheck)
 	{
-		$this->missingTypehintCheck = $missingTypehintCheck;
 	}
 
 	public function getNodeType(): string
@@ -31,7 +33,7 @@ final class MissingClassConstantTypehintRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$errors = [];
@@ -44,7 +46,6 @@ final class MissingClassConstantTypehintRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param string $constantName
 	 * @return RuleError[]
 	 */
 	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
@@ -59,7 +60,7 @@ final class MissingClassConstantTypehintRule implements \PHPStan\Rules\Rule
 				'Constant %s::%s type has no value type specified in iterable type %s.',
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
-				$iterableTypeDescription
+				$iterableTypeDescription,
 			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
@@ -69,7 +70,7 @@ final class MissingClassConstantTypehintRule implements \PHPStan\Rules\Rule
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
 				$name,
-				implode(', ', $genericTypeNames)
+				implode(', ', $genericTypeNames),
 			))->tip(MissingTypehintCheck::TURN_OFF_NON_GENERIC_CHECK_TIP)->build();
 		}
 
@@ -78,7 +79,7 @@ final class MissingClassConstantTypehintRule implements \PHPStan\Rules\Rule
 				'Constant %s::%s type has no signature specified for %s.',
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
-				$callableType->describe(VerbosityLevel::typeOnly())
+				$callableType->describe(VerbosityLevel::typeOnly()),
 			))->build();
 		}
 

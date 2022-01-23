@@ -11,17 +11,8 @@ use PHPStan\Type\Type;
 class TypeStringResolver
 {
 
-	private Lexer $typeLexer;
-
-	private TypeParser $typeParser;
-
-	private TypeNodeResolver $typeNodeResolver;
-
-	public function __construct(Lexer $typeLexer, TypeParser $typeParser, TypeNodeResolver $typeNodeResolver)
+	public function __construct(private Lexer $typeLexer, private TypeParser $typeParser, private TypeNodeResolver $typeNodeResolver)
 	{
-		$this->typeLexer = $typeLexer;
-		$this->typeParser = $typeParser;
-		$this->typeNodeResolver = $typeNodeResolver;
 	}
 
 	/** @api */

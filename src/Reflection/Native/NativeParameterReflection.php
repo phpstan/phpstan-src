@@ -9,33 +9,15 @@ use PHPStan\Type\Type;
 class NativeParameterReflection implements ParameterReflection
 {
 
-	private string $name;
-
-	private bool $optional;
-
-	private \PHPStan\Type\Type $type;
-
-	private \PHPStan\Reflection\PassedByReference $passedByReference;
-
-	private bool $variadic;
-
-	private ?\PHPStan\Type\Type $defaultValue;
-
 	public function __construct(
-		string $name,
-		bool $optional,
-		Type $type,
-		PassedByReference $passedByReference,
-		bool $variadic,
-		?Type $defaultValue
+		private string $name,
+		private bool $optional,
+		private Type $type,
+		private PassedByReference $passedByReference,
+		private bool $variadic,
+		private ?Type $defaultValue,
 	)
 	{
-		$this->name = $name;
-		$this->optional = $optional;
-		$this->type = $type;
-		$this->passedByReference = $passedByReference;
-		$this->variadic = $variadic;
-		$this->defaultValue = $defaultValue;
 	}
 
 	public function getName(): string
@@ -70,7 +52,6 @@ class NativeParameterReflection implements ParameterReflection
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{
@@ -80,7 +61,7 @@ class NativeParameterReflection implements ParameterReflection
 			$properties['type'],
 			$properties['passedByReference'],
 			$properties['variadic'],
-			$properties['defaultValue']
+			$properties['defaultValue'],
 		);
 	}
 

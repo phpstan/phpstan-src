@@ -5,12 +5,13 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Function_>
+ * @implements Rule<Node\Stmt\Function_>
  */
-class InnerFunctionRule implements \PHPStan\Rules\Rule
+class InnerFunctionRule implements Rule
 {
 
 	public function getNodeType(): string
@@ -26,7 +27,7 @@ class InnerFunctionRule implements \PHPStan\Rules\Rule
 
 		return [
 			RuleErrorBuilder::message(
-				'Inner named functions are not supported by PHPStan. Consider refactoring to an anonymous function, class method, or a top-level-defined function. See issue #165 (https://github.com/phpstan/phpstan/issues/165) for more details.'
+				'Inner named functions are not supported by PHPStan. Consider refactoring to an anonymous function, class method, or a top-level-defined function. See issue #165 (https://github.com/phpstan/phpstan/issues/165) for more details.',
 			)->build(),
 		];
 	}

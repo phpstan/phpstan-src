@@ -8,7 +8,7 @@ use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<MethodTemplateTypeRule>
+ * @extends RuleTestCase<MethodTemplateTypeRule>
  */
 class MethodTemplateTypeRuleTest extends RuleTestCase
 {
@@ -20,7 +20,7 @@ class MethodTemplateTypeRuleTest extends RuleTestCase
 
 		return new MethodTemplateTypeRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
-			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker, true), new GenericObjectTypeCheck(), $typeAliasResolver, true)
+			new TemplateTypeCheck($broker, new ClassCaseSensitivityCheck($broker, true), new GenericObjectTypeCheck(), $typeAliasResolver, true),
 		);
 	}
 

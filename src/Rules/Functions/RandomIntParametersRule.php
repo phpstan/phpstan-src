@@ -6,25 +6,23 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\VerbosityLevel;
+use function array_values;
+use function count;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
-class RandomIntParametersRule implements \PHPStan\Rules\Rule
+class RandomIntParametersRule implements Rule
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private bool $reportMaybes;
-
-	public function __construct(ReflectionProvider $reflectionProvider, bool $reportMaybes)
+	public function __construct(private ReflectionProvider $reflectionProvider, private bool $reportMaybes)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string
@@ -34,7 +32,7 @@ class RandomIntParametersRule implements \PHPStan\Rules\Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!($node->name instanceof \PhpParser\Node\Name)) {
+		if (!($node->name instanceof Node\Name)) {
 			return [];
 		}
 
@@ -42,8 +40,13 @@ class RandomIntParametersRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$minType = $scope->getType($node->getArgs()[0]->value)->toInteger();
-		$maxType = $scope->getType($node->getArgs()[1]->value)->toInteger();
+		$args = array_values($node->getArgs());
+		if (count($args) < 2) {
+			return [];
+		}
+
+		$minType = $scope->getType($args[0]->value)->toInteger();
+		$maxType = $scope->getType($args[1]->value)->toInteger();
 
 		if (
 			!$minType instanceof ConstantIntegerType && !$minType instanceof IntegerRangeType
@@ -60,7 +63,7 @@ class RandomIntParametersRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					$message,
 					$minType->describe(VerbosityLevel::value()),
-					$maxType->describe(VerbosityLevel::value())
+					$maxType->describe(VerbosityLevel::value()),
 				))->build(),
 			];
 		}

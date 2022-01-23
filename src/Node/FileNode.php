@@ -2,27 +2,24 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Node;
 use PhpParser\NodeAbstract;
 
 /** @api */
 class FileNode extends NodeAbstract implements VirtualNode
 {
 
-	/** @var \PhpParser\Node[] */
-	private array $nodes;
-
 	/**
-	 * @param \PhpParser\Node[] $nodes
+	 * @param Node[] $nodes
 	 */
-	public function __construct(array $nodes)
+	public function __construct(private array $nodes)
 	{
 		$firstNode = $nodes[0] ?? null;
 		parent::__construct($firstNode !== null ? $firstNode->getAttributes() : []);
-		$this->nodes = $nodes;
 	}
 
 	/**
-	 * @return \PhpParser\Node[]
+	 * @return Node[]
 	 */
 	public function getNodes(): array
 	{

@@ -3,25 +3,17 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\ShouldNotHappenException;
 
 class ScopeContext
 {
 
-	private string $file;
-
-	private ?ClassReflection $classReflection;
-
-	private ?ClassReflection $traitReflection;
-
 	private function __construct(
-		string $file,
-		?ClassReflection $classReflection,
-		?ClassReflection $traitReflection
+		private string $file,
+		private ?ClassReflection $classReflection,
+		private ?ClassReflection $traitReflection,
 	)
 	{
-		$this->file = $file;
-		$this->classReflection = $classReflection;
-		$this->traitReflection = $traitReflection;
 	}
 
 	/** @api */
@@ -38,10 +30,10 @@ class ScopeContext
 	public function enterClass(ClassReflection $classReflection): self
 	{
 		if ($this->classReflection !== null && !$classReflection->isAnonymous()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		if ($classReflection->isTrait()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		return new self($this->file, $classReflection, null);
 	}
@@ -49,10 +41,10 @@ class ScopeContext
 	public function enterTrait(ClassReflection $traitReflection): self
 	{
 		if ($this->classReflection === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		if (!$traitReflection->isTrait()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return new self($this->file, $this->classReflection, $traitReflection);

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Function_;
@@ -11,6 +12,7 @@ use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\TrinaryLogic;
@@ -19,89 +21,40 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
+use ReflectionFunction;
+use ReflectionParameter;
+use function array_map;
+use function filemtime;
+use function is_file;
+use function sprintf;
+use function time;
 
 class PhpFunctionReflection implements FunctionReflection
 {
-
-	private \ReflectionFunction $reflection;
-
-	private \PHPStan\Parser\Parser $parser;
-
-	private \PHPStan\Parser\FunctionCallStatementFinder $functionCallStatementFinder;
-
-	private \PHPStan\Cache\Cache $cache;
-
-	private \PHPStan\Type\Generic\TemplateTypeMap $templateTypeMap;
-
-	/** @var \PHPStan\Type\Type[] */
-	private array $phpDocParameterTypes;
-
-	private ?\PHPStan\Type\Type $phpDocReturnType;
-
-	private ?\PHPStan\Type\Type $phpDocThrowType;
-
-	private ?string $deprecatedDescription;
-
-	private bool $isDeprecated;
-
-	private bool $isInternal;
-
-	private bool $isFinal;
-
-	private ?string $filename;
-
-	private ?bool $isPure;
 
 	/** @var FunctionVariantWithPhpDocs[]|null */
 	private ?array $variants = null;
 
 	/**
-	 * @param \ReflectionFunction $reflection
-	 * @param Parser $parser
-	 * @param FunctionCallStatementFinder $functionCallStatementFinder
-	 * @param Cache $cache
-	 * @param TemplateTypeMap $templateTypeMap
-	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
-	 * @param Type|null $phpDocReturnType
-	 * @param Type|null $phpDocThrowType
-	 * @param string|null $deprecatedDescription
-	 * @param bool $isDeprecated
-	 * @param bool $isInternal
-	 * @param bool $isFinal
-	 * @param string|null $filename
-	 * @param bool|null $isPure
+	 * @param Type[] $phpDocParameterTypes
 	 */
 	public function __construct(
-		\ReflectionFunction $reflection,
-		Parser $parser,
-		FunctionCallStatementFinder $functionCallStatementFinder,
-		Cache $cache,
-		TemplateTypeMap $templateTypeMap,
-		array $phpDocParameterTypes,
-		?Type $phpDocReturnType,
-		?Type $phpDocThrowType,
-		?string $deprecatedDescription,
-		bool $isDeprecated,
-		bool $isInternal,
-		bool $isFinal,
-		?string $filename,
-		?bool $isPure
+		private ReflectionFunction $reflection,
+		private Parser $parser,
+		private FunctionCallStatementFinder $functionCallStatementFinder,
+		private Cache $cache,
+		private TemplateTypeMap $templateTypeMap,
+		private array $phpDocParameterTypes,
+		private ?Type $phpDocReturnType,
+		private ?Type $phpDocThrowType,
+		private ?string $deprecatedDescription,
+		private bool $isDeprecated,
+		private bool $isInternal,
+		private bool $isFinal,
+		private ?string $filename,
+		private ?bool $isPure,
 	)
 	{
-		$this->reflection = $reflection;
-		$this->parser = $parser;
-		$this->functionCallStatementFinder = $functionCallStatementFinder;
-		$this->cache = $cache;
-		$this->templateTypeMap = $templateTypeMap;
-		$this->phpDocParameterTypes = $phpDocParameterTypes;
-		$this->phpDocReturnType = $phpDocReturnType;
-		$this->phpDocThrowType = $phpDocThrowType;
-		$this->isDeprecated = $isDeprecated;
-		$this->deprecatedDescription = $deprecatedDescription;
-		$this->isInternal = $isInternal;
-		$this->isFinal = $isFinal;
-		$this->filename = $filename;
-		$this->isPure = $isPure;
 	}
 
 	public function getName(): string
@@ -136,7 +89,7 @@ class PhpFunctionReflection implements FunctionReflection
 					$this->isVariadic(),
 					$this->getReturnType(),
 					$this->getPhpDocReturnType(),
-					$this->getNativeReturnType()
+					$this->getNativeReturnType(),
 				),
 			];
 		}
@@ -145,17 +98,15 @@ class PhpFunctionReflection implements FunctionReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParameterReflectionWithPhpDocs[]
+	 * @return ParameterReflectionWithPhpDocs[]
 	 */
 	private function getParameters(): array
 	{
-		return array_map(function (\ReflectionParameter $reflection): PhpParameterReflection {
-			return new PhpParameterReflection(
-				$reflection,
-				$this->phpDocParameterTypes[$reflection->getName()] ?? null,
-				null
-			);
-		}, $this->reflection->getParameters());
+		return array_map(fn (ReflectionParameter $reflection): PhpParameterReflection => new PhpParameterReflection(
+			$reflection,
+			$this->phpDocParameterTypes[$reflection->getName()] ?? null,
+			null,
+		), $this->reflection->getParameters());
 	}
 
 	private function isVariadic(): bool
@@ -187,8 +138,7 @@ class PhpFunctionReflection implements FunctionReflection
 	}
 
 	/**
-	 * @param \PhpParser\Node[] $nodes
-	 * @return bool
+	 * @param Node[] $nodes
 	 */
 	private function callsFuncGetArgs(array $nodes): bool
 	{
@@ -229,7 +179,7 @@ class PhpFunctionReflection implements FunctionReflection
 	{
 		return TypehintHelper::decideTypeFromReflection(
 			$this->reflection->getReturnType(),
-			$this->phpDocReturnType
+			$this->phpDocReturnType,
 		);
 	}
 
@@ -259,7 +209,7 @@ class PhpFunctionReflection implements FunctionReflection
 	public function isDeprecated(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean(
-			$this->isDeprecated || $this->reflection->isDeprecated()
+			$this->isDeprecated || $this->reflection->isDeprecated(),
 		);
 	}
 

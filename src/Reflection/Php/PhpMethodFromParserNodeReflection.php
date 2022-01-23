@@ -2,10 +2,12 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -15,30 +17,18 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VoidType;
+use function strtolower;
 
 class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements MethodReflection
 {
 
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
-
 	/**
-	 * @param ClassReflection $declaringClass
-	 * @param ClassMethod $classMethod
-	 * @param TemplateTypeMap $templateTypeMap
-	 * @param \PHPStan\Type\Type[] $realParameterTypes
-	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
-	 * @param \PHPStan\Type\Type[] $realParameterDefaultValues
-	 * @param Type $realReturnType
-	 * @param Type|null $phpDocReturnType
-	 * @param Type|null $throwType
-	 * @param string|null $deprecatedDescription
-	 * @param bool $isDeprecated
-	 * @param bool $isInternal
-	 * @param bool $isFinal
-	 * @param bool|null $isPure
+	 * @param Type[] $realParameterTypes
+	 * @param Type[] $phpDocParameterTypes
+	 * @param Type[] $realParameterDefaultValues
 	 */
 	public function __construct(
-		ClassReflection $declaringClass,
+		private ClassReflection $declaringClass,
 		ClassMethod $classMethod,
 		string $fileName,
 		TemplateTypeMap $templateTypeMap,
@@ -52,7 +42,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		?bool $isPure
+		?bool $isPure,
 	)
 	{
 		$name = strtolower($classMethod->name->name);
@@ -92,9 +82,8 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$isDeprecated,
 			$isInternal,
 			$isFinal || $classMethod->isFinal(),
-			$isPure
+			$isPure,
 		);
-		$this->declaringClass = $declaringClass;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -106,14 +95,14 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 	{
 		try {
 			return $this->declaringClass->getNativeMethod($this->getClassMethod()->name->name)->getPrototype();
-		} catch (\PHPStan\Reflection\MissingMethodFromReflectionException $e) {
+		} catch (MissingMethodFromReflectionException) {
 			return $this;
 		}
 	}
 
 	private function getClassMethod(): ClassMethod
 	{
-		/** @var \PhpParser\Node\Stmt\ClassMethod $functionLike */
+		/** @var Node\Stmt\ClassMethod $functionLike */
 		$functionLike = $this->getFunctionLike();
 		return $functionLike;
 	}

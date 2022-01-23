@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use ThrowsVoidFunction\MyException;
 
 /**
  * @extends RuleTestCase<ThrowsVoidFunctionWithExplicitThrowPointRule>
@@ -11,11 +12,10 @@ use PHPStan\Testing\RuleTestCase;
 class ThrowsVoidFunctionWithExplicitThrowPointRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $missingCheckedExceptionInThrows;
+	private bool $missingCheckedExceptionInThrows;
 
 	/** @var string[] */
-	private $checkedExceptionClasses;
+	private array $checkedExceptionClasses;
 
 	protected function getRule(): Rule
 	{
@@ -24,7 +24,7 @@ class ThrowsVoidFunctionWithExplicitThrowPointRuleTest extends RuleTestCase
 			[],
 			[],
 			[],
-			$this->checkedExceptionClasses
+			$this->checkedExceptionClasses,
 		), $this->missingCheckedExceptionInThrows);
 	}
 
@@ -48,7 +48,7 @@ class ThrowsVoidFunctionWithExplicitThrowPointRuleTest extends RuleTestCase
 			],
 			[
 				true,
-				[\ThrowsVoidFunction\MyException::class],
+				[MyException::class],
 				[],
 			],
 			[
@@ -73,7 +73,7 @@ class ThrowsVoidFunctionWithExplicitThrowPointRuleTest extends RuleTestCase
 			],
 			[
 				false,
-				[\ThrowsVoidFunction\MyException::class],
+				[MyException::class],
 				[
 					[
 						'Function ThrowsVoidFunction\foo() throws exception ThrowsVoidFunction\MyException but the PHPDoc contains @throws void.',
@@ -86,7 +86,6 @@ class ThrowsVoidFunctionWithExplicitThrowPointRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRule
-	 * @param bool $missingCheckedExceptionInThrows
 	 * @param string[] $checkedExceptionClasses
 	 * @param mixed[] $errors
 	 */

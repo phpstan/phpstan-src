@@ -10,11 +10,15 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use SplFileObject;
+use function in_array;
 
-class StatDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension, \PHPStan\Type\DynamicMethodReturnTypeExtension
+class StatDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension, DynamicMethodReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -29,7 +33,7 @@ class StatDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionRet
 
 	public function getClass(): string
 	{
-		return \SplFileObject::class;
+		return SplFileObject::class;
 	}
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool

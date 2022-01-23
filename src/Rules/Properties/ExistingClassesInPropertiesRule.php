@@ -10,41 +10,28 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function array_map;
+use function array_merge;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\ClassPropertyNode>
+ * @implements Rule<ClassPropertyNode>
  */
-class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
+class ExistingClassesInPropertiesRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private UnresolvableTypeHelper $unresolvableTypeHelper;
-
-	private PhpVersion $phpVersion;
-
-	private bool $checkClassCaseSensitivity;
-
-	private bool $checkThisOnly;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		UnresolvableTypeHelper $unresolvableTypeHelper,
-		PhpVersion $phpVersion,
-		bool $checkClassCaseSensitivity,
-		bool $checkThisOnly
+		private ReflectionProvider $reflectionProvider,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private PhpVersion $phpVersion,
+		private bool $checkClassCaseSensitivity,
+		private bool $checkThisOnly,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->unresolvableTypeHelper = $unresolvableTypeHelper;
-		$this->phpVersion = $phpVersion;
-		$this->checkClassCaseSensitivity = $checkClassCaseSensitivity;
-		$this->checkThisOnly = $checkThisOnly;
 	}
 
 	public function getNodeType(): string
@@ -55,7 +42,7 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$propertyReflection = $scope->getClassReflection()->getNativeProperty($node->getName());
@@ -64,7 +51,7 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 		} else {
 			$referencedClasses = array_merge(
 				$propertyReflection->getNativeType()->getReferencedClasses(),
-				$propertyReflection->getPhpDocType()->getReferencedClasses()
+				$propertyReflection->getPhpDocType()->getReferencedClasses(),
 			);
 		}
 
@@ -76,7 +63,7 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 						'Property %s::$%s has invalid type %s.',
 						$propertyReflection->getDeclaringClass()->getDisplayName(),
 						$node->getName(),
-						$referencedClass
+						$referencedClass,
 					))->build();
 				}
 				continue;
@@ -86,16 +73,14 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 				'Property %s::$%s has unknown class %s as its type.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
 				$node->getName(),
-				$referencedClass
+				$referencedClass,
 			))->discoveringSymbolsTip()->build();
 		}
 
 		if ($this->checkClassCaseSensitivity) {
 			$errors = array_merge(
 				$errors,
-				$this->classCaseSensitivityCheck->checkClassNames(array_map(static function (string $class) use ($node): ClassNameNodePair {
-					return new ClassNameNodePair($class, $node);
-				}, $referencedClasses))
+				$this->classCaseSensitivityCheck->checkClassNames(array_map(static fn (string $class): ClassNameNodePair => new ClassNameNodePair($class, $node), $referencedClasses)),
 			);
 		}
 
@@ -106,7 +91,7 @@ class ExistingClassesInPropertiesRule implements \PHPStan\Rules\Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Property %s::$%s has unresolvable native type.',
 				$propertyReflection->getDeclaringClass()->getDisplayName(),
-				$node->getName()
+				$node->getName(),
 			))->build();
 		}
 

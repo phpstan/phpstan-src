@@ -2,19 +2,24 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use Nette\Utils\Strings;
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
+use function array_slice;
+use function strpos;
+use function substr;
 
 class SignatureMapParser
 {
 
-	private \PHPStan\PhpDoc\TypeStringResolver $typeStringResolver;
+	private TypeStringResolver $typeStringResolver;
 
 	public function __construct(
-		TypeStringResolver $typeNodeResolver
+		TypeStringResolver $typeNodeResolver,
 	)
 	{
 		$this->typeStringResolver = $typeNodeResolver;
@@ -22,8 +27,6 @@ class SignatureMapParser
 
 	/**
 	 * @param mixed[] $map
-	 * @param string|null $className
-	 * @return \PHPStan\Reflection\SignatureMap\FunctionSignature
 	 */
 	public function getFunctionSignature(array $map, ?string $className): FunctionSignature
 	{
@@ -39,7 +42,7 @@ class SignatureMapParser
 			$parameterSignatures,
 			$this->getTypeFromString($map[0], $className),
 			new MixedType(),
-			$hasVariadic
+			$hasVariadic,
 		);
 	}
 
@@ -54,7 +57,7 @@ class SignatureMapParser
 
 	/**
 	 * @param array<string, string> $parameterMap
-	 * @return array<int, \PHPStan\Reflection\SignatureMap\ParameterSignature>
+	 * @return array<int, ParameterSignature>
 	 */
 	private function getParameters(array $parameterMap): array
 	{
@@ -67,7 +70,7 @@ class SignatureMapParser
 				$this->getTypeFromString($typeString, null),
 				new MixedType(),
 				$passedByReference,
-				$isVariadic
+				$isVariadic,
 			);
 		}
 
@@ -75,17 +78,16 @@ class SignatureMapParser
 	}
 
 	/**
-	 * @param string $parameterNameString
 	 * @return mixed[]
 	 */
 	private function getParameterInfoFromName(string $parameterNameString): array
 	{
-		$matches = \Nette\Utils\Strings::match(
+		$matches = Strings::match(
 			$parameterNameString,
-			'#^(?P<reference>&(?:\.\.\.)?r?w?_?)?(?P<variadic>\.\.\.)?(?P<name>[^=]+)?(?P<optional>=)?($)#'
+			'#^(?P<reference>&(?:\.\.\.)?r?w?_?)?(?P<variadic>\.\.\.)?(?P<name>[^=]+)?(?P<optional>=)?($)#',
 		);
 		if ($matches === null || !isset($matches['optional'])) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$isVariadic = $matches['variadic'] !== '';

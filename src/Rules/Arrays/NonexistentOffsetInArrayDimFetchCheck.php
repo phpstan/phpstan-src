@@ -14,41 +14,31 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function sprintf;
 
 class NonexistentOffsetInArrayDimFetchCheck
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	private bool $reportMaybes;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper, bool $reportMaybes)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper, private bool $reportMaybes)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param Expr $var
-	 * @param string $unknownClassPattern
-	 * @param Type $dimType
 	 * @return RuleError[]
 	 */
 	public function check(
 		Scope $scope,
 		Expr $var,
 		string $unknownClassPattern,
-		Type $dimType
+		Type $dimType,
 	): array
 	{
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($var),
+			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $var),
 			$unknownClassPattern,
-			static function (Type $type) use ($dimType): bool {
-				return $type->hasOffsetValueType($dimType)->yes();
-			}
+			static fn (Type $type): bool => $type->hasOffsetValueType($dimType)->yes(),
 		);
 		$type = $typeResult->getType();
 		if ($type instanceof ErrorType) {

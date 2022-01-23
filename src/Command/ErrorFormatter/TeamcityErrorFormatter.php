@@ -5,6 +5,12 @@ namespace PHPStan\Command\ErrorFormatter;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use function array_keys;
+use function array_values;
+use function count;
+use function is_string;
+use function preg_replace;
+use const PHP_EOL;
 
 /**
  * @see https://www.jetbrains.com/help/teamcity/build-script-interaction-with-teamcity.html#Reporting+Inspections
@@ -12,11 +18,8 @@ use PHPStan\File\RelativePathHelper;
 class TeamcityErrorFormatter implements ErrorFormatter
 {
 
-	private RelativePathHelper $relativePathHelper;
-
-	public function __construct(RelativePathHelper $relativePathHelper)
+	public function __construct(private RelativePathHelper $relativePathHelper)
 	{
-		$this->relativePathHelper = $relativePathHelper;
 	}
 
 	public function formatErrors(AnalysisResult $analysisResult, Output $output): int

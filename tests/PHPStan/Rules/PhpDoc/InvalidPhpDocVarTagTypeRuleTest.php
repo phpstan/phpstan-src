@@ -8,9 +8,10 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\FileTypeMapper;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<InvalidPhpDocVarTagTypeRule>
+ * @extends RuleTestCase<InvalidPhpDocVarTagTypeRule>
  */
 class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 {
@@ -26,7 +27,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 			new MissingTypehintCheck($broker, true, true, true, []),
 			new UnresolvableTypeHelper(),
 			true,
-			true
+			true,
 		);
 	}
 
@@ -104,12 +105,12 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-4486.php'], [
 			[
-				'PHPDoc tag @var for variable $one contains unknown class Bug4486\ClassName1.',
+				'PHPDoc tag @var for variable $one contains unknown class Some\Namespaced\ClassName1.',
 				10,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 			[
-				'PHPDoc tag @var for variable $two contains unknown class Bug4486\ClassName2.',
+				'PHPDoc tag @var for variable $two contains unknown class Some\Namespaced\ClassName2.',
 				10,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
@@ -125,7 +126,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-4486-ns.php'], [
 			[
-				'PHPDoc tag @var for variable $one contains unknown class ClassName1.',
+				'PHPDoc tag @var for variable $one contains unknown class Bug4486Namespace\ClassName1.',
 				6,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
@@ -135,6 +136,22 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
+	}
+
+	public function testBug6252(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$this->analyse([__DIR__ . '/data/bug-6252.php'], []);
+	}
+
+	public function testBug6348(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$this->analyse([__DIR__ . '/data/bug-6348.php'], []);
 	}
 
 }

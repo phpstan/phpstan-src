@@ -2,16 +2,19 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use function count;
 
-class PathinfoFunctionDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -21,8 +24,8 @@ class PathinfoFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
-		\PhpParser\Node\Expr\FuncCall $functionCall,
-		Scope $scope
+		Node\Expr\FuncCall $functionCall,
+		Scope $scope,
 	): Type
 	{
 		$argsCount = count($functionCall->getArgs());
@@ -34,8 +37,8 @@ class PathinfoFunctionDynamicReturnTypeExtension implements \PHPStan\Type\Dynami
 			$builder = ConstantArrayTypeBuilder::createFromConstantArray(
 				new ConstantArrayType(
 					[new ConstantStringType('dirname'), new ConstantStringType('basename'), new ConstantStringType('filename')],
-					[$stringType, $stringType, $stringType]
-				)
+					[$stringType, $stringType, $stringType],
+				),
 			);
 			$builder->setOffsetValueType(new ConstantStringType('extension'), $stringType, true);
 

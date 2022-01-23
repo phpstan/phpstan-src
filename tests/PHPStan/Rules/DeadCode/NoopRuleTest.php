@@ -5,9 +5,10 @@ namespace PHPStan\Rules\DeadCode;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<NoopRule>
+ * @extends RuleTestCase<NoopRule>
  */
 class NoopRuleTest extends RuleTestCase
 {

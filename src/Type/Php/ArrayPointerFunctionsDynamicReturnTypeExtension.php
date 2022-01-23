@@ -7,11 +7,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function count;
+use function in_array;
 
-class ArrayPointerFunctionsDynamicReturnTypeExtension implements \PHPStan\Type\DynamicFunctionReturnTypeExtension
+class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	/** @var string[] */
@@ -28,7 +31,7 @@ class ArrayPointerFunctionsDynamicReturnTypeExtension implements \PHPStan\Type\D
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		if (count($functionCall->getArgs()) === 0) {

@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
+use function get_class;
 
 trait JustNullableTypeTrait
 {

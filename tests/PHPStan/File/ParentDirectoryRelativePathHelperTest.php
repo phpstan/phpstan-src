@@ -105,20 +105,17 @@ class ParentDirectoryRelativePathHelperTest extends TestCase
 
 	/**
 	 * @dataProvider dataGetRelativePath
-	 * @param string $parentDirectory
-	 * @param string $filename
-	 * @param string $expectedRelativePath
 	 */
 	public function testGetRelativePath(
 		string $parentDirectory,
 		string $filename,
-		string $expectedRelativePath
+		string $expectedRelativePath,
 	): void
 	{
 		$helper = new ParentDirectoryRelativePathHelper($parentDirectory);
 		$this->assertSame(
 			$expectedRelativePath,
-			$helper->getRelativePath($filename)
+			$helper->getRelativePath($filename),
 		);
 	}
 

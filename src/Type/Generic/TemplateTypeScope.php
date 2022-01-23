@@ -2,12 +2,10 @@
 
 namespace PHPStan\Type\Generic;
 
+use function sprintf;
+
 class TemplateTypeScope
 {
-
-	private ?string $className;
-
-	private ?string $functionName;
 
 	public static function createWithFunction(string $functionName): self
 	{
@@ -24,10 +22,8 @@ class TemplateTypeScope
 		return new self($className, null);
 	}
 
-	private function __construct(?string $className, ?string $functionName)
+	private function __construct(private ?string $className, private ?string $functionName)
 	{
-		$this->className = $className;
-		$this->functionName = $functionName;
 	}
 
 	/** @api */
@@ -70,7 +66,7 @@ class TemplateTypeScope
 	{
 		return new self(
 			$properties['className'],
-			$properties['functionName']
+			$properties['functionName'],
 		);
 	}
 

@@ -6,6 +6,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use function count;
 
 class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
@@ -34,7 +35,7 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 	private function findClassReflectionWithMethod(
 		ClassReflection $classReflection,
 		ClassReflection $declaringClass,
-		string $methodName
+		string $methodName,
 	): ?MethodReflection
 	{
 		$methodTags = $classReflection->getMethodTags();
@@ -47,7 +48,7 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 					$parameterTag->passedByReference(),
 					$parameterTag->isOptional(),
 					$parameterTag->isVariadic(),
-					$parameterTag->getDefaultValue()
+					$parameterTag->getDefaultValue(),
 				);
 			}
 
@@ -56,11 +57,11 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 				$declaringClass,
 				TemplateTypeHelper::resolveTemplateTypes(
 					$methodTags[$methodName]->getReturnType(),
-					$classReflection->getActiveTemplateTypeMap()
+					$classReflection->getActiveTemplateTypeMap(),
 				),
 				$parameters,
 				$methodTags[$methodName]->isStatic(),
-				$this->detectMethodVariadic($parameters)
+				$this->detectMethodVariadic($parameters),
 			);
 		}
 
@@ -104,7 +105,6 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 
 	/**
 	 * @param AnnotationsMethodParameterReflection[] $parameters
-	 * @return bool
 	 */
 	private function detectMethodVariadic(array $parameters): bool
 	{

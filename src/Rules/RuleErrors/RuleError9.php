@@ -2,10 +2,13 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
+use PHPStan\Rules\RuleError;
+use PHPStan\Rules\TipRuleError;
+
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-class RuleError9 implements \PHPStan\Rules\RuleError, \PHPStan\Rules\TipRuleError
+class RuleError9 implements RuleError, TipRuleError
 {
 
 	public string $message;

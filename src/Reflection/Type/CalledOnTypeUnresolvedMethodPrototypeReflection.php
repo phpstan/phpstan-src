@@ -13,33 +13,22 @@ use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use function array_map;
 
 class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
-
-	private MethodReflection $methodReflection;
-
-	private ClassReflection $resolvedDeclaringClass;
-
-	private bool $resolveTemplateTypeMapToBounds;
-
-	private Type $calledOnType;
 
 	private ?MethodReflection $transformedMethod = null;
 
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
 
 	public function __construct(
-		MethodReflection $methodReflection,
-		ClassReflection $resolvedDeclaringClass,
-		bool $resolveTemplateTypeMapToBounds,
-		Type $calledOnType
+		private MethodReflection $methodReflection,
+		private ClassReflection $resolvedDeclaringClass,
+		private bool $resolveTemplateTypeMapToBounds,
+		private Type $calledOnType,
 	)
 	{
-		$this->methodReflection = $methodReflection;
-		$this->resolvedDeclaringClass = $resolvedDeclaringClass;
-		$this->resolveTemplateTypeMapToBounds = $resolveTemplateTypeMapToBounds;
-		$this->calledOnType = $calledOnType;
 	}
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedMethodPrototypeReflection
@@ -52,7 +41,7 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 			$this->methodReflection,
 			$this->resolvedDeclaringClass,
 			false,
-			$this->calledOnType
+			$this->calledOnType,
 		);
 	}
 
@@ -70,7 +59,7 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 
 		return $this->transformedMethod = new ResolvedMethodReflection(
 			$this->transformMethodWithStaticType($this->resolvedDeclaringClass, $this->methodReflection),
-			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap
+			$this->resolveTemplateTypeMapToBounds ? $templateTypeMap->resolveToBounds() : $templateTypeMap,
 		);
 	}
 
@@ -80,30 +69,26 @@ class CalledOnTypeUnresolvedMethodPrototypeReflection implements UnresolvedMetho
 			$this->methodReflection,
 			$this->resolvedDeclaringClass,
 			$this->resolveTemplateTypeMapToBounds,
-			$type
+			$type,
 		);
 	}
 
 	private function transformMethodWithStaticType(ClassReflection $declaringClass, MethodReflection $method): MethodReflection
 	{
-		$variants = array_map(function (ParametersAcceptor $acceptor): ParametersAcceptor {
-			return new FunctionVariant(
-				$acceptor->getTemplateTypeMap(),
-				$acceptor->getResolvedTemplateTypeMap(),
-				array_map(function (ParameterReflection $parameter): ParameterReflection {
-					return new DummyParameter(
-						$parameter->getName(),
-						$this->transformStaticType($parameter->getType()),
-						$parameter->isOptional(),
-						$parameter->passedByReference(),
-						$parameter->isVariadic(),
-						$parameter->getDefaultValue()
-					);
-				}, $acceptor->getParameters()),
-				$acceptor->isVariadic(),
-				$this->transformStaticType($acceptor->getReturnType())
-			);
-		}, $method->getVariants());
+		$variants = array_map(fn (ParametersAcceptor $acceptor): ParametersAcceptor => new FunctionVariant(
+			$acceptor->getTemplateTypeMap(),
+			$acceptor->getResolvedTemplateTypeMap(),
+			array_map(fn (ParameterReflection $parameter): ParameterReflection => new DummyParameter(
+				$parameter->getName(),
+				$this->transformStaticType($parameter->getType()),
+				$parameter->isOptional(),
+				$parameter->passedByReference(),
+				$parameter->isVariadic(),
+				$parameter->getDefaultValue(),
+			), $acceptor->getParameters()),
+			$acceptor->isVariadic(),
+			$this->transformStaticType($acceptor->getReturnType()),
+		), $method->getVariants());
 
 		return new ChangedTypeMethodReflection($declaringClass, $method, $variants);
 	}

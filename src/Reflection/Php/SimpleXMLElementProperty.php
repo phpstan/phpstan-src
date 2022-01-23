@@ -15,17 +15,11 @@ use PHPStan\Type\TypeCombinator;
 class SimpleXMLElementProperty implements PropertyReflection
 {
 
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
-
-	private \PHPStan\Type\Type $type;
-
 	public function __construct(
-		ClassReflection $declaringClass,
-		Type $type
+		private ClassReflection $declaringClass,
+		private Type $type,
 	)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->type = $type;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -60,7 +54,7 @@ class SimpleXMLElementProperty implements PropertyReflection
 			new IntegerType(),
 			new FloatType(),
 			new StringType(),
-			new BooleanType()
+			new BooleanType(),
 		);
 	}
 

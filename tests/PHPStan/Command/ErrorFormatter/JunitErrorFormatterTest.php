@@ -10,8 +10,7 @@ use PHPStan\Testing\ErrorFormatterTestCase;
 class JunitErrorFormatterTest extends ErrorFormatterTestCase
 {
 
-	/** @var \PHPStan\Command\ErrorFormatter\JunitErrorFormatter */
-	private $formatter;
+	private JunitErrorFormatter $formatter;
 
 	public function setUp(): void
 	{
@@ -21,7 +20,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 	}
 
 	/**
-	 * @return \Generator<array<int, string|int>>
+	 * @return Generator<array<int, (string|int)>>
 	 */
 	public function dataFormatterOutputProvider(): Generator
 	{
@@ -138,16 +137,16 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGeneralErrors,
-		string $expected
+		string $expected,
 	): void
 	{
 		$this->assertSame(
 			$exitCode,
 			$this->formatter->formatErrors(
 				$this->getAnalysisResult($numFileErrors, $numGeneralErrors),
-				$this->getOutput()
+				$this->getOutput(),
 			),
-			'Response code do not match'
+			'Response code do not match',
 		);
 
 		$xml = new DOMDocument();
@@ -155,13 +154,13 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 
 		$this->assertTrue(
 			$xml->schemaValidate(__DIR__ . '/junit-schema.xsd'),
-			'Schema do not validate'
+			'Schema do not validate',
 		);
 
 		$this->assertXmlStringEqualsXmlString(
 			$expected,
 			$this->getOutputContent(),
-			'XML do not match'
+			'XML do not match',
 		);
 	}
 

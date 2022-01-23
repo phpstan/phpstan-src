@@ -13,20 +13,18 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Yield_>
+ * @implements Rule<Node\Expr\Yield_>
  */
 class YieldTypeRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper
+		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
@@ -68,7 +66,7 @@ class YieldTypeRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects key type %s, %s given.',
 				$returnType->getIterableKeyType()->describe($verbosityLevel),
-				$keyType->describe($verbosityLevel)
+				$keyType->describe($verbosityLevel),
 			))->build();
 		}
 		if (!$this->ruleLevelHelper->accepts($returnType->getIterableValueType(), $valueType, $scope->isDeclareStrictTypes())) {
@@ -76,7 +74,7 @@ class YieldTypeRule implements Rule
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects value type %s, %s given.',
 				$returnType->getIterableValueType()->describe($verbosityLevel),
-				$valueType->describe($verbosityLevel)
+				$valueType->describe($verbosityLevel),
 			))->build();
 		}
 		if ($scope->getType($node) instanceof VoidType && !$scope->isInFirstLevelStatement()) {

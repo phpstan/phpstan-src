@@ -6,57 +6,31 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\BuiltinMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
+use ReflectionException;
+use function strtolower;
 
 class NativeMethodReflection implements MethodReflection
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
-
-	private BuiltinMethodReflection $reflection;
-
-	/** @var \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[] */
-	private array $variants;
-
-	private TrinaryLogic $hasSideEffects;
-
-	private ?string $stubPhpDocString;
-
-	private ?Type $throwType;
-
 	/**
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
-	 * @param \PHPStan\Reflection\ClassReflection $declaringClass
-	 * @param BuiltinMethodReflection $reflection
-	 * @param \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[] $variants
-	 * @param TrinaryLogic $hasSideEffects
-	 * @param string|null $stubPhpDocString
-	 * @param Type|null $throwType
+	 * @param ParametersAcceptorWithPhpDocs[] $variants
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		ClassReflection $declaringClass,
-		BuiltinMethodReflection $reflection,
-		array $variants,
-		TrinaryLogic $hasSideEffects,
-		?string $stubPhpDocString,
-		?Type $throwType
+		private ReflectionProvider $reflectionProvider,
+		private ClassReflection $declaringClass,
+		private BuiltinMethodReflection $reflection,
+		private array $variants,
+		private TrinaryLogic $hasSideEffects,
+		private ?Type $throwType,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->declaringClass = $declaringClass;
-		$this->reflection = $reflection;
-		$this->variants = $variants;
-		$this->hasSideEffects = $hasSideEffects;
-		$this->stubPhpDocString = $stubPhpDocString;
-		$this->throwType = $throwType;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -104,9 +78,9 @@ class NativeMethodReflection implements MethodReflection
 				$prototypeMethod->isAbstract(),
 				$prototypeMethod->isFinal(),
 				$prototypeDeclaringClass->getNativeMethod($prototypeMethod->getName())->getVariants(),
-				$tentativeReturnType
+				$tentativeReturnType,
 			);
-		} catch (\ReflectionException $e) {
+		} catch (ReflectionException) {
 			return $this;
 		}
 	}
@@ -117,7 +91,7 @@ class NativeMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptorWithPhpDocs[]
+	 * @return ParametersAcceptorWithPhpDocs[]
 	 */
 	public function getVariants(): array
 	{
@@ -176,10 +150,6 @@ class NativeMethodReflection implements MethodReflection
 
 	public function getDocComment(): ?string
 	{
-		if ($this->stubPhpDocString !== null) {
-			return $this->stubPhpDocString;
-		}
-
 		return $this->reflection->getDocComment();
 	}
 

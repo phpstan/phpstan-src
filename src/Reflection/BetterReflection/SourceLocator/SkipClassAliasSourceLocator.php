@@ -7,15 +7,14 @@ use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use ReflectionClass;
+use function class_exists;
 
 class SkipClassAliasSourceLocator implements SourceLocator
 {
 
-	private SourceLocator $sourceLocator;
-
-	public function __construct(SourceLocator $sourceLocator)
+	public function __construct(private SourceLocator $sourceLocator)
 	{
-		$this->sourceLocator = $sourceLocator;
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
@@ -26,7 +25,7 @@ class SkipClassAliasSourceLocator implements SourceLocator
 				return $this->sourceLocator->locateIdentifier($reflector, $identifier);
 			}
 
-			$reflection = new \ReflectionClass($className);
+			$reflection = new ReflectionClass($className);
 			if ($reflection->getName() === 'ReturnTypeWillChange') {
 				return $this->sourceLocator->locateIdentifier($reflector, $identifier);
 			}

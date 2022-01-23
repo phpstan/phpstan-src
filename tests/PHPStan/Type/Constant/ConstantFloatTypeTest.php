@@ -2,9 +2,10 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
 
-class ConstantFloatTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class ConstantFloatTypeTest extends PHPStanTestCase
 {
 
 	public function dataDescribe(): array
@@ -31,12 +32,10 @@ class ConstantFloatTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataDescribe
-	 * @param ConstantFloatType $type
-	 * @param string $expectedDescription
 	 */
 	public function testDescribe(
 		ConstantFloatType $type,
-		string $expectedDescription
+		string $expectedDescription,
 	): void
 	{
 		$this->assertSame($expectedDescription, $type->describe(VerbosityLevel::precise()));

@@ -155,3 +155,78 @@ class DolorWithAnonymous
 	}
 
 }
+
+class ArrayAssign
+{
+
+	private $foo;
+
+	public function doFoo(): void
+	{
+		[$this->foo] = [1];
+	}
+
+}
+
+class ArrayAssignAndRead
+{
+
+	private $foo;
+
+	public function doFoo(): void
+	{
+		[$this->foo] = [1];
+	}
+
+	public function getFoo()
+	{
+		return $this->foo;
+	}
+
+}
+
+class ListAssign
+{
+
+	private $foo;
+
+	public function doFoo(): void
+	{
+		list($this->foo) = [1];
+	}
+
+}
+
+class ListAssignAndRead
+{
+
+	private $foo;
+
+	public function doFoo(): void
+	{
+		list($this->foo) = [1];
+	}
+
+	public function getFoo()
+	{
+		return $this->foo;
+	}
+
+}
+
+class WriteToCollection
+{
+
+	/** @var \ArrayAccess<int, string> */
+	private $collection1;
+
+	/** @var \ArrayAccess<int, string>&\Countable */
+	private $collection2;
+
+	public function foo(): void
+	{
+		$this->collection1[] = 1;
+		$this->collection2[] = 2;
+	}
+
+}

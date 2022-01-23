@@ -6,8 +6,8 @@ class Foo
 {
 
 	/**
-	 * @param int[] $integersArray
-	 * @param int[] $integersIterable
+	 * @param array<int, int> $integersArray
+	 * @param array<int, int> $integersIterable
 	 */
 	public function doFoo(
 		array $integersArray,

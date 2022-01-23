@@ -7,26 +7,22 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
+use function array_unshift;
 
 final class ClosureCallMethodReflection implements MethodReflection
 {
 
-	private MethodReflection $nativeMethodReflection;
-
-	private ClosureType $closureType;
-
 	public function __construct(
-		MethodReflection $nativeMethodReflection,
-		ClosureType $closureType
+		private MethodReflection $nativeMethodReflection,
+		private ClosureType $closureType,
 	)
 	{
-		$this->nativeMethodReflection = $nativeMethodReflection;
-		$this->closureType = $closureType;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -65,7 +61,7 @@ final class ClosureCallMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getVariants(): array
 	{
@@ -76,7 +72,7 @@ final class ClosureCallMethodReflection implements MethodReflection
 			new ObjectWithoutClassType(),
 			PassedByReference::createNo(),
 			false,
-			null
+			null,
 		);
 
 		array_unshift($parameters, $newThis);
@@ -87,7 +83,7 @@ final class ClosureCallMethodReflection implements MethodReflection
 				$this->closureType->getResolvedTemplateTypeMap(),
 				$parameters,
 				$this->closureType->isVariadic(),
-				$this->closureType->getReturnType()
+				$this->closureType->getReturnType(),
 			),
 		];
 	}

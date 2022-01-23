@@ -440,7 +440,7 @@ class StrictComparisonOfSpecifiedFunctionCall
 			}
 		}
 	}
-
+	/** @phpstan-impure */
 	public function nullableInt(): ?int
 	{
 

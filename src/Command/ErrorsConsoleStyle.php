@@ -6,15 +6,21 @@ use OndraM\CiDetector\CiDetector;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Console\Terminal;
+use function array_map;
+use function strlen;
+use function wordwrap;
+use const DIRECTORY_SEPARATOR;
 
-class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
+class ErrorsConsoleStyle extends SymfonyStyle
 {
 
 	public const OPTION_NO_PROGRESS = 'no-progress';
 
 	private bool $showProgress;
 
-	private \Symfony\Component\Console\Helper\ProgressBar $progressBar;
+	private ProgressBar $progressBar;
 
 	private ?bool $isCiDetected = null;
 
@@ -41,7 +47,7 @@ class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
 	public function table(array $headers, array $rows): void
 	{
 		/** @var int $terminalWidth */
-		$terminalWidth = (new \Symfony\Component\Console\Terminal())->getWidth() - 2;
+		$terminalWidth = (new Terminal())->getWidth() - 2;
 		$maxHeaderWidth = strlen($headers[0]);
 		foreach ($rows as $row) {
 			$length = strlen($row[0]);
@@ -52,42 +58,44 @@ class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
 			$maxHeaderWidth = $length;
 		}
 
-		$wrap = static function ($rows) use ($terminalWidth, $maxHeaderWidth): array {
-			return array_map(static function ($row) use ($terminalWidth, $maxHeaderWidth): array {
-				return array_map(static function ($s) use ($terminalWidth, $maxHeaderWidth) {
+		$wrap = static fn ($rows): array => array_map(static fn ($row): array => array_map(static function ($s) use ($terminalWidth, $maxHeaderWidth) {
 					if ($terminalWidth > $maxHeaderWidth + 5) {
 						return wordwrap(
 							$s,
 							$terminalWidth - $maxHeaderWidth - 5,
 							"\n",
-							true
+							true,
 						);
 					}
 
 					return $s;
-				}, $row);
-			}, $rows);
-		};
+		}, $row), $rows);
 
 		parent::table($headers, $wrap($rows));
 	}
 
-	/**
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
-	 * @param int $max
-	 */
-	public function createProgressBar($max = 0): ProgressBar
+	public function createProgressBar(int $max = 0): ProgressBar
 	{
 		$this->progressBar = parent::createProgressBar($max);
-		$this->progressBar->setOverwrite(!$this->isCiDetected());
+
+		$ci = $this->isCiDetected();
+		$this->progressBar->setOverwrite(!$ci);
+
+		if ($ci) {
+			$this->progressBar->minSecondsBetweenRedraws(15);
+			$this->progressBar->maxSecondsBetweenRedraws(30);
+		} elseif (DIRECTORY_SEPARATOR === '\\') {
+			$this->progressBar->minSecondsBetweenRedraws(0.5);
+			$this->progressBar->maxSecondsBetweenRedraws(2);
+		} else {
+			$this->progressBar->minSecondsBetweenRedraws(0.1);
+			$this->progressBar->maxSecondsBetweenRedraws(0.5);
+		}
+
 		return $this->progressBar;
 	}
 
-	/**
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
-	 * @param int $max
-	 */
-	public function progressStart($max = 0): void
+	public function progressStart(int $max = 0): void
 	{
 		if (!$this->showProgress) {
 			return;
@@ -95,23 +103,10 @@ class ErrorsConsoleStyle extends \Symfony\Component\Console\Style\SymfonyStyle
 		parent::progressStart($max);
 	}
 
-	/**
-	 * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
-	 * @param int $step
-	 */
-	public function progressAdvance($step = 1): void
+	public function progressAdvance(int $step = 1): void
 	{
 		if (!$this->showProgress) {
 			return;
-		}
-
-		if (!$this->isCiDetected() && $step > 0) {
-			$stepTime = (time() - $this->progressBar->getStartTime()) / $step;
-			if ($stepTime > 0 && $stepTime < 1) {
-				$this->progressBar->setRedrawFrequency((int) (1 / $stepTime));
-			} else {
-				$this->progressBar->setRedrawFrequency(1);
-			}
 		}
 
 		parent::progressAdvance($step);

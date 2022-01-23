@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Constant;
 
+use Closure;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\CallableType;
@@ -17,8 +19,10 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use function array_map;
+use function sprintf;
 
-class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class ConstantArrayTypeTest extends PHPStanTestCase
 {
 
 	public function dataAccepts(): iterable
@@ -126,7 +130,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				], [
 					new StringType(),
 					new StringType(),
-				])
+				]),
 			),
 			new ConstantArrayType([
 				new ConstantStringType('name'),
@@ -163,7 +167,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				], [
 					new StringType(),
 					new StringType(),
-				])
+				]),
 			),
 			new ConstantArrayType([
 				new ConstantStringType('surname'),
@@ -344,9 +348,6 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param Type $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(Type $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -354,7 +355,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -503,9 +504,6 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param ConstantArrayType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(ConstantArrayType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -513,20 +511,18 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
 	public function dataInferTemplateTypes(): array
 	{
-		$templateType = static function (string $name): Type {
-			return TemplateTypeFactory::create(
-				TemplateTypeScope::createWithFunction('a'),
-				$name,
-				new MixedType(),
-				TemplateTypeVariance::createInvariant()
-			);
-		};
+		$templateType = static fn (string $name): Type => TemplateTypeFactory::create(
+			TemplateTypeScope::createWithFunction('a'),
+			$name,
+			new MixedType(),
+			TemplateTypeVariance::createInvariant(),
+		);
 
 		return [
 			'receive constant array' => [
@@ -538,7 +534,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					[
 						new StringType(),
 						new IntegerType(),
-					]
+					],
 				),
 				new ConstantArrayType(
 					[
@@ -548,7 +544,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					[
 						$templateType('T'),
 						$templateType('U'),
-					]
+					],
 				),
 				['T' => 'string', 'U' => 'int'],
 			],
@@ -561,7 +557,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					[
 						new StringType(),
 						new IntegerType(),
-					]
+					],
 				),
 				new ConstantArrayType(
 					[
@@ -571,7 +567,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					[
 						$templateType('T'),
 						$templateType('U'),
-					]
+					],
 				),
 				['T' => 'string', 'U' => 'int'],
 			],
@@ -582,7 +578,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					],
 					[
 						new StringType(),
-					]
+					],
 				),
 				new ConstantArrayType(
 					[
@@ -592,7 +588,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					[
 						$templateType('T'),
 						$templateType('U'),
-					]
+					],
 				),
 				[],
 			],
@@ -604,7 +600,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					],
 					[
 						$templateType('T'),
-					]
+					],
 				),
 				[],
 			],
@@ -616,7 +612,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 					],
 					[
 						$templateType('T'),
-					]
+					],
 				),
 				['T' => 'string'],
 			],
@@ -633,9 +629,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		$this->assertSame(
 			$expectedTypes,
-			array_map(static function (Type $type): string {
-				return $type->describe(VerbosityLevel::precise());
-			}, $result->getTypes())
+			array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $result->getTypes()),
 		);
 	}
 
@@ -648,7 +642,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -673,7 +667,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
 			], [
-				new ConstantStringType(\Closure::class, true),
+				new ConstantStringType(Closure::class, true),
 				new ConstantStringType('bind'),
 			]),
 			TrinaryLogic::createYes(),
@@ -684,7 +678,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
 			], [
-				new ConstantStringType(\Closure::class, true),
+				new ConstantStringType(Closure::class, true),
 				new ConstantStringType('foobar'),
 			]),
 			TrinaryLogic::createNo(),
@@ -706,7 +700,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				new ConstantStringType('a'),
 				new ConstantStringType('b'),
 			], [
-				new ConstantStringType(\Closure::class, true),
+				new ConstantStringType(Closure::class, true),
 				new ConstantStringType('bind'),
 			]),
 			TrinaryLogic::createNo(),
@@ -717,7 +711,7 @@ class ConstantArrayTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
 			], [
-				new GenericClassStringType(new ObjectType(\Closure::class)),
+				new GenericClassStringType(new ObjectType(Closure::class)),
 				new ConstantStringType('bind'),
 			]),
 			TrinaryLogic::createYes(),

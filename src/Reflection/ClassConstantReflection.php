@@ -7,43 +7,25 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\Type;
+use ReflectionClassConstant;
+use function method_exists;
+use const NAN;
 
 class ClassConstantReflection implements ConstantReflection
 {
 
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
-
-	private \ReflectionClassConstant $reflection;
-
-	private ?Type $phpDocType;
-
-	private PhpVersion $phpVersion;
-
-	private ?string $deprecatedDescription;
-
-	private bool $isDeprecated;
-
-	private bool $isInternal;
-
 	private ?Type $valueType = null;
 
 	public function __construct(
-		ClassReflection $declaringClass,
-		\ReflectionClassConstant $reflection,
-		?Type $phpDocType,
-		PhpVersion $phpVersion,
-		?string $deprecatedDescription,
-		bool $isDeprecated,
-		bool $isInternal
+		private ClassReflection $declaringClass,
+		private ReflectionClassConstant $reflection,
+		private ?Type $phpDocType,
+		private PhpVersion $phpVersion,
+		private ?string $deprecatedDescription,
+		private bool $isDeprecated,
+		private bool $isInternal,
 	)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->reflection = $reflection;
-		$this->phpDocType = $phpDocType;
-		$this->phpVersion = $phpVersion;
-		$this->deprecatedDescription = $deprecatedDescription;
-		$this->isDeprecated = $isDeprecated;
-		$this->isInternal = $isInternal;
 	}
 
 	public function getName(): string
@@ -63,7 +45,7 @@ class ClassConstantReflection implements ConstantReflection
 	{
 		try {
 			return $this->reflection->getValue();
-		} catch (UnableToCompileNode $e) {
+		} catch (UnableToCompileNode) {
 			return NAN;
 		}
 	}

@@ -17,17 +17,15 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectWithoutClassType;
+use function count;
 
 class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	private PropertyReflectionFinder $propertyReflectionFinder;
-
 	private TypeSpecifier $typeSpecifier;
 
-	public function __construct(PropertyReflectionFinder $propertyReflectionFinder)
+	public function __construct(private PropertyReflectionFinder $propertyReflectionFinder)
 	{
-		$this->propertyReflectionFinder = $propertyReflectionFinder;
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
@@ -38,7 +36,7 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 	public function isFunctionSupported(
 		FunctionReflection $functionReflection,
 		FuncCall $node,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): bool
 	{
 		return $functionReflection->getName() === 'property_exists'
@@ -50,7 +48,7 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 		FunctionReflection $functionReflection,
 		FuncCall $node,
 		Scope $scope,
-		TypeSpecifierContext $context
+		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
 		$propertyNameType = $scope->getType($node->getArgs()[1]->value);
@@ -64,7 +62,7 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 		} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($objectType)->yes()) {
 			$propertyNode = new PropertyFetch(
 				$node->getArgs()[0]->value,
-				new Identifier($propertyNameType->getValue())
+				new Identifier($propertyNameType->getValue()),
 			);
 		} else {
 			return new SpecifiedTypes([], []);
@@ -85,7 +83,7 @@ class PropertyExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 			]),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

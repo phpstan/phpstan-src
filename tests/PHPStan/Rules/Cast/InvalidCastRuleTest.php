@@ -2,15 +2,18 @@
 
 namespace PHPStan\Rules\Cast;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<InvalidCastRule>
+ * @extends RuleTestCase<InvalidCastRule>
  */
-class InvalidCastRuleTest extends \PHPStan\Testing\RuleTestCase
+class InvalidCastRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new InvalidCastRule($broker, new RuleLevelHelper($broker, true, false, true, false));

@@ -54,3 +54,16 @@ class Baz
 	}
 
 }
+
+class InlineVars
+{
+	public function doFoo()
+	{
+		if (rand(0, 1)) {
+			yield;
+		}
+		if (rand(0, 1)) {
+			func_get_args();
+		}
+	}
+}

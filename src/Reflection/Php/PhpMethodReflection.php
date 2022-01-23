@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Function_;
@@ -14,6 +15,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
@@ -28,110 +30,54 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VoidType;
+use ReflectionException;
+use ReflectionParameter;
+use function array_map;
+use function explode;
+use function filemtime;
+use function is_bool;
+use function is_file;
+use function sprintf;
+use function strtolower;
+use function time;
+use const PHP_VERSION_ID;
 
 /** @api */
 class PhpMethodReflection implements MethodReflection
 {
 
-	private \PHPStan\Reflection\ClassReflection $declaringClass;
-
-	private ?ClassReflection $declaringTrait;
-
-	private BuiltinMethodReflection $reflection;
-
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Parser\Parser $parser;
-
-	private \PHPStan\Parser\FunctionCallStatementFinder $functionCallStatementFinder;
-
-	private \PHPStan\Cache\Cache $cache;
-
-	private \PHPStan\Type\Generic\TemplateTypeMap $templateTypeMap;
-
-	/** @var \PHPStan\Type\Type[] */
-	private array $phpDocParameterTypes;
-
-	private ?\PHPStan\Type\Type $phpDocReturnType;
-
-	private ?\PHPStan\Type\Type $phpDocThrowType;
-
-	/** @var \PHPStan\Reflection\Php\PhpParameterReflection[]|null */
+	/** @var PhpParameterReflection[]|null */
 	private ?array $parameters = null;
 
-	private ?\PHPStan\Type\Type $returnType = null;
+	private ?Type $returnType = null;
 
-	private ?\PHPStan\Type\Type $nativeReturnType = null;
-
-	private ?string $deprecatedDescription;
-
-	private bool $isDeprecated;
-
-	private bool $isInternal;
-
-	private bool $isFinal;
-
-	private ?bool $isPure;
-
-	private ?string $stubPhpDocString;
+	private ?Type $nativeReturnType = null;
 
 	/** @var FunctionVariantWithPhpDocs[]|null */
 	private ?array $variants = null;
 
 	/**
-	 * @param ClassReflection $declaringClass
-	 * @param ClassReflection|null $declaringTrait
-	 * @param BuiltinMethodReflection $reflection
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
-	 * @param Parser $parser
-	 * @param FunctionCallStatementFinder $functionCallStatementFinder
-	 * @param Cache $cache
-	 * @param \PHPStan\Type\Type[] $phpDocParameterTypes
-	 * @param Type|null $phpDocReturnType
-	 * @param Type|null $phpDocThrowType
-	 * @param string|null $deprecatedDescription
-	 * @param bool $isDeprecated
-	 * @param bool $isInternal
-	 * @param bool $isFinal
-	 * @param string|null $stubPhpDocString
+	 * @param Type[] $phpDocParameterTypes
 	 */
 	public function __construct(
-		ClassReflection $declaringClass,
-		?ClassReflection $declaringTrait,
-		BuiltinMethodReflection $reflection,
-		ReflectionProvider $reflectionProvider,
-		Parser $parser,
-		FunctionCallStatementFinder $functionCallStatementFinder,
-		Cache $cache,
-		TemplateTypeMap $templateTypeMap,
-		array $phpDocParameterTypes,
-		?Type $phpDocReturnType,
-		?Type $phpDocThrowType,
-		?string $deprecatedDescription,
-		bool $isDeprecated,
-		bool $isInternal,
-		bool $isFinal,
-		?string $stubPhpDocString,
-		?bool $isPure
+		private ClassReflection $declaringClass,
+		private ?ClassReflection $declaringTrait,
+		private BuiltinMethodReflection $reflection,
+		private ReflectionProvider $reflectionProvider,
+		private Parser $parser,
+		private FunctionCallStatementFinder $functionCallStatementFinder,
+		private Cache $cache,
+		private TemplateTypeMap $templateTypeMap,
+		private array $phpDocParameterTypes,
+		private ?Type $phpDocReturnType,
+		private ?Type $phpDocThrowType,
+		private ?string $deprecatedDescription,
+		private bool $isDeprecated,
+		private bool $isInternal,
+		private bool $isFinal,
+		private ?bool $isPure,
 	)
 	{
-		$this->declaringClass = $declaringClass;
-		$this->declaringTrait = $declaringTrait;
-		$this->reflection = $reflection;
-		$this->reflectionProvider = $reflectionProvider;
-		$this->parser = $parser;
-		$this->functionCallStatementFinder = $functionCallStatementFinder;
-		$this->cache = $cache;
-		$this->templateTypeMap = $templateTypeMap;
-		$this->phpDocParameterTypes = $phpDocParameterTypes;
-		$this->phpDocReturnType = $phpDocReturnType;
-		$this->phpDocThrowType = $phpDocThrowType;
-		$this->deprecatedDescription = $deprecatedDescription;
-		$this->isDeprecated = $isDeprecated;
-		$this->isInternal = $isInternal;
-		$this->isFinal = $isFinal;
-		$this->stubPhpDocString = $stubPhpDocString;
-		$this->isPure = $isPure;
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -146,15 +92,11 @@ class PhpMethodReflection implements MethodReflection
 
 	public function getDocComment(): ?string
 	{
-		if ($this->stubPhpDocString !== null) {
-			return $this->stubPhpDocString;
-		}
-
 		return $this->reflection->getDocComment();
 	}
 
 	/**
-	 * @return self|\PHPStan\Reflection\MethodPrototypeReflection
+	 * @return self|MethodPrototypeReflection
 	 */
 	public function getPrototype(): ClassMemberReflection
 	{
@@ -176,9 +118,9 @@ class PhpMethodReflection implements MethodReflection
 				$prototypeMethod->isAbstract(),
 				$prototypeMethod->isFinal(),
 				$prototypeDeclaringClass->getNativeMethod($prototypeMethod->getName())->getVariants(),
-				$tentativeReturnType
+				$tentativeReturnType,
 			);
-		} catch (\ReflectionException $e) {
+		} catch (ReflectionException) {
 			return $this;
 		}
 	}
@@ -193,6 +135,10 @@ class PhpMethodReflection implements MethodReflection
 		$name = $this->reflection->getName();
 		$lowercaseName = strtolower($name);
 		if ($lowercaseName === $name) {
+			if (PHP_VERSION_ID >= 80000) {
+				return $name;
+			}
+
 			// fix for https://bugs.php.net/bug.php?id=74939
 			foreach ($this->getDeclaringClass()->getNativeReflection()->getTraitAliases() as $traitTarget) {
 				$correctName = $this->getMethodNameWithCorrectCase($name, $traitTarget);
@@ -238,7 +184,7 @@ class PhpMethodReflection implements MethodReflection
 					$this->isVariadic(),
 					$this->getReturnType(),
 					$this->getPhpDocReturnType(),
-					$this->getNativeReturnType()
+					$this->getNativeReturnType(),
 				),
 			];
 		}
@@ -247,18 +193,16 @@ class PhpMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @return \PHPStan\Reflection\ParameterReflectionWithPhpDocs[]
+	 * @return ParameterReflectionWithPhpDocs[]
 	 */
 	private function getParameters(): array
 	{
 		if ($this->parameters === null) {
-			$this->parameters = array_map(function (\ReflectionParameter $reflection): PhpParameterReflection {
-				return new PhpParameterReflection(
-					$reflection,
-					$this->phpDocParameterTypes[$reflection->getName()] ?? null,
-					$this->getDeclaringClass()->getName()
-				);
-			}, $this->reflection->getParameters());
+			$this->parameters = array_map(fn (ReflectionParameter $reflection): PhpParameterReflection => new PhpParameterReflection(
+				$reflection,
+				$this->phpDocParameterTypes[$reflection->getName()] ?? null,
+				$this->getDeclaringClass()->getName(),
+			), $this->reflection->getParameters());
 		}
 
 		return $this->parameters;
@@ -296,15 +240,13 @@ class PhpMethodReflection implements MethodReflection
 	}
 
 	/**
-	 * @param ClassReflection $declaringClass
-	 * @param \PhpParser\Node[] $nodes
-	 * @return bool
+	 * @param Node[] $nodes
 	 */
 	private function callsFuncGetArgs(ClassReflection $declaringClass, array $nodes): bool
 	{
 		foreach ($nodes as $node) {
 			if (
-				$node instanceof \PhpParser\Node\Stmt\ClassLike
+				$node instanceof Node\Stmt\ClassLike
 			) {
 				if (!isset($node->namespacedName)) {
 					continue;
@@ -393,7 +335,7 @@ class PhpMethodReflection implements MethodReflection
 			$this->returnType = TypehintHelper::decideTypeFromReflection(
 				$this->reflection->getReturnType(),
 				$this->phpDocReturnType,
-				$this->declaringClass->getName()
+				$this->declaringClass->getName(),
 			);
 		}
 
@@ -415,7 +357,7 @@ class PhpMethodReflection implements MethodReflection
 			$this->nativeReturnType = TypehintHelper::decideTypeFromReflection(
 				$this->reflection->getReturnType(),
 				null,
-				$this->declaringClass->getName()
+				$this->declaringClass->getName(),
 			);
 		}
 

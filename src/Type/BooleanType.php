@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -11,6 +10,7 @@ use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
+use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
@@ -25,6 +25,7 @@ class BooleanType implements Type
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonGenericTypeTrait;
+	use NonOffsetAccessibleTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -45,7 +46,7 @@ class BooleanType implements Type
 	{
 		return TypeCombinator::union(
 			new ConstantStringType(''),
-			new ConstantStringType('1')
+			new ConstantStringType('1'),
 		);
 	}
 
@@ -53,7 +54,7 @@ class BooleanType implements Type
 	{
 		return TypeCombinator::union(
 			new ConstantIntegerType(0),
-			new ConstantIntegerType(1)
+			new ConstantIntegerType(1),
 		);
 	}
 
@@ -61,7 +62,7 @@ class BooleanType implements Type
 	{
 		return TypeCombinator::union(
 			new ConstantFloatType(0.0),
-			new ConstantFloatType(1.0)
+			new ConstantFloatType(1.0),
 		);
 	}
 
@@ -70,33 +71,12 @@ class BooleanType implements Type
 		return new ConstantArrayType(
 			[new ConstantIntegerType(0)],
 			[$this],
-			1
+			1,
 		);
-	}
-
-	public function isOffsetAccessible(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function getOffsetValueType(Type $offsetType): Type
-	{
-		return new ErrorType();
-	}
-
-	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
-	{
-		return new ErrorType();
 	}
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

@@ -2,43 +2,39 @@
 
 namespace PHPStan\Rules;
 
+use Attribute;
 use PhpParser\Node\AttributeGroup;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use function array_key_exists;
+use function count;
+use function sprintf;
+use function strtolower;
 
 class AttributesCheck
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private FunctionCallParametersCheck $functionCallParametersCheck;
-
-	private ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		FunctionCallParametersCheck $functionCallParametersCheck,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck
+		private ReflectionProvider $reflectionProvider,
+		private FunctionCallParametersCheck $functionCallParametersCheck,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->functionCallParametersCheck = $functionCallParametersCheck;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
 	}
 
 	/**
 	 * @param AttributeGroup[] $attrGroups
-	 * @param \Attribute::TARGET_* $requiredTarget
+	 * @param Attribute::TARGET_* $requiredTarget
 	 * @return RuleError[]
 	 */
 	public function check(
 		Scope $scope,
 		array $attrGroups,
 		int $requiredTarget,
-		string $targetName
+		string $targetName,
 	): array
 	{
 		$errors = [];
@@ -53,7 +49,16 @@ class AttributesCheck
 
 				$attributeClass = $this->reflectionProvider->getClass($name);
 				if (!$attributeClass->isAttributeClass()) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Class %s is not an Attribute class.', $attributeClass->getDisplayName()))->line($attribute->getLine())->build();
+					$classLikeDescription = 'Class';
+					if ($attributeClass->isInterface()) {
+						$classLikeDescription = 'Interface';
+					} elseif ($attributeClass->isTrait()) {
+						$classLikeDescription = 'Trait';
+					} elseif ($attributeClass->isEnum()) {
+						$classLikeDescription = 'Enum';
+					}
+
+					$errors[] = RuleErrorBuilder::message(sprintf('%s %s is not an Attribute class.', $classLikeDescription, $attributeClass->getDisplayName()))->line($attribute->getLine())->build();
 					continue;
 				}
 
@@ -70,7 +75,7 @@ class AttributesCheck
 					$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s does not have the %s target.', $name, $targetName))->line($attribute->getLine())->build();
 				}
 
-				if (($flags & \Attribute::IS_REPEATABLE) === 0) {
+				if (($flags & Attribute::IS_REPEATABLE) === 0) {
 					$loweredName = strtolower($name);
 					if (array_key_exists($loweredName, $alreadyPresent)) {
 						$errors[] = RuleErrorBuilder::message(sprintf('Attribute class %s is not repeatable but is already present above the %s.', $name, $targetName))->line($attribute->getLine())->build();
@@ -93,11 +98,14 @@ class AttributesCheck
 
 				$attributeClassName = SprintfHelper::escapeFormatString($attributeClass->getDisplayName());
 
+				$nodeAttributes = $attribute->getAttributes();
+				$nodeAttributes['isAttribute'] = true;
+
 				$parameterErrors = $this->functionCallParametersCheck->check(
 					ParametersAcceptorSelector::selectSingle($attributeConstructor->getVariants()),
 					$scope,
 					$attributeConstructor->getDeclaringClass()->isBuiltin(),
-					new New_($attribute->name, $attribute->args, $attribute->getAttributes()),
+					new New_($attribute->name, $attribute->args, $nodeAttributes),
 					[
 						'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameter, %d required.',
 						'Attribute class ' . $attributeClassName . ' constructor invoked with %d parameters, %d required.',
@@ -112,7 +120,7 @@ class AttributesCheck
 						'Missing parameter $%s in call to ' . $attributeClassName . ' constructor.',
 						'Unknown parameter $%s in call to ' . $attributeClassName . ' constructor.',
 						'Return type of call to ' . $attributeClassName . ' constructor contains unresolvable type.',
-					]
+					],
 				);
 
 				foreach ($parameterErrors as $error) {

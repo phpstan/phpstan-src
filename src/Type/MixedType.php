@@ -8,6 +8,7 @@ use PHPStan\Reflection\Dummy\DummyConstantReflection;
 use PHPStan\Reflection\Dummy\DummyMethodReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
@@ -20,6 +21,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
+use function sprintf;
 
 /** @api */
 class MixedType implements CompoundType, SubtractableType
@@ -28,21 +30,18 @@ class MixedType implements CompoundType, SubtractableType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 
-	private bool $isExplicitMixed;
-
-	private ?\PHPStan\Type\Type $subtractedType;
+	private ?Type $subtractedType;
 
 	/** @api */
 	public function __construct(
-		bool $isExplicitMixed = false,
-		?Type $subtractedType = null
+		private bool $isExplicitMixed = false,
+		?Type $subtractedType = null,
 	)
 	{
 		if ($subtractedType instanceof NeverType) {
 			$subtractedType = null;
 		}
 
-		$this->isExplicitMixed = $isExplicitMixed;
 		$this->subtractedType = $subtractedType;
 	}
 
@@ -117,6 +116,11 @@ class MixedType implements CompoundType, SubtractableType
 		return new self($this->isExplicitMixed);
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this;
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		if (
@@ -130,8 +134,7 @@ class MixedType implements CompoundType, SubtractableType
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
@@ -206,9 +209,7 @@ class MixedType implements CompoundType, SubtractableType
 			$property,
 			$property->getDeclaringClass(),
 			false,
-			static function (Type $type): Type {
-				return $type;
-			}
+			static fn (Type $type): Type => $type,
 		);
 	}
 
@@ -234,9 +235,7 @@ class MixedType implements CompoundType, SubtractableType
 			$method,
 			$method->getDeclaringClass(),
 			false,
-			static function (Type $type): Type {
-				return $type;
-			}
+			static fn (Type $type): Type => $type,
 		);
 	}
 
@@ -263,12 +262,8 @@ class MixedType implements CompoundType, SubtractableType
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			static function (): string {
-				return 'mixed';
-			},
-			static function (): string {
-				return 'mixed';
-			},
+			static fn (): string => 'mixed',
+			static fn (): string => 'mixed',
 			function () use ($level): string {
 				$description = 'mixed';
 				if ($this->subtractedType !== null) {
@@ -290,7 +285,7 @@ class MixedType implements CompoundType, SubtractableType
 				}
 
 				return $description;
-			}
+			},
 		);
 	}
 
@@ -427,13 +422,12 @@ class MixedType implements CompoundType, SubtractableType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{
 		return new self(
 			$properties['isExplicitMixed'],
-			$properties['subtractedType'] ?? null
+			$properties['subtractedType'] ?? null,
 		);
 	}
 

@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type\Accessory;
 
+use Closure;
+use DateInterval;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\IntersectionType;
@@ -13,8 +16,9 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
-class HasPropertyTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class HasPropertyTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -32,7 +36,7 @@ class HasPropertyTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				new HasPropertyType('d'),
-				new ObjectType(\DateInterval::class),
+				new ObjectType(DateInterval::class),
 				TrinaryLogic::createYes(),
 			],
 			[
@@ -42,7 +46,7 @@ class HasPropertyTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				new HasPropertyType('foo'),
-				new ObjectType(\Closure::class),
+				new ObjectType(Closure::class),
 				TrinaryLogic::createNo(),
 			],
 			[
@@ -78,7 +82,7 @@ class HasPropertyTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new HasPropertyType('d'),
 				new UnionType([
-					new ObjectType(\DateInterval::class),
+					new ObjectType(DateInterval::class),
 					new ObjectType('UnknownClass'),
 				]),
 				TrinaryLogic::createMaybe(),
@@ -104,9 +108,6 @@ class HasPropertyTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param HasPropertyType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(HasPropertyType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -114,7 +115,7 @@ class HasPropertyTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -144,7 +145,7 @@ class HasPropertyTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				new HasPropertyType('d'),
-				new ObjectType(\DateInterval::class),
+				new ObjectType(DateInterval::class),
 				TrinaryLogic::createMaybe(),
 			],
 		];
@@ -152,9 +153,6 @@ class HasPropertyTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param HasPropertyType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOf(HasPropertyType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -162,15 +160,12 @@ class HasPropertyTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param HasPropertyType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOfInversed(HasPropertyType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -178,7 +173,7 @@ class HasPropertyTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
 		);
 	}
 

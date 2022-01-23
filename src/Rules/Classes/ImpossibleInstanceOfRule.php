@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ObjectType;
@@ -11,24 +12,19 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Instanceof_>
+ * @implements Rule<Node\Expr\Instanceof_>
  */
-class ImpossibleInstanceOfRule implements \PHPStan\Rules\Rule
+class ImpossibleInstanceOfRule implements Rule
 {
 
-	private bool $checkAlwaysTrueInstanceof;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		bool $checkAlwaysTrueInstanceof,
-		bool $treatPhpDocTypesAsCertain
+		private bool $checkAlwaysTrueInstanceof,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->checkAlwaysTrueInstanceof = $checkAlwaysTrueInstanceof;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string
@@ -48,14 +44,14 @@ class ImpossibleInstanceOfRule implements \PHPStan\Rules\Rule
 			$classType = $scope->getType($node->class);
 			$allowed = TypeCombinator::union(
 				new StringType(),
-				new ObjectWithoutClassType()
+				new ObjectWithoutClassType(),
 			);
 			if (!$allowed->accepts($classType, true)->yes()) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Instanceof between %s and %s results in an error.',
 						$expressionType->describe(VerbosityLevel::typeOnly()),
-						$classType->describe(VerbosityLevel::typeOnly())
+						$classType->describe(VerbosityLevel::typeOnly()),
 					))->build(),
 				];
 			}
@@ -83,7 +79,7 @@ class ImpossibleInstanceOfRule implements \PHPStan\Rules\Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to false.',
 					$expressionType->describe(VerbosityLevel::typeOnly()),
-					$classType->describe(VerbosityLevel::typeOnly())
+					$classType->describe(VerbosityLevel::typeOnly()),
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueInstanceof) {
@@ -91,7 +87,7 @@ class ImpossibleInstanceOfRule implements \PHPStan\Rules\Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to true.',
 					$expressionType->describe(VerbosityLevel::typeOnly()),
-					$classType->describe(VerbosityLevel::typeOnly())
+					$classType->describe(VerbosityLevel::typeOnly()),
 				)))->build(),
 			];
 		}

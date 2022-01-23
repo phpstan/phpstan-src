@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node\Method;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
@@ -10,23 +11,15 @@ use PHPStan\Analyser\Scope;
 class MethodCall
 {
 
-	/** @var \PhpParser\Node\Expr\MethodCall|StaticCall|Array_ */
-	private $node;
-
-	private Scope $scope;
-
-	/**
-	 * @param \PhpParser\Node\Expr\MethodCall|StaticCall|Array_ $node
-	 * @param Scope $scope
-	 */
-	public function __construct($node, Scope $scope)
+	public function __construct(
+		private Node\Expr\MethodCall|StaticCall|Array_ $node,
+		private Scope $scope,
+	)
 	{
-		$this->node = $node;
-		$this->scope = $scope;
 	}
 
 	/**
-	 * @return \PhpParser\Node\Expr\MethodCall|StaticCall|Array_
+	 * @return Node\Expr\MethodCall|StaticCall|Array_
 	 */
 	public function getNode()
 	{

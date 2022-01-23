@@ -10,28 +10,37 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\VirtualNode;
+use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
+use function array_keys;
+use function array_map;
+use function array_merge;
+use function count;
+use function implode;
+use function in_array;
+use function is_int;
+use function is_string;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt>
+ * @implements Rule<Node\Stmt>
  */
 class WrongVariableNameInVarTagRule implements Rule
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
 	public function __construct(
-		FileTypeMapper $fileTypeMapper
+		private FileTypeMapper $fileTypeMapper,
 	)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt::class;
+		return Node\Stmt::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -57,7 +66,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 				$function !== null ? $function->getName() : null,
-				$comment->getText()
+				$comment->getText(),
 			);
 			foreach ($resolvedPhpDoc->getVarTags() as $key => $varTag) {
 				$varTags[$key] = $varTag;
@@ -95,8 +104,10 @@ class WrongVariableNameInVarTagRule implements Rule
 				$description = 'an interface';
 			} elseif ($originalNode instanceof Node\Stmt\Class_) {
 				$description = 'a class';
+			} elseif ($originalNode instanceof Node\Stmt\Enum_) {
+				$description = 'an enum';
 			} elseif ($originalNode instanceof Node\Stmt\Trait_) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			} elseif ($originalNode instanceof Node\Stmt\ClassMethod) {
 				$description = 'a method';
 			}
@@ -104,7 +115,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'PHPDoc tag @var above %s has no effect.',
-					$description
+					$description,
 				))->build(),
 			];
 		}
@@ -113,10 +124,8 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param \PhpParser\Node\Expr $var
-	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param VarTag[] $varTags
+	 * @return RuleError[]
 	 */
 	private function processAssign(Scope $scope, Node\Expr $var, array $varTags): array
 	{
@@ -132,7 +141,7 @@ class WrongVariableNameInVarTagRule implements Rule
 					}
 				} elseif (count($assignedVariables) !== 1) {
 					$errors[] = RuleErrorBuilder::message(
-						'PHPDoc tag @var above assignment does not specify variable name.'
+						'PHPDoc tag @var above assignment does not specify variable name.',
 					)->build();
 				}
 				continue;
@@ -150,7 +159,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Variable $%s in PHPDoc tag @var does not match assigned variable $%s.',
 					$key,
-					$assignedVariables[0]
+					$assignedVariables[0],
 				))->build();
 			} else {
 				$errors[] = RuleErrorBuilder::message(sprintf('Variable $%s in PHPDoc tag @var does not exist.', $key))->build();
@@ -161,7 +170,6 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param Expr $expr
 	 * @return string[]
 	 */
 	private function getAssignedVariables(Expr $expr): array
@@ -191,10 +199,8 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PhpParser\Node\Expr|null $keyVar
-	 * @param \PhpParser\Node\Expr $valueVar
-	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param VarTag[] $varTags
+	 * @return RuleError[]
 	 */
 	private function processForeach(Node\Expr $iterateeExpr, ?Node\Expr $keyVar, Node\Expr $valueVar, array $varTags): array
 	{
@@ -214,7 +220,7 @@ class WrongVariableNameInVarTagRule implements Rule
 					continue;
 				}
 				$errors[] = RuleErrorBuilder::message(
-					'PHPDoc tag @var above foreach loop does not specify variable name.'
+					'PHPDoc tag @var above foreach loop does not specify variable name.',
 				)->build();
 				continue;
 			}
@@ -226,9 +232,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Variable $%s in PHPDoc tag @var does not match any variable in the foreach loop: %s',
 				$name,
-				implode(', ', array_map(static function (string $name): string {
-					return sprintf('$%s', $name);
-				}, $variableNames))
+				implode(', ', array_map(static fn (string $name): string => sprintf('$%s', $name), $variableNames)),
 			))->build();
 		}
 
@@ -236,9 +240,9 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PhpParser\Node\Stmt\StaticVar[] $vars
-	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param Node\Stmt\StaticVar[] $vars
+	 * @param VarTag[] $varTags
+	 * @return RuleError[]
 	 */
 	private function processStatic(array $vars, array $varTags): array
 	{
@@ -259,7 +263,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				}
 
 				$errors[] = RuleErrorBuilder::message(
-					'PHPDoc tag @var above multiple static variables does not specify variable name.'
+					'PHPDoc tag @var above multiple static variables does not specify variable name.',
 				)->build();
 				continue;
 			}
@@ -271,9 +275,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Variable $%s in PHPDoc tag @var does not match any static variable: %s',
 				$name,
-				implode(', ', array_map(static function (string $name): string {
-					return sprintf('$%s', $name);
-				}, array_keys($variableNames)))
+				implode(', ', array_map(static fn (string $name): string => sprintf('$%s', $name), array_keys($variableNames))),
 			))->build();
 		}
 
@@ -281,10 +283,8 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param \PhpParser\Node\Expr $expr
-	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param VarTag[] $varTags
+	 * @return RuleError[]
 	 */
 	private function processExpression(Scope $scope, Expr $expr, array $varTags): array
 	{
@@ -296,10 +296,8 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @param Expr|null $defaultExpr
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param VarTag[] $varTags
+	 * @return RuleError[]
 	 */
 	private function processStmt(Scope $scope, array $varTags, ?Expr $defaultExpr): array
 	{
@@ -329,9 +327,8 @@ class WrongVariableNameInVarTagRule implements Rule
 	}
 
 	/**
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @param \PHPStan\PhpDoc\Tag\VarTag[] $varTags
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @param VarTag[] $varTags
+	 * @return RuleError[]
 	 */
 	private function processGlobal(Scope $scope, Node\Stmt\Global_ $node, array $varTags): array
 	{
@@ -355,7 +352,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				}
 
 				$errors[] = RuleErrorBuilder::message(
-					'PHPDoc tag @var above multiple global variables does not specify variable name.'
+					'PHPDoc tag @var above multiple global variables does not specify variable name.',
 				)->build();
 				continue;
 			}
@@ -367,9 +364,7 @@ class WrongVariableNameInVarTagRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Variable $%s in PHPDoc tag @var does not match any global variable: %s',
 				$name,
-				implode(', ', array_map(static function (string $name): string {
-					return sprintf('$%s', $name);
-				}, array_keys($variableNames)))
+				implode(', ', array_map(static fn (string $name): string => sprintf('$%s', $name), array_keys($variableNames))),
 			))->build();
 		}
 

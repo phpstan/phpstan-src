@@ -4,28 +4,28 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use Throwable;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt>
+ * @implements Rule<Node\Stmt>
  */
-class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
+class InvalidThrowsPhpDocValueRule implements Rule
 {
 
-	private FileTypeMapper $fileTypeMapper;
-
-	public function __construct(FileTypeMapper $fileTypeMapper)
+	public function __construct(private FileTypeMapper $fileTypeMapper)
 	{
-		$this->fileTypeMapper = $fileTypeMapper;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt::class;
+		return Node\Stmt::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -49,7 +49,7 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
 			$functionName,
-			$docComment->getText()
+			$docComment->getText(),
 		);
 
 		if ($resolvedPhpDoc->getThrowsTag() === null) {
@@ -61,7 +61,7 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 			return [];
 		}
 
-		$isThrowsSuperType = (new ObjectType(\Throwable::class))->isSuperTypeOf($phpDocThrowsType);
+		$isThrowsSuperType = (new ObjectType(Throwable::class))->isSuperTypeOf($phpDocThrowsType);
 		if ($isThrowsSuperType->yes()) {
 			return [];
 		}
@@ -69,7 +69,7 @@ class InvalidThrowsPhpDocValueRule implements \PHPStan\Rules\Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'PHPDoc tag @throws with type %s is not subtype of Throwable',
-				$phpDocThrowsType->describe(VerbosityLevel::typeOnly())
+				$phpDocThrowsType->describe(VerbosityLevel::typeOnly()),
 			))->build(),
 		];
 	}

@@ -7,14 +7,8 @@ use PHPStan\Analyser\AnalyserResult;
 class ResultCacheProcessResult
 {
 
-	private AnalyserResult $analyserResult;
-
-	private bool $saved;
-
-	public function __construct(AnalyserResult $analyserResult, bool $saved)
+	public function __construct(private AnalyserResult $analyserResult, private bool $saved)
 	{
-		$this->analyserResult = $analyserResult;
-		$this->saved = $saved;
 	}
 
 	public function getAnalyserResult(): AnalyserResult

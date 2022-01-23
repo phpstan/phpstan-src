@@ -14,6 +14,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use function in_array;
 
 class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
@@ -24,15 +25,12 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		'json_decode' => 3,
 	];
 
-	private ReflectionProvider $reflectionProvider;
-
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function isFunctionSupported(
-		FunctionReflection $functionReflection
+		FunctionReflection $functionReflection,
 	): bool
 	{
 		return $this->reflectionProvider->hasConstant(new Name\FullyQualified('JSON_THROW_ON_ERROR'), null) && in_array(
@@ -41,14 +39,14 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 				'json_encode',
 				'json_decode',
 			],
-			true
+			true,
 		);
 	}
 
 	public function getThrowTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): ?Type
 	{
 		$argumentPosition = $this->argumentPositions[$functionReflection->getName()];

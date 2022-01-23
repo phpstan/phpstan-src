@@ -4,64 +4,32 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\ShouldNotHappenException;
+use ReturnTypeWillChange;
+use function array_map;
+use function count;
 
 class ExportedClassNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private ?ExportedPhpDocNode $phpDoc;
-
-	private bool $abstract;
-
-	private bool $final;
-
-	private ?string $extends;
-
-	/** @var string[] */
-	private array $implements;
-
-	/** @var string[] */
-	private array $usedTraits;
-
-	/** @var ExportedTraitUseAdaptation[] */
-	private array $traitUseAdaptations;
-
-	/** @var ExportedNode[] */
-	private array $statements;
-
 	/**
-	 * @param string $name
-	 * @param ExportedPhpDocNode|null $phpDoc
-	 * @param bool $abstract
-	 * @param bool $final
-	 * @param string|null $extends
 	 * @param string[] $implements
 	 * @param string[] $usedTraits
 	 * @param ExportedTraitUseAdaptation[] $traitUseAdaptations
 	 * @param ExportedNode[] $statements
 	 */
 	public function __construct(
-		string $name,
-		?ExportedPhpDocNode $phpDoc,
-		bool $abstract,
-		bool $final,
-		?string $extends,
-		array $implements,
-		array $usedTraits,
-		array $traitUseAdaptations,
-		array $statements
+		private string $name,
+		private ?ExportedPhpDocNode $phpDoc,
+		private bool $abstract,
+		private bool $final,
+		private ?string $extends,
+		private array $implements,
+		private array $usedTraits,
+		private array $traitUseAdaptations,
+		private array $statements,
 	)
 	{
-		$this->name = $name;
-		$this->phpDoc = $phpDoc;
-		$this->abstract = $abstract;
-		$this->final = $final;
-		$this->extends = $extends;
-		$this->implements = $implements;
-		$this->usedTraits = $usedTraits;
-		$this->traitUseAdaptations = $traitUseAdaptations;
-		$this->statements = $statements;
 	}
 
 	public function equals(ExportedNode $node): bool
@@ -128,14 +96,14 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 			$properties['implements'],
 			$properties['usedTraits'],
 			$properties['traitUseAdaptations'],
-			$properties['statements']
+			$properties['statements'],
 		);
 	}
 
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [
@@ -170,7 +138,7 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 			$data['usedTraits'],
 			array_map(static function (array $traitUseAdaptationData): ExportedTraitUseAdaptation {
 				if ($traitUseAdaptationData['type'] !== ExportedTraitUseAdaptation::class) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				return ExportedTraitUseAdaptation::decode($traitUseAdaptationData['data']);
 			}, $data['traitUseAdaptations']),
@@ -178,7 +146,7 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 				$nodeType = $node['type'];
 
 				return $nodeType::decode($node['data']);
-			}, $data['statements'])
+			}, $data['statements']),
 		);
 	}
 

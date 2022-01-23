@@ -2,10 +2,16 @@
 
 namespace PHPStan\Reflection\Annotations;
 
+use DeprecatedAnnotations\DeprecatedBar;
+use DeprecatedAnnotations\DeprecatedFoo;
+use DeprecatedAnnotations\DeprecatedWithMultipleTags;
+use DeprecatedAnnotations\Foo;
+use DeprecatedAnnotations\FooInterface;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\Testing\PHPStanTestCase;
 
-class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
+class DeprecatedAnnotationsTest extends PHPStanTestCase
 {
 
 	public function dataDeprecatedAnnotations(): array
@@ -13,7 +19,7 @@ class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 		return [
 			[
 				false,
-				\DeprecatedAnnotations\Foo::class,
+				Foo::class,
 				null,
 				[
 					'constant' => [
@@ -31,7 +37,7 @@ class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				true,
-				\DeprecatedAnnotations\DeprecatedFoo::class,
+				DeprecatedFoo::class,
 				'in 1.0.0.',
 				[
 					'constant' => [
@@ -49,7 +55,7 @@ class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				false,
-				\DeprecatedAnnotations\FooInterface::class,
+				FooInterface::class,
 				null,
 				[
 					'constant' => [
@@ -63,7 +69,7 @@ class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				true,
-				\DeprecatedAnnotations\DeprecatedWithMultipleTags::class,
+				DeprecatedWithMultipleTags::class,
 				"in Foo 1.1.0 and will be removed in 1.5.0, use\n  \\Foo\\Bar\\NotDeprecated instead.",
 				[
 					'method' => [
@@ -76,9 +82,6 @@ class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataDeprecatedAnnotations
-	 * @param bool $deprecated
-	 * @param string $className
-	 * @param string|null $classDeprecation
 	 * @param array<string, mixed> $deprecatedAnnotations
 	 */
 	public function testDeprecatedAnnotations(bool $deprecated, string $className, ?string $classDeprecation, array $deprecatedAnnotations): void
@@ -129,6 +132,13 @@ class DeprecatedAnnotationsTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertFalse($reflectionProvider->getFunction(new Name('str_replace'), null)->isDeprecated()->yes());
 		$this->assertFalse($reflectionProvider->getFunction(new Name('get_class'), null)->isDeprecated()->yes());
 		$this->assertFalse($reflectionProvider->getFunction(new Name('function_exists'), null)->isDeprecated()->yes());
+	}
+
+	public function testDeprecatedMethodsFromInterface(): void
+	{
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass(DeprecatedBar::class);
+		$this->assertTrue($class->getNativeMethod('superDeprecated')->isDeprecated()->yes());
 	}
 
 }

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Arrays;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ArrayDestructuringRule>
@@ -18,7 +19,7 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 
 		return new ArrayDestructuringRule(
 			$ruleLevelHelper,
-			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true)
+			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true),
 		);
 	}
 

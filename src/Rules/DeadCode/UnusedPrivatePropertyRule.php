@@ -9,10 +9,16 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeUtils;
+use function array_key_exists;
+use function array_map;
+use function count;
+use function sprintf;
+use function strpos;
 
 /**
  * @implements Rule<ClassPropertiesNode>
@@ -20,32 +26,17 @@ use PHPStan\Type\TypeUtils;
 class UnusedPrivatePropertyRule implements Rule
 {
 
-	private ReadWritePropertiesExtensionProvider $extensionProvider;
-
-	/** @var string[] */
-	private array $alwaysWrittenTags;
-
-	/** @var string[] */
-	private array $alwaysReadTags;
-
-	private bool $checkUninitializedProperties;
-
 	/**
-	 * @param ReadWritePropertiesExtensionProvider $extensionProvider
 	 * @param string[] $alwaysWrittenTags
 	 * @param string[] $alwaysReadTags
 	 */
 	public function __construct(
-		ReadWritePropertiesExtensionProvider $extensionProvider,
-		array $alwaysWrittenTags,
-		array $alwaysReadTags,
-		bool $checkUninitializedProperties
+		private ReadWritePropertiesExtensionProvider $extensionProvider,
+		private array $alwaysWrittenTags,
+		private array $alwaysReadTags,
+		private bool $checkUninitializedProperties,
 	)
 	{
-		$this->extensionProvider = $extensionProvider;
-		$this->alwaysWrittenTags = $alwaysWrittenTags;
-		$this->alwaysReadTags = $alwaysReadTags;
-		$this->checkUninitializedProperties = $checkUninitializedProperties;
 	}
 
 	public function getNodeType(): string
@@ -59,7 +50,7 @@ class UnusedPrivatePropertyRule implements Rule
 			return [];
 		}
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
 		$classType = new ObjectType($classReflection->getName());
@@ -136,9 +127,7 @@ class UnusedPrivatePropertyRule implements Rule
 					return [];
 				}
 
-				$propertyNames = array_map(static function (ConstantStringType $type): string {
-					return $type->getValue();
-				}, $strings);
+				$propertyNames = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $strings);
 			}
 			if ($fetch instanceof Node\Expr\PropertyFetch) {
 				$fetchedOnType = $usage->getScope()->getType($fetch->var);
@@ -185,6 +174,7 @@ class UnusedPrivatePropertyRule implements Rule
 			} else {
 				$propertyName = sprintf('Property %s::$%s', $scope->getClassReflection()->getDisplayName(), $name);
 			}
+			$tip = sprintf('See: %s', 'https://phpstan.org/developing-extensions/always-read-written-properties');
 			if (!$data['read']) {
 				if (!$data['written']) {
 					$errors[] = RuleErrorBuilder::message(sprintf('%s is unused.', $propertyName))
@@ -196,12 +186,13 @@ class UnusedPrivatePropertyRule implements Rule
 							'classStartLine' => $node->getClass()->getStartLine(),
 							'propertyName' => $name,
 						])
+						->tip($tip)
 						->build();
 				} else {
-					$errors[] = RuleErrorBuilder::message(sprintf('%s is never read, only written.', $propertyName))->line($propertyNode->getStartLine())->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('%s is never read, only written.', $propertyName))->line($propertyNode->getStartLine())->tip($tip)->build();
 				}
 			} elseif (!$data['written'] && (!array_key_exists($name, $uninitializedProperties) || !$this->checkUninitializedProperties)) {
-				$errors[] = RuleErrorBuilder::message(sprintf('%s is never written, only read.', $propertyName))->line($propertyNode->getStartLine())->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('%s is never written, only read.', $propertyName))->line($propertyNode->getStartLine())->tip($tip)->build();
 			}
 		}
 

@@ -2,18 +2,20 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<OffsetAccessAssignmentRule>
+ * @extends RuleTestCase<OffsetAccessAssignmentRule>
  */
-class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
+class OffsetAccessAssignmentRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkUnionTypes;
+	private bool $checkUnionTypes;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnionTypes, false);
 		return new OffsetAccessAssignmentRule($ruleLevelHelper);
@@ -69,7 +71,7 @@ class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Cannot assign new offset to OffsetAccessAssignment\ObjectWithOffsetAccess.',
 					81,
 				],
-			]
+			],
 		);
 	}
 
@@ -111,7 +113,7 @@ class OffsetAccessAssignmentRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Cannot assign new offset to OffsetAccessAssignment\ObjectWithOffsetAccess.',
 					81,
 				],
-			]
+			],
 		);
 	}
 

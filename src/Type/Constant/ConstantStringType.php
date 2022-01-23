@@ -2,11 +2,15 @@
 
 namespace PHPStan\Type\Constant;
 
+use Nette\Utils\RegexpException;
+use Nette\Utils\Strings;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -28,6 +32,11 @@ use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use function is_float;
+use function is_numeric;
+use function strlen;
+use function substr;
+use function var_export;
 
 /** @api */
 class ConstantStringType extends StringType implements ConstantScalarType
@@ -38,16 +47,10 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	use ConstantScalarTypeTrait;
 	use ConstantScalarToBooleanTrait;
 
-	private string $value;
-
-	private bool $isClassString;
-
 	/** @api */
-	public function __construct(string $value, bool $isClassString = false)
+	public function __construct(private string $value, private bool $isClassString = false)
 	{
 		parent::__construct();
-		$this->value = $value;
-		$this->isClassString = $isClassString;
 	}
 
 	public function getValue(): string
@@ -57,34 +60,36 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function isClassString(): bool
 	{
-		return $this->isClassString;
+		if ($this->isClassString) {
+			return true;
+		}
+
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+
+		return $reflectionProvider->hasClass($this->value);
 	}
 
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			static function (): string {
-				return 'string';
-			},
+			static fn (): string => 'string',
 			function (): string {
 				if ($this->isClassString) {
 					return var_export($this->value, true);
 				}
 
 				try {
-					$truncatedValue = \Nette\Utils\Strings::truncate($this->value, self::DESCRIBE_LIMIT);
-				} catch (\Nette\Utils\RegexpException $e) {
+					$truncatedValue = Strings::truncate($this->value, self::DESCRIBE_LIMIT);
+				} catch (RegexpException) {
 					$truncatedValue = substr($this->value, 0, self::DESCRIBE_LIMIT) . "\u{2026}";
 				}
 
 				return var_export(
 					$truncatedValue,
-					true
+					true,
 				);
 			},
-			function (): string {
-				return var_export($this->value, true);
-			}
+			fn (): string => var_export($this->value, true),
 		);
 	}
 
@@ -118,9 +123,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			return TrinaryLogic::createNo();
 		}
 		if ($type instanceof ClassStringType) {
-			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-
-			return $reflectionProvider->hasClass($this->getValue()) ? TrinaryLogic::createMaybe() : TrinaryLogic::createNo();
+			return $this->isClassString() ? TrinaryLogic::createMaybe() : TrinaryLogic::createNo();
 		}
 
 		if ($type instanceof self) {
@@ -152,7 +155,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		}
 
 		// 'MyClass::myStaticFunction'
-		$matches = \Nette\Utils\Strings::match($this->value, '#^([a-zA-Z_\\x7f-\\xff\\\\][a-zA-Z0-9_\\x7f-\\xff\\\\]*)::([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)\z#');
+		$matches = Strings::match($this->value, '#^([a-zA-Z_\\x7f-\\xff\\\\][a-zA-Z0-9_\\x7f-\\xff\\\\]*)::([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)\z#');
 		if ($matches !== null) {
 			if (!$reflectionProvider->hasClass($matches[1])) {
 				return TrinaryLogic::createMaybe();
@@ -174,8 +177,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ClassMemberAccessAnswerer $scope
-	 * @return \PHPStan\Reflection\ParametersAcceptor[]
+	 * @return ParametersAcceptor[]
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
@@ -188,7 +190,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		}
 
 		// 'MyClass::myStaticFunction'
-		$matches = \Nette\Utils\Strings::match($this->value, '#^([a-zA-Z_\\x7f-\\xff\\\\][a-zA-Z0-9_\\x7f-\\xff\\\\]*)::([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)\z#');
+		$matches = Strings::match($this->value, '#^([a-zA-Z_\\x7f-\\xff\\\\][a-zA-Z0-9_\\x7f-\\xff\\\\]*)::([a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*)\z#');
 		if ($matches !== null) {
 			if (!$reflectionProvider->hasClass($matches[1])) {
 				return [new TrivialParametersAcceptor()];
@@ -209,7 +211,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			}
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function toNumber(): Type
@@ -257,7 +259,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	{
 		if ($offsetType instanceof ConstantIntegerType) {
 			return TrinaryLogic::createFromBoolean(
-				$offsetType->getValue() < strlen($this->value)
+				$offsetType->getValue() < strlen($this->value),
 			);
 		}
 
@@ -288,7 +290,15 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			&& $valueStringType instanceof ConstantStringType
 		) {
 			$value = $this->value;
-			$value[$offsetType->getValue()] = $valueStringType->getValue();
+			$offsetValue = $offsetType->getValue();
+			if ($offsetValue < 0) {
+				return new ErrorType();
+			}
+			$stringValue = $valueStringType->getValue();
+			if (strlen($stringValue) !== 1) {
+				return new ErrorType();
+			}
+			$value[$offsetValue] = $stringValue;
 
 			return new self($value);
 		}
@@ -390,7 +400,6 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

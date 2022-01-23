@@ -3,13 +3,25 @@
 namespace PHPStan\Tests;
 
 use Nette\Utils\Json;
+use Nette\Utils\JsonException;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPUnit\Framework\TestCase;
+use function array_map;
+use function chdir;
 use function escapeshellarg;
+use function exec;
 use function file_put_contents;
+use function implode;
+use function ksort;
+use function sort;
+use function sprintf;
 use function str_replace;
+use function unlink;
+use const DIRECTORY_SEPARATOR;
+use const FILE_APPEND;
+use const PHP_BINARY;
 
 class ResultCacheEndToEndTest extends TestCase
 {
@@ -85,7 +97,7 @@ class ResultCacheEndToEndTest extends TestCase
 
 		$fileHelper = new FileHelper(__DIR__);
 
-		$this->assertSame('Parameter #1 $source of function token_get_all expects string, PhpParser\Node\Expr\MethodCall given.', $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/PhpParser/Lexer.php')]['messages'][0]['message']);
+		$this->assertSame('Parameter #1 $code of function token_get_all expects string, PhpParser\Node\Expr\MethodCall given.', $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/PhpParser/Lexer.php')]['messages'][0]['message']);
 		$this->assertSame('Parameter #1 $code of method PhpParser\Lexer::startLexing() expects PhpParser\Node\Expr\MethodCall, string given.', $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/PhpParser/ParserAbstract.php')]['messages'][0]['message']);
 		$this->assertSame('Parameter #1 (array{\'foo\'}) of echo cannot be converted to string.', $result['files'][$fileHelper->normalizePath(__DIR__ . '/PHP-Parser/lib/bootstrap.php')]['messages'][0]['message']);
 		$this->assertResultCache(__DIR__ . '/resultCache_2.php');
@@ -121,7 +133,6 @@ class ResultCacheEndToEndTest extends TestCase
 	}
 
 	/**
-	 * @param int $expectedExitCode
 	 * @return mixed[]
 	 */
 	private function runPhpstan(int $expectedExitCode): array
@@ -130,13 +141,13 @@ class ResultCacheEndToEndTest extends TestCase
 			'%s %s analyse -c %s -l 5 --no-progress --error-format json lib 2>&1',
 			escapeshellarg(PHP_BINARY),
 			escapeshellarg(__DIR__ . '/../../bin/phpstan'),
-			escapeshellarg(__DIR__ . '/phpstan.neon')
+			escapeshellarg(__DIR__ . '/phpstan.neon'),
 		), $outputLines, $exitCode);
 		$output = implode("\n", $outputLines);
 
 		try {
 			$json = Json::decode($output, Json::FORCE_ARRAY);
-		} catch (\Nette\Utils\JsonException $e) {
+		} catch (JsonException $e) {
 			$this->fail(sprintf('%s: %s', $e->getMessage(), $output));
 		}
 
@@ -155,9 +166,7 @@ class ResultCacheEndToEndTest extends TestCase
 	{
 		$new = [];
 		foreach ($resultCache['dependencies'] as $file => $data) {
-			$files = array_map(function (string $file): string {
-				return $this->relativizePath($file);
-			}, $data['dependentFiles']);
+			$files = array_map(fn (string $file): string => $this->relativizePath($file), $data['dependentFiles']);
 			sort($files);
 			$new[$this->relativizePath($file)] = $files;
 		}

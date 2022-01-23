@@ -16,6 +16,7 @@ use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
 
 class NonEmptyArrayType implements CompoundType, AccessoryType
 {
@@ -81,7 +82,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $type instanceof self;
 	}
 
-	public function describe(\PHPStan\Type\VerbosityLevel $level): string
+	public function describe(VerbosityLevel $level): string
 	{
 		return 'non-empty-array';
 	}
@@ -104,6 +105,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		return $this;
+	}
+
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return new ErrorType();
 	}
 
 	public function isIterable(): TrinaryLogic

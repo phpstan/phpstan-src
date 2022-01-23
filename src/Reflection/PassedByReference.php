@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection;
 
+use function array_key_exists;
+
 /** @api */
 class PassedByReference
 {
@@ -13,11 +15,8 @@ class PassedByReference
 	/** @var self[] */
 	private static array $registry = [];
 
-	private int $value;
-
-	private function __construct(int $value)
+	private function __construct(private int $value)
 	{
-		$this->value = $value;
 	}
 
 	private static function create(int $value): self
@@ -77,7 +76,6 @@ class PassedByReference
 
 	/**
 	 * @param mixed[] $properties
-	 * @return self
 	 */
 	public static function __set_state(array $properties): self
 	{

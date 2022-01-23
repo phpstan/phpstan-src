@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\ShouldNotHappenException;
+
 /** @api */
 class TypeSpecifierContext
 {
@@ -14,19 +16,16 @@ class TypeSpecifierContext
 	public const CONTEXT_FALSEY = self::CONTEXT_FALSE | self::CONTEXT_FALSEY_BUT_NOT_FALSE;
 	public const CONTEXT_BITMASK = 0b1111;
 
-	private ?int $value;
-
 	/** @var self[] */
 	private static array $registry;
 
-	private function __construct(?int $value)
+	private function __construct(private ?int $value)
 	{
-		$this->value = $value;
 	}
 
 	private static function create(?int $value): self
 	{
-		self::$registry[$value] = self::$registry[$value] ?? new self($value);
+		self::$registry[$value] ??= new self($value);
 		return self::$registry[$value];
 	}
 
@@ -58,7 +57,7 @@ class TypeSpecifierContext
 	public function negate(): self
 	{
 		if ($this->value === null) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		return self::create(~$this->value & self::CONTEXT_BITMASK);
 	}

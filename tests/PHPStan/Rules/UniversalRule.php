@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
 /**
- * @template TNodeType of \PhpParser\Node
+ * @template TNodeType of Node
  * @implements Rule<TNodeType>
  */
 class UniversalRule implements Rule
@@ -35,7 +35,6 @@ class UniversalRule implements Rule
 
 	/**
 	 * @param TNodeType $node
-	 * @param \PHPStan\Analyser\Scope $scope
 	 * @return array<string|RuleError>
 	 */
 	public function processNode(Node $node, Scope $scope): array

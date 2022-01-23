@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -18,6 +19,18 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_map;
+use function array_merge;
+use function array_unique;
+use function count;
+use function function_exists;
+use function in_array;
+use function mb_encoding_aliases;
+use function mb_internal_encoding;
+use function mb_list_encodings;
+use function mb_str_split;
+use function str_split;
+use function strtoupper;
 
 final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -32,7 +45,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			foreach (mb_list_encodings() as $encoding) {
 				$aliases = mb_encoding_aliases($encoding);
 				if ($aliases === false) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				$supportedEncodings = array_merge($supportedEncodings, $aliases, [$encoding]);
 			}
@@ -68,9 +81,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		if ($functionReflection->getName() === 'mb_str_split') {
 			if (count($functionCall->getArgs()) >= 3) {
 				$strings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[2]->value));
-				$values = array_unique(array_map(static function (ConstantStringType $encoding): string {
-					return $encoding->getValue();
-				}, $strings));
+				$values = array_unique(array_map(static fn (ConstantStringType $encoding): string => $encoding->getValue(), $strings));
 
 				if (count($values) !== 1) {
 					return $defaultReturnType;
@@ -93,7 +104,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		if (!$stringType instanceof ConstantStringType) {
 			return TypeCombinator::intersect(
 				new ArrayType(new IntegerType(), new StringType()),
-				new NonEmptyArrayType()
+				new NonEmptyArrayType(),
 			);
 		}
 		$stringValue = $stringType->getValue();
@@ -102,7 +113,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			? mb_str_split($stringValue, $splitLength, $encoding)
 			: str_split($stringValue, $splitLength);
 		if ($items === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		return self::createConstantArrayFrom($items, $scope);
@@ -115,8 +126,6 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 	/**
 	 * @param string[] $constantArray
-	 * @param \PHPStan\Analyser\Scope $scope
-	 * @return \PHPStan\Type\Constant\ConstantArrayType
 	 */
 	private static function createConstantArrayFrom(array $constantArray, Scope $scope): ConstantArrayType
 	{
@@ -128,7 +137,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		foreach ($constantArray as $key => $value) {
 			$keyType = $scope->getTypeFromValue($key);
 			if (!$keyType instanceof ConstantIntegerType) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 			$keyTypes[] = $keyType;
 

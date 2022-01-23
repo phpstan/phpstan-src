@@ -19,7 +19,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		ObjectType $bound
+		ObjectType $bound,
 	)
 	{
 		parent::__construct($bound->getClassName());
@@ -40,7 +40,7 @@ final class TemplateObjectType extends ObjectType implements TemplateType
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 

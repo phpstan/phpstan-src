@@ -21,33 +21,21 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function sprintf;
+use function strpos;
 
 class RuleLevelHelper
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private bool $checkNullables;
-
-	private bool $checkThisOnly;
-
-	private bool $checkUnionTypes;
-
-	private bool $checkExplicitMixed;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		bool $checkNullables,
-		bool $checkThisOnly,
-		bool $checkUnionTypes,
-		bool $checkExplicitMixed
+		private ReflectionProvider $reflectionProvider,
+		private bool $checkNullables,
+		private bool $checkThisOnly,
+		private bool $checkUnionTypes,
+		private bool $checkExplicitMixed,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->checkNullables = $checkNullables;
-		$this->checkThisOnly = $checkThisOnly;
-		$this->checkUnionTypes = $checkUnionTypes;
-		$this->checkExplicitMixed = $checkExplicitMixed;
 	}
 
 	/** @api */
@@ -109,11 +97,11 @@ class RuleLevelHelper
 			return self::accepts(
 				$acceptingType->getIterableKeyType(),
 				$acceptedType->getIterableKeyType(),
-				$strictTypes
+				$strictTypes,
 			) && self::accepts(
 				$acceptingType->getIterableValueType(),
 				$acceptedType->getIterableValueType(),
-				$strictTypes
+				$strictTypes,
 			);
 		}
 
@@ -122,17 +110,13 @@ class RuleLevelHelper
 
 	/**
 	 * @api
-	 * @param Scope $scope
-	 * @param Expr $var
-	 * @param string $unknownClassErrorPattern
 	 * @param callable(Type $type): bool $unionTypeCriteriaCallback
-	 * @return FoundTypeResult
 	 */
 	public function findTypeToCheck(
 		Scope $scope,
 		Expr $var,
 		string $unknownClassErrorPattern,
-		callable $unionTypeCriteriaCallback
+		callable $unionTypeCriteriaCallback,
 	): FoundTypeResult
 	{
 		if ($this->checkThisOnly && !$this->isThis($var)) {
@@ -140,7 +124,7 @@ class RuleLevelHelper
 		}
 		$type = $scope->getType($var);
 		if (!$this->checkNullables && !$type instanceof NullType) {
-			$type = \PHPStan\Type\TypeCombinator::removeNull($type);
+			$type = TypeCombinator::removeNull($type);
 		}
 
 		if (

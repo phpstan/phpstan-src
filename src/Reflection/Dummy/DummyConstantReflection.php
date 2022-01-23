@@ -8,22 +8,20 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
+use stdClass;
 
 class DummyConstantReflection implements ConstantReflection
 {
 
-	private string $name;
-
-	public function __construct(string $name)
+	public function __construct(private string $name)
 	{
-		$this->name = $name;
 	}
 
 	public function getDeclaringClass(): ClassReflection
 	{
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
-		return $reflectionProvider->getClass(\stdClass::class);
+		return $reflectionProvider->getClass(stdClass::class);
 	}
 
 	public function getFileName(): ?string
@@ -57,7 +55,7 @@ class DummyConstantReflection implements ConstantReflection
 	public function getValue()
 	{
 		// so that Scope::getTypeFromValue() returns mixed
-		return new \stdClass();
+		return new stdClass();
 	}
 
 	public function getValueType(): Type

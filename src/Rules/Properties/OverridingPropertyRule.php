@@ -9,8 +9,12 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function count;
+use function sprintf;
 
 /**
  * @implements Rule<ClassPropertyNode>
@@ -18,17 +22,11 @@ use PHPStan\Type\VerbosityLevel;
 class OverridingPropertyRule implements Rule
 {
 
-	private bool $checkPhpDocMethodSignatures;
-
-	private bool $reportMaybes;
-
 	public function __construct(
-		bool $checkPhpDocMethodSignatures,
-		bool $reportMaybes
+		private bool $checkPhpDocMethodSignatures,
+		private bool $reportMaybes,
 	)
 	{
-		$this->checkPhpDocMethodSignatures = $checkPhpDocMethodSignatures;
-		$this->reportMaybes = $reportMaybes;
 	}
 
 	public function getNodeType(): string
@@ -39,7 +37,7 @@ class OverridingPropertyRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
 		$classReflection = $scope->getClassReflection();
@@ -56,7 +54,7 @@ class OverridingPropertyRule implements Rule
 					$classReflection->getDisplayName(),
 					$node->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$node->getName()
+					$node->getName(),
 				))->nonIgnorable()->build();
 			}
 		} elseif ($node->isStatic()) {
@@ -65,7 +63,7 @@ class OverridingPropertyRule implements Rule
 				$classReflection->getDisplayName(),
 				$node->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$node->getName()
+				$node->getName(),
 			))->nonIgnorable()->build();
 		}
 
@@ -76,7 +74,7 @@ class OverridingPropertyRule implements Rule
 					$classReflection->getDisplayName(),
 					$node->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$node->getName()
+					$node->getName(),
 				))->nonIgnorable()->build();
 			}
 		} elseif ($node->isReadOnly()) {
@@ -85,7 +83,7 @@ class OverridingPropertyRule implements Rule
 				$classReflection->getDisplayName(),
 				$node->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$node->getName()
+				$node->getName(),
 			))->nonIgnorable()->build();
 		}
 
@@ -97,7 +95,7 @@ class OverridingPropertyRule implements Rule
 					$classReflection->getDisplayName(),
 					$node->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
-					$node->getName()
+					$node->getName(),
 				))->nonIgnorable()->build();
 			}
 		} elseif ($node->isPrivate()) {
@@ -106,7 +104,7 @@ class OverridingPropertyRule implements Rule
 				$classReflection->getDisplayName(),
 				$node->getName(),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$node->getName()
+				$node->getName(),
 			))->nonIgnorable()->build();
 		}
 
@@ -120,7 +118,7 @@ class OverridingPropertyRule implements Rule
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$node->getName(),
 					$prototype->getNativeType()->describe(VerbosityLevel::typeOnly()),
-					$prototype->getNativeType()->describe(VerbosityLevel::typeOnly())
+					$prototype->getNativeType()->describe(VerbosityLevel::typeOnly()),
 				))->nonIgnorable()->build();
 			} else {
 				$nativeType = ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $scope->getClassReflection());
@@ -132,7 +130,7 @@ class OverridingPropertyRule implements Rule
 						$node->getName(),
 						$prototype->getNativeType()->describe(VerbosityLevel::typeOnly()),
 						$prototype->getDeclaringClass()->getDisplayName(),
-						$node->getName()
+						$node->getName(),
 					))->nonIgnorable()->build();
 				}
 			}
@@ -143,7 +141,7 @@ class OverridingPropertyRule implements Rule
 				$node->getName(),
 				ParserNodeTypeToPHPStanType::resolve($node->getNativeType(), $scope->getClassReflection())->describe(VerbosityLevel::typeOnly()),
 				$prototype->getDeclaringClass()->getDisplayName(),
-				$node->getName()
+				$node->getName(),
 			))->nonIgnorable()->build();
 		}
 
@@ -171,11 +169,11 @@ class OverridingPropertyRule implements Rule
 			$node->getName(),
 			$prototype->getReadableType()->describe($verbosity),
 			$prototype->getDeclaringClass()->getDisplayName(),
-			$node->getName()
+			$node->getName(),
 		))->tip(sprintf(
 			"You can fix 3rd party PHPDoc types with stub files:\n   %s\n   This error can be turned off by setting\n   %s",
 			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>',
-			'<fg=cyan>reportMaybesInPropertyPhpDocTypes: false</> in your <fg=cyan>%configurationFile%</>.'
+			'<fg=cyan>reportMaybesInPropertyPhpDocTypes: false</> in your <fg=cyan>%configurationFile%</>.',
 		))->build();
 		$cannotBeTurnedOffError = RuleErrorBuilder::message(sprintf(
 			'PHPDoc type %s of property %s::$%s is %s PHPDoc type %s of overridden property %s::$%s.',
@@ -185,10 +183,10 @@ class OverridingPropertyRule implements Rule
 			$this->reportMaybes ? 'not the same as' : 'not covariant with',
 			$prototype->getReadableType()->describe($verbosity),
 			$prototype->getDeclaringClass()->getDisplayName(),
-			$node->getName()
+			$node->getName(),
 		))->tip(sprintf(
 			"You can fix 3rd party PHPDoc types with stub files:\n   %s",
-			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>'
+			'<fg=cyan>https://phpstan.org/user-guide/stub-files</>',
 		))->build();
 		if ($this->reportMaybes) {
 			if (!$isSuperType->yes()) {

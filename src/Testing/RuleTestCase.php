@@ -2,6 +2,7 @@
 
 namespace PHPStan\Testing;
 
+use InvalidArgumentException;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
@@ -16,18 +17,21 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
+use function array_map;
+use function count;
+use function implode;
+use function sprintf;
 
 /**
  * @api
- * @template TRule of \PHPStan\Rules\Rule
+ * @template TRule of Rule
  */
-abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
+abstract class RuleTestCase extends PHPStanTestCase
 {
 
-	private ?\PHPStan\Analyser\Analyser $analyser = null;
+	private ?Analyser $analyser = null;
 
 	/**
-	 * @return \PHPStan\Rules\Rule
 	 * @phpstan-return TRule
 	 */
 	abstract protected function getRule(): Rule;
@@ -48,7 +52,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 			$typeSpecifier = $this->getTypeSpecifier();
 			$nodeScopeResolver = new NodeScopeResolver(
 				$reflectionProvider,
-				self::getReflectors()[0],
+				self::getReflector(),
 				$this->getClassReflectionExtensionRegistryProvider(),
 				$this->getParser(),
 				self::getContainer()->getByType(FileTypeMapper::class),
@@ -62,20 +66,20 @@ abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 				[],
 				[],
-				true
+				true,
 			);
 			$fileAnalyser = new FileAnalyser(
 				$this->createScopeFactory($reflectionProvider, $typeSpecifier),
 				$nodeScopeResolver,
 				$this->getParser(),
 				self::getContainer()->getByType(DependencyResolver::class),
-				true
+				true,
 			);
 			$this->analyser = new Analyser(
 				$fileAnalyser,
 				$registry,
 				$nodeScopeResolver,
-				50
+				50,
 			);
 		}
 
@@ -93,7 +97,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 			$files,
 			null,
 			null,
-			true
+			true,
 		);
 		if (count($analyserResult->getInternalErrors()) > 0) {
 			$this->fail(implode("\n", $analyserResult->getInternalErrors()));
@@ -112,14 +116,14 @@ abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 		$expectedErrors = array_map(
 			static function (array $error) use ($strictlyTypedSprintf): string {
 				if (!isset($error[0])) {
-					throw new \InvalidArgumentException('Missing expected error message.');
+					throw new InvalidArgumentException('Missing expected error message.');
 				}
 				if (!isset($error[1])) {
-					throw new \InvalidArgumentException('Missing expected file line.');
+					throw new InvalidArgumentException('Missing expected file line.');
 				}
 				return $strictlyTypedSprintf($error[1], $error[0], $error[2] ?? null);
 			},
-			$expectedErrors
+			$expectedErrors,
 		);
 
 		$actualErrors = array_map(
@@ -130,7 +134,7 @@ abstract class RuleTestCase extends \PHPStan\Testing\PHPStanTestCase
 				}
 				return $strictlyTypedSprintf($line, $error->getMessage(), $error->getTip());
 			},
-			$actualErrors
+			$actualErrors,
 		);
 
 		$this->assertSame(implode("\n", $expectedErrors) . "\n", implode("\n", $actualErrors) . "\n");

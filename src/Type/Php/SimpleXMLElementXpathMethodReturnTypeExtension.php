@@ -7,18 +7,20 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use SimpleXMLElement;
 
-class SimpleXMLElementXpathMethodReturnTypeExtension implements \PHPStan\Type\DynamicMethodReturnTypeExtension
+class SimpleXMLElementXpathMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
 	public function getClass(): string
 	{
-		return \SimpleXMLElement::class;
+		return SimpleXMLElement::class;
 	}
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool
@@ -34,7 +36,7 @@ class SimpleXMLElementXpathMethodReturnTypeExtension implements \PHPStan\Type\Dy
 
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 
-		$xmlElement = new \SimpleXMLElement('<foo />');
+		$xmlElement = new SimpleXMLElement('<foo />');
 
 		foreach (TypeUtils::getConstantStrings($argType) as $constantString) {
 			$result = @$xmlElement->xpath($constantString->getValue());

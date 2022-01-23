@@ -9,11 +9,8 @@ use PHPStan\Type\Type;
 class InaccessibleMethod implements ParametersAcceptor
 {
 
-	private MethodReflection $methodReflection;
-
-	public function __construct(MethodReflection $methodReflection)
+	public function __construct(private MethodReflection $methodReflection)
 	{
-		$this->methodReflection = $methodReflection;
 	}
 
 	public function getMethod(): MethodReflection
@@ -32,7 +29,7 @@ class InaccessibleMethod implements ParametersAcceptor
 	}
 
 	/**
-	 * @return array<int, \PHPStan\Reflection\ParameterReflection>
+	 * @return array<int, ParameterReflection>
 	 */
 	public function getParameters(): array
 	{

@@ -2,24 +2,31 @@
 
 namespace PHPStan\Rules\Functions;
 
+use Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\TypeUtils;
+use function array_filter;
+use function count;
+use function in_array;
+use function max;
+use function sprintf;
+use function strlen;
+use function strtolower;
+use const PREG_SET_ORDER;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
-class PrintfParametersRule implements \PHPStan\Rules\Rule
+class PrintfParametersRule implements Rule
 {
 
-	private PhpVersion $phpVersion;
-
-	public function __construct(PhpVersion $phpVersion)
+	public function __construct(private PhpVersion $phpVersion)
 	{
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function getNodeType(): string
@@ -29,7 +36,7 @@ class PrintfParametersRule implements \PHPStan\Rules\Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!($node->name instanceof \PhpParser\Node\Name)) {
+		if (!($node->name instanceof Node\Name)) {
 			return [];
 		}
 
@@ -88,11 +95,11 @@ class PrintfParametersRule implements \PHPStan\Rules\Rule
 					sprintf(
 						'%s, %s.',
 						$placeHoldersCount === 1 ? 'Call to %s contains %d placeholder' : 'Call to %s contains %d placeholders',
-						$argsCount - 1 === 1 ? '%d value given' : '%d values given'
+						$argsCount - 1 === 1 ? '%d value given' : '%d values given',
 					),
 					$name,
 					$placeHoldersCount,
-					$argsCount - 1
+					$argsCount - 1,
 				))->build(),
 			];
 		}
@@ -112,15 +119,13 @@ class PrintfParametersRule implements \PHPStan\Rules\Rule
 
 		$pattern = '~(?<before>%*)%(?:(?<position>\d+)\$)?[-+]?(?:[ 0]|(?:\'[^%]))?-?\d*(?:\.\d*)?' . $specifiers . '~';
 
-		$matches = \Nette\Utils\Strings::matchAll($format, $pattern, PREG_SET_ORDER);
+		$matches = Strings::matchAll($format, $pattern, PREG_SET_ORDER);
 
 		if (count($matches) === 0) {
 			return 0;
 		}
 
-		$placeholders = array_filter($matches, static function (array $match): bool {
-			return strlen($match['before']) % 2 === 0;
-		});
+		$placeholders = array_filter($matches, static fn (array $match): bool => strlen($match['before']) % 2 === 0);
 
 		if (count($placeholders) === 0) {
 			return 0;

@@ -9,18 +9,9 @@ use PHPStan\Type\Type;
 class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAcceptorWithPhpDocs
 {
 
-	private Type $phpDocReturnType;
-
-	private Type $nativeReturnType;
-
 	/**
 	 * @api
-	 * @param TemplateTypeMap $templateTypeMap
-	 * @param array<int, \PHPStan\Reflection\ParameterReflectionWithPhpDocs> $parameters
-	 * @param bool $isVariadic
-	 * @param Type $returnType
-	 * @param Type $phpDocReturnType
-	 * @param Type $nativeReturnType
+	 * @param array<int, ParameterReflectionWithPhpDocs> $parameters
 	 */
 	public function __construct(
 		TemplateTypeMap $templateTypeMap,
@@ -28,8 +19,8 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 		array $parameters,
 		bool $isVariadic,
 		Type $returnType,
-		Type $phpDocReturnType,
-		Type $nativeReturnType
+		private Type $phpDocReturnType,
+		private Type $nativeReturnType,
 	)
 	{
 		parent::__construct(
@@ -37,18 +28,16 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 			$resolvedTemplateTypeMap,
 			$parameters,
 			$isVariadic,
-			$returnType
+			$returnType,
 		);
-		$this->phpDocReturnType = $phpDocReturnType;
-		$this->nativeReturnType = $nativeReturnType;
 	}
 
 	/**
-	 * @return array<int, \PHPStan\Reflection\ParameterReflectionWithPhpDocs>
+	 * @return array<int, ParameterReflectionWithPhpDocs>
 	 */
 	public function getParameters(): array
 	{
-		/** @var \PHPStan\Reflection\ParameterReflectionWithPhpDocs[] $parameters */
+		/** @var ParameterReflectionWithPhpDocs[] $parameters */
 		$parameters = parent::getParameters();
 
 		return $parameters;

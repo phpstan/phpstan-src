@@ -9,14 +9,14 @@ on:
       - "master"
 
 env:
-  COMPOSER_ROOT_VERSION: "1.0.x-dev"
+  COMPOSER_ROOT_VERSION: "1.3.x-dev"
 
 jobs:
   backward-compatibility:
     name: "Backward Compatibility"
 
     runs-on: "ubuntu-latest"
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - name: "Checkout"
@@ -31,13 +31,13 @@ jobs:
           php-version: "8.0"
 
       - name: "Install dependencies"
-        run: "composer install --no-dev --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-dev --no-interaction --no-progress"
 
       - name: "Install BackwardCompatibilityCheck"
         run: |
           composer global config minimum-stability dev
           composer global config prefer-stable true
-          composer global require --dev ondrejmirtes/backward-compatibility-check:^5.0.7
+          composer global require --dev ondrejmirtes/backward-compatibility-check:^5.0.8
 
       - name: "Check"
         run: "$(composer global config bin-dir --absolute)/roave-backward-compatibility-check"

@@ -7,8 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
@@ -31,22 +29,19 @@ class ServiceLocatorDynamicReturnTypeExtension implements \PHPStan\Type\DynamicM
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
 		if (count($methodCall->getArgs()) === 0) {
-			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
-		}
-		$argType = $scope->getType($methodCall->getArgs()[0]->value);
-		if (!$argType instanceof ConstantStringType) {
-			return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+			return ParametersAcceptorSelector::selectFromArgs($scope, $methodCall->getArgs(), $methodReflection->getVariants())->getReturnType();
 		}
 
-		$type = new ObjectType($argType->getValue());
+		$returnType = ParametersAcceptorSelector::selectFromArgs($scope, $methodCall->getArgs(), $methodReflection->getVariants())->getReturnType();
+
 		if ($methodReflection->getName() === 'getByType' && count($methodCall->getArgs()) >= 2) {
 			$argType = $scope->getType($methodCall->getArgs()[1]->value);
 			if ($argType instanceof ConstantBooleanType && $argType->getValue()) {
-				$type = TypeCombinator::addNull($type);
+				$returnType = TypeCombinator::addNull($returnType);
 			}
 		}
 
-		return $type;
+		return $returnType;
 	}
 
 }

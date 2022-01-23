@@ -8,20 +8,18 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\Generic\TemplateTypeScope;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InClassNode>
+ * @implements Rule<InClassNode>
  */
 class ClassTemplateTypeRule implements Rule
 {
 
-	private \PHPStan\Rules\Generics\TemplateTypeCheck $templateTypeCheck;
-
 	public function __construct(
-		TemplateTypeCheck $templateTypeCheck
+		private TemplateTypeCheck $templateTypeCheck,
 	)
 	{
-		$this->templateTypeCheck = $templateTypeCheck;
 	}
 
 	public function getNodeType(): string
@@ -35,6 +33,9 @@ class ClassTemplateTypeRule implements Rule
 			return [];
 		}
 		$classReflection = $scope->getClassReflection();
+		if (!$classReflection->isClass()) {
+			return [];
+		}
 		$className = $classReflection->getName();
 		if ($classReflection->isAnonymous()) {
 			$displayName = 'anonymous class';
@@ -49,7 +50,7 @@ class ClassTemplateTypeRule implements Rule
 			sprintf('PHPDoc tag @template for %s cannot have existing class %%s as its name.', $displayName),
 			sprintf('PHPDoc tag @template for %s cannot have existing type alias %%s as its name.', $displayName),
 			sprintf('PHPDoc tag @template %%s for %s has invalid bound type %%s.', $displayName),
-			sprintf('PHPDoc tag @template %%s for %s with bound type %%s is not supported.', $displayName)
+			sprintf('PHPDoc tag @template %%s for %s with bound type %%s is not supported.', $displayName),
 		);
 	}
 

@@ -4,18 +4,17 @@ namespace PHPStan\Rules\Missing;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<MissingReturnRule>
+ * @extends RuleTestCase<MissingReturnRule>
  */
 class MissingReturnRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkExplicitMixedMissingReturn;
+	private bool $checkExplicitMixedMissingReturn;
 
-	/** @var bool */
-	private $checkPhpDocMissingReturn = true;
+	private bool $checkPhpDocMissingReturn = true;
 
 	protected function getRule(): Rule
 	{
@@ -236,7 +235,6 @@ class MissingReturnRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataCheckPhpDocMissingReturn
-	 * @param bool $checkPhpDocMissingReturn
 	 * @param mixed[] $errors
 	 */
 	public function testCheckPhpDocMissingReturn(bool $checkPhpDocMissingReturn, array $errors): void
@@ -264,7 +262,6 @@ class MissingReturnRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataModelMixin
-	 * @param bool $checkExplicitMixedMissingReturn
 	 */
 	public function testModelMixin(bool $checkExplicitMixedMissingReturn): void
 	{

@@ -3,18 +3,19 @@
 namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\FunctionReturnTypeCheck;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<ReturnTypeRule>
+ * @extends RuleTestCase<ReturnTypeRule>
  */
-class ReturnTypeRuleTest extends \PHPStan\Testing\RuleTestCase
+class ReturnTypeRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
-		[, $functionReflector] = self::getReflectors();
-		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)), $functionReflector);
+		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false)));
 	}
 
 	public function testReturnTypeRule(): void

@@ -4,34 +4,28 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
-class ImpossibleCheckTypeFunctionCallRule implements \PHPStan\Rules\Rule
+class ImpossibleCheckTypeFunctionCallRule implements Rule
 {
 
-	private \PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper $impossibleCheckTypeHelper;
-
-	private bool $checkAlwaysTrueCheckTypeFunctionCall;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
-		bool $checkAlwaysTrueCheckTypeFunctionCall,
-		bool $treatPhpDocTypesAsCertain
+		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
+		private bool $checkAlwaysTrueCheckTypeFunctionCall,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->impossibleCheckTypeHelper = $impossibleCheckTypeHelper;
-		$this->checkAlwaysTrueCheckTypeFunctionCall = $checkAlwaysTrueCheckTypeFunctionCall;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Expr\FuncCall::class;
+		return Node\Expr\FuncCall::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -67,7 +61,7 @@ class ImpossibleCheckTypeFunctionCallRule implements \PHPStan\Rules\Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Call to function %s()%s will always evaluate to false.',
 					$functionName,
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs())
+					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
@@ -75,7 +69,7 @@ class ImpossibleCheckTypeFunctionCallRule implements \PHPStan\Rules\Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Call to function %s()%s will always evaluate to true.',
 					$functionName,
-					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs())
+					$this->impossibleCheckTypeHelper->getArgumentsDescription($scope, $node->getArgs()),
 				)))->build(),
 			];
 		}

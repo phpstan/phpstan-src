@@ -3,11 +3,17 @@
 namespace PHPStan\Rules\Api;
 
 use Nette\Utils\Json;
+use Nette\Utils\JsonException;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function dirname;
+use function is_dir;
+use function is_file;
+use function strpos;
 
 /**
  * @implements Rule<Node\Stmt\Namespace_>
@@ -15,11 +21,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 class PhpStanNamespaceIn3rdPartyPackageRule implements Rule
 {
 
-	private ApiRuleHelper $apiRuleHelper;
-
-	public function __construct(ApiRuleHelper $apiRuleHelper)
+	public function __construct(private ApiRuleHelper $apiRuleHelper)
 	{
-		$this->apiRuleHelper = $apiRuleHelper;
 	}
 
 	public function getNodeType(): string
@@ -75,9 +78,9 @@ class PhpStanNamespaceIn3rdPartyPackageRule implements Rule
 
 		try {
 			return Json::decode(FileReader::read($composerJsonPath), Json::FORCE_ARRAY);
-		} catch (\Nette\Utils\JsonException $e) {
+		} catch (JsonException) {
 			return null;
-		} catch (\PHPStan\File\CouldNotReadFileException $e) {
+		} catch (CouldNotReadFileException) {
 			return null;
 		}
 	}

@@ -2,21 +2,22 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<AccessPropertiesRule>
+ * @extends RuleTestCase<AccessPropertiesRule>
  */
-class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
+class AccessPropertiesRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
-	/** @var bool */
-	private $checkUnionTypes;
+	private bool $checkUnionTypes;
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false), true);
@@ -157,10 +158,6 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 					299,
 				],
 				[
-					'Access to an undefined property TestAccessProperties\AccessPropertyWithDimFetch::$foo.',
-					364,
-				],
-				[
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
 					386,
 				],
@@ -172,7 +169,7 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 					'Cannot access property $array on stdClass|null.',
 					412,
 				],
-			]
+			],
 		);
 	}
 
@@ -295,15 +292,26 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 					299,
 				],
 				[
-					'Access to an undefined property TestAccessProperties\AccessPropertyWithDimFetch::$foo.',
-					364,
-				],
-				[
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
 					386,
 				],
-			]
+			],
 		);
+	}
+
+	public function testRuleAssignOp(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/access-properties-assign-op.php'], [
+			[
+				'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
+				10,
+			],
+		]);
 	}
 
 	public function testAccessPropertiesOnThisOnly(): void
@@ -322,14 +330,10 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 					24,
 				],
 				[
-					'Access to an undefined property TestAccessProperties\AccessPropertyWithDimFetch::$foo.',
-					364,
-				],
-				[
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
 					386,
 				],
-			]
+			],
 		);
 	}
 
@@ -489,6 +493,54 @@ class AccessPropertiesRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-4808.php'], []);
+	}
+
+
+	public function testBug5868(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-5868.php'], [
+			[
+				'Cannot access property $child on Bug5868PropertyFetch\Foo|null.',
+				31,
+			],
+			[
+				'Cannot access property $child on Bug5868PropertyFetch\Child|null.',
+				32,
+			],
+			[
+				'Cannot access property $existingChild on Bug5868PropertyFetch\Child|null.',
+				33,
+			],
+			[
+				'Cannot access property $existingChild on Bug5868PropertyFetch\Child|null.',
+				34,
+			],
+		]);
+	}
+
+	public function testBug6385(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-6385.php'], [
+			[
+				'Access to an undefined property UnitEnum::$value.',
+				43,
+			],
+			[
+				'Access to an undefined property Bug6385\ActualUnitEnum::$value.',
+				47,
+			],
+		]);
 	}
 
 }

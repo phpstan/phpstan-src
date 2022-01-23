@@ -2,7 +2,11 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Lexer;
+use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
+use PhpParser\Parser\Php7;
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
@@ -14,9 +18,20 @@ use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\Registry;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
+use function array_map;
+use function array_merge;
+use function assert;
+use function count;
+use function is_string;
+use function sprintf;
+use function str_replace;
+use function strtoupper;
+use function substr;
+use const PHP_OS;
 
-class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
+class AnalyserTest extends PHPStanTestCase
 {
 
 	public function testReturnErrorIfIgnoredMessagesDoesNotOccur(): void
@@ -72,7 +87,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertCount(0, $result);
+		$this->assertNoErrors($result);
 	}
 
 	public function testIgnoreErrorByPathAndCount(): void
@@ -85,7 +100,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-fails.php', false);
-		$this->assertCount(0, $result);
+		$this->assertNoErrors($result);
 	}
 
 	public function dataTrueAndFalse(): array
@@ -98,7 +113,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataTrueAndFalse
-	 * @param bool $onlyFiles
 	 */
 	public function testIgnoreErrorByPathAndCountMoreThanExpected(bool $onlyFiles): void
 	{
@@ -130,7 +144,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataTrueAndFalse
-	 * @param bool $onlyFiles
 	 */
 	public function testIgnoreErrorByPathAndCountLessThanExpected(bool $onlyFiles): void
 	{
@@ -191,7 +204,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap-error.php', false);
-		$this->assertCount(0, $result);
+		$this->assertNoErrors($result);
 	}
 
 	public function testIgnoreErrorByPathsMultipleUnmatched(): void
@@ -251,7 +264,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIgnoreErrorInTraitUsingClassFilePath
-	 * @param string $pathToIgnore
 	 */
 	public function testIgnoreErrorInTraitUsingClassFilePath(string $pathToIgnore): void
 	{
@@ -265,7 +277,7 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 			__DIR__ . '/data/traits-ignore/Foo.php',
 			__DIR__ . '/data/traits-ignore/FooTrait.php',
 		], true);
-		$this->assertCount(0, $result);
+		$this->assertNoErrors($result);
 	}
 
 	public function testIgnoredErrorMissingMessage(): void
@@ -330,7 +342,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataTrueAndFalse
-	 * @param bool $onlyFiles
 	 */
 	public function testDoNotReportUnmatchedIgnoredErrorsFromPathIfPathWasNotAnalysed(bool $onlyFiles): void
 	{
@@ -347,12 +358,11 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 		$result = $this->runAnalyser($ignoreErrors, true, [
 			__DIR__ . '/data/two-fails.php',
 		], $onlyFiles);
-		$this->assertCount(0, $result);
+		$this->assertNoErrors($result);
 	}
 
 	/**
 	 * @dataProvider dataTrueAndFalse
-	 * @param bool $onlyFiles
 	 */
 	public function testDoNotReportUnmatchedIgnoredErrorsFromPathWithCountIfPathWasNotAnalysed(bool $onlyFiles): void
 	{
@@ -371,12 +381,11 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 		$result = $this->runAnalyser($ignoreErrors, true, [
 			__DIR__ . '/data/two-fails.php',
 		], $onlyFiles);
-		$this->assertCount(0, $result);
+		$this->assertNoErrors($result);
 	}
 
 	/**
 	 * @dataProvider dataTrueAndFalse
-	 * @param bool $reportUnmatchedIgnoredErrors
 	 */
 	public function testIgnoreNextLine(bool $reportUnmatchedIgnoredErrors): void
 	{
@@ -403,7 +412,6 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataTrueAndFalse
-	 * @param bool $reportUnmatchedIgnoredErrors
 	 */
 	public function testIgnoreLine(bool $reportUnmatchedIgnoredErrors): void
 	{
@@ -430,16 +438,14 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @param mixed[] $ignoreErrors
-	 * @param bool $reportUnmatchedIgnoredErrors
 	 * @param string|string[] $filePaths
-	 * @param bool $onlyFiles
-	 * @return string[]|\PHPStan\Analyser\Error[]
+	 * @return string[]|Error[]
 	 */
 	private function runAnalyser(
 		array $ignoreErrors,
 		bool $reportUnmatchedIgnoredErrors,
 		$filePaths,
-		bool $onlyFiles
+		bool $onlyFiles,
 	): array
 	{
 		$analyser = $this->createAnalyser($reportUnmatchedIgnoredErrors);
@@ -452,16 +458,14 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 			self::getContainer()->getByType(IgnoredRegexValidator::class),
 			$this->getFileHelper(),
 			$ignoreErrors,
-			$reportUnmatchedIgnoredErrors
+			$reportUnmatchedIgnoredErrors,
 		);
 		$ignoredErrorHelperResult = $ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			return $ignoredErrorHelperResult->getErrors();
 		}
 
-		$normalizedFilePaths = array_map(function (string $path): string {
-			return $this->getFileHelper()->normalizePath($path);
-		}, $filePaths);
+		$normalizedFilePaths = array_map(fn (string $path): string => $this->getFileHelper()->normalizePath($path), $filePaths);
 
 		$analyserResult = $analyser->analyse($normalizedFilePaths);
 
@@ -472,27 +476,27 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 
 		return array_merge(
 			$errors,
-			$analyserResult->getInternalErrors()
+			$analyserResult->getInternalErrors(),
 		);
 	}
 
-	private function createAnalyser(bool $reportUnmatchedIgnoredErrors): \PHPStan\Analyser\Analyser
+	private function createAnalyser(bool $reportUnmatchedIgnoredErrors): Analyser
 	{
 		$registry = new Registry([
 			new AlwaysFailRule(),
 		]);
 
 		$reflectionProvider = $this->createReflectionProvider();
-		$printer = new \PhpParser\PrettyPrinter\Standard();
+		$printer = new Standard();
 		$fileHelper = $this->getFileHelper();
 
 		$typeSpecifier = self::getContainer()->getService('typeSpecifier');
 		$fileTypeMapper = self::getContainer()->getByType(FileTypeMapper::class);
-		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper);
+		$phpDocInheritanceResolver = new PhpDocInheritanceResolver($fileTypeMapper, self::getContainer()->getByType(StubPhpDocProvider::class));
 
 		$nodeScopeResolver = new NodeScopeResolver(
 			$reflectionProvider,
-			self::getReflectors()[0],
+			self::getReflector(),
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),
 			$fileTypeMapper,
@@ -506,27 +510,28 @@ class AnalyserTest extends \PHPStan\Testing\PHPStanTestCase
 			true,
 			[],
 			[],
-			true
+			true,
 		);
-		$lexer = new \PhpParser\Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
+		$lexer = new Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
 		$fileAnalyser = new FileAnalyser(
 			$this->createScopeFactory($reflectionProvider, $typeSpecifier),
 			$nodeScopeResolver,
 			new RichParser(
-				new \PhpParser\Parser\Php7($lexer),
-				new \PhpParser\NodeVisitor\NameResolver(),
+				new Php7($lexer),
+				$lexer,
+				new NameResolver(),
 				new NodeConnectingVisitor(),
-				new StatementOrderVisitor()
+				new StatementOrderVisitor(),
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, $printer)),
-			$reportUnmatchedIgnoredErrors
+			$reportUnmatchedIgnoredErrors,
 		);
 
 		return new Analyser(
 			$fileAnalyser,
 			$registry,
 			$nodeScopeResolver,
-			50
+			50,
 		);
 	}
 

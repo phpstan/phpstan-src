@@ -2,24 +2,25 @@
 
 namespace PHPStan\Rules\Functions;
 
+use Generator;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\InArrowFunctionNode>
+ * @implements Rule<InArrowFunctionNode>
  */
-class ArrowFunctionReturnTypeRule implements \PHPStan\Rules\Rule
+class ArrowFunctionReturnTypeRule implements Rule
 {
 
-	private \PHPStan\Rules\FunctionReturnTypeCheck $returnTypeCheck;
-
-	public function __construct(FunctionReturnTypeCheck $returnTypeCheck)
+	public function __construct(private FunctionReturnTypeCheck $returnTypeCheck)
 	{
-		$this->returnTypeCheck = $returnTypeCheck;
 	}
 
 	public function getNodeType(): string
@@ -30,12 +31,12 @@ class ArrowFunctionReturnTypeRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		if (!$scope->isInAnonymousFunction()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 
-		/** @var \PHPStan\Type\Type $returnType */
+		/** @var Type $returnType */
 		$returnType = $scope->getAnonymousFunctionReturnType();
-		$generatorType = new ObjectType(\Generator::class);
+		$generatorType = new ObjectType(Generator::class);
 
 		$originalNode = $node->getOriginalNode();
 		$isVoidSuperType = (new VoidType())->isSuperTypeOf($returnType);
@@ -52,7 +53,7 @@ class ArrowFunctionReturnTypeRule implements \PHPStan\Rules\Rule
 			'Anonymous function with return type void returns %s but should not return anything.',
 			'Anonymous function should return %s but returns %s.',
 			'Anonymous function should never return but return statement found.',
-			$generatorType->isSuperTypeOf($returnType)->yes()
+			$generatorType->isSuperTypeOf($returnType)->yes(),
 		);
 	}
 

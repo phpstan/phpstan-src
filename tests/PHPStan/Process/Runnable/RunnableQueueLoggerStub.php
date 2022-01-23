@@ -6,7 +6,7 @@ class RunnableQueueLoggerStub implements RunnableQueueLogger
 {
 
 	/** @var string[] */
-	private $messages = [];
+	private array $messages = [];
 
 	/**
 	 * @return string[]

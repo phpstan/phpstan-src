@@ -10,19 +10,13 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 class TypeAlias
 {
 
-	private TypeNode $typeNode;
-
-	private NameScope $nameScope;
-
 	private ?Type $resolvedType = null;
 
 	public function __construct(
-		TypeNode $typeNode,
-		NameScope $nameScope
+		private TypeNode $typeNode,
+		private NameScope $nameScope,
 	)
 	{
-		$this->typeNode = $typeNode;
-		$this->nameScope = $nameScope;
 	}
 
 	public static function invalid(): self
@@ -37,7 +31,7 @@ class TypeAlias
 		if ($this->resolvedType === null) {
 			$this->resolvedType = $typeNodeResolver->resolve(
 				$this->typeNode,
-				$this->nameScope
+				$this->nameScope,
 			);
 		}
 

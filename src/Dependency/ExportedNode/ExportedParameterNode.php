@@ -4,33 +4,19 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use ReturnTypeWillChange;
 
 class ExportedParameterNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private ?string $type;
-
-	private bool $byRef;
-
-	private bool $variadic;
-
-	private bool $hasDefault;
-
 	public function __construct(
-		string $name,
-		?string $type,
-		bool $byRef,
-		bool $variadic,
-		bool $hasDefault
+		private string $name,
+		private ?string $type,
+		private bool $byRef,
+		private bool $variadic,
+		private bool $hasDefault,
 	)
 	{
-		$this->name = $name;
-		$this->type = $type;
-		$this->byRef = $byRef;
-		$this->variadic = $variadic;
-		$this->hasDefault = $hasDefault;
 	}
 
 	public function equals(ExportedNode $node): bool
@@ -57,14 +43,14 @@ class ExportedParameterNode implements ExportedNode, JsonSerializable
 			$properties['type'],
 			$properties['byRef'],
 			$properties['variadic'],
-			$properties['hasDefault']
+			$properties['hasDefault'],
 		);
 	}
 
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [
@@ -90,7 +76,7 @@ class ExportedParameterNode implements ExportedNode, JsonSerializable
 			$data['type'],
 			$data['byRef'],
 			$data['variadic'],
-			$data['hasDefault']
+			$data['hasDefault'],
 		);
 	}
 

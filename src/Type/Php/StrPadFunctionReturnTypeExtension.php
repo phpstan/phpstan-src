@@ -11,6 +11,8 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
+use function count;
 
 class StrPadFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -23,8 +25,8 @@ class StrPadFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
-	): \PHPStan\Type\Type
+		Scope $scope,
+	): Type
 	{
 		$args = $functionCall->getArgs();
 		if (count($args) < 2) {

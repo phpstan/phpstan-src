@@ -8,49 +8,36 @@ use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubValidator;
 use Symfony\Component\Console\Input\InputInterface;
+use function array_merge;
+use function ceil;
+use function count;
+use function error_get_last;
+use function file_put_contents;
+use function is_string;
+use function memory_get_peak_usage;
+use function register_shutdown_function;
+use function sprintf;
+use function strpos;
+use function unlink;
+use const E_ERROR;
 
 class AnalyseApplication
 {
 
-	private AnalyserRunner $analyserRunner;
-
-	private \PHPStan\PhpDoc\StubValidator $stubValidator;
-
-	private \PHPStan\Analyser\ResultCache\ResultCacheManagerFactory $resultCacheManagerFactory;
-
-	private IgnoredErrorHelper $ignoredErrorHelper;
-
-	private string $memoryLimitFile;
-
-	private int $internalErrorsCountLimit;
-
 	public function __construct(
-		AnalyserRunner $analyserRunner,
-		StubValidator $stubValidator,
-		ResultCacheManagerFactory $resultCacheManagerFactory,
-		IgnoredErrorHelper $ignoredErrorHelper,
-		string $memoryLimitFile,
-		int $internalErrorsCountLimit
+		private AnalyserRunner $analyserRunner,
+		private StubValidator $stubValidator,
+		private ResultCacheManagerFactory $resultCacheManagerFactory,
+		private IgnoredErrorHelper $ignoredErrorHelper,
+		private string $memoryLimitFile,
+		private int $internalErrorsCountLimit,
 	)
 	{
-		$this->analyserRunner = $analyserRunner;
-		$this->stubValidator = $stubValidator;
-		$this->resultCacheManagerFactory = $resultCacheManagerFactory;
-		$this->ignoredErrorHelper = $ignoredErrorHelper;
-		$this->memoryLimitFile = $memoryLimitFile;
-		$this->internalErrorsCountLimit = $internalErrorsCountLimit;
 	}
 
 	/**
 	 * @param string[] $files
-	 * @param bool $onlyFiles
-	 * @param \PHPStan\Command\Output $stdOutput
-	 * @param \PHPStan\Command\Output $errorOutput
-	 * @param bool $defaultLevelUsed
-	 * @param bool $debug
-	 * @param string|null $projectConfigFile
 	 * @param mixed[]|null $projectConfigArray
-	 * @return AnalysisResult
 	 */
 	public function analyse(
 		array $files,
@@ -61,7 +48,7 @@ class AnalyseApplication
 		bool $debug,
 		?string $projectConfigFile,
 		?array $projectConfigArray,
-		InputInterface $input
+		InputInterface $input,
 	): AnalysisResult
 	{
 		$this->updateMemoryLimitFile();
@@ -106,7 +93,7 @@ class AnalyseApplication
 				$projectConfigFile,
 				$stdOutput,
 				$errorOutput,
-				$input
+				$input,
 			);
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
 			$analyserResult = $resultCacheResult->getAnalyserResult();
@@ -139,7 +126,7 @@ class AnalyseApplication
 			[],
 			$defaultLevelUsed,
 			$projectConfigFile,
-			$savedResultCache
+			$savedResultCache,
 		);
 	}
 
@@ -154,7 +141,7 @@ class AnalyseApplication
 		?string $projectConfigFile,
 		Output $stdOutput,
 		Output $errorOutput,
-		InputInterface $input
+		InputInterface $input,
 	): AnalyserResult
 	{
 		$filesCount = count($files);

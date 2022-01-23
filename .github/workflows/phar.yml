@@ -15,7 +15,7 @@ jobs:
   compile:
     name: "Compile PHAR"
     runs-on: "ubuntu-latest"
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - name: "Checkout"
@@ -30,13 +30,10 @@ jobs:
           php-version: "8.0"
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest"
+        run: "composer install --no-interaction --no-progress"
 
       - name: "Install compiler dependencies"
-        run: "composer install --no-interaction --no-progress --no-suggest --working-dir=compiler"
-
-      - name: "Transform source code"
-        run: php bin/transform-source.php
+        run: "composer install --no-interaction --no-progress --working-dir=compiler"
 
       - name: "Compile PHAR"
         run: php compiler/bin/compile

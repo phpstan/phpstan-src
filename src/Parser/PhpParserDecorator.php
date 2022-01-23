@@ -2,33 +2,32 @@
 
 namespace PHPStan\Parser;
 
+use PhpParser\Error;
 use PhpParser\ErrorHandler;
+use PhpParser\Node;
+use PhpParser\Parser;
+use function sprintf;
 
-class PhpParserDecorator implements \PhpParser\Parser
+class PhpParserDecorator implements Parser
 {
 
-	private \PHPStan\Parser\Parser $wrappedParser;
-
-	public function __construct(\PHPStan\Parser\Parser $wrappedParser)
+	public function __construct(private \PHPStan\Parser\Parser $wrappedParser)
 	{
-		$this->wrappedParser = $wrappedParser;
 	}
 
 	/**
-	 * @param string $code
-	 * @param \PhpParser\ErrorHandler|null $errorHandler
-	 * @return \PhpParser\Node\Stmt[]
+	 * @return Node\Stmt[]
 	 */
 	public function parse(string $code, ?ErrorHandler $errorHandler = null): array
 	{
 		try {
 			return $this->wrappedParser->parseString($code);
-		} catch (\PHPStan\Parser\ParserErrorsException $e) {
+		} catch (ParserErrorsException $e) {
 			$message = $e->getMessage();
 			if ($e->getParsedFile() !== null) {
 				$message .= sprintf(' in file %s', $e->getParsedFile());
 			}
-			throw new \PhpParser\Error($message);
+			throw new Error($message);
 		}
 	}
 

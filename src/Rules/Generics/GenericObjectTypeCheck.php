@@ -2,31 +2,33 @@
 
 namespace PHPStan\Rules\Generics;
 
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
+use function array_keys;
+use function array_values;
+use function count;
+use function implode;
+use function sprintf;
 
 class GenericObjectTypeCheck
 {
 
 	/**
-	 * @param \PHPStan\Type\Type $phpDocType
-	 * @param string $classNotGenericMessage
-	 * @param string $notEnoughTypesMessage
-	 * @param string $extraTypesMessage
-	 * @param string $typeIsNotSubtypeMessage
-	 * @return \PHPStan\Rules\RuleError[]
+	 * @return RuleError[]
 	 */
 	public function check(
 		Type $phpDocType,
 		string $classNotGenericMessage,
 		string $notEnoughTypesMessage,
 		string $extraTypesMessage,
-		string $typeIsNotSubtypeMessage
+		string $typeIsNotSubtypeMessage,
 	): array
 	{
 		$genericTypes = $this->getGenericTypes($phpDocType);
@@ -36,8 +38,17 @@ class GenericObjectTypeCheck
 			if ($classReflection === null) {
 				continue;
 			}
+
+			$classLikeDescription = 'class';
+			if ($classReflection->isInterface()) {
+				$classLikeDescription = 'interface';
+			} elseif ($classReflection->isTrait()) {
+				$classLikeDescription = 'trait';
+			} elseif ($classReflection->isEnum()) {
+				$classLikeDescription = 'enum';
+			}
 			if (!$classReflection->isGeneric()) {
-				$messages[] = RuleErrorBuilder::message(sprintf($classNotGenericMessage, $genericType->describe(VerbosityLevel::typeOnly()), $classReflection->getDisplayName()))->build();
+				$messages[] = RuleErrorBuilder::message(sprintf($classNotGenericMessage, $genericType->describe(VerbosityLevel::typeOnly()), $classLikeDescription, $classReflection->getDisplayName()))->build();
 				continue;
 			}
 
@@ -50,17 +61,19 @@ class GenericObjectTypeCheck
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$notEnoughTypesMessage,
 					$genericType->describe(VerbosityLevel::typeOnly()),
+					$classLikeDescription,
 					$classReflection->getDisplayName(false),
-					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes()))
+					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes())),
 				))->build();
 			} elseif ($templateTypesCount < $genericTypeTypesCount) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					$extraTypesMessage,
 					$genericType->describe(VerbosityLevel::typeOnly()),
 					$genericTypeTypesCount,
+					$classLikeDescription,
 					$classReflection->getDisplayName(false),
 					$templateTypesCount,
-					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes()))
+					implode(', ', array_keys($classReflection->getTemplateTypeMap()->getTypes())),
 				))->build();
 			}
 
@@ -93,7 +106,8 @@ class GenericObjectTypeCheck
 					$genericTypeType->describe(VerbosityLevel::typeOnly()),
 					$genericType->describe(VerbosityLevel::typeOnly()),
 					$templateType->describe(VerbosityLevel::typeOnly()),
-					$classReflection->getDisplayName(false)
+					$classLikeDescription,
+					$classReflection->getDisplayName(false),
 				))->build();
 			}
 		}
@@ -102,8 +116,7 @@ class GenericObjectTypeCheck
 	}
 
 	/**
-	 * @param \PHPStan\Type\Type $phpDocType
-	 * @return \PHPStan\Type\Generic\GenericObjectType[]
+	 * @return GenericObjectType[]
 	 */
 	private function getGenericTypes(Type $phpDocType): array
 	{
@@ -112,7 +125,7 @@ class GenericObjectTypeCheck
 			if ($type instanceof GenericObjectType) {
 				$resolvedType = TemplateTypeHelper::resolveToBounds($type);
 				if (!$resolvedType instanceof GenericObjectType) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				$genericObjectTypes[] = $resolvedType;
 				$traverse($type);

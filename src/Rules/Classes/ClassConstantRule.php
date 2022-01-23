@@ -11,6 +11,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
@@ -19,32 +20,24 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
+use function in_array;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\ClassConstFetch>
+ * @implements Rule<Node\Expr\ClassConstFetch>
  */
-class ClassConstantRule implements \PHPStan\Rules\Rule
+class ClassConstantRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Rules\RuleLevelHelper $ruleLevelHelper;
-
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private PhpVersion $phpVersion;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		RuleLevelHelper $ruleLevelHelper,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		PhpVersion $phpVersion
+		private ReflectionProvider $reflectionProvider,
+		private RuleLevelHelper $ruleLevelHelper,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private PhpVersion $phpVersion,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->ruleLevelHelper = $ruleLevelHelper;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->phpVersion = $phpVersion;
 	}
 
 	public function getNodeType(): string
@@ -61,7 +54,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 
 		$class = $node->class;
 		$messages = [];
-		if ($class instanceof \PhpParser\Node\Name) {
+		if ($class instanceof Node\Name) {
 			$className = (string) $class;
 			$lowercasedClassName = strtolower($className);
 			if (in_array($lowercasedClassName, ['self', 'static'], true)) {
@@ -84,7 +77,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 						RuleErrorBuilder::message(sprintf(
 							'Access to parent::%s but %s does not extend any class.',
 							$constantName,
-							$currentClassReflection->getDisplayName()
+							$currentClassReflection->getDisplayName(),
 						))->build(),
 					];
 				}
@@ -103,7 +96,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 
 					return [
 						RuleErrorBuilder::message(
-							sprintf('Access to constant %s on an unknown class %s.', $constantName, $className)
+							sprintf('Access to constant %s on an unknown class %s.', $constantName, $className),
 						)->discoveringSymbolsTip()->build(),
 					];
 				} else {
@@ -119,11 +112,9 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 		} else {
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($class),
+				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $class),
 				sprintf('Access to constant %s on an unknown class %%s.', SprintfHelper::escapeFormatString($constantName)),
-				static function (Type $type) use ($constantName): bool {
-					return $type->canAccessConstants()->yes() && $type->hasConstant($constantName)->yes();
-				}
+				static fn (Type $type): bool => $type->canAccessConstants()->yes() && $type->hasConstant($constantName)->yes(),
 			);
 			$classType = $classTypeResult->getType();
 			if ($classType instanceof ErrorType) {
@@ -164,7 +155,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access constant %s on %s.',
 					$constantName,
-					$typeForDescribe->describe(VerbosityLevel::typeOnly())
+					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 				))->build(),
 			]);
 		}
@@ -178,7 +169,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 				RuleErrorBuilder::message(sprintf(
 					'Access to undefined constant %s::%s.',
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
-					$constantName
+					$constantName,
 				))->build(),
 			]);
 		}
@@ -190,7 +181,7 @@ class ClassConstantRule implements \PHPStan\Rules\Rule
 					'Access to %s constant %s of class %s.',
 					$constantReflection->isPrivate() ? 'private' : 'protected',
 					$constantName,
-					$constantReflection->getDeclaringClass()->getDisplayName()
+					$constantReflection->getDeclaringClass()->getDisplayName(),
 				))->build(),
 			]);
 		}

@@ -2,19 +2,21 @@
 
 namespace PHPStan\Type\Php;
 
+use Closure;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 
-class ClosureBindToDynamicReturnTypeExtension implements \PHPStan\Type\DynamicMethodReturnTypeExtension
+class ClosureBindToDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
 	public function getClass(): string
 	{
-		return \Closure::class;
+		return Closure::class;
 	}
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool

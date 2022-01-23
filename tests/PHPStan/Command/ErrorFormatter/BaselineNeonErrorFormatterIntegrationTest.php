@@ -3,9 +3,17 @@
 namespace PHPStan\Command\ErrorFormatter;
 
 use Nette\Utils\Json;
+use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\TestCase;
+use function array_sum;
 use function chdir;
+use function escapeshellarg;
+use function exec;
 use function getcwd;
+use function implode;
+use function sprintf;
+use function unlink;
+use const PHP_BINARY;
 
 /**
  * @group exec
@@ -53,17 +61,17 @@ class BaselineNeonErrorFormatterIntegrationTest extends TestCase
 		string $analysedPath,
 		?string $configFile,
 		string $errorFormatter = 'json',
-		?string $baselineFile = null
+		?string $baselineFile = null,
 	): string
 	{
 		$originalDir = getcwd();
 		if ($originalDir === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		chdir(__DIR__ . '/../../../..');
 		exec(sprintf('%s %s clear-result-cache %s', escapeshellarg(PHP_BINARY), 'bin/phpstan', $configFile !== null ? '--configuration ' . escapeshellarg($configFile) : ''), $clearResultCacheOutputLines, $clearResultCacheExitCode);
 		if ($clearResultCacheExitCode !== 0) {
-			throw new \PHPStan\ShouldNotHappenException('Could not clear result cache.');
+			throw new ShouldNotHappenException('Could not clear result cache.');
 		}
 
 		exec(sprintf('%s %s analyse --no-progress --error-format=%s --level=7 %s %s%s', escapeshellarg(PHP_BINARY), 'bin/phpstan', $errorFormatter, $configFile !== null ? '--configuration ' . escapeshellarg($configFile) : '', escapeshellarg($analysedPath), $baselineFile !== null ? ' --generate-baseline ' . escapeshellarg($baselineFile) : ''), $outputLines);

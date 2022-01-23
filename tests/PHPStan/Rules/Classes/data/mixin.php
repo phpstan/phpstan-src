@@ -85,3 +85,11 @@ class Amet
 {
 
 }
+
+/**
+ * @mixin int
+ */
+interface InterfaceWithMixin
+{
+
+}

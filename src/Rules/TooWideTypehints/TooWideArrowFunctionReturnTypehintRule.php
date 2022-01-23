@@ -10,6 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NullType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
  * @implements Rule<InArrowFunctionNode>
@@ -50,7 +51,7 @@ class TooWideArrowFunctionReturnTypehintRule implements Rule
 
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Anonymous function never returns %s so it can be removed from the return type.',
-				$type->describe(VerbosityLevel::getRecommendedLevelByType($type))
+				$type->describe(VerbosityLevel::getRecommendedLevelByType($type)),
 			))->build();
 		}
 

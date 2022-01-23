@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use Nette\Utils\Strings;
+use function ltrim;
 
 class ClassNameHelper
 {

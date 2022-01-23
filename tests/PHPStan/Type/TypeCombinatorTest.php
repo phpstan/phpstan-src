@@ -2,6 +2,17 @@
 
 namespace PHPStan\Type;
 
+use CheckTypeFunctionCall\FinalClassWithMethodExists;
+use CheckTypeFunctionCall\FinalClassWithPropertyExists;
+use Closure;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
+use Exception;
+use InvalidArgumentException;
+use Iterator;
+use PHPStan\Fixture\FinalClass;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
@@ -13,6 +24,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
@@ -22,8 +34,20 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use RecursionCallable\Foo;
+use stdClass;
+use Test\ClassWithNullableProperty;
+use Test\ClassWithToString;
+use Test\FirstInterface;
+use Throwable;
+use Traversable;
+use function array_map;
+use function array_reverse;
+use function implode;
+use function sprintf;
+use const PHP_VERSION_ID;
 
-class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
+class TypeCombinatorTest extends PHPStanTestCase
 {
 
 	public function dataAddNull(): array
@@ -90,14 +114,12 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAddNull
-	 * @param \PHPStan\Type\Type $type
-	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
+	 * @param class-string<Type> $expectedTypeClass
 	 */
 	public function testAddNull(
 		Type $type,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$result = TypeCombinator::addNull($type);
@@ -107,14 +129,12 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAddNull
-	 * @param \PHPStan\Type\Type $type
-	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
+	 * @param class-string<Type> $expectedTypeClass
 	 */
 	public function testUnionWithNull(
 		Type $type,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$result = TypeCombinator::union($type, new NullType());
@@ -185,7 +205,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				new UnionType([
-					new ThisType($reflectionProvider->getClass(\Exception::class)),
+					new ThisType($reflectionProvider->getClass(Exception::class)),
 					new NullType(),
 				]),
 				ThisType::class,
@@ -193,7 +213,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				new UnionType([
-					new ThisType($reflectionProvider->getClass(\Exception::class)),
+					new ThisType($reflectionProvider->getClass(Exception::class)),
 					new NullType(),
 				]),
 				ThisType::class,
@@ -212,14 +232,12 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataRemoveNull
-	 * @param \PHPStan\Type\Type $type
-	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
+	 * @param class-string<Type> $expectedTypeClass
 	 */
 	public function testRemoveNull(
 		Type $type,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$result = TypeCombinator::removeNull($type);
@@ -227,9 +245,9 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertInstanceOf($expectedTypeClass, $result);
 	}
 
-	public function dataUnion(): array
+	public function dataUnion(): iterable
 	{
-		return [
+		yield from [
 			[
 				[
 					new StringType(),
@@ -548,7 +566,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\RecursionCallable\Foo::class),
+					new ObjectType(Foo::class),
 					new CallableType(),
 				],
 				UnionType::class,
@@ -660,7 +678,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\Closure::class),
+					new ObjectType(Closure::class),
 					new ClosureType([], new MixedType(), false),
 				],
 				ObjectType::class,
@@ -681,7 +699,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						new ConstantStringType('foo'),
 						new ConstantStringType('bar'),
 					], [
-						new ObjectType(\DateTimeImmutable::class),
+						new ObjectType(DateTimeImmutable::class),
 						new IntegerType(),
 					]),
 					new ConstantArrayType([
@@ -701,7 +719,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						new ConstantStringType('foo'),
 						new ConstantStringType('bar'),
 					], [
-						new ObjectType(\DateTimeImmutable::class),
+						new ObjectType(DateTimeImmutable::class),
 						new IntegerType(),
 					]),
 					new ConstantArrayType([
@@ -719,7 +737,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						new ConstantStringType('foo'),
 						new ConstantStringType('bar'),
 					], [
-						new ObjectType(\DateTimeImmutable::class),
+						new ObjectType(DateTimeImmutable::class),
 						new IntegerType(),
 					]),
 					new ConstantArrayType([
@@ -739,13 +757,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new ArrayType(
 						new IntegerType(),
-						new ObjectType(\stdClass::class)
+						new ObjectType(stdClass::class),
 					),
 					new ConstantArrayType([
 						new ConstantStringType('foo'),
 						new ConstantStringType('bar'),
 					], [
-						new ObjectType(\DateTimeImmutable::class),
+						new ObjectType(DateTimeImmutable::class),
 						new IntegerType(),
 					]),
 				],
@@ -883,7 +901,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 							[
 								new ObjectWithoutClassType(),
 								new ConstantStringType('foo'),
-							]
+							],
 						),
 						new CallableType(),
 					]),
@@ -896,7 +914,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 							[
 								new ObjectWithoutClassType(),
 								new ConstantStringType('foo'),
-							]
+							],
 						),
 						new CallableType(),
 					]),
@@ -1130,7 +1148,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						null,
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectType('DateTime'),
 				],
@@ -1143,7 +1161,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectType('DateTime'),
 				],
@@ -1156,13 +1174,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				TemplateType::class,
@@ -1174,13 +1192,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'U',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				UnionType::class,
@@ -1271,7 +1289,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				[
 					new ClassStringType(),
-					new ConstantStringType(\stdClass::class),
+					new ConstantStringType(stdClass::class),
 				],
 				ClassStringType::class,
 				'class-string',
@@ -1294,15 +1312,15 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ConstantStringType(\Exception::class),
-					new GenericClassStringType(new ObjectType(\Exception::class)),
+					new ConstantStringType(Exception::class),
+					new GenericClassStringType(new ObjectType(Exception::class)),
 				],
 				GenericClassStringType::class,
 				'class-string<Exception>',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
 					new ClassStringType(),
 				],
 				ClassStringType::class,
@@ -1310,7 +1328,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
 					new StringType(),
 				],
 				StringType::class,
@@ -1318,64 +1336,64 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
-					new GenericClassStringType(new ObjectType(\Exception::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
 				],
 				GenericClassStringType::class,
 				'class-string<Exception>',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
-					new GenericClassStringType(new ObjectType(\Throwable::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
+					new GenericClassStringType(new ObjectType(Throwable::class)),
 				],
 				GenericClassStringType::class,
 				'class-string<Throwable>',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
-					new GenericClassStringType(new ObjectType(\InvalidArgumentException::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
+					new GenericClassStringType(new ObjectType(InvalidArgumentException::class)),
 				],
 				GenericClassStringType::class,
 				'class-string<Exception>',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
-					new GenericClassStringType(new ObjectType(\stdClass::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
+					new GenericClassStringType(new ObjectType(stdClass::class)),
 				],
 				UnionType::class,
 				'class-string<Exception>|class-string<stdClass>',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
-					new ConstantStringType(\Exception::class),
+					new GenericClassStringType(new ObjectType(Exception::class)),
+					new ConstantStringType(Exception::class),
 				],
 				GenericClassStringType::class,
 				'class-string<Exception>',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Throwable::class)),
-					new ConstantStringType(\Exception::class),
+					new GenericClassStringType(new ObjectType(Throwable::class)),
+					new ConstantStringType(Exception::class),
 				],
 				GenericClassStringType::class,
 				'class-string<Throwable>',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\InvalidArgumentException::class)),
-					new ConstantStringType(\Exception::class),
+					new GenericClassStringType(new ObjectType(InvalidArgumentException::class)),
+					new ConstantStringType(Exception::class),
 				],
 				UnionType::class,
 				'\'Exception\'|class-string<InvalidArgumentException>',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
-					new ConstantStringType(\stdClass::class),
+					new GenericClassStringType(new ObjectType(Exception::class)),
+					new ConstantStringType(stdClass::class),
 				],
 				UnionType::class,
 				'\'stdClass\'|class-string<Exception>',
@@ -1498,10 +1516,10 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				[
 					new GenericObjectType(Variance\Invariant::class, [
-						new ObjectType(\DateTimeInterface::class),
+						new ObjectType(DateTimeInterface::class),
 					]),
 					new GenericObjectType(Variance\Invariant::class, [
-						new ObjectType(\DateTimeInterface::class),
+						new ObjectType(DateTimeInterface::class),
 					]),
 				],
 				GenericObjectType::class,
@@ -1510,10 +1528,10 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				[
 					new GenericObjectType(Variance\Invariant::class, [
-						new ObjectType(\DateTimeInterface::class),
+						new ObjectType(DateTimeInterface::class),
 					]),
 					new GenericObjectType(Variance\Invariant::class, [
-						new ObjectType(\DateTime::class),
+						new ObjectType(DateTime::class),
 					]),
 				],
 				UnionType::class,
@@ -1522,10 +1540,10 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				[
 					new GenericObjectType(Variance\Covariant::class, [
-						new ObjectType(\DateTimeInterface::class),
+						new ObjectType(DateTimeInterface::class),
 					]),
 					new GenericObjectType(Variance\Covariant::class, [
-						new ObjectType(\DateTime::class),
+						new ObjectType(DateTime::class),
 					]),
 				],
 				GenericObjectType::class,
@@ -1537,7 +1555,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectWithoutClassType(),
 				],
@@ -1550,9 +1568,9 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
-					new ObjectType(\stdClass::class),
+					new ObjectType(stdClass::class),
 				],
 				UnionType::class,
 				'stdClass|T of object (function a(), parameter)',
@@ -1563,7 +1581,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new MixedType(),
 				],
@@ -1576,13 +1594,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						null,
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'K',
 						null,
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				UnionType::class,
@@ -1594,13 +1612,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'K',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				UnionType::class,
@@ -1611,14 +1629,14 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
-						new ObjectType(\Exception::class),
-						TemplateTypeVariance::createInvariant()
+						new ObjectType(Exception::class),
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'K',
-						new ObjectType(\stdClass::class),
-						TemplateTypeVariance::createInvariant()
+						new ObjectType(stdClass::class),
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				UnionType::class,
@@ -1626,11 +1644,11 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\DateTimeImmutable::class),
-					new ObjectType(\DateTimeInterface::class, new ObjectType(\DateTimeImmutable::class)),
+					new ObjectType(DateTimeImmutable::class),
+					new ObjectType(DateTimeInterface::class, new ObjectType(DateTimeImmutable::class)),
 				],
 				ObjectType::class,
-				\DateTimeInterface::class,
+				DateTimeInterface::class,
 			],
 			[
 				[
@@ -1815,7 +1833,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 							new FloatType(),
 							new BooleanType(),
 						]),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new NullType(),
 				],
@@ -1833,7 +1851,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithClass('Foo'),
 						'TCode',
 						new UnionType([new ArrayType(new IntegerType(), new IntegerType()), new IntegerType()]),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				UnionType::class,
@@ -1849,7 +1867,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithClass('Foo'),
 						'TCode',
 						new UnionType([new ArrayType(new IntegerType(), new IntegerType()), new IntegerType()]),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				UnionType::class,
@@ -1864,18 +1882,102 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				'mixed=implicit',
 			],
 		];
+
+		if (PHP_VERSION_ID < 80100) {
+			return;
+		}
+
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			ObjectType::class,
+			'PHPStan\Fixture\TestEnum',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'ONE'),
+			],
+			UnionType::class,
+			'PHPStan\Fixture\AnotherTestEnum::ONE|PHPStan\Fixture\TestEnum',
+		];
+		yield [
+			[
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+			],
+			UnionType::class,
+			'PHPStan\Fixture\TestEnum::ONE|PHPStan\Fixture\TestEnum::TWO',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+			],
+			ObjectType::class,
+			'PHPStan\Fixture\TestEnumInterface',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			ObjectType::class,
+			'PHPStan\Fixture\TestEnumInterface',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+				new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'ONE'),
+			],
+			UnionType::class,
+			'PHPStan\Fixture\AnotherTestEnum::ONE|PHPStan\Fixture\TestEnumInterface',
+		];
+		yield [
+			[
+				new ObjectWithoutClassType(),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			ObjectWithoutClassType::class,
+			'object',
+		];
+		yield [
+			[
+				new ObjectType('stdClass'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			UnionType::class,
+			'PHPStan\Fixture\TestEnum::ONE|stdClass',
+		];
+		yield [
+			[
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'ONE'),
+			],
+			UnionType::class,
+			'PHPStan\Fixture\AnotherTestEnum::ONE|PHPStan\Fixture\TestEnum::ONE',
+		];
 	}
 
 	/**
 	 * @dataProvider dataUnion
-	 * @param \PHPStan\Type\Type[] $types
-	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
+	 * @param Type[] $types
+	 * @param class-string<Type> $expectedTypeClass
 	 */
 	public function testUnion(
 		array $types,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$actualType = TypeCombinator::union(...$types);
@@ -1892,11 +1994,9 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			$expectedTypeDescription,
 			$actualTypeDescription,
 			sprintf('union(%s)', implode(', ', array_map(
-				static function (Type $type): string {
-					return $type->describe(VerbosityLevel::precise());
-				},
-				$types
-			)))
+				static fn (Type $type): string => $type->describe(VerbosityLevel::precise()),
+				$types,
+			))),
 		);
 
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
@@ -1917,14 +2017,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataUnion
-	 * @param \PHPStan\Type\Type[] $types
-	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
+	 * @param Type[] $types
+	 * @param class-string<Type> $expectedTypeClass
 	 */
 	public function testUnionInversed(
 		array $types,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$types = array_reverse($types);
@@ -1941,20 +2040,18 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			$expectedTypeDescription,
 			$actualTypeDescription,
 			sprintf('union(%s)', implode(', ', array_map(
-				static function (Type $type): string {
-					return $type->describe(VerbosityLevel::precise());
-				},
-				$types
-			)))
+				static fn (Type $type): string => $type->describe(VerbosityLevel::precise()),
+				$types,
+			))),
 		);
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
 
-	public function dataIntersect(): array
+	public function dataIntersect(): iterable
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 
-		return [
+		yield from [
 			[
 				[
 					new IterableType(new MixedType(), new StringType()),
@@ -1988,8 +2085,8 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 							TemplateTypeScope::createWithFunction('_'),
 							'T',
 							null,
-							TemplateTypeVariance::createInvariant()
-						)
+							TemplateTypeVariance::createInvariant(),
+						),
 					),
 				],
 				IntersectionType::class,
@@ -2216,7 +2313,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\Test\ClassWithToString::class),
+					new ObjectType(ClassWithToString::class),
 					new HasMethodType('__toString'),
 				],
 				ObjectType::class,
@@ -2224,7 +2321,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\CheckTypeFunctionCall\FinalClassWithMethodExists::class),
+					new ObjectType(FinalClassWithMethodExists::class),
 					new HasMethodType('doBar'),
 				],
 				NeverType::class,
@@ -2272,7 +2369,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new UnionType([
 						new ObjectType(\Test\Foo::class),
-						new ObjectType(\Test\FirstInterface::class),
+						new ObjectType(FirstInterface::class),
 					]),
 					new HasMethodType('__toString'),
 				],
@@ -2289,7 +2386,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\Test\ClassWithNullableProperty::class),
+					new ObjectType(ClassWithNullableProperty::class),
 					new HasPropertyType('foo'),
 				],
 				ObjectType::class,
@@ -2297,7 +2394,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\CheckTypeFunctionCall\FinalClassWithPropertyExists::class),
+					new ObjectType(FinalClassWithPropertyExists::class),
 					new HasPropertyType('barProperty'),
 				],
 				NeverType::class,
@@ -2345,7 +2442,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new UnionType([
 						new ObjectType(\Test\Foo::class),
-						new ObjectType(\Test\FirstInterface::class),
+						new ObjectType(FirstInterface::class),
 					]),
 					new HasPropertyType('fooProperty'),
 				],
@@ -2391,7 +2488,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new ConstantArrayType(
 						[new ConstantStringType('a')],
-						[new ConstantStringType('foo')]
+						[new ConstantStringType('foo')],
 					),
 					new HasOffsetType(new ConstantStringType('a')),
 				],
@@ -2402,7 +2499,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				[
 					new ConstantArrayType(
 						[new ConstantStringType('a')],
-						[new ConstantStringType('foo')]
+						[new ConstantStringType('foo')],
 					),
 					new HasOffsetType(new ConstantStringType('b')),
 				],
@@ -2422,12 +2519,12 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					TypeCombinator::union(
 						new ConstantArrayType(
 							[new ConstantStringType('a')],
-							[new ConstantStringType('foo')]
+							[new ConstantStringType('foo')],
 						),
 						new ConstantArrayType(
 							[new ConstantStringType('b')],
-							[new ConstantStringType('foo')]
-						)
+							[new ConstantStringType('foo')],
+						),
 					),
 					new HasOffsetType(new ConstantStringType('b')),
 				],
@@ -2439,9 +2536,9 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 					TypeCombinator::union(
 						new ConstantArrayType(
 							[new ConstantStringType('a')],
-							[new ConstantStringType('foo')]
+							[new ConstantStringType('foo')],
 						),
-						new ClosureType([], new MixedType(), false)
+						new ClosureType([], new MixedType(), false),
 					),
 					new HasOffsetType(new ConstantStringType('a')),
 				],
@@ -2451,7 +2548,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				[
 					new ClosureType([], new MixedType(), false),
-					new ObjectType(\Closure::class),
+					new ObjectType(Closure::class),
 				],
 				ClosureType::class,
 				'Closure(): mixed',
@@ -2518,7 +2615,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 							new ConstantIntegerType(0),
 						], [
 							new StringType(),
-						])
+						]),
 					),
 					new NonEmptyArrayType(),
 				],
@@ -2593,7 +2690,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						null,
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectType('DateTime'),
 				],
@@ -2606,7 +2703,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectType('DateTime'),
 				],
@@ -2619,13 +2716,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				TemplateType::class,
@@ -2637,13 +2734,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithFunction('a'),
 						'U',
 						new ObjectType('DateTime'),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 				IntersectionType::class,
@@ -2655,7 +2752,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						null,
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new MixedType(),
 				],
@@ -2673,7 +2770,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				[
 					new ClassStringType(),
-					new ConstantStringType(\stdClass::class),
+					new ConstantStringType(stdClass::class),
 				],
 				ConstantStringType::class,
 				'\'stdClass\'',
@@ -2696,15 +2793,15 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ConstantStringType(\Exception::class),
-					new GenericClassStringType(new ObjectType(\Exception::class)),
+					new ConstantStringType(Exception::class),
+					new GenericClassStringType(new ObjectType(Exception::class)),
 				],
 				ConstantStringType::class,
 				'\'Exception\'',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
 					new ClassStringType(),
 				],
 				GenericClassStringType::class,
@@ -2712,7 +2809,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
 					new StringType(),
 				],
 				GenericClassStringType::class,
@@ -2720,64 +2817,64 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
-					new GenericClassStringType(new ObjectType(\Exception::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
 				],
 				GenericClassStringType::class,
 				'class-string<Exception>',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
-					new GenericClassStringType(new ObjectType(\Throwable::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
+					new GenericClassStringType(new ObjectType(Throwable::class)),
 				],
 				GenericClassStringType::class,
 				'class-string<Exception>',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
-					new GenericClassStringType(new ObjectType(\InvalidArgumentException::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
+					new GenericClassStringType(new ObjectType(InvalidArgumentException::class)),
 				],
 				GenericClassStringType::class,
 				'class-string<InvalidArgumentException>',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
-					new GenericClassStringType(new ObjectType(\stdClass::class)),
+					new GenericClassStringType(new ObjectType(Exception::class)),
+					new GenericClassStringType(new ObjectType(stdClass::class)),
 				],
 				NeverType::class,
 				'*NEVER*',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
-					new ConstantStringType(\Exception::class),
+					new GenericClassStringType(new ObjectType(Exception::class)),
+					new ConstantStringType(Exception::class),
 				],
 				ConstantStringType::class,
 				'\'Exception\'',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Throwable::class)),
-					new ConstantStringType(\Exception::class),
+					new GenericClassStringType(new ObjectType(Throwable::class)),
+					new ConstantStringType(Exception::class),
 				],
 				ConstantStringType::class,
 				'\'Exception\'',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\InvalidArgumentException::class)),
-					new ConstantStringType(\Exception::class),
+					new GenericClassStringType(new ObjectType(InvalidArgumentException::class)),
+					new ConstantStringType(Exception::class),
 				],
 				NeverType::class,
 				'*NEVER*',
 			],
 			[
 				[
-					new GenericClassStringType(new ObjectType(\Exception::class)),
-					new ConstantStringType(\stdClass::class),
+					new GenericClassStringType(new ObjectType(Exception::class)),
+					new ConstantStringType(stdClass::class),
 				],
 				NeverType::class,
 				'*NEVER*',
@@ -2832,7 +2929,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\Traversable::class),
+					new ObjectType(Traversable::class),
 					new IterableType(new MixedType(), new MixedType()),
 				],
 				ObjectType::class,
@@ -2840,7 +2937,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\Traversable::class),
+					new ObjectType(Traversable::class),
 					new IterableType(new MixedType(), new MixedType()),
 				],
 				ObjectType::class,
@@ -2848,7 +2945,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\Traversable::class),
+					new ObjectType(Traversable::class),
 					new IterableType(new MixedType(), new MixedType(true)),
 				],
 				IntersectionType::class,
@@ -2856,7 +2953,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\Traversable::class),
+					new ObjectType(Traversable::class),
 					new IterableType(new MixedType(true), new MixedType()),
 				],
 				IntersectionType::class,
@@ -2864,7 +2961,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\Traversable::class),
+					new ObjectType(Traversable::class),
 					new IterableType(new MixedType(true), new MixedType(true)),
 				],
 				IntersectionType::class,
@@ -2897,10 +2994,10 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				[
 					new GenericObjectType(Variance\Covariant::class, [
-						new ObjectType(\DateTimeInterface::class),
+						new ObjectType(DateTimeInterface::class),
 					]),
 					new GenericObjectType(Variance\Covariant::class, [
-						new ObjectType(\DateTime::class),
+						new ObjectType(DateTime::class),
 					]),
 				],
 				GenericObjectType::class,
@@ -2912,7 +3009,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new ObjectWithoutClassType(),
 				],
@@ -2925,9 +3022,9 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
-					new ObjectType(\stdClass::class),
+					new ObjectType(stdClass::class),
 				],
 				IntersectionType::class,
 				'stdClass&T of object (function a(), parameter)',
@@ -2938,7 +3035,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('a'),
 						'T',
 						new ObjectWithoutClassType(),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new MixedType(),
 				],
@@ -2955,7 +3052,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ConstantStringType(\stdClass::class),
+					new ConstantStringType(stdClass::class),
 					new ClassStringType(),
 				],
 				ConstantStringType::class,
@@ -2963,16 +3060,16 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				[
-					new ObjectType(\DateTimeInterface::class),
-					new ObjectType(\Iterator::class),
+					new ObjectType(DateTimeInterface::class),
+					new ObjectType(Iterator::class),
 				],
 				IntersectionType::class,
 				'DateTimeInterface&Iterator',
 			],
 			[
 				[
-					new ObjectType(\DateTimeInterface::class),
-					new GenericObjectType(\Iterator::class, [new MixedType(), new MixedType()]),
+					new ObjectType(DateTimeInterface::class),
+					new GenericObjectType(Iterator::class, [new MixedType(), new MixedType()]),
 				],
 				IntersectionType::class,
 				'DateTimeInterface&Iterator<mixed, mixed>',
@@ -3056,7 +3153,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('my_array_keys'),
 						'T',
 						new BenevolentUnionType([new IntegerType(), new StringType()]),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new UnionType([new IntegerType(), new StringType()]),
 				],
@@ -3069,7 +3166,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('my_array_keys'),
 						'T',
 						new BenevolentUnionType([new IntegerType(), new StringType()]),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 				],
@@ -3082,7 +3179,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						TemplateTypeScope::createWithFunction('my_array_keys'),
 						'T',
 						new UnionType([new IntegerType(), new StringType()]),
-						TemplateTypeVariance::createInvariant()
+						TemplateTypeVariance::createInvariant(),
 					),
 					new UnionType([new IntegerType(), new StringType()]),
 				],
@@ -3098,18 +3195,110 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				'mixed',
 			],
 		];
+
+		if (PHP_VERSION_ID < 80100) {
+			return;
+		}
+
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new EnumCaseObjectType(stdClass::class, 'ONE'),
+			],
+			NeverType::class,
+			'*NEVER*',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
+			],
+			NeverType::class,
+			'*NEVER*',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+			],
+			ObjectType::class,
+			'PHPStan\Fixture\TestEnum',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+				new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'ONE'),
+			],
+			NeverType::class,
+			'*NEVER*',
+		];
+		yield [
+			[
+				new ObjectType(FinalClass::class),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			NeverType::class,
+			'*NEVER*',
+		];
+		yield [
+			[
+				new ObjectWithoutClassType(),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			EnumCaseObjectType::class,
+			'PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new ObjectType('stdClass'),
+				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
+			],
+			NeverType::class,
+			'*NEVER*',
+		];
 	}
 
 	/**
 	 * @dataProvider dataIntersect
-	 * @param \PHPStan\Type\Type[] $types
-	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
+	 * @param Type[] $types
+	 * @param class-string<Type> $expectedTypeClass
 	 */
 	public function testIntersect(
 		array $types,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$actualType = TypeCombinator::intersect(...$types);
@@ -3127,14 +3316,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIntersect
-	 * @param \PHPStan\Type\Type[] $types
-	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
+	 * @param Type[] $types
+	 * @param class-string<Type> $expectedTypeClass
 	 */
 	public function testIntersectInversed(
 		array $types,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$actualType = TypeCombinator::intersect(...array_reverse($types));
@@ -3332,13 +3520,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				new IterableType(new MixedType(), new MixedType()),
-				new ObjectType(\Traversable::class),
+				new ObjectType(Traversable::class),
 				ArrayType::class,
 				'array',
 			],
 			[
 				new IterableType(new MixedType(), new MixedType()),
-				new ObjectType(\Iterator::class),
+				new ObjectType(Iterator::class),
 				IterableType::class,
 				'iterable',
 			],
@@ -3385,7 +3573,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 						new ConstantIntegerType(0),
 					], [
 						new StringType(),
-					])
+					]),
 				),
 				new ConstantArrayType([], []),
 				ConstantArrayType::class,
@@ -3605,7 +3793,7 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 				'object',
 			],
 			[
-				new ObjectType(\stdClass::class),
+				new ObjectType(stdClass::class),
 				new NeverType(),
 				ObjectType::class,
 				'stdClass',
@@ -3615,16 +3803,13 @@ class TypeCombinatorTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataRemove
-	 * @param \PHPStan\Type\Type $fromType
-	 * @param \PHPStan\Type\Type $type
-	 * @param class-string<\PHPStan\Type\Type> $expectedTypeClass
-	 * @param string $expectedTypeDescription
+	 * @param class-string<Type> $expectedTypeClass
 	 */
 	public function testRemove(
 		Type $fromType,
 		Type $type,
 		string $expectedTypeClass,
-		string $expectedTypeDescription
+		string $expectedTypeDescription,
 	): void
 	{
 		$result = TypeCombinator::remove($fromType, $type);

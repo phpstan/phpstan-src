@@ -2,6 +2,7 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Identifier;
@@ -15,37 +16,26 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use function array_key_exists;
+use function array_keys;
+use function count;
+use function in_array;
 
 /** @api */
 class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 {
 
-	private ClassLike $class;
-
-	/** @var ClassPropertyNode[] */
-	private array $properties;
-
-	/** @var array<int, PropertyRead|PropertyWrite> */
-	private array $propertyUsages;
-
-	/** @var array<int, MethodCall> */
-	private array $methodCalls;
-
 	/**
-	 * @param ClassLike $class
 	 * @param ClassPropertyNode[] $properties
 	 * @param array<int, PropertyRead|PropertyWrite> $propertyUsages
 	 * @param array<int, MethodCall> $methodCalls
 	 */
-	public function __construct(ClassLike $class, array $properties, array $propertyUsages, array $methodCalls)
+	public function __construct(private ClassLike $class, private array $properties, private array $propertyUsages, private array $methodCalls)
 	{
 		parent::__construct($class->getAttributes());
-		$this->class = $class;
-		$this->properties = $properties;
-		$this->propertyUsages = $propertyUsages;
-		$this->methodCalls = $methodCalls;
 	}
 
 	public function getClass(): ClassLike
@@ -85,19 +75,19 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @param string[] $constructors
 	 * @param ReadWritePropertiesExtension[] $extensions
-	 * @return array{array<string, ClassPropertyNode>, array<array{string, int}>}
+	 * @return array{array<string, ClassPropertyNode>, array<array{string, int, ClassPropertyNode}>, array<array{string, int, ClassPropertyNode}>}
 	 */
 	public function getUninitializedProperties(
 		Scope $scope,
 		array $constructors,
-		array $extensions
+		array $extensions,
 	): array
 	{
 		if (!$this->getClass() instanceof Class_) {
-			return [[], []];
+			return [[], [], []];
 		}
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
 
@@ -130,11 +120,13 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		}
 
 		if ($constructors === []) {
-			return [$properties, []];
+			return [$properties, [], []];
 		}
 		$classType = new ObjectType($scope->getClassReflection()->getName());
 		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classType, $this->methodCalls, $constructors);
 		$prematureAccess = [];
+		$additionalAssigns = [];
+		$originalProperties = $properties;
 		foreach ($this->getPropertyUsages() as $usage) {
 			$fetch = $usage->getFetch();
 			if (!$fetch instanceof PropertyFetch) {
@@ -159,9 +151,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 			$propertyName = $fetch->name->toString();
-			if (!array_key_exists($propertyName, $properties)) {
-				continue;
-			}
 			$fetchedOnType = $usageScope->getType($fetch->var);
 			if ($classType->isSuperTypeOf($fetchedOnType)->no()) {
 				continue;
@@ -171,11 +160,20 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 
 			if ($usage instanceof PropertyWrite) {
-				unset($properties[$propertyName]);
+				if (array_key_exists($propertyName, $properties)) {
+					unset($properties[$propertyName]);
+				} elseif (array_key_exists($propertyName, $originalProperties)) {
+					$additionalAssigns[] = [
+						$propertyName,
+						$fetch->getLine(),
+						$originalProperties[$propertyName],
+					];
+				}
 			} elseif (array_key_exists($propertyName, $properties)) {
 				$prematureAccess[] = [
 					$propertyName,
 					$fetch->getLine(),
+					$properties[$propertyName],
 				];
 			}
 		}
@@ -183,11 +181,11 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		return [
 			$properties,
 			$prematureAccess,
+			$additionalAssigns,
 		];
 	}
 
 	/**
-	 * @param ObjectType $classType
 	 * @param MethodCall[] $methodCalls
 	 * @param string[] $methods
 	 * @return string[]
@@ -195,7 +193,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	private function getMethodsCalledFromConstructor(
 		ObjectType $classType,
 		array $methodCalls,
-		array $methods
+		array $methods,
 	): array
 	{
 		$originalCount = count($methods);
@@ -208,7 +206,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 			$callScope = $methodCall->getScope();
-			if ($methodCallNode instanceof \PhpParser\Node\Expr\MethodCall) {
+			if ($methodCallNode instanceof Node\Expr\MethodCall) {
 				$calledOnType = $callScope->getType($methodCallNode->var);
 			} else {
 				if (!$methodCallNode->class instanceof Name) {

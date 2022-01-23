@@ -2,11 +2,16 @@
 
 namespace PHPStan\Command;
 
+use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\StreamOutput;
+use function fopen;
 use function realpath;
+use function rewind;
+use function stream_get_contents;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * @group exec
@@ -90,12 +95,7 @@ class CommandHelperTest extends TestCase
 
 	/**
 	 * @dataProvider dataBegin
-	 * @param string $input
-	 * @param string $expectedOutput
-	 * @param string|null $projectConfigFile
-	 * @param string|null $level
 	 * @param mixed[] $expectedParameters
-	 * @param bool $expectException
 	 */
 	public function testBegin(
 		string $input,
@@ -103,12 +103,12 @@ class CommandHelperTest extends TestCase
 		?string $projectConfigFile,
 		?string $level,
 		array $expectedParameters,
-		bool $expectException
+		bool $expectException,
 	): void
 	{
 		$resource = fopen('php://memory', 'w', false);
 		if ($resource === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$output = new StreamOutput($resource);
 
@@ -124,17 +124,17 @@ class CommandHelperTest extends TestCase
 				null,
 				$level,
 				false,
-				true
+				true,
 			);
 			if ($expectException) {
 				$this->fail();
 			}
-		} catch (\PHPStan\Command\InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException) {
 			if (!$expectException) {
 				rewind($output->getStream());
 				$contents = stream_get_contents($output->getStream());
 				if ($contents === false) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				$this->fail($contents);
 			}
@@ -144,7 +144,7 @@ class CommandHelperTest extends TestCase
 
 		$contents = stream_get_contents($output->getStream());
 		if ($contents === false) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$this->assertStringContainsString($expectedOutput, $contents);
 
@@ -289,13 +289,12 @@ class CommandHelperTest extends TestCase
 
 	/**
 	 * @dataProvider dataParameters
-	 * @param string $configFile
 	 * @param array<string, string> $expectedParameters
-	 * @throws \PHPStan\Command\InceptionNotSuccessfulException
+	 * @throws InceptionNotSuccessfulException
 	 */
 	public function testResolveParameters(
 		string $configFile,
-		array $expectedParameters
+		array $expectedParameters,
 	): void
 	{
 		$result = CommandHelper::begin(
@@ -309,7 +308,7 @@ class CommandHelperTest extends TestCase
 			null,
 			'0',
 			false,
-			true
+			true,
 		);
 		$parameters = $result->getContainer()->getParameters();
 		foreach ($expectedParameters as $name => $expectedValue) {

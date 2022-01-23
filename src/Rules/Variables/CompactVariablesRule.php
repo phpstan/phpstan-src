@@ -9,18 +9,18 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
+use function array_merge;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\FuncCall>
+ * @implements Rule<Node\Expr\FuncCall>
  */
 final class CompactVariablesRule implements Rule
 {
 
-	private bool $checkMaybeUndefinedVariables;
-
-	public function __construct(bool $checkMaybeUndefinedVariables)
+	public function __construct(private bool $checkMaybeUndefinedVariables)
 	{
-		$this->checkMaybeUndefinedVariables = $checkMaybeUndefinedVariables;
 	}
 
 	public function getNodeType(): string
@@ -52,11 +52,11 @@ final class CompactVariablesRule implements Rule
 
 				if ($scopeHasVariable->no()) {
 					$messages[] = RuleErrorBuilder::message(
-						sprintf('Call to function compact() contains undefined variable $%s.', $variableName)
+						sprintf('Call to function compact() contains undefined variable $%s.', $variableName),
 					)->line($argument->getLine())->build();
 				} elseif ($this->checkMaybeUndefinedVariables && $scopeHasVariable->maybe()) {
 					$messages[] = RuleErrorBuilder::message(
-						sprintf('Call to function compact() contains possibly undefined variable $%s.', $variableName)
+						sprintf('Call to function compact() contains possibly undefined variable $%s.', $variableName),
 					)->line($argument->getLine())->build();
 				}
 			}
@@ -66,7 +66,6 @@ final class CompactVariablesRule implements Rule
 	}
 
 	/**
-	 * @param Type $type
 	 * @return array<int, ConstantStringType>
 	 */
 	private function findConstantStrings(Type $type): array

@@ -8,9 +8,11 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ClassAttributesRule>
@@ -29,13 +31,14 @@ class ClassAttributesRuleTest extends RuleTestCase
 					new NullsafeCheck(),
 					new PhpVersion(80000),
 					new UnresolvableTypeHelper(),
+					new PropertyReflectionFinder(),
 					true,
 					true,
 					true,
-					true
+					true,
 				),
-				new ClassCaseSensitivityCheck($reflectionProvider, false)
-			)
+				new ClassCaseSensitivityCheck($reflectionProvider, false),
+			),
 		);
 	}
 
@@ -93,6 +96,32 @@ class ClassAttributesRuleTest extends RuleTestCase
 			[
 				'Unknown parameter $r in call to ClassAttributes\AttributeWithConstructor constructor.',
 				120,
+			],
+			[
+				'Interface ClassAttributes\InterfaceAsAttribute is not an Attribute class.',
+				132,
+			],
+			[
+				'Trait ClassAttributes\TraitAsAttribute is not an Attribute class.',
+				142,
+			],
+		]);
+	}
+
+	public function testRuleForEnums(): void
+	{
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/enum-attributes.php'], [
+			[
+				'Attribute class EnumAttributes\AttributeWithPropertyTarget does not have the class target.',
+				23,
+			],
+			[
+				'Enum EnumAttributes\EnumAsAttribute is not an Attribute class.',
+				35,
 			],
 		]);
 	}

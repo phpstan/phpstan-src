@@ -2,35 +2,31 @@
 
 namespace PHPStan\Parser;
 
+use PhpParser\Node;
 use PHPStan\File\FileReader;
+use function array_slice;
 
 class CachedParser implements Parser
 {
 
-	private \PHPStan\Parser\Parser $originalParser;
-
-	/** @var array<string, \PhpParser\Node\Stmt[]>*/
+	/** @var array<string, Node\Stmt[]>*/
 	private array $cachedNodesByString = [];
 
 	private int $cachedNodesByStringCount = 0;
-
-	private int $cachedNodesByStringCountMax;
 
 	/** @var array<string, true> */
 	private array $parsedByString = [];
 
 	public function __construct(
-		Parser $originalParser,
-		int $cachedNodesByStringCountMax
+		private Parser $originalParser,
+		private int $cachedNodesByStringCountMax,
 	)
 	{
-		$this->originalParser = $originalParser;
-		$this->cachedNodesByStringCountMax = $cachedNodesByStringCountMax;
 	}
 
 	/**
 	 * @param string $file path to a file to parse
-	 * @return \PhpParser\Node\Stmt[]
+	 * @return Node\Stmt[]
 	 */
 	public function parseFile(string $file): array
 	{
@@ -39,7 +35,7 @@ class CachedParser implements Parser
 				$this->cachedNodesByString,
 				1,
 				null,
-				true
+				true,
 			);
 
 			--$this->cachedNodesByStringCount;
@@ -56,8 +52,7 @@ class CachedParser implements Parser
 	}
 
 	/**
-	 * @param string $sourceCode
-	 * @return \PhpParser\Node\Stmt[]
+	 * @return Node\Stmt[]
 	 */
 	public function parseString(string $sourceCode): array
 	{
@@ -66,7 +61,7 @@ class CachedParser implements Parser
 				$this->cachedNodesByString,
 				1,
 				null,
-				true
+				true,
 			);
 
 			--$this->cachedNodesByStringCount;
@@ -92,7 +87,7 @@ class CachedParser implements Parser
 	}
 
 	/**
-	 * @return array<string, \PhpParser\Node[]>
+	 * @return array<string, Node[]>
 	 */
 	public function getCachedNodesByString(): array
 	{

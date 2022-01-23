@@ -9,21 +9,13 @@ use PHPStan\Analyser\StatementExitPoint;
 class FinallyExitPointsNode extends NodeAbstract implements VirtualNode
 {
 
-	/** @var StatementExitPoint[] */
-	private array $finallyExitPoints;
-
-	/** @var StatementExitPoint[] */
-	private array $tryCatchExitPoints;
-
 	/**
 	 * @param StatementExitPoint[] $finallyExitPoints
 	 * @param StatementExitPoint[] $tryCatchExitPoints
 	 */
-	public function __construct(array $finallyExitPoints, array $tryCatchExitPoints)
+	public function __construct(private array $finallyExitPoints, private array $tryCatchExitPoints)
 	{
 		parent::__construct([]);
-		$this->finallyExitPoints = $finallyExitPoints;
-		$this->tryCatchExitPoints = $tryCatchExitPoints;
 	}
 
 	/**

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MatchExpressionRule>
@@ -125,10 +126,45 @@ class MatchExpressionRuleTest extends RuleTestCase
 
 	public function testBug5454(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+		if (PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 		$this->analyse([__DIR__ . '/data/bug-5454.php'], []);
+	}
+
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/match-enums.php'], [
+			[
+				'Match expression does not handle remaining values: MatchEnums\Foo::THREE|MatchEnums\Foo::TWO',
+				19,
+			],
+			[
+				'Match expression does not handle remaining values: MatchEnums\Foo::THREE|MatchEnums\Foo::TWO',
+				35,
+			],
+			[
+				'Match expression does not handle remaining value: MatchEnums\Foo::THREE',
+				56,
+			],
+			[
+				'Match arm comparison between *NEVER* and MatchEnums\Foo is always false.',
+				77,
+			],
+		]);
+	}
+
+	public function testBug6394(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6394.php'], []);
 	}
 
 }

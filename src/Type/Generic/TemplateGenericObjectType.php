@@ -18,7 +18,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 		TemplateTypeStrategy $templateTypeStrategy,
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
-		GenericObjectType $bound
+		GenericObjectType $bound,
 	)
 	{
 		parent::__construct($bound->getClassName(), $bound->getTypes());
@@ -39,7 +39,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 				$this->strategy,
 				$this->variance,
 				$this->name,
-				$newBound
+				$newBound,
 			);
 		}
 
@@ -53,7 +53,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 			$this->strategy,
 			$this->variance,
 			$this->name,
-			$this->getBound()
+			$this->getBound(),
 		);
 	}
 

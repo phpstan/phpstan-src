@@ -4,26 +4,20 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\MixedType;
 
 class UniversalObjectCratesClassReflectionExtension
-	implements \PHPStan\Reflection\PropertiesClassReflectionExtension
+	implements PropertiesClassReflectionExtension
 {
-
-	/** @var string[] */
-	private array $classes;
-
-	private ReflectionProvider $reflectionProvider;
 
 	/**
 	 * @param string[] $classes
 	 */
-	public function __construct(ReflectionProvider $reflectionProvider, array $classes)
+	public function __construct(private ReflectionProvider $reflectionProvider, private array $classes)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->classes = $classes;
 	}
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
@@ -31,20 +25,17 @@ class UniversalObjectCratesClassReflectionExtension
 		return self::isUniversalObjectCrate(
 			$this->reflectionProvider,
 			$this->classes,
-			$classReflection
+			$classReflection,
 		);
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param string[] $classes
-	 * @param \PHPStan\Reflection\ClassReflection $classReflection
-	 * @return bool
 	 */
 	public static function isUniversalObjectCrate(
 		ReflectionProvider $reflectionProvider,
 		array $classes,
-		ClassReflection $classReflection
+		ClassReflection $classReflection,
 	): bool
 	{
 		foreach ($classes as $className) {

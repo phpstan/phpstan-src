@@ -9,7 +9,7 @@ interface ParametersAcceptorWithPhpDocs extends ParametersAcceptor
 {
 
 	/**
-	 * @return array<int, \PHPStan\Reflection\ParameterReflectionWithPhpDocs>
+	 * @return array<int, ParameterReflectionWithPhpDocs>
 	 */
 	public function getParameters(): array;
 

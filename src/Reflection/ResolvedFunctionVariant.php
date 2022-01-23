@@ -6,13 +6,10 @@ use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
+use function array_map;
 
 class ResolvedFunctionVariant implements ParametersAcceptor
 {
-
-	private ParametersAcceptor $parametersAcceptor;
-
-	private TemplateTypeMap $resolvedTemplateTypeMap;
 
 	/** @var ParameterReflection[]|null */
 	private ?array $parameters = null;
@@ -20,12 +17,10 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 	private ?Type $returnType = null;
 
 	public function __construct(
-		ParametersAcceptor $parametersAcceptor,
-		TemplateTypeMap $resolvedTemplateTypeMap
+		private ParametersAcceptor $parametersAcceptor,
+		private TemplateTypeMap $resolvedTemplateTypeMap,
 	)
 	{
-		$this->parametersAcceptor = $parametersAcceptor;
-		$this->resolvedTemplateTypeMap = $resolvedTemplateTypeMap;
 	}
 
 	public function getOriginalParametersAcceptor(): ParametersAcceptor
@@ -48,16 +43,14 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 		$parameters = $this->parameters;
 
 		if ($parameters === null) {
-			$parameters = array_map(function (ParameterReflection $param): ParameterReflection {
-				return new DummyParameter(
-					$param->getName(),
-					TemplateTypeHelper::resolveTemplateTypes($param->getType(), $this->resolvedTemplateTypeMap),
-					$param->isOptional(),
-					$param->passedByReference(),
-					$param->isVariadic(),
-					$param->getDefaultValue()
-				);
-			}, $this->parametersAcceptor->getParameters());
+			$parameters = array_map(fn (ParameterReflection $param): ParameterReflection => new DummyParameter(
+				$param->getName(),
+				TemplateTypeHelper::resolveTemplateTypes($param->getType(), $this->resolvedTemplateTypeMap),
+				$param->isOptional(),
+				$param->passedByReference(),
+				$param->isVariadic(),
+				$param->getDefaultValue(),
+			), $this->parametersAcceptor->getParameters());
 
 			$this->parameters = $parameters;
 		}
@@ -77,7 +70,7 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 		if ($type === null) {
 			$type = TemplateTypeHelper::resolveTemplateTypes(
 				$this->parametersAcceptor->getReturnType(),
-				$this->resolvedTemplateTypeMap
+				$this->resolvedTemplateTypeMap,
 			);
 
 			$this->returnType = $type;

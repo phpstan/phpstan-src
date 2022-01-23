@@ -8,35 +8,31 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function count;
+use function sprintf;
+use function strtolower;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\GroupUse>
+ * @implements Rule<Node\Stmt\GroupUse>
  */
-class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
+class ExistingNamesInGroupUseRule implements Rule
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private bool $checkFunctionNameCase;
-
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		bool $checkFunctionNameCase
+		private ReflectionProvider $reflectionProvider,
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private bool $checkFunctionNameCase,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->checkFunctionNameCase = $checkFunctionNameCase;
 	}
 
 	public function getNodeType(): string
 	{
-		return \PhpParser\Node\Stmt\GroupUse::class;
+		return Node\Stmt\GroupUse::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
@@ -60,7 +56,7 @@ class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 			} elseif ($use->type === Use_::TYPE_NORMAL) {
 				$error = $this->checkClass($name);
 			} else {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			if ($error === null) {
@@ -99,7 +95,7 @@ class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 				return RuleErrorBuilder::message(sprintf(
 					'Function %s used with incorrect case: %s.',
 					$realName,
-					$usedName
+					$usedName,
 				))->line($name->getLine())->build();
 			}
 		}
@@ -118,7 +114,7 @@ class ExistingNamesInGroupUseRule implements \PHPStan\Rules\Rule
 			return $errors[0];
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 }

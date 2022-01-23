@@ -8,6 +8,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
+use function sprintf;
 
 class VarianceCheck
 {
@@ -18,7 +19,7 @@ class VarianceCheck
 		string $parameterTypeMessage,
 		string $returnTypeMessage,
 		string $generalMessage,
-		bool $isStatic
+		bool $isStatic,
 	): array
 	{
 		$errors = [];
@@ -45,7 +46,7 @@ class VarianceCheck
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type %s in %s.',
 				$templateType->getName(),
-				$generalMessage
+				$generalMessage,
 			))->build();
 		}
 
@@ -75,7 +76,7 @@ class VarianceCheck
 				$referredType->getName(),
 				$referredType->getVariance()->describe(),
 				$reference->getPositionVariance()->describe(),
-				$messageContext
+				$messageContext,
 			))->build();
 		}
 

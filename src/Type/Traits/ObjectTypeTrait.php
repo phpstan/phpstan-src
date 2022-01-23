@@ -50,9 +50,7 @@ trait ObjectTypeTrait
 			$property,
 			$property->getDeclaringClass(),
 			false,
-			static function (Type $type): Type {
-				return $type;
-			}
+			static fn (Type $type): Type => $type,
 		);
 	}
 
@@ -78,9 +76,7 @@ trait ObjectTypeTrait
 			$method,
 			$method->getDeclaringClass(),
 			false,
-			static function (Type $type): Type {
-				return $type;
-			}
+			static fn (Type $type): Type => $type,
 		);
 	}
 

@@ -5,19 +5,11 @@ namespace PHPStan\File;
 class FileFinderResult
 {
 
-	/** @var string[] */
-	private array $files;
-
-	private bool $onlyFiles;
-
 	/**
 	 * @param string[] $files
-	 * @param bool $onlyFiles
 	 */
-	public function __construct(array $files, bool $onlyFiles)
+	public function __construct(private array $files, private bool $onlyFiles)
 	{
-		$this->files = $files;
-		$this->onlyFiles = $onlyFiles;
 	}
 
 	/**

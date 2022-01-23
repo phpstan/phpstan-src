@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Exceptions;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ThrowExpressionRule>
@@ -12,8 +13,7 @@ use PHPStan\Testing\RuleTestCase;
 class ThrowExpressionRuleTest extends RuleTestCase
 {
 
-	/** @var PhpVersion */
-	private $phpVersion;
+	private PhpVersion $phpVersion;
 
 	protected function getRule(): Rule
 	{
@@ -41,7 +41,6 @@ class ThrowExpressionRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRule
-	 * @param int $phpVersion
 	 * @param mixed[] $expectedErrors
 	 */
 	public function testRule(int $phpVersion, array $expectedErrors): void

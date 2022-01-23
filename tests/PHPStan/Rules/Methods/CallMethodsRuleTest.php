@@ -6,41 +6,35 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<CallMethodsRule>
+ * @extends RuleTestCase<CallMethodsRule>
  */
-class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
+class CallMethodsRuleTest extends RuleTestCase
 {
 
-	/** @var bool */
-	private $checkThisOnly;
+	private bool $checkThisOnly;
 
-	/** @var bool */
-	private $checkNullables;
+	private bool $checkNullables;
 
-	/** @var bool */
-	private $checkUnionTypes;
+	private bool $checkUnionTypes;
 
-	/** @var bool */
-	private $checkExplicitMixed = false;
+	private bool $checkExplicitMixed = false;
 
-	/** @var int */
-	private $phpVersion = PHP_VERSION_ID;
+	private int $phpVersion = PHP_VERSION_ID;
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($broker, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed);
+		$reflectionProvider = $this->createReflectionProvider();
+		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed);
 		return new CallMethodsRule(
-			$broker,
-			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(), true, true, true, true),
-			$ruleLevelHelper,
-			true,
-			true
+			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
+			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
 		);
 	}
 
@@ -406,11 +400,11 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				942,
 			],
 			[
-				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int given.',
+				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int<0, max> given.',
 				964,
 			],
 			[
-				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int given.',
+				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int<1, max> given.',
 				987,
 			],
 			[
@@ -502,6 +496,14 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Unable to resolve the template type T in call to method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar()',
 				1751,
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
+			[
+				'Parameter #1 $code of method Test\\KeyOfParam::foo() expects \'jfk\'|\'lga\', \'sfo\' given.',
+				1777,
+			],
+			[
+				'Parameter #1 $code of method Test\\ValueOfParam::foo() expects \'John F. Kennedy…\'|\'La Guardia Airport\', \'Newark Liberty…\' given.',
+				1802,
 			],
 		]);
 	}
@@ -713,11 +715,11 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				921,
 			],
 			[
-				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int given.',
+				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int<0, max> given.',
 				964,
 			],
 			[
-				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int given.',
+				'Parameter #1 $s of method Test\IssetCumulativeArray::doBar() expects string, int<1, max> given.',
 				987,
 			],
 			[
@@ -789,6 +791,14 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 				'Unable to resolve the template type T in call to method Test\InvalidReturnTypeUsingArrayTemplateTypeBound::bar()',
 				1751,
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
+			[
+				'Parameter #1 $code of method Test\\KeyOfParam::foo() expects \'jfk\'|\'lga\', \'sfo\' given.',
+				1777,
+			],
+			[
+				'Parameter #1 $code of method Test\\ValueOfParam::foo() expects \'John F. Kennedy…\'|\'La Guardia Airport\', \'Newark Liberty…\' given.',
+				1802,
 			],
 		]);
 	}
@@ -1216,7 +1226,6 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataIterable
-	 * @param bool $checkNullables
 	 */
 	public function testIterables(bool $checkNullables): void
 	{
@@ -1483,7 +1492,6 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 
 	/**
 	 * @dataProvider dataExplicitMixed
-	 * @param bool $checkExplicitMixed
 	 * @param mixed[] $errors
 	 */
 	public function testExplicitMixed(bool $checkExplicitMixed, array $errors): void
@@ -2191,6 +2199,133 @@ class CallMethodsRuleTest extends \PHPStan\Testing\RuleTestCase
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-3465.php'], []);
+	}
+
+	public function testBug5868(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-5868.php'], [
+			[
+				'Cannot call method nullable1() on Bug5868\HelloWorld|null.',
+				14,
+			],
+			[
+				'Cannot call method nullable2() on Bug5868\HelloWorld|null.',
+				15,
+			],
+			[
+				'Cannot call method nullable3() on Bug5868\HelloWorld|null.',
+				16,
+			],
+		]);
+	}
+
+	public function testBug5460(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-5460.php'], []);
+	}
+
+	public function testFirstClassCallable(): void
+	{
+		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+
+		// handled by a different rule
+		$this->analyse([__DIR__ . '/data/first-class-method-callable.php'], []);
+	}
+
+	public function testEnums(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+
+		$this->analyse([__DIR__ . '/data/call-method-in-enum.php'], [
+			[
+				'Call to an undefined method CallMethodInEnum\Foo::doNonexistent().',
+				11,
+			],
+			[
+				'Call to an undefined method CallMethodInEnum\Bar::doNonexistent().',
+				22,
+			],
+		]);
+	}
+
+	public function testBug6239(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('This test needs PHP 8.0');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-6293.php'], []);
+	}
+
+	public function testBug6306(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-6306.php'], []);
+	}
+
+	public function testRectorDoWhileVarIssue(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/rector-do-while-var-issue.php'], [
+			[
+				'Parameter #1 $cls of method RectorDoWhileVarIssue\Foo::processCharacterClass() expects string, int|string given.',
+				24,
+			],
+		]);
+	}
+
+	public function testReadOnlyPropertyPassedByReference(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/readonly-property-passed-by-reference.php'], [
+			[
+				'Parameter #1 $param is passed by reference so it does not accept readonly property ReadonlyPropertyPassedByRef\Foo::$bar.',
+				15,
+			],
+			[
+				'Parameter $param is passed by reference so it does not accept readonly property ReadonlyPropertyPassedByRef\Foo::$bar.',
+				16,
+			],
+		]);
 	}
 
 }

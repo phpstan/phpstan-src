@@ -51,22 +51,23 @@ use PHPStan\Rules\Properties\MissingPropertyTypehintRule;
 use PHPStan\Rules\Registry;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
+use Throwable;
+use function array_fill_keys;
+use function count;
+use function sprintf;
 
 class StubValidator
 {
 
-	private \PHPStan\DependencyInjection\DerivativeContainerFactory $derivativeContainerFactory;
-
 	public function __construct(
-		DerivativeContainerFactory $derivativeContainerFactory
+		private DerivativeContainerFactory $derivativeContainerFactory,
 	)
 	{
-		$this->derivativeContainerFactory = $derivativeContainerFactory;
 	}
 
 	/**
 	 * @param string[] $stubFiles
-	 * @return \PHPStan\Analyser\Error[]
+	 * @return Error[]
 	 */
 	public function validate(array $stubFiles, bool $debug): array
 	{
@@ -102,12 +103,12 @@ class StubValidator
 					$analysedFiles,
 					$ruleRegistry,
 					static function (): void {
-					}
+					},
 				)->getErrors();
 				foreach ($tmpErrors as $tmpError) {
 					$errors[] = $tmpError->withoutTip();
 				}
-			} catch (\Throwable $e) {
+			} catch (Throwable $e) {
 				if ($debug) {
 					throw $e;
 				}
@@ -151,24 +152,24 @@ class StubValidator
 			new OverridingMethodRule($phpVersion, new MethodSignatureRule(true, true), true),
 
 			// level 2
-			new ClassAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper),
+			new ClassAncestorsRule($genericAncestorsCheck, $crossCheckInterfacesHelper),
 			new ClassTemplateTypeRule($templateTypeCheck),
 			new FunctionTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new FunctionSignatureVarianceRule($varianceCheck),
-			new InterfaceAncestorsRule($fileTypeMapper, $genericAncestorsCheck, $crossCheckInterfacesHelper),
-			new InterfaceTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
+			new InterfaceAncestorsRule($genericAncestorsCheck, $crossCheckInterfacesHelper),
+			new InterfaceTemplateTypeRule($templateTypeCheck),
 			new MethodTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new MethodSignatureVarianceRule($varianceCheck),
 			new TraitTemplateTypeRule($fileTypeMapper, $templateTypeCheck),
 			new IncompatiblePhpDocTypeRule(
 				$fileTypeMapper,
 				$genericObjectTypeCheck,
-				$unresolvableTypeHelper
+				$unresolvableTypeHelper,
 			),
 			new IncompatiblePropertyPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper),
 			new InvalidPhpDocTagValueRule(
 				$container->getByType(Lexer::class),
-				$container->getByType(PhpDocParser::class)
+				$container->getByType(PhpDocParser::class),
 			),
 			new InvalidThrowsPhpDocValueRule($fileTypeMapper),
 

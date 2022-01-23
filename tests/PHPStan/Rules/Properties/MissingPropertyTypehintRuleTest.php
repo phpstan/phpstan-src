@@ -3,14 +3,17 @@
 namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\MissingTypehintCheck;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<MissingPropertyTypehintRule>
+ * @extends RuleTestCase<MissingPropertyTypehintRule>
  */
-class MissingPropertyTypehintRuleTest extends \PHPStan\Testing\RuleTestCase
+class MissingPropertyTypehintRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
 		return new MissingPropertyTypehintRule(new MissingTypehintCheck($broker, true, true, true, []));

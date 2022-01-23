@@ -2,6 +2,10 @@
 
 namespace PHPStan\Type\Accessory;
 
+use Closure;
+use DateTime;
+use DateTimeImmutable;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\IntersectionType;
@@ -13,8 +17,9 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
-class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class HasMethodTypeTest extends PHPStanTestCase
 {
 
 	public function dataIsSuperTypeOf(): array
@@ -37,7 +42,7 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				new HasMethodType('format'),
-				new ObjectType(\DateTimeImmutable::class),
+				new ObjectType(DateTimeImmutable::class),
 				TrinaryLogic::createYes(),
 			],
 			[
@@ -47,7 +52,7 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				new HasMethodType('foo'),
-				new ObjectType(\Closure::class),
+				new ObjectType(Closure::class),
 				TrinaryLogic::createNo(),
 			],
 			[
@@ -88,15 +93,15 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new HasMethodType('format'),
 				new UnionType([
-					new ObjectType(\DateTimeImmutable::class),
-					new ObjectType(\DateTime::class),
+					new ObjectType(DateTimeImmutable::class),
+					new ObjectType(DateTime::class),
 				]),
 				TrinaryLogic::createYes(),
 			],
 			[
 				new HasMethodType('format'),
 				new UnionType([
-					new ObjectType(\DateTimeImmutable::class),
+					new ObjectType(DateTimeImmutable::class),
 					new ObjectType('UnknownClass'),
 				]),
 				TrinaryLogic::createMaybe(),
@@ -104,15 +109,15 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			[
 				new HasMethodType('format'),
 				new UnionType([
-					new ObjectType(\DateTimeImmutable::class),
-					new ObjectType(\Closure::class),
+					new ObjectType(DateTimeImmutable::class),
+					new ObjectType(Closure::class),
 				]),
 				TrinaryLogic::createMaybe(),
 			],
 			[
 				new HasMethodType('format'),
 				new IntersectionType([
-					new ObjectType(\DateTimeImmutable::class),
+					new ObjectType(DateTimeImmutable::class),
 					new IterableType(new MixedType(), new MixedType()),
 				]),
 				TrinaryLogic::createYes(),
@@ -138,9 +143,6 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param HasMethodType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(HasMethodType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -148,7 +150,7 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -183,7 +185,7 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 			],
 			[
 				new HasMethodType('format'),
-				new ObjectType(\DateTimeImmutable::class),
+				new ObjectType(DateTimeImmutable::class),
 				TrinaryLogic::createMaybe(),
 			],
 		];
@@ -191,9 +193,6 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param HasMethodType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOf(HasMethodType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -201,15 +200,12 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param HasMethodType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOfInversed(HasMethodType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -217,7 +213,7 @@ class HasMethodTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
 		);
 	}
 

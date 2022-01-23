@@ -9,18 +9,16 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InClassMethodNode>
+ * @implements Rule<InClassMethodNode>
  */
 class MethodSignatureVarianceRule implements Rule
 {
 
-	private \PHPStan\Rules\Generics\VarianceCheck $varianceCheck;
-
-	public function __construct(VarianceCheck $varianceCheck)
+	public function __construct(private VarianceCheck $varianceCheck)
 	{
-		$this->varianceCheck = $varianceCheck;
 	}
 
 	public function getNodeType(): string
@@ -40,7 +38,7 @@ class MethodSignatureVarianceRule implements Rule
 			sprintf('in parameter %%s of method %s::%s()', SprintfHelper::escapeFormatString($method->getDeclaringClass()->getDisplayName()), SprintfHelper::escapeFormatString($method->getName())),
 			sprintf('in return type of method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName()),
 			sprintf('in method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName()),
-			$method->getName() === '__construct' || $method->isStatic()
+			$method->getName() === '__construct' || $method->isStatic(),
 		);
 	}
 

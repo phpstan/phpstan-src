@@ -10,21 +10,11 @@ use PHPStan\Analyser\Scope;
 class PropertyRead
 {
 
-	/** @var PropertyFetch|StaticPropertyFetch */
-	private $fetch;
-
-	private Scope $scope;
-
-	/**
-	 * PropertyWrite constructor.
-	 *
-	 * @param PropertyFetch|StaticPropertyFetch $fetch
-	 * @param Scope $scope
-	 */
-	public function __construct($fetch, Scope $scope)
+	public function __construct(
+		private PropertyFetch|StaticPropertyFetch $fetch,
+		private Scope $scope,
+	)
 	{
-		$this->fetch = $fetch;
-		$this->scope = $scope;
 	}
 
 	/**

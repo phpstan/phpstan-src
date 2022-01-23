@@ -8,6 +8,8 @@ use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\ShouldNotHappenException;
+use function sprintf;
 
 /**
  * @implements Rule<InClassNode>
@@ -36,18 +38,20 @@ class NonClassAttributeClassRule implements Rule
 	}
 
 	/**
-	 * @param Scope $scope
 	 * @return RuleError[]
 	 */
 	private function check(Scope $scope): array
 	{
 		if (!$scope->isInClass()) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
 		if (!$classReflection->isClass()) {
 			return [
-				RuleErrorBuilder::message('Interface cannot be an Attribute class.')->build(),
+				RuleErrorBuilder::message(sprintf(
+					'%s cannot be an Attribute class.',
+					$classReflection->isInterface() ? 'Interface' : 'Enum',
+				))->build(),
 			];
 		}
 		if ($classReflection->isAbstract()) {

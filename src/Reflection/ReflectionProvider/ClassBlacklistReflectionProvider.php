@@ -3,40 +3,31 @@
 namespace PHPStan\Reflection\ReflectionProvider;
 
 use Nette\Utils\Strings;
+use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
+use ReflectionClass;
+use function class_exists;
 
 class ClassBlacklistReflectionProvider implements ReflectionProvider
 {
 
-	private ReflectionProvider $reflectionProvider;
-
-	private PhpStormStubsSourceStubber $phpStormStubsSourceStubber;
-
-	/** @var string[] */
-	private array $patterns;
-
-	private ?string $singleReflectionInsteadOfFile;
-
 	/**
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
 	 * @param string[] $patterns
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
-		array $patterns,
-		?string $singleReflectionInsteadOfFile
+		private ReflectionProvider $reflectionProvider,
+		private PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
+		private array $patterns,
+		private ?string $singleReflectionInsteadOfFile,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->phpStormStubsSourceStubber = $phpStormStubsSourceStubber;
-		$this->patterns = $patterns;
-		$this->singleReflectionInsteadOfFile = $singleReflectionInsteadOfFile;
 	}
 
 	public function hasClass(string $className): bool
@@ -79,10 +70,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 			if (!class_exists($className, false)) {
 				return true;
 			}
-			if (in_array(strtolower($className), ['reflectionuniontype', 'attribute', 'returntypewillchange', 'reflectionintersectiontype'], true)) {
-				return true;
-			}
-			$reflection = new \ReflectionClass($className);
+			$reflection = new ReflectionClass($className);
 			if ($reflection->getFileName() === false) {
 				return true;
 			}
@@ -100,7 +88,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 	public function getClass(string $className): ClassReflection
 	{
 		if (!$this->hasClass($className)) {
-			throw new \PHPStan\Broker\ClassNotFoundException($className);
+			throw new ClassNotFoundException($className);
 		}
 
 		return $this->reflectionProvider->getClass($className);
@@ -109,7 +97,7 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 	public function getClassName(string $className): string
 	{
 		if (!$this->hasClass($className)) {
-			throw new \PHPStan\Broker\ClassNotFoundException($className);
+			throw new ClassNotFoundException($className);
 		}
 
 		return $this->reflectionProvider->getClassName($className);
@@ -120,12 +108,12 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 		return false;
 	}
 
-	public function getAnonymousClassReflection(\PhpParser\Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
+	public function getAnonymousClassReflection(Node\Stmt\Class_ $classNode, Scope $scope): ClassReflection
 	{
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
-	public function hasFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	public function hasFunction(Node\Name $nameNode, ?Scope $scope): bool
 	{
 		$has = $this->reflectionProvider->hasFunction($nameNode, $scope);
 		if (!$has) {
@@ -141,27 +129,27 @@ class ClassBlacklistReflectionProvider implements ReflectionProvider
 		return $functionReflection->getFileName() !== $this->singleReflectionInsteadOfFile;
 	}
 
-	public function getFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): FunctionReflection
+	public function getFunction(Node\Name $nameNode, ?Scope $scope): FunctionReflection
 	{
 		return $this->reflectionProvider->getFunction($nameNode, $scope);
 	}
 
-	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveFunctionName(Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return $this->reflectionProvider->resolveFunctionName($nameNode, $scope);
 	}
 
-	public function hasConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool
+	public function hasConstant(Node\Name $nameNode, ?Scope $scope): bool
 	{
 		return $this->reflectionProvider->hasConstant($nameNode, $scope);
 	}
 
-	public function getConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
+	public function getConstant(Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
 	{
 		return $this->reflectionProvider->getConstant($nameNode, $scope);
 	}
 
-	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveConstantName(Node\Name $nameNode, ?Scope $scope): ?string
 	{
 		return $this->reflectionProvider->resolveConstantName($nameNode, $scope);
 	}

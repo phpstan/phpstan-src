@@ -4,26 +4,18 @@ namespace PHPStan\PhpDoc\Tag;
 
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\Type\TypeAlias;
 
 /** @api */
 class TypeAliasTag
 {
 
-	private string $aliasName;
-
-	private TypeNode $typeNode;
-
-	private NameScope $nameScope;
-
 	public function __construct(
-		string $aliasName,
-		TypeNode $typeNode,
-		NameScope $nameScope
+		private string $aliasName,
+		private TypeNode $typeNode,
+		private NameScope $nameScope,
 	)
 	{
-		$this->aliasName = $aliasName;
-		$this->typeNode = $typeNode;
-		$this->nameScope = $nameScope;
 	}
 
 	public function getAliasName(): string
@@ -31,11 +23,11 @@ class TypeAliasTag
 		return $this->aliasName;
 	}
 
-	public function getTypeAlias(): \PHPStan\Type\TypeAlias
+	public function getTypeAlias(): TypeAlias
 	{
-		return new \PHPStan\Type\TypeAlias(
+		return new TypeAlias(
 			$this->typeNode,
-			$this->nameScope
+			$this->nameScope,
 		);
 	}
 

@@ -13,6 +13,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
 use PHPStan\Type\ObjectType;
+use ReflectionClass;
 
 class ReflectionClassIsSubclassOfTypeSpecifyingExtension implements MethodTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -26,7 +27,7 @@ class ReflectionClassIsSubclassOfTypeSpecifyingExtension implements MethodTypeSp
 
 	public function getClass(): string
 	{
-		return \ReflectionClass::class;
+		return ReflectionClass::class;
 	}
 
 	public function isMethodSupported(MethodReflection $methodReflection, MethodCall $node, TypeSpecifierContext $context): bool
@@ -45,12 +46,12 @@ class ReflectionClassIsSubclassOfTypeSpecifyingExtension implements MethodTypeSp
 
 		return $this->typeSpecifier->create(
 			$node->var,
-			new GenericObjectType(\ReflectionClass::class, [
+			new GenericObjectType(ReflectionClass::class, [
 				new ObjectType($valueType->getValue()),
 			]),
 			$context,
 			false,
-			$scope
+			$scope,
 		);
 	}
 

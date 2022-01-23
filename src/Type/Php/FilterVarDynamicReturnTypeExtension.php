@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -24,6 +25,8 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use function sprintf;
+use function strtolower;
 
 class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -33,17 +36,13 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	 */
 	private const VALIDATION_FILTER_BITMASK = 0x100;
 
-	private ReflectionProvider $reflectionProvider;
-
 	private ConstantStringType $flagsString;
 
 	/** @var array<int, Type>|null */
 	private ?array $filterTypeMap = null;
 
-	public function __construct(ReflectionProvider $reflectionProvider)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-
 		$this->flagsString = new ConstantStringType('flags');
 	}
 
@@ -97,7 +96,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$constant = $this->reflectionProvider->getConstant(new Node\Name($constantName), null);
 		$valueType = $constant->getValueType();
 		if (!$valueType instanceof ConstantIntegerType) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Constant %s does not have integer type.', $constantName));
+			throw new ShouldNotHappenException(sprintf('Constant %s does not have integer type.', $constantName));
 		}
 
 		return $valueType->getValue();
@@ -111,7 +110,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	public function getTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		$mixedType = new MixedType();

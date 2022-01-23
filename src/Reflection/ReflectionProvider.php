@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
 /** @api */
@@ -17,20 +18,20 @@ interface ReflectionProvider
 	public function supportsAnonymousClasses(): bool;
 
 	public function getAnonymousClassReflection(
-		\PhpParser\Node\Stmt\Class_ $classNode,
-		Scope $scope
+		Node\Stmt\Class_ $classNode,
+		Scope $scope,
 	): ClassReflection;
 
-	public function hasFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool;
+	public function hasFunction(Node\Name $nameNode, ?Scope $scope): bool;
 
-	public function getFunction(\PhpParser\Node\Name $nameNode, ?Scope $scope): FunctionReflection;
+	public function getFunction(Node\Name $nameNode, ?Scope $scope): FunctionReflection;
 
-	public function resolveFunctionName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string;
+	public function resolveFunctionName(Node\Name $nameNode, ?Scope $scope): ?string;
 
-	public function hasConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): bool;
+	public function hasConstant(Node\Name $nameNode, ?Scope $scope): bool;
 
-	public function getConstant(\PhpParser\Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection;
+	public function getConstant(Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection;
 
-	public function resolveConstantName(\PhpParser\Node\Name $nameNode, ?Scope $scope): ?string;
+	public function resolveConstantName(Node\Name $nameNode, ?Scope $scope): ?string;
 
 }

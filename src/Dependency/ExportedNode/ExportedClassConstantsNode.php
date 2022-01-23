@@ -4,31 +4,19 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\ShouldNotHappenException;
+use ReturnTypeWillChange;
+use function array_map;
+use function count;
 
 class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 {
 
-	/** @var ExportedClassConstantNode[] */
-	private array $constants;
-
-	private bool $public;
-
-	private bool $private;
-
-	private bool $final;
-
-	private ?ExportedPhpDocNode $phpDoc;
-
 	/**
 	 * @param ExportedClassConstantNode[] $constants
 	 */
-	public function __construct(array $constants, bool $public, bool $private, bool $final, ?ExportedPhpDocNode $phpDoc)
+	public function __construct(private array $constants, private bool $public, private bool $private, private bool $final, private ?ExportedPhpDocNode $phpDoc)
 	{
-		$this->constants = $constants;
-		$this->public = $public;
-		$this->private = $private;
-		$this->final = $final;
-		$this->phpDoc = $phpDoc;
 	}
 
 	public function equals(ExportedNode $node): bool
@@ -75,7 +63,7 @@ class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 			$properties['public'],
 			$properties['private'],
 			$properties['final'],
-			$properties['phpDoc']
+			$properties['phpDoc'],
 		);
 	}
 
@@ -88,21 +76,21 @@ class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 		return new self(
 			array_map(static function (array $constantData): ExportedClassConstantNode {
 				if ($constantData['type'] !== ExportedClassConstantNode::class) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 				return ExportedClassConstantNode::decode($constantData['data']);
 			}, $data['constants']),
 			$data['public'],
 			$data['private'],
 			$data['final'],
-			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null
+			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data']) : null,
 		);
 	}
 
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Internal;
 
+use function str_replace;
+
 class SprintfHelper
 {
 

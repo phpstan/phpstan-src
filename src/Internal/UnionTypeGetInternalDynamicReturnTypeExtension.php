@@ -9,6 +9,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use function count;
 
 class UnionTypeGetInternalDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
@@ -26,7 +27,7 @@ class UnionTypeGetInternalDynamicReturnTypeExtension implements DynamicMethodRet
 	public function getTypeFromMethodCall(
 		MethodReflection $methodReflection,
 		MethodCall $methodCall,
-		Scope $scope
+		Scope $scope,
 	): Type
 	{
 		if (count($methodCall->getArgs()) < 2) {

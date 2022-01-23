@@ -10,6 +10,7 @@ use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function strpos;
 
 /** @api */
 class ConstantFloatType extends FloatType implements ConstantScalarType
@@ -19,13 +20,10 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	use ConstantScalarToBooleanTrait;
 	use ConstantNumericComparisonTypeTrait;
 
-	private float $value;
-
 	/** @api */
-	public function __construct(float $value)
+	public function __construct(private float $value)
 	{
 		parent::__construct();
-		$this->value = $value;
 	}
 
 	public function getValue(): float
@@ -36,9 +34,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			static function (): string {
-				return 'float';
-			},
+			static fn (): string => 'float',
 			function (): string {
 				$formatted = (string) $this->value;
 				if (strpos($formatted, '.') === false) {
@@ -46,7 +42,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 				}
 
 				return $formatted;
-			}
+			},
 		);
 	}
 
@@ -87,7 +83,6 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 
 	/**
 	 * @param mixed[] $properties
-	 * @return Type
 	 */
 	public static function __set_state(array $properties): Type
 	{

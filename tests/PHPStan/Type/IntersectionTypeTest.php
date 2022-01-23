@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type;
 
+use DoctrineIntersectionTypeIsSupertypeOf\Collection;
+use Iterator;
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -9,12 +12,15 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use stdClass;
 use Test\ClassWithToString;
+use Traversable;
+use function sprintf;
 
-class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
+class IntersectionTypeTest extends PHPStanTestCase
 {
 
-	public function dataAccepts(): \Iterator
+	public function dataAccepts(): Iterator
 	{
 		$intersectionType = new IntersectionType([
 			new ObjectType('Collection'),
@@ -57,9 +63,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param IntersectionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -67,7 +70,7 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -78,7 +81,7 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 				new IntersectionType([
 					new ConstantArrayType(
 						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
-						[new ConstantStringType('Closure'), new ConstantStringType('bind')]
+						[new ConstantStringType('Closure'), new ConstantStringType('bind')],
 					),
 					new IterableType(new MixedType(), new ObjectType('Item')),
 				]),
@@ -103,8 +106,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsCallable
-	 * @param IntersectionType $type
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsCallable(IntersectionType $type, TrinaryLogic $expectedResult): void
 	{
@@ -112,11 +113,11 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isCallable()', $type->describe(VerbosityLevel::precise())),
 		);
 	}
 
-	public function dataIsSuperTypeOf(): \Iterator
+	public function dataIsSuperTypeOf(): Iterator
 	{
 		$intersectionTypeA = new IntersectionType([
 			new ObjectType('ArrayObject'),
@@ -195,24 +196,24 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 		yield [
 			new IntersectionType([
-				new ObjectType(\Traversable::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new ObjectType(Traversable::class),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			new IntersectionType([
-				new ObjectType(\Traversable::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new ObjectType(Traversable::class),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			TrinaryLogic::createYes(),
 		];
 
 		yield [
 			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			TrinaryLogic::createYes(),
 		];
@@ -220,47 +221,47 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		yield [
 			new IntersectionType([
 				new ObjectType(\TestIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			new IntersectionType([
 				new ObjectType(\TestIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			TrinaryLogic::createYes(),
 		];
 
 		yield [
 			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
 			]),
 			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(), new ObjectType(\stdClass::class)),
-			]),
-			TrinaryLogic::createYes(),
-		];
-
-		yield [
-			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(), new ObjectType(\stdClass::class)),
-			]),
-			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(true), new ObjectType(\stdClass::class)),
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(), new ObjectType(stdClass::class)),
 			]),
 			TrinaryLogic::createYes(),
 		];
 
 		yield [
 			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(), new ObjectType(\stdClass::class)),
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(), new ObjectType(stdClass::class)),
 			]),
 			new IntersectionType([
-				new ObjectType(\DoctrineIntersectionTypeIsSupertypeOf\Collection::class),
-				new IterableType(new MixedType(), new ObjectType(\stdClass::class)),
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(true), new ObjectType(stdClass::class)),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new IntersectionType([
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(), new ObjectType(stdClass::class)),
+			]),
+			new IntersectionType([
+				new ObjectType(Collection::class),
+				new IterableType(new MixedType(), new ObjectType(stdClass::class)),
 			]),
 			TrinaryLogic::createYes(),
 		];
@@ -268,9 +269,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSuperTypeOf
-	 * @param IntersectionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSuperTypeOf(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -278,11 +276,11 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
-	public function dataIsSubTypeOf(): \Iterator
+	public function dataIsSubTypeOf(): Iterator
 	{
 		$intersectionTypeA = new IntersectionType([
 			new ObjectType('ArrayObject'),
@@ -371,9 +369,6 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param IntersectionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOf(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -381,15 +376,12 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSubTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
 	/**
 	 * @dataProvider dataIsSubTypeOf
-	 * @param IntersectionType $type
-	 * @param Type $otherType
-	 * @param TrinaryLogic $expectedResult
 	 */
 	public function testIsSubTypeOfInversed(IntersectionType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -397,7 +389,7 @@ class IntersectionTypeTest extends \PHPStan\Testing\PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $otherType->describe(VerbosityLevel::precise()), $type->describe(VerbosityLevel::precise())),
 		);
 	}
 

@@ -2,8 +2,10 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use Jean85\PrettyVersions;
 use Nette\DI\Definitions\Statement;
 use Nette\Neon\Neon;
+use OutOfBoundsException;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\Output;
@@ -13,113 +15,74 @@ use PHPStan\File\FileFinder;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\ShouldNotHappenException;
+use Throwable;
+use function array_diff;
 use function array_fill_keys;
+use function array_filter;
 use function array_key_exists;
+use function array_keys;
+use function array_merge;
+use function array_unique;
+use function array_values;
+use function count;
+use function get_loaded_extensions;
+use function is_array;
+use function is_file;
+use function is_string;
+use function ksort;
+use function sha1;
+use function sort;
+use function sprintf;
+use function str_replace;
+use function time;
+use function unlink;
+use function var_export;
+use const PHP_VERSION_ID;
 
 class ResultCacheManager
 {
 
 	private const CACHE_VERSION = 'v9-project-extensions';
 
-	private ExportedNodeFetcher $exportedNodeFetcher;
-
-	private FileFinder $scanFileFinder;
-
-	private ReflectionProvider $reflectionProvider;
-
-	private string $cacheFilePath;
-
-	private string $tempResultCachePath;
-
-	/** @var string[] */
-	private array $analysedPaths;
-
-	/** @var string[] */
-	private array $composerAutoloaderProjectPaths;
-
-	/** @var string[] */
-	private array $stubFiles;
-
-	private string $usedLevel;
-
-	private ?string $cliAutoloadFile;
-
-	/** @var string[] */
-	private array $bootstrapFiles;
-
-	/** @var string[] */
-	private array $scanFiles;
-
-	/** @var string[] */
-	private array $scanDirectories;
-
 	/** @var array<string, string> */
 	private array $fileHashes = [];
-
-	/** @var array<string, string> */
-	private array $fileReplacements = [];
 
 	/** @var array<string, true> */
 	private array $alreadyProcessed = [];
 
-	private bool $checkDependenciesOfProjectExtensionFiles;
-
 	/**
-	 * @param ExportedNodeFetcher $exportedNodeFetcher
-	 * @param FileFinder $scanFileFinder
-	 * @param ReflectionProvider $reflectionProvider
-	 * @param string $cacheFilePath
-	 * @param string $tempResultCachePath
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $stubFiles
-	 * @param string $usedLevel
-	 * @param string|null $cliAutoloadFile
 	 * @param string[] $bootstrapFiles
 	 * @param string[] $scanFiles
 	 * @param string[] $scanDirectories
 	 * @param array<string, string> $fileReplacements
 	 */
 	public function __construct(
-		ExportedNodeFetcher $exportedNodeFetcher,
-		FileFinder $scanFileFinder,
-		ReflectionProvider $reflectionProvider,
-		string $cacheFilePath,
-		string $tempResultCachePath,
-		array $analysedPaths,
-		array $composerAutoloaderProjectPaths,
-		array $stubFiles,
-		string $usedLevel,
-		?string $cliAutoloadFile,
-		array $bootstrapFiles,
-		array $scanFiles,
-		array $scanDirectories,
-		array $fileReplacements,
-		bool $checkDependenciesOfProjectExtensionFiles
+		private ExportedNodeFetcher $exportedNodeFetcher,
+		private FileFinder $scanFileFinder,
+		private ReflectionProvider $reflectionProvider,
+		private string $cacheFilePath,
+		private string $tempResultCachePath,
+		private array $analysedPaths,
+		private array $composerAutoloaderProjectPaths,
+		private array $stubFiles,
+		private string $usedLevel,
+		private ?string $cliAutoloadFile,
+		private array $bootstrapFiles,
+		private array $scanFiles,
+		private array $scanDirectories,
+		private array $fileReplacements,
+		private bool $checkDependenciesOfProjectExtensionFiles,
 	)
 	{
-		$this->exportedNodeFetcher = $exportedNodeFetcher;
-		$this->scanFileFinder = $scanFileFinder;
-		$this->reflectionProvider = $reflectionProvider;
-		$this->cacheFilePath = $cacheFilePath;
-		$this->tempResultCachePath = $tempResultCachePath;
-		$this->analysedPaths = $analysedPaths;
-		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
-		$this->stubFiles = $stubFiles;
-		$this->usedLevel = $usedLevel;
-		$this->cliAutoloadFile = $cliAutoloadFile;
-		$this->bootstrapFiles = $bootstrapFiles;
-		$this->scanFiles = $scanFiles;
-		$this->scanDirectories = $scanDirectories;
-		$this->fileReplacements = $fileReplacements;
-		$this->checkDependenciesOfProjectExtensionFiles = $checkDependenciesOfProjectExtensionFiles;
 	}
 
 	/**
 	 * @param string[] $allAnalysedFiles
 	 * @param mixed[]|null $projectConfigArray
-	 * @param bool $debug
-	 * @return ResultCache
 	 */
 	public function restore(array $allAnalysedFiles, bool $debug, bool $onlyFiles, ?array $projectConfigArray, Output $output, ?string $resultCacheName = null): ResultCache
 	{
@@ -153,7 +116,7 @@ class ResultCacheManager
 
 		try {
 			$data = require $cacheFilePath;
-		} catch (\Throwable $e) {
+		} catch (Throwable $e) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted(sprintf('Result cache not used because an error occurred while loading the cache file: %s', $e->getMessage()));
 			}
@@ -290,7 +253,6 @@ class ResultCacheManager
 	/**
 	 * @param mixed[] $cachedMeta
 	 * @param mixed[] $currentMeta
-	 * @return bool
 	 */
 	private function isMetaDifferent(array $cachedMeta, array $currentMeta): bool
 	{
@@ -303,9 +265,7 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param string $analysedFile
 	 * @param array<int, ExportedNode> $cachedFileExportedNodes
-	 * @return bool
 	 */
 	private function exportedNodesChanged(string $analysedFile, array $cachedFileExportedNodes): bool
 	{
@@ -328,10 +288,7 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param AnalyserResult $analyserResult
-	 * @param ResultCache $resultCache
 	 * @param bool|string $save
-	 * @return ResultCacheProcessResult
 	 */
 	public function process(AnalyserResult $analyserResult, ResultCache $resultCache, Output $output, bool $onlyFiles, $save): ResultCacheProcessResult
 	{
@@ -420,12 +377,11 @@ class ResultCacheManager
 			$internalErrors,
 			$dependencies,
 			$exportedNodes,
-			$analyserResult->hasReachedInternalErrorsCountLimit()
+			$analyserResult->hasReachedInternalErrorsCountLimit(),
 		), $saved);
 	}
 
 	/**
-	 * @param ResultCache $resultCache
 	 * @param array<string, array<Error>> $freshErrorsByFile
 	 * @return array<string, array<Error>>
 	 */
@@ -444,7 +400,6 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param ResultCache $resultCache
 	 * @param array<string, array<string>>|null $freshDependencies
 	 * @return array<string, array<string>>|null
 	 */
@@ -466,7 +421,7 @@ class ResultCacheManager
 
 		foreach (array_keys($filesNoOneIsDependingOn) as $file) {
 			if (array_key_exists($file, $cachedDependencies)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			$cachedDependencies[$file] = [];
@@ -486,7 +441,6 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param ResultCache $resultCache
 	 * @param array<string, array<ExportedNode>> $freshExportedNodes
 	 * @return array<string, array<ExportedNode>>
 	 */
@@ -506,8 +460,6 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param int $lastFullAnalysisTime
-	 * @param string|null $resultCacheName
 	 * @param array<string, array<Error>> $errors
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
@@ -519,7 +471,7 @@ class ResultCacheManager
 		array $errors,
 		array $dependencies,
 		array $exportedNodes,
-		array $meta
+		array $meta,
 	): void
 	{
 		$invertedDependencies = [];
@@ -539,7 +491,7 @@ class ResultCacheManager
 
 		foreach (array_keys($filesNoOneIsDependingOn) as $file) {
 			if (array_key_exists($file, $invertedDependencies)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			if (!is_file($file)) {
@@ -595,8 +547,8 @@ php;
 				var_export($this->getProjectExtensionFiles($projectConfigArray, $dependencies), true),
 				var_export($errors, true),
 				var_export($invertedDependencies, true),
-				var_export($exportedNodes, true)
-			)
+				var_export($exportedNodes, true),
+			),
 		);
 	}
 
@@ -612,7 +564,7 @@ php;
 		if ($projectConfig !== null) {
 			$services = array_merge(
 				$projectConfig['services'] ?? [],
-				$projectConfig['rules'] ?? []
+				$projectConfig['rules'] ?? [],
 			);
 			foreach ($services as $service) {
 				$classes = $this->getClassesFromConfigDefinition($service);
@@ -675,7 +627,6 @@ php;
 	}
 
 	/**
-	 * @param string $fileName
 	 * @param array<string, array<int, string>> $dependencies
 	 * @return array<int, string>
 	 */
@@ -711,9 +662,7 @@ php;
 	 */
 	private function getMeta(array $allAnalysedFiles, ?array $projectConfigArray): array
 	{
-		$extensions = array_values(array_filter(get_loaded_extensions(), static function (string $extension): bool {
-			return $extension !== 'xdebug';
-		}));
+		$extensions = array_values(array_filter(get_loaded_extensions(), static fn (string $extension): bool => $extension !== 'xdebug'));
 		sort($extensions);
 
 		if ($projectConfigArray !== null) {
@@ -806,8 +755,8 @@ php;
 	private function getPhpStanVersion(): string
 	{
 		try {
-			return \Jean85\PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
-		} catch (\OutOfBoundsException $e) {
+			return PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
+		} catch (OutOfBoundsException) {
 			return 'Version unknown';
 		}
 	}

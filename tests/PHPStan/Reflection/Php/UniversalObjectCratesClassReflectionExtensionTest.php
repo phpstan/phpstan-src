@@ -2,10 +2,12 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
+use stdClass;
 
-class UniversalObjectCratesClassReflectionExtensionTest extends \PHPStan\Testing\PHPStanTestCase
+class UniversalObjectCratesClassReflectionExtensionTest extends PHPStanTestCase
 {
 
 	public function testNonexistentClass(): void
@@ -15,7 +17,7 @@ class UniversalObjectCratesClassReflectionExtensionTest extends \PHPStan\Testing
 			'NonexistentClass',
 			'stdClass',
 		]);
-		$this->assertTrue($extension->hasProperty($reflectionProvider->getClass(\stdClass::class), 'foo'));
+		$this->assertTrue($extension->hasProperty($reflectionProvider->getClass(stdClass::class), 'foo'));
 	}
 
 	public function testDifferentGetSetType(): void
@@ -31,13 +33,13 @@ class UniversalObjectCratesClassReflectionExtensionTest extends \PHPStan\Testing
 			new ObjectType('UniversalObjectCreates\DifferentGetSetTypesValue'),
 			$extension
 				->getProperty($reflectionProvider->getClass('UniversalObjectCreates\DifferentGetSetTypes'), 'foo')
-				->getReadableType()
+				->getReadableType(),
 		);
 		$this->assertEquals(
 			new StringType(),
 			$extension
 				->getProperty($reflectionProvider->getClass('UniversalObjectCreates\DifferentGetSetTypes'), 'foo')
-				->getWritableType()
+				->getWritableType(),
 		);
 	}
 

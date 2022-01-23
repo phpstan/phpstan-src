@@ -7,18 +7,16 @@ use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Expression>
+ * @implements Rule<Node\Stmt\Expression>
  */
 class NoopRule implements Rule
 {
 
-	private Standard $printer;
-
-	public function __construct(Standard $printer)
+	public function __construct(private Standard $printer)
 	{
-		$this->printer = $printer;
 	}
 
 	public function getNodeType(): string
@@ -56,7 +54,7 @@ class NoopRule implements Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Expression "%s" on a separate line does not do anything.',
-				$this->printer->prettyPrintExpr($originalExpr)
+				$this->printer->prettyPrintExpr($originalExpr),
 			))->line($expr->getLine())
 				->identifier('deadCode.noopExpression')
 				->metadata([

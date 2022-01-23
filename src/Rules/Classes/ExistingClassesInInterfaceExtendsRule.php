@@ -7,25 +7,22 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function array_map;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Stmt\Interface_>
+ * @implements Rule<Node\Stmt\Interface_>
  */
-class ExistingClassesInInterfaceExtendsRule implements \PHPStan\Rules\Rule
+class ExistingClassesInInterfaceExtendsRule implements Rule
 {
 
-	private \PHPStan\Rules\ClassCaseSensitivityCheck $classCaseSensitivityCheck;
-
-	private ReflectionProvider $reflectionProvider;
-
 	public function __construct(
-		ClassCaseSensitivityCheck $classCaseSensitivityCheck,
-		ReflectionProvider $reflectionProvider
+		private ClassCaseSensitivityCheck $classCaseSensitivityCheck,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
-		$this->classCaseSensitivityCheck = $classCaseSensitivityCheck;
-		$this->reflectionProvider = $reflectionProvider;
 	}
 
 	public function getNodeType(): string
@@ -36,9 +33,7 @@ class ExistingClassesInInterfaceExtendsRule implements \PHPStan\Rules\Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$messages = $this->classCaseSensitivityCheck->checkClassNames(
-			array_map(static function (Node\Name $interfaceName): ClassNameNodePair {
-				return new ClassNameNodePair((string) $interfaceName, $interfaceName);
-			}, $node->extends)
+			array_map(static fn (Node\Name $interfaceName): ClassNameNodePair => new ClassNameNodePair((string) $interfaceName, $interfaceName), $node->extends),
 		);
 
 		$currentInterfaceName = (string) $node->namespacedName;
@@ -49,7 +44,7 @@ class ExistingClassesInInterfaceExtendsRule implements \PHPStan\Rules\Rule
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'Interface %s extends unknown interface %s.',
 						$currentInterfaceName,
-						$extendedInterfaceName
+						$extendedInterfaceName,
 					))->nonIgnorable()->discoveringSymbolsTip()->build();
 				}
 			} else {
@@ -58,13 +53,19 @@ class ExistingClassesInInterfaceExtendsRule implements \PHPStan\Rules\Rule
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'Interface %s extends class %s.',
 						$currentInterfaceName,
-						$extendedInterfaceName
+						$reflection->getDisplayName(),
 					))->nonIgnorable()->build();
 				} elseif ($reflection->isTrait()) {
 					$messages[] = RuleErrorBuilder::message(sprintf(
 						'Interface %s extends trait %s.',
 						$currentInterfaceName,
-						$extendedInterfaceName
+						$reflection->getDisplayName(),
+					))->nonIgnorable()->build();
+				} elseif ($reflection->isEnum()) {
+					$messages[] = RuleErrorBuilder::message(sprintf(
+						'Interface %s extends enum %s.',
+						$currentInterfaceName,
+						$reflection->getDisplayName(),
 					))->nonIgnorable()->build();
 				}
 			}

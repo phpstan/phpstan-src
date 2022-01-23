@@ -2,31 +2,27 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function count;
+use function implode;
+use function sprintf;
 
 class ConditionalExpressionHolder
 {
 
-	/** @var array<string, Type> */
-	private array $conditionExpressionTypes;
-
-	private VariableTypeHolder $typeHolder;
-
 	/**
 	 * @param array<string, Type> $conditionExpressionTypes
-	 * @param VariableTypeHolder $typeHolder
 	 */
 	public function __construct(
-		array $conditionExpressionTypes,
-		VariableTypeHolder $typeHolder
+		private array $conditionExpressionTypes,
+		private VariableTypeHolder $typeHolder,
 	)
 	{
 		if (count($conditionExpressionTypes) === 0) {
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new ShouldNotHappenException();
 		}
-		$this->conditionExpressionTypes = $conditionExpressionTypes;
-		$this->typeHolder = $typeHolder;
 	}
 
 	/**
@@ -53,7 +49,7 @@ class ConditionalExpressionHolder
 			'%s => %s (%s)',
 			implode(' && ', $parts),
 			$this->typeHolder->getType()->describe(VerbosityLevel::precise()),
-			$this->typeHolder->getCertainty()->describe()
+			$this->typeHolder->getCertainty()->describe(),
 		);
 	}
 

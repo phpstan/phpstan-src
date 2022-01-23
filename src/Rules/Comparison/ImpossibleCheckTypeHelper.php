@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
@@ -16,52 +17,47 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
+use function array_column;
+use function array_map;
+use function array_pop;
+use function count;
+use function implode;
+use function in_array;
+use function is_string;
+use function reset;
+use function sprintf;
+use function strtolower;
 
 class ImpossibleCheckTypeHelper
 {
 
-	private \PHPStan\Reflection\ReflectionProvider $reflectionProvider;
-
-	private \PHPStan\Analyser\TypeSpecifier $typeSpecifier;
-
-	/** @var string[] */
-	private array $universalObjectCratesClasses;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	/**
-	 * @param \PHPStan\Reflection\ReflectionProvider $reflectionProvider
-	 * @param \PHPStan\Analyser\TypeSpecifier $typeSpecifier
 	 * @param string[] $universalObjectCratesClasses
-	 * @param bool $treatPhpDocTypesAsCertain
 	 */
 	public function __construct(
-		ReflectionProvider $reflectionProvider,
-		TypeSpecifier $typeSpecifier,
-		array $universalObjectCratesClasses,
-		bool $treatPhpDocTypesAsCertain
+		private ReflectionProvider $reflectionProvider,
+		private TypeSpecifier $typeSpecifier,
+		private array $universalObjectCratesClasses,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->reflectionProvider = $reflectionProvider;
-		$this->typeSpecifier = $typeSpecifier;
-		$this->universalObjectCratesClasses = $universalObjectCratesClasses;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function findSpecifiedType(
 		Scope $scope,
-		Expr $node
+		Expr $node,
 	): ?bool
 	{
 		if (
 			$node instanceof FuncCall
 			&& count($node->getArgs()) > 0
 		) {
-			if ($node->name instanceof \PhpParser\Node\Name) {
+			if ($node->name instanceof Node\Name) {
 				$functionName = strtolower((string) $node->name);
 				if ($functionName === 'assert') {
 					$assertValue = $scope->getType($node->getArgs()[0]->value)->toBoolean();
@@ -246,7 +242,7 @@ class ImpossibleCheckTypeHelper
 				$argumentType = $scope->getNativeType($sureType[0]);
 			}
 
-			/** @var \PHPStan\Type\Type $resultType */
+			/** @var Type $resultType */
 			$resultType = $sureType[1];
 
 			$isSuperType = $resultType->isSuperTypeOf($argumentType);
@@ -269,7 +265,7 @@ class ImpossibleCheckTypeHelper
 				$argumentType = $scope->getNativeType($sureNotType[0]);
 			}
 
-			/** @var \PHPStan\Type\Type $resultType */
+			/** @var Type $resultType */
 			$resultType = $sureNotType[1];
 
 			$isSuperType = $resultType->isSuperTypeOf($argumentType);
@@ -289,7 +285,7 @@ class ImpossibleCheckTypeHelper
 				}
 			}
 			$types = TypeCombinator::union(
-				...array_column($sureTypes, 1)
+				...array_column($sureTypes, 1),
 			);
 			if ($types instanceof NeverType) {
 				return false;
@@ -303,7 +299,7 @@ class ImpossibleCheckTypeHelper
 				}
 			}
 			$types = TypeCombinator::union(
-				...array_column($sureNotTypes, 1)
+				...array_column($sureNotTypes, 1),
 			);
 			if ($types instanceof NeverType) {
 				return true;
@@ -314,22 +310,18 @@ class ImpossibleCheckTypeHelper
 	}
 
 	/**
-	 * @param Scope $scope
-	 * @param \PhpParser\Node\Arg[] $args
-	 * @return string
+	 * @param Node\Arg[] $args
 	 */
 	public function getArgumentsDescription(
 		Scope $scope,
-		array $args
+		array $args,
 	): string
 	{
 		if (count($args) === 0) {
 			return '';
 		}
 
-		$descriptions = array_map(static function (Arg $arg) use ($scope): string {
-			return $scope->getType($arg->value)->describe(VerbosityLevel::value());
-		}, $args);
+		$descriptions = array_map(static fn (Arg $arg): string => $scope->getType($arg->value)->describe(VerbosityLevel::value()), $args);
 
 		if (count($descriptions) < 3) {
 			return sprintf(' with %s', implode(' and ', $descriptions));
@@ -340,7 +332,7 @@ class ImpossibleCheckTypeHelper
 		return sprintf(
 			' with arguments %s and %s',
 			implode(', ', $descriptions),
-			$lastDescription
+			$lastDescription,
 		);
 	}
 
@@ -354,7 +346,7 @@ class ImpossibleCheckTypeHelper
 			$this->reflectionProvider,
 			$this->typeSpecifier,
 			$this->universalObjectCratesClasses,
-			false
+			false,
 		);
 	}
 

@@ -4,18 +4,20 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
+use PHPStan\Rules\Rule;
+use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<InvalidPHPStanDocTagRule>
+ * @extends RuleTestCase<InvalidPHPStanDocTagRule>
  */
-class InvalidPHPStanDocTagRuleTest extends \PHPStan\Testing\RuleTestCase
+class InvalidPHPStanDocTagRuleTest extends RuleTestCase
 {
 
-	protected function getRule(): \PHPStan\Rules\Rule
+	protected function getRule(): Rule
 	{
 		return new InvalidPHPStanDocTagRule(
 			self::getContainer()->getByType(Lexer::class),
-			self::getContainer()->getByType(PhpDocParser::class)
+			self::getContainer()->getByType(PhpDocParser::class),
 		);
 	}
 

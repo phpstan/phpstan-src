@@ -2,7 +2,9 @@
 
 namespace PHPStan\Process;
 
-class ProcessCanceledException extends \Exception
+use Exception;
+
+class ProcessCanceledException extends Exception
 {
 
 }

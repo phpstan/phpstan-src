@@ -7,14 +7,8 @@ use PhpParser\Node;
 class ClassNameNodePair
 {
 
-	private string $className;
-
-	private Node $node;
-
-	public function __construct(string $className, Node $node)
+	public function __construct(private string $className, private Node $node)
 	{
-		$this->className = $className;
-		$this->node = $node;
 	}
 
 	public function getClassName(): string

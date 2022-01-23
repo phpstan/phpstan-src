@@ -5,15 +5,11 @@ namespace PHPStan\Rules\Properties;
 class DirectReadWritePropertiesExtensionProvider implements ReadWritePropertiesExtensionProvider
 {
 
-	/** @var ReadWritePropertiesExtension[] */
-	private $extensions;
-
 	/**
 	 * @param ReadWritePropertiesExtension[] $extensions
 	 */
-	public function __construct(array $extensions)
+	public function __construct(private array $extensions)
 	{
-		$this->extensions = $extensions;
 	}
 
 	/**

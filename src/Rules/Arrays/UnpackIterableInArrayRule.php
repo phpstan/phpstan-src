@@ -11,20 +11,18 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PHPStan\Node\LiteralArrayNode>
+ * @implements Rule<LiteralArrayNode>
  */
 class UnpackIterableInArrayRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
 	public function __construct(
-		RuleLevelHelper $ruleLevelHelper
+		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
@@ -48,9 +46,7 @@ class UnpackIterableInArrayRule implements Rule
 				$scope,
 				$item->value,
 				'',
-				static function (Type $type): bool {
-					return $type->isIterable()->yes();
-				}
+				static fn (Type $type): bool => $type->isIterable()->yes(),
 			);
 			$type = $typeResult->getType();
 			if ($type instanceof ErrorType) {
@@ -63,7 +59,7 @@ class UnpackIterableInArrayRule implements Rule
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Only iterables can be unpacked, %s given.',
-				$type->describe(VerbosityLevel::typeOnly())
+				$type->describe(VerbosityLevel::typeOnly()),
 			))->line($item->getLine())->build();
 		}
 

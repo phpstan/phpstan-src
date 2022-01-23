@@ -6,9 +6,12 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -20,24 +23,21 @@ use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
+use function count;
+use function min;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<InClassMethodNode>
+ * @implements Rule<InClassMethodNode>
  */
-class MethodSignatureRule implements \PHPStan\Rules\Rule
+class MethodSignatureRule implements Rule
 {
 
-	private bool $reportMaybes;
-
-	private bool $reportStatic;
-
 	public function __construct(
-		bool $reportMaybes,
-		bool $reportStatic
+		private bool $reportMaybes,
+		private bool $reportStatic,
 	)
 	{
-		$this->reportMaybes = $reportMaybes;
-		$this->reportStatic = $reportStatic;
 	}
 
 	public function getNodeType(): string
@@ -86,7 +86,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 					$returnTypeCompatibility->no() ? 'compatible' : 'covariant',
 					$parentReturnType->describe(VerbosityLevel::value()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
-					$parentMethod->getName()
+					$parentMethod->getName(),
 				))->build();
 			}
 
@@ -111,7 +111,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 					$parentParameter->getName(),
 					$parentParameterType->describe(VerbosityLevel::value()),
 					$parentMethod->getDeclaringClass()->getDisplayName(),
-					$parentMethod->getName()
+					$parentMethod->getName(),
 				))->build();
 			}
 		}
@@ -120,9 +120,7 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param string $methodName
-	 * @param \PHPStan\Reflection\ClassReflection $class
-	 * @return \PHPStan\Reflection\MethodReflection[]
+	 * @return MethodReflection[]
 	 */
 	private function collectParentMethods(string $methodName, ClassReflection $class): array
 	{
@@ -148,23 +146,21 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 	}
 
 	/**
-	 * @param ParametersAcceptorWithPhpDocs $currentVariant
-	 * @param ParametersAcceptorWithPhpDocs $parentVariant
 	 * @return array{TrinaryLogic, Type, Type}
 	 */
 	private function checkReturnTypeCompatibility(
 		ClassReflection $declaringClass,
 		ParametersAcceptorWithPhpDocs $currentVariant,
-		ParametersAcceptorWithPhpDocs $parentVariant
+		ParametersAcceptorWithPhpDocs $parentVariant,
 	): array
 	{
 		$returnType = TypehintHelper::decideType(
 			$currentVariant->getNativeReturnType(),
-			TemplateTypeHelper::resolveToBounds($currentVariant->getPhpDocReturnType())
+			TemplateTypeHelper::resolveToBounds($currentVariant->getPhpDocReturnType()),
 		);
 		$originalParentReturnType = TypehintHelper::decideType(
 			$parentVariant->getNativeReturnType(),
-			TemplateTypeHelper::resolveToBounds($parentVariant->getPhpDocReturnType())
+			TemplateTypeHelper::resolveToBounds($parentVariant->getPhpDocReturnType()),
 		);
 		$parentReturnType = $this->transformStaticType($declaringClass, $originalParentReturnType);
 		// Allow adding `void` return type hints when the parent defines no return type
@@ -179,19 +175,19 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 
 		return [$parentReturnType->isSuperTypeOf($returnType), TypehintHelper::decideType(
 			$currentVariant->getNativeReturnType(),
-			$currentVariant->getPhpDocReturnType()
+			$currentVariant->getPhpDocReturnType(),
 		), $originalParentReturnType];
 	}
 
 	/**
-	 * @param \PHPStan\Reflection\ParameterReflectionWithPhpDocs[] $parameters
-	 * @param \PHPStan\Reflection\ParameterReflectionWithPhpDocs[] $parentParameters
+	 * @param ParameterReflectionWithPhpDocs[] $parameters
+	 * @param ParameterReflectionWithPhpDocs[] $parentParameters
 	 * @return array<int, array{TrinaryLogic, Type, Type}>
 	 */
 	private function checkParameterTypeCompatibility(
 		ClassReflection $declaringClass,
 		array $parameters,
-		array $parentParameters
+		array $parentParameters,
 	): array
 	{
 		$parameterResults = [];
@@ -203,17 +199,17 @@ class MethodSignatureRule implements \PHPStan\Rules\Rule
 
 			$parameterType = TypehintHelper::decideType(
 				$parameter->getNativeType(),
-				TemplateTypeHelper::resolveToBounds($parameter->getPhpDocType())
+				TemplateTypeHelper::resolveToBounds($parameter->getPhpDocType()),
 			);
 			$originalParameterType = TypehintHelper::decideType(
 				$parentParameter->getNativeType(),
-				TemplateTypeHelper::resolveToBounds($parentParameter->getPhpDocType())
+				TemplateTypeHelper::resolveToBounds($parentParameter->getPhpDocType()),
 			);
 			$parentParameterType = $this->transformStaticType($declaringClass, $originalParameterType);
 
 			$parameterResults[] = [$parameterType->isSuperTypeOf($parentParameterType), TypehintHelper::decideType(
 				$parameter->getNativeType(),
-				$parameter->getPhpDocType()
+				$parameter->getPhpDocType(),
 			), $originalParameterType];
 		}
 

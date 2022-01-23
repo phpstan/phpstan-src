@@ -14,8 +14,6 @@ class EvaluationOrderRule implements Rule
 	}
 
 	/**
-	 * @param Node $node
-	 * @param Scope $scope
 	 * @return string[]
 	 */
 	public function processNode(Node $node, Scope $scope): array

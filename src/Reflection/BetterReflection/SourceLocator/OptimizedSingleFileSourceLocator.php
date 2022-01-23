@@ -12,23 +12,21 @@ use PHPStan\BetterReflection\Reflection\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\ShouldNotHappenException;
+use function array_key_exists;
+use function array_keys;
+use function strtolower;
 
 class OptimizedSingleFileSourceLocator implements SourceLocator
 {
 
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher $fileNodesFetcher;
-
-	private string $fileName;
-
-	private ?\PHPStan\Reflection\BetterReflection\SourceLocator\FetchedNodesResult $fetchedNodesResult = null;
+	private ?FetchedNodesResult $fetchedNodesResult = null;
 
 	public function __construct(
-		FileNodesFetcher $fileNodesFetcher,
-		string $fileName
+		private FileNodesFetcher $fileNodesFetcher,
+		private string $fileName,
 	)
 	{
-		$this->fileNodesFetcher = $fileNodesFetcher;
-		$this->fileName = $fileName;
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
@@ -48,11 +46,11 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 				$classReflection = $nodeToReflection->__invoke(
 					$reflector,
 					$classNode->getNode(),
-					$this->fetchedNodesResult->getLocatedSource(),
-					$classNode->getNamespace()
+					$classNode->getLocatedSource(),
+					$classNode->getNamespace(),
 				);
 				if (!$classReflection instanceof ReflectionClass) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new ShouldNotHappenException();
 				}
 
 				return $classReflection;
@@ -69,11 +67,11 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 			$functionReflection = $nodeToReflection->__invoke(
 				$reflector,
 				$functionNodes[$functionName]->getNode(),
-				$this->fetchedNodesResult->getLocatedSource(),
-				$functionNodes[$functionName]->getNamespace()
+				$functionNodes[$functionName]->getLocatedSource(),
+				$functionNodes[$functionName]->getNamespace(),
 			);
 			if (!$functionReflection instanceof ReflectionFunction) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new ShouldNotHappenException();
 			}
 
 			return $functionReflection;
@@ -86,14 +84,11 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 					$constantReflection = $nodeToReflection->__invoke(
 						$reflector,
 						$stmtConst->getNode(),
-						$this->fetchedNodesResult->getLocatedSource(),
-						$stmtConst->getNamespace()
+						$stmtConst->getLocatedSource(),
+						$stmtConst->getNamespace(),
 					);
-					if ($constantReflection === null) {
-						continue;
-					}
 					if (!$constantReflection instanceof ReflectionConstant) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 					if ($constantReflection->getName() !== $identifier->getName()) {
 						continue;
@@ -106,15 +101,12 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 					$constantReflection = $nodeToReflection->__invoke(
 						$reflector,
 						$stmtConst->getNode(),
-						$this->fetchedNodesResult->getLocatedSource(),
+						$stmtConst->getLocatedSource(),
 						$stmtConst->getNamespace(),
-						$i
+						$i,
 					);
-					if ($constantReflection === null) {
-						continue;
-					}
 					if (!$constantReflection instanceof ReflectionConstant) {
-						throw new \PHPStan\ShouldNotHappenException();
+						throw new ShouldNotHappenException();
 					}
 					if ($constantReflection->getName() !== $identifier->getName()) {
 						continue;
@@ -127,7 +119,7 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 			return null;
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new ShouldNotHappenException();
 	}
 
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array

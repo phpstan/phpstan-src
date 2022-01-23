@@ -4,9 +4,10 @@ namespace PHPStan\Rules\TooWideTypehints;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
- * @extends \PHPStan\Testing\RuleTestCase<TooWideMethodReturnTypehintRule>
+ * @extends RuleTestCase<TooWideMethodReturnTypehintRule>
  */
 class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 {
@@ -86,6 +87,14 @@ class TooWideMethodReturnTypehintRuleTest extends RuleTestCase
 				21,
 			],
 		]);
+	}
+
+	public function testBug6158(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$this->analyse([__DIR__ . '/data/bug-6158.php'], []);
 	}
 
 }

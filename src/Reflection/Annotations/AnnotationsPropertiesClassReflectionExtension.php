@@ -34,7 +34,7 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 	private function findClassReflectionWithProperty(
 		ClassReflection $classReflection,
 		ClassReflection $declaringClass,
-		string $propertyName
+		string $propertyName,
 	): ?PropertyReflection
 	{
 		$propertyTags = $classReflection->getPropertyTags();
@@ -43,10 +43,10 @@ class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassRe
 				$declaringClass,
 				TemplateTypeHelper::resolveTemplateTypes(
 					$propertyTags[$propertyName]->getType(),
-					$classReflection->getActiveTemplateTypeMap()
+					$classReflection->getActiveTemplateTypeMap(),
 				),
 				$propertyTags[$propertyName]->isReadable(),
-				$propertyTags[$propertyName]->isWritable()
+				$propertyTags[$propertyName]->isWritable(),
 			);
 		}
 

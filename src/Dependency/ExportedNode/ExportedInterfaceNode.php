@@ -4,32 +4,19 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use ReturnTypeWillChange;
+use function array_map;
+use function count;
 
 class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 {
 
-	private string $name;
-
-	private ?ExportedPhpDocNode $phpDoc;
-
-	/** @var string[] */
-	private array $extends;
-
-	/** @var ExportedNode[] */
-	private array $statements;
-
 	/**
-	 * @param string $name
-	 * @param ExportedPhpDocNode|null $phpDoc
 	 * @param string[] $extends
 	 * @param ExportedNode[] $statements
 	 */
-	public function __construct(string $name, ?ExportedPhpDocNode $phpDoc, array $extends, array $statements)
+	public function __construct(private string $name, private ?ExportedPhpDocNode $phpDoc, private array $extends, private array $statements)
 	{
-		$this->name = $name;
-		$this->phpDoc = $phpDoc;
-		$this->extends = $extends;
-		$this->statements = $statements;
 	}
 
 	public function equals(ExportedNode $node): bool
@@ -76,14 +63,14 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 			$properties['name'],
 			$properties['phpDoc'],
 			$properties['extends'],
-			$properties['statements']
+			$properties['statements'],
 		);
 	}
 
 	/**
 	 * @return mixed
 	 */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [
@@ -111,7 +98,7 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 				$nodeType = $node['type'];
 
 				return $nodeType::decode($node['data']);
-			}, $data['statements'])
+			}, $data['statements']),
 		);
 	}
 

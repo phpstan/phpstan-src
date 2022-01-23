@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function array_filter;
+use function array_merge;
+use function array_values;
 use const PHP_VERSION_ID;
 
 /**
@@ -13,15 +16,14 @@ use const PHP_VERSION_ID;
 class OverridingMethodRuleTest extends RuleTestCase
 {
 
-	/** @var int */
-	private $phpVersionId;
+	private int $phpVersionId;
 
 	protected function getRule(): Rule
 	{
 		return new OverridingMethodRule(
 			new PhpVersion($this->phpVersionId),
 			new MethodSignatureRule(true, true),
-			false
+			false,
 		);
 	}
 
@@ -43,8 +45,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataOverridingFinalMethod
-	 * @param int $phpVersion
-	 * @param string $contravariantMessage
 	 */
 	public function testOverridingFinalMethod(int $phpVersion, string $contravariantMessage): void
 	{
@@ -128,9 +128,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		];
 
 		if (PHP_VERSION_ID >= 80000) {
-			$errors = array_values(array_filter($errors, static function (array $error): bool {
-				return $error[1] !== 125;
-			}));
+			$errors = array_values(array_filter($errors, static fn (array $error): bool => $error[1] !== 125));
 		}
 
 		$this->phpVersionId = $phpVersion;
@@ -221,14 +219,12 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataParameterContravariance
-	 * @param string $file
-	 * @param int $phpVersion
 	 * @param mixed[] $expectedErrors
 	 */
 	public function testParameterContravariance(
 		string $file,
 		int $phpVersion,
-		array $expectedErrors
+		array $expectedErrors,
 	): void
 	{
 		if (!self::$useStaticReflectionProvider) {
@@ -285,12 +281,11 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataReturnTypeCovariance
-	 * @param int $phpVersion
 	 * @param mixed[] $expectedErrors
 	 */
 	public function testReturnTypeCovariance(
 		int $phpVersion,
-		array $expectedErrors
+		array $expectedErrors,
 	): void
 	{
 		if (!self::$useStaticReflectionProvider) {
@@ -303,9 +298,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataOverridingFinalMethod
-	 * @param int $phpVersion
-	 * @param string $contravariantMessage
-	 * @param string $covariantMessage
 	 */
 	public function testParle(int $phpVersion, string $contravariantMessage, string $covariantMessage): void
 	{
@@ -334,7 +326,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataOverridingFinalMethod
-	 * @param int $phpVersion
 	 */
 	public function testBug3403(int $phpVersion): void
 	{
@@ -465,7 +456,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataLessOverridenParametersWithVariadic
-	 * @param int $phpVersionId
 	 * @param mixed[] $errors
 	 */
 	public function testLessOverridenParametersWithVariadic(int $phpVersionId, array $errors): void
@@ -498,7 +488,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataParameterTypeWidening
-	 * @param int $phpVersionId
 	 * @param mixed[] $errors
 	 */
 	public function testParameterTypeWidening(int $phpVersionId, array $errors): void
@@ -541,7 +530,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataTentativeReturnTypes
-	 * @param int $phpVersionId
 	 * @param mixed[] $errors
 	 */
 	public function testTentativeReturnTypes(int $phpVersionId, array $errors): void
@@ -550,8 +538,24 @@ class OverridingMethodRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires static reflection.');
 		}
 
+		if (PHP_VERSION_ID < 80100) {
+			$errors = [];
+		}
+
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/tentative-return-types.php'], $errors);
+	}
+
+	public function testCountableBug(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/countable-bug.php'], []);
+	}
+
+	public function testBug6264(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/bug-6264.php'], []);
 	}
 
 }

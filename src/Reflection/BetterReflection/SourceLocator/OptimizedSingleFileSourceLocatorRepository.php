@@ -2,17 +2,16 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use function array_key_exists;
+
 class OptimizedSingleFileSourceLocatorRepository
 {
-
-	private \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorFactory $factory;
 
 	/** @var array<string, OptimizedSingleFileSourceLocator> */
 	private array $locators = [];
 
-	public function __construct(OptimizedSingleFileSourceLocatorFactory $factory)
+	public function __construct(private OptimizedSingleFileSourceLocatorFactory $factory)
 	{
-		$this->factory = $factory;
 	}
 
 	public function getOrCreate(string $fileName): OptimizedSingleFileSourceLocator

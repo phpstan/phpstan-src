@@ -10,18 +10,16 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
- * @implements \PHPStan\Rules\Rule<\PhpParser\Node\Expr\Print_>
+ * @implements Rule<Node\Expr\Print_>
  */
 class PrintRule implements Rule
 {
 
-	private RuleLevelHelper $ruleLevelHelper;
-
-	public function __construct(RuleLevelHelper $ruleLevelHelper)
+	public function __construct(private RuleLevelHelper $ruleLevelHelper)
 	{
-		$this->ruleLevelHelper = $ruleLevelHelper;
 	}
 
 	public function getNodeType(): string
@@ -35,9 +33,7 @@ class PrintRule implements Rule
 			$scope,
 			$node->expr,
 			'',
-			static function (Type $type): bool {
-				return !$type->toString() instanceof ErrorType;
-			}
+			static fn (Type $type): bool => !$type->toString() instanceof ErrorType,
 		);
 
 		if (!$typeResult->getType() instanceof ErrorType
@@ -45,7 +41,7 @@ class PrintRule implements Rule
 		) {
 			return [RuleErrorBuilder::message(sprintf(
 				'Parameter %s of print cannot be converted to string.',
-				$typeResult->getType()->describe(VerbosityLevel::value())
+				$typeResult->getType()->describe(VerbosityLevel::value()),
 			))->line($node->expr->getLine())->build()];
 		}
 

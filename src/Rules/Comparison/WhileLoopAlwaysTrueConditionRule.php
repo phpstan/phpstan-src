@@ -2,30 +2,27 @@
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Continue_;
+use PHPStan\Analyser\Scope;
 use PHPStan\Node\BreaklessWhileLoopNode;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 
 /**
- * @implements \PHPStan\Rules\Rule<BreaklessWhileLoopNode>
+ * @implements Rule<BreaklessWhileLoopNode>
  */
-class WhileLoopAlwaysTrueConditionRule implements \PHPStan\Rules\Rule
+class WhileLoopAlwaysTrueConditionRule implements Rule
 {
 
-	private ConstantConditionRuleHelper $helper;
-
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function __construct(
-		ConstantConditionRuleHelper $helper,
-		bool $treatPhpDocTypesAsCertain
+		private ConstantConditionRuleHelper $helper,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
-		$this->helper = $helper;
-		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 	}
 
 	public function getNodeType(): string
@@ -34,8 +31,8 @@ class WhileLoopAlwaysTrueConditionRule implements \PHPStan\Rules\Rule
 	}
 
 	public function processNode(
-		\PhpParser\Node $node,
-		\PHPStan\Analyser\Scope $scope
+		Node $node,
+		Scope $scope,
 	): array
 	{
 		foreach ($node->getExitPoints() as $exitPoint) {

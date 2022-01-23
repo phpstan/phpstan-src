@@ -2,10 +2,13 @@
 
 namespace PHPStan\Type;
 
+use Exception;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use stdClass;
+use function sprintf;
 
 class ClassStringTypeTest extends PHPStanTestCase
 {
@@ -15,7 +18,7 @@ class ClassStringTypeTest extends PHPStanTestCase
 		return [
 			[
 				new ClassStringType(),
-				new GenericClassStringType(new ObjectType(\Exception::class)),
+				new GenericClassStringType(new ObjectType(Exception::class)),
 				TrinaryLogic::createYes(),
 			],
 			[
@@ -25,7 +28,7 @@ class ClassStringTypeTest extends PHPStanTestCase
 			],
 			[
 				new ClassStringType(),
-				new ConstantStringType(\stdClass::class),
+				new ConstantStringType(stdClass::class),
 				TrinaryLogic::createYes(),
 			],
 			[
@@ -45,7 +48,7 @@ class ClassStringTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -71,7 +74,7 @@ class ClassStringTypeTest extends PHPStanTestCase
 
 		yield [
 			new ClassStringType(),
-			new ConstantStringType(\stdClass::class),
+			new ConstantStringType(stdClass::class),
 			TrinaryLogic::createYes(),
 		];
 
@@ -83,13 +86,13 @@ class ClassStringTypeTest extends PHPStanTestCase
 
 		yield [
 			new ClassStringType(),
-			new UnionType([new ConstantStringType(\stdClass::class), new ConstantStringType(self::class)]),
+			new UnionType([new ConstantStringType(stdClass::class), new ConstantStringType(self::class)]),
 			TrinaryLogic::createYes(),
 		];
 
 		yield [
 			new ClassStringType(),
-			new UnionType([new ConstantStringType(\stdClass::class), new ConstantStringType('Nonexistent')]),
+			new UnionType([new ConstantStringType(stdClass::class), new ConstantStringType('Nonexistent')]),
 			TrinaryLogic::createMaybe(),
 		];
 
@@ -102,9 +105,6 @@ class ClassStringTypeTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataAccepts
-	 * @param \PHPStan\Type\ClassStringType $type
-	 * @param Type $otherType
-	 * @param \PHPStan\TrinaryLogic $expectedResult
 	 */
 	public function testAccepts(ClassStringType $type, Type $otherType, TrinaryLogic $expectedResult): void
 	{
@@ -112,7 +112,7 @@ class ClassStringTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult->describe(),
 			$actualResult->describe(),
-			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 
@@ -134,9 +134,6 @@ class ClassStringTypeTest extends PHPStanTestCase
 
 	/**
 	 * @dataProvider dataEquals
-	 * @param ClassStringType $type
-	 * @param Type $otherType
-	 * @param bool $expectedResult
 	 */
 	public function testEquals(ClassStringType $type, Type $otherType, bool $expectedResult): void
 	{
@@ -144,7 +141,7 @@ class ClassStringTypeTest extends PHPStanTestCase
 		$this->assertSame(
 			$expectedResult,
 			$actualResult,
-			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise()))
+			sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}
 

@@ -2,6 +2,13 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use function array_keys;
+use function implode;
+use function preg_match;
+use function preg_quote;
+use function strlen;
+use function substr;
+
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  * @see https://github.com/composer/composer/pull/10107
@@ -28,7 +35,7 @@ class PhpFileCleaner
 		foreach ($types as $type) {
 			$this->typeConfig[$type[0]] = [
 				'name' => $type,
-				'length' => \strlen($type),
+				'length' => strlen($type),
 				'pattern' => '{.\b(?<![\$:>])' . $type . '\s++[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+}Ais',
 			];
 		}
@@ -68,7 +75,7 @@ class PhpFileCleaner
 				}
 
 				if ($char === '<' && $this->peek('<') && $this->match('{<<<[ \t]*+([\'"]?)([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+)\\1(?:\r\n|\n|\r)}A', $match)) {
-					$this->index += \strlen($match[0]);
+					$this->index += strlen($match[0]);
 					$this->skipHeredoc($match[2]);
 					$clean .= 'null';
 					continue;
@@ -87,8 +94,8 @@ class PhpFileCleaner
 				if ($maxMatches === 1 && isset($this->typeConfig[$char])) {
 					$type = $this->typeConfig[$char];
 					if (
-						\substr($this->contents, $this->index, $type['length']) === $type['name']
-						&& \preg_match($type['pattern'], $this->contents, $match, 0, $this->index - 1)
+						substr($this->contents, $this->index, $type['length']) === $type['name']
+						&& preg_match($type['pattern'], $this->contents, $match, 0, $this->index - 1)
 					) {
 						return $clean . $match[0];
 					}
@@ -97,7 +104,7 @@ class PhpFileCleaner
 				$this->index += 1;
 				if ($this->match($this->restPattern, $match)) {
 					$clean .= $char . $match[0];
-					$this->index += \strlen($match[0]);
+					$this->index += strlen($match[0]);
 				} else {
 					$clean .= $char;
 				}
@@ -161,7 +168,7 @@ class PhpFileCleaner
 	private function skipHeredoc(string $delimiter): void
 	{
 		$firstDelimiterChar = $delimiter[0];
-		$delimiterLength = \strlen($delimiter);
+		$delimiterLength = strlen($delimiter);
 		$delimiterPattern = '{' . preg_quote($delimiter) . '(?![a-zA-Z0-9_\x80-\xff])}A';
 
 		while ($this->index < $this->len) {
@@ -173,7 +180,7 @@ class PhpFileCleaner
 					continue 2;
 				case $firstDelimiterChar:
 					if (
-						\substr($this->contents, $this->index, $delimiterLength) === $delimiter
+						substr($this->contents, $this->index, $delimiterLength) === $delimiter
 						&& $this->match($delimiterPattern)
 					) {
 						$this->index += $delimiterLength;
@@ -202,13 +209,11 @@ class PhpFileCleaner
 	}
 
 	/**
-	 * @param string $regex
 	 * @param string[]|null $match
-	 * @return bool
 	 */
 	private function match(string $regex, ?array &$match = null): bool
 	{
-		if (\preg_match($regex, $this->contents, $match, 0, $this->index)) {
+		if (preg_match($regex, $this->contents, $match, 0, $this->index)) {
 			return true;
 		}
 

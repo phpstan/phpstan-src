@@ -83,6 +83,9 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 					$scope = $scope->assignVariable($itemVariableName, $itemType);
 					$scope = $scope->filterByTruthyValue($expr);
 					$itemType = $scope->getVariableType($itemVariableName);
+					if ($itemType instanceof NeverType) {
+						return new ConstantArrayType([], []);
+					}
 				}
 			}
 

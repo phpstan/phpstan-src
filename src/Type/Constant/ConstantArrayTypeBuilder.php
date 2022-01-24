@@ -5,6 +5,7 @@ namespace PHPStan\Type\Constant;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -13,7 +14,6 @@ use function array_values;
 use function count;
 use function is_float;
 use function max;
-use function range;
 
 /** @api */
 class ConstantArrayTypeBuilder
@@ -101,37 +101,57 @@ class ConstantArrayTypeBuilder
 
 			$scalarTypes = TypeUtils::getConstantScalars($offsetType);
 			if (count($scalarTypes) === 0) {
-				$integerRanges = TypeUtils::getIntegerRanges($offsetType);
+				$integerRangesBackup = TypeUtils::getIntegerRanges($offsetType);
+				$integerRanges = $integerRangesBackup;
 				if (count($integerRanges) > 0) {
 					foreach ($integerRanges as $integerRange) {
 						$minRange = $integerRange->getMin();
-						if ($minRange === null || $minRange <= -self::ARRAY_COUNT_LIMIT) {
+						if ($minRange === null) {
 							break;
 						}
 
 						$maxRange = $integerRange->getMax();
-                        if ($maxRange === null || $maxRange >= self::ARRAY_COUNT_LIMIT) {
+                        if ($maxRange === null) {
 							break;
 						}
 
-						foreach (range($minRange, $maxRange) as $rangeValue) {
+						$rangeValue = $minRange;
+						$rangeCount = 0;
+						do {
+							$rangeCount++;
+							if ($rangeCount > self::ARRAY_COUNT_LIMIT) {
+								$scalarTypes = $integerRangesBackup;
+
+								break;
+							}
+
 							$scalarTypes[] = new ConstantIntegerType($rangeValue);
-						}
+							$rangeValue++;
+						} while ($rangeValue <= $maxRange);
 					}
 				}
 			}
+
 			if (count($scalarTypes) > 0 && count($scalarTypes) < self::ARRAY_COUNT_LIMIT) {
 				$match = true;
 				$valueTypes = $this->valueTypes;
 				foreach ($scalarTypes as $scalarType) {
 					$scalarOffsetType = ArrayType::castToArrayKeyType($scalarType);
+
+					if ($scalarOffsetType instanceof IntegerRangeType) {
+						$match = false;
+
+						break;
+					}
+
 					if (!$scalarOffsetType instanceof ConstantIntegerType && !$scalarOffsetType instanceof ConstantStringType) {
 						throw new ShouldNotHappenException();
 					}
-					$offsetMatch = false;
 
+					$offsetMatch = false;
 					/** @var ConstantIntegerType|ConstantStringType $keyType */
 					foreach ($this->keyTypes as $i => $keyType) {
+
 						if ($keyType->getValue() !== $scalarOffsetType->getValue()) {
 							continue;
 						}

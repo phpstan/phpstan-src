@@ -79,6 +79,15 @@ class TypeDescriptionTest extends PHPStanTestCase
 		);
 		$builder->setOffsetValueType(IntegerRangeType::fromInterval(-2147483648, 2147483647), new StringType());
 		yield ['non-empty-array<int<-2147483648, 2147483647>, string>', $builder->getArray()];
+
+		$builder = ConstantArrayTypeBuilder::createFromConstantArray(
+			new ConstantArrayType(
+				[new ConstantIntegerType(0), new ConstantIntegerType(20)],
+				[new StringType(), new StringType()],
+			),
+		);
+		$builder->setOffsetValueType(IntegerRangeType::fromInterval(1, 19), new StringType());
+		yield ['non-empty-array<int<0, 20>, string>', $builder->getArray()];
 	}
 
 	/**

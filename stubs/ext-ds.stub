@@ -701,6 +701,16 @@ final class Set implements Collection, ArrayAccess
 	}
 
 	/**
+	 * @template TCarry
+	 * @param callable(TCarry, TValue): TCarry $callback
+	 * @param TCarry $initial
+	 * @return TCarry
+	 */
+	public function reduce(callable $callback, $initial = null)
+	{
+	}
+
+	/**
 	 * @param TValue ...$values
 	 */
 	public function remove(...$values): void

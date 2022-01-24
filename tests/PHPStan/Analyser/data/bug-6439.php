@@ -34,30 +34,29 @@ class HelloWorld
 	}
 
 	public function testLimit() {
-		$string = 'i';
+		$string = '0';
 
 		if (rand(0,1)) {
-			$string .= ' a';
+			$string .= 'a';
 		}
 		if (rand(0,1)) {
-			$string .= ' b';
+			$string .= 'b';
 		}
 		if (rand(0,1)) {
-			$string .= ' c';
+			$string .= 'c';
 		}
 		if (rand(0,1)) {
-			$string .= ' d';
+			$string .= 'd';
 		}
 		if (rand(0,1)) {
-			$string .= ' e';
-		}
-		assertType("'i'|'i a'|'i a b'|'i a b c'|'i a b c d'|'i a b c d e'|'i a b c e'|'i a b d'|'i a b d e'|'i a b e'|'i a c'|'i a c d'|'i a c d e'|'i a c e'|'i a d'|'i a d e'|'i a e'|'i b'|'i b c'|'i b c d'|'i b c d e'|'i b c e'|'i b d'|'i b d e'|'i b e'|'i c'|'i c d'|'i c d e'|'i c e'|'i d'|'i d e'|'i e'", $string);
+			$string .= 'e';
 
-		if (rand(0,1)) {
-			$string .= ' f';
+			// union should contain 32 elements
+			assertType("'0'|'0a'|'0ab'|'0abc'|'0abcd'|'0abcde'|'0abce'|'0abd'|'0abde'|'0abe'|'0ac'|'0acd'|'0acde'|'0ace'|'0ad'|'0ade'|'0ae'|'0b'|'0bc'|'0bcd'|'0bcde'|'0bce'|'0bd'|'0bde'|'0be'|'0c'|'0cd'|'0cde'|'0ce'|'0d'|'0de'|'0e'", $string);
+
+			// adding more elements should fallback to the more general form
+			$string .= 'too-long';
+			assertType("literal-string&non-empty-string", $string);
 		}
-
-		assertType("literal-string&non-empty-string", $string);
-
 	}
 }

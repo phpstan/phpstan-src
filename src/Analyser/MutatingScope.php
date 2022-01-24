@@ -1102,7 +1102,7 @@ class MutatingScope implements Scope
 			}
 
 			// we limit the number of union-types for performance reasons
-			if ($leftStringType instanceof UnionType && count($rightStringType->getTypes()) < 32 && $rightStringType instanceof ConstantStringType) {
+			if ($leftStringType instanceof UnionType && count($leftStringType->getTypes()) < 32 && $rightStringType instanceof ConstantStringType) {
 				$constantStrings = TypeUtils::getConstantStrings($leftStringType);
 				if (count($constantStrings) > 0) {
 					$strings = [];

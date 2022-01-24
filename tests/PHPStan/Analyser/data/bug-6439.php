@@ -33,30 +33,23 @@ class HelloWorld
 		assertType("'branch-a general'|'branch-b branch-a general'|'branch-b general'|'general'", $string);
 	}
 
-	public function testLimit() {
-		$string = '0';
-
+	/**
+	 * @param '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15' $s15
+	 * @param '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16' $s16
+	 * @param '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16'|'17' $s17
+	 */
+	public function testLimit(string $s15, string $s16, string $s17) {
 		if (rand(0,1)) {
-			$string .= 'a';
+			// doubles the number of elements
+			$s15 .= 'a';
+			$s16 .= 'a';
+			$s17 .= 'a';
 		}
-		if (rand(0,1)) {
-			$string .= 'b';
-		}
-		if (rand(0,1)) {
-			$string .= 'c';
-		}
-		if (rand(0,1)) {
-			$string .= 'd';
-		}
-		if (rand(0,1)) {
-			$string .= 'e';
-
-			// union should contain 32 elements
-			assertType("'0'|'0a'|'0ab'|'0abc'|'0abcd'|'0abcde'|'0abce'|'0abd'|'0abde'|'0abe'|'0ac'|'0acd'|'0acde'|'0ace'|'0ad'|'0ade'|'0ae'|'0b'|'0bc'|'0bcd'|'0bcde'|'0bce'|'0bd'|'0bde'|'0be'|'0c'|'0cd'|'0cde'|'0ce'|'0d'|'0de'|'0e'", $string);
-
-			// adding more elements should fallback to the more general form
-			$string .= 'too-long';
-			assertType("literal-string&non-empty-string", $string);
-		}
+		// union should contain 30 elements
+		assertType("'1'|'10'|'10a'|'11'|'11a'|'12'|'12a'|'13'|'13a'|'14'|'14a'|'15'|'15a'|'1a'|'2'|'2a'|'3'|'3a'|'4'|'4a'|'5'|'5a'|'6'|'6a'|'7'|'7a'|'8'|'8a'|'9'|'9a'", $s15);
+		// union should contain 32 elements
+		assertType("'1'|'10'|'10a'|'11'|'11a'|'12'|'12a'|'13'|'13a'|'14'|'14a'|'15'|'15a'|'16'|'16a'|'1a'|'2'|'2a'|'3'|'3a'|'4'|'4a'|'5'|'5a'|'6'|'6a'|'7'|'7a'|'8'|'8a'|'9'|'9a'", $s16);
+		// fallback to the more general form
+		assertType("literal-string&non-empty-string", $s17);
 	}
 }

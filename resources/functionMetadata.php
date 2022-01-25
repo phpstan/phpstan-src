@@ -1506,7 +1506,6 @@ return [
 	'ucfirst' => ['hasSideEffects' => false],
 	'ucwords' => ['hasSideEffects' => false],
 	'umask' => ['hasSideEffects' => true],
-	'uniqid' => ['hasSideEffects' => false],
 	'unlink' => ['hasSideEffects' => true],
 	'unpack' => ['hasSideEffects' => false],
 	'urldecode' => ['hasSideEffects' => false],

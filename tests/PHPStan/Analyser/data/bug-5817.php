@@ -27,7 +27,7 @@ class MyContainer implements
 	JsonSerializable
 {
 	/** @var array<int, DateTimeInterface> */
-	protected array $items = [];
+	protected $items = [];
 
 	public function add(DateTimeInterface $item, int $offset = null): self
 	{

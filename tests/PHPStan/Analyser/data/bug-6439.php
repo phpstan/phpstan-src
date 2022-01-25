@@ -53,6 +53,21 @@ class HelloWorld
 		assertType("literal-string&non-empty-string", $s17);
 	}
 
+	/**
+	 * @param '1'|'2' $s2
+	 */
+	public function appendEmpty($s2) {
+		if (rand(0,1)) {
+			$s2 .= '';
+		}
+		assertType("'1'|'2'", $s2);
+
+		if (rand(0,1)) {
+			$s2 = '';
+		}
+		assertType("''|'1'|'2'", $s2);
+	}
+
     public function concatCase() {
 		$extra = '';
 		if (rand(0,1)) {

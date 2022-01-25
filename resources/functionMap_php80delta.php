@@ -76,6 +76,8 @@ return [
 		'odbc_exec' => ['resource|false', 'connection_id'=>'resource', 'query'=>'string'],
 		'parse_str' => ['void', 'encoded_string'=>'string', '&w_result'=>'array'],
 		'password_hash' => ['string', 'password'=>'string', 'algo'=>'string|int|null', 'options='=>'array'],
+		'Phar::getMetadata' => ['mixed', 'unserializeOptions='=>'array'],
+		'PharFileInfo::getMetadata' => ['mixed', 'unserializeOptions='=>'array'],
 		'PhpToken::tokenize' => ['list<PhpToken>', 'code'=>'string', 'flags='=>'int'],
 		'PhpToken::is' => ['bool', 'kind'=>'string|int|string[]|int[]'],
 		'PhpToken::isIgnorable' => ['bool'],
@@ -146,7 +148,6 @@ return [
 		'xmlwriter_write_raw' => ['bool', 'xmlwriter'=>'XMLWriter', 'content'=>'string'],
 	],
 	'old' => [
-
 		'array_combine' => ['associative-array|false', 'keys'=>'string[]|int[]', 'values'=>'array'],
 		'bcdiv' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcmod' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
@@ -203,6 +204,8 @@ return [
 		'odbc_exec' => ['resource|false', 'connection_id'=>'resource', 'query'=>'string', 'flags='=>'int'],
 		'parse_str' => ['void', 'encoded_string'=>'string', '&w_result='=>'array'],
 		'password_hash' => ['string|false|null', 'password'=>'string', 'algo'=>'?string|?int', 'options='=>'array'],
+		'Phar::getMetadata' => ['mixed'],
+		'PharFileInfo::getMetadata' => ['mixed'],
 		'png2wbmp' => ['bool', 'pngname'=>'string', 'wbmpname'=>'string', 'dest_height'=>'int', 'dest_width'=>'int', 'threshold'=>'int'],
 		'proc_get_status' => ['array{command: string, pid: int, running: bool, signaled: bool, stopped: bool, exitcode: int, termsig: int, stopsig: int}|false', 'process'=>'resource'],
 		'read_exif_data' => ['array', 'filename'=>'string', 'sections_needed='=>'string', 'sub_arrays='=>'bool', 'read_thumbnail='=>'bool'],

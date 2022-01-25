@@ -52,4 +52,16 @@ class HelloWorld
 		// fallback to the more general form
 		assertType("literal-string&non-empty-string", $s17);
 	}
+
+    public function concatCase() {
+		$extra = '';
+		if (rand(0,1)) {
+			$extra = '[0-9]';
+		}
+
+		assertType("''|'[0-9]'", $extra);
+
+		$regex = '~[A-Z]' . $extra . '~';
+		assertType("'~[A-Z]~'|'~[A-Z][0-9]~'", $regex);
+	}
 }

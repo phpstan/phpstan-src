@@ -5302,15 +5302,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$versionCompare8',
 			],
 			[
-				'int<0, max>',
+				'int',
 				'$mbStrlenWithoutEncoding',
 			],
 			[
-				'int<0, max>',
+				'int',
 				'$mbStrlenWithValidEncoding',
 			],
 			[
-				'int<0, max>',
+				'int',
 				'$mbStrlenWithValidEncodingAlias',
 			],
 			[
@@ -5318,11 +5318,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrlenWithInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'int<0, max>|false' : 'int',
+				PHP_VERSION_ID < 80000 ? 'int|false' : 'int',
 				'$mbStrlenWithValidAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'int<0, max>|false' : 'int',
+				PHP_VERSION_ID < 80000 ? 'int|false' : 'int',
 				'$mbStrlenWithUnknownEncoding',
 			],
 			[

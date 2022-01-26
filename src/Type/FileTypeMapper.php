@@ -189,7 +189,7 @@ class FileTypeMapper
 	private function getNameScopeMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v18-filter-ast', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v19-trait-detection-recursion', $fileName);
 			$variableCacheKey = sprintf('%s-%s', implode(',', array_map(static fn (array $file): string => sprintf('%s-%d', $file['filename'], $file['modifiedTime']), $this->getCachedDependentFilesWithTimestamps($fileName))), $this->phpVersion->getVersionString());
 			$map = $this->cache->load($cacheKey, $variableCacheKey);
 
@@ -294,6 +294,9 @@ class FileTypeMapper
 
 							$className = $this->anonymousClassNameHelper->getAnonymousClassName($node, $fileName);
 						} elseif ((bool) $node->getAttribute('anonymousClass', false)) {
+							if ($traitFound) {
+								return self::SKIP_NODE;
+							}
 							$className = $node->name->name;
 						} else {
 							if ($traitFound) {

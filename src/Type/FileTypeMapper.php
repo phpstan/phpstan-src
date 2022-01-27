@@ -277,6 +277,10 @@ class FileTypeMapper
 			$this->phpParser->parseFile($fileName),
 			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
 				if ($node instanceof Node\Stmt\ClassLike) {
+					if ($traitFound && $fileName === $originalClassFileName) {
+						return self::SKIP_NODE;
+					}
+
 					if ($lookForTrait !== null && !$traitFound) {
 						if (!$node instanceof Node\Stmt\Trait_) {
 							return self::SKIP_NODE;
@@ -294,14 +298,8 @@ class FileTypeMapper
 
 							$className = $this->anonymousClassNameHelper->getAnonymousClassName($node, $fileName);
 						} elseif ((bool) $node->getAttribute('anonymousClass', false)) {
-							if ($traitFound) {
-								return self::SKIP_NODE;
-							}
 							$className = $node->name->name;
 						} else {
-							if ($traitFound) {
-								return self::SKIP_NODE;
-							}
 							$className = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
 						}
 						$classStack[] = $className;

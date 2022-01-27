@@ -92,6 +92,9 @@ class TrinaryLogic
 
 	public static function extremeIdentity(self ...$operands): self
 	{
+		if ($operands === []) {
+			throw new ShouldNotHappenException();
+		}
 		$operandValues = array_column($operands, 'value');
 		$min = min($operandValues);
 		$max = max($operandValues);
@@ -100,6 +103,9 @@ class TrinaryLogic
 
 	public static function maxMin(self ...$operands): self
 	{
+		if ($operands === []) {
+			throw new ShouldNotHappenException();
+		}
 		$operandValues = array_column($operands, 'value');
 		return self::create(max($operandValues) > 0 ? max($operandValues) : min($operandValues));
 	}

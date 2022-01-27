@@ -44,7 +44,7 @@ class BrokerTest extends PHPStanTestCase
 			$setterReflectionProviderProvider,
 			$classReflectionExtensionRegistryProvider,
 			$this->createMock(FunctionReflectionFactory::class),
-			new FileTypeMapper($setterReflectionProviderProvider, $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper, self::getContainer()->getByType(PhpVersion::class)),
+			new FileTypeMapper($setterReflectionProviderProvider, $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper, self::getContainer()->getByType(PhpVersion::class), self::getContainer()->getByType(FileHelper::class)),
 			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 			self::getContainer()->getByType(PhpVersion::class),
 			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),

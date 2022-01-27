@@ -9355,6 +9355,7 @@ return [
 'Redis::renameNx' => ['bool', 'srckey'=>'string', 'dstkey'=>'string'],
 'Redis::resetStat' => ['bool'],
 'Redis::restore' => ['bool', 'key'=>'string', 'ttl'=>'int', 'value'=>'string'],
+'Redis::role' => ['array'],
 'Redis::rPop' => ['string', 'key'=>'string'],
 'Redis::rpoplpush' => ['string', 'srcKey'=>'string', 'dstKey'=>'string'],
 'Redis::rPush' => ['int|false', 'key'=>'string', 'value1'=>'string', 'value2='=>'string', 'valueN='=>'string'],

@@ -89,6 +89,8 @@ class FileTypeMapper
 		string $docComment,
 	): ResolvedPhpDocBlock
 	{
+		$fileName = $this->fileHelper->normalizePath($fileName);
+
 		if ($className === null && $traitName !== null) {
 			throw new ShouldNotHappenException();
 		}
@@ -279,7 +281,7 @@ class FileTypeMapper
 			$this->phpParser->parseFile($fileName),
 			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
 				if ($node instanceof Node\Stmt\ClassLike) {
-					if ($traitFound && $this->fileHelper->normalizePath($fileName) === $this->fileHelper->normalizePath($originalClassFileName)) {
+					if ($traitFound && $fileName === $originalClassFileName) {
 						return self::SKIP_NODE;
 					}
 

@@ -513,6 +513,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug6442AnonymousClassAndTraitInSameFile(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6442-anonymous-class-and-trait-in-same-file.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

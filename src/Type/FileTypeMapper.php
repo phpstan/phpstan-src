@@ -9,6 +9,7 @@ use PHPStan\Analyser\NameScope;
 use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
+use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
@@ -74,6 +75,7 @@ class FileTypeMapper
 		private Cache $cache,
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
 		private PhpVersion $phpVersion,
+		private FileHelper $fileHelper,
 	)
 	{
 	}
@@ -277,7 +279,7 @@ class FileTypeMapper
 			$this->phpParser->parseFile($fileName),
 			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
 				if ($node instanceof Node\Stmt\ClassLike) {
-					if ($traitFound && $fileName === $originalClassFileName) {
+					if ($traitFound && $this->fileHelper->normalizePath($fileName) === $this->fileHelper->normalizePath($originalClassFileName)) {
 						return self::SKIP_NODE;
 					}
 

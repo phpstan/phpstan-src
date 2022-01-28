@@ -148,7 +148,6 @@ class AnalyseCommand extends Command
 				$generateBaselineFile,
 				$level,
 				$allowXdebug,
-				true,
 				$debugEnabled,
 			);
 		} catch (InceptionNotSuccessfulException $e) {
@@ -409,7 +408,7 @@ class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1);
 			}
 
-			$inceptionResult->handleReturn(0); // delete memory limit file
+			$inceptionResult->handleReturn(0);
 
 			/** @var FixerApplication $fixerApplication */
 			$fixerApplication = $container->getByType(FixerApplication::class);

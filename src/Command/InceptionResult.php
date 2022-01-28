@@ -6,7 +6,6 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\Internal\BytesHelper;
 use function memory_get_peak_usage;
 use function sprintf;
-use function unlink;
 
 class InceptionResult
 {
@@ -24,7 +23,6 @@ class InceptionResult
 		private Output $errorOutput,
 		private Container $container,
 		private bool $isDefaultLevelUsed,
-		private string $memoryLimitFile,
 		private ?string $projectConfigFile,
 		private ?array $projectConfigArray,
 		private ?string $generateBaselineFile,
@@ -87,7 +85,6 @@ class InceptionResult
 			$this->getErrorOutput()->writeLineFormatted(sprintf('Used memory: %s', BytesHelper::bytes(memory_get_peak_usage(true))));
 		}
 
-		@unlink($this->memoryLimitFile);
 		return $exitCode;
 	}
 

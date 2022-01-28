@@ -465,7 +465,6 @@ services:
 	-
 		class: PHPStan\Command\AnalyseApplication
 		arguments:
-			memoryLimitFile: %memoryLimitFile%
 			internalErrorsCountLimit: %internalErrorsCountLimit%
 
 	-

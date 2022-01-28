@@ -114,7 +114,6 @@ class WorkerCommand extends Command
 				$level,
 				$allowXdebug,
 				false,
-				false,
 				$singleReflectionFile,
 				null,
 				false,

@@ -9,17 +9,10 @@ use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubValidator;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
-use function ceil;
 use function count;
-use function error_get_last;
-use function file_put_contents;
 use function is_string;
 use function memory_get_peak_usage;
-use function register_shutdown_function;
 use function sprintf;
-use function strpos;
-use function unlink;
-use const E_ERROR;
 
 class AnalyseApplication
 {
@@ -29,7 +22,6 @@ class AnalyseApplication
 		private StubValidator $stubValidator,
 		private ResultCacheManagerFactory $resultCacheManagerFactory,
 		private IgnoredErrorHelper $ignoredErrorHelper,
-		private string $memoryLimitFile,
 		private int $internalErrorsCountLimit,
 	)
 	{
@@ -51,28 +43,11 @@ class AnalyseApplication
 		InputInterface $input,
 	): AnalysisResult
 	{
-		$this->updateMemoryLimitFile();
 		$projectStubFiles = [];
 		if ($projectConfigArray !== null) {
 			$projectStubFiles = $projectConfigArray['parameters']['stubFiles'] ?? [];
 		}
 		$stubErrors = $this->stubValidator->validate($projectStubFiles, $debug);
-
-		register_shutdown_function(function (): void {
-			$error = error_get_last();
-			if ($error === null) {
-				return;
-			}
-			if ($error['type'] !== E_ERROR) {
-				return;
-			}
-
-			if (strpos($error['message'], 'Allowed memory size') !== false) {
-				return;
-			}
-
-			@unlink($this->memoryLimitFile);
-		});
 
 		$resultCacheManager = $this->resultCacheManagerFactory->create([]);
 
@@ -155,21 +130,14 @@ class AnalyseApplication
 
 		if (!$debug) {
 			$progressStarted = false;
-			$fileOrder = 0;
 			$preFileCallback = null;
-			$postFileCallback = function (int $step) use ($errorOutput, &$progressStarted, $allAnalysedFilesCount, $filesCount, &$fileOrder): void {
+			$postFileCallback = static function (int $step) use ($errorOutput, &$progressStarted, $allAnalysedFilesCount, $filesCount): void {
 				if (!$progressStarted) {
 					$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 					$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount - $filesCount);
 					$progressStarted = true;
 				}
 				$errorOutput->getStyle()->progressAdvance($step);
-
-				if ($fileOrder >= 100) {
-					$this->updateMemoryLimitFile();
-					$fileOrder = 0;
-				}
-				$fileOrder += $step;
 			};
 		} else {
 			$preFileCallback = static function (string $file) use ($stdOutput): void {
@@ -193,13 +161,6 @@ class AnalyseApplication
 		}
 
 		return $analyserResult;
-	}
-
-	private function updateMemoryLimitFile(): void
-	{
-		$bytes = memory_get_peak_usage(true);
-		$megabytes = ceil($bytes / 1024 / 1024);
-		file_put_contents($this->memoryLimitFile, sprintf('%d MB', $megabytes));
 	}
 
 }

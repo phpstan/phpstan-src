@@ -28,6 +28,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
+use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateObjectType;
 use PHPStan\Type\Generic\TemplateObjectWithoutClassType;
 use PHPStan\Type\Generic\TemplateType;
@@ -1203,6 +1204,112 @@ class TypeCombinatorTest extends PHPStanTestCase
 				],
 				UnionType::class,
 				'T of DateTime (function a(), parameter)|U of DateTime (function a(), parameter)',
+			],
+			'bug6210-1' => [
+				[
+					new ObjectWithoutClassType(),
+					new IntersectionType([
+						new ObjectWithoutClassType(),
+						new HasMethodType('getId'),
+					]),
+				],
+				ObjectWithoutClassType::class,
+				'object',
+			],
+			'bug6210-2' => [
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						null,
+						TemplateTypeVariance::createInvariant(),
+					),
+					new IntersectionType([
+						TemplateTypeFactory::create(
+							TemplateTypeScope::createWithFunction('a'),
+							'T',
+							null,
+							TemplateTypeVariance::createInvariant(),
+						),
+						new HasMethodType('getId'),
+					]),
+				],
+				TemplateMixedType::class,
+				'T (function a(), parameter)=explicit',
+			],
+			'bug6210-3' => [
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						new ObjectWithoutClassType(),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new IntersectionType([
+						TemplateTypeFactory::create(
+							TemplateTypeScope::createWithFunction('a'),
+							'T',
+							new ObjectWithoutClassType(),
+							TemplateTypeVariance::createInvariant(),
+						),
+						new HasMethodType('getId'),
+					]),
+				],
+				TemplateObjectWithoutClassType::class,
+				'T of object (function a(), parameter)',
+			],
+			'bug6210-4' => [
+				[
+					new ObjectWithoutClassType(),
+					new IntersectionType([
+						new ObjectWithoutClassType(),
+						new HasPropertyType('getId'),
+					]),
+				],
+				ObjectWithoutClassType::class,
+				'object',
+			],
+			'bug6210-5' => [
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						null,
+						TemplateTypeVariance::createInvariant(),
+					),
+					new IntersectionType([
+						TemplateTypeFactory::create(
+							TemplateTypeScope::createWithFunction('a'),
+							'T',
+							null,
+							TemplateTypeVariance::createInvariant(),
+						),
+						new HasPropertyType('getId'),
+					]),
+				],
+				TemplateMixedType::class,
+				'T (function a(), parameter)=explicit',
+			],
+			'bug6210-6' => [
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						new ObjectWithoutClassType(),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new IntersectionType([
+						TemplateTypeFactory::create(
+							TemplateTypeScope::createWithFunction('a'),
+							'T',
+							new ObjectWithoutClassType(),
+							TemplateTypeVariance::createInvariant(),
+						),
+						new HasPropertyType('getId'),
+					]),
+				],
+				TemplateObjectWithoutClassType::class,
+				'T of object (function a(), parameter)',
 			],
 			[
 				[

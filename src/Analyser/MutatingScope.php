@@ -5409,15 +5409,24 @@ class MutatingScope implements Scope
 
 		if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {
 			if ($operand instanceof ConstantIntegerType) {
+				/** @var int|float|null $min */
 				$min = $rangeMin !== null ? $rangeMin + $operand->getValue() : null;
+
+				/** @var int|float|null $max */
 				$max = $rangeMax !== null ? $rangeMax + $operand->getValue() : null;
 			} else {
+				/** @var int|float|null $min */
 				$min = $rangeMin !== null && $operand->getMin() !== null ? $rangeMin + $operand->getMin() : null;
+
+				/** @var int|float|null $max */
 				$max = $rangeMax !== null && $operand->getMax() !== null ? $rangeMax + $operand->getMax() : null;
 			}
 		} elseif ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus) {
 			if ($operand instanceof ConstantIntegerType) {
+				/** @var int|float|null $min */
 				$min = $rangeMin !== null ? $rangeMin - $operand->getValue() : null;
+
+				/** @var int|float|null $max */
 				$max = $rangeMax !== null ? $rangeMax - $operand->getValue() : null;
 			} else {
 				if ($rangeMin === $rangeMax && $rangeMin !== null
@@ -5429,8 +5438,10 @@ class MutatingScope implements Scope
 						$min = null;
 					} elseif ($rangeMin !== null) {
 						if ($operand->getMax() !== null) {
+							/** @var int|float $min */
 							$min = $rangeMin - $operand->getMax();
 						} else {
+							/** @var int|float $min */
 							$min = $rangeMin - $operand->getMin();
 						}
 					} else {
@@ -5442,9 +5453,11 @@ class MutatingScope implements Scope
 						$max = null;
 					} elseif ($rangeMax !== null) {
 						if ($rangeMin !== null && $operand->getMin() === null) {
+							/** @var int|float $min */
 							$min = $rangeMin - $operand->getMax();
 							$max = null;
 						} elseif ($operand->getMin() !== null) {
+							/** @var int|float $max */
 							$max = $rangeMax - $operand->getMin();
 						} else {
 							$max = null;
@@ -5460,10 +5473,16 @@ class MutatingScope implements Scope
 			}
 		} elseif ($node instanceof Node\Expr\BinaryOp\Mul || $node instanceof Node\Expr\AssignOp\Mul) {
 			if ($operand instanceof ConstantIntegerType) {
+				/** @var int|float|null $min */
 				$min = $rangeMin !== null ? $rangeMin * $operand->getValue() : null;
+
+				/** @var int|float|null $max */
 				$max = $rangeMax !== null ? $rangeMax * $operand->getValue() : null;
 			} else {
+				/** @var int|float|null $min */
 				$min = $rangeMin !== null && $operand->getMin() !== null ? $rangeMin * $operand->getMin() : null;
+
+				/** @var int|float|null $max */
 				$max = $rangeMax !== null && $operand->getMax() !== null ? $rangeMax * $operand->getMax() : null;
 			}
 
@@ -5525,6 +5544,13 @@ class MutatingScope implements Scope
 
 				return TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType());
 			}
+		}
+
+		if (is_float($min)) {
+			$min = null;
+		}
+		if (is_float($max)) {
+			$max = null;
 		}
 
 		return IntegerRangeType::fromInterval($min, $max);

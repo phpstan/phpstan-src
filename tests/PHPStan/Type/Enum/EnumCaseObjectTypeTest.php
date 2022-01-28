@@ -18,6 +18,10 @@ class EnumCaseObjectTypeTest extends PHPStanTestCase
 
 	public function dataIsSuperTypeOf(): iterable
 	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
 		yield [
 			new ObjectType('PHPStan\Fixture\TestEnum'),
 			new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
@@ -120,6 +124,10 @@ class EnumCaseObjectTypeTest extends PHPStanTestCase
 
 	public function dataAccepts(): iterable
 	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
 		yield [
 			new ObjectType('PHPStan\Fixture\TestEnum'),
 			new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),

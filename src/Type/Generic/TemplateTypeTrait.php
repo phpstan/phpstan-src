@@ -121,7 +121,7 @@ trait TemplateTypeTrait
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		if ($type instanceof self) {
+		if ($type instanceof self || $type instanceof IntersectionType) {
 			return $type->isSubTypeOf($this);
 		}
 

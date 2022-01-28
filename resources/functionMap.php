@@ -1590,7 +1590,7 @@ return [
 'DatePeriod::__construct\'2' => ['void', 'iso'=>'string', 'options='=>'int'],
 'DatePeriod::__wakeup' => ['void'],
 'DatePeriod::getDateInterval' => ['DateInterval'],
-'DatePeriod::getEndDate' => ['DateTimeInterface'],
+'DatePeriod::getEndDate' => ['?DateTimeInterface'],
 'DatePeriod::getStartDate' => ['DateTimeInterface'],
 'DateTime::__construct' => ['void', 'time='=>'string', 'timezone='=>'?DateTimeZone'],
 'DateTime::__set_state' => ['static', 'array'=>'array'],

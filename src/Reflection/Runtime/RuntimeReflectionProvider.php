@@ -388,8 +388,7 @@ class RuntimeReflectionProvider implements ReflectionProvider
 
 		foreach ($debugBacktrace as $traceStep) {
 			if (
-				isset($traceStep['function'])
-				&& isset($existsCallTypes[$traceStep['function']])
+				isset($existsCallTypes[$traceStep['function']])
 				// We must ignore the self::hasClass calls
 				&& (!isset($traceStep['file']) || $traceStep['file'] !== __FILE__)
 			) {

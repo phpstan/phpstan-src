@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_INT_SIZE;
 use const PHP_VERSION_ID;
 
 /**
@@ -461,6 +462,9 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	public function testBug4848(): void
 	{
+		if (PHP_INT_SIZE !== 8) {
+			$this->markTestSkipped('Test requires 64-bit platform.');
+		}
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/bug-4848.php'], [
 			[

@@ -8,18 +8,10 @@ use Throwable;
 use function array_fill_keys;
 use function array_merge;
 use function count;
-use function error_reporting;
-use function in_array;
-use function restore_error_handler;
-use function set_error_handler;
 use function sprintf;
-use const E_DEPRECATED;
 
 class Analyser
 {
-
-	/** @var Error[] */
-	private array $collectedErrors = [];
 
 	public function __construct(
 		private FileAnalyser $fileAnalyser,
@@ -50,8 +42,6 @@ class Analyser
 
 		$this->nodeScopeResolver->setAnalysedFiles($allAnalysedFiles);
 		$allAnalysedFiles = array_fill_keys($allAnalysedFiles, true);
-
-		$this->collectErrors($files);
 
 		$errors = [];
 		$internalErrorsCount = 0;
@@ -103,10 +93,6 @@ class Analyser
 			$postFileCallback(1);
 		}
 
-		$this->restoreCollectErrorsHandler();
-
-		$errors = array_merge($errors, $this->collectedErrors);
-
 		return new AnalyserResult(
 			$errors,
 			[],
@@ -114,37 +100,6 @@ class Analyser
 			$exportedNodes,
 			$reachedInternalErrorsCountLimit,
 		);
-	}
-
-	/**
-	 * @param string[] $analysedFiles
-	 */
-	private function collectErrors(array $analysedFiles): void
-	{
-		$this->collectedErrors = [];
-		set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use ($analysedFiles): bool {
-			if ((error_reporting() & $errno) === 0) {
-				// silence @ operator
-				return true;
-			}
-
-			if ($errno === E_DEPRECATED) {
-				return true;
-			}
-
-			if (!in_array($errfile, $analysedFiles, true)) {
-				return true;
-			}
-
-			$this->collectedErrors[] = new Error($errstr, $errfile, $errline, true);
-
-			return true;
-		});
-	}
-
-	private function restoreCollectErrorsHandler(): void
-	{
-		restore_error_handler();
 	}
 
 }

@@ -2328,4 +2328,12 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5591(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-5591.php'], []);
+	}
+
 }

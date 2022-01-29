@@ -21,6 +21,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use function get_class;
 use function in_array;
 use function is_numeric;
@@ -105,14 +106,32 @@ class ParserNodeTypeToPHPStanType
 			$left = self::resolveParameterDefaultType($type->left);
 			$right = self::resolveParameterDefaultType($type->right);
 
-			if ($left instanceof ConstantIntegerType && $right instanceof ConstantIntegerType) {
+			if ($left instanceof ConstantIntegerType && $right instanceof ConstantIntegerType ||
+				$left instanceof ConstantStringType && $right instanceof ConstantStringType)
+			{
 				if ($type instanceof BitwiseOr) {
 					return new ConstantIntegerType($left->getValue() | $right->getValue());
 				}
 				return new ConstantIntegerType($left->getValue() & $right->getValue());
 			}
 
-			throw new ShouldNotHappenException('Unable to resolve bitwise operation: '. json_encode($type));
+			if ($type->left instanceof ConstFetch && $type->right instanceof ConstFetch) {
+				throw new ShouldNotHappenException(
+					sprintf('Unable to resolve bitwise operation: %s, left %s, right %s',
+						get_class($type),
+						$type->left->name,
+						$type->right->name,
+					)
+				);
+			}
+
+			throw new ShouldNotHappenException(
+				sprintf('Unable to resolve bitwise operation: %s, left %s, right %s',
+					get_class($type),
+					get_class($type->left),
+					get_class($type->right),
+				)
+			);
 			// unresolvable constant, e.g. unknown or class not found
 //			return new ErrorType();
 		}

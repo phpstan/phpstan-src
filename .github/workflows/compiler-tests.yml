@@ -58,3 +58,10 @@ jobs:
     uses: phpstan/phpstan/.github/workflows/extension-tests.yml@master
     with:
       ref: master
+
+  other-tests:
+    if: github.event_name == 'pull_request'
+    needs: compiler-tests
+    uses: phpstan/phpstan/.github/workflows/other-tests.yml@master
+    with:
+      ref: master

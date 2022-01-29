@@ -1921,7 +1921,7 @@ return [
 'DOMDocument::registerNodeClass' => ['bool', 'baseclass'=>'string', 'extendedclass'=>'string'],
 'DOMDocument::relaxNGValidate' => ['bool', 'filename'=>'string'],
 'DOMDocument::relaxNGValidateSource' => ['bool', 'source'=>'string'],
-'DOMDocument::save' => ['int', 'filename'=>'string', 'options='=>'int'],
+'DOMDocument::save' => ['int|false', 'filename'=>'string', 'options='=>'int'],
 'DOMDocument::saveHTML' => ['string|false', 'node='=>'?DOMNode'],
 'DOMDocument::saveHTMLFile' => ['int|false', 'filename'=>'string'],
 'DOMDocument::saveXML' => ['string|false', 'node='=>'?DOMNode', 'options='=>'int'],

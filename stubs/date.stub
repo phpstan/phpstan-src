@@ -11,8 +11,8 @@ class DateInterval
 }
 
 /**
- * @template TEnd of ?DateTimeInterface
- * @template TRecurrences of ?int
+ * @template TEnd
+ * @template TRecurrences
  */
 class DatePeriod
 {

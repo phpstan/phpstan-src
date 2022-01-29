@@ -112,7 +112,8 @@ class ParserNodeTypeToPHPStanType
 				return new ConstantIntegerType($left->getValue() & $right->getValue());
 			}
 
-			throw new ShouldNotHappenException(sprintf('Unexpected type %s, left %s, right %s', get_class($type), get_class($left), get_class($right)));
+			// unresolvable constant, e.g. unknown or class not found
+			return new ErrorType();
 		}
 
 		throw new ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));

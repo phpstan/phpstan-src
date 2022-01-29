@@ -46,7 +46,7 @@ class ParserNodeTypeToPHPStanType
 			if ($type->name instanceof Identifier) {
 				$constantName = $type->name->name;
 				if (!($type->class instanceof Name)) {
-					throw new \PHPStan\ShouldNotHappenException();
+					throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected typ %s', get_class($type)));
 				}
 
 				$constantClass = (string) $type->class;
@@ -59,7 +59,7 @@ class ParserNodeTypeToPHPStanType
 				return $constantClassType->getConstant($constantName)->getValueType();
 			}
 
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected typ %s', get_class($type)));
 		} elseif ($type instanceof String_ || $type instanceof LNumber || $type instanceof DNumber) {
 			return ConstantTypeHelper::getTypeFromValue($type->value);
 		} elseif ($type instanceof Array_) {
@@ -84,7 +84,7 @@ class ParserNodeTypeToPHPStanType
 			$expr = $type->expr;
 
 			if (!($expr instanceof LNumber || $expr instanceof DNumber)) {
-				throw new \PHPStan\ShouldNotHappenException();
+				throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected typ %s', get_class($type)));
 			}
 
 			$type = self::resolveParameterDefaultType($expr);
@@ -97,7 +97,7 @@ class ParserNodeTypeToPHPStanType
 				}
 			}
 
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected typ %s', get_class($type)));
 		} elseif ($type instanceof BitwiseOr || $type instanceof BitwiseAnd) {
 
 			if ($type->left instanceof ClassConstFetch && $type->right instanceof ClassConstFetch) {
@@ -112,10 +112,10 @@ class ParserNodeTypeToPHPStanType
 				}
 			}
 
-			throw new \PHPStan\ShouldNotHappenException();
+			throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected typ %s', get_class($type)));
 		}
 
-		throw new \PHPStan\ShouldNotHappenException();
+		throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected typ %s', get_class($type)));
 	}
 
 	/**
@@ -165,7 +165,7 @@ class ParserNodeTypeToPHPStanType
 			return TypeCombinator::intersect(...$types);
 
 		} elseif (!$type instanceof Identifier) {
-			throw new ShouldNotHappenException(get_class($type));
+			throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected typ %s', get_class($type)));
 		}
 
 		$type = $type->name;

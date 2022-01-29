@@ -106,8 +106,15 @@ class ParserNodeTypeToPHPStanType
 			$left = self::resolveParameterDefaultType($type->left);
 			$right = self::resolveParameterDefaultType($type->right);
 
-			if ($left instanceof ConstantIntegerType && $right instanceof ConstantIntegerType ||
-				$left instanceof ConstantStringType && $right instanceof ConstantStringType)
+			if ($left instanceof ConstantStringType && $right instanceof ConstantStringType)
+			{
+				if ($type instanceof BitwiseOr) {
+					return new ConstantIntegerType($left->getValue() | $right->getValue());
+				}
+				return new ConstantIntegerType($left->getValue() & $right->getValue());
+			}
+			
+			if ($left instanceof ConstantIntegerType && $right instanceof ConstantIntegerType)
 			{
 				if ($type instanceof BitwiseOr) {
 					return new ConstantIntegerType($left->getValue() | $right->getValue());

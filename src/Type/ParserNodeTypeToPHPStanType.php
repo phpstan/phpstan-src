@@ -116,7 +116,7 @@ class ParserNodeTypeToPHPStanType
 			return new ErrorType();
 		}
 
-		if ($type) {
+		if ($type !== null) {
 			throw new ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
 		}
 		throw new ShouldNotHappenException('Type cannot be null');

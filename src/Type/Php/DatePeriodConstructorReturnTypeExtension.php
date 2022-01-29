@@ -36,7 +36,7 @@ class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodRet
 
 		if (
 				$thirdArgType instanceof ObjectType
-			&& $thirdArgType->isInstanceOf(DateTimeInterface::class)
+			&& $thirdArgType->isInstanceOf(DateTimeInterface::class)->yes()
 		) {
 
 			return new GenericObjectType(DatePeriod::class, [

@@ -17,12 +17,14 @@ use PhpParser\Node\Scalar\DNumber;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function get_class;
 use function in_array;
 use function is_numeric;
+use function sprintf;
 use function strtolower;
 
 class ParserNodeTypeToPHPStanType
@@ -46,7 +48,7 @@ class ParserNodeTypeToPHPStanType
 			if ($type->name instanceof Identifier) {
 				$constantName = $type->name->name;
 				if (!($type->class instanceof Name)) {
-					throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
+					throw new ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
 				}
 
 				$constantClass = (string) $type->class;
@@ -59,7 +61,7 @@ class ParserNodeTypeToPHPStanType
 				return $constantClassType->getConstant($constantName)->getValueType();
 			}
 
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
+			throw new ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
 		} elseif ($type instanceof String_ || $type instanceof LNumber || $type instanceof DNumber) {
 			return ConstantTypeHelper::getTypeFromValue($type->value);
 		} elseif ($type instanceof Array_) {
@@ -84,7 +86,7 @@ class ParserNodeTypeToPHPStanType
 			$expr = $type->expr;
 
 			if (!($expr instanceof LNumber || $expr instanceof DNumber)) {
-				throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
+				throw new ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
 			}
 
 			$type = self::resolveParameterDefaultType($expr);
@@ -97,25 +99,23 @@ class ParserNodeTypeToPHPStanType
 				}
 			}
 
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
+			throw new ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
 		} elseif ($type instanceof BitwiseOr || $type instanceof BitwiseAnd) {
 
-			if ($type->left instanceof ClassConstFetch && $type->right instanceof ClassConstFetch) {
-				$left = self::resolveParameterDefaultType($type->left);
-				$right = self::resolveParameterDefaultType($type->right);
+			$left = self::resolveParameterDefaultType($type->left);
+			$right = self::resolveParameterDefaultType($type->right);
 
-				if ($left instanceof ConstantIntegerType && $right instanceof ConstantIntegerType) {
-					if ($type instanceof BitwiseOr) {
-						return new ConstantIntegerType($left->getValue() | $right->getValue());
-					}
-					return new ConstantIntegerType($left->getValue() & $right->getValue());
+			if ($left instanceof ConstantIntegerType && $right instanceof ConstantIntegerType) {
+				if ($type instanceof BitwiseOr) {
+					return new ConstantIntegerType($left->getValue() | $right->getValue());
 				}
+				return new ConstantIntegerType($left->getValue() & $right->getValue());
 			}
 
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected type %s, left %s, right %s', get_class($type), get_class($type->left), get_class($type->right)));
+			throw new ShouldNotHappenException(sprintf('Unexpected type %s, left %s, right %s', get_class($type), get_class($left), get_class($right)));
 		}
 
-		throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
+		throw new ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
 	}
 
 	/**
@@ -165,7 +165,7 @@ class ParserNodeTypeToPHPStanType
 			return TypeCombinator::intersect(...$types);
 
 		} elseif (!$type instanceof Identifier) {
-			throw new \PHPStan\ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
+			throw new ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
 		}
 
 		$type = $type->name;

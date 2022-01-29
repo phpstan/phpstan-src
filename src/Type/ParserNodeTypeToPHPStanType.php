@@ -112,7 +112,7 @@ class ParserNodeTypeToPHPStanType
 				return new ConstantIntegerType($left->getValue() & $right->getValue());
 			}
 
-			throw new ShouldNotHappenException('Unable to resolve bitwise operation: '. json_encode($type->jsonSerialize()));
+			throw new ShouldNotHappenException('Unable to resolve bitwise operation: '. json_encode($type));
 			// unresolvable constant, e.g. unknown or class not found
 //			return new ErrorType();
 		}

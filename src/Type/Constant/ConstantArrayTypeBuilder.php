@@ -111,6 +111,12 @@ class ConstantArrayTypeBuilder
 							break;
 						}
 
+						$rangeLength = $integerRange->getMax() - $integerRange->getMin();
+						if ($rangeLength >= self::ARRAY_COUNT_LIMIT) {
+							$scalarTypes = [];
+							break;
+						}
+
 						foreach (range($integerRange->getMin(), $integerRange->getMax()) as $rangeValue) {
 							$scalarTypes[] = new ConstantIntegerType($rangeValue);
 						}

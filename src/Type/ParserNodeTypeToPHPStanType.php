@@ -30,7 +30,7 @@ use function strtolower;
 class ParserNodeTypeToPHPStanType
 {
 
-	public static function resolveParameterDefaultType(?Expr $type): Type
+	public static function resolveParameterDefaultType(Expr $type): Type
 	{
 		if ($type instanceof ConstFetch) {
 			$constName = (string) $type->name;
@@ -116,9 +116,6 @@ class ParserNodeTypeToPHPStanType
 			return new ErrorType();
 		}
 
-		if ($type !== null) {
-			throw new ShouldNotHappenException(sprintf('Unexpected type %s', get_class($type)));
-		}
 		throw new ShouldNotHappenException('Type cannot be null');
 	}
 

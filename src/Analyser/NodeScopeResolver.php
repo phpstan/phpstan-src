@@ -1501,7 +1501,9 @@ class NodeScopeResolver
 
 	private function lookForExitVariableAssign(MutatingScope $scope, Expr $expr): MutatingScope
 	{
-		$scope = $scope->exitExpressionAssign($expr);
+		if (!$expr instanceof ArrayDimFetch || $expr->dim !== null) {
+			$scope = $scope->exitExpressionAssign($expr);
+		}
 		if (!$expr instanceof Variable) {
 			return $this->lookForVariableAssignCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->exitExpressionAssign($expr));
 		}
@@ -1517,11 +1519,11 @@ class NodeScopeResolver
 		if ($expr instanceof Variable) {
 			$scope = $callback($scope, $expr);
 		} elseif ($expr instanceof ArrayDimFetch) {
-			while ($expr instanceof ArrayDimFetch) {
-				$expr = $expr->var;
+			if ($expr->dim !== null) {
+				$scope = $callback($scope, $expr);
 			}
 
-			$scope = $this->lookForVariableAssignCallback($scope, $expr, $callback);
+			$scope = $this->lookForVariableAssignCallback($scope, $expr->var, $callback);
 		} elseif ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
 			$scope = $this->lookForVariableAssignCallback($scope, $expr->var, $callback);
 		} elseif ($expr instanceof StaticPropertyFetch) {

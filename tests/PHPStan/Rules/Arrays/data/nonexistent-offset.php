@@ -459,3 +459,23 @@ class Bug3282
 		return 0;
 	}
 }
+
+class MessageDescriptorTest
+{
+
+	public function testDefinitions(): void
+	{
+		try {
+			doFoo();
+		} catch (\TypeError $e) {
+			$trace = $e->getTrace();
+			if (isset($trace[1]['args'][0])) {
+				$class = $trace[1]['args'][0];
+				$this->fail(sprintf('Invalid phpDoc in class: %s', $class));
+			}
+
+			throw $e;
+		}
+	}
+
+}

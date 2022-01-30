@@ -11,8 +11,8 @@ class DateInterval
 }
 
 /**
- * @template TEnd
- * @template TRecurrences
+ * @template TEnd of ?DateTimeInterface
+ * @template TRecurrences of ?int
  */
 class DatePeriod
 {
@@ -20,7 +20,7 @@ class DatePeriod
 	/**
 	 * @return TEnd
 	 */
-	public function getEndDate(): ?DateTimeInterface
+	public function getEndDate()
 	{
 
 	}
@@ -28,7 +28,7 @@ class DatePeriod
 	/**
 	 * @return TRecurrences
 	 */
-	public function getRecurrences(): ?int
+	public function getRecurrences()
 	{
 
 	}

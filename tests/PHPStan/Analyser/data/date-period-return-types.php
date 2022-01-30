@@ -11,19 +11,19 @@ $iso = 'R4/2012-07-01T00:00:00Z/P7D';
 $datePeriodList = [];
 
 $datePeriod = new DatePeriod($start, $interval, $end);
-assertType(\DatePeriod::class, $datePeriod);
+assertType(\DatePeriod::class . '<DateTimeInterface, null>', $datePeriod);
 assertType(\DateTimeInterface::class, $datePeriod->getEndDate());
 assertType('null', $datePeriod->getRecurrences());
 $datePeriodList[] = $datePeriod;
 
 $datePeriod = new DatePeriod($start, $interval, $recurrences);
-assertType(\DatePeriod::class, $datePeriod);
+assertType(\DatePeriod::class . '<null, int>', $datePeriod);
 assertType('null', $datePeriod->getEndDate());
 assertType('int', $datePeriod->getRecurrences());
 $datePeriodList[] = $datePeriod;
 
 $datePeriod = new DatePeriod($iso);
-assertType(\DatePeriod::class, $datePeriod);
+assertType(\DatePeriod::class . '<null, int>', $datePeriod);
 assertType('null', $datePeriod->getEndDate());
 assertType('int', $datePeriod->getRecurrences());
 $datePeriodList[] = $datePeriod;

@@ -34,21 +34,28 @@ class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodRet
 			$thirdArgType = $scope->getType($methodCall->getArgs()[2]->value);
 		}
 
-		if (
-				$thirdArgType instanceof ObjectType
-			&& (new ObjectType(DateTimeInterface::class))->isSuperTypeOf($thirdArgType)->yes()
-		) {
+		if (!$thirdArgType instanceof Type) {
+			return new GenericObjectType(DatePeriod::class, [
+				new NullType(),
+				new IntegerType(),
+			]);
+		}
 
+		if ((new ObjectType(DateTimeInterface::class))->isSuperTypeOf($thirdArgType)->yes()) {
 			return new GenericObjectType(DatePeriod::class, [
 				new ObjectType(DateTimeInterface::class),
 				new NullType(),
 			]);
 		}
 
-		return new GenericObjectType(DatePeriod::class, [
-			new NullType(),
-			new IntegerType(),
-		]);
+		if ((new IntegerType())->isSuperTypeOf($thirdArgType)->yes()) {
+			return new GenericObjectType(DatePeriod::class, [
+				new NullType(),
+				new IntegerType(),
+			]);
+		}
+
+		return new ObjectType(DatePeriod::class);
 	}
 
 }

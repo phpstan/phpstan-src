@@ -64,12 +64,6 @@ class Foo
 
 }
 
-class Capacity
-{
-
-	function __construct(public mixed $current, public int $count) {}
-
-}
 interface Foo2 {
 	function equals(self $other): bool;
 }

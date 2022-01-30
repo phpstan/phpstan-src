@@ -20,7 +20,7 @@ class DatePeriod
 	/**
 	 * @return TEnd
 	 */
-	public function getEndDate()
+	public function getEndDate(): ?DateTimeInterface
 	{
 
 	}
@@ -28,7 +28,7 @@ class DatePeriod
 	/**
 	 * @return TRecurrences
 	 */
-	public function getRecurrences()
+	public function getRecurrences(): ?int
 	{
 
 	}

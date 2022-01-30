@@ -478,4 +478,10 @@ class MessageDescriptorTest
 		}
 	}
 
+	/** @param array<string, mixed>|null $array */
+	function test($array): void {
+		var_dump($array['test1']['test2'] ?? true);
+		var_dump($array['test1'] ?? true);
+	}
+
 }

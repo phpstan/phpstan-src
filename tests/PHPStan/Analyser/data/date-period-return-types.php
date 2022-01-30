@@ -11,19 +11,24 @@ $iso = 'R4/2012-07-01T00:00:00Z/P7D';
 $datePeriodList = [];
 
 $datePeriod = new DatePeriod($start, $interval, $end);
-assertType(\DatePeriod::class . '<DateTimeInterface, null>', $datePeriod);
-assertType(\DateTimeInterface::class, $datePeriod->getEndDate());
+assertType(\DatePeriod::class . '<DateTime, DateTime, null>', $datePeriod);
+assertType(\DateTime::class, $datePeriod->getEndDate());
 assertType('null', $datePeriod->getRecurrences());
 $datePeriodList[] = $datePeriod;
 
+foreach ($datePeriod as $k => $v) {
+	assertType('int', $k);
+	assertType('DateTime', $v);
+}
+
 $datePeriod = new DatePeriod($start, $interval, $recurrences);
-assertType(\DatePeriod::class . '<null, int>', $datePeriod);
+assertType(\DatePeriod::class . '<DateTime, null, 4>', $datePeriod);
 assertType('null', $datePeriod->getEndDate());
-assertType('int', $datePeriod->getRecurrences());
+assertType('4', $datePeriod->getRecurrences());
 $datePeriodList[] = $datePeriod;
 
 $datePeriod = new DatePeriod($iso);
-assertType(\DatePeriod::class . '<null, int>', $datePeriod);
+assertType(\DatePeriod::class . '<DateTime, null, int>', $datePeriod);
 assertType('null', $datePeriod->getEndDate());
 assertType('int', $datePeriod->getRecurrences());
 $datePeriodList[] = $datePeriod;

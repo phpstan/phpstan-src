@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use DatePeriod;
+use DateTime;
 use DateTimeInterface;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
@@ -12,6 +13,7 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 
 class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
@@ -29,6 +31,13 @@ class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodRet
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): Type
 	{
+		$firstArgType = null;
+		if (isset($methodCall->getArgs()[0])) {
+			$firstArgType = $scope->getType($methodCall->getArgs()[0]->value);
+			if ((new StringType())->isSuperTypeOf($firstArgType)->yes()) {
+				$firstArgType = new ObjectType(DateTime::class);
+			}
+		}
 		$thirdArgType = null;
 		if (isset($methodCall->getArgs()[2])) {
 			$thirdArgType = $scope->getType($methodCall->getArgs()[2]->value);
@@ -36,6 +45,7 @@ class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodRet
 
 		if (!$thirdArgType instanceof Type) {
 			return new GenericObjectType(DatePeriod::class, [
+				$firstArgType,
 				new NullType(),
 				new IntegerType(),
 			]);
@@ -43,15 +53,17 @@ class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodRet
 
 		if ((new ObjectType(DateTimeInterface::class))->isSuperTypeOf($thirdArgType)->yes()) {
 			return new GenericObjectType(DatePeriod::class, [
-				new ObjectType(DateTimeInterface::class),
+				$firstArgType,
+				$thirdArgType,
 				new NullType(),
 			]);
 		}
 
 		if ((new IntegerType())->isSuperTypeOf($thirdArgType)->yes()) {
 			return new GenericObjectType(DatePeriod::class, [
+				$firstArgType,
 				new NullType(),
-				new IntegerType(),
+				$thirdArgType,
 			]);
 		}
 

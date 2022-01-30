@@ -11,10 +11,13 @@ class DateInterval
 }
 
 /**
+ * @template TDate of DateTimeInterface
  * @template TEnd of ?DateTimeInterface
  * @template TRecurrences of ?int
+ * @implements \IteratorAggregate<int, TDate>
+ * @implements \Traversable<int, TDate>
  */
-class DatePeriod
+class DatePeriod implements \IteratorAggregate, \Traversable
 {
 
 	/**
@@ -29,6 +32,14 @@ class DatePeriod
 	 * @return TRecurrences
 	 */
 	public function getRecurrences()
+	{
+
+	}
+
+	/**
+	 * @return TDate
+	 */
+	public function getStartDate(): DateTimeInterface
 	{
 
 	}

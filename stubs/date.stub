@@ -9,3 +9,27 @@ class DateInterval
 	public $days;
 
 }
+
+/**
+ * @template TEnd of ?DateTimeInterface
+ * @template TRecurrences of ?int
+ */
+class DatePeriod
+{
+
+	/**
+	 * @return TEnd
+	 */
+	public function getEndDate()
+	{
+
+	}
+
+	/**
+	 * @return TRecurrences
+	 */
+	public function getRecurrences()
+	{
+
+	}
+}

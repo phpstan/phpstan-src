@@ -22,7 +22,8 @@ parameters:
 	featureToggles:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
-		skipCheckGenericClasses: []
+		skipCheckGenericClasses:
+			- DatePeriod
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -1528,6 +1529,10 @@ services:
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 
+	-
+		class: PHPStan\Type\Php\DatePeriodConstructorReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver

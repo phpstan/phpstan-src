@@ -22,7 +22,8 @@ parameters:
 	featureToggles:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
-		skipCheckGenericClasses: []
+		skipCheckGenericClasses:
+			- DatePeriod
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

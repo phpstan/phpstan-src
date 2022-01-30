@@ -8,7 +8,7 @@ namespace Bug4926;
 class Foo
 {
 	/** @var Data */
-	private array $data = [];
+	private $data = [];
 
 	public function getFirstName(): ?string
 	{

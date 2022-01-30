@@ -602,51 +602,68 @@ class MutatingScope implements Scope
 		if (
 			$node instanceof Expr\BinaryOp\Equal
 			|| $node instanceof Expr\BinaryOp\NotEqual
-			|| $node instanceof Expr\Empty_
 		) {
 			return new BooleanType();
 		}
 
-		if ($node instanceof Expr\Isset_) {
-			$result = new ConstantBooleanType(true);
-			foreach ($node->vars as $var) {
-				if ($var instanceof Expr\ArrayDimFetch && $var->dim !== null) {
-					$variableType = $this->getType($var->var);
-					$dimType = $this->getType($var->dim);
-					$hasOffset = $variableType->hasOffsetValueType($dimType);
-					$offsetValueType = $variableType->getOffsetValueType($dimType);
-					$offsetValueIsNotNull = (new NullType())->isSuperTypeOf($offsetValueType)->negate();
-					$isset = $hasOffset->and($offsetValueIsNotNull)->toBooleanType();
-					if ($isset instanceof ConstantBooleanType) {
-						if (!$isset->getValue()) {
-							return $isset;
-						}
-
-						continue;
-					}
-
-					$result = $isset;
-					continue;
+		if ($node instanceof Expr\Empty_) {
+			$result = $this->issetCheck($node->expr, static function (Type $type): ?bool {
+				$isNull = (new NullType())->isSuperTypeOf($type);
+				$isFalsey = (new ConstantBooleanType(false))->isSuperTypeOf($type->toBoolean());
+				if ($isNull->maybe()) {
+					return null;
+				}
+				if ($isFalsey->maybe()) {
+					return null;
 				}
 
-				if ($var instanceof Expr\Variable && is_string($var->name)) {
-					$variableType = $this->getType($var);
-					$isNullSuperType = (new NullType())->isSuperTypeOf($variableType);
-					$has = $this->hasVariableType($var->name);
-					if ($has->no() || $isNullSuperType->yes()) {
-						return new ConstantBooleanType(false);
+				if ($isNull->yes()) {
+					if ($isFalsey->yes()) {
+						return false;
+					}
+					if ($isFalsey->no()) {
+						return true;
 					}
 
-					if ($has->maybe() || !$isNullSuperType->no()) {
-						$result = new BooleanType();
-					}
-					continue;
+					return false;
 				}
 
+				return !$isFalsey->yes();
+			});
+			if ($result === null) {
 				return new BooleanType();
 			}
 
-			return $result;
+			return new ConstantBooleanType(!$result);
+		}
+
+		if ($node instanceof Expr\Isset_) {
+			$issetResult = true;
+			foreach ($node->vars as $var) {
+				$result = $this->issetCheck($var, static function (Type $type): ?bool {
+					$isNull = (new NullType())->isSuperTypeOf($type);
+					if ($isNull->maybe()) {
+						return null;
+					}
+
+					return !$isNull->yes();
+				});
+				if ($result !== null) {
+					if (!$result) {
+						return new ConstantBooleanType($result);
+					}
+
+					continue;
+				}
+
+				$issetResult = $result;
+			}
+
+			if ($issetResult === null) {
+				return new BooleanType();
+			}
+
+			return new ConstantBooleanType($issetResult);
 		}
 
 		if ($node instanceof Node\Expr\BooleanNot) {
@@ -1928,53 +1945,32 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\Coalesce) {
-			if ($node->left instanceof Expr\ArrayDimFetch && $node->left->dim !== null) {
-				$dimType = $this->getType($node->left->dim);
-				$varType = $this->getType($node->left->var);
-				$hasOffset = $varType->hasOffsetValueType($dimType);
-				$leftType = $this->getType($node->left);
-				$rightType = $this->filterByFalseyValue(
-					new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null'))),
-				)->getType($node->right);
-				if ($hasOffset->no()) {
-					return $rightType;
-				} elseif ($hasOffset->yes()) {
-					$offsetValueType = $varType->getOffsetValueType($dimType);
-					if ($offsetValueType->isSuperTypeOf(new NullType())->no()) {
-						return TypeCombinator::removeNull($leftType);
-					}
-				}
-
-				return TypeCombinator::union(
-					TypeCombinator::removeNull($leftType),
-					$rightType,
-				);
-			}
-
 			$leftType = $this->getType($node->left);
 			$rightType = $this->filterByFalseyValue(
 				new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null'))),
 			)->getType($node->right);
-			if ($leftType instanceof ErrorType || $leftType instanceof NullType) {
-				return $rightType;
-			}
 
-			if (
-				TypeCombinator::containsNull($leftType)
-				|| $node->left instanceof PropertyFetch
-				|| (
-					$node->left instanceof Variable
-					&& is_string($node->left->name)
-					&& !$this->hasVariableType($node->left->name)->yes()
-				)
-			) {
+			$result = $this->issetCheck($node->left, static function (Type $type): ?bool {
+				$isNull = (new NullType())->isSuperTypeOf($type);
+				if ($isNull->maybe()) {
+					return null;
+				}
+
+				return !$isNull->yes();
+			});
+
+			if ($result === null) {
 				return TypeCombinator::union(
 					TypeCombinator::removeNull($leftType),
 					$rightType,
 				);
 			}
 
-			return TypeCombinator::removeNull($leftType);
+			if ($result) {
+				return TypeCombinator::removeNull($leftType);
+			}
+
+			return $rightType;
 		}
 
 		if ($node instanceof ConstFetch) {
@@ -2588,6 +2584,177 @@ class MutatingScope implements Scope
 		}
 
 		return $type;
+	}
+
+	/**
+	 * @param callable(Type): ?bool $typeCallback
+	 */
+	private function issetCheck(Expr $expr, callable $typeCallback, ?bool $result = null): ?bool
+	{
+		// mirrored in PHPStan\Rules\IssetCheck
+		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
+			$hasVariable = $this->hasVariableType($expr->name);
+			if ($hasVariable->maybe()) {
+				return null;
+			}
+
+			if ($result === null) {
+				if ($hasVariable->yes()) {
+					if ($expr->name === '_SESSION') {
+						return null;
+					}
+
+					return $typeCallback($this->getVariableType($expr->name));
+				}
+
+				return false;
+			}
+
+			return $result;
+		} elseif ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
+			$type = $this->treatPhpDocTypesAsCertain
+				? $this->getType($expr->var)
+				: $this->getNativeType($expr->var);
+			$dimType = $this->treatPhpDocTypesAsCertain
+				? $this->getType($expr->dim)
+				: $this->getNativeType($expr->dim);
+			$hasOffsetValue = $type->hasOffsetValueType($dimType);
+			if (!$type->isOffsetAccessible()->yes()) {
+				return $result ?? $this->issetCheckUndefined($expr->var);
+			}
+
+			if ($hasOffsetValue->no()) {
+				if ($result !== null) {
+					return $result;
+				}
+
+				return false;
+			}
+
+			if ($hasOffsetValue->maybe()) {
+				return null;
+			}
+
+			// If offset is cannot be null, store this error message and see if one of the earlier offsets is.
+			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
+			if ($hasOffsetValue->yes()) {
+				if ($result !== null) {
+					return $result;
+				}
+
+				$result = $typeCallback($type->getOffsetValueType($dimType));
+
+				if ($result !== null) {
+					return $this->issetCheck($expr->var, $typeCallback, $result);
+				}
+			}
+
+			// Has offset, it is nullable
+			return null;
+
+		} elseif ($expr instanceof Node\Expr\PropertyFetch || $expr instanceof Node\Expr\StaticPropertyFetch) {
+
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+
+			if ($propertyReflection === null) {
+				if ($expr instanceof Node\Expr\PropertyFetch) {
+					return $this->issetCheckUndefined($expr->var);
+				}
+
+				if ($expr->class instanceof Expr) {
+					return $this->issetCheckUndefined($expr->class);
+				}
+
+				return null;
+			}
+
+			if (!$propertyReflection->isNative()) {
+				if ($expr instanceof Node\Expr\PropertyFetch) {
+					return $this->issetCheckUndefined($expr->var);
+				}
+
+				if ($expr->class instanceof Expr) {
+					return $this->issetCheckUndefined($expr->class);
+				}
+
+				return null;
+			}
+
+			$nativeType = $propertyReflection->getNativeType();
+			if (!$nativeType instanceof MixedType) {
+				if (!$this->isSpecified($expr)) {
+					if ($expr instanceof Node\Expr\PropertyFetch) {
+						return $this->issetCheckUndefined($expr->var);
+					}
+
+					if ($expr->class instanceof Expr) {
+						return $this->issetCheckUndefined($expr->class);
+					}
+
+					return null;
+				}
+			}
+
+			if ($result !== null) {
+				return $result;
+			}
+
+			$result = $typeCallback($propertyReflection->getWritableType());
+			if ($result !== null) {
+				if ($expr instanceof Node\Expr\PropertyFetch) {
+					return $this->issetCheck($expr->var, $typeCallback, $result);
+				}
+
+				if ($expr->class instanceof Expr) {
+					return $this->issetCheck($expr->class, $typeCallback, $result);
+				}
+			}
+
+			return $result;
+		}
+
+		if ($result !== null) {
+			return $result;
+		}
+
+		return $typeCallback($this->getType($expr));
+	}
+
+	private function issetCheckUndefined(Expr $expr): ?bool
+	{
+		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
+			$hasVariable = $this->hasVariableType($expr->name);
+			if (!$hasVariable->no()) {
+				return null;
+			}
+
+			return false;
+		}
+
+		if ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
+			$type = $this->getType($expr->var);
+			$dimType = $this->getType($expr->dim);
+			$hasOffsetValue = $type->hasOffsetValueType($dimType);
+			if (!$type->isOffsetAccessible()->yes()) {
+				return $this->issetCheckUndefined($expr->var);
+			}
+
+			if (!$hasOffsetValue->no()) {
+				return $this->issetCheckUndefined($expr->var);
+			}
+
+			return false;
+		}
+
+		if ($expr instanceof Expr\PropertyFetch) {
+			return $this->issetCheckUndefined($expr->var);
+		}
+
+		if ($expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Expr) {
+			return $this->issetCheckUndefined($expr->class);
+		}
+
+		return null;
 	}
 
 	/**

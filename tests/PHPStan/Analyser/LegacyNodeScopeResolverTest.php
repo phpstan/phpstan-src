@@ -2606,11 +2606,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'!isset($foo)',
 			],
 			[
-				'bool',
+				'false',
 				'empty($foo)',
 			],
 			[
-				'bool',
+				'true',
 				'!empty($foo)',
 			],
 			[

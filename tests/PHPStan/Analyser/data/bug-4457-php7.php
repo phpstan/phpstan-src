@@ -12,4 +12,18 @@ class Foo {
 	public function operatorCanBeNull() {
 		assertType('true', version_compare('1.0', '1.1', null));
 	}
+
+	/**
+	 * @return int|bool
+	 */
+	function compare(string $version1, string $version2, ?string $comparator = null)
+	{
+		$result = version_compare($version1, $version2, $comparator);
+
+		if (null === $result) {
+			throw new InvalidArgumentException(sprintf('Unknown comparator "%s".', $comparator));
+		}
+
+		return $result;
+	}
 }

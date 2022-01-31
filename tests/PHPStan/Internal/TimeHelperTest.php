@@ -57,6 +57,11 @@ class TimeHelperTest extends TestCase
 			'fractionalSeconds' => 3665,
 			'humanisedOutputExpected' => '1h1m5s',
 		];
+
+		yield 'hour minute seconds with fractional seconds' => [
+			'fractionalSeconds' => 3665.12345,
+			'humanisedOutputExpected' => '1h1m5s',
+		];
 	}
 
 }

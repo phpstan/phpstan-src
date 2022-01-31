@@ -16,8 +16,8 @@ class TimeHelper
 			$secondsAsString = round($fractionalSeconds, 3) . 's';
 		} else {
 			$hours = floor($fractionalSeconds / 3600);
-			$minutes = floor(($fractionalSeconds / 60) % 60);
-			$seconds = $fractionalSeconds % 60;
+			$minutes = floor((int) ($fractionalSeconds / 60) % 60);
+			$seconds = (int) $fractionalSeconds % 60;
 
 			if ($hours > 0) {
 				$hoursAsString = $hours . 'h';

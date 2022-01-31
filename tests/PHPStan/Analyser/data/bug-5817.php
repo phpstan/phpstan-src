@@ -41,12 +41,14 @@ class MyContainer implements
 	}
 
 	/** @return DateTimeInterface|false */
+	#[\ReturnTypeWillChange]
 	public function current()
 	{
 		return current($this->items);
 	}
 
 	/** @return DateTimeInterface|false */
+	#[\ReturnTypeWillChange]
 	public function next()
 	{
 		return next($this->items);
@@ -64,6 +66,7 @@ class MyContainer implements
 	}
 
 	/** @return DateTimeInterface|false */
+	#[\ReturnTypeWillChange]
 	public function rewind()
 	{
 		return reset($this->items);

@@ -9,21 +9,16 @@ class DynamicReturnTypeExtensionTypeInferenceTest extends TypeInferenceTestCase
 
 	public function dataAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-types.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-compound-types.php');
+		yield from $this->gatherAssertTypesLazy(__DIR__ . '/data/dynamic-method-return-types.php');
+		yield from $this->gatherAssertTypesLazy(__DIR__ . '/data/dynamic-method-return-compound-types.php');
 	}
 
 	/**
 	 * @dataProvider dataAsserts
-	 * @param mixed ...$args
 	 */
-	public function testAsserts(
-		string $assertType,
-		string $file,
-		...$args,
-	): void
+	public function testAsserts(string $file): void
 	{
-		$this->assertFileAsserts($assertType, $file, ...$args);
+		$this->assertFileAssertsLazy($file);
 	}
 
 	public static function getAdditionalConfigFiles(): array

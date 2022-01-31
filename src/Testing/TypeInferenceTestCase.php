@@ -107,6 +107,13 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		}
 	}
 
+	public function assertFileAssertsLazy(string $file): void
+	{
+		foreach ($this->gatherAssertTypes($file) as $assertion) {
+			$this->assertFileAsserts(...$assertion);
+		}
+	}
+
 	/**
 	 * @api
 	 * @return array<string, mixed[]>
@@ -179,6 +186,14 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		});
 
 		return $asserts;
+	}
+
+	/**
+	 * @return array<string, array{string}>
+	 */
+	public function gatherAssertTypesLazy(string $file): array
+	{
+		return [$file => [$file]];
 	}
 
 	/** @return string[] */

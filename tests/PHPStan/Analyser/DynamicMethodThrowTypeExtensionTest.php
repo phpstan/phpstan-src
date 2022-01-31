@@ -9,20 +9,15 @@ class DynamicMethodThrowTypeExtensionTest extends TypeInferenceTestCase
 
 	public function dataFileAsserts(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-throw-type-extension.php');
+		yield from $this->gatherAssertTypesLazy(__DIR__ . '/data/dynamic-method-throw-type-extension.php');
 	}
 
 	/**
 	 * @dataProvider dataFileAsserts
-	 * @param mixed ...$args
 	 */
-	public function testFileAsserts(
-		string $assertType,
-		string $file,
-		...$args,
-	): void
+	public function testFileAsserts(string $file): void
 	{
-		$this->assertFileAsserts($assertType, $file, ...$args);
+		$this->assertFileAssertsLazy($file);
 	}
 
 	public static function getAdditionalConfigFiles(): array

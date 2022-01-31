@@ -9,22 +9,17 @@ class TypeSpecifyingExtensionTypeInferenceFalseTest extends TypeInferenceTestCas
 
 	public function dataTypeSpecifyingExtensionsFalse(): iterable
 	{
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-1-false.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-2-false.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-3-false.php');
+		yield from $this->gatherAssertTypesLazy(__DIR__ . '/data/type-specifying-extensions-1-false.php');
+		yield from $this->gatherAssertTypesLazy(__DIR__ . '/data/type-specifying-extensions-2-false.php');
+		yield from $this->gatherAssertTypesLazy(__DIR__ . '/data/type-specifying-extensions-3-false.php');
 	}
 
 	/**
 	 * @dataProvider dataTypeSpecifyingExtensionsFalse
-	 * @param mixed ...$args
 	 */
-	public function testTypeSpecifyingExtensionsFalse(
-		string $assertType,
-		string $file,
-		...$args,
-	): void
+	public function testTypeSpecifyingExtensionsFalse(string $file): void
 	{
-		$this->assertFileAsserts($assertType, $file, ...$args);
+		$this->assertFileAssertsLazy($file);
 	}
 
 	public static function getAdditionalConfigFiles(): array

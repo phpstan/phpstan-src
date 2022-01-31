@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d00fd15c389a05d253fc18b424d0bc23",
+    "content-hash": "5091d3763ce7604a3ef3b0cf0b99f21c",
     "packages": [
         {
             "name": "nette/neon",
@@ -129,46 +129,42 @@
         },
         {
             "name": "symfony/console",
-            "version": "v5.4.1",
+            "version": "v6.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "9130e1a0fc93cb0faadca4ee917171bd2ca9e5f4"
+                "reference": "22e8efd019c3270c4f79376234a3f8752cd25490"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/9130e1a0fc93cb0faadca4ee917171bd2ca9e5f4",
-                "reference": "9130e1a0fc93cb0faadca4ee917171bd2ca9e5f4",
+                "url": "https://api.github.com/repos/symfony/console/zipball/22e8efd019c3270c4f79376234a3f8752cd25490",
+                "reference": "22e8efd019c3270c4f79376234a3f8752cd25490",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.2.5",
-                "symfony/deprecation-contracts": "^2.1|^3",
+                "php": ">=8.0.2",
                 "symfony/polyfill-mbstring": "~1.0",
-                "symfony/polyfill-php73": "^1.9",
-                "symfony/polyfill-php80": "^1.16",
                 "symfony/service-contracts": "^1.1|^2|^3",
-                "symfony/string": "^5.1|^6.0"
+                "symfony/string": "^5.4|^6.0"
             },
             "conflict": {
-                "psr/log": ">=3",
-                "symfony/dependency-injection": "<4.4",
-                "symfony/dotenv": "<5.1",
-                "symfony/event-dispatcher": "<4.4",
-                "symfony/lock": "<4.4",
-                "symfony/process": "<4.4"
+                "symfony/dependency-injection": "<5.4",
+                "symfony/dotenv": "<5.4",
+                "symfony/event-dispatcher": "<5.4",
+                "symfony/lock": "<5.4",
+                "symfony/process": "<5.4"
             },
             "provide": {
-                "psr/log-implementation": "1.0|2.0"
+                "psr/log-implementation": "1.0|2.0|3.0"
             },
             "require-dev": {
-                "psr/log": "^1|^2",
-                "symfony/config": "^4.4|^5.0|^6.0",
-                "symfony/dependency-injection": "^4.4|^5.0|^6.0",
-                "symfony/event-dispatcher": "^4.4|^5.0|^6.0",
-                "symfony/lock": "^4.4|^5.0|^6.0",
-                "symfony/process": "^4.4|^5.0|^6.0",
-                "symfony/var-dumper": "^4.4|^5.0|^6.0"
+                "psr/log": "^1|^2|^3",
+                "symfony/config": "^5.4|^6.0",
+                "symfony/dependency-injection": "^5.4|^6.0",
+                "symfony/event-dispatcher": "^5.4|^6.0",
+                "symfony/lock": "^5.4|^6.0",
+                "symfony/process": "^5.4|^6.0",
+                "symfony/var-dumper": "^5.4|^6.0"
             },
             "suggest": {
                 "psr/log": "For using the console logger",
@@ -208,7 +204,7 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v5.4.1"
+                "source": "https://github.com/symfony/console/tree/v6.0.3"
             },
             "funding": [
                 {
@@ -224,7 +220,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-12-09T11:22:43+00:00"
+            "time": "2022-01-26T17:23:29+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -422,20 +418,23 @@
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.23.0",
+            "version": "v1.24.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
-                "reference": "46cd95797e9df938fdd2b03693b5fca5e64b01ce"
+                "reference": "30885182c981ab175d4d034db0f6f469898070ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/46cd95797e9df938fdd2b03693b5fca5e64b01ce",
-                "reference": "46cd95797e9df938fdd2b03693b5fca5e64b01ce",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/30885182c981ab175d4d034db0f6f469898070ab",
+                "reference": "30885182c981ab175d4d034db0f6f469898070ab",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.1"
+            },
+            "provide": {
+                "ext-ctype": "*"
             },
             "suggest": {
                 "ext-ctype": "For best performance"
@@ -481,7 +480,7 @@
                 "portable"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.23.0"
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.24.0"
             },
             "funding": [
                 {
@@ -497,20 +496,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-02-19T12:13:01+00:00"
+            "time": "2021-10-20T20:35:02+00:00"
         },
         {
             "name": "symfony/polyfill-intl-grapheme",
-            "version": "v1.23.1",
+            "version": "v1.24.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-grapheme.git",
-                "reference": "16880ba9c5ebe3642d1995ab866db29270b36535"
+                "reference": "81b86b50cf841a64252b439e738e97f4a34e2783"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/16880ba9c5ebe3642d1995ab866db29270b36535",
-                "reference": "16880ba9c5ebe3642d1995ab866db29270b36535",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/81b86b50cf841a64252b439e738e97f4a34e2783",
+                "reference": "81b86b50cf841a64252b439e738e97f4a34e2783",
                 "shasum": ""
             },
             "require": {
@@ -562,7 +561,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.23.1"
+                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.24.0"
             },
             "funding": [
                 {
@@ -578,11 +577,11 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-05-27T12:26:48+00:00"
+            "time": "2021-11-23T21:10:46+00:00"
         },
         {
             "name": "symfony/polyfill-intl-normalizer",
-            "version": "v1.23.0",
+            "version": "v1.24.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-normalizer.git",
@@ -646,7 +645,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.23.0"
+                "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.24.0"
             },
             "funding": [
                 {
@@ -666,20 +665,23 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.23.1",
+            "version": "v1.24.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "9174a3d80210dca8daa7f31fec659150bbeabfc6"
+                "reference": "0abb51d2f102e00a4eefcf46ba7fec406d245825"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/9174a3d80210dca8daa7f31fec659150bbeabfc6",
-                "reference": "9174a3d80210dca8daa7f31fec659150bbeabfc6",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/0abb51d2f102e00a4eefcf46ba7fec406d245825",
+                "reference": "0abb51d2f102e00a4eefcf46ba7fec406d245825",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.1"
+            },
+            "provide": {
+                "ext-mbstring": "*"
             },
             "suggest": {
                 "ext-mbstring": "For best performance"
@@ -726,7 +728,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.23.1"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.24.0"
             },
             "funding": [
                 {
@@ -742,99 +744,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-05-27T12:26:48+00:00"
-        },
-        {
-            "name": "symfony/polyfill-php73",
-            "version": "v1.23.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/polyfill-php73.git",
-                "reference": "fba8933c384d6476ab14fb7b8526e5287ca7e010"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php73/zipball/fba8933c384d6476ab14fb7b8526e5287ca7e010",
-                "reference": "fba8933c384d6476ab14fb7b8526e5287ca7e010",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.1"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "1.23-dev"
-                },
-                "thanks": {
-                    "name": "symfony/polyfill",
-                    "url": "https://github.com/symfony/polyfill"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Php73\\": ""
-                },
-                "files": [
-                    "bootstrap.php"
-                ],
-                "classmap": [
-                    "Resources/stubs"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony polyfill backporting some PHP 7.3+ features to lower PHP versions",
-            "homepage": "https://symfony.com",
-            "keywords": [
-                "compatibility",
-                "polyfill",
-                "portable",
-                "shim"
-            ],
-            "support": {
-                "source": "https://github.com/symfony/polyfill-php73/tree/v1.23.0"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2021-02-19T12:13:01+00:00"
+            "time": "2021-11-30T18:21:41+00:00"
         },
         {
             "name": "symfony/polyfill-php80",
-            "version": "v1.23.1",
+            "version": "v1.24.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php80.git",
-                "reference": "1100343ed1a92e3a38f9ae122fc0eb21602547be"
+                "reference": "57b712b08eddb97c762a8caa32c84e037892d2e9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/1100343ed1a92e3a38f9ae122fc0eb21602547be",
-                "reference": "1100343ed1a92e3a38f9ae122fc0eb21602547be",
+                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/57b712b08eddb97c762a8caa32c84e037892d2e9",
+                "reference": "57b712b08eddb97c762a8caa32c84e037892d2e9",
                 "shasum": ""
             },
             "require": {
@@ -888,7 +811,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php80/tree/v1.23.1"
+                "source": "https://github.com/symfony/polyfill-php80/tree/v1.24.0"
             },
             "funding": [
                 {
@@ -904,7 +827,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-07-28T13:41:28+00:00"
+            "time": "2021-09-13T13:58:33+00:00"
         },
         {
             "name": "symfony/process",
@@ -1052,16 +975,16 @@
         },
         {
             "name": "symfony/string",
-            "version": "v6.0.1",
+            "version": "v6.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "0cfed595758ec6e0a25591bdc8ca733c1896af32"
+                "reference": "522144f0c4c004c80d56fa47e40e17028e2eefc2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/0cfed595758ec6e0a25591bdc8ca733c1896af32",
-                "reference": "0cfed595758ec6e0a25591bdc8ca733c1896af32",
+                "url": "https://api.github.com/repos/symfony/string/zipball/522144f0c4c004c80d56fa47e40e17028e2eefc2",
+                "reference": "522144f0c4c004c80d56fa47e40e17028e2eefc2",
                 "shasum": ""
             },
             "require": {
@@ -1117,7 +1040,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/v6.0.1"
+                "source": "https://github.com/symfony/string/tree/v6.0.3"
             },
             "funding": [
                 {
@@ -1133,7 +1056,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-12-08T15:13:44+00:00"
+            "time": "2022-01-02T09:55:41+00:00"
         }
     ],
     "packages-dev": [
@@ -3283,5 +3206,5 @@
     "platform-overrides": {
         "php": "8.0.99"
     },
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.2.0"
 }

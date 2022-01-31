@@ -67,7 +67,7 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			count($version2Strings),
 		];
 
-		if (isset($functionCall->getArgs()[2])) {
+		if (isset($functionCall->getArgs()[2]) && (new NullType())->isSuperTypeOf($scope->getType($functionCall->getArgs()[2]->value))->no()) {
 			$operatorStrings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[2]->value));
 
 			foreach ($operatorStrings as $operatorString) {

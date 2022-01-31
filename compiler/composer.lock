@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d00fd15c389a05d253fc18b424d0bc23",
+    "content-hash": "11817144b502528b4e00ae754bdb443f",
     "packages": [
         {
             "name": "nette/neon",
@@ -908,21 +908,20 @@
         },
         {
             "name": "symfony/process",
-            "version": "v5.4.0",
+            "version": "v6.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "5be20b3830f726e019162b26223110c8f47cf274"
+                "reference": "298ed357274c1868c20a0061df256a1250a6c4af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/5be20b3830f726e019162b26223110c8f47cf274",
-                "reference": "5be20b3830f726e019162b26223110c8f47cf274",
+                "url": "https://api.github.com/repos/symfony/process/zipball/298ed357274c1868c20a0061df256a1250a6c4af",
+                "reference": "298ed357274c1868c20a0061df256a1250a6c4af",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.2.5",
-                "symfony/polyfill-php80": "^1.16"
+                "php": ">=8.0.2"
             },
             "type": "library",
             "autoload": {
@@ -950,7 +949,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v5.4.0"
+                "source": "https://github.com/symfony/process/tree/v6.0.3"
             },
             "funding": [
                 {
@@ -966,7 +965,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-11-28T15:25:38+00:00"
+            "time": "2022-01-26T17:23:29+00:00"
         },
         {
             "name": "symfony/service-contracts",
@@ -3283,5 +3282,5 @@
     "platform-overrides": {
         "php": "8.0.99"
     },
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.2.0"
 }

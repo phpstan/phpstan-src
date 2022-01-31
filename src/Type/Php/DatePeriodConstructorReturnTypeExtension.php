@@ -31,12 +31,13 @@ class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodRet
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): Type
 	{
-		$firstArgType = null;
-		if (isset($methodCall->getArgs()[0])) {
-			$firstArgType = $scope->getType($methodCall->getArgs()[0]->value);
-			if ((new StringType())->isSuperTypeOf($firstArgType)->yes()) {
-				$firstArgType = new ObjectType(DateTime::class);
-			}
+		if (!isset($methodCall->getArgs()[0])) {
+			return new ObjectType(DatePeriod::class);
+		}
+
+		$firstArgType = $scope->getType($methodCall->getArgs()[0]->value);
+		if ((new StringType())->isSuperTypeOf($firstArgType)->yes()) {
+			$firstArgType = new ObjectType(DateTime::class);
 		}
 		$thirdArgType = null;
 		if (isset($methodCall->getArgs()[2])) {

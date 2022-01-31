@@ -24,9 +24,7 @@ use function version_compare;
 class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	/**
-	 * @var list<string>
-	 */
+	/** @var list<string> */
 	private $operators = [
 		'<',
 		'lt',

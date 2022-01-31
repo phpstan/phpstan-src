@@ -10,6 +10,7 @@ use function min;
 
 class Scheduler
 {
+
 	/**
 	 * @param positive-int $jobSize
 	 */

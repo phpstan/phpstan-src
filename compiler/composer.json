@@ -9,7 +9,7 @@
         "symfony/console": "^5.2.2",
         "symfony/process": "^5.2.2",
         "symfony/filesystem": "^5.2.2",
-        "symfony/finder": "^5.2.2"
+        "symfony/finder": "^6.0.3"
     },
     "autoload": {
         "psr-4": {

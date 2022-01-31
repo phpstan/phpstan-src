@@ -4,21 +4,46 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_filter;
 use function count;
+use function in_array;
 use function version_compare;
 
 class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	private $operators = [
+		'<',
+		'lt',
+		'<=',
+		'le',
+		'>',
+		'gt',
+		'>=',
+		'ge',
+		'==',
+		'=',
+		'eq',
+		'!=',
+		'<>',
+		'ne',
+	];
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -44,6 +69,16 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 
 		if (isset($functionCall->getArgs()[2])) {
 			$operatorStrings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[2]->value));
+
+			foreach ($operatorStrings as $operatorString) {
+				if (!in_array($operatorString->getValue(), $this->operators, true)) {
+					if ($this->phpVersion->getVersionId() <= 80000) {
+						return new NullType();
+					}
+					return new ErrorType();
+				}
+			}
+
 			$counts[] = count($operatorStrings);
 			$returnType = new BooleanType();
 		} else {

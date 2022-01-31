@@ -9,12 +9,12 @@ class HelloWorld
 	/**
 	 * @var array<string, array{name: string, email: string}>
 	 */
-	private array $contacts1 = [];
+	private $contacts1 = [];
 
 	/**
 	 * @var array{names: array<string, string>, emails: array<string, string>}
 	 */
-	private array $contacts2 = ['names' => [], 'emails' => []];
+	private $contacts2 = ['names' => [], 'emails' => []];
 
 	public function sayHello1(string $id): void
 	{

@@ -6,12 +6,13 @@ use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Internal\BytesHelper;
+use PHPStan\Internal\ConsumptionCollector;
+use PHPStan\Internal\TimeHelper;
 use PHPStan\PhpDoc\StubValidator;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
 use function count;
 use function is_string;
-use function memory_get_peak_usage;
 use function sprintf;
 
 class AnalyseApplication
@@ -145,11 +146,23 @@ class AnalyseApplication
 			};
 			$postFileCallback = null;
 			if ($stdOutput->isDebug()) {
-				$previousMemory = memory_get_peak_usage(true);
-				$postFileCallback = static function () use ($stdOutput, &$previousMemory): void {
-					$currentTotalMemory = memory_get_peak_usage(true);
-					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory)));
-					$previousMemory = $currentTotalMemory;
+				$consumptionCollector = new ConsumptionCollector();
+
+				$preFileCallback = static function (string $file) use ($stdOutput, $consumptionCollector): void {
+					$stdOutput->writeLineFormatted($file);
+					$consumptionCollector->registerFile($file);
+				};
+
+				$postFileCallback = static function () use ($stdOutput, $consumptionCollector): void {
+					$consumptionCollector->trackConsumption();
+					$stdOutput->writeLineFormatted(
+						sprintf(
+							'--- consumed %s, total %s, took %s',
+							BytesHelper::bytes($consumptionCollector->getMemoryConsumed()),
+							BytesHelper::bytes($consumptionCollector->getTotalMemoryConsumed()),
+							TimeHelper::humaniseFractionalSeconds($consumptionCollector->getTimeConsumed()),
+						),
+					);
 				};
 			}
 		}
@@ -158,6 +171,22 @@ class AnalyseApplication
 
 		if (isset($progressStarted) && $progressStarted) {
 			$errorOutput->getStyle()->progressFinish();
+		}
+
+		if ($debug && $stdOutput->isDebug() && isset($consumptionCollector)) {
+			$stdOutput->writeLineFormatted('');
+			$stdOutput->writeLineFormatted('Top memory consumers:');
+			$rows = [];
+			foreach ($consumptionCollector->getHumanisedTopMemoryConsumers() as $file => $consumption) {
+				$rows[] = [ $file, $consumption ];
+			}
+			$stdOutput->getStyle()->table(['file', 'memory consumed'], $rows);
+			$stdOutput->writeLineFormatted('Top time consumers:');
+			$rows = [];
+			foreach ($consumptionCollector->getHumanisedTopTimeConsumers() as $file => $consumption) {
+				$rows[] = [ $file, $consumption ];
+			}
+			$stdOutput->getStyle()->table(['file', 'time to process'], $rows);
 		}
 
 		return $analyserResult;

@@ -19,6 +19,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use function array_map;
@@ -96,7 +97,7 @@ class IntersectionType implements CompoundType
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
-		if ($otherType instanceof self || $otherType instanceof UnionType) {
+		if (($otherType instanceof self || $otherType instanceof UnionType) && !$otherType instanceof TemplateType) {
 			return $otherType->isSuperTypeOf($this);
 		}
 

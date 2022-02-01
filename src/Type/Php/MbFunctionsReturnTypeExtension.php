@@ -11,6 +11,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -73,6 +74,11 @@ class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtensi
 	{
 		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		$positionEncodingParam = $this->encodingPositionMap[$functionReflection->getName()];
+
+		// php8-stubs define a regular int return-type for mb_strlen. use a more precise type instead.
+		if ($functionReflection->getName() === 'mb_strlen') {
+			$returnType = IntegerRangeType::fromInterval(0, null);
+		}
 
 		if (count($functionCall->getArgs()) < $positionEncodingParam) {
 			return TypeCombinator::remove($returnType, new BooleanType());

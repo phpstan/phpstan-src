@@ -57,21 +57,31 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		Scope $scope,
 	): Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
-			return ParametersAcceptorSelector::selectFromArgs($scope, $functionCall->getArgs(), $functionReflection->getVariants())->getReturnType();
+		$args = $functionCall->getArgs();
+
+		if (count($args) < 2) {
+			return ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants())->getReturnType();
 		}
 
-		$version1Strings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[0]->value));
-		$version2Strings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[1]->value));
+		$version1Strings = TypeUtils::getConstantStrings($scope->getType($args[0]->value));
+		$version2Strings = TypeUtils::getConstantStrings($scope->getType($args[1]->value));
 		$counts = [
 			count($version1Strings),
 			count($version2Strings),
 		];
 
-		if (isset($functionCall->getArgs()[2]) || 
-			(new NullType())->isSuperTypeOf($scope->getType($functionCall->getArgs()[2]->value))->yes() && 
-			$this->phpVersion->getVersionId() <= 80000) {
-			$operatorStrings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[2]->value));
+		$returnsBool = false;
+		if (isset($args[2])) {
+			$returnsBool = true;
+
+			if ((new NullType())->isSuperTypeOf($scope->getType($args[2]->value))->yes() &&
+				$this->phpVersion->getVersionId() > 80000) {
+				$returnsBool = false;
+			}
+		}
+
+		if ($returnsBool) {
+			$operatorStrings = TypeUtils::getConstantStrings($scope->getType($args[2]->value));
 
 			foreach ($operatorStrings as $operatorString) {
 				if (!in_array($operatorString->getValue(), $this->operators, true)) {
@@ -103,7 +113,7 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		$types = [];
 		foreach ($version1Strings as $version1String) {
 			foreach ($version2Strings as $version2String) {
-				if (isset($operatorStrings)) {
+				if ($returnsBool) {
 					foreach ($operatorStrings as $operatorString) {
 						$value = version_compare($version1String->getValue(), $version2String->getValue(), $operatorString->getValue());
 						$types[$value] = new ConstantBooleanType($value);

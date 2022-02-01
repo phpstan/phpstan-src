@@ -15,6 +15,6 @@ class Foo {
 
 	function compare(string $version1, string $version2, ?string $comparator = null)
 	{
-		assertType('int|bool', version_compare($version1, $version2, $comparator));
+		assertType('-1|0|1|bool', version_compare($version1, $version2, $comparator));
 	}
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use Bug4003\Boo;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
@@ -10,6 +11,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NullType;
@@ -73,6 +75,26 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		$returnsBool = false;
 		if (isset($args[2])) {
 			$returnsBool = true;
+
+			if (!$scope->getType($args[2]->value) instanceof ConstantScalarType) {
+				// we don't use ParametersAcceptorSelector::selectFromArgs() because the return type depends on php-version
+				// and the function has multiple signatures
+				$returnType = TypeCombinator::union(
+					new ConstantIntegerType(-1),
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+					new BooleanType()
+				);
+
+				if ($this->phpVersion->getVersionId() < 80000) {
+					return TypeCombinator::union(
+						new NullType(),
+						$returnType
+					);
+				}
+
+				return $returnType;
+			}
 
 			if ((new NullType())->isSuperTypeOf($scope->getType($args[2]->value))->yes() &&
 				$this->phpVersion->getVersionId() >= 80000) {

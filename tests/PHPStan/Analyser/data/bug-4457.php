@@ -12,4 +12,9 @@ class Foo {
 	public function operatorCanBeNull() {
 		assertType('-1', version_compare('1.0', '1.1', null));
 	}
+
+	function compare(string $version1, string $version2, ?string $comparator = null)
+	{
+		assertType('int|bool', version_compare($version1, $version2, $comparator));
+	}
 }

@@ -1053,12 +1053,12 @@ class MutatingScope implements Scope
 			}
 			$rightType = $this->getType($right);
 
-			$stringType = $rightType->toString();
+			$integerType = $rightType->toInteger();
 			if (
 				$node instanceof Node\Expr\BinaryOp\Mod
 				|| $node instanceof Node\Expr\AssignOp\Mod
 			) {
-				if ($stringType instanceof ConstantScalarType && $stringType->getValue() === '1') {
+				if ($integerType instanceof ConstantIntegerType && $integerType->getValue() === 1) {
 					return new ConstantIntegerType(0);
 				}
 			}

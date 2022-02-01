@@ -4100,6 +4100,8 @@ class MutatingScope implements Scope
 				$this->getType($expr->var)->unsetOffset($this->getType($expr->dim)),
 			)->invalidateExpression(
 				new FuncCall(new FullyQualified('count'), [new Arg($expr->var)]),
+			)->invalidateExpression(
+				new FuncCall(new FullyQualified('sizeof'), [new Arg($expr->var)]),
 			);
 		}
 

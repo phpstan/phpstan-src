@@ -16,6 +16,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -132,7 +133,16 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 	private function getOffsetOrProperty(Type $type, Type $offsetOrProperty, Scope $scope, bool $allowMaybe): ?Type
 	{
+		$offsetIsNull = (new NullType())->isSuperTypeOf($offsetOrProperty);
+		if ($offsetIsNull->yes()) {
+			return $type;
+		}
+
 		$returnTypes = [];
+
+		if ($offsetIsNull->maybe()) {
+			$returnTypes[] = $type;
+		}
 
 		if (!$type->canAccessProperties()->no()) {
 			$propertyTypes = TypeUtils::getConstantStrings($offsetOrProperty);

@@ -14,6 +14,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -62,7 +63,11 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		}
 
 		if (PHP_VERSION_ID >= 80000) {
-			if (!($firstArgType instanceof IntegerType) && !($firstArgType instanceof FloatType)) {
+			$allowed = TypeCombinator::union(
+				new IntegerType(),
+				new FloatType(),
+			);
+			if (!$allowed->accepts($firstArgType, true)->yes()) {
 				// PHP 8 fatals if the parameter is not an integer or float.
 				return new NeverType(true);
 			}

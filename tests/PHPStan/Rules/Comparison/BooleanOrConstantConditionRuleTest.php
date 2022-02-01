@@ -60,7 +60,7 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 				30,
 			],
 			[
-				'Right side of || is always false.',
+				'Result of || is always true.',
 				33,
 			],
 			[
@@ -173,6 +173,12 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
 		$this->analyse([__DIR__ . '/data/boolean-or-treat-phpdoc-types-regression.php'], []);
+	}
+
+	public function testBug6258(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-6258.php'], []);
 	}
 
 }

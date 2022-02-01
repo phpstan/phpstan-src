@@ -12779,7 +12779,7 @@ return [
 'VarnishLog::getTagName' => ['string', 'index'=>'int'],
 'VarnishStat::__construct' => ['void', 'args='=>'array'],
 'VarnishStat::getSnapshot' => ['array'],
-'version_compare' => ['int', 'version1'=>'string', 'version2'=>'string'],
+'version_compare' => ['-1|0|1', 'version1'=>'string', 'version2'=>'string'],
 'version_compare\'1' => ['bool', 'version1'=>'string', 'version2'=>'string', 'operator'=>'string|null'],
 'vfprintf' => ['int', 'stream'=>'resource', 'format'=>'string', 'args'=>'array'],
 'virtual' => ['bool', 'uri'=>'string'],

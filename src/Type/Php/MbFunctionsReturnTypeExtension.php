@@ -75,14 +75,6 @@ class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtensi
 		$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		$positionEncodingParam = $this->encodingPositionMap[$functionReflection->getName()];
 
-		// php8-stubs define a regular int return-type for mb_strlen. use a more precise type instead.
-		if ($functionReflection->getName() === 'mb_strlen') {
-			$returnType = TypeCombinator::union([
-				IntegerRangeType::fromInterval(0, null),
-				new ConstantBooleanType(false),
-			]);
-		}
-
 		if (count($functionCall->getArgs()) < $positionEncodingParam) {
 			return TypeCombinator::remove($returnType, new BooleanType());
 		}

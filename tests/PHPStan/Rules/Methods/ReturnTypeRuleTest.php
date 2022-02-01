@@ -528,11 +528,6 @@ class ReturnTypeRuleTest extends RuleTestCase
 				'Method ReturnTemplateUnion\Foo::doFoo2() should return T of bool|float|int|string but returns (T of bool|float|int|string)|null.',
 				25,
 			],
-			[
-				// should not be reported
-				'Method ReturnTemplateUnion\Foo::doFoo3() should return (T of bool|float|int|string)|null but returns (T of bool|float|int|string)|null.',
-				35,
-			],
 		]);
 	}
 

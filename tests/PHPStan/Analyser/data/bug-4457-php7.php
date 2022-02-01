@@ -10,7 +10,7 @@ class Foo {
 	}
 
 	public function operatorCanBeNull() {
-		assertType('true', version_compare('1.0', '1.1', null));
+		assertType('bool', version_compare('1.0', '1.1', null));
 	}
 
 	/**

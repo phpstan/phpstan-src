@@ -84,10 +84,13 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 
 				if ($this->phpVersion->getVersionId() < 80000) {
 					return TypeCombinator::union(
+						// on php7 null is returned on a invalid operator
 						new NullType(),
+						// on "null"-operator php7 returns int
 						new ConstantIntegerType(-1),
 						new ConstantIntegerType(0),
 						new ConstantIntegerType(1),
+						// bool is returned on a valid operator
 						$returnType,
 					);
 				}

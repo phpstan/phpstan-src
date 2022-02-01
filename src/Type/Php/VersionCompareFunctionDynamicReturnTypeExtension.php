@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type\Php;
 
-use Bug4003\Boo;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
@@ -80,16 +79,16 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 				// we don't use ParametersAcceptorSelector::selectFromArgs() because the return type depends on php-version
 				// and the function has multiple signatures
 				$returnType = TypeCombinator::union(
-					new ConstantIntegerType(-1),
-					new ConstantIntegerType(0),
-					new ConstantIntegerType(1),
-					new BooleanType()
+					new BooleanType(),
 				);
 
 				if ($this->phpVersion->getVersionId() < 80000) {
 					return TypeCombinator::union(
 						new NullType(),
-						$returnType
+						new ConstantIntegerType(-1),
+						new ConstantIntegerType(0),
+						new ConstantIntegerType(1),
+						$returnType,
 					);
 				}
 

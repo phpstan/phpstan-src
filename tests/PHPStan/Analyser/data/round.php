@@ -7,6 +7,7 @@ use function PHPStan\Testing\assertType;
 // Round
 assertType('float', round(123));
 assertType('float', round(123.456));
+assertType('float', round($_GET['foo'] / 60));
 assertType('float', round('123'));
 assertType('float', round('123.456'));
 assertType('float', round(null));
@@ -22,6 +23,7 @@ assertType('(float|false)', round($_GET['foo']));
 // Ceil
 assertType('float', ceil(123));
 assertType('float', ceil(123.456));
+assertType('float', ceil($_GET['foo'] / 60));
 assertType('float', ceil('123'));
 assertType('float', ceil('123.456'));
 assertType('float', ceil(null));
@@ -37,6 +39,7 @@ assertType('(float|false)', ceil($_GET['foo']));
 // Floor
 assertType('float', floor(123));
 assertType('float', floor(123.456));
+assertType('float', floor($_GET['foo'] / 60));
 assertType('float', floor('123'));
 assertType('float', floor('123.456'));
 assertType('float', floor(null));

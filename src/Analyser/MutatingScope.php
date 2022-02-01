@@ -1090,15 +1090,15 @@ class MutatingScope implements Scope
 			}
 
 			$leftTypes = TypeUtils::getConstantScalars($this->getType($left));
-			$rightScalarTypes = TypeUtils::getConstantScalars($this->getType($right));
+			$rightTypes = TypeUtils::getConstantScalars($this->getType($right));
 
 			$leftTypesCount = count($leftTypes);
-			$rightTypesCount = count($rightScalarTypes);
+			$rightTypesCount = count($rightTypes);
 			if ($leftTypesCount > 0 && $rightTypesCount > 0) {
 				$resultTypes = [];
 				$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
 				foreach ($leftTypes as $leftType) {
-					foreach ($rightScalarTypes as $rightType) {
+					foreach ($rightTypes as $rightType) {
 						$resultType = $this->calculateFromScalars($node, $leftType, $rightType);
 						if ($generalize) {
 							$resultType = TypeUtils::generalizeType($resultType, GeneralizePrecision::lessSpecific());

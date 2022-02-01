@@ -75,7 +75,7 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			$returnsBool = true;
 
 			if ((new NullType())->isSuperTypeOf($scope->getType($args[2]->value))->yes() &&
-				$this->phpVersion->getVersionId() > 80000) {
+				$this->phpVersion->getVersionId() >= 80000) {
 				$returnsBool = false;
 			}
 		}
@@ -113,7 +113,7 @@ class VersionCompareFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		$types = [];
 		foreach ($version1Strings as $version1String) {
 			foreach ($version2Strings as $version2String) {
-				if ($returnsBool) {
+				if (isset($operatorStrings)) {
 					foreach ($operatorStrings as $operatorString) {
 						$value = version_compare($version1String->getValue(), $version2String->getValue(), $operatorString->getValue());
 						$types[$value] = new ConstantBooleanType($value);

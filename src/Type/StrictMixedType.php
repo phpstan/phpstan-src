@@ -32,19 +32,31 @@ class StrictMixedType implements CompoundType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean(
-			$acceptingType instanceof MixedType && !$acceptingType instanceof TemplateMixedType,
-		);
+		if ($acceptingType instanceof self) {
+			return TrinaryLogic::createYes();
+		}
+		if ($acceptingType instanceof MixedType && !$acceptingType instanceof TemplateMixedType) {
+			return TrinaryLogic::createYes();
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($type instanceof self);
+		return TrinaryLogic::createYes();
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($otherType instanceof self);
+		if ($otherType instanceof self) {
+			return TrinaryLogic::createYes();
+		}
+		if ($otherType instanceof MixedType && !$otherType instanceof TemplateMixedType) {
+			return TrinaryLogic::createYes();
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function equals(Type $type): bool

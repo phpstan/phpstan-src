@@ -3,7 +3,8 @@
 /compiler/vendor
 /conf/config.local.yml
 /vendor
-/.idea
+/.idea/*
+!.idea/icon.png
 /tests/tmp
 /tests/.phpunit.result.cache
 tmp/.memory_limit

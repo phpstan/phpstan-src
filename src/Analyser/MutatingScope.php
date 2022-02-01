@@ -1051,12 +1051,24 @@ class MutatingScope implements Scope
 			} else {
 				$right = $node->right;
 			}
+			$rightType = $this->getType($right);
 
-			$rightTypes = TypeUtils::getConstantScalars($this->getType($right)->toNumber());
-			foreach ($rightTypes as $rightType) {
+			$stringType = $rightType->toString();
+			if (
+				$node instanceof Node\Expr\BinaryOp\Mod
+				|| $node instanceof Node\Expr\AssignOp\Mod
+			) {
+				if ($stringType instanceof ConstantScalarType && $stringType->getValue() === '1') {
+					return new ConstantIntegerType(0);
+				}
+			}
+
+			$rightScalarTypes = TypeUtils::getConstantScalars($rightType->toNumber());
+			foreach ($rightScalarTypes as $scalarType) {
+
 				if (
-					$rightType->getValue() === 0
-					|| $rightType->getValue() === 0.0
+					$scalarType->getValue() === 0
+					|| $scalarType->getValue() === 0.0
 				) {
 					return new ErrorType();
 				}
@@ -1078,15 +1090,15 @@ class MutatingScope implements Scope
 			}
 
 			$leftTypes = TypeUtils::getConstantScalars($this->getType($left));
-			$rightTypes = TypeUtils::getConstantScalars($this->getType($right));
+			$rightScalarTypes = TypeUtils::getConstantScalars($this->getType($right));
 
 			$leftTypesCount = count($leftTypes);
-			$rightTypesCount = count($rightTypes);
+			$rightTypesCount = count($rightScalarTypes);
 			if ($leftTypesCount > 0 && $rightTypesCount > 0) {
 				$resultTypes = [];
 				$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
 				foreach ($leftTypes as $leftType) {
-					foreach ($rightTypes as $rightType) {
+					foreach ($rightScalarTypes as $rightType) {
 						$resultType = $this->calculateFromScalars($node, $leftType, $rightType);
 						if ($generalize) {
 							$resultType = TypeUtils::generalizeType($resultType, GeneralizePrecision::lessSpecific());

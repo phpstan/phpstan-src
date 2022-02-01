@@ -3677,6 +3677,7 @@ class MutatingScope implements Scope
 		$variableTypes = $this->variableTypes;
 		$mixed = new MixedType();
 		$parameterVariables = [];
+		$parameterVariableExpressions = [];
 		foreach ($arrowFunction->params as $i => $parameter) {
 			if ($parameter->type === null) {
 				$parameterType = $mixed;
@@ -3706,6 +3707,7 @@ class MutatingScope implements Scope
 
 			$variableTypes[$parameter->var->name] = VariableTypeHolder::createYes($parameterType);
 			$parameterVariables[] = $parameter->var->name;
+			$parameterVariableExpressions[] = $parameter->var;
 		}
 
 		if ($arrowFunction->static) {
@@ -3767,7 +3769,7 @@ class MutatingScope implements Scope
 			}
 		}
 
-		return $this->scopeFactory->create(
+		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->constantTypes,
@@ -3785,6 +3787,12 @@ class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 		);
+
+		foreach ($parameterVariableExpressions as $expr) {
+			$scope = $scope->invalidateExpression($expr);
+		}
+
+		return $scope;
 	}
 
 	public function isParameterValueNullable(Node\Param $parameter): bool

@@ -6,6 +6,7 @@ use DatePeriod;
 use DateTime;
 use DateTimeInterface;
 use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
@@ -15,6 +16,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use function strtolower;
 
 class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
@@ -33,6 +35,15 @@ class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodRet
 	{
 		if (!isset($methodCall->getArgs()[0])) {
 			return new ObjectType(DatePeriod::class);
+		}
+
+		if (!$methodCall->class instanceof Name) {
+			return new ObjectType(DatePeriod::class);
+		}
+
+		$className = $scope->resolveName($methodCall->class);
+		if (strtolower($className) !== 'dateperiod') {
+			return new ObjectType($className);
 		}
 
 		$firstArgType = $scope->getType($methodCall->getArgs()[0]->value);

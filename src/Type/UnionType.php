@@ -92,7 +92,7 @@ class UnionType implements CompoundType
 			return TrinaryLogic::createYes();
 		}
 
-		if ($type instanceof CompoundType && !$type instanceof CallableType) {
+		if ($type instanceof CompoundType && !$type instanceof CallableType && !$type instanceof TemplateUnionType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
@@ -106,7 +106,10 @@ class UnionType implements CompoundType
 
 	public function isSuperTypeOf(Type $otherType): TrinaryLogic
 	{
-		if ($otherType instanceof self || $otherType instanceof IterableType) {
+		if (
+			($otherType instanceof self && !$otherType instanceof TemplateUnionType)
+			|| $otherType instanceof IterableType
+		) {
 			return $otherType->isSubTypeOf($this);
 		}
 

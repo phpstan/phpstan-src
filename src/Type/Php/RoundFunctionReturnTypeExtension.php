@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -17,10 +18,12 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
-use const PHP_VERSION_ID;
 
 class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -37,7 +40,7 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (PHP_VERSION_ID >= 80000) {
+		if ($this->phpVersion->hasStricterRoundFunctions()) {
 			// PHP 8 fatals with a missing parameter.
 			$noArgsReturnType = new NeverType(true);
 			// PHP 8 can either return a float or fatal.
@@ -65,7 +68,7 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			return $defaultReturnType;
 		}
 
-		if (PHP_VERSION_ID >= 80000) {
+		if ($this->phpVersion->hasStricterRoundFunctions()) {
 			$allowed = TypeCombinator::union(
 				new IntegerType(),
 				new FloatType(),

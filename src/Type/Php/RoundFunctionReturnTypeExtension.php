@@ -15,6 +15,9 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function count;
+use function in_array;
+use const PHP_VERSION_ID;
 
 class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -28,7 +31,7 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 				'ceil',
 				'floor',
 			],
-			true
+			true,
 		);
 	}
 

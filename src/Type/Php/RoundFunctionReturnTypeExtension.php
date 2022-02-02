@@ -21,6 +21,7 @@ use function in_array;
 
 class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
 	public function __construct(private PhpVersion $phpVersion)
 	{
 	}

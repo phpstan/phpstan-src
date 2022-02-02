@@ -11,17 +11,17 @@
     {
       "matchPaths": ["+(composer.json)"],
       "enabled": true,
-      "groupName": "website"
+      "groupName": "root-composer"
     },
     {
       "matchPaths": ["build-cs/**"],
       "enabled": true,
-      "groupName": "website"
+      "groupName": "build-cs"
     },
     {
       "matchPaths": ["compiler/**"],
       "enabled": true,
-      "groupName": "playground-api"
+      "groupName": "compiler"
     },
     {
       "matchPaths": [".github/**"],

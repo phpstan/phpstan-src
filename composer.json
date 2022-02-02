@@ -42,7 +42,8 @@
 		"symfony/polyfill-php74": "^1.23",
 		"symfony/polyfill-php80": "^1.23",
 		"symfony/process": "^5.4.3",
-		"symfony/service-contracts": "^2.5.0"
+		"symfony/service-contracts": "^2.5.0",
+		"symfony/string": "^5.4.3"
 	},
 	"replace": {
 		"phpstan/phpstan": "self.version"

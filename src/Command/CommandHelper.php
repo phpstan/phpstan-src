@@ -375,12 +375,12 @@ class CommandHelper
 			throw new InceptionNotSuccessfulException();
 		}
 
-		$phpstanErrorReporting = \intval(\ini_get('error_reporting'));
-		\ini_restore('error_reporting');
+		$phpstanErrorReporting = intval(ini_get('error_reporting'));
+		ini_restore('error_reporting');
 		foreach ($container->getParameter('bootstrapFiles') as $bootstrapFileFromArray) {
 			self::executeBootstrapFile($bootstrapFileFromArray, $container, $errorOutput, $debugEnabled);
 		}
-		\error_reporting($phpstanErrorReporting);
+		error_reporting($phpstanErrorReporting);
 
 		if (PHP_VERSION_ID >= 80000) {
 			require_once __DIR__ . '/../../stubs/runtime/Enum/UnitEnum.php';

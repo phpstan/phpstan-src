@@ -9,6 +9,8 @@ use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\Internal\ConsumptionTrackingCollector;
+use PHPStan\Internal\FileConsumptionTracker;
 use PHPStan\Process\ProcessHelper;
 use React\EventLoop\StreamSelectLoop;
 use React\Socket\ConnectionInterface;
@@ -36,6 +38,8 @@ class ParallelAnalyser
 
 	private ProcessPool $processPool;
 
+	private ?ConsumptionTrackingCollector $consumptionTrackingCollector = null;
+
 	public function __construct(
 		private int $internalErrorsCountLimit,
 		float $processTimeout,
@@ -56,11 +60,13 @@ class ParallelAnalyser
 		?string $tmpFile,
 		?string $insteadOfFile,
 		InputInterface $input,
+		?ConsumptionTrackingCollector $consumptionTrackingCollector,
 	): AnalyserResult
 	{
 		$jobs = array_reverse($schedule->getJobs());
 		$loop = new StreamSelectLoop();
 
+		$this->consumptionTrackingCollector = $consumptionTrackingCollector;
 		$numberOfProcesses = $schedule->getNumberOfProcesses();
 		$errors = [];
 		$internalErrors = [];
@@ -129,6 +135,10 @@ class ParallelAnalyser
 				$commandOptions[] = escapeshellarg($insteadOfFile);
 			}
 
+			if ($consumptionTrackingCollector !== null) {
+				$commandOptions[] = '--track-consumption';
+			}
+
 			$process = new Process(ProcessHelper::getWorkerCommand(
 				$mainScript,
 				'worker',
@@ -167,6 +177,17 @@ class ParallelAnalyser
 
 						return $class::decode($node['data']);
 					}, $fileExportedNodes);
+				}
+
+				if ($this->consumptionTrackingCollector !== null) {
+					/**
+					 * @var array{"file": string, "timeConsumed": float, "memoryConsumed": int, "totalMemoryConsumed": int} $consumptionData
+					 */
+					foreach ($json['consumptionData'] as $consumptionData) {
+						$this->consumptionTrackingCollector->addConsumption(
+							FileConsumptionTracker::createFromArray($consumptionData),
+						);
+					}
 				}
 
 				if ($postFileCallback !== null) {

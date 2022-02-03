@@ -8,6 +8,7 @@ use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\File\PathNotFoundException;
+use PHPStan\Internal\FileConsumptionTracker;
 use PHPStan\Rules\Registry;
 use PHPStan\ShouldNotHappenException;
 use React\EventLoop\StreamSelectLoop;
@@ -63,6 +64,7 @@ class WorkerCommand extends Command
 				new InputOption('identifier', null, InputOption::VALUE_REQUIRED),
 				new InputOption('tmp-file', null, InputOption::VALUE_REQUIRED),
 				new InputOption('instead-of', null, InputOption::VALUE_REQUIRED),
+				new InputOption('track-consumption', null, InputOption::VALUE_NONE),
 			]);
 	}
 
@@ -76,6 +78,7 @@ class WorkerCommand extends Command
 		$allowXdebug = $input->getOption('xdebug');
 		$port = $input->getOption('port');
 		$identifier = $input->getOption('identifier');
+		$trackConsumption = $input->getOption('track-consumption');
 
 		if (
 			!is_array($paths)
@@ -86,6 +89,7 @@ class WorkerCommand extends Command
 			|| (!is_bool($allowXdebug))
 			|| !is_string($port)
 			|| !is_string($identifier)
+			|| !is_bool($trackConsumption)
 		) {
 			throw new ShouldNotHappenException();
 		}
@@ -140,14 +144,14 @@ class WorkerCommand extends Command
 		$analysedFiles = array_fill_keys($analysedFiles, true);
 
 		$tcpConector = new TcpConnector($loop);
-		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->done(function (ConnectionInterface $connection) use ($container, $identifier, $output, $analysedFiles, $tmpFile, $insteadOfFile): void {
+		$tcpConector->connect(sprintf('127.0.0.1:%d', $port))->done(function (ConnectionInterface $connection) use ($container, $identifier, $output, $analysedFiles, $tmpFile, $insteadOfFile, $trackConsumption): void {
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
 			$out = new Encoder($connection, $jsonInvalidUtf8Ignore);
 			$in = new Decoder($connection, true, 512, $jsonInvalidUtf8Ignore, $container->getParameter('parallel')['buffer']);
 			$out->write(['action' => 'hello', 'identifier' => $identifier]);
-			$this->runWorker($container, $out, $in, $output, $analysedFiles, $tmpFile, $insteadOfFile);
+			$this->runWorker($container, $out, $in, $output, $analysedFiles, $tmpFile, $insteadOfFile, $trackConsumption);
 		});
 
 		$loop->run();
@@ -170,6 +174,7 @@ class WorkerCommand extends Command
 		array $analysedFiles,
 		?string $tmpFile,
 		?string $insteadOfFile,
+		bool $trackConsumption,
 	): void
 	{
 		$handleError = function (Throwable $error) use ($out, $output): void {
@@ -191,7 +196,7 @@ class WorkerCommand extends Command
 		$fileAnalyser = $container->getByType(FileAnalyser::class);
 		/** @var Registry $registry */
 		$registry = $container->getByType(Registry::class);
-		$in->on('data', function (array $json) use ($fileAnalyser, $registry, $out, $analysedFiles, $tmpFile, $insteadOfFile, $output): void {
+		$in->on('data', function (array $json) use ($fileAnalyser, $registry, $out, $analysedFiles, $tmpFile, $insteadOfFile, $output, $trackConsumption): void {
 			$action = $json['action'];
 			if ($action !== 'analyse') {
 				return;
@@ -202,10 +207,16 @@ class WorkerCommand extends Command
 			$errors = [];
 			$dependencies = [];
 			$exportedNodes = [];
+			$consumptionData = [];
 			foreach ($files as $file) {
+				$consumptionTracker = null;
 				try {
 					if ($file === $insteadOfFile) {
 						$file = $tmpFile;
+					}
+					if ($trackConsumption) {
+						$consumptionTracker = new FileConsumptionTracker($file);
+						$consumptionTracker->start();
 					}
 					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $registry, null);
 					$fileErrors = $fileAnalyserResult->getErrors();
@@ -214,6 +225,12 @@ class WorkerCommand extends Command
 					foreach ($fileErrors as $fileError) {
 						$errors[] = $fileError;
 					}
+
+					if ($consumptionTracker instanceof FileConsumptionTracker) {
+						$consumptionTracker->stop();
+						$consumptionData[] = $consumptionTracker->toArray();
+					}
+
 				} catch (Throwable $t) {
 					$this->errorCount++;
 					$internalErrorsCount++;
@@ -236,6 +253,7 @@ class WorkerCommand extends Command
 					'errors' => $errors,
 					'dependencies' => $dependencies,
 					'exportedNodes' => $exportedNodes,
+					'consumptionData' => $consumptionData,
 					'filesCount' => count($files),
 					'internalErrorsCount' => $internalErrorsCount,
 				]]);

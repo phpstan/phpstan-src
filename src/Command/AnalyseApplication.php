@@ -6,12 +6,13 @@ use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Internal\BytesHelper;
+use PHPStan\Internal\ConsumptionTrackingCollector;
+use PHPStan\Internal\TimeHelper;
 use PHPStan\PhpDoc\StubValidator;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
 use function count;
 use function is_string;
-use function memory_get_peak_usage;
 use function sprintf;
 
 class AnalyseApplication
@@ -136,6 +137,11 @@ class AnalyseApplication
 			return new AnalyserResult([], [], [], [], false);
 		}
 
+		$consumptionCollector = null;
+		if ($stdOutput->isDebug()) {
+			// use collector whenever phpstan runs with -vvv
+			$consumptionCollector = new ConsumptionTrackingCollector();
+		}
 		if (!$debug) {
 			$progressStarted = false;
 			$preFileCallback = null;
@@ -153,19 +159,58 @@ class AnalyseApplication
 			};
 			$postFileCallback = null;
 			if ($stdOutput->isDebug()) {
-				$previousMemory = memory_get_peak_usage(true);
-				$postFileCallback = static function () use ($stdOutput, &$previousMemory): void {
-					$currentTotalMemory = memory_get_peak_usage(true);
-					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory)));
-					$previousMemory = $currentTotalMemory;
+				$postFileCallback = static function () use ($stdOutput, $consumptionCollector): void {
+					if ($consumptionCollector === null) {
+						return;
+					}
+					$stdOutput->writeLineFormatted(
+						sprintf(
+							'--- consumed %s, total %s, took %s',
+							BytesHelper::bytes($consumptionCollector->getMemoryConsumedForLatestFile()),
+							BytesHelper::bytes($consumptionCollector->getTotalMemoryConsumed()),
+							TimeHelper::humaniseFractionalSeconds($consumptionCollector->getTimeConsumedForLatestFile()),
+						),
+					);
 				};
 			}
 		}
 
-		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, null, null, $input);
+		$analyserResult = $this->analyserRunner->runAnalyser(
+			$files,
+			$allAnalysedFiles,
+			$preFileCallback,
+			$postFileCallback,
+			$debug,
+			true,
+			$projectConfigFile,
+			null,
+			null,
+			$input,
+			$consumptionCollector,
+		);
 
 		if (isset($progressStarted) && $progressStarted) {
 			$errorOutput->getStyle()->progressFinish();
+		}
+
+		if ($stdOutput->isDebug() && isset($consumptionCollector)) {
+			$stdOutput->writeLineFormatted('');
+			if ($debug) {
+				// top memory can be only be determined when not running in parallel
+				// so we just say: only in debug mode
+				$stdOutput->writeLineFormatted('Top memory consumers:');
+				$rows = [];
+				foreach ($consumptionCollector->getHumanisedTopMemoryConsumers() as $file => $consumption) {
+					$rows[] = [$file, $consumption];
+				}
+				$stdOutput->getStyle()->table(['file', 'memory consumed'], $rows);
+			}
+			$stdOutput->writeLineFormatted('Top time consumers:');
+			$rows = [];
+			foreach ($consumptionCollector->getHumanisedTopTimeConsumers() as $file => $consumption) {
+				$rows[] = [ $file, $consumption ];
+			}
+			$stdOutput->getStyle()->table(['file', 'time to process'], $rows);
 		}
 
 		return $analyserResult;

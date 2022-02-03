@@ -5,6 +5,7 @@ namespace PHPStan\Command;
 use Closure;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResult;
+use PHPStan\Internal\ConsumptionTrackingCollector;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
 use PHPStan\Process\CpuCoreCounter;
@@ -43,6 +44,7 @@ class AnalyserRunner
 		?string $tmpFile,
 		?string $insteadOfFile,
 		InputInterface $input,
+		?ConsumptionTrackingCollector $consumptionTrackingCollector = null,
 	): AnalyserResult
 	{
 		$filesCount = count($files);
@@ -62,7 +64,16 @@ class AnalyserRunner
 			&& $mainScript !== null
 			&& $schedule->getNumberOfProcesses() > 1
 		) {
-			return $this->parallelAnalyser->analyse($schedule, $mainScript, $postFileCallback, $projectConfigFile, $tmpFile, $insteadOfFile, $input);
+			return $this->parallelAnalyser->analyse(
+				$schedule,
+				$mainScript,
+				$postFileCallback,
+				$projectConfigFile,
+				$tmpFile,
+				$insteadOfFile,
+				$input,
+				$consumptionTrackingCollector,
+			);
 		}
 
 		return $this->analyser->analyse(
@@ -71,6 +82,7 @@ class AnalyserRunner
 			$postFileCallback,
 			$debug,
 			$this->switchTmpFile($allAnalysedFiles, $insteadOfFile, $tmpFile),
+			$consumptionTrackingCollector,
 		);
 	}
 

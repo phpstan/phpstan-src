@@ -156,6 +156,11 @@ class PhpVersion
 		return $this->versionId < 80000;
 	}
 
+	public function hasStricterRoundFunctions(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 	public function hasTentativeReturnTypes(): bool
 	{
 		return $this->versionId >= 80100;

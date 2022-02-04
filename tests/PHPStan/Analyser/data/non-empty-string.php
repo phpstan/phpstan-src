@@ -206,10 +206,10 @@ class ImplodingStrings
 		assertType('non-empty-string', implode($nonEmptyArrayWithNonEmptyStrings));
 	}
 
-	public function sayHello(): void
+	public function sayHello(int $i): void
 	{
 		// coming from issue #5291
-		$s = array(1, 2);
+		$s = array(1, $i);
 
 		assertType('non-empty-string', implode("a", $s));
 	}
@@ -227,10 +227,10 @@ class ImplodingStrings
 		assertType('non-empty-string', implode($glue, $a));
 	}
 
-	public function sayHello2(): void
+	public function sayHello2(int $i): void
 	{
 		// coming from issue #5291
-		$s = array(1, 2);
+		$s = array(1, $i);
 
 		assertType('non-empty-string', join("a", $s));
 	}

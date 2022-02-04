@@ -101,6 +101,10 @@ class UnionType implements CompoundType
 			$results[] = $innerType->accepts($type, $strictTypes);
 		}
 
+		if ($type instanceof TemplateUnionType) {
+			$results[] = $type->isAcceptedBy($this, $strictTypes);
+		}
+
 		return TrinaryLogic::createNo()->or(...$results);
 	}
 
@@ -116,6 +120,10 @@ class UnionType implements CompoundType
 		$results = [];
 		foreach ($this->getTypes() as $innerType) {
 			$results[] = $innerType->isSuperTypeOf($otherType);
+		}
+
+		if ($otherType instanceof TemplateUnionType) {
+			$results[] = $otherType->isSubTypeOf($this);
 		}
 
 		return TrinaryLogic::createNo()->or(...$results);

@@ -345,6 +345,23 @@ class UnionTypeTest extends PHPStanTestCase
 			TrinaryLogic::createNo(),
 		];
 
+		yield 'is super type of template-of-union with same members' => [
+			new UnionType([
+				new IntegerType(),
+				new FloatType(),
+			]),
+			TemplateTypeFactory::create(
+				TemplateTypeScope::createWithClass('Foo'),
+				'T',
+				new UnionType([
+					new IntegerType(),
+					new FloatType(),
+				]),
+				TemplateTypeVariance::createInvariant(),
+			),
+			TrinaryLogic::createYes(),
+		];
+
 		yield 'is super type of template-of-union equal to a union member' => [
 			new UnionType([
 				TemplateTypeFactory::create(
@@ -860,6 +877,22 @@ class UnionTypeTest extends PHPStanTestCase
 					new NullType(),
 				]),
 				new ClosureType([], new MixedType(), false),
+				TrinaryLogic::createYes(),
+			],
+			'accepts template-of-union with same members' => [
+				new UnionType([
+					new IntegerType(),
+					new FloatType(),
+				]),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new UnionType([
+						new IntegerType(),
+						new FloatType(),
+					]),
+					TemplateTypeVariance::createInvariant(),
+				),
 				TrinaryLogic::createYes(),
 			],
 			'accepts template-of-union equal to a union member' => [

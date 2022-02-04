@@ -15,6 +15,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use function count;
+use function implode;
 use function in_array;
 
 class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -80,12 +81,12 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 		return new StringType();
 	}
 
-	private function inferConstantType(ConstantArrayType $arrayType, ConstantStringType $separatorType):?Type
+	private function inferConstantType(ConstantArrayType $arrayType, ConstantStringType $separatorType): ?Type
 	{
 		$valueTypes = $arrayType->getValueTypes();
 
 		$arrayValues = [];
-		foreach($valueTypes as $valueType) {
+		foreach ($valueTypes as $valueType) {
 			if (!$valueType instanceof ConstantScalarType) {
 				return null;
 			}

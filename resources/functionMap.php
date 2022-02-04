@@ -11294,7 +11294,7 @@ return [
 'SplFileObject::fread' => ['string|false', 'length'=>'int'],
 'SplFileObject::fscanf' => ['bool', 'format'=>'string', '&...w_vars='=>'string|int|float'],
 'SplFileObject::fseek' => ['int', 'pos'=>'int', 'whence='=>'int'],
-'SplFileObject::fstat' => ['array|false'],
+'SplFileObject::fstat' => ['array'],
 'SplFileObject::ftell' => ['int|false'],
 'SplFileObject::ftruncate' => ['bool', 'size'=>'int'],
 'SplFileObject::fwrite' => ['int', 'str'=>'string', 'length='=>'int'],

@@ -28,7 +28,7 @@ class StatDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtensi
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		return $this->getReturnType();
+		return TypeCombinator::union($this->getReturnType(), new ConstantBooleanType(false));
 	}
 
 	public function getClass(): string
@@ -74,7 +74,7 @@ class StatDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtensi
 			$builder->setOffsetValueType(new ConstantStringType($key), $valueType);
 		}
 
-		return TypeCombinator::union($builder->getArray(), new ConstantBooleanType(false));
+		return $builder->getArray();
 	}
 
 }

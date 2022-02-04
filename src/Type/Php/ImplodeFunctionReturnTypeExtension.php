@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -35,20 +36,7 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 		if (count($args) === 1) {
 			$argType = $scope->getType($args[0]->value);
 			if ($argType->isArray()->yes()) {
-				$accessoryTypes = [];
-				if ($argType->isIterableAtLeastOnce()->yes() && $argType->getIterableValueType()->isNonEmptyString()->yes()) {
-					$accessoryTypes[] = new AccessoryNonEmptyStringType();
-				}
-				if ($argType->getIterableValueType()->isLiteralString()->yes()) {
-					$accessoryTypes[] = new AccessoryLiteralStringType();
-				}
-
-				if (count($accessoryTypes) > 0) {
-					$accessoryTypes[] = new StringType();
-					return new IntersectionType($accessoryTypes);
-				}
-
-				return new StringType();
+				return $this->implode($argType, new ConstantStringType(''));
 			}
 		}
 
@@ -58,6 +46,12 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 
 		$separatorType = $scope->getType($args[0]->value);
 		$arrayType = $scope->getType($args[1]->value);
+
+		return $this->implode($arrayType, $separatorType);
+	}
+
+	private function implode(Type $arrayType, Type $separatorType): Type
+	{
 		$accessoryTypes = [];
 		if ($arrayType->isIterableAtLeastOnce()->yes()) {
 			if ($arrayType->getIterableValueType()->isNonEmptyString()->yes() || $separatorType->isNonEmptyString()->yes()) {

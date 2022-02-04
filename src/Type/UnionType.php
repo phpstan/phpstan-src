@@ -634,6 +634,16 @@ class UnionType implements CompoundType
 		return $this;
 	}
 
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		$innerTypes = [];
+		foreach ($this->getTypes() as $innerType) {
+			$innerTypes[] = TypeCombinator::remove($innerType, $typeToRemove);
+		}
+
+		return TypeCombinator::union(...$innerTypes);
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

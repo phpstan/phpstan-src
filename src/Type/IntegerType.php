@@ -76,4 +76,25 @@ class IntegerType implements Type
 		);
 	}
 
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($typeToRemove instanceof IntegerRangeType || $typeToRemove instanceof ConstantIntegerType) {
+			if ($typeToRemove instanceof IntegerRangeType) {
+				$removeValueMin = $typeToRemove->getMin();
+				$removeValueMax = $typeToRemove->getMax();
+			} else {
+				$removeValueMin = $typeToRemove->getValue();
+				$removeValueMax = $typeToRemove->getValue();
+			}
+			$lowerPart = $removeValueMin !== null ? IntegerRangeType::fromInterval(null, $removeValueMin, -1) : null;
+			$upperPart = $removeValueMax !== null ? IntegerRangeType::fromInterval($removeValueMax, null, +1) : null;
+			if ($lowerPart !== null && $upperPart !== null) {
+				return new UnionType([$lowerPart, $upperPart]);
+			}
+			return $lowerPart ?? $upperPart ?? new NeverType();
+		}
+
+		return null;
+	}
+
 }

@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -73,6 +74,15 @@ class BooleanType implements Type
 			[$this],
 			1,
 		);
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($typeToRemove instanceof ConstantBooleanType) {
+			return new ConstantBooleanType(!$typeToRemove->getValue());
+		}
+
+		return null;
 	}
 
 	/**

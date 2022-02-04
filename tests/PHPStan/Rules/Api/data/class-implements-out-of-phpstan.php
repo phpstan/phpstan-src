@@ -284,6 +284,11 @@ class Baz implements Type
 		// TODO: Implement traverse() method.
 	}
 
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		// TODO: Implement tryRemove() method.
+	}
+
 	public static function __set_state(array $properties): \PHPStan\Type\Type
 	{
 		// TODO: Implement __set_state() method.

@@ -5,6 +5,7 @@ namespace PHPStan\Type\Generic;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -15,6 +16,8 @@ use function sprintf;
  */
 trait TemplateTypeTrait
 {
+
+	use NonRemoveableTypeTrait;
 
 	private string $name;
 

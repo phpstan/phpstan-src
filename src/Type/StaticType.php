@@ -450,6 +450,15 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->subtractedType;
 	}
 
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($this->isSuperTypeOf($typeToRemove)->yes()) {
+			return $this->subtract($typeToRemove);
+		}
+
+		return null;
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

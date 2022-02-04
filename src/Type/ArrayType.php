@@ -7,6 +7,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -418,6 +419,23 @@ class ArrayType implements Type
 		}
 
 		return $this;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($typeToRemove instanceof ConstantArrayType && $typeToRemove->isIterableAtLeastOnce()->no()) {
+			return TypeCombinator::intersect($this, new NonEmptyArrayType());
+		}
+
+		if ($typeToRemove instanceof NonEmptyArrayType) {
+			return new ConstantArrayType([], []);
+		}
+
+		if ($this instanceof ConstantArrayType && $typeToRemove instanceof HasOffsetType) {
+			return $this->unsetOffset($typeToRemove->getOffsetType());
+		}
+
+		return null;
 	}
 
 	/**

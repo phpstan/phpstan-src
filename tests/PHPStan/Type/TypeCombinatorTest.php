@@ -28,6 +28,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
+use PHPStan\Type\Generic\TemplateBooleanType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateObjectType;
 use PHPStan\Type\Generic\TemplateObjectWithoutClassType;
@@ -3904,6 +3905,17 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new NeverType(),
 				ObjectType::class,
 				'stdClass',
+			],
+			[
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new BooleanType(),
+					TemplateTypeVariance::createInvariant(),
+				),
+				new ConstantBooleanType(false),
+				TemplateBooleanType::class,
+				'T of bool (class Foo, parameter)',
 			],
 		];
 	}

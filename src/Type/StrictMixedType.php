@@ -13,12 +13,14 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
 class StrictMixedType implements CompoundType
 {
 
 	use UndecidedComparisonCompoundTypeTrait;
+	use NonRemoveableTypeTrait;
 
 	public function getReferencedClasses(): array
 	{

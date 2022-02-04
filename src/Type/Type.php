@@ -149,6 +149,13 @@ interface Type
 	public function traverse(callable $cb): Type;
 
 	/**
+	 * Return the difference with another type, or null if it cannot be represented.
+	 *
+	 * @see TypeCombinator::remove()
+	 */
+	public function tryRemove(Type $typeToRemove): ?Type;
+
+	/**
 	 * @param mixed[] $properties
 	 */
 	public static function __set_state(array $properties): self;

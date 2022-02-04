@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -276,6 +277,24 @@ class IterableType implements CompoundType
 		}
 
 		return $this;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		$arrayType = new ArrayType(new MixedType(), new MixedType());
+		if ($typeToRemove->isSuperTypeOf($arrayType)->yes()) {
+			return new GenericObjectType(Traversable::class, [
+				$this->getIterableKeyType(),
+				$this->getIterableValueType(),
+			]);
+		}
+
+		$traversableType = new ObjectType(Traversable::class);
+		if ($typeToRemove->isSuperTypeOf($traversableType)->yes()) {
+			return new ArrayType($this->getIterableKeyType(), $this->getIterableValueType());
+		}
+
+		return null;
 	}
 
 	/**

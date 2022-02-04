@@ -14,8 +14,13 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 	public function dataFileAsserts(): iterable
 	{
+<<<<<<< HEAD
 		require_once __DIR__ . '/data/implode.php';
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/implode.php');
+=======
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/json-decode/narrow_type.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/json-decode/narrow_type_with_force_array.php');
+>>>>>>> add test case for narrow typed json_decode
 
 		require_once __DIR__ . '/data/bug2574.php';
 

@@ -16,25 +16,24 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 <<<<<<< HEAD
+<<<<<<< HEAD
 use PHPStan\Type\BitwiseFlagHelper;
 use PHPStan\Type\Constant\ConstantBooleanType;
 =======
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+=======
+>>>>>>> return mixed type
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 >>>>>>> Extend JsonThrowOnErrorDynamicReturnTypeExtension to detect knonw type from contssant string value
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\FloatType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
 use stdClass;
 use function json_decode;
 
@@ -77,11 +76,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 
 		// narrow type for json_decode()
 		if ($functionReflection->getName() === 'json_decode') {
-			$jsonDecodeNarrowedType = $this->narrowTypeForJsonDecode($functionCall, $scope);
-			// improve type
-			if (! $jsonDecodeNarrowedType instanceof MixedType) {
-				$defaultReturnType = $jsonDecodeNarrowedType;
-			}
+			$defaultReturnType = $this->narrowTypeForJsonDecode($functionCall, $scope);
 		}
 
 		if (!isset($functionCall->getArgs()[$argumentPosition])) {
@@ -105,57 +100,34 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 		$firstValueType = $scope->getType($firstArgValue);
 
 		if ($firstValueType instanceof ConstantStringType) {
-			$resolvedType = $this->resolveConstantStringType($firstValueType, $isForceArray);
-		} else {
-			$resolvedType = new MixedType();
-		}
-
-		// prefer specific type
-		if (! $resolvedType instanceof MixedType) {
-			return $resolvedType;
+			return $this->resolveConstantStringType($firstValueType, $isForceArray);
 		}
 
 		// fallback type
 		if ($isForceArray) {
-			return new UnionType([
-				new ArrayType(new MixedType(), new MixedType()),
-				new StringType(),
-				new FloatType(),
-				new IntegerType(),
-				new BooleanType(),
-			]);
+			return new MixedType(true, new ObjectType(stdClass::class));
 		}
 
-		// scalar types with stdClass
-		return new UnionType([
-			new ObjectType(stdClass::class),
-			new StringType(),
-			new FloatType(),
-			new IntegerType(),
-			new BooleanType(),
-		]);
+		return new MixedType(true);
 	}
 
 	/**
 	 * Is "json_decode(..., true)"?
-	 * @param Arg[] $args
 	 */
 	private function isForceArray(FuncCall $funcCall): bool
 	{
 		$args = $funcCall->getArgs();
 
-		if (!isset($args[1])) {
+		if (! isset($args[1])) {
 			return false;
 		}
 
 		$secondArgValue = $args[1]->value;
-		if ($secondArgValue instanceof ConstFetch) {
-			if ($secondArgValue->name->toLowerString() === 'true') {
-				return true;
-			}
+		if (! $secondArgValue instanceof ConstFetch) {
+			return false;
 		}
 
-		return false;
+		return $secondArgValue->name->toLowerString() === 'true';
 	}
 
 	private function resolveConstantStringType(ConstantStringType $constantStringType, bool $isForceArray): Type

@@ -21,3 +21,9 @@ assertType('stdClass', $value);
 
 $value = json_decode('[1, 2, 3]');
 assertType('array{1, 2, 3}', $value);
+
+
+function ($mixed) {
+	$value = json_decode($mixed);
+	assertType('mixed', $value);
+};

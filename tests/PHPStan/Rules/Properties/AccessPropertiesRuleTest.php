@@ -545,6 +545,9 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 	public function testBug6566(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-6566.php'], []);

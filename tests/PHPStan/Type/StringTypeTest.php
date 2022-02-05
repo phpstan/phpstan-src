@@ -149,7 +149,7 @@ class StringTypeTest extends PHPStanTestCase
 				TemplateTypeVariance::createInvariant(),
 			)->toArgument(),
 			new StringType(),
-			TrinaryLogic::createNo(),
+			TrinaryLogic::createMaybe(),
 		];
 
 		yield [

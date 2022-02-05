@@ -124,7 +124,7 @@ trait TemplateTypeTrait
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		if ($type instanceof self || $type instanceof IntersectionType) {
+		if ($type instanceof TemplateType || $type instanceof IntersectionType) {
 			return $type->isSubTypeOf($this);
 		}
 
@@ -149,16 +149,12 @@ trait TemplateTypeTrait
 			return $type->isSuperTypeOf($this->getBound());
 		}
 
-		if ($this->equals($type)) {
-			return TrinaryLogic::createYes();
+		if ($this->getScope()->equals($type->getScope()) && $this->getName() === $type->getName()) {
+			return $type->getBound()->isSuperTypeOf($this->getBound());
 		}
 
-		if ($type->getBound()->isSuperTypeOf($this->getBound())->no() &&
-			$this->getBound()->isSuperTypeOf($type->getBound())->no()) {
-			return TrinaryLogic::createNo();
-		}
-
-		return TrinaryLogic::createMaybe();
+		return $type->getBound()->isSuperTypeOf($this->getBound())
+			->and(TrinaryLogic::createMaybe());
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

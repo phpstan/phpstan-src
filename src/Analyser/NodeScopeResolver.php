@@ -80,6 +80,7 @@ use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InClosureNode;
+use PHPStan\Node\InForeachNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\LiteralArrayItem;
@@ -765,6 +766,11 @@ class NodeScopeResolver
 				$stmt->expr,
 				new Array_([]),
 			);
+			$inForeachScope = $scope;
+			if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
+				$inForeachScope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
+			}
+			$nodeCallback(new InForeachNode($stmt), $inForeachScope);
 			$bodyScope = $this->enterForeach($scope->filterByTruthyValue($arrayComparisonExpr), $stmt);
 			$count = 0;
 			do {

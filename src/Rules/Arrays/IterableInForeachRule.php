@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\InForeachNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -13,7 +14,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Stmt\Foreach_>
+ * @implements Rule<InForeachNode>
  */
 class IterableInForeachRule implements Rule
 {
@@ -24,14 +25,15 @@ class IterableInForeachRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Stmt\Foreach_::class;
+		return InForeachNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		$originalNode = $node->getOriginalNode();
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
-			$node->expr,
+			$originalNode->expr,
 			'Iterating over an object of an unknown class %s.',
 			static fn (Type $type): bool => $type->isIterable()->yes(),
 		);
@@ -47,7 +49,7 @@ class IterableInForeachRule implements Rule
 			RuleErrorBuilder::message(sprintf(
 				'Argument of an invalid type %s supplied for foreach, only iterables are supported.',
 				$type->describe(VerbosityLevel::typeOnly()),
-			))->line($node->expr->getLine())->build(),
+			))->line($originalNode->expr->getLine())->build(),
 		];
 	}
 

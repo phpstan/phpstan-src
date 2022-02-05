@@ -543,4 +543,11 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6566(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-6566.php'], []);
+	}
+
 }

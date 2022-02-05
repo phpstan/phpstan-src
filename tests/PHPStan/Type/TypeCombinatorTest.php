@@ -3914,8 +3914,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 					TemplateTypeVariance::createInvariant(),
 				),
 				new ConstantBooleanType(false),
-				TemplateBooleanType::class,
-				'T of bool (class Foo, parameter)',
+				TemplateMixedType::class, // should be TemplateConstantBooleanType
+				'T (class Foo, parameter)', // should be T of true
 			],
 		];
 	}

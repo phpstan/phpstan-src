@@ -1089,7 +1089,7 @@ function testGenericObjectWithoutClassType2($a)
 		return $a;
 	}
 
-	assertType('T of object (function PHPStan\Generics\FunctionsAssertType\testGenericObjectWithoutClassType2(), argument)', $b);
+	assertType('T of object~stdClass (function PHPStan\Generics\FunctionsAssertType\testGenericObjectWithoutClassType2(), argument)', $b);
 
 	return $a;
 }

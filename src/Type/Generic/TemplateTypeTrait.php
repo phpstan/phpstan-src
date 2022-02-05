@@ -5,8 +5,8 @@ namespace PHPStan\Type\Generic;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -16,8 +16,6 @@ use function sprintf;
  */
 trait TemplateTypeTrait
 {
-
-	use NonRemoveableTypeTrait;
 
 	private string $name;
 
@@ -196,6 +194,22 @@ trait TemplateTypeTrait
 	protected function shouldGeneralizeInferredType(): bool
 	{
 		return true;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		$removedBound = TypeCombinator::remove($this->getBound(), $typeToRemove);
+		$type = TemplateTypeFactory::create(
+			$this->getScope(),
+			$this->getName(),
+			$removedBound,
+			$this->getVariance(),
+		);
+		if ($this->isArgument()) {
+			return TemplateTypeHelper::toArgument($type);
+		}
+
+		return $type;
 	}
 
 	/**

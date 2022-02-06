@@ -26,9 +26,3 @@ function ($mixed) {
 	$value = json_decode($mixed, true);
 	assertType('mixed~stdClass', $value);
 };
-
-// @see https://3v4l.org/YFlHF
-function ($mixed) {
-	$value = json_decode($mixed, null, 512, JSON_OBJECT_AS_ARRAY);
-	assertType('mixed~stdClass', $value);
-};

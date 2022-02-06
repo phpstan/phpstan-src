@@ -27,3 +27,8 @@ function ($mixed) {
 	$value = json_decode($mixed);
 	assertType('mixed', $value);
 };
+
+function ($mixed) {
+	$value = json_decode($mixed, false);
+	assertType('mixed', $value);
+};

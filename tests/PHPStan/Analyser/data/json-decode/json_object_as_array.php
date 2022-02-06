@@ -11,6 +11,13 @@ function ($mixed) {
 };
 
 function ($mixed) {
+	$flagsAsVariable = JSON_OBJECT_AS_ARRAY;
+
+	$value = json_decode($mixed, null, 512, $flagsAsVariable);
+	assertType('mixed~stdClass', $value);
+};
+
+function ($mixed) {
 	$value = json_decode($mixed, null, 512, JSON_OBJECT_AS_ARRAY | JSON_BIGINT_AS_STRING);
 	assertType('mixed~stdClass', $value);
 };

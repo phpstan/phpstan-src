@@ -4,9 +4,13 @@ namespace PHPStan\Type\Php;
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 use PhpParser\Node\Arg;
 =======
+=======
+use PhpParser\ConstExprEvaluationException;
+>>>>>>> decopule type resolution to static
 use PhpParser\ConstExprEvaluator;
 >>>>>>> check for JSON_OBJECT_AS_ARRAY, in case of null and array
 use PhpParser\Node\Expr;
@@ -40,11 +44,14 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use stdClass;
 use function constant;
+use function is_bool;
 use function json_decode;
 use const JSON_OBJECT_AS_ARRAY;
 
 class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	private const UNABLE_TO_RESOLVE = '__UNABLE_TO_RESOLVE__';
 
 	/** @var array<string, int> */
 	private array $argumentPositions = [
@@ -52,11 +59,24 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 		'json_decode' => 3,
 	];
 
+<<<<<<< HEAD
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private BitwiseFlagHelper $bitwiseFlagAnalyser,
 	)
+=======
+	private ConstExprEvaluator $constExprEvaluator;
+
+	public function __construct(private ReflectionProvider $reflectionProvider)
+>>>>>>> decopule type resolution to static
 	{
+		$this->constExprEvaluator = new ConstExprEvaluator(static function (Expr $expr) {
+			if ($expr instanceof ConstFetch) {
+				return constant($expr->name->toString());
+			}
+
+			return null;
+		});
 	}
 
 	public function isFunctionSupported(
@@ -100,7 +120,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 	private function narrowTypeForJsonDecode(FuncCall $funcCall, Scope $scope): Type
 	{
 		$args = $funcCall->getArgs();
-		$isArrayWithoutStdClass = $this->isForceArrayWithoutStdClass($funcCall);
+		$isArrayWithoutStdClass = $this->isForceArrayWithoutStdClass($funcCall, $scope);
 
 		$firstArgValue = $args[0]->value;
 		$firstValueType = $scope->getType($firstArgValue);
@@ -110,7 +130,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 		}
 
 		// fallback type
-		if ($isArrayWithoutStdClass) {
+		if ($isArrayWithoutStdClass === true) {
 			return new MixedType(true, new ObjectType(stdClass::class));
 		}
 
@@ -120,39 +140,30 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 	/**
 	 * Is "json_decode(..., true)"?
 	 */
-	private function isForceArrayWithoutStdClass(FuncCall $funcCall): bool
+	private function isForceArrayWithoutStdClass(FuncCall $funcCall, Scope $scope): bool
 	{
 		$args = $funcCall->getArgs();
 
-		$constExprEvaluator = new ConstExprEvaluator(static function (Expr $expr) {
-			if ($expr instanceof ConstFetch) {
-				return constant($expr->name->toString());
-			}
-
-			return null;
-		});
-
 		if (isset($args[1])) {
-			$secondArgValue = $args[1]->value;
-
-			$constValue = $constExprEvaluator->evaluateSilently($secondArgValue);
-			if ($constValue === true) {
-				return true;
-			}
-
-			if ($constValue === false) {
+			$secondArgValue = $this->resolveMaskValue($args[1]->value, $scope);
+			if ($secondArgValue === self::UNABLE_TO_RESOLVE) {
 				return false;
 			}
 
+			if (is_bool($secondArgValue)) {
+				return $secondArgValue;
+			}
+
 			// depends on used constants
-			if ($constValue === null) {
+			if ($secondArgValue === null) {
 				if (! isset($args[3])) {
 					return false;
 				}
 
 				// @see https://www.php.net/manual/en/json.constants.php#constant.json-object-as-array
-				$thirdArgValue = $constExprEvaluator->evaluateSilently($args[3]->value);
-				if ($thirdArgValue & JSON_OBJECT_AS_ARRAY) {
+				$thirdArgValue = $args[3]->value;
+				$resolvedThirdArgValue = $this->resolveMaskValue($thirdArgValue, $scope);
+				if (($resolvedThirdArgValue & JSON_OBJECT_AS_ARRAY) !== 0) {
 					return true;
 				}
 			}
@@ -166,6 +177,25 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 		$decodedValue = json_decode($constantStringType->getValue(), $isForceArray);
 
 		return ConstantTypeHelper::getTypeFromValue($decodedValue);
+	}
+
+	/**
+	 * @return mixed
+	 */
+	private function resolveMaskValue(Expr $expr, Scope $scope)
+	{
+		$thirdArgValueType = $scope->getType($expr);
+		if ($thirdArgValueType instanceof ConstantIntegerType) {
+			return $thirdArgValueType->getValue();
+		}
+
+		// fallback to value resolver
+		try {
+			return $this->constExprEvaluator->evaluateSilently($expr);
+		} catch (ConstExprEvaluationException) {
+			// unable to resolve
+			return self::UNABLE_TO_RESOLVE;
+		}
 	}
 
 }

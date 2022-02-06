@@ -3,8 +3,12 @@
 namespace PHPStan\Type\Php;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 use PhpParser\Node\Arg;
+=======
+use PhpParser\ConstExprEvaluator;
+>>>>>>> check for JSON_OBJECT_AS_ARRAY, in case of null and array
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
 use PhpParser\Node\Expr\ConstFetch;
@@ -35,7 +39,9 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use stdClass;
+use function constant;
 use function json_decode;
+use const JSON_OBJECT_AS_ARRAY;
 
 class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -94,17 +100,17 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 	private function narrowTypeForJsonDecode(FuncCall $funcCall, Scope $scope): Type
 	{
 		$args = $funcCall->getArgs();
-		$isForceArray = $this->isForceArray($funcCall);
+		$isArrayWithoutStdClass = $this->isForceArrayWithoutStdClass($funcCall);
 
 		$firstArgValue = $args[0]->value;
 		$firstValueType = $scope->getType($firstArgValue);
 
 		if ($firstValueType instanceof ConstantStringType) {
-			return $this->resolveConstantStringType($firstValueType, $isForceArray);
+			return $this->resolveConstantStringType($firstValueType, $isArrayWithoutStdClass);
 		}
 
 		// fallback type
-		if ($isForceArray) {
+		if ($isArrayWithoutStdClass) {
 			return new MixedType(true, new ObjectType(stdClass::class));
 		}
 
@@ -114,20 +120,45 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 	/**
 	 * Is "json_decode(..., true)"?
 	 */
-	private function isForceArray(FuncCall $funcCall): bool
+	private function isForceArrayWithoutStdClass(FuncCall $funcCall): bool
 	{
 		$args = $funcCall->getArgs();
 
-		if (! isset($args[1])) {
-			return false;
+		$constExprEvaluator = new ConstExprEvaluator(static function (Expr $expr) {
+			if ($expr instanceof ConstFetch) {
+				return constant($expr->name->toString());
+			}
+
+			return null;
+		});
+
+		if (isset($args[1])) {
+			$secondArgValue = $args[1]->value;
+
+			$constValue = $constExprEvaluator->evaluateSilently($secondArgValue);
+			if ($constValue === true) {
+				return true;
+			}
+
+			if ($constValue === false) {
+				return false;
+			}
+
+			// depends on used constants
+			if ($constValue === null) {
+				if (! isset($args[3])) {
+					return false;
+				}
+
+				// @see https://www.php.net/manual/en/json.constants.php#constant.json-object-as-array
+				$thirdArgValue = $constExprEvaluator->evaluateSilently($args[3]->value);
+				if ($thirdArgValue & JSON_OBJECT_AS_ARRAY) {
+					return true;
+				}
+			}
 		}
 
-		$secondArgValue = $args[1]->value;
-		if (! $secondArgValue instanceof ConstFetch) {
-			return false;
-		}
-
-		return $secondArgValue->name->toLowerString() === 'true';
+		return false;
 	}
 
 	private function resolveConstantStringType(ConstantStringType $constantStringType, bool $isForceArray): Type

@@ -109,4 +109,34 @@ class Foo
 		assertType('int', $i - $j);
 	}
 
+	/**
+	 * @param int<-5, 5> $range
+	 */
+	public function multiplyZero(int $i, float $f, $range): void
+	{
+		assertType('0', $i * false);
+		assertType('0.0', $f * false);
+		assertType('0', $range * false);
+
+		assertType('0', $i * '0');
+		assertType('0.0', $f * '0');
+		assertType('0', $range * '0');
+
+		assertType('0', $i * 0);
+		assertType('0.0', $f * 0);
+		assertType('0', $range * 0);
+
+		assertType('0', 0 * $i);
+		assertType('0.0', 0 * $f);
+		assertType('0', 0 * $range);
+
+		$i *= 0;
+		$f *= 0;
+		$range *= 0;
+		assertType('0', $i);
+		assertType('0.0', $f);
+		assertType('0', $range);
+
+	}
+
 }

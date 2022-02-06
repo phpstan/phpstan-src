@@ -1041,6 +1041,34 @@ class MutatingScope implements Scope
 		}
 
 		if (
+			$node instanceof Node\Expr\BinaryOp\Mul
+			|| $node instanceof Node\Expr\AssignOp\Mul
+		) {
+			if ($node instanceof Node\Expr\AssignOp) {
+				$leftType = $this->getType($node->var)->toNumber();
+				$rightType = $this->getType($node->expr)->toNumber();
+			} else {
+				$leftType = $this->getType($node->left)->toNumber();
+				$rightType = $this->getType($node->right)->toNumber();
+			}
+
+			$floatType = new FloatType();
+
+			if ($leftType instanceof ConstantIntegerType && $leftType->getValue() === 0) {
+				if ($floatType->isSuperTypeOf($rightType)->yes()) {
+					return new ConstantFloatType(0.0);
+				}
+				return new ConstantIntegerType(0);
+			}
+			if ($rightType instanceof ConstantIntegerType && $rightType->getValue() === 0) {
+				if ($floatType->isSuperTypeOf($leftType)->yes()) {
+					return new ConstantFloatType(0.0);
+				}
+				return new ConstantIntegerType(0);
+			}
+		}
+
+		if (
 			$node instanceof Node\Expr\BinaryOp\Div
 			|| $node instanceof Node\Expr\AssignOp\Div
 			|| $node instanceof Node\Expr\BinaryOp\Mod

@@ -45,10 +45,7 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			// PHP 8 fatals with a missing parameter.
 			$noArgsReturnType = new NeverType(true);
 			// PHP 8 can either return a float or fatal.
-			$defaultReturnType = new BenevolentUnionType([
-				new FloatType(),
-				new NeverType(true),
-			]);
+			$defaultReturnType = new FloatType();
 		} else {
 			// PHP 7 returns null with a missing parameter.
 			$noArgsReturnType = new NullType();
@@ -74,7 +71,7 @@ class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 				new IntegerType(),
 				new FloatType(),
 			);
-			if (!$allowed->accepts($firstArgType, true)->yes()) {
+			if ($allowed->isSuperTypeOf($firstArgType)->no()) {
 				// PHP 8 fatals if the parameter is not an integer or float.
 				return new NeverType(true);
 			}

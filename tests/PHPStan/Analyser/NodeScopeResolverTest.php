@@ -14,6 +14,9 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 	public function dataFileAsserts(): iterable
 	{
+		require_once __DIR__ . '/data/implode.php';
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/implode.php');
+
 		require_once __DIR__ . '/data/bug2574.php';
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug2574.php');

@@ -1051,12 +1051,24 @@ class MutatingScope implements Scope
 			} else {
 				$right = $node->right;
 			}
+			$rightType = $this->getType($right);
 
-			$rightTypes = TypeUtils::getConstantScalars($this->getType($right)->toNumber());
-			foreach ($rightTypes as $rightType) {
+			$integerType = $rightType->toInteger();
+			if (
+				$node instanceof Node\Expr\BinaryOp\Mod
+				|| $node instanceof Node\Expr\AssignOp\Mod
+			) {
+				if ($integerType instanceof ConstantIntegerType && $integerType->getValue() === 1) {
+					return new ConstantIntegerType(0);
+				}
+			}
+
+			$rightScalarTypes = TypeUtils::getConstantScalars($rightType->toNumber());
+			foreach ($rightScalarTypes as $scalarType) {
+
 				if (
-					$rightType->getValue() === 0
-					|| $rightType->getValue() === 0.0
+					$scalarType->getValue() === 0
+					|| $scalarType->getValue() === 0.0
 				) {
 					return new ErrorType();
 				}

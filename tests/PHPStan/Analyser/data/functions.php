@@ -101,6 +101,8 @@ $resource = doFoo();
 $stat = stat(__FILE__);
 $lstat = lstat(__FILE__);
 $fstat = fstat($resource);
+$fileObject = new \SplFileObject(__FILE__);
+$fileObjectStat = $fileObject->fstat();
 
 $base64DecodeWithoutStrict = base64_decode('');
 $base64DecodeWithStrictDisabled = base64_decode('', false);

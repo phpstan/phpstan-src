@@ -2,41 +2,21 @@
 
 namespace PHPStan\Type\Php;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-use PhpParser\Node\Arg;
-=======
-=======
 use PhpParser\ConstExprEvaluationException;
->>>>>>> decopule type resolution to static
 use PhpParser\ConstExprEvaluator;
->>>>>>> check for JSON_OBJECT_AS_ARRAY, in case of null and array
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
 use PhpParser\Node\Expr\ConstFetch;
->>>>>>> Extend JsonThrowOnErrorDynamicReturnTypeExtension to detect knonw type from contssant string value
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
-<<<<<<< HEAD
-<<<<<<< HEAD
 use PHPStan\Type\BitwiseFlagHelper;
-use PHPStan\Type\Constant\ConstantBooleanType;
-=======
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\BooleanType;
-=======
->>>>>>> return mixed type
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
->>>>>>> Extend JsonThrowOnErrorDynamicReturnTypeExtension to detect knonw type from contssant string value
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -53,22 +33,18 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 
 	private const UNABLE_TO_RESOLVE = '__UNABLE_TO_RESOLVE__';
 
+	private ConstExprEvaluator $constExprEvaluator;
+
 	/** @var array<string, int> */
 	private array $argumentPositions = [
 		'json_encode' => 1,
 		'json_decode' => 3,
 	];
 
-<<<<<<< HEAD
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private BitwiseFlagHelper $bitwiseFlagAnalyser,
 	)
-=======
-	private ConstExprEvaluator $constExprEvaluator;
-
-	public function __construct(private ReflectionProvider $reflectionProvider)
->>>>>>> decopule type resolution to static
 	{
 		$this->constExprEvaluator = new ConstExprEvaluator(static function (Expr $expr) {
 			if ($expr instanceof ConstFetch) {

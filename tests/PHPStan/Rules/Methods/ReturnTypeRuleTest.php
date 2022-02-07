@@ -16,9 +16,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
+	private bool $checkUnionTypes = true;
+
 	protected function getRule(): Rule
 	{
-		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed)));
+		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnionTypes, $this->checkExplicitMixed)));
 	}
 
 	public function testReturnTypeRule(): void
@@ -584,6 +586,21 @@ class ReturnTypeRuleTest extends RuleTestCase
 	{
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-6438.php'], []);
+	}
+
+	public function testBug6589(): void
+	{
+		$this->checkUnionTypes = false;
+		$this->analyse([__DIR__ . '/data/bug-6589.php'], [
+			[
+				'Method Bug6589\HelloWorldTemplated::getField() should return TField of Bug6589\Field2 but returns Bug6589\Field.',
+				17,
+			],
+			[
+				'Method Bug6589\HelloWorldSimple::getField() should return Bug6589\Field2 but returns Bug6589\Field.',
+				31,
+			],
+		]);
 	}
 
 }

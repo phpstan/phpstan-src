@@ -919,7 +919,7 @@ class UnionTypeTest extends PHPStanTestCase
 				),
 				TrinaryLogic::createYes(),
 			],
-			'maybe accepts template-of-union sub type of a union member' => [
+			'accepts template-of-union sub type of a union member' => [
 				new UnionType([
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithClass('Foo'),
@@ -930,6 +930,30 @@ class UnionTypeTest extends PHPStanTestCase
 						]),
 						TemplateTypeVariance::createInvariant(),
 					),
+					new NullType(),
+				]),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Bar'),
+					'T',
+					new UnionType([
+						new IntegerType(),
+						new FloatType(),
+					]),
+					TemplateTypeVariance::createInvariant(),
+				),
+				TrinaryLogic::createYes(),
+			],
+			'maybe accepts template-of-union sub type of a union member (argument)' => [
+				new UnionType([
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('Foo'),
+						'T',
+						new UnionType([
+							new IntegerType(),
+							new FloatType(),
+						]),
+						TemplateTypeVariance::createInvariant(),
+					)->toArgument(),
 					new NullType(),
 				]),
 				TemplateTypeFactory::create(
@@ -961,7 +985,7 @@ class UnionTypeTest extends PHPStanTestCase
 				),
 				TrinaryLogic::createYes(),
 			],
-			'maybe accepts template-of-string sub type of a union member' => [
+			'accepts template-of-string sub type of a union member' => [
 				new UnionType([
 					TemplateTypeFactory::create(
 						TemplateTypeScope::createWithClass('Foo'),
@@ -969,6 +993,24 @@ class UnionTypeTest extends PHPStanTestCase
 						new StringType(),
 						TemplateTypeVariance::createInvariant(),
 					),
+					new NullType(),
+				]),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Bar'),
+					'T',
+					new StringType(),
+					TemplateTypeVariance::createInvariant(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			'maybe accepts template-of-string sub type of a union member (argument)' => [
+				new UnionType([
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('Foo'),
+						'T',
+						new StringType(),
+						TemplateTypeVariance::createInvariant(),
+					)->toArgument(),
 					new NullType(),
 				]),
 				TemplateTypeFactory::create(

@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use DateTime;
 use DateTimeInterface;
 use Exception;
+use Iterator;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateType;
@@ -14,6 +15,7 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use stdClass;
 use Throwable;
+use Traversable;
 use function array_map;
 use function assert;
 use function sprintf;
@@ -84,6 +86,12 @@ class TemplateTypeTest extends PHPStanTestCase
 				$templateType('T', new ObjectType('stdClass')),
 				TrinaryLogic::createYes(),
 				TrinaryLogic::createYes(),
+			],
+			'does not accept ObjectType that is a super type of bound' => [
+				$templateType('T', new ObjectType(Iterator::class)),
+				new ObjectType(Traversable::class),
+				TrinaryLogic::createNo(),
+				TrinaryLogic::createNo(),
 			],
 		];
 	}

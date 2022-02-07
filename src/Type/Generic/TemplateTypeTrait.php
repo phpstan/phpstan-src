@@ -112,7 +112,27 @@ trait TemplateTypeTrait
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return $this->isSubTypeOf($acceptingType);
+		/** @var Type $bound */
+		$bound = $this->getBound();
+		if (
+			!$acceptingType instanceof $bound
+			&& !$this instanceof $acceptingType
+			&& !$acceptingType instanceof TemplateType
+			&& ($acceptingType instanceof UnionType || $acceptingType instanceof IntersectionType)
+		) {
+			return $acceptingType->accepts($this, $strictTypes);
+		}
+
+		if (!$acceptingType instanceof TemplateType) {
+			return $acceptingType->accepts($this->getBound(), $strictTypes);
+		}
+
+		if ($this->getScope()->equals($acceptingType->getScope()) && $this->getName() === $acceptingType->getName()) {
+			return $acceptingType->getBound()->accepts($this->getBound(), $strictTypes);
+		}
+
+		return $acceptingType->getBound()->accepts($this->getBound(), $strictTypes)
+			->and(TrinaryLogic::createMaybe());
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic

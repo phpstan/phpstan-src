@@ -25,8 +25,14 @@ class TemplateTypeArgumentStrategy implements TemplateTypeStrategy
 			return TrinaryLogic::createNo();
 		}
 
-		return $left->isSuperTypeOf($right)
-			->or(TrinaryLogic::createFromBoolean($right->equals(new MixedType())));
+		if ($right instanceof TemplateType) {
+			$accepts = $right->isAcceptedBy($left, $strictTypes);
+		} else {
+			$accepts = $left->getBound()->accepts($right, $strictTypes)
+				->and(TrinaryLogic::createMaybe());
+		}
+
+		return $accepts->or(TrinaryLogic::createFromBoolean($right->equals(new MixedType())));
 	}
 
 	public function isArgument(): bool

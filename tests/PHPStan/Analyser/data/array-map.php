@@ -44,7 +44,7 @@ function foo3(array $array): void {
 		$array
 	);
 
-	assertType('array<int, string>', $mapped);
+	assertType('array<int<0, max>, string>', $mapped);
 }
 
 /**
@@ -58,5 +58,5 @@ function foo4(array $array): void {
 		$array
 	);
 
-	assertType('non-empty-array<int, string>', $mapped);
+	assertType('non-empty-array<int<0, max>, string>', $mapped);
 }

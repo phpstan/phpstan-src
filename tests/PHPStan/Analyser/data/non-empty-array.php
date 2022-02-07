@@ -26,10 +26,10 @@ class Foo
 	): void
 	{
 		assertType('non-empty-array', $array);
-		assertType('non-empty-array<int, mixed>', $list);
+		assertType('non-empty-array<int<0, max>, mixed>', $list);
 		assertType('non-empty-array<int, string>', $arrayOfStrings);
-		assertType('non-empty-array<int, stdClass>', $listOfStd);
-		assertType('non-empty-array<int, stdClass>', $listOfStd2);
+		assertType('non-empty-array<int<0, max>, stdClass>', $listOfStd);
+		assertType('non-empty-array<int<0, max>, stdClass>', $listOfStd2);
 		assertType('array', $invalidList);
 		assertType('mixed', $invalidList2);
 	}

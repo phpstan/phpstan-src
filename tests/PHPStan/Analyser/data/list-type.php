@@ -9,25 +9,25 @@ class Foo
 	/** @param list $list */
 	public function directAssertion($list): void
 	{
-		assertType('array<int, mixed>', $list);
+		assertType('array<int<0, max>, mixed>', $list);
 	}
 
 	/** @param list $list */
 	public function directAssertionParamHint(array $list): void
 	{
-		assertType('array<int, mixed>', $list);
+		assertType('array<int<0, max>, mixed>', $list);
 	}
 
 	/** @param list $list */
 	public function directAssertionNullableParamHint(array $list = null): void
 	{
-		assertType('array<int, mixed>|null', $list);
+		assertType('array<int<0, max>, mixed>|null', $list);
 	}
 
 	/** @param list<\DateTime> $list */
 	public function directAssertionObjectParamHint($list): void
 	{
-		assertType('array<int, DateTime>', $list);
+		assertType('array<int<0, max>, DateTime>', $list);
 	}
 
 	public function withoutGenerics(): void
@@ -91,7 +91,7 @@ class Foo
 		/** @var list $list2 */
 		$list2 = [];
 		$list2[2] = '1';//Most likely to create a gap in indexes
-		assertType('non-empty-array<int, mixed>', $list2);
+		assertType('non-empty-array<int<0, max>, mixed>', $list2);
 	}
 
 }

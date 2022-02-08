@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a179f978999355066739def2a2c06d81",
+    "content-hash": "f07f2c7c69a397c48821a29db000385b",
     "packages": [
         {
             "name": "clue/block-react",
@@ -1432,12 +1432,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JetBrains/phpstorm-stubs.git",
-                "reference": "419389d409990c0e4cdd1f5f5c560f0a8ea333d1"
+                "reference": "4b8b6094786bde1a668b1a98221003d8c547bfc1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/419389d409990c0e4cdd1f5f5c560f0a8ea333d1",
-                "reference": "419389d409990c0e4cdd1f5f5c560f0a8ea333d1",
+                "url": "https://api.github.com/repos/JetBrains/phpstorm-stubs/zipball/4b8b6094786bde1a668b1a98221003d8c547bfc1",
+                "reference": "4b8b6094786bde1a668b1a98221003d8c547bfc1",
                 "shasum": ""
             },
             "require-dev": {
@@ -1473,7 +1473,7 @@
             "support": {
                 "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
             },
-            "time": "2022-01-28T15:10:07+00:00"
+            "time": "2022-02-06T14:51:26+00:00"
         },
         {
             "name": "nette/bootstrap",

@@ -544,7 +544,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testTypevalFamilyFunctionParameters(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/typeval-functions.php');
-		$this->assertCount(12, $errors);
+		$this->assertCount(15, $errors);
 
 		$this->assertSame('Cannot cast array{} to string.', $errors[0]->getMessage());
 		$this->assertSame(19, $errors[0]->getLine());
@@ -573,8 +573,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 		$this->assertSame('Cannot cast class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 to int.', $errors[10]->getMessage());
 		$this->assertSame(92, $errors[10]->getLine());
-		$this->assertSame('Cannot cast class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 to float.', $errors[11]->getMessage());
-		$this->assertSame(95, $errors[11]->getLine());
+		$this->assertSame('Parameter #1 $value of function intval does not accept object, class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 given.', $errors[11]->getMessage());
+		$this->assertSame(93, $errors[11]->getLine());
+
+		$this->assertSame('Cannot cast class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 to float.', $errors[12]->getMessage());
+		$this->assertSame(95, $errors[12]->getLine());
+		$this->assertSame('Parameter #1 $value of function floatval does not accept object, class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 given.', $errors[13]->getMessage());
+		$this->assertSame(96, $errors[13]->getLine());
+		$this->assertSame('Parameter #1 $value of function doubleval does not accept object, class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 given.', $errors[14]->getMessage());
+		$this->assertSame(97, $errors[14]->getLine());
 	}
 
 	/**

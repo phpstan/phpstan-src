@@ -33,6 +33,7 @@ use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\IntegerType;
 use ReflectionClass;
 use ReflectionEnum;
 use WrongClassConstantFile\SecuredRouter;
@@ -337,6 +338,17 @@ class ClassReflectionTest extends PHPStanTestCase
 		$this->assertInstanceOf(ReflectionEnum::class, $enum->getNativeReflection());
 		$this->assertTrue($enum->isFinal());
 		$this->assertTrue($enum->isFinalByKeyword());
+	}
+
+	public function testBackedEnumType(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$enum = $reflectionProvider->getClass('PHPStan\Fixture\TestEnum');
+		$this->assertInstanceOf(IntegerType::class, $enum->getBackedEnumType());
 	}
 
 }

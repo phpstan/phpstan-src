@@ -26,9 +26,11 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use stdClass;
+use function array_map;
 use function array_merge;
 use function array_reverse;
 use function get_class;
+use function implode;
 use function sprintf;
 
 class UnionTypeTest extends PHPStanTestCase
@@ -341,6 +343,111 @@ class UnionTypeTest extends PHPStanTestCase
 			$unionTypeB,
 			new IntersectionType([new StringType(), new CallableType()]),
 			TrinaryLogic::createNo(),
+		];
+
+		yield 'is super type of template-of-union with same members' => [
+			new UnionType([
+				new IntegerType(),
+				new FloatType(),
+			]),
+			TemplateTypeFactory::create(
+				TemplateTypeScope::createWithClass('Foo'),
+				'T',
+				new UnionType([
+					new IntegerType(),
+					new FloatType(),
+				]),
+				TemplateTypeVariance::createInvariant(),
+			),
+			TrinaryLogic::createYes(),
+		];
+
+		yield 'is super type of template-of-union equal to a union member' => [
+			new UnionType([
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new UnionType([
+						new IntegerType(),
+						new FloatType(),
+					]),
+					TemplateTypeVariance::createInvariant(),
+				),
+				new NullType(),
+			]),
+			TemplateTypeFactory::create(
+				TemplateTypeScope::createWithClass('Foo'),
+				'T',
+				new UnionType([
+					new IntegerType(),
+					new FloatType(),
+				]),
+				TemplateTypeVariance::createInvariant(),
+			),
+			TrinaryLogic::createYes(),
+		];
+
+		yield 'maybe super type of template-of-union equal to a union member' => [
+			new UnionType([
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new UnionType([
+						new IntegerType(),
+						new FloatType(),
+					]),
+					TemplateTypeVariance::createInvariant(),
+				),
+				new NullType(),
+			]),
+			TemplateTypeFactory::create(
+				TemplateTypeScope::createWithClass('Bar'),
+				'T',
+				new UnionType([
+					new IntegerType(),
+					new FloatType(),
+				]),
+				TemplateTypeVariance::createInvariant(),
+			),
+			TrinaryLogic::createMaybe(),
+		];
+
+		yield 'is super type of template-of-string equal to a union member' => [
+			new UnionType([
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new StringType(),
+					TemplateTypeVariance::createInvariant(),
+				),
+				new NullType(),
+			]),
+			TemplateTypeFactory::create(
+				TemplateTypeScope::createWithClass('Foo'),
+				'T',
+				new StringType(),
+				TemplateTypeVariance::createInvariant(),
+			),
+			TrinaryLogic::createYes(),
+		];
+
+		yield 'maybe super type of template-of-string sub type of a union member' => [
+			new UnionType([
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new StringType(),
+					TemplateTypeVariance::createInvariant(),
+				),
+				new NullType(),
+			]),
+			TemplateTypeFactory::create(
+				TemplateTypeScope::createWithClass('Bar'),
+				'T',
+				new StringType(),
+				TemplateTypeVariance::createInvariant(),
+			),
+			TrinaryLogic::createMaybe(),
 		];
 	}
 
@@ -678,6 +785,14 @@ class UnionTypeTest extends PHPStanTestCase
 				'int|numeric-string',
 				'int|string',
 			],
+			[
+				TypeCombinator::union(
+					IntegerRangeType::fromInterval(0, 4),
+					IntegerRangeType::fromInterval(6, 10),
+				),
+				'int<0, 4>|int<6, 10>',
+				'int<0, 4>|int<6, 10>',
+			],
 		];
 	}
 
@@ -690,7 +805,7 @@ class UnionTypeTest extends PHPStanTestCase
 		string $expectedTypeOnlyDescription,
 	): void
 	{
-		$this->assertSame($expectedValueDescription, $type->describe(VerbosityLevel::precise()));
+		$this->assertSame($expectedValueDescription, $type->describe(VerbosityLevel::value()));
 		$this->assertSame($expectedTypeOnlyDescription, $type->describe(VerbosityLevel::typeOnly()));
 	}
 
@@ -764,6 +879,192 @@ class UnionTypeTest extends PHPStanTestCase
 				new ClosureType([], new MixedType(), false),
 				TrinaryLogic::createYes(),
 			],
+			'accepts template-of-union with same members' => [
+				new UnionType([
+					new IntegerType(),
+					new FloatType(),
+				]),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new UnionType([
+						new IntegerType(),
+						new FloatType(),
+					]),
+					TemplateTypeVariance::createInvariant(),
+				),
+				TrinaryLogic::createYes(),
+			],
+			'accepts template-of-union equal to a union member' => [
+				new UnionType([
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('Foo'),
+						'T',
+						new UnionType([
+							new IntegerType(),
+							new FloatType(),
+						]),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new NullType(),
+				]),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new UnionType([
+						new IntegerType(),
+						new FloatType(),
+					]),
+					TemplateTypeVariance::createInvariant(),
+				),
+				TrinaryLogic::createYes(),
+			],
+			'accepts template-of-union sub type of a union member' => [
+				new UnionType([
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('Foo'),
+						'T',
+						new UnionType([
+							new IntegerType(),
+							new FloatType(),
+						]),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new NullType(),
+				]),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Bar'),
+					'T',
+					new UnionType([
+						new IntegerType(),
+						new FloatType(),
+					]),
+					TemplateTypeVariance::createInvariant(),
+				),
+				TrinaryLogic::createYes(),
+			],
+			'maybe accepts template-of-union sub type of a union member (argument)' => [
+				new UnionType([
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('Foo'),
+						'T',
+						new UnionType([
+							new IntegerType(),
+							new FloatType(),
+						]),
+						TemplateTypeVariance::createInvariant(),
+					)->toArgument(),
+					new NullType(),
+				]),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Bar'),
+					'T',
+					new UnionType([
+						new IntegerType(),
+						new FloatType(),
+					]),
+					TemplateTypeVariance::createInvariant(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			'accepts template-of-string equal to a union member' => [
+				new UnionType([
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('Foo'),
+						'T',
+						new StringType(),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new NullType(),
+				]),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new StringType(),
+					TemplateTypeVariance::createInvariant(),
+				),
+				TrinaryLogic::createYes(),
+			],
+			'accepts template-of-string sub type of a union member' => [
+				new UnionType([
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('Foo'),
+						'T',
+						new StringType(),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new NullType(),
+				]),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Bar'),
+					'T',
+					new StringType(),
+					TemplateTypeVariance::createInvariant(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			'maybe accepts template-of-string sub type of a union member (argument)' => [
+				new UnionType([
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('Foo'),
+						'T',
+						new StringType(),
+						TemplateTypeVariance::createInvariant(),
+					)->toArgument(),
+					new NullType(),
+				]),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Bar'),
+					'T',
+					new StringType(),
+					TemplateTypeVariance::createInvariant(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			'accepts template-of-union containing a union member' => [
+				new UnionType([
+					new IntegerType(),
+					new NullType(),
+				]),
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new UnionType([
+						new IntegerType(),
+						new FloatType(),
+					]),
+					TemplateTypeVariance::createInvariant(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			'accepts intersection with template-of-union equal to a union member' => [
+				new UnionType([
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('Foo'),
+						'T',
+						new UnionType([
+							new ObjectType('Iterator'),
+							new ObjectType('IteratorAggregate'),
+						]),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new NullType(),
+				]),
+				new IntersectionType([
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('Foo'),
+						'T',
+						new UnionType([
+							new ObjectType('Iterator'),
+							new ObjectType('IteratorAggregate'),
+						]),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new ObjectType('Countable'),
+				]),
+				TrinaryLogic::createYes(),
+			],
+
 		];
 	}
 
@@ -848,6 +1149,12 @@ class UnionTypeTest extends PHPStanTestCase
 
 		$type1 = new UnionType($types);
 		$type2 = new UnionType(array_reverse($types));
+
+		$this->assertSame(
+			implode("\n", array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $type1->getTypes())),
+			implode("\n", array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::precise()), $type2->getTypes())),
+			'UnionType sorting always produces the same order',
+		);
 
 		$this->assertTrue(
 			$type1->equals($type2),

@@ -174,6 +174,11 @@ class Baz implements Type
 		// TODO: Implement setOffsetValueType() method.
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		// TODO: Implement unsetOffset() method.
+	}
+
 	public function isCallable(): \PHPStan\TrinaryLogic
 	{
 		// TODO: Implement isCallable() method.
@@ -277,6 +282,11 @@ class Baz implements Type
 	public function traverse(callable $cb): \PHPStan\Type\Type
 	{
 		// TODO: Implement traverse() method.
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		// TODO: Implement tryRemove() method.
 	}
 
 	public static function __set_state(array $properties): \PHPStan\Type\Type

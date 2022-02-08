@@ -48,4 +48,14 @@ class DefaultValueTypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5607(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5607.php'], [
+			[
+				'Property Bug5607\Cl::$u (Bug5607\A|null) does not accept default value of type array<int|string, string>.',
+				10,
+			],
+		]);
+	}
+
 }

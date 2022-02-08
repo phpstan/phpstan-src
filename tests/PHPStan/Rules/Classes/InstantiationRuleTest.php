@@ -7,6 +7,7 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -23,7 +24,7 @@ class InstantiationRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new InstantiationRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), true, true, true, true),
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
 			new ClassCaseSensitivityCheck($broker, true),
 		);
 	}
@@ -379,6 +380,16 @@ class InstantiationRuleTest extends RuleTestCase
 			[
 				'Cannot instantiate enum EnumInstantiation\Foo.',
 				21,
+			],
+		]);
+	}
+
+	public function testBug6370(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6370.php'], [
+			[
+				'Parameter #1 $something of class Bug6370\A constructor expects string, int given.',
+				45,
 			],
 		]);
 	}

@@ -8,3 +8,8 @@ enum TestEnum: int
 	case ONE = 1;
 
 }
+
+enum BackedByStringWithoutSpace:string
+{
+	// cases
+}

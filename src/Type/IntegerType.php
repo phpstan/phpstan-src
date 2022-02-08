@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -10,6 +9,7 @@ use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
+use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
@@ -24,6 +24,7 @@ class IntegerType implements Type
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonGenericTypeTrait;
+	use NonOffsetAccessibleTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -75,24 +76,25 @@ class IntegerType implements Type
 		);
 	}
 
-	public function isOffsetAccessible(): TrinaryLogic
+	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		return TrinaryLogic::createNo();
-	}
+		if ($typeToRemove instanceof IntegerRangeType || $typeToRemove instanceof ConstantIntegerType) {
+			if ($typeToRemove instanceof IntegerRangeType) {
+				$removeValueMin = $typeToRemove->getMin();
+				$removeValueMax = $typeToRemove->getMax();
+			} else {
+				$removeValueMin = $typeToRemove->getValue();
+				$removeValueMax = $typeToRemove->getValue();
+			}
+			$lowerPart = $removeValueMin !== null ? IntegerRangeType::fromInterval(null, $removeValueMin, -1) : null;
+			$upperPart = $removeValueMax !== null ? IntegerRangeType::fromInterval($removeValueMax, null, +1) : null;
+			if ($lowerPart !== null && $upperPart !== null) {
+				return new UnionType([$lowerPart, $upperPart]);
+			}
+			return $lowerPart ?? $upperPart ?? new NeverType();
+		}
 
-	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function getOffsetValueType(Type $offsetType): Type
-	{
-		return new ErrorType();
-	}
-
-	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
-	{
-		return new ErrorType();
+		return null;
 	}
 
 }

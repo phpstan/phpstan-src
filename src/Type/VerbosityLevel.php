@@ -55,6 +55,11 @@ class VerbosityLevel
 		return self::create(self::CACHE);
 	}
 
+	public function isTypeOnly(): bool
+	{
+		return $this->value === self::TYPE_ONLY;
+	}
+
 	/** @api */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{

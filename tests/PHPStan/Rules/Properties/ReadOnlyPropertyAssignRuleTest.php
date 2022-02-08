@@ -19,7 +19,7 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+		if (PHP_VERSION_ID < 80100) {
 			self::markTestSkipped('Test requires PHP 8.1');
 		}
 
@@ -75,6 +75,30 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			[
 				'Readonly property ReadonlyPropertyAssign\ListAssign::$foo is assigned outside of the constructor.',
 				127,
+			],
+			[
+				'Readonly property ReadonlyPropertyAssign\FooEnum::$name is assigned outside of the constructor.',
+				140,
+			],
+			[
+				'Readonly property ReadonlyPropertyAssign\FooEnum::$value is assigned outside of the constructor.',
+				141,
+			],
+			[
+				'Readonly property ReadonlyPropertyAssign\FooEnum::$name is assigned outside of its declaring class.',
+				151,
+			],
+			[
+				'Readonly property ReadonlyPropertyAssign\FooEnum::$value is assigned outside of its declaring class.',
+				152,
+			],
+			[
+				'Readonly property ReadonlyPropertyAssign\Foo::$baz is assigned outside of its declaring class.',
+				162,
+			],
+			[
+				'Readonly property ReadonlyPropertyAssign\Foo::$baz is assigned outside of its declaring class.',
+				163,
 			],
 		]);
 	}

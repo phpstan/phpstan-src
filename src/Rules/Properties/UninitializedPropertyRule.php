@@ -48,6 +48,9 @@ class UninitializedPropertyRule implements Rule
 
 		$errors = [];
 		foreach ($properties as $propertyName => $propertyNode) {
+			if ($propertyNode->isReadOnly()) {
+				continue;
+			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Class %s has an uninitialized property $%s. Give it default value or assign it in the constructor.',
 				$classReflection->getDisplayName(),
@@ -55,7 +58,10 @@ class UninitializedPropertyRule implements Rule
 			))->line($propertyNode->getLine())->build();
 		}
 
-		foreach ($prematureAccess as [$propertyName, $line]) {
+		foreach ($prematureAccess as [$propertyName, $line, $propertyNode]) {
+			if ($propertyNode->isReadOnly()) {
+				continue;
+			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Access to an uninitialized property %s::$%s.',
 				$classReflection->getDisplayName(),

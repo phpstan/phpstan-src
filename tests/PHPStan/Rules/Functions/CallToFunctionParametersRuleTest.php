@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -24,7 +25,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new CallToFunctionParametersRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), true, true, true, true),
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, $this->checkExplicitMixed), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
 		);
 	}
 
@@ -629,6 +630,28 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPregReplaceCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/preg_replace_callback.php'], [
+			[
+				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(string): string given.',
+				6,
+			],
+			[
+				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(string): string given.',
+				13,
+			],
+			[
+				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(array): void given.',
+				20,
+			],
+			[
+				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(): void given.',
+				25,
+			],
+		]);
+	}
+
 	public function testUasortCallback(): void
 	{
 		$this->analyse([__DIR__ . '/data/uasort.php'], [
@@ -927,6 +950,17 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 		// handled by a different rule
 		$this->analyse([__DIR__ . '/data/first-class-callables.php'], []);
+	}
+
+	public function testBug4413(): void
+	{
+		require_once __DIR__ . '/data/bug-4413.php';
+		$this->analyse([__DIR__ . '/data/bug-4413.php'], [
+			[
+				'Parameter #1 $date of function Bug4413\takesDate expects class-string<DateTime>, string given.',
+				18,
+			],
+		]);
 	}
 
 }

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_INT_SIZE;
 use const PHP_VERSION_ID;
 
 /**
@@ -126,19 +127,19 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					320,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<1, max> and \'string\' will always evaluate to false.',
 					335,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<0, max> and \'string\' will always evaluate to false.',
 					343,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<0, max> and \'string\' will always evaluate to false.',
 					360,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<1, max> and \'string\' will always evaluate to false.',
 					368,
 				],
 				[
@@ -174,7 +175,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					624,
 				],
 				[
-					'Strict comparison using === between int and \'foo\' will always evaluate to false.',
+					'Strict comparison using === between int<10, max> and \'foo\' will always evaluate to false.',
 					635,
 				],
 				[
@@ -304,19 +305,19 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					320,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<1, max> and \'string\' will always evaluate to false.',
 					335,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<0, max> and \'string\' will always evaluate to false.',
 					343,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<0, max> and \'string\' will always evaluate to false.',
 					360,
 				],
 				[
-					'Strict comparison using === between int and \'string\' will always evaluate to false.',
+					'Strict comparison using === between int<1, max> and \'string\' will always evaluate to false.',
 					368,
 				],
 				[
@@ -348,7 +349,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					624,
 				],
 				[
-					'Strict comparison using === between int and \'foo\' will always evaluate to false.',
+					'Strict comparison using === between int<10, max> and \'foo\' will always evaluate to false.',
 					635,
 				],
 				[
@@ -461,6 +462,9 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	public function testBug4848(): void
 	{
+		if (PHP_INT_SIZE !== 8) {
+			$this->markTestSkipped('Test requires 64-bit platform.');
+		}
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/bug-4848.php'], [
 			[
@@ -486,6 +490,17 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/bug-3366.php'], []);
+	}
+
+	public function testBug5362(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/data/bug-5362.php'], [
+			[
+				'Strict comparison using === between 0 and 1|2 will always evaluate to false.',
+				23,
+			],
+		]);
 	}
 
 }

@@ -61,3 +61,75 @@ class Foo
 	}
 
 }
+
+class InvokableClass
+{
+	public function __invoke(): string
+	{
+		return 'foo';
+	}
+}
+
+/**
+ *
+ * @template TGetDefault
+ * @template TKey
+ *
+ * @param  TKey  $key
+ * @param  TGetDefault|(\Closure(): TGetDefault)  $default
+ * @return TKey|TGetDefault
+ */
+function getWithDefault($key, $default = null)
+{
+	if(rand(0,10) > 5) {
+		return $key;
+	}
+
+	if (is_callable($default)) {
+		return $default();
+	}
+
+	return $default;
+}
+
+/**
+ *
+ * @template TGetDefault
+ * @template TKey
+ *
+ * @param  TKey  $key
+ * @param  TGetDefault|(callable(): TGetDefault)  $default
+ * @return TKey|TGetDefault
+ */
+function getWithDefaultCallable($key, $default = null)
+{
+	if(rand(0,10) > 5) {
+		return $key;
+	}
+
+	if (is_callable($default)) {
+		return $default();
+	}
+
+	return $default;
+}
+
+assertType('int|null', getWithDefault(3));
+assertType('int|null', getWithDefaultCallable(3));
+assertType('int|string', getWithDefault(3, 'foo'));
+assertType('int|string', getWithDefaultCallable(3, 'foo'));
+assertType('int|string', getWithDefault(3, function () {
+	return 'foo';
+}));
+assertType('int|string', getWithDefaultCallable(3, function () {
+	return 'foo';
+}));
+assertType('GenericUnions\Foo|int', getWithDefault(3, function () {
+	return new Foo;
+}));
+assertType('GenericUnions\Foo|int', getWithDefaultCallable(3, function () {
+	return new Foo;
+}));
+assertType('GenericUnions\Foo|int', getWithDefault(3, new Foo));
+assertType('GenericUnions\Foo|int', getWithDefaultCallable(3, new Foo));
+assertType('int|string', getWithDefaultCallable(3, new InvokableClass));

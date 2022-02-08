@@ -9,7 +9,9 @@ use PHPStan\Analyser\NameScope;
 use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Cache\Cache;
+use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -72,6 +74,8 @@ class FileTypeMapper
 		private PhpDocNodeResolver $phpDocNodeResolver,
 		private Cache $cache,
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
+		private PhpVersion $phpVersion,
+		private FileHelper $fileHelper,
 	)
 	{
 	}
@@ -85,6 +89,8 @@ class FileTypeMapper
 		string $docComment,
 	): ResolvedPhpDocBlock
 	{
+		$fileName = $this->fileHelper->normalizePath($fileName);
+
 		if ($className === null && $traitName !== null) {
 			throw new ShouldNotHappenException();
 		}
@@ -187,8 +193,8 @@ class FileTypeMapper
 	private function getNameScopeMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v16-look-for-trait', $fileName);
-			$variableCacheKey = implode(',', array_map(static fn (array $file): string => sprintf('%s-%d', $file['filename'], $file['modifiedTime']), $this->getCachedDependentFilesWithTimestamps($fileName)));
+			$cacheKey = sprintf('%s-phpdocstring-v19-trait-detection-recursion', $fileName);
+			$variableCacheKey = sprintf('%s-%s', implode(',', array_map(static fn (array $file): string => sprintf('%s-%d', $file['filename'], $file['modifiedTime']), $this->getCachedDependentFilesWithTimestamps($fileName))), $this->phpVersion->getVersionString());
 			$map = $this->cache->load($cacheKey, $variableCacheKey);
 
 			if ($map === null) {
@@ -275,6 +281,10 @@ class FileTypeMapper
 			$this->phpParser->parseFile($fileName),
 			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
 				if ($node instanceof Node\Stmt\ClassLike) {
+					if ($traitFound && $fileName === $originalClassFileName) {
+						return self::SKIP_NODE;
+					}
+
 					if ($lookForTrait !== null && !$traitFound) {
 						if (!$node instanceof Node\Stmt\Trait_) {
 							return self::SKIP_NODE;
@@ -294,9 +304,6 @@ class FileTypeMapper
 						} elseif ((bool) $node->getAttribute('anonymousClass', false)) {
 							$className = $node->name->name;
 						} else {
-							if ($traitFound) {
-								return self::SKIP_NODE;
-							}
 							$className = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
 						}
 						$classStack[] = $className;
@@ -373,6 +380,7 @@ class FileTypeMapper
 					&& !$node instanceof Node\Stmt\TraitUse
 					&& !$node instanceof Node\Stmt\TraitUseAdaptation
 					&& !$node instanceof Node\Stmt\InlineHTML
+					&& !($node instanceof Node\Stmt\Expression && $node->expr instanceof Node\Expr\Include_)
 					&& !array_key_exists($nameScopeKey, $nameScopeMap)
 				) {
 					$nameScopeMap[$nameScopeKey] = static fn (): NameScope => new NameScope(
@@ -630,12 +638,12 @@ class FileTypeMapper
 	 */
 	private function getCachedDependentFilesWithTimestamps(string $fileName): array
 	{
-		$cacheKey = sprintf('dependentFilesTimestamps-%s-v2-enum', $fileName);
+		$cacheKey = sprintf('dependentFilesTimestamps-%s-v3-filter-ast', $fileName);
 		$fileModifiedTime = filemtime($fileName);
 		if ($fileModifiedTime === false) {
 			$fileModifiedTime = time();
 		}
-		$variableCacheKey = sprintf('%d', $fileModifiedTime);
+		$variableCacheKey = sprintf('%d-%s', $fileModifiedTime, $this->phpVersion->getVersionString());
 		/** @var array<array{filename: string, modifiedTime: int}>|null $cachedFilesTimestamps */
 		$cachedFilesTimestamps = $this->cache->load($cacheKey, $variableCacheKey);
 		if ($cachedFilesTimestamps !== null) {

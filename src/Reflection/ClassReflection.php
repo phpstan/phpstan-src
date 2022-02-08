@@ -29,6 +29,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAlias;
+use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionClass;
 use ReflectionEnum;
@@ -512,6 +513,24 @@ class ClassReflection
 		return $this->reflection->isBacked();
 	}
 
+	public function getBackedEnumType(): ?Type
+	{
+		if (!$this->reflection instanceof ReflectionEnum) {
+			return null;
+		}
+
+		if (!$this->reflection->isBacked()) {
+			return null;
+		}
+
+		$reflectionType = $this->reflection->getBackingType();
+		if ($reflectionType === null) {
+			return null;
+		}
+
+		return TypehintHelper::decideTypeFromReflection($reflectionType);
+	}
+
 	public function hasEnumCase(string $name): bool
 	{
 		if (!$this->isEnum()) {
@@ -523,6 +542,29 @@ class ClassReflection
 		}
 
 		return $this->reflection->hasCase($name);
+	}
+
+	/**
+	 * @return array<string, EnumCaseReflection>
+	 */
+	public function getEnumCases(): array
+	{
+		if (!$this->reflection instanceof ReflectionEnum) {
+			throw new ShouldNotHappenException();
+		}
+
+		$cases = [];
+		foreach ($this->reflection->getCases() as $case) {
+			$valueType = null;
+			if ($case instanceof ReflectionEnumBackedCase) {
+				$valueType = ConstantTypeHelper::getTypeFromValue($case->getBackingValue());
+			}
+			/** @var string $caseName */
+			$caseName = $case->getName();
+			$cases[$caseName] = new EnumCaseReflection($this, $caseName, $valueType);
+		}
+
+		return $cases;
 	}
 
 	public function getEnumCase(string $name): EnumCaseReflection

@@ -37,10 +37,6 @@ class UnsetRuleTest extends RuleTestCase
 				18,
 			],
 			[
-				'Cannot unset offset \'b\' on 1.',
-				18,
-			],
-			[
 				'Cannot unset offset \'string\' on iterable<int, int>.',
 				31,
 			],

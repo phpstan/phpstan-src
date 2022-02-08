@@ -396,7 +396,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 	public function testToBooleanCrash(): void
 	{
 		$type = new IntersectionType([new NeverType(), new NonEmptyArrayType()]);
-		$this->assertSame('bool', $type->toBoolean()->describe(VerbosityLevel::precise()));
+		$this->assertSame('true', $type->toBoolean()->describe(VerbosityLevel::precise()));
 	}
 
 }

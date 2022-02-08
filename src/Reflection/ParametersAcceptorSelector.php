@@ -37,8 +37,14 @@ class ParametersAcceptorSelector
 		array $parametersAcceptors,
 	): ParametersAcceptor
 	{
-		if (count($parametersAcceptors) !== 1) {
-			throw new ShouldNotHappenException();
+		$count = count($parametersAcceptors);
+		if ($count === 0) {
+			throw new ShouldNotHappenException(
+				'getVariants() must return at least one variant.',
+			);
+		}
+		if ($count !== 1) {
+			throw new ShouldNotHappenException('Multiple variants - use selectFromArgs() instead.');
 		}
 
 		return $parametersAcceptors[0];

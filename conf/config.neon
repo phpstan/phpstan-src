@@ -26,6 +26,7 @@ parameters:
 			- CallbackFilterIterator
 			- FilterIterator
 			- RecursiveCallbackFilterIterator
+			- DatePeriod
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -468,7 +469,6 @@ services:
 	-
 		class: PHPStan\Command\AnalyseApplication
 		arguments:
-			memoryLimitFile: %memoryLimitFile%
 			internalErrorsCountLimit: %internalErrorsCountLimit%
 
 	-
@@ -897,6 +897,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\ArrayColumnFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\ArrayCombineFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
@@ -1114,11 +1119,6 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
-		class: PHPStan\Type\Php\GetoptFunctionDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicFunctionReturnTypeExtension
-
-	-
 		class: PHPStan\Type\Php\GetParentClassDynamicFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
@@ -1127,11 +1127,6 @@ services:
 		class: PHPStan\Type\Php\GettimeofdayDynamicFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
-	-
-		class: PHPStan\Type\Php\HashHmacFunctionsReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicFunctionReturnTypeExtension
-
 	-
 		class: PHPStan\Type\Php\HashFunctionsReturnTypeExtension
 		tags:
@@ -1310,6 +1305,11 @@ services:
 
 	-
 		class: PHPStan\Type\Php\PowFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\RoundFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
@@ -1532,6 +1532,10 @@ services:
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 
+	-
+		class: PHPStan\Type\Php\DatePeriodConstructorReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver

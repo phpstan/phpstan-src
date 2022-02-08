@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -111,7 +112,27 @@ trait TemplateTypeTrait
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return $this->isSubTypeOf($acceptingType);
+		/** @var Type $bound */
+		$bound = $this->getBound();
+		if (
+			!$acceptingType instanceof $bound
+			&& !$this instanceof $acceptingType
+			&& !$acceptingType instanceof TemplateType
+			&& ($acceptingType instanceof UnionType || $acceptingType instanceof IntersectionType)
+		) {
+			return $acceptingType->accepts($this, $strictTypes);
+		}
+
+		if (!$acceptingType instanceof TemplateType) {
+			return $acceptingType->accepts($this->getBound(), $strictTypes);
+		}
+
+		if ($this->getScope()->equals($acceptingType->getScope()) && $this->getName() === $acceptingType->getName()) {
+			return $acceptingType->getBound()->accepts($this->getBound(), $strictTypes);
+		}
+
+		return $acceptingType->getBound()->accepts($this->getBound(), $strictTypes)
+			->and(TrinaryLogic::createMaybe());
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
@@ -121,7 +142,7 @@ trait TemplateTypeTrait
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		if ($type instanceof self) {
+		if ($type instanceof TemplateType || $type instanceof IntersectionType) {
 			return $type->isSubTypeOf($this);
 		}
 
@@ -146,16 +167,12 @@ trait TemplateTypeTrait
 			return $type->isSuperTypeOf($this->getBound());
 		}
 
-		if ($this->equals($type)) {
-			return TrinaryLogic::createYes();
+		if ($this->getScope()->equals($type->getScope()) && $this->getName() === $type->getName()) {
+			return $type->getBound()->isSuperTypeOf($this->getBound());
 		}
 
-		if ($type->getBound()->isSuperTypeOf($this->getBound())->no() &&
-			$this->getBound()->isSuperTypeOf($type->getBound())->no()) {
-			return TrinaryLogic::createNo();
-		}
-
-		return TrinaryLogic::createMaybe();
+		return $type->getBound()->isSuperTypeOf($this->getBound())
+			->and(TrinaryLogic::createMaybe());
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
@@ -197,6 +214,22 @@ trait TemplateTypeTrait
 	protected function shouldGeneralizeInferredType(): bool
 	{
 		return true;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		$removedBound = TypeCombinator::remove($this->getBound(), $typeToRemove);
+		$type = TemplateTypeFactory::create(
+			$this->getScope(),
+			$this->getName(),
+			$removedBound,
+			$this->getVariance(),
+		);
+		if ($this->isArgument()) {
+			return TemplateTypeHelper::toArgument($type);
+		}
+
+		return $type;
 	}
 
 	/**

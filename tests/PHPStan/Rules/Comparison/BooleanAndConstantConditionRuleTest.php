@@ -56,7 +56,7 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 				27,
 			],
 			[
-				'Right side of && is always false.',
+				'Result of && is always false.',
 				30,
 			],
 			[

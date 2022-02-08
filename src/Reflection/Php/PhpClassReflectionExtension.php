@@ -158,11 +158,7 @@ class PhpClassReflectionExtension
 				|| ($declaringClassReflection->isBackedEnum() && $propertyName === 'value')
 			) {
 				$types = [];
-				foreach (array_keys($classReflection->getNativeReflection()->getConstants()) as $name) {
-					if (!$classReflection->hasEnumCase($name)) {
-						continue;
-					}
-
+				foreach (array_keys($classReflection->getEnumCases()) as $name) {
 					if ($propertyName === 'name') {
 						$types[] = new ConstantStringType($name);
 						continue;
@@ -450,11 +446,7 @@ class PhpClassReflectionExtension
 			&& strtolower($methodReflection->getName()) === 'cases'
 		) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-			foreach (array_keys($classReflection->getNativeReflection()->getConstants()) as $name) {
-				if (!$classReflection->hasEnumCase($name)) {
-					continue;
-				}
-
+			foreach (array_keys($classReflection->getEnumCases()) as $name) {
 				$arrayBuilder->setOffsetValueType(null, new EnumCaseObjectType($classReflection->getName(), $name));
 			}
 

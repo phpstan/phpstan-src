@@ -31,8 +31,10 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Node\ExecutionEndNode;
-use PHPStan\Node\GetIterableValueTypeExpr;
-use PHPStan\Node\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\GetIterableValueTypeExpr;
+use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Php\PhpVersion;
@@ -131,6 +133,9 @@ use function strlen;
 use function strtolower;
 use function substr;
 use function usort;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
+use const PHP_INT_SIZE;
 
 class MutatingScope implements Scope
 {
@@ -537,6 +542,20 @@ class MutatingScope implements Scope
 		if ($node instanceof GetOffsetValueTypeExpr) {
 			return $this->getType($node->getVar())->getOffsetValueType($this->getType($node->getDim()));
 		}
+		if ($node instanceof SetOffsetValueTypeExpr) {
+			return $this->getType($node->getVar())->setOffsetValueType(
+				$node->getDim() !== null ? $this->getType($node->getDim()) : null,
+				$this->getType($node->getValue()),
+			);
+		}
+		if ($node instanceof OriginalPropertyTypeExpr) {
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node->getPropertyFetch(), $this);
+			if ($propertyReflection === null) {
+				return new ErrorType();
+			}
+
+			return $propertyReflection->getReadableType();
+		}
 
 		$key = $this->getNodeKey($node);
 
@@ -583,51 +602,68 @@ class MutatingScope implements Scope
 		if (
 			$node instanceof Expr\BinaryOp\Equal
 			|| $node instanceof Expr\BinaryOp\NotEqual
-			|| $node instanceof Expr\Empty_
 		) {
 			return new BooleanType();
 		}
 
-		if ($node instanceof Expr\Isset_) {
-			$result = new ConstantBooleanType(true);
-			foreach ($node->vars as $var) {
-				if ($var instanceof Expr\ArrayDimFetch && $var->dim !== null) {
-					$variableType = $this->getType($var->var);
-					$dimType = $this->getType($var->dim);
-					$hasOffset = $variableType->hasOffsetValueType($dimType);
-					$offsetValueType = $variableType->getOffsetValueType($dimType);
-					$offsetValueIsNotNull = (new NullType())->isSuperTypeOf($offsetValueType)->negate();
-					$isset = $hasOffset->and($offsetValueIsNotNull)->toBooleanType();
-					if ($isset instanceof ConstantBooleanType) {
-						if (!$isset->getValue()) {
-							return $isset;
-						}
-
-						continue;
-					}
-
-					$result = $isset;
-					continue;
+		if ($node instanceof Expr\Empty_) {
+			$result = $this->issetCheck($node->expr, static function (Type $type): ?bool {
+				$isNull = (new NullType())->isSuperTypeOf($type);
+				$isFalsey = (new ConstantBooleanType(false))->isSuperTypeOf($type->toBoolean());
+				if ($isNull->maybe()) {
+					return null;
+				}
+				if ($isFalsey->maybe()) {
+					return null;
 				}
 
-				if ($var instanceof Expr\Variable && is_string($var->name)) {
-					$variableType = $this->getType($var);
-					$isNullSuperType = (new NullType())->isSuperTypeOf($variableType);
-					$has = $this->hasVariableType($var->name);
-					if ($has->no() || $isNullSuperType->yes()) {
-						return new ConstantBooleanType(false);
+				if ($isNull->yes()) {
+					if ($isFalsey->yes()) {
+						return false;
+					}
+					if ($isFalsey->no()) {
+						return true;
 					}
 
-					if ($has->maybe() || !$isNullSuperType->no()) {
-						$result = new BooleanType();
-					}
-					continue;
+					return false;
 				}
 
+				return !$isFalsey->yes();
+			});
+			if ($result === null) {
 				return new BooleanType();
 			}
 
-			return $result;
+			return new ConstantBooleanType(!$result);
+		}
+
+		if ($node instanceof Expr\Isset_) {
+			$issetResult = true;
+			foreach ($node->vars as $var) {
+				$result = $this->issetCheck($var, static function (Type $type): ?bool {
+					$isNull = (new NullType())->isSuperTypeOf($type);
+					if ($isNull->maybe()) {
+						return null;
+					}
+
+					return !$isNull->yes();
+				});
+				if ($result !== null) {
+					if (!$result) {
+						return new ConstantBooleanType($result);
+					}
+
+					continue;
+				}
+
+				$issetResult = $result;
+			}
+
+			if ($issetResult === null) {
+				return new BooleanType();
+			}
+
+			return new ConstantBooleanType($issetResult);
 		}
 
 		if ($node instanceof Node\Expr\BooleanNot) {
@@ -1005,6 +1041,34 @@ class MutatingScope implements Scope
 		}
 
 		if (
+			$node instanceof Node\Expr\BinaryOp\Mul
+			|| $node instanceof Node\Expr\AssignOp\Mul
+		) {
+			if ($node instanceof Node\Expr\AssignOp) {
+				$leftType = $this->getType($node->var)->toNumber();
+				$rightType = $this->getType($node->expr)->toNumber();
+			} else {
+				$leftType = $this->getType($node->left)->toNumber();
+				$rightType = $this->getType($node->right)->toNumber();
+			}
+
+			$floatType = new FloatType();
+
+			if ($leftType instanceof ConstantIntegerType && $leftType->getValue() === 0) {
+				if ($floatType->isSuperTypeOf($rightType)->yes()) {
+					return new ConstantFloatType(0.0);
+				}
+				return new ConstantIntegerType(0);
+			}
+			if ($rightType instanceof ConstantIntegerType && $rightType->getValue() === 0) {
+				if ($floatType->isSuperTypeOf($leftType)->yes()) {
+					return new ConstantFloatType(0.0);
+				}
+				return new ConstantIntegerType(0);
+			}
+		}
+
+		if (
 			$node instanceof Node\Expr\BinaryOp\Div
 			|| $node instanceof Node\Expr\AssignOp\Div
 			|| $node instanceof Node\Expr\BinaryOp\Mod
@@ -1015,12 +1079,24 @@ class MutatingScope implements Scope
 			} else {
 				$right = $node->right;
 			}
+			$rightType = $this->getType($right);
 
-			$rightTypes = TypeUtils::getConstantScalars($this->getType($right)->toNumber());
-			foreach ($rightTypes as $rightType) {
+			$integerType = $rightType->toInteger();
+			if (
+				$node instanceof Node\Expr\BinaryOp\Mod
+				|| $node instanceof Node\Expr\AssignOp\Mod
+			) {
+				if ($integerType instanceof ConstantIntegerType && $integerType->getValue() === 1) {
+					return new ConstantIntegerType(0);
+				}
+			}
+
+			$rightScalarTypes = TypeUtils::getConstantScalars($rightType->toNumber());
+			foreach ($rightScalarTypes as $scalarType) {
+
 				if (
-					$rightType->getValue() === 0
-					|| $rightType->getValue() === 0.0
+					$scalarType->getValue() === 0
+					|| $scalarType->getValue() === 0.0
 				) {
 					return new ErrorType();
 				}
@@ -1909,53 +1985,32 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\Coalesce) {
-			if ($node->left instanceof Expr\ArrayDimFetch && $node->left->dim !== null) {
-				$dimType = $this->getType($node->left->dim);
-				$varType = $this->getType($node->left->var);
-				$hasOffset = $varType->hasOffsetValueType($dimType);
-				$leftType = $this->getType($node->left);
-				$rightType = $this->filterByFalseyValue(
-					new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null'))),
-				)->getType($node->right);
-				if ($hasOffset->no()) {
-					return $rightType;
-				} elseif ($hasOffset->yes()) {
-					$offsetValueType = $varType->getOffsetValueType($dimType);
-					if ($offsetValueType->isSuperTypeOf(new NullType())->no()) {
-						return TypeCombinator::removeNull($leftType);
-					}
-				}
-
-				return TypeCombinator::union(
-					TypeCombinator::removeNull($leftType),
-					$rightType,
-				);
-			}
-
 			$leftType = $this->getType($node->left);
 			$rightType = $this->filterByFalseyValue(
 				new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null'))),
 			)->getType($node->right);
-			if ($leftType instanceof ErrorType || $leftType instanceof NullType) {
-				return $rightType;
-			}
 
-			if (
-				TypeCombinator::containsNull($leftType)
-				|| $node->left instanceof PropertyFetch
-				|| (
-					$node->left instanceof Variable
-					&& is_string($node->left->name)
-					&& !$this->hasVariableType($node->left->name)->yes()
-				)
-			) {
+			$result = $this->issetCheck($node->left, static function (Type $type): ?bool {
+				$isNull = (new NullType())->isSuperTypeOf($type);
+				if ($isNull->maybe()) {
+					return null;
+				}
+
+				return !$isNull->yes();
+			});
+
+			if ($result === null) {
 				return TypeCombinator::union(
 					TypeCombinator::removeNull($leftType),
 					$rightType,
 				);
 			}
 
-			return TypeCombinator::removeNull($leftType);
+			if ($result) {
+				return TypeCombinator::removeNull($leftType);
+			}
+
+			return $rightType;
 		}
 
 		if ($node instanceof ConstFetch) {
@@ -1990,6 +2045,182 @@ class MutatingScope implements Scope
 			if ($this->reflectionProvider->hasConstant($node->name, $this)) {
 				/** @var string $resolvedConstantName */
 				$resolvedConstantName = $this->reflectionProvider->resolveConstantName($node->name, $this);
+				// core, https://www.php.net/manual/en/reserved.constants.php
+				if ($resolvedConstantName === 'PHP_VERSION') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_MAJOR_VERSION') {
+					return IntegerRangeType::fromInterval(5, null);
+				}
+				if ($resolvedConstantName === 'PHP_MINOR_VERSION') {
+					return IntegerRangeType::fromInterval(0, null);
+				}
+				if ($resolvedConstantName === 'PHP_RELEASE_VERSION') {
+					return IntegerRangeType::fromInterval(0, null);
+				}
+				if ($resolvedConstantName === 'PHP_VERSION_ID') {
+					return IntegerRangeType::fromInterval(50207, null);
+				}
+				if ($resolvedConstantName === 'PHP_ZTS') {
+					return new UnionType([
+						new ConstantIntegerType(0),
+						new ConstantIntegerType(1),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_DEBUG') {
+					return new UnionType([
+						new ConstantIntegerType(0),
+						new ConstantIntegerType(1),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_MAXPATHLEN') {
+					return IntegerRangeType::fromInterval(1, null);
+				}
+				if ($resolvedConstantName === 'PHP_OS') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_OS_FAMILY') {
+					return new UnionType([
+						new ConstantStringType('Windows'),
+						new ConstantStringType('BSD'),
+						new ConstantStringType('Darwin'),
+						new ConstantStringType('Solaris'),
+						new ConstantStringType('Linux'),
+						new ConstantStringType('Unknown'),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_SAPI') {
+					return new UnionType([
+						new ConstantStringType('apache'),
+						new ConstantStringType('apache2handler'),
+						new ConstantStringType('cgi'),
+						new ConstantStringType('cli'),
+						new ConstantStringType('cli-server'),
+						new ConstantStringType('embed'),
+						new ConstantStringType('fpm-fcgi'),
+						new ConstantStringType('litespeed'),
+						new ConstantStringType('phpdbg'),
+						new IntersectionType([
+							new StringType(),
+							new AccessoryNonEmptyStringType(),
+						]),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_EOL') {
+					return new UnionType([
+						new ConstantStringType("\n"),
+						new ConstantStringType("\r\n"),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_INT_MAX') {
+					return PHP_INT_SIZE === 8
+						? new UnionType([new ConstantIntegerType(2147483647), new ConstantIntegerType(9223372036854775807)])
+						: new ConstantIntegerType(2147483647);
+				}
+				if ($resolvedConstantName === 'PHP_INT_MIN') {
+					// Why the -1 you might wonder, the answer is to fit it into an int :/ see https://3v4l.org/4SHIQ
+					return PHP_INT_SIZE === 8
+						? new UnionType([new ConstantIntegerType(-9223372036854775807 - 1), new ConstantIntegerType(-2147483647 - 1)])
+						: new ConstantIntegerType(-2147483647 - 1);
+				}
+				if ($resolvedConstantName === 'PHP_INT_SIZE') {
+					return new UnionType([
+						new ConstantIntegerType(4),
+						new ConstantIntegerType(8),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_FLOAT_DIG') {
+					return IntegerRangeType::fromInterval(1, null);
+				}
+				if ($resolvedConstantName === 'PHP_EXTENSION_DIR') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_PREFIX') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_BINDIR') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_BINARY') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_MANDIR') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_LIBDIR') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_DATADIR') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_SYSCONFDIR') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_LOCALSTATEDIR') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_CONFIG_FILE_PATH') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_SHLIB_SUFFIX') {
+					return new UnionType([
+						new ConstantStringType('so'),
+						new ConstantStringType('dll'),
+					]);
+				}
+				if ($resolvedConstantName === 'PHP_FD_SETSIZE') {
+					return IntegerRangeType::fromInterval(1, null);
+				}
+				if ($resolvedConstantName === '__COMPILER_HALT_OFFSET__') {
+					return IntegerRangeType::fromInterval(0, null);
+				}
+				// core other, https://www.php.net/manual/en/info.constants.php
+				if ($resolvedConstantName === 'PHP_WINDOWS_VERSION_MAJOR') {
+					return IntegerRangeType::fromInterval(4, null);
+				}
+				if ($resolvedConstantName === 'PHP_WINDOWS_VERSION_MINOR') {
+					return IntegerRangeType::fromInterval(0, null);
+				}
+				if ($resolvedConstantName === 'PHP_WINDOWS_VERSION_BUILD') {
+					return IntegerRangeType::fromInterval(1, null);
+				}
+				// dir, https://www.php.net/manual/en/dir.constants.php
 				if ($resolvedConstantName === 'DIRECTORY_SEPARATOR') {
 					return new UnionType([
 						new ConstantStringType('/'),
@@ -2002,16 +2233,25 @@ class MutatingScope implements Scope
 						new ConstantStringType(';'),
 					]);
 				}
-				if ($resolvedConstantName === 'PHP_EOL') {
-					return new UnionType([
-						new ConstantStringType("\n"),
-						new ConstantStringType("\r\n"),
+				// iconv, https://www.php.net/manual/en/iconv.constants.php
+				if ($resolvedConstantName === 'ICONV_IMPL') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
 					]);
 				}
-				if ($resolvedConstantName === '__COMPILER_HALT_OFFSET__') {
-					return new IntegerType();
+				// libxml, https://www.php.net/manual/en/libxml.constants.php
+				if ($resolvedConstantName === 'LIBXML_VERSION') {
+					return IntegerRangeType::fromInterval(1, null);
 				}
-				if ($resolvedConstantName === 'PHP_INT_MAX') {
+				if ($resolvedConstantName === 'LIBXML_DOTTED_VERSION') {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+				// openssl, https://www.php.net/manual/en/openssl.constants.php
+				if ($resolvedConstantName === 'OPENSSL_VERSION_NUMBER') {
 					return IntegerRangeType::fromInterval(1, null);
 				}
 
@@ -2062,6 +2302,9 @@ class MutatingScope implements Scope
 			$referencedClasses = TypeUtils::getDirectClassNames($constantClassType);
 			if (strtolower($constantName) === 'class') {
 				if (count($referencedClasses) === 0) {
+					if ((new ObjectWithoutClassType())->isSuperTypeOf($constantClassType)->yes()) {
+						return new ClassStringType();
+					}
 					return new ErrorType();
 				}
 				$classTypes = [];
@@ -2214,10 +2457,21 @@ class MutatingScope implements Scope
 				if ($node->class instanceof Name) {
 					$staticMethodCalledOnType = $this->resolveTypeByName($node->class);
 				} else {
-					$staticMethodCalledOnType = $this->getType($node->class);
-					if ($staticMethodCalledOnType instanceof GenericClassStringType) {
-						$staticMethodCalledOnType = $staticMethodCalledOnType->getGenericType();
-					}
+					$staticMethodCalledOnType = TypeTraverser::map($this->getType($node->class), static function (Type $type, callable $traverse): Type {
+						if ($type instanceof UnionType) {
+							return $traverse($type);
+						}
+
+						if ($type instanceof GenericClassStringType) {
+							return $type->getGenericType();
+						}
+
+						if ($type instanceof ConstantStringType && $type->isClassString()) {
+							return new ObjectType($type->getValue());
+						}
+
+						return $type;
+					});
 				}
 
 				$returnType = $this->methodCallReturnType(
@@ -2370,6 +2624,177 @@ class MutatingScope implements Scope
 		}
 
 		return $type;
+	}
+
+	/**
+	 * @param callable(Type): ?bool $typeCallback
+	 */
+	private function issetCheck(Expr $expr, callable $typeCallback, ?bool $result = null): ?bool
+	{
+		// mirrored in PHPStan\Rules\IssetCheck
+		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
+			$hasVariable = $this->hasVariableType($expr->name);
+			if ($hasVariable->maybe()) {
+				return null;
+			}
+
+			if ($result === null) {
+				if ($hasVariable->yes()) {
+					if ($expr->name === '_SESSION') {
+						return null;
+					}
+
+					return $typeCallback($this->getVariableType($expr->name));
+				}
+
+				return false;
+			}
+
+			return $result;
+		} elseif ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
+			$type = $this->treatPhpDocTypesAsCertain
+				? $this->getType($expr->var)
+				: $this->getNativeType($expr->var);
+			$dimType = $this->treatPhpDocTypesAsCertain
+				? $this->getType($expr->dim)
+				: $this->getNativeType($expr->dim);
+			$hasOffsetValue = $type->hasOffsetValueType($dimType);
+			if (!$type->isOffsetAccessible()->yes()) {
+				return $result ?? $this->issetCheckUndefined($expr->var);
+			}
+
+			if ($hasOffsetValue->no()) {
+				if ($result !== null) {
+					return $result;
+				}
+
+				return false;
+			}
+
+			if ($hasOffsetValue->maybe()) {
+				return null;
+			}
+
+			// If offset is cannot be null, store this error message and see if one of the earlier offsets is.
+			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
+			if ($hasOffsetValue->yes()) {
+				if ($result !== null) {
+					return $result;
+				}
+
+				$result = $typeCallback($type->getOffsetValueType($dimType));
+
+				if ($result !== null) {
+					return $this->issetCheck($expr->var, $typeCallback, $result);
+				}
+			}
+
+			// Has offset, it is nullable
+			return null;
+
+		} elseif ($expr instanceof Node\Expr\PropertyFetch || $expr instanceof Node\Expr\StaticPropertyFetch) {
+
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+
+			if ($propertyReflection === null) {
+				if ($expr instanceof Node\Expr\PropertyFetch) {
+					return $this->issetCheckUndefined($expr->var);
+				}
+
+				if ($expr->class instanceof Expr) {
+					return $this->issetCheckUndefined($expr->class);
+				}
+
+				return null;
+			}
+
+			if (!$propertyReflection->isNative()) {
+				if ($expr instanceof Node\Expr\PropertyFetch) {
+					return $this->issetCheckUndefined($expr->var);
+				}
+
+				if ($expr->class instanceof Expr) {
+					return $this->issetCheckUndefined($expr->class);
+				}
+
+				return null;
+			}
+
+			$nativeType = $propertyReflection->getNativeType();
+			if (!$nativeType instanceof MixedType) {
+				if (!$this->isSpecified($expr)) {
+					if ($expr instanceof Node\Expr\PropertyFetch) {
+						return $this->issetCheckUndefined($expr->var);
+					}
+
+					if ($expr->class instanceof Expr) {
+						return $this->issetCheckUndefined($expr->class);
+					}
+
+					return null;
+				}
+			}
+
+			if ($result !== null) {
+				return $result;
+			}
+
+			$result = $typeCallback($propertyReflection->getWritableType());
+			if ($result !== null) {
+				if ($expr instanceof Node\Expr\PropertyFetch) {
+					return $this->issetCheck($expr->var, $typeCallback, $result);
+				}
+
+				if ($expr->class instanceof Expr) {
+					return $this->issetCheck($expr->class, $typeCallback, $result);
+				}
+			}
+
+			return $result;
+		}
+
+		if ($result !== null) {
+			return $result;
+		}
+
+		return $typeCallback($this->getType($expr));
+	}
+
+	private function issetCheckUndefined(Expr $expr): ?bool
+	{
+		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
+			$hasVariable = $this->hasVariableType($expr->name);
+			if (!$hasVariable->no()) {
+				return null;
+			}
+
+			return false;
+		}
+
+		if ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
+			$type = $this->getType($expr->var);
+			$dimType = $this->getType($expr->dim);
+			$hasOffsetValue = $type->hasOffsetValueType($dimType);
+			if (!$type->isOffsetAccessible()->yes()) {
+				return $this->issetCheckUndefined($expr->var);
+			}
+
+			if (!$hasOffsetValue->no()) {
+				return $this->issetCheckUndefined($expr->var);
+			}
+
+			return false;
+		}
+
+		if ($expr instanceof Expr\PropertyFetch) {
+			return $this->issetCheckUndefined($expr->var);
+		}
+
+		if ($expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Expr) {
+			return $this->issetCheckUndefined($expr->class);
+		}
+
+		return null;
 	}
 
 	/**
@@ -3004,7 +3429,16 @@ class MutatingScope implements Scope
 				}
 			}
 			$variableTypes[$parameter->getName()] = VariableTypeHolder::createYes($parameterType);
-			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $parameter->getNativeType();
+
+			$nativeParameterType = $parameter->getNativeType();
+			if ($parameter->isVariadic()) {
+				if ($this->phpVersion->supportsNamedArguments()) {
+					$nativeParameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $nativeParameterType);
+				} else {
+					$nativeParameterType = new ArrayType(new IntegerType(), $nativeParameterType);
+				}
+			}
+			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $nativeParameterType;
 		}
 
 		if ($preserveThis && array_key_exists('this', $this->variableTypes)) {
@@ -3283,6 +3717,7 @@ class MutatingScope implements Scope
 		$variableTypes = $this->variableTypes;
 		$mixed = new MixedType();
 		$parameterVariables = [];
+		$parameterVariableExpressions = [];
 		foreach ($arrowFunction->params as $i => $parameter) {
 			if ($parameter->type === null) {
 				$parameterType = $mixed;
@@ -3312,6 +3747,7 @@ class MutatingScope implements Scope
 
 			$variableTypes[$parameter->var->name] = VariableTypeHolder::createYes($parameterType);
 			$parameterVariables[] = $parameter->var->name;
+			$parameterVariableExpressions[] = $parameter->var;
 		}
 
 		if ($arrowFunction->static) {
@@ -3373,7 +3809,7 @@ class MutatingScope implements Scope
 			}
 		}
 
-		return $this->scopeFactory->create(
+		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->constantTypes,
@@ -3391,6 +3827,12 @@ class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 		);
+
+		foreach ($parameterVariableExpressions as $expr) {
+			$scope = $scope->invalidateExpression($expr);
+		}
+
+		return $scope;
 	}
 
 	public function isParameterValueNullable(Node\Param $parameter): bool
@@ -3653,27 +4095,14 @@ class MutatingScope implements Scope
 				$this->parentScope,
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			$varType = $this->getType($expr->var);
-			$constantArrays = TypeUtils::getConstantArrays($varType);
-			if (count($constantArrays) > 0) {
-				$unsetArrays = [];
-				$dimType = $this->getType($expr->dim);
-				foreach ($constantArrays as $constantArray) {
-					$unsetArrays[] = $constantArray->unsetOffset($dimType);
-				}
-				return $this->specifyExpressionType(
-					$expr->var,
-					TypeCombinator::union(...$unsetArrays),
-				);
-			}
-
-			$arrays = TypeUtils::getArrays($varType);
-			$scope = $this;
-			if (count($arrays) > 0) {
-				$scope = $scope->specifyExpressionType($expr->var, TypeCombinator::union(...$arrays));
-			}
-
-			return $scope->invalidateExpression($expr->var);
+			return $this->specifyExpressionType(
+				$expr->var,
+				$this->getType($expr->var)->unsetOffset($this->getType($expr->dim)),
+			)->invalidateExpression(
+				new FuncCall(new FullyQualified('count'), [new Arg($expr->var)]),
+			)->invalidateExpression(
+				new FuncCall(new FullyQualified('sizeof'), [new Arg($expr->var)]),
+			);
 		}
 
 		return $this;
@@ -3809,7 +4238,19 @@ class MutatingScope implements Scope
 			if (!$expr instanceof Node\Stmt\Expression) {
 				throw new ShouldNotHappenException();
 			}
-			$found = $nodeFinder->findFirst([$expr->expr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
+
+			$exprExpr = $expr->expr;
+			if ($exprExpr instanceof PropertyFetch) {
+				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($exprExpr, $this);
+				if ($propertyReflection !== null) {
+					$nativePropertyReflection = $propertyReflection->getNativeReflection();
+					if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
+						continue;
+					}
+				}
+			}
+
+			$found = $nodeFinder->findFirst([$exprExpr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
 				if (!$node instanceof $expressionToInvalidateClass) {
 					return false;
 				}
@@ -4663,6 +5104,7 @@ class MutatingScope implements Scope
 		$constantStrings = ['a' => [], 'b' => []];
 		$constantArrays = ['a' => [], 'b' => []];
 		$generalArrays = ['a' => [], 'b' => []];
+		$integerRanges = ['a' => [], 'b' => []];
 		$otherTypes = [];
 
 		foreach ([
@@ -4694,6 +5136,10 @@ class MutatingScope implements Scope
 					$generalArrays[$key][] = $type;
 					continue;
 				}
+				if ($type instanceof IntegerRangeType) {
+					$integerRanges[$key][] = $type;
+					continue;
+				}
 
 				$otherTypes[] = $type;
 			}
@@ -4701,15 +5147,16 @@ class MutatingScope implements Scope
 
 		$resultTypes = [];
 		foreach ([
-			$constantIntegers,
 			$constantFloats,
 			$constantBooleans,
 			$constantStrings,
 		] as $constantTypes) {
 			if (count($constantTypes['a']) === 0) {
+				if (count($constantTypes['b']) > 0) {
+					$resultTypes[] = TypeCombinator::union(...$constantTypes['b']);
+				}
 				continue;
-			}
-			if (count($constantTypes['b']) === 0) {
+			} elseif (count($constantTypes['b']) === 0) {
 				$resultTypes[] = TypeCombinator::union(...$constantTypes['a']);
 				continue;
 			}
@@ -4721,7 +5168,7 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$resultTypes[] = TypeUtils::generalizeType($constantTypes['a'][0], GeneralizePrecision::moreSpecific());
+			$resultTypes[] = TypeUtils::generalizeType(TypeCombinator::union(...$constantTypes['a'], ...$constantTypes['b']), GeneralizePrecision::moreSpecific());
 		}
 
 		if (count($constantArrays['a']) > 0) {
@@ -4750,6 +5197,8 @@ class MutatingScope implements Scope
 					);
 				}
 			}
+		} elseif (count($constantArrays['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$constantArrays['b']);
 		}
 
 		if (count($generalArrays['a']) > 0) {
@@ -4785,6 +5234,139 @@ class MutatingScope implements Scope
 					TypeCombinator::union(self::generalizeType($aValueType, $bValueType)),
 				);
 			}
+		} elseif (count($generalArrays['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$generalArrays['b']);
+		}
+
+		if (count($constantIntegers['a']) > 0) {
+			if (count($constantIntegers['b']) === 0) {
+				$resultTypes[] = TypeCombinator::union(...$constantIntegers['a']);
+			} else {
+				$constantIntegersA = TypeCombinator::union(...$constantIntegers['a']);
+				$constantIntegersB = TypeCombinator::union(...$constantIntegers['b']);
+
+				if ($constantIntegersA->equals($constantIntegersB)) {
+					$resultTypes[] = $constantIntegersA;
+				} else {
+					$min = null;
+					$max = null;
+					foreach ($constantIntegers['a'] as $int) {
+						if ($min === null || $int->getValue() < $min) {
+							$min = $int->getValue();
+						}
+						if ($max !== null && $int->getValue() <= $max) {
+							continue;
+						}
+
+						$max = $int->getValue();
+					}
+
+					$gotGreater = false;
+					$gotSmaller = false;
+					foreach ($constantIntegers['b'] as $int) {
+						if ($int->getValue() > $max) {
+							$gotGreater = true;
+						}
+						if ($int->getValue() >= $min) {
+							continue;
+						}
+
+						$gotSmaller = true;
+					}
+
+					if ($gotGreater && $gotSmaller) {
+						$resultTypes[] = new IntegerType();
+					} elseif ($gotGreater) {
+						$resultTypes[] = IntegerRangeType::fromInterval($min, null);
+					} elseif ($gotSmaller) {
+						$resultTypes[] = IntegerRangeType::fromInterval(null, $max);
+					} else {
+						$resultTypes[] = TypeCombinator::union($constantIntegersA, $constantIntegersB);
+					}
+				}
+			}
+		} elseif (count($constantIntegers['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$constantIntegers['b']);
+		}
+
+		if (count($integerRanges['a']) > 0) {
+			if (count($integerRanges['b']) === 0) {
+				$resultTypes[] = TypeCombinator::union(...$integerRanges['a']);
+			} else {
+				$integerRangesA = TypeCombinator::union(...$integerRanges['a']);
+				$integerRangesB = TypeCombinator::union(...$integerRanges['b']);
+
+				if ($integerRangesA->equals($integerRangesB)) {
+					$resultTypes[] = $integerRangesA;
+				} else {
+					$min = null;
+					$max = null;
+					foreach ($integerRanges['a'] as $range) {
+						if ($range->getMin() === null) {
+							$rangeMin = PHP_INT_MIN;
+						} else {
+							$rangeMin = $range->getMin();
+						}
+						if ($range->getMax() === null) {
+							$rangeMax = PHP_INT_MAX;
+						} else {
+							$rangeMax = $range->getMax();
+						}
+
+						if ($min === null || $rangeMin < $min) {
+							$min = $rangeMin;
+						}
+						if ($max !== null && $rangeMax <= $max) {
+							continue;
+						}
+
+						$max = $rangeMax;
+					}
+
+					$gotGreater = false;
+					$gotSmaller = false;
+					foreach ($integerRanges['b'] as $range) {
+						if ($range->getMin() === null) {
+							$rangeMin = PHP_INT_MIN;
+						} else {
+							$rangeMin = $range->getMin();
+						}
+						if ($range->getMax() === null) {
+							$rangeMax = PHP_INT_MAX;
+						} else {
+							$rangeMax = $range->getMax();
+						}
+
+						if ($rangeMax > $max) {
+							$gotGreater = true;
+						}
+						if ($rangeMin >= $min) {
+							continue;
+						}
+
+						$gotSmaller = true;
+					}
+
+					if ($min === PHP_INT_MIN) {
+						$min = null;
+					}
+					if ($max === PHP_INT_MAX) {
+						$max = null;
+					}
+
+					if ($gotGreater && $gotSmaller) {
+						$resultTypes[] = new IntegerType();
+					} elseif ($gotGreater) {
+						$resultTypes[] = IntegerRangeType::fromInterval($min, null);
+					} elseif ($gotSmaller) {
+						$resultTypes[] = IntegerRangeType::fromInterval(null, $max);
+					} else {
+						$resultTypes[] = TypeCombinator::union($integerRangesA, $integerRangesB);
+					}
+				}
+			}
+		} elseif (count($integerRanges['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$integerRanges['b']);
 		}
 
 		return TypeCombinator::union(...$resultTypes, ...$otherTypes);
@@ -5230,15 +5812,24 @@ class MutatingScope implements Scope
 
 		if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {
 			if ($operand instanceof ConstantIntegerType) {
+				/** @var int|float|null $min */
 				$min = $rangeMin !== null ? $rangeMin + $operand->getValue() : null;
+
+				/** @var int|float|null $max */
 				$max = $rangeMax !== null ? $rangeMax + $operand->getValue() : null;
 			} else {
+				/** @var int|float|null $min */
 				$min = $rangeMin !== null && $operand->getMin() !== null ? $rangeMin + $operand->getMin() : null;
+
+				/** @var int|float|null $max */
 				$max = $rangeMax !== null && $operand->getMax() !== null ? $rangeMax + $operand->getMax() : null;
 			}
 		} elseif ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus) {
 			if ($operand instanceof ConstantIntegerType) {
+				/** @var int|float|null $min */
 				$min = $rangeMin !== null ? $rangeMin - $operand->getValue() : null;
+
+				/** @var int|float|null $max */
 				$max = $rangeMax !== null ? $rangeMax - $operand->getValue() : null;
 			} else {
 				if ($rangeMin === $rangeMax && $rangeMin !== null
@@ -5250,8 +5841,10 @@ class MutatingScope implements Scope
 						$min = null;
 					} elseif ($rangeMin !== null) {
 						if ($operand->getMax() !== null) {
+							/** @var int|float $min */
 							$min = $rangeMin - $operand->getMax();
 						} else {
+							/** @var int|float $min */
 							$min = $rangeMin - $operand->getMin();
 						}
 					} else {
@@ -5263,9 +5856,11 @@ class MutatingScope implements Scope
 						$max = null;
 					} elseif ($rangeMax !== null) {
 						if ($rangeMin !== null && $operand->getMin() === null) {
+							/** @var int|float $min */
 							$min = $rangeMin - $operand->getMax();
 							$max = null;
 						} elseif ($operand->getMin() !== null) {
+							/** @var int|float $max */
 							$max = $rangeMax - $operand->getMin();
 						} else {
 							$max = null;
@@ -5281,10 +5876,16 @@ class MutatingScope implements Scope
 			}
 		} elseif ($node instanceof Node\Expr\BinaryOp\Mul || $node instanceof Node\Expr\AssignOp\Mul) {
 			if ($operand instanceof ConstantIntegerType) {
+				/** @var int|float|null $min */
 				$min = $rangeMin !== null ? $rangeMin * $operand->getValue() : null;
+
+				/** @var int|float|null $max */
 				$max = $rangeMax !== null ? $rangeMax * $operand->getValue() : null;
 			} else {
+				/** @var int|float|null $min */
 				$min = $rangeMin !== null && $operand->getMin() !== null ? $rangeMin * $operand->getMin() : null;
+
+				/** @var int|float|null $max */
 				$max = $rangeMax !== null && $operand->getMax() !== null ? $rangeMax * $operand->getMax() : null;
 			}
 
@@ -5346,6 +5947,13 @@ class MutatingScope implements Scope
 
 				return TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType());
 			}
+		}
+
+		if (is_float($min)) {
+			$min = null;
+		}
+		if (is_float($max)) {
+			$max = null;
 		}
 
 		return IntegerRangeType::fromInterval($min, $max);

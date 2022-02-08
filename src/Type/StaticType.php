@@ -317,6 +317,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->setOffsetValueType($offsetType, $valueType, $unionValues);
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this->getStaticObjectType()->unsetOffset($offsetType);
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isCallable();
@@ -408,13 +413,8 @@ class StaticType implements TypeWithClassName, SubtractableType
 	{
 		$classReflection = $this->getClassReflection();
 		if ($classReflection !== null && $classReflection->isEnum() && $subtractedType !== null) {
-			$constants = $classReflection->getNativeReflection()->getConstants();
 			$cases = [];
-			foreach (array_keys($constants) as $constantName) {
-				if (!$classReflection->hasEnumCase($constantName)) {
-					continue;
-				}
-
+			foreach (array_keys($classReflection->getEnumCases()) as $constantName) {
 				$cases[$constantName] = new EnumCaseObjectType($classReflection->getName(), $constantName);
 			}
 
@@ -448,6 +448,15 @@ class StaticType implements TypeWithClassName, SubtractableType
 	public function getSubtractedType(): ?Type
 	{
 		return $this->subtractedType;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($this->isSuperTypeOf($typeToRemove)->yes()) {
+			return $this->subtract($typeToRemove);
+		}
+
+		return null;
 	}
 
 	/**

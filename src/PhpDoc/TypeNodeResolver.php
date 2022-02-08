@@ -70,6 +70,7 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
@@ -455,7 +456,7 @@ class TypeNodeResolver
 					new IntegerType(),
 					new StringType(),
 				]));
-				$arrayType = new ArrayType($keyType, $genericTypes[1]);
+				$arrayType = new ArrayType(!$keyType instanceof NeverType ? ArrayType::castToArrayKeyType($keyType) : $keyType, $genericTypes[1]);
 			} else {
 				return new ErrorType();
 			}
@@ -526,6 +527,11 @@ class TypeNodeResolver
 				return $genericTypes[0]->getIterableValueType();
 			}
 
+			return new ErrorType();
+		} elseif ($mainTypeName === '__benevolent') {
+			if (count($genericTypes) === 1) {
+				return TypeUtils::toBenevolentUnion($genericTypes[0]);
+			}
 			return new ErrorType();
 		}
 

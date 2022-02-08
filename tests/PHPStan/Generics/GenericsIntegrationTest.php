@@ -24,6 +24,7 @@ class GenericsIntegrationTest extends LevelsTestCase
 			['bug2620'],
 			['bug2622'],
 			['bug2627'],
+			['bug6210'],
 		];
 	}
 

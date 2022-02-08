@@ -4,6 +4,9 @@ namespace PHPStan\Type;
 
 use ArrayAccess;
 use Closure;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Iterator;
 use IteratorAggregate;
 use PHPStan\Analyser\OutOfClassScope;
@@ -324,6 +327,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function equals(Type $type): bool
 	{
 		if (!$type instanceof self) {
+			return false;
+		}
+
+		if ($type instanceof EnumCaseObjectType) {
 			return false;
 		}
 
@@ -676,11 +683,27 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getIterableKeyType(): Type
 	{
-		$classReflection = $this->getClassReflection();
-		if ($classReflection === null) {
-			return new ErrorType();
-		}
+		$isTraversable = false;
+		if ($this->isInstanceOf(Traversable::class)->yes()) {
+			$isTraversable = true;
+			$tKey = GenericTypeVariableResolver::getType($this, Traversable::class, 'TKey');
+			if ($tKey !== null) {
+				if (!$tKey instanceof MixedType || $tKey->isExplicitMixed()) {
+					$classReflection = $this->getClassReflection();
+					if ($classReflection === null) {
+						return $tKey;
+					}
 
+					return TypeTraverser::map($tKey, static function (Type $type, callable $traverse) use ($classReflection): Type {
+						if ($type instanceof StaticType) {
+							return $type->changeBaseClass($classReflection)->getStaticObjectType();
+						}
+
+						return $traverse($type);
+					});
+				}
+			}
+		}
 		if ($this->isInstanceOf(Iterator::class)->yes()) {
 			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
 				$this->getMethod('key', new OutOfClassScope())->getVariants(),
@@ -691,17 +714,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$keyType = RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
 				$this->getMethod('getIterator', new OutOfClassScope())->getVariants(),
 			)->getReturnType()->getIterableKeyType());
+			$isTraversable = true;
 			if (!$keyType instanceof MixedType || $keyType->isExplicitMixed()) {
 				return $keyType;
 			}
 		}
 
-		if ($this->isInstanceOf(Traversable::class)->yes()) {
-			$tKey = GenericTypeVariableResolver::getType($this, Traversable::class, 'TKey');
-			if ($tKey !== null) {
-				return $tKey;
-			}
-
+		if ($isTraversable) {
 			return new MixedType();
 		}
 
@@ -710,6 +729,28 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getIterableValueType(): Type
 	{
+		$isTraversable = false;
+		if ($this->isInstanceOf(Traversable::class)->yes()) {
+			$isTraversable = true;
+			$tValue = GenericTypeVariableResolver::getType($this, Traversable::class, 'TValue');
+			if ($tValue !== null) {
+				if (!$tValue instanceof MixedType || $tValue->isExplicitMixed()) {
+					$classReflection = $this->getClassReflection();
+					if ($classReflection === null) {
+						return $tValue;
+					}
+
+					return TypeTraverser::map($tValue, static function (Type $type, callable $traverse) use ($classReflection): Type {
+						if ($type instanceof StaticType) {
+							return $type->changeBaseClass($classReflection)->getStaticObjectType();
+						}
+
+						return $traverse($type);
+					});
+				}
+			}
+		}
+
 		if ($this->isInstanceOf(Iterator::class)->yes()) {
 			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
 				$this->getMethod('current', new OutOfClassScope())->getVariants(),
@@ -720,17 +761,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$valueType = RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
 				$this->getMethod('getIterator', new OutOfClassScope())->getVariants(),
 			)->getReturnType()->getIterableValueType());
+			$isTraversable = true;
 			if (!$valueType instanceof MixedType || $valueType->isExplicitMixed()) {
 				return $valueType;
 			}
 		}
 
-		if ($this->isInstanceOf(Traversable::class)->yes()) {
-			$tValue = GenericTypeVariableResolver::getType($this, Traversable::class, 'TValue');
-			if ($tValue !== null) {
-				return $tValue;
-			}
-
+		if ($isTraversable) {
 			return new MixedType();
 		}
 
@@ -873,6 +910,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this;
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		if ($this->isOffsetAccessible()->no()) {
+			return new ErrorType();
+		}
+
+		return $this;
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		$parametersAcceptors = $this->findCallableParametersAcceptors();
@@ -979,14 +1025,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	{
 		$classReflection = $this->getClassReflection();
 		if ($classReflection !== null && $classReflection->isEnum() && $subtractedType !== null) {
-			$constants = $classReflection->getNativeReflection()->getConstants();
 			$cases = [];
-			foreach (array_keys($constants) as $constantName) {
-				if (!$classReflection->hasEnumCase($constantName)) {
-					continue;
-				}
-
-				$cases[$constantName] = new EnumCaseObjectType($classReflection->getName(), $constantName);
+			foreach (array_keys($classReflection->getEnumCases()) as $name) {
+				$cases[$name] = new EnumCaseObjectType($classReflection->getName(), $name);
 			}
 
 			foreach (TypeUtils::flattenTypes($subtractedType) as $subType) {
@@ -1145,6 +1186,25 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		return $this->cachedInterfaces = array_map(static fn (ClassReflection $interfaceReflection): self => self::createFromReflection($interfaceReflection), $thisReflection->getInterfaces());
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($this->getClassName() === DateTimeInterface::class) {
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === DateTimeImmutable::class) {
+				return new ObjectType(DateTime::class);
+			}
+
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === DateTime::class) {
+				return new ObjectType(DateTimeImmutable::class);
+			}
+		}
+
+		if ($this->isSuperTypeOf($typeToRemove)->yes()) {
+			return $this->subtract($typeToRemove);
+		}
+
+		return null;
 	}
 
 }

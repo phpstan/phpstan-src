@@ -16,9 +16,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
+	private bool $checkUnionTypes = true;
+
 	protected function getRule(): Rule
 	{
-		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed)));
+		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnionTypes, $this->checkExplicitMixed)));
 	}
 
 	public function testReturnTypeRule(): void
@@ -528,11 +530,6 @@ class ReturnTypeRuleTest extends RuleTestCase
 				'Method ReturnTemplateUnion\Foo::doFoo2() should return T of bool|float|int|string but returns (T of bool|float|int|string)|null.',
 				25,
 			],
-			[
-				// should not be reported
-				'Method ReturnTemplateUnion\Foo::doFoo3() should return (T of bool|float|int|string)|null but returns (T of bool|float|int|string)|null.',
-				35,
-			],
 		]);
 	}
 
@@ -568,6 +565,42 @@ class ReturnTypeRuleTest extends RuleTestCase
 	public function testBug5979(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-5979.php'], []);
+	}
+
+	public function testBug4165(): void
+	{
+		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-4165.php'], []);
+	}
+
+	public function testBug6053(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6053.php'], []);
+	}
+
+	public function testBug6438(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6438.php'], []);
+	}
+
+	public function testBug6589(): void
+	{
+		$this->checkUnionTypes = false;
+		$this->analyse([__DIR__ . '/data/bug-6589.php'], [
+			[
+				'Method Bug6589\HelloWorldTemplated::getField() should return TField of Bug6589\Field2 but returns Bug6589\Field.',
+				17,
+			],
+			[
+				'Method Bug6589\HelloWorldSimple::getField() should return Bug6589\Field2 but returns Bug6589\Field.',
+				31,
+			],
+		]);
 	}
 
 }

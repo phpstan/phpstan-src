@@ -128,3 +128,59 @@ class ListAssign
 	}
 
 }
+
+enum FooEnum: string
+{
+
+	case ONE = 'one';
+	case TWO = 'two';
+
+	public function doFoo(): void
+	{
+		$this->name = 'ONE';
+		$this->value = 'one';
+	}
+
+}
+
+class TestFooEnum
+{
+
+	public function doFoo(FooEnum $foo): void
+	{
+		$foo->name = 'ONE';
+		$foo->value = 'one';
+	}
+
+}
+
+class AssignRefOutsideClass
+{
+
+	public function doFoo(Foo $foo, int $i)
+	{
+		$foo->baz = 5;
+		$foo->baz = &$i;
+	}
+
+}
+
+class Unserialization
+{
+
+	private readonly int $foo;
+
+	public function __construct(int $foo)
+	{
+		$this->foo = $foo; // constructor - fine
+	}
+
+	/**
+	 * @param array<int, int> $data
+	 */
+	public function __unserialize(array $data) : void
+	{
+		[$this->foo] = $data; // __unserialize - fine
+	}
+
+}

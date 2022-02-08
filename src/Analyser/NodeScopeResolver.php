@@ -69,15 +69,18 @@ use PHPStan\Node\ClassStatementsGatherer;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Node\ExecutionEndNode;
+use PHPStan\Node\Expr\GetIterableValueTypeExpr;
+use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
+use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\FunctionReturnStatementsNode;
-use PHPStan\Node\GetIterableValueTypeExpr;
-use PHPStan\Node\GetOffsetValueTypeExpr;
 use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InClosureNode;
+use PHPStan\Node\InForeachNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\LiteralArrayItem;
@@ -116,6 +119,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
@@ -130,6 +134,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 use Throwable;
@@ -761,6 +766,11 @@ class NodeScopeResolver
 				$stmt->expr,
 				new Array_([]),
 			);
+			$inForeachScope = $scope;
+			if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
+				$inForeachScope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
+			}
+			$nodeCallback(new InForeachNode($stmt), $inForeachScope);
 			$bodyScope = $this->enterForeach($scope->filterByTruthyValue($arrayComparisonExpr), $stmt);
 			$count = 0;
 			do {
@@ -779,7 +789,7 @@ class NodeScopeResolver
 				}
 
 				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $bodyScope->generalizeWith($prevScope);
+					$bodyScope = $prevScope->generalizeWith($bodyScope);
 				}
 				$count++;
 			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
@@ -842,7 +852,7 @@ class NodeScopeResolver
 				}
 
 				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $bodyScope->generalizeWith($prevScope);
+					$bodyScope = $prevScope->generalizeWith($bodyScope);
 				}
 				$count++;
 			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
@@ -921,7 +931,7 @@ class NodeScopeResolver
 				}
 
 				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $bodyScope->generalizeWith($prevScope);
+					$bodyScope = $prevScope->generalizeWith($bodyScope);
 				}
 				$count++;
 			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
@@ -978,9 +988,18 @@ class NodeScopeResolver
 			}
 
 			$bodyScope = $initScope;
+			$isIterableAtLeastOnce = TrinaryLogic::createYes();
 			foreach ($stmt->cond as $condExpr) {
 				$condResult = $this->processExprNode($condExpr, $bodyScope, static function (): void {
 				}, ExpressionContext::createDeep());
+				$initScope = $condResult->getScope();
+				$condTruthiness = $condResult->getScope()->getType($condExpr)->toBoolean();
+				if ($condTruthiness instanceof ConstantBooleanType) {
+					$condTruthinessTrinary = TrinaryLogic::createFromBoolean($condTruthiness->getValue());
+				} else {
+					$condTruthinessTrinary = TrinaryLogic::createMaybe();
+				}
+				$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthinessTrinary);
 				$hasYield = $hasYield || $condResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 				$bodyScope = $condResult->getTruthyScope();
@@ -1014,7 +1033,7 @@ class NodeScopeResolver
 				}
 
 				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $bodyScope->generalizeWith($prevScope);
+					$bodyScope = $prevScope->generalizeWith($bodyScope);
 				}
 				$count++;
 			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
@@ -1029,18 +1048,38 @@ class NodeScopeResolver
 			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 				$finalScope = $continueExitPoint->getScope()->mergeWith($finalScope);
 			}
+
+			$loopScope = $finalScope;
 			foreach ($stmt->loop as $loopExpr) {
-				$finalScope = $this->processExprNode($loopExpr, $finalScope, $nodeCallback, ExpressionContext::createTopLevel())->getScope();
+				$loopScope = $this->processExprNode($loopExpr, $loopScope, $nodeCallback, ExpressionContext::createTopLevel())->getScope();
 			}
+			$finalScope = $finalScope->generalizeWith($loopScope);
+			foreach ($stmt->cond as $condExpr) {
+				$finalScope = $finalScope->filterByFalseyValue($condExpr);
+			}
+
 			foreach ($finalScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 				$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
 			}
 
-			if ($this->polluteScopeWithLoopInitialAssignments) {
-				$scope = $initScope;
-			}
+			if ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
+				if ($this->polluteScopeWithLoopInitialAssignments) {
+					$finalScope = $initScope;
+				} else {
+					$finalScope = $scope;
+				}
 
-			$finalScope = $finalScope->mergeWith($scope);
+			} elseif ($isIterableAtLeastOnce->maybe()) {
+				if ($this->polluteScopeWithLoopInitialAssignments) {
+					$finalScope = $finalScope->mergeWith($initScope);
+				} else {
+					$finalScope = $finalScope->mergeWith($scope);
+				}
+			} else {
+				if (!$this->polluteScopeWithLoopInitialAssignments) {
+					$finalScope = $finalScope->mergeWith($scope);
+				}
+			}
 
 			return new StatementResult(
 				$finalScope,
@@ -1470,7 +1509,9 @@ class NodeScopeResolver
 
 	private function lookForExitVariableAssign(MutatingScope $scope, Expr $expr): MutatingScope
 	{
-		$scope = $scope->exitExpressionAssign($expr);
+		if (!$expr instanceof ArrayDimFetch || $expr->dim !== null) {
+			$scope = $scope->exitExpressionAssign($expr);
+		}
 		if (!$expr instanceof Variable) {
 			return $this->lookForVariableAssignCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->exitExpressionAssign($expr));
 		}
@@ -1486,11 +1527,11 @@ class NodeScopeResolver
 		if ($expr instanceof Variable) {
 			$scope = $callback($scope, $expr);
 		} elseif ($expr instanceof ArrayDimFetch) {
-			while ($expr instanceof ArrayDimFetch) {
-				$expr = $expr->var;
+			if ($expr->dim !== null) {
+				$scope = $callback($scope, $expr);
 			}
 
-			$scope = $this->lookForVariableAssignCallback($scope, $expr, $callback);
+			$scope = $this->lookForVariableAssignCallback($scope, $expr->var, $callback);
 		} elseif ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
 			$scope = $this->lookForVariableAssignCallback($scope, $expr->var, $callback);
 		} elseif ($expr instanceof StaticPropertyFetch) {
@@ -2032,17 +2073,15 @@ class NodeScopeResolver
 								if (count($directClassNames) === 1) {
 									$scopeClass = $directClassNames[0];
 									$thisType = new ObjectType($scopeClass);
-								} elseif (
-									$argValue instanceof Expr\ClassConstFetch
-									&& $argValue->name instanceof Node\Identifier
-									&& strtolower($argValue->name->name) === 'class'
-									&& $argValue->class instanceof Name
-								) {
-									$scopeClass = $scope->resolveName($argValue->class);
-									$thisType = new ObjectType($scopeClass);
 								} elseif ($argValueType instanceof ConstantStringType) {
 									$scopeClass = $argValueType->getValue();
 									$thisType = new ObjectType($scopeClass);
+								} elseif (
+									$argValueType instanceof GenericClassStringType
+									&& $argValueType->getGenericType() instanceof TypeWithClassName
+								) {
+									$scopeClass = $argValueType->getGenericType()->getClassName();
+									$thisType = $argValueType->getGenericType();
 								}
 							}
 							$closureBindScope = $scope->enterClosureBind($thisType, $scopeClass);
@@ -2912,6 +2951,9 @@ class NodeScopeResolver
 			if ($closureScope->equals($prevScope)) {
 				break;
 			}
+			if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+				$closureScope = $prevScope->generalizeWith($closureScope);
+			}
 			$count++;
 		} while ($count < self::LOOP_SCOPE_ITERATIONS);
 
@@ -3083,6 +3125,7 @@ class NodeScopeResolver
 		$nodeCallback($var, $enterExpressionAssign ? $scope->enterExpressionAssign($var) : $scope);
 		$hasYield = false;
 		$throwPoints = [];
+		$isAssignOp = $assignedExpr instanceof Expr\AssignOp && !$enterExpressionAssign;
 		if ($var instanceof Variable && is_string($var->name)) {
 			$result = $processExprCallback($scope);
 			$hasYield = $result->hasYield();
@@ -3109,20 +3152,30 @@ class NodeScopeResolver
 		} elseif ($var instanceof ArrayDimFetch) {
 			$dimExprStack = [];
 			$originalVar = $var;
+			$assignedPropertyExpr = $assignedExpr;
 			while ($var instanceof ArrayDimFetch) {
+				$varForSetOffsetValue = $var->var;
+				if ($varForSetOffsetValue instanceof PropertyFetch || $varForSetOffsetValue instanceof StaticPropertyFetch) {
+					$varForSetOffsetValue = new OriginalPropertyTypeExpr($varForSetOffsetValue);
+				}
+				$assignedPropertyExpr = new SetOffsetValueTypeExpr(
+					$varForSetOffsetValue,
+					$var->dim,
+					$assignedPropertyExpr,
+				);
 				$dimExprStack[] = $var->dim;
 				$var = $var->var;
 			}
 
 			// 1. eval root expr
-			if ($enterExpressionAssign && $var instanceof Variable) {
+			if ($enterExpressionAssign) {
 				$scope = $scope->enterExpressionAssign($var);
 			}
 			$result = $this->processExprNode($var, $scope, $nodeCallback, $context->enterDeep());
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$scope = $result->getScope();
-			if ($enterExpressionAssign && $var instanceof Variable) {
+			if ($enterExpressionAssign) {
 				$scope = $scope->exitExpressionAssign($var);
 			}
 
@@ -3159,44 +3212,39 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 
 			$varType = $scope->getType($var);
-			$getValueToWrite = static function (Type $initialType) use ($offsetTypes, $valueToWrite): Type {
-				// 4. compose types
-				if ($initialType instanceof ErrorType) {
-					$initialType = new ConstantArrayType([], []);
-				}
-				$offsetValueType = $initialType;
-				$offsetValueTypeStack = [$offsetValueType];
-				foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
-					if ($offsetType === null) {
+
+			// 4. compose types
+			if ($varType instanceof ErrorType) {
+				$varType = new ConstantArrayType([], []);
+			}
+			$offsetValueType = $varType;
+			$offsetValueTypeStack = [$offsetValueType];
+			foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
+				if ($offsetType === null) {
+					$offsetValueType = new ConstantArrayType([], []);
+
+				} else {
+					$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
+					if ($offsetValueType instanceof ErrorType) {
 						$offsetValueType = new ConstantArrayType([], []);
-
-					} else {
-						$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
-						if ($offsetValueType instanceof ErrorType) {
-							$offsetValueType = new ConstantArrayType([], []);
-						}
 					}
-
-					$offsetValueTypeStack[] = $offsetValueType;
 				}
 
-				foreach (array_reverse($offsetTypes) as $i => $offsetType) {
-					/** @var Type $offsetValueType */
-					$offsetValueType = array_pop($offsetValueTypeStack);
-					$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
-				}
+				$offsetValueTypeStack[] = $offsetValueType;
+			}
 
-				return $valueToWrite;
-			};
-
-			$valueToWrite = $getValueToWrite($varType);
+			foreach (array_reverse($offsetTypes) as $i => $offsetType) {
+				/** @var Type $offsetValueType */
+				$offsetValueType = array_pop($offsetValueTypeStack);
+				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
+			}
 
 			if (!(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
 				if ($var instanceof Variable && is_string($var->name)) {
 					$scope = $scope->assignVariable($var->name, $valueToWrite);
 				} else {
 					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
-						$nodeCallback(new PropertyAssignNode($var, $getValueToWrite(new ErrorType())), $scope);
+						$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
 					}
 					$scope = $scope->assignExpression(
 						$var,
@@ -3215,7 +3263,7 @@ class NodeScopeResolver
 				}
 			} else {
 				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
-					$nodeCallback(new PropertyAssignNode($var, $getValueToWrite(new ErrorType())), $scope);
+					$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
 				}
 			}
 		} elseif ($var instanceof PropertyFetch) {
@@ -3243,14 +3291,14 @@ class NodeScopeResolver
 			if ($propertyName !== null && $propertyHolderType->hasProperty($propertyName)->yes()) {
 				$propertyReflection = $propertyHolderType->getProperty($propertyName, $scope);
 				$assignedExprType = $scope->getType($assignedExpr);
-				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
 				if ($propertyReflection->canChangeTypeAfterAssignment()) {
 					$scope = $scope->assignExpression($var, $assignedExprType);
 				}
 			} else {
 				// fallback
 				$assignedExprType = $scope->getType($assignedExpr);
-				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
 				$scope = $scope->assignExpression($var, $assignedExprType);
 			}
 
@@ -3282,14 +3330,14 @@ class NodeScopeResolver
 			if ($propertyName !== null) {
 				$propertyReflection = $scope->getPropertyReflection($propertyHolderType, $propertyName);
 				$assignedExprType = $scope->getType($assignedExpr);
-				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
 				if ($propertyReflection !== null && $propertyReflection->canChangeTypeAfterAssignment()) {
 					$scope = $scope->assignExpression($var, $assignedExprType);
 				}
 			} else {
 				// fallback
 				$assignedExprType = $scope->getType($assignedExpr);
-				$nodeCallback(new PropertyAssignNode($var, $assignedExprType), $scope);
+				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
 				$scope = $scope->assignExpression($var, $assignedExprType);
 			}
 		} elseif ($var instanceof List_ || $var instanceof Array_) {

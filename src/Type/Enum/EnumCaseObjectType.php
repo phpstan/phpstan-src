@@ -91,6 +91,15 @@ class EnumCaseObjectType extends ObjectType
 		return null;
 	}
 
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($this->isSuperTypeOf($typeToRemove)->yes()) {
+			return $this->subtract($typeToRemove);
+		}
+
+		return null;
+	}
+
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
 		$classReflection = $this->getClassReflection();

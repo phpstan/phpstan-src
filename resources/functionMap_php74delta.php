@@ -43,7 +43,7 @@ return [
 		'password_algos' => ['array<int, string>'],
 		'password_hash' => ['string|false', 'password'=>'string', 'algo'=>'string|null', 'options='=>'array'],
 		'password_needs_rehash' => ['bool', 'hash'=>'string', 'algo'=>'string|null', 'options='=>'array'],
-		'preg_replace_callback' => ['string|array|null', 'regex'=>'string|array', 'callback'=>'callable', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int', 'flags='=>'int'],
+		'preg_replace_callback' => ['string|array|null', 'regex'=>'string|array', 'callback'=>'callable(array<int|string, string>):string', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int', 'flags='=>'int'],
 		'preg_replace_callback_array' => ['string|array|null', 'pattern'=>'array<string,callable>', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int', 'flags='=>'int'],
 		'sapi_windows_set_ctrl_handler' => ['bool', 'callable'=>'callable(int):void', 'add='=>'bool'],
 		'ReflectionProperty::getType' => ['?ReflectionType'],

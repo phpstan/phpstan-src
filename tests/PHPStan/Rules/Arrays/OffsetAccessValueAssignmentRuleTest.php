@@ -45,6 +45,10 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 				'ArrayAccess<int, int> does not accept float.',
 				38,
 			],
+			[
+				'ArrayAccess<int, string> does not accept int.',
+				58,
+			],
 		]);
 	}
 

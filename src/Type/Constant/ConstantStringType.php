@@ -290,7 +290,15 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			&& $valueStringType instanceof ConstantStringType
 		) {
 			$value = $this->value;
-			$value[$offsetType->getValue()] = $valueStringType->getValue();
+			$offsetValue = $offsetType->getValue();
+			if ($offsetValue < 0) {
+				return new ErrorType();
+			}
+			$stringValue = $valueStringType->getValue();
+			if (strlen($stringValue) !== 1) {
+				return new ErrorType();
+			}
+			$value[$offsetValue] = $stringValue;
 
 			return new self($value);
 		}

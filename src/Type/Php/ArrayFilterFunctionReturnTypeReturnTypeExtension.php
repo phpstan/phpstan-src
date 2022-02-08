@@ -2,10 +2,16 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Arg;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;
+use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Expr\Error;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
@@ -26,6 +32,7 @@ use PHPStan\Type\TypeUtils;
 use function array_map;
 use function count;
 use function is_string;
+use function strtolower;
 
 class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -41,54 +48,75 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 		$callbackArg = $functionCall->getArgs()[1]->value ?? null;
 		$flagArg = $functionCall->getArgs()[2]->value ?? null;
 
-		if ($arrayArg !== null) {
-			$arrayArgType = $scope->getType($arrayArg);
-			$keyType = $arrayArgType->getIterableKeyType();
-			$itemType = $arrayArgType->getIterableValueType();
+		if ($arrayArg === null) {
+			return new ArrayType(new MixedType(), new MixedType());
+		}
 
-			if ($arrayArgType instanceof MixedType) {
-				return new BenevolentUnionType([
-					new ArrayType(new MixedType(), new MixedType()),
-					new NullType(),
-				]);
-			}
+		$arrayArgType = $scope->getType($arrayArg);
+		$keyType = $arrayArgType->getIterableKeyType();
+		$itemType = $arrayArgType->getIterableValueType();
 
-			if ($callbackArg === null) {
-				return TypeCombinator::union(
-					...array_map([$this, 'removeFalsey'], TypeUtils::getArrays($arrayArgType)),
-				);
-			}
+		if ($arrayArgType instanceof MixedType) {
+			return new BenevolentUnionType([
+				new ArrayType(new MixedType(), new MixedType()),
+				new NullType(),
+			]);
+		}
 
-			if ($flagArg === null) {
-				$var = null;
-				$expr = null;
-				if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
-					$statement = $callbackArg->stmts[0];
-					if ($statement instanceof Return_ && $statement->expr !== null) {
-						$var = $callbackArg->params[0]->var;
-						$expr = $statement->expr;
-					}
-				} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
-					$var = $callbackArg->params[0]->var;
-					$expr = $callbackArg->expr;
+		if ($callbackArg === null || ($callbackArg instanceof ConstFetch && strtolower($callbackArg->name->parts[0]) === 'null')) {
+			return TypeCombinator::union(
+				...array_map([$this, 'removeFalsey'], TypeUtils::getArrays($arrayArgType)),
+			);
+		}
+
+		if ($flagArg === null) {
+			if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
+				$statement = $callbackArg->stmts[0];
+				if ($statement instanceof Return_ && $statement->expr !== null) {
+					[$itemType, $keyType] = $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $itemType, null, $keyType, $statement->expr);
 				}
-				if ($var !== null && $expr !== null) {
-					if (!$var instanceof Variable || !is_string($var->name)) {
-						throw new ShouldNotHappenException();
-					}
-					$itemVariableName = $var->name;
-					if (!$scope instanceof MutatingScope) {
-						throw new ShouldNotHappenException();
-					}
-					$scope = $scope->assignVariable($itemVariableName, $itemType);
-					$scope = $scope->filterByTruthyValue($expr);
-					$itemType = $scope->getVariableType($itemVariableName);
-				}
+			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
+				[$itemType, $keyType] = $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $itemType, null, $keyType, $callbackArg->expr);
+			} elseif ($callbackArg instanceof String_) {
+				$itemVar = new Variable('item');
+				$expr = new FuncCall(new Name($callbackArg->value), [new Arg($itemVar)]);
+				[$itemType, $keyType] = $this->filterByTruthyValue($scope, $itemVar, $itemType, null, $keyType, $expr);
 			}
+		}
 
-		} else {
-			$keyType = new MixedType();
-			$itemType = new MixedType();
+		if ($flagArg instanceof ConstFetch && $flagArg->name->parts[0] === 'ARRAY_FILTER_USE_KEY') {
+			if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
+				$statement = $callbackArg->stmts[0];
+				if ($statement instanceof Return_ && $statement->expr !== null) {
+					[$itemType, $keyType] = $this->filterByTruthyValue($scope, null, $itemType, $callbackArg->params[0]->var, $keyType, $statement->expr);
+				}
+			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
+				[$itemType, $keyType] = $this->filterByTruthyValue($scope, null, $itemType, $callbackArg->params[0]->var, $keyType, $callbackArg->expr);
+			} elseif ($callbackArg instanceof String_) {
+				$keyVar = new Variable('key');
+				$expr = new FuncCall(new Name($callbackArg->value), [new Arg($keyVar)]);
+				[$itemType, $keyType] = $this->filterByTruthyValue($scope, null, $itemType, $keyVar, $keyType, $expr);
+			}
+		}
+
+		if ($flagArg instanceof ConstFetch && $flagArg->name->parts[0] === 'ARRAY_FILTER_USE_BOTH') {
+			if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
+				$statement = $callbackArg->stmts[0];
+				if ($statement instanceof Return_ && $statement->expr !== null) {
+					[$itemType, $keyType] = $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $itemType, $callbackArg->params[1]->var ?? null, $keyType, $statement->expr);
+				}
+			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
+				[$itemType, $keyType] = $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $itemType, $callbackArg->params[1]->var ?? null, $keyType, $callbackArg->expr);
+			} elseif ($callbackArg instanceof String_) {
+				$itemVar = new Variable('item');
+				$keyVar = new Variable('key');
+				$expr = new FuncCall(new Name($callbackArg->value), [new Arg($itemVar), new Arg($keyVar)]);
+				[$itemType, $keyType] = $this->filterByTruthyValue($scope, $itemVar, $itemType, $keyVar, $keyType, $expr);
+			}
+		}
+
+		if ($itemType instanceof NeverType || $keyType instanceof NeverType) {
+			return new ConstantArrayType([], []);
 		}
 
 		return new ArrayType($keyType, $itemType);
@@ -127,6 +155,41 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 		}
 
 		return new ArrayType($keyType, $valueType);
+	}
+
+	/**
+	 * @return array{Type, Type}
+	 */
+	private function filterByTruthyValue(Scope $scope, Error|Variable|null $itemVar, Type $itemType, Error|Variable|null $keyVar, Type $keyType, Expr $expr): array
+	{
+		if (!$scope instanceof MutatingScope) {
+			throw new ShouldNotHappenException();
+		}
+
+		$itemVarName = null;
+		if ($itemVar !== null) {
+			if (!$itemVar instanceof Variable || !is_string($itemVar->name)) {
+				throw new ShouldNotHappenException();
+			}
+			$itemVarName = $itemVar->name;
+			$scope = $scope->assignVariable($itemVarName, $itemType);
+		}
+
+		$keyVarName = null;
+		if ($keyVar !== null) {
+			if (!$keyVar instanceof Variable || !is_string($keyVar->name)) {
+				throw new ShouldNotHappenException();
+			}
+			$keyVarName = $keyVar->name;
+			$scope = $scope->assignVariable($keyVarName, $keyType);
+		}
+
+		$scope = $scope->filterByTruthyValue($expr);
+
+		return [
+			$itemVarName !== null ? $scope->getVariableType($itemVarName) : $itemType,
+			$keyVarName !== null ? $scope->getVariableType($keyVarName) : $keyType,
+		];
 	}
 
 }

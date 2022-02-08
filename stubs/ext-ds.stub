@@ -682,14 +682,14 @@ final class Set implements Collection, ArrayAccess
 	{
 	}
 
-    /**
-     * @template TNewValue
-     * @param callable(TValue): TNewValue $callback
-     * @return Set<TNewValue>
-     */
-    public function map(callable $callback): Set
-    {
-    }
+	/**
+	 * @template TNewValue
+	 * @param callable(TValue): TNewValue $callback
+	 * @return Set<TNewValue>
+	 */
+	public function map(callable $callback): Set
+	{
+	}
 
 	/**
 	 * @template TValue2
@@ -697,6 +697,16 @@ final class Set implements Collection, ArrayAccess
 	 * @return Set<TValue|TValue2>
 	 */
 	public function merge(iterable $values): Set
+	{
+	}
+
+	/**
+	 * @template TCarry
+	 * @param callable(TCarry, TValue): TCarry $callback
+	 * @param TCarry $initial
+	 * @return TCarry
+	 */
+	public function reduce(callable $callback, $initial = null)
 	{
 	}
 

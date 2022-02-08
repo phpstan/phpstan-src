@@ -43,6 +43,10 @@ class FunctionTemplateTypeRuleTest extends RuleTestCase
 				'PHPDoc tag @template T for function FunctionTemplateType\resourceBound() with bound type resource is not supported.',
 				50,
 			],
+			[
+				'PHPDoc tag @template T for function FunctionTemplateType\nullNotSupported() with bound type null is not supported.',
+				68,
+			],
 		]);
 	}
 

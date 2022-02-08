@@ -24,7 +24,8 @@ class ConstantConditionRuleHelper
 			|| $expr instanceof Expr\BinaryOp\BooleanOr
 			|| $expr instanceof Expr\BinaryOp\BooleanAnd
 			|| $expr instanceof Expr\Ternary
-			|| $expr instanceof Expr\Isset_;
+			|| $expr instanceof Expr\Isset_
+			|| $expr instanceof Expr\Empty_;
 	}
 
 	public function shouldSkip(Scope $scope, Expr $expr): bool
@@ -38,6 +39,7 @@ class ConstantConditionRuleHelper
 			|| $expr instanceof Expr\BinaryOp\BooleanAnd
 			|| $expr instanceof Expr\Ternary
 			|| $expr instanceof Expr\Isset_
+			|| $expr instanceof Expr\Empty_
 			|| $expr instanceof Expr\BinaryOp\Greater
 			|| $expr instanceof Expr\BinaryOp\GreaterOrEqual
 			|| $expr instanceof Expr\BinaryOp\Smaller

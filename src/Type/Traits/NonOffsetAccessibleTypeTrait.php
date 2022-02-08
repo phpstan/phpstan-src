@@ -26,7 +26,12 @@ trait NonOffsetAccessibleTypeTrait
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
-		return $this;
+		return new ErrorType();
+	}
+
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return new ErrorType();
 	}
 
 }

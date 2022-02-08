@@ -71,6 +71,8 @@ interface Type
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type;
 
+	public function unsetOffset(Type $offsetType): Type;
+
 	public function isCallable(): TrinaryLogic;
 
 	/**
@@ -145,6 +147,13 @@ interface Type
 	 * @param callable(Type):Type $cb
 	 */
 	public function traverse(callable $cb): Type;
+
+	/**
+	 * Return the difference with another type, or null if it cannot be represented.
+	 *
+	 * @see TypeCombinator::remove()
+	 */
+	public function tryRemove(Type $typeToRemove): ?Type;
 
 	/**
 	 * @param mixed[] $properties

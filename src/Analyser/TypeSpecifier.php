@@ -36,6 +36,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerRangeType;
@@ -342,44 +343,10 @@ class TypeSpecifier
 						$context->true() ? TypeSpecifierContext::createTruthy() : TypeSpecifierContext::createTruthy()->negate(),
 					);
 				}
-
-				if (
-					!$context->null()
-					&& $exprNode instanceof FuncCall
-					&& count($exprNode->getArgs()) === 1
-					&& $exprNode->name instanceof Name
-					&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
-					&& $constantType instanceof ConstantIntegerType
-				) {
-					if ($context->truthy() || $constantType->getValue() === 0) {
-						$newContext = $context;
-						if ($constantType->getValue() === 0) {
-							$newContext = $newContext->negate();
-						}
-						$argType = $scope->getType($exprNode->getArgs()[0]->value);
-						if ($argType->isArray()->yes()) {
-							return $this->create($exprNode->getArgs()[0]->value, new NonEmptyArrayType(), $newContext, false, $scope);
-						}
-					}
-				}
 			}
 
 			$leftType = $scope->getType($expr->left);
 			$rightType = $scope->getType($expr->right);
-			if (
-				$expr->left instanceof ClassConstFetch &&
-				$expr->left->class instanceof Expr &&
-				$expr->left->name instanceof Node\Identifier &&
-				$expr->right instanceof ClassConstFetch &&
-				$rightType instanceof ConstantStringType &&
-				strtolower($expr->left->name->toString()) === 'class'
-			) {
-				return $this->specifyTypesInCondition(
-					$scope,
-					new Expr\BinaryOp\Identical($expr->left, $expr->right),
-					$context,
-				);
-			}
 
 			$leftBooleanType = $leftType->toBoolean();
 			if ($leftBooleanType instanceof ConstantBooleanType && $rightType instanceof BooleanType) {
@@ -406,16 +373,14 @@ class TypeSpecifier
 			}
 
 			if (
-				$context->falsey()
-				&& $rightType->isArray()->yes()
+				$rightType->isArray()->yes()
 				&& $leftType instanceof ConstantArrayType && $leftType->isEmpty()
 			) {
 				return $this->create($expr->right, new NonEmptyArrayType(), $context->negate(), false, $scope);
 			}
 
 			if (
-				$context->falsey()
-				&& $leftType->isArray()->yes()
+				$leftType->isArray()->yes()
 				&& $rightType instanceof ConstantArrayType && $rightType->isEmpty()
 			) {
 				return $this->create($expr->left, new NonEmptyArrayType(), $context->negate(), false, $scope);
@@ -453,6 +418,17 @@ class TypeSpecifier
 					),
 					$context,
 				);
+			}
+
+			$stringType = new StringType();
+			$integerType = new IntegerType();
+			$floatType = new FloatType();
+			if (
+				($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
+				|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
+				|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
+			) {
+				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context);
 			}
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotEqual) {
 			return $this->specifyTypesInCondition(

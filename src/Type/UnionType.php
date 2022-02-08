@@ -92,7 +92,7 @@ class UnionType implements CompoundType
 			return TrinaryLogic::createYes();
 		}
 
-		if ($type instanceof CompoundType && !$type instanceof CallableType) {
+		if ($type instanceof CompoundType && !$type instanceof CallableType && !$type instanceof TemplateType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
@@ -101,18 +101,29 @@ class UnionType implements CompoundType
 			$results[] = $innerType->accepts($type, $strictTypes);
 		}
 
+		if ($type instanceof TemplateUnionType) {
+			$results[] = $type->isAcceptedBy($this, $strictTypes);
+		}
+
 		return TrinaryLogic::createNo()->or(...$results);
 	}
 
 	public function isSuperTypeOf(Type $otherType): TrinaryLogic
 	{
-		if ($otherType instanceof self || $otherType instanceof IterableType) {
+		if (
+			($otherType instanceof self && !$otherType instanceof TemplateUnionType)
+			|| $otherType instanceof IterableType
+		) {
 			return $otherType->isSubTypeOf($this);
 		}
 
 		$results = [];
 		foreach ($this->getTypes() as $innerType) {
 			$results[] = $innerType->isSuperTypeOf($otherType);
+		}
+
+		if ($otherType instanceof TemplateUnionType) {
+			$results[] = $otherType->isSubTypeOf($this);
 		}
 
 		return TrinaryLogic::createNo()->or(...$results);
@@ -186,7 +197,7 @@ class UnionType implements CompoundType
 						$type instanceof ConstantType
 						&& !$type instanceof ConstantBooleanType
 					) {
-						return $type->generalize(GeneralizePrecision::moreSpecific());
+						return $type->generalize(GeneralizePrecision::lessSpecific());
 					}
 
 					return $type;
@@ -429,6 +440,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->setOffsetValueType($offsetType, $valueType, $unionValues));
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isCallable());
@@ -624,6 +640,16 @@ class UnionType implements CompoundType
 		}
 
 		return $this;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		$innerTypes = [];
+		foreach ($this->getTypes() as $innerType) {
+			$innerTypes[] = TypeCombinator::remove($innerType, $typeToRemove);
+		}
+
+		return TypeCombinator::union(...$innerTypes);
 	}
 
 	/**

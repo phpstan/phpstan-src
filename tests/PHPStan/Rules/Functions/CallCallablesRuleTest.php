@@ -6,6 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -28,6 +29,7 @@ class CallCallablesRuleTest extends RuleTestCase
 				new NullsafeCheck(),
 				new PhpVersion(80000),
 				new UnresolvableTypeHelper(),
+				new PropertyReflectionFinder(),
 				true,
 				true,
 				true,

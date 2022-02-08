@@ -412,7 +412,7 @@ class ObjectTypeTest extends PHPStanTestCase
 					new ObjectType(DateTimeInterface::class),
 					TemplateTypeVariance::createInvariant(),
 				),
-				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createNo(),
 			],
 		];
 	}

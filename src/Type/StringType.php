@@ -4,8 +4,10 @@ namespace PHPStan\Type;
 
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
@@ -69,6 +71,11 @@ class StringType implements Type
 			return new StringType();
 		}
 
+		return new ErrorType();
+	}
+
+	public function unsetOffset(Type $offsetType): Type
+	{
 		return new ErrorType();
 	}
 
@@ -139,6 +146,18 @@ class StringType implements Type
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '') {
+			return TypeCombinator::intersect($this, new AccessoryNonEmptyStringType());
+		}
+		if ($typeToRemove instanceof AccessoryNonEmptyStringType) {
+			return new ConstantStringType('');
+		}
+
+		return null;
 	}
 
 	/**

@@ -116,6 +116,11 @@ class MixedType implements CompoundType, SubtractableType
 		return new self($this->isExplicitMixed);
 	}
 
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this;
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		if (
@@ -413,6 +418,15 @@ class MixedType implements CompoundType, SubtractableType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($this->isSuperTypeOf($typeToRemove)->yes()) {
+			return $this->subtract($typeToRemove);
+		}
+
+		return null;
 	}
 
 	/**

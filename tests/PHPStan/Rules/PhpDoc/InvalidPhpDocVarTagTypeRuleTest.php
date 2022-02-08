@@ -146,4 +146,12 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6252.php'], []);
 	}
 
+	public function testBug6348(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$this->analyse([__DIR__ . '/data/bug-6348.php'], []);
+	}
+
 }

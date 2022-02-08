@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use DateTime;
 use DateTimeInterface;
 use Exception;
+use Iterator;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateType;
@@ -14,6 +15,7 @@ use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use stdClass;
 use Throwable;
+use Traversable;
 use function array_map;
 use function assert;
 use function sprintf;
@@ -31,37 +33,37 @@ class TemplateTypeTest extends PHPStanTestCase
 		);
 
 		return [
-			[
+			0 => [
 				$templateType('T', new ObjectType('DateTime')),
 				new ObjectType('DateTime'),
 				TrinaryLogic::createYes(),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
-			[
+			1 => [
 				$templateType('T', new ObjectType('DateTimeInterface')),
 				new ObjectType('DateTime'),
 				TrinaryLogic::createYes(),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
-			[
+			2 => [
 				$templateType('T', new ObjectType('DateTime')),
 				$templateType('T', new ObjectType('DateTime')),
 				TrinaryLogic::createYes(),
 				TrinaryLogic::createYes(),
 			],
-			[
+			3 => [
 				$templateType('T', new ObjectType('DateTime'), 'a'),
 				$templateType('T', new ObjectType('DateTime'), 'b'),
 				TrinaryLogic::createMaybe(),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
-			[
+			4 => [
 				$templateType('T', null),
 				new MixedType(),
 				TrinaryLogic::createYes(),
 				TrinaryLogic::createYes(),
 			],
-			[
+			5 => [
 				$templateType('T', null),
 				new IntersectionType([
 					new ObjectWithoutClassType(),
@@ -69,6 +71,27 @@ class TemplateTypeTest extends PHPStanTestCase
 				]),
 				TrinaryLogic::createYes(),
 				TrinaryLogic::createYes(),
+			],
+			'accepts itself with a sub-type union bound' => [
+				$templateType('T', new UnionType([
+					new IntegerType(),
+					new StringType(),
+				])),
+				$templateType('T', new IntegerType()),
+				TrinaryLogic::createYes(),
+				TrinaryLogic::createYes(),
+			],
+			'accepts itself with a sub-type object bound' => [
+				$templateType('T', new ObjectWithoutClassType()),
+				$templateType('T', new ObjectType('stdClass')),
+				TrinaryLogic::createYes(),
+				TrinaryLogic::createYes(),
+			],
+			'does not accept ObjectType that is a super type of bound' => [
+				$templateType('T', new ObjectType(Iterator::class)),
+				new ObjectType(Traversable::class),
+				TrinaryLogic::createNo(),
+				TrinaryLogic::createNo(),
 			],
 		];
 	}
@@ -146,7 +169,7 @@ class TemplateTypeTest extends PHPStanTestCase
 				$templateType('T', new ObjectType('DateTime')),
 				$templateType('T', new ObjectType('DateTimeInterface')),
 				TrinaryLogic::createMaybe(), // (T of DateTime) isSuperTypeTo (T of DateTimeInterface)
-				TrinaryLogic::createMaybe(), // (T of DateTimeInterface) isSuperTypeTo (T of DateTime)
+				TrinaryLogic::createYes(), // (T of DateTimeInterface) isSuperTypeTo (T of DateTime)
 			],
 			6 => [
 				$templateType('T', new ObjectType('DateTime')),
@@ -211,49 +234,49 @@ class TemplateTypeTest extends PHPStanTestCase
 				TrinaryLogic::createMaybe(),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			15 => [
 				$templateType('T', new MixedType(true)),
 				$templateType('U', new UnionType([new IntegerType(), new StringType()])),
 				TrinaryLogic::createMaybe(),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			16 => [
 				$templateType('T', new MixedType(true)),
 				$templateType('U', new BenevolentUnionType([new IntegerType(), new StringType()])),
 				TrinaryLogic::createMaybe(),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			17 => [
 				$templateType('T', new ObjectType(stdClass::class)),
 				$templateType('U', new BenevolentUnionType([new IntegerType(), new StringType()])),
 				TrinaryLogic::createNo(),
 				TrinaryLogic::createNo(),
 			],
-			[
+			18 => [
 				$templateType('T', new BenevolentUnionType([new IntegerType(), new StringType()])),
 				$templateType('T', new BenevolentUnionType([new IntegerType(), new StringType()])),
 				TrinaryLogic::createYes(),
 				TrinaryLogic::createYes(),
 			],
-			[
+			19 => [
 				$templateType('T', new UnionType([new IntegerType(), new StringType()])),
 				$templateType('T', new UnionType([new IntegerType(), new StringType()])),
 				TrinaryLogic::createYes(),
 				TrinaryLogic::createYes(),
 			],
-			[
+			20 => [
 				$templateType('T', new UnionType([new IntegerType(), new StringType()])),
 				$templateType('T', new BenevolentUnionType([new IntegerType(), new StringType()])),
-				TrinaryLogic::createMaybe(),
-				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createYes(),
+				TrinaryLogic::createYes(),
 			],
-			[
+			21 => [
 				$templateType('T', new UnionType([new IntegerType(), new StringType()])),
 				$templateType('T', new IntegerType()),
-				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createYes(),
 				TrinaryLogic::createMaybe(),
 			],
-			[
+			22 => [
 				$templateType('T', new BenevolentUnionType([new IntegerType(), new StringType()])),
 				new UnionType([new BooleanType(), new FloatType(), new IntegerType(), new StringType(), new NullType()]),
 				TrinaryLogic::createMaybe(),

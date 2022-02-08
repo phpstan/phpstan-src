@@ -500,6 +500,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(24, $errors[1]->getLine());
 	}
 
+	public function testBug6466(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6466.php');
+		$this->assertNoErrors($errors);
+	}
+
 	public function testBug6253(): void
 	{
 		$errors = $this->runAnalyse(
@@ -510,6 +516,28 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 				__DIR__ . '/data/bug-6253-collection-trait.php',
 			],
 		);
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6442(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6442.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Dumped type: \'Bug6442\\\A\'', $errors[0]->getMessage());
+		$this->assertSame(9, $errors[0]->getLine());
+		$this->assertSame('Dumped type: \'Bug6442\\\B\'', $errors[1]->getMessage());
+		$this->assertSame(9, $errors[1]->getLine());
+	}
+
+	public function testBug6375(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6375.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6501(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6501.php');
 		$this->assertNoErrors($errors);
 	}
 

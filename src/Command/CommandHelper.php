@@ -23,10 +23,8 @@ use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\LoaderFactory;
 use PHPStan\DependencyInjection\NeonAdapter;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
-use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
-use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use Symfony\Component\Console\Input\InputInterface;
@@ -41,11 +39,13 @@ use function array_unique;
 use function class_exists;
 use function count;
 use function dirname;
+use function error_get_last;
 use function function_exists;
 use function get_class;
 use function getcwd;
 use function gettype;
 use function implode;
+use function ini_get;
 use function ini_set;
 use function is_dir;
 use function is_file;
@@ -54,11 +54,14 @@ use function is_string;
 use function mkdir;
 use function pcntl_async_signals;
 use function pcntl_signal;
+use function register_shutdown_function;
 use function sprintf;
 use function str_ends_with;
+use function str_repeat;
+use function strpos;
 use function sys_get_temp_dir;
-use function unlink;
 use const DIRECTORY_SEPARATOR;
+use const E_ERROR;
 use const PHP_VERSION_ID;
 use const SIGINT;
 
@@ -66,6 +69,8 @@ class CommandHelper
 {
 
 	public const DEFAULT_LEVEL = '0';
+
+	private static ?string $reservedMemory = null;
 
 	/**
 	 * @param string[] $paths
@@ -84,7 +89,6 @@ class CommandHelper
 		?string $generateBaselineFile,
 		?string $level,
 		bool $allowXdebug,
-		bool $manageMemoryLimitFile = true,
 		bool $debugEnabled = false,
 		?string $singleReflectionFile = null,
 		?string $singleReflectionInsteadOfFile = null,
@@ -97,6 +101,7 @@ class CommandHelper
 			$xdebug->check();
 			unset($xdebug);
 		}
+
 		$stdOutput = new SymfonyOutput($output, new SymfonyStyle(new ErrorsConsoleStyle($input, $output)));
 
 		/** @var Output $errorOutput */
@@ -114,6 +119,26 @@ class CommandHelper
 				throw new InceptionNotSuccessfulException();
 			}
 		}
+
+		self::$reservedMemory = str_repeat('PHPStan', 1463); // reserve 10 kB of space
+		register_shutdown_function(static function () use ($errorOutput): void {
+			self::$reservedMemory = null;
+			$error = error_get_last();
+			if ($error === null) {
+				return;
+			}
+			if ($error['type'] !== E_ERROR) {
+				return;
+			}
+
+			if (strpos($error['message'], 'Allowed memory size') === false) {
+				return;
+			}
+
+			$errorOutput->writeLineFormatted('');
+			$errorOutput->writeLineFormatted(sprintf('<error>PHPStan process crashed because it reached configured PHP memory limit</error>: %s', ini_get('memory_limit')));
+			$errorOutput->writeLineFormatted('Increase your memory limit in php.ini or run PHPStan with --memory-limit CLI option.');
+		});
 
 		$currentWorkingDirectory = getcwd();
 		if ($currentWorkingDirectory === false) {
@@ -317,24 +342,7 @@ class CommandHelper
 			throw new InceptionNotSuccessfulException();
 		}
 
-		$memoryLimitFile = $container->getParameter('memoryLimitFile');
-		if ($manageMemoryLimitFile && is_file($memoryLimitFile)) {
-			$errorOutput->writeLineFormatted('PHPStan crashed in the previous run probably because of excessive memory consumption.');
-
-			try {
-				$memoryLimitFileContents = FileReader::read($memoryLimitFile);
-				$errorOutput->writeLineFormatted(sprintf('It consumed around %s of memory.', $memoryLimitFileContents));
-				$errorOutput->writeLineFormatted('');
-			} catch (CouldNotReadFileException) {
-				// pass
-			}
-
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('To avoid this issue, allow to use more memory with the --memory-limit option.');
-			@unlink($memoryLimitFile);
-		}
-
-		self::setUpSignalHandler($errorOutput, $manageMemoryLimitFile ? $memoryLimitFile : null);
+		self::setUpSignalHandler($errorOutput);
 		if (!$container->hasParameter('customRulesetUsed')) {
 			$errorOutput->writeLineFormatted('');
 			$errorOutput->writeLineFormatted('<comment>No rules detected</comment>');
@@ -457,7 +465,6 @@ class CommandHelper
 			$errorOutput,
 			$container,
 			$defaultLevelUsed,
-			$memoryLimitFile,
 			$projectConfigFile,
 			$projectConfig,
 			$generateBaselineFile,
@@ -493,17 +500,14 @@ class CommandHelper
 		}
 	}
 
-	private static function setUpSignalHandler(Output $output, ?string $memoryLimitFile): void
+	private static function setUpSignalHandler(Output $output): void
 	{
 		if (!function_exists('pcntl_signal')) {
 			return;
 		}
 
 		pcntl_async_signals(true);
-		pcntl_signal(SIGINT, static function () use ($output, $memoryLimitFile): void {
-			if ($memoryLimitFile !== null && is_file($memoryLimitFile)) {
-				@unlink($memoryLimitFile);
-			}
+		pcntl_signal(SIGINT, static function () use ($output): void {
 			$output->writeLineFormatted('');
 			exit(1);
 		});

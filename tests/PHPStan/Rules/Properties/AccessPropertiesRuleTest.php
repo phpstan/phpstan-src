@@ -158,10 +158,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					299,
 				],
 				[
-					'Access to an undefined property TestAccessProperties\AccessPropertyWithDimFetch::$foo.',
-					364,
-				],
-				[
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
 					386,
 				],
@@ -296,15 +292,26 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					299,
 				],
 				[
-					'Access to an undefined property TestAccessProperties\AccessPropertyWithDimFetch::$foo.',
-					364,
-				],
-				[
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
 					386,
 				],
 			],
 		);
+	}
+
+	public function testRuleAssignOp(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/access-properties-assign-op.php'], [
+			[
+				'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
+				10,
+			],
+		]);
 	}
 
 	public function testAccessPropertiesOnThisOnly(): void
@@ -321,10 +328,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to private property $foo of parent class TestAccessProperties\FooAccessProperties.',
 					24,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\AccessPropertyWithDimFetch::$foo.',
-					364,
 				],
 				[
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
@@ -518,6 +521,36 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				34,
 			],
 		]);
+	}
+
+	public function testBug6385(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-6385.php'], [
+			[
+				'Access to an undefined property UnitEnum::$value.',
+				43,
+			],
+			[
+				'Access to an undefined property Bug6385\ActualUnitEnum::$value.',
+				47,
+			],
+		]);
+	}
+
+	public function testBug6566(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-6566.php'], []);
 	}
 
 }

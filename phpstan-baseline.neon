@@ -31,6 +31,11 @@ parameters:
 			path: src/Command/CommandHelper.php
 
 		-
+			message: "#^Static property PHPStan\\\\Command\\\\CommandHelper\\:\\:\\$reservedMemory is never read, only written\\.$#"
+			count: 1
+			path: src/Command/CommandHelper.php
+
+		-
 			message: "#^Parameter \\#1 \\$headers \\(array\\<string\\>\\) of method PHPStan\\\\Command\\\\ErrorsConsoleStyle\\:\\:table\\(\\) should be contravariant with parameter \\$headers \\(array\\) of method Symfony\\\\Component\\\\Console\\\\Style\\\\StyleInterface\\:\\:table\\(\\)$#"
 			count: 1
 			path: src/Command/ErrorsConsoleStyle.php
@@ -377,4 +382,36 @@ parameters:
 			message: "#^Method PHPStan\\\\Node\\\\FileNodeTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
 			path: tests/PHPStan/Node/FileNodeTest.php
+
+		-
+			message: """
+				#^Instantiation of deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRule\\:
+				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayItemTypeRuleTest.php
+
+		-
+			message: """
+				#^Return type of method PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRuleTest\\:\\:getRule\\(\\) has typehint with deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayItemTypeRule\\:
+				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayItemTypeRuleTest.php
+
+		-
+			message: """
+				#^Instantiation of deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRule\\:
+				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
+
+		-
+			message: """
+				#^Return type of method PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRuleTest\\:\\:getRule\\(\\) has typehint with deprecated class PHPStan\\\\Rules\\\\Arrays\\\\AppendedArrayKeyTypeRule\\:
+				Replaced by PHPStan\\\\Rules\\\\Properties\\\\TypesAssignedToPropertiesRule$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
 

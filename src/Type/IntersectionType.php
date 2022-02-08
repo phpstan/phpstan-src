@@ -19,8 +19,10 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use function array_map;
 use function count;
 use function implode;
@@ -32,6 +34,8 @@ use function substr;
 /** @api */
 class IntersectionType implements CompoundType
 {
+
+	use NonRemoveableTypeTrait;
 
 	/** @var Type[] */
 	private array $types;
@@ -96,7 +100,7 @@ class IntersectionType implements CompoundType
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
-		if ($otherType instanceof self || $otherType instanceof UnionType) {
+		if (($otherType instanceof self || $otherType instanceof UnionType) && !$otherType instanceof TemplateType) {
 			return $otherType->isSuperTypeOf($this);
 		}
 
@@ -378,6 +382,11 @@ class IntersectionType implements CompoundType
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		return $this->intersectTypes(static fn (Type $type): Type => $type->setOffsetValueType($offsetType, $valueType, $unionValues));
+	}
+
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));
 	}
 
 	public function isCallable(): TrinaryLogic

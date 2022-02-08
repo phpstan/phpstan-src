@@ -30,6 +30,7 @@ class IssetCheck
 	 */
 	public function check(Expr $expr, Scope $scope, string $operatorDescription, callable $typeMessageCallback, ?RuleError $error = null): ?RuleError
 	{
+		// mirrored in PHPStan\Analyser\MutatingScope::issetCheck()
 		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
 			$hasVariable = $scope->hasVariableType($expr->name);
 			if ($hasVariable->maybe()) {

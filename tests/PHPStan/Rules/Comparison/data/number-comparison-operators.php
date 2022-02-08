@@ -23,3 +23,11 @@ function (int $i): void {
 		}
 	}
 };
+
+function (): void {
+	for ($X = -3; $X <= 3; ++$X){
+		for ($Z = -3; $Z <= 3; ++$Z){
+
+		}
+	}
+};

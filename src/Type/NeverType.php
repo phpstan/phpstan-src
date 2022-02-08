@@ -12,17 +12,19 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
 /** @api */
 class NeverType implements CompoundType
 {
 
-	use FalseyBooleanTypeTrait;
+	use UndecidedBooleanTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
+	use NonRemoveableTypeTrait;
 
 	/** @api */
 	public function __construct(private bool $isExplicit = false)
@@ -167,6 +169,11 @@ class NeverType implements CompoundType
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
+	{
+		return new NeverType();
+	}
+
+	public function unsetOffset(Type $offsetType): Type
 	{
 		return new NeverType();
 	}

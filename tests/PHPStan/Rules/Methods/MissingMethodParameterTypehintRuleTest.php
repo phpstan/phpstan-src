@@ -116,4 +116,9 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3723.php'], []);
 	}
 
+	public function testBug6472(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6472.php'], []);
+	}
+
 }

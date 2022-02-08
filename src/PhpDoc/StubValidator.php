@@ -106,7 +106,7 @@ class StubValidator
 					},
 				)->getErrors();
 				foreach ($tmpErrors as $tmpError) {
-					$errors[] = $tmpError->withoutTip();
+					$errors[] = $tmpError->withoutTip()->doNotIgnore();
 				}
 			} catch (Throwable $e) {
 				if ($debug) {

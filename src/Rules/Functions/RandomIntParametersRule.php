@@ -11,6 +11,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\VerbosityLevel;
+use function array_values;
+use function count;
 use function sprintf;
 
 /**
@@ -38,8 +40,13 @@ class RandomIntParametersRule implements Rule
 			return [];
 		}
 
-		$minType = $scope->getType($node->getArgs()[0]->value)->toInteger();
-		$maxType = $scope->getType($node->getArgs()[1]->value)->toInteger();
+		$args = array_values($node->getArgs());
+		if (count($args) < 2) {
+			return [];
+		}
+
+		$minType = $scope->getType($args[0]->value)->toInteger();
+		$maxType = $scope->getType($args[1]->value)->toInteger();
 
 		if (
 			!$minType instanceof ConstantIntegerType && !$minType instanceof IntegerRangeType

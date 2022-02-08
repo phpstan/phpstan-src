@@ -75,7 +75,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @param string[] $constructors
 	 * @param ReadWritePropertiesExtension[] $extensions
-	 * @return array{array<string, ClassPropertyNode>, array<array{string, int}>}
+	 * @return array{array<string, ClassPropertyNode>, array<array{string, int, ClassPropertyNode}>, array<array{string, int, ClassPropertyNode}>}
 	 */
 	public function getUninitializedProperties(
 		Scope $scope,
@@ -84,7 +84,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	): array
 	{
 		if (!$this->getClass() instanceof Class_) {
-			return [[], []];
+			return [[], [], []];
 		}
 		if (!$scope->isInClass()) {
 			throw new ShouldNotHappenException();
@@ -120,11 +120,13 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		}
 
 		if ($constructors === []) {
-			return [$properties, []];
+			return [$properties, [], []];
 		}
 		$classType = new ObjectType($scope->getClassReflection()->getName());
 		$methodsCalledFromConstructor = $this->getMethodsCalledFromConstructor($classType, $this->methodCalls, $constructors);
 		$prematureAccess = [];
+		$additionalAssigns = [];
+		$originalProperties = $properties;
 		foreach ($this->getPropertyUsages() as $usage) {
 			$fetch = $usage->getFetch();
 			if (!$fetch instanceof PropertyFetch) {
@@ -149,9 +151,6 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 			$propertyName = $fetch->name->toString();
-			if (!array_key_exists($propertyName, $properties)) {
-				continue;
-			}
 			$fetchedOnType = $usageScope->getType($fetch->var);
 			if ($classType->isSuperTypeOf($fetchedOnType)->no()) {
 				continue;
@@ -161,11 +160,20 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			}
 
 			if ($usage instanceof PropertyWrite) {
-				unset($properties[$propertyName]);
+				if (array_key_exists($propertyName, $properties)) {
+					unset($properties[$propertyName]);
+				} elseif (array_key_exists($propertyName, $originalProperties)) {
+					$additionalAssigns[] = [
+						$propertyName,
+						$fetch->getLine(),
+						$originalProperties[$propertyName],
+					];
+				}
 			} elseif (array_key_exists($propertyName, $properties)) {
 				$prematureAccess[] = [
 					$propertyName,
 					$fetch->getLine(),
+					$properties[$propertyName],
 				];
 			}
 		}
@@ -173,6 +181,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		return [
 			$properties,
 			$prematureAccess,
+			$additionalAssigns,
 		];
 	}
 

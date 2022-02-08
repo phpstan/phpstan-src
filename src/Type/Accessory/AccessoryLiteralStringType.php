@@ -17,6 +17,7 @@ use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -30,6 +31,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 	use NonIterableTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
+	use NonRemoveableTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -113,6 +115,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		return $this;
+	}
+
+	public function unsetOffset(Type $offsetType): Type
+	{
+		return new ErrorType();
 	}
 
 	public function isArray(): TrinaryLogic

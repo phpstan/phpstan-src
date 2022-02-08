@@ -6,6 +6,8 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\SimpleXMLElementProperty;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 
 class SimpleXMLElementClassPropertyReflectionExtension implements PropertiesClassReflectionExtension
@@ -19,7 +21,7 @@ class SimpleXMLElementClassPropertyReflectionExtension implements PropertiesClas
 
 	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
 	{
-		return new SimpleXMLElementProperty($classReflection, new ObjectType($classReflection->getName()));
+		return new SimpleXMLElementProperty($classReflection, new BenevolentUnionType([new ObjectType($classReflection->getName()), new NullType()]));
 	}
 
 }

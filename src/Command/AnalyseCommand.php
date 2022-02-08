@@ -26,9 +26,12 @@ use Throwable;
 use function array_map;
 use function count;
 use function dirname;
+use function error_reporting;
 use function fopen;
 use function get_class;
 use function implode;
+use function ini_restore;
+use function intval;
 use function is_array;
 use function is_bool;
 use function is_dir;
@@ -72,6 +75,7 @@ class AnalyseCommand extends Command
 				new InputOption(self::OPTION_LEVEL, 'l', InputOption::VALUE_REQUIRED, 'Level of rule options - the higher the stricter'),
 				new InputOption(ErrorsConsoleStyle::OPTION_NO_PROGRESS, null, InputOption::VALUE_NONE, 'Do not show progress bar, only results'),
 				new InputOption('debug', null, InputOption::VALUE_NONE, 'Show debug information - which file is analysed, do not catch internal errors'),
+				new InputOption('default-error-reporting', null, InputOption::VALUE_OPTIONAL, 'Start PHPStan with originally configured error_reporting value or specified value', false),
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('error-format', null, InputOption::VALUE_REQUIRED, 'Format in which to print the result of the analysis', null),
 				new InputOption('generate-baseline', 'b', InputOption::VALUE_OPTIONAL, 'Path to a file where the baseline should be saved', false),
@@ -114,6 +118,15 @@ class AnalyseCommand extends Command
 		$allowXdebug = $input->getOption('xdebug');
 		$debugEnabled = (bool) $input->getOption('debug');
 		$fix = (bool) $input->getOption('fix') || (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
+
+		$defaultErrorReporting = $input->getOption('default-error-reporting');
+		if ($defaultErrorReporting !== false) {
+				if (is_null($defaultErrorReporting)) {
+						ini_restore('error_reporting');
+				} else {
+						error_reporting(intval($defaultErrorReporting));
+				}
+		}
 
 		/** @var string|false|null $generateBaselineFile */
 		$generateBaselineFile = $input->getOption('generate-baseline');

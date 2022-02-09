@@ -158,7 +158,7 @@ class CommandHelper
 			})($autoloadFile);
 		}
 		if ($projectConfigFile === null) {
-			foreach (['phpstan.neon', 'phpstan.neon.dist'] as $discoverableConfigName) {
+			foreach (['phpstan.neon', 'phpstan.neon.dist', 'phpstan.dist.neon'] as $discoverableConfigName) {
 				$discoverableConfigFile = $currentWorkingDirectory . DIRECTORY_SEPARATOR . $discoverableConfigName;
 				if (is_file($discoverableConfigFile)) {
 					$projectConfigFile = $discoverableConfigFile;

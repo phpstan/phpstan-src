@@ -85,6 +85,7 @@ return [
 		'PhpToken::isIgnorable' => ['bool'],
 		'PhpToken::getTokenName' => ['string'],
 		'proc_get_status' => ['array{command: string, pid: int, running: bool, signaled: bool, stopped: bool, exitcode: int, termsig: int, stopsig: int}', 'process'=>'resource'],
+		'set_error_handler' => ['?callable', 'callback'=>'null|callable(int,string,string,int):bool', 'error_types='=>'int'],
 		'socket_addrinfo_lookup' => ['AddressInfo[]', 'node'=>'string', 'service='=>'mixed', 'hints='=>'array'],
 		'socket_select' => ['int|false', '&rw_read'=>'Socket[]|null', '&rw_write'=>'Socket[]|null', '&rw_except'=>'Socket[]|null', 'seconds'=>'int|null', 'microseconds='=>'int'],
 		'sodium_crypto_aead_chacha20poly1305_ietf_decrypt' => ['string|false', 'confidential_message'=>'string', 'public_message'=>'string', 'nonce'=>'string', 'key'=>'string'],

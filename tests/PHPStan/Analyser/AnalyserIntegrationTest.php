@@ -541,6 +541,42 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testTypevalFamilyFunctionParameters(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/typeval-functions.php');
+		$this->assertCount(12, $errors);
+
+		$this->assertSame('Cannot cast array{} to string.', $errors[0]->getMessage());
+		$this->assertSame(19, $errors[0]->getLine());
+		$this->assertSame('Parameter #1 $value of function strval expects bool|float|int|resource|string|null, array given.', $errors[1]->getMessage());
+		$this->assertSame(20, $errors[1]->getLine());
+
+		$this->assertSame('Cannot cast resource to float.', $errors[2]->getMessage());
+		$this->assertSame(65, $errors[2]->getLine());
+
+		$this->assertSame('Cannot cast stdClass to string.', $errors[3]->getMessage());
+		$this->assertSame(79, $errors[3]->getLine());
+		$this->assertSame('Parameter #1 $value of function strval expects bool|float|int|resource|string|null, stdClass given.', $errors[4]->getMessage());
+		$this->assertSame(80, $errors[4]->getLine());
+
+		$this->assertSame('Cannot cast stdClass to int.', $errors[5]->getMessage());
+		$this->assertSame(82, $errors[5]->getLine());
+		$this->assertSame('Parameter #1 $value of function intval expects array|bool|float|int|resource|string|null, stdClass given.', $errors[6]->getMessage());
+		$this->assertSame(83, $errors[6]->getLine());
+
+		$this->assertSame('Cannot cast stdClass to float.', $errors[7]->getMessage());
+		$this->assertSame(85, $errors[7]->getLine());
+		$this->assertSame('Parameter #1 $value of function floatval expects array|bool|float|int|resource|string|null, stdClass given.', $errors[8]->getMessage());
+		$this->assertSame(86, $errors[8]->getLine());
+		$this->assertSame('Parameter #1 $value of function doubleval expects array|bool|float|int|resource|string|null, stdClass given.', $errors[9]->getMessage());
+		$this->assertSame(87, $errors[9]->getLine());
+
+		$this->assertSame('Cannot cast class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 to int.', $errors[10]->getMessage());
+		$this->assertSame(92, $errors[10]->getLine());
+		$this->assertSame('Cannot cast class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 to float.', $errors[11]->getMessage());
+		$this->assertSame(95, $errors[11]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

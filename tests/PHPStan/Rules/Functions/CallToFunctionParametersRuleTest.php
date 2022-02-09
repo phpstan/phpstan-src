@@ -37,6 +37,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testCallToFunctionWithIncorrectParameters(): void
 	{
+		$setErrorHandlerError = PHP_VERSION_ID < 80000
+			? 'Parameter #1 $callback of function set_error_handler expects (callable(int, string, string, int, array): bool)|null, Closure(mixed, mixed, mixed, mixed): void given.'
+			: 'Parameter #1 $callback of function set_error_handler expects (callable(int, string, string, int): bool)|null, Closure(mixed, mixed, mixed, mixed): void given.';
+
 		require_once __DIR__ . '/data/incorrect-call-to-function-definition.php';
 		$this->analyse([__DIR__ . '/data/incorrect-call-to-function.php'], [
 			[
@@ -52,7 +56,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				14,
 			],
 			[
-				'Parameter #1 $callback of function set_error_handler expects (callable(int, string, string, int, array): bool)|null, Closure(mixed, mixed, mixed, mixed): void given.',
+				$setErrorHandlerError,
 				16,
 			],
 		]);

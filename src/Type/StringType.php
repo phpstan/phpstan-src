@@ -133,6 +133,11 @@ class StringType implements Type
 		);
 	}
 
+	public function isString(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function isNumericString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

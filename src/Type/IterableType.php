@@ -228,6 +228,11 @@ class IterableType implements CompoundType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isNumericString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

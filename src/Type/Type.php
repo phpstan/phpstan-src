@@ -98,6 +98,8 @@ interface Type
 
 	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic;
 
+	public function isString(): TrinaryLogic;
+
 	public function isNumericString(): TrinaryLogic;
 
 	public function isNonEmptyString(): TrinaryLogic;

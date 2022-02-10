@@ -162,7 +162,7 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 
 	public function isString(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return TrinaryLogic::createYes();
 	}
 
 	public function isNumericString(): TrinaryLogic

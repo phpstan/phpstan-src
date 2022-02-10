@@ -1425,7 +1425,8 @@ class MutatingScope implements Scope
 			$resultType = TypeCombinator::union($leftNumberType, $rightNumberType);
 			if ($node instanceof Expr\AssignOp\Div || $node instanceof Expr\BinaryOp\Div) {
 				// division on strings is not allowed. its allowed on numeric strings though.
-				if ($leftType->isString()->yes() || $rightType->isString()->yes()) {
+				if ($leftType->isString()->yes() && !$leftType->isNumericString()->yes()
+					|| $rightType->isString()->yes() && !$rightType->isNumericString()->yes()) {
 					return new ErrorType();
 				}
 

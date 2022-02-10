@@ -18,13 +18,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\NullType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -55,13 +53,6 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 		$arrayArgType = $scope->getType($arrayArg);
 		$keyType = $arrayArgType->getIterableKeyType();
 		$itemType = $arrayArgType->getIterableValueType();
-
-		if ($arrayArgType instanceof MixedType) {
-			return new BenevolentUnionType([
-				new ArrayType(new MixedType(), new MixedType()),
-				new NullType(),
-			]);
-		}
 
 		if ($callbackArg === null || ($callbackArg instanceof ConstFetch && strtolower($callbackArg->name->parts[0]) === 'null')) {
 			return TypeCombinator::union(

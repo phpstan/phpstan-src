@@ -4889,7 +4889,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_filter($withPossiblyFalsey)',
 			],
 			[
-				'(array|null)',
+				'*NEVER*',
 				'array_filter($mixed)',
 			],
 			[

@@ -16,7 +16,7 @@ function withoutAnyArgs(): void
 function withMixedInsteadOfArray($var1): void
 {
 	$filtered1 = array_filter($var1);
-	assertType('(array|null)', $filtered1);
+	assertType('*NEVER*', $filtered1);
 }
 
 /**

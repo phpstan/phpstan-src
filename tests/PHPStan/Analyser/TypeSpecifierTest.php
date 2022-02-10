@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\BinaryOp\Equal;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\BooleanNot;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\Variable;
@@ -962,6 +963,23 @@ class TypeSpecifierTest extends PHPStanTestCase
 				]),
 				[
 					'$string' => 'object',
+				],
+				[],
+			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_array', 'foo'),
+					new Identical(
+						new FuncCall(
+							new Name('array_filter'),
+							[new Arg(new Variable('foo')), new Arg(new String_('is_string')), new Arg(new ConstFetch(new Name('ARRAY_FILTER_USE_KEY')))],
+						),
+						new Variable('foo'),
+					),
+				),
+				[
+					'$foo' => 'array<string, mixed>',
+					'array_filter($foo, \'is_string\', ARRAY_FILTER_USE_KEY)' => 'array<string, mixed>',
 				],
 				[],
 			],

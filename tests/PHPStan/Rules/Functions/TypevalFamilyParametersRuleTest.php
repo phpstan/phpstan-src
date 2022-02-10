@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function sprintf;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<TypevalFamilyParametersRule>
@@ -20,17 +22,21 @@ class TypevalFamilyParametersRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
+		$paramName = '$value';
+		if (PHP_VERSION_ID < 80000) {
+			$paramName = '$var';
+		}
 		$this->analyse([__DIR__ . '/data/typeval.php'], [
 			[
-				'Parameter #1 $value of function intval does not accept object, class@anonymous/tests/PHPStan/Rules/Functions/data/typeval.php:3 given.',
+				sprintf('Parameter #1 %s of function intval does not accept object, class@anonymous/tests/PHPStan/Rules/Functions/data/typeval.php:3 given.', $paramName),
 				10,
 			],
 			[
-				'Parameter #1 $value of function floatval does not accept object, class@anonymous/tests/PHPStan/Rules/Functions/data/typeval.php:3 given.',
+				sprintf('Parameter #1 %s of function floatval does not accept object, class@anonymous/tests/PHPStan/Rules/Functions/data/typeval.php:3 given.', $paramName),
 				13,
 			],
 			[
-				'Parameter #1 $value of function doubleval does not accept object, class@anonymous/tests/PHPStan/Rules/Functions/data/typeval.php:3 given.',
+				sprintf('Parameter #1 %s of function doubleval does not accept object, class@anonymous/tests/PHPStan/Rules/Functions/data/typeval.php:3 given.', $paramName),
 				16,
 			],
 		]);

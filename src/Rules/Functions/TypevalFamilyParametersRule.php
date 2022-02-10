@@ -15,6 +15,7 @@ use function count;
 use function in_array;
 use function sprintf;
 use function strtolower;
+use const PHP_VERSION_ID;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -77,7 +78,8 @@ class TypevalFamilyParametersRule implements Rule
 
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'Parameter #1 $value of function %s does not accept object, %s given.',
+					'Parameter #1 %s of function %s does not accept object, %s given.',
+					PHP_VERSION_ID < 80000 ? '$var' : '$value',
 					$name,
 					$scope->getType($node->getArgs()[0]->value)->describe(VerbosityLevel::value()),
 				))->line($node->getLine())->build(),

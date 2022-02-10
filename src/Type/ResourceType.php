@@ -54,7 +54,7 @@ class ResourceType implements Type
 
 	public function toFloat(): Type
 	{
-		return new ErrorType();
+		return new FloatType();
 	}
 
 	public function toArray(): Type

@@ -31,8 +31,7 @@ class ImpossibleCheckTypeGenericOverwriteRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = false;
 
-		$this->analyse([__DIR__ . '/data/generic-type-override.php'], [
-		]);
+		$this->analyse([__DIR__ . '/data/generic-type-override.php'], []);
 	}
 
 	public static function getAdditionalConfigFiles(): array

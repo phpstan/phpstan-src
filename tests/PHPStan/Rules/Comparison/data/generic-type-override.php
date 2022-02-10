@@ -11,7 +11,7 @@ class Test {
 
 		// $foo generic will be overridden via MethodTypeSpecifyingExtension
 		$foo->setFetchMode();
-		assertType('Foo<string>', $foo);
+		assertType('Foo<Bar>', $foo);
 	}
 
 	/**

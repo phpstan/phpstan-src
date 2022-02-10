@@ -201,16 +201,27 @@ function bug6624_should_error($foo, $bar) {
 }
 
 /**
- * @param numeric-string $foo
+ * @param numeric-string $numericString
+ * @param literal-string $literalString
  */
-function bug6624_no_error($foo) {
-	echo ($foo + 10);
-	echo ($foo - 10);
-	echo ($foo * 10);
-	echo ($foo / 10);
+function bug6624_no_error($numericString, $literalString) {
+	echo ($numericString + 10);
+	echo ($numericString - 10);
+	echo ($numericString * 10);
+	echo ($numericString / 10);
 
-	echo (10 + $foo);
-	echo (10 - $foo);
-	echo (10 * $foo);
-	echo (10 / $foo);
+	echo (10 + $numericString);
+	echo (10 - $numericString);
+	echo (10 * $numericString);
+	echo (10 / $numericString);
+
+	echo ($literalString + 10);
+	echo ($literalString - 10);
+	echo ($literalString * 10);
+	echo ($literalString / 10);
+
+	echo (10 + $literalString);
+	echo (10 - $literalString);
+	echo (10 * $literalString);
+	echo (10 / $literalString);
 }

@@ -1400,8 +1400,8 @@ class MutatingScope implements Scope
 				return new ErrorType();
 			}
 
-			if ($leftType->isNonEmptyString()->yes() && !$leftType->isNumericString()->yes() ||
-				$rightType->isNonEmptyString()->yes() && !$rightType->isNumericString()->yes()) {
+			if (($leftType->isString()->yes() && !$leftType->isNumericString()->yes())
+				|| ($rightType->isString()->yes() && !$rightType->isNumericString()->yes())) {
 				return new ErrorType();
 			}
 
@@ -1424,12 +1424,6 @@ class MutatingScope implements Scope
 
 			$resultType = TypeCombinator::union($leftNumberType, $rightNumberType);
 			if ($node instanceof Expr\AssignOp\Div || $node instanceof Expr\BinaryOp\Div) {
-				// division on strings is not allowed. its allowed on numeric strings though.
-				if ($leftType->isString()->yes() && !$leftType->isNumericString()->yes() && !$leftType->isLiteralString()->yes()
-					|| $rightType->isString()->yes() && !$rightType->isNumericString()->yes() && !$rightType->isLiteralString()->yes()) {
-					return new ErrorType();
-				}
-
 				if ($types instanceof MixedType || $resultType instanceof IntegerType) {
 					return new BenevolentUnionType([new IntegerType(), new FloatType()]);
 				}

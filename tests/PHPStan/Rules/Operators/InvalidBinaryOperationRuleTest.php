@@ -115,99 +115,131 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 			],
 			[
 				'Binary operation "+" between non-empty-string and 10 results in an error.',
-				183,
-			],
-			[
-				'Binary operation "-" between non-empty-string and 10 results in an error.',
 				184,
 			],
 			[
-				'Binary operation "*" between non-empty-string and 10 results in an error.',
+				'Binary operation "-" between non-empty-string and 10 results in an error.',
 				185,
 			],
 			[
-				'Binary operation "/" between non-empty-string and 10 results in an error.',
+				'Binary operation "*" between non-empty-string and 10 results in an error.',
 				186,
 			],
 			[
-				'Binary operation "+" between 10 and non-empty-string results in an error.',
-				188,
+				'Binary operation "/" between non-empty-string and 10 results in an error.',
+				187,
 			],
 			[
-				'Binary operation "-" between 10 and non-empty-string results in an error.',
+				'Binary operation "+" between 10 and non-empty-string results in an error.',
 				189,
 			],
 			[
-				'Binary operation "*" between 10 and non-empty-string results in an error.',
+				'Binary operation "-" between 10 and non-empty-string results in an error.',
 				190,
 			],
 			[
-				'Binary operation "/" between 10 and non-empty-string results in an error.',
+				'Binary operation "*" between 10 and non-empty-string results in an error.',
 				191,
 			],
 			[
-				'Binary operation "+" between string and 10 results in an error.',
-				193,
+				'Binary operation "/" between 10 and non-empty-string results in an error.',
+				192,
 			],
 			[
-				'Binary operation "-" between string and 10 results in an error.',
+				'Binary operation "+" between string and 10 results in an error.',
 				194,
 			],
 			[
-				'Binary operation "*" between string and 10 results in an error.',
+				'Binary operation "-" between string and 10 results in an error.',
 				195,
 			],
 			[
-				'Binary operation "/" between string and 10 results in an error.',
+				'Binary operation "*" between string and 10 results in an error.',
 				196,
 			],
 			[
-				'Binary operation "+" between 10 and string results in an error.',
-				198,
+				'Binary operation "/" between string and 10 results in an error.',
+				197,
 			],
 			[
-				'Binary operation "-" between 10 and string results in an error.',
+				'Binary operation "+" between 10 and string results in an error.',
 				199,
 			],
 			[
-				'Binary operation "*" between 10 and string results in an error.',
+				'Binary operation "-" between 10 and string results in an error.',
 				200,
 			],
 			[
-				'Binary operation "/" between 10 and string results in an error.',
+				'Binary operation "*" between 10 and string results in an error.',
 				201,
 			],
 			[
-				'Binary operation "+" between class-string and 10 results in an error.',
-				203,
+				'Binary operation "/" between 10 and string results in an error.',
+				202,
 			],
 			[
-				'Binary operation "-" between class-string and 10 results in an error.',
+				'Binary operation "+" between class-string and 10 results in an error.',
 				204,
 			],
 			[
-				'Binary operation "*" between class-string and 10 results in an error.',
+				'Binary operation "-" between class-string and 10 results in an error.',
 				205,
 			],
 			[
-				'Binary operation "/" between class-string and 10 results in an error.',
+				'Binary operation "*" between class-string and 10 results in an error.',
 				206,
 			],
 			[
-				'Binary operation "+" between 10 and class-string results in an error.',
-				208,
+				'Binary operation "/" between class-string and 10 results in an error.',
+				207,
 			],
 			[
-				'Binary operation "-" between 10 and class-string results in an error.',
+				'Binary operation "+" between 10 and class-string results in an error.',
 				209,
 			],
 			[
-				'Binary operation "*" between 10 and class-string results in an error.',
+				'Binary operation "-" between 10 and class-string results in an error.',
 				210,
 			],
 			[
-				'Binary operation "/" between 10 and class-string results in an error.',
+				'Binary operation "*" between 10 and class-string results in an error.',
 				211,
+			],
+			[
+				'Binary operation "/" between 10 and class-string results in an error.',
+				212,
+			],
+			[
+				'Binary operation "+" between literal-string and 10 results in an error.',
+				214,
+			],
+			[
+				'Binary operation "-" between literal-string and 10 results in an error.',
+				215,
+			],
+			[
+				'Binary operation "*" between literal-string and 10 results in an error.',
+				216,
+			],
+			[
+				'Binary operation "/" between literal-string and 10 results in an error.',
+				217,
+			],
+			[
+				'Binary operation "+" between 10 and literal-string results in an error.',
+				219,
+			],
+			[
+				'Binary operation "-" between 10 and literal-string results in an error.',
+				220,
+			],
+			[
+				'Binary operation "*" between 10 and literal-string results in an error.',
+				221,
+			],
+			[
+				'Binary operation "/" between 10 and literal-string results in an error.',
+				222,
 			],
 		]);
 	}

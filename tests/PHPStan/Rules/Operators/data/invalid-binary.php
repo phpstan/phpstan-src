@@ -178,8 +178,9 @@ function (array $args) {
  * @param non-empty-string $foo
  * @param string $bar
  * @param class-string $foobar
+ * @param literal-string $literalString
  */
-function bug6624_should_error($foo, $bar, $foobar) {
+function bug6624_should_error($foo, $bar, $foobar, $literalString) {
 	echo ($foo + 10);
 	echo ($foo - 10);
 	echo ($foo * 10);
@@ -209,22 +210,6 @@ function bug6624_should_error($foo, $bar, $foobar) {
 	echo (10 - $foobar);
 	echo (10 * $foobar);
 	echo (10 / $foobar);
-}
-
-/**
- * @param numeric-string $numericString
- * @param literal-string $literalString
- */
-function bug6624_no_error($numericString, $literalString) {
-	echo ($numericString + 10);
-	echo ($numericString - 10);
-	echo ($numericString * 10);
-	echo ($numericString / 10);
-
-	echo (10 + $numericString);
-	echo (10 - $numericString);
-	echo (10 * $numericString);
-	echo (10 / $numericString);
 
 	echo ($literalString + 10);
 	echo ($literalString - 10);
@@ -235,4 +220,31 @@ function bug6624_no_error($numericString, $literalString) {
 	echo (10 - $literalString);
 	echo (10 * $literalString);
 	echo (10 / $literalString);
+}
+
+/**
+ * @param numeric-string $numericString
+ */
+function bug6624_no_error($numericString) {
+	echo ($numericString + 10);
+	echo ($numericString - 10);
+	echo ($numericString * 10);
+	echo ($numericString / 10);
+
+	echo (10 + $numericString);
+	echo (10 - $numericString);
+	echo (10 * $numericString);
+	echo (10 / $numericString);
+
+	$numericLiteral = "123";
+
+	echo ($numericLiteral + 10);
+	echo ($numericLiteral - 10);
+	echo ($numericLiteral * 10);
+	echo ($numericLiteral / 10);
+
+	echo (10 + $numericLiteral);
+	echo (10 - $numericLiteral);
+	echo (10 * $numericLiteral);
+	echo (10 / $numericLiteral);
 }

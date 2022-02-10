@@ -173,3 +173,19 @@ function (array $args) {
 function (array $args) {
 	isset($args['y']) ? $args + [] : $args;
 };
+
+/**
+ * @param non-empty-string $foo
+ * @param string $bar
+ */
+function bug6624($foo, $bar) {
+	echo ($foo + 10);
+	echo ($foo - 10);
+	echo ($foo * 10);
+	echo ($foo / 10);
+
+	echo ($bar + 10);
+	echo ($bar - 10);
+	echo ($bar * 10);
+	echo ($bar / 10);
+}

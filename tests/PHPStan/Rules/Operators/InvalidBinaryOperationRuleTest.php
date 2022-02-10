@@ -113,6 +113,38 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				'Binary operation "+" between stdClass and int results in an error.',
 				157,
 			],
+			[
+				'Binary operation "+" between stdClass and int results in an error.',
+				182,
+			],
+			[
+				'Binary operation "-" between stdClass and int results in an error.',
+				183,
+			],
+			[
+				'Binary operation "*" between stdClass and int results in an error.',
+				184,
+			],
+			[
+				'Binary operation "/" between stdClass and int results in an error.',
+				185,
+			],
+			[
+				'Binary operation "+" between string and 10 results in an error.',
+				187,
+			],
+			[
+				'Binary operation "-" between string and 10 results in an error.',
+				188,
+			],
+			[
+				'Binary operation "*" between string and 10 results in an error.',
+				189,
+			],
+			[
+				'Binary operation "/" between string and 10 results in an error.',
+				190,
+			],
 		]);
 	}
 

@@ -177,8 +177,9 @@ function (array $args) {
 /**
  * @param non-empty-string $foo
  * @param string $bar
+ * @param class-string $foobar
  */
-function bug6624_should_error($foo, $bar) {
+function bug6624_should_error($foo, $bar, $foobar) {
 	echo ($foo + 10);
 	echo ($foo - 10);
 	echo ($foo * 10);
@@ -198,6 +199,16 @@ function bug6624_should_error($foo, $bar) {
 	echo (10 - $bar);
 	echo (10 * $bar);
 	echo (10 / $bar);
+
+	echo ($foobar + 10);
+	echo ($foobar - 10);
+	echo ($foobar * 10);
+	echo ($foobar / 10);
+
+	echo (10 + $foobar);
+	echo (10 - $foobar);
+	echo (10 * $foobar);
+	echo (10 / $foobar);
 }
 
 /**

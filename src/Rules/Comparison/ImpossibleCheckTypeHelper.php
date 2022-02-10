@@ -158,6 +158,12 @@ class ImpossibleCheckTypeHelper
 		}
 
 		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $node, TypeSpecifierContext::createTruthy());
+
+		// don't validate types on overwrite
+		if ($specifiedTypes->shouldOverwrite()) {
+			return null;
+		}
+
 		$sureTypes = $specifiedTypes->getSureTypes();
 		$sureNotTypes = $specifiedTypes->getSureNotTypes();
 

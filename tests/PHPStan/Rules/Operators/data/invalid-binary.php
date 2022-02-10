@@ -184,8 +184,18 @@ function bug6624($foo, $bar) {
 	echo ($foo * 10);
 	echo ($foo / 10);
 
+	echo (10 + $foo);
+	echo (10 - $foo);
+	echo (10 * $foo);
+	echo (10 / $foo);
+
 	echo ($bar + 10);
 	echo ($bar - 10);
 	echo ($bar * 10);
 	echo ($bar / 10);
+
+	echo (10 + $bar);
+	echo (10 - $bar);
+	echo (10 * $bar);
+	echo (10 / $bar);
 }

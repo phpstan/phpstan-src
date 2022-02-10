@@ -98,6 +98,11 @@ interface Type
 
 	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic;
 
+	/**
+	 * Whether the type is a plain string, and not one of the further specialized string-types.
+	 */
+	public function isString(): TrinaryLogic;
+
 	public function isNumericString(): TrinaryLogic;
 
 	public function isNonEmptyString(): TrinaryLogic;

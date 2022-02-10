@@ -199,6 +199,11 @@ class ArrayType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	public function isString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isNumericString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

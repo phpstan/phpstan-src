@@ -234,6 +234,11 @@ class Baz implements Type
 		// TODO: Implement isSmallerThanOrEqual() method.
 	}
 
+	public function isString(): \PHPStan\TrinaryLogic
+	{
+		// TODO: Implement isString() method.
+	}
+
 	public function isNumericString(): \PHPStan\TrinaryLogic
 	{
 		// TODO: Implement isNumericString() method.

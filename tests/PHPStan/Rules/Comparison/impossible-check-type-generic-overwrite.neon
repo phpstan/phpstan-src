@@ -1,0 +1,5 @@
+services:
+	-
+		class: PHPStan\Rules\Comparison\GenericTypeOverride
+		tags:
+			- phpstan.typeSpecifier.methodTypeSpecifyingExtension

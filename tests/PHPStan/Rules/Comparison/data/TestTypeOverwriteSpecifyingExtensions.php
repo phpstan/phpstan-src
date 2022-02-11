@@ -10,7 +10,7 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\MethodTypeSpecifyingExtension;
-use PHPStan\Type\StringType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
 
 class GenericTypeOverride implements MethodTypeSpecifyingExtension, TypeSpecifierAwareExtension
@@ -45,7 +45,7 @@ class GenericTypeOverride implements MethodTypeSpecifyingExtension, TypeSpecifie
 		TypeSpecifierContext $context
 	): SpecifiedTypes
 	{
-		$newType = new GenericObjectType(\GenericTypeOverride\Foo::class, [\GenericTypeOverride\Bar::class]);
+		$newType = new GenericObjectType(\GenericTypeOverride\Foo::class, [new ObjectType(\GenericTypeOverride\Bar::class)]);
 
 		return $this->typeSpecifier->create(
 			$node->var,

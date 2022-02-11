@@ -11,8 +11,6 @@ use PHPStan\Testing\RuleTestCase;
 class ImpossibleCheckTypeGenericOverwriteRuleTest extends RuleTestCase
 {
 
-	private bool $treatPhpDocTypesAsCertain;
-
 	public function getRule(): Rule
 	{
 		return new ImpossibleCheckTypeMethodCallRule(
@@ -20,17 +18,15 @@ class ImpossibleCheckTypeGenericOverwriteRuleTest extends RuleTestCase
 				$this->createReflectionProvider(),
 				$this->getTypeSpecifier(),
 				[],
-				$this->treatPhpDocTypesAsCertain,
+				true,
 			),
 			true,
-			$this->treatPhpDocTypesAsCertain,
+			true,
 		);
 	}
 
 	public function testNoReportedErrorOnOverwrite(): void
 	{
-		$this->treatPhpDocTypesAsCertain = false;
-
 		$this->analyse([__DIR__ . '/data/generic-type-override.php'], []);
 	}
 

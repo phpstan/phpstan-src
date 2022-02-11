@@ -127,11 +127,11 @@ class AnalyseCommand extends Command
 				continue;
 			}
 
-			if ($generateBaselineOption !== null) {
-				continue;
+			if ($generateBaselineOption === null) {
+				$generateBaselineFile = 'phpstan-baseline.neon';
+			} else {
+				$generateBaselineFile = $generateBaselineOption;
 			}
-
-			$generateBaselineFile = 'phpstan-baseline.neon';
 		}
 
 		$allowEmptyBaseline = (bool) $input->getOption('allow-empty-baseline');

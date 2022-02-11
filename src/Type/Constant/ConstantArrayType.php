@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
-use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\Analyser\InAnyClassScope;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -316,13 +316,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isCallable(): TrinaryLogic
 	{
-		// @todo is there a way to fetch the full scope here.
-		// An OutOfClassScope causes frivolous errors when checking if a
-		// non-static method was invoked statically in its own class, which
-		// is allowed per: https://3v4l.org/mTa9S.
-		// Should add an optional scope parameter to isCallable and if null,
-		// create a new OutOfClassScope instance.
-		$typeAndMethod = $this->findTypeAndMethodName(new OutOfClassScope());
+		$typeAndMethod = $this->findTypeAndMethodName(new InAnyClassScope());
 		if ($typeAndMethod === null) {
 			return TrinaryLogic::createNo();
 		}
@@ -397,7 +391,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$has = $has->and(TrinaryLogic::createMaybe());
 			}
 			if ($scope === null) {
-				$scope = new OutOfClassScope();
+				$scope = new InAnyClassScope();
 			}
 			if (
 				$isClassString

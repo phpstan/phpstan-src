@@ -74,7 +74,7 @@ class IgnoredErrorHelper
 						];
 					}
 
-					// validate regex based errors
+					// validate regex based errors (baseline v1)
 					if (isset($ignoreError['message'])) {
 						$ignoreMessage = $ignoreError['message'];
 						Strings::match('', $ignoreMessage);

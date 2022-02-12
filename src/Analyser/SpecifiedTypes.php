@@ -58,28 +58,31 @@ class SpecifiedTypes
 	/** @api */
 	public function intersectWith(SpecifiedTypes $other): self
 	{
+		$normalized = $this->normalize();
+		$otherNormalized = $other->normalize();
+
 		$sureTypeUnion = [];
 		$sureNotTypeUnion = [];
 
-		foreach ($this->sureTypes as $exprString => [$exprNode, $type]) {
-			if (!isset($other->sureTypes[$exprString])) {
+		foreach ($normalized->sureTypes as $exprString => [$exprNode, $type]) {
+			if (!isset($otherNormalized->sureTypes[$exprString])) {
 				continue;
 			}
 
 			$sureTypeUnion[$exprString] = [
 				$exprNode,
-				TypeCombinator::union($type, $other->sureTypes[$exprString][1]),
+				TypeCombinator::union($type, $otherNormalized->sureTypes[$exprString][1]),
 			];
 		}
 
-		foreach ($this->sureNotTypes as $exprString => [$exprNode, $type]) {
-			if (!isset($other->sureNotTypes[$exprString])) {
+		foreach ($normalized->sureNotTypes as $exprString => [$exprNode, $type]) {
+			if (!isset($otherNormalized->sureNotTypes[$exprString])) {
 				continue;
 			}
 
 			$sureNotTypeUnion[$exprString] = [
 				$exprNode,
-				TypeCombinator::intersect($type, $other->sureNotTypes[$exprString][1]),
+				TypeCombinator::intersect($type, $otherNormalized->sureNotTypes[$exprString][1]),
 			];
 		}
 
@@ -115,6 +118,23 @@ class SpecifiedTypes
 		}
 
 		return new self($sureTypeUnion, $sureNotTypeUnion);
+	}
+
+	private function normalize(): self
+	{
+		$sureTypes = $this->sureTypes;
+		$sureNotTypes = [];
+
+		foreach ($this->sureNotTypes as $exprString => [$exprNode, $sureNotType]) {
+			if (!isset($sureTypes[$exprString])) {
+				$sureNotTypes[$exprString] = [$exprNode, $sureNotType];
+				continue;
+			}
+
+			$sureTypes[$exprString][1] = TypeCombinator::remove($sureTypes[$exprString][1], $sureNotType);
+		}
+
+		return new self($sureTypes, $sureNotTypes, $this->overwrite, $this->newConditionalExpressionHolders);
 	}
 
 }

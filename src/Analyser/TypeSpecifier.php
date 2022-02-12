@@ -482,6 +482,8 @@ class TypeSpecifier
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType->isArray()->yes()) {
 						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new NonEmptyArrayType(), $context, false, $scope));
+					} else {
+						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new ConstantArrayType([], []), $context->negate(), false, $scope));
 					}
 				}
 			}
@@ -501,6 +503,8 @@ class TypeSpecifier
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType instanceof StringType) {
 						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $context, false, $scope));
+					} else {
+						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new ConstantStringType(''), $context->negate(), false, $scope));
 					}
 				}
 			}

@@ -308,3 +308,42 @@ class RecursiveArrayIterator extends ArrayIterator implements RecursiveIterator 
      */
     public function uksort($cmp_function) { }
 }
+
+/**
+ * @template TKey
+ * @template TValue
+ * @template TIterator as Traversable<TKey, TValue>
+ *
+ * @template-implements OuterIterator<TKey, TValue>
+ * @template-implements ArrayAccess<TKey, TValue>
+ *
+ * @template-extends IteratorIterator<TKey, TValue, TIterator>
+ */
+class CachingIterator extends IteratorIterator implements OuterIterator , ArrayAccess , Countable  {
+    const CALL_TOSTRING = 1 ;
+    const CATCH_GET_CHILD = 16 ;
+    const TOSTRING_USE_KEY = 2 ;
+    const TOSTRING_USE_CURRENT = 4 ;
+    const TOSTRING_USE_INNER = 8 ;
+    const FULL_CACHE = 256 ;
+
+	/**
+     * @param Iterator<TKey, TValue> $iterator
+     */
+    public function __construct(Iterator $iterator, int $flags = self::CALL_TOSTRING) {}
+
+    /**
+	 * @return bool
+	 */
+    public function hasNext () {}
+
+    /**
+     * @return TValue|null
+     */
+    public function current() {}
+
+    /**
+     * @return TKey|null
+     */
+    public function key() {}
+}

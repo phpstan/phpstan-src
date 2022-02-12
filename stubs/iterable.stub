@@ -541,3 +541,58 @@ class NoRewindIterator extends IteratorIterator {
      */
     public function key() {}
 }
+
+/**
+ * @template TKey
+ * @template TValue
+ *
+ * @template-implements Iterator<TKey, TValue>
+ */
+class MultipleIterator implements Iterator {
+
+    public function __construct (int $flags = 0) {}
+
+    /**
+     * @param Iterator<TKey,TValue> $iterator
+     * @param string|int $infos
+     * @return void
+     */
+    public function attachIterator(Iterator $iterator, $infos = '') {}
+
+    /**
+     * @param Iterator<TKey, TValue> $iterator
+     * @return bool
+     */
+    public function containsIterator(Iterator $iterator) {}
+
+    /**
+     * @return int
+     */
+    public function countIterators() {}
+
+    /**
+     * @return array<array-key, TValue|null>
+     */
+    public function current() {}
+
+    /**
+     * @param Iterator<TKey,TValue> $iterator
+     * @return void
+     */
+    public function detachIterator(Iterator $iterator) {}
+
+    /**
+     * @return int
+     */
+    public function getFlags() {}
+
+    /**
+     * @return array<array-key, TValue|null>
+     */
+    public function key() {}
+
+    /**
+     * @return void
+     */
+    public function setFlags(int $flags) {}
+}

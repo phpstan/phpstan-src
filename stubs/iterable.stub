@@ -237,25 +237,40 @@ class CallbackFilterIterator extends FilterIterator implements OuterIterator  {
 }
 
 /**
- * @template-covariant TKey
- * @template-covariant TValue
+ * @template TKey
+ * @template TValue
  * @template TIterator as Traversable<TKey, TValue>
  *
- * @extends CallbackFilterIterator<TKey, TValue, TIterator>
- * @implements RecursiveIterator<TKey, TValue>
+ * @template-implements RecursiveIterator<TKey, TValue>
+ * @template-extends CallbackFilterIterator<TKey, TValue, TIterator>
  */
-class RecursiveCallbackFilterIterator extends CallbackFilterIterator implements RecursiveIterator
-{
+class RecursiveCallbackFilterIterator extends CallbackFilterIterator implements RecursiveIterator {
+
     /**
-     * @return bool
+     * @param RecursiveIterator<TKey, TValue> $iterator
+     * @param callable(TValue, TKey, RecursiveIterator<TKey, TValue>): bool $callback
      */
-    public function hasChildren() {}
+    public function __construct(RecursiveIterator $iterator, callable $callback) {}
 
     /**
      * @return RecursiveCallbackFilterIterator<TKey, TValue, TIterator>
      */
     public function getChildren() {}
 
+    /**
+     * @return bool
+     */
+    public function hasChildren() {}
+
+    /**
+     * @return TValue|null
+     */
+    public function current() {}
+
+    /**
+     * @return TKey|null
+     */
+    public function key() {}
 }
 
 /**

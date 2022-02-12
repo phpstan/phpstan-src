@@ -274,7 +274,7 @@ class RecursiveCallbackFilterIterator extends CallbackFilterIterator implements 
 }
 
 /**
- * @template TKey
+ * @template TKey of array-key
  * @template TValue
  *
  * @template-implements RecursiveIterator<TKey, TValue>
@@ -673,6 +673,35 @@ class ParentIterator extends RecursiveFilterIterator implements RecursiveIterato
      * @return void
      */
     public function rewind() {}
+
+    /**
+     * @return TValue|null
+     */
+    public function current() {}
+
+    /**
+     * @return TKey|null
+     */
+    public function key() {}
+}
+
+/**
+ * @template TKey
+ * @template TValue
+ *
+ * @template-implements RecursiveIterator<TKey, TValue>
+ * @template-extends ArrayIterator<TKey, TValue>
+ */
+class RecursiveArrayIterator extends ArrayIterator implements RecursiveIterator {
+    /**
+     * @return RecursiveArrayIterator<TKey, TValue>
+     */
+    public function getChildren() {}
+
+    /**
+     * @return bool
+     */
+    public function hasChildren() {}
 
     /**
      * @return TValue|null

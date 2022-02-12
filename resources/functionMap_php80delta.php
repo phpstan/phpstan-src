@@ -80,6 +80,7 @@ return [
 		'odbc_exec' => ['resource|false', 'connection_id'=>'resource', 'query'=>'string'],
 		'parse_str' => ['void', 'encoded_string'=>'string', '&w_result'=>'array'],
 		'password_hash' => ['string', 'password'=>'string', 'algo'=>'string|int|null', 'options='=>'array'],
+		'PDOStatement::fetchAll' => ['array', 'how='=>'int', 'fetch_argument='=>'int|string|callable', 'ctor_args='=>'?array'],
 		'PhpToken::tokenize' => ['list<PhpToken>', 'code'=>'string', 'flags='=>'int'],
 		'PhpToken::is' => ['bool', 'kind'=>'string|int|string[]|int[]'],
 		'PhpToken::isIgnorable' => ['bool'],

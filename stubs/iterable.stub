@@ -713,3 +713,39 @@ class RecursiveArrayIterator extends ArrayIterator implements RecursiveIterator 
      */
     public function key() {}
 }
+
+/**
+ * @template TKey
+ * @template TValue
+ * @template TIterator of Traversable<TKey, TValue>
+ *
+ * @template-implements RecursiveIterator<TKey, TValue>
+ * @template-extends CachingIterator<TKey, TValue, TIterator>
+ */
+class RecursiveCachingIterator extends CachingIterator implements RecursiveIterator {
+
+    /**
+     * @param Iterator<TKey, TValue> $iterator
+     */
+    public function __construct(Iterator $iterator, int $flags = 0) {}
+
+    /**
+     * @return RecursiveCachingIterator<TKey, TValue, TIterator>
+     */
+    public function getChildren() {}
+
+    /**
+     * @return bool
+     */
+    public function hasChildren() {}
+
+    /**
+     * @return TValue|null
+     */
+    public function current() {}
+
+    /**
+     * @return TKey|null
+     */
+    public function key() {}
+}

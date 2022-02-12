@@ -793,3 +793,35 @@ class RecursiveDirectoryIterator extends FilesystemIterator implements Recursive
      */
     public function key() {}
 }
+
+/**
+ * @template TKey
+ * @template TValue
+ * @template TIterator as Traversable<TKey, TValue>
+ *
+ * @template-implements RecursiveIterator<TKey, TValue>
+ * @template-extends RegexIterator<TKey, TValue, TIterator>
+ */
+class RecursiveRegexIterator extends RegexIterator implements RecursiveIterator {
+
+    const MATCH = 0 ;
+    const GET_MATCH = 1 ;
+    const ALL_MATCHES = 2 ;
+    const SPLIT = 3 ;
+    const REPLACE = 4 ;
+    const USE_KEY = 1 ;
+
+    /**
+     * @param RecursiveIterator<TKey, TValue> $iterator
+     * @param string $regex
+     * @param int $mode
+     * @param self::USE_KEY|0 $flags
+     * @param int $preg_flags
+     */
+    public function __construct(RecursiveIterator $iterator, string $regex, int $mode = self::MATCH, int $flags = 0, int $preg_flags = 0) {}
+
+    /**
+     * @return RecursiveRegexIterator<TKey, TValue, TIterator>
+     */
+    public function getChildren() {}
+}

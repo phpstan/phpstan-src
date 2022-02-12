@@ -98,7 +98,11 @@ class SimpleXMLElement implements Traversable, ArrayAccess, Iterator, RecursiveI
  */
 interface SeekableIterator extends Iterator
 {
-
+	/**
+	 * @param int $position
+	 * @return void
+	 */
+	public function seek($position);
 }
 
 /**

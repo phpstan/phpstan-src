@@ -825,3 +825,122 @@ class RecursiveRegexIterator extends RegexIterator implements RecursiveIterator 
      */
     public function getChildren() {}
 }
+
+/**
+ * @template TKey
+ * @template TValue
+ *
+ * @template-extends RecursiveIteratorIterator<TValue>
+ * @template-implements OuterIterator<TKey, TValue>
+ */
+class RecursiveTreeIterator extends RecursiveIteratorIterator implements OuterIterator {
+
+    const LEAVES_ONLY = 0 ;
+    const SELF_FIRST = 1 ;
+    const CHILD_FIRST = 2 ;
+    const CATCH_GET_CHILD = 16 ;
+
+    const BYPASS_CURRENT = 4 ;
+    const BYPASS_KEY = 8 ;
+    const PREFIX_LEFT = 0 ;
+    const PREFIX_MID_HAS_NEXT = 1 ;
+    const PREFIX_MID_LAST = 2 ;
+    const PREFIX_END_HAS_NEXT = 3 ;
+    const PREFIX_END_LAST = 4 ;
+    const PREFIX_RIGHT = 5 ;
+
+    /**
+     * @return void
+     */
+    public function beginChildren() {}
+
+    /**
+     * @return RecursiveIterator<TKey, TValue>
+     */
+    public function beginIteration() {}
+
+    /**
+     * @return RecursiveIterator<TKey, TValue>
+     */
+    public function callGetChildren() {}
+
+    /**
+     * @return bool
+     */
+    public function callHasChildren() {}
+
+    /**
+     * @param RecursiveIterator<TKey, TValue>|IteratorAggregate<TKey, TValue> $it
+     * @param int $flags
+     * @param int $cit_flags
+     * @param self::LEAVES_ONLY|self::SELF_FIRST|self::CHILD_FIRST $mode
+     */
+    public function __construct($it, int $flags = self::BYPASS_KEY, int $cit_flags = self::CATCH_GET_CHILD, int $mode = self::SELF_FIRST) {}
+
+    /**
+     * @return string
+     */
+    public function current() {}
+
+    /**
+     * @return void
+     */
+    public function endChildren() {}
+
+    /**
+     * @return void
+     */
+    public function endIteration() {}
+
+    /**
+     * @return string
+     */
+    public function getEntry() {}
+
+    /**
+     * @return string
+     */
+    public function getPostfix() {}
+
+    /**
+     * @return string
+     */
+    public function getPrefix() {}
+
+    /**
+     * @return string
+     */
+    public function key() {}
+
+    /**
+     * @return void
+     */
+    public function next() {}
+
+    /**
+     * @return void
+     */
+    public function nextElement() {}
+
+    /**
+     * @return void
+     */
+    public function rewind() {}
+
+    /**
+     * @return void
+     */
+    public function setPostfix(string $postfix ) {}
+
+    /**
+     * @param self::PREFIX_* $part
+     * @param string $value
+     * @return void
+     */
+    public function setPrefixPart(int $part , string $value ) {}
+
+    /**
+     * @return bool
+     */
+    public function valid() {}
+}

@@ -965,6 +965,17 @@ class TypeSpecifierTest extends PHPStanTestCase
 				],
 				[],
 			],
+			[
+				new Expr\BinaryOp\BooleanOr(
+					new Expr\BinaryOp\BooleanAnd(
+						$this->createFunctionCall('is_string', 'a'),
+						new NotIdentical(new String_(''), new Variable('a')),
+					),
+					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
+				),
+				['$a' => 'non-empty-string|null'],
+				['$a' => '~null'],
+			],
 		];
 	}
 

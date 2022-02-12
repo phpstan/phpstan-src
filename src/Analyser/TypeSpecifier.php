@@ -53,6 +53,7 @@ use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
+use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
@@ -232,6 +233,13 @@ class TypeSpecifier
 						if ($argType instanceof StringType) {
 							return $this->create($exprNode->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $newContext, false, $scope);
 						}
+					}
+				}
+
+				if ($context->falsey() && $constantType instanceof ConstantStringType) {
+					$exprType = $scope->getType($exprNode);
+					if ($exprType instanceof SubtractableType) {
+						return $this->create($exprNode, $exprType->subtract($constantType), $context->negate(), false, $scope);
 					}
 				}
 			}

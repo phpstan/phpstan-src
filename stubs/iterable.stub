@@ -632,3 +632,55 @@ abstract class RecursiveFilterIterator extends FilterIterator implements Recursi
      */
     public function key() {}
 }
+
+/**
+ * @template TKey
+ * @template TValue
+ * @template TIterator of Traversable<TKey, TValue>
+ *
+ * @template-extends RecursiveFilterIterator<TKey, TValue, TIterator>
+ * @template-implements RecursiveIterator<TKey, TValue>
+ * @template-implements OuterIterator<TKey, TValue>
+ */
+class ParentIterator extends RecursiveFilterIterator implements RecursiveIterator, OuterIterator {
+
+    /**
+     * @return bool
+     */
+    public function accept() {}
+
+    /**
+     * @param RecursiveIterator<TKey, TValue> $iterator
+     */
+    public function __construct(RecursiveIterator $iterator) {}
+
+    /**
+     * @return ParentIterator<TKey, TValue, TIterator>
+     */
+    public function getChildren() {}
+
+    /**
+     * @return bool
+     */
+    public function hasChildren() {}
+
+    /**
+     * @return void
+     */
+    public function next() {}
+
+    /**
+     * @return void
+     */
+    public function rewind() {}
+
+    /**
+     * @return TValue|null
+     */
+    public function current() {}
+
+    /**
+     * @return TKey|null
+     */
+    public function key() {}
+}

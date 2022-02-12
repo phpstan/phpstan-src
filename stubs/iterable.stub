@@ -386,3 +386,33 @@ class DirectoryIterator extends SplFileInfo implements SeekableIterator {
      */
     public function valid(){}
 }
+
+/**
+ * @template-implements Iterator<mixed, mixed>
+ */
+class EmptyIterator implements Iterator {
+    /**
+     * @return mixed
+     */
+    public function current() {}
+
+    /**
+     * @return mixed
+     */
+    public function key() {}
+
+    /**
+     * @return void
+     */
+    public function next() {}
+
+    /**
+     * @return void
+     */
+    public function rewind() {}
+
+    /**
+     * @return false
+     */
+    public function valid() {}
+}

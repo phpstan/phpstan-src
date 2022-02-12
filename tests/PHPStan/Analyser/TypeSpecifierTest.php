@@ -965,6 +965,45 @@ class TypeSpecifierTest extends PHPStanTestCase
 				],
 				[],
 			],
+			[
+				new Expr\BinaryOp\BooleanOr(
+					new Expr\BinaryOp\BooleanAnd(
+						$this->createFunctionCall('is_string', 'a'),
+						new NotIdentical(new String_(''), new Variable('a')),
+					),
+					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
+				),
+				['$a' => 'non-empty-string|null'],
+				['$a' => '~null'],
+			],
+			[
+				new Expr\BinaryOp\BooleanOr(
+					new Expr\BinaryOp\BooleanAnd(
+						$this->createFunctionCall('is_string', 'a'),
+						new Expr\BinaryOp\Greater(
+							$this->createFunctionCall('strlen', 'a'),
+							new LNumber(0),
+						),
+					),
+					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
+				),
+				['$a' => 'non-empty-string|null'],
+				['$a' => '~null'],
+			],
+			[
+				new Expr\BinaryOp\BooleanOr(
+					new Expr\BinaryOp\BooleanAnd(
+						$this->createFunctionCall('is_array', 'a'),
+						new Expr\BinaryOp\Greater(
+							$this->createFunctionCall('count', 'a'),
+							new LNumber(0),
+						),
+					),
+					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
+				),
+				['$a' => 'non-empty-array|null'],
+				['$a' => '~null'],
+			],
 		];
 	}
 

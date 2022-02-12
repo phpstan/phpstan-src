@@ -596,3 +596,39 @@ class MultipleIterator implements Iterator {
      */
     public function setFlags(int $flags) {}
 }
+
+/**
+ * @template TKey
+ * @template TValue
+ * @template TIterator of Traversable<TKey, TValue>
+ *
+ * @template-extends FilterIterator<TKey, TValue, TIterator>
+ * @template-implements RecursiveIterator<TKey, TValue>
+ */
+abstract class RecursiveFilterIterator extends FilterIterator implements RecursiveIterator {
+
+    /**
+     * @param RecursiveIterator<TKey, TValue> $iterator
+     */
+    public function __construct(RecursiveIterator $iterator) {}
+
+    /**
+     * @return RecursiveFilterIterator<TKey, TValue, TIterator>
+     */
+    public function getChildren() {}
+
+    /**
+     * @return bool
+     */
+    public function hasChildren() {}
+
+    /**
+     * @return TValue|null
+     */
+    public function current() {}
+
+    /**
+     * @return TKey|null
+     */
+    public function key() {}
+}

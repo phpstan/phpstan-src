@@ -274,7 +274,7 @@ class RecursiveCallbackFilterIterator extends CallbackFilterIterator implements 
 }
 
 /**
- * @template TKey of array-key
+ * @template TKey
  * @template TValue
  *
  * @template-implements RecursiveIterator<TKey, TValue>

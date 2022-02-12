@@ -347,3 +347,42 @@ class CachingIterator extends IteratorIterator implements OuterIterator , ArrayA
      */
     public function key() {}
 }
+
+/**
+ * @template-implements SeekableIterator<int, DirectoryIterator>
+ */
+class DirectoryIterator extends SplFileInfo implements SeekableIterator {
+
+    public function __construct(string $path){}
+
+    /**
+     * @return self
+     */
+    public function current() {}
+
+    /**
+     * @return int|false
+     */
+    public function key() {}
+
+    /**
+     * @return void
+     */
+    public function next(){}
+
+    /**
+     * @return void
+     */
+    public function rewind(){}
+
+    /**
+     * @param int $position
+     * @return void
+     */
+    public function seek($position) {}
+
+    /**
+     * @return bool
+     */
+    public function valid(){}
+}

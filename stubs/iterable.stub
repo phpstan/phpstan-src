@@ -457,3 +457,13 @@ class FilesystemIterator extends DirectoryIterator
      */
     public function key() {}
 }
+
+/**
+ * @template-extends FilesystemIterator<string, GlobIterator|SplFileInfo|string>
+ */
+class GlobIterator extends FilesystemIterator implements Countable {
+    /**
+     * @return int
+     */
+    public function count() {}
+}

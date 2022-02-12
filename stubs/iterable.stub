@@ -749,3 +749,47 @@ class RecursiveCachingIterator extends CachingIterator implements RecursiveItera
      */
     public function key() {}
 }
+
+/**
+ * @template-implements RecursiveIterator<string, RecursiveDirectoryIterator|string|SplFileInfo>
+ * @template-implements SeekableIterator<string, RecursiveDirectoryIterator|string|SplFileInfo>
+ */
+class RecursiveDirectoryIterator extends FilesystemIterator implements RecursiveIterator, SeekableIterator {
+
+    const CURRENT_AS_PATHNAME = 32 ;
+    const CURRENT_AS_FILEINFO = 0 ;
+    const CURRENT_AS_SELF = 16 ;
+    const CURRENT_MODE_MASK = 240 ;
+    const KEY_AS_PATHNAME = 0 ;
+    const KEY_AS_FILENAME = 256 ;
+    const FOLLOW_SYMLINKS = 512 ;
+    const KEY_MODE_MASK = 3840 ;
+    const NEW_CURRENT_AND_KEY = 256 ;
+    const SKIP_DOTS = 4096 ;
+    const UNIX_PATHS = 8192 ;
+
+    /**
+     * @param string $path
+     */
+    public function __construct(string $path, int $flags = self::KEY_AS_PATHNAME|self::CURRENT_AS_FILEINFO) {}
+
+    /**
+     * @return string
+     */
+    public function getSubPath() {}
+
+    /**
+     * @return string
+     */
+    public function getSubPathname() {}
+
+    /**
+     * @return RecursiveDirectoryIterator|string|SplFileInfo|null
+     */
+    public function current() {}
+
+    /**
+     * @return string|null
+     */
+    public function key() {}
+}

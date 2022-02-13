@@ -107,7 +107,7 @@ class NameScope
 
 	public function withTemplateTypeMap(TemplateTypeMap $map): self
 	{
-		if ($map->isEmpty()) {
+		if ($map->isEmpty() && $this->templateTypeMap->isEmpty()) {
 			return $this;
 		}
 

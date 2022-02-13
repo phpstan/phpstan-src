@@ -347,7 +347,7 @@ function varAnnotation($cb)
 	/** @var T */
 	$v = $cb();
 
-	assertType('T (function PHPStan\Generics\FunctionsAssertType\varAnnotation(), argument)', $v);
+	assertType('T (function PHPStan\Generics\FunctionsAssertType\varAnnotation(), parameter)', $v);
 
 	return $v;
 }
@@ -384,7 +384,7 @@ class C
 			}
 		};
 
-		assertType('T (class PHPStan\Generics\FunctionsAssertType\C, argument)', $a->g());
+		assertType('T (class PHPStan\Generics\FunctionsAssertType\C, parameter)', $a->g());
 	}
 }
 
@@ -952,7 +952,7 @@ class ClassWithMethodCachingIssue
 
 		/** @var T $b */
 		$b = doFoo();
-		assertType('T (method PHPStan\Generics\FunctionsAssertType\ClassWithMethodCachingIssue::doFoo(), argument)', $b);
+		assertType('T (method PHPStan\Generics\FunctionsAssertType\ClassWithMethodCachingIssue::doFoo(), parameter)', $b);
 	}
 
 	/**
@@ -965,7 +965,7 @@ class ClassWithMethodCachingIssue
 
 		/** @var T $b */
 		$b = doFoo();
-		assertType('T (method PHPStan\Generics\FunctionsAssertType\ClassWithMethodCachingIssue::doBar(), argument)', $b);
+		assertType('T (method PHPStan\Generics\FunctionsAssertType\ClassWithMethodCachingIssue::doBar(), parameter)', $b);
 	}
 
 }

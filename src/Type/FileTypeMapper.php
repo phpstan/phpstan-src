@@ -20,7 +20,6 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\GenericObjectType;
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -134,29 +133,6 @@ class FileTypeMapper
 	private function createResolvedPhpDocBlock(string $phpDocKey, NameScope $nameScope, string $phpDocString, string $fileName): ResolvedPhpDocBlock
 	{
 		$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
-		$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
-		$templateTypeScope = $nameScope->getTemplateTypeScope();
-
-		if ($templateTypeScope !== null) {
-			$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
-			$nameScope = $nameScope->withTemplateTypeMap(
-				new TemplateTypeMap(array_merge(
-					$nameScope->getTemplateTypeMap()->getTypes(),
-					$templateTypeMap->getTypes(),
-				)),
-			);
-			$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
-			$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
-			$nameScope = $nameScope->withTemplateTypeMap(
-				new TemplateTypeMap(array_merge(
-					$nameScope->getTemplateTypeMap()->getTypes(),
-					$templateTypeMap->getTypes(),
-				)),
-			);
-		} else {
-			$templateTypeMap = TemplateTypeMap::createEmpty();
-		}
-
 		if ($this->resolvedPhpDocBlockCacheCount >= 512) {
 			$this->resolvedPhpDocBlockCache = array_slice(
 				$this->resolvedPhpDocBlockCache,
@@ -168,12 +144,23 @@ class FileTypeMapper
 			$this->resolvedPhpDocBlockCacheCount--;
 		}
 
+		$templateTypeMap = $nameScope->getTemplateTypeMap();
+		$phpDocTemplateTypes = [];
+		$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
+		foreach (array_keys($templateTags) as $name) {
+			$templateType = $templateTypeMap->getType($name);
+			if ($templateType === null) {
+				continue;
+			}
+			$phpDocTemplateTypes[$name] = $templateType;
+		}
+
 		$this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::create(
 			$phpDocNode,
 			$phpDocString,
 			$fileName,
 			$nameScope,
-			$templateTypeMap,
+			new TemplateTypeMap($phpDocTemplateTypes),
 			$templateTags,
 			$this->phpDocNodeResolver,
 		);
@@ -193,7 +180,7 @@ class FileTypeMapper
 	private function getNameScopeMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v19-trait-detection-recursion', $fileName);
+			$cacheKey = sprintf('%s-phpdocstring-v20-template-tags', $fileName);
 			$variableCacheKey = sprintf('%s-%s', implode(',', array_map(static fn (array $file): string => sprintf('%s-%d', $file['filename'], $file['modifiedTime']), $this->getCachedDependentFilesWithTimestamps($fileName))), $this->phpVersion->getVersionString());
 			$map = $this->cache->load($cacheKey, $variableCacheKey);
 
@@ -322,14 +309,15 @@ class FileTypeMapper
 
 				$className = $classStack[count($classStack) - 1] ?? null;
 				$functionName = $functionStack[count($functionStack) - 1] ?? null;
-				$resolvableTemplateTypes = ($className !== null && $lookForTrait === null) || $functionName !== null;
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 					$phpDocString = GetLastDocComment::forNode($node);
 					if ($phpDocString !== '') {
-						$typeMapStack[] = function () use ($namespace, $uses, $className, $functionName, $phpDocString, $typeMapStack, $resolvableTemplateTypes): TemplateTypeMap {
+						$typeMapStack[] = function () use ($namespace, $uses, $className, $functionName, $phpDocString, $typeMapStack): TemplateTypeMap {
 							$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
-							$nameScope = new NameScope($namespace, $uses, $className, $functionName);
+							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
+							$currentTypeMap = $typeMapCb !== null ? $typeMapCb() : null;
+							$nameScope = new NameScope($namespace, $uses, $className, $functionName, $currentTypeMap);
 							$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 							$templateTypeScope = $nameScope->getTemplateTypeScope();
 							if ($templateTypeScope === null) {
@@ -339,28 +327,11 @@ class FileTypeMapper
 							$nameScope = $nameScope->withTemplateTypeMap($templateTypeMap);
 							$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 							$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
-							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 
-							return (new TemplateTypeMap(array_merge(
-								$typeMapCb !== null ? $typeMapCb()->getTypes() : [],
+							return new TemplateTypeMap(array_merge(
+								$currentTypeMap !== null ? $currentTypeMap->getTypes() : [],
 								$templateTypeMap->getTypes(),
-							)))->map(static fn (string $name, Type $type): Type => TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($className, $resolvableTemplateTypes): Type {
-									if (!$type instanceof TemplateType) {
-										return $traverse($type);
-									}
-
-									if (!$resolvableTemplateTypes) {
-										return $traverse($type->toArgument());
-									}
-
-									$scope = $type->getScope();
-
-									if ($scope->getClassName() === null || $scope->getFunctionName() !== null || $scope->getClassName() !== $className) {
-										return $traverse($type->toArgument());
-									}
-
-									return $traverse($type);
-							}));
+							));
 						};
 					}
 				}

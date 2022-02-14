@@ -22,7 +22,6 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use function array_map;
 use function count;
 use function implode;
@@ -34,8 +33,6 @@ use function substr;
 /** @api */
 class IntersectionType implements CompoundType
 {
-
-	use NonRemoveableTypeTrait;
 
 	/** @var Type[] */
 	private array $types;
@@ -555,6 +552,11 @@ class IntersectionType implements CompoundType
 		}
 
 		return $this;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => TypeCombinator::remove($type, $typeToRemove));
 	}
 
 	/**

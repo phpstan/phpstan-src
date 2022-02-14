@@ -176,4 +176,9 @@ class PhpVersion
 		return $this->versionId >= 80100;
 	}
 
+	public function throwsOnInvalidMbStringEncoding(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 }

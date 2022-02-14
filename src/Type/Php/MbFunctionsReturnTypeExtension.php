@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
@@ -11,6 +12,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -44,7 +46,7 @@ class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtensi
 		'mb_ord' => 2,
 	];
 
-	public function __construct()
+	public function __construct(private PhpVersion $phpVersion)
 	{
 		$supportedEncodings = [];
 		if (function_exists('mb_list_encodings')) {
@@ -86,9 +88,14 @@ class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtensi
 		}
 
 		if (count($results) === 1) {
+			$invalidEncodingReturn = new ConstantBooleanType(false);
+			if ($this->phpVersion->throwsOnInvalidMbStringEncoding()) {
+				$invalidEncodingReturn = new NeverType();
+			}
+
 			return $results[0]
 				? TypeCombinator::remove($returnType, new ConstantBooleanType(false))
-				: new ConstantBooleanType(false);
+				: $invalidEncodingReturn;
 		}
 
 		return $returnType;

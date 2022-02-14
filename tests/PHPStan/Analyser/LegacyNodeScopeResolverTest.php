@@ -5314,7 +5314,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrlenWithValidEncodingAlias',
 			],
 			[
-				'false',
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
 				'$mbStrlenWithInvalidEncoding',
 			],
 			[
@@ -5390,7 +5390,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbEncodingAliasesWithValidEncoding',
 			],
 			[
-				'false',
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
 				'$mbEncodingAliasesWithInvalidEncoding',
 			],
 			[
@@ -5410,7 +5410,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbChrWithValidEncoding',
 			],
 			[
-				'false',
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
 				'$mbChrWithInvalidEncoding',
 			],
 			[
@@ -5430,7 +5430,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbOrdWithValidEncoding',
 			],
 			[
-				'false',
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
 				'$mbOrdWithInvalidEncoding',
 			],
 			[

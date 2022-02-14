@@ -4,6 +4,7 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
+use PHPStan\File\FileHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
@@ -153,7 +154,9 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		if (PHP_VERSION_ID >= 80100) {
 			self::markTestSkipped('Skipped on PHP 8.1 because of different result');
 		}
-		$formatter = new TableErrorFormatter(new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/'), false, null);
+		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
+		$fileHelper = new FileHelper(__DIR__);
+		$formatter = new TableErrorFormatter($relativePathHelper, false, null, $fileHelper);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
@@ -165,7 +168,9 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 	public function testEditorUrlWithTrait(): void
 	{
-		$formatter = new TableErrorFormatter(new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/'), false, 'editor://%file%/%line%');
+		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
+		$fileHelper = new FileHelper(__DIR__);
+		$formatter = new TableErrorFormatter($relativePathHelper, false, 'editor://%file%/%line%', $fileHelper);
 		$error = new Error('Test', 'Foo.php (in context of trait)', 12, true, 'Foo.php', 'Bar.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], false, null, true), $this->getOutput());
 

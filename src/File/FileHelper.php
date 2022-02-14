@@ -50,6 +50,12 @@ class FileHelper
 	}
 
 	/** @api */
+	public function forwardSlashes(string $originalPath): string
+	{
+		return str_replace('\\', '/', $originalPath);
+	}
+
+	/** @api */
 	public function normalizePath(string $originalPath, string $directorySeparator = DIRECTORY_SEPARATOR): string
 	{
 		$isLocalPath = $originalPath !== '' && $originalPath[0] === '/';

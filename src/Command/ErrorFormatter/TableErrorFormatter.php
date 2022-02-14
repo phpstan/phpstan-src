@@ -6,6 +6,7 @@ use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use PHPStan\File\FileHelper;
 use PHPStan\File\RelativePathHelper;
 use function array_map;
 use function count;
@@ -20,6 +21,7 @@ class TableErrorFormatter implements ErrorFormatter
 		private RelativePathHelper $relativePathHelper,
 		private bool $showTipsOfTheDay,
 		private ?string $editorUrl,
+		private FileHelper $fileHelper,
 	)
 	{
 	}
@@ -74,7 +76,11 @@ class TableErrorFormatter implements ErrorFormatter
 					$message .= "\n💡 " . $tip;
 				}
 				if (is_string($this->editorUrl)) {
-					$url = str_replace(['%file%', '%line%'], [$error->getTraitFilePath() ?? $error->getFilePath(), (string) $error->getLine()], $this->editorUrl);
+					// always use forward-slashes, even on windows to make file-paths clickable
+					$file = $error->getTraitFilePath() ?? $error->getFilePath();
+					$file = $this->fileHelper->forwardSlashes($file);
+
+					$url = str_replace(['%file%', '%line%'], [$file, (string) $error->getLine()], $this->editorUrl);
 					$message .= "\n✏️  <href=" . $url . '>' . $url . '</>';
 				}
 				$rows[] = [
@@ -83,7 +89,9 @@ class TableErrorFormatter implements ErrorFormatter
 				];
 			}
 
+			// always use forward-slashes, even on windows to make file-paths clickable
 			$relativeFilePath = $this->relativePathHelper->getRelativePath($file);
+			$relativeFilePath = $this->fileHelper->forwardSlashes($relativeFilePath);
 
 			$style->table(['Line', $relativeFilePath], $rows);
 		}

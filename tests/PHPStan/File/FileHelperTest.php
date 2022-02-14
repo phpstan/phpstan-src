@@ -112,4 +112,23 @@ class FileHelperTest extends PHPStanTestCase
 		$this->assertSame($normalizedPath, self::getContainer()->getByType(FileHelper::class)->normalizePath($path));
 	}
 
+	/**
+	 * @return string[][]
+	 */
+	public function dataNormalizePathToForwardSlashes(): array
+	{
+		return [
+			['C:\Program Files\PHP', 'C:/Program Files/PHP'],
+			['/home/users/phpstan', '/home/users/phpstan'],
+		];
+	}
+
+	/**
+	 * @dataProvider dataNormalizePathToForwardSlashes
+	 */
+	public function testNormalizePathToForwardSlashes(string $path, string $normalizedPath): void
+	{
+		$this->assertSame($normalizedPath, self::getContainer()->getByType(FileHelper::class)->forwardSlashes($path));
+	}
+
 }

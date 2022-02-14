@@ -89,7 +89,7 @@ class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtensi
 
 		if (count($results) === 1) {
 			$invalidEncodingReturn = new ConstantBooleanType(false);
-			if ($this->phpVersion->getVersionId() >= 80000) {
+			if ($this->phpVersion->throwsOnInvalidMbStringEncoding()) {
 				$invalidEncodingReturn = new NeverType();
 			}
 

@@ -3669,13 +3669,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new BenevolentUnionType([new IntegerType(), new StringType()]),
 				new ConstantStringType('foo'),
 				UnionType::class,
-				'int|string',
+				'(int|string)',
 			],
 			[
 				new BenevolentUnionType([new IntegerType(), new StringType()]),
 				new ConstantIntegerType(1),
 				UnionType::class,
-				'int<min, 0>|int<2, max>|string',
+				'(int<min, 0>|int<2, max>|string)',
 			],
 			[
 				new BenevolentUnionType([new IntegerType(), new StringType()]),

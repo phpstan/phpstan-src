@@ -14,6 +14,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 use Throwable;
 use function count;
 use function in_array;
@@ -50,14 +51,16 @@ final class ThrowableReturnTypeExtension implements DynamicMethodReturnTypeExten
 					continue 2;
 				}
 			}
+
 			if ($pdoException->isSuperTypeOf($classType)->yes()) {
-				$types[] = new StringType();
+				$types[] = new UnionType([new IntegerType(), new StringType()]);
 				continue;
 			}
 
 			if (in_array(strtolower($class), [
 				'throwable',
 				'exception',
+				'runtimeexception',
 			], true)) {
 				$types[] = new BenevolentUnionType([new IntegerType(), new StringType()]);
 				continue;

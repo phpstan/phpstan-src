@@ -482,8 +482,6 @@ class TypeSpecifier
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType->isArray()->yes()) {
 						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new NonEmptyArrayType(), $context, false, $scope));
-					} else {
-						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new ConstantArrayType([], []), $context->negate(), false, $scope));
 					}
 				}
 			}
@@ -503,8 +501,6 @@ class TypeSpecifier
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType instanceof StringType) {
 						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $context, false, $scope));
-					} else {
-						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new ConstantStringType(''), $context->negate(), false, $scope));
 					}
 				}
 			}
@@ -670,8 +666,12 @@ class TypeSpecifier
 
 			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 		} elseif ($expr instanceof BooleanAnd || $expr instanceof LogicalAnd) {
+			if (!$scope instanceof MutatingScope) {
+				throw new ShouldNotHappenException();
+			}
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context);
-			$rightTypes = $this->specifyTypesInCondition($scope, $expr->right, $context);
+			$leftScope = $scope->filterBySpecifiedTypes($context->true() ? $leftTypes : $leftTypes->inverse());
+			$rightTypes = $this->specifyTypesInCondition($leftScope, $expr->right, $context);
 			$types = $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->intersectWith($rightTypes);
 			if ($context->false()) {
 				return new SpecifiedTypes(
@@ -687,8 +687,12 @@ class TypeSpecifier
 
 			return $types;
 		} elseif ($expr instanceof BooleanOr || $expr instanceof LogicalOr) {
+			if (!$scope instanceof MutatingScope) {
+				throw new ShouldNotHappenException();
+			}
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context);
-			$rightTypes = $this->specifyTypesInCondition($scope, $expr->right, $context);
+			$leftScope = $scope->filterBySpecifiedTypes($context->true() ? $leftTypes->inverse() : $leftTypes);
+			$rightTypes = $this->specifyTypesInCondition($leftScope, $expr->right, $context);
 			$types = $context->true() ? $leftTypes->intersectWith($rightTypes) : $leftTypes->unionWith($rightTypes);
 			if ($context->true()) {
 				return new SpecifiedTypes(

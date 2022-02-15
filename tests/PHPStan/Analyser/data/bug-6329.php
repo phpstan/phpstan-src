@@ -158,3 +158,28 @@ function inverse($a, $b, $c): void
 		assertType('non-empty-array|null', $c);
 	}
 }
+
+/**
+ * @param mixed $a
+ * @param mixed $b
+ * @param mixed $c
+ * @param mixed $d
+ */
+function combinations($a, $b, $c, $d): void
+{
+	if (is_string($a) && '' !== $a || is_int($a) && $a > 0 || null === $a) {
+		assertType('int<1, max>|non-empty-string|null', $a);
+	}
+	if ((!is_string($b) || '' === $b) && (!is_int($b) || $b <= 0) && null !== $b) {
+	} else {
+		assertType('int<1, max>|non-empty-string|null', $b);
+	}
+
+	if (is_array($c) && $c === array_filter($c, 'is_string', ARRAY_FILTER_USE_KEY) || null === $c) {
+		assertType('array<string, mixed>|null', $c);
+	}
+	if ((!is_array($d) || $d !== array_filter($d, 'is_string', ARRAY_FILTER_USE_KEY)) && null !== $d) {
+	} else {
+		assertType('array<string, mixed>|null', $d);
+	}
+}

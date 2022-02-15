@@ -120,6 +120,11 @@ class SpecifiedTypes
 		return new self($sureTypeUnion, $sureNotTypeUnion);
 	}
 
+	public function inverse(): self
+	{
+		return new self($this->sureNotTypes, $this->sureTypes, $this->overwrite, $this->newConditionalExpressionHolders);
+	}
+
 	private function normalize(): self
 	{
 		$sureTypes = $this->sureTypes;

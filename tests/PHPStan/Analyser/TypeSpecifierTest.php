@@ -1022,6 +1022,59 @@ class TypeSpecifierTest extends PHPStanTestCase
 				],
 				[],
 			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_array', 'foo'),
+					new Expr\BinaryOp\GreaterOrEqual(
+						new FuncCall(
+							new Name('count'),
+							[new Arg(new Variable('foo'))],
+						),
+						new LNumber(2),
+					),
+				),
+				[
+					'$foo' => 'non-empty-array',
+					'count($foo)' => 'mixed~int<min, 1>|false|null',
+				],
+				[],
+			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_array', 'foo'),
+					new Identical(
+						new FuncCall(
+							new Name('count'),
+							[new Arg(new Variable('foo'))],
+						),
+						new LNumber(2),
+					),
+				),
+				[
+					'$foo' => 'non-empty-array',
+					'count($foo)' => '2',
+				],
+				[],
+			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_string', 'foo'),
+					new NotIdentical(
+						new FuncCall(
+							new Name('strlen'),
+							[new Arg(new Variable('foo'))],
+						),
+						new LNumber(0),
+					),
+				),
+				[
+					'$foo' => 'non-empty-string',
+					'strlen($foo)' => '~0',
+				],
+				[
+					'$foo' => '~non-empty-string',
+				],
+			],
 		];
 	}
 

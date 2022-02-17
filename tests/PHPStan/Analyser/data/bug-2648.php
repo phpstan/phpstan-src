@@ -38,6 +38,8 @@ class Foo
 
 				if (count($list) === 1) {
 					assertType('1', count($list));
+					$list[] = false;
+					assertType('int<1, max>', count($list));
 					break;
 				}
 			}

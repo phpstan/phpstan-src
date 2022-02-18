@@ -41,7 +41,7 @@ final class BitwiseFlagAnalyser
 		return false;
 	}
 
-	public function exprContainsIntFlag(Expr $expr, Scope $scope, int $flag): bool
+	private function exprContainsIntFlag(Expr $expr, Scope $scope, int $flag): bool
 	{
 		if ($expr instanceof BitwiseOr) {
 			return $this->exprContainsIntFlag($expr->left, $scope, $flag) ||

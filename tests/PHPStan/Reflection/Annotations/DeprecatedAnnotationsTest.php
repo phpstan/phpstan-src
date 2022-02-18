@@ -138,7 +138,7 @@ class DeprecatedAnnotationsTest extends PHPStanTestCase
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(DeprecatedBar::class);
-		$this->assertTrue($class->getNativeMethod('superDeprecated')->isDeprecated()->yes());
+		$this->assertFalse($class->getNativeMethod('superDeprecated')->isDeprecated()->yes());
 	}
 
 }

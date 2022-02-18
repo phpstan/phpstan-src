@@ -10,8 +10,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Constant\ConstantIntegerType;
 
-final class BitwiseFlagAnalyser {
-	public function __construct(private ReflectionProvider $reflectionProvider) {
+final class BitwiseFlagAnalyser
+{
+
+	public function __construct(private ReflectionProvider $reflectionProvider)
+	{
 	}
 
 	public function exprContainsConstant(Expr $expr, Scope $scope, string $constName): bool
@@ -19,7 +22,7 @@ final class BitwiseFlagAnalyser {
 		if ($expr instanceof ConstFetch) {
 			$resolveConstantName = $this->reflectionProvider->resolveConstantName($expr->name, $scope);
 
-			if ($resolveConstantName !== $constName)  {
+			if ($resolveConstantName !== $constName) {
 				return false;
 			}
 		}
@@ -41,16 +44,34 @@ final class BitwiseFlagAnalyser {
 	public function exprContainsIntFlag(Expr $expr, Scope $scope, int $flag): bool
 	{
 		if ($expr instanceof BitwiseOr) {
-			return $this->exprContainsFlag($expr->left, $scope, $flag) ||
-				$this->exprContainsFlag($expr->right, $scope, $flag);
+			return $this->exprContainsIntFlag($expr->left, $scope, $flag) ||
+				$this->exprContainsIntFlag($expr->right, $scope, $flag);
 		}
 
 		$exprType = $scope->getType($expr);
 
-		if ($exprType instanceof ConstantIntegerType){
-			return ($exprType->getValue() & $flag) === $flag;
+		if ($exprType instanceof ConstantIntegerType) {
+			return $this->typeContainsIntFlag($exprType, $flag);
+		}
+
+		if ($exprType instanceof UnionType) {
+			foreach ($exprType->getTypes() as $type) {
+				if ($this->typeContainsIntFlag($type, $flag) === true) {
+					return true;
+				}
+			}
 		}
 
 		return false;
 	}
+
+	private function typeContainsIntFlag(Type $type, int $flag): bool
+	{
+		if ($type instanceof ConstantIntegerType) {
+			return ($type->getValue() & $flag) === $flag;
+		}
+
+		return false;
+	}
+
 }

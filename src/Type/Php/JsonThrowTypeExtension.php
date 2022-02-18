@@ -2,16 +2,12 @@
 
 namespace PHPStan\Type\Php;
 
-use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
-use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BitwiseFlagAnalyser;
-use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -28,7 +24,7 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private BitwiseFlagAnalyser $bitwiseFlagAnalyser
+		private BitwiseFlagAnalyser $bitwiseFlagAnalyser,
 	)
 	{
 	}

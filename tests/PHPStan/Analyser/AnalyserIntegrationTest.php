@@ -555,6 +555,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			['Cannot cast array{} to string.', 19],
 			[sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, array given.', $paramName), 20],
 
+			['Cannot cast resource to float.', 65],
+			[sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|string|null, resource given.', $paramName),66],
+			[sprintf('Parameter #1 %s of function doubleval expects array|bool|float|int|string|null, resource given.', $paramName),67],
+
 			['Cannot cast stdClass to string.', 79],
 			[sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, stdClass given.', $paramName),80],
 
@@ -562,8 +566,8 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 			[sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, stdClass given.', $paramName),83],
 
 			['Cannot cast stdClass to float.', 85],
-			[sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, stdClass given.', $paramName),86],
-			[sprintf('Parameter #1 %s of function doubleval expects array|bool|float|int|resource|string|null, stdClass given.', $paramName),87],
+			[sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|string|null, stdClass given.', $paramName),86],
+			[sprintf('Parameter #1 %s of function doubleval expects array|bool|float|int|string|null, stdClass given.', $paramName),87],
 
 			['Cannot cast class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 to int.', 92],
 			[sprintf('Parameter #1 %s of function intval does not accept object, class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 given.', $paramName),93],

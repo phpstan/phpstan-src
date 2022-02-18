@@ -898,6 +898,9 @@ services:
 		factory: PHPStan\Type\LazyTypeAliasResolverProvider
 
 	-
+		class: PHPStan\Type\BitwiseFlagAnalyser
+
+	-
 		class: PHPStan\Type\Php\ArgumentBasedFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

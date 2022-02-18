@@ -10,6 +10,7 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\BitwiseFlagAnalyser;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\ObjectType;
@@ -25,7 +26,10 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		'json_decode' => 3,
 	];
 
-	public function __construct(private ReflectionProvider $reflectionProvider)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private BitwiseFlagAnalyser $bitwiseFlagAnalyser
+	)
 	{
 	}
 
@@ -55,44 +59,11 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		}
 
 		$optionsExpr = $functionCall->getArgs()[$argumentPosition]->value;
-		if ($this->isBitwiseOrWithJsonThrowOnError($optionsExpr, $scope)) {
+		if ($this->bitwiseFlagAnalyser->exprContainsConstant($optionsExpr, $scope, 'JSON_THROW_ON_ERROR')) {
 			return new ObjectType('JsonException');
 		}
 
-		$valueType = $scope->getType($optionsExpr);
-		if (!$valueType instanceof ConstantIntegerType) {
-			return null;
-		}
-
-		$value = $valueType->getValue();
-		$throwOnErrorType = $this->reflectionProvider->getConstant(new Name\FullyQualified('JSON_THROW_ON_ERROR'), null)->getValueType();
-		if (!$throwOnErrorType instanceof ConstantIntegerType) {
-			return null;
-		}
-
-		$throwOnErrorValue = $throwOnErrorType->getValue();
-		if (($value & $throwOnErrorValue) !== $throwOnErrorValue) {
-			return null;
-		}
-
-		return new ObjectType('JsonException');
-	}
-
-	private function isBitwiseOrWithJsonThrowOnError(Expr $expr, Scope $scope): bool
-	{
-		if ($expr instanceof ConstFetch) {
-			$constant = $this->reflectionProvider->resolveConstantName($expr->name, $scope);
-			if ($constant === 'JSON_THROW_ON_ERROR') {
-				return true;
-			}
-		}
-
-		if (!$expr instanceof BitwiseOr) {
-			return false;
-		}
-
-		return $this->isBitwiseOrWithJsonThrowOnError($expr->left, $scope) ||
-			$this->isBitwiseOrWithJsonThrowOnError($expr->right, $scope);
+		return null;
 	}
 
 }

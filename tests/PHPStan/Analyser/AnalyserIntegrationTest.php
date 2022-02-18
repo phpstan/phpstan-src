@@ -12,6 +12,7 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use function array_reverse;
+use function count;
 use function extension_loaded;
 use function method_exists;
 use function restore_error_handler;
@@ -545,45 +546,38 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testTypevalFamilyFunctionParameters(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/typeval-functions.php');
-		$this->assertCount(14, $errors);
 		$paramName = '$value';
 		if (PHP_VERSION_ID < 80000) {
 			$paramName = '$var';
 		}
 
-		$this->assertSame('Cannot cast array{} to string.', $errors[0]->getMessage());
-		$this->assertSame(19, $errors[0]->getLine());
-		$this->assertSame(sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, array given.', $paramName), $errors[1]->getMessage());
-		$this->assertSame(20, $errors[1]->getLine());
+		$expectedErrors = [
+			['Cannot cast array{} to string.', 19],
+			[sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, array given.', $paramName), 20],
 
-		$this->assertSame('Cannot cast stdClass to string.', $errors[2]->getMessage());
-		$this->assertSame(79, $errors[2]->getLine());
-		$this->assertSame(sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, stdClass given.', $paramName), $errors[3]->getMessage());
-		$this->assertSame(80, $errors[3]->getLine());
+			['Cannot cast stdClass to string.', 79],
+			[sprintf('Parameter #1 %s of function strval expects bool|float|int|resource|string|null, stdClass given.', $paramName),80],
 
-		$this->assertSame('Cannot cast stdClass to int.', $errors[4]->getMessage());
-		$this->assertSame(82, $errors[4]->getLine());
-		$this->assertSame(sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, stdClass given.', $paramName), $errors[5]->getMessage());
-		$this->assertSame(83, $errors[5]->getLine());
+			['Cannot cast stdClass to int.', 82],
+			[sprintf('Parameter #1 %s of function intval expects array|bool|float|int|resource|string|null, stdClass given.', $paramName),83],
 
-		$this->assertSame('Cannot cast stdClass to float.', $errors[6]->getMessage());
-		$this->assertSame(85, $errors[6]->getLine());
-		$this->assertSame(sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, stdClass given.', $paramName), $errors[7]->getMessage());
-		$this->assertSame(86, $errors[7]->getLine());
-		$this->assertSame(sprintf('Parameter #1 %s of function doubleval expects array|bool|float|int|resource|string|null, stdClass given.', $paramName), $errors[8]->getMessage());
-		$this->assertSame(87, $errors[8]->getLine());
+			['Cannot cast stdClass to float.', 85],
+			[sprintf('Parameter #1 %s of function floatval expects array|bool|float|int|resource|string|null, stdClass given.', $paramName),86],
+			[sprintf('Parameter #1 %s of function doubleval expects array|bool|float|int|resource|string|null, stdClass given.', $paramName),87],
 
-		$this->assertSame('Cannot cast class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 to int.', $errors[9]->getMessage());
-		$this->assertSame(92, $errors[9]->getLine());
-		$this->assertSame(sprintf('Parameter #1 %s of function intval does not accept object, class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 given.', $paramName), $errors[10]->getMessage());
-		$this->assertSame(93, $errors[10]->getLine());
+			['Cannot cast class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 to int.', 92],
+			[sprintf('Parameter #1 %s of function intval does not accept object, class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 given.', $paramName),93],
 
-		$this->assertSame('Cannot cast class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 to float.', $errors[11]->getMessage());
-		$this->assertSame(95, $errors[11]->getLine());
-		$this->assertSame(sprintf('Parameter #1 %s of function floatval does not accept object, class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 given.', $paramName), $errors[12]->getMessage());
-		$this->assertSame(96, $errors[12]->getLine());
-		$this->assertSame(sprintf('Parameter #1 %s of function doubleval does not accept object, class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 given.', $paramName), $errors[13]->getMessage());
-		$this->assertSame(97, $errors[13]->getLine());
+			['Cannot cast class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 to float.', 95],
+			[sprintf('Parameter #1 %s of function floatval does not accept object, class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 given.', $paramName),96],
+			[sprintf('Parameter #1 %s of function doubleval does not accept object, class@anonymous/tests/PHPStan/Analyser/data/typeval-functions.php:10 given.', $paramName),97],
+		];
+
+		$this->assertCount(count($expectedErrors), $errors);
+		foreach ($expectedErrors as $key => [$message, $line]) {
+			$this->assertSame($message, $errors[$key]->getMessage());
+			$this->assertSame($line, $errors[$key]->getLine());
+		}
 	}
 
 	/**

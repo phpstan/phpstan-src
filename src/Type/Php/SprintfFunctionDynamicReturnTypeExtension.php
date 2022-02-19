@@ -6,12 +6,17 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\FloatType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 use Throwable;
 use function array_shift;
 use function count;
@@ -38,23 +43,39 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$formatType = $scope->getType($args[0]->value);
+		$types = [new StringType()];
 		if ($formatType->isNonEmptyString()->yes()) {
-			$returnType = new IntersectionType([
-				new StringType(),
-				new AccessoryNonEmptyStringType(),
-			]);
-		} else {
-			$returnType = new StringType();
+			$types[] = new AccessoryNonEmptyStringType();
 		}
 
 		$values = [];
+		$isConstant = true;
+		$isLiteral = true;
+		$maxLiteral = new UnionType([
+			new IntegerType(),
+			new FloatType(),
+			new BooleanType(),
+			new AccessoryLiteralStringType(),
+		]);
 		foreach ($args as $arg) {
 			$argType = $scope->getType($arg->value);
+			if (!$maxLiteral->isSuperTypeOf($argType)->yes()) {
+				$isLiteral = false;
+			}
+
 			if (!$argType instanceof ConstantScalarType) {
-				return $returnType;
+				$isConstant = false;
+				continue;
 			}
 
 			$values[] = $argType->getValue();
+		}
+		if ($isLiteral) {
+			$types[] = new AccessoryLiteralStringType();
+		}
+		$returnType = count($types) > 1 ? new IntersectionType($types) : $types[0];
+		if (!$isConstant) {
+			return $returnType;
 		}
 
 		$format = array_shift($values);

@@ -16,7 +16,7 @@ if (!isset($baz)) {
 	\PHPStan\Testing\assertType('1', $baz);
 }
 
-\PHPStan\Testing\assertType('mixed', $baz);
+\PHPStan\Testing\assertType('mixed~null', $baz);
 
 function () {
 	\PHPStan\Testing\assertVariableCertainty(TrinaryLogic::createNo(), $foo);

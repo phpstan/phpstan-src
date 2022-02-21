@@ -2074,6 +2074,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 			UnionType::class,
 			'PHPStan\Fixture\AnotherTestEnum::ONE|PHPStan\Fixture\TestEnum::ONE',
 		];
+		yield [
+			[
+				new MixedType(false, new IntegerRangeType(17, null)),
+				new IntegerRangeType(19, null),
+			],
+			MixedType::class,
+			'mixed~int<17, 18>=implicit',
+		];
 	}
 
 	/**
@@ -3394,6 +3402,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			NeverType::class,
 			'*NEVER*',
+		];
+		yield [
+			[
+				new MixedType(false, new IntegerRangeType(17, null)),
+				new MixedType(),
+			],
+			MixedType::class,
+			'mixed~int<17, max>=implicit',
 		];
 	}
 

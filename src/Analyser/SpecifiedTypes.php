@@ -3,8 +3,11 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_map;
 
 class SpecifiedTypes
 {
@@ -122,7 +125,22 @@ class SpecifiedTypes
 
 	public function inverse(): self
 	{
-		return new self($this->sureNotTypes, $this->sureTypes, $this->overwrite, $this->newConditionalExpressionHolders);
+		$normalized = $this->normalize();
+
+		$inverseType = static function (Type $subtractedType) {
+			if ($subtractedType instanceof SubtractableType && $subtractedType->getSubtractedType() !== null) {
+				return TypeCombinator::union($subtractedType->getTypeWithoutSubtractedType(), $subtractedType->getSubtractedType());
+			}
+
+			return new MixedType(false, $subtractedType);
+		};
+
+		return new self(
+			array_map(static fn (array $sureType) => [$sureType[0], $inverseType($sureType[1])], $normalized->sureTypes),
+			array_map(static fn (array $sureNotType) => [$sureNotType[0], $inverseType($sureNotType[1])], $normalized->sureNotTypes),
+			$normalized->overwrite,
+			$normalized->newConditionalExpressionHolders,
+		);
 	}
 
 	private function normalize(): self

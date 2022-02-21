@@ -8,6 +8,14 @@ interface Traversable
 {
 }
 
+interface Countable
+{
+    /**
+     * @return 0|positive-int
+     */
+    public function count(): int;
+}
+
 /**
  * @template-covariant TKey
  * @template-covariant TValue

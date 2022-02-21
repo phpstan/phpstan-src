@@ -156,7 +156,7 @@ class Foo extends BarParent
 			assertType('object', $subject);
 			assertType('bool', $subject instanceof $string);
 		} else {
-			assertType('mixed', $subject);
+			assertType('mixed~MixedT (method InstanceOfNamespace\Foo::testExprInstanceof(), argument)', $subject);
 			assertType('bool', $subject instanceof $string);
 		}
 

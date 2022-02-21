@@ -356,9 +356,10 @@ class TypeCombinator
 				$isSuperType = $typeWithoutSubtractedTypeA->isSuperTypeOf($b);
 			}
 			if ($isSuperType->yes()) {
-				$subtractedType = null;
 				if ($b instanceof SubtractableType) {
 					$subtractedType = $b->getSubtractedType();
+				} else {
+					$subtractedType = new MixedType(false, $b);
 				}
 				$a = self::intersectWithSubtractedType($a, $subtractedType);
 				return [$a, null];
@@ -373,9 +374,10 @@ class TypeCombinator
 				$isSuperType = $typeWithoutSubtractedTypeB->isSuperTypeOf($a);
 			}
 			if ($isSuperType->yes()) {
-				$subtractedType = null;
 				if ($a instanceof SubtractableType) {
 					$subtractedType = $a->getSubtractedType();
+				} else {
+					$subtractedType = new MixedType(false, $a);
 				}
 				$b = self::intersectWithSubtractedType($b, $subtractedType);
 				return [null, $b];
@@ -710,6 +712,18 @@ class TypeCombinator
 			array_splice($types, $i--, 1, $type->getTypes());
 			$typesCount = count($types);
 		}
+
+		// move subtractables with subtracts before those without to avoid loosing them in the union logic
+		usort($types, static function (Type $a, Type $b): int {
+			if ($a instanceof SubtractableType && $a->getSubtractedType() !== null) {
+				return -1;
+			}
+			if ($b instanceof SubtractableType && $b->getSubtractedType() !== null) {
+				return 1;
+			}
+
+			return 0;
+		});
 
 		// transform IntegerType & ConstantIntegerType to ConstantIntegerType
 		// transform Child & Parent to Child

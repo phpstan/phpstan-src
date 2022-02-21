@@ -697,7 +697,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'mixed',
 				TrinaryLogic::createYes(),
-				'mixed', // should be mixed~bool+1
+				'mixed~bool',
 			],
 			[
 				$testScope,

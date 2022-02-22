@@ -20,6 +20,17 @@ function testArrays(array $array): void
 	assertType('array{}', array_column($array, 'column'));
 	assertType('array{}', array_column($array, 'column', 'key'));
 	assertType('array{}', array_column($array, null, 'key'));
+
+	/** @var array<int, array<string, float>> $array */
+	assertType('array<int, float>', array_column($array, 'column', 'key'));
+	/** @var array<int, array<string, bool>> $array */
+	assertType('array<int, bool>', array_column($array, 'column', 'key'));
+	/** @var array<int, array<string, true>> $array */
+	assertType('array<int, true>', array_column($array, 'column', 'key'));
+	/** @var array<int, array<string, null>> $array */
+	assertType('array<\'\'|int, null>', array_column($array, 'column', 'key'));
+	/** @var array<int, array<string, array>> $array */
+	assertType('array<int, array>', array_column($array, 'column', 'key'));
 }
 
 function testConstantArrays(array $array): void
@@ -54,6 +65,17 @@ function testConstantArrays(array $array): void
 	assertType('non-empty-array<int, string>', array_column($array, 'column'));
 	assertType('non-empty-array<string, string>', array_column($array, 'column', 'key'));
 	assertType('non-empty-array<string, array{column: string, key: string}>', array_column($array, null, 'key'));
+
+	/** @var array<int, array{column: string, key: float}> $array */
+	assertType('array<int, string>', array_column($array, 'column', 'key'));
+	/** @var array<int, array{column: string, key: bool}> $array */
+	assertType('array<0|1, string>', array_column($array, 'column', 'key'));
+	/** @var array<int, array{column: string, key: true}> $array */
+	assertType('array<1, string>', array_column($array, 'column', 'key'));
+	/** @var array<int, array{column: string, key: null}> $array */
+	assertType('array<\'\', string>', array_column($array, 'column', 'key'));
+	/** @var array<int, array{column: string, key: array}> $array */
+	assertType('array<int, string>', array_column($array, 'column', 'key'));
 }
 
 function testImprecise(array $array): void {
@@ -84,8 +106,8 @@ function testObjects(array $array): void {
 	assertType('array<string, DOMElement>', array_column($array, null, 'tagName'));
 	assertType('array<int, mixed>', array_column($array, 'foo'));
 	assertType('array<string, mixed>', array_column($array, 'foo', 'tagName'));
-	assertType('array<string>', array_column($array, 'nodeName', 'foo'));
-	assertType('array<DOMElement>', array_column($array, null, 'foo'));
+	assertType('array<int|string, string>', array_column($array, 'nodeName', 'foo'));
+	assertType('array<int|string, DOMElement>', array_column($array, null, 'foo'));
 
 	/** @var non-empty-array<int, DOMElement> $array */
 	assertType('non-empty-array<int, string>', array_column($array, 'nodeName'));
@@ -93,8 +115,8 @@ function testObjects(array $array): void {
 	assertType('non-empty-array<string, DOMElement>', array_column($array, null, 'tagName'));
 	assertType('array<int, mixed>', array_column($array, 'foo'));
 	assertType('array<string, mixed>', array_column($array, 'foo', 'tagName'));
-	assertType('non-empty-array<string>', array_column($array, 'nodeName', 'foo'));
-	assertType('non-empty-array<DOMElement>', array_column($array, null, 'foo'));
+	assertType('non-empty-array<int|string, string>', array_column($array, 'nodeName', 'foo'));
+	assertType('non-empty-array<int|string, DOMElement>', array_column($array, null, 'foo'));
 
 	/** @var array{DOMElement} $array */
 	assertType('array{string}', array_column($array, 'nodeName'));

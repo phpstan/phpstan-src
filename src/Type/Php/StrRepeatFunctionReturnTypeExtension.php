@@ -12,9 +12,11 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use function count;
+use function str_repeat;
 
 class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -40,6 +42,10 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 		if ((new ConstantIntegerType(0))->isSuperTypeOf($multiplierType)->yes()) {
 			return new ConstantStringType('');
+		}
+
+		if ($multiplierType instanceof ConstantIntegerType && $multiplierType->getValue() < 0) {
+			return new NeverType();
 		}
 
 		if ($inputType instanceof ConstantStringType && $multiplierType instanceof ConstantIntegerType) {

@@ -90,7 +90,7 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			$returnKeyType = new IntegerType();
 		}
 
-		$returnType = new ArrayType($returnKeyType, $returnValueType);
+		$returnType = new ArrayType($this->castToArrayKeyType($returnKeyType), $returnValueType);
 
 		if ($iterableAtLeastOnce->yes()) {
 			$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
@@ -125,6 +125,9 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				$keyType = null;
 			}
 
+			if ($keyType !== null) {
+				$keyType = $this->castToArrayKeyType($keyType);
+			}
 			$builder->setOffsetValueType($keyType, $valueType);
 		}
 
@@ -178,6 +181,21 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		return TypeCombinator::union(...$returnTypes);
+	}
+
+	private function castToArrayKeyType(Type $type): Type
+	{
+		$isArray = $type->isArray();
+		if ($isArray->yes()) {
+			return new IntegerType();
+		}
+		if ($isArray->no()) {
+			return ArrayType::castToArrayKeyType($type);
+		}
+		return TypeCombinator::union(
+			ArrayType::castToArrayKeyType(TypeCombinator::remove($type, new ArrayType(new MixedType(), new MixedType()))),
+			new IntegerType(),
+		);
 	}
 
 }

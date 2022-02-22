@@ -1537,6 +1537,13 @@ services:
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
+	-
+		class: PHPStan\PhpDoc\StubFilesExtensionLoader
+		tags:
+			- phpstan.stubFilesExtension
+		arguments:
+			bleedingEdge: %featureToggles.bleedingEdge%
+
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver
 		factory: @PHPStan\Rules\Exceptions\DefaultExceptionTypeResolver

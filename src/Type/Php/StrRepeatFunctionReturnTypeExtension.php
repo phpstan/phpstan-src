@@ -42,6 +42,10 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			return new ConstantStringType('');
 		}
 
+		if ($inputType instanceof ConstantStringType && $multiplierType instanceof ConstantIntegerType) {
+			return new ConstantStringType(str_repeat($inputType->getValue(), $multiplierType->getValue()));
+		}
+
 		$accessoryTypes = [];
 		if ($inputType->isNonEmptyString()->yes()) {
 			if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($multiplierType)->yes()) {

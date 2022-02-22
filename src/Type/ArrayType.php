@@ -342,7 +342,11 @@ class ArrayType implements Type
 				return $offsetType;
 			}
 
-			if ($offsetType instanceof FloatType || $offsetType instanceof BooleanType || $offsetType->isNumericString()->yes()) {
+			if ($offsetType instanceof BooleanType) {
+				return new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
+			}
+
+			if ($offsetType instanceof FloatType || $offsetType->isNumericString()->yes()) {
 				return new IntegerType();
 			}
 

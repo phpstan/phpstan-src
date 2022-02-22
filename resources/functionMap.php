@@ -11726,7 +11726,7 @@ return [
 'stream_isatty' => ['bool', 'stream'=>'resource'],
 'stream_notification_callback' => ['callback', 'notification_code'=>'int', 'severity'=>'int', 'message'=>'string', 'message_code'=>'int', 'bytes_transferred'=>'int', 'bytes_max'=>'int'],
 'stream_resolve_include_path' => ['string|false', 'filename'=>'string'],
-'stream_select' => ['int|false', '&rw_read_streams'=>'resource[]', '&rw_write_streams'=>'resource[]|null', '&rw_except_streams'=>'resource[]|null', 'tv_sec'=>'?int', 'tv_usec='=>'?int'],
+'stream_select' => ['int|false', '&rw_read_streams'=>'resource[]|null', '&rw_write_streams'=>'resource[]|null', '&rw_except_streams'=>'resource[]|null', 'tv_sec'=>'?int', 'tv_usec='=>'?int'],
 'stream_set_blocking' => ['bool', 'socket'=>'resource', 'mode'=>'bool'],
 'stream_set_chunk_size' => ['int|false', 'fp'=>'resource', 'chunk_size'=>'int'],
 'stream_set_read_buffer' => ['int', 'fp'=>'resource', 'buffer'=>'int'],

@@ -346,7 +346,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataLoopInitialAssignments
-	 * @param mixed[][] $expectedErrors
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
 	public function testLoopInitialAssignments(
 		bool $polluteScopeWithLoopInitialAssignments,

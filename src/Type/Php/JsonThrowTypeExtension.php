@@ -55,7 +55,7 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 		}
 
 		$optionsExpr = $functionCall->getArgs()[$argumentPosition]->value;
-		if ($this->bitwiseFlagAnalyser->exprContainsConstant($optionsExpr, $scope, 'JSON_THROW_ON_ERROR')) {
+		if ($this->bitwiseFlagAnalyser->exprContainsConstant($optionsExpr, $scope, 'JSON_THROW_ON_ERROR')->yes()) {
 			return new ObjectType('JsonException');
 		}
 

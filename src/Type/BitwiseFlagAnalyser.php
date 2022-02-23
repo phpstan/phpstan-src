@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantIntegerType;
 
 final class BitwiseFlagAnalyser
@@ -17,13 +18,13 @@ final class BitwiseFlagAnalyser
 	{
 	}
 
-	public function exprContainsConstant(Expr $expr, Scope $scope, string $constName): bool
+	public function exprContainsConstant(Expr $expr, Scope $scope, string $constName): TrinaryLogic
 	{
 		if ($expr instanceof ConstFetch) {
 			$resolveConstantName = $this->reflectionProvider->resolveConstantName($expr->name, $scope);
 
 			if ($resolveConstantName !== $constName) {
-				return false;
+				return TrinaryLogic::createNo();
 			}
 		}
 
@@ -36,16 +37,19 @@ final class BitwiseFlagAnalyser
 			if ($valueType instanceof ConstantIntegerType) {
 				return $this->exprContainsIntFlag($expr, $scope, $valueType->getValue());
 			}
+
+			// $exprType = $scope->getType($expr);
+			//return $exprType->isSuperTypeOf($valueType);
 		}
 
-		return false;
+		return TrinaryLogic::createNo();
 	}
 
-	private function exprContainsIntFlag(Expr $expr, Scope $scope, int $flag): bool
+	private function exprContainsIntFlag(Expr $expr, Scope $scope, int $flag): TrinaryLogic
 	{
 		if ($expr instanceof BitwiseOr) {
-			return $this->exprContainsIntFlag($expr->left, $scope, $flag) ||
-				$this->exprContainsIntFlag($expr->right, $scope, $flag);
+			return TrinaryLogic::createFromBoolean($this->exprContainsIntFlag($expr->left, $scope, $flag)->yes() ||
+				$this->exprContainsIntFlag($expr->right, $scope, $flag)->yes());
 		}
 
 		$exprType = $scope->getType($expr);
@@ -55,23 +59,44 @@ final class BitwiseFlagAnalyser
 		}
 
 		if ($exprType instanceof UnionType) {
+			$containsMaybe = false;
+
 			foreach ($exprType->getTypes() as $type) {
-				if ($this->typeContainsIntFlag($type, $flag) === true) {
-					return true;
+				$containsFlag = $this->typeContainsIntFlag($type, $flag);
+				if ($containsFlag->yes()) {
+					return TrinaryLogic::createYes();
 				}
+				if (!$containsFlag->maybe()) {
+					continue;
+				}
+
+				$containsMaybe = true;
+			}
+
+			if ($containsMaybe) {
+				return TrinaryLogic::createMaybe();
 			}
 		}
 
-		return false;
-	}
-
-	private function typeContainsIntFlag(Type $type, int $flag): bool
-	{
-		if ($type instanceof ConstantIntegerType) {
-			return ($type->getValue() & $flag) === $flag;
+		$integerType = new IntegerType();
+		$mixedType = new MixedType();
+		if ($integerType->isSuperTypeOf($exprType)->yes() || $exprType instanceof MixedType) {
+			return TrinaryLogic::createMaybe();
 		}
 
-		return false;
+		return TrinaryLogic::createNo();
+	}
+
+	private function typeContainsIntFlag(Type $type, int $flag): TrinaryLogic
+	{
+		if ($type instanceof ConstantIntegerType) {
+			if (($type->getValue() & $flag) === $flag) {
+				return TrinaryLogic::createYes();
+			}
+			return TrinaryLogic::createNo();
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 }

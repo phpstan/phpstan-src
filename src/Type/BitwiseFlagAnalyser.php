@@ -37,9 +37,6 @@ final class BitwiseFlagAnalyser
 			if ($valueType instanceof ConstantIntegerType) {
 				return $this->exprContainsIntFlag($expr, $scope, $valueType->getValue());
 			}
-
-			// $exprType = $scope->getType($expr);
-			//return $exprType->isSuperTypeOf($valueType);
 		}
 
 		return TrinaryLogic::createNo();
@@ -79,7 +76,6 @@ final class BitwiseFlagAnalyser
 		}
 
 		$integerType = new IntegerType();
-		$mixedType = new MixedType();
 		if ($integerType->isSuperTypeOf($exprType)->yes() || $exprType instanceof MixedType) {
 			return TrinaryLogic::createMaybe();
 		}

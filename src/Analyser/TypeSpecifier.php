@@ -210,7 +210,9 @@ class TypeSpecifier
 						}
 						$argType = $scope->getType($exprNode->getArgs()[0]->value);
 						if ($argType->isArray()->yes()) {
-							return $this->create($exprNode->getArgs()[0]->value, new NonEmptyArrayType(), $newContext, false, $scope);
+							$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope);
+							$valueTypes = $this->create($exprNode->getArgs()[0]->value, new NonEmptyArrayType(), $newContext, false, $scope);
+							return $funcTypes->unionWith($valueTypes);
 						}
 					}
 				}
@@ -230,7 +232,9 @@ class TypeSpecifier
 						}
 						$argType = $scope->getType($exprNode->getArgs()[0]->value);
 						if ($argType instanceof StringType) {
-							return $this->create($exprNode->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $newContext, false, $scope);
+							$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope);
+							$valueTypes = $this->create($exprNode->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $newContext, false, $scope);
+							return $funcTypes->unionWith($valueTypes);
 						}
 					}
 				}

@@ -62,6 +62,8 @@ class ErrorsConsoleStyle extends SymfonyStyle
 
 		// manual wrapping could be replaced with $table->setColumnMaxWidth()
 		// but it's buggy for <href> lines
+		// https://github.com/symfony/symfony/issues/45520
+		// https://github.com/symfony/symfony/issues/45521
 		$headers = $this->wrap($headers, $terminalWidth, $maxHeaderWidth);
 		foreach ($rows as $i => $row) {
 			$rows[$i] = $this->wrap($row, $terminalWidth, $maxHeaderWidth);

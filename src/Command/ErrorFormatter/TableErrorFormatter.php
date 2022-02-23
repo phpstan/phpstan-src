@@ -7,6 +7,7 @@ use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use function array_map;
 use function count;
 use function is_string;
@@ -66,6 +67,7 @@ class TableErrorFormatter implements ErrorFormatter
 
 		foreach ($fileErrors as $file => $errors) {
 			$rows = [];
+			$relativeFilePath = $this->relativePathHelper->getRelativePath($file);
 			foreach ($errors as $error) {
 				$message = $error->getMessage();
 				if ($error->getTip() !== null) {
@@ -75,15 +77,13 @@ class TableErrorFormatter implements ErrorFormatter
 				}
 				if (is_string($this->editorUrl)) {
 					$url = str_replace(['%file%', '%line%'], [$error->getTraitFilePath() ?? $error->getFilePath(), (string) $error->getLine()], $this->editorUrl);
-					$message .= "\n✏️  <href=" . $url . '>' . $url . '</>';
+					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $relativeFilePath . '</>';
 				}
 				$rows[] = [
 					(string) $error->getLine(),
 					$message,
 				];
 			}
-
-			$relativeFilePath = $this->relativePathHelper->getRelativePath($file);
 
 			$style->table(['Line', $relativeFilePath], $rows);
 		}

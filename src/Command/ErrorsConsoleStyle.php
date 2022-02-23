@@ -8,7 +8,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Terminal;
-use function array_map;
+use function explode;
+use function implode;
+use function str_starts_with;
 use function strlen;
 use function wordwrap;
 use const DIRECTORY_SEPARATOR;
@@ -58,20 +60,45 @@ class ErrorsConsoleStyle extends SymfonyStyle
 			$maxHeaderWidth = $length;
 		}
 
-		$wrap = static fn ($rows): array => array_map(static fn ($row): array => array_map(static function ($s) use ($terminalWidth, $maxHeaderWidth) {
-					if ($terminalWidth > $maxHeaderWidth + 5) {
-						return wordwrap(
-							$s,
-							$terminalWidth - $maxHeaderWidth - 5,
-							"\n",
-							true,
-						);
-					}
+		// manual wrapping could be replaced with $table->setColumnMaxWidth()
+		// but it's buggy for <href> lines
+		$headers = $this->wrap($headers, $terminalWidth, $maxHeaderWidth);
+		foreach ($rows as $i => $row) {
+			$rows[$i] = $this->wrap($row, $terminalWidth, $maxHeaderWidth);
+		}
 
-					return $s;
-		}, $row), $rows);
+		$table = $this->createTable();
+		$table->setHeaders($headers);
+		$table->setRows($rows);
 
-		parent::table($headers, $wrap($rows));
+		$table->render();
+		$this->newLine();
+	}
+
+	/**
+	 * @param string[] $rows
+	 * @return string[]
+	 */
+	private function wrap(array $rows, int $terminalWidth, int $maxHeaderWidth): array
+	{
+		foreach ($rows as $i => $column) {
+			$columnRows = explode("\n", $column);
+			foreach ($columnRows as $k => $columnRow) {
+				if (str_starts_with($columnRow, '✏️')) {
+					continue;
+				}
+				$columnRows[$k] = wordwrap(
+					$columnRow,
+					$terminalWidth - $maxHeaderWidth - 5,
+					"\n",
+					true,
+				);
+			}
+
+			$rows[$i] = implode("\n", $columnRows);
+		}
+
+		return $rows;
 	}
 
 	public function createProgressBar(int $max = 0): ProgressBar

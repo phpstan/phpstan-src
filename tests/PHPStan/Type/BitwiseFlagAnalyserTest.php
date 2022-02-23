@@ -17,7 +17,7 @@ use function sprintf;
 final class BitwiseFlagAnalyserTest extends PHPStanTestCase
 {
 
-	public function dataJsonExprContainsConst()
+	public function dataJsonExprContainsConst(): array
 	{
 		if (!defined('JSON_THROW_ON_ERROR')) {
 			return [];
@@ -75,10 +75,20 @@ final class BitwiseFlagAnalyserTest extends PHPStanTestCase
 				'JSON_THROW_ON_ERROR',
 				TrinaryLogic::createNo(),
 			],
+			[
+				new Variable('unionIntFloatVar'),
+				'JSON_THROW_ON_ERROR',
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new Variable('unionStringFloatVar'),
+				'JSON_THROW_ON_ERROR',
+				TrinaryLogic::createNo(),
+			],
 		];
 	}
 
-	public function dataJsonExprContainsConstLegacy()
+	public function dataJsonExprContainsConstLegacy(): array
 	{
 		if (defined('JSON_THROW_ON_ERROR')) {
 			return [];
@@ -130,6 +140,16 @@ final class BitwiseFlagAnalyserTest extends PHPStanTestCase
 				'JSON_THROW_ON_ERROR',
 				TrinaryLogic::createNo(),
 			],
+			[
+				new Variable('unionIntFloatVar'),
+				'JSON_THROW_ON_ERROR',
+				TrinaryLogic::createNo(),
+			],
+			[
+				new Variable('unionStringFloatVar'),
+				'JSON_THROW_ON_ERROR',
+				TrinaryLogic::createNo(),
+			],
 		];
 	}
 
@@ -146,7 +166,9 @@ final class BitwiseFlagAnalyserTest extends PHPStanTestCase
 			->assignVariable('stringVar', new StringType())
 			->assignVariable('integerVar', new IntegerType())
 			->assignVariable('booleanVar', new BooleanType())
-			->assignVariable('floatVar', new FloatType());
+			->assignVariable('floatVar', new FloatType())
+			->assignVariable('unionIntFloatVar', new UnionType([new IntegerType(), new FloatType()]))
+			->assignVariable('unionStringFloatVar', new UnionType([new StringType(), new FloatType()]));
 
 		$analyser = new BitwiseFlagAnalyser($this->createReflectionProvider());
 		$actual = $analyser->exprContainsConstant($expr, $scope, $constName);

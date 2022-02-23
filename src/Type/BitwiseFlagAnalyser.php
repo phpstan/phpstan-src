@@ -51,36 +51,32 @@ final class BitwiseFlagAnalyser
 
 		$exprType = $scope->getType($expr);
 
-		if ($exprType instanceof ConstantIntegerType) {
-			return $this->typeContainsIntFlag($exprType, $flag);
-		}
-
 		if ($exprType instanceof UnionType) {
-			$containsMaybe = false;
-
+			$allTypesContainFlag = true;
+			$someTypesContainFlag = false;
 			foreach ($exprType->getTypes() as $type) {
 				$containsFlag = $this->typeContainsIntFlag($type, $flag);
-				if ($containsFlag->yes()) {
-					return TrinaryLogic::createYes();
+				if (!$containsFlag->yes()) {
+					$allTypesContainFlag = false;
 				}
-				if (!$containsFlag->maybe()) {
+
+				if (!$containsFlag->yes() && !$containsFlag->maybe()) {
 					continue;
 				}
 
-				$containsMaybe = true;
+				$someTypesContainFlag = true;
 			}
 
-			if ($containsMaybe) {
+			if ($allTypesContainFlag) {
+				return TrinaryLogic::createYes();
+			}
+			if ($someTypesContainFlag) {
 				return TrinaryLogic::createMaybe();
 			}
+			return TrinaryLogic::createNo();
 		}
 
-		$integerType = new IntegerType();
-		if ($integerType->isSuperTypeOf($exprType)->yes() || $exprType instanceof MixedType) {
-			return TrinaryLogic::createMaybe();
-		}
-
-		return TrinaryLogic::createNo();
+		return $this->typeContainsIntFlag($exprType, $flag);
 	}
 
 	private function typeContainsIntFlag(Type $type, int $flag): TrinaryLogic
@@ -92,7 +88,12 @@ final class BitwiseFlagAnalyser
 			return TrinaryLogic::createNo();
 		}
 
-		return TrinaryLogic::createMaybe();
+		$integerType = new IntegerType();
+		if ($integerType->isSuperTypeOf($type)->yes() || $type instanceof MixedType) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		return TrinaryLogic::createNo();
 	}
 
 }

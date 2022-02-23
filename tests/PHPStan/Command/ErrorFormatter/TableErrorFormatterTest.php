@@ -169,7 +169,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		$error = new Error('Test', 'Foo.php (in context of trait)', 12, true, 'Foo.php', 'Bar.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], false, null, true), $this->getOutput());
 
-		$this->assertStringContainsString('editor://Bar.php/12', $this->getOutputContent());
+		$this->assertStringContainsString('Bar.php', $this->getOutputContent());
 	}
 
 }

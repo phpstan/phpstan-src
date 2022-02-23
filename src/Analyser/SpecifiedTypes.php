@@ -3,6 +3,9 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Scalar;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
@@ -127,17 +130,21 @@ class SpecifiedTypes
 	{
 		$normalized = $this->normalize();
 
-		$inverseType = static function (Type $subtractedType) {
-			if ($subtractedType instanceof SubtractableType && $subtractedType->getSubtractedType() !== null) {
-				return TypeCombinator::union($subtractedType->getTypeWithoutSubtractedType(), $subtractedType->getSubtractedType());
+		$inverseType = static function (Expr $expr, Type $type) {
+			if ($expr instanceof ClassConstFetch || $expr instanceof ConstFetch || $expr instanceof Scalar) {
+				return $type;
 			}
 
-			return new MixedType(false, $subtractedType);
+			if ($type instanceof SubtractableType && $type->getSubtractedType() !== null) {
+				return TypeCombinator::union($type->getTypeWithoutSubtractedType(), $type->getSubtractedType());
+			}
+
+			return new MixedType(false, $type);
 		};
 
 		return new self(
-			array_map(static fn (array $sureType) => [$sureType[0], $inverseType($sureType[1])], $normalized->sureTypes),
-			array_map(static fn (array $sureNotType) => [$sureNotType[0], $inverseType($sureNotType[1])], $normalized->sureNotTypes),
+			array_map(static fn (array $sureType) => [$sureType[0], $inverseType($sureType[0], $sureType[1])], $normalized->sureTypes),
+			array_map(static fn (array $sureNotType) => [$sureNotType[0], $inverseType($sureNotType[0], $sureNotType[1])], $normalized->sureNotTypes),
 			$normalized->overwrite,
 			$normalized->newConditionalExpressionHolders,
 		);

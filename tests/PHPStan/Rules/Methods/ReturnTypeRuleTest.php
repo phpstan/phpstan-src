@@ -377,11 +377,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-3997.php'], [
 			[
-				'Method Bug3997\Foo::count() should return int but returns string.',
+				"Method Bug3997\Foo::count() should return int<0, max> but returns 'foo'.",
 				13,
 			],
 			[
-				'Method Bug3997\Bar::count() should return int but returns string.',
+				"Method Bug3997\Bar::count() should return int<0, max> but returns 'foo'.",
 				24,
 			],
 			[

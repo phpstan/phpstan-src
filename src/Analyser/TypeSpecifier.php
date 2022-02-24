@@ -674,8 +674,7 @@ class TypeSpecifier
 				throw new ShouldNotHappenException();
 			}
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context);
-			$leftScope = $scope->filterBySpecifiedTypes($context->true() ? $leftTypes : $leftTypes->inverse());
-			$rightTypes = $this->specifyTypesInCondition($leftScope, $expr->right, $context);
+			$rightTypes = $this->specifyTypesInCondition($scope->filterByTruthyValue($expr->left), $expr->right, $context);
 			$types = $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->intersectWith($rightTypes);
 			if ($context->false()) {
 				return new SpecifiedTypes(
@@ -695,8 +694,7 @@ class TypeSpecifier
 				throw new ShouldNotHappenException();
 			}
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context);
-			$leftScope = $scope->filterBySpecifiedTypes($context->true() ? $leftTypes->inverse() : $leftTypes);
-			$rightTypes = $this->specifyTypesInCondition($leftScope, $expr->right, $context);
+			$rightTypes = $this->specifyTypesInCondition($scope->filterByFalseyValue($expr->left), $expr->right, $context);
 			$types = $context->true() ? $leftTypes->intersectWith($rightTypes) : $leftTypes->unionWith($rightTypes);
 			if ($context->true()) {
 				return new SpecifiedTypes(

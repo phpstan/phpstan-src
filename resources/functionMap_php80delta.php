@@ -228,7 +228,7 @@ return [
 		'strripos' => ['int|false', 'haystack'=>'string', 'needle'=>'string|int', 'offset='=>'int'],
 		'strrpos' => ['int|false', 'haystack'=>'string', 'needle'=>'string|int', 'offset='=>'int'],
 		'strstr' => ['string|false', 'haystack'=>'string', 'needle'=>'string|int', 'before_needle='=>'bool'],
-		'substr' => ['string|false', 'string'=>'string', 'start'=>'int', 'length='=>'int'],
+		'substr' => ['__benevolent<string|false>', 'string'=>'string', 'start'=>'int', 'length='=>'int'],
 		'version_compare' => ['int|bool', 'version1'=>'string', 'version2'=>'string', 'operator='=>'string'],
 		'xml_parser_create' => ['resource', 'encoding='=>'string'],
 		'xml_parser_create_ns' => ['resource', 'encoding='=>'string', 'sep='=>'string'],

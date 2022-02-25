@@ -35,3 +35,8 @@ function & get_smarty2()
 
 	return $smarty;
 }
+
+Function upperCaseFunction()
+{
+
+}

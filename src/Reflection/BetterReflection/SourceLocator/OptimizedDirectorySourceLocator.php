@@ -225,10 +225,11 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				}
 				$namespacedName = strtolower(ltrim($namespace . $name, '\\'));
 
-				if ($matches['type'][$i] === 'function') {
+				$lowerType = strtolower($matches['type'][$i]);
+				if ($lowerType === 'function') {
 					$functions[] = $namespacedName;
 				} else {
-					if (strtolower($matches['type'][$i]) === 'enum') {
+					if ($lowerType === 'enum') {
 						$colonPos = strrpos($namespacedName, ':');
 						if (false !== $colonPos) {
 							$namespacedName = substr($namespacedName, 0, $colonPos);

@@ -113,6 +113,11 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 				'OptimizedDirectory\\get_smarty2',
 				'b.php',
 			],
+			[
+				'OptimizedDirectory\\upperCaseFunction',
+				'OptimizedDirectory\\upperCaseFunction',
+				'b.php',
+			],
 		];
 	}
 

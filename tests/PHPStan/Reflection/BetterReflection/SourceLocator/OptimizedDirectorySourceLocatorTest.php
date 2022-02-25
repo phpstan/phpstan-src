@@ -53,6 +53,12 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 			'OptimizedDirectory\\BackedByStringWithoutSpace',
 			'enum.php',
 		];
+
+		yield [
+			'OptimizedDirectory\\UppercaseEnum',
+			'OptimizedDirectory\\UppercaseEnum',
+			'enum.php',
+		];
 	}
 
 	/**

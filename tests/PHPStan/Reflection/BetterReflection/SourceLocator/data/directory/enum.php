@@ -13,3 +13,8 @@ enum BackedByStringWithoutSpace:string
 {
 	// cases
 }
+
+Enum UppercaseEnum:string
+{
+
+}

@@ -228,7 +228,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				if ($matches['type'][$i] === 'function') {
 					$functions[] = $namespacedName;
 				} else {
-					if ($matches['type'][$i] === 'enum') {
+					if (strtolower($matches['type'][$i]) === 'enum') {
 						$colonPos = strrpos($namespacedName, ':');
 						if (false !== $colonPos) {
 							$namespacedName = substr($namespacedName, 0, $colonPos);

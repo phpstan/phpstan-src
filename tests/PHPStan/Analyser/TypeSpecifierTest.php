@@ -310,7 +310,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					$this->createFunctionCall('random'),
 				),
 				[],
-				['$foo' => '~*NEVER*'],
+				['$foo' => 'mixed'],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
@@ -342,7 +342,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					),
 					$this->createFunctionCall('random'),
 				),
-				['$foo' => '~*NEVER*'],
+				['$foo' => 'mixed'],
 				[],
 			],
 
@@ -975,7 +975,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
 				),
 				['$a' => 'non-empty-string|null'],
-				['$a' => '~null'],
+				['$a' => 'mixed~non-empty-string & ~null'],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
@@ -989,7 +989,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
 				),
 				['$a' => 'non-empty-string|null'],
-				['$a' => '~non-empty-string|null'],
+				['$a' => 'mixed~non-empty-string & ~null'],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
@@ -1003,7 +1003,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
 				),
 				['$a' => 'non-empty-array|null'],
-				['$a' => '~non-empty-array|null'],
+				['$a' => 'mixed~non-empty-array & ~null'],
 			],
 			[
 				new Expr\BinaryOp\BooleanAnd(
@@ -1072,7 +1072,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'strlen($foo)' => '~0',
 				],
 				[
-					'$foo' => '~non-empty-string',
+					'$foo' => 'mixed~non-empty-string',
 				],
 			],
 		];

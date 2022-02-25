@@ -58,31 +58,28 @@ class SpecifiedTypes
 	/** @api */
 	public function intersectWith(SpecifiedTypes $other): self
 	{
-		$normalized = $this->normalize();
-		$otherNormalized = $other->normalize();
-
 		$sureTypeUnion = [];
 		$sureNotTypeUnion = [];
 
-		foreach ($normalized->sureTypes as $exprString => [$exprNode, $type]) {
-			if (!isset($otherNormalized->sureTypes[$exprString])) {
+		foreach ($this->sureTypes as $exprString => [$exprNode, $type]) {
+			if (!isset($other->sureTypes[$exprString])) {
 				continue;
 			}
 
 			$sureTypeUnion[$exprString] = [
 				$exprNode,
-				TypeCombinator::union($type, $otherNormalized->sureTypes[$exprString][1]),
+				TypeCombinator::union($type, $other->sureTypes[$exprString][1]),
 			];
 		}
 
-		foreach ($normalized->sureNotTypes as $exprString => [$exprNode, $type]) {
-			if (!isset($otherNormalized->sureNotTypes[$exprString])) {
+		foreach ($this->sureNotTypes as $exprString => [$exprNode, $type]) {
+			if (!isset($other->sureNotTypes[$exprString])) {
 				continue;
 			}
 
 			$sureNotTypeUnion[$exprString] = [
 				$exprNode,
-				TypeCombinator::intersect($type, $otherNormalized->sureNotTypes[$exprString][1]),
+				TypeCombinator::intersect($type, $other->sureNotTypes[$exprString][1]),
 			];
 		}
 
@@ -120,21 +117,20 @@ class SpecifiedTypes
 		return new self($sureTypeUnion, $sureNotTypeUnion);
 	}
 
-	private function normalize(): self
+	public function normalize(Scope $scope): self
 	{
 		$sureTypes = $this->sureTypes;
-		$sureNotTypes = [];
 
 		foreach ($this->sureNotTypes as $exprString => [$exprNode, $sureNotType]) {
 			if (!isset($sureTypes[$exprString])) {
-				$sureNotTypes[$exprString] = [$exprNode, $sureNotType];
+				$sureTypes[$exprString] = [$exprNode, TypeCombinator::remove($scope->getType($exprNode), $sureNotType)];
 				continue;
 			}
 
 			$sureTypes[$exprString][1] = TypeCombinator::remove($sureTypes[$exprString][1], $sureNotType);
 		}
 
-		return new self($sureTypes, $sureNotTypes, $this->overwrite, $this->newConditionalExpressionHolders);
+		return new self($sureTypes, [], $this->overwrite, $this->newConditionalExpressionHolders);
 	}
 
 }

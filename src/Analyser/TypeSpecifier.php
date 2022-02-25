@@ -674,8 +674,9 @@ class TypeSpecifier
 				throw new ShouldNotHappenException();
 			}
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context);
-			$rightTypes = $this->specifyTypesInCondition($scope->filterByTruthyValue($expr->left), $expr->right, $context);
-			$types = $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->intersectWith($rightTypes);
+			$rightScope = $scope->filterByTruthyValue($expr->left);
+			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context);
+			$types = $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope));
 			if ($context->false()) {
 				return new SpecifiedTypes(
 					$types->getSureTypes(),
@@ -694,8 +695,9 @@ class TypeSpecifier
 				throw new ShouldNotHappenException();
 			}
 			$leftTypes = $this->specifyTypesInCondition($scope, $expr->left, $context);
-			$rightTypes = $this->specifyTypesInCondition($scope->filterByFalseyValue($expr->left), $expr->right, $context);
-			$types = $context->true() ? $leftTypes->intersectWith($rightTypes) : $leftTypes->unionWith($rightTypes);
+			$rightScope = $scope->filterByFalseyValue($expr->left);
+			$rightTypes = $this->specifyTypesInCondition($rightScope, $expr->right, $context);
+			$types = $context->true() ? $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($rightScope)) : $leftTypes->unionWith($rightTypes);
 			if ($context->true()) {
 				return new SpecifiedTypes(
 					$types->getSureTypes(),
@@ -849,7 +851,7 @@ class TypeSpecifier
 			);
 
 			$nullSafeTypes = $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
-			return $context->true() ? $types->unionWith($nullSafeTypes) : $types->intersectWith($nullSafeTypes);
+			return $context->true() ? $types->unionWith($nullSafeTypes) : $types->normalize($scope)->intersectWith($nullSafeTypes->normalize($scope));
 		} elseif ($expr instanceof Expr\NullsafeMethodCall && !$context->null()) {
 			$types = $this->specifyTypesInCondition(
 				$scope,
@@ -861,7 +863,7 @@ class TypeSpecifier
 			);
 
 			$nullSafeTypes = $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
-			return $context->true() ? $types->unionWith($nullSafeTypes) : $types->intersectWith($nullSafeTypes);
+			return $context->true() ? $types->unionWith($nullSafeTypes) : $types->normalize($scope)->intersectWith($nullSafeTypes->normalize($scope));
 		} elseif (!$context->null()) {
 			return $this->handleDefaultTruthyOrFalseyContext($context, $expr, $scope);
 		}

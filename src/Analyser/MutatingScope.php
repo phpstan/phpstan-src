@@ -153,6 +153,12 @@ class MutatingScope implements Scope
 	/** @var Type[] */
 	private array $resolvedTypes = [];
 
+	/** @var array<string, self> */
+	private array $truthyScopes = [];
+
+	/** @var array<string, self> */
+	private array $falseyScopes = [];
+
 	private ?string $namespace;
 
 	/**
@@ -4386,8 +4392,16 @@ class MutatingScope implements Scope
 	 */
 	public function filterByTruthyValue(Expr $expr): Scope
 	{
+		$exprString = $this->getNodeKey($expr);
+		if (array_key_exists($exprString, $this->truthyScopes)) {
+			return $this->truthyScopes[$exprString];
+		}
+
 		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createTruthy());
-		return $this->filterBySpecifiedTypes($specifiedTypes);
+		$scope = $this->filterBySpecifiedTypes($specifiedTypes);
+		$this->truthyScopes[$exprString] = $scope;
+
+		return $scope;
 	}
 
 	/**
@@ -4396,8 +4410,16 @@ class MutatingScope implements Scope
 	 */
 	public function filterByFalseyValue(Expr $expr): Scope
 	{
+		$exprString = $this->getNodeKey($expr);
+		if (array_key_exists($exprString, $this->falseyScopes)) {
+			return $this->falseyScopes[$exprString];
+		}
+
 		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($this, $expr, TypeSpecifierContext::createFalsey());
-		return $this->filterBySpecifiedTypes($specifiedTypes);
+		$scope = $this->filterBySpecifiedTypes($specifiedTypes);
+		$this->falseyScopes[$exprString] = $scope;
+
+		return $scope;
 	}
 
 	public function filterBySpecifiedTypes(SpecifiedTypes $specifiedTypes): self

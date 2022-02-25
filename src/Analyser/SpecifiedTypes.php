@@ -117,6 +117,7 @@ class SpecifiedTypes
 		return new self($sureTypeUnion, $sureNotTypeUnion);
 	}
 
+	/** @api */
 	public function normalize(Scope $scope): self
 	{
 		$sureTypes = $this->sureTypes;

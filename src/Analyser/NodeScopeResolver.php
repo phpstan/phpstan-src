@@ -139,6 +139,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 use Throwable;
 use function array_fill_keys;
+use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
@@ -2858,6 +2859,13 @@ class NodeScopeResolver
 		$byRefUses = [];
 
 		if ($passedToType !== null && !$passedToType->isCallable()->no()) {
+			if ($passedToType instanceof UnionType) {
+				$passedToType = TypeCombinator::union(...array_filter(
+					$passedToType->getTypes(),
+					static fn (Type $type) => $type->isCallable()->yes(),
+				));
+			}
+
 			$callableParameters = null;
 			$acceptors = $passedToType->getCallableParametersAcceptors($scope);
 			if (count($acceptors) === 1) {
@@ -2987,6 +2995,13 @@ class NodeScopeResolver
 		}
 
 		if ($passedToType !== null && !$passedToType->isCallable()->no()) {
+			if ($passedToType instanceof UnionType) {
+				$passedToType = TypeCombinator::union(...array_filter(
+					$passedToType->getTypes(),
+					static fn (Type $type) => $type->isCallable()->yes(),
+				));
+			}
+
 			$callableParameters = null;
 			$acceptors = $passedToType->getCallableParametersAcceptors($scope);
 			if (count($acceptors) === 1) {

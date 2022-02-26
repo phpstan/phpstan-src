@@ -20,15 +20,22 @@ function testMixed($a) {
 	if (is_subclass_of($a, 'DateTimeInterface')) {
 		assertType('class-string<DateTimeInterface>|DateTimeInterface', $a);
 		assertType('DateTimeInterface', new $a());
+	} else {
+		assertType('mixed~class-string<DateTimeInterface>|DateTimeInterface', $a);
 	}
 
 	if (is_subclass_of($a, 'DateTimeInterface') || is_subclass_of($a, 'stdClass')) {
 		assertType('class-string<DateTimeInterface>|class-string<stdClass>|DateTimeInterface|stdClass', $a);
 		assertType('DateTimeInterface|stdClass', new $a());
+	} else {
+		// could also exclude stdClass
+		assertType('mixed~class-string<DateTimeInterface>|DateTimeInterface', $a);
 	}
 
 	if (is_subclass_of($a, C::class)) {
 		assertType('int', $a::f());
+	} else {
+		assertType('mixed~class-string<PHPStan\Generics\GenericClassStringType\C>|PHPStan\Generics\GenericClassStringType\C', $a);
 	}
 }
 
@@ -40,6 +47,8 @@ function testObject($a) {
 
 	if (is_subclass_of($a, 'DateTimeInterface')) {
 		assertType('DateTimeInterface', $a);
+	} else {
+		assertType('object~DateTimeInterface', $a);
 	}
 }
 
@@ -52,10 +61,14 @@ function testString($a) {
 	if (is_subclass_of($a, 'DateTimeInterface')) {
 		assertType('class-string<DateTimeInterface>', $a);
 		assertType('DateTimeInterface', new $a());
+	} else {
+		assertType('string', $a);
 	}
 
 	if (is_subclass_of($a, C::class)) {
 		assertType('int', $a::f());
+	} else {
+		assertType('string', $a);
 	}
 }
 
@@ -68,10 +81,14 @@ function testStringObject($a) {
 	if (is_subclass_of($a, 'DateTimeInterface')) {
 		assertType('class-string<DateTimeInterface>|DateTimeInterface', $a);
 		assertType('DateTimeInterface', new $a());
+	} else {
+		assertType('object~DateTimeInterface|string', $a);
 	}
 
 	if (is_subclass_of($a, C::class)) {
 		assertType('int', $a::f());
+	} else {
+		assertType('object~PHPStan\Generics\GenericClassStringType\C|string', $a);
 	}
 }
 
@@ -84,6 +101,29 @@ function testClassString($a) {
 	if (is_subclass_of($a, 'DateTime')) {
 		assertType('class-string<DateTime>', $a);
 		assertType('DateTime', new $a());
+	} else {
+		assertType('class-string<DateTimeInterface>', $a);
+	}
+}
+
+/**
+ * @param object|string $a
+ * @param class-string<\DateTimeInterface> $b
+ */
+function testClassStringAsClassName($a, string $b) {
+	assertType('object', new $a());
+
+	if (is_subclass_of($a, $b)) {
+		assertType('class-string<DateTimeInterface>|DateTimeInterface', $a);
+		assertType('DateTimeInterface', new $a());
+	} else {
+		assertType('object|string', $a);
+	}
+
+	if (is_subclass_of($a, $b, false)) {
+		assertType('DateTimeInterface', $a);
+	} else {
+		assertType('object|string', $a);
 	}
 }
 

@@ -16,16 +16,16 @@ class TemplateTypeHelper
 	/**
 	 * Replaces template types with standin types
 	 */
-	public static function resolveTemplateTypes(Type $type, TemplateTypeMap $standins): Type
+	public static function resolveTemplateTypes(Type $type, TemplateTypeMap $standins, bool $keepErrorTypes = false): Type
 	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins): Type {
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins, $keepErrorTypes): Type {
 			if ($type instanceof TemplateType && !$type->isArgument()) {
 				$newType = $standins->getType($type->getName());
 				if ($newType === null) {
 					return $traverse($type);
 				}
 
-				if ($newType instanceof ErrorType) {
+				if ($newType instanceof ErrorType && !$keepErrorTypes) {
 					return $traverse($type->getBound());
 				}
 

@@ -121,4 +121,9 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6472.php'], []);
 	}
 
+	public function testFilterIteratorChildClass(): void
+	{
+		$this->analyse([__DIR__ . '/data/filter-iterator-child-class.php'], []);
+	}
+
 }

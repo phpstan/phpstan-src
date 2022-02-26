@@ -157,6 +157,8 @@ interface Type
 	 */
 	public function tryRemove(Type $typeToRemove): ?Type;
 
+	public function generalize(GeneralizePrecision $precision): Type;
+
 	/**
 	 * @param mixed[] $properties
 	 */

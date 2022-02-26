@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -194,7 +195,7 @@ trait TemplateTypeTrait
 		$resolvedBound = TemplateTypeHelper::resolveTemplateTypes($this->getBound(), $map);
 		if ($resolvedBound->isSuperTypeOf($receivedType)->yes()) {
 			return (new TemplateTypeMap([
-				$this->name => $this->shouldGeneralizeInferredType() ? TemplateTypeHelper::generalizeType($receivedType) : $receivedType,
+				$this->name => $this->shouldGeneralizeInferredType() ? $receivedType->generalize(GeneralizePrecision::templateArgument()) : $receivedType,
 			]))->union($map);
 		}
 

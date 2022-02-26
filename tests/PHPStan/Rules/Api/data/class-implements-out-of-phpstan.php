@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeReference;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
@@ -287,6 +288,11 @@ class Baz implements Type
 	public function traverse(callable $cb): \PHPStan\Type\Type
 	{
 		// TODO: Implement traverse() method.
+	}
+
+	public function generalize(GeneralizePrecision $precision): Type
+	{
+		// TODO: Implement generalize() method.
 	}
 
 	public function tryRemove(Type $typeToRemove): ?Type

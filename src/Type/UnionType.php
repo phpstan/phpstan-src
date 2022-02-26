@@ -22,6 +22,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_map;
 use function count;
 use function implode;
@@ -31,6 +32,8 @@ use function strpos;
 /** @api */
 class UnionType implements CompoundType
 {
+
+	use NonGeneralizableTypeTrait;
 
 	/** @var Type[] */
 	private array $types;

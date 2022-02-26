@@ -8,6 +8,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -179,6 +180,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	public function traverse(callable $cb): Type
 	{
 		return $this;
+	}
+
+	public function generalize(GeneralizePrecision $precision): Type
+	{
+		return new StringType();
 	}
 
 	public static function __set_state(array $properties): Type

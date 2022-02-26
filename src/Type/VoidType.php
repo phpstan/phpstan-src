@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
@@ -24,6 +25,7 @@ class VoidType implements Type
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonRemoveableTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	/** @api */
 	public function __construct()

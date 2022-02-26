@@ -7,6 +7,7 @@ use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
@@ -28,6 +29,7 @@ class FloatType implements Type
 	use NonGenericTypeTrait;
 	use NonOffsetAccessibleTypeTrait;
 	use NonRemoveableTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	/** @api */
 	public function __construct()

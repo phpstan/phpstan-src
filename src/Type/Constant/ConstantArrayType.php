@@ -625,6 +625,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $this;
 		}
 
+		if ($precision->isTemplateArgument()) {
+			return $this->traverse(static fn (Type $type) => $type->generalize($precision));
+		}
+
 		$arrayType = new ArrayType(
 			TypeUtils::generalizeType($this->getKeyType(), $precision),
 			TypeUtils::generalizeType($this->getItemType(), $precision),

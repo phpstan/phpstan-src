@@ -116,13 +116,7 @@ class TypeUtils
 
 	public static function generalizeType(Type $type, GeneralizePrecision $precision): Type
 	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($precision): Type {
-			if ($type instanceof ConstantType) {
-				return $type->generalize($precision);
-			}
-
-			return $traverse($type);
-		});
+		return $type->generalize($precision);
 	}
 
 	/**

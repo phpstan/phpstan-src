@@ -16,6 +16,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
@@ -34,6 +35,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 	use TruthyBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonRemoveableTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	/** @var array<int, ParameterReflection> */
 	private array $parameters;

@@ -15,15 +15,11 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use function count;
 use function strtolower;
@@ -44,61 +40,43 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 		if (count($node->getArgs()) < 2) {
 			return new SpecifiedTypes();
 		}
-		$objectType = $scope->getType($node->getArgs()[0]->value);
 		$classType = $scope->getType($node->getArgs()[1]->value);
 		$allowStringType = isset($node->getArgs()[2]) ? $scope->getType($node->getArgs()[2]->value) : new ConstantBooleanType(true);
 		$allowString = !$allowStringType->equals(new ConstantBooleanType(false));
 
-		if (!$classType instanceof ConstantStringType) {
-			if ($context->truthy()) {
-				if ($allowString) {
-					$type = TypeCombinator::union(
-						new ObjectWithoutClassType(),
-						new ClassStringType(),
-					);
-				} else {
-					$type = new ObjectWithoutClassType();
-				}
-
-				return $this->typeSpecifier->create(
-					$node->getArgs()[0]->value,
-					$type,
-					$context,
-					false,
-					$scope,
-				);
-			}
-
-			return new SpecifiedTypes();
+		if (!$classType instanceof ConstantStringType && !$context->truthy()) {
+			return new SpecifiedTypes([], []);
 		}
 
-		$type = TypeTraverser::map($objectType, static function (Type $type, callable $traverse) use ($classType, $allowString): Type {
-			if ($type instanceof UnionType) {
+		$type = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use ($allowString): Type {
+			if ($type instanceof UnionType || $type instanceof IntersectionType) {
 				return $traverse($type);
 			}
-			if ($type instanceof IntersectionType) {
-				return $traverse($type);
-			}
-			if ($allowString) {
-				if ($type instanceof StringType) {
-					return new GenericClassStringType(new ObjectType($classType->getValue()));
-				}
-			}
-			if ($type instanceof ObjectWithoutClassType || $type instanceof TypeWithClassName) {
-				return new ObjectType($classType->getValue());
-			}
-			if ($type instanceof MixedType) {
-				$objectType = new ObjectType($classType->getValue());
+			if ($type instanceof ConstantStringType) {
 				if ($allowString) {
 					return TypeCombinator::union(
-						new GenericClassStringType($objectType),
-						$objectType,
+						new ObjectType($type->getValue()),
+						new GenericClassStringType(new ObjectType($type->getValue())),
 					);
 				}
-
-				return $objectType;
+				return new ObjectType($type->getValue());
 			}
-			return new NeverType();
+			if ($type instanceof GenericClassStringType) {
+				if ($allowString) {
+					return TypeCombinator::union(
+						$type->getGenericType(),
+						$type,
+					);
+				}
+				return $type->getGenericType();
+			}
+			if ($allowString) {
+				return TypeCombinator::union(
+					new ObjectWithoutClassType(),
+					new ClassStringType(),
+				);
+			}
+			return new ObjectWithoutClassType();
 		});
 
 		return $this->typeSpecifier->create(

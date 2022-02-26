@@ -26,6 +26,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -66,6 +67,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 		$this->scope = $this->scope->assignVariable('foo', new MixedType());
 		$this->scope = $this->scope->assignVariable('classString', new ClassStringType());
 		$this->scope = $this->scope->assignVariable('genericClassString', new GenericClassStringType(new ObjectType('Bar')));
+		$this->scope = $this->scope->assignVariable('object', new ObjectWithoutClassType());
 	}
 
 	/**
@@ -957,12 +959,55 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new FuncCall(new Name('is_subclass_of'), [
+					new Arg(new Variable('object')),
+					new Arg(new Variable('stringOrNull')),
+					new Arg(new Expr\ConstFetch(new Name('false'))),
+				]),
+				[
+					'$object' => 'object',
+				],
+				[],
+			],
+			[
+				new FuncCall(new Name('is_subclass_of'), [
 					new Arg(new Variable('string')),
 					new Arg(new Variable('stringOrNull')),
 					new Arg(new Expr\ConstFetch(new Name('false'))),
 				]),
 				[
 					'$string' => 'object',
+				],
+				[],
+			],
+			[
+				new FuncCall(new Name('is_subclass_of'), [
+					new Arg(new Variable('string')),
+					new Arg(new Variable('genericClassString')),
+				]),
+				[
+					'$string' => 'Bar|class-string<Bar>',
+				],
+				[],
+			],
+			[
+				new FuncCall(new Name('is_subclass_of'), [
+					new Arg(new Variable('object')),
+					new Arg(new Variable('genericClassString')),
+					new Arg(new Expr\ConstFetch(new Name('false'))),
+				]),
+				[
+					'$object' => 'Bar',
+				],
+				[],
+			],
+			[
+				new FuncCall(new Name('is_subclass_of'), [
+					new Arg(new Variable('string')),
+					new Arg(new Variable('genericClassString')),
+					new Arg(new Expr\ConstFetch(new Name('false'))),
+				]),
+				[
+					'$string' => 'Bar',
 				],
 				[],
 			],

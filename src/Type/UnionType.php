@@ -478,12 +478,12 @@ class UnionType implements CompoundType
 
 	public function isSmallerThan(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThan($otherType));
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThan($otherType));
 	}
 
 	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThanOrEqual($otherType));
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThanOrEqual($otherType));
 	}
 
 	public function getSmallerType(): Type
@@ -508,12 +508,12 @@ class UnionType implements CompoundType
 
 	public function isGreaterThan(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThan($type));
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThan($type));
 	}
 
 	public function isGreaterThanOrEqual(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThanOrEqual($type));
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThanOrEqual($type));
 	}
 
 	public function toBoolean(): BooleanType
@@ -664,6 +664,14 @@ class UnionType implements CompoundType
 	 * @param callable(Type $type): TrinaryLogic $getResult
 	 */
 	protected function unionResults(callable $getResult): TrinaryLogic
+	{
+		return TrinaryLogic::extremeIdentity(...array_map($getResult, $this->types));
+	}
+
+	/**
+	 * @param callable(Type $type): TrinaryLogic $getResult
+	 */
+	private function notBenevolentUnionResults(callable $getResult): TrinaryLogic
 	{
 		return TrinaryLogic::extremeIdentity(...array_map($getResult, $this->types));
 	}

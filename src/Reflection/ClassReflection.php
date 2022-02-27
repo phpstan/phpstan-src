@@ -82,6 +82,8 @@ class ClassReflection
 
 	private ?TemplateTypeMap $templateTypeMap = null;
 
+	private ?TemplateTypeMap $activeTemplateTypeMap = null;
+
 	/** @var array<string,ClassReflection>|null */
 	private ?array $ancestors = null;
 
@@ -1060,10 +1062,13 @@ class ClassReflection
 
 	public function getActiveTemplateTypeMap(): TemplateTypeMap
 	{
+		if ($this->activeTemplateTypeMap !== null) {
+			return $this->activeTemplateTypeMap;
+		}
 		$resolved = $this->resolvedTemplateTypeMap;
 		if ($resolved !== null) {
 			$templateTypeMap = $this->getTemplateTypeMap();
-			return $resolved->map(static function (string $name, Type $type) use ($templateTypeMap): Type {
+			return $this->activeTemplateTypeMap = $resolved->map(static function (string $name, Type $type) use ($templateTypeMap): Type {
 				if ($type instanceof ErrorType) {
 					$templateType = $templateTypeMap->getType($name);
 					if ($templateType !== null) {
@@ -1075,7 +1080,7 @@ class ClassReflection
 			});
 		}
 
-		return $this->getTemplateTypeMap();
+		return $this->activeTemplateTypeMap = $this->getTemplateTypeMap();
 	}
 
 	public function getPossiblyIncompleteActiveTemplateTypeMap(): TemplateTypeMap

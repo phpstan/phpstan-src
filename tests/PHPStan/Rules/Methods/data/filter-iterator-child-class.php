@@ -34,9 +34,11 @@ interface IteratorChild extends \Iterator
 {
 
 	/** @return int */
+	#[\ReturnTypeWillChange]
 	public function key();
 
 	/** @return int */
+	#[\ReturnTypeWillChange]
 	public function current();
 
 }
@@ -46,9 +48,11 @@ interface IteratorChild2 extends \Iterator
 {
 
 	/** @return int */
+	#[\ReturnTypeWillChange]
 	public function key();
 
 	/** @return int */
+	#[\ReturnTypeWillChange]
 	public function current();
 
 }

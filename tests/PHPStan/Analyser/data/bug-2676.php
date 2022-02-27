@@ -39,7 +39,7 @@ function (Wallet $wallet): void
 	assertType('DoctrineIntersectionTypeIsSupertypeOf\Collection&iterable<Bug2676\BankAccount>', $bankAccounts);
 
 	foreach ($bankAccounts as $key => $bankAccount) {
-		assertType('(int|string)', $key);
+		assertType('mixed', $key);
 		assertType('Bug2676\BankAccount', $bankAccount);
 	}
 };

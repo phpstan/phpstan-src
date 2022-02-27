@@ -25,9 +25,6 @@ class GenericTypeVariableResolver
 
 		$activeTemplateTypeMap = $ancestorClassReflection->getPossiblyIncompleteActiveTemplateTypeMap();
 
-		// todo if type is not defined, return the bound
-		// in case of mixed bound, return implicit mixed
-
 		$type = $activeTemplateTypeMap->getType($typeVariableName);
 		if ($type instanceof ErrorType) {
 			$templateTypeMap = $ancestorClassReflection->getTemplateTypeMap();

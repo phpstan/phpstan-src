@@ -2,6 +2,8 @@
 
 namespace FilterIteratorChild;
 
+use function PHPStan\Testing\assertType;
+
 class ArchivableFilesFinder extends \FilterIterator
 {
 
@@ -21,7 +23,53 @@ class ArchivableFilesFinderTest
 
 	public function doFoo(ArchivableFilesFinder $finder): void
 	{
+		foreach ($finder as $f) {
+			assertType('mixed', $f);
+		}
+	}
 
+}
+
+interface IteratorChild extends \Iterator
+{
+
+	/** @return int */
+	public function key();
+
+	/** @return int */
+	public function current();
+
+}
+
+/** @extends \Iterator<mixed, mixed> */
+interface IteratorChild2 extends \Iterator
+{
+
+	/** @return int */
+	public function key();
+
+	/** @return int */
+	public function current();
+
+}
+
+class Foo
+{
+
+	public function doFoo(IteratorChild $c)
+	{
+		foreach ($c as $k => $v) {
+			assertType('int', $k);
+			assertType('int', $v);
+		}
+	}
+
+	public function doFoo2(IteratorChild2 $c)
+	{
+		foreach ($c as $k => $v) {
+			assertType('mixed', $k);
+			assertType('mixed', $v);
+		}
 	}
 
 }

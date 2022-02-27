@@ -445,7 +445,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					)),
 				]),
 				['$foo' => 'static(DateTime)'],
-				['$foo' => '~static(DateTime)'],
+				[],
 			],
 			[
 				new FuncCall(new Name('is_a'), [
@@ -461,7 +461,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Arg(new Variable('genericClassString')),
 				]),
 				['$foo' => 'Bar'],
-				['$foo' => '~Bar'],
+				[],
 			],
 			[
 				new FuncCall(new Name('is_a'), [
@@ -470,7 +470,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Arg(new Expr\ConstFetch(new Name('true'))),
 				]),
 				['$foo' => 'class-string<Foo>|Foo'],
-				['$foo' => '~Foo'],
+				['$foo' => '~class-string<Foo>|Foo'],
 			],
 			[
 				new FuncCall(new Name('is_a'), [
@@ -478,7 +478,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Arg(new Variable('className')),
 					new Arg(new Expr\ConstFetch(new Name('true'))),
 				]),
-				['$foo' => 'class-string<object>|object'],
+				['$foo' => 'class-string|object'],
 				[],
 			],
 			[
@@ -488,7 +488,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Arg(new Variable('unknown')),
 				]),
 				['$foo' => 'class-string<Foo>|Foo'],
-				['$foo' => '~Foo'],
+				['$foo' => '~class-string<Foo>|Foo'],
 			],
 			[
 				new FuncCall(new Name('is_a'), [
@@ -496,7 +496,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Arg(new Variable('className')),
 					new Arg(new Variable('unknown')),
 				]),
-				['$foo' => 'class-string<object>|object'],
+				['$foo' => 'class-string|object'],
 				[],
 			],
 			[

@@ -23,6 +23,6 @@ function (string $foo) {
 
 function (string $foo, string $someString) {
 	if (is_a($foo, $someString, true)) {
-		\PHPStan\Testing\assertType('class-string<object>', $foo);
+		\PHPStan\Testing\assertType('class-string', $foo);
 	}
 };

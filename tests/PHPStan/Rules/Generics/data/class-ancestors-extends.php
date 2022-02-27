@@ -193,3 +193,13 @@ class FooGeneric9 extends FooGeneric8
 {
 
 }
+
+class FilterIteratorChild extends \FilterIterator
+{
+
+	public function accept()
+	{
+		return true;
+	}
+
+}

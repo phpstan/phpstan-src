@@ -77,3 +77,18 @@ class Foo
 	}
 
 }
+
+interface IteratorChild3 extends \Iterator
+{
+
+}
+
+class IteratorChildTest
+{
+
+	public function doFoo(IteratorChild3 $c)
+	{
+
+	}
+
+}

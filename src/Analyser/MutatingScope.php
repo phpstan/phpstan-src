@@ -1406,13 +1406,11 @@ class MutatingScope implements Scope
 				return new ErrorType();
 			}
 
-			if (($leftType->isString()->yes() && !$leftType->isNumericString()->yes())
-				|| ($rightType->isString()->yes() && !$rightType->isNumericString()->yes())) {
-				return new ErrorType();
-			}
-
 			$leftNumberType = $leftType->toNumber();
 			$rightNumberType = $rightType->toNumber();
+			if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
+				return new ErrorType();
+			}
 
 			if (
 				(new FloatType())->isSuperTypeOf($leftNumberType)->yes()

@@ -248,3 +248,9 @@ function bug6624_no_error($numericString) {
 	echo (10 * $numericLiteral);
 	echo (10 / $numericLiteral);
 }
+
+function benevolentPlus(array $a, int $i): void {
+	foreach ($a as $k => $v) {
+		echo $k + $i;
+	}
+};

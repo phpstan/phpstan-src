@@ -130,10 +130,7 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 
 	public function toNumber(): Type
 	{
-		return new UnionType([
-			$this->toInteger(),
-			$this->toFloat(),
-		]);
+		return new ErrorType();
 	}
 
 	public function toInteger(): Type

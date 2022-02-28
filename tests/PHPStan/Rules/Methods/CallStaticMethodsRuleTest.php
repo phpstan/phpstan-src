@@ -21,10 +21,12 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	private bool $checkThisOnly;
 
+	private bool $checkExplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, false);
+		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, $this->checkExplicitMixed);
 		return new CallStaticMethodsRule(
 			new StaticMethodCallCheck($reflectionProvider, $ruleLevelHelper, new ClassCaseSensitivityCheck($reflectionProvider, true), true, true),
 			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
@@ -466,6 +468,28 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 		// handled by a different rule
 		$this->analyse([__DIR__ . '/data/first-class-static-method-callable.php'], []);
+	}
+
+	public function testBug5893(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5893.php'], []);
+	}
+
+	public function testBug6249(): void
+	{
+		// discussion https://github.com/phpstan/phpstan/discussions/6249
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6249.php'], []);
+	}
+
+	public function testBug5749(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5749.php'], []);
 	}
 
 }

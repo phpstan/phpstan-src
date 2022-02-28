@@ -8,8 +8,10 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -52,8 +54,13 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 			$nonEmpty = true;
 		}
 
+		$keyType = TypeCombinator::union(...$keyTypes);
+		if ($keyType instanceof NeverType && !$keyType->isExplicit()) {
+			return new ConstantArrayType([], []);
+		}
+
 		$arrayType = new ArrayType(
-			TypeCombinator::union(...$keyTypes),
+			$keyType,
 			TypeCombinator::union(...$valueTypes),
 		);
 

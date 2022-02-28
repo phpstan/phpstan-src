@@ -31,4 +31,9 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6020(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6020.php'], []);
+	}
+
 }

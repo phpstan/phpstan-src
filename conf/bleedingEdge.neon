@@ -2,5 +2,6 @@ parameters:
 	featureToggles:
 		bleedingEdge: true
 		skipCheckGenericClasses: []
+		explicitMixedInUnknownGenericNew: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Countable.stub

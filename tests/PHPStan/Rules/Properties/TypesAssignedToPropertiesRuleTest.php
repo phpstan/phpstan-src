@@ -13,9 +13,11 @@ use const PHP_VERSION_ID;
 class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 {
 
+	private bool $checkExplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
-		return new TypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false), new PropertyDescriptor(), new PropertyReflectionFinder());
+		return new TypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed), new PropertyDescriptor(), new PropertyReflectionFinder());
 	}
 
 	public function testTypesAssignedToProperties(): void
@@ -385,6 +387,17 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 	public function testBug6117(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6117.php'], []);
+	}
+
+	public function testGenericObjectWithUnspecifiedTemplateTypes(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/generic-object-unspecified-template-types.php'], [
+			[
+				'Property GenericObjectUnspecifiedTemplateTypes\Foo::$obj (ArrayObject<int, string>) does not accept ArrayObject<(int|string), mixed>.',
+				13,
+			],
+		]);
 	}
 
 }

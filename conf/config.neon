@@ -27,6 +27,7 @@ parameters:
 			- CallbackFilterIterator
 			- FilterIterator
 			- RecursiveCallbackFilterIterator
+		explicitMixedInUnknownGenericNew: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -200,6 +201,7 @@ parametersSchema:
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		skipCheckGenericClasses: listOf(string()),
+		explicitMixedInUnknownGenericNew: bool(),
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

@@ -162,6 +162,7 @@ abstract class PHPStanTestCase extends TestCase
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container,
 			$container->getByType(PhpVersion::class),
+			$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
 		);
 	}
 

@@ -24,6 +24,8 @@ class LazyScopeFactory implements ScopeFactory
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $explicitMixedInUnknownGenericNew;
+
 	public function __construct(
 		private string $scopeClass,
 		private Container $container,
@@ -31,6 +33,7 @@ class LazyScopeFactory implements ScopeFactory
 	{
 		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 		$this->treatPhpDocTypesAsCertain = $container->getParameter('treatPhpDocTypesAsCertain');
+		$this->explicitMixedInUnknownGenericNew = $this->container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'];
 	}
 
 	/**
@@ -96,6 +99,7 @@ class LazyScopeFactory implements ScopeFactory
 			$this->treatPhpDocTypesAsCertain,
 			$afterExtractCall,
 			$parentScope,
+			$this->explicitMixedInUnknownGenericNew,
 		);
 	}
 

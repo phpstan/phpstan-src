@@ -39,6 +39,7 @@ class DirectScopeFactory implements ScopeFactory
 		private bool $treatPhpDocTypesAsCertain,
 		Container $container,
 		private PhpVersion $phpVersion,
+		private bool $explicitMixedInUnknownGenericNew,
 	)
 	{
 		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
@@ -107,6 +108,7 @@ class DirectScopeFactory implements ScopeFactory
 			$this->treatPhpDocTypesAsCertain,
 			$afterExtractCall,
 			$parentScope,
+			$this->explicitMixedInUnknownGenericNew,
 		);
 	}
 

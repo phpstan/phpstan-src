@@ -200,6 +200,7 @@ class MutatingScope implements Scope
 		private bool $treatPhpDocTypesAsCertain = true,
 		private bool $afterExtractCall = false,
 		private ?Scope $parentScope = null,
+		private bool $explicitMixedInUnknownGenericNew = false,
 	)
 	{
 		if ($namespace === '') {
@@ -2894,6 +2895,7 @@ class MutatingScope implements Scope
 			false,
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->explicitMixedInUnknownGenericNew,
 		);
 	}
 
@@ -5649,9 +5651,36 @@ class MutatingScope implements Scope
 			$constructorMethod->getVariants(),
 		);
 
+		if ($this->explicitMixedInUnknownGenericNew) {
+			return new GenericObjectType(
+				$resolvedClassName,
+				$classReflection->typeMapToList($parametersAcceptor->getResolvedTemplateTypeMap()),
+			);
+		}
+
+		$resolvedPhpDoc = $classReflection->getResolvedPhpDoc();
+		if ($resolvedPhpDoc === null) {
+			return $objectType;
+		}
+
+		$list = [];
+		$typeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
+		foreach ($resolvedPhpDoc->getTemplateTags() as $tag) {
+			$templateType = $typeMap->getType($tag->getName());
+			if ($templateType !== null) {
+				$list[] = $templateType;
+				continue;
+			}
+			$bound = $tag->getBound();
+			if ($bound instanceof MixedType && $bound->isExplicitMixed()) {
+				$bound = new MixedType(false);
+			}
+			$list[] = $bound;
+		}
+
 		return new GenericObjectType(
 			$resolvedClassName,
-			$classReflection->typeMapToList($parametersAcceptor->getResolvedTemplateTypeMap()),
+			$list,
 		);
 	}
 

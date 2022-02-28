@@ -2395,6 +2395,10 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug6423(): void
 	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;

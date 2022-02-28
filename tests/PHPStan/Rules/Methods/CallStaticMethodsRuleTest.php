@@ -479,6 +479,10 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testBug6249(): void
 	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
 		// discussion https://github.com/phpstan/phpstan/discussions/6249
 		$this->checkThisOnly = false;
 		$this->checkExplicitMixed = true;

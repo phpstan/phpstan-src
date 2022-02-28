@@ -629,6 +629,10 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug6023(): void
 	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-6023.php'], []);
 	}

@@ -90,6 +90,9 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 
 	public function testBug5969(): void
 	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
 		$this->analyse([__DIR__ . '/data/bug-5969.php'], []);
 	}
 

@@ -9,18 +9,9 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\Generic\GenericClassStringType;
-use PHPStan\Type\IntersectionType;
-use PHPStan\Type\ObjectType;
-use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\UnionType;
 use function count;
 use function strtolower;
 
@@ -28,6 +19,12 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 {
 
 	private TypeSpecifier $typeSpecifier;
+
+	public function __construct(
+		private IsAFunctionTypeSpecifyingHelper $isAFunctionTypeSpecifyingHelper,
+	)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
@@ -48,40 +45,9 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 			return new SpecifiedTypes([], []);
 		}
 
-		$type = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use ($allowString): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
-			}
-			if ($type instanceof ConstantStringType) {
-				if ($allowString) {
-					return TypeCombinator::union(
-						new ObjectType($type->getValue()),
-						new GenericClassStringType(new ObjectType($type->getValue())),
-					);
-				}
-				return new ObjectType($type->getValue());
-			}
-			if ($type instanceof GenericClassStringType) {
-				if ($allowString) {
-					return TypeCombinator::union(
-						$type->getGenericType(),
-						$type,
-					);
-				}
-				return $type->getGenericType();
-			}
-			if ($allowString) {
-				return TypeCombinator::union(
-					new ObjectWithoutClassType(),
-					new ClassStringType(),
-				);
-			}
-			return new ObjectWithoutClassType();
-		});
-
 		return $this->typeSpecifier->create(
 			$node->getArgs()[0]->value,
-			$type,
+			$this->isAFunctionTypeSpecifyingHelper->determineType($classType, $allowString),
 			$context,
 			false,
 			$scope,

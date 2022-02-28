@@ -62,9 +62,9 @@ class Foo
 	public function doFoo()
 	{
 		$c = new TypeCollection(new ClassStringType(\stdClass::class));
-		assertType('c', $c->validate([\stdClass::class]));
+		assertType('array<class-string<stdClass>>', $c->validate([\stdClass::class]));
 		$c2 = new TypeCollection(new StdClassType());
-		assertType('c', $c2->validate([\stdClass::class]));
+		assertType('array<class-string<stdClass>>', $c2->validate([\stdClass::class]));
 	}
 
 	/**
@@ -96,9 +96,9 @@ class Foo
 
 	/** @param class-string<\stdClass> $p */
 	function test($p): void {
-		assertType('c', $this->unbounded($p));
-		assertType('c', $this->bounded1($p));
-		assertType('c', $this->bounded2($p));
+		assertType('class-string<stdClass>', $this->unbounded($p));
+		assertType('class-string<stdClass>', $this->bounded1($p));
+		assertType('class-string<stdClass>', $this->bounded2($p));
 	}
 
 }
@@ -133,7 +133,7 @@ class Example
 
 	public function getFactories(): void
 	{
-		assertType('c', new Collection($this->factories));
+		assertType('Bug6505\Collection<string, array<int, class-string>>', new Collection($this->factories));
 	}
 }
 

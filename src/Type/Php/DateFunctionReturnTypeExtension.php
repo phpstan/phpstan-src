@@ -5,17 +5,19 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
 use function date;
-use function is_numeric;
 use function sprintf;
 
 class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -76,17 +78,31 @@ class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtens
 			}
 		}
 
+		$types = [];
 		foreach ($constantStrings as $constantString) {
-			$formattedDate = date($constantString->getValue());
-			if (!is_numeric($formattedDate)) {
-				return new StringType();
-			}
+			$types[] = ConstantTypeHelper::getTypeFromValue(date($constantString->getValue()));
 		}
 
-		return new IntersectionType([
-			new StringType(),
-			new AccessoryNumericStringType(),
-		]);
+		$type = TypeCombinator::union(...$types);
+		if ($type->isNumericString()->yes()) {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNumericStringType(),
+			]);
+		}
+
+		if ($type->isNonEmptyString()->yes()) {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNonEmptyStringType(),
+			]);
+		}
+
+		if ($type->isNonEmptyString()->no()) {
+			return new ConstantStringType('');
+		}
+
+		return new StringType();
 	}
 
 	private function buildNumericRangeType(int $min, int $max, bool $zeroPad): Type

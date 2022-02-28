@@ -1439,6 +1439,9 @@ services:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
+		class: PHPStan\Type\Php\IsAFunctionTypeSpecifyingHelper
+
+	-
 		class: PHPStan\Type\Php\ArrayIsListFunctionTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension

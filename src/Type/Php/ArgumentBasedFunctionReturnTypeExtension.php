@@ -10,7 +10,6 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 
 class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -55,8 +54,8 @@ class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		$argumentKeyType = $argumentType->getIterableKeyType();
 		$argumentValueType = $argumentType->getIterableValueType();
 		if ($argument->unpack) {
-			$argumentKeyType = TypeUtils::generalizeType($argumentKeyType, GeneralizePrecision::moreSpecific());
-			$argumentValueType = TypeUtils::generalizeType($argumentValueType->getIterableValueType(), GeneralizePrecision::moreSpecific());
+			$argumentKeyType = $argumentKeyType->generalize(GeneralizePrecision::moreSpecific());
+			$argumentValueType = $argumentValueType->getIterableValueType()->generalize(GeneralizePrecision::moreSpecific());
 		}
 
 		return new ArrayType(

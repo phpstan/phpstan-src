@@ -12,7 +12,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 
 class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -43,7 +42,7 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 				}
 			}
 
-			$keyTypes[] = TypeUtils::generalizeType($argType->getIterableKeyType(), GeneralizePrecision::moreSpecific());
+			$keyTypes[] = $argType->getIterableKeyType()->generalize(GeneralizePrecision::moreSpecific());
 			$valueTypes[] = $argType->getIterableValueType();
 
 			if (!$argType->isIterableAtLeastOnce()->yes()) {

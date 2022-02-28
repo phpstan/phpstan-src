@@ -156,7 +156,7 @@ class IntersectionType implements CompoundType
 					if ($type instanceof AccessoryType) {
 						continue;
 					}
-					$typeNames[] = TypeUtils::generalizeType($type, GeneralizePrecision::lessSpecific())->describe($level);
+					$typeNames[] = $type->generalize(GeneralizePrecision::lessSpecific())->describe($level);
 				}
 
 				return implode('&', $typeNames);

@@ -29,7 +29,6 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_keys;
@@ -499,7 +498,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$arrays[] = new self($tmp->keyTypes, $tmp->valueTypes, $tmp->nextAutoIndex, array_keys($tmp->keyTypes));
 		}
 
-		return TypeUtils::generalizeType(TypeCombinator::union(...$arrays), GeneralizePrecision::moreSpecific());
+		return TypeCombinator::union(...$arrays)->generalize(GeneralizePrecision::moreSpecific());
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
@@ -630,8 +629,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		$arrayType = new ArrayType(
-			TypeUtils::generalizeType($this->getKeyType(), $precision),
-			TypeUtils::generalizeType($this->getItemType(), $precision),
+			$this->getKeyType()->generalize($precision),
+			$this->getItemType()->generalize($precision),
 		);
 
 		if (count($this->keyTypes) > count($this->optionalKeys)) {
@@ -648,7 +647,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	{
 		$valueTypes = [];
 		foreach ($this->valueTypes as $valueType) {
-			$valueTypes[] = TypeUtils::generalizeType($valueType, GeneralizePrecision::lessSpecific());
+			$valueTypes[] = $valueType->generalize(GeneralizePrecision::lessSpecific());
 		}
 
 		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndex, $this->optionalKeys);

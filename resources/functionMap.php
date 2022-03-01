@@ -8489,7 +8489,7 @@ return [
 'PDOStatement::setAttribute' => ['bool', 'attribute'=>'int', 'value'=>'mixed'],
 'PDOStatement::setFetchMode' => ['bool', 'mode'=>'int'],
 'PDOStatement::setFetchMode\'1' => ['bool', 'fetch_column'=>'int', 'colno'=>'int'],
-'PDOStatement::setFetchMode\'2' => ['bool', 'fetch_class'=>'int', 'classname'=>'string', 'ctorargs'=>'?array'],
+'PDOStatement::setFetchMode\'2' => ['bool', 'fetch_class'=>'int', 'classname'=>'string', 'ctorargs='=>'?array'],
 'PDOStatement::setFetchMode\'3' => ['bool', 'fetch_into'=>'int', 'object'=>'object'],
 'pfsockopen' => ['resource|false', 'hostname'=>'string', 'port='=>'int', '&w_errno='=>'int', '&w_errstr='=>'string', 'timeout='=>'float'],
 'pg_affected_rows' => ['int', 'result'=>'resource'],

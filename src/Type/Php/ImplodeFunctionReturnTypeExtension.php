@@ -14,6 +14,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function count;
 use function implode;
 use function in_array;
@@ -83,17 +84,22 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 
 	private function inferConstantType(ConstantArrayType $arrayType, ConstantStringType $separatorType): ?Type
 	{
-		$valueTypes = $arrayType->getValueTypes();
+		$strings = [];
+		foreach ($arrayType->getAllArrays() as $array) {
+			$valueTypes = $array->getValueTypes();
 
-		$arrayValues = [];
-		foreach ($valueTypes as $valueType) {
-			if (!$valueType instanceof ConstantScalarType) {
-				return null;
+			$arrayValues = [];
+			foreach ($valueTypes as $valueType) {
+				if (!$valueType instanceof ConstantScalarType) {
+					return null;
+				}
+				$arrayValues[] = $valueType->getValue();
 			}
-			$arrayValues[] = $valueType->getValue();
+
+			$strings[] = new ConstantStringType(implode($separatorType->getValue(), $arrayValues));
 		}
 
-		return new ConstantStringType(implode($separatorType->getValue(), $arrayValues));
+		return TypeCombinator::union(...$strings);
 	}
 
 }

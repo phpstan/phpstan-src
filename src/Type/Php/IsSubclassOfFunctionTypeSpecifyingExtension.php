@@ -37,6 +37,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 		if (count($node->getArgs()) < 2) {
 			return new SpecifiedTypes();
 		}
+		$objectOrClassType = $scope->getType($node->getArgs()[0]->value);
 		$classType = $scope->getType($node->getArgs()[1]->value);
 		$allowStringType = isset($node->getArgs()[2]) ? $scope->getType($node->getArgs()[2]->value) : new ConstantBooleanType(true);
 		$allowString = !$allowStringType->equals(new ConstantBooleanType(false));
@@ -47,7 +48,7 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 
 		return $this->typeSpecifier->create(
 			$node->getArgs()[0]->value,
-			$this->isAFunctionTypeSpecifyingHelper->determineType($classType, $allowString),
+			$this->isAFunctionTypeSpecifyingHelper->determineType($objectOrClassType, $classType, $allowString, false),
 			$context,
 			false,
 			$scope,

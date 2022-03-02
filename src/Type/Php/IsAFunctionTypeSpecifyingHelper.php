@@ -6,28 +6,54 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 
 final class IsAFunctionTypeSpecifyingHelper
 {
 
 	public function determineType(
+		Type $objectOrClassType,
 		Type $classType,
 		bool $allowString,
+		bool $allowSameClass,
 	): Type
 	{
+		$objectOrClassTypeClassNameType = TypeTraverser::map(
+			$objectOrClassType,
+			static function (Type $type, callable $traverse): Type {
+				if ($type instanceof UnionType || $type instanceof IntersectionType) {
+					return $traverse($type);
+				}
+				if ($type instanceof GenericClassStringType) {
+					return $traverse($type->getGenericType());
+				}
+				if ($type instanceof TypeWithClassName) {
+					return $type;
+				}
+				return new ObjectType('');
+			},
+		);
+		$objectOrClassTypeClassName = $objectOrClassTypeClassNameType instanceof TypeWithClassName
+			? $objectOrClassTypeClassNameType->getClassName()
+			: null;
+
 		return TypeTraverser::map(
 			$classType,
-			static function (Type $type, callable $traverse) use ($allowString): Type {
+			static function (Type $type, callable $traverse) use ($objectOrClassTypeClassName, $allowString, $allowSameClass): Type {
 				if ($type instanceof UnionType || $type instanceof IntersectionType) {
 					return $traverse($type);
 				}
 				if ($type instanceof ConstantStringType) {
+					if (!$allowSameClass && $type->getValue() === $objectOrClassTypeClassName) {
+						return new NeverType();
+					}
 					if ($allowString) {
 						return TypeCombinator::union(
 							new ObjectType($type->getValue()),
@@ -38,14 +64,18 @@ final class IsAFunctionTypeSpecifyingHelper
 					return new ObjectType($type->getValue());
 				}
 				if ($type instanceof GenericClassStringType) {
+					$genericType = $type->getGenericType();
+					if (!$allowSameClass && $genericType instanceof TypeWithClassName && $genericType->getClassName() === $objectOrClassTypeClassName) {
+						return new NeverType();
+					}
 					if ($allowString) {
 						return TypeCombinator::union(
-							$type->getGenericType(),
+							$genericType,
 							$type,
 						);
 					}
 
-					return $type->getGenericType();
+					return $genericType;
 				}
 				if ($allowString) {
 					return TypeCombinator::union(

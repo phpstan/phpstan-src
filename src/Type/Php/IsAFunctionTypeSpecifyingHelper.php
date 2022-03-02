@@ -25,7 +25,7 @@ final class IsAFunctionTypeSpecifyingHelper
 		bool $allowSameClass,
 	): Type
 	{
-		$objectOrClassTypeClassName = $this->determineClassNameFromObjectOrClassType($objectOrClassType);
+		$objectOrClassTypeClassName = $this->determineClassNameFromObjectOrClassType($objectOrClassType, $allowString);
 
 		return TypeTraverser::map(
 			$classType,
@@ -68,13 +68,13 @@ final class IsAFunctionTypeSpecifyingHelper
 		);
 	}
 
-	private function determineClassNameFromObjectOrClassType(Type $type): ?string
+	private function determineClassNameFromObjectOrClassType(Type $type, bool $allowString): ?string
 	{
 		if ($type instanceof TypeWithClassName) {
 			return $type->getClassName();
 		}
 
-		if ($type instanceof ConstantStringType) {
+		if ($allowString && $type instanceof ConstantStringType) {
 			return $type->getValue();
 		}
 

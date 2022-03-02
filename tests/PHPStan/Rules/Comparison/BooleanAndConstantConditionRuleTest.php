@@ -220,7 +220,6 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 
 	public function testBug2870(): void
 	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-2870.php'], []);
 	}

@@ -18,7 +18,7 @@ final class BitwiseFlagHelper
 	{
 	}
 
-	public function exprContainsConstant(Expr $expr, Scope $scope, string $constName): TrinaryLogic
+	public function bitwiseOrContainsConstant(Expr $expr, Scope $scope, string $constName): TrinaryLogic
 	{
 		if ($expr instanceof ConstFetch) {
 			$resolveConstantName = $this->reflectionProvider->resolveConstantName($expr->name, $scope);

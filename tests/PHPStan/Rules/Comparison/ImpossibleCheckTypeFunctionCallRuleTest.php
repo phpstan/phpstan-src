@@ -462,4 +462,24 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5369.php'], []);
 	}
 
+	public function testBugInArrayDateFormat(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/in-array-date-format.php'], [
+			[
+				'Call to function in_array() with arguments \'a\', non-empty-array<int, \'a\'> and true will always evaluate to true.',
+				39,
+			],
+			[
+				'Call to function in_array() with arguments \'b\', non-empty-array<int, \'a\'> and true will always evaluate to false.',
+				43,
+			],
+			[
+				'Call to function in_array() with arguments int, array{} and true will always evaluate to false.',
+				47,
+			],
+		]);
+	}
+
 }

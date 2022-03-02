@@ -170,7 +170,7 @@ final class BitwiseFlagAnalyserTest extends PHPStanTestCase
 			->assignVariable('unionIntFloatVar', new UnionType([new IntegerType(), new FloatType()]))
 			->assignVariable('unionStringFloatVar', new UnionType([new StringType(), new FloatType()]));
 
-		$analyser = new BitwiseFlagAnalyser($this->createReflectionProvider());
+		$analyser = new BitwiseFlagHelper($this->createReflectionProvider());
 		$actual = $analyser->exprContainsConstant($expr, $scope, $constName);
 		$this->assertTrue($expected->equals($actual), sprintf('Expected Trinary::%s but got Trinary::%s.', $expected->describe(), $actual->describe()));
 	}

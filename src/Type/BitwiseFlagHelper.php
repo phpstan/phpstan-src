@@ -11,7 +11,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantIntegerType;
 
-final class BitwiseFlagAnalyser
+final class BitwiseFlagHelper
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

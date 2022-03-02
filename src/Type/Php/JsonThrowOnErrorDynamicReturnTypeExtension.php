@@ -8,7 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Type\BitwiseFlagAnalyser;
+use PHPStan\Type\BitwiseFlagHelper;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
@@ -26,7 +26,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private BitwiseFlagAnalyser $bitwiseFlagAnalyser,
+		private BitwiseFlagHelper  $bitwiseFlagAnalyser,
 	)
 	{
 	}

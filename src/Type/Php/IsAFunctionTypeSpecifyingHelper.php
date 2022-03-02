@@ -25,24 +25,7 @@ final class IsAFunctionTypeSpecifyingHelper
 		bool $allowSameClass,
 	): Type
 	{
-		$objectOrClassTypeClassNameType = TypeTraverser::map(
-			$objectOrClassType,
-			static function (Type $type, callable $traverse): Type {
-				if ($type instanceof UnionType || $type instanceof IntersectionType) {
-					return $traverse($type);
-				}
-				if ($type instanceof GenericClassStringType) {
-					return $traverse($type->getGenericType());
-				}
-				if ($type instanceof TypeWithClassName) {
-					return $type;
-				}
-				return new ObjectType('');
-			},
-		);
-		$objectOrClassTypeClassName = $objectOrClassTypeClassNameType instanceof TypeWithClassName
-			? $objectOrClassTypeClassNameType->getClassName()
-			: null;
+		$objectOrClassTypeClassName = $this->determineClassNameFromObjectOrClassType($objectOrClassType);
 
 		return TypeTraverser::map(
 			$classType,
@@ -64,18 +47,14 @@ final class IsAFunctionTypeSpecifyingHelper
 					return new ObjectType($type->getValue());
 				}
 				if ($type instanceof GenericClassStringType) {
-					$genericType = $type->getGenericType();
-					if (!$allowSameClass && $genericType instanceof TypeWithClassName && $genericType->getClassName() === $objectOrClassTypeClassName) {
-						return new NeverType();
-					}
 					if ($allowString) {
 						return TypeCombinator::union(
-							$genericType,
+							$type->getGenericType(),
 							$type,
 						);
 					}
 
-					return $genericType;
+					return $type->getGenericType();
 				}
 				if ($allowString) {
 					return TypeCombinator::union(
@@ -87,6 +66,19 @@ final class IsAFunctionTypeSpecifyingHelper
 				return new ObjectWithoutClassType();
 			},
 		);
+	}
+
+	private function determineClassNameFromObjectOrClassType(Type $type): ?string
+	{
+		if ($type instanceof TypeWithClassName) {
+			return $type->getClassName();
+		}
+
+		if ($type instanceof ConstantStringType) {
+			return $type->getValue();
+		}
+
+		return null;
 	}
 
 }

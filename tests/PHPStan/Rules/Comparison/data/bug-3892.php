@@ -15,7 +15,7 @@ abstract class OrderSaved
 	public const TYP = [PickingOrder::class => '200', ReceiptOrder::class => '300'];
 
 	/** @var Order[] */
-	private array $dtos;
+	private $dtos;
 
 	public function __construct(OrderEntity $order)
 	{

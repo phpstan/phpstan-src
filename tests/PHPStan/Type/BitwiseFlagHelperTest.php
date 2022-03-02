@@ -14,7 +14,7 @@ use PHPStan\TrinaryLogic;
 use function defined;
 use function sprintf;
 
-final class BitwiseFlagAnalyserTest extends PHPStanTestCase
+final class BitwiseFlagHelperTest extends PHPStanTestCase
 {
 
 	public function dataJsonExprContainsConst(): array

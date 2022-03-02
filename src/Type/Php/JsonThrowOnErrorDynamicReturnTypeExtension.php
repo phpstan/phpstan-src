@@ -26,7 +26,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private BitwiseFlagHelper  $bitwiseFlagAnalyser,
+		private BitwiseFlagHelper $bitwiseFlagAnalyser,
 	)
 	{
 	}

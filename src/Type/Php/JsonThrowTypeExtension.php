@@ -24,7 +24,7 @@ class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private BitwiseFlagHelper  $bitwiseFlagAnalyser,
+		private BitwiseFlagHelper $bitwiseFlagAnalyser,
 	)
 	{
 	}

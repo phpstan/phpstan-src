@@ -22,7 +22,23 @@ class TypesAssignedToPropertiesRuleNoBleedingEdgeTest extends RuleTestCase
 	public function testGenericObjectWithUnspecifiedTemplateTypes(): void
 	{
 		$this->checkExplicitMixed = true;
-		$this->analyse([__DIR__ . '/data/generic-object-unspecified-template-types.php'], []);
+		$this->analyse([__DIR__ . '/data/generic-object-unspecified-template-types.php'], [
+			[
+				'Property GenericObjectUnspecifiedTemplateTypes\Bar::$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, string>.',
+				67,
+			],
+		]);
+	}
+
+	public function testGenericObjectWithUnspecifiedTemplateTypesLevel8(): void
+	{
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/generic-object-unspecified-template-types.php'], [
+			[
+				'Property GenericObjectUnspecifiedTemplateTypes\Bar::$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, string>.',
+				67,
+			],
+		]);
 	}
 
 	public static function getAdditionalConfigFiles(): array

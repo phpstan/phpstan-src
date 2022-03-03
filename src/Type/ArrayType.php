@@ -23,7 +23,6 @@ use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_merge;
-use function count;
 use function is_float;
 use function is_int;
 use function key;
@@ -366,25 +365,6 @@ class ArrayType implements Type
 	{
 		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
 			return $receivedType->inferTemplateTypesOn($this);
-		}
-
-		if ($receivedType instanceof ConstantArrayType && count($receivedType->getKeyTypes()) === 0) {
-			$keyType = $this->getKeyType();
-			$typeMap = TemplateTypeMap::createEmpty();
-			if ($keyType instanceof TemplateType) {
-				$typeMap = new TemplateTypeMap([
-					$keyType->getName() => $keyType->getBound(),
-				]);
-			}
-
-			$itemType = $this->getItemType();
-			if ($itemType instanceof TemplateType) {
-				$typeMap = $typeMap->union(new TemplateTypeMap([
-					$itemType->getName() => $itemType->getBound(),
-				]));
-			}
-
-			return $typeMap;
 		}
 
 		if ($receivedType->isArray()->yes()) {

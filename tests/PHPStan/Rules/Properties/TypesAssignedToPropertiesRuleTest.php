@@ -397,6 +397,21 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				'Property GenericObjectUnspecifiedTemplateTypes\Foo::$obj (ArrayObject<int, string>) does not accept ArrayObject<(int|string), mixed>.',
 				13,
 			],
+			[
+				'Property GenericObjectUnspecifiedTemplateTypes\Bar::$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, string>.',
+				67,
+			],
+		]);
+	}
+
+	public function testGenericObjectWithUnspecifiedTemplateTypesLevel8(): void
+	{
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/generic-object-unspecified-template-types.php'], [
+			[
+				'Property GenericObjectUnspecifiedTemplateTypes\Bar::$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, string>.',
+				67,
+			],
 		]);
 	}
 

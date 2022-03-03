@@ -75,8 +75,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		assert(count($keyTypes) === count($valueTypes));
 
 		parent::__construct(
-			count($keyTypes) > 0 ? TypeCombinator::union(...$keyTypes) : new NeverType(),
-			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType(),
+			count($keyTypes) > 0 ? TypeCombinator::union(...$keyTypes) : new NeverType(true),
+			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType(true),
 		);
 	}
 

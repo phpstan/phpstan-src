@@ -930,8 +930,8 @@ class StdClassCollection
 
 function () {
 	$stdEmpty = new StdClassCollection([]);
-	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<(int|string), stdClass>', $stdEmpty);
-	assertType('array<stdClass>', $stdEmpty->getAll());
+	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<*NEVER*, *NEVER*>', $stdEmpty);
+	assertType('array<*NEVER*, *NEVER*>', $stdEmpty->getAll());
 
 	$std = new StdClassCollection([new \stdClass()]);
 	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<int, stdClass>', $std);

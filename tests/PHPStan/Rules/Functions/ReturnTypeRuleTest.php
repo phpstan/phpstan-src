@@ -87,12 +87,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 	public function testBug2568(): void
 	{
 		require_once __DIR__ . '/data/bug-2568.php';
-		$this->analyse([__DIR__ . '/data/bug-2568.php'], [
-			[
-				'Function Bug2568\my_array_keys() should return array<int, T> but returns array<int, (int&T)|(string&T)>.',
-				12,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-2568.php'], []);
 	}
 
 	public function testBug2723(): void

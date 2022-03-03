@@ -434,6 +434,10 @@ class TypeSpecifier
 			) {
 				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context);
 			}
+
+			$leftTypes = $this->create($expr->left, $leftType, $context, false, $scope);
+			$rightTypes = $this->create($expr->right, $rightType, $context, false, $scope);
+			return $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($scope));
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotEqual) {
 			return $this->specifyTypesInCondition(
 				$scope,

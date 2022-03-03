@@ -67,6 +67,18 @@ class Foo
 
 	public function stdClass(\stdClass $a, \stdClass $b): void
 	{
+		if ($a == $a) {
+			assertType('stdClass', $a);
+		} else {
+			assertType('*NEVER*', $a);
+		}
+
+		if ($b != $b) {
+			assertType('*NEVER*', $b);
+		} else {
+			assertType('stdClass', $b);
+		}
+
 		if ($a == $b) {
 			assertType('stdClass', $a);
 			assertType('stdClass', $b);

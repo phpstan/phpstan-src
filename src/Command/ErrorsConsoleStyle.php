@@ -4,12 +4,15 @@ namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Terminal;
+use function array_unshift;
 use function explode;
 use function implode;
+use function sprintf;
 use function str_starts_with;
 use function strlen;
 use function wordwrap;
@@ -65,12 +68,22 @@ class ErrorsConsoleStyle extends SymfonyStyle
 		// https://github.com/symfony/symfony/issues/45520
 		// https://github.com/symfony/symfony/issues/45521
 		$headers = $this->wrap($headers, $terminalWidth, $maxHeaderWidth);
+		foreach ($headers as $i => $header) {
+			$newHeader = [];
+			foreach (explode("\n", $header) as $h) {
+				$newHeader[] = sprintf('<info>%s</info>', $h);
+			}
+
+			$headers[$i] = implode("\n", $newHeader);
+		}
+
 		foreach ($rows as $i => $row) {
 			$rows[$i] = $this->wrap($row, $terminalWidth, $maxHeaderWidth);
 		}
 
 		$table = $this->createTable();
-		$table->setHeaders($headers);
+		array_unshift($rows, new TableSeparator());
+		array_unshift($rows, $headers);
 		$table->setRows($rows);
 
 		$table->render();

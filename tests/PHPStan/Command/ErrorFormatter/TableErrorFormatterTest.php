@@ -7,11 +7,17 @@ use PHPStan\Command\AnalysisResult;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use function putenv;
 use function sprintf;
 use const PHP_VERSION_ID;
 
 class TableErrorFormatterTest extends ErrorFormatterTestCase
 {
+
+	protected function tearDown(): void
+	{
+		putenv('COLUMNS');
+	}
 
 	public function dataFormatterOutputProvider(): iterable
 	{
@@ -170,6 +176,31 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], false, null, true), $this->getOutput());
 
 		$this->assertStringContainsString('Bar.php', $this->getOutputContent());
+	}
+
+	public function testBug6727(): void
+	{
+		putenv('COLUMNS=30');
+		$formatter = new TableErrorFormatter(new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/'), false, null);
+		$formatter->formatErrors(
+			new AnalysisResult(
+				[
+					new Error(
+						'Method MissingTypehintPromotedProperties\Foo::__construct() has parameter $foo with no value type specified in iterable type array.',
+						'/var/www/html/app/src/Foo.php (in context of class App\Foo\Bar)',
+						5,
+					),
+				],
+				[],
+				[],
+				[],
+				false,
+				null,
+				true,
+			),
+			$this->getOutput(),
+		);
+		self::expectNotToPerformAssertions();
 	}
 
 }

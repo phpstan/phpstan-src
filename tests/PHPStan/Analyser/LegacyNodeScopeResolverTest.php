@@ -5250,26 +5250,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$microtimeBenevolent',
 			],
 			[
-				'int',
-				'$strtotimeNow',
-			],
-			[
-				'false',
-				'$strtotimeInvalid',
-			],
-			[
-				'int|false',
-				'$strtotimeUnknown',
-			],
-			[
-				'(int|false)',
-				'$strtotimeUnknown2',
-			],
-			[
-				'int|false',
-				'$strtotimeCrash',
-			],
-			[
 				'-1',
 				'$versionCompare1',
 			],

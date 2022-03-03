@@ -45,6 +45,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		if (PHP_INT_SIZE === 8) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/random-int.php');
 		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/strtotime-return-type-extensions.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/closure-return-type-extensions.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-key.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/intersection-static.php');

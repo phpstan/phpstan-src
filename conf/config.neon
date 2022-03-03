@@ -162,6 +162,7 @@ parameters:
 		- OPENSSL_VERSION_NUMBER
 		- ZEND_DEBUG_BUILD
 		- ZEND_THREAD_SAFE
+	customRulesetUsed: null
 	editorUrl: null
 
 extensions:
@@ -289,7 +290,7 @@ parametersSchema:
 	resultCacheChecksProjectExtensionFilesDependencies: bool()
 	staticReflectionClassNamePatterns: listOf(string())
 	dynamicConstantNames: listOf(string())
-	customRulesetUsed: bool()
+	customRulesetUsed: schema(bool(), nullable())
 	rootDir: string()
 	tmpDir: string()
 	currentWorkingDirectory: string()

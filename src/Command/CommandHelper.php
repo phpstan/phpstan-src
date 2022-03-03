@@ -355,7 +355,9 @@ class CommandHelper
 		}
 
 		self::setUpSignalHandler($errorOutput);
-		if (!$container->hasParameter('customRulesetUsed')) {
+		/** @var bool|null $customRulesetUsed */
+		$customRulesetUsed = $container->getParameter('customRulesetUsed');
+		if ($customRulesetUsed === null) {
 			$errorOutput->writeLineFormatted('');
 			$errorOutput->writeLineFormatted('<comment>No rules detected</comment>');
 			$errorOutput->writeLineFormatted('');
@@ -367,7 +369,7 @@ class CommandHelper
 			$errorOutput->writeLineFormatted('  * in this case, don\'t forget to define parameter <options=bold>customRulesetUsed</> in your config file.');
 			$errorOutput->writeLineFormatted('');
 			throw new InceptionNotSuccessfulException();
-		} elseif ((bool) $container->getParameter('customRulesetUsed')) {
+		} elseif ($customRulesetUsed) {
 			$defaultLevelUsed = false;
 		}
 

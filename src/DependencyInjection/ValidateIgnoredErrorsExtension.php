@@ -37,6 +37,12 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 	 */
 	public function loadConfiguration(): void
 	{
+		$builder = $this->getContainerBuilder();
+		$ignoreErrors = $builder->parameters['ignoreErrors'];
+		if (count($ignoreErrors) === 0) {
+			return;
+		}
+
 		/** @throws void */
 		$parser = Llk::load(new Read('hoa://Library/Regex/Grammar.pp'));
 		$reflectionProvider = new DummyReflectionProvider();
@@ -74,9 +80,6 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 				),
 			),
 		);
-
-		$builder = $this->getContainerBuilder();
-		$ignoreErrors = $builder->parameters['ignoreErrors'];
 		$errors = [];
 
 		foreach ($ignoreErrors as $ignoreError) {

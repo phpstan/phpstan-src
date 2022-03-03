@@ -317,6 +317,9 @@ class TypeSpecifier
 				if ($types !== null) {
 					return $types;
 				}
+
+				return $this->create($expr->left, $exprLeftType, $context, false, $scope)->normalize($scope)
+					->intersectWith($this->create($expr->right, $exprRightType, $context, false, $scope)->normalize($scope));
 			}
 
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotIdentical) {
@@ -437,7 +440,10 @@ class TypeSpecifier
 
 			$leftTypes = $this->create($expr->left, $leftType, $context, false, $scope);
 			$rightTypes = $this->create($expr->right, $rightType, $context, false, $scope);
-			return $context->true() ? $leftTypes->unionWith($rightTypes) : $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($scope));
+
+			return $context->true()
+				? $leftTypes->unionWith($rightTypes)
+				: $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($scope));
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotEqual) {
 			return $this->specifyTypesInCondition(
 				$scope,

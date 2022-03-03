@@ -72,6 +72,14 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 				'Call to method ImpossibleMethodCall\Foo::isSame() with stdClass and stdClass will always evaluate to true.',
 				78,
 			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with stdClass and stdClass will always evaluate to false.',
+				81,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with *NEVER* and stdClass will always evaluate to false.',
+				84,
+			],
 		]);
 	}
 

@@ -1,6 +1,6 @@
 parameters:
-    implicitThrows: false
     exceptions:
+        implicitThrows: false
         check:
             missingCheckedExceptionInThrows: true
             tooWideThrowType: true

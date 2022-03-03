@@ -10,8 +10,6 @@ use Nette\DI\InvalidConfigurationException;
 use Nette\DI\ServiceCreationException;
 use Nette\FileNotFoundException;
 use Nette\InvalidStateException;
-use Nette\Schema\Context as SchemaContext;
-use Nette\Schema\Processor;
 use Nette\Schema\ValidationException;
 use Nette\Utils\AssertionException;
 use Nette\Utils\Strings;
@@ -308,6 +306,12 @@ class CommandHelper
 				$errorOutput->writeLineFormatted('');
 			}
 			throw new InceptionNotSuccessfulException();
+		} catch (ValidationException $e) {
+			foreach ($e->getMessages() as $message) {
+				$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
+				$errorOutput->writeLineFormatted($message);
+			}
+			throw new InceptionNotSuccessfulException();
 		} catch (ServiceCreationException $e) {
 			$matches = Strings::match($e->getMessage(), '#Service of type (?<serviceType>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*[a-zA-Z0-9_\x7f-\xff]): Service of type (?<parserServiceType>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*[a-zA-Z0-9_\x7f-\xff]) needed by \$(?<parameterName>[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*) in (?<methodName>[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)\(\)#');
 			if ($matches === null) {
@@ -365,22 +369,6 @@ class CommandHelper
 			throw new InceptionNotSuccessfulException();
 		} elseif ((bool) $container->getParameter('customRulesetUsed')) {
 			$defaultLevelUsed = false;
-		}
-
-		$schema = $container->getParameter('__parametersSchema');
-		$processor = new Processor();
-		$processor->onNewContext[] = static function (SchemaContext $context): void {
-			$context->path = ['parameters'];
-		};
-
-		try {
-			$processor->process($schema, $container->getParameters());
-		} catch (ValidationException $e) {
-			foreach ($e->getMessages() as $message) {
-				$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
-				$errorOutput->writeLineFormatted($message);
-			}
-			throw new InceptionNotSuccessfulException();
 		}
 
 		foreach ($container->getParameter('bootstrapFiles') as $bootstrapFileFromArray) {

@@ -82,8 +82,7 @@ class ErrorsConsoleStyle extends SymfonyStyle
 		}
 
 		$table = $this->createTable();
-		array_unshift($rows, new TableSeparator());
-		array_unshift($rows, $headers);
+		array_unshift($rows, $headers, new TableSeparator());
 		$table->setRows($rows);
 
 		$table->render();

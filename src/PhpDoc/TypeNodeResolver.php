@@ -8,7 +8,6 @@ use Iterator;
 use IteratorAggregate;
 use Nette\Utils\Strings;
 use PHPStan\Analyser\NameScope;
-use PHPStan\DependencyInjection\Container;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprArrayNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFalseNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
@@ -69,6 +68,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
+use PHPStan\Type\TypeAliasResolverProvider;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
@@ -90,7 +90,8 @@ class TypeNodeResolver
 
 	public function __construct(
 		private TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,
-		private Container $container,
+		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
+		private TypeAliasResolverProvider $typeAliasResolverProvider,
 	)
 	{
 	}
@@ -797,12 +798,12 @@ class TypeNodeResolver
 
 	private function getReflectionProvider(): ReflectionProvider
 	{
-		return $this->container->getByType(ReflectionProvider::class);
+		return $this->reflectionProviderProvider->getReflectionProvider();
 	}
 
 	private function getTypeAliasResolver(): TypeAliasResolver
 	{
-		return $this->container->getByType(TypeAliasResolver::class);
+		return $this->typeAliasResolverProvider->getTypeAliasResolver();
 	}
 
 }

@@ -894,6 +894,10 @@ services:
 			globalTypeAliases: %typeAliases%
 
 	-
+		class: PHPStan\Type\TypeAliasResolverProvider
+		factory: PHPStan\Type\LazyTypeAliasResolverProvider
+
+	-
 		class: PHPStan\Type\Php\ArgumentBasedFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

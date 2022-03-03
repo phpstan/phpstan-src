@@ -10,6 +10,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
@@ -31,7 +32,7 @@ class StrtotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-		if (count($functionCall->getArgs()) !== 1) { // strtotime() & 2nd param baseTimestamp are both unsupported use cases
+		if (count($functionCall->getArgs()) === 0) {
 			return $defaultReturnType;
 		}
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
@@ -49,9 +50,17 @@ class StrtotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			return new ConstantBooleanType(false);
 		}
 
-		$results = array_map('intval', $results);
+		// 2nd param $baseTimestamp is too non-deterministic so simply return int
+		if (count($functionCall->getArgs()) > 1) {
+			return new IntegerType();
+		}
 
-		return IntegerRangeType::createAllGreaterThan(min($results));
+		// if it is positive we can narrow down to positive-int as long as time flows forward
+		if (min(array_map('intval', $results)) > 0) {
+			return IntegerRangeType::createAllGreaterThan(0);
+		}
+
+		return new IntegerType();
 	}
 
 }

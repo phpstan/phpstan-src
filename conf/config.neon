@@ -307,7 +307,7 @@ parametersSchema:
 	tempDir: string()
 
 	# internal parameters only for DerivativeContainerFactory
-	additionalConfigFiles: listOf(string())
+	additionalConfigFiles: arrayOf(string())
 	generateBaselineFile: schema(string(), nullable())
 	analysedPaths: listOf(string())
 	composerAutoloaderProjectPaths: listOf(string())

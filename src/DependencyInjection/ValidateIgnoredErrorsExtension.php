@@ -37,6 +37,7 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 	 */
 	public function loadConfiguration(): void
 	{
+		/** @throws void */
 		$parser = Llk::load(new Read('hoa://Library/Regex/Grammar.pp'));
 		$reflectionProvider = new DummyReflectionProvider();
 		ReflectionProviderStaticAccessor::registerInstance($reflectionProvider);

@@ -91,16 +91,6 @@ parameters:
 			path: src/DependencyInjection/ParametersSchemaExtension.php
 
 		-
-			message: "#^Method PHPStan\\\\DependencyInjection\\\\ValidateIgnoredErrorsExtension\\:\\:loadConfiguration\\(\\) throws checked exception Hoa\\\\Compiler\\\\Exception\\\\Exception but it's missing from the PHPDoc @throws tag\\.$#"
-			count: 1
-			path: src/DependencyInjection/ValidateIgnoredErrorsExtension.php
-
-		-
-			message: "#^Method PHPStan\\\\DependencyInjection\\\\ValidateIgnoredErrorsExtension\\:\\:loadConfiguration\\(\\) throws checked exception Hoa\\\\File\\\\Exception\\\\Exception but it's missing from the PHPDoc @throws tag\\.$#"
-			count: 1
-			path: src/DependencyInjection/ValidateIgnoredErrorsExtension.php
-
-		-
 			message: "#^Variable method call on PHPStan\\\\Reflection\\\\ClassReflection\\.$#"
 			count: 2
 			path: src/PhpDoc/PhpDocBlock.php

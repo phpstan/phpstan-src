@@ -20,6 +20,7 @@ use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
+use PHPStan\DependencyInjection\InvalidIgnoredErrorPatternsException;
 use PHPStan\DependencyInjection\LoaderFactory;
 use PHPStan\DependencyInjection\NeonAdapter;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
@@ -299,6 +300,13 @@ class CommandHelper
 		} catch (InvalidConfigurationException | AssertionException $e) {
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());
+			throw new InceptionNotSuccessfulException();
+		} catch (InvalidIgnoredErrorPatternsException $e) {
+			$errorOutput->writeLineFormatted(sprintf('<error>Invalid %s in ignoreErrors:</error>', count($e->getErrors()) === 1 ? 'entry' : 'entries'));
+			foreach ($e->getErrors() as $error) {
+				$errorOutput->writeLineFormatted($error);
+				$errorOutput->writeLineFormatted('');
+			}
 			throw new InceptionNotSuccessfulException();
 		} catch (ServiceCreationException $e) {
 			$matches = Strings::match($e->getMessage(), '#Service of type (?<serviceType>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*[a-zA-Z0-9_\x7f-\xff]): Service of type (?<parserServiceType>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*[a-zA-Z0-9_\x7f-\xff]) needed by \$(?<parameterName>[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*) in (?<methodName>[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)\(\)#');

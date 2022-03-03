@@ -7,7 +7,6 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
 use PhpParser\Parser\Php7;
 use PhpParser\PrettyPrinter\Standard;
-use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
@@ -52,14 +51,6 @@ class AnalyserTest extends PHPStanTestCase
 	{
 		$result = $this->runAnalyser(['#Unknown error#'], true, __DIR__ . '/data/empty/empty.php', true);
 		$this->assertEmpty($result);
-	}
-
-	public function testReportInvalidIgnorePatternEarly(): void
-	{
-		$result = $this->runAnalyser(['#Regexp syntax error'], true, __DIR__ . '/data/parse-error.php', false);
-		$this->assertSame([
-			"No ending delimiter '#' found in pattern: #Regexp syntax error",
-		], $result);
 	}
 
 	public function testFileWithAnIgnoredError(): void
@@ -311,19 +302,6 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertSame('Ignored error {"message":"#Fail\\\\.#"} is missing a path.', $result[0]);
 	}
 
-	public function testIgnoredErrorMessageStillValidatedIfMissingAPath(): void
-	{
-		$ignoreErrors = [
-			[
-				'message' => '#Fail\.',
-			],
-		];
-		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', false);
-		$this->assertCount(2, $result);
-		$this->assertSame('Ignored error {"message":"#Fail\\\\."} is missing a path.', $result[0]);
-		$this->assertSame('No ending delimiter \'#\' found in pattern: #Fail\.', $result[1]);
-	}
-
 	public function testReportMultipleParserErrorsAtOnce(): void
 	{
 		$result = $this->runAnalyser([], false, __DIR__ . '/data/multipleParseErrors.php', false);
@@ -455,7 +433,6 @@ class AnalyserTest extends PHPStanTestCase
 		}
 
 		$ignoredErrorHelper = new IgnoredErrorHelper(
-			self::getContainer()->getByType(IgnoredRegexValidator::class),
 			$this->getFileHelper(),
 			$ignoreErrors,
 			$reportUnmatchedIgnoredErrors,

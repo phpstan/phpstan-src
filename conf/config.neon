@@ -168,6 +168,7 @@ extensions:
 	rules: PHPStan\DependencyInjection\RulesExtension
 	conditionalTags: PHPStan\DependencyInjection\ConditionalTagsExtension
 	parametersSchema: PHPStan\DependencyInjection\ParametersSchemaExtension
+	validateIgnoredErrors: PHPStan\DependencyInjection\ValidateIgnoredErrorsExtension
 
 parametersSchema:
 	bootstrapFiles: listOf(string())
@@ -483,11 +484,6 @@ services:
 			currentWorkingDirectory: %currentWorkingDirectory%
 			fixerTmpDir: %fixerTmpDir%
 			maximumNumberOfProcesses: %parallel.maximumNumberOfProcesses%
-
-	-
-		class: PHPStan\Command\IgnoredRegexValidator
-		arguments:
-			parser: @regexParser
 
 	-
 		class: PHPStan\Dependency\DependencyResolver
@@ -1722,15 +1718,6 @@ services:
 		arguments:
 			reflector: @betterReflectionReflector
 		autowired: false
-
-	regexParser:
-		class: Hoa\Compiler\Llk\Parser
-		factory: Hoa\Compiler\Llk\Llk::load(@regexGrammarStream)
-
-	regexGrammarStream:
-		class: Hoa\File\Read
-		arguments:
-			streamName: 'hoa://Library/Regex/Grammar.pp'
 
 	runtimeReflectionProvider:
 		class: PHPStan\Reflection\ReflectionProvider\ClassBlacklistReflectionProvider

@@ -65,4 +65,26 @@ class Foo
 		assertType('array', $a);
 	}
 
+	public function stdClass(\stdClass $a, \stdClass $b): void
+	{
+		if ($a == $b) {
+			assertType('stdClass', $a);
+			assertType('stdClass', $b);
+		} else {
+			assertType('stdClass', $a);
+			assertType('stdClass', $b);
+		}
+
+		if ($a != $b) {
+			assertType('stdClass', $a);
+			assertType('stdClass', $b);
+		} else {
+			assertType('stdClass', $a);
+			assertType('stdClass', $b);
+		}
+
+		assertType('stdClass', $a);
+		assertType('stdClass', $b);
+	}
+
 }

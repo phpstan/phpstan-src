@@ -22,7 +22,9 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
@@ -68,6 +70,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 		$this->scope = $this->scope->assignVariable('classString', new ClassStringType());
 		$this->scope = $this->scope->assignVariable('genericClassString', new GenericClassStringType(new ObjectType('Bar')));
 		$this->scope = $this->scope->assignVariable('object', new ObjectWithoutClassType());
+		$this->scope = $this->scope->assignVariable('int', new IntegerType());
+		$this->scope = $this->scope->assignVariable('float', new FloatType());
 	}
 
 	/**
@@ -1119,6 +1123,34 @@ class TypeSpecifierTest extends PHPStanTestCase
 				[
 					'$foo' => 'mixed~non-empty-string',
 				],
+			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_numeric', 'int'),
+					new Expr\BinaryOp\Equal(
+						new Variable('int'),
+						new Expr\Cast\Int_(new Variable('int')),
+					),
+				),
+				[
+					'$int' => 'int',
+					'(int) $int' => 'int',
+				],
+				[],
+			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_numeric', 'float'),
+					new Expr\BinaryOp\Equal(
+						new Variable('float'),
+						new Expr\Cast\Int_(new Variable('float')),
+					),
+				),
+				[
+					'$float' => 'float',
+					'(int) $float' => 'int',
+				],
+				[],
 			],
 		];
 	}

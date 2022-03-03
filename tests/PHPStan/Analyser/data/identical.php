@@ -21,6 +21,22 @@ class Foo
 			assertType('stdClass', $b);
 		}
 
+		if ($a === $b) {
+			assertType('stdClass', $a);
+			assertType('stdClass', $b);
+		} else {
+			assertType('stdClass', $a);
+			assertType('stdClass', $b);
+		}
+
+		if ($a !== $b) {
+			assertType('stdClass', $a);
+			assertType('stdClass', $b);
+		} else {
+			assertType('stdClass', $a);
+			assertType('stdClass', $b);
+		}
+
 		assertType('stdClass', $a);
 		assertType('stdClass', $b);
 	}

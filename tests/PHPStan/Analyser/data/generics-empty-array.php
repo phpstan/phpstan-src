@@ -53,3 +53,28 @@ class Bar
 	}
 
 }
+
+/**
+ * @template TKey of array-key
+ * @template T
+ */
+class ArrayCollection2
+{
+
+	public function __construct(array $items = [])
+	{
+
+	}
+
+}
+
+class Baz
+{
+
+	public function doFoo()
+	{
+		assertType('GenericsEmptyArray\\ArrayCollection2<(int|string), mixed>', new ArrayCollection2());
+		assertType('GenericsEmptyArray\\ArrayCollection2<(int|string), mixed>', new ArrayCollection2([]));
+	}
+
+}

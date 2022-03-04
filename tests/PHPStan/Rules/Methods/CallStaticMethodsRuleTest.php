@@ -496,4 +496,11 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5749.php'], []);
 	}
 
+	public function testBug5757(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5757.php'], []);
+	}
+
 }

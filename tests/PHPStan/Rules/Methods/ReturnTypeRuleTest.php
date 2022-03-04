@@ -637,4 +637,34 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6023.php'], []);
 	}
 
+
+	public function testBug5065(): void
+	{
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-5065.php'], []);
+	}
+
+	public function testBug5065ExplicitMixed(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5065.php'], [
+			[
+				'Method Bug5065\Collection::emptyWorkaround2() should return Bug5065\Collection<NewTKey of (int|string), NewT> but returns Bug5065\Collection<(int|string), mixed>.',
+				60,
+			],
+		]);
+	}
+
+	public function testBug3400(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-3400.php'], []);
+	}
+
+	public function testBug6353(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6353.php'], []);
+	}
+
 }

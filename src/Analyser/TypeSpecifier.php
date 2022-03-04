@@ -168,7 +168,7 @@ class TypeSpecifier
 			}
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Identical) {
 			if ($expr->left instanceof Expr\CallLike && $expr->right instanceof Expr\CallLike) {
-				return new SpecifiedTypes([], []);
+				return new SpecifiedTypes();
 			}
 
 			$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);
@@ -334,7 +334,7 @@ class TypeSpecifier
 			);
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Equal) {
 			if ($expr->left instanceof Expr\CallLike && $expr->right instanceof Expr\CallLike) {
-				return new SpecifiedTypes([], []);
+				return new SpecifiedTypes();
 			}
 
 			$expressions = $this->findTypeExpressionsFromBinaryOperation($scope, $expr);

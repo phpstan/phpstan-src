@@ -159,10 +159,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					426,
 				],
 				[
-					'Strict comparison using === between (int<min, 0>|int<2, max>|string) and 1.0 will always evaluate to false.',
-					464,
-				],
-				[
 					'Strict comparison using === between (int<min, 0>|int<2, max>|string) and stdClass will always evaluate to false.',
 					466,
 				],
@@ -331,10 +327,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				[
 					'Strict comparison using !== between null and null will always evaluate to false.',
 					408,
-				],
-				[
-					'Strict comparison using === between (int<min, 0>|int<2, max>|string) and 1.0 will always evaluate to false.',
-					464,
 				],
 				[
 					'Strict comparison using === between (int<min, 0>|int<2, max>|string) and stdClass will always evaluate to false.',

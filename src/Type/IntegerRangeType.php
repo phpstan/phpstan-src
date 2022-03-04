@@ -233,7 +233,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return TrinaryLogic::createMaybe();
 		}
 
-		if ($type instanceof parent) {
+		if ($type instanceof parent || $type instanceof FloatType) {
 			return TrinaryLogic::createMaybe();
 		}
 

@@ -259,6 +259,10 @@ class TypeSpecifier
 				);
 			}
 
+			if ($expr->left instanceof Expr\CallLike && $expr->right instanceof Expr\CallLike) {
+				return new SpecifiedTypes([], []);
+			}
+
 			if ($context->true()) {
 				$type = TypeCombinator::intersect($scope->getType($expr->right), $scope->getType($expr->left));
 				$leftTypes = $this->create($expr->left, $type, $context, false, $scope);
@@ -354,6 +358,10 @@ class TypeSpecifier
 
 			$leftType = $scope->getType($expr->left);
 			$rightType = $scope->getType($expr->right);
+
+			if ($expr->left instanceof Expr\CallLike && $expr->right instanceof Expr\CallLike) {
+				return new SpecifiedTypes([], []);
+			}
 
 			$leftBooleanType = $leftType->toBoolean();
 			if ($leftBooleanType instanceof ConstantBooleanType && $rightType instanceof BooleanType) {

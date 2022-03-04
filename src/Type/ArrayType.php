@@ -406,6 +406,10 @@ class ArrayType implements Type
 		$itemType = $cb($this->itemType);
 
 		if ($keyType !== $this->keyType || $itemType !== $this->itemType) {
+			if ($keyType instanceof NeverType && $itemType instanceof NeverType) {
+				return new ConstantArrayType([], []);
+			}
+
 			return new self($keyType, $itemType);
 		}
 

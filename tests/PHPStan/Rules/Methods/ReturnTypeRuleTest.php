@@ -640,12 +640,20 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug5065(): void
 	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/bug-5065.php'], []);
 	}
 
 	public function testBug5065ExplicitMixed(): void
 	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-5065.php'], [
 			[
@@ -657,6 +665,10 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug3400(): void
 	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-3400.php'], []);
 	}

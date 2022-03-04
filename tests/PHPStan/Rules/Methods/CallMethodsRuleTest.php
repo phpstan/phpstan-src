@@ -2424,4 +2424,44 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/generics-empty-array.php'], []);
 	}
 
+	public function testGenericsInferCollection(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/generics-infer-collection.php'], [
+			[
+				'Parameter #1 $c of method GenericsInferCollection\Foo::doBar() expects GenericsInferCollection\ArrayCollection<int, int>, GenericsInferCollection\ArrayCollection<int, string> given.',
+				43,
+			],
+			[
+				'Parameter #1 $c of method GenericsInferCollection\Bar::doBar() expects GenericsInferCollection\ArrayCollection2<int, int>, GenericsInferCollection\ArrayCollection2<(int|string), mixed> given.',
+				62,
+			],
+			[
+				'Parameter #1 $c of method GenericsInferCollection\Bar::doBar() expects GenericsInferCollection\ArrayCollection2<int, int>, GenericsInferCollection\ArrayCollection2<(int|string), mixed> given.',
+				63,
+			],
+			[
+				'Parameter #1 $c of method GenericsInferCollection\Bar::doBar() expects GenericsInferCollection\ArrayCollection2<int, int>, GenericsInferCollection\ArrayCollection2<(int|string), mixed> given.',
+				64,
+			],
+		]);
+	}
+
+	public function testGenericsInferCollectionLevel8(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/generics-infer-collection.php'], [
+			[
+				'Parameter #1 $c of method GenericsInferCollection\Foo::doBar() expects GenericsInferCollection\ArrayCollection<int, int>, GenericsInferCollection\ArrayCollection<int, string> given.',
+				43,
+			],
+		]);
+	}
+
 }

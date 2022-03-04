@@ -5,6 +5,7 @@ parameters:
 	checkMissingIterableValueType: true
 	checkMissingTypehints: true
 	checkMissingCallableSignature: false
+	__validate: false
 
 services:
 	-

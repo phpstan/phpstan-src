@@ -38,6 +38,10 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 	public function loadConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();
+		if (!$builder->parameters['__validate']) {
+			return;
+		}
+
 		$ignoreErrors = $builder->parameters['ignoreErrors'];
 		if (count($ignoreErrors) === 0) {
 			return;

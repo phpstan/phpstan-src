@@ -27,6 +27,11 @@ class ParametersSchemaExtension extends CompilerExtension
 
 	public function loadConfiguration(): void
 	{
+		$builder = $this->getContainerBuilder();
+		if (!$builder->parameters['__validate']) {
+			return;
+		}
+
 		/** @var mixed[] $config */
 		$config = $this->config;
 		$config['analysedPaths'] = new Statement(DynamicParameter::class);
@@ -42,7 +47,6 @@ class ParametersSchemaExtension extends CompilerExtension
 		$processor->onNewContext[] = static function (SchemaContext $context): void {
 			$context->path = ['parameters'];
 		};
-		$builder = $this->getContainerBuilder();
 		$processor->process($schema, $builder->parameters);
 	}
 

@@ -164,6 +164,7 @@ parameters:
 		- ZEND_THREAD_SAFE
 	customRulesetUsed: null
 	editorUrl: null
+	__validate: true
 
 extensions:
 	rules: PHPStan\DependencyInjection\RulesExtension
@@ -305,6 +306,7 @@ parametersSchema:
 	debugMode: bool()
 	productionMode: bool()
 	tempDir: string()
+	__validate: bool()
 
 	# internal parameters only for DerivativeContainerFactory
 	additionalConfigFiles: arrayOf(string())

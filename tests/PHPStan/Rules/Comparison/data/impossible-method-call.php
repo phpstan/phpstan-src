@@ -92,11 +92,30 @@ class Foo
 
 			}
 		}
+		if ($this->isSame(self::createStdClass('a'), self::createStdClass('a'))) {
+
+		}
+		if ($this->isNotSame(self::createStdClass('b'), self::createStdClass('b'))) {
+
+		}
+		$std3 = new \stdClass();
+		if ($this->isSame($std3, self::createStdClass('c'))) {
+
+		}
+		$std4 = new \stdClass();
+		if ($this->isNotSame($std4, self::createStdClass('d'))) {
+
+		}
 	}
 
 	public function nullableInt(): ?int
 	{
 
+	}
+
+	public static function createStdClass(string $foo): \stdClass
+	{
+		return new \stdClass();
 	}
 
 }

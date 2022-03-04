@@ -98,12 +98,10 @@ class Foo
 		if ($this->isNotSame(self::createStdClass('b'), self::createStdClass('b'))) {
 
 		}
-		$std3 = new \stdClass();
-		if ($this->isSame($std3, self::createStdClass('c'))) {
+		if ($this->isSame(self::returnFoo(), self::returnFoo())) {
 
 		}
-		$std4 = new \stdClass();
-		if ($this->isNotSame($std4, self::createStdClass('d'))) {
+		if ($this->isNotSame(self::returnFoo(), self::returnFoo())) {
 
 		}
 	}
@@ -116,6 +114,14 @@ class Foo
 	public static function createStdClass(string $foo): \stdClass
 	{
 		return new \stdClass();
+	}
+
+	/**
+	 * @return 'foo'
+	 */
+	public static function returnFoo(): string
+	{
+		return 'foo';
 	}
 
 }

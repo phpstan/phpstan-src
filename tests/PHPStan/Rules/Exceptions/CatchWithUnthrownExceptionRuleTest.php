@@ -203,6 +203,10 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 
 	public function testBug6256(): void
 	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-6256.php'], [
 			[
 				'Dead catch - TypeError is never thrown in the try block.',

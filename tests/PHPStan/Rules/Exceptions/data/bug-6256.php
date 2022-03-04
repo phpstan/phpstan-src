@@ -2,16 +2,41 @@
 
 namespace Bug6256;
 
-class A
+final class A
 {
-    public int $intVal;
+    public int $intVal = 1;
+
+    function doFoo()
+    {
+        try {
+            $this->intVal = "string";
+        } catch (\TypeError $e) {
+        }
+    }
 }
 
-function doFoo()
+final class B
 {
-    $a = new A();
-    try {
-        $a->intVal = "string";
-		} catch (\TypeError $e) {
+    public $noType;
+
+    function doFoo()
+    {
+        try {
+            $this->noType = "string";
+        } catch (\TypeError $e) {
+        }
+    }
+}
+
+final class C
+{
+    public string $stringType;
+
+    function doFoo()
+    {
+        try {
+            $this->stringType = "string";
+        } catch (\TypeError $e) {
+        }
     }
 }

@@ -1588,7 +1588,7 @@ class MutatingScope implements Scope
 				$parameters[] = new NativeParameterReflection(
 					$param->var->name,
 					$firstOptionalParameterIndex !== null && $i >= $firstOptionalParameterIndex,
-					$this->getFunctionType($param->type, $param->type === null, false),
+					$this->getFunctionType($param->type, $this->isParameterValueNullable($param), false),
 					$param->byRef
 						? PassedByReference::createCreatesNewVariable()
 						: PassedByReference::createNo(),

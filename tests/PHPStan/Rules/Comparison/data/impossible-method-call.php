@@ -130,6 +130,18 @@ class Foo
 		if ($this->isNotSame(1, $std4)) {
 
 		}
+		if ($this->isSame('1', new \stdClass())) {
+
+		}
+		if ($this->isNotSame('1', new \stdClass())) {
+
+		}
+		if ($this->isSame(['a', 'b'], [1, 2])) {
+
+		}
+		if ($this->isNotSame(['a', 'b'], [1, 2])) {
+
+		}
 	}
 
 	public function nullableInt(): ?int

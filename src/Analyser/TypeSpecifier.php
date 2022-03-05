@@ -262,6 +262,15 @@ class TypeSpecifier
 			$exprLeftType = $scope->getType($expr->left);
 			$exprRightType = $scope->getType($expr->right);
 
+			$identicalType = $scope->getType($expr);
+			if ($identicalType instanceof ConstantBooleanType && !$context->null()) {
+				$never = new NeverType();
+				$contextForTypes = $identicalType->getValue() ? $context->negate() : $context;
+				$leftTypes = $this->create($expr->left, $never, $contextForTypes, false, $scope);
+				$rightTypes = $this->create($expr->right, $never, $contextForTypes, false, $scope);
+				return $leftTypes->unionWith($rightTypes);
+			}
+
 			$types = null;
 
 			if (
@@ -300,15 +309,6 @@ class TypeSpecifier
 
 			if ($types !== null) {
 				return $types;
-			}
-
-			$identicalType = $scope->getType($expr);
-			if ($identicalType instanceof ConstantBooleanType && !$context->null()) {
-				$never = new NeverType();
-				$contextForTypes = $identicalType->getValue() ? $context->negate() : $context;
-				$leftTypes = $this->create($expr->left, $never, $contextForTypes, false, $scope);
-				$rightTypes = $this->create($expr->right, $never, $contextForTypes, false, $scope);
-				return $leftTypes->unionWith($rightTypes);
 			}
 
 			if ($expr->left instanceof Expr\Variable || $expr->right instanceof Expr\Variable) {

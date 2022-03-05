@@ -110,6 +110,26 @@ class Foo
 		if ($this->isNotSame(self::createStdClass('b')->foo, self::createStdClass('b')->foo)) {
 
 		}
+		if ($this->isSame([], [])) {
+
+		}
+		if ($this->isNotSame([], [])) {
+
+		}
+		if ($this->isSame([1, 3], [1, 3])) {
+
+		}
+		if ($this->isNotSame([1, 3], [1, 3])) {
+
+		}
+		$std3 = new \stdClass();
+		if ($this->isSame(1, $std3)) {
+
+		}
+		$std4 = new \stdClass();
+		if ($this->isNotSame(1, $std4)) {
+
+		}
 	}
 
 	public function nullableInt(): ?int

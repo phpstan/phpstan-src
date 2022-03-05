@@ -240,9 +240,7 @@ class TypeSpecifier
 				}
 			}
 
-			$leftType = $scope->getType($expr->left);
 			$rightType = $scope->getType($expr->right);
-
 			if (
 				$expr->left instanceof ClassConstFetch &&
 				$expr->left->class instanceof Expr &&
@@ -261,40 +259,42 @@ class TypeSpecifier
 				);
 			}
 
+			$exprLeftType = $scope->getType($expr->left);
+			$exprRightType = $scope->getType($expr->right);
+
 			$types = null;
 
 			if (
 				(
-					$leftType instanceof ConstantType
+					$exprLeftType instanceof ConstantType
 					&& !$expr->right instanceof Node\Scalar
-				) || $leftType instanceof EnumCaseObjectType
+				) || $exprLeftType instanceof EnumCaseObjectType
 			) {
 				$types = $this->create(
 					$expr->right,
-					$leftType,
+					$exprLeftType,
 					$context,
 					false,
 					$scope,
 				);
 			}
-
 			if (
 				(
-					$rightType instanceof ConstantType
+					$exprRightType instanceof ConstantType
 					&& !$expr->left instanceof Node\Scalar
-				) || $rightType instanceof EnumCaseObjectType
+				) || $exprRightType instanceof EnumCaseObjectType
 			) {
-				$leftTypes = $this->create(
+				$leftType = $this->create(
 					$expr->left,
-					$rightType,
+					$exprRightType,
 					$context,
 					false,
 					$scope,
 				);
 				if ($types !== null) {
-					$types = $types->unionWith($leftTypes);
+					$types = $types->unionWith($leftType);
 				} else {
-					$types = $leftTypes;
+					$types = $leftType;
 				}
 			}
 
@@ -319,9 +319,10 @@ class TypeSpecifier
 					return $leftTypes->unionWith($rightTypes);
 				}
 
-				return $this->create($expr->left, $leftType, $context, false, $scope)->normalize($scope)
-					->intersectWith($this->create($expr->right, $rightType, $context, false, $scope)->normalize($scope));
+				return $this->create($expr->left, $exprLeftType, $context, false, $scope)->normalize($scope)
+					->intersectWith($this->create($expr->right, $exprRightType, $context, false, $scope)->normalize($scope));
 			}
+
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotIdentical) {
 			return $this->specifyTypesInCondition(
 				$scope,

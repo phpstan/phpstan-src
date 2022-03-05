@@ -84,6 +84,10 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 				'Call to method ImpossibleMethodCall\Foo::isSame() with \'foo\' and \'foo\' will always evaluate to true.',
 				101,
 			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with \'foo\' and \'foo\' will always evaluate to false.',
+				104,
+			],
 		]);
 	}
 

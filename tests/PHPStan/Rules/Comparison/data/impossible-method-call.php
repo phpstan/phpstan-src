@@ -104,6 +104,12 @@ class Foo
 		if ($this->isNotSame(self::returnFoo('b'), self::returnFoo('b'))) {
 
 		}
+		if ($this->isSame(self::createStdClass('a')->foo, self::createStdClass('a')->foo)) {
+
+		}
+		if ($this->isNotSame(self::createStdClass('b')->foo, self::createStdClass('b')->foo)) {
+
+		}
 	}
 
 	public function nullableInt(): ?int

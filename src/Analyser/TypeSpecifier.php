@@ -240,7 +240,9 @@ class TypeSpecifier
 				}
 			}
 
+			$leftType = $scope->getType($expr->left);
 			$rightType = $scope->getType($expr->right);
+
 			if (
 				$expr->left instanceof ClassConstFetch &&
 				$expr->left->class instanceof Expr &&
@@ -259,71 +261,71 @@ class TypeSpecifier
 				);
 			}
 
-			if ($context->true()) {
-				$type = TypeCombinator::intersect($scope->getType($expr->right), $scope->getType($expr->left));
-				$leftTypes = $this->create($expr->left, $type, $context, false, $scope);
-				$rightTypes = $this->create($expr->right, $type, $context, false, $scope);
-				return $leftTypes->unionWith($rightTypes);
+			$types = null;
 
-			} elseif ($context->false()) {
-				$identicalType = $scope->getType($expr);
-				if ($identicalType instanceof ConstantBooleanType) {
-					$never = new NeverType();
-					$contextForTypes = $identicalType->getValue() ? $context->negate() : $context;
-					$leftTypes = $this->create($expr->left, $never, $contextForTypes, false, $scope);
-					$rightTypes = $this->create($expr->right, $never, $contextForTypes, false, $scope);
-					return $leftTypes->unionWith($rightTypes);
-				}
+			if (
+				(
+					$leftType instanceof ConstantType
+					&& !$expr->right instanceof Node\Scalar
+				) || $leftType instanceof EnumCaseObjectType
+			) {
+				$types = $this->create(
+					$expr->right,
+					$leftType,
+					$context,
+					false,
+					$scope,
+				);
+			}
 
-				$exprLeftType = $scope->getType($expr->left);
-				$exprRightType = $scope->getType($expr->right);
-
-				$types = null;
-
-				if (
-					(
-						$exprLeftType instanceof ConstantType
-						&& !$expr->right instanceof Node\Scalar
-					) || $exprLeftType instanceof EnumCaseObjectType
-				) {
-					$types = $this->create(
-						$expr->right,
-						$exprLeftType,
-						$context,
-						false,
-						$scope,
-					);
-				}
-				if (
-					(
-						$exprRightType instanceof ConstantType
-						&& !$expr->left instanceof Node\Scalar
-					) || $exprRightType instanceof EnumCaseObjectType
-				) {
-					$leftType = $this->create(
-						$expr->left,
-						$exprRightType,
-						$context,
-						false,
-						$scope,
-					);
-					if ($types !== null) {
-						$types = $types->unionWith($leftType);
-					} else {
-						$types = $leftType;
-					}
-				}
-
+			if (
+				(
+					$rightType instanceof ConstantType
+					&& !$expr->left instanceof Node\Scalar
+				) || $rightType instanceof EnumCaseObjectType
+			) {
+				$leftTypes = $this->create(
+					$expr->left,
+					$rightType,
+					$context,
+					false,
+					$scope,
+				);
 				if ($types !== null) {
-					return $types;
-				}
-
-				if ($expr->left instanceof Expr\Variable && $expr->right instanceof Expr\Variable) {
-					return $this->create($expr->left, $exprLeftType, $context, false, $scope)->normalize($scope)
-						->intersectWith($this->create($expr->right, $exprRightType, $context, false, $scope)->normalize($scope));
+					$types = $types->unionWith($leftTypes);
+				} else {
+					$types = $leftTypes;
 				}
 			}
 
+			if ($types !== null) {
+				return $types;
+			}
+
+			$identicalType = $scope->getType($expr);
+			if ($identicalType instanceof ConstantBooleanType && $context->false()) {
+				$never = new NeverType();
+				$contextForTypes = $identicalType->getValue() ? $context->negate() : $context;
+				$leftTypes = $this->create($expr->left, $never, $contextForTypes, false, $scope);
+				$rightTypes = $this->create($expr->right, $never, $contextForTypes, false, $scope);
+				return $leftTypes->unionWith($rightTypes);
+			}
+
+			if (
+				$expr->left instanceof Expr\Variable || $expr->right instanceof Expr\Variable
+				|| $expr->left instanceof Node\Scalar || $expr->right instanceof Node\Scalar
+			) {
+				if ($context->true()) {
+					$type = TypeCombinator::intersect($scope->getType($expr->right), $scope->getType($expr->left));
+					$leftTypes = $this->create($expr->left, $type, $context, false, $scope);
+					$rightTypes = $this->create($expr->right, $type, $context, false, $scope);
+					return $leftTypes->unionWith($rightTypes);
+
+				}
+
+				return $this->create($expr->left, $leftType, $context, false, $scope)->normalize($scope)
+					->intersectWith($this->create($expr->right, $rightType, $context, false, $scope)->normalize($scope));
+			}
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotIdentical) {
 			return $this->specifyTypesInCondition(
 				$scope,
@@ -443,9 +445,14 @@ class TypeSpecifier
 			$leftTypes = $this->create($expr->left, $leftType, $context, false, $scope);
 			$rightTypes = $this->create($expr->right, $rightType, $context, false, $scope);
 
-			return $context->true()
-				? $leftTypes->unionWith($rightTypes)
-				: $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($scope));
+			if (
+				$expr->left instanceof Expr\Variable || $expr->right instanceof Expr\Variable
+				|| $expr->left instanceof Node\Scalar || $expr->right instanceof Node\Scalar
+			) {
+				return $context->true()
+					? $leftTypes->unionWith($rightTypes)
+					: $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($scope));
+			}
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotEqual) {
 			return $this->specifyTypesInCondition(
 				$scope,

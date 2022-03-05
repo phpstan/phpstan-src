@@ -259,12 +259,6 @@ class TypeSpecifier
 				);
 			}
 
-			$exprLeftType = $scope->getType($expr->left);
-			$exprRightType = $scope->getType($expr->right);
-			if ($expr->left instanceof Expr\CallLike && $expr->right instanceof Expr\CallLike && !$exprLeftType instanceof ConstantType && !$exprRightType instanceof ConstantType) {
-				return new SpecifiedTypes();
-			}
-
 			if ($context->true()) {
 				$type = TypeCombinator::intersect($scope->getType($expr->right), $scope->getType($expr->left));
 				$leftTypes = $this->create($expr->left, $type, $context, false, $scope);
@@ -280,6 +274,9 @@ class TypeSpecifier
 					$rightTypes = $this->create($expr->right, $never, $contextForTypes, false, $scope);
 					return $leftTypes->unionWith($rightTypes);
 				}
+
+				$exprLeftType = $scope->getType($expr->left);
+				$exprRightType = $scope->getType($expr->right);
 
 				$types = null;
 
@@ -321,8 +318,10 @@ class TypeSpecifier
 					return $types;
 				}
 
-				return $this->create($expr->left, $exprLeftType, $context, false, $scope)->normalize($scope)
-					->intersectWith($this->create($expr->right, $exprRightType, $context, false, $scope)->normalize($scope));
+				if ($expr->left instanceof Expr\Variable && $expr->right instanceof Expr\Variable) {
+					return $this->create($expr->left, $exprLeftType, $context, false, $scope)->normalize($scope)
+						->intersectWith($this->create($expr->right, $exprRightType, $context, false, $scope)->normalize($scope));
+				}
 			}
 
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotIdentical) {
@@ -357,9 +356,6 @@ class TypeSpecifier
 
 			$leftType = $scope->getType($expr->left);
 			$rightType = $scope->getType($expr->right);
-			if ($expr->left instanceof Expr\CallLike && $expr->right instanceof Expr\CallLike && !$leftType instanceof ConstantType && !$rightType instanceof ConstantType) {
-				return new SpecifiedTypes();
-			}
 
 			$leftBooleanType = $leftType->toBoolean();
 			if ($leftBooleanType instanceof ConstantBooleanType && $rightType instanceof BooleanType) {

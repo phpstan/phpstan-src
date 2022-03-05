@@ -23,10 +23,10 @@ class HelloWorld
 			assertType('Bug6635\A&T (method Bug6635\HelloWorld::sayHelloBug(), argument)', $block);
 			echo 1;
 		} else {
-			assertType('T (method Bug6635\HelloWorld::sayHelloBug(), argument)', $block);
+			assertType('T of mixed~Bug6635\A (method Bug6635\HelloWorld::sayHelloBug(), argument)', $block);
 		}
 
-		assertType('(Bug6635\A&T (method Bug6635\HelloWorld::sayHelloBug(), argument))|T (method Bug6635\HelloWorld::sayHelloBug(), argument)', $block);
+		assertType('(Bug6635\A&T (method Bug6635\HelloWorld::sayHelloBug(), argument))|T of mixed~Bug6635\A (method Bug6635\HelloWorld::sayHelloBug(), argument)', $block);
 
 		return $block;
 	}

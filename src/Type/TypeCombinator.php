@@ -360,12 +360,7 @@ class TypeCombinator
 				$isSuperType = $typeWithoutSubtractedTypeA->isSuperTypeOf($b);
 			}
 			if ($isSuperType->yes()) {
-				if ($b instanceof SubtractableType) {
-					$subtractedType = $b->getSubtractedType();
-				} else {
-					$subtractedType = new MixedType(false, $b);
-				}
-				$a = self::intersectWithSubtractedType($a, $subtractedType);
+				$a = self::intersectWithSubtractedType($a, $b);
 				return [$a, null];
 			}
 		}
@@ -378,12 +373,7 @@ class TypeCombinator
 				$isSuperType = $typeWithoutSubtractedTypeB->isSuperTypeOf($a);
 			}
 			if ($isSuperType->yes()) {
-				if ($a instanceof SubtractableType) {
-					$subtractedType = $a->getSubtractedType();
-				} else {
-					$subtractedType = new MixedType(false, $a);
-				}
-				$b = self::intersectWithSubtractedType($b, $subtractedType);
+				$b = self::intersectWithSubtractedType($b, $a);
 				return [null, $b];
 			}
 		}
@@ -454,27 +444,36 @@ class TypeCombinator
 	}
 
 	private static function intersectWithSubtractedType(
-		SubtractableType $subtractableType,
-		?Type $subtractedType,
+		SubtractableType $a,
+		Type $b,
 	): Type
 	{
-		if ($subtractableType->getSubtractedType() === null) {
-			return $subtractableType;
+		if ($a->getSubtractedType() === null) {
+			return $a;
 		}
 
-		if ($subtractedType === null) {
-			return $subtractableType->getTypeWithoutSubtractedType();
+		if ($b instanceof SubtractableType) {
+			$subtractedType = $b->getSubtractedType();
+			if ($subtractedType === null) {
+				return $a->getTypeWithoutSubtractedType();
+			}
+		} else {
+			$subtractedTypeTmp = self::intersect($a->getTypeWithoutSubtractedType(), $a->getSubtractedType());
+			if ($b->isSuperTypeOf($subtractedTypeTmp)->yes()) {
+				return $a->getTypeWithoutSubtractedType();
+			}
+			$subtractedType = new MixedType(false, $b);
 		}
 
 		$subtractedType = self::intersect(
-			$subtractableType->getSubtractedType(),
+			$a->getSubtractedType(),
 			$subtractedType,
 		);
 		if ($subtractedType instanceof NeverType) {
 			$subtractedType = null;
 		}
 
-		return $subtractableType->changeSubtractedType($subtractedType);
+		return $a->changeSubtractedType($subtractedType);
 	}
 
 	/**

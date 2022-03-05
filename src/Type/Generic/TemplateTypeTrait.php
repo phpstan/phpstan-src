@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -89,19 +90,70 @@ trait TemplateTypeTrait
 		return $this->variance->isValidVariance($a, $b);
 	}
 
-	public function subtract(Type $type): Type
+	public function subtract(Type $typeToRemove): Type
 	{
-		return $this;
+		$removedBound = TypeCombinator::remove($this->getBound(), $typeToRemove);
+		$type = TemplateTypeFactory::create(
+			$this->getScope(),
+			$this->getName(),
+			$removedBound,
+			$this->getVariance(),
+		);
+		if ($this->isArgument()) {
+			return TemplateTypeHelper::toArgument($type);
+		}
+
+		return $type;
 	}
 
 	public function getTypeWithoutSubtractedType(): Type
 	{
-		return $this;
+		$bound = $this->getBound();
+		if (!$bound instanceof SubtractableType) { // @phpstan-ignore-line
+			return $this;
+		}
+
+		$type = TemplateTypeFactory::create(
+			$this->getScope(),
+			$this->getName(),
+			$bound->getTypeWithoutSubtractedType(),
+			$this->getVariance(),
+		);
+		if ($this->isArgument()) {
+			return TemplateTypeHelper::toArgument($type);
+		}
+
+		return $type;
 	}
 
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
-		return $this;
+		$bound = $this->getBound();
+		if (!$bound instanceof SubtractableType) { // @phpstan-ignore-line
+			return $this;
+		}
+
+		$type = TemplateTypeFactory::create(
+			$this->getScope(),
+			$this->getName(),
+			$bound->changeSubtractedType($subtractedType),
+			$this->getVariance(),
+		);
+		if ($this->isArgument()) {
+			return TemplateTypeHelper::toArgument($type);
+		}
+
+		return $type;
+	}
+
+	public function getSubtractedType(): ?Type
+	{
+		$bound = $this->getBound();
+		if (!$bound instanceof SubtractableType) { // @phpstan-ignore-line
+			return null;
+		}
+
+		return $bound->getSubtractedType();
 	}
 
 	public function equals(Type $type): bool
@@ -220,18 +272,11 @@ trait TemplateTypeTrait
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		$removedBound = TypeCombinator::remove($this->getBound(), $typeToRemove);
-		$type = TemplateTypeFactory::create(
-			$this->getScope(),
-			$this->getName(),
-			$removedBound,
-			$this->getVariance(),
-		);
-		if ($this->isArgument()) {
-			return TemplateTypeHelper::toArgument($type);
+		if ($this->getBound()->isSuperTypeOf($typeToRemove)->yes()) {
+			return $this->subtract($typeToRemove);
 		}
 
-		return $type;
+		return null;
 	}
 
 	/**

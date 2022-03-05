@@ -291,6 +291,9 @@ class FileTypeMapper
 						} elseif ((bool) $node->getAttribute('anonymousClass', false)) {
 							$className = $node->name->name;
 						} else {
+							if ($traitFound) {
+								return self::SKIP_NODE;
+							}
 							$className = ltrim(sprintf('%s\\%s', $namespace, $node->name->name), '\\');
 						}
 						$classStack[] = $className;

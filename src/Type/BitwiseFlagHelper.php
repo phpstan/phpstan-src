@@ -5,7 +5,6 @@ namespace PHPStan\Type;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
 use PhpParser\Node\Expr\ConstFetch;
-use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
@@ -22,7 +21,7 @@ final class BitwiseFlagHelper
 	public function bitwiseOrContainsConstant(Expr $expr, Scope $scope, string $constName): TrinaryLogic
 	{
 		if ($expr instanceof ConstFetch) {
-			if ($expr->name instanceof Name && ((string) $expr->name) === $constName) {
+			if (((string) $expr->name) === $constName) {
 				return TrinaryLogic::createYes();
 			}
 

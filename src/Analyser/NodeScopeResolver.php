@@ -3310,7 +3310,7 @@ class NodeScopeResolver
 				if ($propertyReflection->canChangeTypeAfterAssignment()) {
 					$scope = $scope->assignExpression($var, $assignedExprType);
 				}
-				if ($assignedExprType->isSuperTypeOf($propertyReflection->getWritableType())->no()) {
+				if (!$propertyReflection->getWritableType()->isSuperTypeOf($assignedExprType)->yes()) {
 					$throwPoints[] = ThrowPoint::createImplicit($scope, $assignedExpr);
 				}
 			} else {

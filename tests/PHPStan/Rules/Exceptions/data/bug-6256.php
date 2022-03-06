@@ -15,16 +15,19 @@ final class A
 		try {
 			$this->integerType = "string";
 		} catch (\TypeError $e) {
+			// not dead
 		}
 
 		try {
 			$this->mixedType = "string";
 		} catch (\TypeError $e) {
+			// dead
 		}
 
 		try {
 			$this->stringType = "string";
 		} catch (\TypeError $e) {
+			// dead
 		}
 
 		/** @var string|int $intOrString */
@@ -32,26 +35,31 @@ final class A
 		try {
 			$this->integerType = $intOrString;
 		} catch (\TypeError $e) {
+			// not dead
 		}
 
 		try {
 			$this->stringOrIntType = 1;
 		} catch (\TypeError $e) {
+			// dead
 		}
 
 		try {
 			$this->integerType = "string";
 		} catch (\Error $e) {
+			// not dead
 		}
 
 		try {
 			$this->integerType = "string";
 		} catch (\Exception $e) {
+			// dead
 		}
 
 		try {
 			$this->dynamicProperty = 1;
 		} catch (\Throwable $e) {
+			// not dead
 		}
 	}
 }

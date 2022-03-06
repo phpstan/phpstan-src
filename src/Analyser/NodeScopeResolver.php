@@ -138,6 +138,7 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 use Throwable;
+use Traversable;
 use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
@@ -823,7 +824,7 @@ class NodeScopeResolver
 			if (!$isIterableAtLeastOnce->no()) {
 				$throwPoints = array_merge($throwPoints, $finalScopeResult->getThrowPoints());
 			}
-			if (!(new ObjectType(ArrayAccess::class))->isSuperTypeOf($scope->getType($stmt->expr))->no()) {
+			if (!(new ObjectType(Traversable::class))->isSuperTypeOf($scope->getType($stmt->expr))->no()) {
 				$throwPoints[] = ThrowPoint::createImplicit($scope, $stmt->expr);
 			}
 

@@ -823,7 +823,7 @@ class NodeScopeResolver
 			if (!$isIterableAtLeastOnce->no()) {
 				$throwPoints = array_merge($throwPoints, $finalScopeResult->getThrowPoints());
 			}
-			if (!$scope->getType($stmt->expr)->isArray()->yes()) {
+			if (!(new ObjectType(ArrayAccess::class))->isSuperTypeOf($scope->getType($stmt->expr))->no()) {
 				$throwPoints[] = ThrowPoint::createImplicit($scope, $stmt->expr);
 			}
 

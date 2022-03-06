@@ -91,11 +91,10 @@ class DOMXPath
     public function evaluate($expression, $contextNode, $registerNodeNS) {}
 
     /**
-     * @template TNode as DOMNode
      * @param string $expression
      * @param DOMNode|null $contextNode
      * @param boolean $registerNodeNS
-     * @return DOMNodeList<TNode>|false
+     * @return DOMNodeList<DOMNode>|false
      */
     public function query($expression, $contextNode, $registerNodeNS) {}
 

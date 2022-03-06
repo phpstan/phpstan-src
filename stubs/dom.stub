@@ -91,21 +91,24 @@ class DOMXPath
     public function evaluate($expression, $contextNode, $registerNodeNS) {}
 
     /**
+     * @template TNode as DOMNode
      * @param string $expression
      * @param DOMNode|null $contextNode
      * @param boolean $registerNodeNS
-     * @return DOMNodeList|false
+     * @return DOMNodeList<TNode>|false
      */
     public function query($expression, $contextNode, $registerNodeNS) {}
 
     /**
      * @param string $prefix
      * @param string $namespace
+     * @return boolean
      */
     public function registerNamespace($prefix, $namespace) {}
 
     /**
      * @param string|array|null $restrict
+     * @return void
      */
     public function registerPhpFunctions($restrict) {}
 

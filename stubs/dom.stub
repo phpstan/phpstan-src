@@ -55,16 +55,59 @@ class DOMElement extends DOMNode
 
 /**
  * @template-covariant TNode as DOMNode
- * @implements Traversable<int, TNode>
+ * @implements IteratorAggregate<int, TNode>
  */
-class DOMNodeList implements Traversable
+class DOMNodeList implements IteratorAggregate, Countable
 {
+
+    /** @var int */
+    public $length;
+
+    /**
+     * @return int
+     */
+    public function count() {}
 
 	/**
 	 * @param int $index
 	 * @return TNode|null
 	 */
 	public function item ($index) {}
+
+}
+
+class DOMXPath
+{
+
+	/** @var DOMDocument */
+	public $document;
+
+    /**
+     * @param string $expression
+     * @param DOMNode|null $contextNode
+     * @param boolean $registerNodeNS
+     * @return boolean
+     */
+    public function evaluate($expression, $contextNode, $registerNodeNS) {}
+
+    /**
+     * @param string $expression
+     * @param DOMNode|null $contextNode
+     * @param boolean $registerNodeNS
+     * @return DOMNodeList|false
+     */
+    public function query($expression, $contextNode, $registerNodeNS) {}
+
+    /**
+     * @param string $prefix
+     * @param string $namespace
+     */
+    public function registerNamespace($prefix, $namespace) {}
+
+    /**
+     * @param string|array|null $restrict
+     */
+    public function registerPhpFunctions($restrict) {}
 
 }
 

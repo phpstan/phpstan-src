@@ -34,7 +34,11 @@ class TypeCombinator
 
 	public static function addNull(Type $type): Type
 	{
-		return self::union($type, new NullType());
+		if ((new NullType())->isSuperTypeOf($type)->no()) {
+			return self::union($type, new NullType());
+		}
+
+		return $type;
 	}
 
 	public static function remove(Type $fromType, Type $typeToRemove): Type

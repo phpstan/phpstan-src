@@ -3314,7 +3314,7 @@ class MutatingScope implements Scope
 				$this->getRealParameterTypes($classMethod),
 				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $phpDocParameterTypes),
 				$this->getRealParameterDefaultValues($classMethod),
-				$this->transformStaticType($this->getFunctionType($classMethod->returnType, $classMethod->returnType === null, false)),
+				$this->transformStaticType($this->getFunctionType($classMethod->returnType, false, false)),
 				$phpDocReturnType !== null ? TemplateTypeHelper::toArgument($phpDocReturnType) : null,
 				$throwType,
 				$deprecatedDescription,

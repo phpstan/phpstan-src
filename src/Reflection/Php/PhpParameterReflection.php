@@ -6,7 +6,6 @@ use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
@@ -47,7 +46,6 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 					if (
 						$this->reflection->isDefaultValueAvailable()
 						&& $this->reflection->getDefaultValue() === null
-						&& (new NullType())->isSuperTypeOf($phpDocType)->no()
 					) {
 						$phpDocType = TypeCombinator::addNull($phpDocType);
 					}

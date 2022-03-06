@@ -138,6 +138,7 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 use Throwable;
+use TypeError;
 use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
@@ -3311,7 +3312,7 @@ class NodeScopeResolver
 					$scope = $scope->assignExpression($var, $assignedExprType);
 				}
 				if (!$propertyReflection->getWritableType()->isSuperTypeOf($assignedExprType)->yes()) {
-					$throwPoints[] = ThrowPoint::createImplicit($scope, $assignedExpr);
+					$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
 				}
 			} else {
 				// fallback

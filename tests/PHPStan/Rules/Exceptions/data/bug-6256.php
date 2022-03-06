@@ -40,6 +40,16 @@ final class A
 		}
 
 		try {
+			$this->integerType = "string";
+		} catch (\Error $e) {
+		}
+
+		try {
+			$this->integerType = "string";
+		} catch (\Exception $e) {
+		}
+
+		try {
 			$this->dynamicProperty = 1;
 		} catch (\Throwable $e) {
 		}

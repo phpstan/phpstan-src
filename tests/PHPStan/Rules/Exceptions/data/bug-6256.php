@@ -61,7 +61,7 @@ final class A
 		try {
 			$this->dynamicProperty = 1;
 		} catch (\Throwable $e) {
-			// not dead
+			// dead
 		}
 	}
 }
@@ -99,6 +99,17 @@ final class C {
 			$this->dynamicProperty = "string";
 		} catch (\Exception $e) {
 			// dead
+		}
+	}
+}
+
+class D {
+	function doFoo()
+	{
+		try {
+			$this->dynamicProperty = "string";
+		} catch (\Exception $e) {
+			// not dead because class is not final
 		}
 	}
 }

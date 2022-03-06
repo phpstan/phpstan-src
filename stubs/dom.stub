@@ -107,7 +107,7 @@ class DOMXPath
     public function registerNamespace($prefix, $namespace) {}
 
     /**
-     * @param string|array|null $restrict
+     * @param callable-string|array<callable-string>|null $restrict
      * @return void
      */
     public function registerPhpFunctions($restrict) {}

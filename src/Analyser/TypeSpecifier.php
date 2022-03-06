@@ -311,13 +311,17 @@ class TypeSpecifier
 				return $types;
 			}
 
-			$furtherSpecificationPossible = static function (Expr $expr): bool {
+			$furtherSpecificationPossible = static function (Expr $expr) use (&$furtherSpecificationPossible): bool {
 				if ($expr instanceof Expr\Variable) {
 					return true;
 				}
 
-				if ($expr instanceof ArrayDimFetch && $expr->var instanceof Expr\Variable) {
-					return true;
+				if ($expr instanceof Expr\Cast) {
+					return $furtherSpecificationPossible($expr->expr);
+				}
+
+				if ($expr instanceof ArrayDimFetch) {
+					return $furtherSpecificationPossible($expr->var);
 				}
 
 				return false;

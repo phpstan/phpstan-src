@@ -163,6 +163,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Cannot access offset \'foo\' on array|int.',
 				443,
 			],
+			[
+				'Offset \'feature_pretty…\' does not exist on array{version: string, commit: string|null, pretty_version: string|null, feature_version: non-empty-string, feature_pretty_version?: string|null}.',
+				504,
+			],
 		]);
 	}
 

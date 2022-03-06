@@ -38,5 +38,10 @@ final class A
 			$this->stringOrIntType = 1;
 		} catch (\TypeError $e) {
 		}
+
+		try {
+			$this->dynamicProperty = 1;
+		} catch (\Throwable $e) {
+		}
 	}
 }

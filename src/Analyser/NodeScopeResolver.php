@@ -3318,6 +3318,14 @@ class NodeScopeResolver
 				$assignedExprType = $scope->getType($assignedExpr);
 				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
 				$scope = $scope->assignExpression($var, $assignedExprType);
+				// simulate dynamic property assign to get throw points
+				$throwPoints = array_merge($throwPoints, $this->processExprNode(
+					new MethodCall($var->var, '__set'),
+					$scope,
+					static function (): void {
+					},
+					$context,
+				)->getThrowPoints());
 			}
 
 		} elseif ($var instanceof Expr\StaticPropertyFetch) {

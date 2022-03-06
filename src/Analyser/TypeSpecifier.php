@@ -316,10 +316,6 @@ class TypeSpecifier
 					return true;
 				}
 
-				if ($expr instanceof Expr\Cast) {
-					return $furtherSpecificationPossible($expr->expr);
-				}
-
 				if ($expr instanceof ArrayDimFetch) {
 					return $furtherSpecificationPossible($expr->var);
 				}

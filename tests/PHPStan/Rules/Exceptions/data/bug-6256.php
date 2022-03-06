@@ -2,6 +2,8 @@
 
 namespace Bug6256;
 
+use Exception;
+
 final class A
 {
 	public int $integerType = 1;
@@ -60,6 +62,43 @@ final class A
 			$this->dynamicProperty = 1;
 		} catch (\Throwable $e) {
 			// not dead
+		}
+	}
+}
+
+final class B {
+
+	/**
+	 * @throws Exception
+	 */
+	public function __set(string $name, $value)
+	{
+		throw new Exception();
+	}
+
+	function doFoo()
+	{
+		try {
+			$this->dynamicProperty = "string";
+		} catch (\Exception $e) {
+			// not dead
+		}
+	}
+}
+
+final class C {
+
+	/**
+	 * @throws void
+	 */
+	public function __set(string $name, $value) {}
+
+	function doFoo()
+	{
+		try {
+			$this->dynamicProperty = "string";
+		} catch (\Exception $e) {
+			// dead
 		}
 	}
 }

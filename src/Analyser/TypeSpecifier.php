@@ -311,7 +311,19 @@ class TypeSpecifier
 				return $types;
 			}
 
-			if ($expr->left instanceof Expr\Variable || $expr->right instanceof Expr\Variable) {
+			$furtherSpecificationPossible = static function (Expr $expr): bool {
+				if ($expr instanceof Expr\Variable) {
+					return true;
+				}
+
+				if ($expr instanceof ArrayDimFetch && $expr->var instanceof Expr\Variable) {
+					return true;
+				}
+
+				return false;
+			};
+
+			if ($furtherSpecificationPossible($expr->left) || $furtherSpecificationPossible($expr->right)) {
 				if ($context->true()) {
 					$type = TypeCombinator::intersect($scope->getType($expr->right), $scope->getType($expr->left));
 					$leftTypes = $this->create($expr->left, $type, $context, false, $scope);
@@ -442,11 +454,9 @@ class TypeSpecifier
 			$leftTypes = $this->create($expr->left, $leftType, $context, false, $scope);
 			$rightTypes = $this->create($expr->right, $rightType, $context, false, $scope);
 
-			if ($expr->left instanceof Expr\Variable || $expr->right instanceof Expr\Variable) {
-				return $context->true()
-					? $leftTypes->unionWith($rightTypes)
-					: $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($scope));
-			}
+			return $context->true()
+				? $leftTypes->unionWith($rightTypes)
+				: $leftTypes->normalize($scope)->intersectWith($rightTypes->normalize($scope));
 		} elseif ($expr instanceof Node\Expr\BinaryOp\NotEqual) {
 			return $this->specifyTypesInCondition(
 				$scope,

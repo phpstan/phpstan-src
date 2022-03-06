@@ -48,7 +48,8 @@ trait TemplateTypeTrait
 	public function describe(VerbosityLevel $level): string
 	{
 		$basicDescription = function () use ($level): string {
-			if ($this->bound instanceof MixedType) { // @phpstan-ignore-line
+			// @phpstan-ignore-next-line
+			if ($this->bound instanceof MixedType && $this->bound->getSubtractedType() === null && !$this->bound instanceof TemplateMixedType) {
 				$boundDescription = '';
 			} else { // @phpstan-ignore-line
 				$boundDescription = sprintf(' of %s', $this->bound->describe($level));

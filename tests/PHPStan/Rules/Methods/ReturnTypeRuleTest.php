@@ -683,4 +683,24 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6353.php'], []);
 	}
 
+	public function testBug6635Level9(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6635.php'], []);
+	}
+
+	public function testBug6635Level8(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-6635.php'], []);
+	}
+
 }

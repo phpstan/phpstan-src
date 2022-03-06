@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
@@ -16,6 +17,33 @@ use function sprintf;
 
 final class BitwiseFlagHelperTest extends PHPStanTestCase
 {
+
+	public function dataUnknownConstants(): array
+	{
+		return [
+			[
+				new ConstFetch(new Name('SOME_CONST')),
+				'SOME_CONST',
+				TrinaryLogic::createYes(),
+			],
+			[
+				new BitwiseOr(
+					new ConstFetch(new Name('SOME_CONST1')),
+					new ConstFetch(new Name('SOME_CONST2')),
+				),
+				'SOME_CONST2',
+				TrinaryLogic::createYes(),
+			],
+			[
+				new BitwiseOr(
+					new ConstFetch(new Name('SOME_CONST1')),
+					new ConstFetch(new Name('SOME_CONST2')),
+				),
+				'SOME_CONST3',
+				TrinaryLogic::createNo(),
+			],
+		];
+	}
 
 	public function dataJsonExprContainsConst(): array
 	{
@@ -154,6 +182,7 @@ final class BitwiseFlagHelperTest extends PHPStanTestCase
 	}
 
 	/**
+	 * @dataProvider dataUnknownConstants
 	 * @dataProvider dataJsonExprContainsConst
 	 * @dataProvider dataJsonExprContainsConstLegacy
 	 */

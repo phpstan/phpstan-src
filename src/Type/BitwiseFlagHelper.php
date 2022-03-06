@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
 use PhpParser\Node\Expr\ConstFetch;
+use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
@@ -21,11 +22,22 @@ final class BitwiseFlagHelper
 	public function bitwiseOrContainsConstant(Expr $expr, Scope $scope, string $constName): TrinaryLogic
 	{
 		if ($expr instanceof ConstFetch) {
-			$resolveConstantName = $this->reflectionProvider->resolveConstantName($expr->name, $scope);
+			if ($expr->name instanceof Name && ((string) $expr->name) === $constName) {
+				return TrinaryLogic::createYes();
+			}
 
-			if ($resolveConstantName !== $constName) {
+			$resolveConstantName = $this->reflectionProvider->resolveConstantName($expr->name, $scope);
+			if ($resolveConstantName !== null) {
+				if ($resolveConstantName === $constName) {
+					return TrinaryLogic::createYes();
+				}
 				return TrinaryLogic::createNo();
 			}
+		}
+
+		if ($expr instanceof BitwiseOr) {
+			return TrinaryLogic::createFromBoolean($this->bitwiseOrContainsConstant($expr->left, $scope, $constName)->yes() ||
+				$this->bitwiseOrContainsConstant($expr->right, $scope, $constName)->yes());
 		}
 
 		$fqcn = new FullyQualified($constName);
@@ -44,11 +56,6 @@ final class BitwiseFlagHelper
 
 	private function exprContainsIntFlag(Expr $expr, Scope $scope, int $flag): TrinaryLogic
 	{
-		if ($expr instanceof BitwiseOr) {
-			return TrinaryLogic::createFromBoolean($this->exprContainsIntFlag($expr->left, $scope, $flag)->yes() ||
-				$this->exprContainsIntFlag($expr->right, $scope, $flag)->yes());
-		}
-
 		$exprType = $scope->getType($expr);
 
 		if ($exprType instanceof UnionType) {

@@ -898,7 +898,7 @@ services:
 		factory: PHPStan\Type\LazyTypeAliasResolverProvider
 
 	-
-		class: PHPStan\Type\BitwiseFlagAnalyser
+		class: PHPStan\Type\BitwiseFlagHelper
 
 	-
 		class: PHPStan\Type\Php\ArgumentBasedFunctionReturnTypeExtension

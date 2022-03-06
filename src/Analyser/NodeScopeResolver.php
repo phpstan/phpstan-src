@@ -140,7 +140,6 @@ use PHPStan\Type\VoidType;
 use Throwable;
 use Traversable;
 use TypeError;
-
 use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;

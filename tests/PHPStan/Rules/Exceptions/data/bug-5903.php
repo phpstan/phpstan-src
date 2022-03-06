@@ -12,6 +12,10 @@ class Test
 	protected $iterable;
 	/** @var array<string> */
 	protected $array;
+	/** @var array<string>|null */
+	protected $maybeArray;
+	/** @var \Iterator<string>|null */
+	protected $maybeIterable;
 
 	public function foo()
 	{
@@ -38,6 +42,20 @@ class Test
 
 		try {
 			foreach ($this->array as $val) {
+				echo $val;
+			}
+		} catch (\Throwable $e) {
+		}
+
+		try {
+			foreach ($this->maybeArray as $val) {
+				echo $val;
+			}
+		} catch (\Throwable $e) {
+		}
+
+		try {
+			foreach ($this->maybeIterable as $val) {
 				echo $val;
 			}
 		} catch (\Throwable $e) {

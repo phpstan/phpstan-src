@@ -7,6 +7,8 @@ final class A
 	public int $integerType = 1;
 	public $mixedType;
 	public string $stringType;
+	/** @var string|int */
+	public $stringOrIntType;
 
 	function doFoo()
 	{
@@ -22,6 +24,18 @@ final class A
 
 		try {
 			$this->stringType = "string";
+		} catch (\TypeError $e) {
+		}
+
+		/** @var string|int $intOrString */
+		$intOrString = '';
+		try {
+			$this->integerType = $intOrString;
+		} catch (\TypeError $e) {
+		}
+
+		try {
+			$this->stringOrIntType = 1;
 		} catch (\TypeError $e) {
 		}
 	}

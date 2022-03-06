@@ -116,75 +116,9 @@ final class BitwiseFlagHelperTest extends PHPStanTestCase
 		];
 	}
 
-	public function dataJsonExprContainsConstLegacy(): array
-	{
-		if (defined('JSON_THROW_ON_ERROR')) {
-			return [];
-		}
-
-		// php < 7.3 does not define JSON_THROW_ON_ERROR
-		// see https://3v4l.org/Co7df
-		return [
-			[
-				new ConstFetch(new FullyQualified('JSON_THROW_ON_ERROR')),
-				'JSON_THROW_ON_ERROR',
-				TrinaryLogic::createNo(),
-			],
-			[
-				new ConstFetch(new FullyQualified('JSON_NUMERIC_CHECK')),
-				'JSON_THROW_ON_ERROR',
-				TrinaryLogic::createNo(),
-			],
-			[
-				new BitwiseOr(
-					new ConstFetch(new FullyQualified('JSON_NUMERIC_CHECK')),
-					new ConstFetch(new FullyQualified('JSON_THROW_ON_ERROR')),
-				),
-				'JSON_THROW_ON_ERROR',
-				TrinaryLogic::createNo(),
-			],
-			[
-				new Variable('mixedVar'),
-				'JSON_THROW_ON_ERROR',
-				TrinaryLogic::createNo(),
-			],
-			[
-				new Variable('stringVar'),
-				'JSON_THROW_ON_ERROR',
-				TrinaryLogic::createNo(),
-			],
-			[
-				new Variable('integerVar'),
-				'JSON_THROW_ON_ERROR',
-				TrinaryLogic::createNo(),
-			],
-			[
-				new Variable('booleanVar'),
-				'JSON_THROW_ON_ERROR',
-				TrinaryLogic::createNo(),
-			],
-			[
-				new Variable('floatVar'),
-				'JSON_THROW_ON_ERROR',
-				TrinaryLogic::createNo(),
-			],
-			[
-				new Variable('unionIntFloatVar'),
-				'JSON_THROW_ON_ERROR',
-				TrinaryLogic::createNo(),
-			],
-			[
-				new Variable('unionStringFloatVar'),
-				'JSON_THROW_ON_ERROR',
-				TrinaryLogic::createNo(),
-			],
-		];
-	}
-
 	/**
 	 * @dataProvider dataUnknownConstants
 	 * @dataProvider dataJsonExprContainsConst
-	 * @dataProvider dataJsonExprContainsConstLegacy
 	 */
 	public function testExprContainsConst(Expr $expr, string $constName, TrinaryLogic $expected): void
 	{

@@ -140,6 +140,7 @@ use PHPStan\Type\VoidType;
 use Throwable;
 use Traversable;
 use TypeError;
+use UnhandledMatchError;
 use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
@@ -2525,8 +2526,10 @@ class NodeScopeResolver
 			$throwPoints = $condResult->getThrowPoints();
 			$matchScope = $scope;
 			$armNodes = [];
+			$hasDefaultCond = false;
 			foreach ($expr->arms as $arm) {
 				if ($arm->conds === null) {
+					$hasDefaultCond = true;
 					$armResult = $this->processExprNode($arm->body, $matchScope, $nodeCallback, ExpressionContext::createTopLevel());
 					$matchScope = $armResult->getScope();
 					$hasYield = $hasYield || $armResult->hasYield();
@@ -2571,6 +2574,9 @@ class NodeScopeResolver
 				$hasYield = $hasYield || $armResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
+			}
+			if (!$hasDefaultCond) {
+				$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(UnhandledMatchError::class), $expr, false);
 			}
 
 			$nodeCallback(new MatchExpressionNode($expr->cond, $armNodes, $expr, $matchScope), $scope);

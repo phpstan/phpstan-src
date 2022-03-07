@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
@@ -24,6 +25,10 @@ use function count;
 
 class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -187,15 +192,17 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 	{
 		$isArray = $type->isArray();
 		if ($isArray->yes()) {
-			return new IntegerType();
+			return $this->phpVersion->throwsTypeErrorForInternalFunctions() ? new NeverType() : new IntegerType();
 		}
 		if ($isArray->no()) {
 			return ArrayType::castToArrayKeyType($type);
 		}
-		return TypeCombinator::union(
-			ArrayType::castToArrayKeyType(TypeCombinator::remove($type, new ArrayType(new MixedType(), new MixedType()))),
-			new IntegerType(),
-		);
+		$withoutArrayType = TypeCombinator::remove($type, new ArrayType(new MixedType(), new MixedType()));
+		$keyType = ArrayType::castToArrayKeyType($withoutArrayType);
+		if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
+			return $keyType;
+		}
+		return TypeCombinator::union($keyType, new IntegerType());
 	}
 
 }

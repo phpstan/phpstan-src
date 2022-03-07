@@ -139,6 +139,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 use Throwable;
 use Traversable;
+use TypeError;
 use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
@@ -3314,11 +3315,24 @@ class NodeScopeResolver
 				if ($propertyReflection->canChangeTypeAfterAssignment()) {
 					$scope = $scope->assignExpression($var, $assignedExprType);
 				}
+				if (!$propertyReflection->getWritableType()->isSuperTypeOf($assignedExprType)->yes()) {
+					$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
+				}
 			} else {
 				// fallback
 				$assignedExprType = $scope->getType($assignedExpr);
 				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
 				$scope = $scope->assignExpression($var, $assignedExprType);
+				// simulate dynamic property assign by __set to get throw points
+				if (!$propertyHolderType->hasMethod('__set')->no()) {
+					$throwPoints = array_merge($throwPoints, $this->processExprNode(
+						new MethodCall($var->var, '__set'),
+						$scope,
+						static function (): void {
+						},
+						$context,
+					)->getThrowPoints());
+				}
 			}
 
 		} elseif ($var instanceof Expr\StaticPropertyFetch) {

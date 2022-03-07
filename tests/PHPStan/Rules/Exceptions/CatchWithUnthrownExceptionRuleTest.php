@@ -215,4 +215,38 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6262.php'], []);
 	}
 
+	public function testBug6256(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6256.php'], [
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				25,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				31,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				45,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				57,
+			],
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				63,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				100,
+			],
+		]);
+	}
+
 }

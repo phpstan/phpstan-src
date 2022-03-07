@@ -234,7 +234,12 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 			self::markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$this->analyse([__DIR__ . '/data/bug-6115.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-6115.php'], [
+			[
+				'Dead catch - UnhandledMatchError is never thrown in the try block.',
+				19,
+			],
+		]);
 	}
 
 	public function testBug6262(): void

@@ -11,3 +11,10 @@ try {
 	};
 } catch (\UnhandledMatchError $e) {
 }
+
+try {
+	$exportTypes[] = match ($a) {
+		default => [0],
+	};
+} catch (\UnhandledMatchError $e) {
+}

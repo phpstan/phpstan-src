@@ -3271,21 +3271,22 @@ class NodeScopeResolver
 						$valueToWrite,
 					);
 				}
-
-				if ($originalVar->dim instanceof Variable || $originalVar->dim instanceof Node\Scalar) {
-					$currentVarType = $scope->getType($originalVar);
-					if (!$originalValueToWrite->isSuperTypeOf($currentVarType)->yes()) {
-						$scope = $scope->assignExpression(
-							$originalVar,
-							$originalValueToWrite,
-						);
-					}
-				}
 			} else {
 				if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
 					$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
 				}
 			}
+
+			if ($originalVar->dim instanceof Variable || $originalVar->dim instanceof Node\Scalar) {
+				$currentVarType = $scope->getType($originalVar);
+				if (!$originalValueToWrite->isSuperTypeOf($currentVarType)->yes()) {
+					$scope = $scope->assignExpression(
+						$originalVar,
+						$originalValueToWrite,
+					);
+				}
+			}
+
 		} elseif ($var instanceof PropertyFetch) {
 			$objectResult = $this->processExprNode($var->var, $scope, $nodeCallback, $context);
 			$hasYield = $objectResult->hasYield();

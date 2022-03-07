@@ -19,4 +19,19 @@ class Test
 		return $this->answersOrder[$qId];
 	}
 
+	/** @var \ArrayAccess */
+	private $arrayAccess = [];
+
+	public function doBar(string $qId): int
+	{
+		if (null !== $this->arrayAccess[$qId]) {
+			return $this->arrayAccess[$qId];
+		}
+
+
+		$this->arrayAccess[$qId] = 5;
+
+		return $this->arrayAccess[$qId];
+	}
+
 }

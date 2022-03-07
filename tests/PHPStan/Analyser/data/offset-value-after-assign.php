@@ -21,4 +21,20 @@ class Foo
 		assertType('string', $a[$i]);
 	}
 
+	/**
+	 * @param \ArrayAccess<int, string> $a
+	 */
+	public function doBar(\ArrayAccess $a, int $i): void
+	{
+		assertType('string|null', $a[$i]);
+
+		$a[$i] = 'foo';
+		assertType('\'foo\'', $a[$i]);
+		assertType('ArrayAccess<int, string>', $a);
+
+		$i = 1;
+		assertType('string|null', $a[$i]);
+		assertType('ArrayAccess<int, string>', $a);
+	}
+
 }

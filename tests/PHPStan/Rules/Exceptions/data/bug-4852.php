@@ -71,3 +71,10 @@ try {
 	// dead
 }
 
+$array = [];
+try {
+	$array[] = 'value';
+} catch (Exception $e) {
+	// dead
+}
+

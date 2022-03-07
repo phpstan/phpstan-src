@@ -3286,6 +3286,16 @@ class NodeScopeResolver
 					$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
 				}
 			}
+
+			if (!(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
+				$throwPoints = array_merge($throwPoints, $this->processExprNode(
+					new MethodCall($var, 'offsetSet'),
+					$scope,
+					static function (): void {
+					},
+					$context,
+				)->getThrowPoints());
+			}
 		} elseif ($var instanceof PropertyFetch) {
 			$objectResult = $this->processExprNode($var->var, $scope, $nodeCallback, $context);
 			$hasYield = $objectResult->hasYield();

@@ -554,7 +554,6 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$foo' => '123',
-					123 => '123',
 				],
 				['$foo' => '~123'],
 			],

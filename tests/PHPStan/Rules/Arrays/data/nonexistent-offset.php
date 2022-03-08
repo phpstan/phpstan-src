@@ -485,3 +485,26 @@ class MessageDescriptorTest
 	}
 
 }
+
+/**
+ * @phpstan-type Version array{version: string, commit: string|null, pretty_version: string|null, feature_version?: string|null, feature_pretty_version?: string|null}
+ */
+class VersionGuesser
+{
+	/**
+	 * @param array $versionData
+	 *
+	 * @phpstan-param Version $versionData
+	 *
+	 * @return array
+	 * @phpstan-return Version
+	 */
+	private function postprocess(array $versionData): array
+	{
+		if (!empty($versionData['feature_version']) && $versionData['feature_version'] === $versionData['version'] && $versionData['feature_pretty_version'] === $versionData['pretty_version']) {
+			unset($versionData['feature_version'], $versionData['feature_pretty_version']);
+		}
+
+		return $versionData;
+	}
+}

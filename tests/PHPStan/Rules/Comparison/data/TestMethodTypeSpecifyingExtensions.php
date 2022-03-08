@@ -99,7 +99,7 @@ class FooIsSame implements MethodTypeSpecifyingExtension, TypeSpecifierAwareExte
 				$node->args[0]->value,
 				$node->args[1]->value
 			),
-			TypeSpecifierContext::createTruthy()
+			$context
 		);
 	}
 
@@ -144,7 +144,7 @@ class FooIsNotSame implements MethodTypeSpecifyingExtension,
 				$node->args[0]->value,
 				$node->args[1]->value
 			),
-			TypeSpecifierContext::createTruthy()
+			$context
 		);
 	}
 

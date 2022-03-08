@@ -41,6 +41,16 @@ class Foo
 		assertType('stdClass', $b);
 	}
 
+	/**
+	 * @param array{a: string, b: array{c: string|null}} $a
+	 */
+	public function arrayOffset(array $a): void
+	{
+		if (strlen($a['a']) > 0 && $a['a'] === $a['b']['c']) {
+			assertType('array{a: non-empty-string, b: array{c: non-empty-string}}', $a);
+		}
+	}
+
 }
 
 class Bar

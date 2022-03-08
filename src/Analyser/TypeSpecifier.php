@@ -14,7 +14,6 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
@@ -258,14 +257,7 @@ class TypeSpecifier
 					$context,
 				);
 			}
-
-			if ($context->true()) {
-				$type = TypeCombinator::intersect($scope->getType($expr->right), $scope->getType($expr->left));
-				$leftTypes = $this->create($expr->left, $type, $context, false, $scope);
-				$rightTypes = $this->create($expr->right, $type, $context, false, $scope);
-				return $leftTypes->unionWith($rightTypes);
-
-			} elseif ($context->false()) {
+			if ($context->false()) {
 				$identicalType = $scope->getType($expr);
 				if ($identicalType instanceof ConstantBooleanType) {
 					$never = new NeverType();
@@ -274,18 +266,13 @@ class TypeSpecifier
 					$rightTypes = $this->create($expr->right, $never, $contextForTypes, false, $scope);
 					return $leftTypes->unionWith($rightTypes);
 				}
+			}
 
-				$exprLeftType = $scope->getType($expr->left);
-				$exprRightType = $scope->getType($expr->right);
-
-				$types = null;
-
-				if (
-					(
-						$exprLeftType instanceof ConstantType
-						&& !$expr->right instanceof Node\Scalar
-					) || $exprLeftType instanceof EnumCaseObjectType
-				) {
+			$types = null;
+			$exprLeftType = $scope->getType($expr->left);
+			$exprRightType = $scope->getType($expr->right);
+			if ($exprLeftType instanceof ConstantType || $exprLeftType instanceof EnumCaseObjectType) {
+				if (!$expr->right instanceof Node\Scalar && !$expr->right instanceof Expr\Array_) {
 					$types = $this->create(
 						$expr->right,
 						$exprLeftType,
@@ -294,12 +281,9 @@ class TypeSpecifier
 						$scope,
 					);
 				}
-				if (
-					(
-						$exprRightType instanceof ConstantType
-						&& !$expr->left instanceof Node\Scalar
-					) || $exprRightType instanceof EnumCaseObjectType
-				) {
+			}
+			if ($exprRightType instanceof ConstantType || $exprRightType instanceof EnumCaseObjectType) {
+				if ($types === null || (!$expr->left instanceof Node\Scalar && !$expr->left instanceof Expr\Array_)) {
 					$leftType = $this->create(
 						$expr->left,
 						$exprRightType,
@@ -313,11 +297,26 @@ class TypeSpecifier
 						$types = $leftType;
 					}
 				}
+			}
 
-				if ($types !== null) {
-					return $types;
+			if ($types !== null) {
+				return $types;
+			}
+
+			$leftExprString = $this->printer->prettyPrintExpr($expr->left);
+			$rightExprString = $this->printer->prettyPrintExpr($expr->right);
+			if ($leftExprString === $rightExprString) {
+				if (!$expr->left instanceof Expr\Variable || !$expr->right instanceof Expr\Variable) {
+					return new SpecifiedTypes();
 				}
+			}
 
+			if ($context->true()) {
+				$type = TypeCombinator::intersect($scope->getType($expr->right), $scope->getType($expr->left));
+				$leftTypes = $this->create($expr->left, $type, $context, false, $scope);
+				$rightTypes = $this->create($expr->right, $type, $context, false, $scope);
+				return $leftTypes->unionWith($rightTypes);
+			} elseif ($context->false()) {
 				return $this->create($expr->left, $exprLeftType, $context, false, $scope)->normalize($scope)
 					->intersectWith($this->create($expr->right, $exprRightType, $context, false, $scope)->normalize($scope));
 			}
@@ -981,7 +980,7 @@ class TypeSpecifier
 		?Scope $scope = null,
 	): SpecifiedTypes
 	{
-		if ($expr instanceof New_ || $expr instanceof Instanceof_ || $expr instanceof Expr\List_ || $expr instanceof VirtualNode) {
+		if ($expr instanceof Instanceof_ || $expr instanceof Expr\List_ || $expr instanceof VirtualNode) {
 			return new SpecifiedTypes();
 		}
 

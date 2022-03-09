@@ -610,6 +610,30 @@ class MutatingScope implements Scope
 			$node instanceof Expr\BinaryOp\Equal
 			|| $node instanceof Expr\BinaryOp\NotEqual
 		) {
+			if ($node instanceof Expr\BinaryOp\Equal) {
+				if (
+					$node->left instanceof Variable
+					&& is_string($node->left->name)
+					&& $node->right instanceof Variable
+					&& is_string($node->right->name)
+					&& $node->left->name === $node->right->name
+				) {
+					return new ConstantBooleanType(true);
+				}
+			}
+
+			if ($node instanceof Expr\BinaryOp\NotEqual) {
+				if (
+					$node->left instanceof Variable
+					&& is_string($node->left->name)
+					&& $node->right instanceof Variable
+					&& is_string($node->right->name)
+					&& $node->left->name === $node->right->name
+				) {
+					return new ConstantBooleanType(false);
+				}
+			}
+
 			return new BooleanType();
 		}
 
@@ -810,6 +834,16 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\Identical) {
+			if (
+				$node->left instanceof Variable
+				&& is_string($node->left->name)
+				&& $node->right instanceof Variable
+				&& is_string($node->right->name)
+				&& $node->left->name === $node->right->name
+			) {
+				return new ConstantBooleanType(true);
+			}
+
 			if ($this->treatPhpDocTypesAsCertain) {
 				$leftType = $this->getType($node->left);
 				$rightType = $this->getType($node->right);
@@ -856,6 +890,15 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\NotIdentical) {
+			if (
+				$node->left instanceof Variable
+				&& is_string($node->left->name)
+				&& $node->right instanceof Variable
+				&& is_string($node->right->name)
+				&& $node->left->name === $node->right->name
+			) {
+				return new ConstantBooleanType(false);
+			}
 			if ($this->treatPhpDocTypesAsCertain) {
 				$leftType = $this->getType($node->left);
 				$rightType = $this->getType($node->right);

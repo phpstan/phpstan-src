@@ -100,3 +100,24 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	public function doFoo(\stdClass $a, \stdClass $b): void
+	{
+		assertType('true', $a == $a);
+		assertType('bool', $a == $b);
+		assertType('false', $a != $a);
+		assertType('bool', $a != $b);
+
+		assertType('bool', self::createStdClass() == self::createStdClass());
+		assertType('bool', self::createStdClass() != self::createStdClass());
+	}
+
+	public static function createStdClass(): \stdClass
+	{
+
+	}
+
+}

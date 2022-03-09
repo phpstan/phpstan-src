@@ -196,6 +196,24 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4852(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('This test needs static reflection');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-4852.php'], [
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				70,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				77,
+			],
+		]);
+	}
+
 	public function testBug5903(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-5903.php'], [

@@ -73,4 +73,13 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6758(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6758.php'], []);
+	}
+
 }

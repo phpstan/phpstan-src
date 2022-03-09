@@ -4,7 +4,7 @@ namespace Bug6115;
 
 $a = 5;
 try {
-	$exportTypes[] = match ($a) {
+	$exportTypes = match ($a) {
 		1 => [0],
 		2 => [1],
 		3 => [2],
@@ -13,7 +13,7 @@ try {
 }
 
 try {
-	$exportTypes[] = match ($a) {
+	$exportTypes = match ($a) {
 		default => [0],
 	};
 } catch (\UnhandledMatchError $e) {

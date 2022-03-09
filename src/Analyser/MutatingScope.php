@@ -620,6 +620,20 @@ class MutatingScope implements Scope
 				) {
 					return new ConstantBooleanType(true);
 				}
+
+				$leftType = $this->getType($node->left);
+				$rightType = $this->getType($node->right);
+
+				$stringType = new StringType();
+				$integerType = new IntegerType();
+				$floatType = new FloatType();
+				if (
+					($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
+					|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
+					|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
+				) {
+					return $this->getType(new Expr\BinaryOp\Identical($node->left, $node->right));
+				}
 			}
 
 			if ($node instanceof Expr\BinaryOp\NotEqual) {
@@ -631,6 +645,20 @@ class MutatingScope implements Scope
 					&& $node->left->name === $node->right->name
 				) {
 					return new ConstantBooleanType(false);
+				}
+
+				$leftType = $this->getType($node->left);
+				$rightType = $this->getType($node->right);
+
+				$stringType = new StringType();
+				$integerType = new IntegerType();
+				$floatType = new FloatType();
+				if (
+					($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
+					|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
+					|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
+				) {
+					return $this->getType(new Expr\BinaryOp\NotIdentical($node->left, $node->right));
 				}
 			}
 

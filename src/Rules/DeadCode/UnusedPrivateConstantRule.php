@@ -70,7 +70,7 @@ class UnusedPrivateConstantRule implements Rule
 				if ($fetchedOnClass !== $classReflection->getName()) {
 					continue;
 				}
-			} elseif ($fetchNode->class instanceof Node\Expr) {
+			} else {
 				$classExprType = $fetch->getScope()->getType($fetchNode->class);
 				if (!$classExprType instanceof TypeWithClassName) {
 					continue;
@@ -78,8 +78,6 @@ class UnusedPrivateConstantRule implements Rule
 				if ($classExprType->getClassName() !== $classReflection->getName()) {
 					continue;
 				}
-			} else {
-				continue;
 			}
 
 			unset($constants[$fetchNode->name->toString()]);

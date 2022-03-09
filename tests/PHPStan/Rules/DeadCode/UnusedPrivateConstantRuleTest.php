@@ -73,4 +73,9 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6758(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6758.php'], []);
+	}
+
 }

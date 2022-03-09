@@ -9,6 +9,7 @@ use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\TypeWithClassName;
 use function sprintf;
 
 /**
@@ -59,17 +60,26 @@ class UnusedPrivateConstantRule implements Rule
 
 		foreach ($node->getFetches() as $fetch) {
 			$fetchNode = $fetch->getNode();
-			if (!$fetchNode->class instanceof Node\Name) {
-				continue;
-			}
 			if (!$fetchNode->name instanceof Node\Identifier) {
 				continue;
 			}
-			$fetchScope = $fetch->getScope();
-			$fetchedOnClass = $fetchScope->resolveName($fetchNode->class);
-			if ($fetchedOnClass !== $classReflection->getName()) {
-				continue;
+
+			if ($fetchNode->class instanceof Node\Name) {
+				$fetchScope = $fetch->getScope();
+				$fetchedOnClass = $fetchScope->resolveName($fetchNode->class);
+				if ($fetchedOnClass !== $classReflection->getName()) {
+					continue;
+				}
+			} else {
+				$classExprType = $fetch->getScope()->getType($fetchNode->class);
+				if (!$classExprType instanceof TypeWithClassName) {
+					continue;
+				}
+				if ($classExprType->getClassName() !== $classReflection->getName()) {
+					continue;
+				}
 			}
+
 			unset($constants[$fetchNode->name->toString()]);
 		}
 

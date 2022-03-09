@@ -149,3 +149,93 @@ class FooIsNotSame implements MethodTypeSpecifyingExtension,
 	}
 
 }
+
+class FooIsEqual implements MethodTypeSpecifyingExtension, TypeSpecifierAwareExtension
+{
+
+	/** @var TypeSpecifier */
+	private $typeSpecifier;
+
+	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
+	{
+		$this->typeSpecifier = $typeSpecifier;
+	}
+
+	public function getClass(): string
+	{
+		return \ImpossibleMethodCall\Foo::class;
+	}
+
+	public function isMethodSupported(
+		MethodReflection $methodReflection,
+		MethodCall $node,
+		TypeSpecifierContext $context
+	): bool
+	{
+		return $methodReflection->getName() === 'isSame'
+			&& count($node->args) >= 2;
+	}
+
+	public function specifyTypes(
+		MethodReflection $methodReflection,
+		MethodCall $node,
+		Scope $scope,
+		TypeSpecifierContext $context
+	): SpecifiedTypes
+	{
+		return $this->typeSpecifier->specifyTypesInCondition(
+			$scope,
+			new \PhpParser\Node\Expr\BinaryOp\Equal(
+				$node->args[0]->value,
+				$node->args[1]->value
+			),
+			$context
+		);
+	}
+
+}
+
+class FooIsNotEqual implements MethodTypeSpecifyingExtension,
+	TypeSpecifierAwareExtension {
+
+	/** @var TypeSpecifier */
+	private $typeSpecifier;
+
+	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
+	{
+		$this->typeSpecifier = $typeSpecifier;
+	}
+
+	public function getClass(): string
+	{
+		return \ImpossibleMethodCall\Foo::class;
+	}
+
+	public function isMethodSupported(
+		MethodReflection $methodReflection,
+		MethodCall $node,
+		TypeSpecifierContext $context
+	): bool
+	{
+		return $methodReflection->getName() === 'isNotSame'
+			&& count($node->args) >= 2;
+	}
+
+	public function specifyTypes(
+		MethodReflection $methodReflection,
+		MethodCall $node,
+		Scope $scope,
+		TypeSpecifierContext $context
+	): SpecifiedTypes
+	{
+		return $this->typeSpecifier->specifyTypesInCondition(
+			$scope,
+			new \PhpParser\Node\Expr\BinaryOp\NotEqual(
+				$node->args[0]->value,
+				$node->args[1]->value
+			),
+			$context
+		);
+	}
+
+}

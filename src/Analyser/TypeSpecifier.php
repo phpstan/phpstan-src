@@ -438,6 +438,14 @@ class TypeSpecifier
 				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context);
 			}
 
+			$leftExprString = $this->printer->prettyPrintExpr($expr->left);
+			$rightExprString = $this->printer->prettyPrintExpr($expr->right);
+			if ($leftExprString === $rightExprString) {
+				if (!$expr->left instanceof Expr\Variable || !$expr->right instanceof Expr\Variable) {
+					return new SpecifiedTypes();
+				}
+			}
+
 			$leftTypes = $this->create($expr->left, $leftType, $context, false, $scope);
 			$rightTypes = $this->create($expr->right, $rightType, $context, false, $scope);
 

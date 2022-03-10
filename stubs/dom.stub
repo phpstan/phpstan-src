@@ -55,6 +55,7 @@ class DOMElement extends DOMNode
 
 /**
  * @template-covariant TNode as DOMNode
+ * @implements Traversable<int, TNode>
  * @implements IteratorAggregate<int, TNode>
  */
 class DOMNodeList implements IteratorAggregate, Countable

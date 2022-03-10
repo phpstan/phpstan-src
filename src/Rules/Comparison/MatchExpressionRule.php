@@ -97,7 +97,7 @@ class MatchExpressionRule implements Rule
 		return $errors;
 	}
 
-	private function isUnhandledMatchErrorCaught(MatchExpressionNode $node): bool
+	private function isUnhandledMatchErrorCaught(Node $node): bool
 	{
 		$tryCatchNode = $node->getAttribute('parent');
 		while (
@@ -119,7 +119,7 @@ class MatchExpressionRule implements Rule
 			}
 		}
 
-		return false;
+		return $this->isUnhandledMatchErrorCaught($tryCatchNode);
 	}
 
 }

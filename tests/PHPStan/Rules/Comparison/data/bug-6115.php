@@ -42,3 +42,16 @@ try {
 	}
 } catch (\UnhandledMatchError|\Exception $e) {
 }
+
+try {
+	try {
+		foreach ($array as $value) {
+			$b = match ($value) {
+				1 => 0,
+				2 => 1,
+			};
+		}
+	} catch (\Exception $e) {
+	}
+} catch (\UnhandledMatchError $e) {}
+

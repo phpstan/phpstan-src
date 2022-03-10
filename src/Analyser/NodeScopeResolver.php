@@ -2575,7 +2575,9 @@ class NodeScopeResolver
 				$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
 			}
-			if (!$hasDefaultCond) {
+
+			$remainingType = $matchScope->getType($expr->cond);
+			if (!$hasDefaultCond && !$remainingType instanceof NeverType) {
 				$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(UnhandledMatchError::class), $expr, false);
 			}
 

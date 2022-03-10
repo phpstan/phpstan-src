@@ -13,7 +13,7 @@ on:
       - 'compiler/**'
 
 env:
-  COMPOSER_ROOT_VERSION: "1.4.x-dev"
+  COMPOSER_ROOT_VERSION: "1.5.x-dev"
 
 jobs:
   tests:

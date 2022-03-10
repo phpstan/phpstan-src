@@ -384,7 +384,7 @@ class TypeNodeResolver
 
 	private function resolveNullableTypeNode(NullableTypeNode $typeNode, NameScope $nameScope): Type
 	{
-		return TypeCombinator::addNull($this->resolve($typeNode->type, $nameScope));
+		return TypeCombinator::union($this->resolve($typeNode->type, $nameScope), new NullType());
 	}
 
 	private function resolveUnionTypeNode(UnionTypeNode $typeNode, NameScope $nameScope): Type

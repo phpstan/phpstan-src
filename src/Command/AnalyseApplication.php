@@ -148,15 +148,18 @@ class AnalyseApplication
 				$errorOutput->getStyle()->progressAdvance($step);
 			};
 		} else {
-			$preFileCallback = static function (string $file) use ($stdOutput): void {
+			$startTime = null;
+			$preFileCallback = static function (string $file) use ($stdOutput, &$startTime): void {
 				$stdOutput->writeLineFormatted($file);
+				$startTime = microtime(true);
 			};
 			$postFileCallback = null;
 			if ($stdOutput->isDebug()) {
 				$previousMemory = memory_get_peak_usage(true);
-				$postFileCallback = static function () use ($stdOutput, &$previousMemory): void {
+				$postFileCallback = static function () use ($stdOutput, &$previousMemory, &$startTime): void {
 					$currentTotalMemory = memory_get_peak_usage(true);
-					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory)));
+					$elapsedTime = microtime(true) - $startTime;
+					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %d s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), round($elapsedTime, 2)));
 					$previousMemory = $currentTotalMemory;
 				};
 			}

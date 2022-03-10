@@ -173,7 +173,12 @@ class MatchExpressionRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$this->analyse([__DIR__ . '/data/bug-6115.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-6115.php'], [
+			[
+				'Match expression does not handle remaining value: 3',
+				28,
+			],
+		]);
 	}
 
 }

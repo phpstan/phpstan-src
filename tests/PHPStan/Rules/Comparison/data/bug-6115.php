@@ -12,3 +12,33 @@ try {
 	}
 } catch (\UnhandledMatchError $e) {
 }
+
+try {
+	foreach ($array as $value) {
+		$b = match ($value) {
+			1 => 0,
+			2 => 1,
+		};
+	}
+} catch (\Error $e) {
+}
+
+try {
+	foreach ($array as $value) {
+		$b = match ($value) {
+			1 => 0,
+			2 => 1,
+		};
+	}
+} catch (\Exception $e) {
+}
+
+try {
+	foreach ($array as $value) {
+		$b = match ($value) {
+			1 => 0,
+			2 => 1,
+		};
+	}
+} catch (\UnhandledMatchError|\Exception $e) {
+}

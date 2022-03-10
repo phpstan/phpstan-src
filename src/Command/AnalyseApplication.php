@@ -7,6 +7,7 @@ use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\PhpDoc\StubValidator;
+use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
 use function count;
@@ -157,6 +158,9 @@ class AnalyseApplication
 			if ($stdOutput->isDebug()) {
 				$previousMemory = memory_get_peak_usage(true);
 				$postFileCallback = static function () use ($stdOutput, &$previousMemory, &$startTime): void {
+					if ($startTime === null) {
+						throw new ShouldNotHappenException();
+					}
 					$currentTotalMemory = memory_get_peak_usage(true);
 					$elapsedTime = microtime(true) - $startTime;
 					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %.2f s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), $elapsedTime));

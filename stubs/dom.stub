@@ -58,7 +58,7 @@ class DOMElement extends DOMNode
  * @implements Traversable<int, TNode>
  * @implements IteratorAggregate<int, TNode>
  */
-class DOMNodeList implements IteratorAggregate, Countable
+class DOMNodeList implements Traversable, IteratorAggregate, Countable
 {
 
     /** @var int */

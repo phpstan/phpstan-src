@@ -13,6 +13,7 @@ use function array_merge;
 use function count;
 use function is_string;
 use function memory_get_peak_usage;
+use function microtime;
 use function sprintf;
 
 class AnalyseApplication

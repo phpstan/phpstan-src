@@ -2283,7 +2283,10 @@ class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$scope = $result->getScope();
-			$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
+
+			if (!$scope->getType($expr->right) instanceof NeverType) {
+				$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
+			}
 
 			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch) {
 				$scope = $this->lookForExitVariableAssign($scope, $expr->left->var);

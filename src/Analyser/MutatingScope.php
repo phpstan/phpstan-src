@@ -2660,7 +2660,14 @@ class MutatingScope implements Scope
 					continue;
 				}
 
-				return $dynamicFunctionReturnTypeExtension->getTypeFromFunctionCall($functionReflection, $node, $this);
+				$resolvedType = $dynamicFunctionReturnTypeExtension->getTypeFromFunctionCall(
+					$functionReflection,
+					$node,
+					$this,
+				);
+				if ($resolvedType !== null) {
+					return $resolvedType;
+				}
 			}
 
 			return ParametersAcceptorSelector::selectFromArgs(
@@ -5659,7 +5666,16 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$resolvedTypes[] = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall($constructorMethod, $methodCall, $this);
+			$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
+				$constructorMethod,
+				$methodCall,
+				$this,
+			);
+			if ($resolvedType === null) {
+				continue;
+			}
+
+			$resolvedTypes[] = $resolvedType;
 		}
 
 		if (count($resolvedTypes) > 0) {
@@ -5835,7 +5851,12 @@ class MutatingScope implements Scope
 						continue;
 					}
 
-					$resolvedTypes[] = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($methodReflection, $methodCall, $this);
+					$resolvedType = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($methodReflection, $methodCall, $this);
+					if ($resolvedType === null) {
+						continue;
+					}
+
+					$resolvedTypes[] = $resolvedType;
 				}
 			} else {
 				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($className) as $dynamicStaticMethodReturnTypeExtension) {
@@ -5843,7 +5864,16 @@ class MutatingScope implements Scope
 						continue;
 					}
 
-					$resolvedTypes[] = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall($methodReflection, $methodCall, $this);
+					$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
+						$methodReflection,
+						$methodCall,
+						$this,
+					);
+					if ($resolvedType === null) {
+						continue;
+					}
+
+					$resolvedTypes[] = $resolvedType;
 				}
 			}
 		}

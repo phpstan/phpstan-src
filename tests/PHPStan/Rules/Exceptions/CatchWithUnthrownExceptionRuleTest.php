@@ -237,7 +237,11 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6115.php'], [
 			[
 				'Dead catch - UnhandledMatchError is never thrown in the try block.',
-				19,
+				20,
+			],
+			[
+				'Dead catch - UnhandledMatchError is never thrown in the try block.',
+				28,
 			],
 		]);
 	}

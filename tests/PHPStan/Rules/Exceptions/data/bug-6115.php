@@ -4,17 +4,27 @@ namespace Bug6115;
 
 $a = 5;
 try {
-	$exportTypes = match ($a) {
+	$b = match ($a) {
 		1 => [0],
 		2 => [1],
 		3 => [2],
 	};
 } catch (\UnhandledMatchError $e) {
+	// not dead
 }
 
 try {
-	$exportTypes = match ($a) {
+	$b = match ($a) {
 		default => [0],
 	};
 } catch (\UnhandledMatchError $e) {
+	// dead
+}
+
+try {
+	$b = match ($a) {
+		5 => [0],
+	};
+} catch (\UnhandledMatchError $e) {
+	// dead
 }

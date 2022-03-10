@@ -6,17 +6,17 @@ use function PHPStan\Testing\assertType;
 
 class Foo
 {
-    /** @param \DOMNodeList<\DOMNode> $list */
-    public function iterateNodes ($list): void
-    {
-        foreach($list as $item) {
-            assertType('DOMNode', $item);
-        }
-    }
+	/** @param \DOMNodeList<\DOMNode> $list */
+	public function iterateNodes ($list): void
+	{
+		foreach($list as $item) {
+			assertType('DOMNode', $item);
+		}
+	}
 
-    /** @param \DOMXPath $path */
-    public function xPathQuery ($path)
-    {
-        assertType('DOMNodeList<DOMNode>|false', $path->query(''));
-    }
+	/** @param \DOMXPath $path */
+	public function xPathQuery ($path)
+	{
+		assertType('DOMNodeList<DOMNode>|false', $path->query(''));
+	}
 }

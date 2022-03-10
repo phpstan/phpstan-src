@@ -22,7 +22,8 @@ class Foo
 
 	public function doBar(?string $html): void
 	{
-		assertType('string', $html ?? $this->neverReturn());
+		$html ?? $this->neverReturn();
+		assertType('string', $html);
 	}
 
 }

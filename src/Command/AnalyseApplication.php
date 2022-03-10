@@ -159,7 +159,7 @@ class AnalyseApplication
 				$postFileCallback = static function () use ($stdOutput, &$previousMemory, &$startTime): void {
 					$currentTotalMemory = memory_get_peak_usage(true);
 					$elapsedTime = microtime(true) - $startTime;
-					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %f s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), round($elapsedTime, 2)));
+					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %.2f s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), $elapsedTime));
 					$previousMemory = $currentTotalMemory;
 				};
 			}

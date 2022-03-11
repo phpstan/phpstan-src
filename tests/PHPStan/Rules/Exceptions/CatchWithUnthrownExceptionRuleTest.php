@@ -289,4 +289,31 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6786(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6786.php'], []);
+	}
+
+	public function testUnionTypeError(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/union-type-error.php'], [
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				14,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				22,
+			],
+		]);
+	}
+
 }

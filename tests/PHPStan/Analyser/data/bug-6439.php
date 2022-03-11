@@ -77,6 +77,6 @@ class HelloWorld
 		assertType("''|'[0-9]'", $extra);
 
 		$regex = '~[A-Z]' . $extra . '~';
-		assertType("'~[A-Z]~'|'~[A-Z][0-9]~'", $regex);
+		assertType("'~[A-Z][0-9]~'|'~[A-Z]~'", $regex);
 	}
 }

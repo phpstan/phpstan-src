@@ -1072,80 +1072,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\Concat || $node instanceof Expr\AssignOp\Concat) {
-			if ($node instanceof Node\Expr\AssignOp) {
-				$left = $node->var;
-				$right = $node->expr;
-			} else {
-				$left = $node->left;
-				$right = $node->right;
-			}
-
-			$leftStringType = $this->getType($left)->toString();
-			$rightStringType = $this->getType($right)->toString();
-			if (TypeCombinator::union(
-				$leftStringType,
-				$rightStringType,
-			) instanceof ErrorType) {
-				return new ErrorType();
-			}
-
-			if ($leftStringType instanceof ConstantStringType && $leftStringType->getValue() === '') {
-				return $rightStringType;
-			}
-
-			if ($rightStringType instanceof ConstantStringType && $rightStringType->getValue() === '') {
-				return $leftStringType;
-			}
-
-			if ($leftStringType instanceof ConstantStringType && $rightStringType instanceof ConstantStringType) {
-				return $leftStringType->append($rightStringType);
-			}
-
-			// we limit the number of union-types for performance reasons
-			if ($leftStringType instanceof UnionType && count($leftStringType->getTypes()) <= 16 && $rightStringType instanceof ConstantStringType) {
-				$constantStrings = TypeUtils::getConstantStrings($leftStringType);
-				if (count($constantStrings) > 0) {
-					$strings = [];
-					foreach ($constantStrings as $constantString) {
-						$strings[] = $constantString;
-						if ($constantString->getValue() === '') {
-							continue;
-						}
-						$strings[] = $constantString->append($rightStringType);
-					}
-					return TypeCombinator::union(...$strings);
-				}
-			}
-			if ($rightStringType instanceof UnionType && count($rightStringType->getTypes()) <= 16 && $leftStringType instanceof ConstantStringType) {
-				$constantStrings = TypeUtils::getConstantStrings($rightStringType);
-				if (count($constantStrings) > 0) {
-					$strings = [];
-					foreach ($constantStrings as $constantString) {
-						$strings[] = $constantString;
-						if ($constantString->getValue() === '') {
-							continue;
-						}
-						$strings[] = $leftStringType->append($constantString);
-					}
-					return TypeCombinator::union(...$strings);
-				}
-			}
-
-			$accessoryTypes = [];
-			if ($leftStringType->isNonEmptyString()->or($rightStringType->isNonEmptyString())->yes()) {
-				$accessoryTypes[] = new AccessoryNonEmptyStringType();
-			}
-
-			if ($leftStringType->isLiteralString()->and($rightStringType->isLiteralString())->yes()) {
-				$accessoryTypes[] = new AccessoryLiteralStringType();
-			}
-
-			if (count($accessoryTypes) > 0) {
-				$accessoryTypes[] = new StringType();
-				return new IntersectionType($accessoryTypes);
-			}
-
-			return new StringType();
+			return $this->resolveConcatType($node);
 		}
 
 		if (
@@ -2708,6 +2635,86 @@ class MutatingScope implements Scope
 		}
 
 		return new MixedType();
+	}
+
+	private function resolveConcatType(Expr\BinaryOp\Concat|Expr\AssignOp\Concat $node): Type
+	{
+		if ($node instanceof Node\Expr\AssignOp) {
+			$left = $node->var;
+			$right = $node->expr;
+		} else {
+			$left = $node->left;
+			$right = $node->right;
+		}
+
+		$leftStringType = $this->getType($left)->toString();
+		$rightStringType = $this->getType($right)->toString();
+		if (TypeCombinator::union(
+			$leftStringType,
+			$rightStringType,
+		) instanceof ErrorType) {
+			return new ErrorType();
+		}
+
+		if ($leftStringType instanceof ConstantStringType && $leftStringType->getValue() === '') {
+			return $rightStringType;
+		}
+
+		if ($rightStringType instanceof ConstantStringType && $rightStringType->getValue() === '') {
+			return $leftStringType;
+		}
+
+		if ($leftStringType instanceof ConstantStringType && $rightStringType instanceof ConstantStringType) {
+			return $leftStringType->append($rightStringType);
+		}
+
+		// we limit the number of union-types for performance reasons
+		if ($leftStringType instanceof UnionType && count($leftStringType->getTypes()) <= 16 && $rightStringType instanceof ConstantStringType) {
+			$constantStrings = TypeUtils::getConstantStrings($leftStringType);
+			if (count($constantStrings) > 0) {
+				$strings = [];
+				foreach ($constantStrings as $constantString) {
+					if ($constantString->getValue() === '') {
+						$strings[] = $rightStringType;
+
+						continue;
+					}
+					$strings[] = $constantString->append($rightStringType);
+				}
+				return TypeCombinator::union(...$strings);
+			}
+		}
+		if ($rightStringType instanceof UnionType && count($rightStringType->getTypes()) <= 16 && $leftStringType instanceof ConstantStringType) {
+			$constantStrings = TypeUtils::getConstantStrings($rightStringType);
+			if (count($constantStrings) > 0) {
+				$strings = [];
+				foreach ($constantStrings as $constantString) {
+					if ($constantString->getValue() === '') {
+						$strings[] = $leftStringType;
+
+						continue;
+					}
+					$strings[] = $leftStringType->append($constantString);
+				}
+				return TypeCombinator::union(...$strings);
+			}
+		}
+
+		$accessoryTypes = [];
+		if ($leftStringType->isNonEmptyString()->or($rightStringType->isNonEmptyString())->yes()) {
+			$accessoryTypes[] = new AccessoryNonEmptyStringType();
+		}
+
+		if ($leftStringType->isLiteralString()->and($rightStringType->isLiteralString())->yes()) {
+			$accessoryTypes[] = new AccessoryLiteralStringType();
+		}
+
+		if (count($accessoryTypes) > 0) {
+			$accessoryTypes[] = new StringType();
+			return new IntersectionType($accessoryTypes);
+		}
+
+		return new StringType();
 	}
 
 	private function getNullsafeShortCircuitingType(Expr $expr, Type $type): Type

@@ -73,9 +73,6 @@
 		}
 	},
 	"extra": {
-		"branch-alias": {
-			"dev-master": "1.5-dev"
-		},
 		"patcher": {
 			"search": "patches"
 		}

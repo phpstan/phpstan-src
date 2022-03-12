@@ -6,7 +6,7 @@ on:
   pull_request:
   push:
     branches:
-      - "master"
+      - "**"
 
 env:
   COMPOSER_ROOT_VERSION: "1.5.x-dev"
@@ -48,20 +48,20 @@ jobs:
   integration-tests:
     if: github.event_name == 'pull_request'
     needs: compiler-tests
-    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@master
+    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@1.5.x
     with:
-      ref: master
+      ref: 1.5.x
 
   extension-tests:
     if: github.event_name == 'pull_request'
     needs: compiler-tests
-    uses: phpstan/phpstan/.github/workflows/extension-tests.yml@master
+    uses: phpstan/phpstan/.github/workflows/extension-tests.yml@1.5.x
     with:
-      ref: master
+      ref: 1.5.x
 
   other-tests:
     if: github.event_name == 'pull_request'
     needs: compiler-tests
-    uses: phpstan/phpstan/.github/workflows/other-tests.yml@master
+    uses: phpstan/phpstan/.github/workflows/other-tests.yml@1.5.x
     with:
-      ref: master
+      ref: 1.5.x

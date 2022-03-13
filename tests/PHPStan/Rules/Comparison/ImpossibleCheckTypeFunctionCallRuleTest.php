@@ -528,4 +528,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/slevomat-cs-in-array.php'], []);
 	}
 
+	public function testNonEmptySpecifiedString(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/non-empty-string-impossible-type.php'], []);
+	}
+
 }

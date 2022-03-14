@@ -5778,22 +5778,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'int',
 				'$curlGetinfoWithRTSQSessionIdOption',
 			],
-			[
-				'int',
-				'$curlGetinfoWithHTTPVersionOption',
-			],
-			[
-				'string',
-				'$curlGetinfoWithProtocolOption',
-			],
-			[
-				'int',
-				'$curlGetinfoWithProxySSLVerifyresultOption',
-			],
-			[
-				'string',
-				'$curlGetinfoWithSchemeOption',
-			],
 		];
 	}
 

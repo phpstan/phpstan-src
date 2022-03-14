@@ -81,7 +81,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'curl_getinfo';
+		return strtolower($functionReflection->getName()) === 'curl_getinfo';
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type

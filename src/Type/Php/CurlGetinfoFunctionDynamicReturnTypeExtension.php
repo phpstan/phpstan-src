@@ -72,12 +72,12 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 {
 
 	/** @var array<int,Type>|null */
-	private array $componentTypesPairedConstants;
+	private ?array $componentTypesPairedConstants = null;
 
 	/** @var array<string,Type>|null */
-	private array $componentTypesPairedStrings;
+	private ?array $componentTypesPairedStrings = null;
 
-	private Type $allComponentsTogetherType;
+	private ?Type $allComponentsTogetherType = null;
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -121,14 +121,14 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 	 */
 	private function createAllComponentsReturnType(): Type
 	{
-		if (isset($this->allComponentsTogetherType) === false) {
+		if ($this->allComponentsTogetherType === null) {
 			$returnTypes = [
 				new ConstantBooleanType(false),
 			];
 
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 
-			if (isset($this->componentTypesPairedStrings) === false) {
+			if ($this->componentTypesPairedStrings === null) {
 				throw new ShouldNotHappenException();
 			}
 
@@ -146,7 +146,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 
 	private function cacheReturnTypes(): void
 	{
-		if (isset($this->componentTypesPairedConstants) === true) {
+		if ($this->componentTypesPairedConstants !== null) {
 			return;
 		}
 

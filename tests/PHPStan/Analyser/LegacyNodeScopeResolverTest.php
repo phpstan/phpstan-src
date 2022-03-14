@@ -5604,196 +5604,196 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			],
 			[
 				'mixed',
-				'$curlGetinfoWithoutParam'
+				'$curlGetinfoWithoutParam',
 			],
 			[
 				'array{url?: string, content_type?: string|null, http_code?: int, header_size?: int, request_size?: int, filetime?: int, ssl_verify_result?: int, redirect_count?: int, total_time?: float, namelookup_time?: float, connect_time?: float, pretransfer_time?: float, size_upload?: float, size_download?: float, speed_download?: float, speed_upload?: float, download_content_length?: float, upload_content_length?: float, starttransfer_time?: float, redirect_time?: float, redirect_url?: string, primary_ip?: string, certinfo?: array<int, string>, primary_port?: int, local_ip?: string, local_port?: int, http_version?: int, protocol?: int, ssl_verifyresult?: int, scheme?: string}|false',
-				'$curlGetinfoWithOnlyHandle'
+				'$curlGetinfoWithOnlyHandle',
 			],
 			[
 				'string',
-				'$curlGetinfoWithEffectiveUrlOption'
+				'$curlGetinfoWithEffectiveUrlOption',
 			],
 			[
 				'int',
-				'$curlGetinfoFiletimeWithOption'
+				'$curlGetinfoFiletimeWithOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithTotalTimeOption'
+				'$curlGetinfoWithTotalTimeOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithNamelookupTimeOption'
+				'$curlGetinfoWithNamelookupTimeOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithConnectTimeOption'
+				'$curlGetinfoWithConnectTimeOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithPretransferTimeOption'
+				'$curlGetinfoWithPretransferTimeOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithStarttransferTimeOption'
+				'$curlGetinfoWithStarttransferTimeOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithRedirectCountOption'
+				'$curlGetinfoWithRedirectCountOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithRedirectTimeOption'
+				'$curlGetinfoWithRedirectTimeOption',
 			],
 			[
 				'string',
-				'$curlGetinfoWithRedirectUrlOption'
+				'$curlGetinfoWithRedirectUrlOption',
 			],
 			[
 				'string',
-				'$curlGetinfoWithPrimaryIpOption'
+				'$curlGetinfoWithPrimaryIpOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithPrimaryPortOption'
+				'$curlGetinfoWithPrimaryPortOption',
 			],
 			[
 				'string',
-				'$curlGetinfoWithLocalIpOption'
+				'$curlGetinfoWithLocalIpOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithLocalPortOption'
+				'$curlGetinfoWithLocalPortOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithSizeUploadOption'
+				'$curlGetinfoWithSizeUploadOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithSizeDownloadOption'
+				'$curlGetinfoWithSizeDownloadOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithSpeedDownloadOption'
+				'$curlGetinfoWithSpeedDownloadOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithSpeedUploadOption'
+				'$curlGetinfoWithSpeedUploadOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithHeaderSizeOption'
+				'$curlGetinfoWithHeaderSizeOption',
 			],
 			[
 				'string|false',
-				'$curlGetinfoWithHeaderOutOption'
+				'$curlGetinfoWithHeaderOutOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithRequestSizeOption'
+				'$curlGetinfoWithRequestSizeOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithSSLVerifyresultOption'
+				'$curlGetinfoWithSSLVerifyresultOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithContentLengthDownloadOption'
+				'$curlGetinfoWithContentLengthDownloadOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithContentLengthUploadOption'
+				'$curlGetinfoWithContentLengthUploadOption',
 			],
 			[
 				'string',
-				'$curlGetinfoWithContentTypeOption'
+				'$curlGetinfoWithContentTypeOption',
 			],
 			[
 				'string|false',
-				'$curlGetinfoWithPrivateOption'
+				'$curlGetinfoWithPrivateOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithResponseCodeOption'
+				'$curlGetinfoWithResponseCodeOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithHTTPConnectcodeOption'
+				'$curlGetinfoWithHTTPConnectcodeOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithHTTPAuthAvailOption'
+				'$curlGetinfoWithHTTPAuthAvailOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithProxyauthAvailOption'
+				'$curlGetinfoWithProxyauthAvailOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithOSErrornoOption'
+				'$curlGetinfoWithOSErrornoOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithNumConnectsOption'
+				'$curlGetinfoWithNumConnectsOption',
 			],
 			[
 				'array<int, string>',
-				'$curlGetinfoWithSSLEnginesOption'
+				'$curlGetinfoWithSSLEnginesOption',
 			],
 			[
 				'array<int, string>',
-				'$curlGetinfoWithCookielistOption'
+				'$curlGetinfoWithCookielistOption',
 			],
 			[
 				'string|false',
-				'$curlGetinfoWithFTPEntryPathOption'
+				'$curlGetinfoWithFTPEntryPathOption',
 			],
 			[
 				'float',
-				'$curlGetinfoWithAppconnectTimeOption'
+				'$curlGetinfoWithAppconnectTimeOption',
 			],
 			[
 				'array<int, array<int, string>>',
-				'$curlGetinfoWithCertinfoOption'
+				'$curlGetinfoWithCertinfoOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithConditionUnmetOption'
+				'$curlGetinfoWithConditionUnmetOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithRTSPClientCSEQOption'
+				'$curlGetinfoWithRTSPClientCSEQOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithRTSPCSEQRECVOption'
+				'$curlGetinfoWithRTSPCSEQRECVOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithRTSPServerCSEQOption'
+				'$curlGetinfoWithRTSPServerCSEQOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithRTSQSessionIdOption'
+				'$curlGetinfoWithRTSQSessionIdOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithHTTPVersionOption'
+				'$curlGetinfoWithHTTPVersionOption',
 			],
 			[
 				'string',
-				'$curlGetinfoWithProtocolOption'
+				'$curlGetinfoWithProtocolOption',
 			],
 			[
 				'int',
-				'$curlGetinfoWithProxySSLVerifyresultOption'
+				'$curlGetinfoWithProxySSLVerifyresultOption',
 			],
 			[
 				'string',
-				'$curlGetinfoWithSchemeOption'
-			]
+				'$curlGetinfoWithSchemeOption',
+			],
 		];
 	}
 

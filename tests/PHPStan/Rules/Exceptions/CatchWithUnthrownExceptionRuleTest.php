@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function extension_loaded;
 use const PHP_VERSION_ID;
 
 /**

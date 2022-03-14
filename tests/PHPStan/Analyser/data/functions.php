@@ -165,9 +165,5 @@ $curlGetinfoWithRTSPClientCSEQOption = curl_getinfo($handle, CURLINFO_RTSP_CLIEN
 $curlGetinfoWithRTSPCSEQRECVOption = curl_getinfo($handle, CURLINFO_RTSP_CSEQ_RECV);
 $curlGetinfoWithRTSPServerCSEQOption = curl_getinfo($handle, CURLINFO_RTSP_SERVER_CSEQ);
 $curlGetinfoWithRTSQSessionIdOption = curl_getinfo($handle, CURLINFO_RTSP_SESSION_ID);
-$curlGetinfoWithHTTPVersionOption = curl_getinfo($handle, CURLINFO_HTTP_VERSION);
-$curlGetinfoWithProtocolOption = curl_getinfo($handle, CURLINFO_PROTOCOL);
-$curlGetinfoWithProxySSLVerifyresultOption = curl_getinfo($handle, CURLINFO_PROXY_SSL_VERIFYRESULT);
-$curlGetinfoWithSchemeOption = curl_getinfo($handle, CURLINFO_SCHEME);
 
 die;

@@ -53,6 +53,7 @@ jobs:
           repository: phpstan/phpstan
           path: phpstan-dist
           token: ${{ secrets.PAT }}
+          ref: 1.5.x
 
       - name: "cp PHAR"
         run: cp tmp/phpstan.phar phpstan-dist/phpstan.phar

@@ -116,6 +116,20 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			'CURLINFO_PROTOCOL' => new StringType(),
 			'CURLINFO_PROXY_SSL_VERIFYRESULT' => new IntegerType(),
 			'CURLINFO_SCHEME' => new StringType(),
+			'CURLINFO_CONTENT_LENGTH_DOWNLOAD_T' => new FloatType(),
+			'CURLINFO_CONTENT_LENGTH_UPLOAD_T' => new FloatType(),
+			'CURLINFO_SIZE_DOWNLOAD_T' => new FloatType(),
+			'CURLINFO_SIZE_UPLOAD_T' => new FloatType(),
+			'CURLINFO_SPEED_DOWNLOAD_T' => new FloatType(),
+			'CURLINFO_SPEED_UPLOAD_T' => new FloatType(),
+			'CURLINFO_APPCONNECT_TIME_T' => new FloatType(),
+			'CURLINFO_CONNECT_TIME_T' => new FloatType(),
+			'CURLINFO_FILETIME_T' => new FloatType(),
+			'CURLINFO_NAMELOOKUP_TIME_T' => new FloatType(),
+			'CURLINFO_PRETRANSFER_TIME_T' => new FloatType(),
+			'CURLINFO_REDIRECT_TIME_T' => new FloatType(),
+			'CURLINFO_STARTTRANSFER_TIME_T' => new FloatType(),
+			'CURLINFO_TOTAL_TIME_T' => new FloatType(),
 		];
 
 		foreach ($componentTypesPairedConstants as $constantName => $type) {

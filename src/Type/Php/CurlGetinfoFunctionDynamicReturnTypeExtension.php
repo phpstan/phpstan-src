@@ -120,7 +120,16 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 
 		foreach ($componentTypesPairedConstants as $constantName => $type) {
 			$constantNameNode = new Name($constantName);
-			if ($this->reflectionProvider->hasConstant($constantNameNode, $scope) && $this->reflectionProvider->getConstant($constantNameNode, $scope)->getValueType()->getValue() === $componentType->getValue()) {
+			if ($this->reflectionProvider->hasConstant($constantNameNode, $scope) === false) {
+				continue;
+			}
+
+			$valueType = $this->reflectionProvider->getConstant($constantNameNode, $scope)->getValueType();
+			if ($valueType instanceof ConstantIntegerType === false) {
+				throw new ShouldNotHappenException();
+			}
+
+			if ($valueType->getValue() === $componentType->getValue()) {
 				 return $type;
 			}
 		}
@@ -128,9 +137,6 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 		return new ConstantBooleanType(false);
 	}
 
-	/**
-	 * @throws ShouldNotHappenException
-	 */
 	private function createAllComponentsReturnType(): Type
 	{
 		$returnTypes = [

@@ -58,6 +58,9 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			}
 
 			$componentType = $componentType->toInteger();
+			if (!$componentType instanceof ConstantIntegerType) {
+				throw new ShouldNotHappenException();
+			}
 		} else {
 			$componentType = new ConstantIntegerType(-1);
 		}

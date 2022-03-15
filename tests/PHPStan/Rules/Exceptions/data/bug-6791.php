@@ -11,24 +11,33 @@ class Foo {
 	public $array;
 }
 
-$foo = new Foo();
-try {
-	$foo->intArray = ["a"];
-} catch (\TypeError $e) {}
+class Bar
+{
 
-try {
-	$foo->set = ["a"];
-} catch (\TypeError $e) {}
+	public function doFoo()
+	{
+		$foo = new Foo();
+		try {
+			$foo->intArray = ["a"];
+		} catch (\TypeError $e) {}
 
-try {
-	$foo->set = new \Ds\Set;
-} catch (\TypeError $e) {}
+		try {
+			$foo->set = ["a"];
+		} catch (\TypeError $e) {}
 
-try {
-	$foo->array = ["a"];
-} catch (\TypeError $e) {}
+		try {
+			$foo->set = new \Ds\Set;
+		} catch (\TypeError $e) {}
 
-try {
-	$foo->array = "non-array";
-} catch (\TypeError $e) {}
+		try {
+			$foo->array = ["a"];
+		} catch (\TypeError $e) {}
+
+		try {
+			$foo->array = "non-array";
+		} catch (\TypeError $e) {}
+	}
+
+}
+
 

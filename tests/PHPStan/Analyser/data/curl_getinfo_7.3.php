@@ -15,10 +15,10 @@ class Foo {
 		assertType('string', curl_getinfo($handle, CURLINFO_PROTOCOL));
 		assertType('int', curl_getinfo($handle, CURLINFO_PROXY_SSL_VERIFYRESULT));
 		assertType('string', curl_getinfo($handle, CURLINFO_SCHEME));
-		assertType('float', curl_getinfo($handle, CURLINFO_SIZE_DOWNLOAD_T));
-		assertType('float', curl_getinfo($handle, CURLINFO_SIZE_UPLOAD_T));
-		assertType('float', curl_getinfo($handle, CURLINFO_SPEED_DOWNLOAD_T));
-		assertType('float', curl_getinfo($handle, CURLINFO_SPEED_UPLOAD_T));
+		assertType('int', curl_getinfo($handle, CURLINFO_SIZE_DOWNLOAD_T));
+		assertType('int', curl_getinfo($handle, CURLINFO_SIZE_UPLOAD_T));
+		assertType('int', curl_getinfo($handle, CURLINFO_SPEED_DOWNLOAD_T));
+		assertType('int', curl_getinfo($handle, CURLINFO_SPEED_UPLOAD_T));
 		assertType('float', curl_getinfo($handle, CURLINFO_APPCONNECT_TIME_T));
 		assertType('float', curl_getinfo($handle, CURLINFO_CONNECT_TIME_T));
 		assertType('float', curl_getinfo($handle, CURLINFO_FILETIME_T));

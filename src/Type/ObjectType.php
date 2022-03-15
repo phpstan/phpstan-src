@@ -738,12 +738,17 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			if ($tValue !== null) {
 				if (!$tValue instanceof MixedType || $tValue->isExplicitMixed()) {
 					$classReflection = $this->getClassReflection();
-					if ($classReflection === null) {
+					if ($classReflection === null || $classReflection->getName() === 'Generator') {
 						return $tValue;
 					}
 
 					return TypeTraverser::map($tValue, static function (Type $type, callable $traverse) use ($classReflection): Type {
+						// Turning this off will make Bug4267 fail (static really needs to be resolved)
 						if ($type instanceof StaticType) {
+
+							// For $classReflection===Generator and $type===Something this line will return Generator<int, Something, void, void>
+							// This wrapping with a Generator is incorrect right?
+							// Issue introduced in: https://github.com/phpstan/phpstan-src/commit/a2acf64f793976a21f22babbfc27318a60fea4fa
 							return $type->changeBaseClass($classReflection)->getStaticObjectType();
 						}
 

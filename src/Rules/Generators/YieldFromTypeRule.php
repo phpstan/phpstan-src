@@ -85,6 +85,8 @@ class YieldFromTypeRule implements Rule
 		}
 		if (!$this->ruleLevelHelper->accepts($returnType->getIterableValueType(), $exprType->getIterableValueType(), $scope->isDeclareStrictTypes())) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType->getIterableValueType(), $exprType->getIterableValueType());
+
+			// TODO: This might have the same issue?
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects value type %s, %s given.',
 				$returnType->getIterableValueType()->describe($verbosityLevel),

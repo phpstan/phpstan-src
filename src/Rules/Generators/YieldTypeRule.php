@@ -14,6 +14,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use function sprintf;
+//use function strpos; TODO: remove
 
 /**
  * @implements Rule<Node\Expr\Yield_>
@@ -71,6 +72,27 @@ class YieldTypeRule implements Rule
 		}
 		if (!$this->ruleLevelHelper->accepts($returnType->getIterableValueType(), $valueType, $scope->isDeclareStrictTypes())) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType->getIterableValueType(), $valueType);
+
+			// TODO: cleanup
+			/* Disabled to let testing pass
+			if (strpos($returnType->describe(VerbosityLevel::precise()), 'Bug6494') !== false) {
+				echo "\nStart YieldTypeRule\n";
+
+				echo 'Function return type class: ' . $returnType::class . "\n";
+				// PHPStan\Type\Generic\GenericObjectType
+
+				echo 'Function return type: ' . $returnType->describe(VerbosityLevel::precise()) . "\n";
+				// Generator<int, static(Bug6494\Base), void, void>
+
+				echo 'Function return iterable value type: ' . $returnType->getIterableValueType()->describe(VerbosityLevel::precise()) . "\n";
+				// Generator<int, static(Bug6494\Base), void, void>
+				// Which is the same as $returnType, incorrect!
+
+				echo 'Value type: ' . $valueType->describe(VerbosityLevel::precise()) . "\n";
+				// static(Bug6494\Base)
+			}
+			*/
+
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects value type %s, %s given.',
 				$returnType->getIterableValueType()->describe($verbosityLevel),

@@ -58,9 +58,6 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			}
 
 			$componentType = $componentType->toInteger();
-			if (!$componentType instanceof ConstantIntegerType) {
-				throw new ShouldNotHappenException();
-			}
 		} else {
 			$componentType = new ConstantIntegerType(-1);
 		}
@@ -139,11 +136,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			}
 
 			$valueType = $this->reflectionProvider->getConstant($constantNameNode, $scope)->getValueType();
-			if ($valueType instanceof ConstantIntegerType === false) {
-				throw new ShouldNotHappenException();
-			}
-
-			if ($valueType->getValue() === $componentType->getValue()) {
+			if ($componentType->isSuperTypeOf($valueType)->yes()) {
 				 return $type;
 			}
 		}

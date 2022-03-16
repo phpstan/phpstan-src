@@ -8,6 +8,7 @@ parameters:
 rules:
 	- PHPStan\Rules\DateTimeInstantiationRule
 	- PHPStan\Rules\Functions\ImplodeFunctionRule
+	- PHPStan\Rules\Functions\ArrayFilterEmptyRule
 
 services:
 	-

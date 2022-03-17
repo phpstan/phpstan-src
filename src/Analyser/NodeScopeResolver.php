@@ -2284,7 +2284,8 @@ class NodeScopeResolver
 			$throwPoints = $result->getThrowPoints();
 			$scope = $result->getScope();
 
-			if (!$scope->getType($expr->right) instanceof NeverType) {
+			$rightExprType = $scope->getType($expr->right);
+			if (!$rightExprType instanceof NeverType || !$rightExprType->isExplicit()) {
 				$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 			}
 

@@ -246,9 +246,57 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		];
 	}
 
+	/**
+	 * @return array<int, Reflection>
+	 */
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
-		return [];
+		if ($this->classToFile === null || $this->functionToFiles === null) {
+			$this->init();
+			if ($this->classToFile === null || $this->functionToFiles === null) {
+				throw new ShouldNotHappenException();
+			}
+		}
+
+		$reflections = [];
+		if ($identifierType->isClass()) {
+			foreach ($this->classToFile as $className => $file) {
+				if (array_key_exists($className, $this->classNodes)) {
+					$reflections[$className] = $this->nodeToReflection($reflector, $this->classNodes[$className]);
+					continue;
+				}
+
+				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
+				foreach ($fetchedNodesResult->getClassNodes() as $identifierName => $fetchedClassNodes) {
+					foreach ($fetchedClassNodes as $fetchedClassNode) {
+						$this->classNodes[$identifierName] = $fetchedClassNode;
+						$reflections[$identifierName] = $this->nodeToReflection($reflector, $fetchedClassNode);
+						continue;
+					}
+				}
+			}
+		} elseif ($identifierType->isFunction()) {
+			foreach ($this->functionToFiles as $functionName => $files) {
+				foreach ($files as $file) {
+					if (array_key_exists($functionName, $this->functionNodes)) {
+						$reflections[$functionName] = $this->nodeToReflection(
+							$reflector,
+							$this->functionNodes[$functionName]
+						);
+						continue;
+					}
+
+					$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
+					foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
+						$this->functionNodes[$identifierName] = $fetchedFunctionNode;
+						$reflections[$identifierName] = $this->nodeToReflection($reflector, $fetchedFunctionNode);
+						continue;
+					}
+				}
+			}
+		}
+
+		return array_values($reflections);
 	}
 
 }

@@ -51,7 +51,7 @@ class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtensi
 		$supportedEncodings = [];
 		if (function_exists('mb_list_encodings')) {
 			foreach (mb_list_encodings() as $encoding) {
-				$aliases = mb_encoding_aliases($encoding);
+				$aliases = @mb_encoding_aliases($encoding);
 				if ($aliases === false) {
 					throw new ShouldNotHappenException();
 				}

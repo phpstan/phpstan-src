@@ -528,7 +528,7 @@ class TypeNodeResolver
 				if ($genericTypes[0] instanceof ObjectType) {
 					$classReflection = $genericTypes[0]->getClassReflection();
 
-					if ($classReflection->isBackedEnum()) {
+					if ($classReflection !== null && $classReflection->isBackedEnum()) {
 						return $classReflection->getBackedEnumType();
 					}
 				}

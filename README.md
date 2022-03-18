@@ -62,4 +62,3 @@ make tests
 
 This project adheres to a [Contributor Code of Conduct](https://github.com/phpstan/phpstan/blob/master/CODE_OF_CONDUCT.md).
 By participating in this project and its community, you are expected to uphold this code.
-

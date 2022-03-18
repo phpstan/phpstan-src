@@ -32,7 +32,6 @@ use PHPStan\Type\TypeUtils;
 use function array_map;
 use function count;
 use function is_string;
-use function strtolower;
 
 class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -63,7 +62,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			]);
 		}
 
-		if ($callbackArg === null || ($callbackArg instanceof ConstFetch && strtolower($callbackArg->name->parts[0]) === 'null')) {
+		if ($callbackArg === null) {
 			return TypeCombinator::union(
 				...array_map([$this, 'removeFalsey'], TypeUtils::getArrays($arrayArgType)),
 			);

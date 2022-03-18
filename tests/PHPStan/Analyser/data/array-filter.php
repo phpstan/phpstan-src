@@ -30,8 +30,8 @@ function withoutCallback(array $map1, array $map2, array $map3): void
 	assertType('array<string, float|int<min, -1>|int<1, max>|non-empty-string|true>', $filtered1);
 
 	$filtered2 = array_filter($map2, null, ARRAY_FILTER_USE_KEY);
-	assertType('array<string, float|int<min, -1>|int<1, max>|non-empty-string|true>', $filtered2);
+	assertType('array<string, bool|float|int|string>', $filtered2);
 
 	$filtered3 = array_filter($map3, null, ARRAY_FILTER_USE_BOTH);
-	assertType('array<string, float|int<min, -1>|int<1, max>|non-empty-string|true>', $filtered3);
+	assertType('array<string, bool|float|int|string>', $filtered3);
 }

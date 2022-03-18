@@ -62,7 +62,7 @@ class ArrayFilterRule implements Rule
 		$isSuperType = $falsyType->isSuperTypeOf($arrayType->getIterableValueType());
 
 		if ($isSuperType->no()) {
-			$message = 'Parameter #1 $array (%s) to function array_filter cannot contain empty values, call has no effect.';
+			$message = 'Parameter #1 $array (%s) to function array_filter does not contain falsy values, the array will always stay the same.';
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$message,
@@ -72,7 +72,7 @@ class ArrayFilterRule implements Rule
 		}
 
 		if ($isSuperType->yes()) {
-			$message = 'Parameter #1 $array (%s) to function array_filter can only contain empty values, call always results in [].';
+			$message = 'Parameter #1 $array (%s) to function array_filter contains falsy values only, the result will always be an empty array.';
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$message,

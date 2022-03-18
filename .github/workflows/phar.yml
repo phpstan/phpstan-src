@@ -141,6 +141,9 @@ jobs:
       - name: "mv PHAR"
         run: mv phpstan.phar phpstan-dist/phpstan.phar
 
+      - name: "chmod PHAR"
+        run: chmod 755 phpstan-dist/phpstan.phar
+
       - name: "Update checksum"
         run: echo ${{needs.compiler-tests.outputs.checksum}} > phpstan-dist/.phar-checksum
 

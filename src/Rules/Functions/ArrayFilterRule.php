@@ -17,7 +17,7 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
-class ArrayFilterEmptyRule implements Rule
+class ArrayFilterRule implements Rule
 {
 
 	public function __construct(private ReflectionProvider $reflectionProvider)

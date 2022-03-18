@@ -6,14 +6,14 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<ArrayFilterEmptyRule>
+ * @extends RuleTestCase<ArrayFilterRule>
  */
-class ArrayFilterEmptyRuleTest extends RuleTestCase
+class ArrayFilterRuleTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new ArrayFilterEmptyRule($this->createReflectionProvider());
+		return new ArrayFilterRule($this->createReflectionProvider());
 	}
 
 	public function testFile(): void

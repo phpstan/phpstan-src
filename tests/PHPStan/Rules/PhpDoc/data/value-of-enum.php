@@ -42,7 +42,6 @@ class Foo {
 
 	function doFoo() {
 		$this->hello(Country::NL);
-		$this->hello(CountryNo::NL);
 	}
 }
 

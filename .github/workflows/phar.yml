@@ -53,6 +53,22 @@ jobs:
         working-directory: "compiler"
         run: "php bin/prepare"
 
+      - name: "Compile PHAR"
+        working-directory: "compiler/build"
+        run: "php box.phar compile --no-parallel"
+
+      - name: "Run PHAR"
+        working-directory: "compiler"
+        run: "../tmp/phpstan.phar list"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: phar-file
+          path: tmp/phpstan.phar
+
+      - name: "Delete PHAR"
+        run: "rm tmp/phpstan.phar"
+
       - name: "Set autoloader suffix"
         run: "composer config autoloader-suffix PHPStanChecksum"
 
@@ -71,19 +87,6 @@ jobs:
 
       - name: "Delete checksum PHAR"
         run: "rm tmp/phpstan.phar"
-
-      - name: "Compile PHAR"
-        working-directory: "compiler/build"
-        run: "php box.phar compile --no-parallel"
-
-      - name: "Run PHAR"
-        working-directory: "compiler"
-        run: "../tmp/phpstan.phar list"
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: phar-file
-          path: tmp/phpstan.phar
 
   integration-tests:
     if: github.event_name == 'pull_request'

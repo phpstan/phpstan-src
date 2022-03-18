@@ -43,7 +43,7 @@ enum CountryNo: int
 	case US = 2;
 }
 
-class FooCall {
+enum FooCall {
 	/**
 	 * @param value-of<Country> $countryName
 	 */

@@ -5,10 +5,13 @@ parameters:
 	checkFunctionArgumentTypes: true
 	checkArgumentsPassedByReference: true
 
+conditionalTags:
+	PHPStan\Rules\Functions\ArrayFilterRule:
+		phpstan.rules.rule: %featureToggles.arrayFilter%
+
 rules:
 	- PHPStan\Rules\DateTimeInstantiationRule
 	- PHPStan\Rules\Functions\ImplodeFunctionRule
-	- PHPStan\Rules\Functions\ArrayFilterRule
 
 services:
 	-
@@ -17,3 +20,6 @@ services:
 			reportMaybes: %reportMaybes%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Functions\ArrayFilterRule

@@ -55,7 +55,8 @@ jobs:
         run: "php box.phar compile --no-parallel"
 
       - name: "Run PHAR"
-        run: "./tmp/phpstan.phar list"
+        working-directory: "compiler"
+        run: "../tmp/phpstan.phar list"
 
       - uses: actions/upload-artifact@v2
         with:

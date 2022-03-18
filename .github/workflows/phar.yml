@@ -20,6 +20,9 @@ jobs:
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
 
+    outputs:
+      checksum: ${{ steps.checksum.outputs.md5 }}
+
     steps:
       - name: "Checkout"
         uses: "actions/checkout@v2"
@@ -49,6 +52,19 @@ jobs:
       - name: "Prepare for PHAR compilation"
         working-directory: "compiler"
         run: "php bin/prepare"
+
+      - name: "Compile PHAR for checksum"
+        working-directory: "compiler/build"
+        run: "php box.phar compile --no-parallel"
+        env:
+          PHAR_CHECKSUM: "1"
+
+      - name: "Save checksum"
+        id: "checksum"
+        run: echo "::set-output name=md5::$(md5sum tmp/phpstan.phar)"
+
+      - name: "Delete checksum PHAR"
+        run: "rm tmp/phpstan.phar"
 
       - name: "Compile PHAR"
         working-directory: "compiler/build"
@@ -116,6 +132,9 @@ jobs:
 
       - name: "cp PHAR"
         run: cp tmp/phpstan.phar phpstan-dist/phpstan.phar
+
+      - name: "Update checksum"
+        run: echo ${{needs.compiler-tests.outputs.checksum}} > phpstan-dist/.phar-checksum
 
       - name: "Sign PHAR"
         working-directory: phpstan-dist

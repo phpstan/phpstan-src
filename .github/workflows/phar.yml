@@ -74,26 +74,25 @@ jobs:
         env:
           GPG_ID: ${{ secrets.GPG_ID }}
 
-      - name: "Configure Git"
-        working-directory: phpstan-dist
-        run: |
-          git config user.email "ondrej@mirtes.cz" && \
-          git config user.name "Ondrej Mirtes"
-
       - name: "Commit PHAR - development"
-        working-directory: phpstan-dist
         if: "!startsWith(github.ref, 'refs/tags/')"
-        run: |
-          git add phpstan.phar phpstan.phar.asc && \
-          git commit -S -m "Updated PHPStan to commit ${{ github.event.after }}" -m "${{ steps.git-log.outputs.log }}" && \
-          git push --quiet origin 1.5.x
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_user_name: "Ondrej Mirtes"
+          commit_user_email: "ondrej@mirtes.cz"
+          commit_author: "Ondrej Mirtes <ondrej@mirtes.cz>"
+          commit_options: "--gpg-sign"
+          repository: phpstan-dist
+          commit_message: "Updated PHPStan to commit ${{ github.event.after }}\n\n${{ steps.git-log.outputs.log }}"
 
       - name: "Commit PHAR - tag"
-        working-directory: phpstan-dist
         if: "startsWith(github.ref, 'refs/tags/')"
-        run: |
-          git add phpstan.phar phpstan.phar.asc && \
-          git commit -S -m "PHPStan ${GITHUB_REF#refs/tags/}" -m "${{ steps.git-log.outputs.log }}" && \
-          git push --quiet origin 1.5.x && \
-          git tag -s ${GITHUB_REF#refs/tags/} -m "${GITHUB_REF#refs/tags/}" && \
-          git push --quiet origin ${GITHUB_REF#refs/tags/}
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_user_name: "Ondrej Mirtes"
+          commit_user_email: "ondrej@mirtes.cz"
+          commit_author: "Ondrej Mirtes <ondrej@mirtes.cz>"
+          commit_options: "--gpg-sign"
+          repository: phpstan-dist
+          commit_message: "PHPStan ${{github.ref_name}}\n\n${{ steps.git-log.outputs.log }}"
+          tagging_message: ${{github.ref_name}}

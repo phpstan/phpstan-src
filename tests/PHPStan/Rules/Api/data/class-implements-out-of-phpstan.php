@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeReference;
@@ -305,5 +306,10 @@ class Baz implements Type
 		// TODO: Implement __set_state() method.
 	}
 
+
+}
+
+abstract class Dolor implements ReflectionProvider
+{
 
 }

@@ -4,7 +4,6 @@ namespace PHPStan\Compiler\Console;
 
 use Exception;
 use PHPStan\Compiler\Filesystem\Filesystem;
-use PHPStan\Compiler\Process\ProcessFactory;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -36,8 +35,6 @@ final class CompileCommand extends Command
 
 	public function __construct(
 		private Filesystem $filesystem,
-		private ProcessFactory $processFactory,
-		private string $dataDir,
 		private string $buildDir,
 	)
 	{
@@ -52,17 +49,12 @@ final class CompileCommand extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$this->processFactory->setOutput($output);
-
 		$this->buildPreloadScript();
 		$this->deleteUnnecessaryVendorCode();
 		$this->fixComposerJson($this->buildDir);
 		$this->renamePhpStormStubs();
 		$this->renamePhp8Stubs();
 		$this->transformSource();
-
-		$this->processFactory->create(['php', 'box.phar', 'compile', '--no-parallel'], $this->dataDir);
-
 		return 0;
 	}
 

@@ -46,9 +46,13 @@ jobs:
         working-directory: "compiler"
         run: "../bin/phpstan analyse -l 8 src tests"
 
-      - name: "Compiler PHAR"
+      - name: "Prepare for PHAR compilation"
         working-directory: "compiler"
         run: "php bin/compile"
+
+      - name: "Compile PHAR"
+        working-directory: "compiler/build"
+        run: "php box.phar compile --no-parallel"
 
       - name: "Run PHAR"
         run: "./tmp/phpstan.phar list"

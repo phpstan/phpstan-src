@@ -28,6 +28,7 @@ parameters:
 			- FilterIterator
 			- RecursiveCallbackFilterIterator
 		explicitMixedInUnknownGenericNew: false
+		arrayFilter: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -205,6 +206,7 @@ parametersSchema:
 		disableRuntimeReflectionProvider: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		explicitMixedInUnknownGenericNew: bool(),
+		arrayFilter: bool(),
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

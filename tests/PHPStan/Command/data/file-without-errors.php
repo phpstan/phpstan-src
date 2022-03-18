@@ -1,3 +1,3 @@
 <?php
 
-array_filter([]);
+array_filter([0, 1, 2]);

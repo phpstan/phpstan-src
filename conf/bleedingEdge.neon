@@ -3,5 +3,6 @@ parameters:
 		bleedingEdge: true
 		skipCheckGenericClasses: []
 		explicitMixedInUnknownGenericNew: true
+		arrayFilter: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Countable.stub

@@ -48,7 +48,7 @@ jobs:
 
       - name: "Prepare for PHAR compilation"
         working-directory: "compiler"
-        run: "php bin/compile"
+        run: "php bin/prepare"
 
       - name: "Compile PHAR"
         working-directory: "compiler/build"

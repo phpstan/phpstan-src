@@ -30,7 +30,7 @@ use function var_export;
 use const JSON_PRETTY_PRINT;
 use const JSON_UNESCAPED_SLASHES;
 
-final class CompileCommand extends Command
+final class PrepareCommand extends Command
 {
 
 	public function __construct(
@@ -43,8 +43,8 @@ final class CompileCommand extends Command
 
 	protected function configure(): void
 	{
-		$this->setName('phpstan:compile')
-			->setDescription('Compile PHAR');
+		$this->setName('prepare')
+			->setDescription('Prepare PHAR');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output): int

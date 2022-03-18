@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -12,15 +13,15 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
+use function strtolower;
 
 class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'array_keys';
+		return strtolower($functionReflection->getName()) === 'array_keys';
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
@@ -32,8 +33,13 @@ class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 				if ($valueType instanceof ConstantArrayType) {
 					return $valueType->getKeysArray();
 				}
+
 				$keyType = $valueType->getIterableKeyType();
-				return TypeCombinator::intersect(new ArrayType(new IntegerType(), $keyType), ...TypeUtils::getAccessoryTypes($valueType));
+				$array = new ArrayType(new IntegerType(), $keyType);
+				if ($valueType->isIterableAtLeastOnce()->yes()) {
+					$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
+				}
+				return $array;
 			}
 		}
 

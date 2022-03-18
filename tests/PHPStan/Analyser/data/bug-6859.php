@@ -9,14 +9,14 @@ class HelloWorld
 	public function f($body)
 	{
 		if (array_key_exists("someParam", $body)) {
-			assertType('array{someParam: mixed}', array_keys($body));
+			assertType('non-empty-array<int, (int|string)>', array_keys($body));
 
 			$someKeys = array_filter(
 				array_keys($body),
 				fn ($key) => preg_match("/^somePattern[0-9]+$/", $key)
 			);
 
-			assertType('array', $someKeys);
+			assertType('array<int, (int|string)>', $someKeys);
 
 			if (count($someKeys) > 0) {
 				return 1;

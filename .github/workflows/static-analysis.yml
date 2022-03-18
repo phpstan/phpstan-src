@@ -33,9 +33,8 @@ jobs:
           - "8.1"
         operating-system: [ubuntu-latest, windows-latest]
         script:
-          - "make phpstan"
+          - "make phpstan && make phpstan-validate-stub-files"
           - "make phpstan-static-reflection"
-          - "make phpstan-validate-stub-files"
 
     steps:
       - name: "Checkout"

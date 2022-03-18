@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bug6775;
+namespace ValueOfEnum;
 
 enum Country: string
 {

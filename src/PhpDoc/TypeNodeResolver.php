@@ -525,6 +525,14 @@ class TypeNodeResolver
 			return new ErrorType();
 		} elseif ($mainTypeName === 'value-of') {
 			if (count($genericTypes) === 1) { // value-of<ValueType>
+				if ($genericTypes[0] instanceof ObjectType) {
+					$classReflection = $genericTypes[0]->getClassReflection();
+
+					if ($classReflection->isBackedEnum()) {
+						return $classReflection->getBackedEnumType();
+					}
+				}
+
 				return $genericTypes[0]->getIterableValueType();
 			}
 

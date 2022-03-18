@@ -72,11 +72,28 @@ jobs:
       - name: "Set autoloader suffix"
         run: "composer config autoloader-suffix PHPStanChecksum"
 
+      - name: "Install libfaketime"
+        run: "sudo apt-get install -y libfaketime"
+
+      - name: "Test libfaketime"
+        run: "date"
+        env:
+          FAKETIME: 2017-10-11 08:58:00
+          LD_PRELOAD: /usr/lib/x86_64-linux-gnu/faketime/libfaketime.so.1
+
+      - name: "Reset timestamps"
+        run: 'find . -type f -exec touch {} +'
+        env:
+          FAKETIME: 2017-10-11 08:58:00
+          LD_PRELOAD: /usr/lib/x86_64-linux-gnu/faketime/libfaketime.so.1
+
       - name: "Compile PHAR for checksum"
         working-directory: "compiler/build"
         run: "php box.phar compile --no-parallel"
         env:
           PHAR_CHECKSUM: "1"
+          FAKETIME: 2017-10-11 08:58:00
+          LD_PRELOAD: /usr/lib/x86_64-linux-gnu/faketime/libfaketime.so.1
 
       - name: "Unset autoloader suffix"
         run: "composer config autoloader-suffix --unset"

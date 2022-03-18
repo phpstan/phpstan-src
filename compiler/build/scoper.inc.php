@@ -30,13 +30,19 @@ foreach ($stubFinder->files()->name('*.php')->in([
 	$stubs[] = $file->getPathName();
 }
 
-exec('git rev-parse --short HEAD', $gitCommitOutputLines, $gitExitCode);
-if ($gitExitCode !== 0) {
-	die('Could not get Git commit');
+if ($_SERVER['PHAR_CHECKSUM'] ?? false) {
+	$prefix = '_PHPStan_checksum';
+} else {
+	exec('git rev-parse --short HEAD', $gitCommitOutputLines, $gitExitCode);
+	if ($gitExitCode !== 0) {
+		die('Could not get Git commit');
+	}
+
+	$prefix = sprintf('_PHPStan_%s', $gitCommitOutputLines[0]);
 }
 
 return [
-	'prefix' => sprintf('_PHPStan_%s', $gitCommitOutputLines[0]),
+	'prefix' => $prefix,
 	'finders' => [],
 	'files-whitelist' => $stubs,
 	'patchers' => [

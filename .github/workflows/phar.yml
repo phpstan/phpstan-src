@@ -3,17 +3,20 @@
 name: "Compile PHAR"
 
 on:
+  pull_request:
   push:
     branches:
-      - "1.5.x"
+      - "**"
     tags:
       - '1.5.*'
 
-concurrency: phar
+env:
+  COMPOSER_ROOT_VERSION: "1.5.x-dev"
 
 jobs:
-  compile:
-    name: "Compile PHAR"
+  compiler-tests:
+    name: "Compiler Tests"
+
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
 
@@ -35,9 +38,54 @@ jobs:
       - name: "Install compiler dependencies"
         run: "composer install --no-interaction --no-progress --working-dir=compiler"
 
-      - name: "Compile PHAR"
-        run: php compiler/bin/compile
+      - name: "Compiler tests"
+        working-directory: "compiler"
+        run: "vendor/bin/phpunit -c tests/phpunit.xml tests"
 
+      - name: "Compiler PHPStan"
+        working-directory: "compiler"
+        run: "../bin/phpstan analyse -l 8 src tests"
+
+      - name: "Compiler PHAR"
+        working-directory: "compiler"
+        run: "php bin/compile"
+
+      - name: "Run PHAR"
+        run: "./tmp/phpstan.phar list"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: phar-file
+          path: tmp/phpstan.phar
+
+  integration-tests:
+    if: github.event_name == 'pull_request'
+    needs: compiler-tests
+    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@1.5.x
+    with:
+      ref: 1.5.x
+
+  extension-tests:
+    if: github.event_name == 'pull_request'
+    needs: compiler-tests
+    uses: phpstan/phpstan/.github/workflows/extension-tests.yml@1.5.x
+    with:
+      ref: 1.5.x
+
+  other-tests:
+    if: github.event_name == 'pull_request'
+    needs: compiler-tests
+    uses: phpstan/phpstan/.github/workflows/other-tests.yml@1.5.x
+    with:
+      ref: 1.5.x
+
+  commit:
+    if: "github.ref == 'refs/heads/1.5.x' || startsWith(github.ref, 'refs/tags/')"
+    needs: compiler-tests
+    name: "Commit PHAR"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 60
+    steps:
       - name: "Configure GPG signing key"
         run: echo "$GPG_SIGNING_KEY" | base64 --decode | gpg --import --no-tty --batch --yes
         env:
@@ -54,6 +102,12 @@ jobs:
           path: phpstan-dist
           token: ${{ secrets.PAT }}
           ref: 1.5.x
+
+      - name: "Download phpstan.phar"
+        uses: actions/download-artifact@v3
+        with:
+          name: phar-file
+          path: tmp/phpstan.phar
 
       - name: "cp PHAR"
         run: cp tmp/phpstan.phar phpstan-dist/phpstan.phar

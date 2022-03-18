@@ -17,4 +17,20 @@ class Foo {
 	{
 		assertType('bool', version_compare($version1, $version2, $comparator));
 	}
+
+	/**
+	 * @return int|bool
+	 */
+	function compare4457(string $version1, string $version2, ?string $comparator = null)
+	{
+		$result = version_compare($version1, $version2, $comparator);
+
+		if (null === $result) {
+			throw new InvalidArgumentException(sprintf('Unknown comparator "%s".', $comparator));
+		}
+
+		assertType('bool', $result);
+
+		return $result;
+	}
 }

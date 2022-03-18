@@ -53,11 +53,17 @@ jobs:
         working-directory: "compiler"
         run: "php bin/prepare"
 
+      - name: "Set autoloader suffix"
+        run: "composer config autoloader-suffix PHPStanChecksum"
+
       - name: "Compile PHAR for checksum"
         working-directory: "compiler/build"
         run: "php box.phar compile --no-parallel"
         env:
           PHAR_CHECKSUM: "1"
+
+      - name: "Unset autoloader suffix"
+        run: "composer config autoloader-suffix --unset"
 
       - name: "Save checksum"
         id: "checksum"

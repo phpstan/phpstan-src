@@ -134,10 +134,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: phar-file
-          path: tmp/phpstan.phar
 
-      - name: "cp PHAR"
-        run: cp tmp/phpstan.phar phpstan-dist/phpstan.phar
+      - name: "mv PHAR"
+        run: mv phpstan.phar phpstan-dist/phpstan.phar
 
       - name: "Update checksum"
         run: echo ${{needs.compiler-tests.outputs.checksum}} > phpstan-dist/.phar-checksum

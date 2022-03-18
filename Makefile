@@ -14,9 +14,6 @@ tests-static-reflection:
 tests-coverage:
 	php vendor/bin/paratest
 
-tests-integration-coverage:
-	php vendor/bin/paratest --group exec
-
 tests-static-reflection-coverage:
 	php vendor/bin/paratest --bootstrap tests/bootstrap-static-reflection.php
 

@@ -33,7 +33,6 @@ jobs:
         script:
           - "make tests"
           - "make tests-static-reflection"
-          - "make tests-integration"
 
     steps:
       - name: "Checkout"
@@ -77,6 +76,36 @@ jobs:
       - name: "Tests"
         run: "${{ matrix.script }}"
 
+  tests-integration:
+    name: "Integration tests"
+    runs-on: ${{ matrix.operating-system }}
+    needs: tests
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        operating-system: [ ubuntu-latest, windows-latest ]
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-values: memory_limit=640M
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Tests"
+        run: "make tests-integration"
+
   tests-old-phpunit:
     name: "Tests with old PHPUnit"
     runs-on: ${{ matrix.operating-system }}
@@ -92,7 +121,6 @@ jobs:
         script:
           - "make tests-coverage"
           - "make tests-static-reflection-coverage"
-          - "make tests-integration-coverage"
 
     steps:
       - name: "Checkout"

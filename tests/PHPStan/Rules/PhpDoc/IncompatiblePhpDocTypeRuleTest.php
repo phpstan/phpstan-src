@@ -214,7 +214,7 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 
 		$this->analyse(
 			[__DIR__ . '/data/value-of-enum.php'],
-			[]
+			[],
 		);
 	}
 

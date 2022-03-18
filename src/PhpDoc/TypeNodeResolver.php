@@ -525,17 +525,17 @@ class TypeNodeResolver
 			return new ErrorType();
 		} elseif ($mainTypeName === 'value-of') {
 			if (count($genericTypes) === 1) { // value-of<ValueType>
-				if ($genericTypes[0] instanceof ObjectType) {
-					$classReflection = $genericTypes[0]->getClassReflection();
+				if ($genericTypes[0] instanceof TypeWithClassName) {
+					if ($this->getReflectionProvider()->hasClass($genericTypes[0]->getClassName())) {
+						$classReflection = $this->getReflectionProvider()->getClass($genericTypes[0]->getClassName());
 
-					if ($classReflection !== null && $classReflection->isBackedEnum()) {
-						$enumType = $classReflection->getBackedEnumType();
+						if ($classReflection->isBackedEnum()) {
+							$enumType = $classReflection->getBackedEnumType();
 
-						if ($enumType !== null) {
-							return $enumType;
+							if ($enumType !== null) {
+								return $enumType;
+							}
 						}
-
-						return new ErrorType();
 					}
 				}
 

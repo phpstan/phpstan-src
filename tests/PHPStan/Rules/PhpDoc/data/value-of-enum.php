@@ -10,6 +10,12 @@ enum Country: string
 	case US = 'United States';
 }
 
+enum CountryNo: int
+{
+	case NL = 1;
+	case US = 2;
+}
+
 class Foo {
 	/**
 	 * @param value-of<Country> $countryName
@@ -19,8 +25,24 @@ class Foo {
 		// ...
 	}
 
+	/**
+	 * @param value-of<Country> $shouldError
+	 */
+	function helloError(int $shouldError): void
+	{
+		// ...
+	}
+	/**
+	 * @param value-of<CountryNo> $shouldError
+	 */
+	function helloError2(string $shouldError): void
+	{
+		// ...
+	}
+
 	function doFoo() {
 		$this->hello(Country::NL);
+		$this->hello(CountryNo::NL);
 	}
 }
 

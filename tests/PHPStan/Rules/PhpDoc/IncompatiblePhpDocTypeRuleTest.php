@@ -212,10 +212,16 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 
 		require __DIR__ . '/data/value-of-enum.php';
 
-		$this->analyse(
-			[__DIR__ . '/data/value-of-enum.php'],
-			[],
-		);
+		$this->analyse([__DIR__ . '/data/value-of-enum.php'], [
+			[
+				'PHPDoc tag @param for parameter $shouldError with type string is incompatible with native type int.',
+				31,
+			],
+			[
+				'PHPDoc tag @param for parameter $shouldError with type int is incompatible with native type string.',
+				38,
+			]
+		]);
 	}
 
 }

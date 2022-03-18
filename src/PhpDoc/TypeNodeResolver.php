@@ -529,7 +529,13 @@ class TypeNodeResolver
 					$classReflection = $genericTypes[0]->getClassReflection();
 
 					if ($classReflection !== null && $classReflection->isBackedEnum()) {
-						return $classReflection->getBackedEnumType();
+						$enumType = $classReflection->getBackedEnumType();
+
+						if ($enumType !== null) {
+							return $enumType;
+						}
+
+						return new ErrorType();
 					}
 				}
 

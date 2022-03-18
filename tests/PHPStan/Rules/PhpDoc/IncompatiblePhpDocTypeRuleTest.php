@@ -204,4 +204,16 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testValueOfEnum(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
+		$this->analyse(
+			[__DIR__ . '/data/value-of-enum.php'],
+			[]
+		);
+	}
+
 }

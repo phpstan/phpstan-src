@@ -220,7 +220,7 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @param for parameter $shouldError with type int is incompatible with native type string.',
 				38,
-			]
+			],
 		]);
 	}
 

@@ -27,6 +27,11 @@ class Foo
 		assertType('literal-string', str_repeat($literalString, 10));
 		assertType("''", str_repeat('', 10));
 		assertType("'foofoofoofoofoofoofoofoofoofoo'", str_repeat('foo', 10));
+		assertType(
+			"'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'",
+			str_repeat('a', 99)
+		);
+		assertType('literal-string&non-empty-string', str_repeat('a', 100));
 		assertType("'?,?,?,'", str_repeat('?,', 3));
 		assertType("*NEVER*", str_repeat('?,', -3));
 

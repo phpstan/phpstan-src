@@ -17,6 +17,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use function count;
 use function str_repeat;
+use function strlen;
 
 class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -48,7 +49,11 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			return new NeverType();
 		}
 
-		if ($inputType instanceof ConstantStringType && $multiplierType instanceof ConstantIntegerType) {
+		if ($inputType instanceof ConstantStringType &&
+			$multiplierType instanceof ConstantIntegerType &&
+			// don't generate type too big to avoid hitting memory limit
+			strlen($inputType->getValue()) * $multiplierType->getValue() < 100
+		) {
 			return new ConstantStringType(str_repeat($inputType->getValue(), $multiplierType->getValue()));
 		}
 

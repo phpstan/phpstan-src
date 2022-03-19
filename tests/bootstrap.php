@@ -9,7 +9,6 @@ require_once __DIR__ . '/phpstan-bootstrap.php';
 
 putenv('PHPSTAN_ALLOW_XDEBUG=1');
 
-
 eval('trait TraitInEval {
 
 	/**

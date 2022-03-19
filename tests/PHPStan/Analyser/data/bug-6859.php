@@ -6,7 +6,7 @@ use function PHPStan\Testing\assertType;
 
 class HelloWorld
 {
-	public function f($body)
+	public function keys($body)
 	{
 		if (array_key_exists("someParam", $body)) {
 			assertType('non-empty-array<int, (int|string)>', array_keys($body));
@@ -17,6 +17,23 @@ class HelloWorld
 			);
 
 			assertType('array<int, (int|string)>', $someKeys);
+
+			if (count($someKeys) > 0) {
+				return 1;
+			}
+			return 0;
+		}
+	}
+
+	public function values($body)
+	{
+		if (array_key_exists("someParam", $body)) {
+			assertType('non-empty-array<int, mixed>', array_values($body));
+
+			$someKeys = array_filter(
+				array_values($body),
+				fn ($key) => preg_match("/^somePattern[0-9]+$/", $key)
+			);
 
 			if (count($someKeys) > 0) {
 				return 1;

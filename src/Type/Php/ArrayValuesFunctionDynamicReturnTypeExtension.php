@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -19,7 +20,7 @@ class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionRe
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'array_values';
+		return strtolower($functionReflection->getName()) === 'array_values';
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
@@ -31,7 +32,12 @@ class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionRe
 				if ($valueType instanceof ConstantArrayType) {
 					return $valueType->getValuesArray();
 				}
-				return TypeCombinator::intersect(new ArrayType(new IntegerType(), $valueType->getIterableValueType()), ...TypeUtils::getAccessoryTypes($valueType));
+
+				$array = new ArrayType(new IntegerType(), $valueType->getIterableValueType());
+				if ($valueType->isIterableAtLeastOnce()->yes()) {
+					$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
+				}
+				return $array;
 			}
 		}
 

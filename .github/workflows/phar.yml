@@ -10,9 +10,6 @@ on:
     tags:
       - '1.5.*'
 
-env:
-  COMPOSER_ROOT_VERSION: "1.5.x-dev"
-
 jobs:
   compiler-tests:
     name: "Compiler Tests"
@@ -77,6 +74,7 @@ jobs:
         run: "php box.phar compile --no-parallel"
         env:
           PHAR_CHECKSUM: "1"
+          COMPOSER_ROOT_VERSION: "1.5.x-dev"
 
       - name: "Re-sign PHAR"
         run: "php compiler/build/resign.php tmp/phpstan.phar"

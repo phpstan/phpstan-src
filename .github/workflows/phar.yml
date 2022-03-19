@@ -78,6 +78,9 @@ jobs:
         env:
           PHAR_CHECKSUM: "1"
 
+      - name: "Re-sign PHAR"
+        run: "php compiler/build/resign.php tmp/phpstan.phar"
+
       - name: "Unset autoloader suffix"
         run: "composer config autoloader-suffix --unset"
 

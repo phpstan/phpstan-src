@@ -69,6 +69,11 @@ jobs:
       - name: "Set autoloader suffix"
         run: "composer config autoloader-suffix PHPStanChecksum"
 
+      - name: "Composer dump"
+        run: "composer install --no-interaction --no-progress"
+        env:
+          COMPOSER_ROOT_VERSION: "1.5.x-dev"
+
       - name: "Compile PHAR for checksum"
         working-directory: "compiler/build"
         run: "php box.phar compile --no-parallel"

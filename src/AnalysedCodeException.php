@@ -3,7 +3,6 @@
 namespace PHPStan;
 
 use Exception;
-use UnusedException;
 
 abstract class AnalysedCodeException extends Exception
 {

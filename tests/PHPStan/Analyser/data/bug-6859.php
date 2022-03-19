@@ -29,16 +29,6 @@ class HelloWorld
 	{
 		if (array_key_exists("someParam", $body)) {
 			assertType('non-empty-array<int, mixed>', array_values($body));
-
-			$someKeys = array_filter(
-				array_values($body),
-				fn ($key) => preg_match("/^somePattern[0-9]+$/", $key)
-			);
-
-			if (count($someKeys) > 0) {
-				return 1;
-			}
-			return 0;
 		}
 	}
 }

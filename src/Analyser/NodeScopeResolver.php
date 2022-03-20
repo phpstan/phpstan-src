@@ -1561,6 +1561,7 @@ class NodeScopeResolver
 	{
 		$exprType = $scope->getType($exprToSpecify);
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
+		$specifiedExpressions = [];
 		if (!$exprType->equals($exprTypeWithoutNull)) {
 			$nativeType = $scope->getNativeType($exprToSpecify);
 			$scope = $scope->specifyExpressionType(
@@ -1568,16 +1569,27 @@ class NodeScopeResolver
 				$exprTypeWithoutNull,
 				TypeCombinator::removeNull($nativeType),
 			);
-
-			return new EnsuredNonNullabilityResult(
-				$scope,
-				[
-					new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType),
-				],
-			);
+			$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType);
 		}
 
-		return new EnsuredNonNullabilityResult($scope, []);
+		if ($exprToSpecify instanceof ArrayDimFetch && $exprToSpecify->dim !== null) {
+			$dimFetchVarType = $scope->getType($exprToSpecify->var);
+			if ($dimFetchVarType instanceof ConstantArrayType) {
+				$dimFetchVarWithoutOptional = $dimFetchVarType->makeOffsetRequired($scope->getType($exprToSpecify->dim));
+				if (!$dimFetchVarType->equals($dimFetchVarWithoutOptional)) {
+					$nativeType = $scope->getNativeType($exprToSpecify->var);
+					$scope = $scope->specifyExpressionType(
+						$exprToSpecify->var,
+						$dimFetchVarWithoutOptional,
+						TypeCombinator::removeNull($nativeType),
+					);
+
+					$specifiedExpressions[] = new EnsuredNonNullabilityResultExpression($exprToSpecify->var, $dimFetchVarType, $nativeType);
+				}
+			}
+		}
+
+		return new EnsuredNonNullabilityResult($scope, $specifiedExpressions);
 	}
 
 	private function ensureNonNullability(MutatingScope $scope, Expr $expr, bool $findMethods): EnsuredNonNullabilityResult

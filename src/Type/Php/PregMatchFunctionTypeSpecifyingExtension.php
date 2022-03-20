@@ -15,7 +15,6 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
 use function strtolower;

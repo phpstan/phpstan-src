@@ -79,7 +79,6 @@ final class PregMatchFunctionTypeSpecifyingExtension implements FunctionTypeSpec
 
 			if ($weDontKnowFlags || $offsetCapture) {
 				$builder = ConstantArrayTypeBuilder::createEmpty();
-
 				if ($weDontKnowFlags || $unmatchedAsNull) {
 					$builder->setOffsetValueType(new ConstantIntegerType(0), TypeCombinator::addNull(new StringType()));
 				} else {
@@ -87,6 +86,11 @@ final class PregMatchFunctionTypeSpecifyingExtension implements FunctionTypeSpec
 				}
 				$builder->setOffsetValueType(new ConstantIntegerType(1), IntegerRangeType::fromInterval(-1, null));
 				$valueType = $builder->getArray();
+
+				if ($weDontKnowFlags) {
+					$valueType = TypeCombinator::union(TypeCombinator::addNull(new StringType()), $valueType);
+				}
+
 			} elseif ($unmatchedAsNull) {
 				$valueType = TypeCombinator::addNull(new StringType());
 			}

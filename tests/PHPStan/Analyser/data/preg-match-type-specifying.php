@@ -9,7 +9,7 @@ class Foo {
 	{
 		// we don't know the flags, therefore allow all possible variations.
 		if (preg_match('/^[a-z]+$/', 'foo', $matches, $flags)) {
-			assertType('array<int<0, max>|string, array{string|null, int<-1, max>}>', $matches);
+			assertType('array<int<0, max>|string, array{string|null, int<-1, max>}|string|null>', $matches);
 		} else {
 			assertType('array', $matches);
 		}

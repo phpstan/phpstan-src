@@ -361,7 +361,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'matches4',
 				TrinaryLogic::createMaybe(),
-				'mixed',
+				'array',
 			],
 			[
 				$testScope,

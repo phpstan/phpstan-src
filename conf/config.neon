@@ -1235,6 +1235,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\PregMatchFunctionTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+
+	-
 		class: PHPStan\Type\Php\ReflectionClassIsSubclassOfTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.methodTypeSpecifyingExtension

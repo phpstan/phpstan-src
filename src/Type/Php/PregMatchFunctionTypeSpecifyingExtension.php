@@ -38,7 +38,7 @@ final class PregMatchFunctionTypeSpecifyingExtension implements FunctionTypeSpec
 	): bool
 	{
 		return strtolower($functionReflection->getName()) === 'preg_match'
-			&& !$context->null();
+			&& $context->true();
 	}
 
 	public function specifyTypes(
@@ -54,16 +54,6 @@ final class PregMatchFunctionTypeSpecifyingExtension implements FunctionTypeSpec
 
 		if ($matchesArg === null) {
 			return new SpecifiedTypes();
-		}
-
-		if ($context->false()) {
-			return $this->typeSpecifier->create(
-				$matchesArg,
-				new ArrayType(new MixedType(), new MixedType()),
-				$context->negate(),
-				false,
-				$scope,
-			);
 		}
 
 		$valueType = new StringType();

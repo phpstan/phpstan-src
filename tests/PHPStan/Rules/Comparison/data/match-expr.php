@@ -53,10 +53,6 @@ class Foo
 		};
 
 		match ($i) {
-			// unhandled
-		};
-
-		match ($i) {
 			1, 2 => null,
 			default => null, // OK
 		};
@@ -77,6 +73,10 @@ class Foo
 		match ($i) {
 			default => 1,
 			1 => 2,
+		};
+
+		match ($i) {
+			// unhandled
 		};
 	}
 

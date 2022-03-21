@@ -73,16 +73,16 @@ class MatchExpressionRuleTest extends RuleTestCase
 				50,
 			],
 			[
-				'Match expression does not handle remaining values: 1|2|3',
-				55,
-			],
-			[
 				'Match arm comparison between 1|2 and 3 is always false.',
-				65,
+				61,
 			],
 			[
 				'Match arm comparison between 1 and 1 is always true.',
-				70,
+				66,
+			],
+			[
+				'Match expression does not handle remaining values: 1|2|3',
+				78,
 			],
 			[
 				'Match arm comparison between true and false is always false.',

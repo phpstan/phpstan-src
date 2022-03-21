@@ -50,19 +50,17 @@ class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 	{
 		$args = $functionCall->getArgs();
 
-		$arrayType = $scope->getType($args[0]->value);
-		$keyTypes = [$arrayType->getIterableKeyType()];
-		$valueTypes = [$arrayType->getIterableValueType()];
+		$keyTypes = [];
+		$valueTypes = [];
+		for ($i = 0; $i < count($args); $i++) {
+			$arrayType = $scope->getType($args[$i]->value);
 
-		for ($i = 1; $i < count($args); $i++) {
-			$replaceArray = $scope->getType($args[$i]->value);
-
-			if (!$replaceArray->isArray()->yes()) {
+			if (!$arrayType->isArray()->yes()) {
 				return null;
 			}
 
-			$keyTypes[] = $replaceArray->getIterableKeyType();
-			$valueTypes[] = $replaceArray->getIterableValueType();
+			$keyTypes[] = $arrayType->getIterableKeyType();
+			$valueTypes[] = $arrayType->getIterableValueType();
 		}
 
 		$keyType = TypeCombinator::union(...$keyTypes);

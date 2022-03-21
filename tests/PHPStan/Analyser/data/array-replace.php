@@ -34,9 +34,9 @@ class Foo
 	 */
 	public function arrayReplaceUnionType($array1, $array2): void
 	{
-		assertType("array<int, int|string>", array_merge($array1, $array1));
-		assertType("array<int, bool|float|int|string>", array_merge($array1, $array2));
-		assertType("array<int, bool|float|int|string>", array_merge($array2, $array1));
+		assertType("array<int, int|string>", array_replace($array1, $array1));
+		assertType("array<int, bool|float|int|string>", array_replace($array1, $array2));
+		assertType("array<int, bool|float|int|string>", array_replace($array2, $array1));
 	}
 
 	/**
@@ -45,8 +45,8 @@ class Foo
 	 */
 	public function arrayReplaceUnionTypeArrayShapes($array1, $array2): void
 	{
-		assertType("array<int, array{bar: '2'}|array{foo: '1'}>", array_merge($array1, $array1));
-		assertType("array<int, array{bar: '2'|'3'}|array{foo: '1'|'2'}>", array_merge($array1, $array2));
-		assertType("array<int, array{bar: '2'|'3'}|array{foo: '1'|'2'}>", array_merge($array2, $array1));
+		assertType("array<int, array{bar: '2'}|array{foo: '1'}>", array_replace($array1, $array1));
+		assertType("array<int, array{bar: '2'|'3'}|array{foo: '1'|'2'}>", array_replace($array1, $array2));
+		assertType("array<int, array{bar: '2'|'3'}|array{foo: '1'|'2'}>", array_replace($array2, $array1));
 	}
 }

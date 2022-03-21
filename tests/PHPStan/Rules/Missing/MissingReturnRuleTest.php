@@ -279,4 +279,19 @@ class MissingReturnRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6257(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$this->checkExplicitMixedMissingReturn = true;
+		$this->checkPhpDocMissingReturn = true;
+		$this->analyse([__DIR__ . '/data/bug-6257.php'], [
+			[
+				'Function ReturnTypes\sometimesThrows() should always throw an exception or terminate script execution but doesn\'t do that.',
+				27,
+			],
+		]);
+	}
+
 }

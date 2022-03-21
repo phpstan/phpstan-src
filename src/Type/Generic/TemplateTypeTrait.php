@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -198,6 +199,10 @@ trait TemplateTypeTrait
 	{
 		if ($type instanceof TemplateType || $type instanceof IntersectionType) {
 			return $type->isSubTypeOf($this);
+		}
+
+		if ($type instanceof NeverType) {
+			return TrinaryLogic::createYes();
 		}
 
 		return $this->getBound()->isSuperTypeOf($type)

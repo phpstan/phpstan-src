@@ -131,10 +131,6 @@ class TypeCombinator
 		$scalarTypes = [];
 		$hasGenericScalarTypes = [];
 		for ($i = 0; $i < $typesCount; $i++) {
-			if ($types[$i] instanceof NeverType) {
-				unset($types[$i]);
-				continue;
-			}
 			if ($types[$i] instanceof ConstantScalarType) {
 				$type = $types[$i];
 				$scalarTypes[get_class($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
@@ -378,17 +374,11 @@ class TypeCombinator
 			}
 		}
 
-		if (
-			!$b instanceof ConstantArrayType
-			&& $b->isSuperTypeOf($a)->yes()
-		) {
+		if ($b->isSuperTypeOf($a)->yes()) {
 			return [null, $b];
 		}
 
-		if (
-			!$a instanceof ConstantArrayType
-			&& $a->isSuperTypeOf($b)->yes()
-		) {
+		if ($a->isSuperTypeOf($b)->yes()) {
 			return [$a, null];
 		}
 

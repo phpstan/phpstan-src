@@ -92,6 +92,10 @@ class IntersectionType implements CompoundType
 			return TrinaryLogic::createYes();
 		}
 
+		if ($otherType instanceof NeverType) {
+			return TrinaryLogic::createYes();
+		}
+
 		$results = [];
 		foreach ($this->getTypes() as $innerType) {
 			$results[] = $innerType->isSuperTypeOf($otherType);

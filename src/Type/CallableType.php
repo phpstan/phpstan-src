@@ -83,6 +83,10 @@ class CallableType implements CompoundType, ParametersAcceptor
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		if ($type instanceof CompoundType && !$type instanceof self) {
+			return $type->isSubTypeOf($this);
+		}
+
 		return $this->isSuperTypeOfInternal($type, false);
 	}
 

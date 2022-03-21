@@ -62,6 +62,10 @@ class HasMethodType implements AccessoryType, CompoundType
 			return $otherType->isSuperTypeOf($this);
 		}
 
+		if ($this->isCallable()->yes() && $otherType->isCallable()->yes()) {
+			return TrinaryLogic::createYes();
+		}
+
 		if ($otherType instanceof self) {
 			$limit = TrinaryLogic::createYes();
 		} else {

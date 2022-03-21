@@ -116,6 +116,7 @@ class UnionType implements CompoundType
 		if (
 			($otherType instanceof self && !$otherType instanceof TemplateUnionType)
 			|| $otherType instanceof IterableType
+			|| $otherType instanceof NeverType
 		) {
 			return $otherType->isSubTypeOf($this);
 		}

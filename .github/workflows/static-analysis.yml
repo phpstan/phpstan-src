@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
@@ -91,7 +91,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
@@ -119,7 +119,7 @@ jobs:
           make phpstan-result-cache
 
       - name: "Upload result cache artifact"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: resultCache-ubuntu-latest.php
           path: tmp/resultCache.php
@@ -137,7 +137,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"

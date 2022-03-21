@@ -6,7 +6,6 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -122,7 +121,7 @@ class GenericClassStringType extends ClassStringType
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
-		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
+		if ($receivedType instanceof UnionType) {
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 

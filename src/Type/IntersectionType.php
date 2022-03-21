@@ -515,17 +515,6 @@ class IntersectionType implements CompoundType
 		return $types;
 	}
 
-	public function inferTemplateTypesOn(Type $templateType): TemplateTypeMap
-	{
-		$types = TemplateTypeMap::createEmpty();
-
-		foreach ($this->types as $type) {
-			$types = $types->intersect($templateType->inferTemplateTypes($type));
-		}
-
-		return $types;
-	}
-
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
 		$references = [];

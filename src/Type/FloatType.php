@@ -51,10 +51,7 @@ class FloatType implements Type
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy(new UnionType([
-				$this,
-				new IntegerType(),
-			]), $strictTypes);
+			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
 		return TrinaryLogic::createNo();

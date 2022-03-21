@@ -18,17 +18,6 @@ class Foo
 	}
 
 	/**
-	 * @param int[] $array1
-	 * @param string[] $array2
-	 */
-	public function arrayReplaceSimple($array1, $array2): void
-	{
-		assertType("array<int>", array_merge($array1, $array1));
-		assertType("array<int|string>", array_merge($array1, $array2));
-		assertType("array<int|string>", array_merge($array2, $array1));
-	}
-
-	/**
 	 * @param array{foo: '1', bar: '2'} $array1
 	 * @param array{foo: '1', bar: '4'} $array2
 	 */

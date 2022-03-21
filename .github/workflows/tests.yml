@@ -8,7 +8,7 @@ on:
       - 'compiler/**'
   push:
     branches:
-      - "**"
+      - "1.5.x"
     paths-ignore:
       - 'compiler/**'
 

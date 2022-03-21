@@ -4,6 +4,7 @@
     "schedule:weekly"
   ],
   "rangeStrategy": "update-lockfile",
+  "rebaseWhen": "conflicted",
   "packageRules": [
     {
       "matchPackagePatterns": ["*"],

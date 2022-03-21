@@ -29,6 +29,17 @@ class Foo
 	}
 
 	/**
+	 * @param int[] $array1
+	 * @param string[] $array2
+	 */
+	public function arrayReplaceSimple($array1, $array2): void
+	{
+		assertType("array<int>", array_replace($array1, $array1));
+		assertType("array<int|string>", array_replace($array1, $array2));
+		assertType("array<int|string>", array_replace($array2, $array1));
+	}
+
+	/**
 	 * @param array<int, int|string> $array1
 	 * @param array<int, bool|float> $array2
 	 */

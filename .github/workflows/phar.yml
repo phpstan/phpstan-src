@@ -105,6 +105,7 @@ jobs:
     uses: phpstan/phpstan/.github/workflows/integration-tests.yml@1.5.x
     with:
       ref: 1.5.x
+      phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   extension-tests:
     if: github.event_name == 'pull_request'
@@ -112,6 +113,7 @@ jobs:
     uses: phpstan/phpstan/.github/workflows/extension-tests.yml@1.5.x
     with:
       ref: 1.5.x
+      phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   other-tests:
     if: github.event_name == 'pull_request'
@@ -119,6 +121,7 @@ jobs:
     uses: phpstan/phpstan/.github/workflows/other-tests.yml@1.5.x
     with:
       ref: 1.5.x
+      phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   commit:
     if: "github.ref == 'refs/heads/1.5.x' || startsWith(github.ref, 'refs/tags/')"

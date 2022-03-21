@@ -51,9 +51,12 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 
 		if (count($functionCall->getArgs()) > 1) {
 			$componentType = $scope->getType($functionCall->getArgs()[1]->value);
-
-			if (!$componentType instanceof ConstantType || $componentType->equals(new NullType())) {
+			if ($componentType->equals(new NullType())) {
 				return $this->createAllComponentsReturnType();
+			}
+
+			if ($componentType instanceof ConstantType === false) {
+				return new ConstantBooleanType(false);
 			}
 
 			$componentType = $componentType->toInteger();

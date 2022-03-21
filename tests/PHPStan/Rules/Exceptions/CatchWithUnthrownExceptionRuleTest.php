@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Exceptions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function extension_loaded;
 use const PHP_VERSION_ID;
 
 /**
@@ -271,6 +272,10 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 	{
 		if (PHP_VERSION_ID < 70400) {
 			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		if (!extension_loaded('ds')) {
+			self::markTestSkipped('Test requires the DS extension.');
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-6791.php'], [

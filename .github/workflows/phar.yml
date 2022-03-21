@@ -142,6 +142,17 @@ jobs:
           token: ${{ secrets.PAT }}
           ref: 1.5.x
 
+      - name: "Check PHAR checksum"
+        id: checksum-difference
+        working-directory: phpstan-dist
+        run: |
+          checksum=${{needs.compiler-tests.outputs.checksum}}
+          if [[ $(< .phar-checksum) != "$checksum" ]]; then
+            echo "::set-output name=result::different
+          else
+            echo "::set-output name=result::same
+          fi
+
       - name: "Download phpstan.phar"
         uses: actions/download-artifact@v3
         with:
@@ -173,7 +184,7 @@ jobs:
           GPG_ID: ${{ secrets.GPG_ID }}
 
       - name: "Commit PHAR - development"
-        if: "!startsWith(github.ref, 'refs/tags/')"
+        if: "!startsWith(github.ref, 'refs/tags/') && steps.checksum-difference.outputs.result == 'different'"
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_user_name: "Ondrej Mirtes"

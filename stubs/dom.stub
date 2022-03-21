@@ -56,8 +56,9 @@ class DOMElement extends DOMNode
 /**
  * @template-covariant TNode as DOMNode
  * @implements Traversable<int, TNode>
+ * @implements IteratorAggregate<int, TNode>
  */
-class DOMNodeList implements Traversable
+class DOMNodeList implements Traversable, IteratorAggregate, Countable
 {
 
 	/**
@@ -65,6 +66,19 @@ class DOMNodeList implements Traversable
 	 * @return TNode|null
 	 */
 	public function item ($index) {}
+
+}
+
+class DOMXPath
+{
+
+    /**
+     * @param string $expression
+     * @param DOMNode|null $contextNode
+     * @param boolean $registerNodeNS
+     * @return DOMNodeList<DOMNode>|false
+     */
+    public function query($expression, $contextNode, $registerNodeNS) {}
 
 }
 

@@ -8,7 +8,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -38,9 +37,6 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 		return $functionReflection->getName() === 'curl_getinfo';
 	}
 
-	/**
-	 * @throws ShouldNotHappenException
-	 */
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
 		if (count($functionCall->getArgs()) < 1) {
@@ -49,32 +45,24 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			)->getReturnType();
 		}
 
-		$falseType = new ConstantBooleanType(false);
-		if (count($functionCall->getArgs()) > 1) {
-			$componentType = $scope->getType($functionCall->getArgs()[1]->value);
-			if ($componentType->equals(new NullType())) {
-				return $this->createAllComponentsReturnType();
-			}
-
-			if ($componentType instanceof ConstantType === false) {
-				return $falseType;
-			}
-
-			$componentType = $componentType->toInteger();
-			if (!$componentType instanceof ConstantIntegerType) {
-				throw new ShouldNotHappenException();
-			}
-		} else {
-			$componentType = new ConstantIntegerType(-1);
+		if (count($functionCall->getArgs()) <= 1) {
+			return $this->createAllComponentsReturnType();
 		}
 
-		if ($componentType->getValue() === -1) {
+		$componentType = $scope->getType($functionCall->getArgs()[1]->value);
+		if ($componentType instanceof ConstantType === false || $componentType->equals(new NullType())) {
+			return $this->createAllComponentsReturnType();
+		}
+
+		$componentType = $componentType->toInteger();
+		if (!$componentType instanceof ConstantIntegerType) {
 			return $this->createAllComponentsReturnType();
 		}
 
 		$stringType = new StringType();
 		$integerType = new IntegerType();
 		$floatType = new FloatType();
+		$falseType = new ConstantBooleanType(false);
 		$stringFalseType = TypeCombinator::union($stringType, $falseType);
 		$integerStringArrayType = new ArrayType($integerType, $stringType);
 		$nestedIntegerStringArrayType = new ArrayType($integerType, $integerStringArrayType);

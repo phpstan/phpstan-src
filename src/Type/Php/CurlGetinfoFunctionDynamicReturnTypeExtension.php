@@ -49,6 +49,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			)->getReturnType();
 		}
 
+		$falseType = new ConstantBooleanType(false);
 		if (count($functionCall->getArgs()) > 1) {
 			$componentType = $scope->getType($functionCall->getArgs()[1]->value);
 			if ($componentType->equals(new NullType())) {
@@ -56,7 +57,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			}
 
 			if ($componentType instanceof ConstantType === false) {
-				return new ConstantBooleanType(false);
+				return $falseType;
 			}
 
 			$componentType = $componentType->toInteger();
@@ -71,67 +72,74 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			return $this->createAllComponentsReturnType();
 		}
 
+		$stringType = new StringType();
+		$integerType = new IntegerType();
+		$floatType = new FloatType();
+		$stringFalseType = TypeCombinator::union($stringType, $falseType);
+		$integerStringArrayType = new ArrayType($integerType, $stringType);
+		$nestedIntegerStringArrayType = new ArrayType($integerType, $integerStringArrayType);
+
 		$componentTypesPairedConstants = [
-			'CURLINFO_EFFECTIVE_URL' => new StringType(),
-			'CURLINFO_FILETIME' => new IntegerType(),
-			'CURLINFO_TOTAL_TIME' => new FloatType(),
-			'CURLINFO_NAMELOOKUP_TIME' => new FloatType(),
-			'CURLINFO_CONNECT_TIME' => new FloatType(),
-			'CURLINFO_PRETRANSFER_TIME' => new FloatType(),
-			'CURLINFO_STARTTRANSFER_TIME' => new FloatType(),
-			'CURLINFO_REDIRECT_COUNT' => new IntegerType(),
-			'CURLINFO_REDIRECT_TIME' => new FloatType(),
-			'CURLINFO_REDIRECT_URL' => new StringType(),
-			'CURLINFO_PRIMARY_IP' => new StringType(),
-			'CURLINFO_PRIMARY_PORT' => new IntegerType(),
-			'CURLINFO_LOCAL_IP' => new StringType(),
-			'CURLINFO_LOCAL_PORT' => new IntegerType(),
-			'CURLINFO_SIZE_UPLOAD' => new IntegerType(),
-			'CURLINFO_SIZE_DOWNLOAD' => new IntegerType(),
-			'CURLINFO_SPEED_DOWNLOAD' => new IntegerType(),
-			'CURLINFO_SPEED_UPLOAD' => new IntegerType(),
-			'CURLINFO_HEADER_SIZE' => new IntegerType(),
-			'CURLINFO_HEADER_OUT' => TypeCombinator::union(new StringType(), new ConstantBooleanType(false)),
-			'CURLINFO_REQUEST_SIZE' => new IntegerType(),
-			'CURLINFO_SSL_VERIFYRESULT' => new IntegerType(),
-			'CURLINFO_CONTENT_LENGTH_DOWNLOAD' => new FloatType(),
-			'CURLINFO_CONTENT_LENGTH_UPLOAD' => new FloatType(),
-			'CURLINFO_CONTENT_TYPE' => new StringType(),
-			'CURLINFO_PRIVATE' => TypeCombinator::union(new StringType(), new ConstantBooleanType(false)),
-			'CURLINFO_RESPONSE_CODE' => new IntegerType(),
-			'CURLINFO_HTTP_CONNECTCODE' => new IntegerType(),
-			'CURLINFO_HTTPAUTH_AVAIL' => new IntegerType(),
-			'CURLINFO_PROXYAUTH_AVAIL' => new IntegerType(),
-			'CURLINFO_OS_ERRNO' => new IntegerType(),
-			'CURLINFO_NUM_CONNECTS' => new IntegerType(),
-			'CURLINFO_SSL_ENGINES' => new ArrayType(new IntegerType(), new StringType()),
-			'CURLINFO_COOKIELIST' => new ArrayType(new IntegerType(), new StringType()),
-			'CURLINFO_FTP_ENTRY_PATH' => TypeCombinator::union(new StringType(), new ConstantBooleanType(false)),
-			'CURLINFO_APPCONNECT_TIME' => new FloatType(),
-			'CURLINFO_CERTINFO' => new ArrayType(new IntegerType(), new ArrayType(new IntegerType(), new StringType())),
-			'CURLINFO_CONDITION_UNMET' => new IntegerType(),
-			'CURLINFO_RTSP_CLIENT_CSEQ' => new IntegerType(),
-			'CURLINFO_RTSP_CSEQ_RECV' => new IntegerType(),
-			'CURLINFO_RTSP_SERVER_CSEQ' => new IntegerType(),
-			'CURLINFO_RTSP_SESSION_ID' => new IntegerType(),
-			'CURLINFO_HTTP_VERSION' => new IntegerType(),
-			'CURLINFO_PROTOCOL' => new StringType(),
-			'CURLINFO_PROXY_SSL_VERIFYRESULT' => new IntegerType(),
-			'CURLINFO_SCHEME' => new StringType(),
-			'CURLINFO_CONTENT_LENGTH_DOWNLOAD_T' => new IntegerType(),
-			'CURLINFO_CONTENT_LENGTH_UPLOAD_T' => new IntegerType(),
-			'CURLINFO_SIZE_DOWNLOAD_T' => new IntegerType(),
-			'CURLINFO_SIZE_UPLOAD_T' => new IntegerType(),
-			'CURLINFO_SPEED_DOWNLOAD_T' => new IntegerType(),
-			'CURLINFO_SPEED_UPLOAD_T' => new IntegerType(),
-			'CURLINFO_APPCONNECT_TIME_T' => new IntegerType(),
-			'CURLINFO_CONNECT_TIME_T' => new IntegerType(),
-			'CURLINFO_FILETIME_T' => new IntegerType(),
-			'CURLINFO_NAMELOOKUP_TIME_T' => new IntegerType(),
-			'CURLINFO_PRETRANSFER_TIME_T' => new IntegerType(),
-			'CURLINFO_REDIRECT_TIME_T' => new IntegerType(),
-			'CURLINFO_STARTTRANSFER_TIME_T' => new IntegerType(),
-			'CURLINFO_TOTAL_TIME_T' => new IntegerType(),
+			'CURLINFO_EFFECTIVE_URL' => $stringType,
+			'CURLINFO_FILETIME' => $integerType,
+			'CURLINFO_TOTAL_TIME' => $floatType,
+			'CURLINFO_NAMELOOKUP_TIME' => $floatType,
+			'CURLINFO_CONNECT_TIME' => $floatType,
+			'CURLINFO_PRETRANSFER_TIME' => $floatType,
+			'CURLINFO_STARTTRANSFER_TIME' => $floatType,
+			'CURLINFO_REDIRECT_COUNT' => $integerType,
+			'CURLINFO_REDIRECT_TIME' => $floatType,
+			'CURLINFO_REDIRECT_URL' => $stringType,
+			'CURLINFO_PRIMARY_IP' => $stringType,
+			'CURLINFO_PRIMARY_PORT' => $integerType,
+			'CURLINFO_LOCAL_IP' => $stringType,
+			'CURLINFO_LOCAL_PORT' => $integerType,
+			'CURLINFO_SIZE_UPLOAD' => $integerType,
+			'CURLINFO_SIZE_DOWNLOAD' => $integerType,
+			'CURLINFO_SPEED_DOWNLOAD' => $integerType,
+			'CURLINFO_SPEED_UPLOAD' => $integerType,
+			'CURLINFO_HEADER_SIZE' => $integerType,
+			'CURLINFO_HEADER_OUT' => $stringFalseType,
+			'CURLINFO_REQUEST_SIZE' => $integerType,
+			'CURLINFO_SSL_VERIFYRESULT' => $integerType,
+			'CURLINFO_CONTENT_LENGTH_DOWNLOAD' => $floatType,
+			'CURLINFO_CONTENT_LENGTH_UPLOAD' => $floatType,
+			'CURLINFO_CONTENT_TYPE' => $stringType,
+			'CURLINFO_PRIVATE' => $stringFalseType,
+			'CURLINFO_RESPONSE_CODE' => $integerType,
+			'CURLINFO_HTTP_CONNECTCODE' => $integerType,
+			'CURLINFO_HTTPAUTH_AVAIL' => $integerType,
+			'CURLINFO_PROXYAUTH_AVAIL' => $integerType,
+			'CURLINFO_OS_ERRNO' => $integerType,
+			'CURLINFO_NUM_CONNECTS' => $integerType,
+			'CURLINFO_SSL_ENGINES' => $integerStringArrayType,
+			'CURLINFO_COOKIELIST' => $integerStringArrayType,
+			'CURLINFO_FTP_ENTRY_PATH' => $stringFalseType,
+			'CURLINFO_APPCONNECT_TIME' => $floatType,
+			'CURLINFO_CERTINFO' => $nestedIntegerStringArrayType,
+			'CURLINFO_CONDITION_UNMET' => $integerType,
+			'CURLINFO_RTSP_CLIENT_CSEQ' => $integerType,
+			'CURLINFO_RTSP_CSEQ_RECV' => $integerType,
+			'CURLINFO_RTSP_SERVER_CSEQ' => $integerType,
+			'CURLINFO_RTSP_SESSION_ID' => $integerType,
+			'CURLINFO_HTTP_VERSION' => $integerType,
+			'CURLINFO_PROTOCOL' => $stringType,
+			'CURLINFO_PROXY_SSL_VERIFYRESULT' => $integerType,
+			'CURLINFO_SCHEME' => $stringType,
+			'CURLINFO_CONTENT_LENGTH_DOWNLOAD_T' => $integerType,
+			'CURLINFO_CONTENT_LENGTH_UPLOAD_T' => $integerType,
+			'CURLINFO_SIZE_DOWNLOAD_T' => $integerType,
+			'CURLINFO_SIZE_UPLOAD_T' => $integerType,
+			'CURLINFO_SPEED_DOWNLOAD_T' => $integerType,
+			'CURLINFO_SPEED_UPLOAD_T' => $integerType,
+			'CURLINFO_APPCONNECT_TIME_T' => $integerType,
+			'CURLINFO_CONNECT_TIME_T' => $integerType,
+			'CURLINFO_FILETIME_T' => $integerType,
+			'CURLINFO_NAMELOOKUP_TIME_T' => $integerType,
+			'CURLINFO_PRETRANSFER_TIME_T' => $integerType,
+			'CURLINFO_REDIRECT_TIME_T' => $integerType,
+			'CURLINFO_STARTTRANSFER_TIME_T' => $integerType,
+			'CURLINFO_TOTAL_TIME_T' => $integerType,
 		];
 
 		foreach ($componentTypesPairedConstants as $constantName => $type) {
@@ -146,7 +154,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			}
 		}
 
-		return new ConstantBooleanType(false);
+		return $falseType;
 	}
 
 	private function createAllComponentsReturnType(): Type
@@ -156,37 +164,44 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 		];
 
 		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		$stringType = new StringType();
+		$integerType = new IntegerType();
+		$floatType = new FloatType();
+		$stringOrNullType = TypeCombinator::union($stringType, new NullType());
+		$integerStringArrayType = new ArrayType($integerType, $stringType);
+
 		$componentTypesPairedStrings = [
-			'url' => new StringType(),
-			'content_type' => TypeCombinator::union(new StringType(), new NullType()),
-			'http_code' => new IntegerType(),
-			'header_size' => new IntegerType(),
-			'request_size' => new IntegerType(),
-			'filetime' => new IntegerType(),
-			'ssl_verify_result' => new IntegerType(),
-			'redirect_count' => new IntegerType(),
-			'total_time' => new FloatType(),
-			'namelookup_time' => new FloatType(),
-			'connect_time' => new FloatType(),
-			'pretransfer_time' => new FloatType(),
-			'size_upload' => new FloatType(),
-			'size_download' => new FloatType(),
-			'speed_download' => new FloatType(),
-			'speed_upload' => new FloatType(),
-			'download_content_length' => new FloatType(),
-			'upload_content_length' => new FloatType(),
-			'starttransfer_time' => new FloatType(),
-			'redirect_time' => new FloatType(),
-			'redirect_url' => new StringType(),
-			'primary_ip' => new StringType(),
-			'certinfo' => new ArrayType(new IntegerType(), new StringType()),
-			'primary_port' => new IntegerType(),
-			'local_ip' => new StringType(),
-			'local_port' => new IntegerType(),
-			'http_version' => new IntegerType(),
-			'protocol' => new IntegerType(),
-			'ssl_verifyresult' => new IntegerType(),
-			'scheme' => new StringType(),
+			'url' => $stringType,
+			'content_type' => $stringOrNullType,
+			'http_code' => $integerType,
+			'header_size' => $integerType,
+			'request_size' => $integerType,
+			'filetime' => $integerType,
+			'ssl_verify_result' => $integerType,
+			'redirect_count' => $integerType,
+			'total_time' => $floatType,
+			'namelookup_time' => $floatType,
+			'connect_time' => $floatType,
+			'pretransfer_time' => $floatType,
+			'size_upload' => $floatType,
+			'size_download' => $floatType,
+			'speed_download' => $floatType,
+			'speed_upload' => $floatType,
+			'download_content_length' => $floatType,
+			'upload_content_length' => $floatType,
+			'starttransfer_time' => $floatType,
+			'redirect_time' => $floatType,
+			'redirect_url' => $stringType,
+			'primary_ip' => $stringType,
+			'certinfo' => $integerStringArrayType,
+			'primary_port' => $integerType,
+			'local_ip' => $stringType,
+			'local_port' => $integerType,
+			'http_version' => $integerType,
+			'protocol' => $integerType,
+			'ssl_verifyresult' => $integerType,
+			'scheme' => $stringType,
 		];
 		foreach ($componentTypesPairedStrings as $componentName => $componentValueType) {
 			$builder->setOffsetValueType(new ConstantStringType($componentName), $componentValueType, true);

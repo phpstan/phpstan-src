@@ -9,8 +9,12 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use UnhandledMatchError;
+use function array_map;
 use function count;
 use function sprintf;
 
@@ -81,7 +85,7 @@ class MatchExpressionRule implements Rule
 
 		if (!$hasDefault && !$nextArmIsDead) {
 			$remainingType = $node->getEndScope()->getType($matchCondition);
-			if (!$remainingType instanceof NeverType) {
+			if (!$remainingType instanceof NeverType && !$this->isUnhandledMatchErrorCaught($node)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Match expression does not handle remaining %s: %s',
 					$remainingType instanceof UnionType ? 'values' : 'value',
@@ -91,6 +95,31 @@ class MatchExpressionRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	private function isUnhandledMatchErrorCaught(Node $node): bool
+	{
+		$tryCatchNode = $node->getAttribute('parent');
+		while (
+			$tryCatchNode !== null &&
+			!$tryCatchNode instanceof Node\FunctionLike &&
+			!$tryCatchNode instanceof Node\Stmt\TryCatch
+		) {
+			$tryCatchNode = $tryCatchNode->getAttribute('parent');
+		}
+
+		if ($tryCatchNode === null || $tryCatchNode instanceof Node\FunctionLike) {
+			return false;
+		}
+
+		foreach ($tryCatchNode->catches as $catch) {
+			$catchType = TypeCombinator::union(...array_map(static fn (Node\Name $class): ObjectType => new ObjectType($class->toString()), $catch->types));
+			if ($catchType->isSuperTypeOf(new ObjectType(UnhandledMatchError::class))->yes()) {
+				return true;
+			}
+		}
+
+		return $this->isUnhandledMatchErrorCaught($tryCatchNode);
 	}
 
 }

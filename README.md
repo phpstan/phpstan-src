@@ -11,6 +11,7 @@ This repository (`phpstan/phpstan-src`) is for PHPStan's development only. Head 
 
 Any contributions are welcome.
 
+
 ### Building
 
 PHPStan's source code is developed on PHP 8.0. For distribution in `phpstan/phpstan` package and as a PHAR file, the source code is transformed to run on PHP 7.1 and higher.

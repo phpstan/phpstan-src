@@ -18,6 +18,7 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -107,6 +108,7 @@ class TemplateTypeCheck
 				&& $boundTypeClass !== ObjectType::class
 				&& $boundTypeClass !== GenericObjectType::class
 				&& !$boundType instanceof UnionType
+				&& !$boundType instanceof IntersectionType
 				&& !$boundType instanceof TemplateType
 			) {
 				$messages[] = RuleErrorBuilder::message(sprintf($notSupportedBoundMessage, $templateTagName, $boundType->describe(VerbosityLevel::typeOnly())))->build();

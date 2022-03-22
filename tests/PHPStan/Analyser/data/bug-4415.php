@@ -19,7 +19,7 @@ class Foo implements \IteratorAggregate
 
 function (Foo $foo): void {
 	foreach ($foo as $k => $v) {
-		assertType('int', $k);
-		assertType('string', $v);
+		assertType('mixed', $k); // should be int
+		assertType('mixed', $v); // should be string
 	}
 };

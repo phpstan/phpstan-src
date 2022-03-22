@@ -686,32 +686,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function getIterableKeyType(): Type
 	{
 		$isTraversable = false;
-		if ($this->isInstanceOf(Traversable::class)->yes()) {
-			$isTraversable = true;
-			$tKey = GenericTypeVariableResolver::getType($this, Traversable::class, 'TKey');
-			if ($tKey !== null) {
-				if (!$tKey instanceof MixedType || $tKey->isExplicitMixed()) {
-					$classReflection = $this->getClassReflection();
-					if ($classReflection === null) {
-						return $tKey;
-					}
-
-					return TypeTraverser::map($tKey, static function (Type $type, callable $traverse) use ($classReflection): Type {
-						if ($type instanceof StaticType) {
-							return $type->changeBaseClass($classReflection)->getStaticObjectType();
-						}
-
-						return $traverse($type);
-					});
-				}
-			}
-		}
-		if ($this->isInstanceOf(Iterator::class)->yes()) {
-			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
-				$this->getMethod('key', new OutOfClassScope())->getVariants(),
-			)->getReturnType());
-		}
-
 		if ($this->isInstanceOf(IteratorAggregate::class)->yes()) {
 			$keyType = RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
 				$this->getMethod('getIterator', new OutOfClassScope())->getVariants(),
@@ -720,6 +694,22 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			if (!$keyType instanceof MixedType || $keyType->isExplicitMixed()) {
 				return $keyType;
 			}
+		}
+
+		if ($this->isInstanceOf(Traversable::class)->yes()) {
+			$isTraversable = true;
+			$tKey = GenericTypeVariableResolver::getType($this, Traversable::class, 'TKey');
+			if ($tKey !== null) {
+				if (!$tKey instanceof MixedType || $tKey->isExplicitMixed()) {
+					return $tKey;
+				}
+			}
+		}
+
+		if ($this->isInstanceOf(Iterator::class)->yes()) {
+			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
+				$this->getMethod('key', new OutOfClassScope())->getVariants(),
+			)->getReturnType());
 		}
 
 		if ($isTraversable) {
@@ -732,33 +722,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function getIterableValueType(): Type
 	{
 		$isTraversable = false;
-		if ($this->isInstanceOf(Traversable::class)->yes()) {
-			$isTraversable = true;
-			$tValue = GenericTypeVariableResolver::getType($this, Traversable::class, 'TValue');
-			if ($tValue !== null) {
-				if (!$tValue instanceof MixedType || $tValue->isExplicitMixed()) {
-					$classReflection = $this->getClassReflection();
-					if ($classReflection === null) {
-						return $tValue;
-					}
-
-					return TypeTraverser::map($tValue, static function (Type $type, callable $traverse) use ($classReflection): Type {
-						if ($type instanceof StaticType) {
-							return $type->changeBaseClass($classReflection)->getStaticObjectType();
-						}
-
-						return $traverse($type);
-					});
-				}
-			}
-		}
-
-		if ($this->isInstanceOf(Iterator::class)->yes()) {
-			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
-				$this->getMethod('current', new OutOfClassScope())->getVariants(),
-			)->getReturnType());
-		}
-
 		if ($this->isInstanceOf(IteratorAggregate::class)->yes()) {
 			$valueType = RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
 				$this->getMethod('getIterator', new OutOfClassScope())->getVariants(),
@@ -767,6 +730,22 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			if (!$valueType instanceof MixedType || $valueType->isExplicitMixed()) {
 				return $valueType;
 			}
+		}
+
+		if ($this->isInstanceOf(Traversable::class)->yes()) {
+			$isTraversable = true;
+			$tValue = GenericTypeVariableResolver::getType($this, Traversable::class, 'TValue');
+			if ($tValue !== null) {
+				if (!$tValue instanceof MixedType || $tValue->isExplicitMixed()) {
+					return $tValue;
+				}
+			}
+		}
+
+		if ($this->isInstanceOf(Iterator::class)->yes()) {
+			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
+				$this->getMethod('current', new OutOfClassScope())->getVariants(),
+			)->getReturnType());
 		}
 
 		if ($isTraversable) {

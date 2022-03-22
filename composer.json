@@ -9,7 +9,7 @@
 		"clue/block-react": "^1.4",
 		"clue/ndjson-react": "^1.0",
 		"composer/ca-bundle": "^1.2",
-		"composer/xdebug-handler": "^2.0.1",
+		"composer/xdebug-handler": "^3.0.3",
 		"hoa/compiler": "3.17.08.08",
 		"hoa/exception": "^1.0",
 		"hoa/regex": "1.17.01.13",
@@ -49,8 +49,8 @@
 		"phpstan/phpstan": "self.version"
 	},
 	"require-dev": {
-		"brianium/paratest": "^6.2.0",
-		"nategood/httpful": "^0.2.20",
+		"brianium/paratest": "^6.4.3",
+		"nategood/httpful": "^0.3",
 		"php-parallel-lint/php-parallel-lint": "^1.2.0",
 		"phpstan/phpstan-deprecation-rules": "^1.0",
 		"phpstan/phpstan-nette": "^1.0",

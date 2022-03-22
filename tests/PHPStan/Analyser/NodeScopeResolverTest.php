@@ -308,8 +308,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		require_once __DIR__ . '/../Rules/Generics/data/bug-3769.php';
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Generics/data/bug-3769.php');
-
-		require_once __DIR__ . '/../Rules/Generics/data/bug-6301.php';
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Generics/data/bug-6301.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/instanceof-class-string.php');

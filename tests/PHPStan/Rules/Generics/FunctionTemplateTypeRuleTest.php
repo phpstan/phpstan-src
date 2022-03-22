@@ -56,10 +56,4 @@ class FunctionTemplateTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3769.php'], []);
 	}
 
-	public function testBug6301(): void
-	{
-		require_once __DIR__ . '/data/bug-6301.php';
-		$this->analyse([__DIR__ . '/data/bug-6301.php'], []);
-	}
-
 }

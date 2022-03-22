@@ -55,7 +55,7 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 		}
 
 		$keyType = TypeCombinator::union(...$keyTypes);
-		if ($keyType instanceof NeverType && !$keyType->isExplicit()) {
+		if ($keyType instanceof NeverType && $keyType->isExplicit()) {
 			return new ConstantArrayType([], []);
 		}
 

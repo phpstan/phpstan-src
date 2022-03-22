@@ -2112,10 +2112,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
 				72,
 			],
-			/*[
+			[
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, literal-string> given.',
 				85,
-			],*/
+			],
 		]);
 	}
 

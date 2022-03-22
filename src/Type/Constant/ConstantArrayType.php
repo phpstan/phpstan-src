@@ -21,7 +21,6 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -766,7 +765,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
-		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
+		if ($receivedType instanceof UnionType) {
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 

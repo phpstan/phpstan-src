@@ -2241,7 +2241,12 @@ class NodeScopeResolver
 		} elseif ($expr instanceof BooleanAnd || $expr instanceof BinaryOp\LogicalAnd) {
 			$leftResult = $this->processExprNode($expr->left, $scope, $nodeCallback, $context->enterDeep());
 			$rightResult = $this->processExprNode($expr->right, $leftResult->getTruthyScope(), $nodeCallback, $context);
-			$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
+			$rightExprType = $rightResult->getScope()->getType($expr->right);
+			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
+				$leftMergedWithRightScope = $leftResult->getFalseyScope();
+			} else {
+				$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
+			}
 
 			$nodeCallback(new BooleanAndNode($expr, $leftResult->getTruthyScope()), $scope);
 
@@ -2255,7 +2260,12 @@ class NodeScopeResolver
 		} elseif ($expr instanceof BooleanOr || $expr instanceof BinaryOp\LogicalOr) {
 			$leftResult = $this->processExprNode($expr->left, $scope, $nodeCallback, $context->enterDeep());
 			$rightResult = $this->processExprNode($expr->right, $leftResult->getFalseyScope(), $nodeCallback, $context);
-			$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
+			$rightExprType = $rightResult->getScope()->getType($expr->right);
+			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
+				$leftMergedWithRightScope = $leftResult->getTruthyScope();
+			} else {
+				$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
+			}
 
 			$nodeCallback(new BooleanOrNode($expr, $leftResult->getFalseyScope()), $scope);
 
@@ -2486,18 +2496,26 @@ class NodeScopeResolver
 			$throwPoints = $ternaryCondResult->getThrowPoints();
 			$ifTrueScope = $ternaryCondResult->getTruthyScope();
 			$ifFalseScope = $ternaryCondResult->getFalseyScope();
-
+			$ifTrueType = null;
 			if ($expr->if !== null) {
 				$ifResult = $this->processExprNode($expr->if, $ifTrueScope, $nodeCallback, $context);
 				$throwPoints = array_merge($throwPoints, $ifResult->getThrowPoints());
 				$ifTrueScope = $ifResult->getScope();
+				$ifTrueType = $ifTrueScope->getType($expr->if);
 			}
 
 			$elseResult = $this->processExprNode($expr->else, $ifFalseScope, $nodeCallback, $context);
 			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
 			$ifFalseScope = $elseResult->getScope();
+			$ifFalseType = $ifFalseScope->getType($expr->else);
 
-			$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
+			if ($ifTrueType instanceof NeverType && $ifTrueType->isExplicit()) {
+				$finalScope = $ifFalseScope;
+			} elseif ($ifFalseType instanceof NeverType && $ifFalseType->isExplicit()) {
+				$finalScope = $ifTrueScope;
+			} else {
+				$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
+			}
 
 			return new ExpressionResult(
 				$finalScope,

@@ -330,6 +330,18 @@ class TypeCombinator
 	 */
 	private static function compareTypesInUnion(Type $a, Type $b): ?array
 	{
+		if ($a instanceof NeverType && $b instanceof NeverType) {
+			return [new NeverType($a->isExplicit() && $b->isExplicit()), null];
+		}
+
+		if ($a instanceof NeverType) {
+			return [null, $b];
+		}
+
+		if ($b instanceof NeverType) {
+			return [$a, null];
+		}
+
 		if ($a instanceof IntegerRangeType) {
 			$type = $a->tryUnion($b);
 			if ($type !== null) {

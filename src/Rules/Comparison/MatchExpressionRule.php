@@ -85,7 +85,11 @@ class MatchExpressionRule implements Rule
 
 		if (!$hasDefault && !$nextArmIsDead) {
 			$remainingType = $node->getEndScope()->getType($matchCondition);
-			if (!$remainingType instanceof NeverType && !$this->isUnhandledMatchErrorCaught($node)) {
+			if (
+				!$remainingType instanceof NeverType
+				&& !$this->isUnhandledMatchErrorCaught($node)
+				&& !$this->hasUnhandledMatchErrorThrowsTag($scope)
+			) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					'Match expression does not handle remaining %s: %s',
 					$remainingType instanceof UnionType ? 'values' : 'value',
@@ -120,6 +124,21 @@ class MatchExpressionRule implements Rule
 		}
 
 		return $this->isUnhandledMatchErrorCaught($tryCatchNode);
+	}
+
+	private function hasUnhandledMatchErrorThrowsTag(Scope $scope): bool
+	{
+		$function = $scope->getFunction();
+		if ($function === null) {
+			return false;
+		}
+
+		$throwsType = $function->getThrowType();
+		if ($throwsType === null) {
+			return false;
+		}
+
+		return $throwsType->isSuperTypeOf(new ObjectType(UnhandledMatchError::class))->yes();
 	}
 
 }

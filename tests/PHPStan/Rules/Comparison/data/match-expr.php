@@ -138,3 +138,35 @@ class BarConstants
 
 
 }
+
+class ThrowsTag {
+	/**
+	 * @throws \UnhandledMatchError
+	 */
+	public function foo(int $bar): void
+	{
+		$str = match($bar) {
+			1 => 'test'
+		};
+	}
+
+	/**
+	 * @throws \Error
+	 */
+	public function bar(int $bar): void
+	{
+		$str = match($bar) {
+			1 => 'test'
+		};
+	}
+
+	/**
+	 * @throws \Exception
+	 */
+	public function baz(int $bar): void
+	{
+		$str = match($bar) {
+			1 => 'test'
+		};
+	}
+}

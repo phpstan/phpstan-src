@@ -176,7 +176,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6115.php'], [
 			[
 				'Match expression does not handle remaining value: 3',
-				28,
+				32,
 			],
 		]);
 	}

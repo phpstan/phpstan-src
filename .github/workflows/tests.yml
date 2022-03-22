@@ -115,7 +115,6 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "7.1"
           - "7.2"
         operating-system: [ ubuntu-latest, windows-latest ]
         script:

@@ -25,7 +25,6 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -72,7 +71,7 @@ jobs:
           extensions: mbstring
 
       - name: "Downgrade PHPUnit"
-        if: matrix.php-version == '7.1' || matrix.php-version == '7.2'
+        if: matrix.php-version == '7.2'
         run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "PHPStan"

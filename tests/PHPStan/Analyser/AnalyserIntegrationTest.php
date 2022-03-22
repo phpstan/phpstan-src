@@ -411,13 +411,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testFunctionThatExistsOn72AndLater(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/ldap-exop-passwd.php');
-		if (PHP_VERSION_ID >= 70200) {
-			$this->assertNoErrors($errors);
-			return;
-		}
-
-		$this->assertCount(1, $errors);
-		$this->assertSame('Function ldap_exop_passwd not found.', $errors[0]->getMessage());
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug4715(): void

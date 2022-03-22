@@ -496,8 +496,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		if (PHP_VERSION_ID >= 80000) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/mb_substitute_character-php8.php');
-		} elseif (PHP_VERSION_ID < 70200) {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/mb_substitute_character-php71.php');
 		} else {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/mb_substitute_character.php');
 		}
@@ -622,9 +620,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6293.php');
 		}
 
-		if (PHP_VERSION_ID >= 70200) {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/predefined-constants-php72.php');
-		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/predefined-constants-php72.php');
 		if (PHP_VERSION_ID >= 70400) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/predefined-constants-php74.php');
 		}

@@ -1,4 +1,4 @@
-<?php // lint >= 7.2
+<?php
 
 namespace TestClosureFunctionTypehintsPhp72;
 

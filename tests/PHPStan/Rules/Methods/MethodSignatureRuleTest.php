@@ -226,9 +226,6 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 	public function testBug4003(): void
 	{
-		if (PHP_VERSION_ID < 70200 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.2 or later.');
-		}
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-4003.php'], [
@@ -237,7 +234,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 				15,
 			],
 			[
-				PHP_VERSION_ID < 70200 ? 'Parameter #1 $test (mixed) of method Bug4003\Ipsum::doFoo() does not match parameter #1 $test (int) of method Bug4003\Lorem::doFoo().' : 'Parameter #1 $test (string) of method Bug4003\Ipsum::doFoo() should be compatible with parameter $test (int) of method Bug4003\Lorem::doFoo()',
+				'Parameter #1 $test (string) of method Bug4003\Ipsum::doFoo() should be compatible with parameter $test (int) of method Bug4003\Lorem::doFoo()',
 				38,
 			],
 		]);

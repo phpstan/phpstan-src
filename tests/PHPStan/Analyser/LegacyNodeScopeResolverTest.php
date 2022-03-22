@@ -1605,36 +1605,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		);
 	}
 
-	public function dataUnsetCast(): array
-	{
-		return [
-			[
-				'null',
-				'$castedNull',
-			],
-		];
-	}
-
-	/**
-	 * @dataProvider dataUnsetCast
-	 */
-	public function testUnsetCast(
-		string $desciptiion,
-		string $expression,
-	): void
-	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70200) {
-			$this->markTestSkipped(
-				'Test cannot be run on PHP 7.2 and higher - (unset) cast is deprecated.',
-			);
-		}
-		$this->assertTypes(
-			__DIR__ . '/data/cast-unset.php',
-			$desciptiion,
-			$expression,
-		);
-	}
-
 	public function dataDeductedTypes(): array
 	{
 		return [

@@ -2292,6 +2292,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				63,
 			],
 			[
+				'Parameter #1 $countryMap of method CallMethodInEnum\FooCall::helloArray() expects array<\'The Netherlands\'|\'United States\', bool>, array{abc: true} given.',
+				66,
+			],
+			[
 				'Parameter #1 $countryMap of method CallMethodInEnum\FooCall::helloArray() expects array<\'The Netherlands\'|\'United States\', bool>, array<string, int> given.',
 				67,
 			],

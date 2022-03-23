@@ -525,6 +525,26 @@ class TypeNodeResolver
 			return new ErrorType();
 		} elseif ($mainTypeName === 'value-of') {
 			if (count($genericTypes) === 1) { // value-of<ValueType>
+				if ($genericTypes[0] instanceof TypeWithClassName) {
+					if ($this->getReflectionProvider()->hasClass($genericTypes[0]->getClassName())) {
+						$classReflection = $this->getReflectionProvider()->getClass($genericTypes[0]->getClassName());
+
+						if ($classReflection->isBackedEnum()) {
+							$cases = [];
+							foreach ($classReflection->getEnumCases() as $enumCaseReflection) {
+								$backingType = $enumCaseReflection->getBackingValueType();
+								if ($backingType === null) {
+									continue;
+								}
+
+								$cases[] = $backingType;
+							}
+
+							return TypeCombinator::union(...$cases);
+						}
+					}
+				}
+
 				return $genericTypes[0]->getIterableValueType();
 			}
 

@@ -2287,6 +2287,22 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Call to an undefined method CallMethodInEnum\Bar::doNonexistent().',
 				22,
 			],
+			[
+				'Parameter #1 $countryName of method CallMethodInEnum\FooCall::hello() expects \'The Netherlands\'|\'United States\', CallMethodInEnum\CountryNo::NL given.',
+				63,
+			],
+			[
+				'Parameter #1 $countryMap of method CallMethodInEnum\FooCall::helloArray() expects array<\'The Netherlands\'|\'United States\', bool>, array{abc: true} given.',
+				66,
+			],
+			[
+				'Parameter #1 $countryMap of method CallMethodInEnum\FooCall::helloArray() expects array<\'The Netherlands\'|\'United States\', bool>, array{abc: 123} given.',
+				67,
+			],
+			[
+				'Parameter #1 $countryMap of method CallMethodInEnum\FooCall::helloArray() expects array<\'The Netherlands\'|\'United States\', bool>, array{true} given.',
+				70,
+			],
 		]);
 	}
 

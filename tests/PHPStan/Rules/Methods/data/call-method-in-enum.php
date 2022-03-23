@@ -62,7 +62,7 @@ enum FooCall {
 	function doFooArray() {
 		$this->hello(CountryNo::NL);
 
-		// should not be allowed, 'abc' does not match value-of<Country>
+		// 'abc' does not match value-of<Country>
 		$this->helloArray(['abc' => true]);
 		$this->helloArray(['abc' => 123]);
 

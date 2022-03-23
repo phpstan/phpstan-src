@@ -807,7 +807,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		}
 
 		if (PHP_VERSION_ID >= 80100) {
-			require_once __DIR__ . '/data/value-of-enum.php';
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/value-of-enum.php');
 		}
 

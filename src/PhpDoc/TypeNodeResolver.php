@@ -28,7 +28,6 @@ use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
-use PHPStan\Reflection\EnumCaseReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
@@ -533,7 +532,12 @@ class TypeNodeResolver
 						if ($classReflection->isBackedEnum()) {
 							$cases = [];
 							foreach ($classReflection->getEnumCases() as $enumCaseReflection) {
-								$cases[] = $enumCaseReflection->getBackingValueType();
+								$backingType = $enumCaseReflection->getBackingValueType();
+								if ($backingType === null) {
+									continue;
+								}
+
+								$cases[] = $backingType;
 							}
 
 							return TypeCombinator::union(...$cases);

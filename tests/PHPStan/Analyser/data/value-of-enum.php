@@ -26,11 +26,11 @@ class Foo {
 	 */
 	function hello($countryName)
 	{
-		assertType('string', $countryName);
+		assertType("'The Netherlands'|'United States'", $countryName);
 	}
 
 	function doFoo() {
-		assertType('string', $this->us());
+		assertType("'The Netherlands'|'United States'", $this->us());
 	}
 }
 

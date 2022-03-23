@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1); // lint >= 8.0
 
+namespace Bug6870;
+
 use function PHPStan\Testing\assertType;
 
 class HelloWorld

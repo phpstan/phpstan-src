@@ -32,6 +32,9 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		require_once __DIR__ . '/data/generic-class-string.php';
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/generic-class-string.php');
+		if (PHP_VERSION_ID >= 80100) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/generic-enum-class-string.php');
+		}
 
 		require_once __DIR__ . '/data/generic-generalization.php';
 

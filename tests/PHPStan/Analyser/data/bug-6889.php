@@ -7,7 +7,8 @@ use function PHPStan\Testing\assertType;
 
 class MethodWrapper
 {
-	private ReflectionMethod $reflection;
+	/** @var ReflectionMethod */
+	private $reflection;
 
 	public function __construct(ReflectionMethod $reflection) {
 		$this->reflection = $reflection;

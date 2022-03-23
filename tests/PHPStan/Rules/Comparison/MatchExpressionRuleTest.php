@@ -96,6 +96,10 @@ class MatchExpressionRuleTest extends RuleTestCase
 				'Match expression does not handle remaining value: true',
 				90,
 			],
+			[
+				'Match expression does not handle remaining values: int<min, 0>|int<2, max>',
+				168,
+			],
 		]);
 	}
 
@@ -176,7 +180,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6115.php'], [
 			[
 				'Match expression does not handle remaining value: 3',
-				28,
+				32,
 			],
 		]);
 	}

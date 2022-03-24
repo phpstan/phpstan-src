@@ -6,4 +6,4 @@ set -o nounset
 
 export TARGET_PHP_VERSION=$1
 
-vendor/bin/rector process src tests/PHPStan tests/e2e -c build/rector-downgrade.php --no-diffs
+vendor/bin/rector process -c build/rector-downgrade.php --no-diffs

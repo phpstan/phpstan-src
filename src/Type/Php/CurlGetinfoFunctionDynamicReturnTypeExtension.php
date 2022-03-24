@@ -21,6 +21,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use function count;
 
 final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -197,7 +198,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 
 		$returnTypes[] = $builder->getArray();
 
-		return TypeCombinator::union(...$returnTypes);
+		return TypeUtils::toBenevolentUnion(TypeCombinator::union(...$returnTypes));
 	}
 
 }

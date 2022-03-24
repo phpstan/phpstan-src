@@ -4,10 +4,10 @@ namespace PHPStan\Build;
 
 use Nette\Utils\Json;
 use Nette\Utils\Strings;
+use PHPStan\File\FileReader;
+use PHPStan\File\FileWriter;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use function file_get_contents;
-use function file_put_contents;
 
 class RectorCache
 {
@@ -59,7 +59,7 @@ class RectorCache
 			echo "Rector downgrade cache does not exist\n";
 			return self::$restoreAlreadyRun = self::PATHS;
 		}
-		$cache = Json::decode(file_get_contents(self::CACHE_FILE), Json::FORCE_ARRAY);
+		$cache = Json::decode(FileReader::read(self::CACHE_FILE), Json::FORCE_ARRAY);
 		$files = $this->findFiles();
 		$filesToDowngrade = [];
 		foreach ($files as $file) {
@@ -72,7 +72,7 @@ class RectorCache
 			$fileCache = $cache[$file];
 			$hash = sha1_file($file);
 			if ($hash === $fileCache['originalFileHash']) {
-				file_put_contents($file, $fileCache['downgradedContents']);
+				FileWriter::write($file, $fileCache['downgradedContents']);
 				continue;
 			}
 
@@ -98,7 +98,7 @@ class RectorCache
 			$hashes[$file] = sha1_file($file);
 		}
 
-		file_put_contents(self::HASHES_FILE, Json::encode($hashes));
+		FileWriter::write(self::HASHES_FILE, Json::encode($hashes));
 	}
 
 	/**
@@ -154,16 +154,16 @@ class RectorCache
 	public function save(): void
 	{
 		$files = $this->findFiles();
-		$originalHashes = Json::decode(file_get_contents(self::HASHES_FILE), Json::FORCE_ARRAY);
+		$originalHashes = Json::decode(FileReader::read(self::HASHES_FILE), Json::FORCE_ARRAY);
 		$cache = [];
 		foreach ($files as $file) {
 			$cache[$file] = [
 				'originalFileHash' => $originalHashes[$file],
-				'downgradedContents' => file_get_contents($file),
+				'downgradedContents' => FileReader::read($file),
 			];
 		}
 
-		file_put_contents(self::CACHE_FILE, Json::encode($cache));
+		FileWriter::write(self::CACHE_FILE, Json::encode($cache));
 	}
 
 }

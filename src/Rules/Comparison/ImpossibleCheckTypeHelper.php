@@ -79,6 +79,8 @@ class ImpossibleCheckTypeHelper
 					return null;
 				} elseif ($functionName === 'defined') {
 					return null;
+				} elseif ($functionName === 'array_search') {
+					return null;
 				} elseif (
 					$functionName === 'in_array'
 					&& count($node->getArgs()) >= 3

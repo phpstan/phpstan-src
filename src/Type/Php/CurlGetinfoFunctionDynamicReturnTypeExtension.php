@@ -192,7 +192,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			'scheme' => $stringType,
 		];
 		foreach ($componentTypesPairedStrings as $componentName => $componentValueType) {
-			$builder->setOffsetValueType(new ConstantStringType($componentName), $componentValueType, true);
+			$builder->setOffsetValueType(new ConstantStringType($componentName), $componentValueType);
 		}
 
 		$returnTypes[] = $builder->getArray();

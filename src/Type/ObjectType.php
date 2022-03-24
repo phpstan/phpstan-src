@@ -696,7 +696,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			}
 		}
 
-		if ($this->isInstanceOf(Traversable::class)->yes()) {
+		if ($this->isInstanceOf(Traversable::class)->yes() && !$this->isExtraOffsetAccessibleClass()->yes()) {
 			$isTraversable = true;
 			$tKey = GenericTypeVariableResolver::getType($this, Traversable::class, 'TKey');
 			if ($tKey !== null) {
@@ -732,7 +732,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			}
 		}
 
-		if ($this->isInstanceOf(Traversable::class)->yes()) {
+		if ($this->isInstanceOf(Traversable::class)->yes() && !$this->isExtraOffsetAccessibleClass()->yes()) {
 			$isTraversable = true;
 			$tValue = GenericTypeVariableResolver::getType($this, Traversable::class, 'TValue');
 			if ($tValue !== null) {

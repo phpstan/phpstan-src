@@ -101,6 +101,17 @@ class RectorCache
 		FileWriter::write(self::HASHES_FILE, Json::encode($hashes));
 	}
 
+	public function getOriginalFilesHash(): string
+	{
+		$files = $this->findFiles();
+		$hashes = [];
+		foreach ($files as $file) {
+			$hashes[] = $file . '~' . sha1_file($file);
+		}
+
+		return sha1(implode('-', $hashes));
+	}
+
 	/**
 	 * @return array<int, string>
 	 */

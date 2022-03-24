@@ -89,16 +89,6 @@ class Generator implements Iterator
 class SimpleXMLElement implements Traversable, ArrayAccess, Iterator, RecursiveIterator
 {
 
-	/**
-	 * @return static
-	 */
-	public function current();
-
-	/**
-	 * @return string
-	 */
-	public function key();
-
 }
 
 /**

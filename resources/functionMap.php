@@ -2994,7 +2994,7 @@ return [
 'flush' => ['void'],
 'fmod' => ['float', 'x'=>'float', 'y'=>'float'],
 'fnmatch' => ['bool', 'pattern'=>'string', 'filename'=>'string', 'flags='=>'int'],
-'fopen' => ['resource|false', 'filename'=>'string', 'mode'=>'string', 'use_include_path='=>'bool', 'context='=>'resource'],
+'fopen' => ['resource|false', 'filename'=>'string', 'mode'=>'string', 'use_include_path='=>'bool', 'context='=>'resource|null'],
 'forward_static_call' => ['mixed', 'function'=>'callable', '...parameters='=>'mixed'],
 'forward_static_call_array' => ['mixed', 'function'=>'callable', 'parameters'=>'array<int,mixed>'],
 'fpassthru' => ['0|positive-int|false', 'fp'=>'resource'],

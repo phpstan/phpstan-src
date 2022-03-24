@@ -696,7 +696,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			}
 		}
 
-		if ($this->isInstanceOf(Traversable::class)->yes() && !$this->isExtraOffsetAccessibleClass()->yes()) {
+		$extraOffsetAccessible = $this->isExtraOffsetAccessibleClass()->yes();
+		if ($this->isInstanceOf(Traversable::class)->yes() && !$extraOffsetAccessible) {
 			$isTraversable = true;
 			$tKey = GenericTypeVariableResolver::getType($this, Traversable::class, 'TKey');
 			if ($tKey !== null) {
@@ -710,6 +711,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
 				$this->getMethod('key', new OutOfClassScope())->getVariants(),
 			)->getReturnType());
+		}
+
+		if ($extraOffsetAccessible) {
+			return new MixedType(true);
 		}
 
 		if ($isTraversable) {
@@ -732,7 +737,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			}
 		}
 
-		if ($this->isInstanceOf(Traversable::class)->yes() && !$this->isExtraOffsetAccessibleClass()->yes()) {
+		$extraOffsetAccessible = $this->isExtraOffsetAccessibleClass()->yes();
+		if ($this->isInstanceOf(Traversable::class)->yes() && !$extraOffsetAccessible) {
 			$isTraversable = true;
 			$tValue = GenericTypeVariableResolver::getType($this, Traversable::class, 'TValue');
 			if ($tValue !== null) {
@@ -746,6 +752,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectSingle(
 				$this->getMethod('current', new OutOfClassScope())->getVariants(),
 			)->getReturnType());
+		}
+
+		if ($extraOffsetAccessible) {
+			return new MixedType(true);
 		}
 
 		if ($isTraversable) {

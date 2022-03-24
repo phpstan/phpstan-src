@@ -6,4 +6,8 @@ set -o nounset
 
 export TARGET_PHP_VERSION=$1
 
+php ./build/save-rector-hashes.php
+
 vendor/bin/rector process -c build/rector-downgrade.php --no-diffs
+
+php ./build/save-rector-cache.php

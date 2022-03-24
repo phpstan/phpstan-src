@@ -61,7 +61,7 @@ jobs:
 
       - name: "Delete Rector downgrade cache"
         if: github.event_name != 'pull_request'
-        run: "rm tmp/rectorCache.php"
+        run: "rm -f tmp/rectorCache.php"
 
       - name: "Prepare for PHAR compilation"
         working-directory: "compiler"

@@ -360,6 +360,7 @@ class MutatingScope implements Scope
 				'lstat',
 				'file_exists',
 				'is_writable',
+				'is_writeable',
 				'is_readable',
 				'is_executable',
 				'is_file',

@@ -169,7 +169,48 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
-		return [];
+		$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($this->fileName);
+		$nodeToReflection = new NodeToReflection();
+		$reflections = [];
+		if ($identifierType->isClass()) {
+			$classNodes = $fetchedNodesResult->getClassNodes();
+
+			foreach ($classNodes as $classNodesArray) {
+				foreach ($classNodesArray as $classNode) {
+					$classReflection = $nodeToReflection->__invoke(
+						$reflector,
+						$classNode->getNode(),
+						$classNode->getLocatedSource(),
+						$classNode->getNamespace(),
+					);
+
+					if (!$classReflection instanceof ReflectionClass) {
+						throw new ShouldNotHappenException();
+					}
+
+					$reflections[] = $classReflection;
+				}
+			}
+		}
+
+		if ($identifierType->isFunction()) {
+			$functionNodes = $fetchedNodesResult->getFunctionNodes();
+
+			foreach ($functionNodes as $functionNodesArray) {
+				foreach ($functionNodesArray as $functionNode) {
+					$functionReflection = $nodeToReflection->__invoke(
+						$reflector,
+						$functionNode->getNode(),
+						$functionNode->getLocatedSource(),
+						$functionNode->getNamespace(),
+					);
+
+					$reflections[] = $functionReflection;
+				}
+			}
+		}
+
+		return $reflections;
 	}
 
 }

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use PHPStan\BetterReflection\Identifier\IdentifierType;
+use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Reflection\InitializerExprContext;
@@ -10,6 +12,7 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
 use SingleFileSourceLocatorTestClass;
 use TestSingleFileSourceLocator\AFoo;
+use function array_map;
 use const PHP_VERSION_ID;
 
 class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
@@ -47,6 +50,73 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		yield [
 			'OptimizedDirectory\\TestEnum',
 			'OptimizedDirectory\\TestEnum',
+			__DIR__ . '/data/directory/enum.php',
+		];
+	}
+
+	public function dataForIdenifiersByType(): iterable
+	{
+		yield from [
+			'classes wrapped in conditions' => [
+				new IdentifierType(IdentifierType::IDENTIFIER_CLASS),
+				[
+					'TestSingleFileSourceLocator\AFoo',
+					'TestSingleFileSourceLocator\InCondition',
+					'TestSingleFileSourceLocator\InCondition',
+					'TestSingleFileSourceLocator\InCondition',
+				],
+				__DIR__ . '/data/a.php',
+			],
+			'class with function in same file' => [
+				new IdentifierType(IdentifierType::IDENTIFIER_CLASS),
+				['SingleFileSourceLocatorTestClass'],
+				__DIR__ . '/data/b.php',
+			],
+			'class bug-5525' => [
+				new IdentifierType(IdentifierType::IDENTIFIER_CLASS),
+				['Faker\Provider\nl_BE\Text'],
+				__DIR__ . '/data/bug-5525.php',
+			],
+			'file without classes' => [
+				new IdentifierType(IdentifierType::IDENTIFIER_CLASS),
+				[],
+				__DIR__ . '/data/const.php',
+			],
+			'plain function in complex file' => [
+				new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION),
+				[
+					'TestSingleFileSourceLocator\doFoo',
+				],
+				__DIR__ . '/data/a.php',
+			],
+			'function with class in same file' => [
+				new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION),
+				['singleFileSourceLocatorTestFunction'],
+				__DIR__ . '/data/b.php',
+			],
+			'file without functions' => [
+				new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION),
+				[],
+				__DIR__ . '/data/only-class.php',
+			],
+			'constants' => [
+				new IdentifierType(IdentifierType::IDENTIFIER_CONSTANT),
+				[],
+				__DIR__ . '/data/const.php',
+			],
+		];
+
+		if (PHP_VERSION_ID < 80100) {
+			return;
+		}
+
+		yield 'enums as classes' => [
+			new IdentifierType(IdentifierType::IDENTIFIER_CLASS),
+			[
+				'OptimizedDirectory\BackedByStringWithoutSpace',
+				'OptimizedDirectory\TestEnum',
+				'OptimizedDirectory\UppercaseEnum',
+			],
 			__DIR__ . '/data/directory/enum.php',
 		];
 	}
@@ -163,6 +233,30 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		$reflector = new DefaultReflector($locator);
 		$this->expectException(IdentifierNotFound::class);
 		$reflector->reflectConstant($constantName);
+	}
+
+	/**
+	 * @dataProvider dataForIdenifiersByType
+	 * @param class-string[] $expectedIdentifiers
+	 */
+	public function testLocateIdentifiersByType(
+		IdentifierType $identifierType,
+		array $expectedIdentifiers,
+		string $file,
+	): void
+	{
+		/** @var OptimizedSingleFileSourceLocatorFactory $factory */
+		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
+		$locator = $factory->create($file);
+		$reflector = new DefaultReflector($locator);
+
+		$reflections = $locator->locateIdentifiersByType(
+			$reflector,
+			$identifierType,
+		);
+
+		$actualIdentifiers = array_map(static fn (Reflection $reflection) => $reflection->getName(), $reflections);
+		$this->assertEqualsCanonicalizing($expectedIdentifiers, $actualIdentifiers);
 	}
 
 }

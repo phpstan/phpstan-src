@@ -12,6 +12,7 @@
 	  "Clue\\React\\Block\\await", "Hoa\\File\\Read"
   ],
   "php-core-extensions" : [
+    "json",
     "Core",
     "date",
     "pcre",

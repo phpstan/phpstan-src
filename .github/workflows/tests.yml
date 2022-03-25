@@ -189,7 +189,7 @@ jobs:
         run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "Apply ParaTest patch to allow WrapperRunner"
-        run: "patch -p1 < .github/php72-paratest400.diff"
+        run: "git apply .github/php72-paratest400.diff"
 
       - name: "Tests"
         run: "${{ matrix.script }}"

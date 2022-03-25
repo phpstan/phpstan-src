@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ValueOfEnum;
+namespace ValueOfEnumPhpdoc;
 
 enum Country: string
 {

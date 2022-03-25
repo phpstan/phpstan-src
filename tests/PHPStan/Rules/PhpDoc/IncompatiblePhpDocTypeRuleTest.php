@@ -210,8 +210,6 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 			$this->markTestSkipped('This test needs PHP 8.1');
 		}
 
-		require __DIR__ . '/data/value-of-enum.php';
-
 		$this->analyse([__DIR__ . '/data/value-of-enum.php'], [
 			[
 				'PHPDoc tag @param for parameter $shouldError with type string is incompatible with native type int.',

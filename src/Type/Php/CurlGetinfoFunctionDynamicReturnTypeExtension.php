@@ -66,7 +66,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 		$falseType = new ConstantBooleanType(false);
 		$stringFalseType = TypeCombinator::union($stringType, $falseType);
 		$integerStringArrayType = new ArrayType($integerType, $stringType);
-		$nestedIntegerStringArrayType = new ArrayType($integerType, $integerStringArrayType);
+		$nestedStringStringArrayType = new ArrayType($integerType, new ArrayType($stringType, $stringType));
 
 		$componentTypesPairedConstants = [
 			'CURLINFO_EFFECTIVE_URL' => $stringType,
@@ -105,7 +105,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			'CURLINFO_COOKIELIST' => $integerStringArrayType,
 			'CURLINFO_FTP_ENTRY_PATH' => $stringFalseType,
 			'CURLINFO_APPCONNECT_TIME' => $floatType,
-			'CURLINFO_CERTINFO' => $nestedIntegerStringArrayType,
+			'CURLINFO_CERTINFO' => $nestedStringStringArrayType,
 			'CURLINFO_CONDITION_UNMET' => $integerType,
 			'CURLINFO_RTSP_CLIENT_CSEQ' => $integerType,
 			'CURLINFO_RTSP_CSEQ_RECV' => $integerType,
@@ -158,7 +158,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 		$integerType = new IntegerType();
 		$floatType = new FloatType();
 		$stringOrNullType = TypeCombinator::union($stringType, new NullType());
-		$integerStringArrayType = new ArrayType($integerType, $stringType);
+		$nestedStringStringArrayType = new ArrayType($integerType, new ArrayType($stringType, $stringType));
 
 		$componentTypesPairedStrings = [
 			'url' => $stringType,
@@ -183,7 +183,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			'redirect_time' => $floatType,
 			'redirect_url' => $stringType,
 			'primary_ip' => $stringType,
-			'certinfo' => $integerStringArrayType,
+			'certinfo' => $nestedStringStringArrayType,
 			'primary_port' => $integerType,
 			'local_ip' => $stringType,
 			'local_port' => $integerType,

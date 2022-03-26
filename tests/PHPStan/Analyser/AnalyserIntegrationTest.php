@@ -601,6 +601,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug6842(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6842.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Generator expects value type T of DateTimeInterface, DateTime|DateTimeImmutable|T of DateTimeInterface given.', $errors[0]->getMessage());
+		$this->assertSame(28, $errors[0]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

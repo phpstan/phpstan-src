@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -237,12 +236,6 @@ trait TemplateTypeTrait
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
-		if (!$receivedType instanceof TemplateType && ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType)) {
-			if (!$receivedType instanceof IntersectionType || $this->shouldInferTemplatesOn($receivedType)) {
-				return $receivedType->inferTemplateTypesOn($this);
-			}
-		}
-
 		if (
 			$receivedType instanceof TemplateType
 			&& $this->getBound()->isSuperTypeOf($receivedType->getBound())->yes()
@@ -271,17 +264,6 @@ trait TemplateTypeTrait
 	public function getVariance(): TemplateTypeVariance
 	{
 		return $this->variance;
-	}
-
-	private function shouldInferTemplatesOn(IntersectionType $type): bool
-	{
-		foreach ($type->getTypes() as $innerType) {
-			if ($innerType instanceof AccessoryType) {
-				return false;
-			}
-		}
-
-		return false;
 	}
 
 	protected function shouldGeneralizeInferredType(): bool

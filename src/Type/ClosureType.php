@@ -320,7 +320,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
-		if ($receivedType instanceof UnionType) {
+		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 

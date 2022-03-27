@@ -68,7 +68,7 @@ class ProcessPromise implements Runnable
 			fclose($tmpStdErrResource);
 
 			if ($exitCode === null) {
-				$this->deferred->reject(new ProcessCrashedException($stdOut . $stdErr));
+				$this->deferred->reject(new ProcessCrashedException($exitCode, $stdOut, $stdErr));
 				return;
 			}
 
@@ -77,7 +77,7 @@ class ProcessPromise implements Runnable
 				return;
 			}
 
-			$this->deferred->reject(new ProcessCrashedException($stdOut . $stdErr));
+			$this->deferred->reject(new ProcessCrashedException($exitCode, $stdOut, $stdErr));
 		});
 
 		/** @var ExtendedPromiseInterface&CancellablePromiseInterface */

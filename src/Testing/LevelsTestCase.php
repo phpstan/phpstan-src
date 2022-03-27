@@ -6,10 +6,18 @@ use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileWriter;
+use PHPStan\Process\CpuCoreCounter;
+use PHPStan\Process\ProcessCrashedException;
+use PHPStan\Process\ProcessPromise;
+use PHPStan\Process\Runnable\RunnableQueue;
+use PHPStan\Process\Runnable\RunnableQueueLogger;
 use PHPStan\ShouldNotHappenException;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
+use React\EventLoop\StreamSelectLoop;
+use React\Promise\Deferred;
 use function array_merge;
+use function Clue\React\Block\await;
 use function count;
 use function escapeshellarg;
 use function escapeshellcmd;
@@ -17,6 +25,7 @@ use function exec;
 use function implode;
 use function method_exists;
 use function range;
+use function React\Promise\all;
 use function sprintf;
 use function unlink;
 use const DIRECTORY_SEPARATOR;
@@ -68,12 +77,39 @@ abstract class LevelsTestCase extends TestCase
 			throw new ShouldNotHappenException('Could not clear result cache: ' . implode("\n", $clearResultCacheOutputLines));
 		}
 
+		$loop = new StreamSelectLoop();
+		$cpuCoreCounter = new CpuCoreCounter();
+		$queue = new RunnableQueue(new class implements RunnableQueueLogger {
+
+			public function log(string $message): void
+			{
+			}
+
+		}, $cpuCoreCounter->getNumberOfCpuCores());
+		$promises = [];
 		foreach (range(0, 9) as $level) {
-			unset($outputLines);
-			exec(sprintf('%s %s analyse --no-progress --error-format=prettyJson --level=%d %s %s %s', escapeshellarg(PHP_BINARY), $command, $level, $configPath !== null ? '--configuration ' . escapeshellarg($configPath) : '', $this->shouldAutoloadAnalysedFile() ? sprintf('--autoload-file %s', escapeshellarg($file)) : '', escapeshellarg($file)), $outputLines);
+			$process = new ProcessPromise($loop, 'level-' . $level, sprintf('%s %s analyse --no-progress --error-format=prettyJson --level=%d %s %s %s', escapeshellarg(PHP_BINARY), $command, $level, $configPath !== null ? '--configuration ' . escapeshellarg($configPath) : '', $this->shouldAutoloadAnalysedFile() ? sprintf('--autoload-file %s', escapeshellarg($file)) : '', escapeshellarg($file)));
+			$deferred = new Deferred();
+			$queue->queue($process, 1)->then(static function (string $output) use ($deferred): void {
+				$deferred->resolve($output);
+			}, static function (ProcessCrashedException $crash) use ($deferred): void {
+				$exitCode = $crash->getExitCode();
+				if ($exitCode !== 1) {
+					$deferred->reject($crash);
+				}
+				try {
+					Json::decode($crash->getStdOut());
+				} catch (JsonException) {
+					$deferred->reject($crash);
+					return;
+				}
 
-			$output = implode("\n", $outputLines);
+				$deferred->resolve($crash->getStdOut());
+			});
+			$promises[$level] = $deferred->promise();
+		}
 
+		foreach (await(all($promises), $loop) as $level => $output) {
 			try {
 				$actualJson = Json::decode($output, Json::FORCE_ARRAY);
 			} catch (JsonException) {

@@ -6,7 +6,7 @@ tests:
 	php vendor/bin/paratest --runner WrapperRunner --no-coverage
 
 tests-integration:
-	php vendor/bin/paratest --runner WrapperRunner --no-coverage --group exec
+	php vendor/bin/phpunit --no-coverage --group exec
 
 tests-static-reflection:
 	php vendor/bin/paratest --runner WrapperRunner --no-coverage --bootstrap tests/bootstrap-static-reflection.php

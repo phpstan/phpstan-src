@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4537cd3f3811dac40b7aa6575c60a8e1",
+    "content-hash": "5cb7bd74efb3a11aee3db0db1c31f56d",
     "packages": [
         {
             "name": "clue/block-react",
@@ -7308,5 +7308,5 @@
     "platform-overrides": {
         "php": "8.0.99"
     },
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.2.0"
 }

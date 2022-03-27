@@ -6,7 +6,7 @@
 	],
 	"require": {
 		"php": "^8.0",
-		"clue/block-react": "^1.4",
+		"clue/block-react": "^1.5",
 		"clue/ndjson-react": "^1.0",
 		"composer/ca-bundle": "^1.2",
 		"composer/xdebug-handler": "^3.0.3",

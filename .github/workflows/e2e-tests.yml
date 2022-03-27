@@ -41,8 +41,25 @@ jobs:
           extensions: mbstring
           ini-values: memory_limit=256M
 
+      - name: "Install WSL"
+        if: matrix.operating-system == 'windows-latest'
+        uses: Vampire/setup-wsl@v1
+        with:
+          distribution: Ubuntu-20.04
+
       - name: "Install dependencies"
+        if: matrix.operating-system != 'windows-latest'
         run: "composer install --no-interaction --no-progress"
+
+      - name: "Install dependencies using WSL"
+        if: matrix.operating-system == 'windows-latest'
+        shell: wsl-bash {0}
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Dump autoloader after WSL"
+        if: matrix.operating-system == 'windows-latest'
+        shell: wsl-bash {0}
+        run: "composer dump-autoload"
 
       - name: "Tests"
         run: |

@@ -10,7 +10,6 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use function count;
 use function strtolower;
@@ -34,17 +33,14 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (count($node->getArgs()) < 2) {
+		if (!$context->truthy() || count($node->getArgs()) < 2) {
 			return new SpecifiedTypes();
 		}
+
 		$objectOrClassType = $scope->getType($node->getArgs()[0]->value);
 		$classType = $scope->getType($node->getArgs()[1]->value);
 		$allowStringType = isset($node->getArgs()[2]) ? $scope->getType($node->getArgs()[2]->value) : new ConstantBooleanType(true);
 		$allowString = !$allowStringType->equals(new ConstantBooleanType(false));
-
-		if (!$classType instanceof ConstantStringType && !$context->truthy()) {
-			return new SpecifiedTypes([], []);
-		}
 
 		return $this->typeSpecifier->create(
 			$node->getArgs()[0]->value,

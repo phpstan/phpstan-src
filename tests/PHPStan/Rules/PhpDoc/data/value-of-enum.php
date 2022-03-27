@@ -1,7 +1,5 @@
 <?php // lint >= 8.1
 
-declare(strict_types=1);
-
 namespace ValueOfEnumPhpdoc;
 
 enum Country: string

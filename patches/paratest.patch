@@ -1,8 +1,9 @@
-diff --git a/vendor/brianium/paratest/src/Runners/PHPUnit/Worker/BaseWorker.php b/vendor/brianium/paratest/src/Runners/PHPUnit/Worker/BaseWorker.php
-index f96dc0a..b038ee2 100644
---- a/vendor/brianium/paratest/src/Runners/PHPUnit/Worker/BaseWorker.php
-+++ b/vendor/brianium/paratest/src/Runners/PHPUnit/Worker/BaseWorker.php
-@@ -28,17 +28,18 @@ abstract class BaseWorker
+@package brianium/paratest
+@version ^4.0
+
+--- src/Runners/PHPUnit/Worker/BaseWorker.php	2020-02-07 23:07:07.000000000 +0100
++++ src/Runners/PHPUnit/Worker/BaseWorker.php	2022-03-27 17:35:45.000000000 +0200
+@@ -28,17 +28,18 @@
          array $parameters = [],
          ?Options $options = null
      ) {
@@ -26,7 +27,7 @@ index f96dc0a..b038ee2 100644
          if ($options && $options->passthruPhp) {
              $bin .= $options->passthruPhp . ' ';
          }
-@@ -50,7 +51,7 @@ abstract class BaseWorker
+@@ -50,7 +51,7 @@
          if ($options && $options->verbose) {
              echo "Starting WrapperWorker via: $bin\n";
          }

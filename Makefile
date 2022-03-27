@@ -3,19 +3,19 @@
 build: cs tests phpstan
 
 tests:
-	php vendor/bin/paratest --no-coverage
+	php vendor/bin/paratest --runner WrapperRunner --no-coverage
 
 tests-integration:
-	php vendor/bin/paratest --no-coverage --group exec
+	php vendor/bin/paratest --runner WrapperRunner --no-coverage --group exec
 
 tests-static-reflection:
-	php vendor/bin/paratest --no-coverage --bootstrap tests/bootstrap-static-reflection.php
+	php vendor/bin/paratest --runner WrapperRunner --no-coverage --bootstrap tests/bootstrap-static-reflection.php
 
 tests-coverage:
-	php vendor/bin/paratest
+	php vendor/bin/paratest --runner WrapperRunner
 
 tests-static-reflection-coverage:
-	php vendor/bin/paratest --bootstrap tests/bootstrap-static-reflection.php
+	php vendor/bin/paratest --runner WrapperRunner --bootstrap tests/bootstrap-static-reflection.php
 
 lint:
 	php vendor/bin/parallel-lint --colors \

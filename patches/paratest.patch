@@ -1,0 +1,38 @@
+@package brianium/paratest
+@version ^4.0
+
+--- src/Runners/PHPUnit/Worker/BaseWorker.php	2020-02-07 23:07:07.000000000 +0100
++++ src/Runners/PHPUnit/Worker/BaseWorker.php	2022-03-27 17:35:45.000000000 +0200
+@@ -28,17 +28,18 @@
+         array $parameters = [],
+         ?Options $options = null
+     ) {
+-        $bin = 'PARATEST=1 ';
++        $env = getenv();
++        $env['PARATEST'] = 1;
+         if (\is_numeric($token)) {
+-            $bin .= 'XDEBUG_CONFIG="true" ';
+-            $bin .= "TEST_TOKEN=$token ";
++            $env['XDEBUG_CONFIG'] = 'true';
++            $env['TEST_TOKEN'] = $token;
+         }
+         if ($uniqueToken) {
+-            $bin .= "UNIQUE_TEST_TOKEN=$uniqueToken ";
++            $env['UNIQUE_TEST_TOKEN'] = $uniqueToken;
+         }
+         $finder = new PhpExecutableFinder();
+         $phpExecutable = $finder->find();
+-        $bin .= "$phpExecutable ";
++        $bin = "$phpExecutable ";
+         if ($options && $options->passthruPhp) {
+             $bin .= $options->passthruPhp . ' ';
+         }
+@@ -50,7 +51,7 @@
+         if ($options && $options->verbose) {
+             echo "Starting WrapperWorker via: $bin\n";
+         }
+-        $process = \proc_open($bin, self::$descriptorspec, $pipes);
++        $process = \proc_open($bin, self::$descriptorspec, $pipes, null, $env);
+         $this->proc = \is_resource($process) ? $process : null;
+         $this->pipes = $pipes;
+     }

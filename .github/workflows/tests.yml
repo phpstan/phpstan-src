@@ -47,6 +47,21 @@ jobs:
           extensions: ds,mbstring
           ini-values: memory_limit=1G
 
+      - name: Get Composer Cache Directory
+        if: matrix.operating-system == 'windows-latest'
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - uses: actions/cache@v3
+        name: "Cache Composer Dependencies"
+        if: matrix.operating-system == 'windows-latest'
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-tests-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
@@ -115,6 +130,21 @@ jobs:
           extensions: ds,mbstring
           ini-values: memory_limit=1G
 
+      - name: Get Composer Cache Directory
+        if: matrix.operating-system == 'windows-latest'
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - uses: actions/cache@v3
+        name: "Cache Composer Dependencies"
+        if: matrix.operating-system == 'windows-latest'
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-tests-integration-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
@@ -148,6 +178,21 @@ jobs:
           tools: pecl
           extensions: ds,mbstring
           ini-values: memory_limit=1G
+
+      - name: Get Composer Cache Directory
+        if: matrix.operating-system == 'windows-latest'
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - uses: actions/cache@v3
+        name: "Cache Composer Dependencies"
+        if: matrix.operating-system == 'windows-latest'
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-tests-old${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"

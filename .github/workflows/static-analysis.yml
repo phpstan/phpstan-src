@@ -46,6 +46,21 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           extensions: mbstring
 
+      - name: Get Composer Cache Directory
+        if: matrix.operating-system == 'windows-latest'
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - uses: actions/cache@v3
+        name: "Cache Composer Dependencies"
+        if: matrix.operating-system == 'windows-latest'
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-sa-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 

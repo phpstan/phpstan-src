@@ -6,17 +6,20 @@ use InvalidArgumentException;
 use Nette\Utils\Random;
 use PHPStan\File\FileWriter;
 use PHPStan\ShouldNotHappenException;
+use Throwable;
 use function clearstatcache;
 use function error_get_last;
+use function file_get_contents;
 use function is_dir;
 use function is_file;
 use function mkdir;
 use function rename;
+use function serialize;
 use function sha1;
 use function sprintf;
 use function substr;
 use function unlink;
-use function var_export;
+use function unserialize;
 use const DIRECTORY_SEPARATOR;
 
 class FileCacheStorage implements CacheStorage
@@ -56,7 +59,12 @@ class FileCacheStorage implements CacheStorage
 				return null;
 			}
 
-			$cacheItem = require $filePath;
+			$data = file_get_contents($filePath);
+			if ($data === false) {
+				return null;
+			}
+
+			$cacheItem = @unserialize($data, ['allowed_classes' => false]);
 			if (!$cacheItem instanceof CacheItem) {
 				return null;
 			}
@@ -79,19 +87,12 @@ class FileCacheStorage implements CacheStorage
 		$this->makeDir($secondDirectory);
 
 		$tmpPath = sprintf('%s/%s.tmp', $this->directory, Random::generate());
-		$errorBefore = error_get_last();
-		$exported = @var_export(new CacheItem($variableKey, $data), true);
-		$errorAfter = error_get_last();
-		if ($errorAfter !== null && $errorBefore !== $errorAfter) {
-			throw new ShouldNotHappenException(sprintf('Error occurred while saving item %s (%s) to cache: %s', $key, $variableKey, $errorAfter['message']));
+		try {
+			$exported = serialize(new CacheItem($variableKey, $data));
+		} catch (Throwable $t) {
+			throw new ShouldNotHappenException(sprintf('Error occurred while saving item %s (%s) to cache: %s', $key, $variableKey, $t->getMessage()));
 		}
-		FileWriter::write(
-			$tmpPath,
-			sprintf(
-				"<?php declare(strict_types = 1);\n\nreturn %s;",
-				$exported,
-			),
-		);
+		FileWriter::write($tmpPath, $exported);
 
 		$renameSuccess = @rename($tmpPath, $path);
 		if ($renameSuccess) {

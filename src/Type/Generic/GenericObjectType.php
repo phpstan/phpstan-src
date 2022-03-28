@@ -318,4 +318,16 @@ class GenericObjectType extends ObjectType
 		);
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
+	public function __serialize(): array
+	{
+		return [
+			'className' => $this->getClassName(),
+			'types' => $this->types,
+			'subtractedType' => $this->getSubtractedType(),
+		];
+	}
+
 }

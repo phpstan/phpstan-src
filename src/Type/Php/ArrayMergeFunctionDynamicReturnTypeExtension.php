@@ -9,6 +9,9 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\NeverType;
@@ -44,7 +47,7 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 				}
 			}
 
-			$keyTypes[] = $argType->getIterableKeyType()->generalize(GeneralizePrecision::moreSpecific());
+			$keyTypes[] = $argType->getIterableKeyType();
 			$valueTypes[] = $argType->getIterableValueType();
 
 			if (!$argType->isIterableAtLeastOnce()->yes()) {

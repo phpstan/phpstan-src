@@ -2480,4 +2480,28 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+
+	public function testBug6904(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6904.php'], []);
+	}
+
+
+	public function testBug6917(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6917.php'], []);
+	}
+
 }

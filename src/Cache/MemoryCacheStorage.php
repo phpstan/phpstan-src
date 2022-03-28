@@ -2,6 +2,8 @@
 
 namespace PHPStan\Cache;
 
+use function var_export;
+
 class MemoryCacheStorage implements CacheStorage
 {
 
@@ -30,7 +32,9 @@ class MemoryCacheStorage implements CacheStorage
 	 */
 	public function save(string $key, string $variableKey, $data): void
 	{
-		$this->storage[$key] = new CacheItem($variableKey, $data);
+		$item = new CacheItem($variableKey, $data);
+		@var_export($item, true);
+		$this->storage[$key] = $item;
 	}
 
 }

@@ -29,6 +29,7 @@ parameters:
 			- RecursiveCallbackFilterIterator
 		explicitMixedInUnknownGenericNew: false
 		arrayFilter: false
+		arrayUnpacking: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -207,6 +208,7 @@ parametersSchema:
 		skipCheckGenericClasses: listOf(string()),
 		explicitMixedInUnknownGenericNew: bool(),
 		arrayFilter: bool(),
+		arrayUnpacking: bool(),
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

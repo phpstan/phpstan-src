@@ -1,6 +1,10 @@
 includes:
 	- config.level2.neon
 
+conditionalTags:
+	PHPStan\Rules\Arrays\ArrayUnpackingRule:
+		phpstan.rules.rule: %featureToggles.arrayUnpacking%
+
 rules:
 	- PHPStan\Rules\Arrays\ArrayDestructuringRule
 	- PHPStan\Rules\Arrays\IterableInForeachRule
@@ -74,3 +78,6 @@ services:
 			reportMaybes: %reportMaybes%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Arrays\ArrayUnpackingRule

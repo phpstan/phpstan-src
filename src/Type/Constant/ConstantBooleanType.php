@@ -90,4 +90,12 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 		return new ConstantFloatType((float) $this->value);
 	}
 
+	/**
+	 * @param mixed[] $properties
+	 */
+	public static function __set_state(array $properties): Type
+	{
+		return new self($properties['value']);
+	}
+
 }

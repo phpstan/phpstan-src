@@ -436,4 +436,15 @@ class MixedType implements CompoundType, SubtractableType
 		return null;
 	}
 
+	/**
+	 * @param mixed[] $properties
+	 */
+	public static function __set_state(array $properties): Type
+	{
+		return new self(
+			$properties['isExplicitMixed'],
+			$properties['subtractedType'] ?? null,
+		);
+	}
+
 }

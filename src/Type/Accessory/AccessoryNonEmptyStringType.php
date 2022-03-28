@@ -188,4 +188,9 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		return new StringType();
 	}
 
+	public static function __set_state(array $properties): Type
+	{
+		return new self();
+	}
+
 }

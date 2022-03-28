@@ -156,4 +156,19 @@ class NameScope
 		return array_key_exists($alias, $this->typeAliasesMap);
 	}
 
+	/**
+	 * @param mixed[] $properties
+	 */
+	public static function __set_state(array $properties): self
+	{
+		return new self(
+			$properties['namespace'],
+			$properties['uses'],
+			$properties['className'],
+			$properties['functionName'],
+			$properties['templateTypeMap'],
+			$properties['typeAliasesMap'],
+		);
+	}
+
 }

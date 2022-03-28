@@ -657,6 +657,14 @@ class UnionType implements CompoundType
 	}
 
 	/**
+	 * @param mixed[] $properties
+	 */
+	public static function __set_state(array $properties): Type
+	{
+		return new self($properties['types']);
+	}
+
+	/**
 	 * @param callable(Type $type): TrinaryLogic $getResult
 	 */
 	protected function unionResults(callable $getResult): TrinaryLogic

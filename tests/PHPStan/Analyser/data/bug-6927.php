@@ -38,4 +38,16 @@ class Foo
 
 		assertType('array<string, string>', $params2);
 	}
+
+	/**
+	 * @param array<literal-string&non-empty-string, string> $params1
+	 * @param array<non-empty-string, string> $params2
+	 */
+	function foo4(array $params1, array $params2): void
+	{
+		$params2 = array_merge($params1, $params2);
+
+		assertType('array<non-empty-string, string>', $params2);
+	}
+
 }

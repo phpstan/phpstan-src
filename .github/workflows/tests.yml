@@ -131,7 +131,7 @@ jobs:
       matrix:
         php-version:
           - "7.2"
-        operating-system: [ ubuntu-latest, windows-latest ]
+        operating-system: [ ubuntu-latest ]
         script:
           - "make tests-coverage"
           - "make tests-static-reflection-coverage"

@@ -6,10 +6,10 @@ on:
   pull_request:
   push:
     branches:
-      - "1.5.x"
+      - "1.6.x"
 
 env:
-  COMPOSER_ROOT_VERSION: "1.5.x-dev"
+  COMPOSER_ROOT_VERSION: "1.6.x-dev"
 
 jobs:
   backward-compatibility:

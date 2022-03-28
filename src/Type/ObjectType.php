@@ -974,17 +974,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return TrinaryLogic::createYes();
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['className'],
-			$properties['subtractedType'] ?? null,
-		);
-	}
-
 	public function isInstanceOf(string $className): TrinaryLogic
 	{
 		$classReflection = $this->getClassReflection();

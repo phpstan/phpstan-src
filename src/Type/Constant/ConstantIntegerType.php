@@ -78,12 +78,4 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 		return new ConstantStringType((string) $this->value);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self($properties['value']);
-	}
-
 }

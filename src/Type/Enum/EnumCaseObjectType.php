@@ -132,12 +132,4 @@ class EnumCaseObjectType extends ObjectType
 		return new parent($this->getClassName(), null, $this->getClassReflection());
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self($properties['className'], $properties['enumCaseName'], null);
-	}
-
 }

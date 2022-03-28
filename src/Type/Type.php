@@ -159,9 +159,4 @@ interface Type
 
 	public function generalize(GeneralizePrecision $precision): Type;
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): self;
-
 }

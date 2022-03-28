@@ -306,16 +306,4 @@ class GenericObjectType extends ObjectType
 		return new self($this->getClassName(), $this->types, $subtractedType);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['className'],
-			$properties['types'],
-			$properties['subtractedType'] ?? null,
-		);
-	}
-
 }

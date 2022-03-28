@@ -40,12 +40,4 @@ class TemplateTypeArgumentStrategy implements TemplateTypeStrategy
 		return true;
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self();
-	}
-
 }

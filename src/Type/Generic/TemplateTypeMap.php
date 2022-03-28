@@ -211,15 +211,4 @@ class TemplateTypeMap
 		return $this->resolvedToBounds = $this->map(static fn (string $name, Type $type): Type => TemplateTypeHelper::resolveToBounds($type));
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['types'],
-			$properties['lowerBoundTypes'] ?? [],
-		);
-	}
-
 }

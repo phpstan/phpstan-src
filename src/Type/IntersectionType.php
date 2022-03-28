@@ -569,6 +569,14 @@ class IntersectionType implements CompoundType
 	}
 
 	/**
+	 * @param mixed[] $properties
+	 */
+	public static function __set_state(array $properties): Type
+	{
+		return new self($properties['types']);
+	}
+
+	/**
 	 * @param callable(Type $type): TrinaryLogic $getResult
 	 */
 	private function intersectResults(callable $getResult): TrinaryLogic

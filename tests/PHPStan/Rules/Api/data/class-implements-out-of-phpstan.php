@@ -301,6 +301,12 @@ class Baz implements Type
 		// TODO: Implement tryRemove() method.
 	}
 
+	public static function __set_state(array $properties): \PHPStan\Type\Type
+	{
+		// TODO: Implement __set_state() method.
+	}
+
+
 }
 
 abstract class Dolor implements ReflectionProvider

@@ -407,4 +407,18 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return TrinaryLogic::createNo();
 	}
 
+	/**
+	 * @param mixed[] $properties
+	 */
+	public static function __set_state(array $properties): Type
+	{
+		return new self(
+			$properties['parameters'],
+			$properties['returnType'],
+			$properties['variadic'],
+			$properties['templateTypeMap'],
+			$properties['resolvedTemplateTypeMap'],
+		);
+	}
+
 }

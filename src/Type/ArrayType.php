@@ -363,7 +363,7 @@ class ArrayType implements Type
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
-		if ($receivedType instanceof UnionType) {
+		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 

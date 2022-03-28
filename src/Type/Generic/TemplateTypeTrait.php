@@ -236,10 +236,6 @@ trait TemplateTypeTrait
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
-		if (!$receivedType instanceof TemplateType && $receivedType instanceof UnionType) {
-			return $receivedType->inferTemplateTypesOn($this);
-		}
-
 		if (
 			$receivedType instanceof TemplateType
 			&& $this->getBound()->isSuperTypeOf($receivedType->getBound())->yes()

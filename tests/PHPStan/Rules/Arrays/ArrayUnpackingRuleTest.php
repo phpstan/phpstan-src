@@ -82,12 +82,24 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testRuleOnPHP81(): void
+	public function dataRuleOnPHP81(): array
+	{
+		return [
+			[true],
+			[false],
+		];
+	}
+
+	/**
+	 * @dataProvider dataRuleOnPHP81
+	 */
+	public function testRuleOnPHP81(bool $checkUnions): void
 	{
 		if (PHP_VERSION_ID < 80100) {
 			$this->markTestSkipped('Test requires PHP 8.1+');
 		}
 
+		$this->checkUnions = $checkUnions;
 		$this->analyse([__DIR__ . '/data/array-unpacking.php'], []);
 	}
 

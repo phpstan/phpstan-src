@@ -26,7 +26,6 @@ use stdClass;
 use function constant;
 use function is_bool;
 use function json_decode;
-use const JSON_OBJECT_AS_ARRAY;
 
 class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -138,8 +137,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 
 				// @see https://www.php.net/manual/en/json.constants.php#constant.json-object-as-array
 				$thirdArgValue = $args[3]->value;
-				$resolvedThirdArgValue = $this->resolveMaskValue($thirdArgValue, $scope);
-				if (($resolvedThirdArgValue & JSON_OBJECT_AS_ARRAY) !== 0) {
+				if ($this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($thirdArgValue, $scope, 'JSON_OBJECT_AS_ARRAY')->yes()) {
 					return true;
 				}
 			}

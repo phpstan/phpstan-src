@@ -403,12 +403,4 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self($properties['value'], $properties['isClassString'] ?? false);
-	}
-
 }

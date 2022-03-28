@@ -165,12 +165,4 @@ class TemplateTypeVariance
 		throw new ShouldNotHappenException();
 	}
 
-	/**
-	 * @param array{value: int} $properties
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self($properties['value']);
-	}
-
 }

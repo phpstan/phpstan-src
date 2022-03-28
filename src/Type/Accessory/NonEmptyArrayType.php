@@ -191,9 +191,4 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
-	public static function __set_state(array $properties): Type
-	{
-		return new self();
-	}
-
 }

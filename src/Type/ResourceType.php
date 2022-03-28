@@ -68,12 +68,4 @@ class ResourceType implements Type
 		);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self();
-	}
-
 }

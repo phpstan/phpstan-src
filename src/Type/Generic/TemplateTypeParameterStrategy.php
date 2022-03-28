@@ -26,12 +26,4 @@ class TemplateTypeParameterStrategy implements TemplateTypeStrategy
 		return false;
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self();
-	}
-
 }

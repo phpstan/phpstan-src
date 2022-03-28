@@ -121,7 +121,7 @@ class FileTypeMapper
 	private function createResolvedPhpDocBlock(string $phpDocKey, NameScope $nameScope, string $phpDocString, string $fileName): ResolvedPhpDocBlock
 	{
 		$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
-		if ($this->resolvedPhpDocBlockCacheCount >= 512) {
+		if ($this->resolvedPhpDocBlockCacheCount >= 2048) {
 			$this->resolvedPhpDocBlockCache = array_slice(
 				$this->resolvedPhpDocBlockCache,
 				1,
@@ -169,7 +169,7 @@ class FileTypeMapper
 	{
 		if (!isset($this->memoryCache[$fileName])) {
 			$map = $this->createResolvedPhpDocMap($fileName);
-			if ($this->memoryCacheCount >= 512) {
+			if ($this->memoryCacheCount >= 2048) {
 				$this->memoryCache = array_slice(
 					$this->memoryCache,
 					1,

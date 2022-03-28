@@ -27,7 +27,7 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 	public function testRule(): void
 	{
 		if (PHP_VERSION_ID >= 80100) {
-			$this->markTestSkipped('Test requires PHP version <= 8.0');
+			$this->markTestSkipped('Test requires PHP version >= 8.1');
 		}
 
 		$this->checkUnions = true;
@@ -66,7 +66,7 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 	public function testRuleDoNotCheckUnions(): void
 	{
 		if (PHP_VERSION_ID >= 80100) {
-			$this->markTestSkipped('Test requires PHP version <= 8.0');
+			$this->markTestSkipped('Test requires PHP version >= 8.1');
 		}
 
 		$this->checkUnions = false;
@@ -85,7 +85,7 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 	public function testRuleOnPHP81(): void
 	{
 		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1+');
+			$this->markTestSkipped('Test requires PHP version >= 8.1');
 		}
 
 		$this->analyse([__DIR__ . '/data/array-unpacking.php'], []);

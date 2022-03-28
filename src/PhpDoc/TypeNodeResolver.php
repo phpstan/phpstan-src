@@ -20,6 +20,8 @@ use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
+use PHPStan\PhpDocParser\Ast\Type\ConditionalTypeForParameterNode;
+use PHPStan\PhpDocParser\Ast\Type\ConditionalTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -120,6 +122,9 @@ class TypeNodeResolver
 
 		} elseif ($typeNode instanceof IntersectionTypeNode) {
 			return $this->resolveIntersectionTypeNode($typeNode, $nameScope);
+
+		} elseif ($typeNode instanceof ConditionalTypeNode || $typeNode instanceof ConditionalTypeForParameterNode) {
+			return $this->resolveConditionalTypeNode($typeNode, $nameScope);
 
 		} elseif ($typeNode instanceof ArrayTypeNode) {
 			return $this->resolveArrayTypeNode($typeNode, $nameScope);
@@ -436,6 +441,12 @@ class TypeNodeResolver
 	{
 		$types = $this->resolveMultiple($typeNode->types, $nameScope);
 		return TypeCombinator::intersect(...$types);
+	}
+
+	private function resolveConditionalTypeNode(ConditionalTypeNode|ConditionalTypeForParameterNode $typeNode, NameScope $nameScope): Type
+	{
+		$types = $this->resolveMultiple([$typeNode->if, $typeNode->else], $nameScope);
+		return TypeCombinator::union(...$types);
 	}
 
 	private function resolveArrayTypeNode(ArrayTypeNode $typeNode, NameScope $nameScope): Type

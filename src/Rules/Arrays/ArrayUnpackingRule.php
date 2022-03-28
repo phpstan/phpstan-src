@@ -9,6 +9,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\StringType;
+use PHPStan\Type\VerbosityLevel;
 
 /**
  * @implements Rule<ArrayItem>
@@ -32,12 +33,19 @@ class ArrayUnpackingRule implements Rule
 		}
 
 		$valueType = $scope->getType($node->value);
+		$isString = (new StringType())->isSuperTypeOf($valueType->getIterableKeyType());
 
-		if ((new StringType())->isSuperTypeOf($valueType->getIterableKeyType())->no()) {
+		if ($isString->no()) {
 			return [];
 		}
 
-		return [RuleErrorBuilder::message('Array unpacking cannot be used on array that potentially has string keys.')->build()];
+		return [
+			RuleErrorBuilder::message(sprintf(
+				'Array unpacking cannot be used on an array with %sstring keys: %s',
+				$isString->yes() ? '' : 'potential ',
+				$valueType->describe(VerbosityLevel::value()),
+			))->build()
+		];
 	}
 
 }

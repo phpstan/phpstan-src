@@ -26,31 +26,31 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/array-unpacking.php'], [
 			[
-				'Array unpacking cannot be used on array that potentially has string keys.',
+				'Array unpacking cannot be used on an array with potential string keys: array{foo: \'bar\', 0: 1, 1: 2, 2: 3}',
 				7,
 			],
 			[
-				'Array unpacking cannot be used on array that potentially has string keys.',
+				'Array unpacking cannot be used on an array with string keys: array<string, string>',
 				18,
 			],
 			[
-				'Array unpacking cannot be used on array that potentially has string keys.',
+				'Array unpacking cannot be used on an array with potential string keys: array<string>',
 				24,
 			],
 			[
-				'Array unpacking cannot be used on array that potentially has string keys.',
+				'Array unpacking cannot be used on an array with potential string keys: array',
 				29,
 			],
 			[
-				'Array unpacking cannot be used on array that potentially has string keys.',
+				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
 				40,
 			],
 			[
-				'Array unpacking cannot be used on array that potentially has string keys.',
+				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
 				52,
 			],
 			[
-				'Array unpacking cannot be used on array that potentially has string keys.',
+				'Array unpacking cannot be used on an array with string keys: array{foo: string, bar: int}',
 				63,
 			],
 		]);

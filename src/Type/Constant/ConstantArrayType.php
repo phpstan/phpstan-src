@@ -1712,12 +1712,4 @@ class ConstantArrayType implements Type
 		return $finiteTypes;
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self($properties['keyTypes'], $properties['valueTypes'], $properties['nextAutoIndexes'] ?? $properties['nextAutoIndex'], $properties['optionalKeys'] ?? [], $properties['isList'] ?? TrinaryLogic::createNo());
-	}
-
 }

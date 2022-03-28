@@ -91,14 +91,4 @@ class KeyOfType implements CompoundType, LateResolvableType
 		return new GenericTypeNode(new IdentifierTypeNode('key-of'), [$this->type->toPhpDocNode()]);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['type'],
-		);
-	}
-
 }

@@ -100,14 +100,4 @@ final class ValueOfType implements CompoundType, LateResolvableType
 		return new GenericTypeNode(new IdentifierTypeNode('value-of'), [$this->type->toPhpDocNode()]);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['type'],
-		);
-	}
-
 }

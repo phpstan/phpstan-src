@@ -527,12 +527,4 @@ class ObjectShapeType implements Type
 		return new ObjectShapeNode($items);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self($properties['properties'], $properties['optionalProperties']);
-	}
-
 }

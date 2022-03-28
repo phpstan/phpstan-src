@@ -351,18 +351,4 @@ trait TemplateTypeTrait
 		return new IdentifierTypeNode($this->name);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['scope'],
-			$properties['strategy'],
-			$properties['variance'],
-			$properties['name'],
-			$properties['bound'],
-		);
-	}
-
 }

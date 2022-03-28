@@ -76,12 +76,4 @@ final class PassedByReference
 		return $this;
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self($properties['value']);
-	}
-
 }

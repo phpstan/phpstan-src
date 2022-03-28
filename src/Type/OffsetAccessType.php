@@ -114,15 +114,4 @@ final class OffsetAccessType implements CompoundType, LateResolvableType
 		);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['type'],
-			$properties['offset'],
-		);
-	}
-
 }

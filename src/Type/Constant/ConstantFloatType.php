@@ -100,12 +100,4 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 		return new ConstTypeNode(new ConstExprFloatNode($this->castFloatToString($this->value)));
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self($properties['value']);
-	}
-
 }

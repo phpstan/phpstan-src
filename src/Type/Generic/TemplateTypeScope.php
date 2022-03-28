@@ -68,15 +68,4 @@ final class TemplateTypeScope
 		return sprintf('method %s::%s()', $this->className, $this->functionName);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['className'],
-			$properties['functionName'],
-		);
-	}
-
 }

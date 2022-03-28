@@ -472,11 +472,6 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
-	public static function __set_state(array $properties): Type
-	{
-		return new self();
-	}
-
 	public function exponentiate(Type $exponent): Type
 	{
 		return new ErrorType();

@@ -195,14 +195,6 @@ class GenericClassStringType extends ClassStringType
 		return true;
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self($properties['type']);
-	}
-
 	public function toPhpDocNode(): TypeNode
 	{
 		return new GenericTypeNode(

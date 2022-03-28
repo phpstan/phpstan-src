@@ -230,12 +230,4 @@ class ObjectWithoutClassType implements SubtractableType
 		return new IdentifierTypeNode('object');
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self($properties['subtractedType'] ?? null);
-	}
-
 }

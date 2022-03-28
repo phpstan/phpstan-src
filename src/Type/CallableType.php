@@ -680,20 +680,4 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			(bool) $properties['isCommonCallable'] ? null : $properties['parameters'],
-			(bool) $properties['isCommonCallable'] ? null : $properties['returnType'],
-			$properties['variadic'],
-			$properties['templateTypeMap'],
-			$properties['resolvedTemplateTypeMap'],
-			$properties['templateTags'],
-			$properties['isPure'],
-		);
-	}
-
 }

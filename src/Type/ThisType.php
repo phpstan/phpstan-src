@@ -5,7 +5,6 @@ namespace PHPStan\Type;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use function sprintf;
 
@@ -85,19 +84,6 @@ class ThisType extends StaticType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new ThisTypeNode();
-	}
-
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-		if ($reflectionProvider->hasClass($properties['baseClass'])) {
-			return new self($reflectionProvider->getClass($properties['baseClass']), $properties['subtractedType'] ?? null);
-		}
-
-		return new ErrorType();
 	}
 
 }

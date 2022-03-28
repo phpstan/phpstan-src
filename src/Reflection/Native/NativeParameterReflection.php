@@ -63,19 +63,4 @@ final class NativeParameterReflection implements ParameterReflection
 		);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['name'],
-			$properties['optional'],
-			$properties['type'],
-			$properties['passedByReference'],
-			$properties['variadic'],
-			$properties['defaultValue'],
-		);
-	}
-
 }

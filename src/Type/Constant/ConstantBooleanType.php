@@ -127,14 +127,6 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 		return new IdentifierTypeNode($this->value ? 'true' : 'false');
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self($properties['value']);
-	}
-
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType
 	{
 		if ($type->isObject()->yes()) {

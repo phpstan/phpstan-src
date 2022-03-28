@@ -94,12 +94,4 @@ class ClassStringType extends StringType
 		return new IdentifierTypeNode('class-string');
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self();
-	}
-
 }

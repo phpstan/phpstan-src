@@ -346,11 +346,6 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		return new StringType();
 	}
 
-	public static function __set_state(array $properties): Type
-	{
-		return new self();
-	}
-
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '0') {

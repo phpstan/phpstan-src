@@ -10,7 +10,6 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
-use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -735,19 +734,6 @@ class StaticType implements TypeWithClassName, SubtractableType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('static');
-	}
-
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-		if ($reflectionProvider->hasClass($properties['baseClass'])) {
-			return new self($reflectionProvider->getClass($properties['baseClass']), $properties['subtractedType'] ?? null);
-		}
-
-		return new ErrorType();
 	}
 
 }

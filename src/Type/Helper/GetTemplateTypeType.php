@@ -103,16 +103,4 @@ final class GetTemplateTypeType implements CompoundType, LateResolvableType
 		);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['type'],
-			$properties['ancestorClassName'],
-			$properties['templateTypeName'],
-		);
-	}
-
 }

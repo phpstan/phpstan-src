@@ -402,11 +402,6 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return [];
 	}
 
-	public static function __set_state(array $properties): Type
-	{
-		return new self($properties['offsetType']);
-	}
-
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode(''); // no PHPDoc representation

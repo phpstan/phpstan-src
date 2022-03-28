@@ -175,18 +175,4 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 		);
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self(
-			$properties['parameterName'],
-			$properties['target'],
-			$properties['if'],
-			$properties['else'],
-			$properties['negated'],
-		);
-	}
-
 }

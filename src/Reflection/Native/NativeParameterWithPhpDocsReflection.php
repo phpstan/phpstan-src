@@ -81,24 +81,4 @@ final class NativeParameterWithPhpDocsReflection implements ParameterReflectionW
 		return $this->closureThisType;
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): self
-	{
-		return new self(
-			$properties['name'],
-			$properties['optional'],
-			$properties['type'],
-			$properties['phpDocType'],
-			$properties['nativeType'],
-			$properties['passedByReference'],
-			$properties['variadic'],
-			$properties['defaultValue'],
-			$properties['outType'],
-			$properties['immediatelyInvokedCallable'],
-			$properties['closureThisType'],
-		);
-	}
-
 }

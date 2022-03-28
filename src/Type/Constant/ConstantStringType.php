@@ -553,12 +553,4 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return new ConstTypeNode(new ConstExprStringNode($this->value, ConstExprStringNode::SINGLE_QUOTED));
 	}
 
-	/**
-	 * @param mixed[] $properties
-	 */
-	public static function __set_state(array $properties): Type
-	{
-		return new self($properties['value'], $properties['isClassString'] ?? false);
-	}
-
 }

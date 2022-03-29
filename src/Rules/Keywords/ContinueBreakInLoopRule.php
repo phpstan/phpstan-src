@@ -7,7 +7,7 @@ use PhpParser\Node\Stmt;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
+use function array_reverse;
 use function sprintf;
 
 /**
@@ -33,13 +33,15 @@ class ContinueBreakInLoopRule implements Rule
 			$value = $node->num->value;
 		}
 
-		$parent = $node->getAttribute('parent');
-		while ($value > 0) {
+		$parentStmtTypes = array_reverse($node->getAttribute('parentStmtTypes'));
+		foreach ($parentStmtTypes as $parentStmtType) {
+			if ($parentStmtType === Stmt\Case_::class) {
+				continue;
+			}
 			if (
-				$parent === null
-				|| $parent instanceof Stmt\Function_
-				|| $parent instanceof Stmt\ClassMethod
-				|| $parent instanceof Node\Expr\Closure
+				$parentStmtType === Stmt\Function_::class
+				|| $parentStmtType === Stmt\ClassMethod::class
+				|| $parentStmtType === Node\Expr\Closure::class
 			) {
 				return [
 					RuleErrorBuilder::message(sprintf(
@@ -49,22 +51,26 @@ class ContinueBreakInLoopRule implements Rule
 				];
 			}
 			if (
-				$parent instanceof Stmt\For_
-				|| $parent instanceof Stmt\Foreach_
-				|| $parent instanceof Stmt\Do_
-				|| $parent instanceof Stmt\While_
+				$parentStmtType === Stmt\For_::class
+				|| $parentStmtType === Stmt\Foreach_::class
+				|| $parentStmtType === Stmt\Do_::class
+				|| $parentStmtType === Stmt\While_::class
+				|| $parentStmtType === Stmt\Switch_::class
 			) {
 				$value--;
 			}
-			if ($parent instanceof Stmt\Case_) {
-				$value--;
-				$parent = $parent->getAttribute('parent');
-				if (!$parent instanceof Stmt\Switch_) {
-					throw new ShouldNotHappenException();
-				}
+			if ($value === 0) {
+				break;
 			}
+		}
 
-			$parent = $parent->getAttribute('parent');
+		if ($value > 0) {
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'Keyword %s used outside of a loop or a switch statement.',
+					$node instanceof Stmt\Continue_ ? 'continue' : 'break',
+				))->nonIgnorable()->build(),
+			];
 		}
 
 		return [];

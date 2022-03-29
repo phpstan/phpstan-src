@@ -103,27 +103,14 @@ class MatchExpressionRule implements Rule
 
 	private function isUnhandledMatchErrorCaught(Node $node): bool
 	{
-		$tryCatchNode = $node->getAttribute('parent');
-		while (
-			$tryCatchNode !== null &&
-			!$tryCatchNode instanceof Node\FunctionLike &&
-			!$tryCatchNode instanceof Node\Stmt\TryCatch
-		) {
-			$tryCatchNode = $tryCatchNode->getAttribute('parent');
-		}
-
-		if ($tryCatchNode === null || $tryCatchNode instanceof Node\FunctionLike) {
+		$tryCatchTypes = $node->getAttribute('tryCatchTypes');
+		if ($tryCatchTypes === null) {
 			return false;
 		}
 
-		foreach ($tryCatchNode->catches as $catch) {
-			$catchType = TypeCombinator::union(...array_map(static fn (Node\Name $class): ObjectType => new ObjectType($class->toString()), $catch->types));
-			if ($catchType->isSuperTypeOf(new ObjectType(UnhandledMatchError::class))->yes()) {
-				return true;
-			}
-		}
+		$tryCatchType = TypeCombinator::union(...array_map(static fn (string $class) => new ObjectType($class), $tryCatchTypes));
 
-		return $this->isUnhandledMatchErrorCaught($tryCatchNode);
+		return $tryCatchType->isSuperTypeOf(new ObjectType(UnhandledMatchError::class))->yes();
 	}
 
 	private function hasUnhandledMatchErrorThrowsTag(Scope $scope): bool

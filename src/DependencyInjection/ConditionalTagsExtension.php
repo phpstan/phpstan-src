@@ -7,6 +7,7 @@ use Nette\DI\CompilerExtension;
 use Nette\Schema\Expect;
 use PHPStan\Analyser\TypeSpecifierFactory;
 use PHPStan\Broker\BrokerFactory;
+use PHPStan\Parser\RichParser;
 use PHPStan\PhpDoc\TypeNodeResolverExtension;
 use PHPStan\Rules\RegistryFactory;
 use PHPStan\ShouldNotHappenException;
@@ -31,6 +32,7 @@ class ConditionalTagsExtension extends CompilerExtension
 			TypeSpecifierFactory::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::METHOD_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
+			RichParser::VISITOR_SERVICE_TAG => $bool,
 		])->min(1));
 	}
 

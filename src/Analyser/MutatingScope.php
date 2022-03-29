@@ -1642,32 +1642,11 @@ class MutatingScope implements Scope
 			}
 
 			$callableParameters = null;
-			$arg = $node->getAttribute('parent');
-			if ($arg instanceof Arg) {
-				$funcCall = $arg->getAttribute('parent');
-				$argOrder = $arg->getAttribute('expressionOrder');
-				if ($funcCall instanceof FuncCall && $funcCall->name instanceof Name) {
-					$functionName = $this->reflectionProvider->resolveFunctionName($funcCall->name, $this);
-					if (
-						$functionName === 'array_map'
-						&& $argOrder === 0
-						&& isset($funcCall->getArgs()[1])
-					) {
-						if (!isset($funcCall->getArgs()[2])) {
-							$callableParameters = [
-								new DummyParameter('item', $this->getType($funcCall->getArgs()[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
-							];
-						} else {
-							$callableParameters = [];
-							foreach ($funcCall->getArgs() as $i => $funcCallArg) {
-								if ($i === 0) {
-									continue;
-								}
-
-								$callableParameters[] = new DummyParameter('item', $this->getType($funcCallArg->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null);
-							}
-						}
-					}
+			$arrayMapArgs = $node->getAttribute('arrayMapArgs');
+			if ($arrayMapArgs !== null) {
+				$callableParameters = [];
+				foreach ($arrayMapArgs as $funcCallArg) {
+					$callableParameters[] = new DummyParameter('item', $this->getType($funcCallArg->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null);
 				}
 			}
 
@@ -5745,14 +5724,8 @@ class MutatingScope implements Scope
 			return $objectType;
 		}
 
-		$parentNode = $node->getAttribute('parent');
-		if (
-			(
-				$parentNode instanceof Expr\Assign
-				|| $parentNode instanceof Expr\AssignRef
-			)
-			&& $parentNode->var instanceof PropertyFetch
-		) {
+		$assignedToProperty = $node->getAttribute('assignedToProperty');
+		if ($assignedToProperty !== null) {
 			$constructorVariant = ParametersAcceptorSelector::selectSingle($constructorMethod->getVariants());
 			$classTemplateTypes = $classReflection->getTemplateTypeMap()->getTypes();
 			$originalClassTemplateTypes = $classTemplateTypes;
@@ -5771,7 +5744,7 @@ class MutatingScope implements Scope
 			}
 
 			if (count($classTemplateTypes) === count($originalClassTemplateTypes)) {
-				$propertyType = $this->getType($parentNode->var);
+				$propertyType = $this->getType($assignedToProperty);
 				if ($objectType->isSuperTypeOf($propertyType)->yes()) {
 					return $propertyType;
 				}

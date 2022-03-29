@@ -30,6 +30,7 @@ parameters:
 		explicitMixedInUnknownGenericNew: false
 		arrayFilter: false
 		arrayUnpacking: false
+		nodeConnectingVisitorCompatibility: true
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -215,6 +216,7 @@ parametersSchema:
 		explicitMixedInUnknownGenericNew: bool(),
 		arrayFilter: bool(),
 		arrayUnpacking: bool(),
+		nodeConnectingVisitorCompatibility: bool(),
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -344,6 +346,8 @@ conditionalTags:
 		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
 	PHPStan\Rules\Exceptions\TooWideMethodThrowTypeRule:
 		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
+	PhpParser\NodeVisitor\NodeConnectingVisitor:
+		phpstan.parser.richParserNodeVisitor: %featureToggles.nodeConnectingVisitorCompatibility%
 
 services:
 	-
@@ -357,6 +361,31 @@ services:
 		arguments:
 			options:
 				preserveOriginalNames: true
+
+	-
+		class: PHPStan\Parser\ArrayFilterArgVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
+		class: PHPStan\Parser\ArrayMapArgVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
+		class: PHPStan\Parser\NewAssignedToPropertyVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
+		class: PHPStan\Parser\ParentStmtTypesVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
+		class: PHPStan\Parser\TryCatchTypeVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
 
 	-
 		class: PhpParser\NodeVisitor\NodeConnectingVisitor

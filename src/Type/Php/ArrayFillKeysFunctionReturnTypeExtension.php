@@ -9,6 +9,9 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -39,7 +42,15 @@ class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		foreach ($constantArrays as $constantArray) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 			foreach ($constantArray->getValueTypes() as $keyType) {
-				$arrayBuilder->setOffsetValueType($keyType, $valueType);
+				if ((new IntegerType())->isSuperTypeOf($keyType)->no()) {
+					if ($keyType->toString() instanceof ErrorType) {
+						return new NeverType();
+					}
+
+					$arrayBuilder->setOffsetValueType($keyType->toString(), $valueType);
+				} else {
+					$arrayBuilder->setOffsetValueType($keyType, $valueType);
+				}
 			}
 			$arrayTypes[] = $arrayBuilder->getArray();
 		}

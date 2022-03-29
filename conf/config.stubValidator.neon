@@ -11,7 +11,8 @@ services:
 	-
 		class: PHPStan\PhpDoc\StubSourceLocatorFactory
 		arguments:
-			php8Parser: @php8PhpParser
+			php8PhpParser: @php8PhpParser
+			php8Parser: @php8Parser
 			stubFiles: %stubFiles%
 
 	nodeScopeResolverClassReflector:

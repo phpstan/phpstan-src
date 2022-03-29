@@ -1680,7 +1680,7 @@ services:
 	stubPhpDocProvider:
 		class: PHPStan\PhpDoc\StubPhpDocProvider
 		arguments:
-			parser: @defaultAnalysisParser
+			parser: @php8Parser
 			stubFiles: %stubFiles%
 
 	# Reflection providers

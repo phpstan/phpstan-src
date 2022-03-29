@@ -3,11 +3,17 @@
 namespace PHPStan\Type;
 
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Traits\ConditionalTypeTrait;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use function array_merge;
 use function sprintf;
 
 /** @api */
-final class ConditionalTypeForParameter extends UnionType
+final class ConditionalTypeForParameter implements Type
 {
+
+	use ConditionalTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	public function __construct(
 		private string $parameterName,
@@ -17,7 +23,7 @@ final class ConditionalTypeForParameter extends UnionType
 		private bool $negated,
 	)
 	{
-		parent::__construct([$if, $else]);
+		$this->result = TypeCombinator::union($if, $else);
 	}
 
 	public function getParameterName(): string
@@ -36,6 +42,33 @@ final class ConditionalTypeForParameter extends UnionType
 		);
 	}
 
+	public function getReferencedClasses(): array
+	{
+		return array_merge(
+			$this->target->getReferencedClasses(),
+			$this->if->getReferencedClasses(),
+			$this->else->getReferencedClasses(),
+		);
+	}
+
+	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
+	{
+		return array_merge(
+			$this->target->getReferencedTemplateTypes($positionVariance),
+			$this->if->getReferencedTemplateTypes($positionVariance),
+			$this->else->getReferencedTemplateTypes($positionVariance),
+		);
+	}
+
+	public function equals(Type $type): bool
+	{
+		return $type instanceof self
+			&& $this->parameterName === $type->parameterName
+			&& $this->target->equals($type->target)
+			&& $this->if->equals($type->if)
+			&& $this->else->equals($type->else);
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return sprintf(
@@ -46,19 +79,6 @@ final class ConditionalTypeForParameter extends UnionType
 			$this->if->describe($level),
 			$this->else->describe($level),
 		);
-	}
-
-	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
-	{
-		$references = [];
-
-		foreach ([$this->target, $this->if, $this->else] as $type) {
-			foreach ($type->getReferencedTemplateTypes($positionVariance) as $reference) {
-				$references[] = $reference;
-			}
-		}
-
-		return $references;
 	}
 
 	/**
@@ -75,6 +95,20 @@ final class ConditionalTypeForParameter extends UnionType
 		}
 
 		return new ConditionalTypeForParameter($this->parameterName, $target, $if, $else, $this->negated);
+	}
+
+	/**
+	 * @param mixed[] $properties
+	 */
+	public static function __set_state(array $properties): Type
+	{
+		return new self(
+			$properties['parameterName'],
+			$properties['target'],
+			$properties['if'],
+			$properties['else'],
+			$properties['negated'],
+		);
 	}
 
 }

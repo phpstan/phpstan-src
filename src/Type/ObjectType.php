@@ -37,10 +37,12 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use Traversable;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_values;
 use function count;
+use function implode;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -71,10 +73,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	/** @var array<string, array<string, array<string, UnresolvedPropertyPrototypeReflection>>> */
 	private static array $properties = [];
 
-	/** @var array<string, array<string, self>> */
+	/** @var array<string, array<string, self|null>> */
 	private static array $ancestors = [];
 
-	/** @var array<string, self> */
+	/** @var array<string, self|null> */
 	private array $currentAncestors = [];
 
 	/** @api */
@@ -436,6 +438,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		$description = $this->className;
+
+		if ($this instanceof GenericObjectType) {
+			$description .= '<';
+			$typeDescriptions = [];
+			foreach ($this->getTypes() as $type) {
+				$typeDescriptions[] = $type->describe(VerbosityLevel::cache());
+			}
+			$description .= '<' . implode(', ', $typeDescriptions) . '>';
+		}
+
 		if ($this->subtractedType !== null) {
 			$description .= sprintf('~%s', $this->subtractedType->describe(VerbosityLevel::cache()));
 		}
@@ -1019,35 +1031,41 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
-		$classReflection = $this->getClassReflection();
-		if ($classReflection !== null && $classReflection->isEnum() && $subtractedType !== null) {
-			$cases = [];
-			foreach (array_keys($classReflection->getEnumCases()) as $name) {
-				$cases[$name] = new EnumCaseObjectType($classReflection->getName(), $name);
-			}
-
-			foreach (TypeUtils::flattenTypes($subtractedType) as $subType) {
-				if (!$subType instanceof EnumCaseObjectType) {
-					return new self($this->className, $subtractedType);
+		if ($subtractedType !== null) {
+			$classReflection = $this->getClassReflection();
+			if ($classReflection !== null && $classReflection->isEnum()) {
+				$cases = [];
+				foreach (array_keys($classReflection->getEnumCases()) as $name) {
+					$cases[$name] = new EnumCaseObjectType($classReflection->getName(), $name);
 				}
 
-				if ($subType->getClassName() !== $this->getClassName()) {
-					return new self($this->className, $subtractedType);
+				foreach (TypeUtils::flattenTypes($subtractedType) as $subType) {
+					if (!$subType instanceof EnumCaseObjectType) {
+						return new self($this->className, $subtractedType);
+					}
+
+					if ($subType->getClassName() !== $this->getClassName()) {
+						return new self($this->className, $subtractedType);
+					}
+
+					unset($cases[$subType->getEnumCaseName()]);
 				}
 
-				unset($cases[$subType->getEnumCaseName()]);
-			}
+				$cases = array_values($cases);
+				if (count($cases) === 0) {
+					return new NeverType();
+				}
 
-			$cases = array_values($cases);
-			if (count($cases) === 0) {
-				return new NeverType();
-			}
+				if (count($cases) === 1) {
+					return $cases[0];
+				}
 
-			if (count($cases) === 1) {
-				return $cases[0];
+				return new UnionType(array_values($cases));
 			}
+		}
 
-			return new UnionType(array_values($cases));
+		if ($this->subtractedType === null && $subtractedType === null) {
+			return $this;
 		}
 
 		return new self($this->className, $subtractedType);
@@ -1110,26 +1128,32 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	 */
 	public function getAncestorWithClassName(string $className): ?TypeWithClassName
 	{
-		if (isset($this->currentAncestors[$className])) {
+		if (array_key_exists($className, $this->currentAncestors)) {
 			return $this->currentAncestors[$className];
 		}
 
-		$thisReflection = $this->getClassReflection();
-		if ($thisReflection === null) {
-			return null;
+		$description = $this->describeCache();
+		if (
+			array_key_exists($description, self::$ancestors)
+			&& array_key_exists($className, self::$ancestors[$description])
+		) {
+			return self::$ancestors[$description][$className];
 		}
 
-		$description = $this->describeCache() . '-' . $thisReflection->getCacheKey();
-		if (isset(self::$ancestors[$description][$className])) {
-			return self::$ancestors[$description][$className];
+		if ($this->className === $className) {
+			return self::$ancestors[$description][$className] = $this->currentAncestors[$className] = $this;
 		}
 
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 		if (!$reflectionProvider->hasClass($className)) {
-			return null;
+			return self::$ancestors[$description][$className] = $this->currentAncestors[$className] = null;
 		}
 		$theirReflection = $reflectionProvider->getClass($className);
 
+		$thisReflection = $this->getClassReflection();
+		if ($thisReflection === null) {
+			return self::$ancestors[$description][$className] = $this->currentAncestors[$className] = null;
+		}
 		if ($theirReflection->getName() === $thisReflection->getName()) {
 			return self::$ancestors[$description][$className] = $this->currentAncestors[$className] = $this;
 		}
@@ -1149,7 +1173,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			}
 		}
 
-		return null;
+		return self::$ancestors[$description][$className] = $this->currentAncestors[$className] = null;
 	}
 
 	private function getParent(): ?ObjectType

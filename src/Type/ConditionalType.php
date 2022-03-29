@@ -46,6 +46,23 @@ final class ConditionalType extends UnionType
 		return $references;
 	}
 
+	public function resolve(): Type
+	{
+		$isSuperType = $this->target->isSuperTypeOf($this->subject);
+
+		if ($isSuperType->yes()) {
+			return !$this->negated ? $this->if : $this->else;
+		} elseif ($isSuperType->no()) {
+			return !$this->negated ? $this->else : $this->if;
+		}
+
+		if ($this->containsTemplate()) {
+			return $this;
+		}
+
+		return TypeCombinator::union($this->if, $this->else);
+	}
+
 	/**
 	 * @param callable(Type): Type $cb
 	 */
@@ -60,47 +77,21 @@ final class ConditionalType extends UnionType
 			return $this;
 		}
 
-		if ($if->equals($else)) {
-			return $if;
-		}
-
-		$isSuperType = $target->isSuperTypeOf($subject);
-
-		if ($isSuperType->yes()) {
-			return !$this->negated ? $if : $else;
-		} elseif ($isSuperType->no()) {
-			return !$this->negated ? $else : $if;
-		}
-
-		$result = new ConditionalType($subject, $target, $if, $else, $this->negated);
-
-		if ($result->containsConditionalOrTemplateParameter()) {
-			return $result;
-		}
-
-		return TypeCombinator::union($if, $else);
+		return new ConditionalType($subject, $target, $if, $else, $this->negated);
 	}
 
-	private function containsConditionalOrTemplateParameter(): bool
+	private function containsTemplate(): bool
 	{
-		$contains = false;
-		TypeTraverser::map($this, function (Type $type, callable $traverse) use (&$contains): Type {
-			if (($type instanceof self && $type !== $this) || $type instanceof TemplateType) {
-				$contains = true;
+		$containsTemplate = false;
+		TypeTraverser::map($this, static function (Type $type, callable $traverse) use (&$containsTemplate): Type {
+			if ($type instanceof TemplateType) {
+				$containsTemplate = true;
 			}
 
-			if ($contains) {
-				return $type;
-			}
-
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
-			}
-
-			return $type;
+			return $containsTemplate ? $type : $traverse($type);
 		});
 
-		return $contains;
+		return $containsTemplate;
 	}
 
 }

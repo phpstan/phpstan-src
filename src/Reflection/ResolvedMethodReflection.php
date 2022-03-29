@@ -42,6 +42,7 @@ class ResolvedMethodReflection implements MethodReflection
 			$variants[] = new ResolvedFunctionVariant(
 				$variant,
 				$this->resolvedTemplateTypeMap,
+				[],
 			);
 		}
 

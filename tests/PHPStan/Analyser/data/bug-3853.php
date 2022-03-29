@@ -39,15 +39,11 @@ abstract class Test
 	/**
 	 * @return ($as_float is true ? float : string)
 	 */
-	abstract public function microtime(bool $as_float = false);
+	abstract public function microtime(bool $as_float);
 
 	public function testMicrotime(): void
 	{
-		// TODO resolve correctly
-		//assertType('float', $this->microtime(true));
-		//assertType('string', $this->microtime(false));
-
-		assertType('($as_float is true ? float : string)', $this->microtime(true));
-		assertType('($as_float is true ? float : string)', $this->microtime(false));
+		assertType('float', $this->microtime(true));
+		assertType('string', $this->microtime(false));
 	}
 }

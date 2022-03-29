@@ -20,6 +20,22 @@ final class ConditionalTypeForParameter extends UnionType
 		parent::__construct([$if, $else]);
 	}
 
+	public function getParameterName(): string
+	{
+		return $this->parameterName;
+	}
+
+	public function toConditional(Type $subject): ConditionalType
+	{
+		return new ConditionalType(
+			$subject,
+			$this->target,
+			$this->if,
+			$this->else,
+			$this->negated,
+		);
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return sprintf(

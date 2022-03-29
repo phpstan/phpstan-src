@@ -7,8 +7,8 @@ use function PHPStan\Testing\assertType;
 abstract class Test
 {
 	/**
-	 * @template TKey as array-key
-	 * @template TArray as array<TKey, mixed>
+	 * @template TKey of array-key
+	 * @template TArray of array<TKey, mixed>
 	 *
 	 * @param TArray $array
 	 *
@@ -22,18 +22,18 @@ abstract class Test
 	 *
 	 * @param array<int, int> $intArray
 	 * @param non-empty-array<int, int> $nonEmptyIntArray
+	 *
+	 * @param array{} $emptyArray
 	 */
-	public function testArrayKeys(array $array, array $nonEmptyArray, array $intArray, array $nonEmptyIntArray): void
+	public function testArrayKeys(array $array, array $nonEmptyArray, array $intArray, array $nonEmptyIntArray, array $emptyArray): void
 	{
 		assertType('array<int, (int|string)>', $this->arrayKeys($array));
 		assertType('array<int, int>', $this->arrayKeys($intArray));
 
-		// TODO resolve correctly
-		//assertType('non-empty-array<int, (int|string)>', $this->arrayKeys($nonEmptyArray));
-		//assertType('non-empty-array<int, int>', $this->arrayKeys($nonEmptyIntArray));
+		assertType('non-empty-array<int, (int|string)>', $this->arrayKeys($nonEmptyArray));
+		assertType('non-empty-array<int, int>', $this->arrayKeys($nonEmptyIntArray));
 
-		assertType('array<int, (int|string)>', $this->arrayKeys($nonEmptyArray));
-		assertType('array<int, int>', $this->arrayKeys($nonEmptyIntArray));
+		assertType('array<int, *NEVER*>', $this->arrayKeys($emptyArray));
 	}
 
 	/**
@@ -47,7 +47,7 @@ abstract class Test
 		//assertType('float', $this->microtime(true));
 		//assertType('string', $this->microtime(false));
 
-		assertType('float|string', $this->microtime(true));
-		assertType('float|string', $this->microtime(false));
+		assertType('($as_float is true ? float : string)', $this->microtime(true));
+		assertType('($as_float is true ? float : string)', $this->microtime(false));
 	}
 }

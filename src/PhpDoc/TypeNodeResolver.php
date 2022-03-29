@@ -44,6 +44,8 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\ClosureType;
+use PHPStan\Type\ConditionalType;
+use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -123,8 +125,11 @@ class TypeNodeResolver
 		} elseif ($typeNode instanceof IntersectionTypeNode) {
 			return $this->resolveIntersectionTypeNode($typeNode, $nameScope);
 
-		} elseif ($typeNode instanceof ConditionalTypeNode || $typeNode instanceof ConditionalTypeForParameterNode) {
+		} elseif ($typeNode instanceof ConditionalTypeNode) {
 			return $this->resolveConditionalTypeNode($typeNode, $nameScope);
+
+		} elseif ($typeNode instanceof ConditionalTypeForParameterNode) {
+			return $this->resolveConditionalTypeForParameterNode($typeNode, $nameScope);
 
 		} elseif ($typeNode instanceof ArrayTypeNode) {
 			return $this->resolveArrayTypeNode($typeNode, $nameScope);
@@ -443,10 +448,26 @@ class TypeNodeResolver
 		return TypeCombinator::intersect(...$types);
 	}
 
-	private function resolveConditionalTypeNode(ConditionalTypeNode|ConditionalTypeForParameterNode $typeNode, NameScope $nameScope): Type
+	private function resolveConditionalTypeNode(ConditionalTypeNode $typeNode, NameScope $nameScope): Type
 	{
-		$types = $this->resolveMultiple([$typeNode->if, $typeNode->else], $nameScope);
-		return TypeCombinator::union(...$types);
+		return new ConditionalType(
+			$this->resolve($typeNode->subjectType, $nameScope),
+			$this->resolve($typeNode->targetType, $nameScope),
+			$this->resolve($typeNode->if, $nameScope),
+			$this->resolve($typeNode->else, $nameScope),
+			$typeNode->negated,
+		);
+	}
+
+	private function resolveConditionalTypeForParameterNode(ConditionalTypeForParameterNode $typeNode, NameScope $nameScope): Type
+	{
+		return new ConditionalTypeForParameter(
+			$typeNode->parameterName,
+			$this->resolve($typeNode->targetType, $nameScope),
+			$this->resolve($typeNode->if, $nameScope),
+			$this->resolve($typeNode->else, $nameScope),
+			$typeNode->negated,
+		);
 	}
 
 	private function resolveArrayTypeNode(ArrayTypeNode $typeNode, NameScope $nameScope): Type

@@ -353,7 +353,7 @@ services:
 				preserveOriginalNames: true
 
 	-
-		class: PHPStan\Parser\ParentConnectingVisitor
+		class: PhpParser\NodeVisitor\NodeConnectingVisitor
 
 	-
 		class: PhpParser\PrettyPrinter\Standard

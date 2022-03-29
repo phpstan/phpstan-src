@@ -22,8 +22,10 @@ class NodeConnectingRule implements Rule
 	{
 		return [
 			sprintf(
-				'Parent: %s',
+				'Parent: %s, previous: %s, next: %s',
 				get_class($node->getAttribute('parent')),
+				get_class($node->getAttribute('previous')),
+				get_class($node->getAttribute('next')),
 			),
 		];
 	}

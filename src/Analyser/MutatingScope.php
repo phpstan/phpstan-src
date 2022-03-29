@@ -1314,7 +1314,8 @@ class MutatingScope implements Scope
 				$leftConstantArrays = TypeUtils::getConstantArrays($leftType);
 				$rightConstantArrays = TypeUtils::getConstantArrays($rightType);
 
-				if (count($leftConstantArrays) > 0 && count($rightConstantArrays) > 0) {
+				if (count($leftConstantArrays) > 0 && count($rightConstantArrays) > 0
+					&& (count($leftConstantArrays) + count($rightConstantArrays) < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT)) {
 					$resultTypes = [];
 					foreach ($rightConstantArrays as $rightConstantArray) {
 						foreach ($leftConstantArrays as $leftConstantArray) {

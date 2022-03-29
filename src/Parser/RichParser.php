@@ -7,7 +7,6 @@ use PhpParser\Lexer;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\NodeVisitor\NodeConnectingVisitor;
 use PHPStan\File\FileReader;
 use PHPStan\NodeVisitor\StatementOrderVisitor;
 use PHPStan\ShouldNotHappenException;
@@ -24,7 +23,7 @@ class RichParser implements Parser
 		private \PhpParser\Parser $parser,
 		private Lexer $lexer,
 		private NameResolver $nameResolver,
-		private NodeConnectingVisitor $nodeConnectingVisitor,
+		private ParentConnectingVisitor $parentConnectingVisitor,
 		private StatementOrderVisitor $statementOrderVisitor,
 	)
 	{
@@ -60,7 +59,7 @@ class RichParser implements Parser
 
 		$nodeTraverser = new NodeTraverser();
 		$nodeTraverser->addVisitor($this->nameResolver);
-		$nodeTraverser->addVisitor($this->nodeConnectingVisitor);
+		$nodeTraverser->addVisitor($this->parentConnectingVisitor);
 		$nodeTraverser->addVisitor($this->statementOrderVisitor);
 
 		/** @var array<Node\Stmt> */

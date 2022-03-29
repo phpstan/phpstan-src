@@ -19,7 +19,7 @@ class NodeConnectingRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/node-connecting.php'], [
 			[
-				'Parent: PhpParser\Node\Stmt\If_, previous: PhpParser\Node\Stmt\Switch_, next: PhpParser\Node\Stmt\Foreach_',
+				'Parent: PhpParser\Node\Stmt\If_',
 				11,
 			],
 		]);

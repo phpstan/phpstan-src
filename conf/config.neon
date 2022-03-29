@@ -121,6 +121,12 @@ parameters:
 		- ICONV_IMPL
 		- LIBXML_VERSION
 		- LIBXML_DOTTED_VERSION
+		- Memcached::HAVE_ENCODING
+		- Memcached::HAVE_IGBINARY
+		- Memcached::HAVE_JSON
+		- Memcached::HAVE_MSGPACK
+		- Memcached::HAVE_SASL
+		- Memcached::HAVE_SESSION
 		- PHP_VERSION
 		- PHP_MAJOR_VERSION
 		- PHP_MINOR_VERSION

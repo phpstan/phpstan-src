@@ -1317,7 +1317,7 @@ class MutatingScope implements Scope
 				$leftCount = count($leftConstantArrays);
 				$rightCount = count($rightConstantArrays);
 				if ($leftCount > 0 && $rightCount > 0
-					&& (($leftCount + $rightCount) < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT)) {
+					&& ($leftCount + $rightCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT)) {
 					$resultTypes = [];
 					foreach ($rightConstantArrays as $rightConstantArray) {
 						foreach ($leftConstantArrays as $leftConstantArray) {

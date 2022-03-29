@@ -3,8 +3,6 @@
 namespace PHPStan\Reflection;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
@@ -73,30 +71,13 @@ class ParametersAcceptorSelector
 			count($args) > 0
 			&& count($parametersAcceptors) > 0
 		) {
-			$functionName = null;
-			$argParent = $args[0]->getAttribute('parent');
-			if ($argParent instanceof FuncCall && $argParent->name instanceof Name) {
-				$functionName = $argParent->name->toLowerString();
-			}
-			if (
-				$functionName === 'array_map'
-				&& isset($args[1])
-			) {
+			$arrayMapArgs = $args[0]->value->getAttribute('arrayMapArgs');
+			if ($arrayMapArgs !== null) {
 				$acceptor = $parametersAcceptors[0];
 				$parameters = $acceptor->getParameters();
-				if (!isset($args[2])) {
-					$callbackParameters = [
-						new DummyParameter('item', $scope->getType($args[1]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
-					];
-				} else {
-					$callbackParameters = [];
-					foreach ($args as $i => $arg) {
-						if ($i === 0) {
-							continue;
-						}
-
-						$callbackParameters[] = new DummyParameter('item', $scope->getType($arg->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null);
-					}
+				$callbackParameters = [];
+				foreach ($arrayMapArgs as $arg) {
+					$callbackParameters[] = new DummyParameter('item', $scope->getType($arg->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null);
 				}
 				$parameters[0] = new NativeParameterReflection(
 					$parameters[0]->getName(),
@@ -120,10 +101,7 @@ class ParametersAcceptorSelector
 				];
 			}
 
-			if (
-				$functionName === 'array_filter'
-				&& isset($args[0])
-			) {
+			if (isset($args[0]) && (bool) $args[0]->getAttribute('isArrayFilterArg')) {
 				if (isset($args[2])) {
 					$mode = $scope->getType($args[2]->value);
 					if ($mode instanceof ConstantIntegerType) {

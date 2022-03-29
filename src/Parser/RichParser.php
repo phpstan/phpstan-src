@@ -7,9 +7,8 @@ use PhpParser\Lexer;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\NodeVisitor\NodeConnectingVisitor;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\File\FileReader;
-use PHPStan\NodeVisitor\StatementOrderVisitor;
 use PHPStan\ShouldNotHappenException;
 use function is_string;
 use function strpos;
@@ -20,12 +19,13 @@ use const T_DOC_COMMENT;
 class RichParser implements Parser
 {
 
+	public const VISITOR_SERVICE_TAG = 'phpstan.parser.richParserNodeVisitor';
+
 	public function __construct(
 		private \PhpParser\Parser $parser,
 		private Lexer $lexer,
 		private NameResolver $nameResolver,
-		private NodeConnectingVisitor $nodeConnectingVisitor,
-		private StatementOrderVisitor $statementOrderVisitor,
+		private Container $container,
 	)
 	{
 	}
@@ -60,8 +60,10 @@ class RichParser implements Parser
 
 		$nodeTraverser = new NodeTraverser();
 		$nodeTraverser->addVisitor($this->nameResolver);
-		$nodeTraverser->addVisitor($this->nodeConnectingVisitor);
-		$nodeTraverser->addVisitor($this->statementOrderVisitor);
+
+		foreach ($this->container->getServicesByTag(self::VISITOR_SERVICE_TAG) as $visitor) {
+			$nodeTraverser->addVisitor($visitor);
+		}
 
 		/** @var array<Node\Stmt> */
 		$nodes = $nodeTraverser->traverse($nodes);

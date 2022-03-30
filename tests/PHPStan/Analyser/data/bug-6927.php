@@ -58,7 +58,7 @@ class Foo
 	{
 		$params3 = array_merge($params1, $params2);
 
-		assertType('non-empty-array{return: int, stdout: string, stderr: string}', $params3);
+		assertType('array{return: int, stdout: string, stderr: string}', $params3);
 	}
-	
+
 }

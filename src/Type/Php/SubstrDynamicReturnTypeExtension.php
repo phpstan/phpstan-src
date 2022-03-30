@@ -27,7 +27,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		$args = $functionCall->getArgs();
 		if (count($args) === 0) {
@@ -55,7 +55,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			}
 		}
 
-		return new StringType();
+		return null;
 	}
 
 }

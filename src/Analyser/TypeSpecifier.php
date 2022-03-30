@@ -379,14 +379,16 @@ class TypeSpecifier
 			}
 
 			if (
-				$rightType->isArray()->yes()
+				!$context->null()
+				&& $rightType->isArray()->yes()
 				&& $leftType instanceof ConstantArrayType && $leftType->isEmpty()
 			) {
 				return $this->create($expr->right, new NonEmptyArrayType(), $context->negate(), false, $scope);
 			}
 
 			if (
-				$leftType->isArray()->yes()
+				!$context->null()
+				&& $leftType->isArray()->yes()
 				&& $rightType instanceof ConstantArrayType && $rightType->isEmpty()
 			) {
 				return $this->create($expr->left, new NonEmptyArrayType(), $context->negate(), false, $scope);

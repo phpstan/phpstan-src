@@ -15,7 +15,7 @@ class Foo
 	 */
 	public function doSubstr(string $s, $nonEmpty, $positiveInt, $postiveRange, $negativeRange): void
 	{
-		assertType('string', substr($s, 5));
+		assertType('(string|false)', substr($s, 5));
 
 		assertType('(string|false)', substr($s, -5));
 		assertType('non-empty-string', substr($nonEmpty, -5));

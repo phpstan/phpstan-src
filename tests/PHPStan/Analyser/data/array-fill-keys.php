@@ -50,3 +50,19 @@ function withObjectKey() : array
 	assertType("non-empty-array<string, 'b'>", array_fill_keys([new Bar()], 'b'));
 	assertType("*NEVER*", array_fill_keys([new Baz()], 'b'));
 }
+
+/**
+ * @param Bar[] $foo
+ * @param int[] $bar
+ * @param Foo[] $baz
+ * @param float[] $floats
+ * @param array<int, int|string|bool> $mixed
+ */
+function withNotConstantArray(array $foo, array $bar, array $baz, array $floats, array $mixed): void
+{
+	assertType("array<string, null>", array_fill_keys($foo, null));
+	assertType("array<int, null>", array_fill_keys($bar, null));
+	assertType("array<'foo', null>", array_fill_keys($baz, null));
+	assertType("array<numeric-string, null>", array_fill_keys($floats, null));
+	assertType("array<bool|int|string, null>", array_fill_keys($mixed, null));
+}

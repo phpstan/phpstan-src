@@ -28,23 +28,30 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (!isset($functionCall->getArgs()[0])) {
+		$args = $functionCall->getArgs();
+
+		if (!isset($args[0])) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
+		$argTypes = [];
 		$allConstant = true;
-		foreach ($functionCall->getArgs() as $arg) {
+		foreach ($args as $i => $arg) {
 			$argType = $scope->getType($arg->value);
-			if ($arg->unpack || !$argType instanceof ConstantArrayType) {
-				$allConstant = false;
-				break;
+			$argTypes[$i] = $argType;
+
+			if (!$arg->unpack && $argType instanceof ConstantArrayType) {
+				continue;
 			}
+
+			$allConstant = false;
 		}
 
 		if ($allConstant) {
 			$newArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-			foreach ($functionCall->getArgs() as $arg) {
-				$argType = $scope->getType($arg->value);
+			foreach ($args as $i => $arg) {
+				$argType = $argTypes[$i];
+
 				if (!$argType instanceof ConstantArrayType) {
 					throw new ShouldNotHappenException();
 				}
@@ -53,12 +60,12 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 				$valueTypes = $argType->getValueTypes();
 				$optionalKeys = $argType->getOptionalKeys();
 
-				foreach ($keyTypes as $i => $keyType) {
-					$isOptional = in_array($i, $optionalKeys, true);
+				foreach ($keyTypes as $k => $keyType) {
+					$isOptional = in_array($k, $optionalKeys, true);
 
 					$newArrayBuilder->setOffsetValueType(
 						$keyType,
-						$valueTypes[$i],
+						$valueTypes[$k],
 						$isOptional,
 					);
 				}
@@ -70,8 +77,9 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 		$keyTypes = [];
 		$valueTypes = [];
 		$nonEmpty = false;
-		foreach ($functionCall->getArgs() as $arg) {
-			$argType = $scope->getType($arg->value);
+		foreach ($args as $i => $arg) {
+			$argType = $argTypes[$i];
+
 			if ($arg->unpack) {
 				$argType = $argType->getIterableValueType();
 				if ($argType instanceof UnionType) {

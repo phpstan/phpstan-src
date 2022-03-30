@@ -509,6 +509,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 		if (PHP_VERSION_ID < 80000) {
 			$this->analyse([__DIR__ . '/data/bug-6939.php'], []);
+			return;
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-6939.php'], [

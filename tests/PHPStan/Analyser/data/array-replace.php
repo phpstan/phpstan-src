@@ -23,9 +23,9 @@ class Foo
 	 */
 	public function arrayReplaceArrayShapes($array1, $array2): void
 	{
-		assertType("non-empty-array<'bar'|'foo', '1'|'2'>", array_replace($array1));
-		assertType("non-empty-array<'bar'|'foo', '1'|'2'>", array_replace([], $array1));
-		assertType("non-empty-array<'bar'|'foo', '1'|'2'|'4'>", array_replace($array1, $array2));
+		assertType("array{foo: '1', bar: '2'}", array_replace($array1));
+		assertType("array{foo: '1', bar: '2'}", array_replace([], $array1));
+		assertType("array{foo: '1', bar: '4'}", array_replace($array1, $array2));
 	}
 
 	/**
@@ -60,4 +60,63 @@ class Foo
 		assertType("array<int, array{bar: '2'|'3'}|array{foo: '1'|'2'}>", array_replace($array1, $array2));
 		assertType("array<int, array{bar: '2'|'3'}|array{foo: '1'|'2'}>", array_replace($array2, $array1));
 	}
+}
+
+class FooBar
+{
+	/**
+	 * @param array<non-empty-string, string> $params1
+	 * @param array<non-empty-string, string> $params2
+	 */
+	function foo1(array $params1, array $params2): void
+	{
+		$params2 = array_replace($params1, $params2);
+
+		assertType('array<non-empty-string, string>', $params2);
+	}
+
+	/**
+	 * @param array<non-empty-string, string> $params1
+	 * @param array<string, string> $params2
+	 */
+	function foo2(array $params1, array $params2): void
+	{
+		$params2 = array_replace($params1, $params2);
+
+		assertType('array<string, string>', $params2);
+	}
+
+	/**
+	 * @param array<string, string> $params1
+	 * @param array<non-empty-string, string> $params2
+	 */
+	function foo3(array $params1, array $params2): void
+	{
+		$params2 = array_replace($params1, $params2);
+
+		assertType('array<string, string>', $params2);
+	}
+
+	/**
+	 * @param array<literal-string&non-empty-string, string> $params1
+	 * @param array<non-empty-string, string> $params2
+	 */
+	function foo4(array $params1, array $params2): void
+	{
+		$params2 = array_replace($params1, $params2);
+
+		assertType('array<non-empty-string, string>', $params2);
+	}
+
+	/**
+	 * @param array{return: int, stdout: string, stderr: string} $params1
+	 * @param array{return: int, stdout?: string, stderr?: string} $params2
+	 */
+	function foo5(array $params1, array $params2): void
+	{
+		$params3 = array_replace($params1, $params2);
+
+		assertType('array{return: int, stdout: string, stderr: string}', $params3);
+	}
+
 }

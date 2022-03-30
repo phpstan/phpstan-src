@@ -23,7 +23,7 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'array_merge';
+		return in_array($functionReflection->getName(), ['array_merge', 'array_replace'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type

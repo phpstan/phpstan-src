@@ -6,14 +6,17 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function in_array;
 
 class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -27,6 +30,41 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 	{
 		if (!isset($functionCall->getArgs()[0])) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		}
+
+		$allConstant = true;
+		foreach ($functionCall->getArgs() as $arg) {
+			$argType = $scope->getType($arg->value);
+			if ($arg->unpack || !$argType instanceof ConstantArrayType) {
+				$allConstant = false;
+				break;
+			}
+		}
+
+		if ($allConstant) {
+			$newArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+			foreach ($functionCall->getArgs() as $arg) {
+				$argType = $scope->getType($arg->value);
+				if (!$argType instanceof ConstantArrayType) {
+					throw new ShouldNotHappenException();
+				}
+
+				$keyTypes = $argType->getKeyTypes();
+				$valueTypes = $argType->getValueTypes();
+				$optionalKeys = $argType->getOptionalKeys();
+
+				foreach ($keyTypes as $i => $keyType) {
+					$isOptional = in_array($i, $optionalKeys, true);
+
+					$newArrayBuilder->setOffsetValueType(
+						$keyType,
+						$valueTypes[$i],
+						$isOptional,
+					);
+				}
+			}
+
+			return $newArrayBuilder->getArray();
 		}
 
 		$keyTypes = [];

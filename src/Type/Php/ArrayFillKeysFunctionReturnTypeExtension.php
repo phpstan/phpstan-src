@@ -35,6 +35,18 @@ class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		$keysType = $scope->getType($functionCall->getArgs()[0]->value);
 		$constantArrays = TypeUtils::getConstantArrays($keysType);
 		if (count($constantArrays) === 0) {
+			if ($keysType->isArray()->yes()) {
+				$itemType = $keysType->getIterableValueType();
+
+				if ((new IntegerType())->isSuperTypeOf($itemType)->no()) {
+					if ($itemType->toString() instanceof ErrorType) {
+						return new ArrayType($itemType, $valueType);
+					}
+
+					return new ArrayType($itemType->toString(), $valueType);
+				}
+			}
+
 			return new ArrayType($keysType->getIterableValueType(), $valueType);
 		}
 

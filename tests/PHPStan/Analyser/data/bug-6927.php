@@ -50,4 +50,15 @@ class Foo
 		assertType('array<non-empty-string, string>', $params2);
 	}
 
+	/**
+	 * @param array{return: int, stdout: string, stderr: string} $params1
+	 * @param array{return: int, stdout?: string, stderr?: string} $params2
+	 */
+	function foo5(array $params1, array $params2): void
+	{
+		$params3 = array_merge($params1, $params2);
+
+		assertType('non-empty-array{return: int, stdout: string, stderr: string}', $params3);
+	}
+	
 }

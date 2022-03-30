@@ -503,4 +503,21 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6939(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+
+		if (PHP_VERSION_ID < 80000) {
+			$this->analyse([__DIR__ . '/data/bug-6939.php'], []);
+			return;
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6939.php'], [
+			[
+				'Strict comparison using === between string and false will always evaluate to false.',
+				10,
+			],
+		]);
+	}
+
 }

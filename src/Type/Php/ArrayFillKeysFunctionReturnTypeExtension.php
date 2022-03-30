@@ -9,6 +9,9 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -32,6 +35,18 @@ class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		$keysType = $scope->getType($functionCall->getArgs()[0]->value);
 		$constantArrays = TypeUtils::getConstantArrays($keysType);
 		if (count($constantArrays) === 0) {
+			if ($keysType->isArray()->yes()) {
+				$itemType = $keysType->getIterableValueType();
+
+				if ((new IntegerType())->isSuperTypeOf($itemType)->no()) {
+					if ($itemType->toString() instanceof ErrorType) {
+						return new ArrayType($itemType, $valueType);
+					}
+
+					return new ArrayType($itemType->toString(), $valueType);
+				}
+			}
+
 			return new ArrayType($keysType->getIterableValueType(), $valueType);
 		}
 
@@ -39,7 +54,15 @@ class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		foreach ($constantArrays as $constantArray) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 			foreach ($constantArray->getValueTypes() as $keyType) {
-				$arrayBuilder->setOffsetValueType($keyType, $valueType);
+				if ((new IntegerType())->isSuperTypeOf($keyType)->no()) {
+					if ($keyType->toString() instanceof ErrorType) {
+						return new NeverType();
+					}
+
+					$arrayBuilder->setOffsetValueType($keyType->toString(), $valueType);
+				} else {
+					$arrayBuilder->setOffsetValueType($keyType, $valueType);
+				}
 			}
 			$arrayTypes[] = $arrayBuilder->getArray();
 		}

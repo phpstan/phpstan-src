@@ -475,8 +475,15 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5219.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/strval.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-next.php');
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-string.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-string-replace-functions.php');
+		if (PHP_VERSION_ID >= 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-string-substr.php');
+		} else {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-string-substr-pre-80.php');
+		}
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3981.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4711.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/sscanf.php');
@@ -829,8 +836,17 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6904.php');
 		}
 
+		if (PHP_VERSION_ID >= 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-combine-php8.php');
+		} else {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-combine-php7.php');
+		}
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-fill-keys.php');
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6917.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3853.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6936-limit.php');
 	}
 
 	/**

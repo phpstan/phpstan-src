@@ -30,4 +30,5 @@ class Foo
 		assertType('(string|false)', substr($s, 0, $positiveInt));
 		assertType('non-empty-string', substr($nonEmpty, 0, $positiveInt));
 	}
+
 }

@@ -272,6 +272,12 @@ class AnalyseCommand extends Command
 			}
 			if ($analysisResult->hasInternalErrors()) {
 				$inceptionResult->getStdOutput()->getStyle()->error('An internal error occurred. Baseline could not be generated. Re-run PHPStan without --generate-baseline to see what\'s going on.');
+				if ($output->isVerbose()) {
+					$inceptionResult->getStdOutput()->getStyle()->error(sprintf(
+							"Internal error list:\n-%s",
+							implode("\n-", $analysisResult->getInternalErrors()))
+					);
+				}
 
 				return $inceptionResult->handleReturn(1);
 			}

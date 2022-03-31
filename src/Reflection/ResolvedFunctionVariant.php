@@ -95,11 +95,16 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 			if ($type instanceof ConditionalTypeForParameter) {
 				if (array_key_exists($type->getParameterName(), $this->passedArgs)) {
 					$type = $type->toConditional($this->passedArgs[$type->getParameterName()]);
+					return $this->resolveConditionalTypes($type);
 				}
 			}
 
 			if ($type instanceof ConditionalType) {
-				$type = $type->resolve();
+				$resolvedType = $type->resolve();
+
+				if ($type !== $resolvedType) {
+					return $this->resolveConditionalTypes($resolvedType);
+				}
 			}
 
 			return $traverse($type);

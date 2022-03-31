@@ -10,7 +10,7 @@ use function array_merge;
 use function sprintf;
 
 /** @api */
-final class ConditionalType implements Type
+final class ConditionalType implements CompoundType
 {
 
 	use ConditionalTypeTrait;
@@ -24,7 +24,6 @@ final class ConditionalType implements Type
 		private bool $negated,
 	)
 	{
-		$this->result = TypeCombinator::union($if, $else);
 	}
 
 	public function getReferencedClasses(): array
@@ -70,19 +69,19 @@ final class ConditionalType implements Type
 
 	public function resolve(): Type
 	{
+		if ($this->subject instanceof MixedType && !$this->subject->isExplicitMixed()) {
+			return TypeCombinator::union($this->if, $this->else);
+		}
+
 		$isSuperType = $this->target->isSuperTypeOf($this->subject);
 
 		if ($isSuperType->yes()) {
 			return !$this->negated ? $this->if : $this->else;
-		} elseif ($isSuperType->no()) {
+		} elseif ($isSuperType->no() || $this->isResolved()) {
 			return !$this->negated ? $this->else : $this->if;
 		}
 
-		if ($this->containsTemplate()) {
-			return $this;
-		}
-
-		return TypeCombinator::union($this->if, $this->else);
+		return $this;
 	}
 
 	public function traverse(callable $cb): Type
@@ -99,10 +98,15 @@ final class ConditionalType implements Type
 		return new ConditionalType($subject, $target, $if, $else, $this->negated);
 	}
 
-	private function containsTemplate(): bool
+	private function isResolved(): bool
+	{
+		return !$this->containsTemplate($this->subject) && !$this->containsTemplate($this->target);
+	}
+
+	private function containsTemplate(Type $type): bool
 	{
 		$containsTemplate = false;
-		TypeTraverser::map($this, static function (Type $type, callable $traverse) use (&$containsTemplate): Type {
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$containsTemplate): Type {
 			if ($type instanceof TemplateType) {
 				$containsTemplate = true;
 			}

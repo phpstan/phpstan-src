@@ -4,46 +4,22 @@ namespace Bug3853;
 
 use function PHPStan\Testing\assertType;
 
-abstract class Test
+class Connection {}
+class SubConnection extends Connection {}
+
+class DriverManager
 {
 	/**
-	 * @template TKey of array-key
-	 * @template TArray of array<TKey, mixed>
-	 *
-	 * @param TArray $array
-	 *
-	 * @return (TArray is non-empty-array ? non-empty-list<TKey> : list<TKey>)
+	 * @template T of Connection
+	 * @param array{wrapperClass?: class-string<T>} $params
+	 * @return ($params is array{wrapperClass:mixed} ? T : Connection)
 	 */
-	abstract public function arrayKeys(array $array);
-
-	/**
-	 * @param array $array
-	 * @param non-empty-array $nonEmptyArray
-	 *
-	 * @param array<int, int> $intArray
-	 * @param non-empty-array<int, int> $nonEmptyIntArray
-	 *
-	 * @param array{} $emptyArray
-	 */
-	public function testArrayKeys(array $array, array $nonEmptyArray, array $intArray, array $nonEmptyIntArray, array $emptyArray): void
-	{
-		assertType('array<int, (int|string)>', $this->arrayKeys($array));
-		assertType('array<int, int>', $this->arrayKeys($intArray));
-
-		assertType('non-empty-array<int, (int|string)>', $this->arrayKeys($nonEmptyArray));
-		assertType('non-empty-array<int, int>', $this->arrayKeys($nonEmptyIntArray));
-
-		assertType('array<int, *NEVER*>', $this->arrayKeys($emptyArray));
+	public static function getConnection(array $params): Connection {
+		return new Connection();
 	}
 
-	/**
-	 * @return ($as_float is true ? float : string)
-	 */
-	abstract public function microtime(bool $as_float);
-
-	public function testMicrotime(): void
-	{
-		assertType('float', $this->microtime(true));
-		assertType('string', $this->microtime(false));
+	public static function test(): void {
+		assertType('Bug3853\Connection', DriverManager::getConnection([]));
+		assertType('Bug3853\SubConnection', DriverManager::getConnection(['wrapperClass' => SubConnection::class]));
 	}
 }

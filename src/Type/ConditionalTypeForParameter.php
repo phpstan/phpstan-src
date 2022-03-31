@@ -9,7 +9,7 @@ use function array_merge;
 use function sprintf;
 
 /** @api */
-final class ConditionalTypeForParameter implements Type
+final class ConditionalTypeForParameter implements CompoundType
 {
 
 	use ConditionalTypeTrait;
@@ -23,7 +23,6 @@ final class ConditionalTypeForParameter implements Type
 		private bool $negated,
 	)
 	{
-		$this->result = TypeCombinator::union($if, $else);
 	}
 
 	public function getParameterName(): string

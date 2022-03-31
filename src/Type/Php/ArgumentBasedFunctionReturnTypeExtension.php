@@ -6,10 +6,12 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -58,10 +60,15 @@ class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionReturnT
 			$argumentValueType = $argumentValueType->getIterableValueType()->generalize(GeneralizePrecision::moreSpecific());
 		}
 
-		return new ArrayType(
+		$array = new ArrayType(
 			$argumentKeyType,
 			$argumentValueType,
 		);
+		if ($functionReflection->getName() === 'array_unique' && $argumentType->isIterableAtLeastOnce()->yes()) {
+			$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
+		}
+
+		return $array;
 	}
 
 }

@@ -11,8 +11,11 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -94,11 +97,21 @@ class FunctionCallParametersCheck
 				$argumentName = $arg->name->toString();
 			}
 			if ($arg->unpack) {
-				$arrays = TypeUtils::getConstantArrays($type);
+				$arrays = TypeUtils::getOldConstantArrays($type);
 				if (count($arrays) > 0) {
 					$minKeys = null;
 					foreach ($arrays as $array) {
-						$keysCount = count($array->getKeyTypes());
+						$countType = $array->count();
+						if ($countType instanceof ConstantIntegerType) {
+							$keysCount = $countType->getValue();
+						} elseif ($countType instanceof IntegerRangeType) {
+							$keysCount = $countType->getMin();
+							if ($keysCount === null) {
+								throw new ShouldNotHappenException();
+							}
+						} else {
+							throw new ShouldNotHappenException();
+						}
 						if ($minKeys !== null && $keysCount >= $minKeys) {
 							continue;
 						}

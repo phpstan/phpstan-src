@@ -1311,8 +1311,8 @@ class MutatingScope implements Scope
 			$rightType = $this->getType($right);
 
 			if ($node instanceof Expr\AssignOp\Plus || $node instanceof Expr\BinaryOp\Plus) {
-				$leftConstantArrays = TypeUtils::getConstantArrays($leftType);
-				$rightConstantArrays = TypeUtils::getConstantArrays($rightType);
+				$leftConstantArrays = TypeUtils::getOldConstantArrays($leftType);
+				$rightConstantArrays = TypeUtils::getOldConstantArrays($rightType);
 
 				$leftCount = count($leftConstantArrays);
 				$rightCount = count($rightConstantArrays);
@@ -1322,10 +1322,18 @@ class MutatingScope implements Scope
 					foreach ($rightConstantArrays as $rightConstantArray) {
 						foreach ($leftConstantArrays as $leftConstantArray) {
 							$newArrayBuilder = ConstantArrayTypeBuilder::createFromConstantArray($rightConstantArray);
-							foreach ($leftConstantArray->getKeyTypes() as $leftKeyType) {
+							foreach ($leftConstantArray->getKeyTypes() as $i => $leftKeyType) {
+								$optional = $leftConstantArray->isOptionalKey($i);
+								$valueType = $leftConstantArray->getOffsetValueType($leftKeyType);
+								if (!$optional) {
+									if ($rightConstantArray->hasOffsetValueType($leftKeyType)->maybe()) {
+										$valueType = TypeCombinator::union($valueType, $rightConstantArray->getOffsetValueType($leftKeyType));
+									}
+								}
 								$newArrayBuilder->setOffsetValueType(
 									$leftKeyType,
-									$leftConstantArray->getOffsetValueType($leftKeyType),
+									$valueType,
+									$optional,
 								);
 							}
 							$resultTypes[] = $newArrayBuilder->getArray();
@@ -4306,7 +4314,7 @@ class MutatingScope implements Scope
 				$this->parentScope,
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			$constantArrays = TypeUtils::getConstantArrays($this->getType($expr->var));
+			$constantArrays = TypeUtils::getOldConstantArrays($this->getType($expr->var));
 			if (count($constantArrays) > 0) {
 				$setArrays = [];
 				$dimType = $this->getType($expr->dim);

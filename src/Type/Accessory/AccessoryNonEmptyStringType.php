@@ -154,7 +154,7 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		return new ConstantArrayType(
 			[new ConstantIntegerType(0)],
 			[$this],
-			1,
+			[1],
 		);
 	}
 

@@ -16,7 +16,7 @@ final class ConditionalType implements CompoundType
 	use ConditionalTypeTrait;
 	use NonGeneralizableTypeTrait;
 
-	public function __construct(
+	private function __construct(
 		private Type $subject,
 		private Type $target,
 		Type $if,
@@ -75,7 +75,7 @@ final class ConditionalType implements CompoundType
 		Type $if,
 		Type $else,
 		bool $negated,
-	)
+	): Type
 	{
 		return (new self($subject, $target, $if, $else, $negated))->resolve();
 	}

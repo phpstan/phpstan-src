@@ -19,11 +19,13 @@ final class ConditionalType implements CompoundType
 	public function __construct(
 		private Type $subject,
 		private Type $target,
-		private Type $if,
-		private Type $else,
+		Type $if,
+		Type $else,
 		private bool $negated,
 	)
 	{
+		$this->if = $if;
+		$this->else = $else;
 	}
 
 	public function getReferencedClasses(): array

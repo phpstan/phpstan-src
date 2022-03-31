@@ -18,11 +18,13 @@ final class ConditionalTypeForParameter implements CompoundType
 	public function __construct(
 		private string $parameterName,
 		private Type $target,
-		private Type $if,
-		private Type $else,
+		Type $if,
+		Type $else,
 		private bool $negated,
 	)
 	{
+		$this->if = $if;
+		$this->else = $else;
 	}
 
 	public function getParameterName(): string

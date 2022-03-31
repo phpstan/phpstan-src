@@ -3,9 +3,12 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
+use function array_key_exists;
 use function array_map;
 
 class ResolvedFunctionVariant implements ParametersAcceptor
@@ -16,9 +19,13 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 
 	private ?Type $returnType = null;
 
+	/**
+	 * @param array<string, Type> $passedArgs
+	 */
 	public function __construct(
 		private ParametersAcceptor $parametersAcceptor,
 		private TemplateTypeMap $resolvedTemplateTypeMap,
+		private array $passedArgs,
 	)
 	{
 	}
@@ -73,10 +80,23 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 				$this->resolvedTemplateTypeMap,
 			);
 
+			$type = $this->resolveConditionalTypes($type);
+
 			$this->returnType = $type;
 		}
 
 		return $type;
+	}
+
+	private function resolveConditionalTypes(Type $type): Type
+	{
+		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+			while ($type instanceof ConditionalTypeForParameter && array_key_exists($type->getParameterName(), $this->passedArgs)) {
+				$type = $type->toConditional($this->passedArgs[$type->getParameterName()]);
+			}
+
+			return $traverse($type);
+		});
 	}
 
 }

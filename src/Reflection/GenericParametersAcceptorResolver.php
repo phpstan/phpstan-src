@@ -17,6 +17,7 @@ class GenericParametersAcceptorResolver
 	public static function resolve(array $argTypes, ParametersAcceptor $parametersAcceptor): ParametersAcceptor
 	{
 		$typeMap = TemplateTypeMap::createEmpty();
+		$passedArgs = [];
 
 		foreach ($parametersAcceptor->getParameters() as $i => $param) {
 			if (isset($argTypes[$i])) {
@@ -31,6 +32,7 @@ class GenericParametersAcceptorResolver
 
 			$paramType = $param->getType();
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType));
+			$passedArgs['$' . $param->getName()] = $argType;
 		}
 
 		return new ResolvedFunctionVariant(
@@ -39,6 +41,7 @@ class GenericParametersAcceptorResolver
 				$parametersAcceptor->getTemplateTypeMap()->map(static fn (string $name, Type $type): Type => new ErrorType())->getTypes(),
 				$typeMap->getTypes(),
 			)),
+			$passedArgs,
 		);
 	}
 

@@ -82,16 +82,16 @@ final class ConditionalType implements CompoundType
 
 	private function resolve(): Type
 	{
-		if ($this->target->isSuperTypeOf($this->subject)->yes()) {
-			return !$this->negated ? $this->if : $this->else;
-		}
+		$isSuperType = $this->target->isSuperTypeOf($this->subject);
 
-		if ($this->subject instanceof MixedType && !$this->subject->isExplicitMixed()) {
-			return TypeCombinator::union($this->if, $this->else);
+		if ($isSuperType->yes()) {
+			return !$this->negated ? $this->if : $this->else;
+		} elseif ($isSuperType->no()) {
+			return !$this->negated ? $this->else : $this->if;
 		}
 
 		if ($this->isResolved()) {
-			return !$this->negated ? $this->else : $this->if;
+			return TypeCombinator::union($this->if, $this->else);
 		}
 
 		return $this;

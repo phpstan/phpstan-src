@@ -117,6 +117,8 @@ class UnionType implements CompoundType
 			($otherType instanceof self && !$otherType instanceof TemplateUnionType)
 			|| $otherType instanceof IterableType
 			|| $otherType instanceof NeverType
+			|| $otherType instanceof ConditionalType
+			|| $otherType instanceof ConditionalTypeForParameter
 		) {
 			return $otherType->isSubTypeOf($this);
 		}

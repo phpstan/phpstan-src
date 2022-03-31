@@ -109,4 +109,20 @@ abstract class Test
 		assertType('TInt of int (method ConditionalTypes\Test::testConditionalInParameter(), argument)', $foo);
 		assertType('(TInt of int (method ConditionalTypes\Test::testConditionalInParameter(), argument) is 5 ? int<0, 10> : int<10, 100>)', $bar);
 	}
+
+	/**
+	 * @return ($input is null ? null : string)
+	 */
+	abstract public function retainNullable(?bool $input): ?string;
+
+	public function testRetainNullable(?bool $input): void
+	{
+		assertType('string|null', $this->retainNullable($input));
+
+		if ($input === null) {
+			assertType('null', $this->retainNullable($input));
+		} else {
+			assertType('string', $this->retainNullable($input));
+		}
+	}
 }

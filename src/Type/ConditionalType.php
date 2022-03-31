@@ -67,17 +67,28 @@ final class ConditionalType implements CompoundType
 		);
 	}
 
-	public function resolve(): Type
+	public static function create(
+		Type $subject,
+		Type $target,
+		Type $if,
+		Type $else,
+		bool $negated,
+	)
 	{
+		return (new self($subject, $target, $if, $else, $negated))->resolve();
+	}
+
+	private function resolve(): Type
+	{
+		if ($this->target->isSuperTypeOf($this->subject)->yes()) {
+			return !$this->negated ? $this->if : $this->else;
+		}
+
 		if ($this->subject instanceof MixedType && !$this->subject->isExplicitMixed()) {
 			return TypeCombinator::union($this->if, $this->else);
 		}
 
-		$isSuperType = $this->target->isSuperTypeOf($this->subject);
-
-		if ($isSuperType->yes()) {
-			return !$this->negated ? $this->if : $this->else;
-		} elseif ($isSuperType->no() || $this->isResolved()) {
+		if ($this->isResolved()) {
 			return !$this->negated ? $this->else : $this->if;
 		}
 
@@ -95,7 +106,7 @@ final class ConditionalType implements CompoundType
 			return $this;
 		}
 
-		return new ConditionalType($subject, $target, $if, $else, $this->negated);
+		return self::create($subject, $target, $if, $else, $this->negated);
 	}
 
 	private function isResolved(): bool

@@ -30,9 +30,9 @@ final class ConditionalTypeForParameter implements CompoundType
 		return $this->parameterName;
 	}
 
-	public function toConditional(Type $subject): ConditionalType
+	public function toConditional(Type $subject): Type
 	{
-		return new ConditionalType(
+		return ConditionalType::create(
 			$subject,
 			$this->target,
 			$this->if,

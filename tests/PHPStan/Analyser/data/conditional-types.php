@@ -88,6 +88,18 @@ abstract class Test
 	}
 
 	/**
+	 * @param (true is true ? string : bool) $foo
+	 * @param (5 is int<4, 6> ? string : bool) $bar
+	 * @param (5 is not int<0, 4> ? (4 is bool ? float : string) : bool) $baz
+	 */
+	public function testDeterministicParameter($foo, $bar, $baz): void
+	{
+		assertType('string', $foo);
+		assertType('string', $bar);
+		assertType('string', $baz);
+	}
+
+	/**
 	 * @template TInt of int
 	 * @param TInt $foo
 	 * @param (TInt is 5 ? int<0, 10> : int<10, 100>) $bar

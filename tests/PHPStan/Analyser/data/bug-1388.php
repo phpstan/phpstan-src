@@ -4,6 +4,7 @@ namespace Bug1388;
 
 final class Foo
 {
+	/** @var mixed */
 	public $s;
 
 	public function bar(): void

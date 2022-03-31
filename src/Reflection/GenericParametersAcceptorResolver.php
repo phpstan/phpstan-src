@@ -12,7 +12,7 @@ class GenericParametersAcceptorResolver
 
 	/**
 	 * @api
-	 * @param Type[] $argTypes
+	 * @param array<int|string, Type> $argTypes
 	 */
 	public static function resolve(array $argTypes, ParametersAcceptor $parametersAcceptor): ParametersAcceptor
 	{
@@ -21,6 +21,8 @@ class GenericParametersAcceptorResolver
 		foreach ($parametersAcceptor->getParameters() as $i => $param) {
 			if (isset($argTypes[$i])) {
 				$argType = $argTypes[$i];
+			} elseif (isset($argTypes[$param->getName()])) {
+				$argType = $argTypes[$param->getName()];
 			} elseif ($param->getDefaultValue() !== null) {
 				$argType = $param->getDefaultValue();
 			} else {

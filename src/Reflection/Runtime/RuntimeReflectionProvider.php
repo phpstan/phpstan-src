@@ -4,13 +4,19 @@ namespace PHPStan\Reflection\Runtime;
 
 use Closure;
 use PhpParser\Node;
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
+use PHPStan\BetterReflection\Reflector\Reflector;
+use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use PHPStan\Broker\AnonymousClassNameHelper;
 use PHPStan\Broker\ClassAutoloadingException;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Broker\ConstantNotFoundException;
 use PHPStan\Broker\FunctionNotFoundException;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
+use PHPStan\File\FileHelper;
+use PHPStan\File\RelativePathHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
@@ -80,6 +86,11 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		private NativeFunctionReflectionProvider $nativeFunctionReflectionProvider,
 		private StubPhpDocProvider $stubPhpDocProvider,
 		private PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
+		private FileHelper $fileHelper,
+		private Standard $printer,
+		private AnonymousClassNameHelper $anonymousClassNameHelper,
+		private RelativePathHelper $relativePathHelper,
+		private Reflector $reflector,
 	)
 	{
 	}
@@ -146,7 +157,55 @@ class RuntimeReflectionProvider implements ReflectionProvider
 		Scope $scope,
 	): ClassReflection
 	{
-		throw new ShouldNotHappenException();
+		if (isset($classNode->namespacedName)) {
+			throw new ShouldNotHappenException();
+		}
+
+		if (!$scope->isInTrait()) {
+			$scopeFile = $scope->getFile();
+		} else {
+			$scopeFile = $scope->getTraitReflection()->getFileName();
+			if ($scopeFile === null) {
+				$scopeFile = $scope->getFile();
+			}
+		}
+
+		$filename = $this->fileHelper->normalizePath($this->relativePathHelper->getRelativePath($scopeFile), '/');
+		$className = $this->anonymousClassNameHelper->getAnonymousClassName(
+			$classNode,
+			$scopeFile,
+		);
+		$classNode->name = new Node\Identifier($className);
+		$classNode->setAttribute('anonymousClass', true);
+
+		if (isset(self::$anonymousClasses[$className])) {
+			return self::$anonymousClasses[$className];
+		}
+
+		$reflectionClass = \PHPStan\BetterReflection\Reflection\ReflectionClass::createFromNode(
+			$this->reflector,
+			$classNode,
+			new LocatedSource($this->printer->prettyPrint([$classNode]), $className, $scopeFile),
+			null,
+		);
+
+		self::$anonymousClasses[$className] = new ClassReflection(
+			$this->reflectionProviderProvider->getReflectionProvider(),
+			$this->fileTypeMapper,
+			$this->stubPhpDocProvider,
+			$this->phpDocInheritanceResolver,
+			$this->phpVersion,
+			$this->classReflectionExtensionRegistryProvider->getRegistry()->getPropertiesClassReflectionExtensions(),
+			$this->classReflectionExtensionRegistryProvider->getRegistry()->getMethodsClassReflectionExtensions(),
+			sprintf('class@anonymous/%s:%s', $filename, $classNode->getLine()),
+			new \PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass($reflectionClass),
+			$scopeFile,
+			null,
+			$this->stubPhpDocProvider->findClassPhpDoc($className),
+		);
+		$this->classReflections[$className] = self::$anonymousClasses[$className];
+
+		return self::$anonymousClasses[$className];
 	}
 
 	/**

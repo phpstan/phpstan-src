@@ -1787,15 +1787,13 @@ services:
 		autowired: false
 
 	runtimeReflectionProvider:
-		class: PHPStan\Reflection\ReflectionProvider\ClassBlacklistReflectionProvider
-		arguments:
-			reflectionProvider: @innerRuntimeReflectionProvider
-			patterns: %staticReflectionClassNamePatterns%
-			singleReflectionInsteadOfFile: %singleReflectionInsteadOfFile%
-		autowired: false
+		class: PHPStan\Reflection\Runtime\RuntimeReflectionProvider
+		factory: @innerRuntimeReflectionProvider
 
 	innerRuntimeReflectionProvider:
 		class: PHPStan\Reflection\Runtime\RuntimeReflectionProvider
+		arguments:
+			reflector: @betterReflectionReflector
 
 	-
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionSourceLocatorFactory

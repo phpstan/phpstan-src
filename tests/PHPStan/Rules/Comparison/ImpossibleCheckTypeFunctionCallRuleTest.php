@@ -533,11 +533,4 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5354.php'], []);
 	}
 
-	public function testBug6213(): void
-	{
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-6213.php'], []);
-	}
-
 }

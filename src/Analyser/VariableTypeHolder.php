@@ -3,6 +3,8 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
@@ -34,10 +36,17 @@ class VariableTypeHolder
 
 	public function and(self $other): self
 	{
-		if ($this->getType()->equals($other->getType())) {
-			$type = $this->getType();
+		$thisType = $this->getType();
+		$otherType = $other->getType();
+
+		if ($thisType->equals($otherType)) {
+			$type = $thisType;
+		} elseif ($thisType instanceof ConstantArrayType && $otherType instanceof ConstantArrayType && $thisType->getDepth() + $otherType->getDepth() > ConstantArrayTypeBuilder::ARRAY_DEPTH_LIMIT) {
+			// TODO: this is just "cutting of" the type because generalization would trigger perf problems again.
+			// is there a better way of handling this? or a better place for it?
+			$type = $thisType;
 		} else {
-			$type = TypeCombinator::union($this->getType(), $other->getType());
+			$type = TypeCombinator::union($thisType, $otherType);
 		}
 		return new self(
 			$type,

@@ -29,6 +29,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_keys;
@@ -59,6 +60,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	/** @var self[]|null */
 	private ?array $allArrays = null;
 
+	private int $depth;
+
 	/**
 	 * @api
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
@@ -73,6 +76,21 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	)
 	{
 		assert(count($keyTypes) === count($valueTypes));
+
+		$maxDepth = 0;
+		foreach ($valueTypes as $valueType) {
+			TypeTraverser::map($valueType, static function (Type $type, callable $traverse) use (&$maxDepth): Type {
+				if (!$type instanceof ConstantArrayType) {
+					return $traverse($type);
+				}
+
+				if ($type->getDepth() > $maxDepth) {
+					$maxDepth = $type->getDepth();
+				}
+				return $type;
+			});
+		}
+		$this->depth = 1 + $maxDepth;
 
 		parent::__construct(
 			count($keyTypes) > 0 ? TypeCombinator::union(...$keyTypes) : new NeverType(true),
@@ -141,6 +159,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return $this->allArrays = $arrays;
+	}
+
+	public function getDepth(): int
+	{
+		return $this->depth;
 	}
 
 	/**

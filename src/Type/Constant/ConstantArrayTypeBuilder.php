@@ -21,6 +21,8 @@ class ConstantArrayTypeBuilder
 
 	public const ARRAY_COUNT_LIMIT = 256;
 
+	public const ARRAY_DEPTH_LIMIT = 8;
+
 	private bool $degradeToGeneralArray = false;
 
 	/**
@@ -33,13 +35,14 @@ class ConstantArrayTypeBuilder
 		private array $valueTypes,
 		private int $nextAutoIndex,
 		private array $optionalKeys,
+		private int $depth,
 	)
 	{
 	}
 
 	public static function createEmpty(): self
 	{
-		return new self([], [], 0, []);
+		return new self([], [], 0, [], 0);
 	}
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
@@ -49,6 +52,7 @@ class ConstantArrayTypeBuilder
 			$startArrayType->getValueTypes(),
 			$startArrayType->getNextAutoIndex(),
 			$startArrayType->getOptionalKeys(),
+			$startArrayType->getDepth(),
 		);
 
 		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
@@ -65,6 +69,8 @@ class ConstantArrayTypeBuilder
 		} else {
 			$offsetType = ArrayType::castToArrayKeyType($offsetType);
 		}
+
+		$this->depth = $valueType instanceof ConstantArrayType ? $valueType->getDepth() : 1;
 
 		if (!$this->degradeToGeneralArray) {
 			if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
@@ -177,7 +183,7 @@ class ConstantArrayTypeBuilder
 			return new ConstantArrayType([], []);
 		}
 
-		if (!$this->degradeToGeneralArray) {
+		if (!$this->degradeToGeneralArray && $this->depth <= self::ARRAY_DEPTH_LIMIT) {
 			/** @var array<int, ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
 			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndex, $this->optionalKeys);

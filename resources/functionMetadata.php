@@ -1,5 +1,18 @@
 <?php declare(strict_types = 1);
 
+/**
+ * GENERATED FILE - DO NOT EDIT!
+ *
+ * This file is generated automatically when running bin/generate-function-metadata.php
+ * and the result is merged from bin/functionMetadata_original.php and by looking at jetbrains/phpstorm-stubs methods
+ * and functions with the #[Pure] attribute.
+ *
+ * If you want to add new entries here follow these steps:
+ * 1) Contribute the functions that have 'hasSideEffects' => true as a modification to bin/functionMetadata_original.php.
+ * 2) Contribute the #[Pure] functions without side effects to https://github.com/JetBrains/phpstorm-stubs
+ * 3) Once the PR from 2) is merged, please update the package here and run ./bin/generate-function-metadata.php.
+ */
+
 return [
 	'CURLFile::getFilename' => ['hasSideEffects' => false],
 	'CURLFile::getMimeType' => ['hasSideEffects' => false],
@@ -1404,6 +1417,19 @@ return [
 	'rawurldecode' => ['hasSideEffects' => false],
 	'rawurlencode' => ['hasSideEffects' => false],
 	'readfile' => ['hasSideEffects' => true],
+	'readline' => ['hasSideEffects' => true],
+	'readline_add_history' => ['hasSideEffects' => true],
+	'readline_callback_handler_install' => ['hasSideEffects' => true],
+	'readline_callback_handler_remove' => ['hasSideEffects' => true],
+	'readline_callback_read_char' => ['hasSideEffects' => true],
+	'readline_clear_history' => ['hasSideEffects' => true],
+	'readline_completion_function' => ['hasSideEffects' => true],
+	'readline_info' => ['hasSideEffects' => true],
+	'readline_list_history' => ['hasSideEffects' => true],
+	'readline_on_new_line' => ['hasSideEffects' => true],
+	'readline_read_history' => ['hasSideEffects' => true],
+	'readline_redisplay' => ['hasSideEffects' => true],
+	'readline_write_history' => ['hasSideEffects' => true],
 	'readlink' => ['hasSideEffects' => false],
 	'realpath' => ['hasSideEffects' => false],
 	'realpath_cache_get' => ['hasSideEffects' => false],

@@ -17,6 +17,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function array_key_last;
 use function array_slice;
@@ -32,7 +33,7 @@ class ParametersAcceptorSelector
 	/**
 	 * @template T of ParametersAcceptor
 	 * @param T[] $parametersAcceptors
-	 * @return T
+	 * @return T|SingleParametersAcceptor
 	 */
 	public static function selectSingle(
 		array $parametersAcceptors,
@@ -48,7 +49,12 @@ class ParametersAcceptorSelector
 			throw new ShouldNotHappenException('Multiple variants - use selectFromArgs() instead.');
 		}
 
-		return new SingleParametersAcceptor($parametersAcceptors[0]);
+		$parametersAcceptor = $parametersAcceptors[0];
+		if (TypeUtils::containsConditional($parametersAcceptor->getReturnType())) {
+			return new SingleParametersAcceptor($parametersAcceptor);
+		}
+
+		return $parametersAcceptor;
 	}
 
 	/**

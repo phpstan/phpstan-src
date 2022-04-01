@@ -11,6 +11,8 @@ use PHPStan\Type\TypeTraverser;
 class SingleParametersAcceptor implements ParametersAcceptor
 {
 
+	private ?Type $returnType = null;
+
 	public function __construct(private ParametersAcceptor $acceptor)
 	{
 	}
@@ -40,13 +42,17 @@ class SingleParametersAcceptor implements ParametersAcceptor
 
 	public function getReturnType(): Type
 	{
-		return TypeTraverser::map($this->acceptor->getReturnType(), static function (Type $type, callable $traverse) {
-			while ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-				$type = $type->getResult();
-			}
+		if ($this->returnType === null) {
+			return $this->returnType = TypeTraverser::map($this->acceptor->getReturnType(), static function (Type $type, callable $traverse) {
+				while ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+					$type = $type->getResult();
+				}
 
-			return $traverse($type);
-		});
+				return $traverse($type);
+			});
+		}
+
+		return $this->returnType;
 	}
 
 }

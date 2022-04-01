@@ -328,4 +328,22 @@ class TypeUtils
 		return false;
 	}
 
+	public static function containsConditional(Type $type): bool
+	{
+		if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+			return true;
+		}
+
+		$contains = false;
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$contains): Type {
+			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+				$contains = true;
+			}
+
+			return !$contains ? $traverse($type) : $type;
+		});
+
+		return $contains;
+	}
+
 }

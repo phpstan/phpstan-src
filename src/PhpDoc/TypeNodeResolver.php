@@ -7,6 +7,7 @@ use Generator;
 use Iterator;
 use IteratorAggregate;
 use Nette\Utils\Strings;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprArrayNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFalseNode;
@@ -82,10 +83,12 @@ use Traversable;
 use function array_key_exists;
 use function array_map;
 use function count;
+use function explode;
 use function get_class;
 use function in_array;
 use function max;
 use function min;
+use function preg_match;
 use function preg_quote;
 use function str_replace;
 use function strpos;
@@ -361,7 +364,30 @@ class TypeNodeResolver
 			return new ErrorType();
 		}
 
+		if ($this->mightBeConstant($typeNode->name)) {
+			$constType = $this->tryResolveConstant($stringName) ?? $this->tryResolveConstant($typeNode->name);
+			if ($constType !== null) {
+				return $constType;
+			}
+		}
+
 		return new ObjectType($stringName);
+	}
+
+	private function mightBeConstant(string $name): bool
+	{
+		return preg_match('(^[A-Z_][A-Z0-9_]*$)', $name) > 0;
+	}
+
+	private function tryResolveConstant(string $name): ?Type
+	{
+		$nameNode = new Name\FullyQualified(explode('\\', $name));
+
+		if ($this->getReflectionProvider()->hasConstant($nameNode, null)) {
+			return $this->getReflectionProvider()->getConstant($nameNode, null)->getValueType();
+		}
+
+		return null;
 	}
 
 	private function tryResolvePseudoTypeClassType(IdentifierTypeNode $typeNode, NameScope $nameScope): ?Type

@@ -665,6 +665,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug6160(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6160.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Parameter #1 $flags of static method Bug6160\HelloWorld::split() expects 0|1|2, 94561 given.', $errors[0]->getMessage());
+		$this->assertSame(19, $errors[0]->getLine());
+		$this->assertSame('Parameter #1 $flags of static method Bug6160\HelloWorld::split() expects 0|1|2, \'sdf\' given.', $errors[1]->getMessage());
+		$this->assertSame(23, $errors[1]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

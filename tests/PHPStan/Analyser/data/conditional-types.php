@@ -37,6 +37,24 @@ abstract class Test
 	}
 
 	/**
+	 * @return ($array is non-empty-array ? true : false)
+	 */
+	abstract public function accessory(array $array): bool;
+
+	/**
+	 * @param array $array
+	 * @param non-empty-array $nonEmptyArray
+	 * @param array{} $emptyArray
+	 */
+	public function testAccessory(array $array, array $nonEmptyArray, array $emptyArray): void
+	{
+		assertType('bool', $this->accessory($array));
+		assertType('true', $this->accessory($nonEmptyArray));
+		assertType('false', $this->accessory($emptyArray));
+		assertType('bool', $this->accessory($_GET['array']));
+	}
+
+	/**
 	 * @return ($as_float is true ? float : string)
 	 */
 	abstract public function microtime(bool $as_float);

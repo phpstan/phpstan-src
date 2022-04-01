@@ -2664,6 +2664,22 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'highlight_file($string, true)',
 			],
 			[
+				'bool|string',
+				'show_source()',
+			],
+			[
+				'bool',
+				'show_source($string)',
+			],
+			[
+				'bool',
+				'show_source($string, false)',
+			],
+			[
+				'string',
+				'show_source($string, true)',
+			],
+			[
 				'string|true',
 				'print_r()',
 			],

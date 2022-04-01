@@ -189,3 +189,23 @@ class FooGetSelf implements DynamicMethodReturnTypeExtension {
 	}
 
 }
+
+
+class ConditionalGetSingle implements DynamicMethodReturnTypeExtension {
+
+	public function getClass(): string
+	{
+		return \DynamicMethodReturnGetSingleConditional\Foo::class;
+	}
+
+	public function isMethodSupported(MethodReflection $methodReflection): bool
+	{
+		return $methodReflection->getName() === 'get';
+	}
+
+	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
+	{
+		return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+	}
+
+}

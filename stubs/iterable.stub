@@ -275,3 +275,24 @@ class RecursiveArrayIterator extends ArrayIterator implements RecursiveIterator 
      */
     public function uksort($cmp_function) { }
 }
+
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @template TIterator as Iterator<TKey, TValue>
+ *
+ * @template-extends IteratorIterator<TKey, TValue, TIterator>
+ *
+ * @mixin TIterator
+ */
+class LimitIterator extends \IteratorIterator
+{
+	/**
+	 * @param TIterator $iterator
+	 * @param int<0, max> $offset
+	 * @param int<1, max>|-1 $limit
+	 */
+    public function __construct(Iterator $iterator, int $offset = 0, int $limit = -1)
+    {
+    }
+}

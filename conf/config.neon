@@ -27,6 +27,7 @@ parameters:
 			- CallbackFilterIterator
 			- FilterIterator
 			- RecursiveCallbackFilterIterator
+			- LimitIterator
 		explicitMixedInUnknownGenericNew: false
 		arrayFilter: false
 		arrayUnpacking: false

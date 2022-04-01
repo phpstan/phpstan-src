@@ -11,6 +11,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use function count;
@@ -37,11 +38,19 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 		$argType = $scope->getType($args[0]->value);
 
-		$constantStrings = TypeUtils::getConstantStrings($argType);
+		$constantScalars = TypeUtils::getConstantScalars($argType);
 		$min = null;
 		$max = null;
-		foreach ($constantStrings as $constantString) {
-			$len = strlen($constantString->getValue());
+		foreach ($constantScalars as $constantScalar) {
+			if ((new IntegerType())->isSuperTypeOf($constantScalar)->yes()) {
+				$len = strlen((string) $constantScalar->getValue());
+			} elseif ((new StringType())->isSuperTypeOf($constantScalar)->yes()) {
+				$len = strlen((string) $constantScalar->getValue());
+			} elseif ((new BooleanType())->isSuperTypeOf($constantScalar)->yes()) {
+				$len = strlen((string) $constantScalar->getValue());
+			} else {
+				break;
+			}
 
 			if ($min === null) {
 				$min = $len;

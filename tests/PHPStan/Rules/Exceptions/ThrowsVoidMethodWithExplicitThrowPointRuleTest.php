@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Exceptions;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use ThrowsVoidMethod\MyException;
+use UnhandledMatchError;
 
 /**
  * @extends RuleTestCase<ThrowsVoidMethodWithExplicitThrowPointRule>
@@ -94,6 +95,13 @@ class ThrowsVoidMethodWithExplicitThrowPointRuleTest extends RuleTestCase
 		$this->missingCheckedExceptionInThrows = $missingCheckedExceptionInThrows;
 		$this->checkedExceptionClasses = $checkedExceptionClasses;
 		$this->analyse([__DIR__ . '/data/throws-void-method.php'], $errors);
+	}
+
+	public function testBug6910(): void
+	{
+		$this->missingCheckedExceptionInThrows = false;
+		$this->checkedExceptionClasses = [UnhandledMatchError::class];
+		$this->analyse([__DIR__ . '/data/bug-6910.php'], []);
 	}
 
 }

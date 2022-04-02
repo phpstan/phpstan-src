@@ -96,7 +96,7 @@ class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcc
 		$result = new self(
 			$this->parametersAcceptor,
 			$this->resolvedTemplateTypeMap,
-			$this->passedArgs
+			$this->passedArgs,
 		);
 
 		$result->returnType = TypeUtils::flattenConditionals($returnType);

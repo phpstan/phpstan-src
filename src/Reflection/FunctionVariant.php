@@ -59,7 +59,7 @@ class FunctionVariant implements ParametersAcceptor, SingleParametersAcceptor
 			$this->resolvedTemplateTypeMap,
 			$this->parameters,
 			$this->isVariadic,
-			TypeUtils::flattenConditionals($this->returnType)
+			TypeUtils::flattenConditionals($this->returnType),
 		);
 	}
 

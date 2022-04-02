@@ -17,8 +17,6 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function array_key_last;
 use function array_slice;

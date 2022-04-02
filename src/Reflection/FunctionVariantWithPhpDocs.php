@@ -63,7 +63,7 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 			$this->isVariadic(),
 			TypeUtils::flattenConditionals($this->getReturnType()),
 			TypeUtils::flattenConditionals($this->phpDocReturnType),
-			$this->nativeReturnType
+			$this->nativeReturnType,
 		);
 	}
 

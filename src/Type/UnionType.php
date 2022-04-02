@@ -95,7 +95,7 @@ class UnionType implements CompoundType
 			return TrinaryLogic::createYes();
 		}
 
-		if ($type instanceof CompoundType && !$type instanceof CallableType && !$type instanceof TemplateType) {
+		if ($type instanceof CompoundType && !$type instanceof CallableType && !$type instanceof TemplateType && !$type instanceof IntersectionType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 

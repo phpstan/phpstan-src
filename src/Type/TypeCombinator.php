@@ -175,7 +175,13 @@ class TypeCombinator
 			}
 
 			$arrayTypes[] = $types[$i];
-			$arrayAccessoryTypes[] = [];
+
+			if ($types[$i]->isIterableAtLeastOnce()->yes()) {
+				$nonEmpty = new NonEmptyArrayType();
+				$arrayAccessoryTypes[] = [$nonEmpty->describe(VerbosityLevel::cache()) => $nonEmpty];
+			} else {
+				$arrayAccessoryTypes[] = [];
+			}
 			unset($types[$i]);
 		}
 
@@ -588,7 +594,8 @@ class TypeCombinator
 				$builder->setOffsetValueType($data['keyType'], $data['valueType'], $data['optional']);
 			}
 
-			$resultArrays[] = self::intersect($builder->getArray(), ...$accessoryTypes);
+			$arr = self::intersect($builder->getArray(), ...$accessoryTypes);
+			$resultArrays[] = $arr;
 		}
 
 		return self::reduceArrays($resultArrays);

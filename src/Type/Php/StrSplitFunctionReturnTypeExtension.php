@@ -147,7 +147,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$i++;
 		}
 
-		return new ConstantArrayType($keyTypes, $valueTypes, $isList ? $i : 0);
+		return new ConstantArrayType($keyTypes, $valueTypes, $isList ? [$i] : [0]);
 	}
 
 }

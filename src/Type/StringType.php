@@ -131,7 +131,7 @@ class StringType implements Type
 		return new ConstantArrayType(
 			[new ConstantIntegerType(0)],
 			[$this],
-			1,
+			[1],
 		);
 	}
 

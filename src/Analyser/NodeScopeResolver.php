@@ -1863,7 +1863,7 @@ class NodeScopeResolver
 
 				$arrayArg = $expr->getArgs()[0]->value;
 				$originalArrayType = $scope->getType($arrayArg);
-				$constantArrays = TypeUtils::getConstantArrays($originalArrayType);
+				$constantArrays = TypeUtils::getOldConstantArrays($originalArrayType);
 				if (
 					$functionReflection->getName() === 'array_push'
 					|| ($originalArrayType->isArray()->yes() && count($constantArrays) === 0)
@@ -1881,24 +1881,36 @@ class NodeScopeResolver
 					}
 
 					$defaultArrayType = $defaultArrayBuilder->getArray();
-
-					$arrayTypes = [];
-					foreach ($constantArrays as $constantArray) {
-						$arrayType = $defaultArrayType;
-						foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-							$valueType = $constantArray->getValueTypes()[$i];
-							if ($keyType instanceof ConstantIntegerType) {
-								$keyType = null;
-							}
-							$arrayType = $arrayType->setOffsetValueType($keyType, $valueType);
+					if (!$defaultArrayType instanceof ConstantArrayType) {
+						$arrayType = $originalArrayType;
+						foreach ($argumentTypes as $argType) {
+							$arrayType = $arrayType->setOffsetValueType(null, $argType);
 						}
-						$arrayTypes[] = $arrayType;
-					}
 
-					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType(
-						$arrayArg,
-						TypeCombinator::union(...$arrayTypes),
-					);
+						$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, TypeCombinator::intersect($arrayType, new NonEmptyArrayType()));
+					} else {
+						$arrayTypes = [];
+						foreach ($constantArrays as $constantArray) {
+							$arrayTypeBuilder = ConstantArrayTypeBuilder::createFromConstantArray($defaultArrayType);
+							foreach ($constantArray->getKeyTypes() as $i => $keyType) {
+								$valueType = $constantArray->getValueTypes()[$i];
+								if ($keyType instanceof ConstantIntegerType) {
+									$keyType = null;
+								}
+								$arrayTypeBuilder->setOffsetValueType(
+									$keyType,
+									$valueType,
+									$constantArray->isOptionalKey($i),
+								);
+							}
+							$arrayTypes[] = $arrayTypeBuilder->getArray();
+						}
+
+						$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType(
+							$arrayArg,
+							TypeCombinator::union(...$arrayTypes),
+						);
+					}
 				}
 			}
 

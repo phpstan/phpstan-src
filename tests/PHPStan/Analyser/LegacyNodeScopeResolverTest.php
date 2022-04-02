@@ -2596,7 +2596,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$conditionalArray + $unshiftedConditionalArray',
 			],
 			[
-				'array{0: \'lorem\', 1: stdClass, 2: 1, 3: 1, 4: 1, 5?: 2|3, 6?: 3}',
+				'array{0: \'lorem\', 1: stdClass, 2: 1, 3: 1|2, 4: 1|3, 5?: 2|3, 6?: 3}',
 				'$unshiftedConditionalArray + $conditionalArray',
 			],
 			[
@@ -2662,6 +2662,22 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				'string',
 				'highlight_file($string, true)',
+			],
+			[
+				'bool|string',
+				'show_source()',
+			],
+			[
+				'bool',
+				'show_source($string)',
+			],
+			[
+				'bool',
+				'show_source($string, false)',
+			],
+			[
+				'string',
+				'show_source($string, true)',
 			],
 			[
 				'string|true',
@@ -2736,7 +2752,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'count($appendingToArrayInBranches)',
 			],
 			[
-				'3|4|5',
+				'int<3, 5>',
 				'count($conditionalArray)',
 			],
 			[
@@ -3024,7 +3040,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherConditionalString . $conditionalString',
 			],
 			[
-				'6|7|8',
+				'int<6, 8>',
 				'count($conditionalArray) + count($array)',
 			],
 			[
@@ -3116,11 +3132,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$coalesceArray',
 			],
 			[
-				'array<int, int>',
+				'array<0|1|2, 1|2|3>',
 				'$arrayToBeUnset',
 			],
 			[
-				'array<int, int>',
+				'array<0|1|2, 1|2|3>',
 				'$arrayToBeUnset2',
 			],
 			[
@@ -4513,6 +4529,10 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				'123',
 				'$filteredMixed[0]',
+			],
+			[
+				'non-empty-array<0|1|2, 1|2|3>',
+				'$uniquedIntegers',
 			],
 			[
 				'1|2|3',
@@ -8031,11 +8051,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrayAppendedInIf',
 			],
 			[
-				'array<int, \'bar\'|\'baz\'|\'foo\'>',
+				'non-empty-array<int, \'bar\'|\'baz\'|\'foo\'>',
 				'$arrayAppendedInForeach',
 			],
 			[
-				'array<int<0, max>, literal-string&non-empty-string>', // could be 'array<int<0, max>, \'bar\'|\'baz\'|\'foo\'>'
+				'non-empty-array<int<0, max>, literal-string&non-empty-string>', // could be 'array<int<0, max>, \'bar\'|\'baz\'|\'foo\'>'
 				'$anotherArrayAppendedInForeach',
 			],
 			[
@@ -8413,7 +8433,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherArrayCopy',
 			],
 			[
-				'array<literal-string&non-empty-string, int|null>',
+				"array<'a'|'b'|'c', 1|2|3|4|null>",
 				'$yetAnotherArrayCopy',
 			],
 			[

@@ -64,6 +64,7 @@ class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 				return new ConstantArrayType(
 					$keyTypes,
 					$valueTypes,
+					$keysParamType->getNextAutoIndexes(),
 				);
 			}
 		}

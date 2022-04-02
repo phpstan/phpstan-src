@@ -770,10 +770,6 @@ class TypeSpecifier
 				$vars = array_merge($vars, array_reverse($tmpVars));
 			}
 
-			if (count($vars) === 0) {
-				throw new ShouldNotHappenException();
-			}
-
 			$types = null;
 			foreach ($vars as $var) {
 				if ($var instanceof Expr\Variable && is_string($var->name)) {

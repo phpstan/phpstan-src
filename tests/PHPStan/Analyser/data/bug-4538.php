@@ -12,6 +12,6 @@ class Foo
 	public function bar(string $index): void
 	{
 		assertType('string|false', getenv($index));
-		assertType('array<string>', getenv());
+		assertType('array<string, string>', getenv());
 	}
 }

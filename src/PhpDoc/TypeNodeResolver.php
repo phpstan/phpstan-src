@@ -86,6 +86,7 @@ use function count;
 use function explode;
 use function get_class;
 use function in_array;
+use function ltrim;
 use function max;
 use function min;
 use function preg_match;
@@ -364,30 +365,56 @@ class TypeNodeResolver
 			return new ErrorType();
 		}
 
-		if ($this->mightBeConstant($typeNode->name)) {
-			$constType = $this->tryResolveConstant($stringName) ?? $this->tryResolveConstant($typeNode->name);
-			if ($constType !== null) {
-				return $constType;
-			}
+		if ($this->getReflectionProvider()->hasClass($stringName)) {
+			return new ObjectType($stringName);
+		}
+
+		$constType = $this->tryResolveConstant($typeNode->name, $nameScope);
+		if ($constType !== null) {
+			return $constType;
 		}
 
 		return new ObjectType($stringName);
 	}
 
-	private function mightBeConstant(string $name): bool
+	private function tryResolveConstant(string $name, NameScope $nameScope): ?Type
 	{
-		return preg_match('(^[A-Z_][A-Z0-9_]*$)', $name) > 0;
-	}
+		if (!$this->mightBeConstant($name)) {
+			return null;
+		}
 
-	private function tryResolveConstant(string $name): ?Type
-	{
-		$nameNode = new Name\FullyQualified(explode('\\', $name));
+		$names = $this->getPossibleConstNames($name, $nameScope);
 
-		if ($this->getReflectionProvider()->hasConstant($nameNode, null)) {
-			return $this->getReflectionProvider()->getConstant($nameNode, null)->getValueType();
+		foreach ($names as $name) {
+			$nameNode = new Name\FullyQualified(explode('\\', $name));
+
+			if ($this->getReflectionProvider()->hasConstant($nameNode, null)) {
+				return $this->getReflectionProvider()->getConstant($nameNode, null)->getValueType();
+			}
 		}
 
 		return null;
+	}
+
+	/**
+	 * @return non-empty-list<string>
+	 */
+	private function getPossibleConstNames(string $name, NameScope $nameScope): array
+	{
+		if (strpos($name, '\\') === 0) {
+			return [ltrim($name, '\\')];
+		}
+
+		if ($nameScope->getNamespace() !== null) {
+			return [$nameScope->resolveStringName($name), $name];
+		}
+
+		return [$name];
+	}
+
+	private function mightBeConstant(string $name): bool
+	{
+		return preg_match('((?:^|\\\\)[A-Z_][A-Z0-9_]*$)', $name) > 0;
 	}
 
 	private function tryResolvePseudoTypeClassType(IdentifierTypeNode $typeNode, NameScope $nameScope): ?Type

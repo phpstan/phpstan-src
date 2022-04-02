@@ -875,6 +875,9 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		} else {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/conditional-types-constant-php8.php');
 		}
+
+		require_once __DIR__ . '/data/constant-phpdoc-type.php';
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/constant-phpdoc-type.php');
 	}
 
 	/**

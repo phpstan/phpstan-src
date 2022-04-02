@@ -94,10 +94,13 @@ class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcc
 	 */
 	public function flattenConditionalsInReturnType(): SingleParametersAcceptor
 	{
-		$returnType = $this->getReturnType();
-
-		$result = clone $this;
-		$result->returnType = TypeUtils::flattenConditionals($returnType);
+		/** @var static $result */
+		$result = new self(
+			$this->parametersAcceptor,
+			$this->resolvedTemplateTypeMap,
+			$this->passedArgs,
+		);
+		$result->returnType = TypeUtils::flattenConditionals($this->getReturnType());
 
 		return $result;
 	}

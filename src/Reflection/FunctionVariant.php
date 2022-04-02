@@ -54,13 +54,10 @@ class FunctionVariant implements ParametersAcceptor, SingleParametersAcceptor
 
 	public function flattenConditionalsInReturnType(): static
 	{
-		return new self(
-			$this->templateTypeMap,
-			$this->resolvedTemplateTypeMap,
-			$this->parameters,
-			$this->isVariadic,
-			TypeUtils::flattenConditionals($this->returnType),
-		);
+		$result = clone $this;
+		$result->returnType = TypeUtils::flattenConditionals($result->returnType);
+
+		return $result;
 	}
 
 }

@@ -365,7 +365,7 @@ class TypeNodeResolver
 			return new ErrorType();
 		}
 
-		if ($this->getReflectionProvider()->hasClass($stringName)) {
+		if (!$this->mightBeConstant($typeNode->name) || $this->getReflectionProvider()->hasClass($stringName)) {
 			return new ObjectType($stringName);
 		}
 
@@ -377,13 +377,14 @@ class TypeNodeResolver
 		return new ObjectType($stringName);
 	}
 
+	private function mightBeConstant(string $name): bool
+	{
+		return preg_match('((?:^|\\\\)[A-Z_][A-Z0-9_]*$)', $name) > 0;
+	}
+
 	private function tryResolveConstant(string $name, NameScope $nameScope): ?Type
 	{
-		if (!$this->mightBeConstant($name)) {
-			return null;
-		}
-
-		$names = $this->getPossibleConstNames($name, $nameScope);
+		$names = $this->getPossibleConstantNames($name, $nameScope);
 
 		foreach ($names as $name) {
 			$nameNode = new Name\FullyQualified(explode('\\', $name));
@@ -399,7 +400,7 @@ class TypeNodeResolver
 	/**
 	 * @return non-empty-list<string>
 	 */
-	private function getPossibleConstNames(string $name, NameScope $nameScope): array
+	private function getPossibleConstantNames(string $name, NameScope $nameScope): array
 	{
 		if (strpos($name, '\\') === 0) {
 			return [ltrim($name, '\\')];
@@ -410,11 +411,6 @@ class TypeNodeResolver
 		}
 
 		return [$name];
-	}
-
-	private function mightBeConstant(string $name): bool
-	{
-		return preg_match('((?:^|\\\\)[A-Z_][A-Z0-9_]*$)', $name) > 0;
 	}
 
 	private function tryResolvePseudoTypeClassType(IdentifierTypeNode $typeNode, NameScope $nameScope): ?Type

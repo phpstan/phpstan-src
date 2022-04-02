@@ -57,7 +57,7 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 	/**
 	 * @return static
 	 */
-	public function flattenConditionalsInReturnType(): self
+	public function flattenConditionalsInReturnType(): SingleParametersAcceptor
 	{
 		$result = parent::flattenConditionalsInReturnType();
 		$result->phpDocReturnType = TypeUtils::flattenConditionals($result->phpDocReturnType);

@@ -758,8 +758,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 					}
 				}
 
-				$items[] = sprintf('%s%s: %s', $keyDescription, $isOptional ? '?' : '', $valueType->describe($level));
-				$values[] = $valueType->describe($level);
+				$valueTypeDescription = $valueType->describe($level);
+				$items[] = sprintf('%s%s: %s', $keyDescription, $isOptional ? '?' : '', $valueTypeDescription);
+				$values[] = $valueTypeDescription;
 			}
 
 			$append = '';

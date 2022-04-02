@@ -8,10 +8,11 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function array_map;
 
-class ResolvedFunctionVariant implements ParametersAcceptor
+class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcceptor
 {
 
 	/** @var ParameterReflection[]|null */
@@ -86,6 +87,21 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 		}
 
 		return $type;
+	}
+
+	public function flattenConditionalsInReturnType(): static
+	{
+		$returnType = $this->getReturnType();
+
+		$result = new self(
+			$this->parametersAcceptor,
+			$this->resolvedTemplateTypeMap,
+			$this->passedArgs
+		);
+
+		$result->returnType = TypeUtils::flattenConditionals($returnType);
+
+		return $result;
 	}
 
 	private function resolveConditionalTypes(Type $type): Type

@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeUtils;
 
 /** @api */
 class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAcceptorWithPhpDocs
@@ -51,6 +52,19 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 	public function getNativeReturnType(): Type
 	{
 		return $this->nativeReturnType;
+	}
+
+	public function flattenConditionalsInReturnType(): static
+	{
+		return new self(
+			$this->getTemplateTypeMap(),
+			$this->getResolvedTemplateTypeMap(),
+			$this->getParameters(),
+			$this->isVariadic(),
+			TypeUtils::flattenConditionals($this->getReturnType()),
+			TypeUtils::flattenConditionals($this->phpDocReturnType),
+			$this->nativeReturnType
+		);
 	}
 
 }

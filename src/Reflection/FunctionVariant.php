@@ -4,9 +4,10 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeUtils;
 
 /** @api */
-class FunctionVariant implements ParametersAcceptor
+class FunctionVariant implements ParametersAcceptor, SingleParametersAcceptor
 {
 
 	/**
@@ -49,6 +50,17 @@ class FunctionVariant implements ParametersAcceptor
 	public function getReturnType(): Type
 	{
 		return $this->returnType;
+	}
+
+	public function flattenConditionalsInReturnType(): static
+	{
+		return new self(
+			$this->templateTypeMap,
+			$this->resolvedTemplateTypeMap,
+			$this->parameters,
+			$this->isVariadic,
+			TypeUtils::flattenConditionals($this->returnType)
+		);
 	}
 
 }

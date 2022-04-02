@@ -855,7 +855,7 @@ class TypeNodeResolver
 	private function generateIntMaskType(Type $type): ?Type
 	{
 		$ints = TypeUtils::getConstantIntegers($type);
-		if (!$ints) {
+		if (count($ints) === 0) {
 			return null;
 		}
 

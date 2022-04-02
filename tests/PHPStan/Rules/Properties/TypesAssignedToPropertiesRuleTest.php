@@ -420,4 +420,13 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5382(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-5382.php'], []);
+	}
+
 }

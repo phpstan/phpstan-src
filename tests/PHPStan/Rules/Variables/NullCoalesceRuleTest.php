@@ -268,4 +268,10 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5933(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-5933.php'], []);
+	}
+
 }

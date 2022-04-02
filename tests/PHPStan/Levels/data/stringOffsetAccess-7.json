@@ -8,5 +8,10 @@
         "message": "Offset 12.34 does not exist on array|string.",
         "line": 31,
         "ignorable": true
+    },
+    {
+        "message": "Possibly invalid array key type int|object.",
+        "line": 35,
+        "ignorable": true
     }
 ]

@@ -80,6 +80,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 use Traversable;
 use function array_map;
+use function array_unique;
 use function count;
 use function get_class;
 use function in_array;

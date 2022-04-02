@@ -384,10 +384,8 @@ class TypeNodeResolver
 
 	private function tryResolveConstant(string $name, NameScope $nameScope): ?Type
 	{
-		$names = $this->getPossibleConstantNames($name, $nameScope);
-
-		foreach ($names as $name) {
-			$nameNode = new Name\FullyQualified(explode('\\', $name));
+		foreach ($this->getPossibleFullyQualifiedConstantNames($name, $nameScope) as $fqn) {
+			$nameNode = new Name\FullyQualified(explode('\\', $fqn));
 
 			if ($this->getReflectionProvider()->hasConstant($nameNode, null)) {
 				return $this->getReflectionProvider()->getConstant($nameNode, null)->getValueType();
@@ -400,7 +398,7 @@ class TypeNodeResolver
 	/**
 	 * @return non-empty-list<string>
 	 */
-	private function getPossibleConstantNames(string $name, NameScope $nameScope): array
+	private function getPossibleFullyQualifiedConstantNames(string $name, NameScope $nameScope): array
 	{
 		if (strpos($name, '\\') === 0) {
 			return [ltrim($name, '\\')];

@@ -9,7 +9,6 @@ use Rector\DowngradePhp74\Rector\ArrowFunction\ArrowFunctionToAnonymousFunctionR
 use Rector\DowngradePhp74\Rector\Property\DowngradeTypedPropertyRector;
 use Rector\DowngradePhp80\Rector\Catch_\DowngradeNonCapturingCatchesRector;
 use Rector\DowngradePhp80\Rector\Class_\DowngradePropertyPromotionRector;
-use Rector\DowngradePhp80\Rector\ClassMethod\DowngradeStaticTypeDeclarationRector;
 use Rector\DowngradePhp80\Rector\ClassMethod\DowngradeTrailingCommasInParamUseRector;
 use Rector\DowngradePhp80\Rector\FunctionLike\DowngradeUnionTypeDeclarationRector;
 use Rector\DowngradePhp80\Rector\Property\DowngradeUnionTypeTypedPropertyRector;
@@ -40,7 +39,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 		$services->set(DowngradeUnionTypeTypedPropertyRector::class);
 		$services->set(DowngradePropertyPromotionRector::class);
 		$services->set(DowngradeUnionTypeDeclarationRector::class);
-		$services->set(DowngradeStaticTypeDeclarationRector::class);
 	}
 
 	if ($targetPhpVersionId < 70400) {

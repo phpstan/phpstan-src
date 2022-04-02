@@ -5,6 +5,9 @@ namespace PHPStan\Reflection;
 interface SingleParametersAcceptor
 {
 
-	public function flattenConditionalsInReturnType(): static;
+	/**
+	 * @return static
+	 */
+	public function flattenConditionalsInReturnType(): self;
 
 }

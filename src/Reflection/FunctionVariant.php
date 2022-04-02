@@ -52,7 +52,10 @@ class FunctionVariant implements ParametersAcceptor, SingleParametersAcceptor
 		return $this->returnType;
 	}
 
-	public function flattenConditionalsInReturnType(): static
+	/**
+	 * @return static
+	 */
+	public function flattenConditionalsInReturnType(): self
 	{
 		$result = clone $this;
 		$result->returnType = TypeUtils::flattenConditionals($result->returnType);

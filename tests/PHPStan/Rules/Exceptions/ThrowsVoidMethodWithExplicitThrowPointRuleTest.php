@@ -99,6 +99,9 @@ class ThrowsVoidMethodWithExplicitThrowPointRuleTest extends RuleTestCase
 
 	public function testBug6910(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
 		$this->missingCheckedExceptionInThrows = false;
 		$this->checkedExceptionClasses = [UnhandledMatchError::class];
 		$this->analyse([__DIR__ . '/data/bug-6910.php'], []);

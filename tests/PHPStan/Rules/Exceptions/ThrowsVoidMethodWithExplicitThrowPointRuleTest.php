@@ -6,6 +6,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use ThrowsVoidMethod\MyException;
 use UnhandledMatchError;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ThrowsVoidMethodWithExplicitThrowPointRule>

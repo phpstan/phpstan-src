@@ -1,6 +1,6 @@
 <?php
 
-namespace ConditionalTypesConstant;
+namespace ConditionalTypesConstantPhp8;
 
 use function PHPStan\Testing\assertType;
 

@@ -48,7 +48,13 @@ class ParametersAcceptorSelector
 			throw new ShouldNotHappenException('Multiple variants - use selectFromArgs() instead.');
 		}
 
-		return $parametersAcceptors[0];
+		$parametersAcceptor = $parametersAcceptors[0];
+
+		if ($parametersAcceptor instanceof SingleParametersAcceptor) {
+			$parametersAcceptor = $parametersAcceptor->flattenConditionalsInReturnType();
+		}
+
+		return $parametersAcceptor;
 	}
 
 	/**

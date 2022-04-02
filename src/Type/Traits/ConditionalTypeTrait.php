@@ -288,7 +288,7 @@ trait ConditionalTypeTrait
 		return $otherType->isSmallerThanOrEqual($result);
 	}
 
-	private function getResult(): Type
+	public function getResult(): Type
 	{
 		if ($this->result === null) {
 			return $this->result = TypeCombinator::union($this->if, $this->else);

@@ -27,3 +27,7 @@ services:
 		class: PHPStan\Tests\FooGetSelf
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
+	-
+		class: PHPStan\Tests\ConditionalGetSingle
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension

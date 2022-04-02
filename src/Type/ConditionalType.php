@@ -91,7 +91,7 @@ final class ConditionalType implements CompoundType
 		}
 
 		if ($this->isResolved()) {
-			return TypeCombinator::union($this->if, $this->else);
+			return $this->getResult();
 		}
 
 		return $this;

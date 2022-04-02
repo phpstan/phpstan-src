@@ -328,4 +328,15 @@ class TypeUtils
 		return false;
 	}
 
+	public static function flattenConditionals(Type $type): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) {
+			while ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+				$type = $type->getResult();
+			}
+
+			return $traverse($type);
+		});
+	}
+
 }

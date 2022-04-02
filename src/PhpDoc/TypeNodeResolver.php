@@ -581,6 +581,24 @@ class TypeNodeResolver
 			}
 
 			return new ErrorType();
+		} elseif ($mainTypeName === 'int-mask-of') {
+			if (count($genericTypes) === 1) { // int-mask-of<Class::CONST*>
+				$maskType = $this->generateIntMaskType($genericTypes[0]);
+				if ($maskType !== null) {
+					return $maskType;
+				}
+			}
+
+			return new ErrorType();
+		} elseif ($mainTypeName === 'int-mask') {
+			if (count($genericTypes) > 0) { // int-mask<1, 2, 4>
+				$maskType = $this->generateIntMaskType(TypeCombinator::union(...$genericTypes));
+				if ($maskType !== null) {
+					return $maskType;
+				}
+			}
+
+			return new ErrorType();
 		} elseif ($mainTypeName === '__benevolent') {
 			if (count($genericTypes) === 1) {
 				return TypeUtils::toBenevolentUnion($genericTypes[0]);
@@ -831,6 +849,32 @@ class TypeNodeResolver
 		}
 
 		return new ErrorType();
+	}
+
+	private function generateIntMaskType(Type $type): ?Type
+	{
+		$ints = TypeUtils::getConstantIntegers($type);
+		if (!$ints) {
+			return null;
+		}
+
+		$values = [];
+
+		foreach ($ints as $int) {
+			$int = $int->getValue();
+
+			if ($int !== 0) {
+				foreach ($values as $value) {
+					$values[] = $value | $int;
+				}
+			}
+
+			$values[] = $int;
+		}
+
+		$values = array_map(static fn ($value) => new ConstantIntegerType($value), array_unique($values));
+
+		return TypeCombinator::union(...$values);
 	}
 
 	/**

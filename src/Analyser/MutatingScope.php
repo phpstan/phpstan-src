@@ -4137,7 +4137,9 @@ class MutatingScope implements Scope
 	{
 		$exprString = $this->getNodeKey($expr);
 		$currentlyAllowedUndefinedExpressions = $this->currentlyAllowedUndefinedExpressions;
-		$currentlyAllowedUndefinedExpressions[$exprString] = $isAllowed;
+		if (!isset($currentlyAllowedUndefinedExpressions[$exprString])) {
+			$currentlyAllowedUndefinedExpressions[$exprString] = $isAllowed;
+		}
 
 		return $this->scopeFactory->create(
 			$this->context,

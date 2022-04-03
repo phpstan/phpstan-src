@@ -2277,6 +2277,9 @@ class NodeScopeResolver
 				static fn (): MutatingScope => $rightResult->getScope()->filterByFalseyValue($expr),
 			);
 		} elseif ($expr instanceof Coalesce) {
+			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch || $expr->left instanceof StaticPropertyFetch) {
+				$scope = $scope->setAllowedUndefinedExpression($expr->left, false);
+			}
 			$condResult = $this->processExprNode(new Expr\Isset_([$expr->left]), $scope, $nodeCallback, $context->enterDeep());
 			$rightResult = $this->processExprNode($expr->right, $condResult->getFalseyScope(), $nodeCallback, $context->enterDeep());
 

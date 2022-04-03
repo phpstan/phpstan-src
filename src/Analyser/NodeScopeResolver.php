@@ -2290,7 +2290,12 @@ class NodeScopeResolver
 			);
 		} elseif ($expr instanceof Coalesce) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left, false);
-			$scope = $this->lookForEnterAllowedUndefinedVariable($nonNullabilityResult->getScope(), $expr->left, true);
+			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch || $expr->left instanceof StaticPropertyFetch) {
+				$scope = $nonNullabilityResult->getScope()->setAllowedUndefinedExpression($expr->left, false);
+			} else {
+				$scope = $nonNullabilityResult->getScope();
+			}
+			$scope = $this->lookForEnterAllowedUndefinedVariable($scope, $expr->left, true);
 			$result = $this->processExprNode($expr->left, $scope, $nodeCallback, $context->enterDeep());
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();

@@ -79,8 +79,9 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 use Traversable;
+use function array_key_exists;
+use function array_keys;
 use function array_map;
-use function array_unique;
 use function count;
 use function get_class;
 use function in_array;
@@ -854,7 +855,7 @@ class TypeNodeResolver
 
 	private function generateIntMaskType(Type $type): ?Type
 	{
-		$ints = TypeUtils::getConstantIntegers($type);
+		$ints = array_map(static fn (ConstantIntegerType $type) => $type->getValue(), TypeUtils::getConstantIntegers($type));
 		if (count($ints) === 0) {
 			return null;
 		}
@@ -862,18 +863,16 @@ class TypeNodeResolver
 		$values = [];
 
 		foreach ($ints as $int) {
-			$int = $int->getValue();
-
-			if ($int !== 0) {
+			if ($int !== 0 && !array_key_exists($int, $values)) {
 				foreach ($values as $value) {
-					$values[] = $value | $int;
+					$values[$value | $int] = true;
 				}
 			}
 
-			$values[] = $int;
+			$values[$int] = true;
 		}
 
-		$values = array_map(static fn ($value) => new ConstantIntegerType($value), array_unique($values));
+		$values = array_map(static fn ($value) => new ConstantIntegerType($value), array_keys($values));
 
 		return TypeCombinator::union(...$values);
 	}

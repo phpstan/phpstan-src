@@ -44,7 +44,7 @@ class Foo
 		assertType('int', curl_getinfo($handle, CURLINFO_SSL_VERIFYRESULT));
 		assertType('float', curl_getinfo($handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD));
 		assertType('float', curl_getinfo($handle, CURLINFO_CONTENT_LENGTH_UPLOAD));
-		assertType('string', curl_getinfo($handle, CURLINFO_CONTENT_TYPE));
+		assertType('string|false', curl_getinfo($handle, CURLINFO_CONTENT_TYPE));
 		assertType('string|false', curl_getinfo($handle, CURLINFO_PRIVATE));
 		assertType('int', curl_getinfo($handle, CURLINFO_RESPONSE_CODE));
 		assertType('int', curl_getinfo($handle, CURLINFO_HTTP_CONNECTCODE));

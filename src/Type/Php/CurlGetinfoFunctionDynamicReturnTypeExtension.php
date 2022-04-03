@@ -93,7 +93,7 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 			'CURLINFO_SSL_VERIFYRESULT' => $integerType,
 			'CURLINFO_CONTENT_LENGTH_DOWNLOAD' => $floatType,
 			'CURLINFO_CONTENT_LENGTH_UPLOAD' => $floatType,
-			'CURLINFO_CONTENT_TYPE' => $stringType,
+			'CURLINFO_CONTENT_TYPE' => $stringFalseType,
 			'CURLINFO_PRIVATE' => $stringFalseType,
 			'CURLINFO_RESPONSE_CODE' => $integerType,
 			'CURLINFO_HTTP_CONNECTCODE' => $integerType,

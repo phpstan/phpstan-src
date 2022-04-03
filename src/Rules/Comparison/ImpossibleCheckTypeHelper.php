@@ -123,7 +123,7 @@ class ImpossibleCheckTypeHelper
 						if ($isNeedleSupertype->maybe() || $isNeedleSupertype->yes()) {
 							foreach ($haystackArrayTypes as $haystackArrayType) {
 								foreach (TypeUtils::getConstantScalars($haystackArrayType->getIterableValueType()) as $constantScalarType) {
-									if ($needleType->isSuperTypeOf($constantScalarType)->yes()) {
+									if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
 										continue 2;
 									}
 								}

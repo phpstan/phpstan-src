@@ -291,6 +291,7 @@ class PhpClassReflectionExtension
 			&& $this->inferPrivatePropertyTypeFromConstructor
 			&& $declaringClassReflection->getFileName() !== null
 			&& $propertyReflection->isPrivate()
+			&& (!method_exists($propertyReflection, 'isPromoted') || !$propertyReflection->isPromoted())
 			&& (!method_exists($propertyReflection, 'hasType') || !$propertyReflection->hasType())
 			&& $declaringClassReflection->hasConstructor()
 			&& $declaringClassReflection->getConstructor()->getDeclaringClass()->getName() === $declaringClassReflection->getName()

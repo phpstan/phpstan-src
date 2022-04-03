@@ -95,6 +95,9 @@ class TypeCombinator
 	public static function union(Type ...$types): Type
 	{
 		$typesCount = count($types);
+		if ($typesCount === 0) {
+			return new NeverType();
+		}
 
 		$benevolentTypes = [];
 		$benevolentUnionObject = null;
@@ -124,6 +127,10 @@ class TypeCombinator
 			$typesInner = $types[$i]->getTypes();
 			array_splice($types, $i, 1, $typesInner);
 			$typesCount += count($typesInner) - 1;
+		}
+
+		if ($typesCount === 1) {
+			return $types[0];
 		}
 
 		$arrayTypes = [];

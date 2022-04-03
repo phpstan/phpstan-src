@@ -42,6 +42,7 @@ class LazyScopeFactory implements ScopeFactory
 	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
+	 * @param array<string, bool> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
 	 * @param array<(FunctionReflection|MethodReflection)> $inFunctionCallsStack
 	 *
@@ -59,6 +60,7 @@ class LazyScopeFactory implements ScopeFactory
 		?ParametersAcceptor $anonymousFunctionReflection = null,
 		bool $inFirstLevelStatement = true,
 		array $currentlyAssignedExpressions = [],
+		array $currentlyAllowedUndefinedExpressions = [],
 		array $nativeExpressionTypes = [],
 		array $inFunctionCallsStack = [],
 		bool $afterExtractCall = false,
@@ -93,6 +95,7 @@ class LazyScopeFactory implements ScopeFactory
 			$anonymousFunctionReflection,
 			$inFirstLevelStatement,
 			$currentlyAssignedExpressions,
+			$currentlyAllowedUndefinedExpressions,
 			$nativeExpressionTypes,
 			$inFunctionCallsStack,
 			$this->dynamicConstantNames,

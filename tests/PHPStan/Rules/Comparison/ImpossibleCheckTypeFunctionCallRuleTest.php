@@ -113,10 +113,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					244,
 				],
 				[
-					'Call to function in_array() with arguments \'bar\'|\'foo\', array{\'foo\', \'bar\'} and true will always evaluate to true.',
-					248,
-				],
-				[
 					'Call to function in_array() with arguments \'foo\', array{\'foo\'} and true will always evaluate to true.',
 					252,
 				],
@@ -531,6 +527,13 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-5354.php'], []);
+	}
+
+	public function testSlevomatCsInArrayBug(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/slevomat-cs-in-array.php'], []);
 	}
 
 }

@@ -78,7 +78,7 @@ class AccessPropertiesRule implements Rule
 			return [];
 		}
 
-		if (!$type->canAccessProperties()->yes()) {
+		if ($type->canAccessProperties()->no() || $type->canAccessProperties()->maybe() && !$scope->isUndefinedExpressionAllowed($node)) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access property $%s on %s.',
@@ -86,6 +86,10 @@ class AccessPropertiesRule implements Rule
 					$type->describe(VerbosityLevel::typeOnly()),
 				))->build(),
 			];
+		}
+
+		if ($scope->isUndefinedExpressionAllowed($node)) {
+			return [];
 		}
 
 		if (!$type->hasProperty($name)->yes()) {

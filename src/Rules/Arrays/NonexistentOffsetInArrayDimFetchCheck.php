@@ -83,7 +83,7 @@ class NonexistentOffsetInArrayDimFetchCheck
 		}
 
 		if ($report) {
-			if ($scope->isInExpressionAssign($var)) {
+			if ($scope->isInExpressionAssign($var) || $scope->isUndefinedExpressionAllowed($var)) {
 				return [];
 			}
 

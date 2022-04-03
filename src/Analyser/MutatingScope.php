@@ -3088,7 +3088,7 @@ class MutatingScope implements Scope
 			throw new ShouldNotHappenException();
 		}
 
-		if ((new ObjectType(ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()) {
+		if (!$offsetAccessibleType->isArray()->yes() && (new ObjectType(ArrayAccess::class))->isSuperTypeOf($offsetAccessibleType)->yes()) {
 			return $this->getType(
 				new MethodCall(
 					$arrayDimFetch->var,

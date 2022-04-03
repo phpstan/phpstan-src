@@ -2359,33 +2359,13 @@ class NodeScopeResolver
 			$nonNullabilityResults = [];
 			foreach ($expr->vars as $var) {
 				$nonNullabilityResult = $this->ensureNonNullability($scope, $var, true);
-				if ($var instanceof PropertyFetch || $var instanceof Expr\NullsafePropertyFetch) {
-					$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $var->var);
-				} elseif ($var instanceof StaticPropertyFetch) {
-					if ($var->class instanceof Expr) {
-						$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $var->class);
-					} else {
-						$scope = $nonNullabilityResult->getScope();
-					}
-				} else {
-					$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $var);
-				}
-
+				$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $var);
 				$result = $this->processExprNode($var, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$nonNullabilityResults[] = $nonNullabilityResult;
-
-				if ($var instanceof PropertyFetch || $var instanceof Expr\NullsafePropertyFetch) {
-					$scope = $this->lookForExitVariableAssign($scope, $var->var);
-				} elseif ($var instanceof StaticPropertyFetch) {
-					if ($var->class instanceof Expr) {
-						$scope = $this->lookForExitVariableAssign($scope, $var->class);
-					}
-				} else {
-					$scope = $this->lookForExitVariableAssign($scope, $var);;
-				}
+				$scope = $this->lookForExitVariableAssign($scope, $var);
 			}
 			foreach (array_reverse($nonNullabilityResults) as $nonNullabilityResult) {
 				$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());

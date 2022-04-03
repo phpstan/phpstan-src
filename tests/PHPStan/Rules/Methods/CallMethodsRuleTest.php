@@ -240,15 +240,15 @@ class CallMethodsRuleTest extends RuleTestCase
 				446,
 			],
 			[
-				'Cannot call method find() on Test\NullCoalesce|null.',
+				'Method Test\NullCoalesce::find() invoked with 1 parameter, 0 required.',
 				516,
 			],
 			[
-				'Cannot call method find() on Test\NullCoalesce|null.',
+				'Method Test\NullCoalesce::find() invoked with 1 parameter, 0 required.',
 				518,
 			],
 			[
-				'Cannot call method find() on Test\NullCoalesce|null.',
+				'Method Test\NullCoalesce::find() invoked with 1 parameter, 0 required.',
 				522,
 			],
 			[

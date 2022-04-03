@@ -3306,7 +3306,7 @@ class NodeScopeResolver
 				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
 			}
 
-			if (!(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
+			if ($varType->isArray()->yes() || !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
 				if ($var instanceof Variable && is_string($var->name)) {
 					$scope = $scope->assignVariable($var->name, $valueToWrite);
 				} else {
@@ -3334,7 +3334,7 @@ class NodeScopeResolver
 				}
 			}
 
-			if (!(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
+			if (!$varType->isArray()->yes() && !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->no()) {
 				$throwPoints = array_merge($throwPoints, $this->processExprNode(
 					new MethodCall($var, 'offsetSet'),
 					$scope,

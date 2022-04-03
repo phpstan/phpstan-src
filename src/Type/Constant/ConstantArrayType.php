@@ -458,12 +458,22 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	{
 		$offsetType = ArrayType::castToArrayKeyType($offsetType);
 		$matchingValueTypes = [];
+		$all = true;
 		foreach ($this->keyTypes as $i => $keyType) {
 			if ($keyType->isSuperTypeOf($offsetType)->no()) {
+				$all = false;
 				continue;
 			}
 
 			$matchingValueTypes[] = $this->valueTypes[$i];
+		}
+
+		if ($all) {
+			if (count($this->keyTypes) === 0) {
+				return new ErrorType();
+			}
+
+			return $this->getIterableValueType();
 		}
 
 		if (count($matchingValueTypes) > 0) {

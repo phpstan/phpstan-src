@@ -121,6 +121,31 @@ jobs:
       - name: "Tests"
         run: "make tests-integration"
 
+  tests-levels:
+    name: "Levels tests"
+    runs-on: ubuntu-latest
+    needs: tests
+    timeout-minutes: 60
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-values: memory_limit=1G
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Tests"
+        run: "make tests-levels"
+
   tests-old-phpunit:
     name: "Tests with old PHPUnit"
     runs-on: ${{ matrix.operating-system }}

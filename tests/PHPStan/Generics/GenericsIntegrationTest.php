@@ -5,7 +5,7 @@ namespace PHPStan\Generics;
 use PHPStan\Testing\LevelsTestCase;
 
 /**
- * @group exec
+ * @group levels
  */
 class GenericsIntegrationTest extends LevelsTestCase
 {

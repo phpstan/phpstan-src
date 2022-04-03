@@ -8,6 +8,9 @@ tests:
 tests-integration:
 	php vendor/bin/paratest --runner WrapperRunner --no-coverage --group exec
 
+tests-levels:
+	php vendor/bin/paratest --runner WrapperRunner --no-coverage --group levels
+
 tests-static-reflection:
 	php vendor/bin/paratest --runner WrapperRunner --no-coverage --bootstrap tests/bootstrap-static-reflection.php
 

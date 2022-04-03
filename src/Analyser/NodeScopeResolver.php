@@ -2561,6 +2561,7 @@ class NodeScopeResolver
 			$matchScope = $scope;
 			$armNodes = [];
 			$hasDefaultCond = false;
+			$hasAlwaysTrueCond = false;
 			foreach ($expr->arms as $arm) {
 				if ($arm->conds === null) {
 					$hasDefaultCond = true;
@@ -2586,6 +2587,10 @@ class NodeScopeResolver
 					$hasYield = $hasYield || $armCondResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $armCondResult->getThrowPoints());
 					$armCondExpr = new BinaryOp\Identical($expr->cond, $armCond);
+					$armCondType = $armCondResult->getScope()->getType($armCondExpr);
+					if ($armCondType instanceof ConstantBooleanType && $armCondType->getValue()) {
+						$hasAlwaysTrueCond = true;
+					}
 					$armCondScope = $armCondResult->getScope()->filterByFalseyValue($armCondExpr);
 					if ($filteringExpr === null) {
 						$filteringExpr = $armCondExpr;
@@ -2611,7 +2616,7 @@ class NodeScopeResolver
 			}
 
 			$remainingType = $matchScope->getType($expr->cond);
-			if (!$hasDefaultCond && !$remainingType instanceof NeverType) {
+			if (!$hasDefaultCond && !$hasAlwaysTrueCond && !$remainingType instanceof NeverType) {
 				$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(UnhandledMatchError::class), $expr, false);
 			}
 

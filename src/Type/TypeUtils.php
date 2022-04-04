@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use function array_merge;
 
@@ -88,6 +89,14 @@ class TypeUtils
 	public static function getConstantStrings(Type $type): array
 	{
 		return self::map(ConstantStringType::class, $type, false);
+	}
+
+	/**
+	 * @return ConstantIntegerType[]
+	 */
+	public static function getConstantIntegers(Type $type): array
+	{
+		return self::map(ConstantIntegerType::class, $type, false);
 	}
 
 	/**

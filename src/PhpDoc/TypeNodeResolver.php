@@ -79,10 +79,13 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VoidType;
 use Traversable;
+use function array_key_exists;
 use function array_map;
 use function count;
 use function get_class;
 use function in_array;
+use function max;
+use function min;
 use function preg_quote;
 use function str_replace;
 use function strpos;
@@ -581,6 +584,24 @@ class TypeNodeResolver
 			}
 
 			return new ErrorType();
+		} elseif ($mainTypeName === 'int-mask-of') {
+			if (count($genericTypes) === 1) { // int-mask-of<Class::CONST*>
+				$maskType = $this->expandIntMaskToType($genericTypes[0]);
+				if ($maskType !== null) {
+					return $maskType;
+				}
+			}
+
+			return new ErrorType();
+		} elseif ($mainTypeName === 'int-mask') {
+			if (count($genericTypes) > 0) { // int-mask<1, 2, 4>
+				$maskType = $this->expandIntMaskToType(TypeCombinator::union(...$genericTypes));
+				if ($maskType !== null) {
+					return $maskType;
+				}
+			}
+
+			return new ErrorType();
 		} elseif ($mainTypeName === '__benevolent') {
 			if (count($genericTypes) === 1) {
 				return TypeUtils::toBenevolentUnion($genericTypes[0]);
@@ -831,6 +852,38 @@ class TypeNodeResolver
 		}
 
 		return new ErrorType();
+	}
+
+	private function expandIntMaskToType(Type $type): ?Type
+	{
+		$ints = array_map(static fn (ConstantIntegerType $type) => $type->getValue(), TypeUtils::getConstantIntegers($type));
+		if (count($ints) === 0) {
+			return null;
+		}
+
+		$values = [];
+
+		foreach ($ints as $int) {
+			if ($int !== 0 && !array_key_exists($int, $values)) {
+				foreach ($values as $value) {
+					$computedValue = $value | $int;
+					$values[$computedValue] = $computedValue;
+				}
+			}
+
+			$values[$int] = $int;
+		}
+
+		$values[0] = 0;
+
+		$min = min($values);
+		$max = max($values);
+
+		if ($max - $min === count($values) - 1) {
+			return IntegerRangeType::fromInterval($min, $max);
+		}
+
+		return TypeCombinator::union(...array_map(static fn ($value) => new ConstantIntegerType($value), $values));
 	}
 
 	/**

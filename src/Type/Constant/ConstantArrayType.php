@@ -192,15 +192,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $return;
 	}
 
-	public function getKeyType(): Type
-	{
-		if (count($this->keyTypes) > 1) {
-			return new UnionType($this->keyTypes);
-		}
-
-		return parent::getKeyType();
-	}
-
 	/**
 	 * @return array<int, ConstantIntegerType|ConstantStringType>
 	 */

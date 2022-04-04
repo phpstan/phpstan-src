@@ -280,8 +280,9 @@ class MoreNonEmptyStringFunctions
 	/**
 	 * @param non-empty-string $nonEmpty
 	 * @param '1'|'2'|'5'|'10' $constUnion
+	 * @param 1|2|5|10|123|'1234'|false $constUnionMixed
 	 */
-	public function doFoo(string $s, string $nonEmpty, int $i, bool $bool, $constUnion)
+	public function doFoo(string $s, string $nonEmpty, int $i, bool $bool, $constUnion, $constUnionMixed)
 	{
 		assertType('string', addslashes($s));
 		assertType('non-empty-string', addslashes($nonEmpty));
@@ -336,6 +337,10 @@ class MoreNonEmptyStringFunctions
 		assertType('int<0, max>', strlen($s));
 		assertType('int<1, max>', strlen($nonEmpty));
 		assertType('int<1, 2>', strlen($constUnion));
+		assertType('int<0, 4>', strlen($constUnionMixed));
+		assertType('3', strlen(123));
+		assertType('1', strlen(true));
+		assertType('0', strlen(false));
 
 		assertType('non-empty-string', str_pad($nonEmpty, 0));
 		assertType('non-empty-string', str_pad($nonEmpty, 1));

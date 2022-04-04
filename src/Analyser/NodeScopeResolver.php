@@ -1508,7 +1508,7 @@ class NodeScopeResolver
 			$scope = $scope->setAllowedUndefinedExpression($expr, $isAllowed);
 		}
 		if (!$expr instanceof Variable) {
-			return $this->lookForVariableAssignCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->setAllowedUndefinedExpression($expr, $isAllowed));
+			return $this->lookForVariableCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->setAllowedUndefinedExpression($expr, $isAllowed));
 		}
 
 		return $scope;
@@ -1520,7 +1520,7 @@ class NodeScopeResolver
 			$scope = $scope->unsetAllowedUndefinedExpression($expr);
 		}
 		if (!$expr instanceof Variable) {
-			return $this->lookForVariableAssignCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->unsetAllowedUndefinedExpression($expr));
+			return $this->lookForVariableCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->unsetAllowedUndefinedExpression($expr));
 		}
 
 		return $scope;
@@ -1529,7 +1529,7 @@ class NodeScopeResolver
 	/**
 	 * @param Closure(MutatingScope $scope, Expr $expr): MutatingScope $callback
 	 */
-	private function lookForVariableAssignCallback(MutatingScope $scope, Expr $expr, Closure $callback): MutatingScope
+	private function lookForVariableCallback(MutatingScope $scope, Expr $expr, Closure $callback): MutatingScope
 	{
 		if ($expr instanceof Variable) {
 			$scope = $callback($scope, $expr);
@@ -1538,12 +1538,12 @@ class NodeScopeResolver
 				$scope = $callback($scope, $expr);
 			}
 
-			$scope = $this->lookForVariableAssignCallback($scope, $expr->var, $callback);
+			$scope = $this->lookForVariableCallback($scope, $expr->var, $callback);
 		} elseif ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
-			$scope = $this->lookForVariableAssignCallback($scope, $expr->var, $callback);
+			$scope = $this->lookForVariableCallback($scope, $expr->var, $callback);
 		} elseif ($expr instanceof StaticPropertyFetch) {
 			if ($expr->class instanceof Expr) {
-				$scope = $this->lookForVariableAssignCallback($scope, $expr->class, $callback);
+				$scope = $this->lookForVariableCallback($scope, $expr->class, $callback);
 			}
 		} elseif ($expr instanceof Array_ || $expr instanceof List_) {
 			foreach ($expr->items as $item) {
@@ -1551,7 +1551,7 @@ class NodeScopeResolver
 					continue;
 				}
 
-				$scope = $this->lookForVariableAssignCallback($scope, $item->value, $callback);
+				$scope = $this->lookForVariableCallback($scope, $item->value, $callback);
 			}
 		}
 

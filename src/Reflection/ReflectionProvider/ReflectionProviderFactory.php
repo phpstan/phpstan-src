@@ -18,7 +18,6 @@ class ReflectionProviderFactory
 
 	public function create(): ReflectionProvider
 	{
-		return $this->runtimeReflectionProvider;
 		$providers = [];
 
 		if (!$this->disableRuntimeReflectionProvider) {

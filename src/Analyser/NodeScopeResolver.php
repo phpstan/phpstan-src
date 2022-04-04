@@ -1454,10 +1454,10 @@ class NodeScopeResolver
 	private function getCurrentClassReflection(Node\Stmt\ClassLike $stmt, string $className, Scope $scope): ClassReflection
 	{
 		if (!$this->reflectionProvider->hasClass($className)) {
-			throw new ShouldNotHappenException();
+			return $this->createAstClassReflection($stmt, $className, $scope);
 		}
 
-		return $this->reflectionProvider->getClass($className);
+		$defaultClassReflection = $this->reflectionProvider->getClass($className);
 		if ($defaultClassReflection->getFileName() !== $scope->getFile()) {
 			return $this->createAstClassReflection($stmt, $className, $scope);
 		}

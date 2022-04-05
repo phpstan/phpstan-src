@@ -3967,7 +3967,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		}
 		$resultType = TypeCombinator::union(...$arrays);
 		$this->assertInstanceOf(ConstantArrayType::class, $resultType);
-		$this->assertSame('array{0: string, test?: string, 1?: string, 2?: string, 3?: string, 4?: string}', $resultType->describe(VerbosityLevel::precise()));
+		$this->assertSame('array{0: string, 1?: string, 2?: string, 3?: string, 4?: string, test?: string}', $resultType->describe(VerbosityLevel::precise()));
 	}
 
 }

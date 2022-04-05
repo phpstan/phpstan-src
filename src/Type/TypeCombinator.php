@@ -6,7 +6,6 @@ use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -18,6 +17,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateUnionType;
 use function array_intersect_key;
 use function array_key_exists;
+use function array_map;
 use function array_merge;
 use function array_slice;
 use function array_splice;
@@ -556,56 +556,10 @@ class TypeCombinator
 			];
 		}
 
-		/** @var ConstantArrayType[] $arrayTypes */
-		$arrayTypes = $arrayTypes;
-
-		/** @var int[] $constantKeyTypesNumbered */
-		$constantKeyTypesNumbered = $constantKeyTypesNumbered;
-
-		$constantArraysBuckets = [];
-		foreach ($arrayTypes as $arrayTypeAgain) {
-			$arrayIndex = 0;
-			foreach ($arrayTypeAgain->getKeyTypes() as $keyType) {
-				$arrayIndex += $constantKeyTypesNumbered[$keyType->getValue()];
-			}
-
-			if (!array_key_exists($arrayIndex, $constantArraysBuckets)) {
-				$bucket = [];
-				foreach ($arrayTypeAgain->getKeyTypes() as $i => $keyType) {
-					$bucket[$keyType->getValue()] = [
-						'keyType' => $keyType,
-						'valueType' => $arrayTypeAgain->getValueTypes()[$i],
-						'optional' => $arrayTypeAgain->isOptionalKey($i),
-					];
-				}
-				$constantArraysBuckets[$arrayIndex] = $bucket;
-				continue;
-			}
-
-			$bucket = $constantArraysBuckets[$arrayIndex];
-			foreach ($arrayTypeAgain->getKeyTypes() as $i => $keyType) {
-				$bucket[$keyType->getValue()]['valueType'] = self::union(
-					$bucket[$keyType->getValue()]['valueType'],
-					$arrayTypeAgain->getValueTypes()[$i],
-				);
-				$bucket[$keyType->getValue()]['optional'] = $bucket[$keyType->getValue()]['optional'] || $arrayTypeAgain->isOptionalKey($i);
-			}
-
-			$constantArraysBuckets[$arrayIndex] = $bucket;
-		}
-
-		$resultArrays = [];
-		foreach ($constantArraysBuckets as $bucket) {
-			$builder = ConstantArrayTypeBuilder::createEmpty();
-			foreach ($bucket as $data) {
-				$builder->setOffsetValueType($data['keyType'], $data['valueType'], $data['optional']);
-			}
-
-			$arr = self::intersect($builder->getArray(), ...$accessoryTypes);
-			$resultArrays[] = $arr;
-		}
-
-		return self::reduceArrays($resultArrays);
+		return array_map(
+			static fn (Type $arrayType) => self::intersect($arrayType, ...$accessoryTypes),
+			self::reduceArrays($arrayTypes),
+		);
 	}
 
 	/**

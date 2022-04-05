@@ -8035,7 +8035,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array{i: int<1, max>, j: int, k: int<1, max>, key: DateTimeImmutable, l: 1, m: 5, n?: \'str\'}',
+				'array{i: int<1, max>, j: int, k: int<1, max>, l: 1, m: 5, key: DateTimeImmutable, n?: \'str\'}',
 				'$array',
 			],
 			[
@@ -9038,7 +9038,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array<non-empty-array<int|string, array{hitCount: int<0, max>, loadCount: int<0, max>, removeCount: int<0, max>, saveCount: int<0, max>}>>',
+				'array<non-empty-array<int|string, array{saveCount: int<0, max>, removeCount: int<0, max>, loadCount: int<0, max>, hitCount: int<0, max>}>>',
 				'$statistics',
 			],
 		];

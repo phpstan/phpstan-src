@@ -1325,9 +1325,9 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			foreach ($stmt->vars as $var) {
-				$scope = $this->lookForEnterVariableAssign($scope, $var);
+				$scope = $this->lookForEnterAllowedUndefinedVariable($scope, $var, true);
 				$scope = $this->processExprNode($var, $scope, $nodeCallback, ExpressionContext::createDeep())->getScope();
-				$scope = $this->lookForExitVariableAssign($scope, $var);
+				$scope = $this->lookForExitAllowedUndefinedVariable($scope, $var);
 				$scope = $scope->unsetExpression($var);
 			}
 		} elseif ($stmt instanceof Node\Stmt\Use_) {
@@ -1344,9 +1344,9 @@ class NodeScopeResolver
 				if (!$var instanceof Variable) {
 					throw new ShouldNotHappenException();
 				}
-				$scope = $this->lookForEnterVariableAssign($scope, $var);
+				$scope = $this->lookForEnterAllowedUndefinedVariable($scope, $var, true);
 				$this->processExprNode($var, $scope, $nodeCallback, ExpressionContext::createDeep());
-				$scope = $this->lookForExitVariableAssign($scope, $var);
+				$scope = $this->lookForExitAllowedUndefinedVariable($scope, $var);
 
 				if (!is_string($var->name)) {
 					continue;
@@ -1502,25 +1502,25 @@ class NodeScopeResolver
 		);
 	}
 
-	private function lookForEnterVariableAssign(MutatingScope $scope, Expr $expr): MutatingScope
+	private function lookForEnterAllowedUndefinedVariable(MutatingScope $scope, Expr $expr, bool $isAllowed): MutatingScope
 	{
 		if (!$expr instanceof ArrayDimFetch || $expr->dim !== null) {
-			$scope = $scope->enterExpressionAssign($expr);
+			$scope = $scope->setAllowedUndefinedExpression($expr, $isAllowed);
 		}
 		if (!$expr instanceof Variable) {
-			return $this->lookForVariableAssignCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->enterExpressionAssign($expr));
+			return $this->lookForVariableCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->setAllowedUndefinedExpression($expr, $isAllowed));
 		}
 
 		return $scope;
 	}
 
-	private function lookForExitVariableAssign(MutatingScope $scope, Expr $expr): MutatingScope
+	private function lookForExitAllowedUndefinedVariable(MutatingScope $scope, Expr $expr): MutatingScope
 	{
 		if (!$expr instanceof ArrayDimFetch || $expr->dim !== null) {
-			$scope = $scope->exitExpressionAssign($expr);
+			$scope = $scope->unsetAllowedUndefinedExpression($expr);
 		}
 		if (!$expr instanceof Variable) {
-			return $this->lookForVariableAssignCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->exitExpressionAssign($expr));
+			return $this->lookForVariableCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->unsetAllowedUndefinedExpression($expr));
 		}
 
 		return $scope;
@@ -1529,7 +1529,7 @@ class NodeScopeResolver
 	/**
 	 * @param Closure(MutatingScope $scope, Expr $expr): MutatingScope $callback
 	 */
-	private function lookForVariableAssignCallback(MutatingScope $scope, Expr $expr, Closure $callback): MutatingScope
+	private function lookForVariableCallback(MutatingScope $scope, Expr $expr, Closure $callback): MutatingScope
 	{
 		if ($expr instanceof Variable) {
 			$scope = $callback($scope, $expr);
@@ -1538,12 +1538,12 @@ class NodeScopeResolver
 				$scope = $callback($scope, $expr);
 			}
 
-			$scope = $this->lookForVariableAssignCallback($scope, $expr->var, $callback);
+			$scope = $this->lookForVariableCallback($scope, $expr->var, $callback);
 		} elseif ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
-			$scope = $this->lookForVariableAssignCallback($scope, $expr->var, $callback);
+			$scope = $this->lookForVariableCallback($scope, $expr->var, $callback);
 		} elseif ($expr instanceof StaticPropertyFetch) {
 			if ($expr->class instanceof Expr) {
-				$scope = $this->lookForVariableAssignCallback($scope, $expr->class, $callback);
+				$scope = $this->lookForVariableCallback($scope, $expr->class, $callback);
 			}
 		} elseif ($expr instanceof Array_ || $expr instanceof List_) {
 			foreach ($expr->items as $item) {
@@ -1551,7 +1551,7 @@ class NodeScopeResolver
 					continue;
 				}
 
-				$scope = $this->lookForVariableAssignCallback($scope, $item->value, $callback);
+				$scope = $this->lookForVariableCallback($scope, $item->value, $callback);
 			}
 		}
 
@@ -2290,18 +2290,12 @@ class NodeScopeResolver
 			);
 		} elseif ($expr instanceof Coalesce) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left, false);
-
-			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch) {
-				$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $expr->left->var);
-			} elseif ($expr->left instanceof StaticPropertyFetch) {
-				if ($expr->left->class instanceof Expr) {
-					$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $expr->left->class);
-				} else {
-					$scope = $nonNullabilityResult->getScope();
-				}
+			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch || $expr->left instanceof StaticPropertyFetch) {
+				$scope = $nonNullabilityResult->getScope()->setAllowedUndefinedExpression($expr->left, false);
 			} else {
-				$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $expr->left);
+				$scope = $nonNullabilityResult->getScope();
 			}
+			$scope = $this->lookForEnterAllowedUndefinedVariable($scope, $expr->left, true);
 			$result = $this->processExprNode($expr->left, $scope, $nodeCallback, $context->enterDeep());
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
@@ -2311,16 +2305,7 @@ class NodeScopeResolver
 			if (!$rightExprType instanceof NeverType || !$rightExprType->isExplicit()) {
 				$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
 			}
-
-			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch) {
-				$scope = $this->lookForExitVariableAssign($scope, $expr->left->var);
-			} elseif ($expr->left instanceof StaticPropertyFetch) {
-				if ($expr->left->class instanceof Expr) {
-					$scope = $this->lookForExitVariableAssign($scope, $expr->left->class);
-				}
-			} else {
-				$scope = $this->lookForExitVariableAssign($scope, $expr->left);
-			}
+			$scope = $this->lookForExitAllowedUndefinedVariable($scope, $expr->left);
 			$result = $this->processExprNode($expr->right, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope()->mergeWith($scope);
 			$hasYield = $hasYield || $result->hasYield();
@@ -2383,26 +2368,26 @@ class NodeScopeResolver
 			}
 		} elseif ($expr instanceof Expr\Empty_) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->expr, true);
-			$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $expr->expr);
+			$scope = $this->lookForEnterAllowedUndefinedVariable($nonNullabilityResult->getScope(), $expr->expr, true);
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
-			$scope = $this->lookForExitVariableAssign($scope, $expr->expr);
+			$scope = $this->lookForExitAllowedUndefinedVariable($scope, $expr->expr);
 		} elseif ($expr instanceof Expr\Isset_) {
 			$hasYield = false;
 			$throwPoints = [];
 			$nonNullabilityResults = [];
 			foreach ($expr->vars as $var) {
 				$nonNullabilityResult = $this->ensureNonNullability($scope, $var, true);
-				$scope = $this->lookForEnterVariableAssign($nonNullabilityResult->getScope(), $var);
+				$scope = $this->lookForEnterAllowedUndefinedVariable($nonNullabilityResult->getScope(), $var, true);
 				$result = $this->processExprNode($var, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$nonNullabilityResults[] = $nonNullabilityResult;
-				$scope = $this->lookForExitVariableAssign($scope, $var);
+				$scope = $this->lookForExitAllowedUndefinedVariable($scope, $var);
 			}
 			foreach (array_reverse($nonNullabilityResults) as $nonNullabilityResult) {
 				$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
@@ -3448,7 +3433,7 @@ class NodeScopeResolver
 				if ($arrayItem->value instanceof ArrayDimFetch && $arrayItem->value->dim === null) {
 					$itemScope = $itemScope->enterExpressionAssign($arrayItem->value);
 				}
-				$itemScope = $this->lookForEnterVariableAssign($itemScope, $arrayItem->value);
+				$itemScope = $this->lookForEnterAllowedUndefinedVariable($itemScope, $arrayItem->value, true);
 				$itemResult = $this->processExprNode($arrayItem, $itemScope, $nodeCallback, $context->enterDeep());
 				$hasYield = $hasYield || $itemResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $itemResult->getThrowPoints());

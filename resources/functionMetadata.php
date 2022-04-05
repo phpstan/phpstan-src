@@ -15,6 +15,8 @@
  */
 
 return [
+	'BackedEnum::from' => ['hasSideEffects' => false],
+	'BackedEnum::tryFrom' => ['hasSideEffects' => false],
 	'CURLFile::getFilename' => ['hasSideEffects' => false],
 	'CURLFile::getMimeType' => ['hasSideEffects' => false],
 	'CURLFile::getPostFilename' => ['hasSideEffects' => false],
@@ -354,6 +356,8 @@ return [
 	'ImagickPixelIterator::getIteratorRow' => ['hasSideEffects' => false],
 	'ImagickPixelIterator::getNextIteratorRow' => ['hasSideEffects' => false],
 	'ImagickPixelIterator::getPreviousIteratorRow' => ['hasSideEffects' => false],
+	'IntBackedEnum::from' => ['hasSideEffects' => false],
+	'IntBackedEnum::tryFrom' => ['hasSideEffects' => false],
 	'IntlBreakIterator::current' => ['hasSideEffects' => false],
 	'IntlBreakIterator::getErrorCode' => ['hasSideEffects' => false],
 	'IntlBreakIterator::getErrorMessage' => ['hasSideEffects' => false],
@@ -624,6 +628,8 @@ return [
 	'SimpleXMLIterator::valid' => ['hasSideEffects' => false],
 	'SoapFault::__construct' => ['hasSideEffects' => false],
 	'Spoofchecker::__construct' => ['hasSideEffects' => false],
+	'StringBackedEnum::from' => ['hasSideEffects' => false],
+	'StringBackedEnum::tryFrom' => ['hasSideEffects' => false],
 	'StubTests\\CodeStyle\\BracesOneLineFixer::getDefinition' => ['hasSideEffects' => false],
 	'StubTests\\Parsers\\ExpectedFunctionArgumentsInfo::__toString' => ['hasSideEffects' => false],
 	'StubTests\\Parsers\\Visitors\\CoreStubASTVisitor::__construct' => ['hasSideEffects' => false],
@@ -644,6 +650,7 @@ return [
 	'UConverter::getStandards' => ['hasSideEffects' => false],
 	'UConverter::getSubstChars' => ['hasSideEffects' => false],
 	'UConverter::reasonText' => ['hasSideEffects' => false],
+	'UnitEnum::cases' => ['hasSideEffects' => false],
 	'Zookeeper::getAcl' => ['hasSideEffects' => false],
 	'Zookeeper::getChildren' => ['hasSideEffects' => false],
 	'Zookeeper::getClientId' => ['hasSideEffects' => false],

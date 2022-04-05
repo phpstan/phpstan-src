@@ -167,6 +167,7 @@ class MutatingScope implements Scope
 	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
+	 * @param array<string, bool> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
 	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
 	 * @param string[] $dynamicConstantNames
@@ -194,6 +195,7 @@ class MutatingScope implements Scope
 		private ?ParametersAcceptor $anonymousFunctionReflection = null,
 		private bool $inFirstLevelStatement = true,
 		private array $currentlyAssignedExpressions = [],
+		private array $currentlyAllowedUndefinedExpressions = [],
 		private array $nativeExpressionTypes = [],
 		private array $inFunctionCallsStack = [],
 		private array $dynamicConstantNames = [],
@@ -341,6 +343,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			true,
@@ -397,6 +400,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
@@ -3016,6 +3020,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->dynamicConstantNames,
@@ -3056,6 +3061,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			[],
 		);
 	}
@@ -3315,6 +3321,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$this->nativeExpressionTypes,
 			$stack,
 			$this->afterExtractCall,
@@ -3340,6 +3347,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$this->nativeExpressionTypes,
 			$stack,
 			$this->afterExtractCall,
@@ -3596,6 +3604,7 @@ class MutatingScope implements Scope
 			null,
 			true,
 			[],
+			[],
 			$nativeExpressionTypes,
 		);
 	}
@@ -3716,6 +3725,7 @@ class MutatingScope implements Scope
 			$anonymousFunctionReflection,
 			true,
 			[],
+			[],
 			$scope->nativeExpressionTypes,
 			[],
 			false,
@@ -3807,6 +3817,7 @@ class MutatingScope implements Scope
 			new TrivialParametersAcceptor(),
 			true,
 			[],
+			[],
 			$nativeTypes,
 			[],
 			false,
@@ -3839,6 +3850,7 @@ class MutatingScope implements Scope
 			$scope->inClosureBindScopeClass,
 			$anonymousFunctionReflection,
 			true,
+			[],
 			[],
 			[],
 			[],
@@ -3959,6 +3971,7 @@ class MutatingScope implements Scope
 			$this->inClosureBindScopeClass,
 			null,
 			true,
+			[],
 			[],
 			[],
 			[],
@@ -4089,6 +4102,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$this->nativeExpressionTypes,
 			[],
 			$this->afterExtractCall,
@@ -4115,6 +4129,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$this->nativeExpressionTypes,
 			[],
 			$this->afterExtractCall,
@@ -4127,6 +4142,70 @@ class MutatingScope implements Scope
 	{
 		$exprString = $this->getNodeKey($expr);
 		return array_key_exists($exprString, $this->currentlyAssignedExpressions);
+	}
+
+	public function setAllowedUndefinedExpression(Expr $expr, bool $isAllowed): self
+	{
+		$exprString = $this->getNodeKey($expr);
+		if (array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions)) {
+			return $this;
+		}
+		$currentlyAllowedUndefinedExpressions = $this->currentlyAllowedUndefinedExpressions;
+		$currentlyAllowedUndefinedExpressions[$exprString] = $isAllowed;
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->getVariableTypes(),
+			$this->moreSpecificTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$currentlyAllowedUndefinedExpressions,
+			$this->nativeExpressionTypes,
+			[],
+			$this->afterExtractCall,
+			$this->parentScope,
+		);
+	}
+
+	public function unsetAllowedUndefinedExpression(Expr $expr): self
+	{
+		$exprString = $this->getNodeKey($expr);
+		$currentlyAllowedUndefinedExpressions = $this->currentlyAllowedUndefinedExpressions;
+		unset($currentlyAllowedUndefinedExpressions[$exprString]);
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->getVariableTypes(),
+			$this->moreSpecificTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$currentlyAllowedUndefinedExpressions,
+			$this->nativeExpressionTypes,
+			[],
+			$this->afterExtractCall,
+			$this->parentScope,
+		);
+	}
+
+	/** @api */
+	public function isUndefinedExpressionAllowed(Expr $expr): bool
+	{
+		$exprString = $this->getNodeKey($expr);
+		return array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions) && $this->currentlyAllowedUndefinedExpressions[$exprString];
 	}
 
 	public function assignVariable(string $variableName, Type $type, ?TrinaryLogic $certainty = null): self
@@ -4191,6 +4270,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$nativeTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
@@ -4226,6 +4306,7 @@ class MutatingScope implements Scope
 				$this->inClosureBindScopeClass,
 				$this->anonymousFunctionReflection,
 				$this->inFirstLevelStatement,
+				[],
 				[],
 				$nativeTypes,
 				[],
@@ -4270,6 +4351,7 @@ class MutatingScope implements Scope
 				$this->anonymousFunctionReflection,
 				$this->inFirstLevelStatement,
 				$this->currentlyAssignedExpressions,
+				$this->currentlyAllowedUndefinedExpressions,
 				$this->nativeExpressionTypes,
 				$this->inFunctionCallsStack,
 				$this->afterExtractCall,
@@ -4308,6 +4390,7 @@ class MutatingScope implements Scope
 				$this->anonymousFunctionReflection,
 				$this->inFirstLevelStatement,
 				$this->currentlyAssignedExpressions,
+				$this->currentlyAllowedUndefinedExpressions,
 				$nativeTypes,
 				$this->inFunctionCallsStack,
 				$this->afterExtractCall,
@@ -4425,6 +4508,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$nativeExpressionTypes,
 			[],
 			$this->afterExtractCall,
@@ -4483,6 +4567,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$nativeExpressionTypes,
 			[],
 			$this->afterExtractCall,
@@ -4700,6 +4785,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
@@ -4727,6 +4813,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
@@ -4749,6 +4836,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			false,
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
@@ -4786,6 +4874,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
 			$this->nativeExpressionTypes,
 			[],
 			$this->afterExtractCall,
@@ -4853,6 +4942,7 @@ class MutatingScope implements Scope
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
+			[],
 			[],
 			array_map($variableHolderToType, array_filter($this->mergeVariableHolders(
 				array_map($typeToVariableHolder, $this->nativeExpressionTypes),
@@ -5025,6 +5115,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			[],
+			[],
 			array_map($variableHolderToType, array_filter($this->processFinallyScopeVariableTypeHolders(
 				array_map($typeToVariableHolder, $this->nativeExpressionTypes),
 				array_map($typeToVariableHolder, $finallyScope->nativeExpressionTypes),
@@ -5122,6 +5213,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			[],
+			[],
 			$nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
@@ -5172,6 +5264,7 @@ class MutatingScope implements Scope
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			[],
+			[],
 			$nativeTypes,
 			[],
 			$this->afterExtractCall,
@@ -5214,6 +5307,7 @@ class MutatingScope implements Scope
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
+			[],
 			[],
 			$nativeTypes,
 			[],

@@ -122,16 +122,6 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 				$tip,
 			],
 			[
-				'Property UnusedPrivateProperty\ArrayAssign::$foo is never read, only written.',
-				162,
-				$tip,
-			],
-			[
-				'Property UnusedPrivateProperty\ListAssign::$foo is never read, only written.',
-				191,
-				$tip,
-			],
-			[
 				'Property UnusedPrivateProperty\WriteToCollection::$collection1 is never read, only written.',
 				221,
 				$tip,
@@ -248,18 +238,29 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
-		$this->analyse([__DIR__ . '/data/bug-5337.php'], [
-			[
-				'Property Bug5337\Clazz::$prefix is never read, only written.',
-				7,
-				'See: https://phpstan.org/developing-extensions/always-read-written-properties',
-			],
-			[
-				'Property Bug5337\Foo::$field is unused.',
-				20,
-				'See: https://phpstan.org/developing-extensions/always-read-written-properties',
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-5337.php'], []);
+	}
+
+	public function testBug5971(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+		$this->analyse([__DIR__ . '/data/bug-5971.php'], []);
+	}
+
+	public function testBug6107(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+		$this->analyse([__DIR__ . '/data/bug-6107.php'], []);
 	}
 
 }

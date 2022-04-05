@@ -553,4 +553,28 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6566.php'], []);
 	}
 
+	public function testBug6899(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-6899.php'], [
+			[
+				'Cannot access property $prop on string.',
+				13,
+			],
+			[
+				'Cannot access property $prop on string.',
+				14,
+			],
+			[
+				'Cannot access property $prop on string.',
+				15,
+			],
+			[
+				'Cannot access property $prop on object|string.', // open issue https://github.com/phpstan/phpstan/issues/3659, https://github.com/phpstan/phpstan/issues/6026
+				25,
+			],
+		]);
+	}
+
 }

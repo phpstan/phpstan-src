@@ -145,4 +145,10 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug1714(): void
+	{
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-1714.php'], []);
+	}
+
 }

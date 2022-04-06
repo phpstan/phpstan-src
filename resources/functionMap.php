@@ -2000,7 +2000,7 @@ return [
 'DOMText::__construct' => ['void', 'value='=>'string'],
 'DOMText::isElementContentWhitespace' => ['bool'],
 'DOMText::isWhitespaceInElementContent' => ['bool'],
-'DOMText::splitText' => ['DOMText', 'offset'=>'int'],
+'DOMText::splitText' => ['DOMText|false', 'offset'=>'int'],
 'domxml_new_doc' => ['DomDocument', 'version'=>'string'],
 'domxml_open_file' => ['DomDocument', 'filename'=>'string', 'mode='=>'int', 'error='=>'array'],
 'domxml_open_mem' => ['DomDocument', 'str'=>'string', 'mode='=>'int', 'error='=>'array'],

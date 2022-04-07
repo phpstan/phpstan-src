@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\PrettyPrinter\Standard;
-use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Parser\Parser;
@@ -23,9 +22,6 @@ use function is_a;
 class DirectScopeFactory implements ScopeFactory
 {
 
-	/** @var string[] */
-	private array $dynamicConstantNames;
-
 	public function __construct(
 		private string $scopeClass,
 		private ReflectionProvider $reflectionProvider,
@@ -37,12 +33,11 @@ class DirectScopeFactory implements ScopeFactory
 		private Parser $parser,
 		private NodeScopeResolver $nodeScopeResolver,
 		private bool $treatPhpDocTypesAsCertain,
-		Container $container,
 		private PhpVersion $phpVersion,
 		private bool $explicitMixedInUnknownGenericNew,
+		private ConstantResolver $constantResolver,
 	)
 	{
-		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 	}
 
 	/**
@@ -91,6 +86,7 @@ class DirectScopeFactory implements ScopeFactory
 			$this->propertyReflectionFinder,
 			$this->parser,
 			$this->nodeScopeResolver,
+			$this->constantResolver,
 			$context,
 			$this->phpVersion,
 			$declareStrictTypes,
@@ -107,7 +103,6 @@ class DirectScopeFactory implements ScopeFactory
 			$currentlyAllowedUndefinedExpressions,
 			$nativeExpressionTypes,
 			$inFunctionCallsStack,
-			$this->dynamicConstantNames,
 			$this->treatPhpDocTypesAsCertain,
 			$afterExtractCall,
 			$parentScope,

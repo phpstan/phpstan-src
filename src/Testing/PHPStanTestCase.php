@@ -3,6 +3,7 @@
 namespace PHPStan\Testing;
 
 use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\DirectScopeFactory;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\MutatingScope;
@@ -30,7 +31,9 @@ use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\UsefulTypeAliasResolver;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 use function array_merge;
+use function count;
 use function implode;
 use function is_dir;
 use function mkdir;
@@ -146,9 +149,19 @@ abstract class PHPStanTestCase extends TestCase
 		return self::getContainer()->getByType(ClassReflectionExtensionRegistryProvider::class);
 	}
 
-	public function createScopeFactory(ReflectionProvider $reflectionProvider, TypeSpecifier $typeSpecifier): ScopeFactory
+	/**
+	 * @param string[] $dynamicConstantNames
+	 */
+	public function createScopeFactory(ReflectionProvider $reflectionProvider, TypeSpecifier $typeSpecifier, array $dynamicConstantNames = []): ScopeFactory
 	{
 		$container = self::getContainer();
+
+		$constantResolver = new ConstantResolver($container->getByType(ReflectionProvider::class), $container);
+		if (count($dynamicConstantNames) > 0) {
+			$reflectionProperty = new ReflectionProperty(ConstantResolver::class, 'dynamicConstantNames');
+			$reflectionProperty->setAccessible(true);
+			$reflectionProperty->setValue($constantResolver, $dynamicConstantNames);
+		}
 
 		return new DirectScopeFactory(
 			MutatingScope::class,
@@ -159,11 +172,11 @@ abstract class PHPStanTestCase extends TestCase
 			$typeSpecifier,
 			new PropertyReflectionFinder(),
 			$this->getParser(),
-			self::getContainer()->getByType(NodeScopeResolver::class),
+			$container->getByType(NodeScopeResolver::class),
 			$this->shouldTreatPhpDocTypesAsCertain(),
-			$container,
 			$container->getByType(PhpVersion::class),
 			$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
+			$constantResolver,
 		);
 	}
 

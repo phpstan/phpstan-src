@@ -5,7 +5,6 @@ namespace PHPStan\Testing;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
-use PHPStan\Analyser\DirectScopeFactory;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeContext;
@@ -17,7 +16,6 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
-use ReflectionProperty;
 use function array_map;
 use function array_merge;
 use function count;
@@ -61,12 +59,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		);
 		$resolver->setAnalysedFiles(array_map(static fn (string $file): string => $fileHelper->normalizePath($file), array_merge([$file], $this->getAdditionalAnalysedFiles())));
 
-		$scopeFactory = $this->createScopeFactory($reflectionProvider, $typeSpecifier);
-		if (count($dynamicConstantNames) > 0) {
-			$reflectionProperty = new ReflectionProperty(DirectScopeFactory::class, 'dynamicConstantNames');
-			$reflectionProperty->setAccessible(true);
-			$reflectionProperty->setValue($scopeFactory, $dynamicConstantNames);
-		}
+		$scopeFactory = $this->createScopeFactory($reflectionProvider, $typeSpecifier, $dynamicConstantNames);
 		$scope = $scopeFactory->create(ScopeContext::create($file));
 
 		$resolver->processNodes(

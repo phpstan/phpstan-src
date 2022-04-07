@@ -19,9 +19,6 @@ use function is_a;
 class LazyScopeFactory implements ScopeFactory
 {
 
-	/** @var string[] */
-	private array $dynamicConstantNames;
-
 	private bool $treatPhpDocTypesAsCertain;
 
 	private bool $explicitMixedInUnknownGenericNew;
@@ -31,7 +28,6 @@ class LazyScopeFactory implements ScopeFactory
 		private Container $container,
 	)
 	{
-		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 		$this->treatPhpDocTypesAsCertain = $container->getParameter('treatPhpDocTypesAsCertain');
 		$this->explicitMixedInUnknownGenericNew = $this->container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'];
 	}
@@ -82,6 +78,7 @@ class LazyScopeFactory implements ScopeFactory
 			$this->container->getByType(PropertyReflectionFinder::class),
 			$this->container->getService('currentPhpVersionSimpleParser'),
 			$this->container->getByType(NodeScopeResolver::class),
+			$this->container->getByType(ConstantResolver::class),
 			$context,
 			$this->container->getByType(PhpVersion::class),
 			$declareStrictTypes,
@@ -98,7 +95,6 @@ class LazyScopeFactory implements ScopeFactory
 			$currentlyAllowedUndefinedExpressions,
 			$nativeExpressionTypes,
 			$inFunctionCallsStack,
-			$this->dynamicConstantNames,
 			$this->treatPhpDocTypesAsCertain,
 			$afterExtractCall,
 			$parentScope,

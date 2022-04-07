@@ -34,11 +34,15 @@ class FileNodesFetcher
 		$this->cachingVisitor->reset($fileName, $contents);
 		$nodeTraverser->traverse($ast);
 
-		return new FetchedNodesResult(
+		$result = new FetchedNodesResult(
 			$this->cachingVisitor->getClassNodes(),
 			$this->cachingVisitor->getFunctionNodes(),
 			$this->cachingVisitor->getConstantNodes(),
 		);
+
+		$this->cachingVisitor->reset($fileName, $contents);
+
+		return $result;
 	}
 
 }

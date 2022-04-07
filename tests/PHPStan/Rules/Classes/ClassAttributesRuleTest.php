@@ -110,7 +110,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 
 	public function testRuleForEnums(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80100) {
+		if (PHP_VERSION_ID < 80100) {
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 

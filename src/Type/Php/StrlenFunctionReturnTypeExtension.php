@@ -7,12 +7,16 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function count;
 use function strlen;
@@ -38,19 +42,25 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 		$argType = $scope->getType($args[0]->value);
 
-		$constantScalars = TypeUtils::getConstantScalars($argType);
+		if ($argType->isSuperTypeOf(new BooleanType())->yes()) {
+			$constantScalars = TypeUtils::getConstantScalars(TypeCombinator::remove($argType, new BooleanType()));
+			if (count($constantScalars) > 0) {
+				$constantScalars[] = new ConstantBooleanType(true);
+				$constantScalars[] = new ConstantBooleanType(false);
+			}
+		} else {
+			$constantScalars = TypeUtils::getConstantScalars($argType);
+		}
+
 		$min = null;
 		$max = null;
 		foreach ($constantScalars as $constantScalar) {
-			if ((new IntegerType())->isSuperTypeOf($constantScalar)->yes()) {
-				$len = strlen((string) $constantScalar->getValue());
-			} elseif ((new StringType())->isSuperTypeOf($constantScalar)->yes()) {
-				$len = strlen((string) $constantScalar->getValue());
-			} elseif ((new BooleanType())->isSuperTypeOf($constantScalar)->yes()) {
-				$len = strlen((string) $constantScalar->getValue());
-			} else {
+			$stringScalar = $constantScalar->toString();
+			if (!($stringScalar instanceof ConstantStringType)) {
+				$min = $max = null;
 				break;
 			}
+			$len = strlen($stringScalar->getValue());
 
 			if ($min === null) {
 				$min = $len;
@@ -78,12 +88,16 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		}
 
 		$isNonEmpty = $argType->isNonEmptyString();
-		$integer = new IntegerType();
-		if ($isNonEmpty->yes() || $integer->isSuperTypeOf($argType)->yes()) {
+		$numeric = TypeCombinator::union(new IntegerType(), new FloatType());
+		if (
+			$isNonEmpty->yes()
+			|| $numeric->isSuperTypeOf($argType)->yes()
+			|| TypeCombinator::remove($argType, $numeric)->isNonEmptyString()->yes()
+		) {
 			return IntegerRangeType::fromInterval(1, null);
 		}
 
-		if ($isNonEmpty->no()) {
+		if ((new StringType())->isSuperTypeOf($argType)->yes() && $isNonEmpty->no()) {
 			return new ConstantIntegerType(0);
 		}
 

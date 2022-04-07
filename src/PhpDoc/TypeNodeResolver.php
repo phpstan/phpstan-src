@@ -11,7 +11,6 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\ConstantResolverProvider;
 use PHPStan\Analyser\NameScope;
-use PHPStan\Analyser\ScopeFactory;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprArrayNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFalseNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
@@ -106,7 +105,6 @@ class TypeNodeResolver
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		private TypeAliasResolverProvider $typeAliasResolverProvider,
 		private ConstantResolverProvider $constantResolverProvider,
-		private ScopeFactory $scopeFactory,
 	)
 	{
 	}

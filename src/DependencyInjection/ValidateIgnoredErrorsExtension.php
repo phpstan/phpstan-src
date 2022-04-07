@@ -7,6 +7,8 @@ use Hoa\File\Read;
 use Nette\DI\CompilerExtension;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
+use PHPStan\Analyser\DirectConstantResolver;
+use PHPStan\Analyser\DirectConstantResolverProvider;
 use PHPStan\Analyser\NameScope;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\PhpDoc\DirectTypeNodeResolverExtensionRegistryProvider;
@@ -81,6 +83,7 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 						}
 
 					}),
+					new DirectConstantResolverProvider(new DirectConstantResolver($reflectionProvider, [])),
 				),
 			),
 		);

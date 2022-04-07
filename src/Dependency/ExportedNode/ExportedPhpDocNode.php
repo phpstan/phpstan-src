@@ -9,15 +9,12 @@ use ReturnTypeWillChange;
 class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 {
 
-	/** @var array<string, string> alias(string) => fullName(string) */
-	private array $uses;
-
 	/**
-	 * @param array<string, string> $uses
+	 * @param array<string, string> $uses alias(string) => fullName(string)
+	 * @param array<string, string> $constUses alias(string) => fullName(string)
 	 */
-	public function __construct(private string $phpDocString, private ?string $namespace, array $uses)
+	public function __construct(private string $phpDocString, private ?string $namespace, private array $uses, private array $constUses)
 	{
-		$this->uses = $uses;
 	}
 
 	public function equals(ExportedNode $node): bool
@@ -28,7 +25,8 @@ class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 
 		return $this->phpDocString === $node->phpDocString
 			&& $this->namespace === $node->namespace
-			&& $this->uses === $node->uses;
+			&& $this->uses === $node->uses
+			&& $this->constUses === $node->constUses;
 	}
 
 	/**
@@ -43,6 +41,7 @@ class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 				'phpDocString' => $this->phpDocString,
 				'namespace' => $this->namespace,
 				'uses' => $this->uses,
+				'constUses' => $this->constUses,
 			],
 		];
 	}
@@ -53,7 +52,7 @@ class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 	 */
 	public static function __set_state(array $properties): ExportedNode
 	{
-		return new self($properties['phpDocString'], $properties['namespace'], $properties['uses']);
+		return new self($properties['phpDocString'], $properties['namespace'], $properties['uses'], $properties['constUses']);
 	}
 
 	/**
@@ -62,7 +61,7 @@ class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 	 */
 	public static function decode(array $data): ExportedNode
 	{
-		return new self($data['phpDocString'], $data['namespace'], $data['uses']);
+		return new self($data['phpDocString'], $data['namespace'], $data['uses'], $data['constUses']);
 	}
 
 }

@@ -2,18 +2,9 @@
 
 namespace PHPStan\Analyser;
 
-use PHPStan\DependencyInjection\Container;
-
-class ConstantResolverProvider
+interface ConstantResolverProvider
 {
 
-	public function __construct(private Container $container)
-	{
-	}
-
-	public function getConstantResolver(): ConstantResolver
-	{
-		return $this->container->getByType(ConstantResolver::class);
-	}
+	public function getConstantResolver(): ConstantResolver;
 
 }

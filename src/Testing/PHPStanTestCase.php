@@ -3,7 +3,8 @@
 namespace PHPStan\Testing;
 
 use PhpParser\PrettyPrinter\Standard;
-use PHPStan\Analyser\ConstantResolver;
+use PHPStan\Analyser\ContainerConstantResolver;
+use PHPStan\Analyser\DirectConstantResolver;
 use PHPStan\Analyser\DirectScopeFactory;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\MutatingScope;
@@ -31,7 +32,6 @@ use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\UsefulTypeAliasResolver;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
-use ReflectionProperty;
 use function array_merge;
 use function count;
 use function implode;
@@ -156,11 +156,10 @@ abstract class PHPStanTestCase extends TestCase
 	{
 		$container = self::getContainer();
 
-		$constantResolver = new ConstantResolver($container->getByType(ReflectionProvider::class), $container);
 		if (count($dynamicConstantNames) > 0) {
-			$reflectionProperty = new ReflectionProperty(ConstantResolver::class, 'dynamicConstantNames');
-			$reflectionProperty->setAccessible(true);
-			$reflectionProperty->setValue($constantResolver, $dynamicConstantNames);
+			$constantResolver = new DirectConstantResolver($reflectionProvider, $dynamicConstantNames);
+		} else {
+			$constantResolver = new ContainerConstantResolver($reflectionProvider, $container);
 		}
 
 		return new DirectScopeFactory(

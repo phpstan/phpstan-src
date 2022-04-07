@@ -43,7 +43,7 @@ function foo(
 	assertType('1', $three);
 	assertType('1|2', $four);
 	assertType('1', $five);
-	assertType('ConstantPhpdocType\PREG_SPLIT_NO_EMPTY_ALIAS', $six); // use const not supported
+	assertType('1', $six);
 	assertType('ConstantPhpdocType\BAR', $seven); // classes take precedence over constants
 	assertType("'foo'", $eight);
 	assertType("'foo'", $nine);

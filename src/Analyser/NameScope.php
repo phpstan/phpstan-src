@@ -25,9 +25,10 @@ class NameScope
 	/**
 	 * @api
 	 * @param array<string, string> $uses alias(string) => fullName(string)
+	 * @param array<string, string> $constUses alias(string) => fullName(string)
 	 * @param array<string, true> $typeAliasesMap
 	 */
-	public function __construct(private ?string $namespace, private array $uses, private ?string $className = null, private ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, private array $typeAliasesMap = [], private bool $bypassTypeAliases = false)
+	public function __construct(private ?string $namespace, private array $uses, private ?string $className = null, private ?string $functionName = null, ?TemplateTypeMap $templateTypeMap = null, private array $typeAliasesMap = [], private bool $bypassTypeAliases = false, private array $constUses = [])
 	{
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
 	}
@@ -48,6 +49,14 @@ class NameScope
 	public function hasUseAlias(string $name): bool
 	{
 		return isset($this->uses[strtolower($name)]);
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	public function getConstUses(): array
+	{
+		return $this->constUses;
 	}
 
 	public function getClassName(): ?string
@@ -88,12 +97,15 @@ class NameScope
 		}
 
 		$nameParts = explode('\\', $name);
+		$firstNamePart = strtolower($nameParts[0]);
+
 		if (count($nameParts) > 1) {
-			$firstNamePart = strtolower($nameParts[0]);
 			if (isset($this->uses[$firstNamePart])) {
 				array_shift($nameParts);
 				return [sprintf('%s\\%s', $this->uses[$firstNamePart], implode('\\', $nameParts))];
 			}
+		} elseif (isset($this->constUses[$firstNamePart])) {
+			return [$this->constUses[$firstNamePart]];
 		}
 
 		if ($this->namespace !== null) {
@@ -149,6 +161,8 @@ class NameScope
 				$map->getTypes(),
 			)),
 			$this->typeAliasesMap,
+			$this->bypassTypeAliases,
+			$this->constUses,
 		);
 	}
 
@@ -166,12 +180,14 @@ class NameScope
 			$this->functionName,
 			$this->templateTypeMap->unsetType($name),
 			$this->typeAliasesMap,
+			$this->bypassTypeAliases,
+			$this->constUses,
 		);
 	}
 
 	public function bypassTypeAliases(): self
 	{
-		return new self($this->namespace, $this->uses, $this->className, $this->functionName, $this->templateTypeMap, $this->typeAliasesMap, true);
+		return new self($this->namespace, $this->uses, $this->className, $this->functionName, $this->templateTypeMap, $this->typeAliasesMap, true, $this->constUses);
 	}
 
 	public function shouldBypassTypeAliases(): bool
@@ -196,6 +212,8 @@ class NameScope
 			$properties['functionName'],
 			$properties['templateTypeMap'],
 			$properties['typeAliasesMap'],
+			$properties['bypassTypeAliases'],
+			$properties['constUses'],
 		);
 	}
 

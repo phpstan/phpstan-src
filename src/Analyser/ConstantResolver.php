@@ -3,7 +3,6 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Name;
-use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -18,18 +17,14 @@ use PHPStan\Type\UnionType;
 use function in_array;
 use const PHP_INT_SIZE;
 
-class ConstantResolver
+abstract class ConstantResolver
 {
 
 	/** @var string[] */
-	private array $dynamicConstantNames;
+	private ?array $dynamicConstantNames = null;
 
-	public function __construct(
-		private ReflectionProvider $reflectionProvider,
-		Container $container,
-	)
+	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
-		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 	}
 
 	public function resolveConstant(Name $name, ?Scope $scope): ?Type
@@ -257,11 +252,25 @@ class ConstantResolver
 
 	public function resolveConstantType(string $constantName, Type $constantType): Type
 	{
-		if ($constantType instanceof ConstantType && in_array($constantName, $this->dynamicConstantNames, true)) {
+		if ($constantType instanceof ConstantType && $this->isDynamicConstantName($constantName)) {
 			return $constantType->generalize(GeneralizePrecision::lessSpecific());
 		}
 
 		return $constantType;
 	}
+
+	private function isDynamicConstantName(string $constantName): bool
+	{
+		if ($this->dynamicConstantNames === null) {
+			$this->dynamicConstantNames = $this->getDynamicConstantNames();
+		}
+
+		return in_array($constantName, $this->dynamicConstantNames, true);
+	}
+
+	/**
+	 * @return string[]
+	 */
+	abstract protected function getDynamicConstantNames(): array;
 
 }

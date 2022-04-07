@@ -78,6 +78,34 @@ class NameScope
 		return $name;
 	}
 
+	/**
+	 * @return non-empty-list<string>
+	 */
+	public function resolveConstantNames(string $name): array
+	{
+		if (strpos($name, '\\') === 0) {
+			return [ltrim($name, '\\')];
+		}
+
+		$nameParts = explode('\\', $name);
+		if (count($nameParts) > 1) {
+			$firstNamePart = strtolower($nameParts[0]);
+			if (isset($this->uses[$firstNamePart])) {
+				array_shift($nameParts);
+				return [sprintf('%s\\%s', $this->uses[$firstNamePart], implode('\\', $nameParts))];
+			}
+		}
+
+		if ($this->namespace !== null) {
+			return [
+				sprintf('%s\\%s', $this->namespace, $name),
+				$name,
+			];
+		}
+
+		return [$name];
+	}
+
 	public function getTemplateTypeScope(): ?TemplateTypeScope
 	{
 		if ($this->className !== null) {

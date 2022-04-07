@@ -2,6 +2,8 @@
 
 namespace ConstantPhpdocType;
 
+use ConstantPhpdocType\Sub;
+use ConstantPhpdocType\Sub as Aliased;
 use const PREG_SPLIT_NO_EMPTY as PREG_SPLIT_NO_EMPTY_ALIAS;
 use function PHPStan\Testing\assertType;
 
@@ -20,6 +22,9 @@ class BAR {}
  * @param PREG_SPLIT_NO_EMPTY_COPY $five
  * @param PREG_SPLIT_NO_EMPTY_ALIAS $six
  * @param BAR $seven
+ * @param Sub\Nested\CONST_FROM_OTHER_NS $eight
+ * @param Aliased\Nested\CONST_FROM_OTHER_NS $nine
+ * @param PHP_INT_MAX $ten
  */
 function foo(
 	$one,
@@ -28,7 +33,10 @@ function foo(
 	$four,
 	$five,
 	$six,
-	$seven
+	$seven,
+	$eight,
+	$nine,
+	$ten
 ) {
 	assertType('100', $one);
 	assertType('100|200', $two);
@@ -37,4 +45,11 @@ function foo(
 	assertType('1', $five);
 	assertType('ConstantPhpdocType\PREG_SPLIT_NO_EMPTY_ALIAS', $six); // use const not supported
 	assertType('ConstantPhpdocType\BAR', $seven); // classes take precedence over constants
+	assertType("'foo'", $eight);
+	assertType("'foo'", $nine);
+	assertType('2147483647|9223372036854775807', $ten);
 }
+
+namespace ConstantPhpdocType\Sub\Nested;
+
+const CONST_FROM_OTHER_NS = 'foo';

@@ -8,7 +8,10 @@ use Iterator;
 use IteratorAggregate;
 use Nette\Utils\Strings;
 use PhpParser\Node\Name;
+use PHPStan\Analyser\ConstantResolver;
+use PHPStan\Analyser\ConstantResolverProvider;
 use PHPStan\Analyser\NameScope;
+use PHPStan\Analyser\ScopeFactory;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprArrayNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFalseNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
@@ -86,7 +89,6 @@ use function count;
 use function explode;
 use function get_class;
 use function in_array;
-use function ltrim;
 use function max;
 use function min;
 use function preg_match;
@@ -103,6 +105,8 @@ class TypeNodeResolver
 		private TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		private TypeAliasResolverProvider $typeAliasResolverProvider,
+		private ConstantResolverProvider $constantResolverProvider,
+		private ScopeFactory $scopeFactory,
 	)
 	{
 	}
@@ -384,31 +388,15 @@ class TypeNodeResolver
 
 	private function tryResolveConstant(string $name, NameScope $nameScope): ?Type
 	{
-		foreach ($this->getPossibleFullyQualifiedConstantNames($name, $nameScope) as $fqn) {
-			$nameNode = new Name\FullyQualified(explode('\\', $fqn));
-
-			if ($this->getReflectionProvider()->hasConstant($nameNode, null)) {
-				return $this->getReflectionProvider()->getConstant($nameNode, null)->getValueType();
+		foreach ($nameScope->resolveConstantNames($name) as $constName) {
+			$nameNode = new Name\FullyQualified(explode('\\', $constName));
+			$constType = $this->getConstantResolver()->resolveConstant($nameNode, null);
+			if ($constType !== null) {
+				return $constType;
 			}
 		}
 
 		return null;
-	}
-
-	/**
-	 * @return non-empty-list<string>
-	 */
-	private function getPossibleFullyQualifiedConstantNames(string $name, NameScope $nameScope): array
-	{
-		if (strpos($name, '\\') === 0) {
-			return [ltrim($name, '\\')];
-		}
-
-		if ($nameScope->getNamespace() !== null) {
-			return [$nameScope->resolveStringName($name), $name];
-		}
-
-		return [$name];
 	}
 
 	private function tryResolvePseudoTypeClassType(IdentifierTypeNode $typeNode, NameScope $nameScope): ?Type
@@ -956,6 +944,11 @@ class TypeNodeResolver
 	private function getTypeAliasResolver(): TypeAliasResolver
 	{
 		return $this->typeAliasResolverProvider->getTypeAliasResolver();
+	}
+
+	private function getConstantResolver(): ConstantResolver
+	{
+		return $this->constantResolverProvider->getConstantResolver();
 	}
 
 }

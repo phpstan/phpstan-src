@@ -488,6 +488,9 @@ services:
 		class: PHPStan\Analyser\ConstantResolver
 
 	-
+		class: PHPStan\Analyser\ConstantResolverProvider
+
+	-
 		implement: PHPStan\Analyser\ResultCache\ResultCacheManagerFactory
 		arguments:
 			scanFileFinder: @fileFinderScan

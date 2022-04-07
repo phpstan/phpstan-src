@@ -32,12 +32,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	/** @var array<string, array<int, string>>|null */
 	private ?array $functionToFiles = null;
 
-	/** @var array<string, FetchedNode<Node\Stmt\ClassLike>> */
-	private array $classNodes = [];
-
-	/** @var array<string, FetchedNode<Node\Stmt\Function_>> */
-	private array $functionNodes = [];
-
 	/**
 	 * @param string[] $files
 	 */
@@ -63,49 +57,43 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	{
 		if ($identifier->isClass()) {
 			$className = strtolower($identifier->getName());
-			if (array_key_exists($className, $this->classNodes)) {
-				return $this->nodeToReflection($reflector, $this->classNodes[$className]);
-			}
-
 			$file = $this->findFileByClass($className);
 			if ($file === null) {
 				return null;
 			}
 
 			$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
+			$classNodes = [];
 			foreach ($fetchedNodesResult->getClassNodes() as $identifierName => $fetchedClassNodes) {
 				foreach ($fetchedClassNodes as $fetchedClassNode) {
-					$this->classNodes[$identifierName] = $fetchedClassNode;
+					$classNodes[$identifierName] = $fetchedClassNode;
 					break;
 				}
 			}
 
-			if (!array_key_exists($className, $this->classNodes)) {
+			if (!array_key_exists($className, $classNodes)) {
 				return null;
 			}
 
-			return $this->nodeToReflection($reflector, $this->classNodes[$className]);
+			return $this->nodeToReflection($reflector, $classNodes[$className]);
 		}
 
 		if ($identifier->isFunction()) {
 			$functionName = strtolower($identifier->getName());
-			if (array_key_exists($functionName, $this->functionNodes)) {
-				return $this->nodeToReflection($reflector, $this->functionNodes[$functionName]);
-			}
-
 			$files = $this->findFilesByFunction($functionName);
+			$functionNodes = [];
 			foreach ($files as $file) {
 				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
 				foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
-					$this->functionNodes[$identifierName] = $fetchedFunctionNode;
+					$functionNodes[$identifierName] = $fetchedFunctionNode;
 				}
 			}
 
-			if (!array_key_exists($functionName, $this->functionNodes)) {
+			if (!array_key_exists($functionName, $functionNodes)) {
 				return null;
 			}
 
-			return $this->nodeToReflection($reflector, $this->functionNodes[$functionName]);
+			return $this->nodeToReflection($reflector, $functionNodes[$functionName]);
 		}
 
 		return null;
@@ -261,15 +249,9 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		$reflections = [];
 		if ($identifierType->isClass()) {
 			foreach ($this->classToFile as $className => $file) {
-				if (array_key_exists($className, $this->classNodes)) {
-					$reflections[$className] = $this->nodeToReflection($reflector, $this->classNodes[$className]);
-					continue;
-				}
-
 				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
 				foreach ($fetchedNodesResult->getClassNodes() as $identifierName => $fetchedClassNodes) {
 					foreach ($fetchedClassNodes as $fetchedClassNode) {
-						$this->classNodes[$identifierName] = $fetchedClassNode;
 						$reflections[$identifierName] = $this->nodeToReflection($reflector, $fetchedClassNode);
 						continue;
 					}
@@ -278,17 +260,8 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		} elseif ($identifierType->isFunction()) {
 			foreach ($this->functionToFiles as $functionName => $files) {
 				foreach ($files as $file) {
-					if (array_key_exists($functionName, $this->functionNodes)) {
-						$reflections[$functionName] = $this->nodeToReflection(
-							$reflector,
-							$this->functionNodes[$functionName]
-						);
-						continue;
-					}
-
 					$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
 					foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
-						$this->functionNodes[$identifierName] = $fetchedFunctionNode;
 						$reflections[$identifierName] = $this->nodeToReflection($reflector, $fetchedFunctionNode);
 						continue;
 					}

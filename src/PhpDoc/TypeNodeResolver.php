@@ -453,7 +453,7 @@ class TypeNodeResolver
 
 	private function resolveConditionalTypeNode(ConditionalTypeNode $typeNode, NameScope $nameScope): Type
 	{
-		return ConditionalType::create(
+		return new ConditionalType(
 			$this->resolve($typeNode->subjectType, $nameScope),
 			$this->resolve($typeNode->targetType, $nameScope),
 			$this->resolve($typeNode->if, $nameScope),

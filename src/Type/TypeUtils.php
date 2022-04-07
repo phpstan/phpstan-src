@@ -7,6 +7,9 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use function array_key_exists;
 use function array_merge;
 
 /** @api */
@@ -342,6 +345,45 @@ class TypeUtils
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse) {
 			while ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 				$type = $type->getResult();
+			}
+
+			return $traverse($type);
+		});
+	}
+
+	/**
+	 * Replaces template types with standin types, and conditional types with their resolved types
+	 *
+	 * @param array<string, Type> $passedArgs
+	 */
+	public static function resolveTypes(Type $type, TemplateTypeMap $standins, array $passedArgs, bool $keepErrorTypes = false): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins, $passedArgs, $keepErrorTypes): Type {
+			if ($type instanceof TemplateType && !$type->isArgument()) {
+				$newType = $standins->getType($type->getName());
+				if ($newType === null) {
+					return $traverse($type);
+				}
+
+				if ($newType instanceof ErrorType && !$keepErrorTypes) {
+					return $traverse($type->getBound());
+				}
+
+				return $newType;
+			}
+
+			if ($type instanceof ConditionalTypeForParameter || $type instanceof ConditionalType) {
+				$type = $traverse($type);
+
+				if ($type instanceof ConditionalTypeForParameter && array_key_exists($type->getParameterName(), $passedArgs)) {
+					$type = $type->toConditional($passedArgs[$type->getParameterName()]);
+				}
+
+				if ($type instanceof ConditionalType) {
+					return $type->resolve();
+				}
+
+				return $type;
 			}
 
 			return $traverse($type);

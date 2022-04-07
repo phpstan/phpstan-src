@@ -112,9 +112,9 @@ abstract class Test
 	 */
 	public function testDeterministicParameter($foo, $bar, $baz): void
 	{
-		assertType('string', $foo);
-		assertType('string', $bar);
-		assertType('string', $baz);
+		assertType('(true is true ? string : bool)', $foo);
+		assertType('(5 is int<4, 6> ? string : bool)', $bar);
+		assertType('(5 is not int<0, 4> ? (4 is bool ? float : string) : bool)', $baz);
 	}
 
 	/**

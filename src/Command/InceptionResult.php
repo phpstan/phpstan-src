@@ -83,7 +83,6 @@ class InceptionResult
 	{
 		if ($this->getErrorOutput()->isVerbose()) {
 			$this->getErrorOutput()->writeLineFormatted(sprintf('Used memory: %s', BytesHelper::bytes(memory_get_peak_usage(true))));
-			meminfo_dump(fopen('/Users/ondrej/Downloads/php-meminfo/runtime_reflection.json', 'w'));
 		}
 
 		return $exitCode;

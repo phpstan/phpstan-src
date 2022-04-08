@@ -486,6 +486,10 @@ services:
 
 	-
 		class: PHPStan\Analyser\ConstantResolver
+		factory: @PHPStan\Analyser\ConstantResolverFactory::create()
+
+	-
+		class: PHPStan\Analyser\ConstantResolverFactory
 
 	-
 		implement: PHPStan\Analyser\ResultCache\ResultCacheManagerFactory

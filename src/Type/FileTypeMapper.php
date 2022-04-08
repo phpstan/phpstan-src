@@ -244,9 +244,10 @@ class FileTypeMapper
 		/** @var array<string|null> $functionStack */
 		$functionStack = [];
 		$uses = [];
+		$constUses = [];
 		$this->processNodes(
 			$this->phpParser->parseFile($fileName),
-			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
+			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack, &$constUses): ?int {
 				if ($node instanceof Node\Stmt\ClassLike) {
 					if ($traitFound && $fileName === $originalClassFileName) {
 						return self::SKIP_NODE;
@@ -296,11 +297,11 @@ class FileTypeMapper
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 					$phpDocString = GetLastDocComment::forNode($node);
 					if ($phpDocString !== '') {
-						$typeMapStack[] = function () use ($namespace, $uses, $className, $functionName, $phpDocString, $typeMapStack): TemplateTypeMap {
+						$typeMapStack[] = function () use ($namespace, $uses, $className, $functionName, $phpDocString, $typeMapStack, $constUses): TemplateTypeMap {
 							$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
 							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 							$currentTypeMap = $typeMapCb !== null ? $typeMapCb() : null;
-							$nameScope = new NameScope($namespace, $uses, $className, $functionName, $currentTypeMap);
+							$nameScope = new NameScope($namespace, $uses, $className, $functionName, $currentTypeMap, [], false, $constUses);
 							$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 							$templateTypeScope = $nameScope->getTemplateTypeScope();
 							if ($templateTypeScope === null) {
@@ -344,6 +345,8 @@ class FileTypeMapper
 						$functionName,
 						($typeMapCb !== null ? $typeMapCb() : TemplateTypeMap::createEmpty()),
 						$typeAliasesMap,
+						false,
+						$constUses,
 					);
 				}
 
@@ -358,18 +361,24 @@ class FileTypeMapper
 
 				if ($node instanceof Node\Stmt\Namespace_) {
 					$namespace = (string) $node->name;
-				} elseif ($node instanceof Node\Stmt\Use_ && $node->type === Node\Stmt\Use_::TYPE_NORMAL) {
-					foreach ($node->uses as $use) {
-						$uses[strtolower($use->getAlias()->name)] = (string) $use->name;
+				} elseif ($node instanceof Node\Stmt\Use_) {
+					if ($node->type === Node\Stmt\Use_::TYPE_NORMAL) {
+						foreach ($node->uses as $use) {
+							$uses[strtolower($use->getAlias()->name)] = (string) $use->name;
+						}
+					} elseif ($node->type === Node\Stmt\Use_::TYPE_CONSTANT) {
+						foreach ($node->uses as $use) {
+							$constUses[strtolower($use->getAlias()->name)] = (string) $use->name;
+						}
 					}
 				} elseif ($node instanceof Node\Stmt\GroupUse) {
 					$prefix = (string) $node->prefix;
 					foreach ($node->uses as $use) {
-						if ($node->type !== Node\Stmt\Use_::TYPE_NORMAL && $use->type !== Node\Stmt\Use_::TYPE_NORMAL) {
-							continue;
+						if ($node->type === Node\Stmt\Use_::TYPE_NORMAL || $use->type === Node\Stmt\Use_::TYPE_NORMAL) {
+							$uses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
+						} elseif ($node->type === Node\Stmt\Use_::TYPE_CONSTANT || $use->type === Node\Stmt\Use_::TYPE_CONSTANT) {
+							$constUses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
 						}
-
-						$uses[strtolower($use->getAlias()->name)] = sprintf('%s\\%s', $prefix, (string) $use->name);
 					}
 				} elseif ($node instanceof Node\Stmt\TraitUse) {
 					$traitMethodAliases = [];
@@ -475,7 +484,7 @@ class FileTypeMapper
 
 				return null;
 			},
-			static function (Node $node, $callbackResult) use ($lookForTrait, &$namespace, &$functionStack, &$classStack, &$typeAliasStack, &$uses, &$typeMapStack): void {
+			static function (Node $node, $callbackResult) use ($lookForTrait, &$namespace, &$functionStack, &$classStack, &$typeAliasStack, &$uses, &$typeMapStack, &$constUses): void {
 				if ($node instanceof Node\Stmt\ClassLike && $lookForTrait === null) {
 					if (count($classStack) === 0) {
 						throw new ShouldNotHappenException();
@@ -496,6 +505,7 @@ class FileTypeMapper
 				} elseif ($node instanceof Node\Stmt\Namespace_) {
 					$namespace = null;
 					$uses = [];
+					$constUses = [];
 				} elseif ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 					if (count($functionStack) === 0) {
 						throw new ShouldNotHappenException();

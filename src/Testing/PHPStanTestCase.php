@@ -26,12 +26,12 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\UsefulTypeAliasResolver;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
-use ReflectionProperty;
 use function array_merge;
 use function count;
 use function implode;
@@ -156,11 +156,8 @@ abstract class PHPStanTestCase extends TestCase
 	{
 		$container = self::getContainer();
 
-		$constantResolver = new ConstantResolver($container->getByType(ReflectionProvider::class), $container);
-		if (count($dynamicConstantNames) > 0) {
-			$reflectionProperty = new ReflectionProperty(ConstantResolver::class, 'dynamicConstantNames');
-			$reflectionProperty->setAccessible(true);
-			$reflectionProperty->setValue($constantResolver, $dynamicConstantNames);
+		if (count($dynamicConstantNames) === 0) {
+			$dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 		}
 
 		return new DirectScopeFactory(
@@ -176,7 +173,7 @@ abstract class PHPStanTestCase extends TestCase
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container->getByType(PhpVersion::class),
 			$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
-			$constantResolver,
+			new ConstantResolver(new DirectReflectionProviderProvider($reflectionProvider), $dynamicConstantNames),
 		);
 	}
 

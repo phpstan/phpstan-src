@@ -327,13 +327,17 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	{
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-5744.php'], [
-			/*[
+			[
 				'Cannot access offset \'permission\' on mixed.',
 				16,
-			],*/
+			],
 			[
 				'Cannot access offset \'permission\' on mixed.',
 				29,
+			],
+			[
+				'Cannot access offset \'permission\' on mixed.',
+				39,
 			],
 		]);
 	}

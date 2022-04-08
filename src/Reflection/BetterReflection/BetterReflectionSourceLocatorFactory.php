@@ -2,10 +2,15 @@
 
 namespace PHPStan\Reflection\BetterReflection;
 
-use PhpParser\Node;
-
-use PHPStan\DependencyInjection\Container;
-use PHPStan\Php\PhpVersion;
+use PhpParser\Parser;
+use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
+use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
+use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ClassBlacklistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ClassWhitelistSourceLocator;
@@ -14,63 +19,13 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLo
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
-use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
-use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
-use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
-use PHPStan\BetterReflection\SourceLocator\SourceStubber\SourceStubber;
-use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
-use PHPStan\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
-use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
-use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
-use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use function array_merge;
+use function array_unique;
+use function is_dir;
+use function is_file;
 
 class BetterReflectionSourceLocatorFactory
 {
-
-	/** @var \PhpParser\Parser */
-	private $parser;
-
-	/** @var \PhpParser\Parser */
-	private $php8Parser;
-
-	/** @var PhpStormStubsSourceStubber */
-	private $phpstormStubsSourceStubber;
-
-	/** @var ReflectionSourceStubber */
-	private $reflectionSourceStubber;
-
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository */
-	private $optimizedSingleFileSourceLocatorRepository;
-
-	/** @var \PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository */
-	private $optimizedDirectorySourceLocatorRepository;
-
-	/** @var ComposerJsonAndInstalledJsonSourceLocatorMaker */
-	private $composerJsonAndInstalledJsonSourceLocatorMaker;
-
-	/** @var AutoloadSourceLocator */
-	private $autoloadSourceLocator;
-
-	/** @var string[] */
-	private $scanFiles;
-
-	/** @var string[] */
-	private $scanDirectories;
-
-	/** @var string[] */
-	private $analysedPaths;
-
-	/** @var string[] */
-	private $composerAutoloaderProjectPaths;
-
-	/** @var string[] */
-	private $analysedPathsFromConfig;
-
-	/** @var string|null */
-	private $singleReflectionFile;
-
-	/** @var string[] */
-	private array $staticReflectionClassNamePatterns;
 
 	/**
 	 * @param string[] $scanFiles
@@ -78,42 +33,26 @@ class BetterReflectionSourceLocatorFactory
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $analysedPathsFromConfig
-	 * @param string|null $singleReflectionFile,
 	 * @param string[] $staticReflectionClassNamePatterns
 	 */
 	public function __construct(
-		\PhpParser\Parser $parser,
-		\PhpParser\Parser $php8Parser,
-		PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
-		ReflectionSourceStubber $reflectionSourceStubber,
-		OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
-		OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
-		ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
-		AutoloadSourceLocator $autoloadSourceLocator,
-		array $scanFiles,
-		array $scanDirectories,
-		array $analysedPaths,
-		array $composerAutoloaderProjectPaths,
-		array $analysedPathsFromConfig,
-		?string $singleReflectionFile,
-		array $staticReflectionClassNamePatterns
+		private Parser $parser,
+		private Parser $php8Parser,
+		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
+		private ReflectionSourceStubber $reflectionSourceStubber,
+		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
+		private OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
+		private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
+		private AutoloadSourceLocator $autoloadSourceLocator,
+		private array $scanFiles,
+		private array $scanDirectories,
+		private array $analysedPaths,
+		private array $composerAutoloaderProjectPaths,
+		private array $analysedPathsFromConfig,
+		private ?string $singleReflectionFile,
+		private array $staticReflectionClassNamePatterns,
 	)
 	{
-		$this->parser = $parser;
-		$this->php8Parser = $php8Parser;
-		$this->phpstormStubsSourceStubber = $phpstormStubsSourceStubber;
-		$this->reflectionSourceStubber = $reflectionSourceStubber;
-		$this->optimizedSingleFileSourceLocatorRepository = $optimizedSingleFileSourceLocatorRepository;
-		$this->optimizedDirectorySourceLocatorRepository = $optimizedDirectorySourceLocatorRepository;
-		$this->composerJsonAndInstalledJsonSourceLocatorMaker = $composerJsonAndInstalledJsonSourceLocatorMaker;
-		$this->autoloadSourceLocator = $autoloadSourceLocator;
-		$this->scanFiles = $scanFiles;
-		$this->scanDirectories = $scanDirectories;
-		$this->analysedPaths = $analysedPaths;
-		$this->composerAutoloaderProjectPaths = $composerAutoloaderProjectPaths;
-		$this->analysedPathsFromConfig = $analysedPathsFromConfig;
-		$this->singleReflectionFile = $singleReflectionFile;
-		$this->staticReflectionClassNamePatterns = $staticReflectionClassNamePatterns;
 	}
 
 	public function create(): SourceLocator

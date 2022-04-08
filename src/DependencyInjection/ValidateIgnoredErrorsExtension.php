@@ -7,8 +7,7 @@ use Hoa\File\Read;
 use Nette\DI\CompilerExtension;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
-use PHPStan\Analyser\DirectConstantResolver;
-use PHPStan\Analyser\DirectConstantResolverProvider;
+use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\PhpDoc\DirectTypeNodeResolverExtensionRegistryProvider;
@@ -52,6 +51,7 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 		/** @throws void */
 		$parser = Llk::load(new Read('hoa://Library/Regex/Grammar.pp'));
 		$reflectionProvider = new DummyReflectionProvider();
+		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
 		ReflectionProviderStaticAccessor::registerInstance($reflectionProvider);
 		$ignoredRegexValidator = new IgnoredRegexValidator(
 			$parser,
@@ -69,7 +69,7 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 
 						},
 					),
-					new DirectReflectionProviderProvider($reflectionProvider),
+					$reflectionProviderProvider,
 					new DirectTypeAliasResolverProvider(new class implements TypeAliasResolver {
 
 						public function hasTypeAlias(string $aliasName, ?string $classNameScope): bool
@@ -83,7 +83,7 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 						}
 
 					}),
-					new DirectConstantResolverProvider(new DirectConstantResolver($reflectionProvider, [])),
+					new ConstantResolver($reflectionProviderProvider, []),
 				),
 			),
 		);

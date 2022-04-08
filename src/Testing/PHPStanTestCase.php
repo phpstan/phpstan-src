@@ -3,8 +3,7 @@
 namespace PHPStan\Testing;
 
 use PhpParser\PrettyPrinter\Standard;
-use PHPStan\Analyser\ContainerConstantResolver;
-use PHPStan\Analyser\DirectConstantResolver;
+use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\DirectScopeFactory;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\MutatingScope;
@@ -27,6 +26,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\UsefulTypeAliasResolver;
@@ -156,10 +156,8 @@ abstract class PHPStanTestCase extends TestCase
 	{
 		$container = self::getContainer();
 
-		if (count($dynamicConstantNames) > 0) {
-			$constantResolver = new DirectConstantResolver($reflectionProvider, $dynamicConstantNames);
-		} else {
-			$constantResolver = new ContainerConstantResolver($reflectionProvider, $container);
+		if (count($dynamicConstantNames) === 0) {
+			$dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 		}
 
 		return new DirectScopeFactory(
@@ -175,7 +173,7 @@ abstract class PHPStanTestCase extends TestCase
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container->getByType(PhpVersion::class),
 			$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
-			$constantResolver,
+			new ConstantResolver(new DirectReflectionProviderProvider($reflectionProvider), $dynamicConstantNames),
 		);
 	}
 

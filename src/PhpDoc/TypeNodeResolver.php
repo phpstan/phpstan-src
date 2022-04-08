@@ -9,7 +9,6 @@ use IteratorAggregate;
 use Nette\Utils\Strings;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\ConstantResolver;
-use PHPStan\Analyser\ConstantResolverProvider;
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprArrayNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFalseNode;
@@ -104,7 +103,7 @@ class TypeNodeResolver
 		private TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		private TypeAliasResolverProvider $typeAliasResolverProvider,
-		private ConstantResolverProvider $constantResolverProvider,
+		private ConstantResolver $constantResolver,
 	)
 	{
 	}
@@ -388,7 +387,7 @@ class TypeNodeResolver
 	{
 		foreach ($nameScope->resolveConstantNames($name) as $constName) {
 			$nameNode = new Name\FullyQualified(explode('\\', $constName));
-			$constType = $this->getConstantResolver()->resolveConstant($nameNode, null);
+			$constType = $this->constantResolver->resolveConstant($nameNode, null);
 			if ($constType !== null) {
 				return $constType;
 			}
@@ -942,11 +941,6 @@ class TypeNodeResolver
 	private function getTypeAliasResolver(): TypeAliasResolver
 	{
 		return $this->typeAliasResolverProvider->getTypeAliasResolver();
-	}
-
-	private function getConstantResolver(): ConstantResolver
-	{
-		return $this->constantResolverProvider->getConstantResolver();
 	}
 
 }

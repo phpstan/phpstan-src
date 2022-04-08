@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -17,24 +18,24 @@ use PHPStan\Type\UnionType;
 use function in_array;
 use const PHP_INT_SIZE;
 
-abstract class ConstantResolver
+class ConstantResolver
 {
 
-	/** @var string[] */
-	private ?array $dynamicConstantNames = null;
-
-	public function __construct(private ReflectionProvider $reflectionProvider)
+	/**
+	 * @param string[] $dynamicConstantNames
+	 */
+	public function __construct(private ReflectionProviderProvider $reflectionProviderProvider, private array $dynamicConstantNames)
 	{
 	}
 
 	public function resolveConstant(Name $name, ?Scope $scope): ?Type
 	{
-		if (!$this->reflectionProvider->hasConstant($name, $scope)) {
+		if (!$this->getReflectionProvider()->hasConstant($name, $scope)) {
 			return null;
 		}
 
 		/** @var string $resolvedConstantName */
-		$resolvedConstantName = $this->reflectionProvider->resolveConstantName($name, $scope);
+		$resolvedConstantName = $this->getReflectionProvider()->resolveConstantName($name, $scope);
 		// core, https://www.php.net/manual/en/reserved.constants.php
 		if ($resolvedConstantName === 'PHP_VERSION') {
 			return new IntersectionType([
@@ -245,32 +246,23 @@ abstract class ConstantResolver
 			return IntegerRangeType::fromInterval(1, null);
 		}
 
-		$constantType = $this->reflectionProvider->getConstant($name, $scope)->getValueType();
+		$constantType = $this->getReflectionProvider()->getConstant($name, $scope)->getValueType();
 
 		return $this->resolveConstantType($resolvedConstantName, $constantType);
 	}
 
 	public function resolveConstantType(string $constantName, Type $constantType): Type
 	{
-		if ($constantType instanceof ConstantType && $this->isDynamicConstantName($constantName)) {
+		if ($constantType instanceof ConstantType && in_array($constantName, $this->dynamicConstantNames, true)) {
 			return $constantType->generalize(GeneralizePrecision::lessSpecific());
 		}
 
 		return $constantType;
 	}
 
-	private function isDynamicConstantName(string $constantName): bool
+	private function getReflectionProvider(): ReflectionProvider
 	{
-		if ($this->dynamicConstantNames === null) {
-			$this->dynamicConstantNames = $this->getDynamicConstantNames();
-		}
-
-		return in_array($constantName, $this->dynamicConstantNames, true);
+		return $this->reflectionProviderProvider->getReflectionProvider();
 	}
-
-	/**
-	 * @return string[]
-	 */
-	abstract protected function getDynamicConstantNames(): array;
 
 }

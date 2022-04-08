@@ -1809,6 +1809,7 @@ services:
 			analysedPathsFromConfig: %analysedPathsFromConfig%
 			singleReflectionFile: %singleReflectionFile%
 			staticReflectionClassNamePatterns: %staticReflectionClassNamePatterns%
+			disableRuntimeReflectionProvider: %featureToggles.disableRuntimeReflectionProvider%
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory

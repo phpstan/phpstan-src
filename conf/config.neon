@@ -1692,8 +1692,10 @@ services:
 		autowired: no
 
 	defaultAnalysisParser:
-		class: PHPStan\Parser\PathRoutingParser
-		factory: @pathRoutingParser
+		class: PHPStan\Parser\CachedParser
+		arguments:
+			originalParser: @pathRoutingParser
+			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
 		autowired: false
 
 	phpParserDecorator:

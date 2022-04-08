@@ -35,7 +35,7 @@ class IsArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			throw new ShouldNotHappenException();
 		}
 
-		return $this->typeSpecifier->create($node->getArgs()[0]->value, new ArrayType(new MixedType(), new MixedType()), $context, false, $scope);
+		return $this->typeSpecifier->create($node->getArgs()[0]->value, new ArrayType(new MixedType(true), new MixedType(true)), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

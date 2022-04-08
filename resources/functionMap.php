@@ -10229,7 +10229,7 @@ return [
 'SimpleXMLElement::attributes' => ['static|null', 'ns='=>'string', 'is_prefix='=>'bool'],
 'SimpleXMLElement::children' => ['static', 'namespaceOrPrefix='=>'string|null', 'is_prefix='=>'bool'],
 'SimpleXMLElement::count' => ['0|positive-int'],
-'SimpleXMLElement::getDocNamespaces' => ['string[]', 'recursive='=>'bool', 'from_root='=>'bool'],
+'SimpleXMLElement::getDocNamespaces' => ['string[]|false', 'recursive='=>'bool', 'from_root='=>'bool'],
 'SimpleXMLElement::getName' => ['string'],
 'SimpleXMLElement::getNamespaces' => ['string[]', 'recursive='=>'bool'],
 'SimpleXMLElement::registerXPathNamespace' => ['bool', 'prefix'=>'string', 'ns'=>'string'],

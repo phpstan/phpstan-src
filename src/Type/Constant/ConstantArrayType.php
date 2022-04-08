@@ -925,6 +925,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function makeOffsetRequired(Type $offsetType): self
 	{
 		$offsetType = ArrayType::castToArrayKeyType($offsetType);
+		if ($offsetType instanceof UnionType) {
+			$constantArrayType = $this;
+			foreach ($offsetType->getTypes() as $innerType) {
+				$constantArrayType = $constantArrayType->makeOffsetRequired($innerType);
+			}
+			return $constantArrayType;
+		}
+
 		$optionalKeys = $this->optionalKeys;
 		foreach ($this->keyTypes as $i => $keyType) {
 			if (!$keyType->equals($offsetType)) {

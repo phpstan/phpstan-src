@@ -366,13 +366,11 @@ class TypeNodeResolver
 			return new ErrorType();
 		}
 
-		if (!$this->mightBeConstant($typeNode->name) || $this->getReflectionProvider()->hasClass($stringName)) {
-			return new ObjectType($stringName);
-		}
-
-		$constType = $this->tryResolveConstant($typeNode->name, $nameScope);
-		if ($constType !== null) {
-			return $constType;
+		if ($this->mightBeConstant($typeNode->name) && !$this->getReflectionProvider()->hasClass($stringName)) {
+			$constType = $this->tryResolveConstant($typeNode->name, $nameScope);
+			if ($constType !== null) {
+				return $constType;
+			}
 		}
 
 		return new ObjectType($stringName);

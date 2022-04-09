@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command;
 
+use Nette\Utils\Json;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
@@ -151,29 +152,41 @@ class AnalyseApplication
 			};
 		} else {
 			$startTime = null;
-			$preFileCallback = static function (string $file) use ($stdOutput, &$startTime): void {
+			$fileName = null;
+			$preFileCallback = static function (string $file) use ($stdOutput, &$startTime, &$fileName): void {
 				$stdOutput->writeLineFormatted($file);
 				$startTime = microtime(true);
+				$fileName = $file;
 			};
 			$postFileCallback = null;
+			$statistics = [];
 			if ($stdOutput->isDebug()) {
 				$previousMemory = memory_get_peak_usage(true);
-				$postFileCallback = static function () use ($stdOutput, &$previousMemory, &$startTime): void {
+				$postFileCallback = static function () use ($stdOutput, &$previousMemory, &$startTime, &$fileName, &$statistics): void {
 					if ($startTime === null) {
+						throw new ShouldNotHappenException();
+					}
+					if ($fileName === null) {
 						throw new ShouldNotHappenException();
 					}
 					$currentTotalMemory = memory_get_peak_usage(true);
 					$elapsedTime = microtime(true) - $startTime;
+					$statistics[$fileName] = $elapsedTime;
 					$stdOutput->writeLineFormatted(sprintf('--- consumed %s, total %s, took %.2f s', BytesHelper::bytes($currentTotalMemory - $previousMemory), BytesHelper::bytes($currentTotalMemory), $elapsedTime));
 					$previousMemory = $currentTotalMemory;
 				};
 			}
+
 		}
 
 		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, null, null, $input);
 
 		if (isset($progressStarted) && $progressStarted) {
 			$errorOutput->getStyle()->progressFinish();
+		}
+
+		if ($stdOutput->isDebug() && isset($statistics)) {
+			echo Json::encode($statistics) . "\n";
 		}
 
 		return $analyserResult;

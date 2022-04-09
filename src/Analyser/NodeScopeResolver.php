@@ -2289,27 +2289,29 @@ class NodeScopeResolver
 				static fn (): MutatingScope => $rightResult->getScope()->filterByFalseyValue($expr),
 			);
 		} elseif ($expr instanceof Coalesce) {
+			// backwards compatibility: coalesce doesn't allow dynamic properties
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left, false);
 			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch || $expr->left instanceof StaticPropertyFetch) {
-				$scope = $nonNullabilityResult->getScope()->setAllowedUndefinedExpression($expr->left, false);
+				$condScope = $nonNullabilityResult->getScope()->setAllowedUndefinedExpression($expr->left, false);
 			} else {
-				$scope = $nonNullabilityResult->getScope();
+				$condScope = $nonNullabilityResult->getScope();
 			}
-			$scope = $this->lookForEnterAllowedUndefinedVariable($scope, $expr->left, true);
-			$result = $this->processExprNode($expr->left, $scope, $nodeCallback, $context->enterDeep());
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$scope = $result->getScope();
-
-			$rightExprType = $scope->getType($expr->right);
-			if (!$rightExprType instanceof NeverType || !$rightExprType->isExplicit()) {
-				$scope = $this->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
-			}
+			$condScope = $this->lookForEnterAllowedUndefinedVariable($condScope, $expr->left, true);
+			$condResult = $this->processExprNode($expr->left, $condScope, $nodeCallback, $context->enterDeep());
+			$scope = $this->revertNonNullability($condResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 			$scope = $this->lookForExitAllowedUndefinedVariable($scope, $expr->left);
-			$result = $this->processExprNode($expr->right, $scope, $nodeCallback, $context->enterDeep());
-			$scope = $result->getScope()->mergeWith($scope);
-			$hasYield = $hasYield || $result->hasYield();
-			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
+
+			$rightScope = $scope->filterByFalseyValue(new Expr\Isset_([$expr->left]));
+			$rightResult = $this->processExprNode($expr->right, $rightScope, $nodeCallback, $context->enterDeep());
+			$rightExprType = $scope->getType($expr->right);
+			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
+				$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]));
+			} else {
+				$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]))->mergeWith($rightResult->getScope());
+			}
+
+			$hasYield = $condResult->hasYield() || $rightResult->hasYield();
+			$throwPoints = array_merge($condResult->getThrowPoints(), $rightResult->getThrowPoints());
 		} elseif ($expr instanceof BinaryOp) {
 			$result = $this->processExprNode($expr->left, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();

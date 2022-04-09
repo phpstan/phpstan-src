@@ -13,4 +13,4 @@ rules:
 	- PHPStan\Rules\Functions\UnusedClosureUsesRule
 	- PHPStan\Rules\Variables\EmptyRule
 	- PHPStan\Rules\Variables\IssetRule
-	- PHPStan\Rules\Variables\NullCoalesceRule
+	- PHPStan\Rules\Variables\NullCoalesceAssignRule

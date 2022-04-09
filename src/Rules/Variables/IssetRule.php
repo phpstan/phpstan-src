@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Rule;
@@ -28,7 +29,14 @@ class IssetRule implements Rule
 	{
 		$messages = [];
 		foreach ($node->vars as $var) {
-			$error = $this->issetCheck->check($var, $scope, 'in isset()', static function (Type $type): ?string {
+			// get the real parent node
+			$parent = $var->getAttribute('parent');
+			if ($parent instanceof Expr\BinaryOp\Coalesce) {
+				$operatorDescription = 'on left side of ??';
+			} else {
+				$operatorDescription = 'in isset()';
+			}
+			$error = $this->issetCheck->check($var, $scope, $operatorDescription, static function (Type $type): ?string {
 				$isNull = (new NullType())->isSuperTypeOf($type);
 				if ($isNull->maybe()) {
 					return null;

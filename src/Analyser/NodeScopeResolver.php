@@ -2294,7 +2294,9 @@ class NodeScopeResolver
 				$scope = $scope->setAllowedUndefinedExpression($expr->left, false);
 			}
 			// simulate Isset_ expr for consistency with isset
-			$condResult = $this->processExprNode(new Expr\Isset_([$expr->left]), $scope, $nodeCallback, $context->enterDeep());
+			$simulateNode = new Expr\Isset_([$expr->left]);
+			$simulateNode->setAttributes($expr->getAttributes());
+			$condResult = $this->processExprNode($simulateNode, $scope, $nodeCallback, $context->enterDeep());
 			$rightResult = $this->processExprNode($expr->right, $condResult->getFalseyScope(), $nodeCallback, $context->enterDeep());
 
 			$rightExprType = $condResult->getFalseyScope()->getType($expr->right);

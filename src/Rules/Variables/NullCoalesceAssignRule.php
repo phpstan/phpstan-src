@@ -10,9 +10,9 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
 /**
- * @implements Rule<Node\Expr>
+ * @implements Rule<Node\Expr\AssignOp\Coalesce>
  */
-class NullCoalesceRule implements Rule
+class NullCoalesceAssignRule implements Rule
 {
 
 	public function __construct(private IssetCheck $issetCheck)
@@ -21,12 +21,12 @@ class NullCoalesceRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Expr::class;
+		return Node\Expr\AssignOp\Coalesce::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$typeMessageCallback = static function (Type $type): ?string {
+		$error = $this->issetCheck->check($node->var, $scope, 'on left side of ??=', static function (Type $type): ?string {
 			$isNull = (new NullType())->isSuperTypeOf($type);
 			if ($isNull->maybe()) {
 				return null;
@@ -37,21 +37,9 @@ class NullCoalesceRule implements Rule
 			}
 
 			return 'is not nullable';
-		};
+		});
 
-		if ($node instanceof Node\Expr\BinaryOp\Coalesce) {
-			$error = $this->issetCheck->check($node->left, $scope, 'on left side of ??', $typeMessageCallback);
-		} elseif ($node instanceof Node\Expr\AssignOp\Coalesce) {
-			$error = $this->issetCheck->check($node->var, $scope, 'on left side of ??=', $typeMessageCallback);
-		} else {
-			return [];
-		}
-
-		if ($error === null) {
-			return [];
-		}
-
-		return [$error];
+		return $error === null ? [] : [$error];
 	}
 
 }

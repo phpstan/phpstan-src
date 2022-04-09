@@ -2305,9 +2305,9 @@ class NodeScopeResolver
 			$rightResult = $this->processExprNode($expr->right, $rightScope, $nodeCallback, $context->enterDeep());
 			$rightExprType = $scope->getType($expr->right);
 			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
-				$scope = $condScope->filterByTruthyValue(new Expr\Isset_([$expr->left]));
+				$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]));
 			} else {
-				$scope = $condScope->mergeWith($rightResult->getScope());
+				$scope = $scope->mergeWith($rightResult->getScope());
 			}
 
 			$hasYield = $condResult->hasYield() || $rightResult->hasYield();

@@ -2307,7 +2307,7 @@ class NodeScopeResolver
 			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
 				$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]));
 			} else {
-				$scope = $scope->mergeWith($rightResult->getScope());
+				$scope = $scope->filterByTruthyValue(new Expr\Isset_([$expr->left]))->mergeWith($rightResult->getScope());
 			}
 
 			$hasYield = $condResult->hasYield() || $rightResult->hasYield();

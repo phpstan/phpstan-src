@@ -2301,7 +2301,7 @@ class NodeScopeResolver
 			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
 				$scope = $condResult->getTruthyScope();
 			} else {
-				$scope = $condResult->getScope()->mergeWith($rightResult->getScope());
+				$scope = $condResult->getTruthyScope()->mergeWith($rightResult->getScope());
 			}
 			$hasYield = $condResult->hasYield() || $rightResult->hasYield();
 			$throwPoints = array_merge($condResult->getThrowPoints(), $rightResult->getThrowPoints());

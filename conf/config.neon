@@ -28,6 +28,7 @@ parameters:
 			- FilterIterator
 			- RecursiveCallbackFilterIterator
 		explicitMixedInUnknownGenericNew: false
+		explicitMixedViaIsArray: false
 		arrayFilter: false
 	fileExtensions:
 		- php
@@ -212,6 +213,7 @@ parametersSchema:
 		disableRuntimeReflectionProvider: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		explicitMixedInUnknownGenericNew: bool(),
+		explicitMixedViaIsArray: bool(),
 		arrayFilter: bool(),
 	])
 	fileExtensions: listOf(string())
@@ -1424,6 +1426,8 @@ services:
 		class: PHPStan\Type\Php\IsArrayFunctionTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+		arguments:
+			explicitMixed: %featureToggles.explicitMixedViaIsArray%
 
 	-
 		class: PHPStan\Type\Php\IsBoolFunctionTypeSpecifyingExtension

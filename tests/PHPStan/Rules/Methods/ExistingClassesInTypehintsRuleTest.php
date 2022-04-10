@@ -87,19 +87,19 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				67,
 			],
 			[
-				'Class stdClass referenced with incorrect case: STDClass.',
-				76,
-			],
-			[
 				'Class TestMethodTypehints\FooMethodTypehints referenced with incorrect case: TestMethodTypehints\fOOMethodTypehints.',
 				76,
 			],
 			[
-				'Class stdClass referenced with incorrect case: stdclass.',
+				'Class stdClass referenced with incorrect case: STDClass.',
 				76,
 			],
 			[
 				'Class TestMethodTypehints\FooMethodTypehints referenced with incorrect case: TestMethodTypehints\fOOMethodTypehintS.',
+				76,
+			],
+			[
+				'Class stdClass referenced with incorrect case: stdclass.',
 				76,
 			],
 			[

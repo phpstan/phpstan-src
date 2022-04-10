@@ -48,22 +48,22 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
-					'Property PropertiesTypes\Foo::$dolors has unknown class PropertiesTypes\Dolor as its type.',
-					21,
-					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-				],
-				[
 					'Property PropertiesTypes\Foo::$dolors has unknown class PropertiesTypes\Ipsum as its type.',
 					21,
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
-					'Property PropertiesTypes\Foo::$fooWithWrongCase has unknown class PropertiesTypes\BAR as its type.',
-					24,
+					'Property PropertiesTypes\Foo::$dolors has unknown class PropertiesTypes\Dolor as its type.',
+					21,
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],
 				[
 					'Property PropertiesTypes\Foo::$fooWithWrongCase has unknown class PropertiesTypes\Fooo as its type.',
+					24,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+				],
+				[
+					'Property PropertiesTypes\Foo::$fooWithWrongCase has unknown class PropertiesTypes\BAR as its type.',
 					24,
 					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 				],

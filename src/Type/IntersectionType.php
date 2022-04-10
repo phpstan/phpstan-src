@@ -40,14 +40,13 @@ class IntersectionType implements CompoundType
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
-	/** @var Type[] */
-	private array $types;
+	private bool $sortedTypes = false;
 
 	/**
 	 * @api
 	 * @param Type[] $types
 	 */
-	public function __construct(array $types)
+	public function __construct(private array $types)
 	{
 		if (count($types) < 2) {
 			throw new ShouldNotHappenException(sprintf(
@@ -56,8 +55,6 @@ class IntersectionType implements CompoundType
 				implode(', ', array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::value()), $types)),
 			));
 		}
-
-		$this->types = UnionTypeHelper::sortTypes($types);
 	}
 
 	/**
@@ -65,6 +62,21 @@ class IntersectionType implements CompoundType
 	 */
 	public function getTypes(): array
 	{
+		return $this->types;
+	}
+
+	/**
+	 * @return Type[]
+	 */
+	private function getSortedTypes(): array
+	{
+		if ($this->sortedTypes) {
+			return $this->types;
+		}
+
+		$this->types = UnionTypeHelper::sortTypes($this->types);
+		$this->sortedTypes = true;
+
 		return $this->types;
 	}
 
@@ -146,7 +158,7 @@ class IntersectionType implements CompoundType
 
 	public function equals(Type $type): bool
 	{
-		if (!$type instanceof self) {
+		if (!$type instanceof static) {
 			return false;
 		}
 
@@ -154,13 +166,25 @@ class IntersectionType implements CompoundType
 			return false;
 		}
 
-		foreach ($this->types as $i => $innerType) {
-			if (!$innerType->equals($type->types[$i])) {
+		$otherTypes = $type->types;
+		foreach ($this->types as $innerType) {
+			$match = false;
+			foreach ($otherTypes as $i => $otherType) {
+				if (!$innerType->equals($otherType)) {
+					continue;
+				}
+
+				$match = true;
+				unset($otherTypes[$i]);
+				break;
+			}
+
+			if (!$match) {
 				return false;
 			}
 		}
 
-		return true;
+		return count($otherTypes) === 0;
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -168,7 +192,7 @@ class IntersectionType implements CompoundType
 		return $level->handle(
 			function () use ($level): string {
 				$typeNames = [];
-				foreach ($this->types as $type) {
+				foreach ($this->getSortedTypes() as $type) {
 					if ($type instanceof AccessoryType) {
 						continue;
 					}
@@ -186,7 +210,7 @@ class IntersectionType implements CompoundType
 	{
 		$typesToDescribe = [];
 		$skipTypeNames = [];
-		foreach ($this->types as $type) {
+		foreach ($this->getSortedTypes() as $type) {
 			if ($type instanceof AccessoryNonEmptyStringType || $type instanceof AccessoryLiteralStringType || $type instanceof AccessoryNumericStringType) {
 				$typesToDescribe[] = $type;
 				$skipTypeNames[] = 'string';
@@ -210,7 +234,7 @@ class IntersectionType implements CompoundType
 		}
 
 		$describedTypes = [];
-		foreach ($this->types as $type) {
+		foreach ($this->getSortedTypes() as $type) {
 			if ($type instanceof AccessoryType) {
 				continue;
 			}

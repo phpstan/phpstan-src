@@ -35,14 +35,13 @@ class UnionType implements CompoundType
 
 	use NonGeneralizableTypeTrait;
 
-	/** @var Type[] */
-	private array $types;
+	private bool $sortedTypes = false;
 
 	/**
 	 * @api
 	 * @param Type[] $types
 	 */
-	public function __construct(array $types)
+	public function __construct(private array $types)
 	{
 		$throwException = static function () use ($types): void {
 			throw new ShouldNotHappenException(sprintf(
@@ -64,7 +63,6 @@ class UnionType implements CompoundType
 
 			$throwException();
 		}
-		$this->types = UnionTypeHelper::sortTypes($types);
 	}
 
 	/**
@@ -72,6 +70,21 @@ class UnionType implements CompoundType
 	 */
 	public function getTypes(): array
 	{
+		return $this->types;
+	}
+
+	/**
+	 * @return Type[]
+	 */
+	private function getSortedTypes(): array
+	{
+		if ($this->sortedTypes) {
+			return $this->types;
+		}
+
+		$this->types = UnionTypeHelper::sortTypes($this->types);
+		$this->sortedTypes = true;
+
 		return $this->types;
 	}
 
@@ -165,13 +178,25 @@ class UnionType implements CompoundType
 			return false;
 		}
 
-		foreach ($this->types as $i => $innerType) {
-			if (!$innerType->equals($type->types[$i])) {
+		$otherTypes = $type->types;
+		foreach ($this->types as $innerType) {
+			$match = false;
+			foreach ($otherTypes as $i => $otherType) {
+				if (!$innerType->equals($otherType)) {
+					continue;
+				}
+
+				$match = true;
+				unset($otherTypes[$i]);
+				break;
+			}
+
+			if (!$match) {
 				return false;
 			}
 		}
 
-		return true;
+		return count($otherTypes) === 0;
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -207,15 +232,15 @@ class UnionType implements CompoundType
 					}
 
 					return $type;
-				}, $this->types));
+				}, $this->getSortedTypes()));
 
 				if ($types instanceof UnionType) {
-					return $joinTypes($types->getTypes());
+					return $joinTypes($types->getSortedTypes());
 				}
 
 				return $joinTypes([$types]);
 			},
-			fn (): string => $joinTypes($this->types),
+			fn (): string => $joinTypes($this->getSortedTypes()),
 		);
 	}
 

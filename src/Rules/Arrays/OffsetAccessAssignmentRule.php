@@ -45,7 +45,7 @@ class OffsetAccessAssignmentRule implements Rule
 			NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->var),
 			'',
 			static function (Type $varType) use ($potentialDimType): bool {
-				$arrayDimType = $varType->setOffsetValueType($potentialDimType, new MixedType());
+				$arrayDimType = $varType->setOffsetValueType($potentialDimType, new MixedType(), false);
 				return !($arrayDimType instanceof ErrorType);
 			},
 		);
@@ -63,7 +63,7 @@ class OffsetAccessAssignmentRule implements Rule
 				$node->dim,
 				'',
 				static function (Type $dimType) use ($varType): bool {
-					$arrayDimType = $varType->setOffsetValueType($dimType, new MixedType());
+					$arrayDimType = $varType->setOffsetValueType($dimType, new MixedType(), false);
 					return !($arrayDimType instanceof ErrorType);
 				},
 			);
@@ -72,7 +72,7 @@ class OffsetAccessAssignmentRule implements Rule
 			$dimType = $potentialDimType;
 		}
 
-		$resultType = $varType->setOffsetValueType($dimType, new MixedType());
+		$resultType = $varType->setOffsetValueType($dimType, new MixedType(), false);
 		if (!($resultType instanceof ErrorType)) {
 			return [];
 		}

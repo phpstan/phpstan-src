@@ -59,7 +59,7 @@ class OffsetAccessValueAssignmentRule implements Rule
 			$arrayDimFetch->var,
 			'',
 			static function (Type $varType) use ($assignedValueType): bool {
-				$result = $varType->setOffsetValueType(new MixedType(), $assignedValueType);
+				$result = $varType->setOffsetValueType(new MixedType(), $assignedValueType, false);
 				return !($result instanceof ErrorType);
 			},
 		);
@@ -71,7 +71,7 @@ class OffsetAccessValueAssignmentRule implements Rule
 		if (!$isOffsetAccessible->yes()) {
 			return [];
 		}
-		$resultType = $arrayType->setOffsetValueType(new MixedType(), $assignedValueType);
+		$resultType = $arrayType->setOffsetValueType(new MixedType(), $assignedValueType, false);
 		if (!$resultType instanceof ErrorType) {
 			return [];
 		}

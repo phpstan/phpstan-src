@@ -21,7 +21,7 @@ parameters:
 			tooWideThrowType: false
 	featureToggles:
 		bleedingEdge: false
-		disableRuntimeReflectionProvider: false
+		disableRuntimeReflectionProvider: true
 		skipCheckGenericClasses:
 			- DatePeriod
 			- CallbackFilterIterator

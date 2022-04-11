@@ -108,7 +108,7 @@ jobs:
         id: "checksum"
         run: echo "::set-output name=md5::$(md5sum tmp/phpstan.phar | cut -d' ' -f1)"
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: phar-file-checksum
           path: tmp/phpstan.phar

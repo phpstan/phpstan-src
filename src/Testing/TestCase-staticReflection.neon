@@ -1,3 +1,7 @@
+parameters:
+	featureToggles:
+		disableRuntimeReflectionProvider: true
+
 services:
 	-
 		class: PHPStan\Testing\TestCaseSourceLocatorFactory

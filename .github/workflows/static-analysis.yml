@@ -33,7 +33,7 @@ jobs:
         operating-system: [ubuntu-latest, windows-latest]
         script:
           - "make phpstan && make phpstan-validate-stub-files"
-          - "make phpstan-static-reflection"
+          - "make phpstan-runtime-reflection"
 
     steps:
       - name: "Checkout"

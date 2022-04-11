@@ -15,7 +15,10 @@ use Symfony\Component\Console\Helper\ProgressBar;
 		// custom autoloaders' reads to discover file paths. See PHPStan #4881.
 		ini_set('opcache.enable', 'Off');
 	}
-	gc_disable(); // performance boost
+
+	if (PHP_VERSION_ID < 70300) {
+		gc_disable(); // performance boost
+	}
 
 	define('__PHPSTAN_RUNNING__', true);
 

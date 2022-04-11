@@ -349,7 +349,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 	public function testBug5333(): void
 	{
 		$this->checkAlwaysTrueInstanceOf = true;
-		$this->treatPhpDocTypesAsCertain = false;
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-5333.php'], []);
 	}
 

@@ -7,6 +7,7 @@ use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\Testing\PHPStanTestCase;
 use TestSingleFileSourceLocator\AFoo;
 use TestSingleFileSourceLocator\InCondition;
+use function class_alias;
 
 function testFunctionForLocator(): void // phpcs:disable
 {
@@ -51,6 +52,15 @@ class AutoloadSourceLocatorTest extends PHPStanTestCase
 		$this->assertSame(25, $classInCondition->getStartLine());
 		$this->assertInstanceOf(ReflectionClass::class, $classInCondition->getParentClass());
 		$this->assertSame(AFoo::class, $classInCondition->getParentClass()->getName());
+	}
+
+	public function testClassAlias(): void
+	{
+		class_alias(AFoo::class, 'A_Foo');
+		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class), true);
+		$reflector = new DefaultReflector($locator);
+		$class = $reflector->reflectClass('A_Foo');
+		$this->assertSame(AFoo::class, $class->getName());
 	}
 
 }

@@ -61,7 +61,7 @@ phpstan:
 	php bin/phpstan clear-result-cache -q && php -d memory_limit=512M bin/phpstan
 
 phpstan-runtime-reflection:
-	php bin/phpstan clear-result-cache -q && php -d memory_limit=512M bin/phpstan analyse -c phpstan-runtime-reflection.neon
+	php bin/phpstan clear-result-cache -q && php -d memory_limit=384M bin/phpstan analyse -c phpstan-runtime-reflection.neon
 
 phpstan-result-cache:
 	php -d memory_limit=512M bin/phpstan

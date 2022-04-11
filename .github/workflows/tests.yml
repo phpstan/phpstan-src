@@ -32,7 +32,7 @@ jobs:
         operating-system: [ ubuntu-latest, windows-latest ]
         script:
           - "make tests"
-          - "make tests-static-reflection"
+          - "make tests-runtime-reflection"
 
     steps:
       - name: "Checkout"
@@ -157,7 +157,7 @@ jobs:
         operating-system: [ ubuntu-latest ]
         script:
           - "make tests-coverage"
-          - "make tests-static-reflection-coverage"
+          - "make tests-runtime-reflection-coverage"
 
     steps:
       - name: "Checkout"

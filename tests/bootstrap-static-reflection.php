@@ -4,6 +4,4 @@ use PHPStan\Testing\PHPStanTestCase;
 
 require_once __DIR__ . '/bootstrap.php';
 
-PHPStanTestCase::$useStaticReflectionProvider = true;
-
 PHPStanTestCase::getContainer();

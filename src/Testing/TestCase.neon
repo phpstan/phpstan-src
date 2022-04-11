@@ -1,5 +1,8 @@
 parameters:
 	inferPrivatePropertyTypeFromConstructor: true
+	featureToggles:
+		disableRuntimeReflectionProvider: false
+
 services:
 	cacheStorage:
 		class: PHPStan\Cache\MemoryCacheStorage

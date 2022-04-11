@@ -1,5 +1,0 @@
-# WARNING - This isn't ready for use
-
-parameters:
-	featureToggles:
-		disableRuntimeReflectionProvider: true

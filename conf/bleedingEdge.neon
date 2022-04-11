@@ -6,5 +6,6 @@ parameters:
 		arrayFilter: true
 		arrayUnpacking: true
 		nodeConnectingVisitorCompatibility: false
+		disableRuntimeReflectionProvider: true
 	stubFiles:
 		- ../stubs/bleedingEdge/Countable.stub

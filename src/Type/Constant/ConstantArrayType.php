@@ -887,7 +887,25 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			if ($otherArray->isOptionalKey($otherIndex)) {
 				$optionalKeys[] = $i;
 			}
+
 			$otherValueType = $otherArray->valueTypes[$otherIndex];
+			if ($valueTypes[$i] === $otherValueType) {
+				continue;
+			}
+
+			// Avoid calling union unnecessarily for nested constant arrays
+			// e.g. array{0: 1} | array{0: 1, 1?: array{0: 1}} = array{0: 1, 1?: array{0: 1}}
+			if ($valueTypes[$i] instanceof self && $otherValueType instanceof self) {
+				if ($valueTypes[$i]->accepts($otherValueType, true)->yes()) {
+					continue;
+				}
+
+				if ($otherValueType->accepts($valueTypes[$i], true)->yes()) {
+					$valueTypes[$i] = $otherValueType;
+					continue;
+				}
+			}
+
 			$valueTypes[$i] = TypeCombinator::union($valueTypes[$i], $otherValueType);
 		}
 

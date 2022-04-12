@@ -29,9 +29,4 @@ final class TemplateIntegerType extends IntegerType implements TemplateType
 		$this->bound = $bound;
 	}
 
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return false;
-	}
-
 }

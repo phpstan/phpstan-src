@@ -57,18 +57,18 @@ class Foo
 	public function doFoo(string $classString)
 	{
 		$col = new Collection(['foo', 'bar']);
-		assertType('Bug5372\Collection<int, string>', $col);
+		assertType("Bug5372\Collection<0|1, 'bar'|'foo'>", $col);
 
 		$newCol = $col->map(static fn(string $var): string => $var . 'bar');
-		assertType('Bug5372\Collection<int, string>', $newCol);
+		assertType('Bug5372\Collection<0|1, non-falsy-string>', $newCol);
 		$this->takesStrings($newCol);
 
 		$newCol = $col->map(static fn(string $var): string => $classString);
-		assertType('Bug5372\Collection<int, class-string>', $newCol);
+		assertType('Bug5372\Collection<0|1, class-string>', $newCol);
 		$this->takesStrings($newCol);
 
 		$newCol = $col->map2(static fn(string $var): string => $classString);
-		assertType('Bug5372\Collection<int, class-string>', $newCol);
+		assertType('Bug5372\Collection<0|1, class-string>', $newCol);
 		$this->takesStrings($newCol);
 	}
 
@@ -77,11 +77,11 @@ class Foo
 	{
 		$col = new Collection(['foo', 'bar']);
 		$newCol = $col->map(static fn(string $var): string => $literalString);
-		assertType('Bug5372\Collection<int, string>', $newCol);
+		assertType('Bug5372\Collection<0|1, literal-string>', $newCol);
 		$this->takesStrings($newCol);
 
 		$newCol = $col->map2(static fn(string $var): string => $literalString);
-		assertType('Bug5372\Collection<int, literal-string>', $newCol);
+		assertType('Bug5372\Collection<0|1, literal-string>', $newCol);
 		$this->takesStrings($newCol);
 	}
 

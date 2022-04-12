@@ -21,6 +21,6 @@ class Foo
 
 function (Foo $f, ?int $i): void {
 	assertType('null', $f->doFoo(null));
-	assertType('int', $f->doFoo(1));
+	assertType('1', $f->doFoo(1));
 	assertType('int|null', $f->doFoo($i));
 };

@@ -35,7 +35,7 @@ class CallMethodsRuleNoBleedingEdgeTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/generics-infer-collection.php'], [
 			[
-				'Parameter #1 $c of method GenericsInferCollection\Foo::doBar() expects GenericsInferCollection\ArrayCollection<int, int>, GenericsInferCollection\ArrayCollection<int, string> given.',
+				"Parameter #1 \$c of method GenericsInferCollection\Foo::doBar() expects GenericsInferCollection\ArrayCollection<int, int>, GenericsInferCollection\ArrayCollection<0|1, 'bar'|'foo'> given.",
 				43,
 			],
 		]);
@@ -46,7 +46,7 @@ class CallMethodsRuleNoBleedingEdgeTest extends RuleTestCase
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/generics-infer-collection.php'], [
 			[
-				'Parameter #1 $c of method GenericsInferCollection\Foo::doBar() expects GenericsInferCollection\ArrayCollection<int, int>, GenericsInferCollection\ArrayCollection<int, string> given.',
+				"Parameter #1 \$c of method GenericsInferCollection\Foo::doBar() expects GenericsInferCollection\ArrayCollection<int, int>, GenericsInferCollection\ArrayCollection<0|1, 'bar'|'foo'> given.",
 				43,
 			],
 		]);

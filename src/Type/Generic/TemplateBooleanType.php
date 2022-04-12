@@ -29,9 +29,4 @@ final class TemplateBooleanType extends BooleanType implements TemplateType
 		$this->bound = $bound;
 	}
 
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return false;
-	}
-
 }

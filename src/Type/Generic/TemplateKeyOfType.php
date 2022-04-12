@@ -43,9 +43,4 @@ final class TemplateKeyOfType extends KeyOfType implements TemplateType
 		);
 	}
 
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return false;
-	}
-
 }

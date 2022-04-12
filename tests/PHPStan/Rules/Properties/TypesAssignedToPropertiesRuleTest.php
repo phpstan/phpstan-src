@@ -387,7 +387,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Property GenericObjectUnspecifiedTemplateTypes\Bar::$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, string>.',
+				"Property GenericObjectUnspecifiedTemplateTypes\Bar::\$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<0|1, 'bar'|'foo'>.",
 				67,
 			],
 		]);
@@ -398,7 +398,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/generic-object-unspecified-template-types.php'], [
 			[
-				'Property GenericObjectUnspecifiedTemplateTypes\Bar::$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, string>.',
+				"Property GenericObjectUnspecifiedTemplateTypes\Bar::\$ints (GenericObjectUnspecifiedTemplateTypes\ArrayCollection<int, int>) does not accept GenericObjectUnspecifiedTemplateTypes\ArrayCollection<0|1, 'bar'|'foo'>.",
 				67,
 			],
 		]);

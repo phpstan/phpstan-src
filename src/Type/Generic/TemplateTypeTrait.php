@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -242,12 +241,6 @@ trait TemplateTypeTrait
 		$map = $this->getBound()->inferTemplateTypes($receivedType);
 		$resolvedBound = TypeUtils::resolveLateResolvableTypes(TemplateTypeHelper::resolveTemplateTypes($this->getBound(), $map));
 		if ($resolvedBound->isSuperTypeOf($receivedType)->yes()) {
-			if ($this->shouldGeneralizeInferredType()) {
-				$generalizedType = $receivedType->generalize(GeneralizePrecision::templateArgument());
-				if ($resolvedBound->isSuperTypeOf($generalizedType)->yes()) {
-					$receivedType = $generalizedType;
-				}
-			}
 			return (new TemplateTypeMap([
 				$this->name => $receivedType,
 			]))->union($map);
@@ -269,11 +262,6 @@ trait TemplateTypeTrait
 	public function getStrategy(): TemplateTypeStrategy
 	{
 		return $this->strategy;
-	}
-
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return true;
 	}
 
 	public function traverse(callable $cb): Type

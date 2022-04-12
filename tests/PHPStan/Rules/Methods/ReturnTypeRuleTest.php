@@ -435,16 +435,20 @@ class ReturnTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-4590.php'], [
 			[
-				'Method Bug4590\\Controller::test1() should return Bug4590\\OkResponse<array<string, string>> but returns Bug4590\\OkResponse<array{ok: string}>.',
+				"Method Bug4590\\Controller::test1() should return Bug4590\\OkResponse<array<string, string>> but returns Bug4590\\OkResponse<array{ok: 'hello'}>.",
 				39,
 			],
 			[
-				'Method Bug4590\\Controller::test2() should return Bug4590\\OkResponse<array<int, string>> but returns Bug4590\\OkResponse<array{string}>.',
+				"Method Bug4590\\Controller::test2() should return Bug4590\\OkResponse<array<int, string>> but returns Bug4590\\OkResponse<array{'hello'}>.",
 				47,
 			],
 			[
-				'Method Bug4590\\Controller::test3() should return Bug4590\\OkResponse<array<string>> but returns Bug4590\\OkResponse<array{string}>.',
+				"Method Bug4590\\Controller::test3() should return Bug4590\\OkResponse<array<string>> but returns Bug4590\\OkResponse<array{'hello'}>.",
 				55,
+			],
+			[
+				"Method Bug4590\\Controller::test4() should return Bug4590\\OkResponse<string> but returns Bug4590\\OkResponse<'hello'>.",
+				63,
 			],
 		]);
 	}

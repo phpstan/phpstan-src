@@ -56,7 +56,7 @@ class Foo
 	{
 		$a = new Map([1 => new A()]);
 
-		assertType('Ds\Map<int|string, ExtDs\A|ExtDs\B>', $a->merge(['a' => new B()]));
+		assertType("Ds\Map<1|'a', ExtDs\A|ExtDs\B>", $a->merge(['a' => new B()]));
 	}
 
 	public function mapUnion() : void
@@ -64,7 +64,7 @@ class Foo
 		$a = new Map([1 => new A()]);
 		$b = new Map(['a' => new B()]);
 
-		assertType('Ds\Map<int|string, ExtDs\A|ExtDs\B>', $a->union($b));
+		assertType("Ds\Map<1|'a', ExtDs\A|ExtDs\B>", $a->union($b));
 	}
 
 	public function mapXor() : void
@@ -72,7 +72,7 @@ class Foo
 		$a = new Map([1 => new A()]);
 		$b = new Map(['a' => new B()]);
 
-		assertType('Ds\Map<int|string, ExtDs\A|ExtDs\B>', $a->xor($b));
+		assertType("Ds\Map<1|'a', ExtDs\A|ExtDs\B>", $a->xor($b));
 	}
 
 	public function setMerge() : void

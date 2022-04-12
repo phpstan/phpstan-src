@@ -29,9 +29,4 @@ final class TemplateFloatType extends FloatType implements TemplateType
 		$this->bound = $bound;
 	}
 
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return false;
-	}
-
 }

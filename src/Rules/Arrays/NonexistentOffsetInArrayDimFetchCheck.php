@@ -45,6 +45,10 @@ class NonexistentOffsetInArrayDimFetchCheck
 			return $typeResult->getUnknownClassErrors();
 		}
 
+		if ($scope->isInExpressionAssign($var) || $scope->isUndefinedExpressionAllowed($var)) {
+			return [];
+		}
+
 		$hasOffsetValueType = $type->hasOffsetValueType($dimType);
 		$report = $hasOffsetValueType->no();
 		if ($hasOffsetValueType->maybe()) {
@@ -83,10 +87,6 @@ class NonexistentOffsetInArrayDimFetchCheck
 		}
 
 		if ($report) {
-			if ($scope->isInExpressionAssign($var) || $scope->isUndefinedExpressionAllowed($var)) {
-				return [];
-			}
-
 			return [
 				RuleErrorBuilder::message(sprintf('Offset %s does not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))->build(),
 			];

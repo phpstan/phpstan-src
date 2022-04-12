@@ -4,12 +4,8 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\BetterReflection\Reflection\ReflectionClass;
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
-use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
-use PHPStan\File\FileExcluder;
-use PHPStan\File\FileHelper;
 use PHPStan\Testing\PHPStanTestCase;
 use TestSingleFileSourceLocator\AFoo;
-use TestSingleFileSourceLocator\Ceee;
 use TestSingleFileSourceLocator\InCondition;
 use function class_alias;
 
@@ -23,8 +19,7 @@ class AutoloadSourceLocatorTest extends PHPStanTestCase
 
 	public function testAutoloadEverythingInFile(): void
 	{
-		$fileHelper = new FileHelper(__DIR__);
-		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class), $fileHelper, new FileExcluder($fileHelper, [], []), false);
+		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class), false);
 		$reflector = new DefaultReflector($locator);
 		$aFoo = $reflector->reflectClass(AFoo::class);
 		$this->assertNotNull($aFoo->getFileName());
@@ -62,46 +57,10 @@ class AutoloadSourceLocatorTest extends PHPStanTestCase
 	public function testClassAlias(): void
 	{
 		class_alias(AFoo::class, 'A_Foo');
-		$fileHelper = new FileHelper(__DIR__);
-		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class), $fileHelper, new FileExcluder($fileHelper, [], []), true);
+		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class), true);
 		$reflector = new DefaultReflector($locator);
 		$class = $reflector->reflectClass('A_Foo');
 		$this->assertSame(AFoo::class, $class->getName());
-	}
-
-	public function dataSkipExcludedFiles(): array
-	{
-		return [
-			[true, false, []],
-			[false, false, []],
-			[true, true, [__DIR__ . '/data/c.php']],
-			[false, false, [__DIR__ . '/data/c.php']],
-		];
-	}
-
-	/**
-	 * @dataProvider dataSkipExcludedFiles
-	 * @runInSeparateProcess
-	 * @param string[] $excludedFiles
-	 * @return void
-	 */
-	public function testSkipExcludedFiles(bool $disableRuntimeReflectionProvider, bool $expectException, array $excludedFiles): void
-	{
-		$fileHelper = new FileHelper(__DIR__);
-		$locator = new AutoloadSourceLocator(
-			self::getContainer()->getByType(FileNodesFetcher::class),
-			$fileHelper,
-			new FileExcluder($fileHelper, $excludedFiles, []),
-			$disableRuntimeReflectionProvider,
-		);
-		$reflector = new DefaultReflector($locator);
-
-		if ($expectException) {
-			$this->expectException(IdentifierNotFound::class);
-		}
-
-		$class = $reflector->reflectClass(Ceee::class);
-		$this->assertSame(Ceee::class, $class->getName());
 	}
 
 }

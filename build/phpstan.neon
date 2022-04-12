@@ -20,19 +20,20 @@ parameters:
 	checkUninitializedProperties: true
 	checkMissingCallableSignature: true
 	excludePaths:
-		analyse:
-			- ../tests/*/data/*
-			- ../tests/tmp/*
-			- ../tests/PHPStan/Analyser/traits/*
-			- ../tests/notAutoloaded/*
-			- ../tests/PHPStan/Generics/functions.php
-			- ../tests/PHPStan/Reflection/UnionTypesTest.php
-			- ../tests/PHPStan/Reflection/MixedTypeTest.php
-			- ../tests/PHPStan/Reflection/StaticTypeTest.php
-			- ../tests/e2e/magic-setter/*
-			- ../tests/PHPStan/Rules/Properties/UninitializedPropertyRuleTest.php
-			- ../tests/PHPStan/Command/IgnoredRegexValidatorTest.php
-			- ../src/Command/IgnoredRegexValidator.php
+		- ../src/Reflection/SignatureMap/functionMap.php
+		- ../src/Reflection/SignatureMap/functionMetadata.php
+		- ../tests/*/data/*
+		- ../tests/tmp/*
+		- ../tests/PHPStan/Analyser/traits/*
+		- ../tests/notAutoloaded/*
+		- ../tests/PHPStan/Generics/functions.php
+		- ../tests/PHPStan/Reflection/UnionTypesTest.php
+		- ../tests/PHPStan/Reflection/MixedTypeTest.php
+		- ../tests/PHPStan/Reflection/StaticTypeTest.php
+		- ../tests/e2e/magic-setter/*
+		- ../tests/PHPStan/Rules/Properties/UninitializedPropertyRuleTest.php
+		- ../tests/PHPStan/Command/IgnoredRegexValidatorTest.php
+		- ../src/Command/IgnoredRegexValidator.php
 	exceptions:
 		uncheckedExceptionClasses:
 			- 'PHPStan\ShouldNotHappenException'

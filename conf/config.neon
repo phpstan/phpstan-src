@@ -687,7 +687,6 @@ services:
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator
 		arguments:
-			fileExcluder: @fileExcluderScan
 			disableRuntimeReflectionProvider: %featureToggles.disableRuntimeReflectionProvider%
 
 	-

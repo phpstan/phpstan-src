@@ -15,8 +15,6 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
-use PHPStan\File\FileExcluder;
-use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use ReflectionFunction;
@@ -61,12 +59,7 @@ class AutoloadSourceLocator implements SourceLocator
 	/** @var array<string, int> */
 	private array $startLineByClass = [];
 
-	public function __construct(
-		private FileNodesFetcher $fileNodesFetcher,
-		private FileHelper $fileHelper,
-		private FileExcluder $fileExcluder,
-		private bool $disableRuntimeReflectionProvider,
-	)
+	public function __construct(private FileNodesFetcher $fileNodesFetcher, private bool $disableRuntimeReflectionProvider)
 	{
 	}
 
@@ -339,7 +332,7 @@ class AutoloadSourceLocator implements SourceLocator
 
 		try {
 			/** @var array{string, string, null}|null */
-			$result = FileReadTrapStreamWrapper::withStreamWrapperOverride(
+			return FileReadTrapStreamWrapper::withStreamWrapperOverride(
 				static function () use ($className): ?array {
 					$functions = spl_autoload_functions();
 					if ($functions === false) {
@@ -363,14 +356,6 @@ class AutoloadSourceLocator implements SourceLocator
 					return null;
 				},
 			);
-			if ($result === null) {
-				return null;
-			}
-			if ($this->fileExcluder->isExcludedFromAnalysing($this->fileHelper->normalizePath($result[0]))) {
-				return null;
-			}
-
-			return $result;
 		} finally {
 			restore_error_handler();
 		}

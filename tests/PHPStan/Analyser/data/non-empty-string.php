@@ -337,10 +337,6 @@ class MoreNonEmptyStringFunctions
 		assertType('int<0, max>', strlen($s));
 		assertType('int<1, max>', strlen($nonEmpty));
 		assertType('int<1, 2>', strlen($constUnion));
-		assertType('int<0, 4>', strlen($constUnionMixed));
-		assertType('3', strlen(123));
-		assertType('1', strlen(true));
-		assertType('0', strlen(false));
 
 		assertType('non-empty-string', str_pad($nonEmpty, 0));
 		assertType('non-empty-string', str_pad($nonEmpty, 1));

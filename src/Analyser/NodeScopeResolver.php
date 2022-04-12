@@ -2447,6 +2447,12 @@ class NodeScopeResolver
 							$expr->getArgs(),
 							$constructorReflection->getVariants(),
 						);
+						$hasSideEffects = $constructorReflection->hasSideEffects();
+						if ($hasSideEffects->yes()) {
+							foreach ($expr->getArgs() as $arg) {
+								$scope = $scope->invalidateExpression($arg->value, true);
+							}
+						}
 						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $classReflection, $expr, $expr->class, $expr->getArgs(), $scope);
 						if ($constructorThrowPoint !== null) {
 							$throwPoints[] = $constructorThrowPoint;

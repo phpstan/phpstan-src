@@ -450,6 +450,13 @@ services:
 		class: PHPStan\PhpDoc\StubValidator
 
 	-
+		class: PHPStan\PhpDoc\CountableStubFilesExtension
+		arguments:
+			bleedingEdge: %featureToggles.bleedingEdge%
+		tags:
+			- phpstan.stubFilesExtension
+
+	-
 		class: PHPStan\Analyser\Analyser
 		arguments:
 			internalErrorsCountLimit: %internalErrorsCountLimit%

@@ -28,6 +28,7 @@ parameters:
 			- FilterIterator
 			- RecursiveCallbackFilterIterator
 		explicitMixedInUnknownGenericNew: false
+		explicitMixedViaIsArray: false
 		arrayFilter: false
 		arrayUnpacking: false
 		nodeConnectingVisitorCompatibility: true
@@ -214,6 +215,7 @@ parametersSchema:
 		disableRuntimeReflectionProvider: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		explicitMixedInUnknownGenericNew: bool(),
+		explicitMixedViaIsArray: bool(),
 		arrayFilter: bool(),
 		arrayUnpacking: bool(),
 		nodeConnectingVisitorCompatibility: bool(),
@@ -1469,6 +1471,8 @@ services:
 		class: PHPStan\Type\Php\IsArrayFunctionTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+		arguments:
+			explicitMixed: %featureToggles.explicitMixedViaIsArray%
 
 	-
 		class: PHPStan\Type\Php\IsBoolFunctionTypeSpecifyingExtension

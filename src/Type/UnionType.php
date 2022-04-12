@@ -266,8 +266,10 @@ class UnionType implements CompoundType
 	}
 
 	/**
+	 * @template TObject of object
 	 * @param callable(Type $type): TrinaryLogic $hasCallback
-	 * @param callable(Type $type): object $getCallback
+	 * @param callable(Type $type): TObject $getCallback
+	 * @return TObject
 	 */
 	private function getInternal(
 		callable $hasCallback,
@@ -277,7 +279,7 @@ class UnionType implements CompoundType
 		/** @var TrinaryLogic|null $result */
 		$result = null;
 
-		/** @var object|null $object */
+		/** @var TObject|null $object */
 		$object = null;
 		foreach ($this->types as $type) {
 			$has = $hasCallback($type);

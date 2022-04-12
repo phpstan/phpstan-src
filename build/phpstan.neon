@@ -100,11 +100,6 @@ services:
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 
-	-
-		class: PHPStan\Internal\UnionTypeGetInternalDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicMethodReturnTypeExtension
-
 	scopeIsInClass:
 		class: PHPStan\Internal\ScopeIsInClassTypeSpecifyingExtension
 		arguments:

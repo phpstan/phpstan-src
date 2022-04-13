@@ -169,6 +169,9 @@ class NodeScopeResolver
 	/** @var bool[] filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 
+	/** @var array<string, true> */
+	private array $earlyTerminatingMethodNames = [];
+
 	/**
 	 * @param string[][] $earlyTerminatingMethodCalls className(string) => methods(string[])
 	 * @param array<int, string> $earlyTerminatingFunctionCalls
@@ -192,6 +195,13 @@ class NodeScopeResolver
 		private bool $implicitThrows,
 	)
 	{
+		$earlyTerminatingMethodNames = [];
+		foreach ($this->earlyTerminatingMethodCalls as $methodNames) {
+			foreach ($methodNames as $methodName) {
+				$earlyTerminatingMethodNames[strtolower($methodName)] = true;
+			}
+		}
+		$this->earlyTerminatingMethodNames = $earlyTerminatingMethodNames;
 	}
 
 	/**
@@ -1627,7 +1637,7 @@ class NodeScopeResolver
 	private function findEarlyTerminatingExpr(Expr $expr, Scope $scope): ?Expr
 	{
 		if (($expr instanceof MethodCall || $expr instanceof Expr\StaticCall) && $expr->name instanceof Node\Identifier) {
-			if (count($this->earlyTerminatingMethodCalls) > 0) {
+			if (array_key_exists($expr->name->toLowerString(), $this->earlyTerminatingMethodNames)) {
 				if ($expr instanceof MethodCall) {
 					$methodCalledOnType = $scope->getType($expr->var);
 				} else {

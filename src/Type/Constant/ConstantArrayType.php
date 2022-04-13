@@ -86,8 +86,17 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$this->nextAutoIndexes = $nextAutoIndexes;
 
+		$keyTypesCount = count($this->keyTypes);
+		if ($keyTypesCount === 0) {
+			$keyType = new NeverType(true);
+		} elseif ($keyTypesCount === 1) {
+			$keyType = $this->keyTypes[0];
+		} else {
+			$keyType = new UnionType($this->keyTypes);
+		}
+
 		parent::__construct(
-			count($keyTypes) > 0 ? TypeCombinator::union(...$keyTypes) : new NeverType(true),
+			$keyType,
 			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType(true),
 		);
 	}

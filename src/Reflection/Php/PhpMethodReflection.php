@@ -413,10 +413,6 @@ class PhpMethodReflection implements MethodReflection
 			return TrinaryLogic::createFromBoolean(!$this->isPure);
 		}
 
-		if ($isVoid) {
-			return TrinaryLogic::createYes();
-		}
-
 		return TrinaryLogic::createMaybe();
 	}
 

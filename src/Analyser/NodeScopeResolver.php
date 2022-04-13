@@ -1996,7 +1996,7 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 			if ($methodReflection !== null) {
 				$hasSideEffects = $methodReflection->hasSideEffects();
-				if ($hasSideEffects->yes()) {
+				if ($hasSideEffects->yes() || $methodReflection->getName() === '__construct') {
 					$scope = $scope->invalidateExpression($expr->var, true);
 					foreach ($expr->getArgs() as $arg) {
 						$scope = $scope->invalidateExpression($arg->value, true);
@@ -2118,7 +2118,10 @@ class NodeScopeResolver
 			if (
 				$methodReflection !== null
 				&& !$methodReflection->isStatic()
-				&& $methodReflection->hasSideEffects()->yes()
+				&& (
+					$methodReflection->hasSideEffects()->yes()
+					|| $methodReflection->getName() === '__construct'
+				)
 				&& $scopeFunction instanceof MethodReflection
 				&& !$scopeFunction->isStatic()
 				&& $scope->isInClass()
@@ -2131,7 +2134,7 @@ class NodeScopeResolver
 			}
 
 			if ($methodReflection !== null) {
-				if ($methodReflection->hasSideEffects()->yes()) {
+				if ($methodReflection->hasSideEffects()->yes() || $methodReflection->getName() === '__construct') {
 					foreach ($expr->getArgs() as $arg) {
 						$scope = $scope->invalidateExpression($arg->value, true);
 					}

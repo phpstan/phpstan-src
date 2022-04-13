@@ -28,5 +28,18 @@ class Foo
 		assertType('int<1, max>', strlen($nonEmptyStringIntFloat));
 		assertType('0', strlen($emptyStringFalseNull));
 		assertType('int<0, 1>', strlen($emptyStringBoolNull));
+
+		assertType('int<0, 4>', mb_strlen($constUnionMixed));
+		assertType('3', mb_strlen(123));
+		assertType('1', mb_strlen(true));
+		assertType('0', mb_strlen(false));
+		assertType('0', mb_strlen(null));
+		assertType('1', mb_strlen(1.0));
+		assertType('4', mb_strlen(1.23));
+		assertType('int<1, max>', mb_strlen($float));
+		assertType('int<1, max>', mb_strlen($intFloat));
+		assertType('int<1, max>', mb_strlen($nonEmptyStringIntFloat));
+		assertType('0', mb_strlen($emptyStringFalseNull));
+		assertType('int<0, 1>', mb_strlen($emptyStringBoolNull));
 	}
 }

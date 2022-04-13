@@ -40,6 +40,14 @@ class Foo
 	}
 
 	/**
+	 * @param int[] ...$arrays1
+	 */
+	public function arrayReplaceVariadic(...$arrays1): void
+	{
+		assertType("array<int>", array_replace(...$arrays1));
+	}
+
+	/**
 	 * @param array<int, int|string> $array1
 	 * @param array<int, bool|float> $array2
 	 */

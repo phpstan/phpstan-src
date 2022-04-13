@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PHPStan\ShouldNotHappenException;
 use function array_map;
 use function array_merge;
 use function function_exists;
@@ -32,7 +33,11 @@ trait MbFunctionsReturnTypeExtensionTrait
 		$supportedEncodings = [];
 		if (function_exists('mb_list_encodings')) {
 			foreach (mb_list_encodings() as $encoding) {
-				$supportedEncodings = array_merge($supportedEncodings, mb_encoding_aliases($encoding), [$encoding]);
+				$aliases = mb_encoding_aliases($encoding);
+				if ($aliases === false) {
+					throw new ShouldNotHappenException();
+				}
+				$supportedEncodings = array_merge($supportedEncodings, $aliases, [$encoding]);
 			}
 		}
 		$this->supportedEncodings = array_map('strtoupper', $supportedEncodings);

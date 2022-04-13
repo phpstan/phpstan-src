@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -117,7 +118,11 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 					continue;
 				}
 
-				$lengths[] = mb_strlen($stringScalar->getValue(), $encoding);
+				$length = mb_strlen($stringScalar->getValue(), $encoding);
+				if ($length === false) {
+					throw new ShouldNotHappenException();
+				}
+				$lengths[] = $length;
 			}
 		}
 

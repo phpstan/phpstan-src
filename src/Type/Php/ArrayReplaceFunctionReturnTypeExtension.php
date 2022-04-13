@@ -38,13 +38,12 @@ class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		$valueTypes = [];
 		$nonEmptyArray = false;
 		foreach ($arrayTypes as $arrayType) {
-			$keyTypes[] = $arrayType->getIterableKeyType();
-			$valueTypes[] = $arrayType->getIterableValueType();
-			if ($nonEmptyArray || !$arrayType->isIterableAtLeastOnce()->yes()) {
-				continue;
+			if (!$nonEmptyArray && $arrayType->isIterableAtLeastOnce()->yes()) {
+				$nonEmptyArray = true;
 			}
 
-			$nonEmptyArray = true;
+			$keyTypes[] = $arrayType->getIterableKeyType();
+			$valueTypes[] = $arrayType->getIterableValueType();
 		}
 
 		$keyType = TypeCombinator::union(...$keyTypes);

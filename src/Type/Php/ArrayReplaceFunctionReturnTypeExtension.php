@@ -22,12 +22,12 @@ class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		return strtolower($functionReflection->getName()) === 'array_replace';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		$arrayTypes = $this->collectArrayTypes($functionCall, $scope);
 
 		if (count($arrayTypes) === 0) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		return $this->getResultType(...$arrayTypes);
@@ -52,9 +52,7 @@ class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		$valueType = TypeCombinator::union(...$valueTypes);
 
 		$arrayType = new ArrayType($keyType, $valueType);
-		return $nonEmptyArray
-			? TypeCombinator::intersect($arrayType, new NonEmptyArrayType())
-			: $arrayType;
+		return $nonEmptyArray ? TypeCombinator::intersect($arrayType, new NonEmptyArrayType()) : $arrayType;
 	}
 
 	/**

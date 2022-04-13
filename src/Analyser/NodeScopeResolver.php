@@ -109,7 +109,6 @@ use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -1847,10 +1846,9 @@ class NodeScopeResolver
 				foreach (array_slice($expr->getArgs(), 1) as $callArg) {
 					$callArgType = $scope->getType($callArg->value);
 					if ($callArg->unpack) {
-						if ($callArgType instanceof ConstantArrayType && $callArgType->isEmpty()) {
+						if ($callArgType->isIterableAtLeastOnce()->no()) {
 							continue;
 						}
-
 						$iterableValueType = $callArgType->getIterableValueType();
 						if ($iterableValueType instanceof UnionType) {
 							foreach ($iterableValueType->getTypes() as $innerType) {
@@ -1877,7 +1875,7 @@ class NodeScopeResolver
 						$arrayType = $arrayType->setOffsetValueType(null, $argType);
 					}
 
-					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, TypeCombinator::intersect($arrayType, new NonEmptyArrayType()));
+					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType);
 				} elseif (count($constantArrays) > 0) {
 					$defaultArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach ($argumentTypes as $argType) {
@@ -1891,7 +1889,7 @@ class NodeScopeResolver
 							$arrayType = $arrayType->setOffsetValueType(null, $argType);
 						}
 
-						$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, TypeCombinator::intersect($arrayType, new NonEmptyArrayType()));
+						$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType);
 					} else {
 						$arrayTypes = [];
 						foreach ($constantArrays as $constantArray) {

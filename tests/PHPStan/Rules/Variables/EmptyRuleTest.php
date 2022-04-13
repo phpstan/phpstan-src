@@ -81,4 +81,19 @@ class EmptyRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6974(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-6974.php'], [
+			[
+				'Variable $a in empty() always exists and is always falsy.',
+				12,
+			],
+			[
+				'Variable $a in empty() always exists and is not falsy.',
+				30,
+			],
+		]);
+	}
+
 }

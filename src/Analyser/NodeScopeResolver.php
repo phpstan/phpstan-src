@@ -1847,6 +1847,10 @@ class NodeScopeResolver
 				foreach (array_slice($expr->getArgs(), 1) as $callArg) {
 					$callArgType = $scope->getType($callArg->value);
 					if ($callArg->unpack) {
+						if ($callArgType instanceof ConstantArrayType && $callArgType->isEmpty()) {
+							continue;
+						}
+
 						$iterableValueType = $callArgType->getIterableValueType();
 						if ($iterableValueType instanceof UnionType) {
 							foreach ($iterableValueType->getTypes() as $innerType) {

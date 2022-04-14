@@ -1128,6 +1128,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	 */
 	public function getAncestorWithClassName(string $className): ?TypeWithClassName
 	{
+		if ($this->className === $className) {
+			return $this;
+		}
+
+		if ($this->classReflection !== null && $className === $this->classReflection->getName()) {
+			return $this;
+		}
+
 		if (array_key_exists($className, $this->currentAncestors)) {
 			return $this->currentAncestors[$className];
 		}
@@ -1138,10 +1146,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			&& array_key_exists($className, self::$ancestors[$description])
 		) {
 			return self::$ancestors[$description][$className];
-		}
-
-		if ($this->className === $className) {
-			return self::$ancestors[$description][$className] = $this->currentAncestors[$className] = $this;
 		}
 
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();

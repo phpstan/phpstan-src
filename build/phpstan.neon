@@ -17,6 +17,8 @@ parameters:
 		- ../tests
 	bootstrapFiles:
 		- ../tests/phpstan-bootstrap.php
+	cache:
+		nodesByStringCountMax: 128
 	checkUninitializedProperties: true
 	checkMissingCallableSignature: true
 	excludePaths:

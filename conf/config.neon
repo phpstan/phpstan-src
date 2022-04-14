@@ -391,6 +391,8 @@ services:
 
 	-
 		class: PhpParser\NodeVisitor\NodeConnectingVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
 
 	-
 		class: PhpParser\PrettyPrinter\Standard

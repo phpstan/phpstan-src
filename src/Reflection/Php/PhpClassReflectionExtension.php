@@ -108,6 +108,54 @@ class PhpClassReflectionExtension
 	{
 	}
 
+	public function evictPrivateSymbols(string $classCacheKey): void
+	{
+		foreach ($this->propertiesIncludingAnnotations as $key => $properties) {
+			if ($key !== $classCacheKey) {
+				continue;
+			}
+			foreach ($properties as $name => $property) {
+				if (!$property->isPrivate()) {
+					continue;
+				}
+				unset($this->propertiesIncludingAnnotations[$key][$name]);
+			}
+		}
+		foreach ($this->nativeProperties as $key => $properties) {
+			if ($key !== $classCacheKey) {
+				continue;
+			}
+			foreach ($properties as $name => $property) {
+				if (!$property->isPrivate()) {
+					continue;
+				}
+				unset($this->nativeProperties[$key][$name]);
+			}
+		}
+		foreach ($this->methodsIncludingAnnotations as $key => $methods) {
+			if ($key !== $classCacheKey) {
+				continue;
+			}
+			foreach ($methods as $name => $method) {
+				if (!$method->isPrivate()) {
+					continue;
+				}
+				unset($this->methodsIncludingAnnotations[$key][$name]);
+			}
+		}
+		foreach ($this->nativeMethods as $key => $methods) {
+			if ($key !== $classCacheKey) {
+				continue;
+			}
+			foreach ($methods as $name => $method) {
+				if (!$method->isPrivate()) {
+					continue;
+				}
+				unset($this->nativeMethods[$key][$name]);
+			}
+		}
+	}
+
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
 	{
 		return $classReflection->getNativeReflection()->hasProperty($propertyName);

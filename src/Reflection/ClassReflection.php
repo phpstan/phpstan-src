@@ -438,6 +438,32 @@ class ClassReflection
 		return $extension;
 	}
 
+	public function evictPrivateSymbols(): void
+	{
+		foreach ($this->constants as $name => $constant) {
+			if (!$constant->isPrivate()) {
+				continue;
+			}
+
+			unset($this->constants[$name]);
+		}
+		foreach ($this->properties as $name => $property) {
+			if (!$property->isPrivate()) {
+				continue;
+			}
+
+			unset($this->properties[$name]);
+		}
+		foreach ($this->methods as $name => $method) {
+			if (!$method->isPrivate()) {
+				continue;
+			}
+
+			unset($this->methods[$name]);
+		}
+		$this->getPhpExtension()->evictPrivateSymbols($this->getCacheKey());
+	}
+
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
 		if ($this->isEnum()) {

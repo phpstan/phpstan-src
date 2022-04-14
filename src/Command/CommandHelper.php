@@ -39,7 +39,6 @@ use function class_exists;
 use function count;
 use function dirname;
 use function error_get_last;
-use function function_exists;
 use function get_class;
 use function getcwd;
 use function gettype;
@@ -51,8 +50,6 @@ use function is_file;
 use function is_readable;
 use function is_string;
 use function mkdir;
-use function pcntl_async_signals;
-use function pcntl_signal;
 use function register_shutdown_function;
 use function sprintf;
 use function str_ends_with;
@@ -62,7 +59,6 @@ use function sys_get_temp_dir;
 use const DIRECTORY_SEPARATOR;
 use const E_ERROR;
 use const PHP_VERSION_ID;
-use const SIGINT;
 
 class CommandHelper
 {
@@ -354,7 +350,6 @@ class CommandHelper
 			throw new InceptionNotSuccessfulException();
 		}
 
-		self::setUpSignalHandler($errorOutput);
 		/** @var bool|null $customRulesetUsed */
 		$customRulesetUsed = $container->getParameter('customRulesetUsed');
 		if ($customRulesetUsed === null) {
@@ -496,19 +491,6 @@ class CommandHelper
 
 			throw new InceptionNotSuccessfulException();
 		}
-	}
-
-	private static function setUpSignalHandler(Output $output): void
-	{
-		if (!function_exists('pcntl_signal')) {
-			return;
-		}
-
-		pcntl_async_signals(true);
-		pcntl_signal(SIGINT, static function () use ($output): void {
-			$output->writeLineFormatted('');
-			exit(1);
-		});
 	}
 
 	/**

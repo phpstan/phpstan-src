@@ -19,7 +19,6 @@
     "Reflection",
     "SPL",
     "standard",
-    "pcntl",
     "mbstring",
     "hash",
     "tokenizer",

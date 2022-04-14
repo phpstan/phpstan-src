@@ -646,6 +646,8 @@ services:
 
 	-
 		class: PHPStan\NodeVisitor\StatementOrderVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
 
 	-
 		class: PHPStan\Parallel\ParallelAnalyser

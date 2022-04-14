@@ -1675,7 +1675,7 @@ return [
 'db2_free_result' => ['bool', 'stmt'=>'resource'],
 'db2_free_stmt' => ['bool', 'stmt'=>'resource'],
 'db2_get_option' => ['string|false', 'resource'=>'resource', 'option'=>'string'],
-'db2_last_insert_id' => ['string', 'resource'=>'resource'],
+'db2_last_insert_id' => ['string|null', 'resource'=>'resource'],
 'db2_lob_read' => ['string|false', 'stmt'=>'resource', 'colnum'=>'int', 'length'=>'int'],
 'db2_next_result' => ['resource|false', 'stmt'=>'resource'],
 'db2_num_fields' => ['int|false', 'stmt'=>'resource'],

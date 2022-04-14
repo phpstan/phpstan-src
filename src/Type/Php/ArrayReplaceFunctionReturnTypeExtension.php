@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -22,41 +21,25 @@ class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		return strtolower($functionReflection->getName()) === 'array_replace';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		$args = $functionCall->getArgs();
+		$arrayTypes = $this->collectArrayTypes($functionCall, $scope);
 
-		if (count($args) < 1) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		if (count($arrayTypes) === 0) {
+			return null;
 		}
 
-		$arrayType = $scope->getType($args[0]->value);
-		if ($arrayType->isArray()->yes()) {
-			$resultType = $this->getResultType($functionCall, $scope);
-
-			if ($resultType !== null) {
-				if ($this->returnsNonEmptyArray($functionCall, $scope)) {
-					$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
-				}
-
-				return $resultType;
-			}
-		}
-
-		return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		return $this->getResultType(...$arrayTypes);
 	}
 
-	private function getResultType(FuncCall $functionCall, Scope $scope): ?Type
+	private function getResultType(Type ...$arrayTypes): Type
 	{
-		$args = $functionCall->getArgs();
-
 		$keyTypes = [];
 		$valueTypes = [];
-		for ($i = 0; $i < count($args); $i++) {
-			$arrayType = $scope->getType($args[$i]->value);
-
-			if (!$arrayType->isArray()->yes()) {
-				return null;
+		$nonEmptyArray = false;
+		foreach ($arrayTypes as $arrayType) {
+			if (!$nonEmptyArray && $arrayType->isIterableAtLeastOnce()->yes()) {
+				$nonEmptyArray = true;
 			}
 
 			$keyTypes[] = $arrayType->getIterableKeyType();
@@ -66,26 +49,28 @@ class ArrayReplaceFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		$keyType = TypeCombinator::union(...$keyTypes);
 		$valueType = TypeCombinator::union(...$valueTypes);
 
-		return new ArrayType($keyType, $valueType);
+		$arrayType = new ArrayType($keyType, $valueType);
+		return $nonEmptyArray ? TypeCombinator::intersect($arrayType, new NonEmptyArrayType()) : $arrayType;
 	}
 
-	private function returnsNonEmptyArray(FuncCall $functionCall, Scope $scope): bool
+	/**
+	 * @return Type[]
+	 */
+	private function collectArrayTypes(FuncCall $functionCall, Scope $scope): array
 	{
 		$args = $functionCall->getArgs();
 
-		for ($i = 0; $i < count($args); $i++) {
-			$array = $scope->getType($args[$i]->value);
-
-			if (!$array->isArray()->yes()) {
+		$arrayTypes = [];
+		foreach ($args as $arg) {
+			$argType = $scope->getType($arg->value);
+			if (!$argType->isArray()->yes()) {
 				continue;
 			}
 
-			if ($array->isIterableAtLeastOnce()->yes()) {
-				return true;
-			}
+			$arrayTypes[] = $arg->unpack ? $argType->getIterableValueType() : $argType;
 		}
 
-		return false;
+		return $arrayTypes;
 	}
 
 }

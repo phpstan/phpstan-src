@@ -124,6 +124,7 @@ use function dirname;
 use function get_class;
 use function in_array;
 use function is_float;
+use function is_int;
 use function is_string;
 use function ltrim;
 use function max;
@@ -1061,7 +1062,12 @@ class MutatingScope implements Scope
 				$newTypes = [];
 				foreach ($scalarValues as $scalarValue) {
 					if ($scalarValue instanceof ConstantIntegerType) {
-						$newTypes[] = new ConstantIntegerType(-$scalarValue->getValue());
+						/** @var int|float $newValue */
+						$newValue = -$scalarValue->getValue();
+						if (!is_int($newValue)) {
+							return $type;
+						}
+						$newTypes[] = new ConstantIntegerType($newValue);
 					} elseif ($scalarValue instanceof ConstantFloatType) {
 						$newTypes[] = new ConstantFloatType(-$scalarValue->getValue());
 					}

@@ -4,13 +4,11 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Lexer;
 use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\NodeVisitor\NodeConnectingVisitor;
 use PhpParser\Parser\Php7;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
-use PHPStan\NodeVisitor\StatementOrderVisitor;
 use PHPStan\Parser\RichParser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;

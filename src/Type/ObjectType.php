@@ -242,6 +242,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		if (!$type instanceof CompoundType && !$type instanceof TypeWithClassName && !$type instanceof ObjectWithoutClassType) {
+			return TrinaryLogic::createNo();
+		}
+
 		$thisDescription = $this->describeCache();
 
 		if ($type instanceof self) {
@@ -268,10 +272,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createMaybe();
 		}
 
-		if (!$type instanceof TypeWithClassName) {
-			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createNo();
-		}
-
 		if ($this->subtractedType !== null) {
 			$isSuperType = $this->subtractedType->isSuperTypeOf($type);
 			if ($isSuperType->yes()) {
@@ -293,7 +293,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$thatClassName = $type->getClassName();
 
 		if ($thatClassName === $thisClassName) {
-			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createYes();
+			return TrinaryLogic::createYes();
 		}
 
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();

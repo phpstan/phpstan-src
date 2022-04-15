@@ -32,6 +32,8 @@ use function mb_strlen;
 use function min;
 use function range;
 use function sort;
+use function sprintf;
+use function var_export;
 
 class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -120,7 +122,7 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 				$length = mb_strlen($stringScalar->getValue(), $encoding);
 				if ($length === false) {
-					throw new ShouldNotHappenException();
+					throw new ShouldNotHappenException(sprintf('Got false on a supported encoding %s and value %s', $encoding, var_export($stringScalar->getValue(), true)));
 				}
 				$lengths[] = $length;
 			}

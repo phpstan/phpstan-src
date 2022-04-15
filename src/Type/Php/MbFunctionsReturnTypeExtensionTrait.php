@@ -2,8 +2,8 @@
 
 namespace PHPStan\Type\Php;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
+use function array_filter;
 use function array_map;
 use function array_merge;
 use function function_exists;
@@ -19,12 +19,8 @@ trait MbFunctionsReturnTypeExtensionTrait
 	/** @var string[]|null */
 	private ?array $supportedEncodings = null;
 
-	private function isSupportedEncoding(string $encoding, PhpVersion $phpVersion): bool
+	private function isSupportedEncoding(string $encoding): bool
 	{
-		// PHP 7.3 and 7.4 claims 'pass' and its alias 'none' to be supported, but actually 'pass' was removed in 7.3
-		if (in_array(strtoupper($encoding), ['PASS', 'NONE'], true) && !$phpVersion->supportsPassNoneEncodings()) {
-			return false;
-		}
 		return in_array(strtoupper($encoding), $this->getSupportedEncodings(), true);
 	}
 
@@ -46,6 +42,14 @@ trait MbFunctionsReturnTypeExtensionTrait
 			}
 		}
 		$this->supportedEncodings = array_map('strtoupper', $supportedEncodings);
+
+		// PHP 7.3 and 7.4 claims 'pass' and its alias 'none' to be supported, but actually 'pass' was removed in 7.3
+		if (!$this->phpVersion->supportsPassNoneEncodings()) {
+			$this->supportedEncodings = array_filter(
+				$this->supportedEncodings,
+				static fn (string $enc) => !in_array($enc, ['PASS', 'NONE'], true),
+			);
+		}
 
 		return $this->supportedEncodings;
 	}

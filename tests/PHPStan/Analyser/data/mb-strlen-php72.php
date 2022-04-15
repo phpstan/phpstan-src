@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 use function PHPStan\Testing\assertType;
 
-class MbStrlenPhp8
+class MbStrlenPhp72
 {
 
 	/**
+	 * In PHP 7.2 you cannot get FALSE if encoding isn't specified, mb_internal_encoding() always supplies a valid one.
+	 *
 	 * @param non-empty-string $nonEmpty
 	 * @param 'utf-8'|'8bit' $utf8And8bit
 	 * @param 'utf-8'|'foo' $utf8AndInvalidEncoding
@@ -41,13 +43,14 @@ class MbStrlenPhp8
 		assertType('int<0, 1>', mb_strlen($emptyStringBoolNull));
 		assertType('8', mb_strlen('паляниця', 'utf-8'));
 		assertType('11', mb_strlen('alias test🤔', 'utf8'));
-		assertType('*NEVER*', mb_strlen('', 'invalid encoding'));
+		assertType('false', mb_strlen('', 'invalid encoding'));
 		assertType('int<5, 6>', mb_strlen('école', $utf8And8bit));
-		assertType('5', mb_strlen('école', $utf8AndInvalidEncoding));
-		assertType('1|3|5|6', mb_strlen('école', $unknownEncoding));
-		assertType('2|4|5|6|8', mb_strlen('מזגן', $unknownEncoding));
-		assertType('6|8|12|13|15|18|24', mb_strlen('いい天気ですね〜', $unknownEncoding));
-		assertType('3', mb_strlen(123, $utf8AndInvalidEncoding));
+		assertType('5|false', mb_strlen('école', $utf8AndInvalidEncoding));
+		assertType('1|3|5|6|false', mb_strlen('école', $unknownEncoding));
+		assertType('2|4|5|6|8|false', mb_strlen('מזגן', $unknownEncoding));
+		assertType('6|8|12|13|15|18|24|false', mb_strlen('いい天気ですね〜', $unknownEncoding));
+		assertType('3|false', mb_strlen(123, $utf8AndInvalidEncoding));
 	}
 
 }
+

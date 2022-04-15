@@ -66,33 +66,33 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$encodings = [];
 
 		if (count($functionCall->getArgs()) === 1) {
+			// there is a chance to get an unsupported encoding 'pass' or 'none' here on PHP 7.3-7.4
 			$encodings = [mb_internal_encoding()];
 		} elseif (count($functionCall->getArgs()) === 2) { // custom encoding is specified
 			$encodings = array_map(
 				static fn (ConstantStringType $t) => $t->getValue(),
 				TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[1]->value)),
 			);
+		}
 
-			if (count($encodings) > 0) {
-				for ($i = 0; $i < count($encodings); $i++) {
-					if ($this->isSupportedEncoding($encodings[$i], $this->phpVersion)) {
-						continue;
-					}
-
-					$encodings[$i] = self::UNSUPPORTED_ENCODING;
+		if (count($encodings) > 0) {
+			for ($i = 0; $i < count($encodings); $i++) {
+				if ($this->isSupportedEncoding($encodings[$i])) {
+					continue;
 				}
-
-				$encodings = array_unique($encodings);
-
-				if (in_array(self::UNSUPPORTED_ENCODING, $encodings, true) && count($encodings) === 1) {
-					if ($this->phpVersion->throwsOnInvalidMbStringEncoding()) {
-						return new NeverType();
-					}
-					return new ConstantBooleanType(false);
-				}
-			} else { // if there aren't encoding constants, use all available encodings
-				$encodings = array_merge($this->getSupportedEncodings(), [self::UNSUPPORTED_ENCODING]);
+				$encodings[$i] = self::UNSUPPORTED_ENCODING;
 			}
+
+			$encodings = array_unique($encodings);
+
+			if (in_array(self::UNSUPPORTED_ENCODING, $encodings, true) && count($encodings) === 1) {
+				if ($this->phpVersion->throwsOnInvalidMbStringEncoding()) {
+					return new NeverType();
+				}
+				return new ConstantBooleanType(false);
+			}
+		} else { // if there aren't encoding constants, use all available encodings
+			$encodings = array_merge($this->getSupportedEncodings(), [self::UNSUPPORTED_ENCODING]);
 		}
 
 		$argType = $scope->getType($args[0]->value);
@@ -116,7 +116,7 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			}
 
 			foreach ($encodings as $encoding) {
-				if (!$this->isSupportedEncoding($encoding, $this->phpVersion)) {
+				if (!$this->isSupportedEncoding($encoding)) {
 					continue;
 				}
 
@@ -150,7 +150,10 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		} elseif ((new StringType())->isSuperTypeOf($argType)->yes() && $isNonEmpty->no()) {
 			$range = new ConstantIntegerType(0);
 		} else {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			$range = TypeCombinator::remove(
+				ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType(),
+				new ConstantBooleanType(false),
+			);
 		}
 
 		if (!$this->phpVersion->throwsOnInvalidMbStringEncoding() && in_array(self::UNSUPPORTED_ENCODING, $encodings, true)) {

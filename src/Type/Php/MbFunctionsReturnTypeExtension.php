@@ -56,7 +56,7 @@ class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtensi
 		}
 
 		$strings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[$positionEncodingParam - 1]->value));
-		$results = array_unique(array_map(fn (ConstantStringType $encoding): bool => $this->isSupportedEncoding($encoding->getValue(), $this->phpVersion), $strings));
+		$results = array_unique(array_map(fn (ConstantStringType $encoding): bool => $this->isSupportedEncoding($encoding->getValue()), $strings));
 
 		if ($returnType->equals(new UnionType([new StringType(), new BooleanType()]))) {
 			return count($results) === 1 ? new ConstantBooleanType($results[0]) : new BooleanType();

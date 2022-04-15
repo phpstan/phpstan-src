@@ -60,7 +60,6 @@ final class TryCatchTypeVisitor extends NodeVisitorAbstract
 		if (
 			!$node instanceof Node\Stmt\TryCatch
 			&& !$node instanceof Node\FunctionLike
-			&& !$node instanceof Node\Expr\Match_
 		) {
 			return null;
 		}

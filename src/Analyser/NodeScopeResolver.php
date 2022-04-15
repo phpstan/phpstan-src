@@ -1843,6 +1843,7 @@ class NodeScopeResolver
 				&& count($expr->getArgs()) >= 2
 			) {
 				$argumentTypes = [];
+				$optionalArgumentTypes = [];
 				foreach (array_slice($expr->getArgs(), 1) as $callArg) {
 					$callArgType = $scope->getType($callArg->value);
 					if ($callArg->unpack) {
@@ -1850,12 +1851,21 @@ class NodeScopeResolver
 							continue;
 						}
 						$iterableValueType = $callArgType->getIterableValueType();
+						$isOptionalArgumentType = !$callArgType->isIterableAtLeastOnce()->yes();
 						if ($iterableValueType instanceof UnionType) {
 							foreach ($iterableValueType->getTypes() as $innerType) {
-								$argumentTypes[] = $innerType;
+								if ($isOptionalArgumentType) {
+									$optionalArgumentTypes[] = $innerType;
+								} else {
+									$argumentTypes[] = $innerType;
+								}
 							}
 						} else {
-							$argumentTypes[] = $iterableValueType;
+							if ($isOptionalArgumentType) {
+								$optionalArgumentTypes[] = $iterableValueType;
+							} else {
+								$argumentTypes[] = $iterableValueType;
+							}
 						}
 						continue;
 					}
@@ -1866,14 +1876,27 @@ class NodeScopeResolver
 				$arrayArg = $expr->getArgs()[0]->value;
 				$originalArrayType = $scope->getType($arrayArg);
 				$constantArrays = TypeUtils::getOldConstantArrays($originalArrayType);
+
+				$addArgumentTypesAsOffsets = static function (Type $arrayType, array $argumentTypes, array $optionalArgumentTypes) {
+					foreach ($argumentTypes as $argType) {
+						$arrayType = $arrayType->setOffsetValueType(null, $argType);
+					}
+					if ($arrayType instanceof ConstantArrayType && count($optionalArgumentTypes) > 0) {
+						$arrayTypeBuilder = ConstantArrayTypeBuilder::createFromConstantArray($arrayType);
+						foreach ($optionalArgumentTypes as $optionalArgumentType) {
+							$arrayTypeBuilder->setOffsetValueType(null, $optionalArgumentType, true);
+						}
+						$arrayType = $arrayTypeBuilder->getArray();
+					}
+
+					return $arrayType;
+				};
+
 				if (
 					$functionReflection->getName() === 'array_push'
 					|| ($originalArrayType->isArray()->yes() && count($constantArrays) === 0)
 				) {
-					$arrayType = $originalArrayType;
-					foreach ($argumentTypes as $argType) {
-						$arrayType = $arrayType->setOffsetValueType(null, $argType);
-					}
+					$arrayType = $addArgumentTypesAsOffsets($originalArrayType, $argumentTypes, $optionalArgumentTypes);
 
 					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType);
 				} elseif (count($constantArrays) > 0) {
@@ -1884,10 +1907,7 @@ class NodeScopeResolver
 
 					$defaultArrayType = $defaultArrayBuilder->getArray();
 					if (!$defaultArrayType instanceof ConstantArrayType) {
-						$arrayType = $originalArrayType;
-						foreach ($argumentTypes as $argType) {
-							$arrayType = $arrayType->setOffsetValueType(null, $argType);
-						}
+						$arrayType = $addArgumentTypesAsOffsets($originalArrayType, $argumentTypes, $optionalArgumentTypes);
 
 						$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType);
 					} else {

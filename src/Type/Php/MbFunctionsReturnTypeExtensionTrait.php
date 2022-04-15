@@ -22,7 +22,7 @@ trait MbFunctionsReturnTypeExtensionTrait
 	private function isSupportedEncoding(string $encoding, PhpVersion $phpVersion): bool
 	{
 		// PHP 7.3 and 7.4 claims 'pass' and its alias 'none' to be supported, but actually 'pass' was removed in 7.3
-		if (in_array($encoding, ['pass', 'none'], true) && !$phpVersion->supportsPassNoneEncodings()) {
+		if (in_array(strtoupper($encoding), ['PASS', 'NONE'], true) && !$phpVersion->supportsPassNoneEncodings()) {
 			return false;
 		}
 		return in_array(strtoupper($encoding), $this->getSupportedEncodings(), true);

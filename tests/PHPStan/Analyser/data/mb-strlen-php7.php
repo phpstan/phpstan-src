@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 use function PHPStan\Testing\assertType;
 
-class MbStrlenPhp73
+class MbStrlenPhp7
 {
 
 	/**
-	 * In PHP 7.3 and 7.4 you can specify mb_internal_encoding('pass'|'none')
-	 * and get FALSE on every mb_* function calling without encoding specified.
-	 *
 	 * @param non-empty-string $nonEmpty
 	 * @param 'utf-8'|'8bit' $utf8And8bit
 	 * @param 'utf-8'|'foo' $utf8AndInvalidEncoding
@@ -23,25 +20,25 @@ class MbStrlenPhp73
 	 */
 	public function doFoo(int $i, string $s, bool $bool, float $float, $intFloat, $nonEmpty, $nonEmptyStringIntFloat, $emptyStringFalseNull, $emptyStringBoolNull, $constUnion, $constUnionMixed, $utf8And8bit, $utf8AndInvalidEncoding, string $unknownEncoding)
 	{
-		assertType('0|false', mb_strlen(''));
-		assertType('5|false', mb_strlen('hallo'));
-		assertType('int<0, 1>|false', mb_strlen($bool));
-		assertType('int<1, max>|false', mb_strlen($i));
-		assertType('int<0, max>|false', mb_strlen($s));
-		assertType('int<1, max>|false', mb_strlen($nonEmpty));
-		assertType('int<1, 2>|false', mb_strlen($constUnion));
-		assertType('int<0, 4>|false', mb_strlen($constUnionMixed));
-		assertType('3|false', mb_strlen(123));
-		assertType('1|false', mb_strlen(true));
-		assertType('0|false', mb_strlen(false));
-		assertType('0|false', mb_strlen(null));
-		assertType('1|false', mb_strlen(1.0));
-		assertType('4|false', mb_strlen(1.23));
-		assertType('int<1, max>|false', mb_strlen($float));
-		assertType('int<1, max>|false', mb_strlen($intFloat));
-		assertType('int<1, max>|false', mb_strlen($nonEmptyStringIntFloat));
-		assertType('0|false', mb_strlen($emptyStringFalseNull));
-		assertType('int<0, 1>|false', mb_strlen($emptyStringBoolNull));
+		assertType('0', mb_strlen(''));
+		assertType('5', mb_strlen('hallo'));
+		assertType('int<0, 1>', mb_strlen($bool));
+		assertType('int<1, max>', mb_strlen($i));
+		assertType('int<0, max>', mb_strlen($s));
+		assertType('int<1, max>', mb_strlen($nonEmpty));
+		assertType('int<1, 2>', mb_strlen($constUnion));
+		assertType('int<0, 4>', mb_strlen($constUnionMixed));
+		assertType('3', mb_strlen(123));
+		assertType('1', mb_strlen(true));
+		assertType('0', mb_strlen(false));
+		assertType('0', mb_strlen(null));
+		assertType('1', mb_strlen(1.0));
+		assertType('4', mb_strlen(1.23));
+		assertType('int<1, max>', mb_strlen($float));
+		assertType('int<1, max>', mb_strlen($intFloat));
+		assertType('int<1, max>', mb_strlen($nonEmptyStringIntFloat));
+		assertType('0', mb_strlen($emptyStringFalseNull));
+		assertType('int<0, 1>', mb_strlen($emptyStringBoolNull));
 		assertType('8', mb_strlen('паляниця', 'utf-8'));
 		assertType('11', mb_strlen('alias test🤔', 'utf8'));
 		assertType('false', mb_strlen('', 'invalid encoding'));
@@ -54,3 +51,4 @@ class MbStrlenPhp73
 	}
 
 }
+

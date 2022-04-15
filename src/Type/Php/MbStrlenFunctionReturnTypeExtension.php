@@ -75,7 +75,7 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 			if (count($encodings) > 0) {
 				for ($i = 0; $i < count($encodings); $i++) {
-					if ($this->isSupportedEncoding($encodings[$i])) {
+					if ($this->isSupportedEncoding($encodings[$i], $this->phpVersion)) {
 						continue;
 					}
 
@@ -116,7 +116,7 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			}
 
 			foreach ($encodings as $encoding) {
-				if (!$this->isSupportedEncoding($encoding)) {
+				if (!$this->isSupportedEncoding($encoding, $this->phpVersion)) {
 					continue;
 				}
 

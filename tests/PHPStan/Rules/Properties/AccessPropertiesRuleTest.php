@@ -158,16 +158,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					299,
 				],
 				[
-					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
-					386,
+					'Cannot access property $foo on TestAccessProperties\PropertyIssetOnPossibleFalse|false.',
+					315,
 				],
 				[
 					'Cannot access property $selfOrNull on TestAccessProperties\RevertNonNullabilityForIsset|null.',
 					402,
-				],
-				[
-					'Cannot access property $array on stdClass|null.',
-					412,
 				],
 			],
 		);
@@ -292,8 +288,8 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					299,
 				],
 				[
-					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
-					386,
+					'Cannot access property $foo on TestAccessProperties\PropertyIssetOnPossibleFalse|false.',
+					315,
 				],
 			],
 		);
@@ -328,10 +324,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to private property $foo of parent class TestAccessProperties\FooAccessProperties.',
 					24,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
-					386,
 				],
 			],
 		);
@@ -571,8 +563,36 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				15,
 			],
 			[
-				'Cannot access property $prop on object|string.', // open issue https://github.com/phpstan/phpstan/issues/3659, https://github.com/phpstan/phpstan/issues/6026
+				'Cannot access property $prop on object|string.',
+				24,
+			],
+			[
+				'Cannot access property $prop on object|string.',
 				25,
+			],
+			[
+				'Cannot access property $prop on object|string.',
+				26,
+			],
+		]);
+	}
+
+	public function testBug3171(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-3171.php'], [
+			[
+				'Access to an undefined property Bug3171\PropertyClass::$someArrrrray.',
+				22,
+			],
+			[
+				'Cannot access property $someArrrrray on Bug3171\PropertyClass|null.',
+				42,
+			],
+			[
+				'Cannot access property $someArrrrray on Bug3171\PropertyClass|null.',
+				52,
 			],
 		]);
 	}

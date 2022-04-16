@@ -251,7 +251,8 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug6936(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6936.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Variable $_SENDJOB might not be defined.', $errors[0]->getMessage());
 	}
 
 	public function testBug3405(): void

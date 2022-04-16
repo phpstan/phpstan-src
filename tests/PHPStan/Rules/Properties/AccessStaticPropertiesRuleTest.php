@@ -161,12 +161,12 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 				141,
 			],
 			[
-				'Static access to instance property ClassOrString::$instanceProperty.',
-				152,
+				'Cannot access static property $anotherProperty on ClassOrString|false.',
+				150,
 			],
 			[
-				'Access to an undefined static property AccessInIsset::$foo.',
-				185,
+				'Static access to instance property ClassOrString::$instanceProperty.',
+				152,
 			],
 			[
 				'Access to static property $foo on an unknown class TraitWithStaticProperty.',

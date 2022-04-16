@@ -1548,8 +1548,7 @@ class NodeScopeResolver
 			if ($expr->dim !== null) {
 				$scope = $callback($scope, $expr);
 			}
-
-			$scope = $this->lookForVariableCallback($scope, $expr->var, $callback);
+			$scope = $callback($scope, $expr->var);
 		} elseif ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
 			$scope = $this->lookForVariableCallback($scope, $expr->var, $callback);
 		} elseif ($expr instanceof StaticPropertyFetch) {
@@ -2309,8 +2308,8 @@ class NodeScopeResolver
 				static fn (): MutatingScope => $rightResult->getScope()->filterByFalseyValue($expr),
 			);
 		} elseif ($expr instanceof Coalesce) {
-			// backwards compatibility: coalesce doesn't allow dynamic properties
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left, false);
+			// backwards compatibility: coalesce doesn't allow dynamic properties
 			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch || $expr->left instanceof StaticPropertyFetch) {
 				$condScope = $nonNullabilityResult->getScope()->setAllowedUndefinedExpression($expr->left, false);
 			} else {

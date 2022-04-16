@@ -95,6 +95,10 @@ class DefinedVariableRuleTest extends RuleTestCase
 				99,
 			],
 			[
+				'Undefined variable: $anotherAnotherInIsset',
+				131,
+			],
+			[
 				'Undefined variable: $variableInEmpty',
 				145,
 			],

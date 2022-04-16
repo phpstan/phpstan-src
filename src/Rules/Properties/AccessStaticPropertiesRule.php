@@ -164,7 +164,7 @@ class AccessStaticPropertiesRule implements Rule
 			return [];
 		}
 
-		if ($classType->canAccessProperties()->no() || $classType->canAccessProperties()->maybe() && !$scope->isUndefinedExpressionAllowed($node)) {
+		if ($classType->canAccessProperties()->no() || $classType->canAccessProperties()->maybe() && (!$scope->isUndefinedExpressionAllowed($node) || !$this->hasPropertyYes($classType, $name))) {
 			return array_merge($messages, [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access static property $%s on %s.',
@@ -222,6 +222,17 @@ class AccessStaticPropertiesRule implements Rule
 		}
 
 		return $messages;
+	}
+
+	private function hasPropertyYes(Type $type, string $name)
+	{
+		foreach (TypeUtils::flattenTypes($type) as $innerType) {
+			if ($innerType->hasProperty($name)->yes()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

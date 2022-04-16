@@ -78,7 +78,7 @@ class AccessPropertiesRule implements Rule
 			return [];
 		}
 
-		if ($type->canAccessProperties()->no() || $type->canAccessProperties()->maybe() && !$scope->isUndefinedExpressionAllowed($node)) {
+		if ($type->canAccessProperties()->no() || $type->canAccessProperties()->maybe() && (!$scope->isUndefinedExpressionAllowed($node) || !$this->hasPropertyYes($type, $name))) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access property $%s on %s.',
@@ -160,6 +160,17 @@ class AccessPropertiesRule implements Rule
 		}
 
 		return [];
+	}
+
+	private function hasPropertyYes(Type $type, string $name)
+	{
+		foreach (TypeUtils::flattenTypes($type) as $innerType) {
+			if ($innerType->hasProperty($name)->yes()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

@@ -4727,7 +4727,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_values($generalStringKeys)',
 			],
 			[
-				'array{foo: stdClass, 1: stdClass}',
+				'array{foo: stdClass, 0: stdClass}',
 				'array_merge($stringOrIntegerKeys)',
 			],
 			[
@@ -4743,15 +4743,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_merge($stringOrIntegerKeys, $generalStringKeys)',
 			],
 			[
-				'array{foo: stdClass, bar: stdClass, 1: stdClass}',
+				'array{foo: stdClass, bar: stdClass, 0: stdClass}',
 				'array_merge($stringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				"array{foo: 'foo', 1: stdClass, bar: stdClass}",
+				"array{foo: 'foo', 0: stdClass, bar: stdClass}",
 				'array_merge($stringOrIntegerKeys, $stringKeys)',
 			],
 			[
-				"array{color: 'green', 0: 'a', 1: 'b', shape: 'trapezoid', 2: 4}",
+				"array{color: 'green', 0: 2, 1: 4, 2: 'a', 3: 'b', shape: 'trapezoid', 4: 4}",
 				'array_merge(array("color" => "red", 2, 4), array("a", "b", "color" => "green", "shape" => "trapezoid", 4))',
 			],
 			[

@@ -11,6 +11,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -64,7 +65,7 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 					$isOptional = in_array($k, $optionalKeys, true);
 
 					$newArrayBuilder->setOffsetValueType(
-						$keyType,
+						$keyType instanceof ConstantIntegerType ? null : $keyType,
 						$valueTypes[$k],
 						$isOptional,
 					);

@@ -1,8 +1,10 @@
 <?php
 
-class ExtendedDateTimeWithMethodCall extends DateTimeImmutable
+namespace IllegalConstructorMethodCall;
+
+class ExtendedDateTimeWithMethodCall extends \DateTimeImmutable
 {
-	public function __construct(string $datetime = "now", ?DateTimeZone $timezone = null)
+	public function __construct(string $datetime = "now", ?\DateTimeZone $timezone = null)
 	{
 		// Avoid infinite loop
 		if (count(debug_backtrace()) > 1) {
@@ -11,28 +13,28 @@ class ExtendedDateTimeWithMethodCall extends DateTimeImmutable
 		$this->__construct($datetime, $timezone);
 	}
 
-	public function mutate(string $datetime = "now", ?DateTimeZone $timezone = null): void
+	public function mutate(string $datetime = "now", ?\DateTimeZone $timezone = null): void
 	{
 		$this->__construct($datetime, $timezone);
 	}
 }
 
-class ExtendedDateTimeWithParentCall extends DateTimeImmutable
+class ExtendedDateTimeWithParentCall extends \DateTimeImmutable
 {
-	public function __construct(string $datetime = "now", ?DateTimeZone $timezone = null)
+	public function __construct(string $datetime = "now", ?\DateTimeZone $timezone = null)
 	{
 		parent::__construct($datetime, $timezone);
 	}
 
-	public function mutate(string $datetime = "now", ?DateTimeZone $timezone = null): void
+	public function mutate(string $datetime = "now", ?\DateTimeZone $timezone = null): void
 	{
 		parent::__construct($datetime, $timezone);
 	}
 }
 
-class ExtendedDateTimeWithSelfCall extends DateTimeImmutable
+class ExtendedDateTimeWithSelfCall extends \DateTimeImmutable
 {
-	public function __construct(string $datetime = "now", ?DateTimeZone $timezone = null)
+	public function __construct(string $datetime = "now", ?\DateTimeZone $timezone = null)
 	{
 		// Avoid infinite loop
 		if (count(debug_backtrace()) > 1) {
@@ -42,7 +44,7 @@ class ExtendedDateTimeWithSelfCall extends DateTimeImmutable
 		ExtendedDateTimeWithSelfCall::__construct($datetime, $timezone);
 	}
 
-	public function mutate(string $datetime = "now", ?DateTimeZone $timezone = null): void
+	public function mutate(string $datetime = "now", ?\DateTimeZone $timezone = null): void
 	{
 		self::__construct($datetime, $timezone);
 		ExtendedDateTimeWithSelfCall::__construct($datetime, $timezone);

@@ -21,11 +21,11 @@ class IllegalConstructorMethodCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/illegal-constructor-call-rule-test.php'], [
 			[
 				'Call to __construct() on an existing object is not allowed.',
-				16,
+				18,
 			],
 			[
 				'Call to __construct() on an existing object is not allowed.',
-				58,
+				60,
 			],
 		]);
 	}

@@ -2960,7 +2960,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrToPush2',
 			],
 			[
-				'array{\'lorem\', 5, stdClass, \'test\'}',
+				'array{0: \'lorem\', 1: 5, foo: stdClass, 2: \'test\'}',
 				'$arrToUnshift',
 			],
 			[

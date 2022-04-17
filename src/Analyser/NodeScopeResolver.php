@@ -1869,9 +1869,14 @@ class NodeScopeResolver
 					}
 
 					if ($prepend) {
+						$keyTypes = $arrayType->getKeyTypes();
 						$valueTypes = $arrayType->getValueTypes();
-						foreach ($valueTypes as $key => $valueType) {
-							$arrayTypeBuilder->setOffsetValueType(null, $valueType, $arrayType->isOptionalKey($key));
+						foreach ($keyTypes as $k => $keyType) {
+							$arrayTypeBuilder->setOffsetValueType(
+								$keyType instanceof ConstantStringType ? $keyType : null,
+								$valueTypes[$k],
+								$arrayType->isOptionalKey($k),
+							);
 						}
 					}
 

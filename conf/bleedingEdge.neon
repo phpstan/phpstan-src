@@ -8,3 +8,4 @@ parameters:
 		arrayUnpacking: true
 		nodeConnectingVisitorCompatibility: false
 		disableRuntimeReflectionProvider: true
+		illegalConstructorMethodCall: true

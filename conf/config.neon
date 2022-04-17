@@ -32,6 +32,7 @@ parameters:
 		arrayFilter: false
 		arrayUnpacking: false
 		nodeConnectingVisitorCompatibility: true
+		illegalConstructorMethodCall: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -219,6 +220,7 @@ parametersSchema:
 		arrayFilter: bool(),
 		arrayUnpacking: bool(),
 		nodeConnectingVisitorCompatibility: bool(),
+		illegalConstructorMethodCall: bool(),
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

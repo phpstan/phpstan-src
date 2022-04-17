@@ -20,7 +20,7 @@ class IllegalConstructorMethodCallRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->name instanceof Node\Identifier || $node->name->name !== '__construct') {
+		if (!$node->name instanceof Node\Identifier || $node->name->toLowerString() !== '__construct') {
 			return [];
 		}
 

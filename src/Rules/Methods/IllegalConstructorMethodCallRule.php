@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * @implements Rule<Node\Expr\MethodCall>
@@ -23,9 +24,14 @@ class IllegalConstructorMethodCallRule implements Rule
 			return [];
 		}
 
-		return $this->isCollectCallingConstructor($node, $scope)
-			? []
-			: ['__construct() should not be called outside constructor.'];
+		if ($this->isCollectCallingConstructor($node, $scope)) {
+			return [];
+		}
+
+		return [
+			RuleErrorBuilder::message('__construct() should not be called outside constructor.')
+				->build(),
+		];
 	}
 
 	private function isCollectCallingConstructor(Node $node, Scope $scope): bool

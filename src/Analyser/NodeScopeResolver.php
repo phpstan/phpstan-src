@@ -6,6 +6,7 @@ use ArrayAccess;
 use Closure;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
@@ -1844,10 +1845,12 @@ class NodeScopeResolver
 				$arrayArg = $expr->getArgs()[0]->value;
 				$arrayType = $scope->getType($arrayArg);
 				$callArgs = array_slice($expr->getArgs(), 1);
-				$prepend = $functionReflection->getName() === 'array_unshift';
 
-				if ($arrayType instanceof ConstantArrayType) {
-					$arrayTypeBuilder = $prepend ? ConstantArrayTypeBuilder::createEmpty() : ConstantArrayTypeBuilder::createFromConstantArray($arrayType);
+				/**
+				 * @param Arg[] $callArgs
+				 * @param callable(?Type, Type, bool=): void $setOffsetValueType
+				 */
+				$setOffsetValueTypes = static function (Scope $scope, array $callArgs, callable $setOffsetValueType): void {
 					foreach ($callArgs as $callArg) {
 						$callArgType = $scope->getType($callArg->value);
 						if ($callArg->unpack) {
@@ -1858,15 +1861,28 @@ class NodeScopeResolver
 							$isOptional = !$callArgType->isIterableAtLeastOnce()->yes();
 							if ($iterableValueType instanceof UnionType) {
 								foreach ($iterableValueType->getTypes() as $innerType) {
-									$arrayTypeBuilder->setOffsetValueType(null, $innerType, $isOptional);
+									$setOffsetValueType(null, $innerType, $isOptional);
 								}
 							} else {
-								$arrayTypeBuilder->setOffsetValueType(null, $iterableValueType, $isOptional);
+								$setOffsetValueType(null, $iterableValueType, $isOptional);
 							}
 							continue;
 						}
-						$arrayTypeBuilder->setOffsetValueType(null, $callArgType);
+						$setOffsetValueType(null, $callArgType);
 					}
+				};
+
+				if ($arrayType instanceof ConstantArrayType) {
+					$prepend = $functionReflection->getName() === 'array_unshift';
+					$arrayTypeBuilder = $prepend ? ConstantArrayTypeBuilder::createEmpty() : ConstantArrayTypeBuilder::createFromConstantArray($arrayType);
+
+					$setOffsetValueTypes(
+						$scope,
+						$callArgs,
+						static function (?Type $offsetType, Type $valueType, bool $optional = false) use (&$arrayTypeBuilder): void {
+							$arrayTypeBuilder->setOffsetValueType($offsetType, $valueType, $optional);
+						},
+					);
 
 					if ($prepend) {
 						$keyTypes = $arrayType->getKeyTypes();
@@ -1881,26 +1897,17 @@ class NodeScopeResolver
 					}
 
 					$arrayType = $arrayTypeBuilder->getArray();
-					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType);
 				} else {
-					foreach ($callArgs as $callArg) {
-						$callArgType = $scope->getType($callArg->value);
-						if ($callArg->unpack) {
-							$iterableValueType = $callArgType->getIterableValueType();
-							if ($iterableValueType instanceof UnionType) {
-								foreach ($iterableValueType->getTypes() as $innerType) {
-									$arrayType = $arrayType->setOffsetValueType(null, $innerType);
-								}
-							} else {
-								$arrayType = $arrayType->setOffsetValueType(null, $iterableValueType);
-							}
-							continue;
-						}
-						$arrayType = $arrayType->setOffsetValueType(null, $callArgType);
-					}
-
-					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType);
+					$setOffsetValueTypes(
+						$scope,
+						$callArgs,
+						static function (?Type $offsetType, Type $valueType) use (&$arrayType): void {
+							$arrayType = $arrayType->setOffsetValueType($offsetType, $valueType);
+						},
+					);
 				}
+
+				$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType);
 			}
 
 			if (

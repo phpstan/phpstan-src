@@ -47,5 +47,13 @@ class ExtendedDateTimeWithSelfCall extends DateTimeImmutable
 	}
 }
 
-$extendedDateTime = new ExtendedDateTimeWithMethodCall('2022/04/12');
-$extendedDateTime->__construct('2022/04/13');
+class Foo
+{
+
+	public function doFoo()
+	{
+		$extendedDateTime = new ExtendedDateTimeWithMethodCall('2022/04/12');
+		$extendedDateTime->__construct('2022/04/13');
+	}
+
+}

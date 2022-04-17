@@ -24,7 +24,7 @@ class CachingVisitor extends NodeVisitorAbstract
 	/** @var array<string, array<FetchedNode<Node\Stmt\ClassLike>>> */
 	private array $classNodes;
 
-	/** @var array<string, FetchedNode<Node\Stmt\Function_>> */
+	/** @var array<string, array<FetchedNode<Node\Stmt\Function_>>> */
 	private array $functionNodes;
 
 	/** @var array<int, FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>> */
@@ -58,7 +58,7 @@ class CachingVisitor extends NodeVisitorAbstract
 		if ($node instanceof Node\Stmt\Function_) {
 			if ($node->namespacedName !== null) {
 				$functionName = $node->namespacedName->toString();
-				$this->functionNodes[strtolower($functionName)] = new FetchedNode(
+				$this->functionNodes[strtolower($functionName)][] = new FetchedNode(
 					$node,
 					$this->currentNamespaceNode,
 					$this->fileName,
@@ -132,7 +132,7 @@ class CachingVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @return array<string, FetchedNode<Node\Stmt\Function_>>
+	 * @return array<string, array<FetchedNode<Node\Stmt\Function_>>>
 	 */
 	public function getFunctionNodes(): array
 	{

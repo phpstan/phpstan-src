@@ -116,17 +116,19 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 				return null;
 			}
 
-			$functionReflection = $nodeToReflection->__invoke(
-				$reflector,
-				$functionNodes[$functionName]->getNode(),
-				$functionNodes[$functionName]->getLocatedSource(),
-				$functionNodes[$functionName]->getNamespace(),
-			);
-			if (!$functionReflection instanceof ReflectionFunction) {
-				throw new ShouldNotHappenException();
-			}
+			foreach ($functionNodes[$functionName] as $functionNode) {
+				$functionReflection = $nodeToReflection->__invoke(
+					$reflector,
+					$functionNode->getNode(),
+					$functionNode->getLocatedSource(),
+					$functionNode->getNamespace(),
+				);
+				if (!$functionReflection instanceof ReflectionFunction) {
+					throw new ShouldNotHappenException();
+				}
 
-			return $functionReflection;
+				return $functionReflection;
+			}
 		}
 
 		if ($identifier->isConstant()) {

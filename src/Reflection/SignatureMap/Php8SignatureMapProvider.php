@@ -160,11 +160,11 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		$stubFile = self::DIRECTORY . '/' . Php8StubsMap::FUNCTIONS[$lowerName];
 		$nodes = $this->fileNodesFetcher->fetchNodes($stubFile);
 		$functions = $nodes->getFunctionNodes();
-		if (count($functions) !== 1) {
+		if (count($functions[$lowerName]) !== 1) {
 			throw new ShouldNotHappenException(sprintf('Function %s stub not found in %s.', $functionName, $stubFile));
 		}
 
-		$signature = $this->getSignature($functions[$lowerName]->getNode(), null, $stubFile);
+		$signature = $this->getSignature($functions[$lowerName][0]->getNode(), null, $stubFile);
 		if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName)) {
 			return $this->mergeSignatures(
 				$signature,

@@ -84,8 +84,11 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			$functionNodes = [];
 			foreach ($files as $file) {
 				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
-				foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
-					$functionNodes[$identifierName] = $fetchedFunctionNode;
+				foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNodes) {
+					foreach ($fetchedFunctionNodes as $fetchedFunctionNode) {
+						$functionNodes[$identifierName] = $fetchedFunctionNode;
+						continue 2;
+					}
 				}
 			}
 
@@ -261,9 +264,11 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			foreach ($this->functionToFiles as $functionName => $files) {
 				foreach ($files as $file) {
 					$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
-					foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNode) {
-						$reflections[$identifierName] = $this->nodeToReflection($reflector, $fetchedFunctionNode);
-						continue;
+					foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNodes) {
+						foreach ($fetchedFunctionNodes as $fetchedFunctionNode) {
+							$reflections[$identifierName] = $this->nodeToReflection($reflector, $fetchedFunctionNode);
+							continue 2;
+						}
 					}
 				}
 			}

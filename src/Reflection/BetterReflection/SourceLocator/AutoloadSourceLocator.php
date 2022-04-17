@@ -218,12 +218,14 @@ class AutoloadSourceLocator implements SourceLocator
 				return null;
 			}
 
-			return $nodeToReflection->__invoke(
-				$reflector,
-				$result->getFunctionNodes()[$identifierName]->getNode(),
-				$result->getFunctionNodes()[$identifierName]->getLocatedSource(),
-				$result->getFunctionNodes()[$identifierName]->getNamespace(),
-			);
+			foreach ($result->getFunctionNodes()[$identifierName] as $functionNode) {
+				return $nodeToReflection->__invoke(
+					$reflector,
+					$functionNode->getNode(),
+					$functionNode->getLocatedSource(),
+					$functionNode->getNamespace(),
+				);
+			}
 		}
 
 		if ($identifier->isConstant()) {

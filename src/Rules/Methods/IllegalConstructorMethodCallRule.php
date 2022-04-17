@@ -29,7 +29,7 @@ class IllegalConstructorMethodCallRule implements Rule
 		}
 
 		return [
-			RuleErrorBuilder::message('__construct() should not be called outside constructor.')
+			RuleErrorBuilder::message('Call to __construct() on an existing object is not allowed.')
 				->build(),
 		];
 	}

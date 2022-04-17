@@ -20,11 +20,11 @@ class IllegalConstructorStaticCallRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/illegal-constructor-call-rule-test.php'], [
 			[
-				'__construct() should not be called outside constructor.',
+				'Static call to __construct() is only allowed on a parent class in the constructor.',
 				29,
 			],
 			[
-				'__construct() should not be called outside constructor.',
+				'Static call to __construct() is only allowed on a parent class in the constructor.',
 				46,
 			],
 		]);

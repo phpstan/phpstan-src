@@ -6,6 +6,7 @@ use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function sprintf;
 use const PHP_VERSION_ID;
 
 /**
@@ -102,11 +103,11 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				127,
 			],
 			[
-				'Binary operation "." between array|string and \'xyz\' results in an error.',
+				sprintf('Binary operation "." between %s|string and \'xyz\' results in an error.', PHP_VERSION_ID < 80000 ? 'array' : 'array<int|string, string>'),
 				134,
 			],
 			[
-				'Binary operation "+" between (array|string) and 1 results in an error.',
+				sprintf('Binary operation "+" between (%s|string) and 1 results in an error.', PHP_VERSION_ID < 80000 ? 'array' : 'array<int|string, string>'),
 				136,
 			],
 			[

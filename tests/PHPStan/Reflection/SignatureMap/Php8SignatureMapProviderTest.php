@@ -28,6 +28,7 @@ use PHPStan\Type\VoidType;
 use function array_map;
 use function array_merge;
 use function count;
+use const PHP_VERSION_ID;
 
 class Php8SignatureMapProviderTest extends PHPStanTestCase
 {
@@ -140,13 +141,16 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 
 	private function createProvider(): Php8SignatureMapProvider
 	{
+		$phpVersion = new PhpVersion(80000);
+
 		return new Php8SignatureMapProvider(
 			new FunctionSignatureMapProvider(
 				self::getContainer()->getByType(SignatureMapParser::class),
-				new PhpVersion(80000),
+				$phpVersion,
 			),
 			self::getContainer()->getByType(FileNodesFetcher::class),
 			self::getContainer()->getByType(FileTypeMapper::class),
+			$phpVersion,
 		);
 	}
 
@@ -288,7 +292,8 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 
 	public function dataParseAll(): array
 	{
-		return array_map(static fn (string $file): array => [__DIR__ . '/../../../../vendor/phpstan/php-8-stubs/' . $file], array_merge(Php8StubsMap::CLASSES, Php8StubsMap::FUNCTIONS));
+		$map = new Php8StubsMap(PHP_VERSION_ID);
+		return array_map(static fn (string $file): array => [__DIR__ . '/../../../../vendor/phpstan/php-8-stubs/' . $file], array_merge($map->classes, $map->functions));
 	}
 
 	/**

@@ -12,7 +12,7 @@ class Foo
 	public function doFoo($x = null) {
 		$args = func_get_args();
 		assertType('mixed', $x);
-		assertType('array', $args);
+		assertType('array<int, mixed>', $args);
 	}
 
 	/**
@@ -39,7 +39,7 @@ class Foo
 	public function doIpsum($x = null) {
 		$args = func_get_args();
 		assertType('mixed', $x);
-		assertType('array', $args);
+		assertType('array<int, mixed>', $args);
 	}
 }
 
@@ -51,7 +51,7 @@ class Bar
 	public function doFoo($x = null) {
 		$args = func_get_args();
 		assertType('string|null', $x);
-		assertType('array', $args);
+		assertType('array<int, mixed>', $args);
 	}
 
 	/**

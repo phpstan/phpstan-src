@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eb192299eb618faaf4b1cb02af209623",
+    "content-hash": "cb48de43655535828a00b7d7bac5f6ae",
     "packages": [
         {
             "name": "clue/block-react",
@@ -2304,18 +2304,19 @@
         },
         {
             "name": "phpstan/php-8-stubs",
-            "version": "0.1.52",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/php-8-stubs.git",
-                "reference": "dc9494b5191cf56cab7984aa5ecd740f4c7503ad"
+                "reference": "169c2bc2ada5fefcad43f4676096fd1f18d69ed0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/php-8-stubs/zipball/dc9494b5191cf56cab7984aa5ecd740f4c7503ad",
-                "reference": "dc9494b5191cf56cab7984aa5ecd740f4c7503ad",
+                "url": "https://api.github.com/repos/phpstan/php-8-stubs/zipball/169c2bc2ada5fefcad43f4676096fd1f18d69ed0",
+                "reference": "169c2bc2ada5fefcad43f4676096fd1f18d69ed0",
                 "shasum": ""
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "files": [
@@ -2330,9 +2331,9 @@
             "description": "PHP stubs extracted from php-src",
             "support": {
                 "issues": "https://github.com/phpstan/php-8-stubs/issues",
-                "source": "https://github.com/phpstan/php-8-stubs/tree/0.1.52"
+                "source": "https://github.com/phpstan/php-8-stubs/tree/main"
             },
-            "time": "2022-04-14T00:16:18+00:00"
+            "time": "2022-04-18T15:18:23+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",
@@ -7292,7 +7293,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20
+        "jetbrains/phpstorm-stubs": 20,
+        "phpstan/php-8-stubs": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

@@ -10,6 +10,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use function sprintf;
 use const PHP_VERSION_ID;
 
 /**
@@ -163,7 +164,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 					11,
 				],
 				[
-					'Function fputcsv invoked with 1 parameter, 2-5 required.',
+					sprintf('Function fputcsv invoked with 1 parameter, 2-%d required.', PHP_VERSION_ID >= 80100 ? 6 : 5),
 					12,
 				],
 				[
@@ -964,6 +965,30 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testBug6383(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-6383.php'], []);
+	}
+
+	public function testBug6448(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80100) {
+			$errors[] = [
+				'Function fputcsv invoked with 6 parameters, 2-5 required.',
+				28,
+			];
+		}
+		$this->analyse([__DIR__ . '/data/bug-6448.php'], $errors);
+	}
+
+	public function testBug7017(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80100) {
+			$errors[] = [
+				'Parameter #1 $finfo of function finfo_close expects resource, finfo given.',
+				7,
+			];
+		}
+		$this->analyse([__DIR__ . '/data/bug-7017.php'], $errors);
 	}
 
 }

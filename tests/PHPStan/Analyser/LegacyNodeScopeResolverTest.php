@@ -3172,15 +3172,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$simpleXMLRightXpath',
 			],
 			[
-				'array<SimpleXMLElement>|false',
+				'array<SimpleXMLElement>|false|null',
 				'$simpleXMLWrongXpath',
 			],
 			[
-				'array<SimpleXMLElement>|false',
+				'array<SimpleXMLElement>|false|null',
 				'$simpleXMLUnknownXpath',
 			],
 			[
-				'array<SimpleXMLElement>|false',
+				'array<SimpleXMLElement>|false|null',
 				'$namespacedXpath',
 			],
 		];
@@ -5356,7 +5356,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbInternalEncodingWithUnknownEncoding',
 			],
 			[
-				'array',
+				PHP_VERSION_ID < 80000 ? 'array' : 'array<int, string>',
 				'$mbEncodingAliasesWithValidEncoding',
 			],
 			[
@@ -5364,11 +5364,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbEncodingAliasesWithInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array|false' : 'array',
+				PHP_VERSION_ID < 80000 ? 'array|false' : 'array<int, string>',
 				'$mbEncodingAliasesWithValidAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array|false' : 'array',
+				PHP_VERSION_ID < 80000 ? 'array|false' : 'array<int, string>',
 				'$mbEncodingAliasesWithUnknownEncoding',
 			],
 			[
@@ -5469,7 +5469,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			],
 			// parse_url
 			[
-				'array|int|string|false|null',
+				PHP_VERSION_ID < 80000 ? 'array|int|string|false|null' : 'array<string, int|string>|int|string|false|null',
 				'$parseUrlWithoutParameters',
 			],
 			[
@@ -7402,19 +7402,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherExpectedArray',
 			],
 			[
-				'array|string',
+				PHP_VERSION_ID < 80000 ? 'array|string' : 'array<int|string, string>|string',
 				'$expectedArrayOrString',
 			],
 			[
-				'(array|string)',
+				PHP_VERSION_ID < 80000 ? '(array|string)' : '(array<int|string, string>|string)',
 				'$expectedBenevolentArrayOrString',
 			],
 			[
-				'array|string|null',
+				PHP_VERSION_ID < 80000 ? 'array|string|null' : 'array<int|string, string>|string|null',
 				'$expectedArrayOrString2',
 			],
 			[
-				'array|string|null',
+				PHP_VERSION_ID < 80000 ? 'array|string|null' : 'array<int|string, string>|string|null',
 				'$anotherExpectedArrayOrString',
 			],
 			[

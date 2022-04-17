@@ -114,7 +114,6 @@ use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
@@ -1842,97 +1841,60 @@ class NodeScopeResolver
 				&& in_array($functionReflection->getName(), ['array_push', 'array_unshift'], true)
 				&& count($expr->getArgs()) >= 2
 			) {
-				$argumentTypes = [];
-				$optionalArgumentTypes = [];
-				foreach (array_slice($expr->getArgs(), 1) as $callArg) {
-					$callArgType = $scope->getType($callArg->value);
-					if ($callArg->unpack) {
-						if ($callArgType->isIterableAtLeastOnce()->no()) {
+				$arrayArg = $expr->getArgs()[0]->value;
+				$arrayType = $scope->getType($arrayArg);
+				$callArgs = array_slice($expr->getArgs(), 1);
+				$prepend = $functionReflection->getName() === 'array_unshift';
+
+				if ($arrayType instanceof ConstantArrayType) {
+					$arrayTypeBuilder = $prepend ? ConstantArrayTypeBuilder::createEmpty() : ConstantArrayTypeBuilder::createFromConstantArray($arrayType);
+					foreach ($callArgs as $callArg) {
+						$callArgType = $scope->getType($callArg->value);
+						if ($callArg->unpack) {
+							if ($callArgType->isIterableAtLeastOnce()->no()) {
+								continue;
+							}
+							$iterableValueType = $callArgType->getIterableValueType();
+							$isOptional = !$callArgType->isIterableAtLeastOnce()->yes();
+							if ($iterableValueType instanceof UnionType) {
+								foreach ($iterableValueType->getTypes() as $innerType) {
+									$arrayTypeBuilder->setOffsetValueType(null, $innerType, $isOptional);
+								}
+							} else {
+								$arrayTypeBuilder->setOffsetValueType(null, $iterableValueType, $isOptional);
+							}
 							continue;
 						}
-						$iterableValueType = $callArgType->getIterableValueType();
-						$isOptionalArgumentType = !$callArgType->isIterableAtLeastOnce()->yes();
-						if ($iterableValueType instanceof UnionType) {
-							foreach ($iterableValueType->getTypes() as $innerType) {
-								if ($isOptionalArgumentType) {
-									$optionalArgumentTypes[] = $innerType;
-								} else {
-									$argumentTypes[] = $innerType;
+						$arrayTypeBuilder->setOffsetValueType(null, $callArgType);
+					}
+
+					if ($prepend) {
+						$valueTypes = $arrayType->getValueTypes();
+						foreach ($valueTypes as $key => $valueType) {
+							$arrayTypeBuilder->setOffsetValueType(null, $valueType, $arrayType->isOptionalKey($key));
+						}
+					}
+
+					$arrayType = $arrayTypeBuilder->getArray();
+					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType);
+				} else {
+					foreach ($callArgs as $callArg) {
+						$callArgType = $scope->getType($callArg->value);
+						if ($callArg->unpack) {
+							$iterableValueType = $callArgType->getIterableValueType();
+							if ($iterableValueType instanceof UnionType) {
+								foreach ($iterableValueType->getTypes() as $innerType) {
+									$arrayType = $arrayType->setOffsetValueType(null, $innerType);
 								}
-							}
-						} else {
-							if ($isOptionalArgumentType) {
-								$optionalArgumentTypes[] = $iterableValueType;
 							} else {
-								$argumentTypes[] = $iterableValueType;
+								$arrayType = $arrayType->setOffsetValueType(null, $iterableValueType);
 							}
+							continue;
 						}
-						continue;
+						$arrayType = $arrayType->setOffsetValueType(null, $callArgType);
 					}
-
-					$argumentTypes[] = $callArgType;
-				}
-
-				$arrayArg = $expr->getArgs()[0]->value;
-				$originalArrayType = $scope->getType($arrayArg);
-				$constantArrays = TypeUtils::getOldConstantArrays($originalArrayType);
-
-				$addArgumentTypesAsOffsets = static function (Type $arrayType, array $argumentTypes, array $optionalArgumentTypes) {
-					foreach ($argumentTypes as $argType) {
-						$arrayType = $arrayType->setOffsetValueType(null, $argType);
-					}
-					if ($arrayType instanceof ConstantArrayType && count($optionalArgumentTypes) > 0) {
-						$arrayTypeBuilder = ConstantArrayTypeBuilder::createFromConstantArray($arrayType);
-						foreach ($optionalArgumentTypes as $optionalArgumentType) {
-							$arrayTypeBuilder->setOffsetValueType(null, $optionalArgumentType, true);
-						}
-						$arrayType = $arrayTypeBuilder->getArray();
-					}
-
-					return $arrayType;
-				};
-
-				if (
-					$functionReflection->getName() === 'array_push'
-					|| ($originalArrayType->isArray()->yes() && count($constantArrays) === 0)
-				) {
-					$arrayType = $addArgumentTypesAsOffsets($originalArrayType, $argumentTypes, $optionalArgumentTypes);
 
 					$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType);
-				} elseif (count($constantArrays) > 0) {
-					$defaultArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-					foreach ($argumentTypes as $argType) {
-						$defaultArrayBuilder->setOffsetValueType(null, $argType);
-					}
-
-					$defaultArrayType = $defaultArrayBuilder->getArray();
-					if (!$defaultArrayType instanceof ConstantArrayType) {
-						$arrayType = $addArgumentTypesAsOffsets($originalArrayType, $argumentTypes, $optionalArgumentTypes);
-
-						$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType);
-					} else {
-						$arrayTypes = [];
-						foreach ($constantArrays as $constantArray) {
-							$arrayTypeBuilder = ConstantArrayTypeBuilder::createFromConstantArray($defaultArrayType);
-							foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-								$valueType = $constantArray->getValueTypes()[$i];
-								if ($keyType instanceof ConstantIntegerType) {
-									$keyType = null;
-								}
-								$arrayTypeBuilder->setOffsetValueType(
-									$keyType,
-									$valueType,
-									$constantArray->isOptionalKey($i),
-								);
-							}
-							$arrayTypes[] = $arrayTypeBuilder->getArray();
-						}
-
-						$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType(
-							$arrayArg,
-							TypeCombinator::union(...$arrayTypes),
-						);
-					}
 				}
 			}
 

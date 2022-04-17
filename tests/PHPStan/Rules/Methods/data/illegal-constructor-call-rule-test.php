@@ -39,11 +39,13 @@ class ExtendedDateTimeWithSelfCall extends DateTimeImmutable
 			return;
 		}
 		self::__construct($datetime, $timezone);
+		ExtendedDateTimeWithSelfCall::__construct($datetime, $timezone);
 	}
 
 	public function mutate(string $datetime = "now", ?DateTimeZone $timezone = null): void
 	{
 		self::__construct($datetime, $timezone);
+		ExtendedDateTimeWithSelfCall::__construct($datetime, $timezone);
 	}
 }
 

@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use function in_array;
 
 /**
  * @implements Rule<Node\Expr\StaticCall>
@@ -44,8 +43,22 @@ class IllegalConstructorStaticCallRule implements Rule
 		if ($scope->getFunction() !== null && $scope->getFunction()->getName() !== '__construct') {
 			return false;
 		}
-		// In constructor, static call is allowed with 'self' or 'parent;
-		return $node->class instanceof Node\Name && in_array($node->class->getFirst(), ['self', 'parent'], true);
+
+		if (!$scope->isInClass()) {
+			return false;
+		}
+
+		if (!$node->class instanceof Node\Name) {
+			return false;
+		}
+
+		if ($node->class->toLowerString() === 'parent') {
+			return true;
+		}
+
+		$className = $scope->resolveName($node->class);
+
+		return $className === $scope->getClassReflection()->getName();
 	}
 
 }

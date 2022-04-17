@@ -25,7 +25,7 @@ class IllegalConstructorMethodCallRuleTest extends RuleTestCase
 			],
 			[
 				'Call to __construct() on an existing object is not allowed.',
-				56,
+				58,
 			],
 		]);
 	}

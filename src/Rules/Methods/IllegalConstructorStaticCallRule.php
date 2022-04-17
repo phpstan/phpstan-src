@@ -52,13 +52,7 @@ class IllegalConstructorStaticCallRule implements Rule
 			return false;
 		}
 
-		if ($node->class->toLowerString() === 'parent') {
-			return true;
-		}
-
-		$className = $scope->resolveName($node->class);
-
-		return $className === $scope->getClassReflection()->getName();
+		return $node->class->toLowerString() === 'parent';
 	}
 
 }

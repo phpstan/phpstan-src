@@ -24,27 +24,10 @@ class IllegalConstructorMethodCallRule implements Rule
 			return [];
 		}
 
-		if ($this->isCollectCallingConstructor($node, $scope)) {
-			return [];
-		}
-
 		return [
 			RuleErrorBuilder::message('Call to __construct() on an existing object is not allowed.')
 				->build(),
 		];
-	}
-
-	private function isCollectCallingConstructor(Node $node, Scope $scope): bool
-	{
-		if (!$node instanceof Node\Expr\MethodCall) {
-			return true;
-		}
-		// __construct should be called from inside constructor
-		if ($scope->getFunction() !== null && $scope->getFunction()->getName() !== '__construct') {
-			return false;
-		}
-		// In constructor, method call is allowed with 'this';
-		return $node->var instanceof Node\Expr\Variable && $node->var->name === 'this';
 	}
 
 }

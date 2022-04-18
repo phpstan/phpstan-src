@@ -127,6 +127,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
@@ -2309,9 +2310,12 @@ class NodeScopeResolver
 				static fn (): MutatingScope => $rightResult->getScope()->filterByFalseyValue($expr),
 			);
 		} elseif ($expr instanceof Coalesce) {
-			// backwards compatibility: coalesce doesn't allow dynamic properties
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left, false);
-			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch || $expr->left instanceof StaticPropertyFetch) {
+			// backwards compatibility: coalesce doesn't allow dynamic properties
+			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch) {
+				$propertyHolderType = $scope->getType($expr->left->var);
+				$condScope = $nonNullabilityResult->getScope()->setAllowedUndefinedExpression($expr->left, $propertyHolderType->isSuperTypeOf(new ObjectWithoutClassType())->yes());
+			} elseif ($expr->left instanceof StaticPropertyFetch) {
 				$condScope = $nonNullabilityResult->getScope()->setAllowedUndefinedExpression($expr->left, false);
 			} else {
 				$condScope = $nonNullabilityResult->getScope();

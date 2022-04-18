@@ -108,7 +108,7 @@ class Baz
 		assertType('array{0: \'lorem\', 1: stdClass, 2: 1, 3: 1|2, 4: 1|3, 5?: 2|3, 6?: 3}', $unshiftedConditionalArray + $conditionalArray);
 
 		$conditionalArray[] = 4;
-		assertType('array{0: 1, 1: 1, 2: 1, 3?: 2|4, 4?: 3, 5?: 4}', $conditionalArray);
+		assertType('array{0: 1, 1: 1, 2: 1, 3: 2|4, 4?: 3, 5?: 4}', $conditionalArray);
 	}
 
 }

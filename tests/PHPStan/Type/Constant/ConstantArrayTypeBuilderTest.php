@@ -29,7 +29,7 @@ class ConstantArrayTypeBuilderTest extends TestCase
 		$builder->setOffsetValueType(null, new ConstantIntegerType(3));
 		$array3 = $builder->getArray();
 		$this->assertInstanceOf(ConstantArrayType::class, $array3);
-		$this->assertSame('array{0: 1, 1?: 2|3, 2?: 3}', $array3->describe(VerbosityLevel::precise()));
+		$this->assertSame('array{0: 1, 1: 2|3, 2?: 3}', $array3->describe(VerbosityLevel::precise()));
 		$this->assertSame([2, 3], $array3->getNextAutoIndexes());
 
 		$this->assertTrue($array3->isKeysSupersetOf($array2));
@@ -40,19 +40,19 @@ class ConstantArrayTypeBuilderTest extends TestCase
 		$builder->setOffsetValueType(null, new ConstantIntegerType(4));
 		$array4 = $builder->getArray();
 		$this->assertInstanceOf(ConstantArrayType::class, $array4);
-		$this->assertSame('array{0: 1, 1?: 2|3, 2?: 3|4, 3?: 4}', $array4->describe(VerbosityLevel::precise()));
+		$this->assertSame('array{0: 1, 1: 2|3, 2: 3|4, 3?: 4}', $array4->describe(VerbosityLevel::precise()));
 		$this->assertSame([3, 4], $array4->getNextAutoIndexes());
 
 		$builder->setOffsetValueType(new ConstantIntegerType(3), new ConstantIntegerType(5), true);
 		$array5 = $builder->getArray();
 		$this->assertInstanceOf(ConstantArrayType::class, $array5);
-		$this->assertSame('array{0: 1, 1?: 2|3, 2?: 3|4, 3?: 4|5}', $array5->describe(VerbosityLevel::precise()));
+		$this->assertSame('array{0: 1, 1: 2|3, 2: 3|4, 3?: 4|5}', $array5->describe(VerbosityLevel::precise()));
 		$this->assertSame([3, 4], $array5->getNextAutoIndexes());
 
 		$builder->setOffsetValueType(new ConstantIntegerType(3), new ConstantIntegerType(6));
 		$array6 = $builder->getArray();
 		$this->assertInstanceOf(ConstantArrayType::class, $array6);
-		$this->assertSame('array{0: 1, 1?: 2|3, 2?: 3|4, 3: 6}', $array6->describe(VerbosityLevel::precise()));
+		$this->assertSame('array{1, 2|3, 3|4, 6}', $array6->describe(VerbosityLevel::precise()));
 		$this->assertSame([4], $array6->getNextAutoIndexes());
 	}
 

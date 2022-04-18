@@ -976,6 +976,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				28,
 			];
 		}
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
 		$this->analyse([__DIR__ . '/data/bug-6448.php'], $errors);
 	}
 

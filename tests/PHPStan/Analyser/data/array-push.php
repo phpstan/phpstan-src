@@ -9,8 +9,9 @@ use function PHPStan\Testing\assertType;
  * @param string[] $a
  * @param int[] $b
  * @param non-empty-array<int> $c
+ * @param array<int|string> $d
  */
-function arrayPush(array $a, array $b, array $c): void
+function arrayPush(array $a, array $b, array $c, array $d): void
 {
 	array_push($a, ...$b);
 	assertType('non-empty-array<int|string>', $a);
@@ -20,6 +21,11 @@ function arrayPush(array $a, array $b, array $c): void
 
 	array_push($c, ...[19, 'baz', false]);
 	assertType('non-empty-array<\'baz\'|int|false>', $c);
+
+	/** @var array<bool|null> $d1 */
+	$d1 = [];
+	array_push($d, ...$d1);
+	assertType('non-empty-array<bool|int|string|null>', $d);
 }
 
 function arrayPushConstantArray(): void
@@ -43,4 +49,10 @@ function arrayPushConstantArray(): void
 	$e = [];
 	array_push($e, 19, 'baz', false);
 	assertType('array{19, \'baz\', false}', $e);
+
+	$f = [17];
+	/** @var array<bool|null> $f1 */
+	$f1 = [];
+	array_push($f, ...$f1);
+	assertType('non-empty-array<int, bool|int|null>', $f);
 }

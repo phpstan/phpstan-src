@@ -118,6 +118,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -1850,12 +1851,15 @@ class NodeScopeResolver
 				 * @param Arg[] $callArgs
 				 * @param callable(?Type, Type, bool=): void $setOffsetValueType
 				 */
-				$setOffsetValueTypes = static function (Scope $scope, array $callArgs, callable $setOffsetValueType): void {
+				$setOffsetValueTypes = static function (Scope $scope, array $callArgs, callable $setOffsetValueType, ?bool &$nonConstantArrayWasUnpacked = null): void {
 					foreach ($callArgs as $callArg) {
 						$callArgType = $scope->getType($callArg->value);
 						if ($callArg->unpack) {
 							if ($callArgType->isIterableAtLeastOnce()->no()) {
 								continue;
+							}
+							if (!$callArgType instanceof ConstantArrayType) {
+								$nonConstantArrayWasUnpacked = true;
 							}
 							$iterableValueType = $callArgType->getIterableValueType();
 							$isOptional = !$callArgType->isIterableAtLeastOnce()->yes();
@@ -1882,6 +1886,7 @@ class NodeScopeResolver
 						static function (?Type $offsetType, Type $valueType, bool $optional = false) use (&$arrayTypeBuilder): void {
 							$arrayTypeBuilder->setOffsetValueType($offsetType, $valueType, $optional);
 						},
+						$nonConstantArrayWasUnpacked,
 					);
 
 					if ($prepend) {
@@ -1897,6 +1902,10 @@ class NodeScopeResolver
 					}
 
 					$arrayType = $arrayTypeBuilder->getArray();
+
+					if ($arrayType instanceof ConstantArrayType && $nonConstantArrayWasUnpacked) {
+						$arrayType = $arrayType->generalize(GeneralizePrecision::lessSpecific());
+					}
 				} else {
 					$setOffsetValueTypes(
 						$scope,

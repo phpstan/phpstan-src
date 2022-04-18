@@ -577,4 +577,34 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6026(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-6026.php'], []);
+	}
+
+	public function testBug3659(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-3659.php'], []);
+	}
+
+	public function testDynamicProperties(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/dynamic-properties.php'], [
+			[
+				'Access to an undefined property DynamicProperties\Foo::$dynamicProperty.',
+				11,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				16,
+			],
+		]);
+	}
+
 }

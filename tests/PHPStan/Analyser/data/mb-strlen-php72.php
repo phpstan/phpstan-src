@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use function PHPStan\Testing\assertType;
 
-class MbStrlenPhp7
+class MbStrlenPhp72
 {
 
 	/**
@@ -17,8 +17,9 @@ class MbStrlenPhp7
 	 * @param non-empty-string|int|float $nonEmptyStringIntFloat
 	 * @param ""|false|null $emptyStringFalseNull
 	 * @param ""|bool|null $emptyStringBoolNull
+	 * @param "pass"|"none" $encodingsValidOnlyUntilPhp72
 	 */
-	public function doFoo(int $i, string $s, bool $bool, float $float, $intFloat, $nonEmpty, $nonEmptyStringIntFloat, $emptyStringFalseNull, $emptyStringBoolNull, $constUnion, $constUnionMixed, $utf8And8bit, $utf8AndInvalidEncoding, string $unknownEncoding)
+	public function doFoo(int $i, string $s, bool $bool, float $float, $intFloat, $nonEmpty, $nonEmptyStringIntFloat, $emptyStringFalseNull, $emptyStringBoolNull, $constUnion, $constUnionMixed, $utf8And8bit, $utf8AndInvalidEncoding, string $unknownEncoding, $encodingsValidOnlyUntilPhp72)
 	{
 		assertType('0', mb_strlen(''));
 		assertType('5', mb_strlen('hallo'));
@@ -48,6 +49,7 @@ class MbStrlenPhp7
 		assertType('2|4|5|6|8|false', mb_strlen('מזגן', $unknownEncoding));
 		assertType('6|8|12|13|15|18|24|false', mb_strlen('いい天気ですね〜', $unknownEncoding));
 		assertType('3|false', mb_strlen(123, $utf8AndInvalidEncoding));
+		assertType('3', mb_strlen('foo', $encodingsValidOnlyUntilPhp72));
 	}
 
 }

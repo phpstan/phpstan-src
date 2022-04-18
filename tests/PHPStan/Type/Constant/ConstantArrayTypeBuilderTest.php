@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\Type\BooleanType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\TestCase;
 
@@ -80,6 +82,20 @@ class ConstantArrayTypeBuilderTest extends TestCase
 		$this->assertInstanceOf(ConstantArrayType::class, $array);
 		$this->assertSame('array{\'foo\', \'bar\'}', $array->describe(VerbosityLevel::precise()));
 		$this->assertSame([2], $array->getNextAutoIndexes());
+	}
+
+	public function testAppendingOptionalKeys(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		$builder->setOffsetValueType(null, new BooleanType(), true);
+		$this->assertSame('array{0?: bool}', $builder->getArray()->describe(VerbosityLevel::precise()));
+
+		$builder->setOffsetValueType(null, new NullType(), true);
+		$this->assertSame('array{0?: bool|null, 1?: null}', $builder->getArray()->describe(VerbosityLevel::precise()));
+
+		$builder->setOffsetValueType(null, new ConstantIntegerType(17));
+		$this->assertSame('array{0: 17|bool|null, 1?: 17|null, 2?: 17}', $builder->getArray()->describe(VerbosityLevel::precise()));
 	}
 
 }

@@ -9,9 +9,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_filter;
-use function array_key_exists;
 use function array_map;
-use function array_splice;
 use function array_unique;
 use function array_values;
 use function count;
@@ -85,8 +83,8 @@ class ConstantArrayTypeBuilder
 
 					$this->valueTypes[$i] = TypeCombinator::union($this->valueTypes[$i], $valueType);
 
-					if (!$optional && array_key_exists($i, $this->optionalKeys)) {
-						array_splice($this->optionalKeys, $i, 1);
+					if (!$hasOptional && !$optional) {
+						$this->optionalKeys = array_values(array_filter($this->optionalKeys, static fn (int $index): bool => $index !== $i));
 					}
 
 					/** @var int|float $newAutoIndex */

@@ -570,10 +570,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				'Cannot access property $prop on string.',
 				15,
 			],
-			[
-				'Cannot access property $prop on object|string.', // open issue https://github.com/phpstan/phpstan/issues/3659, https://github.com/phpstan/phpstan/issues/6026
-				25,
-			],
 		]);
 	}
 

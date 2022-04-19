@@ -2,6 +2,8 @@
 
 namespace ArrayPush;
 
+use stdClass;
+
 use function array_push;
 use function PHPStan\Testing\assertType;
 
@@ -55,4 +57,8 @@ function arrayPushConstantArray(): void
 	$f1 = [];
 	array_push($f, ...$f1);
 	assertType('non-empty-array<int, bool|int|null>', $f);
+
+	$g = [new stdClass()];
+	array_push($g, ...[new stdClass(), new stdClass()]);
+	assertType('array{stdClass, stdClass, stdClass}', $g);
 }

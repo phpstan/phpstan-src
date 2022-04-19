@@ -695,6 +695,26 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	null, $shippingLongitude = null, $shippingNeutralShipping = null)): Unexpected token "\n * ", expected type at offset 193', $errors[0]->getMessage());
 	}
 
+	public function testBug7012(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7012.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6192(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6192.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

@@ -2,6 +2,8 @@ parameters:
 	customRulesetUsed: false
 
 conditionalTags:
+	PHPStan\Rules\Api\NodeConnectingVisitorAttributesRule:
+		phpstan.rules.rule: %featureToggles.nodeConnectingVisitorRule%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
 		phpstan.rules.rule: %checkUninitializedProperties%
 
@@ -67,6 +69,8 @@ rules:
 	- PHPStan\Rules\Whitespace\FileWhitespaceRule
 
 services:
+	-
+		class: PHPStan\Rules\Api\NodeConnectingVisitorAttributesRule
 	-
 		class: PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
 		tags:

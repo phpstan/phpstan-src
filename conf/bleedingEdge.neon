@@ -7,5 +7,6 @@ parameters:
 		arrayFilter: true
 		arrayUnpacking: true
 		nodeConnectingVisitorCompatibility: false
+		nodeConnectingVisitorRule: true
 		disableRuntimeReflectionProvider: true
 		illegalConstructorMethodCall: true

@@ -32,6 +32,7 @@ parameters:
 		arrayFilter: false
 		arrayUnpacking: false
 		nodeConnectingVisitorCompatibility: true
+		nodeConnectingVisitorRule: false
 		illegalConstructorMethodCall: false
 	fileExtensions:
 		- php
@@ -220,6 +221,7 @@ parametersSchema:
 		arrayFilter: bool(),
 		arrayUnpacking: bool(),
 		nodeConnectingVisitorCompatibility: bool(),
+		nodeConnectingVisitorRule: bool(),
 		illegalConstructorMethodCall: bool(),
 	])
 	fileExtensions: listOf(string())

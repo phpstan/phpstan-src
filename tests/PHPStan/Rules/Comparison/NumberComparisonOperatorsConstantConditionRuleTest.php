@@ -103,7 +103,7 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 
 	public function testBug7052(): void
 	{
-		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+		if (PHP_VERSION_ID < 80100) {
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 		$this->analyse([__DIR__ . '/data/bug-7052.php'], [

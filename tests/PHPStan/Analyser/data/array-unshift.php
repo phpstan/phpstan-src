@@ -2,6 +2,8 @@
 
 namespace ArrayUnshift;
 
+use stdClass;
+
 use function array_unshift;
 use function PHPStan\Testing\assertType;
 
@@ -55,4 +57,8 @@ function arrayUnshiftConstantArray(): void
 	$f1 = [];
 	array_unshift($f, ...$f1);
 	assertType('non-empty-array<int, bool|int|null>', $f);
+
+	$g = [new stdClass()];
+	array_unshift($g, ...[new stdClass(), new stdClass()]);
+	assertType('array{stdClass, stdClass, stdClass}', $g);
 }

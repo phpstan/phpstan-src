@@ -1875,17 +1875,23 @@ class NodeScopeResolver
 							if ($callArgType->isIterableAtLeastOnce()->no()) {
 								continue;
 							}
-							if (!$callArgType instanceof ConstantArrayType) {
+
+							if ($callArgType instanceof ConstantArrayType) {
+								$iterableValueTypes = $callArgType->getValueTypes();
+							} else {
+								$iterableValueTypes = [$callArgType->getIterableValueType()];
 								$nonConstantArrayWasUnpacked = true;
 							}
-							$iterableValueType = $callArgType->getIterableValueType();
+
 							$isOptional = !$callArgType->isIterableAtLeastOnce()->yes();
-							if ($iterableValueType instanceof UnionType) {
-								foreach ($iterableValueType->getTypes() as $innerType) {
-									$setOffsetValueType(null, $innerType, $isOptional);
+							foreach ($iterableValueTypes as $iterableValueType) {
+								if ($iterableValueType instanceof UnionType) {
+									foreach ($iterableValueType->getTypes() as $innerType) {
+										$setOffsetValueType(null, $innerType, $isOptional);
+									}
+								} else {
+									$setOffsetValueType(null, $iterableValueType, $isOptional);
 								}
-							} else {
-								$setOffsetValueType(null, $iterableValueType, $isOptional);
 							}
 							continue;
 						}

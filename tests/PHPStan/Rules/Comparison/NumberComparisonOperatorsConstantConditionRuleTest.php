@@ -101,4 +101,29 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5295.php'], []);
 	}
 
+	public function testBug7052(): void
+	{
+		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+		$this->analyse([__DIR__ . '/data/bug-7052.php'], [
+			[
+				'Comparison operation ">" between Bug7052\Foo::A and Bug7052\Foo::B is always false.',
+				16,
+			],
+			[
+				'Comparison operation "<" between Bug7052\Foo::A and Bug7052\Foo::B is always false.',
+				17,
+			],
+			[
+				'Comparison operation ">=" between Bug7052\Foo::A and Bug7052\Foo::B is always false.',
+				18,
+			],
+			[
+				'Comparison operation "<=" between Bug7052\Foo::A and Bug7052\Foo::B is always false.',
+				19,
+			],
+		]);
+	}
+
 }

@@ -132,6 +132,16 @@ class EnumCaseObjectType extends ObjectType
 		return new parent($this->getClassName(), null, $this->getClassReflection());
 	}
 
+	public function isSmallerThan(Type $otherType): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

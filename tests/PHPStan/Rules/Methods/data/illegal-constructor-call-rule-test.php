@@ -61,3 +61,43 @@ class Foo
 	}
 
 }
+
+abstract class Presenter
+{
+
+	public function __construct()
+	{
+
+	}
+
+}
+
+abstract class BasePresenter extends Presenter
+{
+
+	public function __construct()
+	{
+		Presenter::__construct();
+	}
+
+}
+
+class CatPresenter extends BasePresenter
+{
+
+	public function __construct()
+	{
+		Presenter::__construct();
+	}
+
+}
+
+class DogPresenter extends BasePresenter
+{
+
+	public function __construct()
+	{
+		CatPresenter::__construct();
+	}
+
+}

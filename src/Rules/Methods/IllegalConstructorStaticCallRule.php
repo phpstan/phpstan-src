@@ -6,6 +6,9 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function array_map;
+use function in_array;
+use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\StaticCall>
@@ -52,7 +55,9 @@ class IllegalConstructorStaticCallRule implements Rule
 			return false;
 		}
 
-		return $node->class->toLowerString() === 'parent';
+		$parentClasses = array_map(static fn (string $name) => strtolower($name), $scope->getClassReflection()->getParentClassesNames());
+
+		return in_array(strtolower($scope->resolveName($node->class)), $parentClasses, true);
 	}
 
 }

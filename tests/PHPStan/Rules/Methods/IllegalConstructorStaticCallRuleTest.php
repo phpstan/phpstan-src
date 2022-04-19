@@ -39,6 +39,10 @@ class IllegalConstructorStaticCallRuleTest extends RuleTestCase
 				'Static call to __construct() is only allowed on a parent class in the constructor.',
 				50,
 			],
+			[
+				'Static call to __construct() is only allowed on a parent class in the constructor.',
+				100,
+			],
 		]);
 	}
 

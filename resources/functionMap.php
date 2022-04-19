@@ -10227,7 +10227,7 @@ return [
 'SimpleXMLElement::addChild' => ['static', 'name'=>'string', 'value='=>'string|null', 'ns='=>'string|null'],
 'SimpleXMLElement::asXML' => ['string|bool', 'filename='=>'string'],
 'SimpleXMLElement::attributes' => ['static|null', 'ns='=>'string', 'is_prefix='=>'bool'],
-'SimpleXMLElement::children' => ['static|null', 'namespaceOrPrefix='=>'string|null', 'is_prefix='=>'bool'],
+'SimpleXMLElement::children' => ['__benevolent<static|null>', 'namespaceOrPrefix='=>'string|null', 'is_prefix='=>'bool'],
 'SimpleXMLElement::count' => ['0|positive-int'],
 'SimpleXMLElement::getDocNamespaces' => ['string[]|false', 'recursive='=>'bool', 'from_root='=>'bool'],
 'SimpleXMLElement::getName' => ['string'],

@@ -15,7 +15,7 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new MissingMethodReturnTypehintRule(new MissingTypehintCheck($broker, true, true, true, []));
+		return new MissingMethodReturnTypehintRule(new MissingTypehintCheck($broker, true, true, true, true, []));
 	}
 
 	public function testRule(): void
@@ -40,7 +40,7 @@ class MissingMethodReturnTypehintRuleTest extends RuleTestCase
 			[
 				'Method MissingMethodReturnTypehint\Foo::unionTypeWithUnknownArrayValueTypehint() return type has no value type specified in iterable type array.',
 				46,
-				MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
 				'Method MissingMethodReturnTypehint\Bar::returnsGenericInterface() return type with generic interface MissingMethodReturnTypehint\GenericInterface does not specify its types: T, U',

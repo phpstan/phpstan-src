@@ -24,7 +24,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 			$broker,
 			new ClassCaseSensitivityCheck($broker, true),
 			new GenericObjectTypeCheck(),
-			new MissingTypehintCheck($broker, true, true, true, []),
+			new MissingTypehintCheck($broker, true, true, true, true, []),
 			new UnresolvableTypeHelper(),
 			true,
 			true,
@@ -86,7 +86,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var for variable $test has no value type specified in iterable type array.',
 				58,
-				MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
 				'PHPDoc tag @var for variable $test contains generic class InvalidPhpDocDefinitions\FooGeneric but does not specify its types: T, U',

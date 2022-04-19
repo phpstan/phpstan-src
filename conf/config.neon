@@ -34,6 +34,7 @@ parameters:
 		nodeConnectingVisitorCompatibility: true
 		nodeConnectingVisitorRule: false
 		illegalConstructorMethodCall: false
+		disableCheckMissingIterableValueType: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -223,6 +224,7 @@ parametersSchema:
 		nodeConnectingVisitorCompatibility: bool(),
 		nodeConnectingVisitorRule: bool(),
 		illegalConstructorMethodCall: bool(),
+		disableCheckMissingIterableValueType: bool(),
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -907,6 +909,7 @@ services:
 		class: PHPStan\Rules\MissingTypehintCheck
 		arguments:
 			checkMissingIterableValueType: %checkMissingIterableValueType%
+			disableCheckMissingIterableValueType: %featureToggles.disableCheckMissingIterableValueType%
 			checkGenericClassInNonGenericObjectType: %checkGenericClassInNonGenericObjectType%
 			checkMissingCallableSignature: %checkMissingCallableSignature%
 			skipCheckGenericClasses: %featureToggles.skipCheckGenericClasses%

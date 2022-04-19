@@ -61,7 +61,7 @@ final class MissingClassConstantTypehintRule implements Rule
 				$constantReflection->getDeclaringClass()->getDisplayName(),
 				$constantName,
 				$iterableTypeDescription,
-			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+			))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($constantType) as [$name, $genericTypeNames]) {

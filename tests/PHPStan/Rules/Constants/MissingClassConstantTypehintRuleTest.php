@@ -15,7 +15,7 @@ class MissingClassConstantTypehintRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		return new MissingClassConstantTypehintRule(new MissingTypehintCheck($reflectionProvider, true, true, true, []));
+		return new MissingClassConstantTypehintRule(new MissingTypehintCheck($reflectionProvider, true, true, true, true, []));
 	}
 
 	public function testRule(): void

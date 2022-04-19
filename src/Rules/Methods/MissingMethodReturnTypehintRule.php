@@ -57,7 +57,7 @@ final class MissingMethodReturnTypehintRule implements Rule
 				$methodReflection->getDeclaringClass()->getDisplayName(),
 				$methodReflection->getName(),
 				$iterableTypeDescription,
-			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+			))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($returnType) as [$name, $genericTypeNames]) {

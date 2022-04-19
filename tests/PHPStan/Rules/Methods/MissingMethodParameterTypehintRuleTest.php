@@ -16,7 +16,7 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck($broker, true, true, true, []));
+		return new MissingMethodParameterTypehintRule(new MissingTypehintCheck($broker, true, true, true, true, []));
 	}
 
 	public function testRule(): void
@@ -45,7 +45,7 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 			[
 				'Method MissingMethodParameterTypehint\Foo::unionTypeWithUnknownArrayValueTypehint() has parameter $a with no value type specified in iterable type array.',
 				58,
-				MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
 				'Method MissingMethodParameterTypehint\Bar::acceptsGenericInterface() has parameter $i with generic interface MissingMethodParameterTypehint\GenericInterface but does not specify its types: T, U',
@@ -85,12 +85,12 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 			[
 				'Method MissingTypehintPromotedProperties\Foo::__construct() has parameter $foo with no value type specified in iterable type array.',
 				8,
-				MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
 				'Method MissingTypehintPromotedProperties\Bar::__construct() has parameter $foo with no value type specified in iterable type array.',
 				21,
-				MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 		]);
 	}
@@ -101,7 +101,7 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 			[
 				'Method DeepInspectTypes\Foo::doFoo() has parameter $foo with no value type specified in iterable type iterable.',
 				11,
-				MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
 				'Method DeepInspectTypes\Foo::doBar() has parameter $bars with generic class DeepInspectTypes\Bar but does not specify its types: T',

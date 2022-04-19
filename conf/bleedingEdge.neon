@@ -10,3 +10,4 @@ parameters:
 		nodeConnectingVisitorRule: true
 		disableRuntimeReflectionProvider: true
 		illegalConstructorMethodCall: true
+		disableCheckMissingIterableValueType: true

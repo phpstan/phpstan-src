@@ -78,7 +78,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 				$functionReflection->getName(),
 				$parameterReflection->getName(),
 				$iterableTypeDescription,
-			))->tip(MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
+			))->tip(MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP)->build();
 		}
 
 		foreach ($this->missingTypehintCheck->getNonGenericObjectTypesWithGenericClass($parameterType) as [$name, $genericTypeNames]) {

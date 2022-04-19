@@ -16,7 +16,7 @@ class MissingPropertyTypehintRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new MissingPropertyTypehintRule(new MissingTypehintCheck($broker, true, true, true, []));
+		return new MissingPropertyTypehintRule(new MissingTypehintCheck($broker, true, true, true, true, []));
 	}
 
 	public function testRule(): void
@@ -37,7 +37,7 @@ class MissingPropertyTypehintRuleTest extends RuleTestCase
 			[
 				'Property MissingPropertyTypehint\ChildClass::$unionProp type has no value type specified in iterable type array.',
 				32,
-				MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 			[
 				'Property MissingPropertyTypehint\Bar::$foo with generic interface MissingPropertyTypehint\GenericInterface does not specify its types: T, U',
@@ -74,7 +74,7 @@ class MissingPropertyTypehintRuleTest extends RuleTestCase
 			[
 				'Property PromotedPropertiesMissingTypehint\Foo::$ipsum type has no value type specified in iterable type array.',
 				16,
-				MissingTypehintCheck::TURN_OFF_MISSING_ITERABLE_VALUE_TYPE_TIP,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
 			],
 		]);
 	}

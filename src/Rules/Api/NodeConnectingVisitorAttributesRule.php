@@ -13,6 +13,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
 use function array_keys;
+use function get_class;
 use function in_array;
 use function sprintf;
 use function strpos;
@@ -75,7 +76,7 @@ class NodeConnectingVisitorAttributesRule implements Rule
 
 		$isVisitorRegistered = false;
 		foreach ($this->container->getServicesByTag(RichParser::VISITOR_SERVICE_TAG) as $service) {
-			if ($service::class !== NodeConnectingVisitor::class) {
+			if (get_class($service) !== NodeConnectingVisitor::class) {
 				continue;
 			}
 

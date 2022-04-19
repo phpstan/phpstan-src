@@ -22,7 +22,7 @@ class NodeConnectingVisitorAttributesRuleTest extends RuleTestCase
 			[
 				'Node attribute \'parent\' is no longer available.',
 				18,
-				'See: https://phpstan.org/blog/preprocessing-ast-for-custom-rules'
+				'See: https://phpstan.org/blog/preprocessing-ast-for-custom-rules',
 			],
 		]);
 	}

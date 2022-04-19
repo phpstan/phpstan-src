@@ -5356,7 +5356,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbInternalEncodingWithUnknownEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array' : 'array<int, string>',
+				'array',
 				'$mbEncodingAliasesWithValidEncoding',
 			],
 			[
@@ -5364,11 +5364,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbEncodingAliasesWithInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array|false' : 'array',
 				'$mbEncodingAliasesWithValidAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array|false' : 'array',
 				'$mbEncodingAliasesWithUnknownEncoding',
 			],
 			[
@@ -5469,7 +5469,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			],
 			// parse_url
 			[
-				PHP_VERSION_ID < 80000 ? 'array|int|string|false|null' : 'array<string, int|string>|int|string|false|null',
+				'array|int|string|false|null',
 				'$parseUrlWithoutParameters',
 			],
 			[
@@ -7402,19 +7402,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherExpectedArray',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array|string' : 'array<int|string, string>|string',
+				'array|string',
 				'$expectedArrayOrString',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(array|string)' : '(array<int|string, string>|string)',
+				'(array|string)',
 				'$expectedBenevolentArrayOrString',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array|string|null' : 'array<int|string, string>|string|null',
+				'array|string|null',
 				'$expectedArrayOrString2',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array|string|null' : 'array<int|string, string>|string|null',
+				'array|string|null',
 				'$anotherExpectedArrayOrString',
 			],
 			[

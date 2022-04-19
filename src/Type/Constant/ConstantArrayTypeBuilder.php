@@ -83,6 +83,10 @@ class ConstantArrayTypeBuilder
 
 					$this->valueTypes[$i] = TypeCombinator::union($this->valueTypes[$i], $valueType);
 
+					if (!$hasOptional && !$optional) {
+						$this->optionalKeys = array_values(array_filter($this->optionalKeys, static fn (int $index): bool => $index !== $i));
+					}
+
 					/** @var int|float $newAutoIndex */
 					$newAutoIndex = $keyType->getValue() + 1;
 					if (is_float($newAutoIndex)) {

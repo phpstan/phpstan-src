@@ -9,12 +9,16 @@ use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\ConditionalType;
+use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_key_last;
 use function array_slice;
@@ -146,6 +150,13 @@ class ParametersAcceptorSelector
 			}
 		}
 
+		if (count($parametersAcceptors) === 1) {
+			$acceptor = $parametersAcceptors[0];
+			if (!self::hasAcceptorTemplateOrConditionalType($acceptor)) {
+				return $acceptor;
+			}
+		}
+
 		foreach ($args as $i => $arg) {
 			$type = $scope->getType($arg->value);
 			$index = $arg->name !== null ? $arg->name->toString() : $i;
@@ -160,6 +171,37 @@ class ParametersAcceptorSelector
 		return self::selectFromTypes($types, $parametersAcceptors, $unpack);
 	}
 
+	private static function hasAcceptorTemplateOrConditionalType(ParametersAcceptor $acceptor): bool
+	{
+		if (self::hasTemplateOrConditionalType($acceptor->getReturnType())) {
+			return true;
+		}
+
+		foreach ($acceptor->getParameters() as $parameter) {
+			if (!self::hasTemplateOrConditionalType($parameter->getType())) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private static function hasTemplateOrConditionalType(Type $type): bool
+	{
+		$has = false;
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$has): Type {
+			if ($type instanceof TemplateType || $type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+				$has = true;
+				return $type;
+			}
+
+			return $traverse($type);
+		});
+
+		return $has;
+	}
 	/**
 	 * @param array<int|string, Type> $types
 	 * @param ParametersAcceptor[] $parametersAcceptors

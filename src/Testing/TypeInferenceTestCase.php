@@ -56,7 +56,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$this->getEarlyTerminatingMethodCalls(),
 			$this->getEarlyTerminatingFunctionCalls(),
 			true,
-			false
+			false,
 		);
 		$resolver->setAnalysedFiles(array_map(static fn (string $file): string => $fileHelper->normalizePath($file), array_merge([$file], $this->getAdditionalAnalysedFiles())));
 

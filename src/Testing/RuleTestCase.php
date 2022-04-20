@@ -66,7 +66,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				[],
 				[],
 				true,
-				false
+				false,
 			);
 			$fileAnalyser = new FileAnalyser(
 				$this->createScopeFactory($reflectionProvider, $typeSpecifier),

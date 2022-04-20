@@ -486,7 +486,7 @@ class AnalyserTest extends PHPStanTestCase
 			[],
 			[],
 			true,
-			false
+			false,
 		);
 		$lexer = new Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
 		$fileAnalyser = new FileAnalyser(

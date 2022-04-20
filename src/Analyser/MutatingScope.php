@@ -3909,9 +3909,6 @@ class MutatingScope implements Scope
 	public function setAllowedUndefinedExpression(Expr $expr, bool $isAllowed): self
 	{
 		$exprString = $this->getNodeKey($expr);
-		if (array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions)) {
-			return $this;
-		}
 		$currentlyAllowedUndefinedExpressions = $this->currentlyAllowedUndefinedExpressions;
 		$currentlyAllowedUndefinedExpressions[$exprString] = $isAllowed;
 

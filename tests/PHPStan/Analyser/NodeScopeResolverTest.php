@@ -881,6 +881,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		require_once __DIR__ . '/data/constant-phpdoc-type.php';
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/constant-phpdoc-type.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7068.php');
 	}
 
 	/**

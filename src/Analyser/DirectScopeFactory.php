@@ -46,7 +46,7 @@ class DirectScopeFactory implements ScopeFactory
 	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
-	 * @param array<string, bool> $currentlyAllowedUndefinedExpressions
+	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
 	 * @param array<(FunctionReflection|MethodReflection)> $inFunctionCallsStack
 	 *

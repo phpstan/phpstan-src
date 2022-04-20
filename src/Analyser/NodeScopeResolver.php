@@ -1337,7 +1337,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			foreach ($stmt->vars as $var) {
-				$scope = $this->lookForSetAllowedUndefinedExpressions($scope, $var, true);
+				$scope = $this->lookForSetAllowedUndefinedExpressions($scope, $var);
 				$scope = $this->processExprNode($var, $scope, $nodeCallback, ExpressionContext::createDeep())->getScope();
 				$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $var);
 				$scope = $scope->unsetExpression($var);
@@ -1356,7 +1356,7 @@ class NodeScopeResolver
 				if (!$var instanceof Variable) {
 					throw new ShouldNotHappenException();
 				}
-				$scope = $this->lookForSetAllowedUndefinedExpressions($scope, $var, true);
+				$scope = $this->lookForSetAllowedUndefinedExpressions($scope, $var);
 				$this->processExprNode($var, $scope, $nodeCallback, ExpressionContext::createDeep());
 				$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $var);
 
@@ -1514,9 +1514,9 @@ class NodeScopeResolver
 		);
 	}
 
-	private function lookForSetAllowedUndefinedExpressions(MutatingScope $scope, Expr $expr, bool $isAllowed): MutatingScope
+	private function lookForSetAllowedUndefinedExpressions(MutatingScope $scope, Expr $expr): MutatingScope
 	{
-		return $this->lookForExpressionCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->setAllowedUndefinedExpression($expr, $isAllowed));
+		return $this->lookForExpressionCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->setAllowedUndefinedExpression($expr));
 	}
 
 	private function lookForUnsetAllowedUndefinedExpressions(MutatingScope $scope, Expr $expr): MutatingScope
@@ -2309,7 +2309,7 @@ class NodeScopeResolver
 			);
 		} elseif ($expr instanceof Coalesce) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left, false);
-			$condScope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->left, true);
+			$condScope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->left);
 			$condResult = $this->processExprNode($expr->left, $condScope, $nodeCallback, $context->enterDeep());
 			$scope = $this->revertNonNullability($condResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 			$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $expr->left);
@@ -2383,7 +2383,7 @@ class NodeScopeResolver
 			}
 		} elseif ($expr instanceof Expr\Empty_) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->expr, true);
-			$scope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->expr, true);
+			$scope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->expr);
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
@@ -2396,7 +2396,7 @@ class NodeScopeResolver
 			$nonNullabilityResults = [];
 			foreach ($expr->vars as $var) {
 				$nonNullabilityResult = $this->ensureNonNullability($scope, $var, true);
-				$scope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var, true);
+				$scope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
 				$result = $this->processExprNode($var, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();
 				$hasYield = $hasYield || $result->hasYield();
@@ -3454,7 +3454,7 @@ class NodeScopeResolver
 				if ($arrayItem->value instanceof ArrayDimFetch && $arrayItem->value->dim === null) {
 					$itemScope = $itemScope->enterExpressionAssign($arrayItem->value);
 				}
-				$itemScope = $this->lookForSetAllowedUndefinedExpressions($itemScope, $arrayItem->value, true);
+				$itemScope = $this->lookForSetAllowedUndefinedExpressions($itemScope, $arrayItem->value);
 				$itemResult = $this->processExprNode($arrayItem, $itemScope, $nodeCallback, $context->enterDeep());
 				$hasYield = $hasYield || $itemResult->hasYield();
 				$throwPoints = array_merge($throwPoints, $itemResult->getThrowPoints());

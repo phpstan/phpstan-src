@@ -1871,6 +1871,7 @@ services:
 			currentPhpVersionRichParser: @currentPhpVersionRichParser
 			currentPhpVersionSimpleParser: @currentPhpVersionSimpleParser
 			php8Parser: @php8Parser
+			singleReflectionFile: %singleReflectionFile%
 		autowired: false
 
 	# Error formatters

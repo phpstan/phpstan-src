@@ -193,6 +193,7 @@ class NodeScopeResolver
 		private array $earlyTerminatingMethodCalls,
 		private array $earlyTerminatingFunctionCalls,
 		private bool $implicitThrows,
+		private bool $checkDynamicProperties,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -1528,7 +1529,10 @@ class NodeScopeResolver
 	 */
 	private function lookForExpressionCallback(MutatingScope $scope, Expr $expr, Closure $callback): MutatingScope
 	{
-		if (!$expr instanceof ArrayDimFetch || $expr->dim !== null) {
+		if (
+			(!$expr instanceof ArrayDimFetch || $expr->dim !== null) &&
+			(!$expr instanceof PropertyFetch && !$expr instanceof Expr\NullsafePropertyFetch || !$this->checkDynamicProperties)
+		) {
 			$scope = $callback($scope, $expr);
 		}
 

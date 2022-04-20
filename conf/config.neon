@@ -62,6 +62,7 @@ parameters:
 	checkMissingTypehints: false
 	checkTooWideReturnTypesInProtectedAndPublicMethods: false
 	checkUninitializedProperties: false
+	checkDynamicProperties: false
 	inferPrivatePropertyTypeFromConstructor: false
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
@@ -252,6 +253,7 @@ parametersSchema:
 	checkMissingTypehints: bool()
 	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
 	checkUninitializedProperties: bool()
+	checkDynamicProperties: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()
 
 	tipsOfTheDay: bool()
@@ -498,6 +500,7 @@ services:
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
 			implicitThrows: %exceptions.implicitThrows%
+			checkDynamicProperties: %checkDynamicProperties%
 
 	-
 		class: PHPStan\Analyser\ConstantResolver

@@ -16,7 +16,8 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
+use function array_keys;
+use function count;
 use function in_array;
 
 class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -36,23 +37,44 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 		}
 
 		$argTypes = [];
+		$optionalArgTypes = [];
 		$allConstant = true;
-		foreach ($args as $i => $arg) {
+		foreach ($args as $arg) {
 			$argType = $scope->getType($arg->value);
-			$argTypes[$i] = $argType;
 
-			if (!$arg->unpack && $argType instanceof ConstantArrayType) {
-				continue;
+			if ($arg->unpack) {
+				if ($argType instanceof ConstantArrayType) {
+					$argTypesFound = $argType->getValueTypes();
+				} else {
+					$argTypesFound = [$argType->getIterableValueType()];
+				}
+
+				foreach ($argTypesFound as $argTypeFound) {
+					$argTypes[] = $argTypeFound;
+					if ($argTypeFound instanceof ConstantArrayType) {
+						continue;
+					}
+					$allConstant = false;
+				}
+
+				if (!$argType->isIterableAtLeastOnce()->yes()) {
+					// unpacked params can be empty, making them optional
+					$optionalArgTypesOffset = count($argTypes) - 1;
+					foreach (array_keys($argTypesFound) as $key) {
+						$optionalArgTypes[] = $optionalArgTypesOffset + $key;
+					}
+				}
+			} else {
+				$argTypes[] = $argType;
+				if (!$argType instanceof ConstantArrayType) {
+					$allConstant = false;
+				}
 			}
-
-			$allConstant = false;
 		}
 
 		if ($allConstant) {
 			$newArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-			foreach ($args as $i => $arg) {
-				$argType = $argTypes[$i];
-
+			foreach ($argTypes as $argType) {
 				if (!$argType instanceof ConstantArrayType) {
 					throw new ShouldNotHappenException();
 				}
@@ -78,22 +100,11 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 		$keyTypes = [];
 		$valueTypes = [];
 		$nonEmpty = false;
-		foreach ($args as $i => $arg) {
-			$argType = $argTypes[$i];
-
-			if ($arg->unpack) {
-				$argType = $argType->getIterableValueType();
-				if ($argType instanceof UnionType) {
-					foreach ($argType->getTypes() as $innerType) {
-						$argType = $innerType;
-					}
-				}
-			}
-
+		foreach ($argTypes as $key => $argType) {
 			$keyTypes[] = $argType->getIterableKeyType();
 			$valueTypes[] = $argType->getIterableValueType();
 
-			if (!$argType->isIterableAtLeastOnce()->yes()) {
+			if (in_array($key, $optionalArgTypes, true) || !$argType->isIterableAtLeastOnce()->yes()) {
 				continue;
 			}
 

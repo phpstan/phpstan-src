@@ -165,10 +165,6 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 				152,
 			],
 			[
-				'Access to an undefined static property AccessInIsset::$foo.',
-				185,
-			],
-			[
 				'Access to static property $foo on an unknown class TraitWithStaticProperty.',
 				209,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',

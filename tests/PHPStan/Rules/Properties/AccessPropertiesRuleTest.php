@@ -146,16 +146,8 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					299,
 				],
 				[
-					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
-					386,
-				],
-				[
 					'Cannot access property $selfOrNull on TestAccessProperties\RevertNonNullabilityForIsset|null.',
 					402,
-				],
-				[
-					'Cannot access property $array on stdClass|null.',
-					412,
 				],
 			],
 		);
@@ -267,10 +259,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					'Access to an undefined property class@anonymous/tests/PHPStan/Rules/Properties/data/access-properties.php:294::$barProperty.',
 					299,
 				],
-				[
-					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
-					386,
-				],
 			],
 		);
 	}
@@ -304,10 +292,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to private property $foo of parent class TestAccessProperties\FooAccessProperties.',
 					24,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
-					386,
 				],
 			],
 		);

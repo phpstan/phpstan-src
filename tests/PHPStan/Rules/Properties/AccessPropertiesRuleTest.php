@@ -130,18 +130,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					250,
 				],
 				[
-					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
-					264,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
-					266,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
-					270,
-				],
-				[
 					'Cannot access property $bar on TestAccessProperties\NullCoalesce|null.',
 					272,
 				],
@@ -270,18 +258,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$dolor.',
 					250,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
-					264,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
-					266,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
-					270,
 				],
 				[
 					'Cannot access property $bar on TestAccessProperties\NullCoalesce|null.',
@@ -570,11 +546,36 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				'Cannot access property $prop on string.',
 				15,
 			],
-			[
-				'Cannot access property $prop on object|string.', // open issue https://github.com/phpstan/phpstan/issues/3659, https://github.com/phpstan/phpstan/issues/6026
-				25,
-			],
 		]);
+	}
+
+	public function testBug6026(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-6026.php'], []);
+	}
+
+	public function testBug3659(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-3659.php'], []);
+	}
+
+	public function testDynamicProperties(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/dynamic-properties.php'], []);
+	}
+
+
+	public function testBug4559(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-4559.php'], []);
 	}
 
 }

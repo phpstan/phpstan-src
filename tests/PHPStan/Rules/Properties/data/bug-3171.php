@@ -7,7 +7,7 @@ class PropertyClass {
 	public $someArray;
 }
 
-class HelloWorld
+class Foo
 {
 	/** @var PropertyClass|null */
 	private $property;

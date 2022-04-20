@@ -2311,16 +2311,7 @@ class NodeScopeResolver
 			);
 		} elseif ($expr instanceof Coalesce) {
 			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left, false);
-			// backwards compatibility: coalesce doesn't allow dynamic properties
-			if ($expr->left instanceof PropertyFetch || $expr->left instanceof Expr\NullsafePropertyFetch) {
-				$propertyHolderType = $scope->getType($expr->left->var);
-				$condScope = $nonNullabilityResult->getScope()->setAllowedUndefinedExpression($expr->left, $propertyHolderType->isSuperTypeOf(new ObjectWithoutClassType())->yes());
-			} elseif ($expr->left instanceof StaticPropertyFetch) {
-				$condScope = $nonNullabilityResult->getScope()->setAllowedUndefinedExpression($expr->left, false);
-			} else {
-				$condScope = $nonNullabilityResult->getScope();
-			}
-			$condScope = $this->lookForEnterAllowedUndefinedVariable($condScope, $expr->left, true);
+			$condScope = $this->lookForEnterAllowedUndefinedVariable($nonNullabilityResult->getScope(), $expr->left, true);
 			$condResult = $this->processExprNode($expr->left, $condScope, $nodeCallback, $context->enterDeep());
 			$scope = $this->revertNonNullability($condResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 			$scope = $this->lookForExitAllowedUndefinedVariable($scope, $expr->left);

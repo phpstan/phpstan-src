@@ -8,7 +8,7 @@ class Foo {
 	public function doBar() {
 		isset($this->dynamicProperty);
 		empty($this->dynamicProperty);
-		$this->dynamicProperty ?? 'test'; // dynamic properties are not allowed in coalesce
+		$this->dynamicProperty ?? 'test';
 
 		$bar = new Bar();
 		isset($bar->dynamicProperty);

@@ -130,18 +130,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					250,
 				],
 				[
-					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
-					264,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
-					266,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
-					270,
-				],
-				[
 					'Cannot access property $bar on TestAccessProperties\NullCoalesce|null.',
 					272,
 				],
@@ -270,18 +258,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				[
 					'Access to an undefined property TestAccessProperties\FooAccessProperties::$dolor.',
 					250,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
-					264,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
-					266,
-				],
-				[
-					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
-					270,
 				],
 				[
 					'Cannot access property $bar on TestAccessProperties\NullCoalesce|null.',
@@ -591,16 +567,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
-		$this->analyse([__DIR__ . '/data/dynamic-properties.php'], [
-			[
-				'Access to an undefined property DynamicProperties\Foo::$dynamicProperty.',
-				11,
-			],
-			[
-				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
-				16,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/dynamic-properties.php'], []);
 	}
 
 }

@@ -2,10 +2,6 @@
 
 namespace PHPStan\Type\Php;
 
-use PhpParser\ConstExprEvaluationException;
-use PhpParser\ConstExprEvaluator;
-use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
@@ -14,8 +10,8 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BitwiseFlagHelper;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\MixedType;
@@ -23,16 +19,11 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use stdClass;
-use function constant;
 use function is_bool;
 use function json_decode;
 
 class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
-
-	private const UNABLE_TO_RESOLVE = '__UNABLE_TO_RESOLVE__';
-
-	private ConstExprEvaluator $constExprEvaluator;
 
 	/** @var array<string, int> */
 	private array $argumentPositions = [
@@ -45,13 +36,6 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 		private BitwiseFlagHelper $bitwiseFlagAnalyser,
 	)
 	{
-		$this->constExprEvaluator = new ConstExprEvaluator(static function (Expr $expr) {
-			if ($expr instanceof ConstFetch) {
-				return constant($expr->name->toString());
-			}
-
-			return null;
-		});
 	}
 
 	public function isFunctionSupported(
@@ -116,32 +100,23 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 	private function isForceArrayWithoutStdClass(FuncCall $funcCall, Scope $scope): bool
 	{
 		$args = $funcCall->getArgs();
-
-		if (isset($args[1])) {
-			$secondArgValue = $this->resolveMaskValue($args[1]->value, $scope);
-			if ($secondArgValue === self::UNABLE_TO_RESOLVE) {
-				return false;
-			}
-
-			if (is_bool($secondArgValue)) {
-				return $secondArgValue;
-			}
-
-			// depends on used constants
-			if ($secondArgValue === null) {
-				if (! isset($args[3])) {
-					return false;
-				}
-
-				// @see https://www.php.net/manual/en/json.constants.php#constant.json-object-as-array
-				$thirdArgValue = $args[3]->value;
-				if ($this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($thirdArgValue, $scope, 'JSON_OBJECT_AS_ARRAY')->yes()) {
-					return true;
-				}
-			}
+		if (!isset($args[1])) {
+			return false;
 		}
 
-		return false;
+		$secondArgType = $scope->getType($args[1]->value);
+		$secondArgValue = $secondArgType instanceof ConstantScalarType ? $secondArgType->getValue() : null;
+
+		if (is_bool($secondArgValue)) {
+			return $secondArgValue;
+		}
+
+		if ($secondArgValue !== null || !isset($args[3])) {
+			return false;
+		}
+
+		// depends on used constants, @see https://www.php.net/manual/en/json.constants.php#constant.json-object-as-array
+		return $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($args[3]->value, $scope, 'JSON_OBJECT_AS_ARRAY')->yes();
 	}
 
 	private function resolveConstantStringType(ConstantStringType $constantStringType, bool $isForceArray): Type
@@ -149,25 +124,6 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 		$decodedValue = json_decode($constantStringType->getValue(), $isForceArray);
 
 		return ConstantTypeHelper::getTypeFromValue($decodedValue);
-	}
-
-	/**
-	 * @return mixed
-	 */
-	private function resolveMaskValue(Expr $expr, Scope $scope)
-	{
-		$thirdArgValueType = $scope->getType($expr);
-		if ($thirdArgValueType instanceof ConstantIntegerType) {
-			return $thirdArgValueType->getValue();
-		}
-
-		// fallback to value resolver
-		try {
-			return $this->constExprEvaluator->evaluateSilently($expr);
-		} catch (ConstExprEvaluationException) {
-			// unable to resolve
-			return self::UNABLE_TO_RESOLVE;
-		}
 	}
 
 }

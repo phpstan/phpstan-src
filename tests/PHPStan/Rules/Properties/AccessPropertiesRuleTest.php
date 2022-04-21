@@ -17,16 +17,19 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 	private bool $checkUnionTypes;
 
+	private bool $checkDynamicProperties;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		return new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false), true);
+		return new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false), true, $this->checkDynamicProperties);
 	}
 
 	public function testAccessProperties(): void
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse(
 			[__DIR__ . '/data/access-properties.php'],
 			[
@@ -146,16 +149,8 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					299,
 				],
 				[
-					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
-					386,
-				],
-				[
 					'Cannot access property $selfOrNull on TestAccessProperties\RevertNonNullabilityForIsset|null.',
 					402,
-				],
-				[
-					'Cannot access property $array on stdClass|null.',
-					412,
 				],
 			],
 		);
@@ -165,6 +160,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = false;
+		$this->checkDynamicProperties = false;
 		$this->analyse(
 			[__DIR__ . '/data/access-properties.php'],
 			[
@@ -267,10 +263,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					'Access to an undefined property class@anonymous/tests/PHPStan/Rules/Properties/data/access-properties.php:294::$barProperty.',
 					299,
 				],
-				[
-					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
-					386,
-				],
 			],
 		);
 	}
@@ -282,6 +274,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		}
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/access-properties-assign-op.php'], [
 			[
 				'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
@@ -294,6 +287,27 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = true;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
+		$this->analyse(
+			[__DIR__ . '/data/access-properties.php'],
+			[
+				[
+					'Access to an undefined property TestAccessProperties\BarAccessProperties::$loremipsum.',
+					23,
+				],
+				[
+					'Access to private property $foo of parent class TestAccessProperties\FooAccessProperties.',
+					24,
+				],
+			],
+		);
+	}
+
+	public function testAccessPropertiesOnDynamicProperties(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = true;
 		$this->analyse(
 			[__DIR__ . '/data/access-properties.php'],
 			[
@@ -306,8 +320,199 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					24,
 				],
 				[
+					'Cannot access property $propertyOnString on string.',
+					31,
+				],
+				[
+					'Access to private property TestAccessProperties\FooAccessProperties::$foo.',
+					42,
+				],
+				[
+					'Access to protected property TestAccessProperties\FooAccessProperties::$bar.',
+					43,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$baz.',
+					45,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$baz.',
+					48,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$baz.',
+					49,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$nonexistent.',
+					51,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$nonexistent.',
+					52,
+				],
+				[
+					'Access to private property TestAccessProperties\FooAccessProperties::$foo.',
+					58,
+				],
+				[
+					'Access to protected property TestAccessProperties\FooAccessProperties::$bar.',
+					59,
+				],
+				[
+					'Access to property $foo on an unknown class TestAccessProperties\UnknownClass.',
+					63,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$emptyBaz.',
+					65,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$emptyBaz.',
+					68,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$emptyNonexistent.',
+					69,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$emptyNonexistent.',
+					70,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherNonexistent.',
+					75,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherNonexistent.',
+					76,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherNonexistent.',
+					76,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherNonexistent.',
+					77,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherNonexistent.',
+					77,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherNonexistent.',
+					78,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherEmptyNonexistent.',
+					80,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherEmptyNonexistent.',
+					80,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherEmptyNonexistent.',
+					81,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherEmptyNonexistent.',
+					82,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherEmptyNonexistent.',
+					83,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$anotherEmptyNonexistent.',
+					83,
+				],
+				[
+					'Access to property $test on an unknown class TestAccessProperties\FirstUnknownClass.',
+					146,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+				],
+				[
+					'Access to property $test on an unknown class TestAccessProperties\SecondUnknownClass.',
+					146,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+				],
+				[
+					'Access to an undefined property TestAccessProperties\WithFooAndBarProperty|TestAccessProperties\WithFooProperty::$bar.',
+					176,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\SomeInterface&TestAccessProperties\WithFooProperty::$bar.',
+					193,
+				],
+				[
+					'Cannot access property $ipsum on TestAccessProperties\FooAccessProperties|null.',
+					207,
+				],
+				[
+					'Cannot access property $foo on null.',
+					220,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$lorem.',
+					247,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\FooAccessProperties::$dolor.',
+					250,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
+					264,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
+					266,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\NullCoalesce::$bar.',
+					270,
+				],
+				[
+					'Cannot access property $bar on TestAccessProperties\NullCoalesce|null.',
+					272,
+				],
+				[
+					'Cannot access property $foo on TestAccessProperties\NullCoalesce|null.',
+					272,
+				],
+				[
+					'Cannot access property $foo on TestAccessProperties\NullCoalesce|null.',
+					272,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\IssetPropertyInWhile::$foo.',
+					282,
+				],
+				[
+					'Access to an undefined property class@anonymous/tests/PHPStan/Rules/Properties/data/access-properties.php:294::$barProperty.',
+					299,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\PropertyIssetOnPossibleFalse|false::$foo.',
+					315,
+				],
+				[
+					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
+					379,
+				],
+				[
 					'Access to an undefined property TestAccessProperties\AccessInIsset::$foo.',
 					386,
+				],
+				[
+					'Cannot access property $selfOrNull on TestAccessProperties\RevertNonNullabilityForIsset|null.',
+					402,
+				],
+				[
+					'Access to an undefined property stdClass|null::$array.',
+					412,
 				],
 			],
 		);
@@ -317,6 +522,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/access-properties-after-isnull.php'], [
 			[
 				'Cannot access property $fooProperty on null.',
@@ -357,6 +563,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/date-interval-child-properties.php'], [
 			[
 				'Access to an undefined property AccessPropertiesDateIntervalChild\DateIntervalChild::$nonexistent.',
@@ -369,6 +576,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 
 		$this->analyse([__DIR__ . '/data/access-properties-class-exists.php'], [
 			[
@@ -398,6 +606,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/mixin.php'], [
 			[
 				'Access to an undefined property MixinProperties\GenericFoo<ReflectionClass>::$namee.',
@@ -410,6 +619,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-3947.php'], []);
 	}
 
@@ -421,6 +631,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 
 		$this->analyse([__DIR__ . '/data/nullsafe-property-fetch.php'], [
 			[
@@ -450,6 +661,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-3371.php'], []);
 	}
 
@@ -461,6 +673,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-4527.php'], []);
 	}
 
@@ -468,6 +681,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-4808.php'], []);
 	}
 
@@ -479,6 +693,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		}
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-5868.php'], [
 			[
 				'Cannot access property $child on Bug5868PropertyFetch\Foo|null.',
@@ -507,6 +722,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-6385.php'], [
 			[
 				'Access to an undefined property UnitEnum::$value.',
@@ -526,6 +742,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		}
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-6566.php'], []);
 	}
 
@@ -533,6 +750,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-6899.php'], [
 			[
 				'Cannot access property $prop on string.',
@@ -553,6 +771,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-6026.php'], []);
 	}
 
@@ -560,6 +779,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-3659.php'], []);
 	}
 
@@ -567,15 +787,57 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/dynamic-properties.php'], []);
 	}
 
+	public function testCheckDynamicProperties(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = true;
+		$this->analyse([__DIR__ . '/data/dynamic-properties.php'], [
+			[
+				'Access to an undefined property DynamicProperties\Foo::$dynamicProperty.',
+				9,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Foo::$dynamicProperty.',
+				10,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Foo::$dynamicProperty.',
+				11,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				14,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				15,
+			],
+			[
+				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
+				16,
+			],
+		]);
+	}
 
 	public function testBug4559(): void
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-4559.php'], []);
+	}
+
+	public function testBug3171(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
+		$this->analyse([__DIR__ . '/data/bug-3171.php'], []);
 	}
 
 }

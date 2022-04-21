@@ -33,6 +33,7 @@ class AccessPropertiesRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
 		private bool $reportMagicProperties,
+		private bool $checkDynamicProperties,
 	)
 	{
 	}
@@ -88,7 +89,7 @@ class AccessPropertiesRule implements Rule
 			];
 		}
 
-		if ($scope->isUndefinedExpressionAllowed($node)) {
+		if ($this->canAccessUndefinedProperties($scope, $node)) {
 			return [];
 		}
 
@@ -160,6 +161,11 @@ class AccessPropertiesRule implements Rule
 		}
 
 		return [];
+	}
+
+	private function canAccessUndefinedProperties(Scope $scope, Node\Expr $node): bool
+	{
+		return $scope->isUndefinedExpressionAllowed($node) && !$this->checkDynamicProperties;
 	}
 
 }

@@ -167,7 +167,7 @@ class MutatingScope implements Scope
 	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
-	 * @param array<string, bool> $currentlyAllowedUndefinedExpressions
+	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
 	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
 	 */
@@ -3906,11 +3906,11 @@ class MutatingScope implements Scope
 		return array_key_exists($exprString, $this->currentlyAssignedExpressions);
 	}
 
-	public function setAllowedUndefinedExpression(Expr $expr, bool $isAllowed): self
+	public function setAllowedUndefinedExpression(Expr $expr): self
 	{
 		$exprString = $this->getNodeKey($expr);
 		$currentlyAllowedUndefinedExpressions = $this->currentlyAllowedUndefinedExpressions;
-		$currentlyAllowedUndefinedExpressions[$exprString] = $isAllowed;
+		$currentlyAllowedUndefinedExpressions[$exprString] = true;
 
 		return $this->scopeFactory->create(
 			$this->context,
@@ -3964,7 +3964,7 @@ class MutatingScope implements Scope
 	public function isUndefinedExpressionAllowed(Expr $expr): bool
 	{
 		$exprString = $this->getNodeKey($expr);
-		return array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions) && $this->currentlyAllowedUndefinedExpressions[$exprString];
+		return array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions);
 	}
 
 	public function assignVariable(string $variableName, Type $type, ?TrinaryLogic $certainty = null): self

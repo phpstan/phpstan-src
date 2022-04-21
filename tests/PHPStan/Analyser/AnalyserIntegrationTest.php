@@ -723,6 +723,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testDiscussion6993(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6993.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('Parameter #1 $specificable of method Bug6993\AndSpecificationValidator<Bug6993\TestSpecification,Bug6993\Foo>::isSatisfiedBy() expects Bug6993\Foo, Bug6993\Bar given.', $errors[0]->getMessage());

@@ -9,6 +9,7 @@ use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
 use function ksort;
 use function preg_quote;
+use function substr;
 use const SORT_STRING;
 
 class BaselineNeonErrorFormatter
@@ -24,11 +25,7 @@ class BaselineNeonErrorFormatter
 	): int
 	{
 		if (!$analysisResult->hasErrors()) {
-			$output->writeRaw(Neon::encode([
-				'parameters' => [
-					'ignoreErrors' => [],
-				],
-			], Neon::BLOCK));
+			$output->writeRaw($this->getNeon([]));
 			return 0;
 		}
 
@@ -63,13 +60,21 @@ class BaselineNeonErrorFormatter
 			}
 		}
 
-		$output->writeRaw(Neon::encode([
-			'parameters' => [
-				'ignoreErrors' => $errorsToOutput,
-			],
-		], Neon::BLOCK));
+		$output->writeRaw($this->getNeon($errorsToOutput));
 
 		return 1;
+	}
+
+	/**
+	 * @param array<int, array{message: string, count: int, path: string}> $ignoreErrors
+	 */
+	private function getNeon(array $ignoreErrors): string
+	{
+		return Neon::encode([
+			'parameters' => [
+				'ignoreErrors' => $ignoreErrors,
+			],
+		], Neon::BLOCK);
 	}
 
 }

@@ -181,4 +181,9 @@ class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function supportsPassNoneEncodings(): bool
+	{
+		return $this->versionId < 70300;
+	}
+
 }

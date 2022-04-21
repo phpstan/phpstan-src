@@ -280,9 +280,8 @@ class MoreNonEmptyStringFunctions
 	/**
 	 * @param non-empty-string $nonEmpty
 	 * @param '1'|'2'|'5'|'10' $constUnion
-	 * @param 1|2|5|10|123|'1234'|false $constUnionMixed
 	 */
-	public function doFoo(string $s, string $nonEmpty, int $i, bool $bool, $constUnion, $constUnionMixed)
+	public function doFoo(string $s, string $nonEmpty, int $i, bool $bool, $constUnion)
 	{
 		assertType('string', addslashes($s));
 		assertType('non-empty-string', addslashes($nonEmpty));

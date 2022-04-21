@@ -15,13 +15,6 @@ $versionCompare6 = version_compare('7.0.0', doFoo() ? '7.0.1' : '6.0.0', '<');
 $versionCompare7 = version_compare(doFoo() ? '7.0.0' : '6.0.5', doBar() ? '7.0.1' : '6.0.0', '<');
 $versionCompare8 = version_compare('7.0.0', doFoo(), '<');
 
-$mbStrlenWithoutEncoding = mb_strlen('');
-$mbStrlenWithValidEncoding = mb_strlen('', 'utf-8');
-$mbStrlenWithValidEncodingAlias = mb_strlen('', 'utf8');
-$mbStrlenWithInvalidEncoding = mb_strlen('', 'foo');
-$mbStrlenWithValidAndInvalidEncoding = mb_strlen('', doFoo() ? 'utf-8' : 'foo');
-$mbStrlenWithUnknownEncoding = mb_strlen('', doFoo());
-
 $mbHttpOutputWithoutEncoding = mb_http_output();
 $mbHttpOutputWithValidEncoding = mb_http_output('utf-8');
 $mbHttpOutputWithInvalidEncoding = mb_http_output('foo');

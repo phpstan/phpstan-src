@@ -58,9 +58,8 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 		}
 
 		$optionsExpr = $functionCall->getArgs()[$argumentPosition]->value;
-		$constrictedReturnType = TypeCombinator::remove($defaultReturnType, new ConstantBooleanType(false));
-		if ($this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($optionsExpr, $scope, 'JSON_THROW_ON_ERROR')->yes()) {
-			return $constrictedReturnType;
+		if ($functionReflection->getName() === 'json_encode' && $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($optionsExpr, $scope, 'JSON_THROW_ON_ERROR')->yes()) {
+			return TypeCombinator::remove($defaultReturnType, new ConstantBooleanType(false));
 		}
 
 		return $defaultReturnType;

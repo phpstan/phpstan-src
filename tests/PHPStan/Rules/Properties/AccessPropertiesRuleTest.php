@@ -495,7 +495,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					299,
 				],
 				[
-					'Cannot access property $foo on TestAccessProperties\PropertyIssetOnPossibleFalse|false.',
+					'Access to an undefined property TestAccessProperties\PropertyIssetOnPossibleFalse|false::$foo.',
 					315,
 				],
 				[
@@ -511,7 +511,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					402,
 				],
 				[
-					'Cannot access property $array on stdClass|null.',
+					'Access to an undefined property stdClass|null::$array.',
 					412,
 				],
 			],

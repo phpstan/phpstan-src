@@ -79,7 +79,7 @@ class AccessPropertiesRule implements Rule
 			return [];
 		}
 
-		if ($type->canAccessProperties()->no() || $type->canAccessProperties()->maybe() && !$this->canAccessUndefinedProperties($scope, $node)) {
+		if ($type->canAccessProperties()->no() || $type->canAccessProperties()->maybe() && !$scope->isUndefinedExpressionAllowed($node)) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access property $%s on %s.',

@@ -798,6 +798,7 @@ class TypeSpecifier
 				if (
 					$var instanceof PropertyFetch
 					&& $var->name instanceof Node\Identifier
+					&& !$scope->getType($var->var) instanceof MixedType
 				) {
 					$type = $type->unionWith($this->create($var->var, new IntersectionType([
 						new ObjectWithoutClassType(),

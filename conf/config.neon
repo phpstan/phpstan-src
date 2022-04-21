@@ -500,7 +500,6 @@ services:
 			earlyTerminatingMethodCalls: %earlyTerminatingMethodCalls%
 			earlyTerminatingFunctionCalls: %earlyTerminatingFunctionCalls%
 			implicitThrows: %exceptions.implicitThrows%
-			checkDynamicProperties: %checkDynamicProperties%
 
 	-
 		class: PHPStan\Analyser\ConstantResolver

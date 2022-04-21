@@ -33,6 +33,7 @@ class AccessPropertiesRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
 		private bool $reportMagicProperties,
+		private bool $checkDynamicProperties,
 	)
 	{
 	}
@@ -78,7 +79,7 @@ class AccessPropertiesRule implements Rule
 			return [];
 		}
 
-		if ($type->canAccessProperties()->no() || $type->canAccessProperties()->maybe() && !$scope->isUndefinedExpressionAllowed($node)) {
+		if ($type->canAccessProperties()->no() || $type->canAccessProperties()->maybe() && !$this->canAccessUndefinedProperties($scope, $node)) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access property $%s on %s.',
@@ -88,7 +89,7 @@ class AccessPropertiesRule implements Rule
 			];
 		}
 
-		if ($scope->isUndefinedExpressionAllowed($node)) {
+		if ($this->canAccessUndefinedProperties($scope, $node)) {
 			return [];
 		}
 
@@ -160,6 +161,11 @@ class AccessPropertiesRule implements Rule
 		}
 
 		return [];
+	}
+
+	private function canAccessUndefinedProperties(Scope $scope, Node\Expr $node): bool
+	{
+		return $scope->isUndefinedExpressionAllowed($node) && !$this->checkDynamicProperties;
 	}
 
 }

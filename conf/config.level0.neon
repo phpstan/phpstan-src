@@ -146,6 +146,7 @@ services:
 			- phpstan.rules.rule
 		arguments:
 			reportMagicProperties: %reportMagicProperties%
+			checkDynamicProperties: %checkDynamicProperties%
 
 	-
 		class: PHPStan\Rules\Properties\AccessStaticPropertiesRule

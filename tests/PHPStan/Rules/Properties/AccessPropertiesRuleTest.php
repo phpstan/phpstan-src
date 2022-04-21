@@ -20,7 +20,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		return new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false), true);
+		return new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false), true, true);
 	}
 
 	public function testAccessProperties(): void

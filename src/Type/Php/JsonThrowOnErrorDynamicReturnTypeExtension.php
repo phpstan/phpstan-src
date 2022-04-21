@@ -14,7 +14,6 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -59,7 +58,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
 		if ($functionReflection->getName() === 'json_decode') {
-			$defaultReturnType = $this->narrowTypeForJsonDecode($functionCall, $scope);
+			$defaultReturnType = $this->narrowTypeForJsonDecode($functionCall, $scope, $defaultReturnType);
 		}
 
 		if (!isset($functionCall->getArgs()[$argumentPosition])) {
@@ -74,7 +73,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 		return $defaultReturnType;
 	}
 
-	private function narrowTypeForJsonDecode(FuncCall $funcCall, Scope $scope): Type
+	private function narrowTypeForJsonDecode(FuncCall $funcCall, Scope $scope, Type $fallbackType): Type
 	{
 		$args = $funcCall->getArgs();
 		$isArrayWithoutStdClass = $this->isForceArrayWithoutStdClass($funcCall, $scope);
@@ -86,12 +85,11 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 			return $this->resolveConstantStringType($firstValueType, $isArrayWithoutStdClass);
 		}
 
-		// fallback type
-		if ($isArrayWithoutStdClass === true) {
-			return new MixedType(true, new ObjectType(stdClass::class));
+		if ($isArrayWithoutStdClass) {
+			return TypeCombinator::remove($fallbackType, new ObjectType(stdClass::class));
 		}
 
-		return new MixedType(true);
+		return $fallbackType;
 	}
 
 	/**

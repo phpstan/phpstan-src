@@ -17,16 +17,19 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 	private bool $checkUnionTypes;
 
+	private bool $checkDynamicProperties;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		return new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false), true, true);
+		return new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false), true, $this->checkDynamicProperties);
 	}
 
 	public function testAccessProperties(): void
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse(
 			[__DIR__ . '/data/access-properties.php'],
 			[
@@ -157,6 +160,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = false;
+		$this->checkDynamicProperties = false;
 		$this->analyse(
 			[__DIR__ . '/data/access-properties.php'],
 			[
@@ -270,6 +274,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		}
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/access-properties-assign-op.php'], [
 			[
 				'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
@@ -282,6 +287,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = true;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse(
 			[__DIR__ . '/data/access-properties.php'],
 			[
@@ -301,6 +307,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/access-properties-after-isnull.php'], [
 			[
 				'Cannot access property $fooProperty on null.',
@@ -341,6 +348,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/date-interval-child-properties.php'], [
 			[
 				'Access to an undefined property AccessPropertiesDateIntervalChild\DateIntervalChild::$nonexistent.',
@@ -353,6 +361,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 
 		$this->analyse([__DIR__ . '/data/access-properties-class-exists.php'], [
 			[
@@ -382,6 +391,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/mixin.php'], [
 			[
 				'Access to an undefined property MixinProperties\GenericFoo<ReflectionClass>::$namee.',
@@ -394,6 +404,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-3947.php'], []);
 	}
 
@@ -405,6 +416,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 
 		$this->analyse([__DIR__ . '/data/nullsafe-property-fetch.php'], [
 			[
@@ -434,6 +446,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-3371.php'], []);
 	}
 
@@ -445,6 +458,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-4527.php'], []);
 	}
 
@@ -452,6 +466,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-4808.php'], []);
 	}
 
@@ -463,6 +478,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		}
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-5868.php'], [
 			[
 				'Cannot access property $child on Bug5868PropertyFetch\Foo|null.',
@@ -491,6 +507,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-6385.php'], [
 			[
 				'Access to an undefined property UnitEnum::$value.',
@@ -510,6 +527,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		}
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-6566.php'], []);
 	}
 
@@ -517,6 +535,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-6899.php'], [
 			[
 				'Cannot access property $prop on string.',
@@ -537,6 +556,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-6026.php'], []);
 	}
 
@@ -544,6 +564,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-3659.php'], []);
 	}
 
@@ -551,14 +572,15 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/dynamic-properties.php'], []);
 	}
-
 
 	public function testBug4559(): void
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-4559.php'], []);
 	}
 
@@ -566,6 +588,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-3171.php'], []);
 	}
 

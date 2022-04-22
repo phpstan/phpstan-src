@@ -260,7 +260,7 @@ class ObjectTypeTest extends PHPStanTestCase
 			32 => [
 				new ObjectType(Closure::class),
 				new HasPropertyType('d'),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
 			33 => [
 				new ObjectType(DateInterval::class),

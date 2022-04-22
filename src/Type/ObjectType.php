@@ -129,10 +129,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return TrinaryLogic::createYes();
 		}
 
-		if ($classReflection->isFinal()) {
-			return TrinaryLogic::createNo();
-		}
-
 		return TrinaryLogic::createMaybe();
 	}
 

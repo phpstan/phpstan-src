@@ -101,10 +101,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					209,
 				],
 				[
-					'Call to function property_exists() with $this(CheckTypeFunctionCall\FinalClassWithPropertyExists) and \'barProperty\' will always evaluate to false.',
-					212,
-				],
-				[
 					'Call to function in_array() with arguments int, array{\'foo\', \'bar\'} and true will always evaluate to false.',
 					235,
 				],
@@ -272,10 +268,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				[
 					'Call to function method_exists() with $this(CheckTypeFunctionCall\FinalClassWithMethodExists) and \'doBar\' will always evaluate to false.',
 					194,
-				],
-				[
-					'Call to function property_exists() with $this(CheckTypeFunctionCall\FinalClassWithPropertyExists) and \'barProperty\' will always evaluate to false.',
-					212,
 				],
 				[
 					'Call to function in_array() with arguments int, array{\'foo\', \'bar\'} and true will always evaluate to false.',

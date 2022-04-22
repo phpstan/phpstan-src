@@ -523,4 +523,16 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTemplateTypeInOneBranchOfConditional(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/template-type-in-one-branch-of-conditional.php'], [
+			[
+				'Parameter #1 $params of static method TemplateTypeInOneBranchOfConditional\DriverManager::getConnection() expects array{wrapperClass?: class-string<TemplateTypeInOneBranchOfConditional\Connection>}, array{wrapperClass: \'stdClass\'} given.',
+				27,
+			],
+		]);
+	}
+
 }

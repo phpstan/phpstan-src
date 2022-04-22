@@ -1,0 +1,3 @@
+parameters:
+	stubFiles:
+		- data/bug-7074.stub

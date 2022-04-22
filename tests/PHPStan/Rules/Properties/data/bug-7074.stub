@@ -1,0 +1,13 @@
+<?php
+
+namespace Bug7074;
+
+abstract class Model
+{
+	/**
+	 * The primary key for the model.
+	 *
+	 * @var string|array<int, string>
+	 */
+	protected $primaryKey;
+}

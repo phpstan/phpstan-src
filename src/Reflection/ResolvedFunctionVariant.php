@@ -146,13 +146,13 @@ class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcc
 	private function resolveConditionalTypes(Type $type): Type
 	{
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
-			if ($type instanceof ConditionalType) {
-				$type = $traverse($type);
+			$type = $traverse($type);
 
-				return $type->resolve();
+			if ($type instanceof ConditionalType) {
+				$type = $type->resolve();
 			}
 
-			return $traverse($type);
+			return $type;
 		});
 	}
 

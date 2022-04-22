@@ -5,7 +5,6 @@ namespace PHPStan\Reflection;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -71,30 +70,32 @@ class GenericParametersAcceptorResolver
 			$typeMap->getTypes(),
 		));
 
-		return new ResolvedFunctionVariant(
-			new FunctionVariant(
-				TemplateTypeMap::createEmpty(),
-				TemplateTypeMap::createEmpty(),
-				$parametersAcceptor->getParameters(),
-				$parametersAcceptor->isVariadic(),
-				TypeTraverser::map($parametersAcceptor->getReturnType(), static function (Type $type, callable $traverse) use ($passedArgs): Type {
-					if ($type instanceof ConditionalTypeForParameter || $type instanceof ConditionalType) {
-						$type = $traverse($type);
+		$originalParametersAcceptor = new FunctionVariant(
+			TemplateTypeMap::createEmpty(),
+			TemplateTypeMap::createEmpty(),
+			$parametersAcceptor->getParameters(),
+			$parametersAcceptor->isVariadic(),
+			TypeTraverser::map($parametersAcceptor->getReturnType(), static function (Type $type, callable $traverse) use ($passedArgs): Type {
+				if ($type instanceof ConditionalTypeForParameter || $type instanceof ConditionalType) {
+					$type = $traverse($type);
 
-						if ($type instanceof ConditionalTypeForParameter && array_key_exists($type->getParameterName(), $passedArgs)) {
-							$type = $type->toConditional($passedArgs[$type->getParameterName()]);
-						}
-
-						if ($type instanceof ConditionalType) {
-							return $type->resolve();
-						}
-
-						return $type;
+					if ($type instanceof ConditionalTypeForParameter && array_key_exists($type->getParameterName(), $passedArgs)) {
+						$type = $type->toConditional($passedArgs[$type->getParameterName()]);
 					}
 
-					return $traverse($type);
-				}),
-			),
+					if ($type instanceof ConditionalType) {
+						return $type->resolve();
+					}
+
+					return $type;
+				}
+
+				return $traverse($type);
+			}),
+		);
+
+		return new ResolvedFunctionVariant(
+			$originalParametersAcceptor,
 			$resolvedTemplateTypeMap,
 			$passedArgs,
 		);

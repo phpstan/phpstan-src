@@ -73,10 +73,9 @@ class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcc
 		$type = $this->returnType;
 
 		if ($type === null) {
-			$type = TypeUtils::resolveTypes(
+			$type = TemplateTypeHelper::resolveTemplateTypes(
 				$this->parametersAcceptor->getReturnType(),
 				$this->resolvedTemplateTypeMap,
-				$this->passedArgs,
 			);
 
 			$this->returnType = $type;

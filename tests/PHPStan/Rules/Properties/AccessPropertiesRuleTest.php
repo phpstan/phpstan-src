@@ -510,10 +510,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					'Cannot access property $selfOrNull on TestAccessProperties\RevertNonNullabilityForIsset|null.',
 					402,
 				],
-				[
-					'Access to an undefined property stdClass|null::$array.',
-					412,
-				],
 			],
 		);
 	}

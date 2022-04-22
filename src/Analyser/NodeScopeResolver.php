@@ -1587,7 +1587,9 @@ class NodeScopeResolver
 				$specifiedExpressions[] = $specifiedExpression;
 			}
 
-			if ($exprToSpecify instanceof PropertyFetch) {
+			if ($exprToSpecify instanceof ArrayDimFetch && $exprToSpecify->dim !== null) {
+				$exprToSpecify = $exprToSpecify->var;
+			} elseif ($exprToSpecify instanceof PropertyFetch) {
 				$exprToSpecify = $exprToSpecify->var;
 			} elseif ($exprToSpecify instanceof StaticPropertyFetch && $exprToSpecify->class instanceof Expr) {
 				$exprToSpecify = $exprToSpecify->class;

@@ -1536,10 +1536,8 @@ class NodeScopeResolver
 			$scope = $this->lookForExpressionCallback($scope, $expr->var, $callback);
 		} elseif ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
 			$scope = $this->lookForExpressionCallback($scope, $expr->var, $callback);
-		} elseif ($expr instanceof StaticPropertyFetch) {
-			if ($expr->class instanceof Expr) {
-				$scope = $this->lookForExpressionCallback($scope, $expr->class, $callback);
-			}
+		} elseif ($expr instanceof StaticPropertyFetch && $expr->class instanceof Expr) {
+			$scope = $this->lookForExpressionCallback($scope, $expr->class, $callback);
 		} elseif ($expr instanceof Array_ || $expr instanceof List_) {
 			foreach ($expr->items as $item) {
 				if ($item === null) {
@@ -1576,29 +1574,16 @@ class NodeScopeResolver
 		return new EnsuredNonNullabilityResult($scope, []);
 	}
 
-	private function ensureNonNullability(MutatingScope $scope, Expr $expr, bool $findMethods): EnsuredNonNullabilityResult
+	private function ensureNonNullability(MutatingScope $scope, Expr $expr): EnsuredNonNullabilityResult
 	{
-		$exprToSpecify = $expr;
 		$specifiedExpressions = [];
-		while (true) {
-			$result = $this->ensureShallowNonNullability($scope, $exprToSpecify);
-			$scope = $result->getScope();
+		$scope = $this->lookForExpressionCallback($scope, $expr, function ($scope, $expr) use (&$specifiedExpressions) {
+			$result = $this->ensureShallowNonNullability($scope, $expr);
 			foreach ($result->getSpecifiedExpressions() as $specifiedExpression) {
 				$specifiedExpressions[] = $specifiedExpression;
 			}
-
-			if ($exprToSpecify instanceof PropertyFetch) {
-				$exprToSpecify = $exprToSpecify->var;
-			} elseif ($exprToSpecify instanceof StaticPropertyFetch && $exprToSpecify->class instanceof Expr) {
-				$exprToSpecify = $exprToSpecify->class;
-			} elseif ($findMethods && $exprToSpecify instanceof MethodCall) {
-				$exprToSpecify = $exprToSpecify->var;
-			} elseif ($findMethods && $exprToSpecify instanceof StaticCall && $exprToSpecify->class instanceof Expr) {
-				$exprToSpecify = $exprToSpecify->class;
-			} else {
-				break;
-			}
-		}
+			return $result->getScope();
+		});
 
 		return new EnsuredNonNullabilityResult($scope, $specifiedExpressions);
 	}
@@ -2304,7 +2289,7 @@ class NodeScopeResolver
 				static fn (): MutatingScope => $rightResult->getScope()->filterByFalseyValue($expr),
 			);
 		} elseif ($expr instanceof Coalesce) {
-			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left, false);
+			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->left);
 			$condScope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->left);
 			$condResult = $this->processExprNode($expr->left, $condScope, $nodeCallback, $context->enterDeep());
 			$scope = $this->revertNonNullability($condResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
@@ -2378,7 +2363,7 @@ class NodeScopeResolver
 				$throwPoints = $result->getThrowPoints();
 			}
 		} elseif ($expr instanceof Expr\Empty_) {
-			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->expr, true);
+			$nonNullabilityResult = $this->ensureNonNullability($scope, $expr->expr);
 			$scope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->expr);
 			$result = $this->processExprNode($expr->expr, $scope, $nodeCallback, $context->enterDeep());
 			$scope = $result->getScope();
@@ -2391,7 +2376,7 @@ class NodeScopeResolver
 			$throwPoints = [];
 			$nonNullabilityResults = [];
 			foreach ($expr->vars as $var) {
-				$nonNullabilityResult = $this->ensureNonNullability($scope, $var, true);
+				$nonNullabilityResult = $this->ensureNonNullability($scope, $var);
 				$scope = $this->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
 				$result = $this->processExprNode($var, $scope, $nodeCallback, $context->enterDeep());
 				$scope = $result->getScope();

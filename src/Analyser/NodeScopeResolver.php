@@ -1577,7 +1577,7 @@ class NodeScopeResolver
 	private function ensureNonNullability(MutatingScope $scope, Expr $expr): EnsuredNonNullabilityResult
 	{
 		$specifiedExpressions = [];
-		$scope = $this->lookForExpressionCallback($scope, $expr, function($scope, $expr) use (&$specifiedExpressions) {
+		$scope = $this->lookForExpressionCallback($scope, $expr, function ($scope, $expr) use (&$specifiedExpressions) {
 			$result = $this->ensureShallowNonNullability($scope, $expr);
 			foreach ($result->getSpecifiedExpressions() as $specifiedExpression) {
 				$specifiedExpressions[] = $specifiedExpression;

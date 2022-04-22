@@ -2512,8 +2512,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ObjectType(FinalClassWithPropertyExists::class),
 					new HasPropertyType('barProperty'),
 				],
-				NeverType::class,
-				'*NEVER*',
+				IntersectionType::class,
+				'CheckTypeFunctionCall\FinalClassWithPropertyExists&hasProperty(barProperty)',
 			],
 			[
 				[

@@ -47,7 +47,7 @@ class HasPropertyTypeTest extends PHPStanTestCase
 			[
 				new HasPropertyType('foo'),
 				new ObjectType(Closure::class),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
 			[
 				new HasPropertyType('foo'),

@@ -7,6 +7,9 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use function array_merge;
 
+/**
+ * @extends RuleTestCase<DefaultValueTypesAssignedToPropertiesRule>
+ */
 class Bug7074Test extends RuleTestCase
 {
 

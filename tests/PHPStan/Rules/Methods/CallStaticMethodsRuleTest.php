@@ -532,6 +532,11 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $params of static method TemplateTypeInOneBranchOfConditional\DriverManager::getConnection() expects array{wrapperClass?: class-string<TemplateTypeInOneBranchOfConditional\Connection>}, array{wrapperClass: \'stdClass\'} given.',
 				27,
 			],
+			[
+				'Unable to resolve the template type T in call to method static method TemplateTypeInOneBranchOfConditional\DriverManager::getConnection()',
+				27,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
 		]);
 	}
 

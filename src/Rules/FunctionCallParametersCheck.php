@@ -12,6 +12,7 @@ use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ConditionalType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
@@ -330,14 +331,21 @@ class FunctionCallParametersCheck
 			$resolvedTypes = $parametersAcceptor->getResolvedTemplateTypeMap()->getTypes();
 			if (count($resolvedTypes) > 0) {
 				$returnTemplateTypes = [];
-				TypeTraverser::map($originalParametersAcceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$returnTemplateTypes): Type {
-					if ($type instanceof TemplateType) {
-						$returnTemplateTypes[$type->getName()] = true;
-						return $type;
-					}
+				TypeTraverser::map(
+					$parametersAcceptor->getReturnTypeWithUnresolvableTemplateTypes(),
+					static function (Type $type, callable $traverse) use (&$returnTemplateTypes): Type {
+						if ($type instanceof ConditionalType) {
+							$type = $type->resolve();
+						}
 
-					return $traverse($type);
-				});
+						if ($type instanceof TemplateType) {
+							$returnTemplateTypes[$type->getName()] = true;
+							return $type;
+						}
+
+						return $traverse($type);
+					},
+				);
 
 				$parameterTemplateTypes = [];
 				foreach ($originalParametersAcceptor->getParameters() as $parameter) {

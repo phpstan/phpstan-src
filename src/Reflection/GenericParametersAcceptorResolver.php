@@ -62,12 +62,14 @@ class GenericParametersAcceptorResolver
 			$passedArgs['$' . $param->getName()] = $argType;
 		}
 
+		$resolvedTemplateTypeMap = new TemplateTypeMap(array_merge(
+			$parametersAcceptor->getTemplateTypeMap()->map(static fn (string $name, Type $type): Type => new ErrorType())->getTypes(),
+			$typeMap->getTypes(),
+		));
+
 		return new ResolvedFunctionVariant(
 			$parametersAcceptor,
-			new TemplateTypeMap(array_merge(
-				$parametersAcceptor->getTemplateTypeMap()->map(static fn (string $name, Type $type): Type => new ErrorType())->getTypes(),
-				$typeMap->getTypes(),
-			)),
+			$resolvedTemplateTypeMap,
 			$passedArgs,
 		);
 	}

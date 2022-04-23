@@ -1,0 +1,3 @@
+parameters:
+	stubFiles:
+		- data/conditional-return-type.stub

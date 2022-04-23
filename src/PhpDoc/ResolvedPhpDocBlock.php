@@ -19,11 +19,15 @@ use PHPStan\PhpDoc\Tag\TypedTag;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
 use function count;
 use function is_bool;
+use function substr;
 
 /** @api */
 class ResolvedPhpDocBlock
@@ -216,6 +220,21 @@ class ResolvedPhpDocBlock
 			$newParamTags[$parameterNameMapping[$key]] = $paramTag;
 		}
 
+		$returnTag = $this->getReturnTag();
+		if ($returnTag !== null) {
+			$transformedType = TypeTraverser::map($returnTag->getType(), static function (Type $type, callable $traverse) use ($parameterNameMapping): Type {
+				if ($type instanceof ConditionalTypeForParameter) {
+					$parameterName = substr($type->getParameterName(), 1);
+					if (array_key_exists($parameterName, $parameterNameMapping)) {
+						$type = $type->changeParameterName('$' . $parameterNameMapping[$parameterName]);
+					}
+				}
+
+				return $traverse($type);
+			});
+			$returnTag = $returnTag->withType($transformedType);
+		}
+
 		$self = new self();
 		$self->phpDocNode = $this->phpDocNode;
 		$self->phpDocNodes = $this->phpDocNodes;
@@ -232,7 +251,7 @@ class ResolvedPhpDocBlock
 		$self->implementsTags = $this->implementsTags;
 		$self->usesTags = $this->usesTags;
 		$self->paramTags = $newParamTags;
-		$self->returnTag = $this->returnTag;
+		$self->returnTag = $returnTag;
 		$self->throwsTag = $this->throwsTag;
 		$self->mixinTags = $this->mixinTags;
 		$self->typeAliasTags = $this->typeAliasTags;

@@ -1,0 +1,16 @@
+<?php
+
+namespace ConditionalReturnTypeStub;
+
+class Foo
+{
+
+	/**
+	 * @return ($p is int ? int : string)
+	 */
+	public function doFoo($p)
+	{
+
+	}
+
+}

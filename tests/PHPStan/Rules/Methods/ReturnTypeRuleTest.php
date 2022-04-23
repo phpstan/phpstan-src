@@ -727,6 +727,14 @@ class ReturnTypeRuleTest extends RuleTestCase
 				'Method ReturnRuleConditionalTypes\Foo::doFoo() should return int|string but returns stdClass.',
 				15,
 			],
+			[
+				'Method ReturnRuleConditionalTypes\Bar::doFoo() should return int|string but returns stdClass.',
+				29,
+			],
+			[
+				'Method ReturnRuleConditionalTypes\Bar2::doFoo() should return int|string but returns stdClass.',
+				43,
+			],
 		]);
 	}
 

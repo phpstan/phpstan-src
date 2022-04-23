@@ -173,3 +173,18 @@ function (ChildClass $c): void {
 	assertType('int', $c->doFoo(1));
 	assertType('string', $c->doFoo('foo'));
 };
+
+class ChildClass2 extends ParentClassToInherit
+{
+
+	public function doFoo($x)
+	{
+
+	}
+
+}
+
+function (ChildClass2 $c): void {
+	assertType('int', $c->doFoo(1));
+	assertType('string', $c->doFoo('foo'));
+};

@@ -10,9 +10,13 @@ use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Reflection\ResolvedPropertyReflection;
+use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
 use function count;
 use function strtolower;
+use function substr;
 
 class PhpDocBlock
 {
@@ -82,6 +86,20 @@ class PhpDocBlock
 		}
 
 		return $newArray;
+	}
+
+	public function transformConditionalReturnTypeWithParameterNameMapping(Type $type): Type
+	{
+		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+			if ($type instanceof ConditionalTypeForParameter) {
+				$parameterName = substr($type->getParameterName(), 1);
+				if (array_key_exists($parameterName, $this->parameterNameMapping)) {
+					$type = $type->changeParameterName('$' . $this->parameterNameMapping[$parameterName]);
+				}
+			}
+
+			return $traverse($type);
+		});
 	}
 
 	/**

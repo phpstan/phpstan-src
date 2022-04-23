@@ -629,7 +629,12 @@ class ResolvedPhpDocBlock
 			return null;
 		}
 
-		return self::resolveTemplateTypeInTag($parentReturnTag->toImplicit(), $phpDocBlock);
+		return self::resolveTemplateTypeInTag(
+			$parentReturnTag->withType(
+				$phpDocBlock->transformConditionalReturnTypeWithParameterNameMapping($parentReturnTag->getType()),
+			)->toImplicit(),
+			$phpDocBlock,
+		);
 	}
 
 	/**

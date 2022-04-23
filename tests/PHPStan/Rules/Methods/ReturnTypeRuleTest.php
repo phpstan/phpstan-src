@@ -719,4 +719,15 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6552.php'], []);
 	}
 
+	public function testConditionalTypes(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/return-rule-conditional-types.php'], [
+			[
+				'Method ReturnRuleConditionalTypes\Foo::doFoo() should return int|string but returns stdClass.',
+				15,
+			],
+		]);
+	}
+
 }

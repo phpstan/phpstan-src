@@ -144,3 +144,32 @@ abstract class Test
 		}
 	}
 }
+
+class ParentClassToInherit
+{
+
+	/**
+	 * @param mixed $p
+	 * @return ($p is int ? int : string)
+	 */
+	public function doFoo($p)
+	{
+
+	}
+
+}
+
+class ChildClass extends ParentClassToInherit
+{
+
+	public function doFoo($p)
+	{
+
+	}
+
+}
+
+function (ChildClass $c): void {
+	assertType('int', $c->doFoo(1));
+	assertType('string', $c->doFoo('foo'));
+};

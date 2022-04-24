@@ -222,4 +222,18 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testConditionalReturnType(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('This test needs PHP 8.0');
+		}
+
+		$this->analyse([__DIR__ . '/data/incompatible-conditional-return-type.php'], [
+			[
+				'PHPDoc tag @return with type ($p is int ? int : string) is not subtype of native type int.',
+				25,
+			],
+		]);
+	}
+
 }

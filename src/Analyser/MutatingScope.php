@@ -703,35 +703,6 @@ class MutatingScope implements Scope
 			return new ConstantBooleanType(!$result);
 		}
 
-		if ($node instanceof Expr\Isset_) {
-			$issetResult = true;
-			foreach ($node->vars as $var) {
-				$result = $this->issetCheck($var, static function (Type $type): ?bool {
-					$isNull = (new NullType())->isSuperTypeOf($type);
-					if ($isNull->maybe()) {
-						return null;
-					}
-
-					return !$isNull->yes();
-				});
-				if ($result !== null) {
-					if (!$result) {
-						return new ConstantBooleanType($result);
-					}
-
-					continue;
-				}
-
-				$issetResult = $result;
-			}
-
-			if ($issetResult === null) {
-				return new BooleanType();
-			}
-
-			return new ConstantBooleanType($issetResult);
-		}
-
 		if ($node instanceof Node\Expr\BooleanNot) {
 			if ($this->treatPhpDocTypesAsCertain) {
 				$exprBooleanType = $this->getType($node->expr)->toBoolean();
@@ -2018,6 +1989,35 @@ class MutatingScope implements Scope
 		$exprString = $this->getNodeKey($node);
 		if (isset($this->moreSpecificTypes[$exprString]) && $this->moreSpecificTypes[$exprString]->getCertainty()->yes()) {
 			return $this->moreSpecificTypes[$exprString]->getType();
+		}
+
+		if ($node instanceof Expr\Isset_) {
+			$issetResult = true;
+			foreach ($node->vars as $var) {
+				$result = $this->issetCheck($var, static function (Type $type): ?bool {
+					$isNull = (new NullType())->isSuperTypeOf($type);
+					if ($isNull->maybe()) {
+						return null;
+					}
+
+					return !$isNull->yes();
+				});
+				if ($result !== null) {
+					if (!$result) {
+						return new ConstantBooleanType($result);
+					}
+
+					continue;
+				}
+
+				$issetResult = $result;
+			}
+
+			if ($issetResult === null) {
+				return new BooleanType();
+			}
+
+			return new ConstantBooleanType($issetResult);
 		}
 
 		if ($node instanceof Expr\AssignOp\Coalesce) {

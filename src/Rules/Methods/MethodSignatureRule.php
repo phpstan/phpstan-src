@@ -71,7 +71,7 @@ class MethodSignatureRule implements Rule
 			if (count($parentVariants) !== 1) {
 				continue;
 			}
-			$parentParameters = $parentVariants[0];
+			$parentParameters = ParametersAcceptorSelector::selectSingle($parentVariants);
 			if (!$parentParameters instanceof ParametersAcceptorWithPhpDocs) {
 				continue;
 			}

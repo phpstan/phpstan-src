@@ -373,7 +373,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/overriden-method-with-conditional-return-type.php'], [
 			[
-				'Return type (stdClass|string) of method OverridenMethodWithConditionalReturnType\Bar2::doFoo() should be covariant with return type (($p is int ? int : string)) of method OverridenMethodWithConditionalReturnType\Foo::doFoo()',
+				'Return type (stdClass|string) of method OverridenMethodWithConditionalReturnType\Bar2::doFoo() should be covariant with return type (int|string) of method OverridenMethodWithConditionalReturnType\Foo::doFoo()',
 				37,
 			],
 		]);

@@ -2383,6 +2383,8 @@ class NodeScopeResolver
 				$hasYield = $hasYield || $result->hasYield();
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$nonNullabilityResults[] = $nonNullabilityResult;
+			}
+			foreach (array_reverse($expr->vars) as $var) {
 				$scope = $this->lookForUnsetAllowedUndefinedExpressions($scope, $var);
 			}
 			foreach (array_reverse($nonNullabilityResults) as $nonNullabilityResult) {

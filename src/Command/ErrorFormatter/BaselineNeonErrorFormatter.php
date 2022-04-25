@@ -7,6 +7,7 @@ use Nette\Neon\Neon;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use PHPStan\ShouldNotHappenException;
 use function ksort;
 use function preg_quote;
 use function substr;
@@ -70,11 +71,17 @@ class BaselineNeonErrorFormatter
 	 */
 	private function getNeon(array $ignoreErrors): string
 	{
-		return Neon::encode([
+		$neon = Neon::encode([
 			'parameters' => [
 				'ignoreErrors' => $ignoreErrors,
 			],
 		], Neon::BLOCK);
+
+		if (substr($neon, -2) !== "\n\n") {
+			throw new ShouldNotHappenException();
+		}
+
+		return substr($neon, 0, -1);
 	}
 
 }

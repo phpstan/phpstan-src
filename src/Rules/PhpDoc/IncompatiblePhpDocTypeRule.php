@@ -46,7 +46,6 @@ class IncompatiblePhpDocTypeRule implements Rule
 			return [];
 		}
 
-		$functionName = null;
 		if ($node instanceof Node\Stmt\ClassMethod) {
 			$functionName = $node->name->name;
 		} elseif ($node instanceof Node\Stmt\Function_) {

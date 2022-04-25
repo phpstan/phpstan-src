@@ -32,6 +32,16 @@ final class ConditionalTypeForParameter implements CompoundType
 		return $this->parameterName;
 	}
 
+	public function getTarget(): Type
+	{
+		return $this->target;
+	}
+
+	public function isNegated(): bool
+	{
+		return $this->negated;
+	}
+
 	public function changeParameterName(string $parameterName): self
 	{
 		return new self(

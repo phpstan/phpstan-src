@@ -923,6 +923,9 @@ services:
 		class: PHPStan\Rules\Constants\LazyAlwaysUsedClassConstantsExtensionProvider
 
 	-
+		class: PHPStan\Rules\PhpDoc\ConditionalReturnTypeRuleHelper
+
+	-
 		class: PHPStan\Rules\PhpDoc\UnresolvableTypeHelper
 
 	-

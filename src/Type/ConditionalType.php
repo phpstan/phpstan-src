@@ -28,6 +28,21 @@ final class ConditionalType implements CompoundType
 		$this->else = $else;
 	}
 
+	public function getSubject(): Type
+	{
+		return $this->subject;
+	}
+
+	public function getTarget(): Type
+	{
+		return $this->target;
+	}
+
+	public function isNegated(): bool
+	{
+		return $this->negated;
+	}
+
 	public function getReferencedClasses(): array
 	{
 		return array_merge(

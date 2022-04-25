@@ -1,0 +1,147 @@
+<?php
+
+namespace MethodConditionalReturnType;
+
+class Foo
+{
+
+	/**
+	 * @return ($i is positive-int ? non-empty-array : array)
+	 */
+	public function fill(int $i): array
+	{
+
+	}
+
+	/**
+	 * @template T
+	 * @param T $p
+	 * @return (T is positive-int ? non-empty-array : array)
+	 */
+	public function fill2(int $i): array
+	{
+
+	}
+
+	/**
+	 * @template T of int
+	 * @param T $p
+	 * @return (T is positive-int ? non-empty-array : array)
+	 */
+	public function fill3(int $i): array
+	{
+
+	}
+
+}
+
+/**
+ * @template TAboveClass
+ */
+class Bar
+{
+
+	/**
+	 * @param int $i
+	 * @return (\stdClass is object ? Foo : Bar)
+	 */
+	public function doFoo(int $i)
+	{
+
+	}
+
+	/**
+	 * @param int $i
+	 * @return (TAboveClass is object ? Foo : Bar)
+	 */
+	public function doFoo2(int $i)
+	{
+
+	}
+
+	/**
+	 * @return ($j is object ? Foo : Bar)
+	 */
+	public function doFoo3(int $i)
+	{
+
+	}
+
+	/**
+	 * @return ($i is int ? non-empty-array : array)
+	 */
+	public function fill(int $i): array
+	{
+
+	}
+
+	/**
+	 * @template T of int
+	 * @param T $p
+	 * @return (T is int ? non-empty-array : array)
+	 */
+	public function fill2(int $i): array
+	{
+
+	}
+
+	/**
+	 * @template T of int
+	 * @param T $p
+	 * @return (T is int ? non-empty-array : array)
+	 */
+	public function fill3($i): array
+	{
+
+	}
+
+	/**
+	 * @return ($i is not int ? non-empty-array : array)
+	 */
+	public function fill4(int $i): array
+	{
+
+	}
+
+}
+
+class Baz
+{
+
+	/**
+	 * @return ($i is string ? non-empty-array : array)
+	 */
+	public function fill(int $i): array
+	{
+
+	}
+
+	/**
+	 * @template T of int
+	 * @param T $p
+	 * @return (T is string ? non-empty-array : array)
+	 */
+	public function fill2(int $i): array
+	{
+
+	}
+
+	/**
+	 * @template T of int
+	 * @param T $p
+	 * @return (T is string ? non-empty-array : array)
+	 */
+	public function fill3($i): array
+	{
+
+	}
+
+	/**
+	 * @return ($i is not string ? non-empty-array : array)
+	 */
+	public function fill4(int $i): array
+	{
+
+	}
+
+}

@@ -29,6 +29,7 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
@@ -71,6 +72,7 @@ use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\OffsetAccessType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
@@ -157,6 +159,8 @@ class TypeNodeResolver
 			return $this->resolveArrayShapeNode($typeNode, $nameScope);
 		} elseif ($typeNode instanceof ConstTypeNode) {
 			return $this->resolveConstTypeNode($typeNode, $nameScope);
+		} elseif ($typeNode instanceof OffsetAccessTypeNode) {
+			return $this->resolveOffsetAccessNode($typeNode, $nameScope);
 		}
 
 		return new ErrorType();
@@ -902,6 +906,14 @@ class TypeNodeResolver
 		}
 
 		return new ErrorType();
+	}
+
+	private function resolveOffsetAccessNode(OffsetAccessTypeNode $typeNode, NameScope $nameScope): Type
+	{
+		$type = $this->resolve($typeNode->type, $nameScope);
+		$offset = $this->resolve($typeNode->offset, $nameScope);
+
+		return new OffsetAccessType($type, $offset);
 	}
 
 	private function expandIntMaskToType(Type $type): ?Type

@@ -36,8 +36,13 @@ trait LateResolvableTypeTrait
 			return TrinaryLogic::createYes();
 		}
 
-		return $this->getResult()->isSuperTypeOf($type)
-			->and(TrinaryLogic::createMaybe());
+		$isSuperType = $this->getResult()->isSuperTypeOf($type);
+
+		if (!$this->isResolvable()) {
+			$isSuperType = $isSuperType->and(TrinaryLogic::createMaybe());
+		}
+
+		return $isSuperType;
 	}
 
 	public function canAccessProperties(): TrinaryLogic

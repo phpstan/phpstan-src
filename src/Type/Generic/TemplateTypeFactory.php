@@ -10,6 +10,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\KeyOfType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -82,6 +83,10 @@ final class TemplateTypeFactory
 
 		if ($bound instanceof IntersectionType) {
 			return new TemplateIntersectionType($scope, $strategy, $variance, $name, $bound);
+		}
+
+		if ($bound instanceof KeyOfType && ($boundClass === KeyOfType::class || $bound instanceof TemplateType)) {
+			return new TemplateKeyOfType($scope, $strategy, $variance, $name, $bound);
 		}
 
 		return new TemplateMixedType($scope, $strategy, $variance, $name, new MixedType(true));

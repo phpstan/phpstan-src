@@ -10,6 +10,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -246,7 +247,7 @@ trait TemplateTypeTrait
 		}
 
 		$map = $this->getBound()->inferTemplateTypes($receivedType);
-		$resolvedBound = TemplateTypeHelper::resolveTemplateTypes($this->getBound(), $map);
+		$resolvedBound = TypeUtils::resolveLateResolvableTypes(TemplateTypeHelper::resolveTemplateTypes($this->getBound(), $map));
 		if ($resolvedBound->isSuperTypeOf($receivedType)->yes()) {
 			return (new TemplateTypeMap([
 				$this->name => $this->shouldGeneralizeInferredType() ? $receivedType->generalize(GeneralizePrecision::templateArgument()) : $receivedType,

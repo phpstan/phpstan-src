@@ -75,7 +75,6 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 		$argumentPosition = $this->argumentPositions[$functionReflection->getName()];
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
-		// narrow type for json_decode()
 		if ($functionReflection->getName() === 'json_decode') {
 			$defaultReturnType = $this->narrowTypeForJsonDecode($functionCall, $scope);
 		}

@@ -78,9 +78,7 @@ class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctionRetur
 		$args = $funcCall->getArgs();
 		$isArrayWithoutStdClass = $this->isForceArrayWithoutStdClass($funcCall, $scope);
 
-		$firstArgValue = $args[0]->value;
-		$firstValueType = $scope->getType($firstArgValue);
-
+		$firstValueType = $scope->getType($args[0]->value);
 		if ($firstValueType instanceof ConstantStringType) {
 			return $this->resolveConstantStringType($firstValueType, $isArrayWithoutStdClass);
 		}

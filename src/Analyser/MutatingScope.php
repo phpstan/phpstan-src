@@ -2399,6 +2399,7 @@ class MutatingScope implements Scope
 				return new ErrorType();
 			}
 
+			$resolvedTypes = [];
 			$functionReflection = $this->reflectionProvider->getFunction($node->name, $this);
 			foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions() as $dynamicFunctionReturnTypeExtension) {
 				if (!$dynamicFunctionReturnTypeExtension->isFunctionSupported($functionReflection)) {
@@ -2410,9 +2411,15 @@ class MutatingScope implements Scope
 					$node,
 					$this,
 				);
-				if ($resolvedType !== null) {
-					return $resolvedType;
+				if ($resolvedType === null) {
+					continue;
 				}
+
+				$resolvedTypes[] = $resolvedType;
+			}
+
+			if (count($resolvedTypes) > 0) {
+				return TypeCombinator::union(...$resolvedTypes);
 			}
 
 			return ParametersAcceptorSelector::selectFromArgs(

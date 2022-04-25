@@ -8703,27 +8703,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'json_decode($mixed)',
 			],
 			[
-<<<<<<< HEAD
-<<<<<<< HEAD
 				'mixed',
 				'json_decode($mixed, false, 512, JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[
-				'mixed',
-=======
 				'float|int|stdClass|string|true',
 				'json_decode($mixed, false, 512, JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[
 				'float|int|stdClass|string|true',
->>>>>>> update type in LegacyNodeScopeResolverTest
-=======
-				'mixed~false',
 				'json_decode($mixed, false, 512, JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[
 				'mixed~false',
->>>>>>> return mixed type
 				'json_decode($mixed, false, 512, $integer | JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[

@@ -43,7 +43,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 				}
 				$searchPullRequestsResponse = $searchPullRequestsResponse->body;
 
-				$searchIssuesResponse = Request::get(sprintf('https://api.github.com/search/issues?q=repo:phpstan/phpstan+%s', $commit['hash']))
+				$searchIssuesResponse = Request::get(sprintf('https://api.github.com/search/issues?q=repo:phpstan/phpstan+%s&sort=created&order=desc', $commit['hash']))
 					->sendsAndExpectsType('application/json')
 					->basicAuth('ondrejmirtes', getenv('GITHUB_TOKEN'))
 					->send();

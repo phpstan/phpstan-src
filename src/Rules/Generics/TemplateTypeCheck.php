@@ -19,6 +19,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\KeyOfType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -107,6 +108,7 @@ class TemplateTypeCheck
 				&& $boundTypeClass !== ObjectWithoutClassType::class
 				&& $boundTypeClass !== ObjectType::class
 				&& $boundTypeClass !== GenericObjectType::class
+				&& $boundTypeClass !== KeyOfType::class
 				&& !$boundType instanceof UnionType
 				&& !$boundType instanceof IntersectionType
 				&& !$boundType instanceof TemplateType

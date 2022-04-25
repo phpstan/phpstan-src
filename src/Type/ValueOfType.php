@@ -41,7 +41,7 @@ final class ValueOfType implements CompoundType, LateResolvableType
 
 	public function isResolvable(): bool
 	{
-		return !TypeUtils::containsTemplateType($this->type);
+		return !TypeUtils::containsTemplateType($this->type) && $this->type->isIterable()->yes();
 	}
 
 	protected function getResult(): Type

@@ -8,7 +8,7 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function sprintf;
 
 /** @api */
-final class KeyOfType implements CompoundType, LateResolvableType
+class KeyOfType implements CompoundType, LateResolvableType
 {
 
 	use LateResolvableTypeTrait;
@@ -16,6 +16,11 @@ final class KeyOfType implements CompoundType, LateResolvableType
 
 	public function __construct(private Type $type)
 	{
+	}
+
+	public function getType(): Type
+	{
+		return $this->type;
 	}
 
 	public function getReferencedClasses(): array
@@ -41,7 +46,7 @@ final class KeyOfType implements CompoundType, LateResolvableType
 
 	public function isResolvable(): bool
 	{
-		return !TypeUtils::containsTemplateType($this->type);
+		return !TypeUtils::containsTemplateType($this->type) && $this->type->isIterable()->yes();
 	}
 
 	protected function getResult(): Type

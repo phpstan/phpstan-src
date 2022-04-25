@@ -112,9 +112,9 @@ abstract class Test
 	 */
 	public function testDeterministicParameter($foo, $bar, $baz): void
 	{
-		assertType('(true is true ? string : bool)', $foo);
-		assertType('(5 is int<4, 6> ? string : bool)', $bar);
-		assertType('(5 is not int<0, 4> ? (4 is bool ? float : string) : bool)', $baz);
+		assertType('string', $foo);
+		assertType('string', $bar);
+		assertType('string', $baz);
 	}
 
 	/**
@@ -125,7 +125,7 @@ abstract class Test
 	public function testConditionalInParameter(int $foo, int $bar): void
 	{
 		assertType('TInt of int (method ConditionalTypes\Test::testConditionalInParameter(), argument)', $foo);
-		assertType('(TInt of int (method ConditionalTypes\Test::testConditionalInParameter(), argument) is 5 ? int<0, 10> : int<10, 100>)', $bar);
+		assertType('int<0, 100>', $bar);
 	}
 
 	/**

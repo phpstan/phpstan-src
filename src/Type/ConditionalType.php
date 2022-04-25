@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\ConditionalTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -10,7 +9,7 @@ use function array_merge;
 use function sprintf;
 
 /** @api */
-final class ConditionalType implements CompoundType
+final class ConditionalType implements CompoundType, LateResolvableType
 {
 
 	use ConditionalTypeTrait;
@@ -86,19 +85,24 @@ final class ConditionalType implements CompoundType
 
 	public function resolve(): Type
 	{
-		$isSuperType = $this->target->isSuperTypeOf($this->subject);
+		return $this->getResult();
+	}
 
-		if ($isSuperType->yes()) {
-			return !$this->negated ? $this->if : $this->else;
-		} elseif ($isSuperType->no()) {
-			return !$this->negated ? $this->else : $this->if;
+	public function getResult(): Type
+	{
+		if ($this->result === null) {
+			$isSuperType = $this->target->isSuperTypeOf($this->subject);
+
+			if ($isSuperType->yes()) {
+				$this->result = !$this->negated ? $this->if : $this->else;
+			} elseif ($isSuperType->no()) {
+				$this->result = !$this->negated ? $this->else : $this->if;
+			} else {
+				$this->result = TypeCombinator::union($this->if, $this->else);
+			}
 		}
 
-		if ($this->isResolved()) {
-			return $this->getResult();
-		}
-
-		return $this;
+		return $this->result;
 	}
 
 	public function traverse(callable $cb): Type
@@ -113,25 +117,6 @@ final class ConditionalType implements CompoundType
 		}
 
 		return new self($subject, $target, $if, $else, $this->negated);
-	}
-
-	private function isResolved(): bool
-	{
-		return !$this->containsTemplate($this->subject) && !$this->containsTemplate($this->target);
-	}
-
-	private function containsTemplate(Type $type): bool
-	{
-		$containsTemplate = false;
-		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$containsTemplate): Type {
-			if ($type instanceof TemplateType) {
-				$containsTemplate = true;
-			}
-
-			return $containsTemplate ? $type : $traverse($type);
-		});
-
-		return $containsTemplate;
 	}
 
 	/**

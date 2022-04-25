@@ -3,7 +3,6 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Php\DummyParameter;
-use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
@@ -94,8 +93,6 @@ class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcc
 				$this->resolvedTemplateTypeMap,
 			);
 
-			$type = $this->resolveConditionalTypes($type);
-
 			$this->returnType = $type;
 		}
 
@@ -140,19 +137,6 @@ class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcc
 			}
 
 			return $traverse($type);
-		});
-	}
-
-	private function resolveConditionalTypes(Type $type): Type
-	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
-			$type = $traverse($type);
-
-			if ($type instanceof ConditionalType) {
-				$type = $type->resolve();
-			}
-
-			return $type;
 		});
 	}
 

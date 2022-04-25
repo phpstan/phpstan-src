@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @param mixed $var
+ * @param bool $return
+ * @return ($return is true ? string : void)
+ */
+function var_export($var, bool $return = false) {}
+
+/**
+ * @param mixed $var
+ * @return ($return is true ? string : bool)
+ */
+function highlight_file($var, bool $return = false) {}
+
+/**
+ * @param mixed $var
+ * @return ($return is true ? string : bool)
+ */
+function show_source($var, bool $return = false) {}
+
+/**
+ * @param mixed $var
+ * @return ($return is true ? string : bool)
+ */
+function highlight_string($var, bool $return = false) {}
+
+/**
+ * @param mixed $var
+ * @param bool $return
+ * @return ($return is true ? string : true)
+ */
+function print_r($var, bool $return = false) {}

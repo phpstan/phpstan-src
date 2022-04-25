@@ -1340,11 +1340,6 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
-		class: PHPStan\Type\Php\VarExportFunctionDynamicReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicFunctionReturnTypeExtension
-
-	-
 		class: PHPStan\Type\Php\MbFunctionsReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

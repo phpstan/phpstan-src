@@ -147,9 +147,6 @@ class TypehintHelper
 			if ($phpDocType instanceof NeverType && $phpDocType->isExplicit()) {
 				return $phpDocType;
 			}
-			if ($type instanceof VoidType) {
-				return new VoidType();
-			}
 			if (
 				$type instanceof MixedType
 				&& !$type->isExplicitMixed()

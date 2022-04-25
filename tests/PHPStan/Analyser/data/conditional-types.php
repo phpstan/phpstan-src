@@ -143,6 +143,18 @@ abstract class Test
 			assertType('string', $this->retainNullable($input));
 		}
 	}
+
+	/**
+	 * @return ($option is 1 ? never : void)
+	 */
+	abstract public function maybeNever(int $option): void;
+
+	public function testMaybeNever(): void
+	{
+		assertType('void', $this->maybeNever(0));
+		assertType('*NEVER*', $this->maybeNever(1));
+		assertType('void', $this->maybeNever(2));
+	}
 }
 
 class ParentClassToInherit

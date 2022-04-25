@@ -350,8 +350,8 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			throw new ShouldNotHappenException();
 		}
 
-		Assert::assertSame("\n\n", substr($content, -2));
-		Assert::assertNotSame("\n", substr($content, -3, 1));
+		Assert::assertSame("\n", substr($content, -1));
+		Assert::assertNotSame("\n", substr($content, -2, 1));
 	}
 
 }

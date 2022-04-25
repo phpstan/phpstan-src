@@ -419,4 +419,3 @@ parameters:
 			"""
 			count: 1
 			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
-

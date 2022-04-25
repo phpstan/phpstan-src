@@ -20,3 +20,4 @@ parameters:
 		- ../stubs/SplObjectStorage.stub
 		- ../stubs/Exception.stub
 		- ../stubs/arrayFunctions.stub
+		- ../stubs/core.stub

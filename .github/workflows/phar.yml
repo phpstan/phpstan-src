@@ -11,7 +11,7 @@ on:
       - '1.6.*'
 
 concurrency:
-  group: phar-${{ github.head_ref || github.ref }}
+  group: phar-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

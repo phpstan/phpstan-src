@@ -56,7 +56,7 @@ function arrayPushConstantArray(): void
 	/** @var array<bool|null> $f1 */
 	$f1 = [];
 	array_push($f, ...$f1);
-	assertType('non-empty-array<int, bool|int|null>', $f);
+	assertType('non-empty-array<int, 17|bool|null>', $f);
 
 	$g = [new stdClass()];
 	array_push($g, ...[new stdClass(), new stdClass()]);

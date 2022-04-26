@@ -152,6 +152,11 @@ class ArrayType implements Type
 		);
 	}
 
+	public function generalizeKeys(): self
+	{
+		return new self($this->keyType->generalize(GeneralizePrecision::lessSpecific()), $this->itemType);
+	}
+
 	public function generalizeValues(): self
 	{
 		return new self($this->keyType, $this->itemType->generalize(GeneralizePrecision::lessSpecific()));

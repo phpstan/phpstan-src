@@ -500,6 +500,34 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			], 2, [0, 1]),
 			TrinaryLogic::createMaybe(),
 		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+			], [
+				new IntegerType(),
+			], 1, [0]),
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+			], [
+				new IntegerType(),
+			]),
+			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+			], [
+				new IntegerType(),
+			]),
+			new ConstantArrayType([
+				new ConstantStringType('foo'),
+			], [
+				new IntegerType(),
+			], 1, [0]),
+			TrinaryLogic::createMaybe(),
+		];
 	}
 
 	/**

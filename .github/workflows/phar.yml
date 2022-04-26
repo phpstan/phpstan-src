@@ -11,7 +11,7 @@ on:
       - '1.6.*'
 
 concurrency:
-  group: phar-${{ github.ref }}
+  group: phar-${{ github.ref }} # will be canceled on subsequent pushes in both branches and pull requests
   cancel-in-progress: true
 
 jobs:

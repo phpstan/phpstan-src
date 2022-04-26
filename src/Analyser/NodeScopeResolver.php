@@ -1841,10 +1841,6 @@ class NodeScopeResolver
 					foreach ($callArgs as $callArg) {
 						$callArgType = $scope->getType($callArg->value);
 						if ($callArg->unpack) {
-							if ($callArgType->isIterableAtLeastOnce()->no()) {
-								continue;
-							}
-
 							if ($callArgType instanceof ConstantArrayType) {
 								$iterableValueTypes = $callArgType->getValueTypes();
 							} else {

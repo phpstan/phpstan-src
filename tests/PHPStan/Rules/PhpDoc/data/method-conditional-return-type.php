@@ -145,3 +145,17 @@ class Baz
 	}
 
 }
+
+class MoreVerboseDescription
+{
+
+	/**
+	 * @param array{foo: string} $i
+	 * @return ($i is array{foo: int} ? non-empty-array : array)
+	 */
+	public function fill(array $i): array
+	{
+
+	}
+
+}

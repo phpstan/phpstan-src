@@ -61,9 +61,11 @@ class ConditionalReturnTypeRuleHelper
 				continue;
 			}
 
+			$verbosity = VerbosityLevel::getRecommendedLevelByType($subjectType, $targetType);
+
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Condition "%s" in conditional return type is always %s.',
-				sprintf('%s %s %s', $subjectType->describe(VerbosityLevel::typeOnly()), $conditionalType->isNegated() ? 'is not' : 'is', $targetType->describe(VerbosityLevel::typeOnly())),
+				sprintf('%s %s %s', $subjectType->describe($verbosity), $conditionalType->isNegated() ? 'is not' : 'is', $targetType->describe($verbosity)),
 				$conditionalType->isNegated()
 					? ($isTargetSuperType->yes() ? 'false' : 'true')
 					: ($isTargetSuperType->yes() ? 'true' : 'false'),

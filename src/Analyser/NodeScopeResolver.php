@@ -110,6 +110,7 @@ use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -118,7 +119,6 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -1896,7 +1896,9 @@ class NodeScopeResolver
 					$arrayType = $arrayTypeBuilder->getArray();
 
 					if ($arrayType instanceof ConstantArrayType && $nonConstantArrayWasUnpacked) {
-						$arrayType = $arrayType->generalize(GeneralizePrecision::lessSpecific());
+						$arrayType = $arrayType->isIterableAtLeastOnce()->yes()
+							? TypeCombinator::intersect($arrayType->generalizeKeys(), new NonEmptyArrayType())
+							: $arrayType->generalizeKeys();
 					}
 				} else {
 					$setOffsetValueTypes(

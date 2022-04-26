@@ -50,6 +50,9 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 	public function hasMethodSignature(string $className, string $methodName, int $variant = 0): bool
 	{
 		$lowerClassName = strtolower($className);
+		if ($lowerClassName === 'backedenum') {
+			return false;
+		}
 		if (!array_key_exists($lowerClassName, $this->map->classes)) {
 			return $this->functionSignatureMapProvider->hasMethodSignature($className, $methodName, $variant);
 		}

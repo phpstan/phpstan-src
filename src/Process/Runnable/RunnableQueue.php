@@ -27,6 +27,9 @@ class RunnableQueue
 		$this->running = $running;
 	}
 
+	/**
+	 * @impure
+	 */
 	public function getQueueSize(): int
 	{
 		$allSize = 0;
@@ -37,6 +40,9 @@ class RunnableQueue
 		return $allSize;
 	}
 
+	/**
+	 * @impure
+	 */
 	public function getRunningSize(): int
 	{
 		$allSize = 0;

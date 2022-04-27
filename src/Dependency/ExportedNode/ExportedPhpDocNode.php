@@ -52,7 +52,7 @@ class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 	 */
 	public static function __set_state(array $properties): ExportedNode
 	{
-		return new self($properties['phpDocString'], $properties['namespace'], $properties['uses'], $properties['constUses']);
+		return new self($properties['phpDocString'], $properties['namespace'], $properties['uses'], $properties['constUses'] ?? []);
 	}
 
 	/**
@@ -61,7 +61,7 @@ class ExportedPhpDocNode implements ExportedNode, JsonSerializable
 	 */
 	public static function decode(array $data): ExportedNode
 	{
-		return new self($data['phpDocString'], $data['namespace'], $data['uses'], $data['constUses']);
+		return new self($data['phpDocString'], $data['namespace'], $data['uses'], $data['constUses'] ?? []);
 	}
 
 }

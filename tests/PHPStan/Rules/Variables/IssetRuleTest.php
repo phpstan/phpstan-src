@@ -353,7 +353,7 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
 				'Expression in isset() is not nullable.',
-				39,
+				41,
 			],
 		]);
 	}
@@ -370,15 +370,15 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
 				'Using nullsafe property access in isset() is unnecessary. Use -> instead.',
-				16,
+				18,
 			],
 			[
 				'Using nullsafe property access in isset() is unnecessary. Use -> instead.',
-				27,
+				29,
 			],
 			[
 				'Expression in isset() is not nullable.',
-				39,
+				41,
 			],
 		]);
 	}

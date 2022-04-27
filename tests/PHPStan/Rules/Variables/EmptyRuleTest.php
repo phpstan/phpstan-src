@@ -115,7 +115,7 @@ class EmptyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
 				'Expression in empty() is not falsy.',
-				57,
+				59,
 			],
 		]);
 	}
@@ -132,23 +132,23 @@ class EmptyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
 				'Using nullsafe property access in empty() is unnecessary. Use -> instead.',
-				17,
+				19,
 			],
 			[
 				'Using nullsafe property access in empty() is unnecessary. Use -> instead.',
-				28,
+				30,
 			],
 			[
 				'Using nullsafe property access in empty() is unnecessary. Use -> instead.',
-				40,
+				42,
 			],
 			[
 				'Using nullsafe property access in empty() is unnecessary. Use -> instead.',
-				52,
+				54,
 			],
 			[
 				'Expression in empty() is not falsy.',
-				57,
+				59,
 			],
 		]);
 	}

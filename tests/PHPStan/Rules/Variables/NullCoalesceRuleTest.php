@@ -296,7 +296,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
 				'Expression on left side of ?? is not nullable.',
-				38,
+				40,
 			],
 		]);
 	}
@@ -313,15 +313,15 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
 				'Using nullsafe property access on left side of ?? is unnecessary. Use -> instead.',
-				15,
+				17,
 			],
 			[
 				'Using nullsafe property access on left side of ?? is unnecessary. Use -> instead.',
-				26,
+				28,
 			],
 			[
 				'Expression on left side of ?? is not nullable.',
-				38,
+				40,
 			],
 		]);
 	}

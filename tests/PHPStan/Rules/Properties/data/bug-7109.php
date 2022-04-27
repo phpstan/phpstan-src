@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1); // lint >= 8.0
 
+namespace Bug7109;
+
 class HelloWorld
 {
 	public int $aaa = 5;

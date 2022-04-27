@@ -175,6 +175,11 @@ class ClassStatementsGatherer
 		if ($node instanceof Node\Scalar\EncapsedStringPart) {
 			return;
 		}
+		if ($node instanceof FunctionCallableNode) {
+			$node = $node->getOriginalNode();
+		} elseif ($node instanceof InstantiationCallableNode) {
+			$node = $node->getOriginalNode();
+		}
 
 		$inAssign = $scope->isInExpressionAssign($node);
 		if ($inAssign) {

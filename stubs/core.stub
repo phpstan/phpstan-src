@@ -3,7 +3,7 @@
 /**
  * @param mixed $var
  * @param bool $return
- * @return ($return is true ? string : void)
+ * @return ($return is true ? string : null)
  */
 function var_export($var, bool $return = false) {}
 

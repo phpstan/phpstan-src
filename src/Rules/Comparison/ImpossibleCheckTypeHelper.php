@@ -53,13 +53,11 @@ class ImpossibleCheckTypeHelper
 		Expr $node,
 	): ?bool
 	{
-		if (
-			$node instanceof FuncCall
-			&& count($node->getArgs()) > 0
-		) {
+		if ($node instanceof FuncCall) {
+			$argsCount = count($node->getArgs());
 			if ($node->name instanceof Node\Name) {
 				$functionName = strtolower((string) $node->name);
-				if ($functionName === 'assert') {
+				if ($functionName === 'assert' && $argsCount >= 1) {
 					$assertValue = $scope->getType($node->getArgs()[0]->value)->toBoolean();
 					if (!$assertValue instanceof ConstantBooleanType) {
 						return null;
@@ -81,10 +79,7 @@ class ImpossibleCheckTypeHelper
 					return null;
 				} elseif ($functionName === 'array_search') {
 					return null;
-				} elseif (
-					$functionName === 'in_array'
-					&& count($node->getArgs()) >= 3
-				) {
+				} elseif ($functionName === 'in_array' && $argsCount >= 3) {
 					$haystackType = $scope->getType($node->getArgs()[1]->value);
 					if ($haystackType instanceof MixedType) {
 						return null;
@@ -143,7 +138,7 @@ class ImpossibleCheckTypeHelper
 							}
 						}
 					}
-				} elseif ($functionName === 'method_exists' && count($node->getArgs()) >= 2) {
+				} elseif ($functionName === 'method_exists' && $argsCount >= 2) {
 					$objectType = $scope->getType($node->getArgs()[0]->value);
 					$methodType = $scope->getType($node->getArgs()[1]->value);
 
@@ -197,6 +192,18 @@ class ImpossibleCheckTypeHelper
 				|| $node instanceof Expr\StaticCall
 			) && $scope->isSpecified($expr);
 		};
+
+		$rootExpr = $specifiedTypes->getRootExpr();
+		if ($rootExpr !== null) {
+			if ($isSpecified($rootExpr)) {
+				return null;
+			}
+
+			$rootExprType = $scope->getType($rootExpr);
+			if ($rootExprType instanceof ConstantBooleanType) {
+				return $rootExprType->getValue();
+			}
+		}
 
 		if (count($sureTypes) === 1 && count($sureNotTypes) === 0) {
 			$sureType = reset($sureTypes);

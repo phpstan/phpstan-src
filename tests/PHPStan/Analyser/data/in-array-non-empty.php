@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types = 1);
+
+namespace InArrayNonEmpty;
+
+use function PHPStan\Testing\assertType;
+
+class HelloWorld
+{
+	/**
+	 * @phpstan-param list<string> $array
+	 */
+	public function sayHello(array $array): void
+	{
+		if(in_array("thing", $array, true)){
+			assertType('non-empty-array<int, string>', $array);
+		}
+	}
+}

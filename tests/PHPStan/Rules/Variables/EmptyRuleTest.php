@@ -7,6 +7,7 @@ use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<EmptyRule>
@@ -16,6 +17,8 @@ class EmptyRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $strictUnnecessaryNullsafePropertyFetch;
+
 	protected function getRule(): Rule
 	{
 		return new EmptyRule(new IssetCheck(
@@ -23,6 +26,7 @@ class EmptyRuleTest extends RuleTestCase
 			new PropertyReflectionFinder(),
 			true,
 			$this->treatPhpDocTypesAsCertain,
+			$this->strictUnnecessaryNullsafePropertyFetch,
 		));
 	}
 
@@ -34,6 +38,7 @@ class EmptyRuleTest extends RuleTestCase
 	public function testRule(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/empty-rule.php'], [
 			[
 				'Offset \'nonexistent\' on array{0?: bool, 1?: false, 2: bool, 3: false, 4: true} in empty() does not exist.',
@@ -73,6 +78,7 @@ class EmptyRuleTest extends RuleTestCase
 	public function testBug970(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/bug-970.php'], [
 			[
 				'Variable $ar in empty() is never defined.',
@@ -84,6 +90,7 @@ class EmptyRuleTest extends RuleTestCase
 	public function testBug6974(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/bug-6974.php'], [
 			[
 				'Variable $a in empty() always exists and is always falsy.',
@@ -92,6 +99,56 @@ class EmptyRuleTest extends RuleTestCase
 			[
 				'Variable $a in empty() always exists and is not falsy.',
 				30,
+			],
+		]);
+	}
+
+	public function testBug7109(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
+
+		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
+			[
+				'Expression in empty() is not falsy.',
+				57,
+			],
+		]);
+	}
+
+	public function testBug7109Strict(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = true;
+
+		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
+			[
+				'Using nullsafe property access in empty() is unnecessary. Use -> instead.',
+				17,
+			],
+			[
+				'Using nullsafe property access in empty() is unnecessary. Use -> instead.',
+				28,
+			],
+			[
+				'Using nullsafe property access in empty() is unnecessary. Use -> instead.',
+				40,
+			],
+			[
+				'Using nullsafe property access in empty() is unnecessary. Use -> instead.',
+				52,
+			],
+			[
+				'Expression in empty() is not falsy.',
+				57,
 			],
 		]);
 	}

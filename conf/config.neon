@@ -889,6 +889,7 @@ services:
 		arguments:
 			checkAdvancedIsset: %checkAdvancedIsset%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			strictUnnecessaryNullsafePropertyFetch: %featureToggles.strictUnnecessaryNullsafePropertyFetch%
 
 	-
 		class: PHPStan\Rules\Methods\MethodCallCheck

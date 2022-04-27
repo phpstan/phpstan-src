@@ -17,6 +17,8 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $strictUnnecessaryNullsafePropertyFetch;
+
 	protected function getRule(): Rule
 	{
 		return new NullCoalesceRule(new IssetCheck(
@@ -24,6 +26,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 			new PropertyReflectionFinder(),
 			true,
 			$this->treatPhpDocTypesAsCertain,
+			$this->strictUnnecessaryNullsafePropertyFetch,
 		));
 	}
 
@@ -35,6 +38,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testCoalesceRule(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$errors = [
 			[
 				'Property CoalesceRule\FooCoalesce::$string (string) on left side of ?? is not nullable.',
@@ -145,6 +149,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 		}
 
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign.php'], [
 			[
 				'Property CoalesceAssignRule\FooCoalesce::$string (string) on left side of ??= is not nullable.',
@@ -212,12 +217,14 @@ class NullCoalesceRuleTest extends RuleTestCase
 		}
 
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/null-coalesce-nullsafe.php'], []);
 	}
 
 	public function testVariableCertaintyInNullCoalesce(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null.php'], [
 			[
 				'Variable $scalar on left side of ?? always exists and is not nullable.',
@@ -241,6 +248,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 		}
 
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null-assign.php'], [
 			[
 				'Variable $scalar on left side of ??= always exists and is not nullable.',
@@ -260,6 +268,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testNullCoalesceInGlobalScope(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/null-coalesce-global-scope.php'], [
 			[
 				'Variable $bar on left side of ?? always exists and is not nullable.',
@@ -271,7 +280,50 @@ class NullCoalesceRuleTest extends RuleTestCase
 	public function testBug5933(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/bug-5933.php'], []);
+	}
+
+	public function testBug7109(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
+
+		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
+			[
+				'Expression on left side of ?? is not nullable.',
+				38,
+			],
+		]);
+	}
+
+	public function testBug7109Strict(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = true;
+
+		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
+			[
+				'Using nullsafe property access on left side of ?? is unnecessary. Use -> instead.',
+				15,
+			],
+			[
+				'Using nullsafe property access on left side of ?? is unnecessary. Use -> instead.',
+				26,
+			],
+			[
+				'Expression on left side of ?? is not nullable.',
+				38,
+			],
+		]);
 	}
 
 }

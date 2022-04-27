@@ -16,4 +16,44 @@ class HelloWorld
 		isset($this->get()?->aaa) ?: 6;
 		empty($this->get()?->aaa) ?: 6;
 	}
+
+	public function moreExamples(): void
+	{
+		$foo = null;
+		if (rand(0, 1)) {
+			$foo = new self();
+		}
+		$foo->get()?->aaa ?? 6;
+		isset($foo->get()?->aaa) ?: 6;
+		empty($foo->get()?->aaa) ?: 6;
+	}
+
+	public function getNotNull(): HelloWorld
+	{
+		return $this;
+	}
+
+	public function notNullableExamples(): void
+	{
+		$this->getNotNull()?->aaa ?? 6;
+		isset($this->getNotNull()?->aaa) ?: 6;
+		empty($this->getNotNull()?->aaa) ?: 6;
+	}
+
+	/** @var positive-int */
+	public int $notFalsy = 5;
+
+	public function emptyNotFalsy(): void
+	{
+		$foo = null;
+		if (rand(0, 1)) {
+			$foo = new self();
+		}
+		empty($foo->get()?->notFalsy) ?: 6;
+	}
+
+	public function emptyNotFalsy2(): void
+	{
+		empty($this->getNotNull()?->notFalsy) ?: 6;
+	}
 }

@@ -21,6 +21,7 @@ class IssetCheck
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private bool $checkAdvancedIsset,
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $strictUnnecessaryNullsafePropertyFetch,
 	)
 	{
 	}
@@ -202,7 +203,20 @@ class IssetCheck
 			return null;
 		}
 
-		return $this->generateError($scope->getType($expr), sprintf('Expression %s', $operatorDescription), $typeMessageCallback);
+		$error = $this->generateError($scope->getType($expr), sprintf('Expression %s', $operatorDescription), $typeMessageCallback);
+		if ($error !== null) {
+			return $error;
+		}
+
+		if ($expr instanceof Expr\NullsafePropertyFetch) {
+			if (!$this->strictUnnecessaryNullsafePropertyFetch) {
+				return null;
+			}
+
+			return RuleErrorBuilder::message(sprintf('Using nullsafe property access %s is unnecessary. Use -> instead.', $operatorDescription))->build();
+		}
+
+		return null;
 	}
 
 	private function checkUndefined(Expr $expr, Scope $scope, string $operatorDescription): ?RuleError

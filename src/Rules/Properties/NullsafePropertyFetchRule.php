@@ -16,7 +16,7 @@ use function sprintf;
 class NullsafePropertyFetchRule implements Rule
 {
 
-	public function __construct(private bool $strictUnnecessaryNullsafePropertyFetch)
+	public function __construct()
 	{
 	}
 
@@ -38,12 +38,6 @@ class NullsafePropertyFetchRule implements Rule
 		}
 
 		if ($scope->isUndefinedExpressionAllowed($node)) {
-			if ($this->strictUnnecessaryNullsafePropertyFetch) {
-				return [
-					RuleErrorBuilder::message('Using nullsafe property access on left side of ?? / in isset / in empty is unnecessary. Use -> instead.')->build(),
-				];
-			}
-
 			return [];
 		}
 

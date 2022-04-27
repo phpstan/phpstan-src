@@ -17,6 +17,8 @@ class IssetRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $strictUnnecessaryNullsafePropertyFetch;
+
 	protected function getRule(): Rule
 	{
 		return new IssetRule(new IssetCheck(
@@ -24,6 +26,7 @@ class IssetRuleTest extends RuleTestCase
 			new PropertyReflectionFinder(),
 			true,
 			$this->treatPhpDocTypesAsCertain,
+			$this->strictUnnecessaryNullsafePropertyFetch,
 		));
 	}
 
@@ -35,6 +38,7 @@ class IssetRuleTest extends RuleTestCase
 	public function testRule(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/isset.php'], [
 			[
 				'Property IssetRule\FooCoalesce::$string (string) in isset() is not nullable.',
@@ -122,6 +126,7 @@ class IssetRuleTest extends RuleTestCase
 	public function testRuleWithoutTreatPhpDocTypesAsCertain(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/isset.php'], [
 			[
 				'Property IssetRule\FooCoalesce::$string (string) in isset() is not nullable.',
@@ -204,6 +209,7 @@ class IssetRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/isset-native-property-types.php'], [
 			/*[
 				// no way to achieve this with current PHP Reflection API
@@ -222,12 +228,14 @@ class IssetRuleTest extends RuleTestCase
 	public function testBug4290(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/bug-4290.php'], []);
 	}
 
 	public function testBug4671(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/bug-4671.php'], [[
 			'Offset numeric-string on array<string, string> in isset() does not exist.',
 			13,
@@ -237,6 +245,7 @@ class IssetRuleTest extends RuleTestCase
 	public function testVariableCertaintyInIsset(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/variable-certainty-isset.php'], [
 			[
 				'Variable $alwaysDefinedNotNullable in isset() always exists and is not nullable.',
@@ -312,6 +321,7 @@ class IssetRuleTest extends RuleTestCase
 	public function testIssetInGlobalScope(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/isset-global-scope.php'], [
 			[
 				'Variable $alwaysDefinedNotNullable in isset() always exists and is not nullable.',
@@ -327,7 +337,50 @@ class IssetRuleTest extends RuleTestCase
 		}
 
 		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/isset-nullsafe.php'], []);
+	}
+
+	public function testBug7109(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
+
+		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
+			[
+				'Expression in isset() is not nullable.',
+				39,
+			],
+		]);
+	}
+
+	public function testBug7109Strict(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = true;
+
+		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
+			[
+				'Using nullsafe property access in isset() is unnecessary. Use -> instead.',
+				16,
+			],
+			[
+				'Using nullsafe property access in isset() is unnecessary. Use -> instead.',
+				27,
+			],
+			[
+				'Expression in isset() is not nullable.',
+				39,
+			],
+		]);
 	}
 
 }

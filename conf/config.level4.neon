@@ -164,7 +164,5 @@ services:
 
 	-
 		class: PHPStan\Rules\Properties\NullsafePropertyFetchRule
-		arguments:
-			strictUnnecessaryNullsafePropertyFetch: %featureToggles.strictUnnecessaryNullsafePropertyFetch%
 		tags:
 			- phpstan.rules.rule

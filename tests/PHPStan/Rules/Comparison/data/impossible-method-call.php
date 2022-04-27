@@ -192,6 +192,9 @@ class Foo
 
 		$j = 2;
 		$this->isNotSame($j, 2);
+
+		$this->isSame(true, true);
+		$this->isNotSame(true, true);
 	}
 
 }

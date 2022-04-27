@@ -2350,10 +2350,12 @@ class MutatingScope implements Scope
 		$stringType = new StringType();
 		$integerType = new IntegerType();
 		$floatType = new FloatType();
+		$booleanType = new BooleanType();
 		if (
 			($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
 			|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
 			|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
+			|| ($booleanType->isSuperTypeOf($leftType)->yes() && $booleanType->isSuperTypeOf($rightType)->yes())
 		) {
 			return $this->resolveIdenticalType($leftType, $rightType);
 		}

@@ -16,6 +16,10 @@ use function sprintf;
 class NullsafePropertyFetchRule implements Rule
 {
 
+	public function __construct(private bool $strictUnnecessaryNullsafePropertyFetch)
+	{
+	}
+
 	public function getNodeType(): string
 	{
 		return Node\Expr\NullsafePropertyFetch::class;
@@ -34,7 +38,13 @@ class NullsafePropertyFetchRule implements Rule
 		}
 
 		if ($scope->isUndefinedExpressionAllowed($node)) {
-			return [];
+			if ($this->strictUnnecessaryNullsafePropertyFetch) {
+				return [
+					RuleErrorBuilder::message(sprintf('Using nullsafe property access on non-nullable type %s. Use -> instead.', $calledOnType->describe(VerbosityLevel::typeOnly())))->build(),
+				];
+			} else {
+				return [];
+			}
 		}
 
 		return [

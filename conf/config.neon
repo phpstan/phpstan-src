@@ -35,6 +35,7 @@ parameters:
 		nodeConnectingVisitorRule: false
 		illegalConstructorMethodCall: false
 		disableCheckMissingIterableValueType: false
+		strictUnnecessaryNullsafePropertyFetch: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -226,6 +227,7 @@ parametersSchema:
 		nodeConnectingVisitorRule: bool(),
 		illegalConstructorMethodCall: bool(),
 		disableCheckMissingIterableValueType: bool(),
+		strictUnnecessaryNullsafePropertyFetch: bool(),
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

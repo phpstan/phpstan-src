@@ -11,3 +11,4 @@ parameters:
 		disableRuntimeReflectionProvider: true
 		illegalConstructorMethodCall: true
 		disableCheckMissingIterableValueType: true
+		strictUnnecessaryNullsafePropertyFetch: true

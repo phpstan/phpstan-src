@@ -614,63 +614,36 @@ class MutatingScope implements Scope
 			return $this->getType($node->right)->isSmallerThanOrEqual($this->getType($node->left))->toBooleanType();
 		}
 
-		if (
-			$node instanceof Expr\BinaryOp\Equal
-			|| $node instanceof Expr\BinaryOp\NotEqual
-		) {
-			if ($node instanceof Expr\BinaryOp\Equal) {
-				if (
-					$node->left instanceof Variable
-					&& is_string($node->left->name)
-					&& $node->right instanceof Variable
-					&& is_string($node->right->name)
-					&& $node->left->name === $node->right->name
-				) {
-					return new ConstantBooleanType(true);
-				}
-
-				$leftType = $this->getType($node->left);
-				$rightType = $this->getType($node->right);
-
-				$stringType = new StringType();
-				$integerType = new IntegerType();
-				$floatType = new FloatType();
-				if (
-					($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
-					|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
-					|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
-				) {
-					return $this->getType(new Expr\BinaryOp\Identical($node->left, $node->right));
-				}
+		if ($node instanceof Expr\BinaryOp\Equal) {
+			if (
+				$node->left instanceof Variable
+				&& is_string($node->left->name)
+				&& $node->right instanceof Variable
+				&& is_string($node->right->name)
+				&& $node->left->name === $node->right->name
+			) {
+				return new ConstantBooleanType(true);
 			}
 
-			if ($node instanceof Expr\BinaryOp\NotEqual) {
-				if (
-					$node->left instanceof Variable
-					&& is_string($node->left->name)
-					&& $node->right instanceof Variable
-					&& is_string($node->right->name)
-					&& $node->left->name === $node->right->name
-				) {
-					return new ConstantBooleanType(false);
-				}
+			$leftType = $this->getType($node->left);
+			$rightType = $this->getType($node->right);
 
-				$leftType = $this->getType($node->left);
-				$rightType = $this->getType($node->right);
-
-				$stringType = new StringType();
-				$integerType = new IntegerType();
-				$floatType = new FloatType();
-				if (
-					($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
-					|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
-					|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
-				) {
-					return $this->getType(new Expr\BinaryOp\NotIdentical($node->left, $node->right));
-				}
+			$stringType = new StringType();
+			$integerType = new IntegerType();
+			$floatType = new FloatType();
+			if (
+				($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
+				|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
+				|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
+			) {
+				return $this->getType(new Expr\BinaryOp\Identical($node->left, $node->right));
 			}
 
 			return new BooleanType();
+		}
+
+		if ($node instanceof Expr\BinaryOp\NotEqual) {
+			return $this->getType(new Expr\BooleanNot(new BinaryOp\Equal($node->left, $node->right)));
 		}
 
 		if ($node instanceof Expr\Empty_) {
@@ -897,58 +870,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\BinaryOp\NotIdentical) {
-			if (
-				$node->left instanceof Variable
-				&& is_string($node->left->name)
-				&& $node->right instanceof Variable
-				&& is_string($node->right->name)
-				&& $node->left->name === $node->right->name
-			) {
-				return new ConstantBooleanType(false);
-			}
-			if ($this->treatPhpDocTypesAsCertain) {
-				$leftType = $this->getType($node->left);
-				$rightType = $this->getType($node->right);
-			} else {
-				$leftType = $this->getNativeType($node->left);
-				$rightType = $this->getNativeType($node->right);
-			}
-
-			if (
-				(
-					$node->left instanceof Node\Expr\PropertyFetch
-					|| $node->left instanceof Node\Expr\StaticPropertyFetch
-				)
-				&& $rightType instanceof NullType
-				&& !$this->hasPropertyNativeType($node->left)
-			) {
-				return new BooleanType();
-			}
-
-			if (
-				(
-					$node->right instanceof Node\Expr\PropertyFetch
-					|| $node->right instanceof Node\Expr\StaticPropertyFetch
-				)
-				&& $leftType instanceof NullType
-				&& !$this->hasPropertyNativeType($node->right)
-			) {
-				return new BooleanType();
-			}
-
-			$isSuperset = $leftType->isSuperTypeOf($rightType);
-			if ($isSuperset->no()) {
-				return new ConstantBooleanType(true);
-			} elseif (
-				$isSuperset->yes()
-				&& $leftType instanceof ConstantScalarType
-				&& $rightType instanceof ConstantScalarType
-				&& $leftType->getValue() === $rightType->getValue()
-			) {
-				return new ConstantBooleanType(false);
-			}
-
-			return new BooleanType();
+			return $this->getType(new Expr\BooleanNot(new BinaryOp\Identical($node->left, $node->right)));
 		}
 
 		if ($node instanceof Expr\Instanceof_) {

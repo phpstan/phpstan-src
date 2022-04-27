@@ -762,6 +762,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		if (PHP_VERSION_ID < 80100) {
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires static reflection.');
+		}
 
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7135.php');
 		$this->assertCount(1, $errors);

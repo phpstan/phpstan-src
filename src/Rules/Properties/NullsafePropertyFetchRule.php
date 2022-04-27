@@ -33,6 +33,10 @@ class NullsafePropertyFetchRule implements Rule
 			return [];
 		}
 
+		if ($scope->isUndefinedExpressionAllowed($node)) {
+			return [];
+		}
+
 		return [
 			RuleErrorBuilder::message(sprintf('Using nullsafe property access on non-nullable type %s. Use -> instead.', $calledOnType->describe(VerbosityLevel::typeOnly())))->build(),
 		];

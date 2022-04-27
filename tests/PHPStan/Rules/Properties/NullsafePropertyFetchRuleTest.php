@@ -40,4 +40,13 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6020.php'], []);
 	}
 
+	public function testBug7109(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-7109.php'], []);
+	}
+
 }

@@ -203,6 +203,8 @@ class ImpossibleCheckTypeHelper
 			if ($rootExprType instanceof ConstantBooleanType) {
 				return $rootExprType->getValue();
 			}
+
+			return null;
 		}
 
 		if (count($sureTypes) === 1 && count($sureNotTypes) === 0) {

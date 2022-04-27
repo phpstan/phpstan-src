@@ -9,6 +9,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
@@ -45,7 +46,8 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		}
 
 		$needleType = $scope->getType($node->getArgs()[0]->value);
-		$arrayValueType = $scope->getType($node->getArgs()[1]->value)->getIterableValueType();
+		$arrayType = $scope->getType($node->getArgs()[1]->value);
+		$arrayValueType = $arrayType->getIterableValueType();
 
 		if (
 			$context->truthy()
@@ -78,6 +80,19 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 				$node->getArgs()[1]->value,
 				new ArrayType(new MixedType(), $arrayValueType),
 				TypeSpecifierContext::createTrue(),
+				false,
+				$scope,
+			));
+		}
+
+		if (
+			$context->truthy()
+			&& $arrayType->isArray()->yes()
+		) {
+			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+				$node->getArgs()[1]->value,
+				TypeCombinator::intersect($arrayType, new NonEmptyArrayType()),
+				$context,
 				false,
 				$scope,
 			));

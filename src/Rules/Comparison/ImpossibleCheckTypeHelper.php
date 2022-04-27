@@ -18,11 +18,9 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
-use function array_column;
 use function array_map;
 use function array_pop;
 use function count;
@@ -233,36 +231,6 @@ class ImpossibleCheckTypeHelper
 			if ($isSuperType->yes()) {
 				return false;
 			} elseif ($isSuperType->no()) {
-				return true;
-			}
-
-			return null;
-		}
-
-		if (count($sureTypes) > 0) {
-			foreach ($sureTypes as $sureType) {
-				if (self::isSpecified($scope, $node, $sureType[0])) {
-					return null;
-				}
-			}
-			$types = TypeCombinator::union(
-				...array_column($sureTypes, 1),
-			);
-			if ($types instanceof NeverType) {
-				return false;
-			}
-		}
-
-		if (count($sureNotTypes) > 0) {
-			foreach ($sureNotTypes as $sureNotType) {
-				if (self::isSpecified($scope, $node, $sureNotType[0])) {
-					return null;
-				}
-			}
-			$types = TypeCombinator::union(
-				...array_column($sureNotTypes, 1),
-			);
-			if ($types instanceof NeverType) {
 				return true;
 			}
 		}

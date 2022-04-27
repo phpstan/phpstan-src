@@ -11,7 +11,7 @@ use function ksort;
 use function preg_quote;
 use const SORT_STRING;
 
-class BaselineNeonErrorFormatter implements ErrorFormatter
+class BaselineNeonErrorFormatter
 {
 
 	public function __construct(private RelativePathHelper $relativePathHelper)

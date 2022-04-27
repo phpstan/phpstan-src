@@ -11,6 +11,7 @@ use const PHP_VERSION_ID;
  */
 class NullsafePropertyFetchRuleTest extends RuleTestCase
 {
+
 	private bool $strictUnnecessaryNullsafePropertyFetch;
 
 	protected function getRule(): Rule
@@ -64,7 +65,20 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
-		$this->analyse([__DIR__ . '/data/bug-7109.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-7109.php'], [
+			[
+				'Using nullsafe property access on left side of ?? / in isset / in empty is unnecessary. Use -> instead.',
+				15,
+			],
+			[
+				'Using nullsafe property access on left side of ?? / in isset / in empty is unnecessary. Use -> instead.',
+				16,
+			],
+			[
+				'Using nullsafe property access on left side of ?? / in isset / in empty is unnecessary. Use -> instead.',
+				17,
+			],
+		]);
 	}
 
 }

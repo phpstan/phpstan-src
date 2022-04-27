@@ -40,11 +40,11 @@ class NullsafePropertyFetchRule implements Rule
 		if ($scope->isUndefinedExpressionAllowed($node)) {
 			if ($this->strictUnnecessaryNullsafePropertyFetch) {
 				return [
-					RuleErrorBuilder::message(sprintf('Using nullsafe property access on non-nullable type %s. Use -> instead.', $calledOnType->describe(VerbosityLevel::typeOnly())))->build(),
+					RuleErrorBuilder::message('Using nullsafe property access on left side of ?? / in isset / in empty is unnecessary. Use -> instead.')->build(),
 				];
-			} else {
-				return [];
 			}
+
+			return [];
 		}
 
 		return [

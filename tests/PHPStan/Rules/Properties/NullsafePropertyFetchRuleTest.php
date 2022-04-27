@@ -12,13 +12,17 @@ use const PHP_VERSION_ID;
 class NullsafePropertyFetchRuleTest extends RuleTestCase
 {
 
+	private bool $strictUnnecessaryNullsafePropertyFetch;
+
 	protected function getRule(): Rule
 	{
-		return new NullsafePropertyFetchRule();
+		return new NullsafePropertyFetchRule($this->strictUnnecessaryNullsafePropertyFetch);
 	}
 
 	public function testRule(): void
 	{
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
+
 		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
@@ -33,11 +37,48 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 
 	public function testBug6020(): void
 	{
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
+
 		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-6020.php'], []);
+	}
+
+	public function testBug7109(): void
+	{
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
+
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-7109.php'], []);
+	}
+
+	public function testBug7109Strict(): void
+	{
+		$this->strictUnnecessaryNullsafePropertyFetch = true;
+
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-7109.php'], [
+			[
+				'Using nullsafe property access on left side of ?? / in isset / in empty is unnecessary. Use -> instead.',
+				15,
+			],
+			[
+				'Using nullsafe property access on left side of ?? / in isset / in empty is unnecessary. Use -> instead.',
+				16,
+			],
+			[
+				'Using nullsafe property access on left side of ?? / in isset / in empty is unnecessary. Use -> instead.',
+				17,
+			],
+		]);
 	}
 
 }

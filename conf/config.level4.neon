@@ -15,7 +15,6 @@ rules:
 	- PHPStan\Rules\Methods\CallToMethodStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\CallToStaticMethodStatementWithoutSideEffectsRule
 	- PHPStan\Rules\Methods\NullsafeMethodCallRule
-	- PHPStan\Rules\Properties\NullsafePropertyFetchRule
 	- PHPStan\Rules\TooWideTypehints\TooWideArrowFunctionReturnTypehintRule
 	- PHPStan\Rules\TooWideTypehints\TooWideClosureReturnTypehintRule
 	- PHPStan\Rules\TooWideTypehints\TooWideFunctionReturnTypehintRule
@@ -160,5 +159,12 @@ services:
 		class: PHPStan\Rules\TooWideTypehints\TooWideMethodReturnTypehintRule
 		arguments:
 			checkProtectedAndPublicMethods: %checkTooWideReturnTypesInProtectedAndPublicMethods%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Properties\NullsafePropertyFetchRule
+		arguments:
+			strictUnnecessaryNullsafePropertyFetch: %featureToggles.strictUnnecessaryNullsafePropertyFetch%
 		tags:
 			- phpstan.rules.rule

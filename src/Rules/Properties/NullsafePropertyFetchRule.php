@@ -16,6 +16,10 @@ use function sprintf;
 class NullsafePropertyFetchRule implements Rule
 {
 
+	public function __construct(private bool $strictUnnecessaryNullsafePropertyFetch)
+	{
+	}
+
 	public function getNodeType(): string
 	{
 		return Node\Expr\NullsafePropertyFetch::class;
@@ -30,6 +34,16 @@ class NullsafePropertyFetchRule implements Rule
 		}
 
 		if (!$calledOnType->isSuperTypeOf($nullType)->no()) {
+			return [];
+		}
+
+		if ($scope->isUndefinedExpressionAllowed($node)) {
+			if ($this->strictUnnecessaryNullsafePropertyFetch) {
+				return [
+					RuleErrorBuilder::message('Using nullsafe property access on left side of ?? / in isset / in empty is unnecessary. Use -> instead.')->build(),
+				];
+			}
+
 			return [];
 		}
 

@@ -10,7 +10,7 @@ class Bug6940
 	public function foo(): void
 	{
 		$b = [] == [];
-		assertType('bool', $b);
+		assertType('true', $b);
 	}
 
 }

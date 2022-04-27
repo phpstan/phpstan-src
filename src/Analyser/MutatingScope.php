@@ -628,18 +628,7 @@ class MutatingScope implements Scope
 			$leftType = $this->getType($node->left);
 			$rightType = $this->getType($node->right);
 
-			$stringType = new StringType();
-			$integerType = new IntegerType();
-			$floatType = new FloatType();
-			if (
-				($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
-				|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
-				|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
-			) {
-				return $this->getType(new Expr\BinaryOp\Identical($node->left, $node->right));
-			}
-
-			return new BooleanType();
+			return $this->resolveEqualType($leftType, $rightType);
 		}
 
 		if ($node instanceof Expr\BinaryOp\NotEqual) {
@@ -2335,7 +2324,7 @@ class MutatingScope implements Scope
 		return new MixedType();
 	}
 
-	private function resolveIdenticalType(Type $leftType, Type $rightType): Type
+	private function resolveIdenticalType(Type $leftType, Type $rightType): BooleanType
 	{
 		$isSuperset = $leftType->isSuperTypeOf($rightType);
 		if ($isSuperset->no()) {
@@ -2350,65 +2339,93 @@ class MutatingScope implements Scope
 		}
 
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
-			$leftValueTypes = $leftType->getValueTypes();
-			$rightKeyTypes = $rightType->getKeyTypes();
-			$rightValueTypes = $rightType->getValueTypes();
-			$hasOptional = false;
-			foreach ($leftType->getKeyTypes() as $i => $keyType) {
-				if (!array_key_exists($i, $rightKeyTypes)) {
-					if ($leftType->isOptionalKey($i)) {
-						$hasOptional = true;
-						continue;
-					}
-					return new ConstantBooleanType(false);
-				}
-
-				$rightKeyType = $rightKeyTypes[$i];
-				if (!$keyType->equals($rightKeyType)) {
-					return new ConstantBooleanType(false);
-				}
-
-				$leftValueType = $leftValueTypes[$i];
-				$rightValueType = $rightValueTypes[$i];
-				$leftIdenticalToRight = $this->resolveIdenticalType($leftValueType, $rightValueType);
-				if ($leftIdenticalToRight instanceof ConstantBooleanType) {
-					if (!$leftIdenticalToRight->getValue()) {
-						return new ConstantBooleanType(false);
-					}
-					$isLeftOptional = $leftType->isOptionalKey($i);
-					if ($isLeftOptional || $rightType->isOptionalKey($i)) {
-						$hasOptional = true;
-					}
-					continue;
-				}
-
-				$hasOptional = true;
-			}
-
-			if (!isset($i)) {
-				$i = 0;
-			} else {
-				$i++;
-			}
-
-			$rightKeyTypesCount = count($rightKeyTypes);
-			for (; $i < $rightKeyTypesCount; $i++) {
-				if ($rightType->isOptionalKey($i)) {
-					$hasOptional = true;
-					continue;
-				}
-
-				return new ConstantBooleanType(false);
-			}
-
-			if ($hasOptional) {
-				return new BooleanType();
-			}
-
-			return new ConstantBooleanType(true);
+			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveIdenticalType($leftValueType, $rightValueType));
 		}
 
 		return new BooleanType();
+	}
+
+	private function resolveEqualType(Type $leftType, Type $rightType): BooleanType
+	{
+		$stringType = new StringType();
+		$integerType = new IntegerType();
+		$floatType = new FloatType();
+		if (
+			($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
+			|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
+			|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
+		) {
+			return $this->resolveIdenticalType($leftType, $rightType);
+		}
+
+		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
+			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveEqualType($leftValueType, $rightValueType));
+		}
+
+		return new BooleanType();
+	}
+
+	/**
+	 * @param callable(Type, Type): BooleanType $valueComparisonCallback
+	 */
+	private function resolveConstantArrayTypeComparison(ConstantArrayType $leftType, ConstantArrayType $rightType, callable $valueComparisonCallback): BooleanType
+	{
+		$leftValueTypes = $leftType->getValueTypes();
+		$rightKeyTypes = $rightType->getKeyTypes();
+		$rightValueTypes = $rightType->getValueTypes();
+		$hasOptional = false;
+		foreach ($leftType->getKeyTypes() as $i => $keyType) {
+			if (!array_key_exists($i, $rightKeyTypes)) {
+				if ($leftType->isOptionalKey($i)) {
+					$hasOptional = true;
+					continue;
+				}
+				return new ConstantBooleanType(false);
+			}
+
+			$rightKeyType = $rightKeyTypes[$i];
+			if (!$keyType->equals($rightKeyType)) {
+				return new ConstantBooleanType(false);
+			}
+
+			$leftValueType = $leftValueTypes[$i];
+			$rightValueType = $rightValueTypes[$i];
+			$leftIdenticalToRight = $valueComparisonCallback($leftValueType, $rightValueType);
+			if ($leftIdenticalToRight instanceof ConstantBooleanType) {
+				if (!$leftIdenticalToRight->getValue()) {
+					return new ConstantBooleanType(false);
+				}
+				$isLeftOptional = $leftType->isOptionalKey($i);
+				if ($isLeftOptional || $rightType->isOptionalKey($i)) {
+					$hasOptional = true;
+				}
+				continue;
+			}
+
+			$hasOptional = true;
+		}
+
+		if (!isset($i)) {
+			$i = 0;
+		} else {
+			$i++;
+		}
+
+		$rightKeyTypesCount = count($rightKeyTypes);
+		for (; $i < $rightKeyTypesCount; $i++) {
+			if ($rightType->isOptionalKey($i)) {
+				$hasOptional = true;
+				continue;
+			}
+
+			return new ConstantBooleanType(false);
+		}
+
+		if ($hasOptional) {
+			return new BooleanType();
+		}
+
+		return new ConstantBooleanType(true);
 	}
 
 	private function resolveConcatType(Expr\BinaryOp\Concat|Expr\AssignOp\Concat $node): Type

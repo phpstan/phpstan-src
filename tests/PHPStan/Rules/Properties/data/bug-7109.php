@@ -58,4 +58,20 @@ class HelloWorld
 	{
 		empty($this->getNotNull()?->notFalsy) ?: 6;
 	}
+
+	public ?HelloWorld $prop = null;
+	public function edgeCaseWithMethodCall(): void
+	{
+		// only ?->aaa should be reported
+		$this->get()?->prop?->get()?->aaa ?? 'edge';
+		isset($this->get()?->prop?->get()?->aaa) ?: 'edge';
+		empty($this->get()?->prop?->get()?->aaa) ?: 'edge';
+	}
+
+	public function fetchByExpr(): void
+	{
+		$this?->{'aaa'} ?? 'edge';
+		isset($this?->{'aaa'}) ?: 'edge';
+		empty($this?->{'aaa'}) ?: 'edge';
+	}
 }

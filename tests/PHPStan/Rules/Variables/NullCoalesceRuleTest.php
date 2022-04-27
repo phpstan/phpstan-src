@@ -312,11 +312,11 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
-				'Using nullsafe property access on left side of ?? is unnecessary. Use -> instead.',
+				'Using nullsafe property access "?->aaa" on left side of ?? is unnecessary. Use -> instead.',
 				17,
 			],
 			[
-				'Using nullsafe property access on left side of ?? is unnecessary. Use -> instead.',
+				'Using nullsafe property access "?->aaa" on left side of ?? is unnecessary. Use -> instead.',
 				28,
 			],
 			[

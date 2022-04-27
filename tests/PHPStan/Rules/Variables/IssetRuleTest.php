@@ -369,11 +369,11 @@ class IssetRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
 			[
-				'Using nullsafe property access in isset() is unnecessary. Use -> instead.',
+				'Using nullsafe property access "?->aaa" in isset() is unnecessary. Use -> instead.',
 				18,
 			],
 			[
-				'Using nullsafe property access in isset() is unnecessary. Use -> instead.',
+				'Using nullsafe property access "?->aaa" in isset() is unnecessary. Use -> instead.',
 				29,
 			],
 			[

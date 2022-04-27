@@ -177,32 +177,10 @@ class ImpossibleCheckTypeHelper
 		$sureTypes = $specifiedTypes->getSureTypes();
 		$sureNotTypes = $specifiedTypes->getSureNotTypes();
 
-		$isSpecified = static function (Expr $expr) use ($scope, $node): bool {
-			if ($expr === $node) {
-				return true;
-			}
-
-			if ($expr instanceof Expr\Variable && is_string($expr->name) && !$scope->hasVariableType($expr->name)->yes()) {
-				return true;
-			}
-
-			return (
-				$node instanceof FuncCall
-				|| $node instanceof MethodCall
-				|| $node instanceof Expr\StaticCall
-			) && $scope->isSpecified($expr);
-		};
-
 		$rootExpr = $specifiedTypes->getRootExpr();
 		if ($rootExpr !== null) {
-			if ($isSpecified($rootExpr)) {
+			if (self::isSpecified($scope, $node, $rootExpr)) {
 				return null;
-			}
-
-			if ($rootExpr instanceof Expr\BinaryOp) {
-				if ($isSpecified($rootExpr->left) || $isSpecified($rootExpr->right)) {
-					return null;
-				}
 			}
 
 			$rootExprType = $scope->getType($rootExpr);
@@ -215,7 +193,7 @@ class ImpossibleCheckTypeHelper
 
 		if (count($sureTypes) === 1 && count($sureNotTypes) === 0) {
 			$sureType = reset($sureTypes);
-			if ($isSpecified($sureType[0])) {
+			if (self::isSpecified($scope, $node, $sureType[0])) {
 				return null;
 			}
 
@@ -238,7 +216,7 @@ class ImpossibleCheckTypeHelper
 			return null;
 		} elseif (count($sureNotTypes) === 1 && count($sureTypes) === 0) {
 			$sureNotType = reset($sureNotTypes);
-			if ($isSpecified($sureNotType[0])) {
+			if (self::isSpecified($scope, $node, $sureNotType[0])) {
 				return null;
 			}
 
@@ -263,7 +241,7 @@ class ImpossibleCheckTypeHelper
 
 		if (count($sureTypes) > 0) {
 			foreach ($sureTypes as $sureType) {
-				if ($isSpecified($sureType[0])) {
+				if (self::isSpecified($scope, $node, $sureType[0])) {
 					return null;
 				}
 			}
@@ -277,7 +255,7 @@ class ImpossibleCheckTypeHelper
 
 		if (count($sureNotTypes) > 0) {
 			foreach ($sureNotTypes as $sureNotType) {
-				if ($isSpecified($sureNotType[0])) {
+				if (self::isSpecified($scope, $node, $sureNotType[0])) {
 					return null;
 				}
 			}
@@ -290,6 +268,31 @@ class ImpossibleCheckTypeHelper
 		}
 
 		return null;
+	}
+
+	private static function isSpecified(Scope $scope, Expr $node, Expr $expr): bool
+	{
+		if ($expr === $node) {
+			return true;
+		}
+
+		if ($expr instanceof Expr\Variable && is_string($expr->name) && !$scope->hasVariableType($expr->name)->yes()) {
+			return true;
+		}
+
+		if ($expr instanceof Expr\BooleanNot) {
+			return self::isSpecified($scope, $node, $expr->expr);
+		}
+
+		if ($expr instanceof Expr\BinaryOp) {
+			return self::isSpecified($scope, $node, $expr->left) || self::isSpecified($scope, $node, $expr->right);
+		}
+
+		return (
+			$node instanceof FuncCall
+			|| $node instanceof MethodCall
+			|| $node instanceof Expr\StaticCall
+		) && $scope->isSpecified($expr);
 	}
 
 	/**

@@ -278,32 +278,28 @@ class TypeSpecifier
 			$exprLeftType = $scope->getType($expr->left);
 			$exprRightType = $scope->getType($expr->right);
 			if ($exprLeftType instanceof ConstantType || $exprLeftType instanceof EnumCaseObjectType) {
-				if (!$expr->right instanceof Node\Scalar && !$expr->right instanceof Expr\Array_) {
-					$types = $this->create(
-						$expr->right,
-						$exprLeftType,
-						$context,
-						false,
-						$scope,
-						$rootExpr,
-					);
-				}
+				$types = $this->create(
+					$expr->right,
+					$exprLeftType,
+					$context,
+					false,
+					$scope,
+					$rootExpr,
+				);
 			}
 			if ($exprRightType instanceof ConstantType || $exprRightType instanceof EnumCaseObjectType) {
-				if ($types === null || (!$expr->left instanceof Node\Scalar && !$expr->left instanceof Expr\Array_)) {
-					$leftType = $this->create(
-						$expr->left,
-						$exprRightType,
-						$context,
-						false,
-						$scope,
-						$rootExpr,
-					);
-					if ($types !== null) {
-						$types = $types->unionWith($leftType);
-					} else {
-						$types = $leftType;
-					}
+				$leftType = $this->create(
+					$expr->left,
+					$exprRightType,
+					$context,
+					false,
+					$scope,
+					$rootExpr,
+				);
+				if ($types !== null) {
+					$types = $types->unionWith($leftType);
+				} else {
+					$types = $leftType;
 				}
 			}
 

@@ -15,8 +15,8 @@ class Foo
 		assertType('false', [1] != [1]);
 		assertType('false', [1] == [2]);
 		assertType('true', [1] != [2]);
-		assertType('bool', [1] == ["1"]);
-		assertType('bool', [1] != ["1"]);
+		assertType('true', [1] == ["1"]);
+		assertType('false', [1] != ["1"]);
 
 		assertType('false', [1] === [2]);
 		assertType('false', [1] !== [1]);

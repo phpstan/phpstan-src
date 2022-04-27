@@ -2358,6 +2358,10 @@ class MutatingScope implements Scope
 			return $this->resolveIdenticalType($leftType, $rightType);
 		}
 
+		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {
+			return new ConstantBooleanType($leftType->getValue() == $rightType->getValue()); // phpcs:ignore
+		}
+
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
 			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveEqualType($leftValueType, $rightValueType));
 		}

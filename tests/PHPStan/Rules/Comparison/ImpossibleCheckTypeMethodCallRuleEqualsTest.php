@@ -93,6 +93,14 @@ class ImpossibleCheckTypeMethodCallRuleEqualsTest extends RuleTestCase
 				122,
 			],
 			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with array{\'a\', \'b\'} and array{1, 2} will always evaluate to false.',
+				139,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with array{\'a\', \'b\'} and array{1, 2} will always evaluate to true.',
+				142,
+			],
+			[
 				'Call to method ImpossibleMethodCall\Foo::isSame() with \'\' and \'\' will always evaluate to true.',
 				174,
 			],

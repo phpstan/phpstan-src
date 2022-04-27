@@ -199,6 +199,12 @@ class ImpossibleCheckTypeHelper
 				return null;
 			}
 
+			if ($rootExpr instanceof Expr\BinaryOp) {
+				if ($isSpecified($rootExpr->left) || $isSpecified($rootExpr->right)) {
+					return null;
+				}
+			}
+
 			$rootExprType = $scope->getType($rootExpr);
 			if ($rootExprType instanceof ConstantBooleanType) {
 				return $rootExprType->getValue();

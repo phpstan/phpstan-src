@@ -20,6 +20,7 @@ class SpecifiedTypes
 		private array $sureNotTypes = [],
 		private bool $overwrite = false,
 		private array $newConditionalExpressionHolders = [],
+		private ?Expr $rootExpr = null,
 	)
 	{
 	}
@@ -55,11 +56,17 @@ class SpecifiedTypes
 		return $this->newConditionalExpressionHolders;
 	}
 
+	public function getRootExpr(): ?Expr
+	{
+		return $this->rootExpr;
+	}
+
 	/** @api */
 	public function intersectWith(SpecifiedTypes $other): self
 	{
 		$sureTypeUnion = [];
 		$sureNotTypeUnion = [];
+		$rootExpr = $this->mergeRootExpr($this->rootExpr, $other->rootExpr);
 
 		foreach ($this->sureTypes as $exprString => [$exprNode, $type]) {
 			if (!isset($other->sureTypes[$exprString])) {
@@ -83,7 +90,7 @@ class SpecifiedTypes
 			];
 		}
 
-		return new self($sureTypeUnion, $sureNotTypeUnion);
+		return new self($sureTypeUnion, $sureNotTypeUnion, false, [], $rootExpr);
 	}
 
 	/** @api */
@@ -91,6 +98,7 @@ class SpecifiedTypes
 	{
 		$sureTypeUnion = $this->sureTypes + $other->sureTypes;
 		$sureNotTypeUnion = $this->sureNotTypes + $other->sureNotTypes;
+		$rootExpr = $this->mergeRootExpr($this->rootExpr, $other->rootExpr);
 
 		foreach ($this->sureTypes as $exprString => [$exprNode, $type]) {
 			if (!isset($other->sureTypes[$exprString])) {
@@ -114,7 +122,7 @@ class SpecifiedTypes
 			];
 		}
 
-		return new self($sureTypeUnion, $sureNotTypeUnion);
+		return new self($sureTypeUnion, $sureNotTypeUnion, false, [], $rootExpr);
 	}
 
 	public function normalize(Scope $scope): self
@@ -130,7 +138,20 @@ class SpecifiedTypes
 			$sureTypes[$exprString][1] = TypeCombinator::remove($sureTypes[$exprString][1], $sureNotType);
 		}
 
-		return new self($sureTypes, [], $this->overwrite, $this->newConditionalExpressionHolders);
+		return new self($sureTypes, [], $this->overwrite, $this->newConditionalExpressionHolders, $this->rootExpr);
+	}
+
+	private function mergeRootExpr(?Expr $rootExprA, ?Expr $rootExprB): ?Expr
+	{
+		if ($rootExprA === $rootExprB) {
+			return $rootExprA;
+		}
+
+		if ($rootExprA === null || $rootExprB === null) {
+			return $rootExprA ?? $rootExprB;
+		}
+
+		return null;
 	}
 
 }

@@ -18,11 +18,9 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
-use function array_column;
 use function array_map;
 use function array_pop;
 use function count;
@@ -53,13 +51,11 @@ class ImpossibleCheckTypeHelper
 		Expr $node,
 	): ?bool
 	{
-		if (
-			$node instanceof FuncCall
-			&& count($node->getArgs()) > 0
-		) {
+		if ($node instanceof FuncCall) {
+			$argsCount = count($node->getArgs());
 			if ($node->name instanceof Node\Name) {
 				$functionName = strtolower((string) $node->name);
-				if ($functionName === 'assert') {
+				if ($functionName === 'assert' && $argsCount >= 1) {
 					$assertValue = $scope->getType($node->getArgs()[0]->value)->toBoolean();
 					if (!$assertValue instanceof ConstantBooleanType) {
 						return null;
@@ -81,10 +77,7 @@ class ImpossibleCheckTypeHelper
 					return null;
 				} elseif ($functionName === 'array_search') {
 					return null;
-				} elseif (
-					$functionName === 'in_array'
-					&& count($node->getArgs()) >= 3
-				) {
+				} elseif ($functionName === 'in_array' && $argsCount >= 3) {
 					$haystackType = $scope->getType($node->getArgs()[1]->value);
 					if ($haystackType instanceof MixedType) {
 						return null;
@@ -143,7 +136,7 @@ class ImpossibleCheckTypeHelper
 							}
 						}
 					}
-				} elseif ($functionName === 'method_exists' && count($node->getArgs()) >= 2) {
+				} elseif ($functionName === 'method_exists' && $argsCount >= 2) {
 					$objectType = $scope->getType($node->getArgs()[0]->value);
 					$methodType = $scope->getType($node->getArgs()[1]->value);
 
@@ -182,25 +175,23 @@ class ImpossibleCheckTypeHelper
 		$sureTypes = $specifiedTypes->getSureTypes();
 		$sureNotTypes = $specifiedTypes->getSureNotTypes();
 
-		$isSpecified = static function (Expr $expr) use ($scope, $node): bool {
-			if ($expr === $node) {
-				return true;
+		$rootExpr = $specifiedTypes->getRootExpr();
+		if ($rootExpr !== null) {
+			if (self::isSpecified($scope, $node, $rootExpr)) {
+				return null;
 			}
 
-			if ($expr instanceof Expr\Variable && is_string($expr->name) && !$scope->hasVariableType($expr->name)->yes()) {
-				return true;
+			$rootExprType = $scope->getType($rootExpr);
+			if ($rootExprType instanceof ConstantBooleanType) {
+				return $rootExprType->getValue();
 			}
 
-			return (
-				$node instanceof FuncCall
-				|| $node instanceof MethodCall
-				|| $node instanceof Expr\StaticCall
-			) && $scope->isSpecified($expr);
-		};
+			return null;
+		}
 
 		if (count($sureTypes) === 1 && count($sureNotTypes) === 0) {
 			$sureType = reset($sureTypes);
-			if ($isSpecified($sureType[0])) {
+			if (self::isSpecified($scope, $node, $sureType[0])) {
 				return null;
 			}
 
@@ -223,7 +214,7 @@ class ImpossibleCheckTypeHelper
 			return null;
 		} elseif (count($sureNotTypes) === 1 && count($sureTypes) === 0) {
 			$sureNotType = reset($sureNotTypes);
-			if ($isSpecified($sureNotType[0])) {
+			if (self::isSpecified($scope, $node, $sureNotType[0])) {
 				return null;
 			}
 
@@ -242,39 +233,34 @@ class ImpossibleCheckTypeHelper
 			} elseif ($isSuperType->no()) {
 				return true;
 			}
-
-			return null;
-		}
-
-		if (count($sureTypes) > 0) {
-			foreach ($sureTypes as $sureType) {
-				if ($isSpecified($sureType[0])) {
-					return null;
-				}
-			}
-			$types = TypeCombinator::union(
-				...array_column($sureTypes, 1),
-			);
-			if ($types instanceof NeverType) {
-				return false;
-			}
-		}
-
-		if (count($sureNotTypes) > 0) {
-			foreach ($sureNotTypes as $sureNotType) {
-				if ($isSpecified($sureNotType[0])) {
-					return null;
-				}
-			}
-			$types = TypeCombinator::union(
-				...array_column($sureNotTypes, 1),
-			);
-			if ($types instanceof NeverType) {
-				return true;
-			}
 		}
 
 		return null;
+	}
+
+	private static function isSpecified(Scope $scope, Expr $node, Expr $expr): bool
+	{
+		if ($expr === $node) {
+			return true;
+		}
+
+		if ($expr instanceof Expr\Variable && is_string($expr->name) && !$scope->hasVariableType($expr->name)->yes()) {
+			return true;
+		}
+
+		if ($expr instanceof Expr\BooleanNot) {
+			return self::isSpecified($scope, $node, $expr->expr);
+		}
+
+		if ($expr instanceof Expr\BinaryOp) {
+			return self::isSpecified($scope, $node, $expr->left) || self::isSpecified($scope, $node, $expr->right);
+		}
+
+		return (
+			$node instanceof FuncCall
+			|| $node instanceof MethodCall
+			|| $node instanceof Expr\StaticCall
+		) && $scope->isSpecified($expr);
 	}
 
 	/**

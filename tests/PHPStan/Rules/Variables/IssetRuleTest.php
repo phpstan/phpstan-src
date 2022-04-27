@@ -380,6 +380,14 @@ class IssetRuleTest extends RuleTestCase
 				'Expression in isset() is not nullable.',
 				41,
 			],
+			[
+				'Using nullsafe property access "?->aaa" in isset() is unnecessary. Use -> instead.',
+				67,
+			],
+			[
+				'Using nullsafe property access "?->(Expression)" in isset() is unnecessary. Use -> instead.',
+				74,
+			],
 		]);
 	}
 

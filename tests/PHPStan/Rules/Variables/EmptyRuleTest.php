@@ -150,6 +150,14 @@ class EmptyRuleTest extends RuleTestCase
 				'Expression in empty() is not falsy.',
 				59,
 			],
+			[
+				'Using nullsafe property access "?->aaa" in empty() is unnecessary. Use -> instead.',
+				68,
+			],
+			[
+				'Using nullsafe property access "?->(Expression)" in empty() is unnecessary. Use -> instead.',
+				75,
+			],
 		]);
 	}
 

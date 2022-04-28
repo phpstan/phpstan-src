@@ -62,6 +62,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
@@ -687,8 +688,21 @@ class MutatingScope implements Scope
 				if ($type instanceof ConstantStringType) {
 					return new ConstantStringType(~$type->getValue());
 				}
-				if ($type instanceof StringType) {
-					return new StringType();
+				if ($type->isString()->yes()) {
+					$accessories = [
+						new StringType(),
+					];
+					if ($type->isNonEmptyString()->yes()) {
+						$accessories[] = new AccessoryNonEmptyStringType();
+					}
+					if ($type->isLiteralString()->yes()) {
+						$accessories[] = new AccessoryLiteralStringType();
+					}
+					if ($type->isNumericString()->yes()) {
+						$accessories[] = new AccessoryNumericStringType();
+					}
+
+					return TypeCombinator::intersect(...$accessories);
 				}
 				if ($type instanceof IntegerType || $type instanceof FloatType) {
 					return new IntegerType(); //no const types here, result depends on PHP_INT_SIZE

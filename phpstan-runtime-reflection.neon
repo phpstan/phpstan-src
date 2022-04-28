@@ -1,6 +1,0 @@
-includes:
-	- build/phpstan.neon
-
-parameters:
-	featureToggles:
-		disableRuntimeReflectionProvider: false

@@ -88,10 +88,6 @@ class ClassConstantRuleTest extends RuleTestCase
 
 	public function testClassConstantVisibility(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70400) {
-			$this->markTestSkipped('Test does not run on PHP 7.4 because of referencing parent:: without parent class.');
-		}
-
 		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/class-constant-visibility.php'], [
 			[
@@ -231,19 +227,12 @@ class ClassConstantRuleTest extends RuleTestCase
 	 */
 	public function testClassConstantOnExpression(int $phpVersion, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection');
-		}
 		$this->phpVersion = $phpVersion;
 		$this->analyse([__DIR__ . '/data/class-constant-on-expr.php'], $errors);
 	}
 
 	public function testAttributes(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->phpVersion = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/class-constant-attribute.php'], [
 			[

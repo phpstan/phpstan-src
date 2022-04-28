@@ -9172,9 +9172,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $expression,
 	): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->assertTypes(
 			__DIR__ . '/data/property-native-types.php',
 			$description,
@@ -9208,9 +9205,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $expression,
 	): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->assertTypes(
 			__DIR__ . '/data/arrow-functions.php',
 			$description,
@@ -9244,9 +9238,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $expression,
 	): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->assertTypes(
 			__DIR__ . '/data/arrow-functions-inside.php',
 			$description,
@@ -9304,9 +9295,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $expression,
 	): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->assertTypes(
 			__DIR__ . '/data/coalesce-assign.php',
 			$description,
@@ -9356,9 +9344,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		string $expression,
 	): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->assertTypes(
 			__DIR__ . '/data/array-spread.php',
 			$description,

@@ -6,17 +6,12 @@ use NativeMixedType\Foo;
 use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\MixedType;
-use const PHP_VERSION_ID;
 
 class MixedTypeTest extends PHPStanTestCase
 {
 
 	public function testMixedType(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(Foo::class);
 		$propertyType = $class->getNativeProperty('fooProp')->getNativeType();

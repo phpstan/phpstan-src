@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Exceptions;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ThrowExpressionRule>
@@ -45,10 +44,6 @@ class ThrowExpressionRuleTest extends RuleTestCase
 	 */
 	public function testRule(int $phpVersion, array $expectedErrors): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->phpVersion = new PhpVersion($phpVersion);
 		$this->analyse([__DIR__ . '/data/throw-expr.php'], $expectedErrors);
 	}

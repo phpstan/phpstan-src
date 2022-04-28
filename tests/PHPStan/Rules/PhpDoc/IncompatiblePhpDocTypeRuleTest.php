@@ -178,9 +178,6 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 
 	public function testTemplateTypeNativeTypeObject(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->analyse([__DIR__ . '/data/template-type-native-type-object.php'], [
 			[
 				'PHPDoc tag @return with type T is not subtype of native type object.',

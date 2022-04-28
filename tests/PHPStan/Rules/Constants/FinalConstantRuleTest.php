@@ -44,10 +44,6 @@ class FinalConstantRuleTest extends RuleTestCase
 	 */
 	public function testRule(int $phpVersionId, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/final-constant.php'], $errors);
 	}

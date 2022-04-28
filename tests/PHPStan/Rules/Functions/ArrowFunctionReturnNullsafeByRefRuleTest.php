@@ -19,10 +19,6 @@ class ArrowFunctionReturnNullsafeByRefRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->analyse([__DIR__ . '/data/arrow-function-nullsafe-by-ref.php'], [
 			[
 				'Nullsafe cannot be returned by reference.',

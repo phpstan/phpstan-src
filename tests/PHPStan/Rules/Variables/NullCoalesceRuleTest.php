@@ -144,10 +144,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testCoalesceAssignRule(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign.php'], [
@@ -212,10 +208,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testNullsafe(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/null-coalesce-nullsafe.php'], []);
@@ -243,10 +235,6 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testVariableCertaintyInNullCoalesceAssign(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null-assign.php'], [

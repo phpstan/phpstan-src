@@ -6,7 +6,6 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ReturnTypeRule>
@@ -362,9 +361,6 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testReturnTypeRulePhp70(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
 		$this->analyse([__DIR__ . '/data/returnTypes-7.0.php'], [
 			[
 				'Method ReturnTypes\FooPhp70::returnInteger() should return int but empty return statement found.',
@@ -499,9 +495,6 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug4795(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
 		$this->analyse([__DIR__ . '/data/bug-4795.php'], []);
 	}
 
@@ -522,9 +515,6 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug4603(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
 		$this->analyse([__DIR__ . '/data/bug-4603.php'], []);
 	}
 
@@ -579,10 +569,6 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug4165(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-4165.php'], []);
 	}
 
@@ -639,10 +625,6 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug6023(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-6023.php'], []);
 	}
@@ -650,20 +632,12 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug5065(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/bug-5065.php'], []);
 	}
 
 	public function testBug5065ExplicitMixed(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-5065.php'], [
 			[
@@ -675,40 +649,24 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug3400(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-3400.php'], []);
 	}
 
 	public function testBug6353(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-6353.php'], []);
 	}
 
 	public function testBug6635Level9(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-6635.php'], []);
 	}
 
 	public function testBug6635Level8(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/bug-6635.php'], []);
 	}

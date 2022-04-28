@@ -18,10 +18,6 @@ class ContinueBreakInLoopRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->analyse([__DIR__ . '/data/continue-break.php'], [
 			[
 				'Keyword break used outside of a loop or a switch statement.',

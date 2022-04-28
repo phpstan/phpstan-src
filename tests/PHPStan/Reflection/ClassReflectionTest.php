@@ -213,9 +213,6 @@ class ClassReflectionTest extends PHPStanTestCase
 	 */
 	public function testIsAttributeClass(string $className, bool $expected, int $expectedFlags = Attribute::TARGET_ALL): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
 		$reflectionProvider = $this->createReflectionProvider();
 		$reflection = $reflectionProvider->getClass($className);
 		$this->assertSame($expected, $reflection->isAttributeClass());

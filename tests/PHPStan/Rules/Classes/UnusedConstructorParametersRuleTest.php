@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Classes;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<UnusedConstructorParametersRule>
@@ -36,10 +35,6 @@ class UnusedConstructorParametersRuleTest extends RuleTestCase
 
 	public function testPromotedProperties(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/unused-constructor-parameters-promoted-properties.php'], []);
 	}
 

@@ -20,9 +20,6 @@ class AbstractMethodInNonAbstractClassRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
 		$this->analyse([__DIR__ . '/data/abstract-method.php'], [
 			[
 				'Non-abstract class AbstractMethod\Bar contains abstract method doBar().',

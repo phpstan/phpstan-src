@@ -18,10 +18,6 @@ class DuplicateDeclarationRuleTest extends RuleTestCase
 
 	public function testDuplicateDeclarations(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('This test needs static reflection');
-		}
-
 		$this->analyse(
 			[
 				__DIR__ . '/data/duplicate-declarations.php',
@@ -57,10 +53,6 @@ class DuplicateDeclarationRuleTest extends RuleTestCase
 
 	public function testDuplicatePromotedProperty(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('This test needs static reflection');
-		}
-
 		$this->analyse([__DIR__ . '/data/duplicate-promoted-property.php'], [
 			[
 				'Cannot redeclare property DuplicatedPromotedProperty\Foo::$foo.',
@@ -75,10 +67,6 @@ class DuplicateDeclarationRuleTest extends RuleTestCase
 
 	public function testDuplicateEnumCase(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('This test needs static reflection');
-		}
-
 		$this->analyse([__DIR__ . '/data/duplicate-enum-cases.php'], [
 			[
 				'Cannot redeclare enum case DuplicatedEnumCase\Foo::BAR.',

@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MissingMethodImplementationRule>
@@ -19,10 +18,6 @@ class MissingMethodImplementationRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->analyse([__DIR__ . '/data/missing-method-impl.php'], [
 			[
 				'Non-abstract class MissingMethodImpl\Baz contains abstract method doBaz() from class MissingMethodImpl\Baz.',
@@ -51,10 +46,6 @@ class MissingMethodImplementationRuleTest extends RuleTestCase
 
 	public function testEnums(): void
 	{
-		if (!self::$useStaticReflectionProvider || PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs static reflection and PHP 8.1');
-		}
-
 		$this->analyse([__DIR__ . '/data/missing-method-impl-enum.php'], [
 			[
 				'Enum MissingMethodImplEnum\Bar contains abstract method doFoo() from interface MissingMethodImplEnum\FooInterface.',

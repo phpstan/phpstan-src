@@ -47,10 +47,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 	 */
 	public function testOverridingFinalMethod(int $phpVersion, string $contravariantMessage): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$errors = [
 			[
 				'Method OverridingFinalMethod\Bar::doFoo() overrides final method OverridingFinalMethod\Foo::doFoo().',
@@ -226,10 +222,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 		array $expectedErrors,
 	): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->phpVersionId = $phpVersion;
 		$this->analyse([$file], $expectedErrors);
 	}
@@ -287,10 +279,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 		array $expectedErrors,
 	): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->phpVersionId = $phpVersion;
 		$this->analyse([__DIR__ . '/data/return-type-covariance.php'], $expectedErrors);
 	}
@@ -300,10 +288,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 	 */
 	public function testParle(int $phpVersion, string $contravariantMessage, string $covariantMessage): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->phpVersionId = $phpVersion;
 		$this->analyse([__DIR__ . '/data/parle.php'], [
 			[
@@ -346,19 +330,12 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	public function testBug3629(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test require static reflection.');
-		}
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-3629.php'], []);
 	}
 
 	public function testVariadics(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->phpVersionId = PHP_VERSION_ID;
 		$errors = [
 			[
@@ -444,9 +421,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 	 */
 	public function testLessOverridenParametersWithVariadic(int $phpVersionId, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/less-parameters-variadics.php'], $errors);
 	}
@@ -476,9 +450,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 	 */
 	public function testParameterTypeWidening(int $phpVersionId, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/parameter-type-widening.php'], $errors);
 	}
@@ -518,10 +489,6 @@ class OverridingMethodRuleTest extends RuleTestCase
 	 */
 	public function testTentativeReturnTypes(int $phpVersionId, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		if (PHP_VERSION_ID < 80100) {
 			$errors = [];
 		}

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\PhpDoc;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<IncompatiblePropertyPhpDocTypeRule>
@@ -62,9 +61,6 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 
 	public function testNativeTypes(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->analyse([__DIR__ . '/data/incompatible-property-native-types.php'], [
 			[
 				'PHPDoc tag @var for property IncompatiblePhpDocPropertyNativeType\Foo::$selfTwo with type object is not subtype of native type IncompatiblePhpDocPropertyNativeType\Foo.',
@@ -88,10 +84,6 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 
 	public function testPromotedProperties(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/incompatible-property-promoted.php'], [
 			[
 				'PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$bar contains unresolvable type.',
@@ -134,10 +126,6 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 
 	public function testBug4227(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-4227.php'], []);
 	}
 

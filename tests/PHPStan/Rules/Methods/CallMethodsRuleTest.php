@@ -884,9 +884,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testArrowFunctionClosureBind(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1500,10 +1497,6 @@ class CallMethodsRuleTest extends RuleTestCase
 	 */
 	public function testExplicitMixed(bool $checkExplicitMixed, array $errors): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1550,11 +1543,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug3445(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			if (PHP_VERSION_ID < 70300) {
-				$this->markTestSkipped('PHP looks at the parameter value non-lazily before PHP 7.3.');
-			}
-		}
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1585,9 +1573,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug3683(): void
 	{
-		if (self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires hybrid reflection.');
-		}
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1626,10 +1611,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testMatchExpressionVoidIsUsed(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1647,10 +1628,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testNullSafe(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1676,9 +1653,6 @@ class CallMethodsRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID >= 80000) {
 			$this->markTestSkipped('Test requires PHP earlier than 8.0.');
 		}
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
 
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
@@ -1694,10 +1668,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testNamedArguments(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1801,10 +1771,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug4199(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1819,10 +1785,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug4188(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -1975,10 +1937,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug4800(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2018,10 +1976,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug4083(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2096,10 +2050,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug5372(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2244,10 +2194,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug5460(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2256,10 +2202,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testFirstClassCallable(): void
 	{
-		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
@@ -2411,10 +2353,6 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	public function testBug6423(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;

@@ -393,9 +393,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	public function testStrictComparisonPropertyNativeTypesPhp74(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/strict-comparison-property-native-types.php'], [
 			[

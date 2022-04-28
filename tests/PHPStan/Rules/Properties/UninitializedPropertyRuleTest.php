@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<UninitializedPropertyRule>
@@ -44,10 +43,6 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/uninitialized-property.php'], [
 			[
 				'Class UninitializedProperty\Foo has an uninitialized property $bar. Give it default value or assign it in the constructor.',
@@ -74,18 +69,10 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 
 	public function testPromotedProperties(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/uninitialized-property-promoted.php'], []);
 	}
 	public function testReadOnly(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1');
-		}
-
 		// reported by a different rule
 		$this->analyse([__DIR__ . '/data/uninitialized-property-readonly.php'], []);
 	}

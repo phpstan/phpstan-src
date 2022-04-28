@@ -211,15 +211,15 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3997.php'], [
 			[
 				'Return type (int) of method Bug3997\Baz::count() should be covariant with return type (int<0, max>) of method Countable::count()',
-				PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider ? 35 : 36,
+				35,
 			],
 			[
 				'Return type (int) of method Bug3997\Lorem::count() should be covariant with return type (int<0, max>) of method Countable::count()',
-				PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider ? 49 : 50,
+				49,
 			],
 			[
 				'Return type (string) of method Bug3997\Ipsum::count() should be compatible with return type (int<0, max>) of method Countable::count()',
-				PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider ? 63 : 64,
+				63,
 			],
 		]);
 	}
@@ -347,10 +347,6 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 	public function testBug4854(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-4854.php'], []);
@@ -358,10 +354,6 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 	public function testMemcachePoolGet(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/memcache-pool-get.php'], []);

@@ -160,10 +160,6 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 
 	public function testThrowExpression(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		$this->analyse([__DIR__ . '/data/dead-catch-throw-expr.php'], [
 			[
 				'Dead catch - InvalidArgumentException is never thrown in the try block.',
@@ -184,10 +180,6 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 
 	public function testFirstClassCallables(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/dead-catch-first-class-callables.php'], [
 			[
 				'Dead catch - InvalidArgumentException is never thrown in the try block.',
@@ -198,10 +190,6 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 
 	public function testBug4852(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('This test needs static reflection');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-4852.php'], [
 			[
 				'Dead catch - Exception is never thrown in the try block.',

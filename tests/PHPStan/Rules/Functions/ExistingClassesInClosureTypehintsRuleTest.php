@@ -75,9 +75,6 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 
 	public function testVoidParameterTypehint(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection');
-		}
 		$this->analyse([__DIR__ . '/data/void-parameter-typehint.php'], [
 			[
 				'Parameter $param of anonymous function has invalid type void.',
@@ -115,10 +112,6 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 	 */
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
@@ -194,10 +187,6 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 	 */
 	public function testIntersectionTypes(int $phpVersion, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->phpVersionId = $phpVersion;
 
 		$this->analyse([__DIR__ . '/data/closure-intersection-types.php'], $errors);

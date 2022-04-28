@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CallToStaticMethodStatementWithoutSideEffectsRule>
@@ -69,10 +68,6 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 
 	public function testFirstClassCallables(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/first-class-callable-static-method-without-side-effect.php'], [
 			[
 				'Call to static method FirstClassCallableStaticMethodWithoutSideEffect\Foo::doFoo() on a separate line has no effect.',

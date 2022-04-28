@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MissingMethodParameterTypehintRule>
@@ -78,9 +77,6 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 
 	public function testPromotedProperties(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
 		$this->analyse([__DIR__ . '/data/missing-typehint-promoted-properties.php'], [
 			[
 				'Method MissingTypehintPromotedProperties\Foo::__construct() has parameter $foo with no value type specified in iterable type array.',

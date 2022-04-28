@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<TraitAttributeClassRule>
@@ -19,9 +18,6 @@ class TraitAttributeClassRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
 		$this->analyse([__DIR__ . '/data/non-class-attribute-class.php'], [
 			[
 				'Trait cannot be an Attribute class.',

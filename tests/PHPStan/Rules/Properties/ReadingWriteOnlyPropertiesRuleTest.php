@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ReadingWriteOnlyPropertiesRule>
@@ -74,10 +73,6 @@ class ReadingWriteOnlyPropertiesRuleTest extends RuleTestCase
 
 	public function testNullsafe(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/reading-write-only-properties-nullsafe.php'], [
 			[

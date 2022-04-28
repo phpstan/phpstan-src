@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CallToFunctionStatementWithoutSideEffectsRule>
@@ -58,10 +57,6 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 
 	public function testFirstClassCallables(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/first-class-callable-function-without-side-effect.php'], [
 			[
 				'Call to function mkdir() on a separate line has no effect.',

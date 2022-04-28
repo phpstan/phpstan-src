@@ -33,9 +33,6 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID >= 80100) {
 			self::markTestSkipped('Test runs on PHP < 8.1.');
 		}
-		if (!self::$useStaticReflectionProvider) {
-			self::markTestSkipped('Test requires static reflection.');
-		}
 
 		$this->analyse([__DIR__ . '/data/static-method-callable-not-supported.php'], [
 			[

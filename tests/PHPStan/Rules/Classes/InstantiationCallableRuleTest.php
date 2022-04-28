@@ -18,9 +18,6 @@ class InstantiationCallableRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			self::markTestSkipped('Test requires static reflection.');
-		}
 		$this->analyse([__DIR__ . '/data/instantiation-callable.php'], [
 			[
 				'Cannot create callable from the new operator.',

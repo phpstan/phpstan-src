@@ -95,10 +95,6 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 
 	public function testNativeTypes(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/properties-native-types.php'], [
 			[
 				'Property PropertiesNativeTypes\Foo::$bar has unknown class PropertiesNativeTypes\Bar as its type.',
@@ -120,10 +116,6 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 
 	public function testPromotedProperties(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/properties-promoted-types.php'], [
 			[
 				'Property PromotedPropertiesExistingClasses\Foo::$baz has invalid type PromotedPropertiesExistingClasses\SomeTrait.',
@@ -172,10 +164,6 @@ class ExistingClassesInPropertiesRuleTest extends RuleTestCase
 	 */
 	public function testIntersectionTypes(int $phpVersion, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->phpVersion = $phpVersion;
 
 		$this->analyse([__DIR__ . '/data/intersection-types.php'], $errors);

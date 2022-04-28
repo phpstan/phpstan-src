@@ -34,10 +34,6 @@ class ExistingClassesInClassImplementsRuleTest extends RuleTestCase
 
 	public function testRuleImplementsError(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('This test needs static reflection');
-		}
-
 		$this->analyse([__DIR__ . '/data/implements-error.php'], [
 			[
 				'Class ImplementsError\Foo implements unknown interface ImplementsError\Bar.',
@@ -61,8 +57,8 @@ class ExistingClassesInClassImplementsRuleTest extends RuleTestCase
 
 	public function testEnums(): void
 	{
-		if (!self::$useStaticReflectionProvider || PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs static reflection and PHP 8.1');
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
 		}
 
 		$this->analyse([__DIR__ . '/data/class-implements-enum.php'], [

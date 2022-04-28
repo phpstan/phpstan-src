@@ -61,10 +61,6 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4 or static reflection.');
-		}
-
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
 
@@ -179,9 +175,6 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 	public function testBug3636(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
 		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
@@ -196,10 +189,6 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 	public function testPromotedProperties(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = ['@get'];
 		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
@@ -214,10 +203,6 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 	public function testNullsafe(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
 		$this->analyse([__DIR__ . '/data/nullsafe-unused-private-property.php'], []);
@@ -232,10 +217,6 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 
 	public function testBug5337(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->alwaysWrittenTags = [];
 		$this->alwaysReadTags = [];
 		$this->analyse([__DIR__ . '/data/bug-5337.php'], []);

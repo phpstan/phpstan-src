@@ -372,10 +372,6 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	public function testBug6333(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-6333.php'], []);
 	}
 

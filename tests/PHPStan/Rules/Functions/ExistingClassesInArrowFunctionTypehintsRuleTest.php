@@ -26,9 +26,6 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->analyse([__DIR__ . '/data/arrow-function-typehints.php'], [
 			[
 				'Parameter $bar of anonymous function has invalid type ArrowFunctionExistingClassesInTypehints\Bar.',
@@ -70,10 +67,6 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 	 */
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
@@ -111,10 +104,6 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 	 */
 	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/required-parameter-after-optional-arrow.php'], $errors);
 	}
@@ -153,10 +142,6 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 	 */
 	public function testIntersectionTypes(int $phpVersion, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->phpVersionId = $phpVersion;
 
 		$this->analyse([__DIR__ . '/data/arrow-function-intersection-types.php'], $errors);

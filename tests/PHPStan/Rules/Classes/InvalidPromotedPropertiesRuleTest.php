@@ -21,9 +21,6 @@ class InvalidPromotedPropertiesRuleTest extends RuleTestCase
 
 	public function testNotSupportedOnPhp7(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
 		$this->phpVersion = 70400;
 		$this->analyse([__DIR__ . '/data/invalid-promoted-properties.php'], [
 			[
@@ -63,9 +60,6 @@ class InvalidPromotedPropertiesRuleTest extends RuleTestCase
 
 	public function testSupportedOnPhp8(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
 		$this->phpVersion = 80000;
 		$this->analyse([__DIR__ . '/data/invalid-promoted-properties.php'], [
 			[

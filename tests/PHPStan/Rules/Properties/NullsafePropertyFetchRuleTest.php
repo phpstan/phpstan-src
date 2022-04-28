@@ -19,10 +19,6 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/nullsafe-property-fetch-rule.php'], [
 			[
 				'Using nullsafe property access on non-nullable type Exception. Use -> instead.',
@@ -33,10 +29,6 @@ class NullsafePropertyFetchRuleTest extends RuleTestCase
 
 	public function testBug6020(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-6020.php'], []);
 	}
 

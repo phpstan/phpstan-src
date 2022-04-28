@@ -20,9 +20,6 @@ class UnpackIterableInArrayRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->analyse([__DIR__ . '/data/unpack-iterable.php'], [
 			[
 				'Only iterables can be unpacked, array<int>|null given.',

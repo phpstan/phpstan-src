@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CallToMethodStatementWithoutSideEffectsRule>
@@ -46,10 +45,6 @@ class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 
 	public function testNullsafe(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/nullsafe-method-call-statement-no-side-effects.php'], [
 			[
 				'Call to method Exception::getMessage() on a separate line has no effect.',
@@ -88,10 +83,6 @@ class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 
 	public function testFirstClassCallables(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/first-class-callable-method-without-side-effect.php'], [
 			[
 				'Call to method FirstClassCallableMethodWithoutSideEffect\Foo::doFoo() on a separate line has no effect.',

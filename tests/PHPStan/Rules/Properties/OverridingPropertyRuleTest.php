@@ -21,10 +21,6 @@ class OverridingPropertyRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->reportMaybes = true;
 		$this->analyse([__DIR__ . '/data/overriding-property.php'], [
 			[

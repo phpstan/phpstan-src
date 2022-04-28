@@ -11,7 +11,6 @@ use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use function array_reverse;
 use function extension_loaded;
 use function method_exists;
 use function restore_error_handler;
@@ -73,13 +72,8 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/extending-unknown-class.php');
 		$this->assertCount(1, $errors);
 
-		if (self::$useStaticReflectionProvider) {
-			$this->assertSame(5, $errors[0]->getLine());
-			$this->assertSame('Class ExtendingUnknownClass\Foo extends unknown class ExtendingUnknownClass\Bar.', $errors[0]->getMessage());
-		} else {
-			$this->assertNull($errors[0]->getLine());
-			$this->assertSame('Class ExtendingUnknownClass\Bar not found.', $errors[0]->getMessage());
-		}
+		$this->assertSame(5, $errors[0]->getLine());
+		$this->assertSame('Class ExtendingUnknownClass\Foo extends unknown class ExtendingUnknownClass\Bar.', $errors[0]->getMessage());
 	}
 
 	public function testExtendingKnownClassWithCheck(): void
@@ -155,9 +149,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testExtendsPdoStatementCrash(): void
 	{
-		if (PHP_VERSION_ID >= 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped();
-		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/extends-pdo-statement.php');
 		$this->assertNoErrors($errors);
 	}
@@ -186,28 +177,11 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testCollectWarnings(): void
 	{
-		if (PHP_VERSION_ID >= 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Fatal error in PHP 8.0');
-		}
 		restore_error_handler();
 		$errors = $this->runAnalyse(__DIR__ . '/data/declaration-warning.php');
-		if (self::$useStaticReflectionProvider) {
-			$this->assertCount(1, $errors);
-			$this->assertSame('Parameter #1 $i of method DeclarationWarning\Bar::doFoo() is not optional.', $errors[0]->getMessage());
-			$this->assertSame(22, $errors[0]->getLine());
-			return;
-		}
-		$this->assertCount(2, $errors);
-		$messages = [
-			'Declaration of DeclarationWarning\Bar::doFoo(int $i): void should be compatible with DeclarationWarning\Foo::doFoo(): void',
-			'Parameter #1 $i of method DeclarationWarning\Bar::doFoo() is not optional.',
-		];
-		if (PHP_VERSION_ID < 70400) {
-			$messages = array_reverse($messages);
-		}
-		foreach ($messages as $i => $message) {
-			$this->assertSame($message, $errors[$i]->getMessage());
-		}
+		$this->assertCount(1, $errors);
+		$this->assertSame('Parameter #1 $i of method DeclarationWarning\Bar::doFoo() is not optional.', $errors[0]->getMessage());
+		$this->assertSame(22, $errors[0]->getLine());
 	}
 
 	public function testPropertyAssignIntersectionStaticTypeBug(): void
@@ -286,9 +260,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug3379(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection');
-		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3379.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('Constant SOME_UNKNOWN_CONST not found.', $errors[0]->getMessage());
@@ -734,9 +705,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 	public function testBug7077(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7077.php');
 		$this->assertNoErrors($errors);
 	}
@@ -761,9 +729,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		if (PHP_VERSION_ID < 80100) {
 			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
 		}
 
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7135.php');

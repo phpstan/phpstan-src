@@ -302,10 +302,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testImplodeOnPhp74(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$errors = [
 			[
 				'Parameter #1 $glue of function implode expects string, array given.',
@@ -333,10 +329,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testImplodeOnLessThanPhp74(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70400) {
-			$this->markTestSkipped('Test skipped on 7.4.');
-		}
-
 		$errors = [];
 		if (PHP_VERSION_ID >= 80000) {
 			$errors = [
@@ -484,10 +476,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$errors = [
 			[
 				'Missing parameter $j (int) in call to function FunctionNamedArguments\foo.',
@@ -579,9 +567,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testArrayReduceArrowFunctionCallback(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->analyse([__DIR__ . '/data/array_reduce_arrow.php'], [
 			[
 				'Parameter #2 $callback of function array_reduce expects callable(string, int): string, Closure(string, string): string given.',
@@ -614,9 +599,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testArrayWalkArrowFunctionCallback(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->analyse([__DIR__ . '/data/array_walk_arrow.php'], [
 			[
 				'Parameter #2 $callback of function array_walk expects callable(int, string, mixed): mixed, Closure(stdClass, float): \'\' given.',
@@ -663,10 +645,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testUasortArrowFunctionCallback(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/uasort_arrow.php'], [
 			[
 				'Parameter #2 $callback of function uasort expects callable(int, int): int, Closure(string, string): 1 given.',
@@ -687,10 +665,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testUsortArrowFunctionCallback(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/usort_arrow.php'], [
 			[
 				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(string, string): 1 given.',
@@ -715,10 +689,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testUksortArrowFunctionCallback(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/uksort_arrow.php'], [
 			[
 				'Parameter #2 $callback of function uksort expects callable(string, string): int, Closure(stdClass, stdClass): 1 given.',
@@ -744,10 +714,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testBug3660(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-3660.php'], [
 			[
 				'Parameter #1 $string of function strlen expects string, int given.',
@@ -855,10 +821,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testBug5356(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-5356.php'], [
 			[
 				'Parameter #1 $callback of function array_map expects (callable(string): mixed)|null, Closure(array): \'a\' given.',
@@ -943,10 +905,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testFirstClassCallables(): void
 	{
-		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		// handled by a different rule
 		$this->analyse([__DIR__ . '/data/first-class-callables.php'], []);
 	}
@@ -975,9 +933,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Function fputcsv invoked with 6 parameters, 2-5 required.',
 				28,
 			];
-		}
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 		$this->analyse([__DIR__ . '/data/bug-6448.php'], $errors);
 	}

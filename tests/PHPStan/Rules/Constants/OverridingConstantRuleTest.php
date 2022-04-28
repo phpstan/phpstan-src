@@ -31,10 +31,6 @@ class OverridingConstantRuleTest extends RuleTestCase
 
 	public function testFinal(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$errors = [
 			[
 				'Constant OverridingFinalConstant\Bar::FOO overrides final constant OverridingFinalConstant\Foo::FOO.',

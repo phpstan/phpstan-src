@@ -59,3 +59,60 @@ class Foo
 	}
 
 }
+
+class MoreLiteralStringFunctions
+{
+
+	/**
+	 * @param literal-string $literal
+	 */
+	public function doFoo(string $s, string $literal)
+	{
+		assertType('string', addslashes($s));
+		assertType('literal-string', addslashes($literal));
+		assertType('string', addcslashes($s));
+		assertType('literal-string', addcslashes($literal));
+
+		assertType('string', escapeshellarg($s));
+		assertType('literal-string', escapeshellarg($literal));
+		assertType('string', escapeshellcmd($s));
+		assertType('literal-string', escapeshellcmd($literal));
+
+		assertType('string', strtoupper($s));
+		assertType('literal-string', strtoupper($literal));
+		assertType('string', strtolower($s));
+		assertType('literal-string', strtolower($literal));
+		assertType('string', mb_strtoupper($s));
+		assertType('literal-string', mb_strtoupper($literal));
+		assertType('string', mb_strtolower($s));
+		assertType('literal-string', mb_strtolower($literal));
+		assertType('string', lcfirst($s));
+		assertType('literal-string', lcfirst($literal));
+		assertType('string', ucfirst($s));
+		assertType('literal-string', ucfirst($literal));
+		assertType('string', ucwords($s));
+		assertType('literal-string', ucwords($literal));
+		assertType('string', htmlspecialchars($s));
+		assertType('literal-string', htmlspecialchars($literal));
+		assertType('string', htmlentities($s));
+		assertType('literal-string', htmlentities($literal));
+
+		assertType('string', urlencode($s));
+		assertType('literal-string', urlencode($literal));
+		assertType('string', urldecode($s));
+		assertType('literal-string', urldecode($literal));
+		assertType('string', rawurlencode($s));
+		assertType('literal-string', rawurlencode($literal));
+		assertType('string', rawurldecode($s));
+		assertType('literal-string', rawurldecode($literal));
+
+		assertType('string', preg_quote($s));
+		assertType('literal-string', preg_quote($literal));
+
+		assertType('string', sprintf($s));
+		assertType('literal-string', sprintf($literal));
+		assertType('string', vsprintf($s, []));
+		assertType('literal-string', vsprintf($literal, []));
+	}
+
+}

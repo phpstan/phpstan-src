@@ -1384,7 +1384,7 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
-		class: PHPStan\Type\Php\NonEmptyStringFunctionsReturnTypeExtension
+		class: PHPStan\Type\Php\StringFunctionsReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 

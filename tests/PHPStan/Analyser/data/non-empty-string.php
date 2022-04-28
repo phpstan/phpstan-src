@@ -96,7 +96,9 @@ class Foo
 	{
 		if (1 === strlen($s)) {
 			assertType('literal-string&non-empty-string', $s);
+			return;
 		}
+		assertType('literal-string', $s);
 	}
 
 	/**
@@ -106,7 +108,9 @@ class Foo
 	{
 		if (0 < strlen($s)) {
 			assertType('literal-string&non-empty-string', $s);
+			return;
 		}
+		assertType('literal-string', $s);
 	}
 
 	public function doFoo3(string $s): void

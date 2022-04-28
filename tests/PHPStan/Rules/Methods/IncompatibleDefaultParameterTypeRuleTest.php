@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<IncompatibleDefaultParameterTypeRule>
@@ -48,10 +47,6 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 
 	public function testNewInInitializers(): void
 	{
-		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/new-in-initializers.php'], [
 			[
 				'Default value of the parameter #1 $i (stdClass) of method MethodNewInInitializers\Foo::doFoo() is incompatible with type int.',
@@ -62,10 +57,6 @@ class IncompatibleDefaultParameterTypeRuleTest extends RuleTestCase
 
 	public function testDefaultValueForPromotedProperty(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->analyse([__DIR__ . '/data/default-value-for-promoted-property.php'], [
 			[
 				'Default value of the parameter #1 $foo (string) of method DefaultValueForPromotedProperty\Foo::__construct() is incompatible with type int.',

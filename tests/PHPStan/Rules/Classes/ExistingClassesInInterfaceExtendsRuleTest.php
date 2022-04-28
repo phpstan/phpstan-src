@@ -34,10 +34,6 @@ class ExistingClassesInInterfaceExtendsRuleTest extends RuleTestCase
 
 	public function testRuleExtendsError(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('This test needs static reflection');
-		}
-
 		$this->analyse([__DIR__ . '/data/interface-extends-error.php'], [
 			[
 				'Interface InterfaceExtendsError\Foo extends unknown interface InterfaceExtendsError\Bar.',
@@ -57,8 +53,8 @@ class ExistingClassesInInterfaceExtendsRuleTest extends RuleTestCase
 
 	public function testEnums(): void
 	{
-		if (!self::$useStaticReflectionProvider || PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('This test needs static reflection and PHP 8.1');
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
 		}
 
 		$this->analyse([__DIR__ . '/data/interface-extends-enum.php'], [

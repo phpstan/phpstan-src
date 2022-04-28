@@ -42,9 +42,6 @@ class CallCallablesRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID >= 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped();
-		}
 		$this->analyse([__DIR__ . '/data/callables.php'], [
 			[
 				'Trying to invoke string but it might not be a callable.',
@@ -144,10 +141,6 @@ class CallCallablesRuleTest extends RuleTestCase
 
 	public function testNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/callables-named-arguments.php'], [
 			[
 				'Missing parameter $j (int) in call to closure.',
@@ -223,10 +216,6 @@ class CallCallablesRuleTest extends RuleTestCase
 
 	public function testFirstClassCallables(): void
 	{
-		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->analyse([__DIR__ . '/data/call-first-class-callables.php'], [
 			[
 				'Unable to resolve the template type T in call to closure',
@@ -243,9 +232,6 @@ class CallCallablesRuleTest extends RuleTestCase
 
 	public function testBug6701(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->analyse([__DIR__ . '/data/bug-6701.php'], [
 			[
 				'Parameter #1 $test of closure expects string|null, int given.',

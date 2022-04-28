@@ -19,10 +19,6 @@ class InvalidAssignVarRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection.');
-		}
-
 		$this->analyse([__DIR__ . '/data/invalid-assign-var.php'], [
 			[
 				'Nullsafe operator cannot be on left side of assignment.',

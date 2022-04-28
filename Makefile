@@ -11,14 +11,8 @@ tests-integration:
 tests-levels:
 	php vendor/bin/paratest --runner WrapperRunner --no-coverage --group levels
 
-tests-runtime-reflection:
-	php vendor/bin/paratest --runner WrapperRunner --no-coverage --bootstrap tests/bootstrap-runtime-reflection.php
-
 tests-coverage:
 	php vendor/bin/paratest --runner WrapperRunner
-
-tests-runtime-reflection-coverage:
-	php vendor/bin/paratest --runner WrapperRunner --bootstrap tests/bootstrap-runtime-reflection.php
 
 lint:
 	php vendor/bin/parallel-lint --colors \
@@ -59,9 +53,6 @@ cs-fix:
 
 phpstan:
 	php bin/phpstan clear-result-cache -q && php -d memory_limit=448M bin/phpstan
-
-phpstan-runtime-reflection:
-	php bin/phpstan clear-result-cache -q && php -d memory_limit=448M bin/phpstan analyse -c phpstan-runtime-reflection.neon
 
 phpstan-result-cache:
 	php -d memory_limit=448M bin/phpstan

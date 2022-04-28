@@ -35,9 +35,6 @@ jobs:
           - "8.0"
           - "8.1"
         operating-system: [ubuntu-latest, windows-latest]
-        script:
-          - "make phpstan && make phpstan-validate-stub-files"
-          - "make phpstan-runtime-reflection"
 
     steps:
       - name: "Checkout"
@@ -94,7 +91,7 @@ jobs:
         run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "PHPStan"
-        run: ${{ matrix.script }}
+        run: "make phpstan && make phpstan-validate-stub-files"
 
   static-analysis-with-result-cache:
     name: "PHPStan with result cache"

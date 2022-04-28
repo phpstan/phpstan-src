@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<UsageOfVoidMatchExpressionRule>
@@ -19,10 +18,6 @@ class UsageOfVoidMatchExpressionRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/void-match.php'], [
 			[
 				'Result of match expression (void) is used.',

@@ -50,16 +50,12 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 
 	public function testNullsafe(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/nullsafe-unused-private-method.php'], []);
 	}
 
 	public function testFirstClassCallable(): void
 	{
-		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
+		if (PHP_VERSION_ID < 80100) {
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 

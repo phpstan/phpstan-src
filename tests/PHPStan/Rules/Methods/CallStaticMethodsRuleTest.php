@@ -11,7 +11,6 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CallStaticMethodsRule>
@@ -35,9 +34,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testCallStaticMethods(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70400) {
-			$this->markTestSkipped('Test does not run on PHP 7.4 because of referencing parent:: without parent class.');
-		}
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/call-static-methods.php'], [
 			[
@@ -390,10 +386,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 
 		$this->analyse([__DIR__ . '/data/static-method-named-arguments.php'], [
@@ -460,10 +452,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testFirstClassCallables(): void
 	{
-		if (PHP_VERSION_ID < 80100 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->checkThisOnly = false;
 
 		// handled by a different rule
@@ -479,10 +467,6 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	public function testBug6249(): void
 	{
-		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		// discussion https://github.com/phpstan/phpstan/discussions/6249
 		$this->checkThisOnly = false;
 		$this->checkExplicitMixed = true;

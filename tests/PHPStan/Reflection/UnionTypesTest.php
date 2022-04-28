@@ -7,17 +7,12 @@ use PhpParser\Node\Name;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
-use const PHP_VERSION_ID;
 
 class UnionTypesTest extends PHPStanTestCase
 {
 
 	public function testUnionTypes(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0');
-		}
-
 		require_once __DIR__ . '/../../../stubs/runtime/ReflectionUnionType.php';
 
 		$reflectionProvider = $this->createReflectionProvider();

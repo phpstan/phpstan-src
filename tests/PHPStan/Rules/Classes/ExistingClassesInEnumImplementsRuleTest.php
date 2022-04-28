@@ -25,8 +25,8 @@ class ExistingClassesInEnumImplementsRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider || PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1 and static reflection.');
+		if (PHP_VERSION_ID < 80100) {
+			self::markTestSkipped('Test requires PHP 8.1.');
 		}
 
 		$this->analyse([__DIR__ . '/data/enum-implements.php'], [

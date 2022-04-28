@@ -6,7 +6,6 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ArrowFunctionReturnTypeRule>
@@ -27,9 +26,6 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
 		$this->analyse([__DIR__ . '/data/arrow-functions-return-type.php'], [
 			[
 				'Anonymous function should return string but returns int.',
@@ -44,10 +40,6 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug3261(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-3261.php'], []);
 	}
 

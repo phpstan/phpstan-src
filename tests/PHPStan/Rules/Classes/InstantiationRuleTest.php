@@ -31,9 +31,6 @@ class InstantiationRuleTest extends RuleTestCase
 
 	public function testInstantiation(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70400) {
-			$this->markTestSkipped('Test does not run on PHP 7.4 because of referencing parent:: without parent class.');
-		}
 		$this->analyse(
 			[__DIR__ . '/data/instantiation.php'],
 			[
@@ -265,10 +262,6 @@ class InstantiationRuleTest extends RuleTestCase
 
 	public function testPromotedProperties(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/instantiation-promoted-properties.php'], [
 			[
 				'Parameter #2 $bar of class InstantiationPromotedProperties\Foo constructor expects array<string>, array<int, int> given.',
@@ -288,10 +281,6 @@ class InstantiationRuleTest extends RuleTestCase
 
 	public function testNamedArguments(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/instantiation-named-arguments.php'], [
 			[
 				'Missing parameter $j (int) in call to InstantiationNamedArguments\Foo constructor.',
@@ -345,16 +334,12 @@ class InstantiationRuleTest extends RuleTestCase
 
 	public function testBug4681(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/bug-4681.php'], []);
 	}
 
 	public function testFirstClassCallable(): void
 	{
-		if (PHP_VERSION_ID < 80100 || !self::$useStaticReflectionProvider) {
+		if (PHP_VERSION_ID < 80100) {
 			$this->markTestSkipped('Test requires PHP 8.1 and static reflection.');
 		}
 

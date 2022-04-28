@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="tests/phpunit.xsd"
-	bootstrap="tests/bootstrap-static-reflection.php"
+	bootstrap="tests/bootstrap.php"
 	cacheResult="false"
 	colors="true"
 	failOnRisky="true"

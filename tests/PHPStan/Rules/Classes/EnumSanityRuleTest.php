@@ -19,10 +19,6 @@ class EnumSanityRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection');
-		}
-
 		if (PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Test requires PHP 8.0');
 		}

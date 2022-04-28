@@ -4,8 +4,33 @@ parameters:
 		disableRuntimeReflectionProvider: false
 
 services:
+	-
+		class: PHPStan\Testing\TestCaseSourceLocatorFactory
+		arguments:
+			phpParser: @phpParserDecorator
+			php8Parser: @php8PhpParser
+
 	cacheStorage:
 		class: PHPStan\Cache\MemoryCacheStorage
 		arguments!: []
+
 	currentPhpVersionSimpleParser!:
 		factory: @currentPhpVersionRichParser
+
+	currentPhpVersionLexer:
+		class: PhpParser\Lexer
+		factory: PhpParser\Lexer\Emulative
+		arguments:
+			options:
+				usedAttributes: [comments, startLine, endLine, startTokenPos, endTokenPos]
+
+	betterReflectionSourceLocator:
+		class: PHPStan\BetterReflection\SourceLocator\Type\SourceLocator
+		factory: @PHPStan\Testing\TestCaseSourceLocatorFactory::create()
+		autowired: false
+
+	reflectionProvider:
+		factory: @betterReflectionProvider
+		arguments!: []
+		autowired:
+			- PHPStan\Reflection\ReflectionProvider

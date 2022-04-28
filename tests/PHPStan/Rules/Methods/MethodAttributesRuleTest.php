@@ -12,7 +12,6 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MethodAttributesRule>
@@ -46,10 +45,6 @@ class MethodAttributesRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->phpVersion = 80000;
 
 		$this->analyse([__DIR__ . '/data/method-attributes.php'], [
@@ -62,10 +57,6 @@ class MethodAttributesRuleTest extends RuleTestCase
 
 	public function testBug5898(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->phpVersion = 70400;
 		$this->analyse([__DIR__ . '/data/bug-5898.php'], []);
 	}

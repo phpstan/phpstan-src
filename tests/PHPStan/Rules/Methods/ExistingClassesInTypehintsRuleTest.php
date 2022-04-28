@@ -26,9 +26,6 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	public function testExistingClassInTypehint(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70400) {
-			$this->markTestSkipped('Test does not run on PHP 7.4 because of referencing parent:: without parent class.');
-		}
 		$this->analyse([__DIR__ . '/data/typehints.php'], [
 			[
 				'Method TestMethodTypehints\FooMethodTypehints::foo() has invalid return type TestMethodTypehints\NonexistentClass.',
@@ -153,9 +150,6 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	public function testVoidParameterTypehint(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection');
-		}
 		$this->analyse([__DIR__ . '/data/void-parameter-typehint.php'], [
 			[
 				'Parameter $param of method VoidParameterTypehintMethod\Foo::doFoo() has invalid type void.',
@@ -166,10 +160,6 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	public function dataNativeUnionTypes(): array
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			return [];
-		}
-
 		return [
 			[
 				70400,
@@ -282,10 +272,6 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	 */
 	public function testIntersectionTypes(int $phpVersion, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->phpVersionId = $phpVersion;
 
 		$this->analyse([__DIR__ . '/data/intersection-types.php'], $errors);

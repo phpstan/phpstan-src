@@ -48,6 +48,7 @@ use const PHP_VERSION_ID;
 abstract class PHPStanTestCase extends TestCase
 {
 
+	/** @deprecated */
 	public static bool $useStaticReflectionProvider = true;
 
 	/** @var array<string, Container> */
@@ -58,9 +59,6 @@ abstract class PHPStanTestCase extends TestCase
 	{
 		$additionalConfigFiles = static::getAdditionalConfigFiles();
 		$additionalConfigFiles[] = __DIR__ . '/TestCase.neon';
-		if (self::$useStaticReflectionProvider) {
-			$additionalConfigFiles[] = __DIR__ . '/TestCase-staticReflection.neon';
-		}
 		$cacheKey = sha1(implode("\n", $additionalConfigFiles));
 
 		if (!isset(self::$containers[$cacheKey])) {

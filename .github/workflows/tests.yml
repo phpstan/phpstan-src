@@ -34,9 +34,6 @@ jobs:
           - "8.0"
           - "8.1"
         operating-system: [ ubuntu-latest, windows-latest ]
-        script:
-          - "make tests"
-          - "make tests-runtime-reflection"
 
     steps:
       - name: "Checkout"
@@ -93,7 +90,7 @@ jobs:
           ini-values: memory_limit=1G
 
       - name: "Tests"
-        run: "${{ matrix.script }}"
+        run: "make tests"
 
   tests-integration:
     name: "Integration tests"
@@ -159,9 +156,6 @@ jobs:
         php-version:
           - "7.2"
         operating-system: [ ubuntu-latest ]
-        script:
-          - "make tests-coverage"
-          - "make tests-runtime-reflection-coverage"
 
     steps:
       - name: "Checkout"
@@ -216,4 +210,4 @@ jobs:
         run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "Tests"
-        run: "${{ matrix.script }}"
+        run: "make tests-coverage"

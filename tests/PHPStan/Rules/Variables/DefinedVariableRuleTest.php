@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Variables;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<DefinedVariableRule>
@@ -600,10 +599,6 @@ class DefinedVariableRuleTest extends RuleTestCase
 
 	public function testArrowFunctions(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->cliArgumentsVariablesRegistered = true;
 		$this->polluteScopeWithLoopInitialAssignments = false;
 		$this->checkMaybeUndefinedVariables = true;
@@ -622,10 +617,6 @@ class DefinedVariableRuleTest extends RuleTestCase
 
 	public function testCoalesceAssign(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70400) {
-			$this->markTestSkipped('Test requires PHP 7.4.');
-		}
-
 		$this->cliArgumentsVariablesRegistered = true;
 		$this->polluteScopeWithLoopInitialAssignments = false;
 		$this->checkMaybeUndefinedVariables = true;
@@ -754,10 +745,6 @@ class DefinedVariableRuleTest extends RuleTestCase
 
 	public function testNullsafeIsset(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->cliArgumentsVariablesRegistered = true;
 		$this->polluteScopeWithLoopInitialAssignments = false;
 		$this->checkMaybeUndefinedVariables = true;
@@ -817,10 +804,6 @@ class DefinedVariableRuleTest extends RuleTestCase
 
 	public function testFirstClassCallables(): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			self::markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->cliArgumentsVariablesRegistered = true;
 		$this->polluteScopeWithLoopInitialAssignments = false;
 		$this->checkMaybeUndefinedVariables = true;

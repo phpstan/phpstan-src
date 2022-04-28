@@ -621,10 +621,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 	public function testNullSafe(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
@@ -663,10 +659,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 	public function testBug4527(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;

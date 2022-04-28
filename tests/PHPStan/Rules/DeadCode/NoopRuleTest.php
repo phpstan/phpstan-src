@@ -5,7 +5,6 @@ namespace PHPStan\Rules\DeadCode;
 use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<NoopRule>
@@ -82,10 +81,6 @@ class NoopRuleTest extends RuleTestCase
 
 	public function testNullsafe(): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->analyse([__DIR__ . '/data/nullsafe-property-fetch-noop.php'], [
 			[
 				'Expression "$ref?->name" on a separate line does not do anything.',

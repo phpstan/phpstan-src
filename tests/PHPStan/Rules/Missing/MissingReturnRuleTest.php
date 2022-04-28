@@ -239,10 +239,6 @@ class MissingReturnRuleTest extends RuleTestCase
 	 */
 	public function testCheckPhpDocMissingReturn(bool $checkPhpDocMissingReturn, array $errors): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixedMissingReturn = true;
 		$this->checkPhpDocMissingReturn = $checkPhpDocMissingReturn;
 		$this->analyse([__DIR__ . '/data/check-phpdoc-missing-return.php'], $errors);
@@ -265,10 +261,6 @@ class MissingReturnRuleTest extends RuleTestCase
 	 */
 	public function testModelMixin(bool $checkExplicitMixedMissingReturn): void
 	{
-		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->checkExplicitMixedMissingReturn = $checkExplicitMixedMissingReturn;
 		$this->checkPhpDocMissingReturn = true;
 		$this->analyse([__DIR__ . '/../../Analyser/data/model-mixin.php'], [

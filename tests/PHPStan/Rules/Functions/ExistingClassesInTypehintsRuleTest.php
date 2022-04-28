@@ -156,9 +156,6 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	public function testVoidParameterTypehint(): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection');
-		}
 		$this->analyse([__DIR__ . '/data/void-parameter-typehint.php'], [
 			[
 				'Parameter $param of function VoidParameterTypehint\doFoo() has invalid type void.',
@@ -196,10 +193,6 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	 */
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
@@ -237,9 +230,6 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	 */
 	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
 	{
-		if (PHP_VERSION_ID >= 80000 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires static reflection on PHP 8.0 and higher.');
-		}
 		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/required-parameter-after-optional.php'], $errors);
 	}
@@ -278,10 +268,6 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	 */
 	public function testIntersectionTypes(int $phpVersion, array $errors): void
 	{
-		if (!self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$this->phpVersionId = $phpVersion;
 
 		$this->analyse([__DIR__ . '/data/intersection-types.php'], $errors);

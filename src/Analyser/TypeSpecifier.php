@@ -23,7 +23,9 @@ use PHPStan\Node\VirtualNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -236,8 +238,18 @@ class TypeSpecifier
 						}
 						$argType = $scope->getType($exprNode->getArgs()[0]->value);
 						if ($argType->isString()->yes()) {
+							$accessories = [
+								new AccessoryNonEmptyStringType(),
+							];
+							if ($argType->isLiteralString()->yes()) {
+								$accessories[] = new AccessoryLiteralStringType();
+							}
+							if ($argType->isNumericString()->yes()) {
+								$accessories[] = new AccessoryNumericStringType();
+							}
+
 							$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-							$valueTypes = $this->create($exprNode->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $newContext, false, $scope, $rootExpr);
+							$valueTypes = $this->create($exprNode->getArgs()[0]->value, TypeCombinator::intersect(...$accessories), $newContext, false, $scope, $rootExpr);
 							return $funcTypes->unionWith($valueTypes);
 						}
 					}
@@ -536,7 +548,17 @@ class TypeSpecifier
 				) {
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType->isString()->yes()) {
-						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $context, false, $scope, $rootExpr));
+						$accessories = [
+							new AccessoryNonEmptyStringType(),
+						];
+						if ($argType->isLiteralString()->yes()) {
+							$accessories[] = new AccessoryLiteralStringType();
+						}
+						if ($argType->isNumericString()->yes()) {
+							$accessories[] = new AccessoryNumericStringType();
+						}
+
+						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, TypeCombinator::intersect(...$accessories), $context, false, $scope, $rootExpr));
 					}
 				}
 			}

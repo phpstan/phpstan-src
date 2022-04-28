@@ -10,6 +10,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -384,6 +385,18 @@ class TypeCombinator
 			if ($isSuperType->yes()) {
 				$b = self::intersectWithSubtractedType($b, $a);
 				return [null, $b];
+			}
+		}
+
+		if ($a instanceof GenericClassStringType && $a->getGenericType() instanceof TemplateType) {
+			if ($b instanceof StringType && !$b instanceof GenericClassStringType) {
+				return null;
+			}
+		}
+
+		if ($b instanceof GenericClassStringType && $b->getGenericType() instanceof TemplateType) {
+			if ($a instanceof StringType && !$a instanceof GenericClassStringType) {
+				return null;
 			}
 		}
 

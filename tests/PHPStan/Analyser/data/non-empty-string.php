@@ -89,6 +89,16 @@ class Foo
 		assertType('\'\'', $s);
 	}
 
+	/**
+	 * @param literal-string $s
+	 */
+	public function doBar6($s): void
+	{
+		if (0 < strlen($s)) {
+			assertType('literal-string&non-empty-string', $s);
+		}
+	}
+
 	public function doFoo3(string $s): void
 	{
 		if ($s) {

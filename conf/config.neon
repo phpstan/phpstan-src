@@ -36,12 +36,14 @@ parameters:
 		illegalConstructorMethodCall: false
 		disableCheckMissingIterableValueType: false
 		strictUnnecessaryNullsafePropertyFetch: false
+		looseComparison: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
 	checkAlwaysTrueCheckTypeFunctionCall: false
 	checkAlwaysTrueInstanceof: false
 	checkAlwaysTrueStrictComparison: false
+	checkAlwaysTrueLooseComparison: false
 	checkClassCaseSensitivity: false
 	checkExplicitMixed: false
 	checkFunctionArgumentTypes: false
@@ -228,12 +230,14 @@ parametersSchema:
 		illegalConstructorMethodCall: bool(),
 		disableCheckMissingIterableValueType: bool(),
 		strictUnnecessaryNullsafePropertyFetch: bool(),
+		looseComparison: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
 	checkAlwaysTrueCheckTypeFunctionCall: bool()
 	checkAlwaysTrueInstanceof: bool()
 	checkAlwaysTrueStrictComparison: bool()
+	checkAlwaysTrueLooseComparison: bool()
 	checkClassCaseSensitivity: bool()
 	checkExplicitMixed: bool()
 	checkFunctionArgumentTypes: bool()

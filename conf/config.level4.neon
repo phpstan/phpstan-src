@@ -19,6 +19,10 @@ rules:
 	- PHPStan\Rules\TooWideTypehints\TooWideClosureReturnTypehintRule
 	- PHPStan\Rules\TooWideTypehints\TooWideFunctionReturnTypehintRule
 
+conditionalTags:
+	PHPStan\Rules\Comparison\ConstantLooseComparisonRule:
+		phpstan.rules.rule: %featureToggles.looseComparison%
+
 parameters:
 	checkAdvancedIsset: true
 
@@ -119,6 +123,11 @@ services:
 			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Comparison\ConstantLooseComparisonRule
+		arguments:
+			checkAlwaysTrueLooseComparison: %checkAlwaysTrueLooseComparison%
 
 	-
 		class: PHPStan\Rules\Comparison\TernaryOperatorConstantConditionRule

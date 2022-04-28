@@ -12,3 +12,4 @@ parameters:
 		illegalConstructorMethodCall: true
 		disableCheckMissingIterableValueType: true
 		strictUnnecessaryNullsafePropertyFetch: true
+		looseComparison: true

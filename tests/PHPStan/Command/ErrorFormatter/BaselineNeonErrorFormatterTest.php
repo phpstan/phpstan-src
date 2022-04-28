@@ -20,6 +20,7 @@ use function mt_srand;
 use function rewind;
 use function shuffle;
 use function sprintf;
+use function str_repeat;
 use function stream_get_contents;
 use function substr;
 use function trim;
@@ -128,6 +129,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
 			$this->getOutput(),
+			'',
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertSame(trim(Neon::encode(['parameters' => ['ignoreErrors' => $expected]], Neon::BLOCK)), trim($this->getOutputContent()), sprintf('%s: output do not match', $message));
@@ -150,6 +152,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter->formatErrors(
 			$result,
 			$this->getOutput(),
+			'',
 		);
 
 		self::assertSame(
@@ -186,6 +189,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter->formatErrors(
 			$result,
 			$this->getOutput(),
+			'',
 		);
 		self::assertSame(
 			trim(
@@ -248,6 +252,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter->formatErrors(
 			$result,
 			$this->getOutput(),
+			'',
 		);
 		self::assertSame(
 			trim(Neon::encode([
@@ -300,14 +305,63 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	 */
 	public function endOfFileNewlinesProvider(): Generator
 	{
+		$existingBaselineContentWithoutEndNewlines = 'parameters:
+	ignoreErrors:
+		-
+			message: "#^Existing error$#"
+			count: 1
+			path: TestfileA';
+
 		yield 'one error' => [
 			'errors' => [
 				new Error('Error #1', 'TestfileA', 1),
 			],
+			'existingBaselineContent' => $existingBaselineContentWithoutEndNewlines . "\n",
+			'expectedNewlinesCount' => 1,
 		];
 
 		yield 'no errors' => [
 			'errors' => [],
+			'existingBaselineContent' => $existingBaselineContentWithoutEndNewlines . "\n",
+			'expectedNewlinesCount' => 1,
+		];
+
+		yield 'one error with 2 newlines' => [
+			'errors' => [
+				new Error('Error #1', 'TestfileA', 1),
+			],
+			'existingBaselineContent' => $existingBaselineContentWithoutEndNewlines . "\n\n",
+			'expectedNewlinesCount' => 2,
+		];
+
+		yield 'no errors with 2 newlines' => [
+			'errors' => [],
+			'existingBaselineContent' => $existingBaselineContentWithoutEndNewlines . "\n\n",
+			'expectedNewlinesCount' => 2,
+		];
+
+		yield 'one error with 0 newlines' => [
+			'errors' => [
+				new Error('Error #1', 'TestfileA', 1),
+			],
+			'existingBaselineContent' => $existingBaselineContentWithoutEndNewlines,
+			'expectedNewlinesCount' => 0,
+		];
+
+		yield 'one error with 3 newlines' => [
+			'errors' => [
+				new Error('Error #1', 'TestfileA', 1),
+			],
+			'existingBaselineContent' => $existingBaselineContentWithoutEndNewlines . "\n\n\n",
+			'expectedNewlinesCount' => 3,
+		];
+
+		yield 'empty existing baseline' => [
+			'errors' => [
+				new Error('Error #1', 'TestfileA', 1),
+			],
+			'existingBaselineContent' => '',
+			'expectedNewlinesCount' => 1,
 		];
 	}
 
@@ -316,7 +370,11 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 	 *
 	 * @param list<Error> $errors
 	 */
-	public function testEndOfFileNewlines(array $errors): void
+	public function testEndOfFileNewlines(
+		array $errors,
+		string $existingBaselineContent,
+		int $expectedNewlinesCount,
+	): void
 	{
 		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
 		$result = new AnalysisResult(
@@ -341,6 +399,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter->formatErrors(
 			$result,
 			$output,
+			$existingBaselineContent,
 		);
 
 		rewind($outputStream->getStream());
@@ -350,8 +409,10 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			throw new ShouldNotHappenException();
 		}
 
-		Assert::assertSame("\n", substr($content, -1));
-		Assert::assertNotSame("\n", substr($content, -2, 1));
+		if ($expectedNewlinesCount > 0) {
+			Assert::assertSame(str_repeat("\n", $expectedNewlinesCount), substr($content, -$expectedNewlinesCount));
+		}
+		Assert::assertNotSame("\n", substr($content, -($expectedNewlinesCount + 1), 1));
 	}
 
 }

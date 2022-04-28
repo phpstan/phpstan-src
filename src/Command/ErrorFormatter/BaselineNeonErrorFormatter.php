@@ -4,6 +4,7 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use Nette\DI\Helpers;
 use Nette\Neon\Neon;
+use Nette\Utils\Strings;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
@@ -23,10 +24,11 @@ class BaselineNeonErrorFormatter
 	public function formatErrors(
 		AnalysisResult $analysisResult,
 		Output $output,
+		string $existingBaselineContent,
 	): int
 	{
 		if (!$analysisResult->hasErrors()) {
-			$output->writeRaw($this->getNeon([]));
+			$output->writeRaw($this->getNeon([], $existingBaselineContent));
 			return 0;
 		}
 
@@ -61,7 +63,7 @@ class BaselineNeonErrorFormatter
 			}
 		}
 
-		$output->writeRaw($this->getNeon($errorsToOutput));
+		$output->writeRaw($this->getNeon($errorsToOutput, $existingBaselineContent));
 
 		return 1;
 	}
@@ -69,7 +71,7 @@ class BaselineNeonErrorFormatter
 	/**
 	 * @param array<int, array{message: string, count: int, path: string}> $ignoreErrors
 	 */
-	private function getNeon(array $ignoreErrors): string
+	private function getNeon(array $ignoreErrors, string $existingBaselineContent): string
 	{
 		$neon = Neon::encode([
 			'parameters' => [
@@ -81,7 +83,16 @@ class BaselineNeonErrorFormatter
 			throw new ShouldNotHappenException();
 		}
 
-		return substr($neon, 0, -1);
+		if ($existingBaselineContent === '') {
+			return substr($neon, 0, -1);
+		}
+
+		$existingBaselineContentEndOfFileNewlinesMatches = Strings::match($existingBaselineContent, "~(\n)+$~");
+		$existingBaselineContentEndOfFileNewlines = $existingBaselineContentEndOfFileNewlinesMatches !== null
+			? $existingBaselineContentEndOfFileNewlinesMatches[0]
+			: '';
+
+		return substr($neon, 0, -2) . $existingBaselineContentEndOfFileNewlines;
 	}
 
 }

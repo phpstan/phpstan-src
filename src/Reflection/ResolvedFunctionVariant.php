@@ -57,7 +57,13 @@ class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcc
 		if ($parameters === null) {
 			$parameters = array_map(fn (ParameterReflection $param): ParameterReflection => new DummyParameter(
 				$param->getName(),
-				TemplateTypeHelper::resolveTemplateTypes($param->getType(), $this->resolvedTemplateTypeMap),
+				TypeUtils::resolveLateResolvableTypes(
+					TemplateTypeHelper::resolveTemplateTypes(
+						$this->resolveConditionalTypesForParameter($param->getType()),
+						$this->resolvedTemplateTypeMap,
+					),
+					false,
+				),
 				$param->isOptional(),
 				$param->passedByReference(),
 				$param->isVariadic(),
@@ -88,9 +94,12 @@ class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcc
 		$type = $this->returnType;
 
 		if ($type === null) {
-			$type = TemplateTypeHelper::resolveTemplateTypes(
-				$this->getReturnTypeWithUnresolvableTemplateTypes(),
-				$this->resolvedTemplateTypeMap,
+			$type = TypeUtils::resolveLateResolvableTypes(
+				TemplateTypeHelper::resolveTemplateTypes(
+					$this->getReturnTypeWithUnresolvableTemplateTypes(),
+					$this->resolvedTemplateTypeMap,
+				),
+				false,
 			);
 
 			$this->returnType = $type;

@@ -768,7 +768,24 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7135.php');
 		$this->assertCount(1, $errors);
-		$this->assertSame('Cannot create callable from the new operator.', $errors[0]->getMessage());
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int): bool, Closure(int, bool): bool given', $errors[0]->getMessage());
+		$this->assertSame(38, $errors[0]->getMessage());
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int): bool, Closure(int): bool given', $errors[0]->getMessage());
+		$this->assertSame(45, $errors[0]->getMessage());
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(int): bool, Closure(bool): bool given', $errors[0]->getMessage());
+		$this->assertSame(52, $errors[0]->getMessage());
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool): bool, Closure(int): bool given', $errors[0]->getMessage());
+		$this->assertSame(59, $errors[0]->getMessage());
+	}
+
+	public function testDiscussion7124(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/discussion-7124.php');
+		$this->assertCount(4, $errors);
 	}
 
 	/**

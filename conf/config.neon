@@ -21,7 +21,7 @@ parameters:
 			tooWideThrowType: false
 	featureToggles:
 		bleedingEdge: false
-		disableRuntimeReflectionProvider: false
+		disableRuntimeReflectionProvider: true
 		skipCheckGenericClasses:
 			- DatePeriod
 			- CallbackFilterIterator
@@ -106,27 +106,7 @@ parameters:
 	tempResultCachePath: %tmpDir%/resultCaches
 	resultCachePath: %tmpDir%/resultCache.php
 	resultCacheChecksProjectExtensionFilesDependencies: false
-	staticReflectionClassNamePatterns:
-		- '#^PhpParser\\#i'
-		- '#^PHPStan\\#i'
-		- '#^Hoa\\#i'
-		- '#^Symfony\\Polyfill\\Php80\\#i'
-		- '#^Symfony\\Polyfill\\Mbstring\\#i'
-		- '#^Symfony\\Polyfill\\Intl\\Normalizer\\#i'
-		- '#^Symfony\\Polyfill\\Php73\\#i'
-		- '#^Symfony\\Polyfill\\Php74\\#i'
-		- '#^Symfony\\Polyfill\\Php72\\#i'
-		- '#^Symfony\\Polyfill\\Intl\\Grapheme\\#i'
-		- '#^Composer\\#i'
-		- '#^ReflectionUnionType$#i'
-		- '#^Attribute$#i'
-		- '#^ReturnTypeWillChange$#i'
-		- '#^ReflectionIntersectionType$#i'
-		- '#^UnitEnum$#i'
-		- '#^BackedEnum$#i'
-		- '#^ReflectionEnum$#i'
-		- '#^ReflectionEnumUnitCase$#i'
-		- '#^ReflectionEnumBackedCase$#i'
+	staticReflectionClassNamePatterns: []
 	dynamicConstantNames:
 		- ICONV_IMPL
 		- LIBXML_VERSION
@@ -704,8 +684,6 @@ services:
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator
-		arguments:
-			disableRuntimeReflectionProvider: %featureToggles.disableRuntimeReflectionProvider%
 
 	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker
@@ -1772,9 +1750,7 @@ services:
 	reflectionProviderFactory:
 		class: PHPStan\Reflection\ReflectionProvider\ReflectionProviderFactory
 		arguments:
-			runtimeReflectionProvider: @runtimeReflectionProvider
 			staticReflectionProvider: @betterReflectionProvider
-			disableRuntimeReflectionProvider: %featureToggles.disableRuntimeReflectionProvider%
 
 	reflectionProvider:
 		factory: @PHPStan\Reflection\ReflectionProvider\ReflectionProviderFactory::create
@@ -1828,17 +1804,6 @@ services:
 			reflector: @betterReflectionReflector
 		autowired: false
 
-	runtimeReflectionProvider:
-		class: PHPStan\Reflection\ReflectionProvider\ClassBlacklistReflectionProvider
-		arguments:
-			reflectionProvider: @innerRuntimeReflectionProvider
-			patterns: %staticReflectionClassNamePatterns%
-			singleReflectionInsteadOfFile: %singleReflectionInsteadOfFile%
-		autowired: false
-
-	innerRuntimeReflectionProvider:
-		class: PHPStan\Reflection\Runtime\RuntimeReflectionProvider
-
 	-
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionSourceLocatorFactory
 		arguments:
@@ -1850,8 +1815,6 @@ services:
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
 			analysedPathsFromConfig: %analysedPathsFromConfig%
 			singleReflectionFile: %singleReflectionFile%
-			staticReflectionClassNamePatterns: %staticReflectionClassNamePatterns%
-			disableRuntimeReflectionProvider: %featureToggles.disableRuntimeReflectionProvider%
 
 	-
 		implement: PHPStan\Reflection\BetterReflection\BetterReflectionProviderFactory

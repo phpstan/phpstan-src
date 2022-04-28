@@ -19,7 +19,7 @@ class AutoloadSourceLocatorTest extends PHPStanTestCase
 
 	public function testAutoloadEverythingInFile(): void
 	{
-		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class), false);
+		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class));
 		$reflector = new DefaultReflector($locator);
 		$aFoo = $reflector->reflectClass(AFoo::class);
 		$this->assertNotNull($aFoo->getFileName());
@@ -57,7 +57,7 @@ class AutoloadSourceLocatorTest extends PHPStanTestCase
 	public function testClassAlias(): void
 	{
 		class_alias(AFoo::class, 'A_Foo');
-		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class), true);
+		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class));
 		$reflector = new DefaultReflector($locator);
 		$class = $reflector->reflectClass('A_Foo');
 		$this->assertSame(AFoo::class, $class->getName());

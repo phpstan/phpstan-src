@@ -29,7 +29,7 @@ class NamedArgumentsIntegrationTest extends LevelsTestCase
 
 	public function getPhpStanConfigPath(): string
 	{
-		return __DIR__ . '/staticReflection.neon';
+		return __DIR__ . '/namedArguments.neon';
 	}
 
 	protected function shouldAutoloadAnalysedFile(): bool

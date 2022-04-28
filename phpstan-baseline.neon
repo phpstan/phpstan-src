@@ -345,30 +345,6 @@ parameters:
 			path: tests/PHPStan/Analyser/EvaluationOrderTest.php
 
 		-
-			message: """
-				#^Call to deprecated method getClass\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-				Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
-			"""
-			count: 1
-			path: tests/PHPStan/Broker/BrokerTest.php
-
-		-
-			message: """
-				#^Call to deprecated method getFunction\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-				Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
-			"""
-			count: 1
-			path: tests/PHPStan/Broker/BrokerTest.php
-
-		-
-			message: """
-				#^Call to deprecated method hasClass\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
-				Use PHPStan\\\\Reflection\\\\ReflectionProvider instead$#
-			"""
-			count: 1
-			path: tests/PHPStan/Broker/BrokerTest.php
-
-		-
 			message: "#^Constant SOME_CONSTANT_IN_AUTOLOAD_FILE not found\\.$#"
 			count: 1
 			path: tests/PHPStan/Command/AnalyseCommandTest.php

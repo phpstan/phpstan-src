@@ -60,7 +60,7 @@ class AutoloadSourceLocator implements SourceLocator
 	/** @var array<string, int> */
 	private array $startLineByClass = [];
 
-	public function __construct(private FileNodesFetcher $fileNodesFetcher, private bool $disableRuntimeReflectionProvider)
+	public function __construct(private FileNodesFetcher $fileNodesFetcher)
 	{
 	}
 
@@ -293,7 +293,7 @@ class AutoloadSourceLocator implements SourceLocator
 	 */
 	private function getReflectionClass(string $className): ?ReflectionClass
 	{
-		if (class_exists($className, !$this->disableRuntimeReflectionProvider) || interface_exists($className, !$this->disableRuntimeReflectionProvider) || trait_exists($className, !$this->disableRuntimeReflectionProvider)) {
+		if (class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false)) {
 			$reflection = new ReflectionClass($className);
 			$filename = $reflection->getFileName();
 
@@ -336,10 +336,6 @@ class AutoloadSourceLocator implements SourceLocator
 			}
 
 			return [[$filename], $reflection->getName(), $reflection->getStartLine() !== false ? $reflection->getStartLine() : null];
-		}
-
-		if (!$this->disableRuntimeReflectionProvider) {
-			return null;
 		}
 
 		$this->silenceErrors();

@@ -1,7 +1,5 @@
 parameters:
 	inferPrivatePropertyTypeFromConstructor: true
-	featureToggles:
-		disableRuntimeReflectionProvider: false
 
 services:
 	-

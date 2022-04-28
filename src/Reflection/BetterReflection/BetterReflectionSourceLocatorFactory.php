@@ -12,8 +12,6 @@ use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
-use PHPStan\Reflection\BetterReflection\SourceLocator\ClassBlacklistSourceLocator;
-use PHPStan\Reflection\BetterReflection\SourceLocator\ClassWhitelistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
@@ -33,7 +31,6 @@ class BetterReflectionSourceLocatorFactory
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
 	 * @param string[] $analysedPathsFromConfig
-	 * @param string[] $staticReflectionClassNamePatterns
 	 */
 	public function __construct(
 		private Parser $parser,
@@ -50,8 +47,6 @@ class BetterReflectionSourceLocatorFactory
 		private array $composerAutoloaderProjectPaths,
 		private array $analysedPathsFromConfig,
 		private ?string $singleReflectionFile,
-		private array $staticReflectionClassNamePatterns,
-		private bool $disableRuntimeReflectionProvider,
 	)
 	{
 	}
@@ -95,9 +90,6 @@ class BetterReflectionSourceLocatorFactory
 
 		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
 
-		if (!$this->disableRuntimeReflectionProvider) {
-			$locators[] = new ClassBlacklistSourceLocator($this->autoloadSourceLocator, $this->staticReflectionClassNamePatterns);
-		}
 		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
 			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
 			if ($locator === null) {
@@ -105,11 +97,8 @@ class BetterReflectionSourceLocatorFactory
 			}
 			$locators[] = $locator;
 		}
-		if (!$this->disableRuntimeReflectionProvider) {
-			$locators[] = new ClassWhitelistSourceLocator($this->autoloadSourceLocator, $this->staticReflectionClassNamePatterns);
-		} else {
-			$locators[] = $this->autoloadSourceLocator;
-		}
+
+		$locators[] = $this->autoloadSourceLocator;
 		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 

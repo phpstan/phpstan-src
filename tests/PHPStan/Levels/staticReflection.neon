@@ -1,4 +1,0 @@
-parameters:
-	phpVersion: 80000
-	featureToggles:
-		disableRuntimeReflectionProvider: true

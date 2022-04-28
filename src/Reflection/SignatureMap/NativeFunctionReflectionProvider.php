@@ -59,7 +59,7 @@ class NativeFunctionReflectionProvider
 				null,
 				array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName, $phpDoc): NativeParameterReflection {
 					$type = $parameterSignature->getType();
-					$defaultValue = null;
+					$defaultValue = $parameterSignature->getDefaultValue();
 
 					$phpDocType = null;
 					if ($phpDoc !== null) {

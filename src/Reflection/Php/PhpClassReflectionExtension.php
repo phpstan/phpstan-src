@@ -774,7 +774,7 @@ class PhpClassReflectionExtension
 				$parameterSignature->getNativeType(),
 				$parameterSignature->passedByReference(),
 				$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
-				null,
+				$parameterSignature->getDefaultValue(),
 			);
 		}
 

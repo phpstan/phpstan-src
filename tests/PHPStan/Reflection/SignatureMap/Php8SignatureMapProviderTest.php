@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php8StubsMap;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
@@ -151,6 +152,7 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 			self::getContainer()->getByType(FileNodesFetcher::class),
 			self::getContainer()->getByType(FileTypeMapper::class),
 			$phpVersion,
+			self::getContainer()->getByType(ScopeFactory::class),
 		);
 	}
 

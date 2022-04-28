@@ -7,6 +7,9 @@ use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\ScopeContext;
+use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php8StubsMap;
 use PHPStan\PhpDoc\Tag\ParamTag;
@@ -37,11 +40,14 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 
 	private Php8StubsMap $map;
 
+	private ?Scope $scope = null;
+
 	public function __construct(
 		private FunctionSignatureMapProvider $functionSignatureMapProvider,
 		private FileNodesFetcher $fileNodesFetcher,
 		private FileTypeMapper $fileTypeMapper,
 		private PhpVersion $phpVersion,
+		private ScopeFactory $scopeFactory,
 	)
 	{
 		$this->map = new Php8StubsMap($phpVersion->getVersionId());
@@ -253,6 +259,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$nativeParameterType,
 				$nativeParameter->passedByReference()->yes() ? $functionMapParameter->passedByReference() : $nativeParameter->passedByReference(),
 				$nativeParameter->isVariadic(),
+				$nativeParameter->getDefaultValue(),
 			);
 		}
 
@@ -349,6 +356,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$parameterType,
 				$param->byRef ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),
 				$param->variadic,
+				$param->default !== null ? $this->getScope()->getType($param->default) : null,
 			);
 
 			$variadic = $variadic || $param->variadic;
@@ -362,6 +370,15 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			$returnType,
 			$variadic,
 		);
+	}
+
+	private function getScope(): Scope
+	{
+		if ($this->scope === null) {
+			$this->scope = $this->scopeFactory->create(ScopeContext::create('file.php'));
+		}
+
+		return $this->scope;
 	}
 
 }

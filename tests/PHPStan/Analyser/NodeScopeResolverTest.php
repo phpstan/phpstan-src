@@ -897,13 +897,13 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		if (PHP_VERSION_ID >= 80000) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7096.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/native-reflection-default-values.php');
 		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7068.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7115.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/constant-array-type-identical.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-string-str-containing-fns.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/native-reflection-default-values.php');
 	}
 
 	/**

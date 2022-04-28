@@ -31,30 +31,32 @@ function filter(array $array, ?callable $callback = null, int $mode = ARRAY_FILT
 		: array_filter($array);
 }
 
-// This one does fail, as both the value + key is asked and the key + value is used
-filter(
-	[false, true, false],
-	static fn (int $key, bool $value): bool => 0 === $key % 2 && $value,
-	mode: ARRAY_FILTER_USE_BOTH,
-);
+function () {
+	// This one does fail, as both the value + key is asked and the key + value is used
+	filter(
+		[false, true, false],
+		static fn (int $key, bool $value): bool => 0 === $key % 2 && $value,
+		mode: ARRAY_FILTER_USE_BOTH,
+	);
 
-// This one should fail, as both the value + key is asked but only the key is used
-filter(
-	[false, true, false],
-	static fn (int $key): bool => 0 === $key % 2,
-	mode: ARRAY_FILTER_USE_BOTH,
-);
+	// This one should fail, as both the value + key is asked but only the key is used
+	filter(
+		[false, true, false],
+		static fn (int $key): bool => 0 === $key % 2,
+		mode: ARRAY_FILTER_USE_BOTH,
+	);
 
-// This one should fail, as only the key is asked but the value is used
-filter(
-	[false, true, false],
-	static fn (bool $value): bool => $value,
-	mode: ARRAY_FILTER_USE_KEY,
-);
+	// This one should fail, as only the key is asked but the value is used
+	filter(
+		[false, true, false],
+		static fn (bool $value): bool => $value,
+		mode: ARRAY_FILTER_USE_KEY,
+	);
 
-// This one should fail, as only the value is asked but the key is used
-filter(
-	[false, true, false],
-	static fn (int $key): bool => 0 === $key % 2,
-	mode: 0,
-);
+	// This one should fail, as only the value is asked but the key is used
+	filter(
+		[false, true, false],
+		static fn (int $key): bool => 0 === $key % 2,
+		mode: 0,
+	);
+};

@@ -780,13 +780,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/discussion-7124.php');
 		$this->assertCount(4, $errors);
 		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int): bool, Closure(int, bool): bool given.', $errors[0]->getMessage());
-		$this->assertSame(37, $errors[0]->getLine());
+		$this->assertSame(38, $errors[0]->getLine());
 		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int): bool, Closure(int): bool given.', $errors[1]->getMessage());
-		$this->assertSame(44, $errors[1]->getLine());
+		$this->assertSame(45, $errors[1]->getLine());
 		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(int): bool, Closure(bool): bool given.', $errors[2]->getMessage());
-		$this->assertSame(51, $errors[2]->getLine());
+		$this->assertSame(52, $errors[2]->getLine());
 		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool): bool, Closure(int): bool given.', $errors[3]->getMessage());
-		$this->assertSame(58, $errors[3]->getLine());
+		$this->assertSame(59, $errors[3]->getLine());
 	}
 
 	/**

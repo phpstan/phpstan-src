@@ -1269,6 +1269,11 @@ services:
 			- phpstan.dynamicStaticMethodThrowTypeExtension
 
 	-
+		class: PHPStan\Type\Php\StrContainingTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+
+	-
 		class: PHPStan\Type\Php\SimpleXMLElementClassPropertyReflectionExtension
 		tags:
 			- phpstan.broker.propertiesClassReflectionExtension

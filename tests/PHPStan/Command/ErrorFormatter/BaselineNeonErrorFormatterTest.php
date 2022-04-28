@@ -6,11 +6,22 @@ use Generator;
 use Nette\Neon\Neon;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
+use PHPStan\Command\ErrorsConsoleStyle;
+use PHPStan\Command\Symfony\SymfonyOutput;
+use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\File\SimpleRelativePathHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use PHPUnit\Framework\Assert;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\StreamOutput;
+use function fopen;
 use function mt_srand;
+use function rewind;
 use function shuffle;
 use function sprintf;
+use function stream_get_contents;
+use function substr;
 use function trim;
 
 class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
@@ -282,6 +293,65 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			], Neon::BLOCK)),
 			$f = trim($this->getOutputContent()),
 		);
+	}
+
+	/**
+	 * @return Generator<string, array{errors: list<Error>}>
+	 */
+	public function endOfFileNewlinesProvider(): Generator
+	{
+		yield 'one error' => [
+			'errors' => [
+				new Error('Error #1', 'TestfileA', 1),
+			],
+		];
+
+		yield 'no errors' => [
+			'errors' => [],
+		];
+	}
+
+	/**
+	 * @dataProvider endOfFileNewlinesProvider
+	 *
+	 * @param list<Error> $errors
+	 */
+	public function testEndOfFileNewlines(array $errors): void
+	{
+		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
+		$result = new AnalysisResult(
+			$errors,
+			[],
+			[],
+			[],
+			false,
+			null,
+			true,
+		);
+
+		$resource = fopen('php://memory', 'w', false);
+		if ($resource === false) {
+			throw new ShouldNotHappenException();
+		}
+		$outputStream = new StreamOutput($resource, StreamOutput::VERBOSITY_NORMAL, false);
+
+		$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $outputStream);
+		$output = new SymfonyOutput($outputStream, new SymfonyStyle($errorConsoleStyle));
+
+		$formatter->formatErrors(
+			$result,
+			$output,
+		);
+
+		rewind($outputStream->getStream());
+
+		$content = stream_get_contents($outputStream->getStream());
+		if ($content === false) {
+			throw new ShouldNotHappenException();
+		}
+
+		Assert::assertSame("\n\n", substr($content, -2));
+		Assert::assertNotSame("\n", substr($content, -3, 1));
 	}
 
 }

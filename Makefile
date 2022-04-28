@@ -58,22 +58,22 @@ cs-fix:
 	php build-cs/vendor/bin/phpcbf
 
 phpstan:
-	php bin/phpstan clear-result-cache -q && php -d memory_limit=384M bin/phpstan
+	php bin/phpstan clear-result-cache -q && php -d memory_limit=448M bin/phpstan
 
 phpstan-runtime-reflection:
-	php bin/phpstan clear-result-cache -q && php -d memory_limit=384M bin/phpstan analyse -c phpstan-runtime-reflection.neon
+	php bin/phpstan clear-result-cache -q && php -d memory_limit=448M bin/phpstan analyse -c phpstan-runtime-reflection.neon
 
 phpstan-result-cache:
-	php -d memory_limit=384M bin/phpstan
+	php -d memory_limit=448M bin/phpstan
 
 phpstan-generate-baseline:
-	php -d memory_limit=384M bin/phpstan --generate-baseline
+	php -d memory_limit=448M bin/phpstan --generate-baseline
 
 phpstan-validate-stub-files:
 	php bin/phpstan analyse -c conf/config.stubFiles.neon -l 8 tests/notAutoloaded/empty.php
 
 phpstan-pro:
-	php -d memory_limit=384M bin/phpstan --pro
+	php -d memory_limit=448M bin/phpstan --pro
 
 composer-require-checker:
 	php build/composer-require-checker.phar check --config-file $(CURDIR)/build/composer-require-checker.json

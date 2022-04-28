@@ -2,7 +2,12 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Arg;
+use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
+use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -77,6 +82,15 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 					$context,
 					false,
 					$scope,
+					new BooleanAnd(
+						new NotIdentical(
+							$args[$needleArg]->value,
+							new String_(''),
+						),
+						new FuncCall(new Name('FAUX_FUNCTION'), [
+							new Arg($args[$needleArg]->value),
+						]),
+					),
 				);
 			}
 		}

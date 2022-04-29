@@ -2,19 +2,22 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\TrinaryLogic;
-use ReflectionClass;
 use ReflectionException;
-use ReflectionMethod;
-use ReflectionParameter;
-use ReflectionType;
 
 class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 {
 
 	public function __construct(
 		private string $methodName,
-		private ReflectionClass $declaringClass,
+		private ReflectionClass|ReflectionEnum $declaringClass,
 	)
 	{
 	}
@@ -34,7 +37,7 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 		return null;
 	}
 
-	public function getDeclaringClass(): ReflectionClass
+	public function getDeclaringClass(): ReflectionClass|ReflectionEnum
 	{
 		return $this->declaringClass;
 	}
@@ -99,12 +102,12 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 		return false;
 	}
 
-	public function getReturnType(): ?ReflectionType
+	public function getReturnType(): ReflectionIntersectionType|ReflectionNamedType|ReflectionUnionType|null
 	{
 		return null;
 	}
 
-	public function getTentativeReturnType(): ?ReflectionType
+	public function getTentativeReturnType(): ReflectionIntersectionType|ReflectionNamedType|ReflectionUnionType|null
 	{
 		return null;
 	}

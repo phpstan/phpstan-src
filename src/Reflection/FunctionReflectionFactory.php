@@ -2,10 +2,10 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
-use ReflectionFunction;
 
 interface FunctionReflectionFactory
 {

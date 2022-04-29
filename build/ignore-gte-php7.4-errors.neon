@@ -3,9 +3,6 @@ includes:
 
 parameters:
 	ignoreErrors:
-		-
-			message: "#^Call to function method_exists\\(\\) with ReflectionProperty and '(?:hasType|getType)' will always evaluate to true\\.$#"
-			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
 		- '#^Class PHPStan\\Rules\\RuleErrors\\RuleError(?:\d+) has an uninitialized property (?:\$message|\$line|\$identifier|\$tip|\$file|\$metadata)#'
 		- '#Extension has an uninitialized property (?:\$typeSpecifier|\$broker)#'
 		-

@@ -3,6 +3,10 @@
 namespace PHPStan\Reflection;
 
 use Attribute;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -31,11 +35,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeAlias;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VerbosityLevel;
-use ReflectionClass;
-use ReflectionEnum;
-use ReflectionEnumBackedCase;
 use ReflectionException;
-use ReflectionMethod;
 use function array_diff;
 use function array_filter;
 use function array_key_exists;
@@ -49,7 +49,6 @@ use function implode;
 use function in_array;
 use function is_bool;
 use function is_file;
-use function method_exists;
 use function reset;
 use function sprintf;
 use function strtolower;
@@ -120,7 +119,7 @@ class ClassReflection
 		private array $propertiesClassReflectionExtensions,
 		private array $methodsClassReflectionExtensions,
 		private string $displayName,
-		private ReflectionClass $reflection,
+		private ReflectionClass|ReflectionEnum $reflection,
 		private ?string $anonymousFilename,
 		private ?TemplateTypeMap $resolvedTemplateTypeMap,
 		private ?ResolvedPhpDocBlock $stubPhpDocBlock,
@@ -129,7 +128,7 @@ class ClassReflection
 	{
 	}
 
-	public function getNativeReflection(): ReflectionClass
+	public function getNativeReflection(): ReflectionClass|ReflectionEnum
 	{
 		return $this->reflection;
 	}
@@ -304,10 +303,9 @@ class ClassReflection
 	}
 
 	/**
-	 * @param ReflectionClass<object> $class
-	 * @return ReflectionClass<object>[]
+	 * @return ReflectionClass[]
 	 */
-	private function collectTraits(ReflectionClass $class): array
+	private function collectTraits(ReflectionClass|ReflectionEnum $class): array
 	{
 		$traits = [];
 		$traitsLeftToAnalyze = $class->getTraits();
@@ -526,11 +524,7 @@ class ClassReflection
 
 	public function isEnum(): bool
 	{
-		if (method_exists($this->reflection, 'isEnum')) {
-			return $this->reflection->isEnum();
-		}
-
-		return false;
+		return $this->reflection->isEnum();
 	}
 
 	public function isBackedEnum(): bool
@@ -566,7 +560,7 @@ class ClassReflection
 			return false;
 		}
 
-		if (!method_exists($this->reflection, 'hasCase')) {
+		if (!$this->reflection instanceof ReflectionEnum) {
 			return false;
 		}
 
@@ -889,7 +883,6 @@ class ClassReflection
 				$declaringClass,
 				$reflectionConstant,
 				$phpDocType,
-				$this->phpVersion,
 				$deprecatedDescription,
 				$isDeprecated,
 				$isInternal,
@@ -1039,10 +1032,6 @@ class ClassReflection
 	private function findAttributeClass(): ?Attribute
 	{
 		if ($this->isInterface() || $this->isTrait() || $this->isEnum()) {
-			return null;
-		}
-
-		if (!method_exists($this->reflection, 'getAttributes')) {
 			return null;
 		}
 

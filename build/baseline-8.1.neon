@@ -1,22 +1,2 @@
 parameters:
-	ignoreErrors:
-		-
-			message: "#^Call to function method_exists\\(\\) with ReflectionClassConstant and 'isFinal' will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Reflection/ClassConstantReflection.php
-
-		-
-			message: "#^Call to function method_exists\\(\\) with ReflectionClass and 'isEnum' will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Reflection/ClassReflection.php
-
-		-
-			message: "#^Call to function method_exists\\(\\) with ReflectionMethod and 'getTentativeReturnT…' will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Reflection/Php/NativeBuiltinMethodReflection.php
-
-		-
-			message: "#^Call to function method_exists\\(\\) with ReflectionProperty and 'isReadOnly' will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Reflection/Php/PhpPropertyReflection.php
-
+	ignoreErrors: []

@@ -3,7 +3,6 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use ReflectionIntersectionType;
@@ -12,8 +11,6 @@ use ReflectionType;
 use ReflectionUnionType;
 use function array_map;
 use function count;
-use function get_class;
-use function sprintf;
 use function str_ends_with;
 use function strtolower;
 
@@ -105,10 +102,6 @@ class TypehintHelper
 			}
 
 			return self::decideType(TypeCombinator::intersect(...$types), $phpDocType);
-		}
-
-		if (!$reflectionType instanceof ReflectionNamedType) {
-			throw new ShouldNotHappenException(sprintf('Unexpected type: %s', get_class($reflectionType)));
 		}
 
 		$reflectionTypeString = $reflectionType->getName();

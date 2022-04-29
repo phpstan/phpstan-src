@@ -6,11 +6,23 @@ use Generator;
 use Nette\Neon\Neon;
 use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
+use PHPStan\Command\ErrorsConsoleStyle;
+use PHPStan\Command\Symfony\SymfonyOutput;
+use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\File\SimpleRelativePathHelper;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use PHPUnit\Framework\Assert;
+use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\StreamOutput;
+use function fopen;
 use function mt_srand;
+use function rewind;
 use function shuffle;
 use function sprintf;
+use function str_repeat;
+use function stream_get_contents;
+use function substr;
 use function trim;
 
 class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
@@ -117,6 +129,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
 			$this->getOutput(),
+			'',
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertSame(trim(Neon::encode(['parameters' => ['ignoreErrors' => $expected]], Neon::BLOCK)), trim($this->getOutputContent()), sprintf('%s: output do not match', $message));
@@ -139,6 +152,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter->formatErrors(
 			$result,
 			$this->getOutput(),
+			'',
 		);
 
 		self::assertSame(
@@ -175,6 +189,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter->formatErrors(
 			$result,
 			$this->getOutput(),
+			'',
 		);
 		self::assertSame(
 			trim(
@@ -237,6 +252,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter->formatErrors(
 			$result,
 			$this->getOutput(),
+			'',
 		);
 		self::assertSame(
 			trim(Neon::encode([
@@ -282,6 +298,139 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			], Neon::BLOCK)),
 			$f = trim($this->getOutputContent()),
 		);
+	}
+
+	/**
+	 * @return Generator<string, array{errors: list<Error>}>
+	 */
+	public function endOfFileNewlinesProvider(): Generator
+	{
+		$existingBaselineContentWithoutEndNewlines = 'parameters:
+	ignoreErrors:
+		-
+			message: "#^Existing error$#"
+			count: 1
+			path: TestfileA';
+
+		yield 'one error' => [
+			'errors' => [
+				new Error('Error #1', 'TestfileA', 1),
+			],
+			'existingBaselineContent' => $existingBaselineContentWithoutEndNewlines . "\n",
+			'expectedNewlinesCount' => 1,
+		];
+
+		yield 'no errors' => [
+			'errors' => [],
+			'existingBaselineContent' => $existingBaselineContentWithoutEndNewlines . "\n",
+			'expectedNewlinesCount' => 1,
+		];
+
+		yield 'one error with 2 newlines' => [
+			'errors' => [
+				new Error('Error #1', 'TestfileA', 1),
+			],
+			'existingBaselineContent' => $existingBaselineContentWithoutEndNewlines . "\n\n",
+			'expectedNewlinesCount' => 2,
+		];
+
+		yield 'no errors with 2 newlines' => [
+			'errors' => [],
+			'existingBaselineContent' => $existingBaselineContentWithoutEndNewlines . "\n\n",
+			'expectedNewlinesCount' => 2,
+		];
+
+		yield 'one error with 0 newlines' => [
+			'errors' => [
+				new Error('Error #1', 'TestfileA', 1),
+			],
+			'existingBaselineContent' => $existingBaselineContentWithoutEndNewlines,
+			'expectedNewlinesCount' => 0,
+		];
+
+		yield 'one error with 3 newlines' => [
+			'errors' => [
+				new Error('Error #1', 'TestfileA', 1),
+			],
+			'existingBaselineContent' => $existingBaselineContentWithoutEndNewlines . "\n\n\n",
+			'expectedNewlinesCount' => 3,
+		];
+
+		yield 'empty existing baseline' => [
+			'errors' => [
+				new Error('Error #1', 'TestfileA', 1),
+			],
+			'existingBaselineContent' => '',
+			'expectedNewlinesCount' => 1,
+		];
+
+		yield 'empty existing baseline, no new errors' => [
+			'errors' => [],
+			'existingBaselineContent' => '',
+			'expectedNewlinesCount' => 1,
+		];
+
+		yield 'empty existing baseline with a newline, no new errors' => [
+			'errors' => [],
+			'existingBaselineContent' => "\n",
+			'expectedNewlinesCount' => 1,
+		];
+
+		yield 'empty existing baseline with 2 newlines, no new errors' => [
+			'errors' => [],
+			'existingBaselineContent' => "\n\n",
+			'expectedNewlinesCount' => 2,
+		];
+	}
+
+	/**
+	 * @dataProvider endOfFileNewlinesProvider
+	 *
+	 * @param list<Error> $errors
+	 */
+	public function testEndOfFileNewlines(
+		array $errors,
+		string $existingBaselineContent,
+		int $expectedNewlinesCount,
+	): void
+	{
+		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
+		$result = new AnalysisResult(
+			$errors,
+			[],
+			[],
+			[],
+			false,
+			null,
+			true,
+		);
+
+		$resource = fopen('php://memory', 'w', false);
+		if ($resource === false) {
+			throw new ShouldNotHappenException();
+		}
+		$outputStream = new StreamOutput($resource, StreamOutput::VERBOSITY_NORMAL, false);
+
+		$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $outputStream);
+		$output = new SymfonyOutput($outputStream, new SymfonyStyle($errorConsoleStyle));
+
+		$formatter->formatErrors(
+			$result,
+			$output,
+			$existingBaselineContent,
+		);
+
+		rewind($outputStream->getStream());
+
+		$content = stream_get_contents($outputStream->getStream());
+		if ($content === false) {
+			throw new ShouldNotHappenException();
+		}
+
+		if ($expectedNewlinesCount > 0) {
+			Assert::assertSame(str_repeat("\n", $expectedNewlinesCount), substr($content, -$expectedNewlinesCount));
+		}
+		Assert::assertNotSame("\n", substr($content, -($expectedNewlinesCount + 1), 1));
 	}
 
 }

@@ -11,6 +11,7 @@ use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\File\CouldNotWriteFileException;
+use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
 use PHPStan\File\PathNotFoundException;
@@ -32,6 +33,7 @@ use function implode;
 use function is_array;
 use function is_bool;
 use function is_dir;
+use function is_file;
 use function is_string;
 use function mkdir;
 use function pathinfo;
@@ -279,10 +281,12 @@ class AnalyseCommand extends Command
 			$baselineFileDirectory = dirname($generateBaselineFile);
 			$baselineErrorFormatter = new BaselineNeonErrorFormatter(new ParentDirectoryRelativePathHelper($baselineFileDirectory));
 
+			$existingBaselineContent = is_file($generateBaselineFile) ? FileReader::read($generateBaselineFile) : '';
+
 			$streamOutput = $this->createStreamOutput();
 			$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $streamOutput);
 			$baselineOutput = new SymfonyOutput($streamOutput, new SymfonyStyle($errorConsoleStyle));
-			$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput);
+			$baselineErrorFormatter->formatErrors($analysisResult, $baselineOutput, $existingBaselineContent);
 
 			$stream = $streamOutput->getStream();
 			rewind($stream);

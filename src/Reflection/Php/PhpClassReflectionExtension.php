@@ -10,7 +10,7 @@ use PhpParser\Node\Stmt\Namespace_;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
 use PHPStan\Parser\Parser;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -48,20 +48,15 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 use ReflectionClass;
-use ReflectionParameter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
-use function array_shift;
 use function array_slice;
 use function class_exists;
 use function count;
 use function explode;
 use function implode;
-use function in_array;
 use function is_array;
-use function method_exists;
-use function reset;
 use function sprintf;
 use function strtolower;
 
@@ -263,7 +258,7 @@ class PhpClassReflectionExtension
 		if ($declaringClassReflection->getFileName() !== null) {
 			$declaringTraitName = $this->findPropertyTrait($propertyReflection);
 			$constructorName = null;
-			if (method_exists($propertyReflection, 'isPromoted') && $propertyReflection->isPromoted()) {
+			if ($propertyReflection->isPromoted()) {
 				if ($declaringClassReflection->hasConstructor()) {
 					$constructorName = $declaringClassReflection->getConstructor()->getName();
 				}
@@ -339,8 +334,8 @@ class PhpClassReflectionExtension
 			&& $this->inferPrivatePropertyTypeFromConstructor
 			&& $declaringClassReflection->getFileName() !== null
 			&& $propertyReflection->isPrivate()
-			&& (!method_exists($propertyReflection, 'isPromoted') || !$propertyReflection->isPromoted())
-			&& (!method_exists($propertyReflection, 'hasType') || !$propertyReflection->hasType())
+			&& !$propertyReflection->isPromoted()
+			&& !$propertyReflection->hasType()
 			&& $declaringClassReflection->hasConstructor()
 			&& $declaringClassReflection->getConstructor()->getDeclaringClass()->getName() === $declaringClassReflection->getName()
 		) {
@@ -351,7 +346,7 @@ class PhpClassReflectionExtension
 		}
 
 		$nativeType = null;
-		if (method_exists($propertyReflection, 'getType') && $propertyReflection->getType() !== null) {
+		if ($propertyReflection->getType() !== null) {
 			$nativeType = $propertyReflection->getType();
 		}
 
@@ -657,7 +652,7 @@ class PhpClassReflectionExtension
 			&& $declaringClass->getFileName() !== null
 		) {
 			foreach ($methodReflection->getParameters() as $parameter) {
-				if (!method_exists($parameter, 'isPromoted') || !$parameter->isPromoted()) {
+				if (!$parameter->isPromoted()) {
 					continue;
 				}
 
@@ -666,7 +661,7 @@ class PhpClassReflectionExtension
 				}
 
 				$parameterProperty = $methodReflection->getDeclaringClass()->getProperty($parameter->getName());
-				if (!method_exists($parameterProperty, 'isPromoted') || !$parameterProperty->isPromoted()) {
+				if (!$parameterProperty->isPromoted()) {
 					continue;
 				}
 				if ($parameterProperty->getDocComment() === false) {
@@ -795,51 +790,15 @@ class PhpClassReflectionExtension
 		);
 	}
 
-	private function findPropertyTrait(\ReflectionProperty $propertyReflection): ?string
+	private function findPropertyTrait(ReflectionProperty $propertyReflection): ?string
 	{
-		if ($propertyReflection instanceof ReflectionProperty) {
-			$declaringClass = $propertyReflection->getBetterReflection()->getDeclaringClass();
-			if ($declaringClass->isTrait()) {
-				if ($propertyReflection->getDeclaringClass()->isTrait() && $propertyReflection->getDeclaringClass()->getName() === $declaringClass->getName()) {
-					return null;
-				}
-
-				return $declaringClass->getName();
+		$declaringClass = $propertyReflection->getBetterReflection()->getDeclaringClass();
+		if ($declaringClass->isTrait()) {
+			if ($propertyReflection->getDeclaringClass()->isTrait() && $propertyReflection->getDeclaringClass()->getName() === $declaringClass->getName()) {
+				return null;
 			}
 
-			return null;
-		}
-		$declaringClass = $propertyReflection->getDeclaringClass();
-		$trait = $this->deepScanTraitsForProperty($declaringClass->getTraits(), $propertyReflection);
-		if ($trait !== null) {
-			return $trait;
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param ReflectionClass<object>[] $traits
-	 */
-	private function deepScanTraitsForProperty(
-		array $traits,
-		\ReflectionProperty $propertyReflection,
-	): ?string
-	{
-		foreach ($traits as $trait) {
-			$result = $this->deepScanTraitsForProperty($trait->getTraits(), $propertyReflection);
-			if ($result !== null) {
-				return $result;
-			}
-
-			if (!$trait->hasProperty($propertyReflection->getName())) {
-				continue;
-			}
-
-			$traitProperty = $trait->getProperty($propertyReflection->getName());
-			if ($traitProperty->getDocComment() === $propertyReflection->getDocComment()) {
-				return $trait->getName();
-			}
+			return $declaringClass->getName();
 		}
 
 		return null;
@@ -849,75 +808,20 @@ class PhpClassReflectionExtension
 		BuiltinMethodReflection $methodReflection,
 	): ?string
 	{
-		if ($methodReflection->getReflection() instanceof ReflectionMethod) {
-			$declaringClass = $methodReflection->getReflection()->getBetterReflection()->getDeclaringClass();
-			if ($declaringClass->isTrait()) {
-				if ($methodReflection->getDeclaringClass()->isTrait() && $declaringClass->getName() === $methodReflection->getDeclaringClass()->getName()) {
-					return null;
-				}
-
-				return $declaringClass->getName();
-			}
-
+		if ($methodReflection->getReflection() === null) {
 			return null;
 		}
 
-		$declaringClass = $methodReflection->getDeclaringClass();
-		if (
-			$methodReflection->getFileName() === $declaringClass->getFileName()
-			&& $methodReflection->getStartLine() >= $declaringClass->getStartLine()
-			&& $methodReflection->getEndLine() <= $declaringClass->getEndLine()
-		) {
-			return null;
-		}
-
-		$declaringClass = $methodReflection->getDeclaringClass();
-		$traitAliases = $declaringClass->getTraitAliases();
-		if (array_key_exists($methodReflection->getName(), $traitAliases)) {
-			return explode('::', $traitAliases[$methodReflection->getName()])[0];
-		}
-
-		foreach ($this->collectTraits($declaringClass) as $traitReflection) {
-			if (!$traitReflection->hasMethod($methodReflection->getName())) {
-				continue;
+		$declaringClass = $methodReflection->getReflection()->getBetterReflection()->getDeclaringClass();
+		if ($declaringClass->isTrait()) {
+			if ($methodReflection->getDeclaringClass()->isTrait() && $declaringClass->getName() === $methodReflection->getDeclaringClass()->getName()) {
+				return null;
 			}
 
-			if (
-				$methodReflection->getFileName() === $traitReflection->getFileName()
-				&& $methodReflection->getStartLine() >= $traitReflection->getStartLine()
-				&& $methodReflection->getEndLine() <= $traitReflection->getEndLine()
-			) {
-				return $traitReflection->getName();
-			}
+			return $declaringClass->getName();
 		}
 
 		return null;
-	}
-
-	/**
-	 * @return ReflectionClass[]
-	 */
-	private function collectTraits(ReflectionClass $class): array
-	{
-		$traits = [];
-		$traitsLeftToAnalyze = $class->getTraits();
-
-		while (count($traitsLeftToAnalyze) !== 0) {
-			$trait = reset($traitsLeftToAnalyze);
-			$traits[] = $trait;
-
-			foreach ($trait->getTraits() as $subTrait) {
-				if (in_array($subTrait, $traits, true)) {
-					continue;
-				}
-
-				$traitsLeftToAnalyze[] = $subTrait;
-			}
-
-			array_shift($traitsLeftToAnalyze);
-		}
-
-		return $traits;
 	}
 
 	private function inferPrivatePropertyType(

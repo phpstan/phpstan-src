@@ -2,12 +2,14 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\TrinaryLogic;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionParameter;
-use ReflectionType;
-use function method_exists;
 
 class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 {
@@ -36,7 +38,7 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $fileName;
 	}
 
-	public function getDeclaringClass(): ReflectionClass
+	public function getDeclaringClass(): ReflectionClass|ReflectionEnum
 	{
 		return $this->reflection->getDeclaringClass();
 	}
@@ -121,18 +123,14 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->reflection->isVariadic();
 	}
 
-	public function getReturnType(): ?ReflectionType
+	public function getReturnType(): ReflectionIntersectionType|ReflectionNamedType|ReflectionUnionType|null
 	{
 		return $this->reflection->getReturnType();
 	}
 
-	public function getTentativeReturnType(): ?ReflectionType
+	public function getTentativeReturnType(): ReflectionIntersectionType|ReflectionNamedType|ReflectionUnionType|null
 	{
-		if (method_exists($this->reflection, 'getTentativeReturnType')) {
-			return $this->reflection->getTentativeReturnType();
-		}
-
-		return null;
+		return $this->reflection->getTentativeReturnType();
 	}
 
 	/**

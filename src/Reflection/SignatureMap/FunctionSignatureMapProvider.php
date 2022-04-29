@@ -2,11 +2,11 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypehintHelper;
-use ReflectionMethod;
 use function array_change_key_case;
 use function array_key_exists;
 use function array_keys;

@@ -2,11 +2,14 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\TrinaryLogic;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionParameter;
-use ReflectionType;
 
 interface BuiltinMethodReflection
 {
@@ -17,7 +20,7 @@ interface BuiltinMethodReflection
 
 	public function getFileName(): ?string;
 
-	public function getDeclaringClass(): ReflectionClass;
+	public function getDeclaringClass(): ReflectionClass|ReflectionEnum;
 
 	public function getStartLine(): ?int;
 
@@ -37,9 +40,9 @@ interface BuiltinMethodReflection
 
 	public function isVariadic(): bool;
 
-	public function getReturnType(): ?ReflectionType;
+	public function getReturnType(): ReflectionIntersectionType|ReflectionNamedType|ReflectionUnionType|null;
 
-	public function getTentativeReturnType(): ?ReflectionType;
+	public function getTentativeReturnType(): ReflectionIntersectionType|ReflectionNamedType|ReflectionUnionType|null;
 
 	/**
 	 * @return ReflectionParameter[]

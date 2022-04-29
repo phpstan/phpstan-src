@@ -10,7 +10,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use ReflectionProperty;
 use ReflectionType;
-use function method_exists;
 
 /** @api */
 class PhpPropertyReflection implements PropertyReflection
@@ -70,11 +69,7 @@ class PhpPropertyReflection implements PropertyReflection
 
 	public function isReadOnly(): bool
 	{
-		if (method_exists($this->reflection, 'isReadOnly')) {
-			return $this->reflection->isReadOnly();
-		}
-
-		return false;
+		return $this->reflection->isReadOnly();
 	}
 
 	public function getReadableType(): Type
@@ -102,10 +97,6 @@ class PhpPropertyReflection implements PropertyReflection
 
 	public function isPromoted(): bool
 	{
-		if (!method_exists($this->reflection, 'isPromoted')) {
-			return false;
-		}
-
 		return $this->reflection->isPromoted();
 	}
 

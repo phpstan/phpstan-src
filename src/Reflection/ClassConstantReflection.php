@@ -3,12 +3,10 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
-use PHPStan\Php\PhpVersion;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\Type;
-use ReflectionClassConstant;
-use function method_exists;
 use const NAN;
 
 class ClassConstantReflection implements ConstantReflection
@@ -20,7 +18,6 @@ class ClassConstantReflection implements ConstantReflection
 		private ClassReflection $declaringClass,
 		private ReflectionClassConstant $reflection,
 		private ?Type $phpDocType,
-		private PhpVersion $phpVersion,
 		private ?string $deprecatedDescription,
 		private bool $isDeprecated,
 		private bool $isInternal,
@@ -90,15 +87,7 @@ class ClassConstantReflection implements ConstantReflection
 
 	public function isFinal(): bool
 	{
-		if (method_exists($this->reflection, 'isFinal')) {
-			return $this->reflection->isFinal();
-		}
-
-		if (!$this->phpVersion->isInterfaceConstantImplicitlyFinal()) {
-			return false;
-		}
-
-		return $this->declaringClass->isInterface();
+		return $this->reflection->isFinal();
 	}
 
 	public function isDeprecated(): TrinaryLogic

@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
-use ReflectionMethod;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 
 interface SignatureMapProvider
 {

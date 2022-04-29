@@ -16,7 +16,7 @@ parameters:
 			path: src/Analyser/NodeScopeResolver.php
 
 		-
-			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects ReflectionClass, object given\\.$#"
+			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum, object given\\.$#"
 			count: 1
 			path: src/Analyser/NodeScopeResolver.php
 
@@ -139,7 +139,7 @@ parameters:
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
 		-
-			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects ReflectionClass, object given\\.$#"
+			message: "#^Parameter \\#9 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum, object given\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
@@ -174,59 +174,9 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/PhpFileCleaner.php
 
 		-
-			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:__construct\\(\\) has parameter \\$reflection with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/ClassReflection.php
-
-		-
 			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:getCacheKey\\(\\) should return string but returns string\\|null\\.$#"
 			count: 1
 			path: src/Reflection/ClassReflection.php
-
-		-
-			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:getNativeReflection\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/ClassReflection.php
-
-		-
-			message: "#^Property PHPStan\\\\Reflection\\\\ClassReflection\\:\\:\\$reflection with generic class ReflectionClass does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/ClassReflection.php
-
-		-
-			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\BuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/Php/BuiltinMethodReflection.php
-
-		-
-			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:__construct\\(\\) has parameter \\$declaringClass with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/Php/FakeBuiltinMethodReflection.php
-
-		-
-			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/Php/FakeBuiltinMethodReflection.php
-
-		-
-			message: "#^Property PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:\\$declaringClass with generic class ReflectionClass does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/Php/FakeBuiltinMethodReflection.php
-
-		-
-			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\NativeBuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/Php/NativeBuiltinMethodReflection.php
-
-		-
-			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\PhpClassReflectionExtension\\:\\:collectTraits\\(\\) has parameter \\$class with generic class ReflectionClass but does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/Php/PhpClassReflectionExtension.php
-
-		-
-			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\PhpClassReflectionExtension\\:\\:collectTraits\\(\\) return type with generic class ReflectionClass does not specify its types\\: T$#"
-			count: 1
-			path: src/Reflection/Php/PhpClassReflectionExtension.php
 
 		-
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"

@@ -12,7 +12,6 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use function extension_loaded;
-use function method_exists;
 use function restore_error_handler;
 use const PHP_VERSION_ID;
 
@@ -372,10 +371,6 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(10, $defaultValue->getValue());
 
 		$nativeProperty = $class->getNativeReflection()->getProperty('test');
-		if (!method_exists($nativeProperty, 'getDefaultValue')) {
-			return;
-		}
-
 		$this->assertSame(10, $nativeProperty->getDefaultValue());
 	}
 

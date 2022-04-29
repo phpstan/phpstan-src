@@ -27,12 +27,7 @@ use NestedTraits\BarTrait;
 use NestedTraits\BazChild;
 use NestedTraits\BazTrait;
 use NestedTraits\NoTrait;
-use PHPStan\Broker\Broker;
-use PHPStan\Php\PhpVersion;
-use PHPStan\PhpDoc\PhpDocInheritanceResolver;
-use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Testing\PHPStanTestCase;
-use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\IntegerType;
 use ReflectionClass;
 use ReflectionEnum;
@@ -59,11 +54,8 @@ class ClassReflectionTest extends PHPStanTestCase
 	 */
 	public function testHasTraitUse(string $className, bool $has): void
 	{
-		$broker = $this->createMock(Broker::class);
-		$fileTypeMapper = $this->createMock(FileTypeMapper::class);
-		$stubPhpDocProvider = $this->createMock(StubPhpDocProvider::class);
-		$phpDocInheritanceResolver = $this->createMock(PhpDocInheritanceResolver::class);
-		$classReflection = new ClassReflection($broker, $fileTypeMapper, $stubPhpDocProvider, $phpDocInheritanceResolver, new PhpVersion(PHP_VERSION_ID), [], [], $className, new ReflectionClass($className), null, null, null);
+		$reflectionProvider = $this->createReflectionProvider();
+		$classReflection = $reflectionProvider->getClass($className);
 		$this->assertSame($has, $classReflection->hasTraitUse(FooTrait::class));
 	}
 
@@ -82,21 +74,6 @@ class ClassReflectionTest extends PHPStanTestCase
 			],
 			[
 				Ipsum::class,
-				PHP_VERSION_ID < 70400 ?
-				[
-					Ipsum::class => 0,
-					TraitOne::class => 1,
-					Lorem::class => 2,
-					TraitTwo::class => 3,
-					TraitThree::class => 4,
-					SecondLoremInterface::class => 5,
-					FirstLoremInterface::class => 6,
-					FirstIpsumInterface::class => 7,
-					ExtendedIpsumInterface::class => 8,
-					SecondIpsumInterface::class => 9,
-					ThirdIpsumInterface::class => 10,
-				]
-				:
 				[
 					Ipsum::class => 0,
 					TraitOne::class => 1,
@@ -106,9 +83,9 @@ class ClassReflectionTest extends PHPStanTestCase
 					FirstLoremInterface::class => 5,
 					SecondLoremInterface::class => 6,
 					FirstIpsumInterface::class => 7,
-					SecondIpsumInterface::class => 8,
-					ThirdIpsumInterface::class => 9,
-					ExtendedIpsumInterface::class => 10,
+					ExtendedIpsumInterface::class => 8,
+					SecondIpsumInterface::class => 9,
+					ThirdIpsumInterface::class => 10,
 				],
 			],
 		];
@@ -124,25 +101,8 @@ class ClassReflectionTest extends PHPStanTestCase
 		array $expectedDistances,
 	): void
 	{
-		$broker = $this->createReflectionProvider();
-		$fileTypeMapper = $this->createMock(FileTypeMapper::class);
-		$stubPhpDocProvider = $this->createMock(StubPhpDocProvider::class);
-		$phpDocInheritanceResolver = $this->createMock(PhpDocInheritanceResolver::class);
-
-		$classReflection = new ClassReflection(
-			$broker,
-			$fileTypeMapper,
-			$stubPhpDocProvider,
-			$phpDocInheritanceResolver,
-			new PhpVersion(PHP_VERSION_ID),
-			[],
-			[],
-			$class,
-			new ReflectionClass($class),
-			null,
-			null,
-			null,
-		);
+		$reflectionProvider = $this->createReflectionProvider();
+		$classReflection = $reflectionProvider->getClass($class);
 		$this->assertSame(
 			$expectedDistances,
 			$classReflection->getClassHierarchyDistances(),

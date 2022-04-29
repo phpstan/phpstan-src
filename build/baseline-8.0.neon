@@ -21,27 +21,6 @@ parameters:
 			path: ../src/Type/Php/StrSplitFunctionReturnTypeExtension.php
 
 		-
-			message: "#^Call to function method_exists\\(\\) with ReflectionProperty and 'isPromoted' will always evaluate to true\\.$#"
-			paths:
-				- ../src/Reflection/Php/PhpClassReflectionExtension.php
-				- ../src/Reflection/Php/PhpPropertyReflection.php
-
-		-
-			message: "#^Call to function method_exists\\(\\) with ReflectionProperty and 'getDefaultValue' will always evaluate to true\\.$#"
-			paths:
-				- ../tests/PHPStan/Analyser/AnalyserIntegrationTest.php
-
-		-
-			message: "#^Call to function method_exists\\(\\) with ReflectionParameter and 'isPromoted' will always evaluate to true\\.$#"
-			paths:
-				- ../src/Reflection/Php/PhpClassReflectionExtension.php
-
-		-
-			message: "#^Call to function method_exists\\(\\) with ReflectionClass and 'getAttributes' will always evaluate to true\\.$#"
-			count: 1
-			path: ../src/Reflection/ClassReflection.php
-
-		-
 			message: "#^Strict comparison using \\=\\=\\= between array and false will always evaluate to false\\.$#"
 			count: 1
 			path: ../src/Type/Php/StrSplitFunctionReturnTypeExtension.php

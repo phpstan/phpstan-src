@@ -363,6 +363,24 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			'existingBaselineContent' => '',
 			'expectedNewlinesCount' => 1,
 		];
+
+		yield 'empty existing baseline, no new errors' => [
+			'errors' => [],
+			'existingBaselineContent' => '',
+			'expectedNewlinesCount' => 1,
+		];
+
+		yield 'empty existing baseline with a newline, no new errors' => [
+			'errors' => [],
+			'existingBaselineContent' => "\n",
+			'expectedNewlinesCount' => 1,
+		];
+
+		yield 'empty existing baseline with 2 newlines, no new errors' => [
+			'errors' => [],
+			'existingBaselineContent' => "\n\n",
+			'expectedNewlinesCount' => 2,
+		];
 	}
 
 	/**

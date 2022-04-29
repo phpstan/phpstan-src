@@ -248,7 +248,7 @@ class FunctionCallParametersCheck
 				continue;
 			}
 
-			$parameterType = $parameter->getType();
+			$parameterType = TypeUtils::resolveLateResolvableTypes($parameter->getType());
 			if (
 				$this->checkArgumentTypes
 				&& !$parameter->passedByReference()->createsNewVariable()

@@ -352,26 +352,13 @@ class TypeUtils
 		return $containsTemplateType;
 	}
 
-	public static function flattenConditionals(Type $type): Type
-	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) {
-			while ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
-				$type = $type->getResult();
-			}
-
-			return $traverse($type);
-		});
-	}
-
 	public static function resolveLateResolvableTypes(Type $type, bool $resolveUnresolvableTypes = true): Type
 	{
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($resolveUnresolvableTypes): Type {
 			$type = $traverse($type);
 
-			if ($type instanceof LateResolvableType) {
-				if ($resolveUnresolvableTypes || !self::containsTemplateType($type)) {
-					$type = $type->resolve();
-				}
+			if ($type instanceof LateResolvableType && ($resolveUnresolvableTypes || $type->isResolvable())) {
+				$type = $type->resolve();
 			}
 
 			return $type;

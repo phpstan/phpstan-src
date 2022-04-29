@@ -92,7 +92,7 @@ abstract class Test
 
 	public function testMissingParameter(): void
 	{
-		assertType('($parameter is true ? int : string)', $this->missingParameter());
+		assertType('int|string', $this->missingParameter());
 	}
 
 	/**

@@ -14,7 +14,7 @@ use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function array_map;
 
-class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcceptor
+class ResolvedFunctionVariant implements ParametersAcceptor
 {
 
 	/** @var ParameterReflection[]|null */
@@ -106,22 +106,6 @@ class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcc
 		}
 
 		return $type;
-	}
-
-	/**
-	 * @return static
-	 */
-	public function flattenConditionalsInReturnType(): SingleParametersAcceptor
-	{
-		/** @var static $result */
-		$result = new self(
-			$this->parametersAcceptor,
-			$this->resolvedTemplateTypeMap,
-			$this->passedArgs,
-		);
-		$result->returnType = TypeUtils::flattenConditionals($this->getReturnType());
-
-		return $result;
 	}
 
 	private function resolveResolvableTemplateTypes(Type $type): Type

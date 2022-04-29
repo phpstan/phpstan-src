@@ -235,7 +235,7 @@ class TypeSpecifier
 							$newContext = $newContext->negate();
 						}
 						$argType = $scope->getType($exprNode->getArgs()[0]->value);
-						if ($argType instanceof StringType) {
+						if ($argType->isString()->yes()) {
 							$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
 							$valueTypes = $this->create($exprNode->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $newContext, false, $scope, $rootExpr);
 							return $funcTypes->unionWith($valueTypes);
@@ -535,7 +535,7 @@ class TypeSpecifier
 					|| ($context->falsey() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
 				) {
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
-					if ($argType instanceof StringType) {
+					if ($argType->isString()->yes()) {
 						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $context, false, $scope, $rootExpr));
 					}
 				}

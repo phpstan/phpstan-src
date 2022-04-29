@@ -106,7 +106,7 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 		return false;
 	}
 
-	private function getResult(): Type
+	protected function getResult(): Type
 	{
 		return TypeCombinator::union($this->if, $this->else);
 	}

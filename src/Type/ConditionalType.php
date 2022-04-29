@@ -86,7 +86,7 @@ final class ConditionalType implements CompoundType, LateResolvableType
 		return !TypeUtils::containsTemplateType($this->subject) && !TypeUtils::containsTemplateType($this->target);
 	}
 
-	private function getResult(): Type
+	protected function getResult(): Type
 	{
 		$isSuperType = $this->target->isSuperTypeOf($this->subject);
 

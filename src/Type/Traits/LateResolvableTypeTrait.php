@@ -292,6 +292,6 @@ trait LateResolvableTypeTrait
 		return $this->result;
 	}
 
-	abstract private function getResult(): Type;
+	abstract protected function getResult(): Type;
 
 }

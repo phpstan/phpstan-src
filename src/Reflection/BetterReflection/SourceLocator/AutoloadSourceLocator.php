@@ -135,12 +135,23 @@ class AutoloadSourceLocator implements SourceLocator
 		if ($locateResult === null) {
 			return null;
 		}
-		[$potentiallyLocatedFile, $className, $startLine] = $locateResult;
+		[$potentiallyLocatedFiles, $className, $startLine] = $locateResult;
 		if ($startLine !== null) {
 			$this->startLineByClass[strtolower($className)] = $startLine;
 		}
 
-		return $this->findReflection($reflector, $potentiallyLocatedFile, new Identifier($className, $identifier->getType()), $startLine);
+		$newIdentifier = new Identifier($className, $identifier->getType());
+
+		foreach ($potentiallyLocatedFiles as $potentiallyLocatedFile) {
+			$reflection = $this->findReflection($reflector, $potentiallyLocatedFile, $newIdentifier, $startLine);
+			if ($reflection === null) {
+				continue;
+			}
+
+			return $reflection;
+		}
+
+		return null;
 	}
 
 	private function findReflection(Reflector $reflector, string $file, Identifier $identifier, ?int $startLine): ?Reflection
@@ -313,7 +324,7 @@ class AutoloadSourceLocator implements SourceLocator
 	 * that it cannot find the file, so we squelch the errors by overriding the
 	 * error handler temporarily.
 	 *
-	 * @return array{string, string, int|null}|null
+	 * @return array{string[], string, int|null}|null
 	 */
 	private function locateClassByName(string $className): ?array
 	{
@@ -324,7 +335,7 @@ class AutoloadSourceLocator implements SourceLocator
 				return null;
 			}
 
-			return [$filename, $reflection->getName(), $reflection->getStartLine() !== false ? $reflection->getStartLine() : null];
+			return [[$filename], $reflection->getName(), $reflection->getStartLine() !== false ? $reflection->getStartLine() : null];
 		}
 
 		if (!$this->disableRuntimeReflectionProvider) {
@@ -334,7 +345,7 @@ class AutoloadSourceLocator implements SourceLocator
 		$this->silenceErrors();
 
 		try {
-			/** @var array{string, string, null}|null */
+			/** @var array{string[], string, null}|null */
 			$result = FileReadTrapStreamWrapper::withStreamWrapperOverride(
 				static function () use ($className): ?array {
 					$functions = spl_autoload_functions();
@@ -351,8 +362,8 @@ class AutoloadSourceLocator implements SourceLocator
 						 *
 						 * This will not be `null` when the autoloader tried to read a file.
 						 */
-						if (FileReadTrapStreamWrapper::$autoloadLocatedFile !== null) {
-							return [FileReadTrapStreamWrapper::$autoloadLocatedFile, $className, null];
+						if (FileReadTrapStreamWrapper::$autoloadLocatedFiles !== []) {
+							return [FileReadTrapStreamWrapper::$autoloadLocatedFiles, $className, null];
 						}
 					}
 
@@ -363,7 +374,9 @@ class AutoloadSourceLocator implements SourceLocator
 				return null;
 			}
 
-			opcache_invalidate($result[0], true);
+			foreach ($result[0] as $file) {
+				opcache_invalidate($file, true);
+			}
 
 			return $result;
 		} finally {

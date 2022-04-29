@@ -34,7 +34,8 @@ final class FileReadTrapStreamWrapper
 	/** @var string[]|null */
 	private static ?array $registeredStreamWrapperProtocols;
 
-	public static ?string $autoloadLocatedFile = null;
+	/** @var string[] */
+	public static array $autoloadLocatedFiles = [];
 
 	private bool $readFromFile = false;
 
@@ -55,7 +56,7 @@ final class FileReadTrapStreamWrapper
 	)
 	{
 		self::$registeredStreamWrapperProtocols = $streamWrapperProtocols;
-		self::$autoloadLocatedFile = null;
+		self::$autoloadLocatedFiles = [];
 
 		try {
 			foreach ($streamWrapperProtocols as $protocol) {
@@ -71,7 +72,7 @@ final class FileReadTrapStreamWrapper
 		}
 
 		self::$registeredStreamWrapperProtocols = null;
-		self::$autoloadLocatedFile = null;
+		self::$autoloadLocatedFiles = [];
 
 		return $result;
 	}
@@ -93,9 +94,7 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_open($path, $mode, $options, &$openedPath): bool
 	{
-		if (self::$autoloadLocatedFile === null) {
-			self::$autoloadLocatedFile = $path;
-		}
+		self::$autoloadLocatedFiles[] = $path;
 		$this->readFromFile = false;
 		$this->seekPosition = 0;
 
@@ -139,11 +138,11 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_stat()
 	{
-		if (self::$autoloadLocatedFile === null) {
+		if (self::$autoloadLocatedFiles === []) {
 			return false;
 		}
 
-		return $this->url_stat(self::$autoloadLocatedFile, STREAM_URL_STAT_QUIET);
+		return $this->url_stat(self::$autoloadLocatedFiles[0], STREAM_URL_STAT_QUIET);
 	}
 
 	/**

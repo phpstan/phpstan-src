@@ -22,25 +22,17 @@ use PHPStan\Rules\Registry;
 use PHPStan\Rules\TipRuleError;
 use function array_key_exists;
 use function array_keys;
-use function array_merge;
 use function array_unique;
 use function array_values;
-use function error_reporting;
 use function get_class;
 use function is_dir;
 use function is_file;
 use function is_string;
-use function restore_error_handler;
-use function set_error_handler;
 use function sprintf;
 use function strpos;
-use const E_DEPRECATED;
 
 class FileAnalyser
 {
-
-	/** @var Error[] */
-	private array $collectedErrors = [];
 
 	public function __construct(
 		private ScopeFactory $scopeFactory,
@@ -68,7 +60,6 @@ class FileAnalyser
 		$exportedNodes = [];
 		if (is_file($file)) {
 			try {
-				$this->collectErrors($analysedFiles);
 				$parserNodes = $this->parser->parseFile($file);
 				$linesToIgnore = $this->getLinesToIgnoreFromTokens($file, $parserNodes);
 				$temporaryFileErrors = [];
@@ -266,10 +257,6 @@ class FileAnalyser
 			$fileErrors[] = new Error(sprintf('File %s does not exist.', $file), $file, null, false);
 		}
 
-		$this->restoreCollectErrorsHandler();
-
-		$fileErrors = array_merge($fileErrors, $this->collectedErrors);
-
 		return new FileAnalyserResult($fileErrors, array_values(array_unique($fileDependencies)), $exportedNodes);
 	}
 
@@ -339,37 +326,6 @@ class FileAnalyser
 		}
 
 		return null;
-	}
-
-	/**
-	 * @param array<string, true> $analysedFiles
-	 */
-	private function collectErrors(array $analysedFiles): void
-	{
-		$this->collectedErrors = [];
-		set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use ($analysedFiles): bool {
-			if ((error_reporting() & $errno) === 0) {
-				// silence @ operator
-				return true;
-			}
-
-			if ($errno === E_DEPRECATED) {
-				return true;
-			}
-
-			if (!isset($analysedFiles[$errfile])) {
-				return true;
-			}
-
-			$this->collectedErrors[] = new Error($errstr, $errfile, $errline, true);
-
-			return true;
-		});
-	}
-
-	private function restoreCollectErrorsHandler(): void
-	{
-		restore_error_handler();
 	}
 
 }

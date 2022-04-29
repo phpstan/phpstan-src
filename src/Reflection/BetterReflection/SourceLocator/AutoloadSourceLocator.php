@@ -293,7 +293,7 @@ class AutoloadSourceLocator implements SourceLocator
 	 */
 	private function getReflectionClass(string $className): ?ReflectionClass
 	{
-		if (class_exists($className, !$this->disableRuntimeReflectionProvider) || interface_exists($className, !$this->disableRuntimeReflectionProvider) || trait_exists($className, !$this->disableRuntimeReflectionProvider)) {
+		if (class_exists($className) || interface_exists($className) || trait_exists($className)) {
 			$reflection = new ReflectionClass($className);
 			$filename = $reflection->getFileName();
 

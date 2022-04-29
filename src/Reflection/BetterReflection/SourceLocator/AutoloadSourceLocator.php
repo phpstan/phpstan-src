@@ -28,6 +28,7 @@ use function function_exists;
 use function interface_exists;
 use function is_file;
 use function is_string;
+use function opcache_invalidate;
 use function restore_error_handler;
 use function set_error_handler;
 use function spl_autoload_functions;
@@ -334,7 +335,7 @@ class AutoloadSourceLocator implements SourceLocator
 
 		try {
 			/** @var array{string, string, null}|null */
-			return FileReadTrapStreamWrapper::withStreamWrapperOverride(
+			$result = FileReadTrapStreamWrapper::withStreamWrapperOverride(
 				static function () use ($className): ?array {
 					$functions = spl_autoload_functions();
 					if ($functions === false) {
@@ -358,6 +359,13 @@ class AutoloadSourceLocator implements SourceLocator
 					return null;
 				},
 			);
+			if ($result === null) {
+				return null;
+			}
+
+			opcache_invalidate($result[0], true);
+
+			return $result;
 		} finally {
 			restore_error_handler();
 		}

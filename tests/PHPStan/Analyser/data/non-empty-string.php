@@ -110,7 +110,7 @@ class Foo
 			assertType('literal-string&non-empty-string', $s);
 			return;
 		}
-		assertType('literal-string', $s);
+		assertType("''", $s);
 	}
 
 	public function doFoo3(string $s): void

@@ -42,6 +42,7 @@ use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -2530,6 +2531,7 @@ class MutatingScope implements Scope
 		bool $isFinal,
 		?bool $isPure = null,
 		bool $acceptsNamedArguments = true,
+		?Assertions $asserts = null,
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -2554,6 +2556,7 @@ class MutatingScope implements Scope
 				$isFinal,
 				$isPure,
 				$acceptsNamedArguments,
+				$asserts ?? Assertions::createEmpty(),
 			),
 			!$classMethod->isStatic(),
 		);
@@ -2633,6 +2636,7 @@ class MutatingScope implements Scope
 		bool $isFinal,
 		?bool $isPure = null,
 		bool $acceptsNamedArguments = true,
+		?Assertions $asserts = null,
 	): self
 	{
 		return $this->enterFunctionLike(
@@ -2652,6 +2656,7 @@ class MutatingScope implements Scope
 				$isFinal,
 				$isPure,
 				$acceptsNamedArguments,
+				$asserts ?? Assertions::createEmpty(),
 			),
 			false,
 		);

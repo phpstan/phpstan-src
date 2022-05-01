@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Type;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;

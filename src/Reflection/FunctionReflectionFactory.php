@@ -25,6 +25,7 @@ interface FunctionReflectionFactory
 		bool $isFinal,
 		?string $filename,
 		?bool $isPure = null,
+		?Assertions $asserts = null,
 	): PhpFunctionReflection;
 
 }

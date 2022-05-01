@@ -7,6 +7,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
@@ -54,6 +55,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		private bool $isFinal,
 		private ?bool $isPure,
 		private bool $acceptsNamedArguments,
+		private Assertions $asserts,
 	)
 	{
 		$this->functionLike = $functionLike;
@@ -97,6 +99,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 					$this->getReturnType(),
 					$this->phpDocReturnType ?? new MixedType(),
 					$this->realReturnType,
+					$this->asserts,
 				),
 			];
 		}

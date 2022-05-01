@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -85,6 +86,7 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 				$parameters,
 				$this->closureType->isVariadic(),
 				$this->closureType->getReturnType(),
+				Assertions::fromParametersAcceptor($this->closureType),
 			),
 		];
 	}

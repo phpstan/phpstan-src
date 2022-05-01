@@ -21,6 +21,7 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 		Type $returnType,
 		private Type $phpDocReturnType,
 		private Type $nativeReturnType,
+		?Assertions $asserts = null,
 	)
 	{
 		parent::__construct(
@@ -29,6 +30,7 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 			$parameters,
 			$isVariadic,
 			$returnType,
+			$asserts ?? Assertions::createEmpty(),
 		);
 	}
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Type;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -83,6 +84,7 @@ class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 			$acceptor->getParameters(),
 			$acceptor->isVariadic(),
 			$returnType,
+			Assertions::fromParametersAcceptor($acceptor),
 		), $this->methods[0]->getVariants());
 	}
 

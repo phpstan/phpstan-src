@@ -108,6 +108,7 @@ class ParametersAcceptorSelector
 						$parameters,
 						$acceptor->isVariadic(),
 						$acceptor->getReturnType(),
+						Assertions::fromParametersAcceptor($acceptor),
 					),
 				];
 			}
@@ -183,6 +184,7 @@ class ParametersAcceptorSelector
 						$parameters,
 						$acceptor->isVariadic(),
 						$acceptor->getReturnType(),
+						Assertions::fromParametersAcceptor($acceptor),
 					),
 				];
 			}
@@ -415,6 +417,7 @@ class ParametersAcceptorSelector
 		$parameters = [];
 		$isVariadic = false;
 		$returnType = null;
+		$asserts = null;
 
 		foreach ($acceptors as $acceptor) {
 			if ($returnType === null) {
@@ -423,6 +426,11 @@ class ParametersAcceptorSelector
 				$returnType = TypeCombinator::union($returnType, $acceptor->getReturnType());
 			}
 			$isVariadic = $isVariadic || $acceptor->isVariadic();
+			if ($asserts === null) {
+				$asserts = Assertions::fromParametersAcceptor($acceptor);
+			} else {
+				$asserts = $asserts->mergeWith(Assertions::fromParametersAcceptor($acceptor));
+			}
 
 			foreach ($acceptor->getParameters() as $i => $parameter) {
 				if (!isset($parameters[$i])) {
@@ -468,6 +476,7 @@ class ParametersAcceptorSelector
 			$parameters,
 			$isVariadic,
 			$returnType,
+			$asserts,
 		);
 	}
 

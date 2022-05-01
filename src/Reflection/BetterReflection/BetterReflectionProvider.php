@@ -29,6 +29,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\ParamTag;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassNameHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Constant\RuntimeConstantReflection;
@@ -261,6 +262,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		$isInternal = false;
 		$isFinal = false;
 		$isPure = null;
+		$asserts = Assertions::createEmpty();
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $reflectionFunction->getParameters()));
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
 			$docComment = $reflectionFunction->getDocComment();
@@ -277,6 +279,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isFinal = $resolvedPhpDoc->isFinal();
 			$isPure = $resolvedPhpDoc->isPure();
+			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
 		}
 
 		return $this->functionReflectionFactory->create(
@@ -291,6 +294,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$isFinal,
 			$reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null,
 			$isPure,
+			$asserts,
 		);
 	}
 

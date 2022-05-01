@@ -19,8 +19,10 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Internal\AssertVariableResolver;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ParametersAcceptorWithAsserts;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\ShouldNotHappenException;
@@ -756,6 +758,11 @@ class TypeSpecifier
 						return $specifiedTypes;
 					}
 				}
+
+				$specifiedTypes = $this->specifyTypesFromAsserts($context, $rootExpr, $expr, $functionReflection->getVariants(), $scope);
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
+				}
 			}
 
 			return $this->handleDefaultTruthyOrFalseyContext($context, $rootExpr, $expr, $scope);
@@ -781,6 +788,11 @@ class TypeSpecifier
 				if (count($expr->getArgs()) > 0) {
 					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants());
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
+					if ($specifiedTypes !== null) {
+						return $specifiedTypes;
+					}
+
+					$specifiedTypes = $this->specifyTypesFromAsserts($context, $rootExpr, $expr, $methodReflection->getVariants(), $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
 					}
@@ -818,6 +830,11 @@ class TypeSpecifier
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
 					}
+				}
+
+				$specifiedTypes = $this->specifyTypesFromAsserts($context, $rootExpr, $expr, $staticMethodReflection->getVariants(), $scope);
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
 				}
 			}
 
@@ -1145,6 +1162,83 @@ class TypeSpecifier
 		}
 
 		return $specifiedTypes;
+	}
+
+	/**
+	 * @param array<ParametersAcceptor> $variants
+	 */
+	private function specifyTypesFromAsserts(TypeSpecifierContext $context, ?Expr $rootExpr, Expr\CallLike $call, array $variants, Scope $scope): ?SpecifiedTypes
+	{
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $call->getArgs(), $variants);
+
+		if (!$parametersAcceptor instanceof ParametersAcceptorWithAsserts) {
+			return null;
+		}
+
+		$asserts = $parametersAcceptor->getAsserts();
+
+		if ($context->null()) {
+			$asserts = $parametersAcceptor->getAsserts()->getAsserts();
+		} elseif ($context->truthy()) {
+			$asserts = $parametersAcceptor->getAsserts()->getAssertsIfTrue();
+		} elseif ($context->falsey()) {
+			$asserts = $parametersAcceptor->getAsserts()->getAssertsIfFalse();
+		} else {
+			throw new ShouldNotHappenException();
+		}
+
+		if (count($asserts) === 0) {
+			return null;
+		}
+
+		$argsMap = [];
+		$parameters = $parametersAcceptor->getParameters();
+		foreach ($call->getArgs() as $i => $arg) {
+			if ($arg->unpack) {
+				continue;
+			}
+
+			if ($arg->name !== null) {
+				$paramName = $arg->name->toString();
+			} elseif (isset($parameters[$i])) {
+				$paramName = $parameters[$i]->getName();
+			} else {
+				continue;
+			}
+
+			$argsMap[$paramName] = $arg->value;
+		}
+
+		if ($call instanceof MethodCall) {
+			$argsMap['this'] = $call->var;
+		}
+
+		/** @var SpecifiedTypes|null $types */
+		$types = null;
+
+		$assertVariableResolver = new AssertVariableResolver(static function (string $variable) use ($argsMap): ?Expr {
+			if (array_key_exists($variable, $argsMap)) {
+				return $argsMap[$variable];
+			}
+
+			return null;
+		});
+
+		foreach ($asserts as $assert) {
+			$assertExpr = $assertVariableResolver->map($assert->getParameter());
+
+			$newTypes = $this->create(
+				$assertExpr,
+				$assert->getType(),
+				$assert->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
+				false,
+				$scope,
+				$rootExpr,
+			);
+			$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
+		}
+
+		return $types;
 	}
 
 	/**

@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Php;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
@@ -44,6 +45,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		bool $isFinal,
 		?bool $isPure,
 		bool $acceptsNamedArguments,
+		Assertions $asserts,
 	)
 	{
 		$name = strtolower($classMethod->name->name);
@@ -85,6 +87,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$isFinal || $classMethod->isFinal(),
 			$isPure,
 			$acceptsNamedArguments,
+			$asserts,
 		);
 	}
 

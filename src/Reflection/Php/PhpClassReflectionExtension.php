@@ -18,6 +18,7 @@ use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
@@ -515,6 +516,7 @@ class PhpClassReflectionExtension
 				$phpDocParameterTypes = [];
 				$phpDocReturnType = null;
 				$stubPhpDocPair = null;
+				$asserts = Assertions::createEmpty();
 				if (count($methodSignatures) === 1) {
 					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
 					if ($stubPhpDocPair !== null) {
@@ -540,6 +542,8 @@ class PhpClassReflectionExtension
 						if ($throwsTag !== null) {
 							$throwType = $throwsTag->getType();
 						}
+
+						$asserts = Assertions::createFromResolvedPhpDocBlock($stubPhpDoc);
 					}
 				}
 				if ($stubPhpDocPair === null && $reflectionMethod !== null && $reflectionMethod->getDocComment() !== false) {
@@ -563,6 +567,7 @@ class PhpClassReflectionExtension
 						foreach ($phpDocBlock->getParamTags() as $name => $paramTag) {
 							$phpDocParameterTypes[$name] = $paramTag->getType();
 						}
+						$asserts = Assertions::createFromResolvedPhpDocBlock($phpDocBlock);
 
 						$signatureParameters = $methodSignature->getParameters();
 						foreach ($reflectionMethod->getParameters() as $paramI => $reflectionParameter) {
@@ -574,7 +579,7 @@ class PhpClassReflectionExtension
 						}
 					}
 				}
-				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping);
+				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $asserts);
 			}
 
 			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
@@ -708,6 +713,7 @@ class PhpClassReflectionExtension
 		$isInternal = $resolvedPhpDoc->isInternal();
 		$isFinal = $resolvedPhpDoc->isFinal();
 		$isPure = $resolvedPhpDoc->isPure();
+		$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
 
 		return $this->methodReflectionFactory->create(
 			$declaringClass,
@@ -722,6 +728,7 @@ class PhpClassReflectionExtension
 			$isInternal,
 			$isFinal,
 			$isPure,
+			$asserts,
 		);
 	}
 
@@ -739,6 +746,7 @@ class PhpClassReflectionExtension
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
 		array $phpDocParameterNameMapping,
+		Assertions $asserts,
 	): FunctionVariantWithPhpDocs
 	{
 		$parameters = [];
@@ -781,6 +789,7 @@ class PhpClassReflectionExtension
 			$returnType ?? $methodSignature->getReturnType(),
 			$phpDocReturnType ?? new MixedType(),
 			$methodSignature->getNativeReturnType(),
+			$asserts,
 		);
 	}
 
@@ -877,7 +886,7 @@ class PhpClassReflectionExtension
 			$constructor,
 			$namespace,
 		)->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , , $asserts] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,
@@ -890,6 +899,7 @@ class PhpClassReflectionExtension
 			$isFinal,
 			$isPure,
 			$acceptsNamedArguments,
+			$asserts,
 		);
 
 		$propertyTypes = [];

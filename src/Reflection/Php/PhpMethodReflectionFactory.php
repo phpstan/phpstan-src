@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
@@ -26,6 +27,7 @@ interface PhpMethodReflectionFactory
 		bool $isInternal,
 		bool $isFinal,
 		?bool $isPure = null,
+		?Assertions $asserts = null,
 	): PhpMethodReflection;
 
 }

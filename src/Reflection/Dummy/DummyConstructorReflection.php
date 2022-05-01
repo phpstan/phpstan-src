@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Dummy;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionVariant;
@@ -57,6 +58,7 @@ class DummyConstructorReflection implements MethodReflection
 				[],
 				false,
 				new VoidType(),
+				Assertions::createEmpty(),
 			),
 		];
 	}

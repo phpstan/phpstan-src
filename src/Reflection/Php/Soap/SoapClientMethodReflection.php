@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php\Soap;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionVariant;
@@ -63,6 +64,7 @@ class SoapClientMethodReflection implements MethodReflection
 				[],
 				true,
 				new MixedType(true),
+				Assertions::createEmpty(),
 			),
 		];
 	}

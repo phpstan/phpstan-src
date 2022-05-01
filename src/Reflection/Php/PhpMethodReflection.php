@@ -11,6 +11,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\Cache\Cache;
 use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -78,8 +79,10 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		private bool $isInternal,
 		private bool $isFinal,
 		private ?bool $isPure,
+		private ?Assertions $asserts = null,
 	)
 	{
+		$this->asserts ??= Assertions::createEmpty();
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -187,6 +190,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 					$this->getReturnType(),
 					$this->getPhpDocReturnType(),
 					$this->getNativeReturnType(),
+					$this->asserts,
 				),
 			];
 		}

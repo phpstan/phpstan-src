@@ -2,7 +2,10 @@
 
 namespace PHPStan\PhpDoc;
 
+use PhpParser\Node;
 use PHPStan\Analyser\NameScope;
+use PHPStan\Internal\AssertVariableResolver;
+use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\PhpDoc\Tag\DeprecatedTag;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
@@ -25,6 +28,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
+use function array_map;
 use function count;
 use function is_bool;
 use function substr;
@@ -84,6 +88,15 @@ class ResolvedPhpDocBlock
 
 	/** @var array<TypeAliasImportTag>|false */
 	private array|false $typeAliasImportTags = false;
+
+	/** @var array<AssertTag>|false */
+	private array|false $assertTags = false;
+
+	/** @var array<AssertTag>|false */
+	private array|false $assertIfTrueTags = false;
+
+	/** @var array<AssertTag>|false */
+	private array|false $assertIfFalseTags = false;
 
 	private DeprecatedTag|false|null $deprecatedTag = false;
 
@@ -158,6 +171,9 @@ class ResolvedPhpDocBlock
 		$self->mixinTags = [];
 		$self->typeAliasTags = [];
 		$self->typeAliasImportTags = [];
+		$self->assertTags = [];
+		$self->assertIfTrueTags = [];
+		$self->assertIfFalseTags = [];
 		$self->deprecatedTag = null;
 		$self->isDeprecated = false;
 		$self->isInternal = false;
@@ -209,6 +225,9 @@ class ResolvedPhpDocBlock
 		$result->mixinTags = $this->getMixinTags();
 		$result->typeAliasTags = $this->getTypeAliasTags();
 		$result->typeAliasImportTags = $this->getTypeAliasImportTags();
+		$result->assertTags = $this->getAssertTags();
+		$result->assertIfTrueTags = $this->getAssertIfTrueTags();
+		$result->assertIfFalseTags = $this->getAssertIfFalseTags();
 		$result->deprecatedTag = self::mergeDeprecatedTags($this->getDeprecatedTag(), $parents);
 		$result->isDeprecated = $result->deprecatedTag !== null;
 		$result->isInternal = $this->isInternal();
@@ -257,6 +276,19 @@ class ResolvedPhpDocBlock
 			$returnTag = $returnTag->withType($transformedType);
 		}
 
+		$assertVariableResolver = new AssertVariableResolver(static function (string $variable) use ($parameterNameMapping): ?Node\Expr {
+			if (array_key_exists($variable, $parameterNameMapping)) {
+				return new Node\Expr\Variable($parameterNameMapping[$variable]);
+			}
+
+			return null;
+		});
+
+		$assertTagsCallback = static fn (AssertTag $tag): AssertTag => $tag->withParameter($assertVariableResolver->map($tag->getParameter()));
+		$assertTags = array_map($assertTagsCallback, $this->getAssertTags());
+		$assertIfTrueTags = array_map($assertTagsCallback, $this->getAssertIfTrueTags());
+		$assertIfFalseTags = array_map($assertTagsCallback, $this->getAssertIfFalseTags());
+
 		$self = new self();
 		$self->phpDocNode = $this->phpDocNode;
 		$self->phpDocNodes = $this->phpDocNodes;
@@ -278,6 +310,9 @@ class ResolvedPhpDocBlock
 		$self->mixinTags = $this->mixinTags;
 		$self->typeAliasTags = $this->typeAliasTags;
 		$self->typeAliasImportTags = $this->typeAliasImportTags;
+		$self->assertTags = $assertTags;
+		$self->assertIfTrueTags = $assertIfTrueTags;
+		$self->assertIfFalseTags = $assertIfFalseTags;
 		$self->deprecatedTag = $this->deprecatedTag;
 		$self->isDeprecated = $this->isDeprecated;
 		$self->isInternal = $this->isInternal;
@@ -487,6 +522,52 @@ class ResolvedPhpDocBlock
 
 		return $this->typeAliasImportTags;
 	}
+
+	/**
+	 * @return array<AssertTag>
+	 */
+	public function getAssertTags(): array
+	{
+		if ($this->assertTags === false) {
+			$this->assertTags = $this->phpDocNodeResolver->resolveAssertTags(
+				$this->phpDocNode,
+				$this->getNameScope(),
+			);
+		}
+
+		return $this->assertTags;
+	}
+
+	/**
+	 * @return array<AssertTag>
+	 */
+	public function getAssertIfTrueTags(): array
+	{
+		if ($this->assertIfTrueTags === false) {
+			$this->assertIfTrueTags = $this->phpDocNodeResolver->resolveAssertIfTrueTags(
+				$this->phpDocNode,
+				$this->getNameScope(),
+			);
+		}
+
+		return $this->assertIfTrueTags;
+	}
+
+	/**
+	 * @return array<AssertTag>
+	 */
+	public function getAssertIfFalseTags(): array
+	{
+		if ($this->assertIfFalseTags === false) {
+			$this->assertIfFalseTags = $this->phpDocNodeResolver->resolveAssertIfFalseTags(
+				$this->phpDocNode,
+				$this->getNameScope(),
+			);
+		}
+
+		return $this->assertIfFalseTags;
+	}
+
 
 	public function getDeprecatedTag(): ?DeprecatedTag
 	{

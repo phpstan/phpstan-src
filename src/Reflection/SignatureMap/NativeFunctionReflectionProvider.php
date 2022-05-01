@@ -8,6 +8,7 @@ use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -139,6 +140,7 @@ class NativeFunctionReflectionProvider
 				}, $functionSignature->getParameters()),
 				$functionSignature->isVariadic(),
 				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDoc !== null ? $this->getReturnTypeFromPhpDoc($phpDoc) : null),
+				$phpDoc !== null ? Assertions::createFromResolvedPhpDocBlock($phpDoc) : Assertions::createEmpty(),
 			);
 		}
 

@@ -2,7 +2,12 @@
 
 namespace PHPStan\PhpDoc;
 
+use PhpParser\Node\Expr;
+use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\NameScope;
+use PHPStan\Parser\Parser;
+use PHPStan\Parser\ParserErrorsException;
+use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\PhpDoc\Tag\DeprecatedTag;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
@@ -30,6 +35,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_map;
 use function array_reverse;
+use function assert;
 use function count;
 use function in_array;
 use function strpos;
@@ -42,6 +48,7 @@ class PhpDocNodeResolver
 		private TypeNodeResolver $typeNodeResolver,
 		private ConstExprNodeResolver $constExprNodeResolver,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private Parser $parser,
 	)
 	{
 	}
@@ -399,6 +406,72 @@ class PhpDocNodeResolver
 		return $resolved;
 	}
 
+	/**
+	 * @return AssertTag[]
+	 */
+	public function resolveAssertTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		$resolved = [];
+
+		foreach (['@psalm-assert', '@phpstan-assert'] as $tagName) {
+			foreach ($phpDocNode->getAssertTagValues($tagName) as $assertTagValue) {
+				$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
+				$parameter = $this->parseAssertExpr($assertTagValue->parameter);
+				if ($parameter === null) {
+					continue;
+				}
+
+				$resolved[] = new AssertTag($type, $parameter, $assertTagValue->isNegated);
+			}
+		}
+
+		return $resolved;
+	}
+
+	/**
+	 * @return AssertTag[]
+	 */
+	public function resolveAssertIfTrueTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		$resolved = [];
+
+		foreach (['@psalm-assert-if-true', '@phpstan-assert-if-true'] as $tagName) {
+			foreach ($phpDocNode->getAssertTagValues($tagName) as $assertTagValue) {
+				$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
+				$parameter = $this->parseAssertExpr($assertTagValue->parameter);
+				if ($parameter === null) {
+					continue;
+				}
+
+				$resolved[] = new AssertTag($type, $parameter, $assertTagValue->isNegated);
+			}
+		}
+
+		return $resolved;
+	}
+
+	/**
+	 * @return AssertTag[]
+	 */
+	public function resolveAssertIfFalseTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		$resolved = [];
+
+		foreach (['@psalm-assert-if-false', '@phpstan-assert-if-false'] as $tagName) {
+			foreach ($phpDocNode->getAssertTagValues($tagName) as $assertTagValue) {
+				$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
+				$parameter = $this->parseAssertExpr($assertTagValue->parameter);
+				if ($parameter === null) {
+					continue;
+				}
+
+				$resolved[] = new AssertTag($type, $parameter, $assertTagValue->isNegated);
+			}
+		}
+
+		return $resolved;
+	}
+
 	public function resolveDeprecatedTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?DeprecatedTag
 	{
 		foreach ($phpDocNode->getDeprecatedTagValues() as $deprecatedTagValue) {
@@ -516,6 +589,22 @@ class PhpDocNodeResolver
 		}
 
 		return false;
+	}
+
+	private function parseAssertExpr(string $parameter): ?Expr
+	{
+		try {
+			$tree = $this->parser->parseString('<?php return ' . $parameter . ';');
+		} catch (ParserErrorsException) {
+			return null;
+		}
+
+		if (count($tree) === 1) {
+			assert($tree[0] instanceof Return_);
+			return $tree[0]->expr;
+		}
+
+		return null;
 	}
 
 }

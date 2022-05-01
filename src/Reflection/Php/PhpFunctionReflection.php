@@ -12,6 +12,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\Cache\Cache;
 use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -55,8 +56,10 @@ class PhpFunctionReflection implements FunctionReflection
 		private bool $isFinal,
 		private ?string $filename,
 		private ?bool $isPure,
+		private ?Assertions $asserts = null,
 	)
 	{
+		$this->asserts ??= Assertions::createEmpty();
 	}
 
 	public function getName(): string
@@ -92,6 +95,7 @@ class PhpFunctionReflection implements FunctionReflection
 					$this->getReturnType(),
 					$this->getPhpDocReturnType(),
 					$this->getNativeReturnType(),
+					$this->asserts,
 				),
 			];
 		}
@@ -115,7 +119,8 @@ class PhpFunctionReflection implements FunctionReflection
 	private function isVariadic(): bool
 	{
 		$isNativelyVariadic = $this->reflection->isVariadic();
-		if (!$isNativelyVariadic && $this->reflection->getFileName() !== false) {
+		if (!$isNativelyVariadic && $this->reflection
+			->getFileName() !== false) {
 			$fileName = $this->reflection->getFileName();
 			if (is_file($fileName)) {
 				$functionName = $this->reflection->getName();

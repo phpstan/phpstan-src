@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -71,6 +72,7 @@ class EnumCasesMethodReflection implements ExtendedMethodReflection
 				[],
 				false,
 				$this->returnType,
+				Assertions::createEmpty(),
 			),
 		];
 	}

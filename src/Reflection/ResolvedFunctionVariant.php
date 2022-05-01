@@ -24,6 +24,8 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 
 	private ?Type $returnType = null;
 
+	private ?Assertions $asserts = null;
+
 	/**
 	 * @param array<string, Type> $passedArgs
 	 */
@@ -106,6 +108,20 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 		}
 
 		return $type;
+	}
+
+	public function getAsserts(): Assertions
+	{
+		$asserts = $this->asserts;
+
+		if ($asserts === null) {
+			$asserts = Assertions::fromParametersAcceptor($this->parametersAcceptor)
+				->mapTypes(fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes($type, $this->resolvedTemplateTypeMap));
+
+			$this->asserts = $asserts;
+		}
+
+		return $asserts;
 	}
 
 	private function resolveResolvableTemplateTypes(Type $type): Type

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Annotations;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -74,6 +75,7 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 					$this->parameters,
 					$this->isVariadic,
 					$this->returnType,
+					Assertions::createEmpty(),
 				),
 			];
 		}

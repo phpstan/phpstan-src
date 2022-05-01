@@ -4494,7 +4494,7 @@ class MutatingScope implements Scope
 					}
 
 					if (!$typeGuards[$conditionExprString]->equals($conditionalType)) {
-						continue 2;
+						continue;
 					}
 
 					$matchingConditions[$conditionExprString] = $conditionalType;

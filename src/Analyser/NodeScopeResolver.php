@@ -3490,11 +3490,12 @@ class NodeScopeResolver
 				$conditionalExpressions[$exprString] = [];
 			}
 
-			$conditionalExpressions[$exprString][] = new ConditionalExpressionHolder([
+			$holder = new ConditionalExpressionHolder([
 				'$' . $variableName => $variableType,
 			], VariableTypeHolder::createYes(
 				TypeCombinator::intersect($scope->getType($expr), $exprType),
 			));
+			$conditionalExpressions[$exprString][$holder->getKey()] = $holder;
 		}
 
 		return $conditionalExpressions;
@@ -3518,11 +3519,12 @@ class NodeScopeResolver
 				$conditionalExpressions[$exprString] = [];
 			}
 
-			$conditionalExpressions[$exprString][] = new ConditionalExpressionHolder([
+			$holder = new ConditionalExpressionHolder([
 				'$' . $variableName => $variableType,
 			], VariableTypeHolder::createYes(
 				TypeCombinator::remove($scope->getType($expr), $exprType),
 			));
+			$conditionalExpressions[$exprString][$holder->getKey()] = $holder;
 		}
 
 		return $conditionalExpressions;
@@ -3689,9 +3691,10 @@ class NodeScopeResolver
 			$conditionalHolders = [];
 			foreach ($iterateeType->getKeyTypes() as $i => $keyType) {
 				$valueType = $iterateeType->getValueTypes()[$i];
-				$conditionalHolders[] = new ConditionalExpressionHolder([
+				$holder = new ConditionalExpressionHolder([
 					'$' . $stmt->keyVar->name => $keyType,
 				], new VariableTypeHolder($valueType, TrinaryLogic::createYes()));
+				$conditionalHolders[$holder->getKey()] = $holder;
 			}
 
 			$scope = $scope->addConditionalExpressions(

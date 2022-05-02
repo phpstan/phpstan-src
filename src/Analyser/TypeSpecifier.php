@@ -962,10 +962,11 @@ class TypeSpecifier
 					$holders[$exprString] = [];
 				}
 
-				$holders[$exprString][] = new ConditionalExpressionHolder(
+				$holder = new ConditionalExpressionHolder(
 					$conditionExpressionTypes,
 					new VariableTypeHolder(TypeCombinator::remove($scope->getType($expr), $type), TrinaryLogic::createYes()),
 				);
+				$holders[$exprString][$holder->getKey()] = $holder;
 			}
 
 			return $holders;

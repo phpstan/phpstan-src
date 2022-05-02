@@ -2025,21 +2025,40 @@ class MutatingScope implements Scope
 				$isObject = true;
 			}
 
-			$referencedClasses = TypeUtils::getDirectClassNames($constantClassType);
 			if (strtolower($constantName) === 'class') {
-				if (count($referencedClasses) === 0) {
-					if ((new ObjectWithoutClassType())->isSuperTypeOf($constantClassType)->yes()) {
-						return new ClassStringType();
-					}
-					return new ErrorType();
-				}
-				$classTypes = [];
-				foreach ($referencedClasses as $referencedClass) {
-					$classTypes[] = new GenericClassStringType(new ObjectType($referencedClass));
-				}
+				return TypeTraverser::map(
+					$constantClassType,
+					static function (Type $type, callable $traverse): Type {
+						if ($type instanceof UnionType || $type instanceof IntersectionType) {
+							return $traverse($type);
+						}
 
-				return TypeCombinator::union(...$classTypes);
+						if ($type instanceof NullType) {
+							return $type;
+						}
+
+						if ($type instanceof EnumCaseObjectType) {
+							return new GenericClassStringType(new ObjectType($type->getClassName()));
+						}
+
+						if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {
+							if ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
+								return new GenericClassStringType($type);
+							}
+
+							return new GenericClassStringType($type);
+						} elseif ($type instanceof TypeWithClassName) {
+							return new GenericClassStringType($type);
+						} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
+							return new ClassStringType();
+						}
+
+						return new ErrorType();
+					},
+				);
 			}
+
+			$referencedClasses = TypeUtils::getDirectClassNames($constantClassType);
 			$types = [];
 			foreach ($referencedClasses as $referencedClass) {
 				if (!$this->reflectionProvider->hasClass($referencedClass)) {

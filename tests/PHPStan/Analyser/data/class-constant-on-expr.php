@@ -16,7 +16,7 @@ class Foo
 	{
 		assertType('class-string<stdClass>', $std::class);
 		assertType('*ERROR*', $string::class);
-		assertType('class-string<stdClass>', $stdOrNull::class);
+		assertType('class-string<stdClass>|null', $stdOrNull::class);
 		assertType('*ERROR*', $stringOrNull::class);
 	}
 

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ConstantTypeHelper;
@@ -9,7 +10,6 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
-use ReflectionParameter;
 use Throwable;
 
 class PhpParameterReflection implements ParameterReflectionWithPhpDocs

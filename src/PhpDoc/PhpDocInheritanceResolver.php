@@ -2,9 +2,9 @@
 
 namespace PHPStan\PhpDoc;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\FileTypeMapper;
-use ReflectionParameter;
 use function array_map;
 use function strtolower;
 

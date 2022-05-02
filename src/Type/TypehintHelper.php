@@ -2,13 +2,12 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
-use ReflectionIntersectionType;
-use ReflectionNamedType;
-use ReflectionType;
-use ReflectionUnionType;
 use function array_map;
 use function count;
 use function str_ends_with;
@@ -71,7 +70,7 @@ class TypehintHelper
 
 	/** @api */
 	public static function decideTypeFromReflection(
-		?ReflectionType $reflectionType,
+		ReflectionUnionType|ReflectionNamedType|ReflectionIntersectionType|null $reflectionType,
 		?Type $phpDocType = null,
 		?string $selfClass = null,
 		bool $isVariadic = false,
@@ -85,7 +84,7 @@ class TypehintHelper
 		}
 
 		if ($reflectionType instanceof ReflectionUnionType) {
-			$type = TypeCombinator::union(...array_map(static fn (ReflectionType $type): Type => self::decideTypeFromReflection($type, null, $selfClass, false), $reflectionType->getTypes()));
+			$type = TypeCombinator::union(...array_map(static fn (ReflectionNamedType $type): Type => self::decideTypeFromReflection($type, null, $selfClass, false), $reflectionType->getTypes()));
 
 			return self::decideType($type, $phpDocType);
 		}

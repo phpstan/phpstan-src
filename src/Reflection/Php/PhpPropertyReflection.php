@@ -2,14 +2,16 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
-use ReflectionProperty;
-use ReflectionType;
 
 /** @api */
 class PhpPropertyReflection implements PropertyReflection
@@ -22,7 +24,7 @@ class PhpPropertyReflection implements PropertyReflection
 	public function __construct(
 		private ClassReflection $declaringClass,
 		private ?ClassReflection $declaringTrait,
-		private ?ReflectionType $nativeType,
+		private ReflectionUnionType|ReflectionNamedType|ReflectionIntersectionType|null $nativeType,
 		private ?Type $phpDocType,
 		private ReflectionProperty $reflection,
 		private ?string $deprecatedDescription,

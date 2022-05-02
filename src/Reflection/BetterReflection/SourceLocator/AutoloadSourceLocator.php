@@ -374,6 +374,10 @@ class AutoloadSourceLocator implements SourceLocator
 				return null;
 			}
 
+			if (!function_exists('opcache_invalidate')) {
+				return $result;
+			}
+
 			foreach ($result[0] as $file) {
 				opcache_invalidate($file, true);
 			}

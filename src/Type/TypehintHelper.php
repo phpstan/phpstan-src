@@ -2,14 +2,18 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionIntersectionType;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionNamedType;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionUnionType;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use ReflectionIntersectionType;
+use ReflectionNamedType;
+use ReflectionType;
+use ReflectionUnionType;
 use function array_map;
 use function count;
+use function get_class;
+use function sprintf;
 use function str_ends_with;
 use function strtolower;
 
@@ -70,7 +74,7 @@ class TypehintHelper
 
 	/** @api */
 	public static function decideTypeFromReflection(
-		ReflectionUnionType|ReflectionNamedType|ReflectionIntersectionType|null $reflectionType,
+		?ReflectionType $reflectionType,
 		?Type $phpDocType = null,
 		?string $selfClass = null,
 		bool $isVariadic = false,
@@ -84,7 +88,7 @@ class TypehintHelper
 		}
 
 		if ($reflectionType instanceof ReflectionUnionType) {
-			$type = TypeCombinator::union(...array_map(static fn (ReflectionNamedType $type): Type => self::decideTypeFromReflection($type, null, $selfClass, false), $reflectionType->getTypes()));
+			$type = TypeCombinator::union(...array_map(static fn (ReflectionType $type): Type => self::decideTypeFromReflection($type, null, $selfClass, false), $reflectionType->getTypes()));
 
 			return self::decideType($type, $phpDocType);
 		}
@@ -101,6 +105,10 @@ class TypehintHelper
 			}
 
 			return self::decideType(TypeCombinator::intersect(...$types), $phpDocType);
+		}
+
+		if (!$reflectionType instanceof ReflectionNamedType) {
+			throw new ShouldNotHappenException(sprintf('Unexpected type: %s', get_class($reflectionType)));
 		}
 
 		$reflectionTypeString = $reflectionType->getName();

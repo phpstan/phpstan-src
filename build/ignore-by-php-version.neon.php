@@ -19,7 +19,7 @@ if (PHP_VERSION_ID >= 70400) {
 	$includes[] = __DIR__ . '/ignore-gte-php7.4-errors.neon';
 }
 
-if (PHP_VERSION_ID < 80000) {
+if (PHP_VERSION_ID < 70400) {
 	$includes[] = __DIR__ . '/enum-adapter-errors.neon';
 }
 

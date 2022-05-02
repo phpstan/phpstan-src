@@ -1,42 +1,361 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Call to method getBackingValue\\(\\) on an unknown class ReflectionEnumBackedCase\\.$#"
-			count: 2
-			path: ../src/Reflection/ClassReflection.php
+			message: "#^Call to method getInterfaceNames\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Analyser/NodeScopeResolver.php
 
 		-
-			message: "#^Call to method getCase\\(\\) on an unknown class ReflectionEnum\\.$#"
+			message: "#^Call to method getStartLine\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 2
+			path: ../src/Analyser/NodeScopeResolver.php
+
+		-
+			message: "#^Call to method getInterfaceNames\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Analyser/TypeSpecifier.php
+
+		-
+			message: "#^Call to method getMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/PhpDoc/PhpDocInheritanceResolver.php
+
+		-
+			message: "#^Call to method hasConstant\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/PhpDoc/PhpDocInheritanceResolver.php
+
+		-
+			message: "#^Call to method hasMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/PhpDoc/PhpDocInheritanceResolver.php
+
+		-
+			message: "#^Call to method hasProperty\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/PhpDoc/PhpDocInheritanceResolver.php
+
+		-
+			message: "#^Call to method getConstants\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/PhpDoc/TypeNodeResolver.php
+
+		-
+			message: "#^Call to method getAttributes\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Call to method getCases\\(\\) on an unknown class ReflectionEnum\\.$#"
+			message: "#^Call to method getBackingType\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Call to method isBacked\\(\\) on an unknown class ReflectionEnum\\.$#"
+			message: "#^Call to method getBackingValue\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnumBackedCase\\.$#"
 			count: 2
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Call to method getBackingType\\(\\) on an unknown class ReflectionEnum\\.$#"
+			message: "#^Call to method getCase\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Class ReflectionEnum not found\\.$#"
-			count: 4
+			message: "#^Call to method getCases\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Class ReflectionEnumBackedCase not found\\.$#"
+			message: "#^Call to method getConstructor\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getDocComment\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getFileName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getInterfaceNames\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 2
 			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getInterfaces\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 2
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getParentClass\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 8
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getReflectionConstant\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 2
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getTraitNames\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getTraits\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 2
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method hasCase\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method hasConstant\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method implementsInterface\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method isAbstract\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method isBacked\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 2
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method isEnum\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method isFinal\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method isInterface\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 2
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method isInternal\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method isSubclassOf\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method isTrait\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum not found\\.$#"
+			count: 5
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnumBackedCase not found\\.$#"
+			count: 2
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:getNativeReflection\\(\\) has invalid return type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Parameter \\$class of method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:collectTraits\\(\\) has invalid type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Parameter \\$reflection of method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:__construct\\(\\) has invalid type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Property PHPStan\\\\Reflection\\\\ClassReflection\\:\\:\\$reflection has unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum as its type\\.$#"
+			count: 1
+			path: ../src/Reflection/ClassReflection.php
+
+		-
+			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/Native/NativeMethodReflection.php
+
+		-
+			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\BuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) has invalid return type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/Php/BuiltinMethodReflection.php
+
+		-
+			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) has invalid return type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/Php/FakeBuiltinMethodReflection.php
+
+		-
+			message: "#^Parameter \\$declaringClass of method PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:__construct\\(\\) has invalid type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/Php/FakeBuiltinMethodReflection.php
+
+		-
+			message: "#^Property PHPStan\\\\Reflection\\\\Php\\\\FakeBuiltinMethodReflection\\:\\:\\$declaringClass has unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum as its type\\.$#"
+			count: 1
+			path: ../src/Reflection/Php/FakeBuiltinMethodReflection.php
+
+		-
+			message: "#^Method PHPStan\\\\Reflection\\\\Php\\\\NativeBuiltinMethodReflection\\:\\:getDeclaringClass\\(\\) has invalid return type PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/Php/NativeBuiltinMethodReflection.php
+
+		-
+			message: "#^Call to method getConstructor\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 2
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			message: "#^Call to method getMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 3
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 3
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			message: "#^Call to method getProperty\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 3
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			message: "#^Call to method hasMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 3
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			message: "#^Call to method hasProperty\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 2
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			message: "#^Call to method isTrait\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/Php/PhpMethodReflection.php
+
+		-
+			message: "#^Call to method getTraitAliases\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 2
+			path: ../src/Reflection/Php/PhpMethodReflection.php
+
+		-
+			message: "#^Call to method getShortName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Cast/InvalidCastRule.php
+
+		-
+			message: "#^Call to method getMethods\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Methods/MissingMethodImplementationRule.php
+
+		-
+			message: "#^Call to method getMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Properties/MissingReadOnlyPropertyAssignRule.php
+
+		-
+			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Properties/MissingReadOnlyPropertyAssignRule.php
+
+		-
+			message: "#^Call to method hasMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Properties/MissingReadOnlyPropertyAssignRule.php
+
+		-
+			message: "#^Call to method getMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Properties/UninitializedPropertyRule.php
+
+		-
+			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Properties/UninitializedPropertyRule.php
+
+		-
+			message: "#^Call to method hasMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Properties/UninitializedPropertyRule.php
+
+		-
+			message: "#^Call to method isFinal\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 2
+			path: ../src/Type/Constant/ConstantStringType.php
+
+		-
+			message: "#^Call to method getInterfaceNames\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Type/DynamicReturnTypeExtensionRegistry.php
+
+		-
+			message: "#^Call to method getProperties\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Type/ObjectType.php
+
+		-
+			message: "#^Call to method getStartLine\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 2
+			path: ../src/Type/ObjectType.php
+
+		-
+			message: "#^Call to method isFinal\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 3
+			path: ../src/Type/ObjectType.php
+
+		-
+			message: "#^Call to method isUserDefined\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Type/ObjectType.php
+
+		-
+			message: "#^Call to method getProperty\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../tests/PHPStan/Analyser/AnalyserIntegrationTest.php
+
+		-
+			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../tests/PHPStan/Reflection/ClassReflectionTest.php
 
 		-
 			message: "#^Class ReflectionEnum not found\\.$#"
 			count: 1
 			path: ../tests/PHPStan/Reflection/ClassReflectionTest.php
-

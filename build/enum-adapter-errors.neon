@@ -354,8 +354,3 @@ parameters:
 			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../tests/PHPStan/Reflection/ClassReflectionTest.php
-
-		-
-			message: "#^Class ReflectionEnum not found\\.$#"
-			count: 1
-			path: ../tests/PHPStan/Reflection/ClassReflectionTest.php

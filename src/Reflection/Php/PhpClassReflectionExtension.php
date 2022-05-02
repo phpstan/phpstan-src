@@ -47,12 +47,10 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
-use ReflectionClass;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_slice;
-use function class_exists;
 use function count;
 use function explode;
 use function implode;
@@ -509,11 +507,6 @@ class PhpClassReflectionExtension
 			$throwType = null;
 			if ($classReflection->getNativeReflection()->hasMethod($methodReflection->getName())) {
 				$reflectionMethod = $classReflection->getNativeReflection()->getMethod($methodReflection->getName());
-			} elseif (class_exists($classReflection->getName(), false)) {
-				$reflectionClass = new ReflectionClass($classReflection->getName());
-				if ($reflectionClass->hasMethod($methodReflection->getName())) {
-					$reflectionMethod = $reflectionClass->getMethod($methodReflection->getName());
-				}
 			}
 			foreach ($variantNumbers as $variantNumber) {
 				$methodSignature = $this->signatureMapProvider->getMethodSignature($declaringClassName, $methodReflection->getName(), $reflectionMethod, $variantNumber);

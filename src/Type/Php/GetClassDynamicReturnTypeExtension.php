@@ -9,10 +9,12 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
@@ -47,6 +49,10 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 			static function (Type $type, callable $traverse): Type {
 				if ($type instanceof UnionType || $type instanceof IntersectionType) {
 					return $traverse($type);
+				}
+
+				if ($type instanceof EnumCaseObjectType) {
+					return new GenericClassStringType(new ObjectType($type->getClassName()));
 				}
 
 				if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {

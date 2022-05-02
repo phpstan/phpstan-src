@@ -30,7 +30,6 @@ use NestedTraits\NoTrait;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\IntegerType;
 use ReflectionClass;
-use ReflectionEnum;
 use WrongClassConstantFile\SecuredRouter;
 use function array_map;
 use function array_values;
@@ -292,7 +291,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 		$enum = $reflectionProvider->getClass('PHPStan\Fixture\TestEnum');
 		$this->assertTrue($enum->isEnum());
-		$this->assertInstanceOf(ReflectionEnum::class, $enum->getNativeReflection());
+		$this->assertInstanceOf('ReflectionEnum', $enum->getNativeReflection());
 		$this->assertTrue($enum->isFinal());
 		$this->assertTrue($enum->isFinalByKeyword());
 	}

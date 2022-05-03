@@ -1198,14 +1198,14 @@ services:
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 		arguments:
-			dateTimeClass: \DateTime
+			dateTimeClass: DateTime
 
 	-
 		class: PHPStan\Type\Php\DateTimeModifyReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 		arguments:
-			dateTimeClass: \DateTimeImmutable
+			dateTimeClass: DateTimeImmutable
 
 	-
 		class: PHPStan\Type\Php\DateTimeConstructorThrowTypeExtension

@@ -2314,7 +2314,7 @@ class NodeScopeResolver
 			$result = $this->processExprNode($expr->right, $scope, $nodeCallback, $context->enterDeep());
 			if (
 				($expr instanceof BinaryOp\Div || $expr instanceof BinaryOp\Mod) &&
-				!$scope->getType($expr->right)->toInteger()->isSuperTypeOf(new ConstantIntegerType(0))->no()
+				!$scope->getType($expr->right)->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
 			) {
 				$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(DivisionByZeroError::class), $expr, false);
 			}

@@ -355,6 +355,14 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 			],
 			[
 				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				74,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				78,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
 				121,
 			],
 			[

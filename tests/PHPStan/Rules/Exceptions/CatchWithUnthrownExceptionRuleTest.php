@@ -334,4 +334,34 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6349(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6349.php'], [
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				29,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				44,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				48,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				74,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				78,
+			],
+		]);
+	}
+
 }

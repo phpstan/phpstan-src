@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use ArrayAccess;
 use Closure;
+use DivisionByZeroError;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
@@ -116,6 +117,7 @@ use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
@@ -2310,6 +2312,12 @@ class NodeScopeResolver
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
 			$result = $this->processExprNode($expr->right, $scope, $nodeCallback, $context->enterDeep());
+			if (
+				($expr instanceof BinaryOp\Div || $expr instanceof BinaryOp\Mod) &&
+				!$scope->getType($expr->right)->isSuperTypeOf(new ConstantIntegerType(0))->no()
+			) {
+				$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(DivisionByZeroError::class), $expr, false);
+			}
 			$scope = $result->getScope();
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());

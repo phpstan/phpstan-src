@@ -221,6 +221,19 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 			'OptimizedDirectory\get_smarty2',
 			'OptimizedDirectory\upperCaseFunction',
 		], $actualFunctions);
+
+		$constantIdentifiers = $locator->locateIdentifiersByType(
+			$reflector,
+			new IdentifierType(IdentifierType::IDENTIFIER_CONSTANT),
+		);
+
+		$actualConstants = array_map(static fn (Reflection $reflection) => $reflection->getName(), $constantIdentifiers);
+
+		$this->assertEqualsCanonicalizing([
+			'NOTHING',
+			'OptimizedDirectory\SOMETHING',
+			'OptimizedDirectory2\ANYTHING',
+		], $actualConstants);
 	}
 
 	public function dataFunctionDoesNotExist(): array

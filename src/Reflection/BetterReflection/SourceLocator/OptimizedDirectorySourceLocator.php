@@ -94,7 +94,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 					continue;
 				}
 
-
 				/** @var FetchedNode<Node\Stmt\Function_> $fetchedFunctionNode */
 				$fetchedFunctionNode = current($fetchedFunctionNodes[$functionName]);
 			}
@@ -122,28 +121,12 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 
 			/** @var FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall> $fetchedConstantNode */
 			$fetchedConstantNode = current($fetchedConstantNodes[$constantName]);
-			$constantNode = $fetchedConstantNode->getNode();
 
-			$positionInNode = null;
-			if ($constantNode instanceof Node\Stmt\Const_) {
-				foreach ($constantNode->consts as $constPosition => $const) {
-					if ($const->namespacedName === null) {
-						throw new ShouldNotHappenException();
-					}
-
-					if (ConstantNameHelper::normalize($const->namespacedName->toString()) === $constantName) {
-						/** @var int $positionInNode */
-						$positionInNode = $constPosition;
-						break;
-					}
-				}
-
-				if ($positionInNode === null) {
-					throw new ShouldNotHappenException();
-				}
-			}
-
-			return $this->nodeToReflection($reflector, $fetchedConstantNode, $positionInNode);
+			return $this->nodeToReflection(
+				$reflector,
+				$fetchedConstantNode,
+				$this->findConstantPositionInConstNode($fetchedConstantNode->getNode(), $constantName),
+			);
 		}
 
 		return null;
@@ -313,9 +296,9 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 	 */
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{
-		if ($this->classToFile === null || $this->functionToFiles === null) {
+		if ($this->classToFile === null || $this->functionToFiles === null || $this->constantToFile === null) {
 			$this->init();
-			if ($this->classToFile === null || $this->functionToFiles === null) {
+			if ($this->classToFile === null || $this->functionToFiles === null || $this->constantToFile === null) {
 				throw new ShouldNotHappenException();
 			}
 		}
@@ -342,9 +325,42 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 					}
 				}
 			}
+		} elseif ($identifierType->isConstant()) {
+			foreach ($this->constantToFile as $file) {
+				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
+				foreach ($fetchedNodesResult->getConstantNodes() as $identifierName => $fetchedConstantNodes) {
+					foreach ($fetchedConstantNodes as $fetchedConstantNode) {
+						$reflections[$identifierName] = $this->nodeToReflection(
+							$reflector,
+							$fetchedConstantNode,
+							$this->findConstantPositionInConstNode($fetchedConstantNode->getNode(), $identifierName),
+						);
+					}
+				}
+			}
 		}
 
 		return array_values($reflections);
+	}
+
+	private function findConstantPositionInConstNode(Node\Stmt\Const_|Node\Expr\FuncCall $constantNode, string $constantName): ?int
+	{
+		if ($constantNode instanceof Node\Expr\FuncCall) {
+			return null;
+		}
+
+		/** @var int $position */
+		foreach ($constantNode->consts as $position => $const) {
+			if ($const->namespacedName === null) {
+				throw new ShouldNotHappenException();
+			}
+
+			if (ConstantNameHelper::normalize($const->namespacedName->toString()) === $constantName) {
+				return $position;
+			}
+		}
+
+		throw new ShouldNotHappenException();
 	}
 
 }

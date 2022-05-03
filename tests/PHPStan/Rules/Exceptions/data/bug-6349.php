@@ -242,7 +242,7 @@ class TestAssignOp
 	/**
 	 * @param '1' $value
 	 */
-	public function numericNonZeroString(string $value): void
+	public function numericNonZeroString($val, string $value): void
 	{
 		try {
 			$val /= $value;
@@ -257,7 +257,7 @@ class TestAssignOp
 	/**
 	 * @param float $value
 	 */
-	public function floatValue(float $value): void
+	public function floatValue($val, float $value): void
 	{
 		try {
 			$val /= $value;
@@ -272,7 +272,7 @@ class TestAssignOp
 	/**
 	 * @param float $value
 	 */
-	public function floatNonZeroValue(float $value): void
+	public function floatNonZeroValue($val, float $value): void
 	{
 		if ($value === 0.0) {
 			return;

@@ -3,28 +3,26 @@
 namespace PHPStan\Type;
 
 use PHPStan\Type\Generic\TemplateTypeVariance;
-use PHPStan\Type\Traits\ConditionalTypeTrait;
+use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_merge;
 use function sprintf;
 
 /** @api */
-final class ConditionalTypeForParameter implements CompoundType
+final class ConditionalTypeForParameter implements CompoundType, LateResolvableType
 {
 
-	use ConditionalTypeTrait;
+	use LateResolvableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	public function __construct(
 		private string $parameterName,
 		private Type $target,
-		Type $if,
-		Type $else,
+		private Type $if,
+		private Type $else,
 		private bool $negated,
 	)
 	{
-		$this->if = $if;
-		$this->else = $else;
 	}
 
 	public function getParameterName(): string
@@ -101,6 +99,16 @@ final class ConditionalTypeForParameter implements CompoundType
 			$this->if->describe($level),
 			$this->else->describe($level),
 		);
+	}
+
+	public function isResolvable(): bool
+	{
+		return false;
+	}
+
+	protected function getResult(): Type
+	{
+		return TypeCombinator::union($this->if, $this->else);
 	}
 
 	/**

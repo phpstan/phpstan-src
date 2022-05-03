@@ -14,7 +14,7 @@ use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function array_map;
 
-class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcceptor
+class ResolvedFunctionVariant implements ParametersAcceptor
 {
 
 	/** @var ParameterReflection[]|null */
@@ -57,7 +57,13 @@ class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcc
 		if ($parameters === null) {
 			$parameters = array_map(fn (ParameterReflection $param): ParameterReflection => new DummyParameter(
 				$param->getName(),
-				TemplateTypeHelper::resolveTemplateTypes($param->getType(), $this->resolvedTemplateTypeMap),
+				TypeUtils::resolveLateResolvableTypes(
+					TemplateTypeHelper::resolveTemplateTypes(
+						$this->resolveConditionalTypesForParameter($param->getType()),
+						$this->resolvedTemplateTypeMap,
+					),
+					false,
+				),
 				$param->isOptional(),
 				$param->passedByReference(),
 				$param->isVariadic(),
@@ -88,31 +94,18 @@ class ResolvedFunctionVariant implements ParametersAcceptor, SingleParametersAcc
 		$type = $this->returnType;
 
 		if ($type === null) {
-			$type = TemplateTypeHelper::resolveTemplateTypes(
-				$this->getReturnTypeWithUnresolvableTemplateTypes(),
-				$this->resolvedTemplateTypeMap,
+			$type = TypeUtils::resolveLateResolvableTypes(
+				TemplateTypeHelper::resolveTemplateTypes(
+					$this->getReturnTypeWithUnresolvableTemplateTypes(),
+					$this->resolvedTemplateTypeMap,
+				),
+				false,
 			);
 
 			$this->returnType = $type;
 		}
 
 		return $type;
-	}
-
-	/**
-	 * @return static
-	 */
-	public function flattenConditionalsInReturnType(): SingleParametersAcceptor
-	{
-		/** @var static $result */
-		$result = new self(
-			$this->parametersAcceptor,
-			$this->resolvedTemplateTypeMap,
-			$this->passedArgs,
-		);
-		$result->returnType = TypeUtils::flattenConditionals($this->getReturnType());
-
-		return $result;
 	}
 
 	private function resolveResolvableTemplateTypes(Type $type): Type

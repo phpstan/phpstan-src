@@ -13,14 +13,9 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 
-trait ConditionalTypeTrait
+trait LateResolvableTypeTrait
 {
-
-	private Type $if;
-
-	private Type $else;
 
 	private ?Type $result = null;
 
@@ -288,13 +283,15 @@ trait ConditionalTypeTrait
 		return $otherType->isSmallerThanOrEqual($result);
 	}
 
-	public function getResult(): Type
+	public function resolve(): Type
 	{
 		if ($this->result === null) {
-			return $this->result = TypeCombinator::union($this->if, $this->else);
+			return $this->result = $this->getResult();
 		}
 
 		return $this->result;
 	}
+
+	abstract protected function getResult(): Type;
 
 }

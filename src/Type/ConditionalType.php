@@ -3,7 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Type\Generic\TemplateTypeVariance;
-use PHPStan\Type\Traits\ConditionalTypeTrait;
+use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_merge;
 use function sprintf;
@@ -12,19 +12,17 @@ use function sprintf;
 final class ConditionalType implements CompoundType, LateResolvableType
 {
 
-	use ConditionalTypeTrait;
+	use LateResolvableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
 	public function __construct(
 		private Type $subject,
 		private Type $target,
-		Type $if,
-		Type $else,
+		private Type $if,
+		private Type $else,
 		private bool $negated,
 	)
 	{
-		$this->if = $if;
-		$this->else = $else;
 	}
 
 	public function getSubject(): Type
@@ -83,26 +81,24 @@ final class ConditionalType implements CompoundType, LateResolvableType
 		);
 	}
 
-	public function resolve(): Type
+	public function isResolvable(): bool
 	{
-		return $this->getResult();
+		return !TypeUtils::containsTemplateType($this->subject) && !TypeUtils::containsTemplateType($this->target);
 	}
 
-	public function getResult(): Type
+	protected function getResult(): Type
 	{
-		if ($this->result === null) {
-			$isSuperType = $this->target->isSuperTypeOf($this->subject);
+		$isSuperType = $this->target->isSuperTypeOf($this->subject);
 
-			if ($isSuperType->yes()) {
-				$this->result = !$this->negated ? $this->if : $this->else;
-			} elseif ($isSuperType->no()) {
-				$this->result = !$this->negated ? $this->else : $this->if;
-			} else {
-				$this->result = TypeCombinator::union($this->if, $this->else);
-			}
+		if ($isSuperType->yes()) {
+			return !$this->negated ? $this->if : $this->else;
 		}
 
-		return $this->result;
+		if ($isSuperType->no()) {
+			return !$this->negated ? $this->else : $this->if;
+		}
+
+		return TypeCombinator::union($this->if, $this->else);
 	}
 
 	public function traverse(callable $cb): Type

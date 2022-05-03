@@ -13,10 +13,13 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 use function array_merge;
+use function array_values;
 use function count;
+use function ltrim;
 use function php_strip_whitespace;
 use function preg_match_all;
 use function sprintf;
+use function str_replace;
 use function strtolower;
 
 class OptimizedDirectorySourceLocator implements SourceLocator
@@ -195,18 +198,18 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		$contents = $this->cleaner->clean($contents, count($matches[0]));
 
 		preg_match_all(sprintf('{
-            (?:
-                 \b(?<![\$:>])(?P<type>class|interface|trait|function%s) \s++ (?P<byref>&\s*)? (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+)
-               | \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;]
-            )
-        }ix', $this->extraTypes), $contents, $matches);
+			(?:
+				\b(?<![\$:>])(?P<type>class|interface|trait|function%s) \s++ (?P<byref>&\s*)? (?P<name>[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+)
+				| \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;]
+			)
+		}ix', $this->extraTypes), $contents, $matches);
 
 		$classes = [];
 		$functions = [];
 		$namespace = '';
 
 		for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
-			if (!empty($matches['ns'][$i])) { // phpcs:disable
+			if (isset($matches['ns'][$i]) && $matches['ns'][$i] !== '') {
 				$namespace = str_replace([' ', "\t", "\r", "\n"], '', $matches['nsname'][$i]) . '\\';
 			} else {
 				$name = $matches['name'][$i];
@@ -251,7 +254,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 
 		$reflections = [];
 		if ($identifierType->isClass()) {
-			foreach ($this->classToFile as $className => $file) {
+			foreach ($this->classToFile as $file) {
 				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
 				foreach ($fetchedNodesResult->getClassNodes() as $identifierName => $fetchedClassNodes) {
 					foreach ($fetchedClassNodes as $fetchedClassNode) {
@@ -261,7 +264,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				}
 			}
 		} elseif ($identifierType->isFunction()) {
-			foreach ($this->functionToFiles as $functionName => $files) {
+			foreach ($this->functionToFiles as $files) {
 				foreach ($files as $file) {
 					$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
 					foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNodes) {

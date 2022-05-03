@@ -369,12 +369,13 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				'Dead catch - DivisionByZeroError is never thrown in the try block.',
 				125,
 			],
-			// throw point not implemented yet, because there is no way to narrow float value by !== 0.0
 			[
+				// throw point not implemented yet, because there is no way to narrow float value by !== 0.0
 				'Dead catch - DivisionByZeroError is never thrown in the try block.',
 				139,
 			],
 			[
+				// throw point not implemented yet, because there is no way to narrow float value by !== 0.0
 				'Dead catch - DivisionByZeroError is never thrown in the try block.',
 				143,
 			],
@@ -410,12 +411,13 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				'Dead catch - DivisionByZeroError is never thrown in the try block.',
 				268,
 			],
-			// throw point not implemented yet, because there is no way to narrow float value by !== 0.0
 			[
+				// throw point not implemented yet, because there is no way to narrow float value by !== 0.0
 				'Dead catch - DivisionByZeroError is never thrown in the try block.',
 				282,
 			],
 			[
+				// throw point not implemented yet, because there is no way to narrow float value by !== 0.0
 				'Dead catch - DivisionByZeroError is never thrown in the try block.',
 				286,
 			],

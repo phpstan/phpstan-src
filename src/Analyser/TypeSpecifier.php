@@ -175,7 +175,7 @@ class TypeSpecifier
 				$exprNode = $expressions[0];
 				/** @var ConstantScalarType $constantType */
 				$constantType = $expressions[1];
-				if ($constantType->getValue() === false) {
+				if (!$context->null() && $constantType->getValue() === false) {
 					$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
 					return $types->unionWith($this->specifyTypesInCondition(
 						$scope,
@@ -185,7 +185,7 @@ class TypeSpecifier
 					));
 				}
 
-				if ($constantType->getValue() === true) {
+				if (!$context->null() && $constantType->getValue() === true) {
 					$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
 					return $types->unionWith($this->specifyTypesInCondition(
 						$scope,
@@ -339,7 +339,7 @@ class TypeSpecifier
 				$exprNode = $expressions[0];
 				/** @var ConstantScalarType $constantType */
 				$constantType = $expressions[1];
-				if ($constantType->getValue() === false || $constantType->getValue() === null) {
+				if (!$context->null() && ($constantType->getValue() === false || $constantType->getValue() === null)) {
 					return $this->specifyTypesInCondition(
 						$scope,
 						$exprNode,
@@ -348,7 +348,7 @@ class TypeSpecifier
 					);
 				}
 
-				if ($constantType->getValue() === true) {
+				if (!$context->null() && $constantType->getValue() === true) {
 					return $this->specifyTypesInCondition(
 						$scope,
 						$exprNode,

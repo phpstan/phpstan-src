@@ -95,4 +95,34 @@ class HelloWorld
 			return 0.0;
 		}
 	}
+
+	/**
+	 * @param '0' $value
+	 */
+	public function numericZeroString(string $value): void
+	{
+		try {
+			99 / $value;
+		} catch (\DivisionByZeroError $e) {
+		}
+		try {
+			99 % $value;
+		} catch (\DivisionByZeroError $e) {
+		}
+	}
+
+	/**
+	 * @param '1' $value
+	 */
+	public function numericNonZeroString(string $value): void
+	{
+		try {
+			99 / $value;
+		} catch (\DivisionByZeroError $e) {
+		}
+		try {
+			99 % $value;
+		} catch (\DivisionByZeroError $e) {
+		}
+	}
 }

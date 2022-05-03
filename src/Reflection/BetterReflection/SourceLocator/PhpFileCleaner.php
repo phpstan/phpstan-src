@@ -36,7 +36,7 @@ class PhpFileCleaner
 			$this->typeConfig[$type[0]] = [
 				'name' => $type,
 				'length' => strlen($type),
-				'pattern' => '{.\b(?<![\$:>])' . $type . '\s++[a-zA-Z_\x7f-\xff:][a-zA-Z0-9_\x7f-\xff:\-]*+}Ais',
+				'pattern' => '{.\b(?<![\$:>])' . $type . '\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+}Ais',
 			];
 		}
 

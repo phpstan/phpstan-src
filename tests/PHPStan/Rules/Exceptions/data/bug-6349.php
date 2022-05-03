@@ -65,21 +65,6 @@ class HelloWorld
 	}
 
 	/**
-	 * @param float $values
-	 */
-	public function floatValue(float $value): void
-	{
-		try {
-			99 / $value;
-		} catch (\DivisionByZeroError $e) {
-		}
-		try {
-			99 % $value;
-		} catch (\DivisionByZeroError $e) {
-		}
-	}
-
-	/**
 	 * @param array<string, int> $values
 	 */
 	public function sayHello(array $values): float
@@ -116,6 +101,39 @@ class HelloWorld
 	 */
 	public function numericNonZeroString(string $value): void
 	{
+		try {
+			99 / $value;
+		} catch (\DivisionByZeroError $e) {
+		}
+		try {
+			99 % $value;
+		} catch (\DivisionByZeroError $e) {
+		}
+	}
+
+	/**
+	 * @param float $value
+	 */
+	public function floatValue(float $value): void
+	{
+		try {
+			99 / $value;
+		} catch (\DivisionByZeroError $e) {
+		}
+		try {
+			99 % $value;
+		} catch (\DivisionByZeroError $e) {
+		}
+	}
+
+	/**
+	 * @param float $value
+	 */
+	public function floatNonZeroValue(float $value): void
+	{
+		if ($value === 0.0) {
+			return;
+		}
 		try {
 			99 / $value;
 		} catch (\DivisionByZeroError $e) {

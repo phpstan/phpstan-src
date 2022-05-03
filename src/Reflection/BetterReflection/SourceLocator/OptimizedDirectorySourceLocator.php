@@ -18,8 +18,8 @@ use function count;
 use function ltrim;
 use function php_strip_whitespace;
 use function preg_match_all;
+use function preg_replace;
 use function sprintf;
-use function str_replace;
 use function strtolower;
 
 class OptimizedDirectorySourceLocator implements SourceLocator
@@ -210,7 +210,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 
 		for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
 			if (isset($matches['ns'][$i]) && $matches['ns'][$i] !== '') {
-				$namespace = str_replace([' ', "\t", "\r", "\n"], '', $matches['nsname'][$i]) . '\\';
+				$namespace = preg_replace('~\s+~', '', $matches['nsname'][$i]) . '\\';
 			} else {
 				$name = $matches['name'][$i];
 				// skip anon classes extending/implementing

@@ -5,6 +5,8 @@ namespace OptimizedDirectory;
 class BFoo
 {
 
+	const CLASS_CONST = 'class_const';
+
 	function doBar()
 	{
 
@@ -40,3 +42,5 @@ Function upperCaseFunction()
 {
 
 }
+
+const SOMETHING = 'something';

@@ -13,6 +13,8 @@ class Scheduler
 
 	/**
 	 * @param positive-int $jobSize
+	 * @param positive-int $maximumNumberOfProcesses
+	 * @param positive-int $minimumNumberOfJobsPerProcess
 	 */
 	public function __construct(
 		private int $jobSize,

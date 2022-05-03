@@ -3,10 +3,10 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PhpParser\Node\Arg;
-use PhpParser\Node\Const_;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\Stmt\Const_;
 use PHPStan\BetterReflection\Identifier\Identifier;
 use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
@@ -15,6 +15,7 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use ReflectionFunction;
@@ -90,7 +91,7 @@ class AutoloadSourceLocator implements SourceLocator
 		}
 
 		if ($identifier->isConstant()) {
-			$constantName = $identifier->getName();
+			$constantName = ConstantNameHelper::normalize($identifier->getName());
 			if (array_key_exists($constantName, $this->presentSymbols['constants'])) {
 				return $this->findReflection($reflector, $this->presentSymbols['constants'][$constantName], $identifier, null);
 			}
@@ -170,28 +171,11 @@ class AutoloadSourceLocator implements SourceLocator
 				}
 				$this->presentSymbols['functions'][$functionName] = $file;
 			}
-			foreach ($result->getConstantNodes() as $stmtConst) {
-				if ($stmtConst->getNode() instanceof FuncCall) {
-					/** @var String_ $nameNode */
-					$nameNode = $stmtConst->getNode()->getArgs()[0]->value;
-					if (array_key_exists($nameNode->value, $this->presentSymbols['constants'])) {
-						continue;
-					}
-					$this->presentSymbols['constants'][$nameNode->value] = $file;
+			foreach (array_keys($result->getConstantNodes()) as $constantName) {
+				if (array_key_exists($constantName, $this->presentSymbols['constants'])) {
 					continue;
 				}
-
-				/** @var Const_ $const */
-				foreach ($stmtConst->getNode()->consts as $const) {
-					$constName = $const->namespacedName;
-					if ($constName === null) {
-						continue;
-					}
-					if (array_key_exists($constName->toString(), $this->presentSymbols['constants'])) {
-						continue;
-					}
-					$this->presentSymbols['constants'][$constName->toString()] = $file;
-				}
+				$this->presentSymbols['constants'][$constantName] = $file;
 			}
 			$this->scannedFiles[$file] = true;
 		}
@@ -241,42 +225,42 @@ class AutoloadSourceLocator implements SourceLocator
 		}
 
 		if ($identifier->isConstant()) {
-			$nodeToReflection = new NodeToReflection();
-			foreach ($result->getConstantNodes() as $stmtConst) {
-				if ($stmtConst->getNode() instanceof FuncCall) {
-					$constantReflection = $nodeToReflection->__invoke(
-						$reflector,
-						$stmtConst->getNode(),
-						$stmtConst->getLocatedSource(),
-						$stmtConst->getNamespace(),
-					);
-					if (!$constantReflection instanceof ReflectionConstant) {
+			$identifierName = ConstantNameHelper::normalize($identifier->getName());
+			$constantNodes = $result->getConstantNodes();
+
+			if (!array_key_exists($identifierName, $constantNodes)) {
+				return null;
+			}
+
+			foreach ($constantNodes[$identifierName] as $fetchedConstantNode) {
+				$constantNode = $fetchedConstantNode->getNode();
+
+				$positionInNode = null;
+				if ($constantNode instanceof Const_) {
+					foreach ($constantNode->consts as $constPosition => $const) {
+						if ($const->namespacedName === null) {
+							throw new ShouldNotHappenException();
+						}
+
+						if (ConstantNameHelper::normalize($const->namespacedName->toString()) === $identifierName) {
+							/** @var int $positionInNode */
+							$positionInNode = $constPosition;
+							break;
+						}
+					}
+
+					if ($positionInNode === null) {
 						throw new ShouldNotHappenException();
 					}
-					if ($constantReflection->getName() !== $identifier->getName()) {
-						continue;
-					}
-
-					return $constantReflection;
 				}
 
-				foreach (array_keys($stmtConst->getNode()->consts) as $i) {
-					$constantReflection = $nodeToReflection->__invoke(
-						$reflector,
-						$stmtConst->getNode(),
-						$stmtConst->getLocatedSource(),
-						$stmtConst->getNamespace(),
-						$i,
-					);
-					if (!$constantReflection instanceof ReflectionConstant) {
-						throw new ShouldNotHappenException();
-					}
-					if ($constantReflection->getName() !== $identifier->getName()) {
-						continue;
-					}
-
-					return $constantReflection;
-				}
+				return $nodeToReflection->__invoke(
+					$reflector,
+					$constantNode,
+					$fetchedConstantNode->getLocatedSource(),
+					$fetchedConstantNode->getNamespace(),
+					$positionInNode,
+				);
 			}
 		}
 

@@ -10,7 +10,7 @@ class FetchedNodesResult
 	/**
 	 * @param array<string, array<FetchedNode<Node\Stmt\ClassLike>>> $classNodes
 	 * @param array<string, array<FetchedNode<Node\Stmt\Function_>>> $functionNodes
-	 * @param array<int, FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>> $constantNodes
+	 * @param array<string, array<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>> $constantNodes
 	 */
 	public function __construct(
 		private array $classNodes,
@@ -37,7 +37,7 @@ class FetchedNodesResult
 	}
 
 	/**
-	 * @return array<int, FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>
+	 * @return array<string, array<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>>
 	 */
 	public function getConstantNodes(): array
 	{

@@ -1747,6 +1747,12 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
 			$throwPoints = $result->getThrowPoints();
+			if (
+				($expr instanceof Expr\AssignOp\Div || $expr instanceof Expr\AssignOp\Mod) &&
+				!$scope->getType($expr->expr)->toNumber()->isSuperTypeOf(new ConstantIntegerType(0))->no()
+			) {
+				$throwPoints[] = ThrowPoint::createExplicit($scope, new ObjectType(DivisionByZeroError::class), $expr, false);
+			}
 		} elseif ($expr instanceof FuncCall) {
 			$parametersAcceptor = null;
 			$functionReflection = null;

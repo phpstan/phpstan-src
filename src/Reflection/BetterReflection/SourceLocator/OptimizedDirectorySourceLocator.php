@@ -327,7 +327,6 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				foreach ($fetchedNodesResult->getClassNodes() as $identifierName => $fetchedClassNodes) {
 					foreach ($fetchedClassNodes as $fetchedClassNode) {
 						$reflections[$identifierName] = $this->nodeToReflection($reflector, $fetchedClassNode);
-						continue;
 					}
 				}
 			}

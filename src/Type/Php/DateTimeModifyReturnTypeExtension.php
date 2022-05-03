@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use DateTime;
+use DateTimeInterface;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
@@ -18,9 +19,18 @@ use PHPStan\Type\TypeUtils;
 class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 
+	/** @var class-string<DateTimeInterface> */
+	private $dateTimeClass;
+
+	/** @param class-string<DateTimeInterface> $dateTimeClass */
+	public function __construct($dateTimeClass = DateTime::class)
+	{
+		$this->dateTimeClass = $dateTimeClass;
+	}
+
 	public function getClass(): string
 	{
-		return DateTime::class;
+		return $this->dateTimeClass;
 	}
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool
@@ -31,6 +41,9 @@ class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtens
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+		if (count($methodCall->getArgs()) < 1) {
+			return $defaultReturnType;
+		}
 
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
 		$constantStrings = TypeUtils::getConstantStrings($valueType);
@@ -39,7 +52,7 @@ class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtens
 		$hasDateTime = false;
 
 		foreach ($constantStrings as $constantString) {
-			if ((new DateTime())->modify($constantString->getValue()) === false) {
+			if (@(new DateTime())->modify($constantString->getValue()) === false) {
 				$hasFalse = true;
 			} else {
 				$hasDateTime = true;

@@ -200,7 +200,8 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		preg_match_all(sprintf('{
 			(?:
 				\b(?<![\$:>])(?:
-					(?: (?P<type>class|interface|trait|function%s) \s++ (?P<byref>&\s*)? (?P<name>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) )
+					(?: (?P<type>class|interface|trait%s) \s++ (?P<name>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) )
+					| (?: (?P<function>function) \s++ (?:&\s*)? (?P<fname>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) )
 					| (?: (?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;] )
 				)
 			)
@@ -214,15 +215,17 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			if (isset($matches['ns'][$i]) && $matches['ns'][$i] !== '') {
 				$namespace = preg_replace('~\s+~', '', $matches['nsname'][$i]) . '\\';
 			} else {
-				$name = $matches['name'][$i];
+				$isFuction = $matches['function'][$i] !== '';
+				$name = $matches[$isFuction ? 'fname' : 'name'][$i];
+
 				// skip anon classes extending/implementing
 				if ($name === 'extends' || $name === 'implements') {
 					continue;
 				}
+
 				$namespacedName = strtolower(ltrim($namespace . $name, '\\'));
 
-				$lowerType = strtolower($matches['type'][$i]);
-				if ($lowerType === 'function') {
+				if ($isFuction) {
 					$functions[] = $namespacedName;
 				} else {
 					$classes[] = $namespacedName;

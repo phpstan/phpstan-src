@@ -594,7 +594,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		}
 
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6896.php');
-		$this->assertCount(2, $errors);
+		$this->assertCount(4, $errors);
+		$this->assertSame('Generic type IteratorIterator<(int|string), mixed> in PHPDoc tag @return does not specify all template types of class IteratorIterator: TKey, TValue, TIterator', $errors[0]->getMessage());
+		$this->assertSame(38, $errors[0]->getLine());
+		$this->assertSame('Method Bug6896\RandHelper::getPseudoRandomWithUrl() return type has no value type specified in iterable type array.', $errors[1]->getMessage());
+		$this->assertSame(38, $errors[1]->getLine());
+		$this->assertSame('Method Bug6896\RandHelper::getPseudoRandomWithUrl() return type with generic class Bug6896\XIterator does not specify its types: TKey, TValue', $errors[2]->getMessage());
+		$this->assertSame(38, $errors[2]->getLine());
+		$this->assertSame('Method Bug6896\RandHelper::getPseudoRandomWithUrl() should return array<TRandKey of (int|string), TRandVal>|Bug6896\XIterator<TRandKey of (int|string), TRandVal>|(iterable<TRandKey of (int|string), TRandVal>&LimitIterator)|IteratorIterator<TRandKey of (int|string), TRandVal> but returns TRandList of array<TRandKey of (int|string), TRandVal>|Traversable<TRandKey of (int|string), TRandVal>.', $errors[3]->getMessage());
+		$this->assertSame(42, $errors[3]->getLine());
 	}
 
 	public function testBug6940(): void
@@ -729,6 +737,24 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7135.php');
 		$this->assertCount(1, $errors);
 		$this->assertSame('Cannot create callable from the new operator.', $errors[0]->getMessage());
+	}
+
+	public function testDiscussion7124(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/discussion-7124.php');
+		$this->assertCount(4, $errors);
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int): bool, Closure(int, bool): bool given.', $errors[0]->getMessage());
+		$this->assertSame(38, $errors[0]->getLine());
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int): bool, Closure(int): bool given.', $errors[1]->getMessage());
+		$this->assertSame(45, $errors[1]->getLine());
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(int): bool, Closure(bool): bool given.', $errors[2]->getMessage());
+		$this->assertSame(52, $errors[2]->getLine());
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool): bool, Closure(int): bool given.', $errors[3]->getMessage());
+		$this->assertSame(59, $errors[3]->getLine());
 	}
 
 	/**

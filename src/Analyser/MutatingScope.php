@@ -90,7 +90,6 @@ use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
@@ -575,7 +574,7 @@ class MutatingScope implements Scope
 		$key = $this->getNodeKey($node);
 
 		if (!array_key_exists($key, $this->resolvedTypes)) {
-			$this->resolvedTypes[$key] = $this->resolveLateResolvableTypes($this->resolveType($node));
+			$this->resolvedTypes[$key] = TypeUtils::resolveLateResolvableTypes($this->resolveType($node));
 		}
 		return $this->resolvedTypes[$key];
 	}
@@ -6016,19 +6015,6 @@ class MutatingScope implements Scope
 		}
 
 		return IntegerRangeType::fromInterval($min, $max);
-	}
-
-	private function resolveLateResolvableTypes(Type $type): Type
-	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
-			$type = $traverse($type);
-
-			if ($type instanceof LateResolvableType) {
-				$type = $type->resolve();
-			}
-
-			return $type;
-		});
 	}
 
 }

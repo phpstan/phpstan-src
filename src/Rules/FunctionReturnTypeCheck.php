@@ -9,6 +9,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
@@ -36,6 +37,8 @@ class FunctionReturnTypeCheck
 		bool $isGenerator,
 	): array
 	{
+		$returnType = TypeUtils::resolveLateResolvableTypes($returnType);
+
 		if ($returnType instanceof NeverType && $returnType->isExplicit()) {
 			return [
 				RuleErrorBuilder::message($neverMessage)

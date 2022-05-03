@@ -8,7 +8,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -80,7 +79,7 @@ class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtens
 
 		$types = [];
 		foreach ($constantStrings as $constantString) {
-			$types[] = ConstantTypeHelper::getTypeFromValue(date($constantString->getValue()));
+			$types[] = new ConstantStringType(date($constantString->getValue()));
 		}
 
 		$type = TypeCombinator::union(...$types);

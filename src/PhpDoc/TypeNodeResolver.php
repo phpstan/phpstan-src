@@ -50,6 +50,7 @@ use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
@@ -870,15 +871,15 @@ class TypeNodeResolver
 		}
 
 		if ($constExpr instanceof ConstExprFloatNode) {
-			return ConstantTypeHelper::getTypeFromValue((float) $constExpr->value);
+			return new ConstantFloatType((float) $constExpr->value);
 		}
 
 		if ($constExpr instanceof ConstExprIntegerNode) {
-			return ConstantTypeHelper::getTypeFromValue((int) $constExpr->value);
+			return new ConstantIntegerType((int) $constExpr->value);
 		}
 
 		if ($constExpr instanceof ConstExprStringNode) {
-			return ConstantTypeHelper::getTypeFromValue($constExpr->value);
+			return new ConstantStringType($constExpr->value);
 		}
 
 		return new ErrorType();

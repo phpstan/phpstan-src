@@ -11,8 +11,12 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprTrueNode;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
-use PHPStan\Type\ConstantTypeHelper;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
 class ConstExprNodeResolver
@@ -25,27 +29,27 @@ class ConstExprNodeResolver
 		}
 
 		if ($node instanceof ConstExprFalseNode) {
-			return ConstantTypeHelper::getTypeFromValue(false);
+			return new ConstantBooleanType(false);
 		}
 
 		if ($node instanceof ConstExprTrueNode) {
-			return ConstantTypeHelper::getTypeFromValue(true);
+			return new ConstantBooleanType(true);
 		}
 
 		if ($node instanceof ConstExprFloatNode) {
-			return ConstantTypeHelper::getTypeFromValue((float) $node->value);
+			return new ConstantFloatType((float) $node->value);
 		}
 
 		if ($node instanceof ConstExprIntegerNode) {
-			return ConstantTypeHelper::getTypeFromValue((int) $node->value);
+			return new ConstantIntegerType((int) $node->value);
 		}
 
 		if ($node instanceof ConstExprNullNode) {
-			return ConstantTypeHelper::getTypeFromValue(null);
+			return new NullType();
 		}
 
 		if ($node instanceof ConstExprStringNode) {
-			return ConstantTypeHelper::getTypeFromValue($node->value);
+			return new ConstantStringType($node->value);
 		}
 
 		return new MixedType();

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use function array_filter;
 use function array_slice;
 use function end;
 use function explode;
@@ -18,7 +19,7 @@ class ConstantNameHelper
 			return $name;
 		}
 
-		$nameParts = explode('\\', $name);
+		$nameParts = array_filter(explode('\\', $name));
 		return strtolower(implode('\\', array_slice($nameParts, 0, -1))) . '\\' . end($nameParts);
 	}
 

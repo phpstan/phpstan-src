@@ -37,7 +37,7 @@ class PhpFileCleaner
 			];
 		}
 
-		$this->restPattern = '{[^{}?"\'</' . implode('', array_keys($this->typeConfig)) . ']+}A';
+		$this->restPattern = '{[^{}?"\'</d' . implode('', array_keys($this->typeConfig)) . ']+}A';
 	}
 
 	public function clean(string $contents, int $maxMatches): string
@@ -48,6 +48,8 @@ class PhpFileCleaner
 
 		$inType = false;
 		$typeLevel = 0;
+
+		$inDefine = false;
 
 		$clean = '';
 		while ($this->index < $this->len) {
@@ -62,15 +64,15 @@ class PhpFileCleaner
 					continue 2;
 				}
 
-				if ($char === '"') {
-					$this->skipString('"');
-					$clean .= 'null';
-					continue;
-				}
+				if ($char === '"' || $char === "'") {
+					if ($inDefine) {
+						$clean .= $char . $this->consumeString($char);
+						$inDefine = false;
+					} else {
+						$this->skipString($char);
+						$clean .= 'null';
+					}
 
-				if ($char === "'") {
-					$this->skipString("'");
-					$clean .= 'null';
 					continue;
 				}
 
@@ -127,6 +129,13 @@ class PhpFileCleaner
 					continue;
 				}
 
+				if ($char === 'd' && $this->match('~.\b(?<![\$:>])define\s*+\(~Ais', $match, $this->index - 1)) {
+					$inDefine = true;
+					$clean .= $match[0];
+					$this->index += strlen($match[0]) - 1;
+					continue;
+				}
+
 				if (isset($this->typeConfig[$char])) {
 					$type = $this->typeConfig[$char];
 
@@ -162,6 +171,33 @@ class PhpFileCleaner
 
 			$this->index += 1;
 		}
+	}
+
+	private function consumeString(string $delimiter): string
+	{
+		$string = '';
+
+		$this->index += 1;
+		while ($this->index < $this->len) {
+			if ($this->contents[$this->index] === '\\' && ($this->peek('\\') || $this->peek($delimiter))) {
+				$string .= $this->contents[$this->index];
+				$string .= $this->contents[$this->index + 1];
+
+				$this->index += 2;
+				continue;
+			}
+
+			if ($this->contents[$this->index] === $delimiter) {
+				$string .= $delimiter;
+				$this->index += 1;
+				break;
+			}
+
+			$string .= $this->contents[$this->index];
+			$this->index += 1;
+		}
+
+		return $string;
 	}
 
 	private function skipString(string $delimiter): void

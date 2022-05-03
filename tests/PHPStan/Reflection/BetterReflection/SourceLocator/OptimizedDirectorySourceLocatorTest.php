@@ -175,6 +175,30 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 				'TestDirectorySourceLocator\\Something\\FINAL_PUBLIC_CONSTANT',
 				'01-constant-in-namespace.php',
 			],
+			[
+				'DEFINE_CONST',
+				'01-define.php',
+			],
+			[
+				'FQN_DEFINE_CONST',
+				'01-define.php',
+			],
+			[
+				'DOUBLE_QUOTES_DEFINE_CONST',
+				'01-define.php',
+			],
+			[
+				'OptimizedDirectory\\DEFINE_CONST',
+				'01-define.php',
+			],
+			[
+				'OptimizedDirectory\\DEFINE_CONST2',
+				'01-define.php',
+			],
+			[
+				'DEFINE_THAT_SHOULD_SURVIVE_METHOD_CALL',
+				'01-define.php',
+			],
 		];
 	}
 
@@ -216,6 +240,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 			'CFoo',
 			'TestDirectorySourceLocator\EmptyClass',
 			'TestDirectorySourceLocator\Something\Whatever',
+			'OptimizedDirectory\WithDefineCall',
 		];
 		if (PHP_VERSION_ID >= 80100) {
 			$expectedClasses[] = 'OptimizedDirectory\TestEnum';
@@ -256,6 +281,12 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 			'TestDirectorySourceLocator\Something\CONSTANT',
 			'TestDirectorySourceLocator\Something\PUBLIC_CONSTANT',
 			'TestDirectorySourceLocator\Something\FINAL_PUBLIC_CONSTANT',
+			'DEFINE_CONST',
+			'FQN_DEFINE_CONST',
+			'DOUBLE_QUOTES_DEFINE_CONST',
+			'DEFINE_THAT_SHOULD_SURVIVE_METHOD_CALL',
+			'OptimizedDirectory\\DEFINE_CONST',
+			'OptimizedDirectory\\DEFINE_CONST2',
 		], $actualConstants);
 	}
 

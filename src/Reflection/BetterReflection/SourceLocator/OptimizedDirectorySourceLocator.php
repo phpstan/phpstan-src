@@ -229,7 +229,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 			return ['classes' => [], 'functions' => [], 'constants' => []];
 		}
 
-		$matchResults = (bool) preg_match_all(sprintf('{\b(?:class|interface|trait|const|function%s)\s}i', $this->extraTypes), $contents, $matches);
+		$matchResults = (bool) preg_match_all(sprintf('{\b(?:(?:class|interface|trait|const|function%s)\s)|(?:define\s*\()}i', $this->extraTypes), $contents, $matches);
 		if (!$matchResults) {
 			return ['classes' => [], 'functions' => [], 'constants' => []];
 		}
@@ -242,6 +242,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 					(?: (?P<type>class|interface|trait%s) \s++ (?P<name>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) )
 					| (?: (?P<function>function) \s++ (?:&\s*)? (?P<fname>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) \s*+ [&\(] )
 					| (?: (?P<constant>const) \s++ (?P<cname>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) \s*+ [^;] )
+					| (?: (?:\\\)? (?P<define>define) \s*+ \( \s*+ [\'"] (?P<dname>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:[\\\\]{1,2}[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+) )
 					| (?: (?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;] )
 				)
 			)
@@ -265,6 +266,10 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 
 			if ($matches['constant'][$i] !== '') {
 				$constants[] = ConstantNameHelper::normalize(ltrim($namespace . $matches['cname'][$i], '\\'));
+			}
+
+			if ($matches['define'][$i] !== '') {
+				$constants[] = ConstantNameHelper::normalize($matches['dname'][$i]);
 				continue;
 			}
 

@@ -214,22 +214,23 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		for ($i = 0, $len = count($matches['type']); $i < $len; $i++) {
 			if (isset($matches['ns'][$i]) && $matches['ns'][$i] !== '') {
 				$namespace = preg_replace('~\s+~', '', $matches['nsname'][$i]) . '\\';
+				continue;
+			}
+
+			$isFuction = $matches['function'][$i] !== '';
+			$name = $matches[$isFuction ? 'fname' : 'name'][$i];
+
+			// skip anon classes extending/implementing
+			if ($name === 'extends' || $name === 'implements') {
+				continue;
+			}
+
+			$namespacedName = strtolower(ltrim($namespace . $name, '\\'));
+
+			if ($isFuction) {
+				$functions[] = $namespacedName;
 			} else {
-				$isFuction = $matches['function'][$i] !== '';
-				$name = $matches[$isFuction ? 'fname' : 'name'][$i];
-
-				// skip anon classes extending/implementing
-				if ($name === 'extends' || $name === 'implements') {
-					continue;
-				}
-
-				$namespacedName = strtolower(ltrim($namespace . $name, '\\'));
-
-				if ($isFuction) {
-					$functions[] = $namespacedName;
-				} else {
-					$classes[] = $namespacedName;
-				}
+				$classes[] = $namespacedName;
 			}
 		}
 

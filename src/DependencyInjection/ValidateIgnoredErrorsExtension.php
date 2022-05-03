@@ -7,6 +7,7 @@ use Hoa\File\Read;
 use Nette\DI\CompilerExtension;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
+use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
 use PHPStan\Command\IgnoredRegexValidator;
@@ -54,6 +55,7 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 		$reflectionProvider = new DummyReflectionProvider();
 		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
 		ReflectionProviderStaticAccessor::registerInstance($reflectionProvider);
+		$constantResolver = new ConstantResolver($reflectionProviderProvider, []);
 		$ignoredRegexValidator = new IgnoredRegexValidator(
 			$parser,
 			new TypeStringResolver(
@@ -84,8 +86,8 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 						}
 
 					}),
-					new ConstantResolver($reflectionProviderProvider, []),
-					new InitializerExprTypeResolver(),
+					$constantResolver,
+					new InitializerExprTypeResolver($constantResolver, new Standard(), $reflectionProviderProvider),
 				),
 			),
 		);

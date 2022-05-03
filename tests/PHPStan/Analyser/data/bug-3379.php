@@ -13,5 +13,5 @@ class Foo
 
 function () {
 	echo Foo::URL;
-	assertType('mixed', Foo::URL);
+	assertType('non-empty-string', Foo::URL);
 };

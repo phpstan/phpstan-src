@@ -199,8 +199,10 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 
 		preg_match_all(sprintf('{
 			(?:
-				\b(?<![\$:>])(?P<type>class|interface|trait|function%s) \s++ (?P<byref>&\s*)? (?P<name>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+)
-				| \b(?<![\$:>])(?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;]
+				\b(?<![\$:>])(?:
+					(?: (?P<type>class|interface|trait|function%s) \s++ (?P<byref>&\s*)? (?P<name>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) )
+					| (?: (?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;] )
+				)
 			)
 		}ix', $this->extraTypes), $contents, $matches);
 

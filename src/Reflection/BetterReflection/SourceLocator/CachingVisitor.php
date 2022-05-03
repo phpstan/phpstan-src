@@ -10,6 +10,7 @@ use PhpParser\NodeVisitorAbstract;
 use PHPStan\BetterReflection\Reflection\Exception\InvalidConstantNode;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\Util\ConstantNodeChecker;
+use PHPStan\Reflection\ConstantNameHelper;
 use function constant;
 use function defined;
 use function strtolower;
@@ -27,7 +28,7 @@ class CachingVisitor extends NodeVisitorAbstract
 	/** @var array<string, array<FetchedNode<Node\Stmt\Function_>>> */
 	private array $functionNodes;
 
-	/** @var array<int, FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>> */
+	/** @var array<string, array<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>> */
 	private array $constantNodes;
 
 	private ?Node\Stmt\Namespace_ $currentNamespaceNode = null;
@@ -70,12 +71,18 @@ class CachingVisitor extends NodeVisitorAbstract
 		}
 
 		if ($node instanceof Node\Stmt\Const_) {
-			$this->constantNodes[] = new FetchedNode(
-				$node,
-				$this->currentNamespaceNode,
-				$this->fileName,
-				new LocatedSource($this->contents, null, $this->fileName),
-			);
+			foreach ($node->consts as $const) {
+				if ($const->namespacedName === null) {
+					continue;
+				}
+
+				$this->constantNodes[ConstantNameHelper::normalize($const->namespacedName->toString())][] = new FetchedNode(
+					$node,
+					$this->currentNamespaceNode,
+					$this->fileName,
+					new LocatedSource($this->contents, null, $this->fileName),
+				);
+			}
 
 			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
@@ -102,7 +109,7 @@ class CachingVisitor extends NodeVisitorAbstract
 				$this->fileName,
 				new LocatedSource($this->contents, $constantName, $this->fileName),
 			);
-			$this->constantNodes[] = $constantNode;
+			$this->constantNodes[ConstantNameHelper::normalize($constantName)][] = $constantNode;
 
 			return NodeTraverser::DONT_TRAVERSE_CHILDREN;
 		}
@@ -140,7 +147,7 @@ class CachingVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @return array<int, FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>
+	 * @return array<string, array<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>>
 	 */
 	public function getConstantNodes(): array
 	{

@@ -70,41 +70,40 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				return null;
 			}
 
-			$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
-			$classNodes = [];
-			foreach ($fetchedNodesResult->getClassNodes() as $identifierName => $fetchedClassNodes) {
-				foreach ($fetchedClassNodes as $fetchedClassNode) {
-					$classNodes[$identifierName] = $fetchedClassNode;
-					break;
-				}
-			}
+			$fetchedClassNodes = $this->fileNodesFetcher->fetchNodes($file)->getClassNodes();
 
-			if (!array_key_exists($className, $classNodes)) {
+			if (!array_key_exists($className, $fetchedClassNodes)) {
 				return null;
 			}
 
-			return $this->nodeToReflection($reflector, $classNodes[$className]);
+			/** @var FetchedNode<Node\Stmt\ClassLike> $fetchedClassNode */
+			$fetchedClassNode = current($fetchedClassNodes[$className]);
+
+			return $this->nodeToReflection($reflector, $fetchedClassNode);
 		}
 
 		if ($identifier->isFunction()) {
 			$functionName = strtolower($identifier->getName());
 			$files = $this->findFilesByFunction($functionName);
-			$functionNodes = [];
+
+			$fetchedFunctionNode = null;
 			foreach ($files as $file) {
-				$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
-				foreach ($fetchedNodesResult->getFunctionNodes() as $identifierName => $fetchedFunctionNodes) {
-					foreach ($fetchedFunctionNodes as $fetchedFunctionNode) {
-						$functionNodes[$identifierName] = $fetchedFunctionNode;
-						continue 2;
-					}
+				$fetchedFunctionNodes = $this->fileNodesFetcher->fetchNodes($file)->getFunctionNodes();
+
+				if (!array_key_exists($functionName, $fetchedFunctionNodes)) {
+					continue;
 				}
+
+
+				/** @var FetchedNode<Node\Stmt\Function_> $fetchedFunctionNode */
+				$fetchedFunctionNode = current($fetchedFunctionNodes[$functionName]);
 			}
 
-			if (!array_key_exists($functionName, $functionNodes)) {
+			if ($fetchedFunctionNode === null) {
 				return null;
 			}
 
-			return $this->nodeToReflection($reflector, $functionNodes[$functionName]);
+			return $this->nodeToReflection($reflector, $fetchedFunctionNode);
 		}
 
 		if ($identifier->isConstant()) {
@@ -115,8 +114,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				return null;
 			}
 
-			$fetchedNodesResult = $this->fileNodesFetcher->fetchNodes($file);
-			$fetchedConstantNodes = $fetchedNodesResult->getConstantNodes();
+			$fetchedConstantNodes = $this->fileNodesFetcher->fetchNodes($file)->getConstantNodes();
 
 			if (!array_key_exists($constantName, $fetchedConstantNodes)) {
 				return null;

@@ -138,6 +138,48 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		$this->assertSame($file, basename($functionReflection->getFileName()));
 	}
 
+	public function dataConstant(): iterable
+	{
+		yield from [
+			[
+				'OptimizedDirectory\\SOMETHING',
+				'b.php',
+			],
+			[
+				'OptimizedDirectory\\CLASS_CONST',
+				null,
+			],
+			[
+				'OptimizedDirectory2\\ANYTHING',
+				'd.php',
+			],
+			[
+				'NOTHING',
+				'd.php',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataConstant
+	 */
+	public function testConstant(string $constantName, ?string $expectedFile): void
+	{
+		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
+		$locator = $factory->createByDirectory(__DIR__ . '/data/directory');
+		$reflector = new DefaultReflector($locator);
+
+		if ($expectedFile === null) {
+			$this->expectException(IdentifierNotFound::class);
+			$reflector->reflectConstant($constantName);
+		} else {
+			$constantReflection = $reflector->reflectConstant($constantName);
+
+			$this->assertNotNull($constantReflection->getFileName());
+			$this->assertSame($expectedFile, basename($constantReflection->getFileName()));
+		}
+	}
+
 	public function testLocateIdentifiersByType(): void
 	{
 		/** @var OptimizedDirectorySourceLocatorFactory $factory */

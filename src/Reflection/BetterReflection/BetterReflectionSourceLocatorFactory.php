@@ -18,6 +18,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJs
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
+use PHPStan\Reflection\BetterReflection\SourceLocator\RectorAutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
 use function array_merge;
 use function array_unique;
@@ -108,6 +109,7 @@ class BetterReflectionSourceLocatorFactory
 		if (!$this->disableRuntimeReflectionProvider) {
 			$locators[] = new ClassWhitelistSourceLocator($this->autoloadSourceLocator, $this->staticReflectionClassNamePatterns);
 		} else {
+			$locators[] = new RectorAutoloadSourceLocator();
 			$locators[] = $this->autoloadSourceLocator;
 		}
 		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);

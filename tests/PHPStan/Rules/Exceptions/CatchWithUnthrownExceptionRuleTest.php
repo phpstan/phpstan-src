@@ -334,4 +334,94 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6349(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6349.php'], [
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				29,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				44,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				48,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				106,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				110,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				121,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				125,
+			],
+			[
+				// throw point not implemented yet, because there is no way to narrow float value by !== 0.0
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				139,
+			],
+			[
+				// throw point not implemented yet, because there is no way to narrow float value by !== 0.0
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				143,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				172,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				176,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				187,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				191,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				249,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				253,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				264,
+			],
+			[
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				268,
+			],
+			[
+				// throw point not implemented yet, because there is no way to narrow float value by !== 0.0
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				282,
+			],
+			[
+				// throw point not implemented yet, because there is no way to narrow float value by !== 0.0
+				'Dead catch - DivisionByZeroError is never thrown in the try block.',
+				286,
+			],
+		]);
+	}
+
 }

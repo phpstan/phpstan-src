@@ -2939,11 +2939,18 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
+			if ($rightNumberValue === 0 || $rightNumberValue === 0.0) {
+				return new ErrorType();
+			}
 			return $this->getTypeFromValue($leftNumberValue / $rightNumberValue);
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\Mod || $node instanceof Node\Expr\AssignOp\Mod) {
-			return $this->getTypeFromValue(((int) $leftNumberValue) % ((int) $rightNumberValue));
+			$rightIntegerValue = (int) $rightNumberValue;
+			if ($rightIntegerValue === 0) {
+				return new ErrorType();
+			}
+			return $this->getTypeFromValue(((int) $leftNumberValue) % $rightIntegerValue);
 		}
 
 		if ($node instanceof Expr\BinaryOp\ShiftLeft || $node instanceof Expr\AssignOp\ShiftLeft) {

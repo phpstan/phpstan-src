@@ -16,7 +16,7 @@ jobs:
         id: waitforstatuschecks
         uses: "WyriHaximus/github-action-wait-for-status@v1"
         with:
-          ignoreActions: automerge
+          ignoreActions: "automerge,Automerge PRs"
           checkInterval: 13
         env:
           GITHUB_TOKEN: "${{ secrets.PHPSTAN_BOT_TOKEN }}"

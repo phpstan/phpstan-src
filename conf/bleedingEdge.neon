@@ -8,7 +8,6 @@ parameters:
 		arrayUnpacking: true
 		nodeConnectingVisitorCompatibility: false
 		nodeConnectingVisitorRule: true
-		illegalConstructorMethodCall: true
 		disableCheckMissingIterableValueType: true
 		strictUnnecessaryNullsafePropertyFetch: true
 		looseComparison: true

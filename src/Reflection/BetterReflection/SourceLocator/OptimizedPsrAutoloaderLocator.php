@@ -13,6 +13,9 @@ use function is_file;
 class OptimizedPsrAutoloaderLocator implements SourceLocator
 {
 
+	/** @var array<string, OptimizedSingleFileSourceLocator> */
+	private array $locators = [];
+
 	public function __construct(
 		private PsrAutoloaderMapping $mapping,
 		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
@@ -22,15 +25,27 @@ class OptimizedPsrAutoloaderLocator implements SourceLocator
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
+		foreach ($this->locators as $locator) {
+			$reflection = $locator->locateIdentifier($reflector, $identifier);
+			if ($reflection === null) {
+				continue;
+			}
+
+			return $reflection;
+		}
+
 		foreach ($this->mapping->resolvePossibleFilePaths($identifier) as $file) {
 			if (!is_file($file)) {
 				continue;
 			}
 
-			$reflection = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($file)->locateIdentifier($reflector, $identifier);
+			$locator = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($file);
+			$reflection = $locator->locateIdentifier($reflector, $identifier);
 			if ($reflection === null) {
 				continue;
 			}
+
+			$this->locators[$file] = $locator;
 
 			return $reflection;
 		}

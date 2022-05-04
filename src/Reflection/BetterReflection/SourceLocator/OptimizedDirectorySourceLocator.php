@@ -239,8 +239,9 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		preg_match_all(sprintf('{
 			(?:
 				\b(?<![\$:>])(?:
-					(?: (?P<type>class|interface|trait|const%s) \s++ (?P<name>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) )
+					(?: (?P<type>class|interface|trait%s) \s++ (?P<name>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) )
 					| (?: (?P<function>function) \s++ (?:&\s*)? (?P<fname>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) \s*+ [&\(] )
+					| (?: (?P<constant>const) \s++ (?P<cname>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+) \s*+ [^;] )
 					| (?: (?P<ns>namespace) (?P<nsname>\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+(?:\s*+\\\\\s*+[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*+)*+)? \s*+ [\{;] )
 				)
 			)
@@ -257,23 +258,24 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 				continue;
 			}
 
-			$isFuction = $matches['function'][$i] !== '';
-			$name = $matches[$isFuction ? 'fname' : 'name'][$i];
+			if ($matches['function'][$i] !== '') {
+				$functions[] = strtolower(ltrim($namespace . $matches['fname'][$i], '\\'));
+				continue;
+			}
+
+			if ($matches['constant'][$i] !== '') {
+				$constants[] = ConstantNameHelper::normalize(ltrim($namespace . $matches['cname'][$i], '\\'));
+				continue;
+			}
+
+			$name = $matches['name'][$i];
 
 			// skip anon classes extending/implementing
 			if ($name === 'extends' || $name === 'implements') {
 				continue;
 			}
 
-			$namespacedName = ltrim($namespace . $name, '\\');
-
-			if ($isFuction) {
-				$functions[] = strtolower($namespacedName);
-			} elseif (strtolower($matches['type'][$i]) === 'const') {
-				$constants[] = $namespacedName;
-			} else {
-				$classes[] = strtolower($namespacedName);
-			}
+			$classes[] = strtolower(ltrim($namespace . $name, '\\'));
 		}
 
 		return [

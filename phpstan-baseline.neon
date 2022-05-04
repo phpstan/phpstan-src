@@ -159,16 +159,6 @@ parameters:
 			path: src/Reflection/BetterReflection/SourceLocator/OptimizedSingleFileSourceLocator.php
 
 		-
-			message: "#^Only booleans are allowed in &&, int\\|false given on the right side\\.$#"
-			count: 1
-			path: src/Reflection/BetterReflection/SourceLocator/PhpFileCleaner.php
-
-		-
-			message: "#^Only booleans are allowed in an if condition, int\\|false given\\.$#"
-			count: 1
-			path: src/Reflection/BetterReflection/SourceLocator/PhpFileCleaner.php
-
-		-
 			message: "#^Method PHPStan\\\\Reflection\\\\ClassReflection\\:\\:getCacheKey\\(\\) should return string but returns string\\|null\\.$#"
 			count: 1
 			path: src/Reflection/ClassReflection.php

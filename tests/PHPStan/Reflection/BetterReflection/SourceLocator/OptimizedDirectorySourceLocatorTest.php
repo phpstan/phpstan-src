@@ -163,6 +163,18 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 				'NOTHING',
 				'd.php',
 			],
+			[
+				'TestDirectorySourceLocator\\Something\\CONSTANT',
+				'01-constant-in-namespace.php',
+			],
+			[
+				'TestDirectorySourceLocator\\Something\\PUBLIC_CONSTANT',
+				'01-constant-in-namespace.php',
+			],
+			[
+				'TestDirectorySourceLocator\\Something\\FINAL_PUBLIC_CONSTANT',
+				'01-constant-in-namespace.php',
+			],
 		];
 	}
 
@@ -203,6 +215,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 			'OptimizedDirectory\BFoo',
 			'CFoo',
 			'TestDirectorySourceLocator\EmptyClass',
+			'TestDirectorySourceLocator\Something\Whatever',
 		];
 		if (PHP_VERSION_ID >= 80100) {
 			$expectedClasses[] = 'OptimizedDirectory\TestEnum';
@@ -240,6 +253,9 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 			'NOTHING',
 			'OptimizedDirectory\SOMETHING',
 			'OptimizedDirectory2\ANYTHING',
+			'TestDirectorySourceLocator\Something\CONSTANT',
+			'TestDirectorySourceLocator\Something\PUBLIC_CONSTANT',
+			'TestDirectorySourceLocator\Something\FINAL_PUBLIC_CONSTANT',
 		], $actualConstants);
 	}
 

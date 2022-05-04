@@ -7,11 +7,9 @@ use DateTimeInterface;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -39,11 +37,10 @@ class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtens
 		return $methodReflection->getName() === 'modify';
 	}
 
-	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
+	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
-		$defaultReturnType = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
 		if (count($methodCall->getArgs()) < 1) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
@@ -63,17 +60,17 @@ class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtens
 		}
 
 		if (!$valueType instanceof NeverType) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		if ($hasFalse && !$hasDateTime) {
 			return new ConstantBooleanType(false);
 		}
 		if ($hasDateTime && !$hasFalse) {
-			return new StaticType($methodReflection->getDeclaringClass());
+			return $scope->getType($methodCall->var);
 		}
 
-		return $defaultReturnType;
+		return null;
 	}
 
 }

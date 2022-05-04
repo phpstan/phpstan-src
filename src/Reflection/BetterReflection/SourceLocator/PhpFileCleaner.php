@@ -37,7 +37,7 @@ class PhpFileCleaner
 			];
 		}
 
-		$this->restPattern = '{[^?"\'</' . implode('', array_keys($this->typeConfig)) . ']+}A';
+		$this->restPattern = '{[^{}?"\'</' . implode('', array_keys($this->typeConfig)) . ']+}A';
 	}
 
 	public function clean(string $contents, int $maxMatches): string
@@ -45,6 +45,9 @@ class PhpFileCleaner
 		$this->contents = $contents;
 		$this->len = strlen($contents);
 		$this->index = 0;
+
+		$inType = false;
+		$typeLevel = 0;
 
 		$clean = '';
 		while ($this->index < $this->len) {
@@ -71,6 +74,30 @@ class PhpFileCleaner
 					continue;
 				}
 
+				if ($char === '{') {
+					if ($inType) {
+						$typeLevel++;
+					}
+
+					$clean .= $char;
+					$this->index++;
+					continue;
+				}
+
+				if ($char === '}') {
+					if ($inType) {
+						$typeLevel--;
+
+						if ($typeLevel === 0) {
+							$inType = false;
+						}
+					}
+
+					$clean .= $char;
+					$this->index++;
+					continue;
+				}
+
 				if ($char === '<' && $this->peek('<') && $this->match('{<<<[ \t]*+([\'"]?)([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*+)\\1(?:\r\n|\n|\r)}A', $match)) {
 					$this->index += strlen($match[0]);
 					$this->skipHeredoc($match[2]);
@@ -88,13 +115,20 @@ class PhpFileCleaner
 					}
 				}
 
-				if ($maxMatches === 1 && isset($this->typeConfig[$char])) {
+				if ($inType && $char === 'c' && substr($this->contents, $this->index, 5) === 'const') {
+					$this->skipTo(';');
+					continue;
+				}
+
+				if (isset($this->typeConfig[$char])) {
 					$type = $this->typeConfig[$char];
-					if (
-						substr($this->contents, $this->index, $type['length']) === $type['name']
-						&& preg_match($type['pattern'], $this->contents, $match, 0, $this->index - 1)
-					) {
-						return $clean . $match[0];
+
+					if (substr($this->contents, $this->index, $type['length']) === $type['name']) {
+						if ($maxMatches === 1 && preg_match($type['pattern'], $this->contents, $match, 0, $this->index - 1)) {
+							return $clean . $match[0];
+						}
+
+						$inType = true;
 					}
 				}
 
@@ -137,6 +171,19 @@ class PhpFileCleaner
 			}
 			$this->index += 1;
 		}
+	}
+
+	private function skipTo(string $char): void
+	{
+		while ($this->index < $this->len) {
+			if ($this->contents[$this->index] === $char) {
+				break;
+			}
+
+			$this->index++;
+		}
+
+		$this->index++;
 	}
 
 	private function skipComment(): void

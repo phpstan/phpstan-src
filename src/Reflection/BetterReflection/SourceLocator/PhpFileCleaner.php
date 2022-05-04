@@ -115,8 +115,14 @@ class PhpFileCleaner
 					}
 				}
 
-				if ($inType && $char === 'c' && substr($this->contents, $this->index, 5) === 'const') {
-					$this->skipTo(';');
+				if (
+					$inType
+					&& $char === 'c'
+					&& $this->match('~.\b(?<![\$:>])const(\s++[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\-]*+)~Ais', $match, $this->index - 1)
+				) {
+					// It's invalid PHP but it does not matter
+					$clean .= 'class_const' . $match[1];
+					$this->index += strlen($match[0]) - 1;
 					continue;
 				}
 
@@ -171,19 +177,6 @@ class PhpFileCleaner
 			}
 			$this->index += 1;
 		}
-	}
-
-	private function skipTo(string $char): void
-	{
-		while ($this->index < $this->len) {
-			if ($this->contents[$this->index] === $char) {
-				break;
-			}
-
-			$this->index++;
-		}
-
-		$this->index++;
 	}
 
 	private function skipComment(): void
@@ -255,9 +248,9 @@ class PhpFileCleaner
 	/**
 	 * @param string[]|null $match
 	 */
-	private function match(string $regex, ?array &$match = null): bool
+	private function match(string $regex, ?array &$match = null, ?int $offset = null): bool
 	{
-		if (preg_match($regex, $this->contents, $match, 0, $this->index)) {
+		if (preg_match($regex, $this->contents, $match, 0, $offset ?? $this->index)) {
 			return true;
 		}
 

@@ -9,6 +9,7 @@ use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Testing\PHPStanTestCase;
 use TestDirectorySourceLocator\AFoo;
+use TestDirectorySourceLocator\EmptyClass;
 use function array_map;
 use function basename;
 use const PHP_VERSION_ID;
@@ -38,6 +39,11 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 				'OptimizedDirectory\\bfOO',
 				BFoo::class,
 				'b.php',
+			],
+			[
+				'TestDirectorySourceLocator\\EmptyClass',
+				EmptyClass::class,
+				'e.php',
 			],
 		];
 
@@ -196,6 +202,7 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 			'TestDirectorySourceLocator\AFoo',
 			'OptimizedDirectory\BFoo',
 			'CFoo',
+			'TestDirectorySourceLocator\EmptyClass',
 		];
 		if (PHP_VERSION_ID >= 80100) {
 			$expectedClasses[] = 'OptimizedDirectory\TestEnum';

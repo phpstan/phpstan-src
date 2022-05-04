@@ -28,7 +28,7 @@ class PhpFileCleaner
 	private int $index = 0;
 
 	/**
-	 * @param string[] $types
+	 * @param string[] $types Class types
 	 */
 	public function __construct(array $types)
 	{

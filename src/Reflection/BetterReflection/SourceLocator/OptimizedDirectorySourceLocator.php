@@ -58,7 +58,7 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 
 		$this->extraTypes = $extraTypes;
 
-		$this->cleaner = new PhpFileCleaner(array_merge(['class', 'interface', 'trait', 'const', 'function'], $extraTypesArray));
+		$this->cleaner = new PhpFileCleaner(array_merge(['class', 'interface', 'trait'], $extraTypesArray));
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection

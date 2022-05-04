@@ -15,6 +15,7 @@ use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function count;
 
 class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
@@ -23,7 +24,7 @@ class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtens
 	private $dateTimeClass;
 
 	/** @param class-string<DateTimeInterface> $dateTimeClass */
-	public function __construct($dateTimeClass = DateTime::class)
+	public function __construct(string $dateTimeClass = DateTime::class)
 	{
 		$this->dateTimeClass = $dateTimeClass;
 	}

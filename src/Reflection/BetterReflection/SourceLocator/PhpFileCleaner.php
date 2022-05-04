@@ -131,7 +131,7 @@ class PhpFileCleaner
 					$type = $this->typeConfig[$char];
 
 					if (substr($this->contents, $this->index, $type['length']) === $type['name']) {
-						if ($maxMatches === 1 && preg_match($type['pattern'], $this->contents, $match, 0, $this->index - 1)) {
+						if ($maxMatches === 1 && $this->match($type['pattern'], $match, $this->index - 1)) {
 							return $clean . $match[0];
 						}
 
@@ -251,11 +251,7 @@ class PhpFileCleaner
 	 */
 	private function match(string $regex, ?array &$match = null, ?int $offset = null): bool
 	{
-		if (preg_match($regex, $this->contents, $match, 0, $offset ?? $this->index)) {
-			return true;
-		}
-
-		return false;
+		return preg_match($regex, $this->contents, $match, 0, $offset ?? $this->index) === 1;
 	}
 
 }

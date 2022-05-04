@@ -25,10 +25,10 @@ assertType('array{1, 2, 3}', $value);
 
 function ($mixed) {
 	$value = json_decode($mixed);
-	assertType('mixed', $value);
+	assertType('array|bool|float|int|stdClass|string|null', $value);
 };
 
 function ($mixed) {
 	$value = json_decode($mixed, false);
-	assertType('mixed', $value);
+	assertType('array|bool|float|int|stdClass|string|null', $value);
 };

@@ -8699,15 +8699,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'json_encode($mixed,  $integer | JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[
-				'mixed',
+				'array|bool|float|int|stdClass|string|null',
 				'json_decode($mixed)',
 			],
 			[
-				'mixed',
+				'array|bool|float|int|stdClass|string|null',
 				'json_decode($mixed, false, 512, JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[
-				'mixed',
+				'array|bool|float|int|stdClass|string|null',
 				'json_decode($mixed, false, 512, $integer | JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[

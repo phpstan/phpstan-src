@@ -13,7 +13,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
-use function array_merge;
 use function array_values;
 use function count;
 use function current;
@@ -49,16 +48,9 @@ class OptimizedDirectorySourceLocator implements SourceLocator
 		private array $files,
 	)
 	{
-		$extraTypes = '';
-		$extraTypesArray = [];
-		if ($this->phpVersion->supportsEnums()) {
-			$extraTypes = '|enum';
-			$extraTypesArray[] = 'enum';
-		}
+		$this->extraTypes = $this->phpVersion->supportsEnums() ? '|enum' : '';
 
-		$this->extraTypes = $extraTypes;
-
-		$this->cleaner = new PhpFileCleaner(array_merge(['class', 'interface', 'trait'], $extraTypesArray));
+		$this->cleaner = new PhpFileCleaner();
 	}
 
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection

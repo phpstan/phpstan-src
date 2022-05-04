@@ -112,6 +112,7 @@ class PhpFileCleaner
 					}
 					if ($this->peek('*')) {
 						$this->skipComment();
+						continue;
 					}
 				}
 

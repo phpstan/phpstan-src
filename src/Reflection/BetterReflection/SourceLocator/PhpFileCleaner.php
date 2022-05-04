@@ -27,12 +27,9 @@ class PhpFileCleaner
 
 	private int $index = 0;
 
-	/**
-	 * @param string[] $types Class types
-	 */
-	public function __construct(array $types)
+	public function __construct()
 	{
-		foreach ($types as $type) {
+		foreach (['class', 'interface', 'trait', 'enum'] as $type) {
 			$this->typeConfig[$type[0]] = [
 				'name' => $type,
 				'length' => strlen($type),

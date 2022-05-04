@@ -56,7 +56,7 @@ class DefineConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingExt
 			),
 			$scope->getType($node->getArgs()[1]->value),
 			TypeSpecifierContext::createTruthy(),
-			false,
+			true,
 			$scope,
 		);
 	}

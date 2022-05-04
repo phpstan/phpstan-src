@@ -1056,7 +1056,7 @@ class TypeSpecifier
 			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
 			if ($methodReflection === null || $methodReflection->hasSideEffects()->yes()) {
 				if (isset($resultType) && !TypeCombinator::containsNull($resultType)) {
-					return $this->createNullsafeTypes($rootExpr, $originalExpr, $scope, $context, $type);
+					return $this->createNullsafeTypes($rootExpr, $originalExpr, $scope, $context, $overwrite, $type);
 				}
 
 				return new SpecifiedTypes([], [], false, [], $rootExpr);
@@ -1074,13 +1074,13 @@ class TypeSpecifier
 
 		$types = new SpecifiedTypes($sureTypes, $sureNotTypes, $overwrite, [], $rootExpr);
 		if ($scope !== null && isset($resultType) && !TypeCombinator::containsNull($resultType)) {
-			return $this->createNullsafeTypes($rootExpr, $originalExpr, $scope, $context, $type)->unionWith($types);
+			return $this->createNullsafeTypes($rootExpr, $originalExpr, $scope, $context, $overwrite, $type)->unionWith($types);
 		}
 
 		return $types;
 	}
 
-	private function createNullsafeTypes(?Expr $rootExpr, Expr $expr, Scope $scope, TypeSpecifierContext $context, ?Type $type): SpecifiedTypes
+	private function createNullsafeTypes(?Expr $rootExpr, Expr $expr, Scope $scope, TypeSpecifierContext $context, bool $overwrite, ?Type $type): SpecifiedTypes
 	{
 		if ($expr instanceof Expr\NullsafePropertyFetch) {
 			if ($type !== null) {
@@ -1090,43 +1090,43 @@ class TypeSpecifier
 			}
 
 			return $propertyFetchTypes->unionWith(
-				$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr),
+				$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), $overwrite, $scope, $rootExpr),
 			);
 		}
 
 		if ($expr instanceof Expr\NullsafeMethodCall) {
 			if ($type !== null) {
-				$methodCallTypes = $this->create(new MethodCall($expr->var, $expr->name, $expr->args), $type, $context, false, $scope, $rootExpr);
+				$methodCallTypes = $this->create(new MethodCall($expr->var, $expr->name, $expr->args), $type, $context, $overwrite, $scope, $rootExpr);
 			} else {
-				$methodCallTypes = $this->create(new MethodCall($expr->var, $expr->name, $expr->args), new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr);
+				$methodCallTypes = $this->create(new MethodCall($expr->var, $expr->name, $expr->args), new NullType(), TypeSpecifierContext::createFalse(), $overwrite, $scope, $rootExpr);
 			}
 
 			return $methodCallTypes->unionWith(
-				$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr),
+				$this->create($expr->var, new NullType(), TypeSpecifierContext::createFalse(), $overwrite, $scope, $rootExpr),
 			);
 		}
 
 		if ($expr instanceof Expr\PropertyFetch) {
-			return $this->createNullsafeTypes($rootExpr, $expr->var, $scope, $context, null);
+			return $this->createNullsafeTypes($rootExpr, $expr->var, $scope, $context, $overwrite, null);
 		}
 
 		if ($expr instanceof Expr\MethodCall) {
-			return $this->createNullsafeTypes($rootExpr, $expr->var, $scope, $context, null);
+			return $this->createNullsafeTypes($rootExpr, $expr->var, $scope, $context, $overwrite, null);
 		}
 
 		if ($expr instanceof Expr\ArrayDimFetch) {
-			return $this->createNullsafeTypes($rootExpr, $expr->var, $scope, $context, null);
+			return $this->createNullsafeTypes($rootExpr, $expr->var, $scope, $context, $overwrite, null);
 		}
 
 		if ($expr instanceof Expr\StaticPropertyFetch && $expr->class instanceof Expr) {
-			return $this->createNullsafeTypes($rootExpr, $expr->class, $scope, $context, null);
+			return $this->createNullsafeTypes($rootExpr, $expr->class, $scope, $context, $overwrite, null);
 		}
 
 		if ($expr instanceof Expr\StaticCall && $expr->class instanceof Expr) {
-			return $this->createNullsafeTypes($rootExpr, $expr->class, $scope, $context, null);
+			return $this->createNullsafeTypes($rootExpr, $expr->class, $scope, $context, $overwrite, null);
 		}
 
-		return new SpecifiedTypes([], [], false, [], $rootExpr);
+		return new SpecifiedTypes([], [], $overwrite, [], $rootExpr);
 	}
 
 	private function createRangeTypes(?Expr $rootExpr, Expr $expr, Type $type, TypeSpecifierContext $context): SpecifiedTypes

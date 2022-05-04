@@ -90,7 +90,7 @@ class SpecifiedTypes
 			];
 		}
 
-		return new self($sureTypeUnion, $sureNotTypeUnion, false, [], $rootExpr);
+		return new self($sureTypeUnion, $sureNotTypeUnion, $this->overwrite && $other->overwrite, [], $rootExpr);
 	}
 
 	/** @api */
@@ -122,7 +122,7 @@ class SpecifiedTypes
 			];
 		}
 
-		return new self($sureTypeUnion, $sureNotTypeUnion, false, [], $rootExpr);
+		return new self($sureTypeUnion, $sureNotTypeUnion, $this->overwrite || $other->overwrite, [], $rootExpr);
 	}
 
 	public function normalize(Scope $scope): self

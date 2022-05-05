@@ -63,6 +63,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
+use PHPStan\Type\KeyOfType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
@@ -80,6 +81,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\ValueOfType;
 use PHPStan\Type\VoidType;
 use Traversable;
 use function array_key_exists;
@@ -585,7 +587,8 @@ class TypeNodeResolver
 			}
 		} elseif ($mainTypeName === 'key-of') {
 			if (count($genericTypes) === 1) { // key-of<ValueType>
-				return $genericTypes[0]->getIterableKeyType();
+				$type = new KeyOfType($genericTypes[0]);
+				return $type->isResolvable() ? $type->resolve() : $type;
 			}
 
 			return new ErrorType();
@@ -611,7 +614,8 @@ class TypeNodeResolver
 					}
 				}
 
-				return $genericTypes[0]->getIterableValueType();
+				$type = new ValueOfType($genericTypes[0]);
+				return $type->isResolvable() ? $type->resolve() : $type;
 			}
 
 			return new ErrorType();

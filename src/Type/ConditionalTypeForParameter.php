@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -60,6 +61,16 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 			$this->else,
 			$this->negated,
 		);
+	}
+
+	public function isSuperTypeOf(Type $type): TrinaryLogic
+	{
+		if ($type instanceof self) {
+			return $this->if->isSuperTypeOf($type->if)
+				->and($this->else->isSuperTypeOf($type->else));
+		}
+
+		return $this->isSuperTypeOfDefault($type);
 	}
 
 	public function getReferencedClasses(): array

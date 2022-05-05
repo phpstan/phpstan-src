@@ -20,13 +20,13 @@ class CachingVisitor extends NodeVisitorAbstract
 	private string $contents;
 
 	/** @var array<string, array<FetchedNode<Node\Stmt\ClassLike>>> */
-	private array $classNodes;
+	private array $classNodes = [];
 
 	/** @var array<string, array<FetchedNode<Node\Stmt\Function_>>> */
-	private array $functionNodes;
+	private array $functionNodes = [];
 
 	/** @var array<string, array<FetchedNode<Node\Stmt\Const_|Node\Expr\FuncCall>>> */
-	private array $constantNodes;
+	private array $constantNodes = [];
 
 	private ?Node\Stmt\Namespace_ $currentNamespaceNode = null;
 
@@ -146,13 +146,17 @@ class CachingVisitor extends NodeVisitorAbstract
 		return $this->constantNodes;
 	}
 
-	public function reset(string $fileName, string $contents): void
+	public function prepare(string $fileName, string $contents): void
+	{
+		$this->fileName = $fileName;
+		$this->contents = $contents;
+	}
+
+	public function reset(): void
 	{
 		$this->classNodes = [];
 		$this->functionNodes = [];
 		$this->constantNodes = [];
-		$this->fileName = $fileName;
-		$this->contents = $contents;
 	}
 
 }

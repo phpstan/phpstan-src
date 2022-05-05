@@ -66,20 +66,6 @@ parameters:
 			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
 
 		-
-			message: "#^Class PHPStan\\\\Reflection\\\\BetterReflection\\\\SourceLocator\\\\CachingVisitor has an uninitialized property \\$classNodes\\. Give it default value or assign it in the constructor\\.$#"
-			count: 1
-			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
-
-		-
-			message: "#^Class PHPStan\\\\Reflection\\\\BetterReflection\\\\SourceLocator\\\\CachingVisitor has an uninitialized property \\$functionNodes\\. Give it default value or assign it in the constructor\\.$#"
-			count: 1
-			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
-
-		-
-			message: "#^Class PHPStan\\\\Reflection\\\\BetterReflection\\\\SourceLocator\\\\CachingVisitor has an uninitialized property \\$constantNodes\\. Give it default value or assign it in the constructor\\.$#"
-			count: 1
-			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
-		-
 			message: "#^Class PHPStan\\\\Reflection\\\\ReflectionProvider\\\\SetterReflectionProviderProvider has an uninitialized property \\$reflectionProvider\\. Give it default value or assign it in the constructor\\.$#"
 			count: 1
 			path: ../src/Reflection/ReflectionProvider/SetterReflectionProviderProvider.php

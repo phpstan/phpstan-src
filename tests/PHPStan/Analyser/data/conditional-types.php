@@ -155,6 +155,25 @@ abstract class Test
 		assertType('*NEVER*', $this->maybeNever(1));
 		assertType('void', $this->maybeNever(2));
 	}
+
+	/**
+	 * @return ($if is true ? mixed : null)|false
+	 */
+	abstract public function lateConditional1(bool $if);
+
+	/**
+	 * @return ($if is true ? mixed : null)|($if is true ? null : mixed)|false
+	 */
+	abstract public function lateConditional2(bool $if);
+
+	public function testLateConditional(): void
+	{
+		assertType('mixed', $this->lateConditional1(true));
+		assertType('false|null', $this->lateConditional1(false));
+
+		assertType('mixed', $this->lateConditional2(true));
+		assertType('mixed', $this->lateConditional2(false));
+	}
 }
 
 class ParentClassToInherit

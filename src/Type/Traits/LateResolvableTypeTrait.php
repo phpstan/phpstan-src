@@ -12,6 +12,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
 trait LateResolvableTypeTrait
@@ -26,7 +27,17 @@ trait LateResolvableTypeTrait
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		return $this->getResult()->isSuperTypeOf($type);
+		return $this->isSuperTypeOfDefault($type);
+	}
+
+	private function isSuperTypeOfDefault(Type $type): TrinaryLogic
+	{
+		if ($type instanceof NeverType) {
+			return TrinaryLogic::createYes();
+		}
+
+		return $this->getResult()->isSuperTypeOf($type)
+			->and(TrinaryLogic::createMaybe());
 	}
 
 	public function canAccessProperties(): TrinaryLogic

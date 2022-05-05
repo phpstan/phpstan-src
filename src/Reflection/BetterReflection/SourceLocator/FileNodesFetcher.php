@@ -11,18 +11,19 @@ use PHPStan\Parser\ParserErrorsException;
 class FileNodesFetcher
 {
 
+	private NodeTraverser $nodeTraverser;
+
 	public function __construct(
 		private CachingVisitor $cachingVisitor,
 		private Parser $parser,
 	)
 	{
+		$this->nodeTraverser = new NodeTraverser();
+		$this->nodeTraverser->addVisitor($this->cachingVisitor);
 	}
 
 	public function fetchNodes(string $fileName): FetchedNodesResult
 	{
-		$nodeTraverser = new NodeTraverser();
-		$nodeTraverser->addVisitor($this->cachingVisitor);
-
 		$contents = FileReader::read($fileName);
 
 		try {
@@ -32,7 +33,7 @@ class FileNodesFetcher
 			return new FetchedNodesResult([], [], []);
 		}
 		$this->cachingVisitor->reset($fileName, $contents);
-		$nodeTraverser->traverse($ast);
+		$this->nodeTraverser->traverse($ast);
 
 		$result = new FetchedNodesResult(
 			$this->cachingVisitor->getClassNodes(),

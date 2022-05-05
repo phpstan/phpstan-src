@@ -501,13 +501,7 @@ class MutatingScope implements Scope
 			return true;
 		}
 
-		if (!$this->reflectionProvider->hasConstant($name, $this)) {
-			return false;
-		}
-
-		$constantReflection = $this->reflectionProvider->getConstant($name, $this);
-
-		return $constantReflection->getFileName() !== $this->getFile();
+		return $this->reflectionProvider->hasConstant($name, $this);
 	}
 
 	private function fileHasCompilerHaltStatementCalls(): bool

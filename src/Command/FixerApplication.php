@@ -156,7 +156,7 @@ class FixerApplication
 				$output,
 				$mainScript,
 				$reanalyseProcessQueue,
-				$inceptionResult
+				$inceptionResult,
 			): void {
 				if ($data['action'] === 'webPort') {
 					$output->writeln(sprintf('Open your web browser at: <fg=cyan>http://127.0.0.1:%d</>', $data['data']['port']));

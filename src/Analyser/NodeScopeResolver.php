@@ -158,6 +158,7 @@ use function is_array;
 use function is_int;
 use function is_string;
 use function sprintf;
+use function str_starts_with;
 use function strtolower;
 use function trim;
 use const PHP_VERSION_ID;
@@ -1947,6 +1948,10 @@ class NodeScopeResolver
 
 			if (isset($functionReflection) && ($functionReflection->getName() === 'clearstatcache' || $functionReflection->getName() === 'unlink')) {
 				$scope = $scope->afterClearstatcacheCall();
+			}
+
+			if (isset($functionReflection) && str_starts_with($functionReflection->getName(), 'openssl')) {
+				$scope = $scope->afterOpenSslCall($functionReflection->getName());
 			}
 
 			if (isset($functionReflection) && $functionReflection->hasSideEffects()->yes()) {

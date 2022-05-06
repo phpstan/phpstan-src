@@ -407,6 +407,89 @@ class MutatingScope implements Scope
 		);
 	}
 
+	public function afterOpenSslCall(string $openSslFunctionName): self
+	{
+		$moreSpecificTypes = $this->moreSpecificTypes;
+
+		if (in_array($openSslFunctionName, [
+			'openssl_cipher_iv_length',
+			'openssl_cms_decrypt',
+			'openssl_cms_encrypt',
+			'openssl_cms_read',
+			'openssl_cms_sign',
+			'openssl_cms_verify',
+			'openssl_csr_export_to_file',
+			'openssl_csr_export',
+			'openssl_csr_get_public_key',
+			'openssl_csr_get_subject',
+			'openssl_csr_new',
+			'openssl_csr_sign',
+			'openssl_decrypt',
+			'openssl_dh_compute_key',
+			'openssl_digest',
+			'openssl_encrypt',
+			'openssl_get_curve_names',
+			'openssl_get_privatekey',
+			'openssl_get_publickey',
+			'openssl_open',
+			'openssl_pbkdf2',
+			'openssl_pkcs12_export_to_file',
+			'openssl_pkcs12_export',
+			'openssl_pkcs12_read',
+			'openssl_pkcs7_decrypt',
+			'openssl_pkcs7_encrypt',
+			'openssl_pkcs7_read',
+			'openssl_pkcs7_sign',
+			'openssl_pkcs7_verify',
+			'openssl_pkey_derive',
+			'openssl_pkey_export_to_file',
+			'openssl_pkey_export',
+			'openssl_pkey_get_private',
+			'openssl_pkey_get_public',
+			'openssl_pkey_new',
+			'openssl_private_decrypt',
+			'openssl_private_encrypt',
+			'openssl_public_decrypt',
+			'openssl_public_encrypt',
+			'openssl_random_pseudo_bytes',
+			'openssl_seal',
+			'openssl_sign',
+			'openssl_spki_export_challenge',
+			'openssl_spki_export',
+			'openssl_spki_new',
+			'openssl_spki_verify',
+			'openssl_verify',
+			'openssl_x509_checkpurpose',
+			'openssl_x509_export_to_file',
+			'openssl_x509_export',
+			'openssl_x509_fingerprint',
+			'openssl_x509_read',
+			'openssl_x509_verify',
+		], true)) {
+			unset($moreSpecificTypes['\openssl_error_string()']);
+		}
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->constantTypes,
+			$this->getFunction(),
+			$this->getNamespace(),
+			$this->getVariableTypes(),
+			$moreSpecificTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->isInFirstLevelStatement(),
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->nativeExpressionTypes,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+		);
+	}
+
 	/** @api */
 	public function hasVariableType(string $variableName): TrinaryLogic
 	{

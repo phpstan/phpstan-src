@@ -137,7 +137,27 @@
 	<rule ref="Consistence.NamingConventions.ValidVariableName.NotCamelCaps">
 		<exclude-pattern>src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php</exclude-pattern>
 	</rule>
+	<rule ref="SlevomatCodingStandard.Functions.DisallowTrailingCommaInCall">
+		<properties>
+			<property name="onlySingleLine" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.Functions.DisallowTrailingCommaInClosureUse">
+		<properties>
+			<property name="onlySingleLine" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.Functions.DisallowTrailingCommaInDeclaration">
+		<properties>
+			<property name="onlySingleLine" value="true"/>
+		</properties>
+	</rule>
 	<rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInCall">
+		<properties>
+			<property name="enable" value="true"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.Functions.RequireTrailingCommaInClosureUse">
 		<properties>
 			<property name="enable" value="true"/>
 		</properties>

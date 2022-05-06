@@ -9,11 +9,10 @@ use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CallableType;
-use PHPStan\Type\ConditionalType;
-use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
@@ -146,7 +145,7 @@ class ParametersAcceptorSelector
 
 		if (count($parametersAcceptors) === 1) {
 			$acceptor = $parametersAcceptors[0];
-			if (!self::hasAcceptorTemplateOrConditionalType($acceptor)) {
+			if (!self::hasAcceptorTemplateOrLateResolvableType($acceptor)) {
 				return $acceptor;
 			}
 		}
@@ -165,14 +164,14 @@ class ParametersAcceptorSelector
 		return self::selectFromTypes($types, $parametersAcceptors, $unpack);
 	}
 
-	private static function hasAcceptorTemplateOrConditionalType(ParametersAcceptor $acceptor): bool
+	private static function hasAcceptorTemplateOrLateResolvableType(ParametersAcceptor $acceptor): bool
 	{
-		if (self::hasTemplateOrConditionalType($acceptor->getReturnType())) {
+		if (self::hasTemplateOrLateResolvableType($acceptor->getReturnType())) {
 			return true;
 		}
 
 		foreach ($acceptor->getParameters() as $parameter) {
-			if (!self::hasTemplateOrConditionalType($parameter->getType())) {
+			if (!self::hasTemplateOrLateResolvableType($parameter->getType())) {
 				continue;
 			}
 
@@ -182,11 +181,11 @@ class ParametersAcceptorSelector
 		return false;
 	}
 
-	private static function hasTemplateOrConditionalType(Type $type): bool
+	private static function hasTemplateOrLateResolvableType(Type $type): bool
 	{
 		$has = false;
 		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$has): Type {
-			if ($type instanceof TemplateType || $type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+			if ($type instanceof TemplateType || $type instanceof LateResolvableType) {
 				$has = true;
 				return $type;
 			}

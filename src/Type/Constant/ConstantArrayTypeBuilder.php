@@ -9,8 +9,11 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_filter;
+use function array_map;
+use function array_unique;
 use function array_values;
 use function count;
+use function in_array;
 use function is_float;
 use function max;
 use function range;
@@ -26,12 +29,13 @@ class ConstantArrayTypeBuilder
 	/**
 	 * @param array<int, Type> $keyTypes
 	 * @param array<int, Type> $valueTypes
+	 * @param non-empty-list<int> $nextAutoIndexes
 	 * @param array<int> $optionalKeys
 	 */
 	private function __construct(
 		private array $keyTypes,
 		private array $valueTypes,
-		private int $nextAutoIndex,
+		private array $nextAutoIndexes,
 		private array $optionalKeys,
 	)
 	{
@@ -39,7 +43,7 @@ class ConstantArrayTypeBuilder
 
 	public static function createEmpty(): self
 	{
-		return new self([], [], 0, []);
+		return new self([], [], [0], []);
 	}
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
@@ -47,7 +51,7 @@ class ConstantArrayTypeBuilder
 		$builder = new self(
 			$startArrayType->getKeyTypes(),
 			$startArrayType->getValueTypes(),
-			$startArrayType->getNextAutoIndex(),
+			$startArrayType->getNextAutoIndexes(),
 			$startArrayType->getOptionalKeys(),
 		);
 
@@ -60,36 +64,111 @@ class ConstantArrayTypeBuilder
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $optional = false): void
 	{
-		if ($offsetType === null) {
-			$offsetType = new ConstantIntegerType($this->nextAutoIndex);
-		} else {
+		if ($offsetType !== null) {
 			$offsetType = ArrayType::castToArrayKeyType($offsetType);
 		}
 
 		if (!$this->degradeToGeneralArray) {
+			if ($offsetType === null) {
+				$newAutoIndexes = $optional ? $this->nextAutoIndexes : [];
+				$hasOptional = false;
+				foreach ($this->keyTypes as $i => $keyType) {
+					if (!$keyType instanceof ConstantIntegerType) {
+						continue;
+					}
+
+					if (!in_array($keyType->getValue(), $this->nextAutoIndexes, true)) {
+						continue;
+					}
+
+					$this->valueTypes[$i] = TypeCombinator::union($this->valueTypes[$i], $valueType);
+
+					if (!$hasOptional && !$optional) {
+						$this->optionalKeys = array_values(array_filter($this->optionalKeys, static fn (int $index): bool => $index !== $i));
+					}
+
+					/** @var int|float $newAutoIndex */
+					$newAutoIndex = $keyType->getValue() + 1;
+					if (is_float($newAutoIndex)) {
+						$newAutoIndex = $keyType->getValue();
+					}
+
+					$newAutoIndexes[] = $newAutoIndex;
+					$hasOptional = true;
+				}
+
+				$max = max($this->nextAutoIndexes);
+
+				$this->keyTypes[] = new ConstantIntegerType($max);
+				$this->valueTypes[] = $valueType;
+
+				/** @var int|float $newAutoIndex */
+				$newAutoIndex = $max + 1;
+				if (is_float($newAutoIndex)) {
+					$newAutoIndex = $max;
+				}
+
+				$newAutoIndexes[] = $newAutoIndex;
+				$this->nextAutoIndexes = array_unique($newAutoIndexes);
+
+				if ($optional || $hasOptional) {
+					$this->optionalKeys[] = count($this->keyTypes) - 1;
+				}
+
+				if (count($this->keyTypes) > self::ARRAY_COUNT_LIMIT) {
+					$this->degradeToGeneralArray = true;
+				}
+
+				return;
+			}
+
 			if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
 				/** @var ConstantIntegerType|ConstantStringType $keyType */
 				foreach ($this->keyTypes as $i => $keyType) {
-					if ($keyType->getValue() === $offsetType->getValue()) {
-						$this->valueTypes[$i] = $valueType;
-						$this->optionalKeys = array_values(array_filter($this->optionalKeys, static fn (int $index): bool => $index !== $i));
-						return;
+					if ($keyType->getValue() !== $offsetType->getValue()) {
+						continue;
 					}
+
+					if ($optional) {
+						$valueType = TypeCombinator::union($valueType, $this->valueTypes[$i]);
+					}
+
+					$this->valueTypes[$i] = $valueType;
+
+					if (!$optional) {
+						$this->optionalKeys = array_values(array_filter($this->optionalKeys, static fn (int $index): bool => $index !== $i));
+						if ($keyType instanceof ConstantIntegerType) {
+							$nextAutoIndexes = array_values(array_filter($this->nextAutoIndexes, static fn (int $index) => $index > $keyType->getValue()));
+							if (count($nextAutoIndexes) === 0) {
+								throw new ShouldNotHappenException();
+							}
+							$this->nextAutoIndexes = $nextAutoIndexes;
+						}
+					}
+					return;
 				}
 
 				$this->keyTypes[] = $offsetType;
 				$this->valueTypes[] = $valueType;
 
-				if ($optional) {
-					$this->optionalKeys[] = count($this->keyTypes) - 1;
+				if ($offsetType instanceof ConstantIntegerType) {
+					$max = max($this->nextAutoIndexes);
+					if ($offsetType->getValue() >= $max) {
+						/** @var int|float $newAutoIndex */
+						$newAutoIndex = $offsetType->getValue() + 1;
+						if (is_float($newAutoIndex)) {
+							$newAutoIndex = $max;
+						}
+						if (!$optional) {
+							$this->nextAutoIndexes = [$newAutoIndex];
+						} else {
+							$this->nextAutoIndexes[] = $newAutoIndex;
+						}
+					}
 				}
 
-				/** @var int|float $newNextAutoIndex */
-				$newNextAutoIndex = $offsetType instanceof ConstantIntegerType
-					? max($this->nextAutoIndex, $offsetType->getValue() + 1)
-					: $this->nextAutoIndex;
-				if (!is_float($newNextAutoIndex)) {
-					$this->nextAutoIndex = $newNextAutoIndex;
+				if ($optional) {
+					$this->optionalKeys[] = count($this->keyTypes) - 1;
 				}
 
 				if (count($this->keyTypes) > self::ARRAY_COUNT_LIMIT) {
@@ -108,6 +187,12 @@ class ConstantArrayTypeBuilder
 							break;
 						}
 						if ($integerRange->getMax() === null) {
+							break;
+						}
+
+						$rangeLength = $integerRange->getMax() - $integerRange->getMin();
+						if ($rangeLength >= self::ARRAY_COUNT_LIMIT) {
+							$scalarTypes = [];
 							break;
 						}
 
@@ -151,6 +236,10 @@ class ConstantArrayTypeBuilder
 			}
 		}
 
+		if ($offsetType === null) {
+			$offsetType = TypeCombinator::union(...array_map(static fn (int $index) => new ConstantIntegerType($index), $this->nextAutoIndexes));
+		}
+
 		$this->keyTypes[] = $offsetType;
 		$this->valueTypes[] = $valueType;
 		if ($optional) {
@@ -174,7 +263,7 @@ class ConstantArrayTypeBuilder
 		if (!$this->degradeToGeneralArray) {
 			/** @var array<int, ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
-			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndex, $this->optionalKeys);
+			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys);
 		}
 
 		$array = new ArrayType(

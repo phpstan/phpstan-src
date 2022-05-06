@@ -82,6 +82,8 @@ class ClassReflection
 
 	private ?TemplateTypeMap $templateTypeMap = null;
 
+	private ?TemplateTypeMap $activeTemplateTypeMap = null;
+
 	/** @var array<string,ClassReflection>|null */
 	private ?array $ancestors = null;
 
@@ -181,7 +183,8 @@ class ClassReflection
 			if ($this->isGeneric()) {
 				$extendedType = TemplateTypeHelper::resolveTemplateTypes(
 					$extendedType,
-					$this->getActiveTemplateTypeMap(),
+					$this->getPossiblyIncompleteActiveTemplateTypeMap(),
+					true,
 				);
 			}
 
@@ -195,7 +198,7 @@ class ClassReflection
 		$parentReflection = $this->reflectionProvider->getClass($parentClass->getName());
 		if ($parentReflection->isGeneric()) {
 			return $parentReflection->withTypes(
-				array_values($parentReflection->getTemplateTypeMap()->resolveToBounds()->getTypes()),
+				array_values($parentReflection->getTemplateTypeMap()->map(static fn (): Type => new ErrorType())->getTypes()),
 			);
 		}
 
@@ -224,7 +227,7 @@ class ClassReflection
 			return $name;
 		}
 
-		return $name . '<' . implode(',', array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::typeOnly()), $this->resolvedTemplateTypeMap->getTypes())) . '>';
+		return $name . '<' . implode(',', array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::typeOnly()), $this->getActiveTemplateTypeMap()->getTypes())) . '>';
 	}
 
 	public function getCacheKey(): string
@@ -728,7 +731,8 @@ class ClassReflection
 				if ($this->isGeneric()) {
 					$implementedType = TemplateTypeHelper::resolveTemplateTypes(
 						$implementedType,
-						$this->getActiveTemplateTypeMap(),
+						$this->getPossiblyIncompleteActiveTemplateTypeMap(),
+						true,
 					);
 				}
 
@@ -743,7 +747,7 @@ class ClassReflection
 
 			if ($immediateInterface->isGeneric()) {
 				$immediateInterfaces[$immediateInterface->getName()] = $immediateInterface->withTypes(
-					array_values($immediateInterface->getTemplateTypeMap()->resolveToBounds()->getTypes()),
+					array_values($immediateInterface->getTemplateTypeMap()->map(static fn (): Type => new ErrorType())->getTypes()),
 				);
 				continue;
 			}
@@ -1057,6 +1061,29 @@ class ClassReflection
 	}
 
 	public function getActiveTemplateTypeMap(): TemplateTypeMap
+	{
+		if ($this->activeTemplateTypeMap !== null) {
+			return $this->activeTemplateTypeMap;
+		}
+		$resolved = $this->resolvedTemplateTypeMap;
+		if ($resolved !== null) {
+			$templateTypeMap = $this->getTemplateTypeMap();
+			return $this->activeTemplateTypeMap = $resolved->map(static function (string $name, Type $type) use ($templateTypeMap): Type {
+				if ($type instanceof ErrorType) {
+					$templateType = $templateTypeMap->getType($name);
+					if ($templateType !== null) {
+						return TemplateTypeHelper::resolveToBounds($templateType);
+					}
+				}
+
+				return $type;
+			});
+		}
+
+		return $this->activeTemplateTypeMap = $this->getTemplateTypeMap();
+	}
+
+	public function getPossiblyIncompleteActiveTemplateTypeMap(): TemplateTypeMap
 	{
 		return $this->resolvedTemplateTypeMap ?? $this->getTemplateTypeMap();
 	}

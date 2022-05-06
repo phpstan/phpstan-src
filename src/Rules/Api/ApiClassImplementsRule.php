@@ -12,6 +12,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
 use function array_merge;
 use function count;
+use function in_array;
 use function sprintf;
 
 /**
@@ -65,7 +66,10 @@ class ApiClassImplementsRule implements Rule
 			'https://github.com/phpstan/phpstan/discussions',
 		))->build();
 
-		if ($implementedClassReflection->getName() === Type::class) {
+		if (in_array($implementedClassReflection->getName(), [
+			Type::class,
+			ReflectionProvider::class,
+		], true)) {
 			return [$ruleError];
 		}
 

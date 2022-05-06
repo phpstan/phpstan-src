@@ -13,12 +13,16 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
 class StrictMixedType implements CompoundType
 {
 
 	use UndecidedComparisonCompoundTypeTrait;
+	use NonRemoveableTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	public function getReferencedClasses(): array
 	{
@@ -32,19 +36,31 @@ class StrictMixedType implements CompoundType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean(
-			$acceptingType instanceof MixedType && !$acceptingType instanceof TemplateMixedType,
-		);
+		if ($acceptingType instanceof self) {
+			return TrinaryLogic::createYes();
+		}
+		if ($acceptingType instanceof MixedType && !$acceptingType instanceof TemplateMixedType) {
+			return TrinaryLogic::createYes();
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($type instanceof self);
+		return TrinaryLogic::createYes();
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($otherType instanceof self);
+		if ($otherType instanceof self) {
+			return TrinaryLogic::createYes();
+		}
+		if ($otherType instanceof MixedType && !$otherType instanceof TemplateMixedType) {
+			return TrinaryLogic::createYes();
+		}
+
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function equals(Type $type): bool
@@ -133,6 +149,11 @@ class StrictMixedType implements CompoundType
 	}
 
 	public function isArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

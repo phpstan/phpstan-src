@@ -240,6 +240,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return new ConstantFloatType((float) $this->value);
 	}
 
+	public function isString(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function isNumericString(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean(is_numeric($this->getValue()));

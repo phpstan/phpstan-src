@@ -68,9 +68,6 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
-	/**
-	 * @requires PHP 7.2
-	 */
 	public function testValidTypehintPhp72(): void
 	{
 		$this->analyse([__DIR__ . '/data/closure-7.2-typehints.php'], []);

@@ -697,7 +697,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'mixed',
 				TrinaryLogic::createYes(),
-				'mixed', // should be mixed~bool+1
+				'mixed~bool',
 			],
 			[
 				$testScope,
@@ -1600,36 +1600,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		$this->assertTypes(
 			__DIR__ . '/data/casts.php',
-			$desciptiion,
-			$expression,
-		);
-	}
-
-	public function dataUnsetCast(): array
-	{
-		return [
-			[
-				'null',
-				'$castedNull',
-			],
-		];
-	}
-
-	/**
-	 * @dataProvider dataUnsetCast
-	 */
-	public function testUnsetCast(
-		string $desciptiion,
-		string $expression,
-	): void
-	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID >= 70200) {
-			$this->markTestSkipped(
-				'Test cannot be run on PHP 7.2 and higher - (unset) cast is deprecated.',
-			);
-		}
-		$this->assertTypes(
-			__DIR__ . '/data/cast-unset.php',
 			$desciptiion,
 			$expression,
 		);
@@ -2606,11 +2576,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'!isset($foo)',
 			],
 			[
-				'bool',
+				'false',
 				'empty($foo)',
 			],
 			[
-				'bool',
+				'true',
 				'!empty($foo)',
 			],
 			[
@@ -2626,7 +2596,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$conditionalArray + $unshiftedConditionalArray',
 			],
 			[
-				'array{0: \'lorem\', 1: stdClass, 2: 1, 3: 1, 4: 1, 5?: 2|3, 6?: 3}',
+				'array{0: \'lorem\', 1: stdClass, 2: 1, 3: 1|2, 4: 1|3, 5?: 2|3, 6?: 3}',
 				'$unshiftedConditionalArray + $conditionalArray',
 			],
 			[
@@ -2692,6 +2662,22 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				'string',
 				'highlight_file($string, true)',
+			],
+			[
+				'bool|string',
+				'show_source()',
+			],
+			[
+				'bool',
+				'show_source($string)',
+			],
+			[
+				'bool',
+				'show_source($string, false)',
+			],
+			[
+				'string',
+				'show_source($string, true)',
 			],
 			[
 				'string|true',
@@ -2766,7 +2752,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'count($appendingToArrayInBranches)',
 			],
 			[
-				'3|4|5',
+				'int<3, 5>',
 				'count($conditionalArray)',
 			],
 			[
@@ -3054,7 +3040,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherConditionalString . $conditionalString',
 			],
 			[
-				'6|7|8',
+				'int<6, 8>',
 				'count($conditionalArray) + count($array)',
 			],
 			[
@@ -3146,11 +3132,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$coalesceArray',
 			],
 			[
-				'array<int, int>',
+				'array<0|1|2, 1|2|3>',
 				'$arrayToBeUnset',
 			],
 			[
-				'array<int, int>',
+				'array<0|1|2, 1|2|3>',
 				'$arrayToBeUnset2',
 			],
 			[
@@ -4545,6 +4531,10 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$filteredMixed[0]',
 			],
 			[
+				'non-empty-array<0|1|2, 1|2|3>',
+				'$uniquedIntegers',
+			],
+			[
 				'1|2|3',
 				'$uniquedIntegers[1]',
 			],
@@ -4737,7 +4727,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_values($generalStringKeys)',
 			],
 			[
-				'non-empty-array<int|(literal-string&non-empty-string), stdClass>',
+				'array{foo: stdClass, 0: stdClass}',
 				'array_merge($stringOrIntegerKeys)',
 			],
 			[
@@ -4745,23 +4735,23 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_merge($generalStringKeys, $generalDateTimeValues)',
 			],
 			[
-				'non-empty-array<int|string, int|stdClass>',
+				'non-empty-array<1|string, int|stdClass>',
 				'array_merge($generalStringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				'non-empty-array<int|string, int|stdClass>',
+				'non-empty-array<1|string, int|stdClass>',
 				'array_merge($stringOrIntegerKeys, $generalStringKeys)',
 			],
 			[
-				'non-empty-array<int|(literal-string&non-empty-string), \'foo\'|stdClass>',
+				'array{foo: stdClass, bar: stdClass, 0: stdClass}',
 				'array_merge($stringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				'non-empty-array<int|(literal-string&non-empty-string), \'foo\'|stdClass>',
+				"array{foo: 'foo', 0: stdClass, bar: stdClass}",
 				'array_merge($stringOrIntegerKeys, $stringKeys)',
 			],
 			[
-				'non-empty-array<int|(literal-string&non-empty-string), 2|4|\'a\'|\'b\'|\'green\'|\'red\'|\'trapezoid\'>',
+				"array{color: 'green', 0: 2, 1: 4, 2: 'a', 3: 'b', shape: 'trapezoid', 4: 4}",
 				'array_merge(array("color" => "red", 2, 4), array("a", "b", "color" => "green", "shape" => "trapezoid", 4))',
 			],
 			[
@@ -5250,26 +5240,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$microtimeBenevolent',
 			],
 			[
-				'int',
-				'$strtotimeNow',
-			],
-			[
-				'false',
-				'$strtotimeInvalid',
-			],
-			[
-				'int|false',
-				'$strtotimeUnknown',
-			],
-			[
-				'(int|false)',
-				'$strtotimeUnknown2',
-			],
-			[
-				'int|false',
-				'$strtotimeCrash',
-			],
-			[
 				'-1',
 				'$versionCompare1',
 			],
@@ -5300,30 +5270,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				'bool',
 				'$versionCompare8',
-			],
-			[
-				'int',
-				'$mbStrlenWithoutEncoding',
-			],
-			[
-				'int',
-				'$mbStrlenWithValidEncoding',
-			],
-			[
-				'int',
-				'$mbStrlenWithValidEncodingAlias',
-			],
-			[
-				'false',
-				'$mbStrlenWithInvalidEncoding',
-			],
-			[
-				PHP_VERSION_ID < 80000 ? 'int|false' : 'int',
-				'$mbStrlenWithValidAndInvalidEncoding',
-			],
-			[
-				PHP_VERSION_ID < 80000 ? 'int|false' : 'int',
-				'$mbStrlenWithUnknownEncoding',
 			],
 			[
 				'string',
@@ -5390,7 +5336,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbEncodingAliasesWithValidEncoding',
 			],
 			[
-				'false',
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
 				'$mbEncodingAliasesWithInvalidEncoding',
 			],
 			[
@@ -5410,7 +5356,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbChrWithValidEncoding',
 			],
 			[
-				'false',
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
 				'$mbChrWithInvalidEncoding',
 			],
 			[
@@ -5430,7 +5376,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbOrdWithValidEncoding',
 			],
 			[
-				'false',
+				PHP_VERSION_ID < 80000 ? 'false' : '*NEVER*',
 				'$mbOrdWithInvalidEncoding',
 			],
 			[
@@ -5563,6 +5509,10 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$fstat',
 			],
 			[
+				'array{0: int, 1: int, 2: int, 3: int, 4: int, 5: int, 6: int, 7: int, 8: int, 9: int, 10: int, 11: int, 12: int, dev: int, ino: int, mode: int, nlink: int, uid: int, gid: int, rdev: int, size: int, atime: int, mtime: int, ctime: int, blksize: int, blocks: int}',
+				'$fileObjectStat',
+			],
+			[
 				'string',
 				'$base64DecodeWithoutStrict',
 			],
@@ -5617,62 +5567,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				'array<int, string>|int|false',
 				'$strWordCountStrTypeIndeterminant',
-			],
-			[
-				'string',
-				'$hashHmacMd5',
-			],
-			[
-				'string',
-				'$hashHmacSha256',
-			],
-			[
-				'false',
-				'$hashHmacNonCryptographic',
-			],
-			[
-				'false',
-				'$hashHmacRandom',
-			],
-			[
-				'string',
-				'$hashHmacVariable',
-			],
-			[
-				'string|false',
-				'$hashHmacFileMd5',
-			],
-			[
-				'string|false',
-				'$hashHmacFileSha256',
-			],
-			[
-				'false',
-				'$hashHmacFileNonCryptographic',
-			],
-			[
-				'false',
-				'$hashHmacFileRandom',
-			],
-			[
-				'(string|false)',
-				'$hashHmacFileVariable',
-			],
-			[
-				'string',
-				'$hash',
-			],
-			[
-				'string',
-				'$hashRaw',
-			],
-			[
-				'false',
-				'$hashRandom',
-			],
-			[
-				'string',
-				'$hashMixed',
 			],
 		];
 	}
@@ -8117,7 +8011,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array{i: int<1, max>, j: int, k: int<1, max>, key: DateTimeImmutable, l: 1, m: 5, n?: \'str\'}',
+				'array{i: int<1, max>, j: int, k: int<1, max>, l: 1, m: 5, key: DateTimeImmutable, n?: \'str\'}',
 				'$array',
 			],
 			[
@@ -8133,11 +8027,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrayAppendedInIf',
 			],
 			[
-				'array<int, \'bar\'|\'baz\'|\'foo\'>',
+				'non-empty-array<int, \'bar\'|\'baz\'|\'foo\'>',
 				'$arrayAppendedInForeach',
 			],
 			[
-				'array<int<0, max>, literal-string&non-empty-string>', // could be 'array<int<0, max>, \'bar\'|\'baz\'|\'foo\'>'
+				'non-empty-array<int<0, max>, literal-string&non-empty-string>', // could be 'array<int<0, max>, \'bar\'|\'baz\'|\'foo\'>'
 				'$anotherArrayAppendedInForeach',
 			],
 			[
@@ -8515,7 +8409,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherArrayCopy',
 			],
 			[
-				'array<literal-string&non-empty-string, int|null>',
+				"array<'a'|'b'|'c', 1|2|3|4|null>",
 				'$yetAnotherArrayCopy',
 			],
 			[
@@ -8809,11 +8703,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'json_decode($mixed)',
 			],
 			[
-				'mixed~false',
+				'mixed',
 				'json_decode($mixed, false, 512, JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[
-				'mixed~false',
+				'mixed',
 				'json_decode($mixed, false, 512, $integer | JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[
@@ -9120,7 +9014,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array<non-empty-array<int|string, array{hitCount: int<0, max>, loadCount: int<0, max>, removeCount: int<0, max>, saveCount: int<0, max>}>>',
+				'array<non-empty-array<int|string, array{saveCount: int<0, max>, removeCount: int<0, max>, loadCount: int<0, max>, hitCount: int<0, max>}>>',
 				'$statistics',
 			],
 		];

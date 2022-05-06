@@ -241,4 +241,25 @@ class CallCallablesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6701(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+		$this->analyse([__DIR__ . '/data/bug-6701.php'], [
+			[
+				'Parameter #1 $test of closure expects string|null, int given.',
+				14,
+			],
+			[
+				'Parameter #1 $test of closure expects string|null, int given.',
+				18,
+			],
+			[
+				'Parameter #1 $test of closure expects string|null, int given.',
+				24,
+			],
+		]);
+	}
+
 }

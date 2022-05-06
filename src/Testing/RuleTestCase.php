@@ -2,7 +2,6 @@
 
 namespace PHPStan\Testing;
 
-use InvalidArgumentException;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
@@ -88,7 +87,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 	/**
 	 * @param string[] $files
-	 * @param mixed[] $expectedErrors
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
 	public function analyse(array $files, array $expectedErrors): void
 	{
@@ -114,15 +113,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 		};
 
 		$expectedErrors = array_map(
-			static function (array $error) use ($strictlyTypedSprintf): string {
-				if (!isset($error[0])) {
-					throw new InvalidArgumentException('Missing expected error message.');
-				}
-				if (!isset($error[1])) {
-					throw new InvalidArgumentException('Missing expected file line.');
-				}
-				return $strictlyTypedSprintf($error[1], $error[0], $error[2] ?? null);
-			},
+			static fn (array $error): string => $strictlyTypedSprintf($error[1], $error[0], $error[2] ?? null),
 			$expectedErrors,
 		);
 

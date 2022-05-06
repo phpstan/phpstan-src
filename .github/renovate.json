@@ -1,0 +1,34 @@
+{
+  "extends": [
+    "config:base",
+    "schedule:weekly"
+  ],
+  "rangeStrategy": "update-lockfile",
+  "rebaseWhen": "conflicted",
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["*"],
+      "enabled": false
+    },
+    {
+      "matchPaths": ["+(composer.json)"],
+      "enabled": true,
+      "groupName": "root-composer"
+    },
+    {
+      "matchPaths": ["build-cs/**"],
+      "enabled": true,
+      "groupName": "build-cs"
+    },
+    {
+      "matchPaths": ["compiler/**"],
+      "enabled": true,
+      "groupName": "compiler"
+    },
+    {
+      "matchPaths": [".github/**"],
+      "enabled": true,
+      "groupName": "github-actions"
+    }
+  ]
+}

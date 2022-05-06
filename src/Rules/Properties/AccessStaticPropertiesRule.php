@@ -164,7 +164,7 @@ class AccessStaticPropertiesRule implements Rule
 			return [];
 		}
 
-		if (!$classType->canAccessProperties()->yes()) {
+		if ($classType->canAccessProperties()->no() || $classType->canAccessProperties()->maybe() && !$scope->isUndefinedExpressionAllowed($node)) {
 			return array_merge($messages, [
 				RuleErrorBuilder::message(sprintf(
 					'Cannot access static property $%s on %s.',
@@ -172,6 +172,10 @@ class AccessStaticPropertiesRule implements Rule
 					$typeForDescribe->describe(VerbosityLevel::typeOnly()),
 				))->build(),
 			]);
+		}
+
+		if ($scope->isUndefinedExpressionAllowed($node)) {
+			return [];
 		}
 
 		if (!$classType->hasProperty($name)->yes()) {

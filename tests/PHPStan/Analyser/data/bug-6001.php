@@ -11,10 +11,11 @@ class Foo
 	{
 		assertType('(int|string)', (new \Exception())->getCode());
 		assertType('(int|string)', $t->getCode());
-		assertType('int', (new \RuntimeException())->getCode());
-		assertType('string', (new \PDOException())->getCode());
+		assertType('(int|string)', (new \RuntimeException())->getCode());
+		assertType('int', (new \LogicException())->getCode());
+		assertType('(int|string)', (new \PDOException())->getCode());
 		assertType('int', (new MyException())->getCode());
-		assertType('string', (new SubPDOException())->getCode());
+		assertType('(int|string)', (new SubPDOException())->getCode());
 		assertType('1|2|3', (new ExceptionWithMethodTag())->getCode());
 	}
 
@@ -24,7 +25,7 @@ class Foo
 	 */
 	public function doBar($exception): void
 	{
-		assertType('int|string', $exception->getCode());
+		assertType('(int|string)', $exception->getCode());
 	}
 
 }

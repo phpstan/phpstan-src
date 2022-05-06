@@ -103,7 +103,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 				155,
 			],
 			[
-				'Variable $negatedVariableInEmpty might not be defined.',
+				'Undefined variable: $negatedVariableInEmpty',
 				156,
 			],
 			[
@@ -346,7 +346,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataLoopInitialAssignments
-	 * @param mixed[][] $expectedErrors
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
 	public function testLoopInitialAssignments(
 		bool $polluteScopeWithLoopInitialAssignments,
@@ -851,6 +851,15 @@ class DefinedVariableRuleTest extends RuleTestCase
 				49,
 			],
 		]);
+	}
+
+	public function testBug6112(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = false;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-6112.php'], []);
 	}
 
 }

@@ -22,7 +22,14 @@ parameters:
 	featureToggles:
 		bleedingEdge: false
 		disableRuntimeReflectionProvider: false
-		skipCheckGenericClasses: []
+		skipCheckGenericClasses:
+			- DatePeriod
+			- CallbackFilterIterator
+			- FilterIterator
+			- RecursiveCallbackFilterIterator
+		explicitMixedInUnknownGenericNew: false
+		explicitMixedViaIsArray: false
+		arrayFilter: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -115,6 +122,12 @@ parameters:
 		- ICONV_IMPL
 		- LIBXML_VERSION
 		- LIBXML_DOTTED_VERSION
+		- Memcached::HAVE_ENCODING
+		- Memcached::HAVE_IGBINARY
+		- Memcached::HAVE_JSON
+		- Memcached::HAVE_MSGPACK
+		- Memcached::HAVE_SASL
+		- Memcached::HAVE_SESSION
 		- PHP_VERSION
 		- PHP_MAJOR_VERSION
 		- PHP_MINOR_VERSION
@@ -157,12 +170,15 @@ parameters:
 		- OPENSSL_VERSION_NUMBER
 		- ZEND_DEBUG_BUILD
 		- ZEND_THREAD_SAFE
+	customRulesetUsed: null
 	editorUrl: null
+	__validate: true
 
 extensions:
 	rules: PHPStan\DependencyInjection\RulesExtension
 	conditionalTags: PHPStan\DependencyInjection\ConditionalTagsExtension
 	parametersSchema: PHPStan\DependencyInjection\ParametersSchemaExtension
+	validateIgnoredErrors: PHPStan\DependencyInjection\ValidateIgnoredErrorsExtension
 
 parametersSchema:
 	bootstrapFiles: listOf(string())
@@ -196,6 +212,9 @@ parametersSchema:
 		bleedingEdge: bool(),
 		disableRuntimeReflectionProvider: bool(),
 		skipCheckGenericClasses: listOf(string()),
+		explicitMixedInUnknownGenericNew: bool(),
+		explicitMixedViaIsArray: bool(),
+		arrayFilter: bool(),
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -282,7 +301,7 @@ parametersSchema:
 	resultCacheChecksProjectExtensionFilesDependencies: bool()
 	staticReflectionClassNamePatterns: listOf(string())
 	dynamicConstantNames: listOf(string())
-	customRulesetUsed: bool()
+	customRulesetUsed: schema(bool(), nullable())
 	rootDir: string()
 	tmpDir: string()
 	currentWorkingDirectory: string()
@@ -297,9 +316,10 @@ parametersSchema:
 	debugMode: bool()
 	productionMode: bool()
 	tempDir: string()
+	__validate: bool()
 
 	# internal parameters only for DerivativeContainerFactory
-	additionalConfigFiles: listOf(string())
+	additionalConfigFiles: arrayOf(string())
 	generateBaselineFile: schema(string(), nullable())
 	analysedPaths: listOf(string())
 	composerAutoloaderProjectPaths: listOf(string())
@@ -340,6 +360,8 @@ services:
 
 	-
 		class: PhpParser\NodeVisitor\NodeConnectingVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
 
 	-
 		class: PhpParser\PrettyPrinter\Standard
@@ -465,7 +487,6 @@ services:
 	-
 		class: PHPStan\Command\AnalyseApplication
 		arguments:
-			memoryLimitFile: %memoryLimitFile%
 			internalErrorsCountLimit: %internalErrorsCountLimit%
 
 	-
@@ -478,11 +499,6 @@ services:
 			currentWorkingDirectory: %currentWorkingDirectory%
 			fixerTmpDir: %fixerTmpDir%
 			maximumNumberOfProcesses: %parallel.maximumNumberOfProcesses%
-
-	-
-		class: PHPStan\Command\IgnoredRegexValidator
-		arguments:
-			parser: @regexParser
 
 	-
 		class: PHPStan\Dependency\DependencyResolver
@@ -587,6 +603,8 @@ services:
 
 	-
 		class: PHPStan\NodeVisitor\StatementOrderVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
 
 	-
 		class: PHPStan\Parallel\ParallelAnalyser
@@ -885,11 +903,24 @@ services:
 
 	-
 		class: PHPStan\Type\TypeAliasResolver
+		factory: PHPStan\Type\UsefulTypeAliasResolver
 		arguments:
 			globalTypeAliases: %typeAliases%
 
 	-
+		class: PHPStan\Type\TypeAliasResolverProvider
+		factory: PHPStan\Type\LazyTypeAliasResolverProvider
+
+	-
+		class: PHPStan\Type\BitwiseFlagHelper
+
+	-
 		class: PHPStan\Type\Php\ArgumentBasedFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\ArrayColumnFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
@@ -979,6 +1010,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\ArrayReplaceFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\ArrayReverseFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
@@ -1002,6 +1038,11 @@ services:
 		class: PHPStan\Type\Php\ArraySearchFunctionDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\ArraySearchFunctionTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
 		class: PHPStan\Type\Php\ArrayValuesFunctionDynamicReturnTypeExtension
@@ -1056,9 +1097,24 @@ services:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
+		class: PHPStan\Type\Php\CurlGetinfoFunctionDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\CurlInitReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\DateFormatFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\DateFormatMethodReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension
 
 	-
 		class: PHPStan\Type\Php\DateFunctionReturnTypeExtension
@@ -1119,11 +1175,6 @@ services:
 		class: PHPStan\Type\Php\GettimeofdayDynamicFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
-	-
-		class: PHPStan\Type\Php\HashHmacFunctionsReturnTypeExtension
-		tags:
-			- phpstan.broker.dynamicFunctionReturnTypeExtension
-
 	-
 		class: PHPStan\Type\Php\HashFunctionsReturnTypeExtension
 		tags:
@@ -1201,6 +1252,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\PregFilterFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\PregSplitDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
@@ -1237,6 +1293,11 @@ services:
 
 	-
 		class: PHPStan\Type\Php\MbSubstituteCharacterDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
+		class: PHPStan\Type\Php\MbStrlenFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
@@ -1306,6 +1367,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\RoundFunctionReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\StrtotimeFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
@@ -1369,6 +1435,8 @@ services:
 		class: PHPStan\Type\Php\IsArrayFunctionTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+		arguments:
+			explicitMixed: %featureToggles.explicitMixedViaIsArray%
 
 	-
 		class: PHPStan\Type\Php\IsBoolFunctionTypeSpecifyingExtension
@@ -1429,6 +1497,9 @@ services:
 		class: PHPStan\Type\Php\IsAFunctionTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
+
+	-
+		class: PHPStan\Type\Php\IsAFunctionTypeSpecifyingHelper
 
 	-
 		class: PHPStan\Type\Php\ArrayIsListFunctionTypeSpecifyingExtension
@@ -1524,6 +1595,10 @@ services:
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
 
+	-
+		class: PHPStan\Type\Php\DatePeriodConstructorReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver
@@ -1686,15 +1761,6 @@ services:
 			reflector: @betterReflectionReflector
 		autowired: false
 
-	regexParser:
-		class: Hoa\Compiler\Llk\Parser
-		factory: Hoa\Compiler\Llk\Llk::load(@regexGrammarStream)
-
-	regexGrammarStream:
-		class: Hoa\File\Read
-		arguments:
-			streamName: 'hoa://Library/Regex/Grammar.pp'
-
 	runtimeReflectionProvider:
 		class: PHPStan\Reflection\ReflectionProvider\ClassBlacklistReflectionProvider
 		arguments:
@@ -1759,6 +1825,7 @@ services:
 			currentPhpVersionRichParser: @currentPhpVersionRichParser
 			currentPhpVersionSimpleParser: @currentPhpVersionSimpleParser
 			php8Parser: @php8Parser
+			singleReflectionFile: %singleReflectionFile%
 		autowired: false
 
 	# Error formatters

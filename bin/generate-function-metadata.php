@@ -99,6 +99,20 @@ use PhpParser\ParserFactory;
 	$template = <<<'php'
 <?php declare(strict_types = 1);
 
+/**
+ * GENERATED FILE - DO NOT EDIT!
+ *
+ * This file is generated automatically when running bin/generate-function-metadata.php
+ * and the result is merged from bin/functionMetadata_original.php and by looking at jetbrains/phpstorm-stubs methods
+ * and functions with the #[Pure] attribute.
+ *
+ * If you want to add new entries here follow these steps:
+ * 1) verify on https://phpstan.org/try whether the entry you are going to add does not already work as expected.
+ * 2) Contribute the functions that have 'hasSideEffects' => true as a modification to bin/functionMetadata_original.php.
+ * 3) Contribute the #[Pure] functions without side effects to https://github.com/JetBrains/phpstorm-stubs
+ * 4) Once the PR from 3) is merged, please update the package here and run ./bin/generate-function-metadata.php.
+ */
+
 return [
 %s
 ];

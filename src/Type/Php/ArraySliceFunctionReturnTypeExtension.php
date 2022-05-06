@@ -62,7 +62,7 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 			$limit = new NullType();
 		}
 
-		$constantArrays = TypeUtils::getConstantArrays($valueType);
+		$constantArrays = TypeUtils::getOldConstantArrays($valueType);
 		if (count($constantArrays) === 0) {
 			$arrays = TypeUtils::getArrays($valueType);
 			if (count($arrays) !== 0) {

@@ -10,8 +10,6 @@ use Nette\DI\InvalidConfigurationException;
 use Nette\DI\ServiceCreationException;
 use Nette\FileNotFoundException;
 use Nette\InvalidStateException;
-use Nette\Schema\Context as SchemaContext;
-use Nette\Schema\Processor;
 use Nette\Schema\ValidationException;
 use Nette\Utils\AssertionException;
 use Nette\Utils\Strings;
@@ -20,13 +18,12 @@ use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
+use PHPStan\DependencyInjection\InvalidIgnoredErrorPatternsException;
 use PHPStan\DependencyInjection\LoaderFactory;
 use PHPStan\DependencyInjection\NeonAdapter;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
-use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
-use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use Symfony\Component\Console\Input\InputInterface;
@@ -41,11 +38,13 @@ use function array_unique;
 use function class_exists;
 use function count;
 use function dirname;
+use function error_get_last;
 use function function_exists;
 use function get_class;
 use function getcwd;
 use function gettype;
 use function implode;
+use function ini_get;
 use function ini_set;
 use function is_dir;
 use function is_file;
@@ -54,11 +53,14 @@ use function is_string;
 use function mkdir;
 use function pcntl_async_signals;
 use function pcntl_signal;
+use function register_shutdown_function;
 use function sprintf;
 use function str_ends_with;
+use function str_repeat;
+use function strpos;
 use function sys_get_temp_dir;
-use function unlink;
 use const DIRECTORY_SEPARATOR;
+use const E_ERROR;
 use const PHP_VERSION_ID;
 use const SIGINT;
 
@@ -66,6 +68,8 @@ class CommandHelper
 {
 
 	public const DEFAULT_LEVEL = '0';
+
+	private static ?string $reservedMemory = null;
 
 	/**
 	 * @param string[] $paths
@@ -84,7 +88,6 @@ class CommandHelper
 		?string $generateBaselineFile,
 		?string $level,
 		bool $allowXdebug,
-		bool $manageMemoryLimitFile = true,
 		bool $debugEnabled = false,
 		?string $singleReflectionFile = null,
 		?string $singleReflectionInsteadOfFile = null,
@@ -97,6 +100,7 @@ class CommandHelper
 			$xdebug->check();
 			unset($xdebug);
 		}
+
 		$stdOutput = new SymfonyOutput($output, new SymfonyStyle(new ErrorsConsoleStyle($input, $output)));
 
 		/** @var Output $errorOutput */
@@ -114,6 +118,26 @@ class CommandHelper
 				throw new InceptionNotSuccessfulException();
 			}
 		}
+
+		self::$reservedMemory = str_repeat('PHPStan', 1463); // reserve 10 kB of space
+		register_shutdown_function(static function () use ($errorOutput): void {
+			self::$reservedMemory = null;
+			$error = error_get_last();
+			if ($error === null) {
+				return;
+			}
+			if ($error['type'] !== E_ERROR) {
+				return;
+			}
+
+			if (strpos($error['message'], 'Allowed memory size') === false) {
+				return;
+			}
+
+			$errorOutput->writeLineFormatted('');
+			$errorOutput->writeLineFormatted(sprintf('<error>PHPStan process crashed because it reached configured PHP memory limit</error>: %s', ini_get('memory_limit')));
+			$errorOutput->writeLineFormatted('Increase your memory limit in php.ini or run PHPStan with --memory-limit CLI option.');
+		});
 
 		$currentWorkingDirectory = getcwd();
 		if ($currentWorkingDirectory === false) {
@@ -133,7 +157,7 @@ class CommandHelper
 			})($autoloadFile);
 		}
 		if ($projectConfigFile === null) {
-			foreach (['phpstan.neon', 'phpstan.neon.dist'] as $discoverableConfigName) {
+			foreach (['phpstan.neon', 'phpstan.neon.dist', 'phpstan.dist.neon'] as $discoverableConfigName) {
 				$discoverableConfigFile = $currentWorkingDirectory . DIRECTORY_SEPARATOR . $discoverableConfigName;
 				if (is_file($discoverableConfigFile)) {
 					$projectConfigFile = $discoverableConfigFile;
@@ -275,6 +299,19 @@ class CommandHelper
 			$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
 			$errorOutput->writeLineFormatted($e->getMessage());
 			throw new InceptionNotSuccessfulException();
+		} catch (InvalidIgnoredErrorPatternsException $e) {
+			$errorOutput->writeLineFormatted(sprintf('<error>Invalid %s in ignoreErrors:</error>', count($e->getErrors()) === 1 ? 'entry' : 'entries'));
+			foreach ($e->getErrors() as $error) {
+				$errorOutput->writeLineFormatted($error);
+				$errorOutput->writeLineFormatted('');
+			}
+			throw new InceptionNotSuccessfulException();
+		} catch (ValidationException $e) {
+			foreach ($e->getMessages() as $message) {
+				$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
+				$errorOutput->writeLineFormatted($message);
+			}
+			throw new InceptionNotSuccessfulException();
 		} catch (ServiceCreationException $e) {
 			$matches = Strings::match($e->getMessage(), '#Service of type (?<serviceType>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*[a-zA-Z0-9_\x7f-\xff]): Service of type (?<parserServiceType>[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff\\\\]*[a-zA-Z0-9_\x7f-\xff]) needed by \$(?<parameterName>[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*) in (?<methodName>[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)\(\)#');
 			if ($matches === null) {
@@ -317,25 +354,10 @@ class CommandHelper
 			throw new InceptionNotSuccessfulException();
 		}
 
-		$memoryLimitFile = $container->getParameter('memoryLimitFile');
-		if ($manageMemoryLimitFile && is_file($memoryLimitFile)) {
-			$errorOutput->writeLineFormatted('PHPStan crashed in the previous run probably because of excessive memory consumption.');
-
-			try {
-				$memoryLimitFileContents = FileReader::read($memoryLimitFile);
-				$errorOutput->writeLineFormatted(sprintf('It consumed around %s of memory.', $memoryLimitFileContents));
-				$errorOutput->writeLineFormatted('');
-			} catch (CouldNotReadFileException) {
-				// pass
-			}
-
-			$errorOutput->writeLineFormatted('');
-			$errorOutput->writeLineFormatted('To avoid this issue, allow to use more memory with the --memory-limit option.');
-			@unlink($memoryLimitFile);
-		}
-
-		self::setUpSignalHandler($errorOutput, $manageMemoryLimitFile ? $memoryLimitFile : null);
-		if (!$container->hasParameter('customRulesetUsed')) {
+		self::setUpSignalHandler($errorOutput);
+		/** @var bool|null $customRulesetUsed */
+		$customRulesetUsed = $container->getParameter('customRulesetUsed');
+		if ($customRulesetUsed === null) {
 			$errorOutput->writeLineFormatted('');
 			$errorOutput->writeLineFormatted('<comment>No rules detected</comment>');
 			$errorOutput->writeLineFormatted('');
@@ -347,24 +369,8 @@ class CommandHelper
 			$errorOutput->writeLineFormatted('  * in this case, don\'t forget to define parameter <options=bold>customRulesetUsed</> in your config file.');
 			$errorOutput->writeLineFormatted('');
 			throw new InceptionNotSuccessfulException();
-		} elseif ((bool) $container->getParameter('customRulesetUsed')) {
+		} elseif ($customRulesetUsed) {
 			$defaultLevelUsed = false;
-		}
-
-		$schema = $container->getParameter('__parametersSchema');
-		$processor = new Processor();
-		$processor->onNewContext[] = static function (SchemaContext $context): void {
-			$context->path = ['parameters'];
-		};
-
-		try {
-			$processor->process($schema, $container->getParameters());
-		} catch (ValidationException $e) {
-			foreach ($e->getMessages() as $message) {
-				$errorOutput->writeLineFormatted('<error>Invalid configuration:</error>');
-				$errorOutput->writeLineFormatted($message);
-			}
-			throw new InceptionNotSuccessfulException();
 		}
 
 		foreach ($container->getParameter('bootstrapFiles') as $bootstrapFileFromArray) {
@@ -457,7 +463,6 @@ class CommandHelper
 			$errorOutput,
 			$container,
 			$defaultLevelUsed,
-			$memoryLimitFile,
 			$projectConfigFile,
 			$projectConfig,
 			$generateBaselineFile,
@@ -493,17 +498,14 @@ class CommandHelper
 		}
 	}
 
-	private static function setUpSignalHandler(Output $output, ?string $memoryLimitFile): void
+	private static function setUpSignalHandler(Output $output): void
 	{
 		if (!function_exists('pcntl_signal')) {
 			return;
 		}
 
 		pcntl_async_signals(true);
-		pcntl_signal(SIGINT, static function () use ($output, $memoryLimitFile): void {
-			if ($memoryLimitFile !== null && is_file($memoryLimitFile)) {
-				@unlink($memoryLimitFile);
-			}
+		pcntl_signal(SIGINT, static function () use ($output): void {
 			$output->writeLineFormatted('');
 			exit(1);
 		});

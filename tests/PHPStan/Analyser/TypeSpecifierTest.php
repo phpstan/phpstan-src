@@ -8,6 +8,7 @@ use PhpParser\Node\Expr\BinaryOp\Equal;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\BooleanNot;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\Variable;
@@ -21,10 +22,13 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -65,6 +69,9 @@ class TypeSpecifierTest extends PHPStanTestCase
 		$this->scope = $this->scope->assignVariable('foo', new MixedType());
 		$this->scope = $this->scope->assignVariable('classString', new ClassStringType());
 		$this->scope = $this->scope->assignVariable('genericClassString', new GenericClassStringType(new ObjectType('Bar')));
+		$this->scope = $this->scope->assignVariable('object', new ObjectWithoutClassType());
+		$this->scope = $this->scope->assignVariable('int', new IntegerType());
+		$this->scope = $this->scope->assignVariable('float', new FloatType());
 	}
 
 	/**
@@ -309,7 +316,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					$this->createFunctionCall('random'),
 				),
 				[],
-				['$foo' => '~*NEVER*'],
+				['$foo' => 'mixed'],
 			],
 			[
 				new Expr\BinaryOp\BooleanOr(
@@ -341,7 +348,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					),
 					$this->createFunctionCall('random'),
 				),
-				['$foo' => '~*NEVER*'],
+				['$foo' => 'mixed'],
 				[],
 			],
 
@@ -442,7 +449,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					)),
 				]),
 				['$foo' => 'static(DateTime)'],
-				['$foo' => '~static(DateTime)'],
+				[],
 			],
 			[
 				new FuncCall(new Name('is_a'), [
@@ -458,7 +465,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Arg(new Variable('genericClassString')),
 				]),
 				['$foo' => 'Bar'],
-				['$foo' => '~Bar'],
+				[],
 			],
 			[
 				new FuncCall(new Name('is_a'), [
@@ -467,7 +474,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Arg(new Expr\ConstFetch(new Name('true'))),
 				]),
 				['$foo' => 'class-string<Foo>|Foo'],
-				['$foo' => '~Foo'],
+				['$foo' => '~class-string<Foo>|Foo'],
 			],
 			[
 				new FuncCall(new Name('is_a'), [
@@ -475,7 +482,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Arg(new Variable('className')),
 					new Arg(new Expr\ConstFetch(new Name('true'))),
 				]),
-				['$foo' => 'class-string<object>|object'],
+				['$foo' => 'class-string|object'],
 				[],
 			],
 			[
@@ -485,7 +492,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Arg(new Variable('unknown')),
 				]),
 				['$foo' => 'class-string<Foo>|Foo'],
-				['$foo' => '~Foo'],
+				['$foo' => '~class-string<Foo>|Foo'],
 			],
 			[
 				new FuncCall(new Name('is_a'), [
@@ -493,7 +500,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Arg(new Variable('className')),
 					new Arg(new Variable('unknown')),
 				]),
-				['$foo' => 'class-string<object>|object'],
+				['$foo' => 'class-string|object'],
 				[],
 			],
 			[
@@ -547,7 +554,6 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$foo' => '123',
-					123 => '123',
 				],
 				['$foo' => '~123'],
 			],
@@ -956,12 +962,192 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new FuncCall(new Name('is_subclass_of'), [
+					new Arg(new Variable('object')),
+					new Arg(new Variable('stringOrNull')),
+					new Arg(new Expr\ConstFetch(new Name('false'))),
+				]),
+				[
+					'$object' => 'object',
+				],
+				[],
+			],
+			[
+				new FuncCall(new Name('is_subclass_of'), [
 					new Arg(new Variable('string')),
 					new Arg(new Variable('stringOrNull')),
 					new Arg(new Expr\ConstFetch(new Name('false'))),
 				]),
 				[
 					'$string' => 'object',
+				],
+				[],
+			],
+			[
+				new FuncCall(new Name('is_subclass_of'), [
+					new Arg(new Variable('string')),
+					new Arg(new Variable('genericClassString')),
+				]),
+				[
+					'$string' => 'Bar|class-string<Bar>',
+				],
+				[],
+			],
+			[
+				new FuncCall(new Name('is_subclass_of'), [
+					new Arg(new Variable('object')),
+					new Arg(new Variable('genericClassString')),
+					new Arg(new Expr\ConstFetch(new Name('false'))),
+				]),
+				[
+					'$object' => 'Bar',
+				],
+				[],
+			],
+			[
+				new FuncCall(new Name('is_subclass_of'), [
+					new Arg(new Variable('string')),
+					new Arg(new Variable('genericClassString')),
+					new Arg(new Expr\ConstFetch(new Name('false'))),
+				]),
+				[
+					'$string' => 'Bar',
+				],
+				[],
+			],
+			[
+				new Expr\BinaryOp\BooleanOr(
+					new Expr\BinaryOp\BooleanAnd(
+						$this->createFunctionCall('is_string', 'a'),
+						new NotIdentical(new String_(''), new Variable('a')),
+					),
+					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
+				),
+				['$a' => 'non-empty-string|null'],
+				['$a' => 'mixed~non-empty-string & ~null'],
+			],
+			[
+				new Expr\BinaryOp\BooleanOr(
+					new Expr\BinaryOp\BooleanAnd(
+						$this->createFunctionCall('is_string', 'a'),
+						new Expr\BinaryOp\Greater(
+							$this->createFunctionCall('strlen', 'a'),
+							new LNumber(0),
+						),
+					),
+					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
+				),
+				['$a' => 'non-empty-string|null'],
+				['$a' => 'mixed~non-empty-string & ~null'],
+			],
+			[
+				new Expr\BinaryOp\BooleanOr(
+					new Expr\BinaryOp\BooleanAnd(
+						$this->createFunctionCall('is_array', 'a'),
+						new Expr\BinaryOp\Greater(
+							$this->createFunctionCall('count', 'a'),
+							new LNumber(0),
+						),
+					),
+					new Identical(new Expr\ConstFetch(new Name('null')), new Variable('a')),
+				),
+				['$a' => 'non-empty-array|null'],
+				['$a' => 'mixed~non-empty-array & ~null'],
+			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_array', 'foo'),
+					new Identical(
+						new FuncCall(
+							new Name('array_filter'),
+							[new Arg(new Variable('foo')), new Arg(new String_('is_string')), new Arg(new ConstFetch(new Name('ARRAY_FILTER_USE_KEY')))],
+						),
+						new Variable('foo'),
+					),
+				),
+				[
+					'$foo' => 'array<string, mixed>',
+					'array_filter($foo, \'is_string\', ARRAY_FILTER_USE_KEY)' => 'array<string, mixed>',
+				],
+				[],
+			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_array', 'foo'),
+					new Expr\BinaryOp\GreaterOrEqual(
+						new FuncCall(
+							new Name('count'),
+							[new Arg(new Variable('foo'))],
+						),
+						new LNumber(2),
+					),
+				),
+				[
+					'$foo' => 'non-empty-array',
+					'count($foo)' => 'mixed~int<min, 1>|false|null',
+				],
+				[],
+			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_array', 'foo'),
+					new Identical(
+						new FuncCall(
+							new Name('count'),
+							[new Arg(new Variable('foo'))],
+						),
+						new LNumber(2),
+					),
+				),
+				[
+					'$foo' => 'non-empty-array',
+					'count($foo)' => '2',
+				],
+				[],
+			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_string', 'foo'),
+					new NotIdentical(
+						new FuncCall(
+							new Name('strlen'),
+							[new Arg(new Variable('foo'))],
+						),
+						new LNumber(0),
+					),
+				),
+				[
+					'$foo' => 'non-empty-string',
+					'strlen($foo)' => '~0',
+				],
+				[
+					'$foo' => 'mixed~non-empty-string',
+				],
+			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_numeric', 'int'),
+					new Expr\BinaryOp\Equal(
+						new Variable('int'),
+						new Expr\Cast\Int_(new Variable('int')),
+					),
+				),
+				[
+					'$int' => 'int',
+					'(int) $int' => 'int',
+				],
+				[],
+			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_numeric', 'float'),
+					new Expr\BinaryOp\Equal(
+						new Variable('float'),
+						new Expr\Cast\Int_(new Variable('float')),
+					),
+				),
+				[
+					'$float' => 'float',
+					'(int) $float' => 'int',
 				],
 				[],
 			],

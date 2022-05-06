@@ -56,6 +56,7 @@ use function fclose;
 use function fopen;
 use function fwrite;
 use function getenv;
+use function http_build_query;
 use function ini_get;
 use function is_dir;
 use function is_file;
@@ -70,6 +71,7 @@ use function strpos;
 use function unlink;
 use const PHP_BINARY;
 use const PHP_URL_PORT;
+use const PHP_VERSION_ID;
 
 class FixerApplication
 {
@@ -380,7 +382,7 @@ class FixerApplication
 		 * @var array{url: string, version: string} $latestInfo
 		 * @phpstan-ignore-next-line
 		 */
-		$latestInfo = Json::decode((string) await($client->get('https://fixer-download-api.phpstan.com/latest'), $loop, 5.0)->getBody(), Json::FORCE_ARRAY);
+		$latestInfo = Json::decode((string) await($client->get(sprintf('https://fixer-download-api.phpstan.com/latest?%s', http_build_query(['phpVersion' => PHP_VERSION_ID]))), $loop, 5.0)->getBody(), Json::FORCE_ARRAY);
 		if ($currentVersion !== null && $latestInfo['version'] === $currentVersion) {
 			$this->writeInfoFile($infoPath, $latestInfo['version']);
 			$output->writeln('<fg=green>You\'re running the latest PHPStan Pro!</>');

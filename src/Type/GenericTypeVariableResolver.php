@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Generic\TemplateTypeHelper;
+
 /** @api */
 class GenericTypeVariableResolver
 {
@@ -12,19 +14,34 @@ class GenericTypeVariableResolver
 		string $typeVariableName,
 	): ?Type
 	{
-		$ancestor = $type->getAncestorWithClassName($genericClassName);
-		if ($ancestor === null) {
-			return null;
-		}
-
-		$classReflection = $ancestor->getClassReflection();
+		$classReflection = $type->getClassReflection();
 		if ($classReflection === null) {
 			return null;
 		}
+		$ancestorClassReflection = $classReflection->getAncestorWithClassName($genericClassName);
+		if ($ancestorClassReflection === null) {
+			return null;
+		}
 
-		$templateTypeMap = $classReflection->getActiveTemplateTypeMap();
+		$activeTemplateTypeMap = $ancestorClassReflection->getPossiblyIncompleteActiveTemplateTypeMap();
 
-		return $templateTypeMap->getType($typeVariableName);
+		$type = $activeTemplateTypeMap->getType($typeVariableName);
+		if ($type instanceof ErrorType) {
+			$templateTypeMap = $ancestorClassReflection->getTemplateTypeMap();
+			$templateType = $templateTypeMap->getType($typeVariableName);
+			if ($templateType === null) {
+				return $type;
+			}
+
+			$bound = TemplateTypeHelper::resolveToBounds($templateType);
+			if ($bound instanceof MixedType && $bound->isExplicitMixed()) {
+				return new MixedType(false);
+			}
+
+			return $bound;
+		}
+
+		return $type;
 	}
 
 }

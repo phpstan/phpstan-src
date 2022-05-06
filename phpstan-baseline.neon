@@ -31,6 +31,11 @@ parameters:
 			path: src/Command/CommandHelper.php
 
 		-
+			message: "#^Static property PHPStan\\\\Command\\\\CommandHelper\\:\\:\\$reservedMemory is never read, only written\\.$#"
+			count: 1
+			path: src/Command/CommandHelper.php
+
+		-
 			message: "#^Parameter \\#1 \\$headers \\(array\\<string\\>\\) of method PHPStan\\\\Command\\\\ErrorsConsoleStyle\\:\\:table\\(\\) should be contravariant with parameter \\$headers \\(array\\) of method Symfony\\\\Component\\\\Console\\\\Style\\\\StyleInterface\\:\\:table\\(\\)$#"
 			count: 1
 			path: src/Command/ErrorsConsoleStyle.php
@@ -282,11 +287,6 @@ parameters:
 			message: "#^Anonymous function has an unused use \\$container\\.$#"
 			count: 1
 			path: src/Testing/PHPStanTestCase.php
-
-		-
-			message: "#^Call to function in_array\\(\\) with arguments 'array', array\\<int, 'array'\\|'string'\\> and true will always evaluate to true\\.$#"
-			count: 1
-			path: src/Type/IntersectionType.php
 
 		-
 			message: """

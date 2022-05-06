@@ -179,6 +179,15 @@ class ResultCacheManager
 		$filteredErrors = [];
 		$filteredExportedNodes = [];
 		$newFileAppeared = false;
+
+		foreach ($this->stubFiles as $stubFile) {
+			if (!array_key_exists($stubFile, $errors)) {
+				continue;
+			}
+
+			$filteredErrors[$stubFile] = $errors[$stubFile];
+		}
+
 		foreach ($allAnalysedFiles as $analysedFile) {
 			if (array_key_exists($analysedFile, $errors)) {
 				$filteredErrors[$analysedFile] = $errors[$analysedFile];

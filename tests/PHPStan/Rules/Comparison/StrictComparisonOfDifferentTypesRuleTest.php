@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_INT_SIZE;
 use const PHP_VERSION_ID;
 
 /**
@@ -158,11 +159,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					426,
 				],
 				[
-					'Strict comparison using === between int<min, 0>|int<2, max>|string and 1.0 will always evaluate to false.',
+					'Strict comparison using === between (int<min, 0>|int<2, max>|string) and 1.0 will always evaluate to false.',
 					464,
 				],
 				[
-					'Strict comparison using === between int<min, 0>|int<2, max>|string and stdClass will always evaluate to false.',
+					'Strict comparison using === between (int<min, 0>|int<2, max>|string) and stdClass will always evaluate to false.',
 					466,
 				],
 				[
@@ -332,11 +333,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					408,
 				],
 				[
-					'Strict comparison using === between int<min, 0>|int<2, max>|string and 1.0 will always evaluate to false.',
+					'Strict comparison using === between (int<min, 0>|int<2, max>|string) and 1.0 will always evaluate to false.',
 					464,
 				],
 				[
-					'Strict comparison using === between int<min, 0>|int<2, max>|string and stdClass will always evaluate to false.',
+					'Strict comparison using === between (int<min, 0>|int<2, max>|string) and stdClass will always evaluate to false.',
 					466,
 				],
 				[
@@ -461,6 +462,9 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	public function testBug4848(): void
 	{
+		if (PHP_INT_SIZE !== 8) {
+			$this->markTestSkipped('Test requires 64-bit platform.');
+		}
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/bug-4848.php'], [
 			[
@@ -495,6 +499,23 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between 0 and 1|2 will always evaluate to false.',
 				23,
+			],
+		]);
+	}
+
+	public function testBug6939(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+
+		if (PHP_VERSION_ID < 80000) {
+			$this->analyse([__DIR__ . '/data/bug-6939.php'], []);
+			return;
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6939.php'], [
+			[
+				'Strict comparison using === between string and false will always evaluate to false.',
+				10,
 			],
 		]);
 	}

@@ -113,10 +113,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					244,
 				],
 				[
-					'Call to function in_array() with arguments \'bar\'|\'foo\', array{\'foo\', \'bar\'} and true will always evaluate to true.',
-					248,
-				],
-				[
 					'Call to function in_array() with arguments \'foo\', array{\'foo\'} and true will always evaluate to true.',
 					252,
 				],
@@ -454,6 +450,98 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-3766.php'], []);
+	}
+
+	public function testBug6305(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-6305.php'], [
+			[
+				'Call to function is_subclass_of() with Bug6305\B and \'Bug6305\\\A\' will always evaluate to true.',
+				11,
+			],
+			[
+				'Call to function is_subclass_of() with Bug6305\B and \'Bug6305\\\B\' will always evaluate to false.',
+				14,
+			],
+		]);
+	}
+
+	public function testBug6698(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-6698.php'], []);
+	}
+
+	public function testBug5369(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-5369.php'], []);
+	}
+
+	public function testBugInArrayDateFormat(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/in-array-date-format.php'], [
+			[
+				'Call to function in_array() with arguments \'a\', non-empty-array<int, \'a\'> and true will always evaluate to true.',
+				39,
+			],
+			[
+				'Call to function in_array() with arguments \'b\', non-empty-array<int, \'a\'> and true will always evaluate to false.',
+				43,
+			],
+			[
+				'Call to function in_array() with arguments int, array{} and true will always evaluate to false.',
+				47,
+			],
+		]);
+	}
+
+	public function testBug5496(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-5496.php'], []);
+	}
+
+	public function testBug3892(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-3892.php'], []);
+	}
+
+	public function testBug3314(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-3314.php'], []);
+	}
+
+	public function testBug2870(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-2870.php'], []);
+	}
+
+	public function testBug5354(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-5354.php'], []);
+	}
+
+	public function testSlevomatCsInArrayBug(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/slevomat-cs-in-array.php'], []);
 	}
 
 }

@@ -5,7 +5,6 @@ namespace PHPStan\Broker;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
-use PHPStan\Cache\Cache;
 use PHPStan\DependencyInjection\Reflection\DirectClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
@@ -44,7 +43,7 @@ class BrokerTest extends PHPStanTestCase
 			$setterReflectionProviderProvider,
 			$classReflectionExtensionRegistryProvider,
 			$this->createMock(FunctionReflectionFactory::class),
-			new FileTypeMapper($setterReflectionProviderProvider, $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $this->createMock(Cache::class), $anonymousClassNameHelper, self::getContainer()->getByType(PhpVersion::class)),
+			new FileTypeMapper($setterReflectionProviderProvider, $this->getParser(), $phpDocStringResolver, $phpDocNodeResolver, $anonymousClassNameHelper, self::getContainer()->getByType(FileHelper::class)),
 			self::getContainer()->getByType(PhpDocInheritanceResolver::class),
 			self::getContainer()->getByType(PhpVersion::class),
 			self::getContainer()->getByType(NativeFunctionReflectionProvider::class),

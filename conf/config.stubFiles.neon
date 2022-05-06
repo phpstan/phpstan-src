@@ -4,6 +4,7 @@ parameters:
 		- ../stubs/ReflectionClass.stub
 		- ../stubs/ReflectionClassConstant.stub
 		- ../stubs/ReflectionFunctionAbstract.stub
+		- ../stubs/ReflectionMethod.stub
 		- ../stubs/ReflectionParameter.stub
 		- ../stubs/ReflectionProperty.stub
 		- ../stubs/iterable.stub

@@ -27,6 +27,7 @@ use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\TypeAliasResolver;
+use PHPStan\Type\UsefulTypeAliasResolver;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\TestCase;
 use function array_merge;
@@ -162,6 +163,7 @@ abstract class PHPStanTestCase extends TestCase
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container,
 			$container->getByType(PhpVersion::class),
+			$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
 		);
 	}
 
@@ -172,7 +174,7 @@ abstract class PHPStanTestCase extends TestCase
 	{
 		$container = self::getContainer();
 
-		return new TypeAliasResolver(
+		return new UsefulTypeAliasResolver(
 			$globalTypeAliases,
 			$container->getByType(TypeStringResolver::class),
 			$container->getByType(TypeNodeResolver::class),

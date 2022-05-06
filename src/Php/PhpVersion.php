@@ -156,6 +156,11 @@ class PhpVersion
 		return $this->versionId < 80000;
 	}
 
+	public function hasStricterRoundFunctions(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 	public function hasTentativeReturnTypes(): bool
 	{
 		return $this->versionId >= 80100;
@@ -169,6 +174,16 @@ class PhpVersion
 	public function supportsArrayUnpackingWithStringKeys(): bool
 	{
 		return $this->versionId >= 80100;
+	}
+
+	public function throwsOnInvalidMbStringEncoding(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
+	public function supportsPassNoneEncodings(): bool
+	{
+		return $this->versionId < 70300;
 	}
 
 }

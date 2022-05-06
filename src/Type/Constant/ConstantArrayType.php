@@ -29,7 +29,6 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_keys;
@@ -43,9 +42,11 @@ use function assert;
 use function count;
 use function implode;
 use function in_array;
+use function is_int;
 use function is_string;
 use function max;
 use function pow;
+use function sort;
 use function sprintf;
 use function strpos;
 
@@ -60,24 +61,34 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	/** @var self[]|null */
 	private ?array $allArrays = null;
 
+	/** @var non-empty-list<int> */
+	private array $nextAutoIndexes;
+
 	/**
 	 * @api
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
 	 * @param array<int, Type> $valueTypes
+	 * @param non-empty-list<int>|int $nextAutoIndexes
 	 * @param int[] $optionalKeys
 	 */
 	public function __construct(
 		private array $keyTypes,
 		private array $valueTypes,
-		private int $nextAutoIndex = 0,
+		int|array $nextAutoIndexes = [0],
 		private array $optionalKeys = [],
 	)
 	{
 		assert(count($keyTypes) === count($valueTypes));
 
+		if (is_int($nextAutoIndexes)) {
+			$nextAutoIndexes = [$nextAutoIndexes];
+		}
+
+		$this->nextAutoIndexes = $nextAutoIndexes;
+
 		parent::__construct(
-			count($keyTypes) > 0 ? TypeCombinator::union(...$keyTypes) : new NeverType(),
-			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType(),
+			count($keyTypes) > 0 ? TypeCombinator::union(...$keyTypes) : new NeverType(true),
+			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType(true),
 		);
 	}
 
@@ -86,9 +97,20 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return count($this->keyTypes) === 0;
 	}
 
+	/**
+	 * @return non-empty-list<int>
+	 */
+	public function getNextAutoIndexes(): array
+	{
+		return $this->nextAutoIndexes;
+	}
+
+	/**
+	 * @deprecated
+	 */
 	public function getNextAutoIndex(): int
 	{
-		return $this->nextAutoIndex;
+		return $this->nextAutoIndexes[count($this->nextAutoIndexes) - 1];
 	}
 
 	/**
@@ -168,15 +190,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return $return;
-	}
-
-	public function getKeyType(): Type
-	{
-		if (count($this->keyTypes) > 1) {
-			return new UnionType($this->keyTypes);
-		}
-
-		return parent::getKeyType();
 	}
 
 	/**
@@ -436,12 +449,22 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	{
 		$offsetType = ArrayType::castToArrayKeyType($offsetType);
 		$matchingValueTypes = [];
+		$all = true;
 		foreach ($this->keyTypes as $i => $keyType) {
 			if ($keyType->isSuperTypeOf($offsetType)->no()) {
+				$all = false;
 				continue;
 			}
 
 			$matchingValueTypes[] = $this->valueTypes[$i];
+		}
+
+		if ($all) {
+			if (count($this->keyTypes) === 0) {
+				return new ErrorType();
+			}
+
+			return $this->getIterableValueType();
 		}
 
 		if (count($matchingValueTypes) > 0) {
@@ -489,17 +512,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 						$k++;
 					}
 
-					return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndex, $newOptionalKeys);
+					return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys);
 				}
 			}
 		}
 
-		$arrays = [];
-		foreach ($this->getAllArrays() as $tmp) {
-			$arrays[] = new self($tmp->keyTypes, $tmp->valueTypes, $tmp->nextAutoIndex, array_keys($tmp->keyTypes));
-		}
-
-		return TypeUtils::generalizeType(TypeCombinator::union(...$arrays), GeneralizePrecision::moreSpecific());
+		return new ArrayType($this->getKeyType(), $this->getItemType());
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
@@ -534,7 +552,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		array_pop($valueTypes);
 		$nextAutoindex = $removedKeyType instanceof ConstantIntegerType
 			? $removedKeyType->getValue()
-			: $this->nextAutoIndex;
+			: $this->getNextAutoIndex(); // @phpstan-ignore-line
 
 		return new self(
 			$keyTypes,
@@ -625,9 +643,13 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $this;
 		}
 
+		if ($precision->isTemplateArgument()) {
+			return $this->traverse(static fn (Type $type) => $type->generalize($precision));
+		}
+
 		$arrayType = new ArrayType(
-			TypeUtils::generalizeType($this->getKeyType(), $precision),
-			TypeUtils::generalizeType($this->getItemType(), $precision),
+			$this->getKeyType()->generalize($precision),
+			$this->getItemType()->generalize($precision),
 		);
 
 		if (count($this->keyTypes) > count($this->optionalKeys)) {
@@ -644,10 +666,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	{
 		$valueTypes = [];
 		foreach ($this->valueTypes as $valueType) {
-			$valueTypes[] = TypeUtils::generalizeType($valueType, GeneralizePrecision::lessSpecific());
+			$valueTypes[] = $valueType->generalize(GeneralizePrecision::lessSpecific());
 		}
 
-		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndex, $this->optionalKeys);
+		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys);
 	}
 
 	/**
@@ -737,8 +759,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 					}
 				}
 
-				$items[] = sprintf('%s%s: %s', $keyDescription, $isOptional ? '?' : '', $valueType->describe($level));
-				$values[] = $valueType->describe($level);
+				$valueTypeDescription = $valueType->describe($level);
+				$items[] = sprintf('%s%s: %s', $keyDescription, $isOptional ? '?' : '', $valueTypeDescription);
+				$values[] = $valueTypeDescription;
 			}
 
 			$append = '';
@@ -822,7 +845,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return $this;
 		}
 
-		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndex, $this->optionalKeys);
+		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys);
 	}
 
 	public function isKeysSupersetOf(self $otherArray): bool
@@ -870,7 +893,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$optionalKeys = array_values(array_unique($optionalKeys));
 
-		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndex, $optionalKeys);
+		$nextAutoIndexes = array_unique(array_merge($this->nextAutoIndexes, $otherArray->nextAutoIndexes));
+		sort($nextAutoIndexes);
+
+		return new self($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys);
 	}
 
 	/**
@@ -899,7 +925,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			foreach ($optionalKeys as $j => $key) {
 				if ($i === $key) {
 					unset($optionalKeys[$j]);
-					return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndex, array_values($optionalKeys));
+					return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, array_values($optionalKeys));
 				}
 			}
 
@@ -914,7 +940,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 */
 	public static function __set_state(array $properties): Type
 	{
-		return new self($properties['keyTypes'], $properties['valueTypes'], $properties['nextAutoIndex'], $properties['optionalKeys'] ?? []);
+		return new self($properties['keyTypes'], $properties['valueTypes'], $properties['nextAutoIndexes'] ?? $properties['nextAutoIndex'], $properties['optionalKeys'] ?? []);
 	}
 
 }

@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
@@ -20,37 +21,20 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function array_map;
-use function array_merge;
 use function array_unique;
 use function count;
-use function function_exists;
 use function in_array;
-use function mb_encoding_aliases;
 use function mb_internal_encoding;
-use function mb_list_encodings;
 use function mb_str_split;
 use function str_split;
-use function strtoupper;
 
 final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	/** @var string[] */
-	private array $supportedEncodings;
+	use MbFunctionsReturnTypeExtensionTrait;
 
-	public function __construct()
+	public function __construct(private PhpVersion $phpVersion)
 	{
-		$supportedEncodings = [];
-		if (function_exists('mb_list_encodings')) {
-			foreach (mb_list_encodings() as $encoding) {
-				$aliases = mb_encoding_aliases($encoding);
-				if ($aliases === false) {
-					throw new ShouldNotHappenException();
-				}
-				$supportedEncodings = array_merge($supportedEncodings, $aliases, [$encoding]);
-			}
-		}
-		$this->supportedEncodings = array_map('strtoupper', $supportedEncodings);
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -119,11 +103,6 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		return self::createConstantArrayFrom($items, $scope);
 	}
 
-	private function isSupportedEncoding(string $encoding): bool
-	{
-		return in_array(strtoupper($encoding), $this->supportedEncodings, true);
-	}
-
 	/**
 	 * @param string[] $constantArray
 	 */
@@ -147,7 +126,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$i++;
 		}
 
-		return new ConstantArrayType($keyTypes, $valueTypes, $isList ? $i : 0);
+		return new ConstantArrayType($keyTypes, $valueTypes, $isList ? [$i] : [0]);
 	}
 
 }

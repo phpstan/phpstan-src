@@ -6,6 +6,8 @@ set -o nounset
 
 export TARGET_PHP_VERSION=$1
 
-vendor/bin/rector process src tests/PHPStan tests/e2e -c build/rector-downgrade.php --no-diffs
+php ./build/save-rector-hashes.php
 
-vendor/bin/rector process vendor/symfony vendor/nette -c build/rector-downgrade-vendor.php --no-diffs || true
+vendor/bin/rector process -c build/rector-downgrade.php --no-diffs
+
+php ./build/save-rector-cache.php

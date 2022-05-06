@@ -45,4 +45,32 @@ class Foo
 
 		assertType('int', $j % $i);
 	}
+
+	function moduleOne(int $i, float $f) {
+		assertType('0', true % '1');
+		assertType('0', false % '1');
+		assertType('0', null % '1');
+		assertType('0', -1 % '1');
+		assertType('0', 0 % '1');
+		assertType('0', 1 % '1');
+		assertType('0', '1' % '1');
+		assertType('0', 1.24 % '1');
+
+		assertType('0', $i % 1.0);
+		assertType('0', $f % 1.0);
+
+		assertType('0', $i % '1.0');
+		assertType('0', $f % '1.0');
+
+		assertType('0', $i % '1');
+		assertType('0', $f % '1');
+
+		assertType('0', $i % true);
+		assertType('0', $f % true);
+
+		$i %= '1';
+		$f %= '1';
+		assertType('0', $i);
+		assertType('0', $f);
+	}
 }

@@ -33,6 +33,11 @@ class Bar
 			$foo->nonexistentMethod();
 		}, null, new Foo());
 
+		\Closure::bind(function (Foo $foo) {
+			$foo->privateMethod();
+			$foo->nonexistentMethod();
+		}, null, get_class(new Foo()));
+
 		\Closure::bind(function () {
 			// $this is Foo
 			$this->privateMethod();

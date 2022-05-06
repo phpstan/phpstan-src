@@ -8,6 +8,7 @@ includes:
 	- ../conf/bleedingEdge.neon
 	- ../phpstan-baseline.neon
 	- ignore-by-php-version.neon.php
+	- ignore-by-architecture.neon.php
 parameters:
 	level: 8
 	paths:

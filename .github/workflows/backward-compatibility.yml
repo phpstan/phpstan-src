@@ -6,10 +6,10 @@ on:
   pull_request:
   push:
     branches:
-      - "master"
+      - "1.5.x"
 
 env:
-  COMPOSER_ROOT_VERSION: "1.3.x-dev"
+  COMPOSER_ROOT_VERSION: "1.5.x-dev"
 
 jobs:
   backward-compatibility:
@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -37,7 +37,7 @@ jobs:
         run: |
           composer global config minimum-stability dev
           composer global config prefer-stable true
-          composer global require --dev ondrejmirtes/backward-compatibility-check:^5.0.8
+          composer global require --dev ondrejmirtes/backward-compatibility-check:^5.0.9
 
       - name: "Check"
         run: "$(composer global config bin-dir --absolute)/roave-backward-compatibility-check"

@@ -37,6 +37,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testCallToFunctionWithIncorrectParameters(): void
 	{
+		$setErrorHandlerError = PHP_VERSION_ID < 80000
+			? 'Parameter #1 $callback of function set_error_handler expects (callable(int, string, string, int, array): bool)|null, Closure(mixed, mixed, mixed, mixed): void given.'
+			: 'Parameter #1 $callback of function set_error_handler expects (callable(int, string, string, int): bool)|null, Closure(mixed, mixed, mixed, mixed): void given.';
+
 		require_once __DIR__ . '/data/incorrect-call-to-function-definition.php';
 		$this->analyse([__DIR__ . '/data/incorrect-call-to-function.php'], [
 			[
@@ -52,7 +56,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				14,
 			],
 			[
-				'Parameter #1 $callback of function set_error_handler expects (callable(int, string, string, int, array): bool)|null, Closure(mixed, mixed, mixed, mixed): void given.',
+				$setErrorHandlerError,
 				16,
 			],
 		]);
@@ -266,14 +270,8 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/call-to-weird-functions.php'], $errors);
 	}
 
-	/**
-	 * @requires PHP 7.1.1
-	 */
 	public function testUnpackOnAfter711(): void
 	{
-		if (!self::$useStaticReflectionProvider && PHP_VERSION_ID < 70101) {
-			$this->markTestSkipped('This test requires PHP >= 7.1.1');
-		}
 		$this->analyse([__DIR__ . '/data/unpack.php'], [
 			[
 				'Function unpack invoked with 0 parameters, 2-3 required.',
@@ -626,6 +624,28 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $callback of function array_walk expects callable(int, string, string): mixed, Closure(int, string, int): \'\' given.',
 				12,
+			],
+		]);
+	}
+
+	public function testPregReplaceCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/preg_replace_callback.php'], [
+			[
+				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(string): string given.',
+				6,
+			],
+			[
+				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(string): string given.',
+				13,
+			],
+			[
+				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(array): void given.',
+				20,
+			],
+			[
+				'Parameter #2 $callback of function preg_replace_callback expects callable(array<int|string, string>): string, Closure(): void given.',
+				25,
 			],
 		]);
 	}

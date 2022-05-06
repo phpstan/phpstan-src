@@ -196,4 +196,142 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4852(): void
+	{
+		if (!self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('This test needs static reflection');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-4852.php'], [
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				70,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				77,
+			],
+		]);
+	}
+
+	public function testBug5903(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5903.php'], [
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				47,
+			],
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				54,
+			],
+		]);
+	}
+
+	public function testBug6115(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6115.php'], [
+			[
+				'Dead catch - UnhandledMatchError is never thrown in the try block.',
+				20,
+			],
+			[
+				'Dead catch - UnhandledMatchError is never thrown in the try block.',
+				28,
+			],
+		]);
+	}
+
+	public function testBug6262(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6262.php'], []);
+	}
+
+	public function testBug6256(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6256.php'], [
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				25,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				31,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				45,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				57,
+			],
+			[
+				'Dead catch - Throwable is never thrown in the try block.',
+				63,
+			],
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				100,
+			],
+		]);
+	}
+
+	public function testBug6791(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6791.php'], [
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				22,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				34,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				38,
+			],
+		]);
+	}
+
+	public function testBug6786(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			self::markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6786.php'], []);
+	}
+
+	public function testUnionTypeError(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			self::markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/union-type-error.php'], [
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				14,
+			],
+			[
+				'Dead catch - TypeError is never thrown in the try block.',
+				22,
+			],
+		]);
+	}
+
 }

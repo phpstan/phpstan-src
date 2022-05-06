@@ -210,7 +210,15 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-3997.php'], [
 			[
-				'Return type (string) of method Bug3997\Ipsum::count() should be compatible with return type (int) of method Countable::count()',
+				'Return type (int) of method Bug3997\Baz::count() should be covariant with return type (int<0, max>) of method Countable::count()',
+				PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider ? 35 : 36,
+			],
+			[
+				'Return type (int) of method Bug3997\Lorem::count() should be covariant with return type (int<0, max>) of method Countable::count()',
+				PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider ? 49 : 50,
+			],
+			[
+				'Return type (string) of method Bug3997\Ipsum::count() should be compatible with return type (int<0, max>) of method Countable::count()',
 				PHP_VERSION_ID >= 80000 || self::$useStaticReflectionProvider ? 63 : 64,
 			],
 		]);
@@ -218,9 +226,6 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 	public function testBug4003(): void
 	{
-		if (PHP_VERSION_ID < 70200 && !self::$useStaticReflectionProvider) {
-			$this->markTestSkipped('Test requires PHP 7.2 or later.');
-		}
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-4003.php'], [
@@ -229,7 +234,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 				15,
 			],
 			[
-				PHP_VERSION_ID < 70200 ? 'Parameter #1 $test (mixed) of method Bug4003\Ipsum::doFoo() does not match parameter #1 $test (int) of method Bug4003\Lorem::doFoo().' : 'Parameter #1 $test (string) of method Bug4003\Ipsum::doFoo() should be compatible with parameter $test (int) of method Bug4003\Lorem::doFoo()',
+				'Parameter #1 $test (string) of method Bug4003\Ipsum::doFoo() should be compatible with parameter $test (int) of method Bug4003\Lorem::doFoo()',
 				38,
 			],
 		]);

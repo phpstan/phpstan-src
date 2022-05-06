@@ -2,11 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\GeneralizePrecision;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 
@@ -16,16 +12,16 @@ class TemplateTypeHelper
 	/**
 	 * Replaces template types with standin types
 	 */
-	public static function resolveTemplateTypes(Type $type, TemplateTypeMap $standins): Type
+	public static function resolveTemplateTypes(Type $type, TemplateTypeMap $standins, bool $keepErrorTypes = false): Type
 	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins): Type {
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($standins, $keepErrorTypes): Type {
 			if ($type instanceof TemplateType && !$type->isArgument()) {
 				$newType = $standins->getType($type->getName());
 				if ($newType === null) {
 					return $traverse($type);
 				}
 
-				if ($newType instanceof ErrorType) {
+				if ($newType instanceof ErrorType && !$keepErrorTypes) {
 					return $traverse($type->getBound());
 				}
 
@@ -58,25 +54,6 @@ class TemplateTypeHelper
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof TemplateType) {
 				return $traverse($type->toArgument());
-			}
-
-			return $traverse($type);
-		});
-	}
-
-	public static function generalizeType(Type $type): Type
-	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
-			if ($type instanceof ConstantType && !$type instanceof ConstantArrayType) {
-				return $type->generalize(GeneralizePrecision::lessSpecific());
-			}
-
-			if ($type->isNonEmptyString()->yes()) {
-				return new StringType();
-			}
-
-			if ($type->isLiteralString()->yes()) {
-				return new StringType();
 			}
 
 			return $traverse($type);

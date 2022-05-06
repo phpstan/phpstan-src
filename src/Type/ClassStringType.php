@@ -62,6 +62,11 @@ class ClassStringType extends StringType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isString(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function isNumericString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

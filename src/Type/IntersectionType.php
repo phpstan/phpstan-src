@@ -19,8 +19,12 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateUnionType;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use function array_map;
 use function count;
 use function implode;
@@ -32,6 +36,9 @@ use function substr;
 /** @api */
 class IntersectionType implements CompoundType
 {
+
+	use NonRemoveableTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	/** @var Type[] */
 	private array $types;
@@ -61,6 +68,17 @@ class IntersectionType implements CompoundType
 		return $this->types;
 	}
 
+	public function inferTemplateTypesOn(Type $templateType): TemplateTypeMap
+	{
+		$types = TemplateTypeMap::createEmpty();
+
+		foreach ($this->types as $type) {
+			$types = $types->intersect($templateType->inferTemplateTypes($type));
+		}
+
+		return $types;
+	}
+
 	/**
 	 * @return string[]
 	 */
@@ -86,6 +104,10 @@ class IntersectionType implements CompoundType
 			return TrinaryLogic::createYes();
 		}
 
+		if ($otherType instanceof NeverType) {
+			return TrinaryLogic::createYes();
+		}
+
 		$results = [];
 		foreach ($this->getTypes() as $innerType) {
 			$results[] = $innerType->isSuperTypeOf($otherType);
@@ -96,7 +118,7 @@ class IntersectionType implements CompoundType
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
-		if ($otherType instanceof self || $otherType instanceof UnionType) {
+		if (($otherType instanceof self || $otherType instanceof UnionType) && !$otherType instanceof TemplateType) {
 			return $otherType->isSuperTypeOf($this);
 		}
 
@@ -110,8 +132,8 @@ class IntersectionType implements CompoundType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		if ($acceptingType instanceof self || $acceptingType instanceof UnionType) {
-			return $acceptingType->isSuperTypeOf($this);
+		if ($acceptingType instanceof self || ($acceptingType instanceof UnionType && !$acceptingType instanceof TemplateUnionType)) {
+			return $acceptingType->accepts($this, $strictTypes);
 		}
 
 		$results = [];
@@ -150,7 +172,7 @@ class IntersectionType implements CompoundType
 					if ($type instanceof AccessoryType) {
 						continue;
 					}
-					$typeNames[] = TypeUtils::generalizeType($type, GeneralizePrecision::lessSpecific())->describe($level);
+					$typeNames[] = $type->generalize(GeneralizePrecision::lessSpecific())->describe($level);
 				}
 
 				return implode('&', $typeNames);
@@ -345,6 +367,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isArray());
 	}
 
+	public function isString(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isString());
+	}
+
 	public function isNumericString(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isNumericString());
@@ -504,17 +531,6 @@ class IntersectionType implements CompoundType
 		return $types;
 	}
 
-	public function inferTemplateTypesOn(Type $templateType): TemplateTypeMap
-	{
-		$types = TemplateTypeMap::createEmpty();
-
-		foreach ($this->types as $type) {
-			$types = $types->intersect($templateType->inferTemplateTypes($type));
-		}
-
-		return $types;
-	}
-
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
 		$references = [];
@@ -546,6 +562,11 @@ class IntersectionType implements CompoundType
 		}
 
 		return $this;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => TypeCombinator::remove($type, $typeToRemove));
 	}
 
 	/**

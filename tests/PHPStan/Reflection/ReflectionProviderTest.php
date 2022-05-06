@@ -21,12 +21,10 @@ class ReflectionProviderTest extends PHPStanTestCase
 			null,
 		];
 
-		if (PHP_VERSION_ID >= 70200) {
-			yield [
-				'sodium_crypto_kx_keypair',
-				new ObjectType('SodiumException'),
-			];
-		}
+		yield [
+			'sodium_crypto_kx_keypair',
+			new ObjectType('SodiumException'),
+		];
 
 		if (PHP_VERSION_ID >= 80000) {
 			yield [
@@ -75,11 +73,11 @@ class ReflectionProviderTest extends PHPStanTestCase
 		if (PHP_VERSION_ID < 80000) {
 			yield 'create_function' => [
 				'create_function',
-				PHP_VERSION_ID >= 70200,
+				true,
 			];
 			yield 'each' => [
 				'each',
-				PHP_VERSION_ID >= 70200,
+				true,
 			];
 		}
 

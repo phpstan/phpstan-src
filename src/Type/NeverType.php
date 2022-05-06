@@ -12,17 +12,21 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
 /** @api */
 class NeverType implements CompoundType
 {
 
-	use FalseyBooleanTypeTrait;
+	use UndecidedBooleanTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
+	use NonRemoveableTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	/** @api */
 	public function __construct(private bool $isExplicit = false)
@@ -225,6 +229,11 @@ class NeverType implements CompoundType
 	}
 
 	public function isArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

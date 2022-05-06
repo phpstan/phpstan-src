@@ -8,6 +8,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -15,6 +16,7 @@ use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
@@ -30,6 +32,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
+	use NonRemoveableTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -150,8 +153,13 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		return new ConstantArrayType(
 			[new ConstantIntegerType(0)],
 			[$this],
-			1,
+			[1],
 		);
+	}
+
+	public function isString(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
 	}
 
 	public function isNumericString(): TrinaryLogic
@@ -172,6 +180,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	public function traverse(callable $cb): Type
 	{
 		return $this;
+	}
+
+	public function generalize(GeneralizePrecision $precision): Type
+	{
+		return new StringType();
 	}
 
 	public static function __set_state(array $properties): Type

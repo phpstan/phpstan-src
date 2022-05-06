@@ -1,0 +1,18 @@
+#!/usr/bin/env php
+<?php declare(strict_types = 1);
+
+use PHPStan\Compiler\Console\PrepareCommand;
+use PHPStan\Compiler\Filesystem\SymfonyFilesystem;
+use Symfony\Component\Console\Application;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$prepareCommand = new PrepareCommand(
+	new SymfonyFilesystem(new \Symfony\Component\Filesystem\Filesystem()),
+	realpath(__DIR__ . '/../..')
+);
+
+$application = new Application();
+$application->add($prepareCommand);
+$application->setDefaultCommand($prepareCommand->getName(), true);
+$application->run();

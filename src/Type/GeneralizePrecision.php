@@ -7,6 +7,7 @@ class GeneralizePrecision
 
 	private const LESS_SPECIFIC = 1;
 	private const MORE_SPECIFIC = 2;
+	private const TEMPLATE_ARGUMENT = 3;
 
 	/** @var self[] */
 	private static array $registry;
@@ -33,9 +34,25 @@ class GeneralizePrecision
 		return self::create(self::MORE_SPECIFIC);
 	}
 
+	/** @api */
+	public static function templateArgument(): self
+	{
+		return self::create(self::TEMPLATE_ARGUMENT);
+	}
+
+	public function isLessSpecific(): bool
+	{
+		return $this->value === self::LESS_SPECIFIC;
+	}
+
 	public function isMoreSpecific(): bool
 	{
 		return $this->value === self::MORE_SPECIFIC;
+	}
+
+	public function isTemplateArgument(): bool
+	{
+		return $this->value === self::TEMPLATE_ARGUMENT;
 	}
 
 }

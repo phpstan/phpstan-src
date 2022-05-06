@@ -10,6 +10,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -91,6 +92,15 @@ class EnumCaseObjectType extends ObjectType
 		return null;
 	}
 
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($this->isSuperTypeOf($typeToRemove)->yes()) {
+			return $this->subtract($typeToRemove);
+		}
+
+		return null;
+	}
+
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection
 	{
 		$classReflection = $this->getClassReflection();
@@ -115,6 +125,11 @@ class EnumCaseObjectType extends ObjectType
 		}
 
 		return parent::getProperty($propertyName, $scope);
+	}
+
+	public function generalize(GeneralizePrecision $precision): Type
+	{
+		return new parent($this->getClassName(), null, $this->getClassReflection());
 	}
 
 	/**

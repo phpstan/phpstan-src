@@ -7,7 +7,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeReference;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
@@ -234,6 +236,11 @@ class Baz implements Type
 		// TODO: Implement isSmallerThanOrEqual() method.
 	}
 
+	public function isString(): \PHPStan\TrinaryLogic
+	{
+		// TODO: Implement isString() method.
+	}
+
 	public function isNumericString(): \PHPStan\TrinaryLogic
 	{
 		// TODO: Implement isNumericString() method.
@@ -284,10 +291,25 @@ class Baz implements Type
 		// TODO: Implement traverse() method.
 	}
 
+	public function generalize(GeneralizePrecision $precision): Type
+	{
+		// TODO: Implement generalize() method.
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		// TODO: Implement tryRemove() method.
+	}
+
 	public static function __set_state(array $properties): \PHPStan\Type\Type
 	{
 		// TODO: Implement __set_state() method.
 	}
 
+
+}
+
+abstract class Dolor implements ReflectionProvider
+{
 
 }

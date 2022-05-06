@@ -56,7 +56,7 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 				27,
 			],
 			[
-				'Right side of && is always false.',
+				'Result of && is always false.',
 				30,
 			],
 			[
@@ -199,6 +199,29 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 				21,
 			],
 		]);
+	}
+
+	public function testBug1746(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-1746.php'], [
+			[
+				'Left side of && is always true.',
+				20,
+			],
+		]);
+	}
+
+	public function testBug4666(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-4666.php'], []);
+	}
+
+	public function testBug2870(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-2870.php'], []);
 	}
 
 }

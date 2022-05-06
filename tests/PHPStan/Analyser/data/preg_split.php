@@ -27,4 +27,19 @@ class HelloWorld
 
 		assertType('array<int, array{string, int<0, max>}>|false', preg_split($pattern, $subject, $limit, PREG_SPLIT_OFFSET_CAPTURE | $flags | PREG_SPLIT_NO_EMPTY));
 	}
+
+	/**
+	 * @param string $pattern
+	 * @param string $subject
+	 * @param int $limit
+	 */
+	public static function dynamicFlags($pattern, $subject, $limit = -1) {
+		$flags = PREG_SPLIT_OFFSET_CAPTURE;
+
+		if ($subject === '1-2-3') {
+			$flags |= PREG_SPLIT_NO_EMPTY;
+		}
+
+		assertType('array<int, array{string, int<0, max>}>|false', preg_split($pattern, $subject, $limit, $flags));
+	}
 }

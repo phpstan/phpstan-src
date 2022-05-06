@@ -13,6 +13,7 @@ use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 
 /** @api */
 class NullType implements ConstantScalarType
@@ -23,6 +24,7 @@ class NullType implements ConstantScalarType
 	use NonObjectTypeTrait;
 	use FalseyBooleanTypeTrait;
 	use NonGenericTypeTrait;
+	use NonRemoveableTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -169,6 +171,11 @@ class NullType implements ConstantScalarType
 	}
 
 	public function isArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

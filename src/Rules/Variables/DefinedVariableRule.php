@@ -45,7 +45,7 @@ class DefinedVariableRule implements Rule
 			}
 		}
 
-		if ($scope->isInExpressionAssign($node)) {
+		if ($scope->isInExpressionAssign($node) || $scope->isUndefinedExpressionAllowed($node)) {
 			return [];
 		}
 

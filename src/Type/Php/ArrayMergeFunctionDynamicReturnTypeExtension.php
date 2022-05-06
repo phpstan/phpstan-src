@@ -6,14 +6,19 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
-use PHPStan\Type\UnionType;
+use function array_keys;
+use function count;
+use function in_array;
 
 class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -25,36 +30,94 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if (!isset($functionCall->getArgs()[0])) {
+		$args = $functionCall->getArgs();
+
+		if (!isset($args[0])) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		}
+
+		$argTypes = [];
+		$optionalArgTypes = [];
+		$allConstant = true;
+		foreach ($args as $arg) {
+			$argType = $scope->getType($arg->value);
+
+			if ($arg->unpack) {
+				if ($argType instanceof ConstantArrayType) {
+					$argTypesFound = $argType->getValueTypes();
+				} else {
+					$argTypesFound = [$argType->getIterableValueType()];
+				}
+
+				foreach ($argTypesFound as $argTypeFound) {
+					$argTypes[] = $argTypeFound;
+					if ($argTypeFound instanceof ConstantArrayType) {
+						continue;
+					}
+					$allConstant = false;
+				}
+
+				if (!$argType->isIterableAtLeastOnce()->yes()) {
+					// unpacked params can be empty, making them optional
+					$optionalArgTypesOffset = count($argTypes) - 1;
+					foreach (array_keys($argTypesFound) as $key) {
+						$optionalArgTypes[] = $optionalArgTypesOffset + $key;
+					}
+				}
+			} else {
+				$argTypes[] = $argType;
+				if (!$argType instanceof ConstantArrayType) {
+					$allConstant = false;
+				}
+			}
+		}
+
+		if ($allConstant) {
+			$newArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+			foreach ($argTypes as $argType) {
+				if (!$argType instanceof ConstantArrayType) {
+					throw new ShouldNotHappenException();
+				}
+
+				$keyTypes = $argType->getKeyTypes();
+				$valueTypes = $argType->getValueTypes();
+				$optionalKeys = $argType->getOptionalKeys();
+
+				foreach ($keyTypes as $k => $keyType) {
+					$isOptional = in_array($k, $optionalKeys, true);
+
+					$newArrayBuilder->setOffsetValueType(
+						$keyType instanceof ConstantIntegerType ? null : $keyType,
+						$valueTypes[$k],
+						$isOptional,
+					);
+				}
+			}
+
+			return $newArrayBuilder->getArray();
 		}
 
 		$keyTypes = [];
 		$valueTypes = [];
 		$nonEmpty = false;
-		foreach ($functionCall->getArgs() as $arg) {
-			$argType = $scope->getType($arg->value);
-			if ($arg->unpack) {
-				$argType = $argType->getIterableValueType();
-				if ($argType instanceof UnionType) {
-					foreach ($argType->getTypes() as $innerType) {
-						$argType = $innerType;
-					}
-				}
-			}
-
-			$keyTypes[] = TypeUtils::generalizeType($argType->getIterableKeyType(), GeneralizePrecision::moreSpecific());
+		foreach ($argTypes as $key => $argType) {
+			$keyTypes[] = $argType->getIterableKeyType();
 			$valueTypes[] = $argType->getIterableValueType();
 
-			if (!$argType->isIterableAtLeastOnce()->yes()) {
+			if (in_array($key, $optionalArgTypes, true) || !$argType->isIterableAtLeastOnce()->yes()) {
 				continue;
 			}
 
 			$nonEmpty = true;
 		}
 
+		$keyType = TypeCombinator::union(...$keyTypes);
+		if ($keyType instanceof NeverType) {
+			return new ConstantArrayType([], []);
+		}
+
 		$arrayType = new ArrayType(
-			TypeCombinator::union(...$keyTypes),
+			$keyType,
 			TypeCombinator::union(...$valueTypes),
 		);
 

@@ -19,6 +19,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use function sprintf;
@@ -29,6 +30,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	private ?Type $subtractedType;
 
@@ -405,6 +407,11 @@ class MixedType implements CompoundType, SubtractableType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isNumericString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
@@ -418,6 +425,15 @@ class MixedType implements CompoundType, SubtractableType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($this->isSuperTypeOf($typeToRemove)->yes()) {
+			return $this->subtract($typeToRemove);
+		}
+
+		return null;
 	}
 
 	/**

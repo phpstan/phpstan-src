@@ -137,6 +137,25 @@ class Error implements JsonSerializable
 		);
 	}
 
+	public function doNotIgnore(): self
+	{
+		if (!$this->canBeIgnored()) {
+			return $this;
+		}
+
+		return new self(
+			$this->message,
+			$this->file,
+			$this->line,
+			false,
+			$this->filePath,
+			$this->traitFilePath,
+			$this->tip,
+			$this->nodeLine,
+			$this->nodeType,
+		);
+	}
+
 	public function getNodeLine(): ?int
 	{
 		return $this->nodeLine;

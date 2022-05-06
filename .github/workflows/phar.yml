@@ -3,23 +3,26 @@
 name: "Compile PHAR"
 
 on:
+  pull_request:
   push:
     branches:
-      - "master"
+      - "1.5.x"
     tags:
-      - '1.*'
-
-concurrency: phar
+      - '1.5.*'
 
 jobs:
-  compile:
-    name: "Compile PHAR"
+  compiler-tests:
+    name: "Compiler Tests"
+
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
 
+    outputs:
+      checksum: ${{ steps.checksum.outputs.md5 }}
+
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -35,9 +38,115 @@ jobs:
       - name: "Install compiler dependencies"
         run: "composer install --no-interaction --no-progress --working-dir=compiler"
 
-      - name: "Compile PHAR"
-        run: php compiler/bin/compile
+      - name: "Compiler tests"
+        working-directory: "compiler"
+        run: "vendor/bin/phpunit -c tests/phpunit.xml tests"
 
+      - name: "Compiler PHPStan"
+        working-directory: "compiler"
+        run: "../bin/phpstan analyse -l 8 src tests"
+
+      - name: "Rector downgrade cache key"
+        id: rector-cache-key
+        run: |
+          echo "::set-output name=sha::$(php build/rector-cache-files-hash.php)"
+
+      - name: "Rector downgrade cache"
+        uses: actions/cache@v3
+        with:
+          path: ./tmp/rectorCache.php
+          key: "rector-v1-phar-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ steps.rector-cache-key.outputs.sha }}"
+          restore-keys: |
+            rector-v1-phar-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-
+
+      - name: "Delete Rector downgrade cache"
+        if: github.event_name != 'pull_request'
+        run: "rm -f tmp/rectorCache.php"
+
+      - name: "Prepare for PHAR compilation"
+        working-directory: "compiler"
+        run: "php bin/prepare"
+
+      - name: "Compile PHAR"
+        working-directory: "compiler/build"
+        run: "php box.phar compile --no-parallel"
+
+      - name: "Run PHAR"
+        working-directory: "compiler"
+        run: "../tmp/phpstan.phar list"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: phar-file
+          path: tmp/phpstan.phar
+
+      - name: "Delete PHAR"
+        run: "rm tmp/phpstan.phar"
+
+      - name: "Set autoloader suffix"
+        run: "composer config autoloader-suffix PHPStanChecksum"
+
+      - name: "Composer dump"
+        run: "composer install --no-interaction --no-progress"
+        env:
+          COMPOSER_ROOT_VERSION: "1.5.x-dev"
+
+      - name: "Compile PHAR for checksum"
+        working-directory: "compiler/build"
+        run: "php box.phar compile --no-parallel"
+        env:
+          PHAR_CHECKSUM: "1"
+          COMPOSER_ROOT_VERSION: "1.5.x-dev"
+
+      - name: "Re-sign PHAR"
+        run: "php compiler/build/resign.php tmp/phpstan.phar"
+
+      - name: "Unset autoloader suffix"
+        run: "composer config autoloader-suffix --unset"
+
+      - name: "Save checksum"
+        id: "checksum"
+        run: echo "::set-output name=md5::$(md5sum tmp/phpstan.phar | cut -d' ' -f1)"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: phar-file-checksum
+          path: tmp/phpstan.phar
+
+      - name: "Delete checksum PHAR"
+        run: "rm tmp/phpstan.phar"
+
+  integration-tests:
+    if: github.event_name == 'pull_request'
+    needs: compiler-tests
+    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@1.5.x
+    with:
+      ref: 1.5.x
+      phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
+
+  extension-tests:
+    if: github.event_name == 'pull_request'
+    needs: compiler-tests
+    uses: phpstan/phpstan/.github/workflows/extension-tests.yml@1.5.x
+    with:
+      ref: 1.5.x
+      phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
+
+  other-tests:
+    if: github.event_name == 'pull_request'
+    needs: compiler-tests
+    uses: phpstan/phpstan/.github/workflows/other-tests.yml@1.5.x
+    with:
+      ref: 1.5.x
+      phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
+
+  commit:
+    if: "github.ref == 'refs/heads/1.5.x' || startsWith(github.ref, 'refs/tags/')"
+    needs: compiler-tests
+    name: "Commit PHAR"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 60
+    steps:
       - name: "Configure GPG signing key"
         run: echo "$GPG_SIGNING_KEY" | base64 --decode | gpg --import --no-tty --batch --yes
         env:
@@ -48,14 +157,37 @@ jobs:
         run: echo ::set-output name=log::$(git log ${{ github.event.before }}..${{ github.event.after }} --reverse --pretty='%H %s' | sed -e 's/^/https:\/\/github.com\/phpstan\/phpstan-src\/commit\//')
 
       - name: "Checkout phpstan-dist"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
         with:
           repository: phpstan/phpstan
           path: phpstan-dist
           token: ${{ secrets.PAT }}
+          ref: 1.5.x
 
-      - name: "cp PHAR"
-        run: cp tmp/phpstan.phar phpstan-dist/phpstan.phar
+      - name: "Check PHAR checksum"
+        id: checksum-difference
+        working-directory: phpstan-dist
+        run: |
+          checksum=${{needs.compiler-tests.outputs.checksum}}
+          if [[ $(< .phar-checksum) != "$checksum" ]]; then
+            echo "::set-output name=result::different
+          else
+            echo "::set-output name=result::same
+          fi
+
+      - name: "Download phpstan.phar"
+        uses: actions/download-artifact@v3
+        with:
+          name: phar-file
+
+      - name: "mv PHAR"
+        run: mv phpstan.phar phpstan-dist/phpstan.phar
+
+      - name: "chmod PHAR"
+        run: chmod 755 phpstan-dist/phpstan.phar
+
+      - name: "Update checksum"
+        run: echo ${{needs.compiler-tests.outputs.checksum}} > phpstan-dist/.phar-checksum
 
       - name: "Sign PHAR"
         working-directory: phpstan-dist
@@ -73,26 +205,25 @@ jobs:
         env:
           GPG_ID: ${{ secrets.GPG_ID }}
 
-      - name: "Configure Git"
-        working-directory: phpstan-dist
-        run: |
-          git config user.email "ondrej@mirtes.cz" && \
-          git config user.name "Ondrej Mirtes"
-
-      - name: "Commit PHAR - master"
-        working-directory: phpstan-dist
-        if: "!startsWith(github.ref, 'refs/tags/')"
-        run: |
-          git add phpstan.phar phpstan.phar.asc && \
-          git commit -S -m "Updated PHPStan to commit ${{ github.event.after }}" -m "${{ steps.git-log.outputs.log }}" && \
-          git push --quiet origin master
+      - name: "Commit PHAR - development"
+        if: "!startsWith(github.ref, 'refs/tags/') && steps.checksum-difference.outputs.result == 'different'"
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_user_name: "Ondrej Mirtes"
+          commit_user_email: "ondrej@mirtes.cz"
+          commit_author: "Ondrej Mirtes <ondrej@mirtes.cz>"
+          commit_options: "--gpg-sign"
+          repository: phpstan-dist
+          commit_message: "Updated PHPStan to commit ${{ github.event.after }}\n\n${{ steps.git-log.outputs.log }}"
 
       - name: "Commit PHAR - tag"
-        working-directory: phpstan-dist
         if: "startsWith(github.ref, 'refs/tags/')"
-        run: |
-          git add phpstan.phar phpstan.phar.asc && \
-          git commit -S -m "PHPStan ${GITHUB_REF#refs/tags/}" -m "${{ steps.git-log.outputs.log }}" && \
-          git push --quiet origin master && \
-          git tag -s ${GITHUB_REF#refs/tags/} -m "${GITHUB_REF#refs/tags/}" && \
-          git push --quiet origin ${GITHUB_REF#refs/tags/}
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_user_name: "Ondrej Mirtes"
+          commit_user_email: "ondrej@mirtes.cz"
+          commit_author: "Ondrej Mirtes <ondrej@mirtes.cz>"
+          commit_options: "--gpg-sign"
+          repository: phpstan-dist
+          commit_message: "PHPStan ${{github.ref_name}}\n\n${{ steps.git-log.outputs.log }}"
+          tagging_message: ${{github.ref_name}}

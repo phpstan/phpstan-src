@@ -28,7 +28,7 @@ use function substr;
 class NeonAdapter implements Adapter
 {
 
-	public const CACHE_KEY = 'v15-symfony-camel-case';
+	public const CACHE_KEY = 'v17-validate-schema';
 
 	private const PREVENT_MERGING_SUFFIX = '!';
 

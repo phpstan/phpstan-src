@@ -30,6 +30,7 @@
 	<groups>
 		<exclude>
 			<group>exec</group>
+			<group>levels</group>
 		</exclude>
 	</groups>
 	<logging/>

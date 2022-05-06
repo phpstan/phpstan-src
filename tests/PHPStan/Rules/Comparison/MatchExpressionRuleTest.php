@@ -73,16 +73,16 @@ class MatchExpressionRuleTest extends RuleTestCase
 				50,
 			],
 			[
-				'Match expression does not handle remaining values: 1|2|3',
-				55,
-			],
-			[
 				'Match arm comparison between 1|2 and 3 is always false.',
-				65,
+				61,
 			],
 			[
 				'Match arm comparison between 1 and 1 is always true.',
-				70,
+				66,
+			],
+			[
+				'Match expression does not handle remaining values: 1|2|3',
+				78,
 			],
 			[
 				'Match arm comparison between true and false is always false.',
@@ -95,6 +95,10 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match expression does not handle remaining value: true',
 				90,
+			],
+			[
+				'Match expression does not handle remaining values: int<min, 0>|int<2, max>',
+				168,
 			],
 		]);
 	}
@@ -165,6 +169,20 @@ class MatchExpressionRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-6394.php'], []);
+	}
+
+	public function testBug6115(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-6115.php'], [
+			[
+				'Match expression does not handle remaining value: 3',
+				32,
+			],
+		]);
 	}
 
 }

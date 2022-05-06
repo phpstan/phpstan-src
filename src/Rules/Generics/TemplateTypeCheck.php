@@ -18,13 +18,12 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
-use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
-use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
@@ -95,29 +94,25 @@ class TemplateTypeCheck
 				$messages = array_merge($messages, $this->classCaseSensitivityCheck->checkClassNames($classNameNodePairs));
 			}
 
-			TypeTraverser::map($templateTag->getBound(), static function (Type $type, callable $traverse) use (&$messages, $notSupportedBoundMessage, $templateTagName): Type {
-				$boundClass = get_class($type);
-				if (
-					$boundClass === MixedType::class
-					|| $boundClass === ConstantArrayType::class
-					|| $boundClass === ArrayType::class
-					|| $boundClass === StringType::class
-					|| $boundClass === IntegerType::class
-					|| $boundClass === FloatType::class
-					|| $boundClass === BooleanType::class
-					|| $boundClass === ObjectWithoutClassType::class
-					|| $boundClass === ObjectType::class
-					|| $boundClass === GenericObjectType::class
-					|| $type instanceof UnionType
-					|| $type instanceof TemplateType
-				) {
-					return $traverse($type);
-				}
-
-				$messages[] = RuleErrorBuilder::message(sprintf($notSupportedBoundMessage, $templateTagName, $type->describe(VerbosityLevel::typeOnly())))->build();
-
-				return $type;
-			});
+			$boundType = $templateTag->getBound();
+			$boundTypeClass = get_class($boundType);
+			if (
+				$boundTypeClass !== MixedType::class
+				&& $boundTypeClass !== ConstantArrayType::class
+				&& $boundTypeClass !== ArrayType::class
+				&& $boundTypeClass !== StringType::class
+				&& $boundTypeClass !== IntegerType::class
+				&& $boundTypeClass !== FloatType::class
+				&& $boundTypeClass !== BooleanType::class
+				&& $boundTypeClass !== ObjectWithoutClassType::class
+				&& $boundTypeClass !== ObjectType::class
+				&& $boundTypeClass !== GenericObjectType::class
+				&& !$boundType instanceof UnionType
+				&& !$boundType instanceof IntersectionType
+				&& !$boundType instanceof TemplateType
+			) {
+				$messages[] = RuleErrorBuilder::message(sprintf($notSupportedBoundMessage, $templateTagName, $boundType->describe(VerbosityLevel::typeOnly())))->build();
+			}
 
 			$escapedTemplateTagName = SprintfHelper::escapeFormatString($templateTagName);
 			$genericObjectErrors = $this->genericObjectTypeCheck->check(

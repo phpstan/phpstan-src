@@ -28,6 +28,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
+use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateObjectType;
 use PHPStan\Type\Generic\TemplateObjectWithoutClassType;
 use PHPStan\Type\Generic\TemplateType;
@@ -1204,6 +1205,112 @@ class TypeCombinatorTest extends PHPStanTestCase
 				UnionType::class,
 				'T of DateTime (function a(), parameter)|U of DateTime (function a(), parameter)',
 			],
+			'bug6210-1' => [
+				[
+					new ObjectWithoutClassType(),
+					new IntersectionType([
+						new ObjectWithoutClassType(),
+						new HasMethodType('getId'),
+					]),
+				],
+				ObjectWithoutClassType::class,
+				'object',
+			],
+			'bug6210-2' => [
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						null,
+						TemplateTypeVariance::createInvariant(),
+					),
+					new IntersectionType([
+						TemplateTypeFactory::create(
+							TemplateTypeScope::createWithFunction('a'),
+							'T',
+							null,
+							TemplateTypeVariance::createInvariant(),
+						),
+						new HasMethodType('getId'),
+					]),
+				],
+				TemplateMixedType::class,
+				'T (function a(), parameter)=explicit',
+			],
+			'bug6210-3' => [
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						new ObjectWithoutClassType(),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new IntersectionType([
+						TemplateTypeFactory::create(
+							TemplateTypeScope::createWithFunction('a'),
+							'T',
+							new ObjectWithoutClassType(),
+							TemplateTypeVariance::createInvariant(),
+						),
+						new HasMethodType('getId'),
+					]),
+				],
+				TemplateObjectWithoutClassType::class,
+				'T of object (function a(), parameter)',
+			],
+			'bug6210-4' => [
+				[
+					new ObjectWithoutClassType(),
+					new IntersectionType([
+						new ObjectWithoutClassType(),
+						new HasPropertyType('getId'),
+					]),
+				],
+				ObjectWithoutClassType::class,
+				'object',
+			],
+			'bug6210-5' => [
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						null,
+						TemplateTypeVariance::createInvariant(),
+					),
+					new IntersectionType([
+						TemplateTypeFactory::create(
+							TemplateTypeScope::createWithFunction('a'),
+							'T',
+							null,
+							TemplateTypeVariance::createInvariant(),
+						),
+						new HasPropertyType('getId'),
+					]),
+				],
+				TemplateMixedType::class,
+				'T (function a(), parameter)=explicit',
+			],
+			'bug6210-6' => [
+				[
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithFunction('a'),
+						'T',
+						new ObjectWithoutClassType(),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new IntersectionType([
+						TemplateTypeFactory::create(
+							TemplateTypeScope::createWithFunction('a'),
+							'T',
+							new ObjectWithoutClassType(),
+							TemplateTypeVariance::createInvariant(),
+						),
+						new HasPropertyType('getId'),
+					]),
+				],
+				TemplateObjectWithoutClassType::class,
+				'T of object (function a(), parameter)',
+			],
 			[
 				[
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
@@ -1966,6 +2073,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			UnionType::class,
 			'PHPStan\Fixture\AnotherTestEnum::ONE|PHPStan\Fixture\TestEnum::ONE',
+		];
+		yield [
+			[
+				new MixedType(false, new IntegerRangeType(17, null)),
+				new IntegerRangeType(19, null),
+			],
+			MixedType::class,
+			'mixed~int<17, 18>=implicit',
 		];
 	}
 
@@ -3288,6 +3403,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 			NeverType::class,
 			'*NEVER*',
 		];
+		yield [
+			[
+				new MixedType(false, new IntegerRangeType(17, null)),
+				new MixedType(),
+			],
+			MixedType::class,
+			'mixed~int<17, max>=implicit',
+		];
 	}
 
 	/**
@@ -3546,13 +3669,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new BenevolentUnionType([new IntegerType(), new StringType()]),
 				new ConstantStringType('foo'),
 				UnionType::class,
-				'int|string',
+				'(int|string)',
 			],
 			[
 				new BenevolentUnionType([new IntegerType(), new StringType()]),
 				new ConstantIntegerType(1),
 				UnionType::class,
-				'int<min, 0>|int<2, max>|string',
+				'(int<min, 0>|int<2, max>|string)',
 			],
 			[
 				new BenevolentUnionType([new IntegerType(), new StringType()]),
@@ -3798,6 +3921,17 @@ class TypeCombinatorTest extends PHPStanTestCase
 				ObjectType::class,
 				'stdClass',
 			],
+			[
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithClass('Foo'),
+					'T',
+					new BooleanType(),
+					TemplateTypeVariance::createInvariant(),
+				),
+				new ConstantBooleanType(false),
+				TemplateMixedType::class, // should be TemplateConstantBooleanType
+				'T (class Foo, parameter)', // should be T of true
+			],
 		];
 	}
 
@@ -3833,7 +3967,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		}
 		$resultType = TypeCombinator::union(...$arrays);
 		$this->assertInstanceOf(ConstantArrayType::class, $resultType);
-		$this->assertSame('array{0: string, test?: string, 1?: string, 2?: string, 3?: string, 4?: string}', $resultType->describe(VerbosityLevel::precise()));
+		$this->assertSame('array{0: string, 1?: string, 2?: string, 3?: string, 4?: string, test?: string}', $resultType->describe(VerbosityLevel::precise()));
 	}
 
 }

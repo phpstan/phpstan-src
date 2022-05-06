@@ -8,9 +8,8 @@ use PhpParser\Node;
 use PHPStan\Analyser\NameScope;
 use PHPStan\BetterReflection\Util\GetLastDocComment;
 use PHPStan\Broker\AnonymousClassNameHelper;
-use PHPStan\Cache\Cache;
+use PHPStan\File\FileHelper;
 use PHPStan\Parser\Parser;
-use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -19,11 +18,9 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\GenericObjectType;
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use ReflectionClass;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -31,8 +28,6 @@ use function array_merge;
 use function array_pop;
 use function array_slice;
 use function count;
-use function filemtime;
-use function implode;
 use function is_array;
 use function is_callable;
 use function is_file;
@@ -41,8 +36,6 @@ use function md5;
 use function sprintf;
 use function strpos;
 use function strtolower;
-use function time;
-use function trait_exists;
 
 class FileTypeMapper
 {
@@ -63,17 +56,13 @@ class FileTypeMapper
 
 	private int $resolvedPhpDocBlockCacheCount = 0;
 
-	/** @var array<string, bool> */
-	private array $alreadyProcessedDependentFiles = [];
-
 	public function __construct(
 		private ReflectionProviderProvider $reflectionProviderProvider,
 		private Parser $phpParser,
 		private PhpDocStringResolver $phpDocStringResolver,
 		private PhpDocNodeResolver $phpDocNodeResolver,
-		private Cache $cache,
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
-		private PhpVersion $phpVersion,
+		private FileHelper $fileHelper,
 	)
 	{
 	}
@@ -87,6 +76,8 @@ class FileTypeMapper
 		string $docComment,
 	): ResolvedPhpDocBlock
 	{
+		$fileName = $this->fileHelper->normalizePath($fileName);
+
 		if ($className === null && $traitName !== null) {
 			throw new ShouldNotHappenException();
 		}
@@ -130,30 +121,7 @@ class FileTypeMapper
 	private function createResolvedPhpDocBlock(string $phpDocKey, NameScope $nameScope, string $phpDocString, string $fileName): ResolvedPhpDocBlock
 	{
 		$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
-		$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
-		$templateTypeScope = $nameScope->getTemplateTypeScope();
-
-		if ($templateTypeScope !== null) {
-			$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
-			$nameScope = $nameScope->withTemplateTypeMap(
-				new TemplateTypeMap(array_merge(
-					$nameScope->getTemplateTypeMap()->getTypes(),
-					$templateTypeMap->getTypes(),
-				)),
-			);
-			$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
-			$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
-			$nameScope = $nameScope->withTemplateTypeMap(
-				new TemplateTypeMap(array_merge(
-					$nameScope->getTemplateTypeMap()->getTypes(),
-					$templateTypeMap->getTypes(),
-				)),
-			);
-		} else {
-			$templateTypeMap = TemplateTypeMap::createEmpty();
-		}
-
-		if ($this->resolvedPhpDocBlockCacheCount >= 512) {
+		if ($this->resolvedPhpDocBlockCacheCount >= 2048) {
 			$this->resolvedPhpDocBlockCache = array_slice(
 				$this->resolvedPhpDocBlockCache,
 				1,
@@ -164,12 +132,23 @@ class FileTypeMapper
 			$this->resolvedPhpDocBlockCacheCount--;
 		}
 
+		$templateTypeMap = $nameScope->getTemplateTypeMap();
+		$phpDocTemplateTypes = [];
+		$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
+		foreach (array_keys($templateTags) as $name) {
+			$templateType = $templateTypeMap->getType($name);
+			if ($templateType === null) {
+				continue;
+			}
+			$phpDocTemplateTypes[$name] = $templateType;
+		}
+
 		$this->resolvedPhpDocBlockCache[$phpDocKey] = ResolvedPhpDocBlock::create(
 			$phpDocNode,
 			$phpDocString,
 			$fileName,
 			$nameScope,
-			$templateTypeMap,
+			new TemplateTypeMap($phpDocTemplateTypes),
 			$templateTags,
 			$this->phpDocNodeResolver,
 		);
@@ -189,16 +168,8 @@ class FileTypeMapper
 	private function getNameScopeMap(string $fileName): array
 	{
 		if (!isset($this->memoryCache[$fileName])) {
-			$cacheKey = sprintf('%s-phpdocstring-v18-filter-ast', $fileName);
-			$variableCacheKey = sprintf('%s-%s', implode(',', array_map(static fn (array $file): string => sprintf('%s-%d', $file['filename'], $file['modifiedTime']), $this->getCachedDependentFilesWithTimestamps($fileName))), $this->phpVersion->getVersionString());
-			$map = $this->cache->load($cacheKey, $variableCacheKey);
-
-			if ($map === null) {
-				$map = $this->createResolvedPhpDocMap($fileName);
-				$this->cache->save($cacheKey, $variableCacheKey, $map);
-			}
-
-			if ($this->memoryCacheCount >= 512) {
+			$map = $this->createResolvedPhpDocMap($fileName);
+			if ($this->memoryCacheCount >= 2048) {
 				$this->memoryCache = array_slice(
 					$this->memoryCache,
 					1,
@@ -277,6 +248,10 @@ class FileTypeMapper
 			$this->phpParser->parseFile($fileName),
 			function (Node $node) use ($fileName, $lookForTrait, &$traitFound, $traitMethodAliases, $originalClassFileName, &$nameScopeMap, &$classStack, &$typeAliasStack, &$namespace, &$functionStack, &$uses, &$typeMapStack): ?int {
 				if ($node instanceof Node\Stmt\ClassLike) {
+					if ($traitFound && $fileName === $originalClassFileName) {
+						return self::SKIP_NODE;
+					}
+
 					if ($lookForTrait !== null && !$traitFound) {
 						if (!$node instanceof Node\Stmt\Trait_) {
 							return self::SKIP_NODE;
@@ -317,14 +292,15 @@ class FileTypeMapper
 
 				$className = $classStack[count($classStack) - 1] ?? null;
 				$functionName = $functionStack[count($functionStack) - 1] ?? null;
-				$resolvableTemplateTypes = ($className !== null && $lookForTrait === null) || $functionName !== null;
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 					$phpDocString = GetLastDocComment::forNode($node);
 					if ($phpDocString !== '') {
-						$typeMapStack[] = function () use ($namespace, $uses, $className, $functionName, $phpDocString, $typeMapStack, $resolvableTemplateTypes): TemplateTypeMap {
+						$typeMapStack[] = function () use ($namespace, $uses, $className, $functionName, $phpDocString, $typeMapStack): TemplateTypeMap {
 							$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
-							$nameScope = new NameScope($namespace, $uses, $className, $functionName);
+							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
+							$currentTypeMap = $typeMapCb !== null ? $typeMapCb() : null;
+							$nameScope = new NameScope($namespace, $uses, $className, $functionName, $currentTypeMap);
 							$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 							$templateTypeScope = $nameScope->getTemplateTypeScope();
 							if ($templateTypeScope === null) {
@@ -334,28 +310,11 @@ class FileTypeMapper
 							$nameScope = $nameScope->withTemplateTypeMap($templateTypeMap);
 							$templateTags = $this->phpDocNodeResolver->resolveTemplateTags($phpDocNode, $nameScope);
 							$templateTypeMap = new TemplateTypeMap(array_map(static fn (TemplateTag $tag): Type => TemplateTypeFactory::fromTemplateTag($templateTypeScope, $tag), $templateTags));
-							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
 
-							return (new TemplateTypeMap(array_merge(
-								$typeMapCb !== null ? $typeMapCb()->getTypes() : [],
+							return new TemplateTypeMap(array_merge(
+								$currentTypeMap !== null ? $currentTypeMap->getTypes() : [],
 								$templateTypeMap->getTypes(),
-							)))->map(static fn (string $name, Type $type): Type => TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($className, $resolvableTemplateTypes): Type {
-									if (!$type instanceof TemplateType) {
-										return $traverse($type);
-									}
-
-									if (!$resolvableTemplateTypes) {
-										return $traverse($type->toArgument());
-									}
-
-									$scope = $type->getScope();
-
-									if ($scope->getClassName() === null || $scope->getFunctionName() !== null || $scope->getClassName() !== $className) {
-										return $traverse($type->toArgument());
-									}
-
-									return $traverse($type);
-							}));
+							));
 						};
 					}
 				}
@@ -626,128 +585,6 @@ class FileTypeMapper
 		}
 
 		return md5(sprintf('%s-%s-%s-%s', $file, $class, $trait, $function));
-	}
-
-	/**
-	 * @return array<array{filename: string, modifiedTime: int}>
-	 */
-	private function getCachedDependentFilesWithTimestamps(string $fileName): array
-	{
-		$cacheKey = sprintf('dependentFilesTimestamps-%s-v3-filter-ast', $fileName);
-		$fileModifiedTime = filemtime($fileName);
-		if ($fileModifiedTime === false) {
-			$fileModifiedTime = time();
-		}
-		$variableCacheKey = sprintf('%d-%s', $fileModifiedTime, $this->phpVersion->getVersionString());
-		/** @var array<array{filename: string, modifiedTime: int}>|null $cachedFilesTimestamps */
-		$cachedFilesTimestamps = $this->cache->load($cacheKey, $variableCacheKey);
-		if ($cachedFilesTimestamps !== null) {
-			$useCached = true;
-			foreach ($cachedFilesTimestamps as $cachedFile) {
-				$cachedFilename = $cachedFile['filename'];
-				$cachedTimestamp = $cachedFile['modifiedTime'];
-
-				if (!is_file($cachedFilename)) {
-					$useCached = false;
-					break;
-				}
-
-				$currentTimestamp = filemtime($cachedFilename);
-				if ($currentTimestamp === false) {
-					$useCached = false;
-					break;
-				}
-
-				if ($currentTimestamp !== $cachedTimestamp) {
-					$useCached = false;
-					break;
-				}
-			}
-
-			if ($useCached) {
-				return $cachedFilesTimestamps;
-			}
-		}
-
-		$filesTimestamps = [];
-		foreach ($this->getDependentFiles($fileName) as $dependentFile) {
-			$dependentFileModifiedTime = filemtime($dependentFile);
-			if ($dependentFileModifiedTime === false) {
-				$dependentFileModifiedTime = time();
-			}
-
-			$filesTimestamps[] = [
-				'filename' => $dependentFile,
-				'modifiedTime' => $dependentFileModifiedTime,
-			];
-		}
-
-		$this->cache->save($cacheKey, $variableCacheKey, $filesTimestamps);
-
-		return $filesTimestamps;
-	}
-
-	/**
-	 * @return string[]
-	 */
-	private function getDependentFiles(string $fileName): array
-	{
-		$dependentFiles = [$fileName];
-
-		if (isset($this->alreadyProcessedDependentFiles[$fileName])) {
-			return $dependentFiles;
-		}
-
-		$this->alreadyProcessedDependentFiles[$fileName] = true;
-
-		$this->processNodes(
-			$this->phpParser->parseFile($fileName),
-			function (Node $node) use (&$dependentFiles) {
-				if ($node instanceof Node\Stmt\Declare_) {
-					return null;
-				}
-				if ($node instanceof Node\Stmt\Namespace_) {
-					return null;
-				}
-
-				if (!$node instanceof Node\Stmt\Class_ && !$node instanceof Node\Stmt\Trait_ && !$node instanceof Node\Stmt\Enum_) {
-					return null;
-				}
-
-				foreach ($node->stmts as $stmt) {
-					if (!$stmt instanceof Node\Stmt\TraitUse) {
-						continue;
-					}
-
-					foreach ($stmt->traits as $traitName) {
-						$traitName = (string) $traitName;
-						if (!trait_exists($traitName)) {
-							continue;
-						}
-
-						$traitReflection = new ReflectionClass($traitName);
-						if ($traitReflection->getFileName() === false) {
-							continue;
-						}
-						if (!is_file($traitReflection->getFileName())) {
-							continue;
-						}
-
-						foreach ($this->getDependentFiles($traitReflection->getFileName()) as $traitFileName) {
-							$dependentFiles[] = $traitFileName;
-						}
-					}
-				}
-
-				return null;
-			},
-			static function (): void {
-			},
-		);
-
-		unset($this->alreadyProcessedDependentFiles[$fileName]);
-
-		return $dependentFiles;
 	}
 
 }

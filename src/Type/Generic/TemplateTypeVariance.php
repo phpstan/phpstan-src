@@ -6,6 +6,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
 /** @api */
@@ -97,6 +98,10 @@ class TemplateTypeVariance
 
 	public function isValidVariance(Type $a, Type $b): TrinaryLogic
 	{
+		if ($b instanceof NeverType) {
+			return TrinaryLogic::createYes();
+		}
+
 		if ($a instanceof MixedType && !$a instanceof TemplateType) {
 			return TrinaryLogic::createYes();
 		}

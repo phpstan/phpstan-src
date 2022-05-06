@@ -63,3 +63,35 @@ class Foo
 	}
 
 }
+
+interface Foo2 {
+	function equals(self $other): bool;
+}
+
+class HelloWorld
+{
+	/**
+	 * @param Foo2[] $startTimes
+	 * @return mixed[]
+	 */
+	public static function groupCapacities(array $startTimes): array
+	{
+		if ($startTimes === []) {
+			return [];
+		}
+		sort($startTimes);
+
+		$capacities = [];
+		$current = $startTimes[0];
+		$count = 0;
+		foreach ($startTimes as $startTime) {
+			if (!$startTime->equals($current)) {
+				$count = 0;
+			}
+			$count++;
+		}
+		assertType('int<1, max>', $count);
+
+		return $capacities;
+	}
+}

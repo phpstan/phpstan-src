@@ -107,15 +107,15 @@ class GenericObjectType extends ObjectType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		if ($type instanceof CompoundType) {
+			return $type->isSubTypeOf($this);
+		}
+
 		return $this->isSuperTypeOfInternal($type, false);
 	}
 
 	private function isSuperTypeOfInternal(Type $type, bool $acceptsContext): TrinaryLogic
 	{
-		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
-		}
-
 		$nakedSuperTypeOf = parent::isSuperTypeOf($type);
 		if ($nakedSuperTypeOf->no()) {
 			return $nakedSuperTypeOf;

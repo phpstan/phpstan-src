@@ -14,7 +14,7 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: '0'
@@ -27,7 +27,7 @@ jobs:
       - name: "Install dependencies"
         run: "composer install  --no-interaction --no-progress"
       - name: "Checkout stubs"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
         with:
           path: "phpstorm-stubs"
           repository: "jetbrains/phpstorm-stubs"
@@ -39,7 +39,7 @@ jobs:
         run: "./bin/generate-function-metadata.php"
       - name: "Create Pull Request"
         id: create-pr
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           branch-suffix: random

@@ -845,3 +845,18 @@ class InArray2
 	}
 
 }
+
+class ArraySearch
+{
+
+	/**
+	 * @param int $i
+	 * @param non-empty-array<int> $is
+	 * @return void
+	 */
+	public function doFoo(int $i, array $is): void
+	{
+		$res = array_search($i, $is, true);
+	}
+
+}

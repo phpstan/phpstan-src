@@ -11,7 +11,7 @@ class HelloWorld
 	{
 		$redirectUrlParts = parse_url($redirectUri);
 		if (false === is_array($redirectUrlParts) || true === array_key_exists('host', $redirectUrlParts)) {
-			assertType('array{scheme?: string, host?: string, port?: int, user?: string, pass?: string, path?: string, query?: string, fragment?: string}|false', $redirectUrlParts);
+			assertType('array{scheme?: string, host: string, port?: int, user?: string, pass?: string, path?: string, query?: string, fragment?: string}|false', $redirectUrlParts);
 			return null;
 		}
 

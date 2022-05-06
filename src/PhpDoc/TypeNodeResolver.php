@@ -8,7 +8,6 @@ use Iterator;
 use IteratorAggregate;
 use Nette\Utils\Strings;
 use PHPStan\Analyser\NameScope;
-use PHPStan\DependencyInjection\Container;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprArrayNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFalseNode;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
@@ -69,6 +68,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
+use PHPStan\Type\TypeAliasResolverProvider;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
@@ -90,7 +90,8 @@ class TypeNodeResolver
 
 	public function __construct(
 		private TypeNodeResolverExtensionRegistryProvider $extensionRegistryProvider,
-		private Container $container,
+		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
+		private TypeAliasResolverProvider $typeAliasResolverProvider,
 	)
 	{
 	}
@@ -383,7 +384,7 @@ class TypeNodeResolver
 
 	private function resolveNullableTypeNode(NullableTypeNode $typeNode, NameScope $nameScope): Type
 	{
-		return TypeCombinator::addNull($this->resolve($typeNode->type, $nameScope));
+		return TypeCombinator::union($this->resolve($typeNode->type, $nameScope), new NullType());
 	}
 
 	private function resolveUnionTypeNode(UnionTypeNode $typeNode, NameScope $nameScope): Type
@@ -456,7 +457,7 @@ class TypeNodeResolver
 					new IntegerType(),
 					new StringType(),
 				]));
-				$arrayType = new ArrayType($keyType, $genericTypes[1]);
+				$arrayType = new ArrayType(!$keyType instanceof NeverType ? ArrayType::castToArrayKeyType($keyType) : $keyType, $genericTypes[1]);
 			} else {
 				return new ErrorType();
 			}
@@ -524,6 +525,26 @@ class TypeNodeResolver
 			return new ErrorType();
 		} elseif ($mainTypeName === 'value-of') {
 			if (count($genericTypes) === 1) { // value-of<ValueType>
+				if ($genericTypes[0] instanceof TypeWithClassName) {
+					if ($this->getReflectionProvider()->hasClass($genericTypes[0]->getClassName())) {
+						$classReflection = $this->getReflectionProvider()->getClass($genericTypes[0]->getClassName());
+
+						if ($classReflection->isBackedEnum()) {
+							$cases = [];
+							foreach ($classReflection->getEnumCases() as $enumCaseReflection) {
+								$backingType = $enumCaseReflection->getBackingValueType();
+								if ($backingType === null) {
+									continue;
+								}
+
+								$cases[] = $backingType;
+							}
+
+							return TypeCombinator::union(...$cases);
+						}
+					}
+				}
+
 				return $genericTypes[0]->getIterableValueType();
 			}
 
@@ -797,12 +818,12 @@ class TypeNodeResolver
 
 	private function getReflectionProvider(): ReflectionProvider
 	{
-		return $this->container->getByType(ReflectionProvider::class);
+		return $this->reflectionProviderProvider->getReflectionProvider();
 	}
 
 	private function getTypeAliasResolver(): TypeAliasResolver
 	{
-		return $this->container->getByType(TypeAliasResolver::class);
+		return $this->typeAliasResolverProvider->getTypeAliasResolver();
 	}
 
 }

@@ -7,11 +7,16 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function count;
+use function implode;
 use function in_array;
 
 class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -35,20 +40,7 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 		if (count($args) === 1) {
 			$argType = $scope->getType($args[0]->value);
 			if ($argType->isArray()->yes()) {
-				$accessoryTypes = [];
-				if ($argType->isIterableAtLeastOnce()->yes() && $argType->getIterableValueType()->isNonEmptyString()->yes()) {
-					$accessoryTypes[] = new AccessoryNonEmptyStringType();
-				}
-				if ($argType->getIterableValueType()->isLiteralString()->yes()) {
-					$accessoryTypes[] = new AccessoryLiteralStringType();
-				}
-
-				if (count($accessoryTypes) > 0) {
-					$accessoryTypes[] = new StringType();
-					return new IntersectionType($accessoryTypes);
-				}
-
-				return new StringType();
+				return $this->implode($argType, new ConstantStringType(''));
 			}
 		}
 
@@ -58,6 +50,19 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 
 		$separatorType = $scope->getType($args[0]->value);
 		$arrayType = $scope->getType($args[1]->value);
+
+		return $this->implode($arrayType, $separatorType);
+	}
+
+	private function implode(Type $arrayType, Type $separatorType): Type
+	{
+		if ($arrayType instanceof ConstantArrayType && $separatorType instanceof ConstantStringType) {
+			$constantType = $this->inferConstantType($arrayType, $separatorType);
+			if ($constantType !== null) {
+				return $constantType;
+			}
+		}
+
 		$accessoryTypes = [];
 		if ($arrayType->isIterableAtLeastOnce()->yes()) {
 			if ($arrayType->getIterableValueType()->isNonEmptyString()->yes() || $separatorType->isNonEmptyString()->yes()) {
@@ -75,6 +80,26 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 		}
 
 		return new StringType();
+	}
+
+	private function inferConstantType(ConstantArrayType $arrayType, ConstantStringType $separatorType): ?Type
+	{
+		$strings = [];
+		foreach ($arrayType->getAllArrays() as $array) {
+			$valueTypes = $array->getValueTypes();
+
+			$arrayValues = [];
+			foreach ($valueTypes as $valueType) {
+				if (!$valueType instanceof ConstantScalarType) {
+					return null;
+				}
+				$arrayValues[] = $valueType->getValue();
+			}
+
+			$strings[] = new ConstantStringType(implode($separatorType->getValue(), $arrayValues));
+		}
+
+		return TypeCombinator::union(...$strings);
 	}
 
 }

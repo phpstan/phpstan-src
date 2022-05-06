@@ -25,6 +25,7 @@ class VarExportFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 			[
 				'var_export',
 				'highlight_file',
+				'show_source', // alias of highlight_file
 				'highlight_string',
 				'print_r',
 			],

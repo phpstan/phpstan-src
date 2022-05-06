@@ -72,6 +72,82 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 				'Call to method ImpossibleMethodCall\Foo::isSame() with stdClass and stdClass will always evaluate to true.',
 				78,
 			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with stdClass and stdClass will always evaluate to false.',
+				81,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with \'foo\' and \'foo\' will always evaluate to true.',
+				101,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with \'foo\' and \'foo\' will always evaluate to false.',
+				104,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with array{} and array{} will always evaluate to true.',
+				113,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with array{} and array{} will always evaluate to false.',
+				116,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with array{1, 3} and array{1, 3} will always evaluate to true.',
+				119,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with array{1, 3} and array{1, 3} will always evaluate to false.',
+				122,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with 1 and stdClass will always evaluate to false.',
+				126,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with 1 and stdClass will always evaluate to true.',
+				130,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with \'1\' and stdClass will always evaluate to false.',
+				133,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with \'1\' and stdClass will always evaluate to true.',
+				136,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with array{\'a\', \'b\'} and array{1, 2} will always evaluate to false.',
+				139,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with array{\'a\', \'b\'} and array{1, 2} will always evaluate to true.',
+				142,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with stdClass and \'1\' will always evaluate to false.',
+				145,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with stdClass and \'1\' will always evaluate to true.',
+				148,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with \'\' and \'\' will always evaluate to true.',
+				174,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with \'\' and \'\' will always evaluate to false.',
+				175,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isSame() with 1 and 1 will always evaluate to true.',
+				191,
+			],
+			[
+				'Call to method ImpossibleMethodCall\Foo::isNotSame() with 2 and 2 will always evaluate to false.',
+				194,
+			],
 		]);
 	}
 

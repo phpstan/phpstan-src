@@ -47,7 +47,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
-use PHPStan\Type\TypeUtils;
 use ReflectionClass;
 use ReflectionParameter;
 use function array_key_exists;
@@ -292,6 +291,7 @@ class PhpClassReflectionExtension
 			&& $this->inferPrivatePropertyTypeFromConstructor
 			&& $declaringClassReflection->getFileName() !== null
 			&& $propertyReflection->isPrivate()
+			&& (!method_exists($propertyReflection, 'isPromoted') || !$propertyReflection->isPromoted())
 			&& (!method_exists($propertyReflection, 'hasType') || !$propertyReflection->hasType())
 			&& $declaringClassReflection->hasConstructor()
 			&& $declaringClassReflection->getConstructor()->getDeclaringClass()->getName() === $declaringClassReflection->getName()
@@ -974,7 +974,7 @@ class PhpClassReflectionExtension
 				continue;
 			}
 
-			$propertyType = TypeUtils::generalizeType($propertyType, GeneralizePrecision::lessSpecific());
+			$propertyType = $propertyType->generalize(GeneralizePrecision::lessSpecific());
 			if ($propertyType instanceof ConstantArrayType) {
 				$propertyType = new ArrayType(new MixedType(true), new MixedType(true));
 			}

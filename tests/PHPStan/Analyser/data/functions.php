@@ -6,12 +6,6 @@ $microtimeFloat = microtime(true);
 $microtimeDefault = microtime(null);
 $microtimeBenevolent = microtime($undefined);
 
-$strtotimeNow = strtotime('now');
-$strtotimeInvalid = strtotime('4 qm');
-$strtotimeUnknown = strtotime(doFoo() ? 'now': '4 qm');
-$strtotimeUnknown2 = strtotime($undefined);
-$strtotimeCrash = strtotime();
-
 $versionCompare1 = version_compare('7.0.0', '7.0.1');
 $versionCompare2 = version_compare('7.0.0', doFoo() ? '7.0.1' : '6.0.0');
 $versionCompare3 = version_compare(doFoo() ? '7.0.0' : '6.0.5', doBar() ? '7.0.1' : '6.0.0');
@@ -20,13 +14,6 @@ $versionCompare5 = version_compare('7.0.0', '7.0.1', '<');
 $versionCompare6 = version_compare('7.0.0', doFoo() ? '7.0.1' : '6.0.0', '<');
 $versionCompare7 = version_compare(doFoo() ? '7.0.0' : '6.0.5', doBar() ? '7.0.1' : '6.0.0', '<');
 $versionCompare8 = version_compare('7.0.0', doFoo(), '<');
-
-$mbStrlenWithoutEncoding = mb_strlen('');
-$mbStrlenWithValidEncoding = mb_strlen('', 'utf-8');
-$mbStrlenWithValidEncodingAlias = mb_strlen('', 'utf8');
-$mbStrlenWithInvalidEncoding = mb_strlen('', 'foo');
-$mbStrlenWithValidAndInvalidEncoding = mb_strlen('', doFoo() ? 'utf-8' : 'foo');
-$mbStrlenWithUnknownEncoding = mb_strlen('', doFoo());
 
 $mbHttpOutputWithoutEncoding = mb_http_output();
 $mbHttpOutputWithValidEncoding = mb_http_output('utf-8');
@@ -101,6 +88,8 @@ $resource = doFoo();
 $stat = stat(__FILE__);
 $lstat = lstat(__FILE__);
 $fstat = fstat($resource);
+$fileObject = new \SplFileObject(__FILE__);
+$fileObjectStat = $fileObject->fstat();
 
 $base64DecodeWithoutStrict = base64_decode('');
 $base64DecodeWithStrictDisabled = base64_decode('', false);
@@ -123,22 +112,4 @@ $strWordCountStrType2Extra = str_word_count('string', 2, 'string');
 $integer = doFoo();
 $strWordCountStrTypeIndeterminant = str_word_count('string', $integer);
 
-$hashHmacMd5 = hash_hmac('md5', 'data', 'key');
-$hashHmacSha256 = hash_hmac('sha256', 'data', 'key');
-$hashHmacNonCryptographic = hash_hmac('crc32', 'data', 'key');
-$hashHmacRandom = hash_hmac('random', 'data', 'key');
-$hashHmacVariable = hash_hmac($string, 'data', 'key');
-
-$hashHmacFileMd5 = hash_hmac_file('md5', 'data', 'key');
-$hashHmacFileSha256 = hash_hmac_file('sha256', 'data', 'key');
-$hashHmacFileNonCryptographic = hash_hmac_file('crc32', 'data', 'key');
-$hashHmacFileRandom = hash_hmac_file('random', 'data', 'key');
-$hashHmacFileVariable = hash_hmac_file($string, 'data', 'key');
-
-$hash = hash('sha256', 'data', false);
-$hashRaw = hash('sha256', 'data', true);
-$hashRandom = hash('random', 'data', false);
-/** @var mixed $mixed */
-$mixed = doFoo();
-$hashMixed = hash('md5', $mixed, false);
 die;

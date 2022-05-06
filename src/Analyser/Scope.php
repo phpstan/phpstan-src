@@ -102,6 +102,8 @@ interface Scope extends ClassMemberAccessAnswerer
 
 	public function isInExpressionAssign(Expr $expr): bool;
 
+	public function isUndefinedExpressionAllowed(Expr $expr): bool;
+
 	public function filterByTruthyValue(Expr $expr): self;
 
 	public function filterByFalseyValue(Expr $expr): self;

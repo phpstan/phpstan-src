@@ -5,26 +5,55 @@ namespace PHPStan\Reflection;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use function array_key_exists;
 use function array_merge;
+use function count;
+use function is_int;
 
 class GenericParametersAcceptorResolver
 {
 
 	/**
 	 * @api
-	 * @param Type[] $argTypes
+	 * @param array<int|string, Type> $argTypes
 	 */
 	public static function resolve(array $argTypes, ParametersAcceptor $parametersAcceptor): ParametersAcceptor
 	{
 		$typeMap = TemplateTypeMap::createEmpty();
 
-		foreach ($parametersAcceptor->getParameters() as $i => $param) {
-			if (isset($argTypes[$i])) {
-				$argType = $argTypes[$i];
+		$parameters = $parametersAcceptor->getParameters();
+		$namedArgTypes = [];
+		foreach ($argTypes as $i => $argType) {
+			if (is_int($i)) {
+				if (isset($parameters[$i])) {
+					$namedArgTypes[$parameters[$i]->getName()] = $argType;
+					continue;
+				}
+				if (count($parameters) > 0) {
+					$lastParameter = $parameters[count($parameters) - 1];
+					if ($lastParameter->isVariadic()) {
+						$parameterName = $lastParameter->getName();
+						if (array_key_exists($parameterName, $namedArgTypes)) {
+							$namedArgTypes[$parameterName] = TypeCombinator::union($namedArgTypes[$parameterName], $argType);
+							continue;
+						}
+						$namedArgTypes[$parameterName] = $argType;
+					}
+				}
+				continue;
+			}
+
+			$namedArgTypes[$i] = $argType;
+		}
+
+		foreach ($parametersAcceptor->getParameters() as $param) {
+			if (isset($namedArgTypes[$param->getName()])) {
+				$argType = $namedArgTypes[$param->getName()];
 			} elseif ($param->getDefaultValue() !== null) {
 				$argType = $param->getDefaultValue();
 			} else {
-				break;
+				continue;
 			}
 
 			$paramType = $param->getType();

@@ -21,10 +21,12 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 	private bool $checkThisOnly;
 
+	private bool $checkExplicitMixed = false;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, false);
+		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, true, $this->checkExplicitMixed);
 		return new CallStaticMethodsRule(
 			new StaticMethodCallCheck($reflectionProvider, $ruleLevelHelper, new ClassCaseSensitivityCheck($reflectionProvider, true), true, true),
 			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true),
@@ -466,6 +468,59 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 
 		// handled by a different rule
 		$this->analyse([__DIR__ . '/data/first-class-static-method-callable.php'], []);
+	}
+
+	public function testBug5893(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5893.php'], []);
+	}
+
+	public function testBug6249(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		// discussion https://github.com/phpstan/phpstan/discussions/6249
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6249.php'], []);
+	}
+
+	public function testBug5749(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5749.php'], []);
+	}
+
+	public function testBug5757(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5757.php'], []);
+	}
+
+	public function testDiscussion7004(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/discussion-7004.php'], [
+			[
+				'Parameter #1 $data of static method Discussion7004\Foo::fromArray1() expects array<array{newsletterName: string, subscriberCount: int}>, array given.',
+				46,
+			],
+			[
+				'Parameter #1 $data of static method Discussion7004\Foo::fromArray2() expects array{array{newsletterName: string, subscriberCount: int}}, array given.',
+				47,
+			],
+			[
+				'Parameter #1 $data of static method Discussion7004\Foo::fromArray3() expects array{newsletterName: string, subscriberCount: int}, array given.',
+				48,
+			],
+		]);
 	}
 
 }

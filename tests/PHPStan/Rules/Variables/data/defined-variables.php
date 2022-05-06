@@ -143,7 +143,7 @@ function () {
 	echo $variablePassedByReferenceToClosure;
 	if (empty($variableInEmpty) && empty($anotherVariableInEmpty['foo'])) {
 		echo $variableInEmpty; // does not exist here
-		return;
+		//return;
 	} else {
 		//echo $variableInEmpty; // exists here - not yet supported
 	}

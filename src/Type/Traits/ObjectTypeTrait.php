@@ -105,6 +105,11 @@ trait ObjectTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
+	public function isString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isNumericString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

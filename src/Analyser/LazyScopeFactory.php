@@ -24,6 +24,8 @@ class LazyScopeFactory implements ScopeFactory
 
 	private bool $treatPhpDocTypesAsCertain;
 
+	private bool $explicitMixedInUnknownGenericNew;
+
 	public function __construct(
 		private string $scopeClass,
 		private Container $container,
@@ -31,6 +33,7 @@ class LazyScopeFactory implements ScopeFactory
 	{
 		$this->dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 		$this->treatPhpDocTypesAsCertain = $container->getParameter('treatPhpDocTypesAsCertain');
+		$this->explicitMixedInUnknownGenericNew = $this->container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'];
 	}
 
 	/**
@@ -39,6 +42,7 @@ class LazyScopeFactory implements ScopeFactory
 	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
+	 * @param array<string, bool> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, Type> $nativeExpressionTypes
 	 * @param array<(FunctionReflection|MethodReflection)> $inFunctionCallsStack
 	 *
@@ -56,6 +60,7 @@ class LazyScopeFactory implements ScopeFactory
 		?ParametersAcceptor $anonymousFunctionReflection = null,
 		bool $inFirstLevelStatement = true,
 		array $currentlyAssignedExpressions = [],
+		array $currentlyAllowedUndefinedExpressions = [],
 		array $nativeExpressionTypes = [],
 		array $inFunctionCallsStack = [],
 		bool $afterExtractCall = false,
@@ -90,12 +95,14 @@ class LazyScopeFactory implements ScopeFactory
 			$anonymousFunctionReflection,
 			$inFirstLevelStatement,
 			$currentlyAssignedExpressions,
+			$currentlyAllowedUndefinedExpressions,
 			$nativeExpressionTypes,
 			$inFunctionCallsStack,
 			$this->dynamicConstantNames,
 			$this->treatPhpDocTypesAsCertain,
 			$afterExtractCall,
 			$parentScope,
+			$this->explicitMixedInUnknownGenericNew,
 		);
 	}
 

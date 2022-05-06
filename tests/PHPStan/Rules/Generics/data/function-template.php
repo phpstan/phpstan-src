@@ -63,3 +63,15 @@ function nakano()
 {
 
 }
+
+/** @template T of null */
+function nullNotSupported()
+{
+
+}
+
+/** @template T of ?int */
+function nullableUnionSupported()
+{
+
+}

@@ -873,7 +873,11 @@ class CallMethodsRuleTest extends RuleTestCase
 			],
 			[
 				'Call to an undefined method CallClosureBind\Foo::nonexistentMethod().',
-				39,
+				38,
+			],
+			[
+				'Call to an undefined method CallClosureBind\Foo::nonexistentMethod().',
+				44,
 			],
 		]);
 	}
@@ -2048,6 +2052,14 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5258.php'], []);
 	}
 
+	public function testBug5591(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-5591.php'], []);
+	}
+
 	public function testGenericObjectLowerBound(): void
 	{
 		$this->checkThisOnly = false;
@@ -2094,12 +2106,16 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5372.php'], [
 			[
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
+				68,
+			],
+			[
+				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
 				72,
 			],
-			/*[
+			[
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, literal-string> given.',
 				85,
-			],*/
+			],
 		]);
 	}
 
@@ -2271,6 +2287,22 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Call to an undefined method CallMethodInEnum\Bar::doNonexistent().',
 				22,
 			],
+			[
+				'Parameter #1 $countryName of method CallMethodInEnum\FooCall::hello() expects \'The Netherlands\'|\'United States\', CallMethodInEnum\CountryNo::NL given.',
+				63,
+			],
+			[
+				'Parameter #1 $countryMap of method CallMethodInEnum\FooCall::helloArray() expects array<\'The Netherlands\'|\'United States\', bool>, array{abc: true} given.',
+				66,
+			],
+			[
+				'Parameter #1 $countryMap of method CallMethodInEnum\FooCall::helloArray() expects array<\'The Netherlands\'|\'United States\', bool>, array{abc: 123} given.',
+				67,
+			],
+			[
+				'Parameter #1 $countryMap of method CallMethodInEnum\FooCall::helloArray() expects array<\'The Netherlands\'|\'United States\', bool>, array{true} given.',
+				70,
+			],
 		]);
 	}
 
@@ -2326,6 +2358,150 @@ class CallMethodsRuleTest extends RuleTestCase
 				16,
 			],
 		]);
+	}
+
+	public function testBug6055(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6055.php'], []);
+	}
+
+	public function testBug6081(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6081.php'], []);
+	}
+
+	public function testBug6236(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6236.php'], []);
+	}
+
+	public function testBug6118(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6118.php'], []);
+	}
+
+	public function testBug6464(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6464.php'], []);
+	}
+
+	public function testBug6423(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6423.php'], []);
+	}
+
+	public function testBug5869(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5869.php'], []);
+	}
+
+	public function testGenericsEmptyArray(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/generics-empty-array.php'], []);
+	}
+
+	public function testGenericsInferCollection(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/generics-infer-collection.php'], [
+			[
+				'Parameter #1 $c of method GenericsInferCollection\Foo::doBar() expects GenericsInferCollection\ArrayCollection<int, int>, GenericsInferCollection\ArrayCollection<int, string> given.',
+				43,
+			],
+			[
+				'Parameter #1 $c of method GenericsInferCollection\Bar::doBar() expects GenericsInferCollection\ArrayCollection2<int, int>, GenericsInferCollection\ArrayCollection2<(int|string), mixed> given.',
+				62,
+			],
+			[
+				'Parameter #1 $c of method GenericsInferCollection\Bar::doBar() expects GenericsInferCollection\ArrayCollection2<int, int>, GenericsInferCollection\ArrayCollection2<(int|string), mixed> given.',
+				63,
+			],
+			[
+				'Parameter #1 $c of method GenericsInferCollection\Bar::doBar() expects GenericsInferCollection\ArrayCollection2<int, int>, GenericsInferCollection\ArrayCollection2<(int|string), mixed> given.',
+				64,
+			],
+		]);
+	}
+
+	public function testGenericsInferCollectionLevel8(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/generics-infer-collection.php'], [
+			[
+				'Parameter #1 $c of method GenericsInferCollection\Foo::doBar() expects GenericsInferCollection\ArrayCollection<int, int>, GenericsInferCollection\ArrayCollection<int, string> given.',
+				43,
+			],
+		]);
+	}
+
+
+	public function testBug6904(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6904.php'], []);
+	}
+
+
+	public function testBug6917(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6917.php'], []);
 	}
 
 }

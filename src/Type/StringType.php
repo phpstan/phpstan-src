@@ -4,9 +4,12 @@ namespace PHPStan\Type;
 
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
@@ -24,6 +27,7 @@ class StringType implements Type
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonGenericTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -127,8 +131,13 @@ class StringType implements Type
 		return new ConstantArrayType(
 			[new ConstantIntegerType(0)],
 			[$this],
-			1,
+			[1],
 		);
+	}
+
+	public function isString(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
 	}
 
 	public function isNumericString(): TrinaryLogic
@@ -144,6 +153,18 @@ class StringType implements Type
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '') {
+			return TypeCombinator::intersect($this, new AccessoryNonEmptyStringType());
+		}
+		if ($typeToRemove instanceof AccessoryNonEmptyStringType) {
+			return new ConstantStringType('');
+		}
+
+		return null;
 	}
 
 	/**

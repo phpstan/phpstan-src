@@ -98,6 +98,8 @@ interface Type
 
 	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic;
 
+	public function isString(): TrinaryLogic;
+
 	public function isNumericString(): TrinaryLogic;
 
 	public function isNonEmptyString(): TrinaryLogic;
@@ -147,6 +149,15 @@ interface Type
 	 * @param callable(Type):Type $cb
 	 */
 	public function traverse(callable $cb): Type;
+
+	/**
+	 * Return the difference with another type, or null if it cannot be represented.
+	 *
+	 * @see TypeCombinator::remove()
+	 */
+	public function tryRemove(Type $typeToRemove): ?Type;
+
+	public function generalize(GeneralizePrecision $precision): Type;
 
 	/**
 	 * @param mixed[] $properties

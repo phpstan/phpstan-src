@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+			-
+				message: "#^Parameter \\#1 \\$value of class PHPStan\\\\Type\\\\Constant\\\\ConstantIntegerType constructor expects int, float given\\.$#"
+				count: 2
+				path: ../src/Analyser/MutatingScope.php

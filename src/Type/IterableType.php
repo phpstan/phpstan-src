@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -11,6 +12,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use Traversable;
@@ -26,6 +28,7 @@ class IterableType implements CompoundType
 	use MaybeOffsetAccessibleTypeTrait;
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	/** @api */
 	public function __construct(
@@ -75,6 +78,10 @@ class IterableType implements CompoundType
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		if ($type instanceof CompoundType) {
+			return $type->isSubTypeOf($this);
+		}
+
 		return $type->isIterable()
 			->and($this->getIterableValueType()->isSuperTypeOf($type->getIterableValueType()))
 			->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
@@ -227,6 +234,11 @@ class IterableType implements CompoundType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isNumericString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -276,6 +288,24 @@ class IterableType implements CompoundType
 		}
 
 		return $this;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		$arrayType = new ArrayType(new MixedType(), new MixedType());
+		if ($typeToRemove->isSuperTypeOf($arrayType)->yes()) {
+			return new GenericObjectType(Traversable::class, [
+				$this->getIterableKeyType(),
+				$this->getIterableValueType(),
+			]);
+		}
+
+		$traversableType = new ObjectType(Traversable::class);
+		if ($typeToRemove->isSuperTypeOf($traversableType)->yes()) {
+			return new ArrayType($this->getIterableKeyType(), $this->getIterableValueType());
+		}
+
+		return null;
 	}
 
 	/**

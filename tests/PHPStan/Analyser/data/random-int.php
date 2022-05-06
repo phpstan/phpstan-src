@@ -22,9 +22,9 @@ function (int $i) {
 };
 
 assertType('0', random_int(0, 0));
-assertType('int', random_int(PHP_INT_MIN, PHP_INT_MAX));
-assertType('int<0, max>', random_int(0, PHP_INT_MAX));
-assertType('int<min, 0>', random_int(PHP_INT_MIN, 0));
+assertType('int<-9223372036854775808, 9223372036854775807>', random_int(PHP_INT_MIN, PHP_INT_MAX));
+assertType('int<0, 9223372036854775807>', random_int(0, PHP_INT_MAX));
+assertType('int<-9223372036854775808, 0>', random_int(PHP_INT_MIN, 0));
 assertType('int<-1, 1>', random_int(-1, 1));
 assertType('int<0, 30>', random_int(0, random_int(0, 30)));
 assertType('int<0, 100>', random_int(random_int(0, 10), 100));
@@ -36,7 +36,7 @@ assertType('*NEVER*', random_int(random_int(0, 1), -1));
 assertType('int<0, 1>', random_int(random_int(0, 1), 1));
 
 assertType('int<-5, 5>', random_int(random_int(-5, 0), random_int(0, 5)));
-assertType('int', random_int(random_int(PHP_INT_MIN, 0), random_int(0, PHP_INT_MAX)));
+assertType('int<-9223372036854775808, 9223372036854775807>', random_int(random_int(PHP_INT_MIN, 0), random_int(0, PHP_INT_MAX)));
 
 assertType('int<-5, 5>', rand(-5, 5));
 assertType('int<0, max>', rand());

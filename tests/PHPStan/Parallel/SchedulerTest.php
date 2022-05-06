@@ -72,6 +72,7 @@ class SchedulerTest extends TestCase
 
 	/**
 	 * @dataProvider dataSchedule
+	 * @param positive-int $jobSize
 	 * @param 0|positive-int $numberOfFiles
 	 * @param array<int> $expectedJobSizes
 	 */

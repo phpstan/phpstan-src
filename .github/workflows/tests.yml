@@ -8,12 +8,12 @@ on:
       - 'compiler/**'
   push:
     branches:
-      - "master"
+      - "1.5.x"
     paths-ignore:
       - 'compiler/**'
 
 env:
-  COMPOSER_ROOT_VERSION: "1.3.x-dev"
+  COMPOSER_ROOT_VERSION: "1.5.x-dev"
 
 jobs:
   tests:
@@ -33,11 +33,10 @@ jobs:
         script:
           - "make tests"
           - "make tests-static-reflection"
-          - "make tests-integration"
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
@@ -46,7 +45,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl
           extensions: ds,mbstring
-          ini-values: memory_limit=640M
+          ini-values: memory_limit=1G
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
@@ -59,6 +58,21 @@ jobs:
           php-version: 8.0
           extensions: mbstring
 
+      - name: "Rector downgrade cache key"
+        id: rector-cache-key
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        run: |
+          echo "::set-output name=sha::$(php build/rector-cache-files-hash.php)"
+
+      - name: "Rector downgrade cache"
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        uses: actions/cache@v3
+        with:
+          path: ./tmp/rectorCache.php
+          key: "rector-v1-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key.outputs.sha }}"
+          restore-keys: |
+            rector-v1-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
+
       - name: "Transform source code"
         if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
         shell: bash
@@ -72,10 +86,63 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl
           extensions: ds,mbstring
-          ini-values: memory_limit=640M
+          ini-values: memory_limit=1G
 
       - name: "Tests"
         run: "${{ matrix.script }}"
+
+  tests-integration:
+    name: "Integration tests"
+    runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        operating-system: [ ubuntu-latest, windows-latest ]
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-values: memory_limit=1G
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Tests"
+        run: "make tests-integration"
+
+  tests-levels:
+    name: "Levels tests"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-values: memory_limit=1G
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Tests"
+        run: "make tests-levels"
 
   tests-old-phpunit:
     name: "Tests with old PHPUnit"
@@ -86,17 +153,15 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "7.1"
           - "7.2"
-        operating-system: [ ubuntu-latest, windows-latest ]
+        operating-system: [ ubuntu-latest ]
         script:
           - "make tests-coverage"
           - "make tests-static-reflection-coverage"
-          - "make tests-integration-coverage"
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
@@ -105,7 +170,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl
           extensions: ds,mbstring
-          ini-values: memory_limit=640M
+          ini-values: memory_limit=1G
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
@@ -115,6 +180,20 @@ jobs:
         with:
           coverage: "none"
           php-version: "8.0"
+
+      - name: "Rector downgrade cache key"
+        id: rector-cache-key
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        run: |
+          echo "::set-output name=sha::$(php build/rector-cache-files-hash.php)"
+
+      - name: "Rector downgrade cache"
+        uses: actions/cache@v3
+        with:
+          path: ./tmp/rectorCache.php
+          key: "rector-v1-tests-old-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key.outputs.sha }}"
+          restore-keys: |
+            rector-v1-tests-old-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
 
       - name: "Transform source code"
         shell: bash
@@ -127,7 +206,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl
           extensions: ds,mbstring
-          ini-values: memory_limit=640M
+          ini-values: memory_limit=1G
 
       - name: "Downgrade PHPUnit"
         run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"

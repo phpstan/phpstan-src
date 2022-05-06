@@ -17,6 +17,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_keys;
@@ -31,6 +32,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	private ?Type $subtractedType;
 
@@ -332,6 +334,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->isArray();
 	}
 
+	public function isString(): TrinaryLogic
+	{
+		return $this->getStaticObjectType()->isString();
+	}
+
 	public function isNumericString(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isNumericString();
@@ -448,6 +455,15 @@ class StaticType implements TypeWithClassName, SubtractableType
 	public function getSubtractedType(): ?Type
 	{
 		return $this->subtractedType;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($this->isSuperTypeOf($typeToRemove)->yes()) {
+			return $this->subtract($typeToRemove);
+		}
+
+		return null;
 	}
 
 	/**

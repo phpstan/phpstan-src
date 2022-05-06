@@ -113,7 +113,6 @@ class FixerWorkerCommand extends Command
 				$level,
 				$allowXdebug,
 				false,
-				false,
 				$singleReflectionFile,
 				$insteadOfFile,
 				false,

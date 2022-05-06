@@ -6,7 +6,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use function array_filter;
-use function array_merge;
 use function array_values;
 use const PHP_VERSION_ID;
 
@@ -361,15 +360,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 		}
 
 		$this->phpVersionId = PHP_VERSION_ID;
-		$errors = [];
-		if (PHP_VERSION_ID < 70200) {
-			$errors[] = [
-				'Parameter #2 $lang (mixed) of method OverridingVariadics\Translator::translate() does not match parameter #2 $parameters (string) of method OverridingVariadics\ITranslator::translate().',
-				24,
-			];
-		}
-
-		$errors = array_merge($errors, [
+		$errors = [
 			[
 				'Parameter #2 $lang of method OverridingVariadics\OtherTranslator::translate() is not optional.',
 				34,
@@ -386,14 +377,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 				'Parameter #2 $lang of method OverridingVariadics\YetAnotherTranslator::translate() is not variadic.',
 				54,
 			],
-		]);
-
-		if (PHP_VERSION_ID < 70200) {
-			$errors[] = [
-				'Parameter #2 $lang (mixed) of method OverridingVariadics\YetAnotherTranslator::translate() does not match parameter #2 $parameters (string) of method OverridingVariadics\ITranslator::translate().',
-				54,
-			];
-		}
+		];
 
 		$this->analyse([__DIR__ . '/data/overriding-variadics.php'], $errors);
 	}

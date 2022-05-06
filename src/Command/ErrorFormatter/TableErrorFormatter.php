@@ -7,6 +7,7 @@ use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use function array_map;
 use function count;
 use function is_string;
@@ -74,7 +75,9 @@ class TableErrorFormatter implements ErrorFormatter
 					$message .= "\n💡 " . $tip;
 				}
 				if (is_string($this->editorUrl)) {
-					$message .= "\n✏️  " . str_replace(['%file%', '%line%'], [$error->getTraitFilePath() ?? $error->getFilePath(), (string) $error->getLine()], $this->editorUrl);
+					$editorFile = $error->getTraitFilePath() ?? $error->getFilePath();
+					$url = str_replace(['%file%', '%line%'], [$editorFile, (string) $error->getLine()], $this->editorUrl);
+					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $this->relativePathHelper->getRelativePath($editorFile) . '</>';
 				}
 				$rows[] = [
 					(string) $error->getLine(),
@@ -82,9 +85,7 @@ class TableErrorFormatter implements ErrorFormatter
 				];
 			}
 
-			$relativeFilePath = $this->relativePathHelper->getRelativePath($file);
-
-			$style->table(['Line', $relativeFilePath], $rows);
+			$style->table(['Line', $this->relativePathHelper->getRelativePath($file)], $rows);
 		}
 
 		if (count($analysisResult->getNotFileSpecificErrors()) > 0) {

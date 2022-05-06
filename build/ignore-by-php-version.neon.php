@@ -1,32 +1,30 @@
 <?php declare(strict_types = 1);
 
-use PHPStan\DependencyInjection\NeonAdapter;
-
-$adapter = new NeonAdapter();
-
-$config = [];
+$includes = [];
 if (PHP_VERSION_ID < 70300) {
-	$config = array_merge_recursive($config, $adapter->load(__DIR__ . '/baseline-lt-7.3.neon'));
+	$includes[] = __DIR__ . '/baseline-lt-7.3.neon';
 } else {
-	$config = array_merge_recursive($config, $adapter->load(__DIR__ . '/baseline-7.3.neon'));
+	$includes[] = __DIR__ . '/baseline-7.3.neon';
 }
 if (PHP_VERSION_ID >= 80000) {
-	$config = array_merge_recursive($config, $adapter->load(__DIR__ . '/baseline-8.0.neon'));
+	$includes[] = __DIR__ . '/baseline-8.0.neon';
 }
 if (PHP_VERSION_ID >= 80100) {
-	$config = array_merge_recursive($config, $adapter->load(__DIR__ . '/baseline-8.1.neon'));
+	$includes[] = __DIR__ . '/baseline-8.1.neon';
 } else {
-	$config = array_merge_recursive($config, $adapter->load(__DIR__ . '/enums.neon'));
+	$includes[] = __DIR__ . '/enums.neon';
 }
 
 if (PHP_VERSION_ID >= 70400) {
-	$config = array_merge_recursive($config, $adapter->load(__DIR__ . '/ignore-gte-php7.4-errors.neon'));
+	$includes[] = __DIR__ . '/ignore-gte-php7.4-errors.neon';
 }
 
 if (PHP_VERSION_ID < 80000) {
-	$config = array_merge_recursive($config, $adapter->load(__DIR__ . '/enum-adapter-errors.neon'));
+	$includes[] = __DIR__ . '/enum-adapter-errors.neon';
 }
 
+$config = [];
+$config['includes'] = $includes;
 $config['parameters']['phpVersion'] = PHP_VERSION_ID;
 
 return $config;

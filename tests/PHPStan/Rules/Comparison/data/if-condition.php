@@ -293,3 +293,20 @@ class NestedIfConditions
 		}
 	}
 }
+
+class EmptyCondition
+{
+
+	public function doFoo()
+	{
+		$a = 1;
+		if (empty($a)) {
+
+		}
+
+		if (empty($b)) {
+
+		}
+	}
+
+}

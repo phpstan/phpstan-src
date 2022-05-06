@@ -7,6 +7,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -17,11 +18,11 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_merge;
-use function count;
 use function is_float;
 use function is_int;
 use function key;
@@ -35,6 +36,7 @@ class ArrayType implements Type
 	use NonObjectTypeTrait;
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	private Type $keyType;
 
@@ -152,7 +154,7 @@ class ArrayType implements Type
 
 	public function generalizeValues(): self
 	{
-		return new self($this->keyType, TypeUtils::generalizeType($this->itemType, GeneralizePrecision::lessSpecific()));
+		return new self($this->keyType, $this->itemType->generalize(GeneralizePrecision::lessSpecific()));
 	}
 
 	public function getKeysArray(): self
@@ -196,6 +198,11 @@ class ArrayType implements Type
 	public function isArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function isString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
 	}
 
 	public function isNumericString(): TrinaryLogic
@@ -334,7 +341,11 @@ class ArrayType implements Type
 				return $offsetType;
 			}
 
-			if ($offsetType instanceof FloatType || $offsetType instanceof BooleanType || $offsetType->isNumericString()->yes()) {
+			if ($offsetType instanceof BooleanType) {
+				return new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
+			}
+
+			if ($offsetType instanceof FloatType || $offsetType->isNumericString()->yes()) {
 				return new IntegerType();
 			}
 
@@ -354,25 +365,6 @@ class ArrayType implements Type
 	{
 		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
 			return $receivedType->inferTemplateTypesOn($this);
-		}
-
-		if ($receivedType instanceof ConstantArrayType && count($receivedType->getKeyTypes()) === 0) {
-			$keyType = $this->getKeyType();
-			$typeMap = TemplateTypeMap::createEmpty();
-			if ($keyType instanceof TemplateType) {
-				$typeMap = new TemplateTypeMap([
-					$keyType->getName() => $keyType->getBound(),
-				]);
-			}
-
-			$itemType = $this->getItemType();
-			if ($itemType instanceof TemplateType) {
-				$typeMap = $typeMap->union(new TemplateTypeMap([
-					$itemType->getName() => $itemType->getBound(),
-				]));
-			}
-
-			return $typeMap;
 		}
 
 		if ($receivedType->isArray()->yes()) {
@@ -414,10 +406,31 @@ class ArrayType implements Type
 		$itemType = $cb($this->itemType);
 
 		if ($keyType !== $this->keyType || $itemType !== $this->itemType) {
+			if ($keyType instanceof NeverType && $itemType instanceof NeverType) {
+				return new ConstantArrayType([], []);
+			}
+
 			return new self($keyType, $itemType);
 		}
 
 		return $this;
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($typeToRemove instanceof ConstantArrayType && $typeToRemove->isIterableAtLeastOnce()->no()) {
+			return TypeCombinator::intersect($this, new NonEmptyArrayType());
+		}
+
+		if ($typeToRemove instanceof NonEmptyArrayType) {
+			return new ConstantArrayType([], []);
+		}
+
+		if ($this instanceof ConstantArrayType && $typeToRemove instanceof HasOffsetType) {
+			return $this->unsetOffset($typeToRemove->getOffsetType());
+		}
+
+		return null;
 	}
 
 	/**

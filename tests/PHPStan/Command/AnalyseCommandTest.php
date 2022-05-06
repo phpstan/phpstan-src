@@ -73,8 +73,16 @@ class AnalyseCommandTest extends PHPStanTestCase
 				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-dist' . DIRECTORY_SEPARATOR . 'phpstan.neon.dist',
 			],
 			[
+				__DIR__ . '/test-autodiscover-dist-dot-neon',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-dist-dot-neon' . DIRECTORY_SEPARATOR . 'phpstan.dist.neon',
+			],
+			[
 				__DIR__ . '/test-autodiscover-priority',
 				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-priority' . DIRECTORY_SEPARATOR . 'phpstan.neon',
+			],
+			[
+				__DIR__ . '/test-autodiscover-priority-dist-dot-neon',
+				__DIR__ . DIRECTORY_SEPARATOR . 'test-autodiscover-priority-dist-dot-neon' . DIRECTORY_SEPARATOR . 'phpstan.neon',
 			],
 		];
 	}

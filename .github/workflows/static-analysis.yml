@@ -8,12 +8,12 @@ on:
       - 'compiler/**'
   push:
     branches:
-      - "master"
+      - "1.5.x"
     paths-ignore:
       - 'compiler/**'
 
 env:
-  COMPOSER_ROOT_VERSION: "1.3.x-dev"
+  COMPOSER_ROOT_VERSION: "1.5.x-dev"
 
 jobs:
   static-analysis:
@@ -25,7 +25,6 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -33,13 +32,12 @@ jobs:
           - "8.1"
         operating-system: [ubuntu-latest, windows-latest]
         script:
-          - "make phpstan"
+          - "make phpstan && make phpstan-validate-stub-files"
           - "make phpstan-static-reflection"
-          - "make phpstan-validate-stub-files"
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
@@ -59,6 +57,21 @@ jobs:
           php-version: 8.0
           extensions: mbstring
 
+      - name: "Rector downgrade cache key"
+        id: rector-cache-key
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        run: |
+          echo "::set-output name=sha::$(php build/rector-cache-files-hash.php)"
+
+      - name: "Rector downgrade cache"
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        uses: actions/cache@v3
+        with:
+          path: ./tmp/rectorCache.php
+          key: "rector-v1-sa-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key.outputs.sha }}"
+          restore-keys: |
+            rector-v1-sa-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
+
       - name: "Transform source code"
         if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
         shell: bash
@@ -73,7 +86,7 @@ jobs:
           extensions: mbstring
 
       - name: "Downgrade PHPUnit"
-        if: matrix.php-version == '7.1' || matrix.php-version == '7.2'
+        if: matrix.php-version == '7.2'
         run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "PHPStan"
@@ -92,7 +105,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"
@@ -105,7 +118,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Cache Result cache"
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ./tmp
           key: "result-cache-v4"
@@ -120,7 +133,7 @@ jobs:
           make phpstan-result-cache
 
       - name: "Upload result cache artifact"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: resultCache-ubuntu-latest.php
           path: tmp/resultCache.php
@@ -138,7 +151,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: "actions/checkout@v2"
+        uses: actions/checkout@v3
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@v2"

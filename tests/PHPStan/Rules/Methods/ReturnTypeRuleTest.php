@@ -16,9 +16,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
+	private bool $checkUnionTypes = true;
+
 	protected function getRule(): Rule
 	{
-		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed)));
+		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnionTypes, $this->checkExplicitMixed)));
 	}
 
 	public function testReturnTypeRule(): void
@@ -375,11 +377,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-3997.php'], [
 			[
-				'Method Bug3997\Foo::count() should return int but returns string.',
+				"Method Bug3997\Foo::count() should return int<0, max> but returns 'foo'.",
 				13,
 			],
 			[
-				'Method Bug3997\Bar::count() should return int but returns string.',
+				"Method Bug3997\Bar::count() should return int<0, max> but returns 'foo'.",
 				24,
 			],
 			[
@@ -420,6 +422,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 	public function testBug3034(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3034.php'], []);
+	}
+
+	public function testBug3951(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3951.php'], []);
 	}
 
 	public function testInferArrayKey(): void
@@ -503,6 +510,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-4803.php'], []);
 	}
 
+	public function testBug7020(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7020.php'], []);
+	}
+
 	public function testBug2573(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-2573-return.php'], []);
@@ -527,11 +539,6 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				'Method ReturnTemplateUnion\Foo::doFoo2() should return T of bool|float|int|string but returns (T of bool|float|int|string)|null.',
 				25,
-			],
-			[
-				// should not be reported
-				'Method ReturnTemplateUnion\Foo::doFoo3() should return (T of bool|float|int|string)|null but returns (T of bool|float|int|string)|null.',
-				35,
 			],
 		]);
 	}
@@ -577,6 +584,133 @@ class ReturnTypeRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-4165.php'], []);
+	}
+
+	public function testBug6053(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6053.php'], []);
+	}
+
+	public function testBug6438(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6438.php'], []);
+	}
+
+	public function testBug6589(): void
+	{
+		$this->checkUnionTypes = false;
+		$this->analyse([__DIR__ . '/data/bug-6589.php'], [
+			[
+				'Method Bug6589\HelloWorldTemplated::getField() should return TField of Bug6589\Field2 but returns Bug6589\Field.',
+				17,
+			],
+			[
+				'Method Bug6589\HelloWorldSimple::getField() should return Bug6589\Field2 but returns Bug6589\Field.',
+				31,
+			],
+		]);
+	}
+
+	public function testBug6418(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6418.php'], []);
+	}
+
+	public function testBug6230(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6230.php'], []);
+	}
+
+	public function testBug5860(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5860.php'], []);
+	}
+
+	public function testBug6266(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6266.php'], []);
+	}
+
+	public function testBug6023(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6023.php'], []);
+	}
+
+
+	public function testBug5065(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-5065.php'], []);
+	}
+
+	public function testBug5065ExplicitMixed(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-5065.php'], [
+			[
+				'Method Bug5065\Collection::emptyWorkaround2() should return Bug5065\Collection<NewTKey of (int|string), NewT> but returns Bug5065\Collection<(int|string), mixed>.',
+				60,
+			],
+		]);
+	}
+
+	public function testBug3400(): void
+	{
+		if (PHP_VERSION_ID < 70400 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-3400.php'], []);
+	}
+
+	public function testBug6353(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6353.php'], []);
+	}
+
+	public function testBug6635Level9(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6635.php'], []);
+	}
+
+	public function testBug6635Level8(): void
+	{
+		if (PHP_VERSION_ID < 80000 && !self::$useStaticReflectionProvider) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-6635.php'], []);
 	}
 
 }

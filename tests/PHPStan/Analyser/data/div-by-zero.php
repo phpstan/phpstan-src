@@ -17,7 +17,12 @@ class Foo
 		assertType('(float|int)', 5 / $range2);
 		assertType('(float|int)', $range1 / $range2);
 		assertType('(float|int)', 5 / $int);
+
 		assertType('*ERROR*', 5 / 0);
+		assertType('*ERROR*', 5 / '0');
+		assertType('*ERROR*', 5 / 0.0);
+		assertType('*ERROR*', 5 / false);
+		assertType('*ERROR*', 5 / null);
 	}
 
 }

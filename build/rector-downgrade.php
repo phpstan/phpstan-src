@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use PHPStan\Build\RectorCache;
 use Rector\Core\Configuration\Option;
 use Rector\DowngradePhp72\Rector\FunctionLike\DowngradeObjectTypeDeclarationRector;
 use Rector\DowngradePhp73\Rector\FuncCall\DowngradeTrailingCommasInFunctionCallsRector;
@@ -13,8 +14,6 @@ use Rector\DowngradePhp80\Rector\FunctionLike\DowngradeUnionTypeDeclarationRecto
 use Rector\DowngradePhp80\Rector\Property\DowngradeUnionTypeTypedPropertyRector;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
-
-
 return static function (ContainerConfigurator $containerConfigurator): void {
 	$parsePhpVersion = static function (string $version, int $defaultPatch = 0): int {
 		$parts = array_map('intval', explode('.', $version));
@@ -26,16 +25,11 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
 	$parameters = $containerConfigurator->parameters();
 
+	$cache = new RectorCache();
+
+	$parameters->set(Option::PATHS, $cache->restore());
 	$parameters->set(Option::PHP_VERSION_FEATURES, $targetPhpVersionId);
-	$parameters->set(Option::SKIP, [
-		'tests/*/data/*',
-		'tests/*/Fixture/*',
-		'tests/PHPStan/Analyser/traits/*',
-		'tests/PHPStan/Generics/functions.php',
-		'tests/e2e/resultCache_1.php',
-		'tests/e2e/resultCache_2.php',
-		'tests/e2e/resultCache_3.php',
-	]);
+	$parameters->set(Option::SKIP, RectorCache::SKIP_PATHS);
 
 	$services = $containerConfigurator->services();
 

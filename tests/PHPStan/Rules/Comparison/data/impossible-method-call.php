@@ -92,11 +92,106 @@ class Foo
 
 			}
 		}
+		if ($this->isSame(self::createStdClass('a'), self::createStdClass('a'))) {
+
+		}
+		if ($this->isNotSame(self::createStdClass('b'), self::createStdClass('b'))) {
+
+		}
+		if ($this->isSame(self::returnFoo('a'), self::returnFoo('a'))) {
+
+		}
+		if ($this->isNotSame(self::returnFoo('b'), self::returnFoo('b'))) {
+
+		}
+		if ($this->isSame(self::createStdClass('a')->foo, self::createStdClass('a')->foo)) {
+
+		}
+		if ($this->isNotSame(self::createStdClass('b')->foo, self::createStdClass('b')->foo)) {
+
+		}
+		if ($this->isSame([], [])) {
+
+		}
+		if ($this->isNotSame([], [])) {
+
+		}
+		if ($this->isSame([1, 3], [1, 3])) {
+
+		}
+		if ($this->isNotSame([1, 3], [1, 3])) {
+
+		}
+		$std3 = new \stdClass();
+		if ($this->isSame(1, $std3)) {
+
+		}
+		$std4 = new \stdClass();
+		if ($this->isNotSame(1, $std4)) {
+
+		}
+		if ($this->isSame('1', new \stdClass())) {
+
+		}
+		if ($this->isNotSame('1', new \stdClass())) {
+
+		}
+		if ($this->isSame(['a', 'b'], [1, 2])) {
+
+		}
+		if ($this->isNotSame(['a', 'b'], [1, 2])) {
+
+		}
+		if ($this->isSame(new \stdClass(), '1')) {
+
+		}
+		if ($this->isNotSame(new \stdClass(), '1')) {
+
+		}
 	}
 
 	public function nullableInt(): ?int
 	{
 
+	}
+
+	public static function createStdClass(string $foo): \stdClass
+	{
+		return new \stdClass();
+	}
+
+	/**
+	 * @return 'foo'
+	 */
+	public static function returnFoo(string $foo): string
+	{
+		return 'foo';
+	}
+
+	public function nonEmptyString()
+	{
+		$s = '';
+		$this->isSame($s, '');
+		$this->isNotSame($s, '');
+	}
+
+	public function stdClass(\stdClass $a)
+	{
+		$this->isSame($a, new \stdClass());
+	}
+
+	public function stdClass2(\stdClass $a)
+	{
+		$this->isNotSame($a, new \stdClass());
+	}
+
+	public function scalars()
+	{
+		$i = 1;
+		$this->isSame($i, 1);
+
+		$j = 2;
+		$this->isNotSame($j, 2);
 	}
 
 }

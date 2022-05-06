@@ -163,6 +163,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Cannot access offset \'foo\' on array|int.',
 				443,
 			],
+			[
+				'Offset \'feature_pretty…\' does not exist on array{version: non-empty-string, commit: string|null, pretty_version: string|null, feature_version: non-empty-string, feature_pretty_version?: string|null}.',
+				504,
+			],
 		]);
 	}
 
@@ -323,13 +327,17 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	{
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-5744.php'], [
-			/*[
+			[
 				'Cannot access offset \'permission\' on mixed.',
 				16,
-			],*/
+			],
 			[
 				'Cannot access offset \'permission\' on mixed.',
 				29,
+			],
+			[
+				'Cannot access offset \'permission\' on mixed.',
+				39,
 			],
 		]);
 	}
@@ -346,6 +354,30 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				18,
 			],
 		]);
+	}
+
+	public function testBug4926(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4926.php'], []);
+	}
+
+	public function testBug3171(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3171.php'], []);
+	}
+
+	public function testBug4747(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4747.php'], []);
+	}
+
+	public function testBug4885(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-4885.php'], []);
 	}
 
 }

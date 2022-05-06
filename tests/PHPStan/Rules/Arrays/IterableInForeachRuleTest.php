@@ -69,4 +69,10 @@ class IterableInForeachRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6564(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6564.php'], []);
+	}
+
 }

@@ -71,7 +71,7 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 			$symfonyOutput,
 			$symfonyOutput,
 			false,
-			false,
+			true,
 			null,
 			null,
 			$this->createMock(InputInterface::class),

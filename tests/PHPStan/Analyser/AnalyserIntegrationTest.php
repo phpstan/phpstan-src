@@ -248,6 +248,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(36, $error->getLine());
 	}
 
+	public function testBug6936(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6936.php');
+		$this->assertNoErrors($errors);
+	}
+
 	public function testBug3405(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3405.php');
@@ -332,10 +338,27 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug6872(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6872.php');
+		$this->assertNoErrors($errors);
+	}
+
 	public function testBug3769(): void
 	{
 		require_once __DIR__ . '/../Rules/Generics/data/bug-3769.php';
 		$errors = $this->runAnalyse(__DIR__ . '/../Rules/Generics/data/bug-3769.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6301(): void
+	{
+		require_once __DIR__ . '/../Rules/Generics/data/bug-6301.php';
+		$errors = $this->runAnalyse(__DIR__ . '/../Rules/Generics/data/bug-6301.php');
 		$this->assertNoErrors($errors);
 	}
 
@@ -394,13 +417,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testFunctionThatExistsOn72AndLater(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/ldap-exop-passwd.php');
-		if (PHP_VERSION_ID >= 70200) {
-			$this->assertNoErrors($errors);
-			return;
-		}
-
-		$this->assertCount(1, $errors);
-		$this->assertSame('Function ldap_exop_passwd not found.', $errors[0]->getMessage());
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug4715(): void
@@ -500,6 +517,21 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(24, $errors[1]->getLine());
 	}
 
+	public function testBug6466(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6466.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6494(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6494.php');
+		$this->assertNoErrors($errors);
+	}
+
 	public function testBug6253(): void
 	{
 		$errors = $this->runAnalyse(
@@ -510,6 +542,114 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 				__DIR__ . '/data/bug-6253-collection-trait.php',
 			],
 		);
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6442(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6442.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Dumped type: \'Bug6442\\\A\'', $errors[0]->getMessage());
+		$this->assertSame(9, $errors[0]->getLine());
+		$this->assertSame('Dumped type: \'Bug6442\\\B\'', $errors[1]->getMessage());
+		$this->assertSame(9, $errors[1]->getLine());
+	}
+
+	public function testBug6375(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6375.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6501(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6501.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6114(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6114.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6681(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6681.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6212(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6212.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6740(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6740-b.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6866(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6866.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6649(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6649.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6842(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6842.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Generator expects value type T of DateTimeInterface, DateTime|DateTimeImmutable|T of DateTimeInterface given.', $errors[0]->getMessage());
+		$this->assertSame(28, $errors[0]->getLine());
+	}
+
+	public function testBug6896(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6896.php');
+		$this->assertCount(6, $errors);
+	}
+
+	public function testBug6940(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6940.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug4308(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4308.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug6979(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6979.php');
+		$this->assertNoErrors($errors);
+	}
+
+	public function testBug7068(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7068.php');
 		$this->assertNoErrors($errors);
 	}
 

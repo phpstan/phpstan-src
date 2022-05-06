@@ -95,6 +95,11 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				'Template type T is declared as covariant, but occurs in invariant position in extended type ClassAncestorsExtends\FooGeneric8<T, T> of class ClassAncestorsExtends\FooGeneric9.',
 				192,
 			],
+			[
+				'Class ClassAncestorsExtends\FilterIteratorChild extends generic class FilterIterator but does not specify its types: TKey, TValue, TIterator',
+				197,
+				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
 		]);
 	}
 

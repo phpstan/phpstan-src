@@ -194,6 +194,53 @@ class IteratorIterator implements OuterIterator {
 }
 
 /**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @template TIterator as Traversable<TKey, TValue>
+ *
+ * @template-extends IteratorIterator<TKey, TValue, TIterator>
+ */
+class FilterIterator extends IteratorIterator
+{
+
+}
+
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @template TIterator as Traversable<TKey, TValue>
+ *
+ * @extends FilterIterator<TKey, TValue, TIterator>
+ */
+class CallbackFilterIterator extends FilterIterator
+{
+
+}
+
+
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @template TIterator as Traversable<TKey, TValue>
+ *
+ * @extends CallbackFilterIterator<TKey, TValue, TIterator>
+ * @implements RecursiveIterator<TKey, TValue>
+ */
+class RecursiveCallbackFilterIterator extends CallbackFilterIterator implements RecursiveIterator
+{
+    /**
+     * @return bool
+     */
+    public function hasChildren() {}
+
+    /**
+     * @return RecursiveCallbackFilterIterator<TKey, TValue, TIterator>
+     */
+    public function getChildren() {}
+
+}
+
+/**
  * @template TKey of array-key
  * @template TValue
  *

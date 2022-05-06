@@ -53,10 +53,6 @@ class Foo
 		};
 
 		match ($i) {
-			// unhandled
-		};
-
-		match ($i) {
 			1, 2 => null,
 			default => null, // OK
 		};
@@ -77,6 +73,10 @@ class Foo
 		match ($i) {
 			default => 1,
 			1 => 2,
+		};
+
+		match ($i) {
+			// unhandled
 		};
 	}
 
@@ -137,4 +137,36 @@ class BarConstants
 	}
 
 
+}
+
+class ThrowsTag {
+	/**
+	 * @throws \UnhandledMatchError
+	 */
+	public function foo(int $bar): void
+	{
+		$str = match($bar) {
+			1 => 'test'
+		};
+	}
+
+	/**
+	 * @throws \Error
+	 */
+	public function bar(int $bar): void
+	{
+		$str = match($bar) {
+			1 => 'test'
+		};
+	}
+
+	/**
+	 * @throws \Exception
+	 */
+	public function baz(int $bar): void
+	{
+		$str = match($bar) {
+			1 => 'test'
+		};
+	}
 }

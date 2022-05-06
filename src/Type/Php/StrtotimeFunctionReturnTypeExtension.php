@@ -9,6 +9,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -16,7 +17,8 @@ use PHPStan\Type\TypeUtils;
 use function array_map;
 use function array_unique;
 use function count;
-use function is_int;
+use function gettype;
+use function min;
 use function strtotime;
 
 class StrtotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -37,13 +39,28 @@ class StrtotimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 		if ($argType instanceof MixedType) {
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
-		$result = array_unique(array_map(static fn (ConstantStringType $string): bool => is_int(strtotime($string->getValue())), TypeUtils::getConstantStrings($argType)));
+		$results = array_unique(array_map(static fn (ConstantStringType $string): int|bool => strtotime($string->getValue()), TypeUtils::getConstantStrings($argType)));
+		$resultTypes = array_unique(array_map(static fn (int|bool $value): string => gettype($value), $results));
 
-		if (count($result) !== 1) {
+		if (count($resultTypes) !== 1 || count($results) === 0) {
 			return $defaultReturnType;
 		}
 
-		return $result[0] ? new IntegerType() : new ConstantBooleanType(false);
+		if ($results[0] === false) {
+			return new ConstantBooleanType(false);
+		}
+
+		// 2nd param $baseTimestamp is too non-deterministic so simply return int
+		if (count($functionCall->getArgs()) > 1) {
+			return new IntegerType();
+		}
+
+		// if it is positive we can narrow down to positive-int as long as time flows forward
+		if (min(array_map('intval', $results)) > 0) {
+			return IntegerRangeType::createAllGreaterThan(0);
+		}
+
+		return new IntegerType();
 	}
 
 }

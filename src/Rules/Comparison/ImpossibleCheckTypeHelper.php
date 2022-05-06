@@ -71,12 +71,15 @@ class ImpossibleCheckTypeHelper
 					'class_exists',
 					'interface_exists',
 					'trait_exists',
+					'enum_exists',
 				], true)) {
 					return null;
 				}
 				if (in_array($functionName, ['count', 'sizeof'], true)) {
 					return null;
 				} elseif ($functionName === 'defined') {
+					return null;
+				} elseif ($functionName === 'array_search') {
 					return null;
 				} elseif (
 					$functionName === 'in_array'
@@ -91,21 +94,36 @@ class ImpossibleCheckTypeHelper
 						return null;
 					}
 
-					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {
-						$needleType = $scope->getType($node->getArgs()[0]->value);
+					$constantArrays = TypeUtils::getOldConstantArrays($haystackType);
+					$needleType = $scope->getType($node->getArgs()[0]->value);
+					$valueType = $haystackType->getIterableValueType();
+					$constantNeedleTypesCount = count(TypeUtils::getConstantScalars($needleType));
+					$constantHaystackTypesCount = count(TypeUtils::getConstantScalars($valueType));
+					$isNeedleSupertype = $needleType->isSuperTypeOf($valueType);
+					if (count($constantArrays) === 0) {
+						if ($haystackType->isIterableAtLeastOnce()->yes()) {
+							if ($constantNeedleTypesCount === 1 && $constantHaystackTypesCount === 1) {
+								if ($isNeedleSupertype->yes()) {
+									return true;
+								}
+								if ($isNeedleSupertype->no()) {
+									return false;
+								}
+							}
+						}
+						return null;
+					}
 
+					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {
 						$haystackArrayTypes = TypeUtils::getArrays($haystackType);
 						if (count($haystackArrayTypes) === 1 && $haystackArrayTypes[0]->getIterableValueType() instanceof NeverType) {
 							return null;
 						}
 
-						$valueType = $haystackType->getIterableValueType();
-						$isNeedleSupertype = $needleType->isSuperTypeOf($valueType);
-
 						if ($isNeedleSupertype->maybe() || $isNeedleSupertype->yes()) {
 							foreach ($haystackArrayTypes as $haystackArrayType) {
 								foreach (TypeUtils::getConstantScalars($haystackArrayType->getIterableValueType()) as $constantScalarType) {
-									if ($needleType->isSuperTypeOf($constantScalarType)->yes()) {
+									if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
 										continue 2;
 									}
 								}
@@ -115,13 +133,10 @@ class ImpossibleCheckTypeHelper
 						}
 
 						if ($isNeedleSupertype->yes()) {
-							$hasConstantNeedleTypes = count(TypeUtils::getConstantScalars($needleType)) > 0;
-							$hasConstantHaystackTypes = count(TypeUtils::getConstantScalars($valueType)) > 0;
+							$hasConstantNeedleTypes = $constantNeedleTypesCount > 0;
+							$hasConstantHaystackTypes = $constantHaystackTypesCount > 0;
 							if (
-								(
-									!$hasConstantNeedleTypes
-									&& !$hasConstantHaystackTypes
-								)
+								(!$hasConstantNeedleTypes && !$hasConstantHaystackTypes)
 								|| $hasConstantNeedleTypes !== $hasConstantHaystackTypes
 							) {
 								return null;
@@ -211,6 +226,12 @@ class ImpossibleCheckTypeHelper
 		}
 
 		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $node, TypeSpecifierContext::createTruthy());
+
+		// don't validate types on overwrite
+		if ($specifiedTypes->shouldOverwrite()) {
+			return null;
+		}
+
 		$sureTypes = $specifiedTypes->getSureTypes();
 		$sureNotTypes = $specifiedTypes->getSureNotTypes();
 

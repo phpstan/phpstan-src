@@ -53,6 +53,7 @@ class ProcessHelper
 			'autoload-file',
 			'memory-limit',
 			'xdebug',
+			'verbose',
 		];
 		foreach ($options as $optionName) {
 			/** @var bool|string|null $optionValue */

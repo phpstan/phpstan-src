@@ -3,8 +3,8 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\CompoundType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
 /**
@@ -25,8 +25,14 @@ class TemplateTypeArgumentStrategy implements TemplateTypeStrategy
 			return TrinaryLogic::createNo();
 		}
 
-		return TrinaryLogic::createFromBoolean($left->equals($right))
-			->or(TrinaryLogic::createFromBoolean($right->equals(new MixedType())));
+		if ($right instanceof CompoundType) {
+			$accepts = $right->isAcceptedBy($left, $strictTypes);
+		} else {
+			$accepts = $left->getBound()->accepts($right, $strictTypes)
+				->and(TrinaryLogic::createMaybe());
+		}
+
+		return $accepts;
 	}
 
 	public function isArgument(): bool

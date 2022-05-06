@@ -3,10 +3,13 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use OptimizedDirectory\BFoo;
+use PHPStan\BetterReflection\Identifier\IdentifierType;
+use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Testing\PHPStanTestCase;
 use TestDirectorySourceLocator\AFoo;
+use function array_map;
 use function basename;
 use const PHP_VERSION_ID;
 
@@ -45,6 +48,18 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		yield [
 			'OptimizedDirectory\\TestEnum',
 			'OptimizedDirectory\\TestEnum',
+			'enum.php',
+		];
+
+		yield [
+			'OptimizedDirectory\\BackedByStringWithoutSpace',
+			'OptimizedDirectory\\BackedByStringWithoutSpace',
+			'enum.php',
+		];
+
+		yield [
+			'OptimizedDirectory\\UppercaseEnum',
+			'OptimizedDirectory\\UppercaseEnum',
 			'enum.php',
 		];
 	}
@@ -101,6 +116,11 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 				'OptimizedDirectory\\get_smarty2',
 				'b.php',
 			],
+			[
+				'OptimizedDirectory\\upperCaseFunction',
+				'OptimizedDirectory\\upperCaseFunction',
+				'b.php',
+			],
 		];
 	}
 
@@ -116,6 +136,49 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		$this->assertSame($expectedFunctionName, $functionReflection->getName());
 		$this->assertNotNull($functionReflection->getFileName());
 		$this->assertSame($file, basename($functionReflection->getFileName()));
+	}
+
+	public function testLocateIdentifiersByType(): void
+	{
+		/** @var OptimizedDirectorySourceLocatorFactory $factory */
+		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
+		$locator = $factory->createByDirectory(__DIR__ . '/data/directory');
+		$reflector = new DefaultReflector($locator);
+
+		$classIdentifiers = $locator->locateIdentifiersByType(
+			$reflector,
+			new IdentifierType(IdentifierType::IDENTIFIER_CLASS),
+		);
+
+		$expectedClasses = [
+			'TestDirectorySourceLocator\AFoo',
+			'OptimizedDirectory\BFoo',
+			'CFoo',
+		];
+		if (PHP_VERSION_ID >= 80100) {
+			$expectedClasses[] = 'OptimizedDirectory\TestEnum';
+			$expectedClasses[] = 'OptimizedDirectory\BackedByStringWithoutSpace';
+			$expectedClasses[] = 'OptimizedDirectory\UppercaseEnum';
+		}
+
+		$actualClasses = array_map(static fn (Reflection $reflection) => $reflection->getName(), $classIdentifiers);
+		$this->assertEqualsCanonicalizing($expectedClasses, $actualClasses);
+
+		$functionIdentifiers = $locator->locateIdentifiersByType(
+			$reflector,
+			new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION),
+		);
+
+		$actualFunctions = array_map(static fn (Reflection $reflection) => $reflection->getName(), $functionIdentifiers);
+
+		$this->assertEqualsCanonicalizing([
+			'TestDirectorySourceLocator\doLorem',
+			'OptimizedDirectory\doBar',
+			'OptimizedDirectory\doBaz',
+			'OptimizedDirectory\get_smarty',
+			'OptimizedDirectory\get_smarty2',
+			'OptimizedDirectory\upperCaseFunction',
+		], $actualFunctions);
 	}
 
 	public function dataFunctionDoesNotExist(): array

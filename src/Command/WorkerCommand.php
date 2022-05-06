@@ -114,7 +114,6 @@ class WorkerCommand extends Command
 				$level,
 				$allowXdebug,
 				false,
-				false,
 				$singleReflectionFile,
 				null,
 				false,
@@ -188,14 +187,11 @@ class WorkerCommand extends Command
 			$out->end();
 		};
 		$out->on('error', $handleError);
-
 		/** @var FileAnalyser $fileAnalyser */
 		$fileAnalyser = $container->getByType(FileAnalyser::class);
-
 		/** @var Registry $registry */
 		$registry = $container->getByType(Registry::class);
-
-		$in->on('data', function (array $json) use ($fileAnalyser, $registry, $out, $analysedFiles, $tmpFile, $insteadOfFile): void {
+		$in->on('data', function (array $json) use ($fileAnalyser, $registry, $out, $analysedFiles, $tmpFile, $insteadOfFile, $output): void {
 			$action = $json['action'];
 			if ($action !== 'analyse') {
 				return;
@@ -222,12 +218,14 @@ class WorkerCommand extends Command
 					$this->errorCount++;
 					$internalErrorsCount++;
 					$internalErrorMessage = sprintf('Internal error: %s in file %s', $t->getMessage(), $file);
-					$internalErrorMessage .= sprintf(
-						'%sRun PHPStan with --debug option and post the stack trace to:%s%s',
-						"\n",
-						"\n",
-						'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md',
-					);
+
+					$bugReportUrl = 'https://github.com/phpstan/phpstan/issues/new?template=Bug_report.md';
+					if (OutputInterface::VERBOSITY_VERBOSE <= $output->getVerbosity()) {
+						$internalErrorMessage .= sprintf('%sPost the following stack trace to %s: %s%s', "\n\n", $bugReportUrl, "\n", $t->getTraceAsString());
+					} else {
+						$internalErrorMessage .= sprintf('%sRun PHPStan with -v option and post the stack trace to:%s%s', "\n", "\n", $bugReportUrl);
+					}
+
 					$errors[] = $internalErrorMessage;
 				}
 			}

@@ -117,4 +117,20 @@ class SpecifiedTypes
 		return new self($sureTypeUnion, $sureNotTypeUnion);
 	}
 
+	public function normalize(Scope $scope): self
+	{
+		$sureTypes = $this->sureTypes;
+
+		foreach ($this->sureNotTypes as $exprString => [$exprNode, $sureNotType]) {
+			if (!isset($sureTypes[$exprString])) {
+				$sureTypes[$exprString] = [$exprNode, TypeCombinator::remove($scope->getType($exprNode), $sureNotType)];
+				continue;
+			}
+
+			$sureTypes[$exprString][1] = TypeCombinator::remove($sureTypes[$exprString][1], $sureNotType);
+		}
+
+		return new self($sureTypes, [], $this->overwrite, $this->newConditionalExpressionHolders);
+	}
+
 }

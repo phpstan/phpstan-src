@@ -50,14 +50,16 @@ final class ThrowableReturnTypeExtension implements DynamicMethodReturnTypeExten
 					continue 2;
 				}
 			}
+
 			if ($pdoException->isSuperTypeOf($classType)->yes()) {
-				$types[] = new StringType();
+				$types[] = new BenevolentUnionType([new IntegerType(), new StringType()]);
 				continue;
 			}
 
 			if (in_array(strtolower($class), [
 				'throwable',
 				'exception',
+				'runtimeexception',
 			], true)) {
 				$types[] = new BenevolentUnionType([new IntegerType(), new StringType()]);
 				continue;

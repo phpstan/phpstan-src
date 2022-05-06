@@ -27,7 +27,7 @@ class ArrayRandFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
 		$argsCount = count($functionCall->getArgs());
-		if (count($functionCall->getArgs()) < 1) {
+		if ($argsCount < 1) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 

@@ -91,3 +91,23 @@ function nonEmptyArrayTest(array $a): void
 	assertType('1.0', floatval($a));
 	assertType('true', boolval($a));
 }
+
+/**
+ * @param array{} $a
+ * @param array{foo: mixed, bar?: mixed} $b
+ * @param array{foo?: mixed, bar?: mixed} $c
+ */
+function constantArrayTest(array $a, array $b, array $c): void
+{
+	assertType('0', intval($a));
+	assertType('0.0', floatval($a));
+	assertType('false', boolval($a));
+
+	assertType('1', intval($b));
+	assertType('1.0', floatval($b));
+	assertType('true', boolval($b));
+
+	assertType('0|1', intval($c));
+	assertType('0.0|1.0', floatval($c));
+	assertType('bool', boolval($c));
+}

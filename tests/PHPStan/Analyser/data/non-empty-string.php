@@ -134,29 +134,6 @@ class Foo
 		}
 	}
 
-	/**
-	 * @param non-empty-string $nonEmpty
-	 * @param positive-int $positiveInt
-	 * @param 1|2|3 $postiveRange
-	 * @param -1|-2|-3 $negativeRange
-	 */
-	public function doSubstr(string $s, $nonEmpty, $positiveInt, $postiveRange, $negativeRange): void
-	{
-		assertType('string', substr($s, 5));
-
-		assertType('string', substr($s, -5));
-		assertType('non-empty-string', substr($nonEmpty, -5));
-		assertType('non-empty-string', substr($nonEmpty, $negativeRange));
-
-		assertType('string', substr($s, 0, 5));
-		assertType('non-empty-string', substr($nonEmpty, 0, 5));
-		assertType('non-empty-string', substr($nonEmpty, 0, $postiveRange));
-
-		assertType('string', substr($nonEmpty, 0, -5));
-
-		assertType('string', substr($s, 0, $positiveInt));
-		assertType('non-empty-string', substr($nonEmpty, 0, $positiveInt));
-	}
 }
 
 class ImplodingStrings
@@ -206,10 +183,10 @@ class ImplodingStrings
 		assertType('non-empty-string', implode($nonEmptyArrayWithNonEmptyStrings));
 	}
 
-	public function sayHello(): void
+	public function sayHello(int $i): void
 	{
 		// coming from issue #5291
-		$s = array(1, 2);
+		$s = array(1, $i);
 
 		assertType('non-empty-string', implode("a", $s));
 	}
@@ -227,10 +204,10 @@ class ImplodingStrings
 		assertType('non-empty-string', implode($glue, $a));
 	}
 
-	public function sayHello2(): void
+	public function sayHello2(int $i): void
 	{
 		// coming from issue #5291
-		$s = array(1, 2);
+		$s = array(1, $i);
 
 		assertType('non-empty-string', join("a", $s));
 	}

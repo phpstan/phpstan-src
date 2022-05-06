@@ -60,7 +60,7 @@ class AnalyserRunner
 			!$debug
 			&& $allowParallel
 			&& $mainScript !== null
-			&& $schedule->getNumberOfProcesses() > 1
+			&& $schedule->getNumberOfProcesses() > 0
 		) {
 			return $this->parallelAnalyser->analyse($schedule, $mainScript, $postFileCallback, $projectConfigFile, $tmpFile, $insteadOfFile, $input);
 		}

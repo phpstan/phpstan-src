@@ -24,6 +24,6 @@ class HelloWorld
 
 	public function incorrectWithConstant(): void
 	{
-		assertType('int<1, max>', max(1, PHP_INT_MAX));
+		assertType('2147483647|9223372036854775807', max(1, PHP_INT_MAX));
 	}
 }

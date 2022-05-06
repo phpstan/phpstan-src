@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -15,6 +14,8 @@ class TemplateTypeMap
 {
 
 	private static ?TemplateTypeMap $empty = null;
+
+	private ?TemplateTypeMap $resolvedToBounds = null;
 
 	/**
 	 * @api
@@ -204,14 +205,10 @@ class TemplateTypeMap
 
 	public function resolveToBounds(): self
 	{
-		return $this->map(static function (string $name, Type $type): Type {
-			$type = TemplateTypeHelper::resolveToBounds($type);
-			if ($type instanceof MixedType && $type->isExplicitMixed()) {
-				return new MixedType(false);
-			}
-
-			return $type;
-		});
+		if ($this->resolvedToBounds !== null) {
+			return $this->resolvedToBounds;
+		}
+		return $this->resolvedToBounds = $this->map(static fn (string $name, Type $type): Type => TemplateTypeHelper::resolveToBounds($type));
 	}
 
 	/**

@@ -1802,3 +1802,30 @@ class ValueOfParam
 		$this->foo('Newark Liberty International');
 	}
 }
+
+class WeirdArrayBug
+{
+
+	/** @param string[] $strings */
+	public function doBar($m, array $a, bool $b, array $strings)
+	{
+		$needles = [$m];
+		foreach ($a as $v) {
+			if ($b) {
+				$needles = array_merge($needles, $strings);
+			}
+		}
+
+		$this->doFoo($needles);
+	}
+
+	/**
+	 * @param array<string>|string $strings
+	 * @return void
+	 */
+	public function doFoo($strings)
+	{
+
+	}
+
+}

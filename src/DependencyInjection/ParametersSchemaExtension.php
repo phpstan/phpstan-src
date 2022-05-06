@@ -4,10 +4,13 @@ namespace PHPStan\DependencyInjection;
 
 use Nette\DI\CompilerExtension;
 use Nette\DI\Definitions\Statement;
+use Nette\Schema\Context as SchemaContext;
+use Nette\Schema\DynamicParameter;
 use Nette\Schema\Elements\AnyOf;
 use Nette\Schema\Elements\Structure;
 use Nette\Schema\Elements\Type;
 use Nette\Schema\Expect;
+use Nette\Schema\Processor;
 use Nette\Schema\Schema;
 use PHPStan\ShouldNotHappenException;
 use function array_map;
@@ -24,15 +27,27 @@ class ParametersSchemaExtension extends CompilerExtension
 
 	public function loadConfiguration(): void
 	{
+		$builder = $this->getContainerBuilder();
+		if (!$builder->parameters['__validate']) {
+			return;
+		}
+
 		/** @var mixed[] $config */
 		$config = $this->config;
-		$config['__parametersSchema'] = new Statement(Schema::class);
-		$builder = $this->getContainerBuilder();
-		$builder->parameters['__parametersSchema'] = $this->processArgument(
+		$config['analysedPaths'] = new Statement(DynamicParameter::class);
+		$config['analysedPathsFromConfig'] = new Statement(DynamicParameter::class);
+		$config['singleReflectionFile'] = new Statement(DynamicParameter::class);
+		$config['singleReflectionInsteadOfFile'] = new Statement(DynamicParameter::class);
+		$schema = $this->processArgument(
 			new Statement('schema', [
 				new Statement('structure', [$config]),
 			]),
 		);
+		$processor = new Processor();
+		$processor->onNewContext[] = static function (SchemaContext $context): void {
+			$context->path = ['parameters'];
+		};
+		$processor->process($schema, $builder->parameters);
 	}
 
 	/**

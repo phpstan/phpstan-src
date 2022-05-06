@@ -26,7 +26,7 @@ class HrtimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		$arrayType = new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new IntegerType(), new IntegerType()], 2);
+		$arrayType = new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new IntegerType(), new IntegerType()], [2]);
 		$numberType = TypeUtils::toBenevolentUnion(TypeCombinator::union(new IntegerType(), new FloatType()));
 
 		if (count($functionCall->getArgs()) < 1) {

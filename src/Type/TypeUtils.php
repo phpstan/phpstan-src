@@ -114,15 +114,12 @@ class TypeUtils
 		return self::map(ArrayType::class, $type, true, false);
 	}
 
+	/**
+	 * @deprecated Use PHPStan\Type\Type::generalize() instead.
+	 */
 	public static function generalizeType(Type $type, GeneralizePrecision $precision): Type
 	{
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($precision): Type {
-			if ($type instanceof ConstantType) {
-				return $type->generalize($precision);
-			}
-
-			return $traverse($type);
-		});
+		return $type->generalize($precision);
 	}
 
 	/**

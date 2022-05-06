@@ -18,6 +18,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function array_key_last;
 use function array_slice;
 use function count;
 use function sprintf;
@@ -161,13 +162,14 @@ class ParametersAcceptorSelector
 			}
 		}
 
-		foreach ($args as $arg) {
+		foreach ($args as $i => $arg) {
 			$type = $scope->getType($arg->value);
+			$index = $arg->name !== null ? $arg->name->toString() : $i;
 			if ($arg->unpack) {
 				$unpack = true;
-				$types[] = $type->getIterableValueType();
+				$types[$index] = $type->getIterableValueType();
 			} else {
-				$types[] = $type;
+				$types[$index] = $type;
 			}
 		}
 
@@ -175,7 +177,7 @@ class ParametersAcceptorSelector
 	}
 
 	/**
-	 * @param Type[] $types
+	 * @param array<int|string, Type> $types
 	 * @param ParametersAcceptor[] $parametersAcceptors
 	 */
 	public static function selectFromTypes(
@@ -246,7 +248,7 @@ class ParametersAcceptorSelector
 						break;
 					}
 
-					$type = $types[count($types) - 1];
+					$type = $types[array_key_last($types)];
 				} else {
 					$type = $types[$i];
 				}

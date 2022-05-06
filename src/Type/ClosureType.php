@@ -22,8 +22,10 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_map;
 use function array_merge;
@@ -37,6 +39,8 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonOffsetAccessibleTypeTrait;
+	use NonRemoveableTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	private ObjectType $objectType;
 
@@ -104,6 +108,10 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
+		if ($type instanceof CompoundType) {
+			return $type->isSubTypeOf($this);
+		}
+
 		return $this->isSuperTypeOfInternal($type, false);
 	}
 
@@ -278,7 +286,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return new ConstantArrayType(
 			[new ConstantIntegerType(0)],
 			[$this],
-			1,
+			[1],
 		);
 	}
 
@@ -375,6 +383,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	}
 
 	public function isArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}

@@ -11,7 +11,9 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
@@ -26,6 +28,8 @@ class HasMethodType implements AccessoryType, CompoundType
 	use ObjectTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
+	use NonRemoveableTypeTrait;
+	use NonGeneralizableTypeTrait;
 
 	/** @api */
 	public function __construct(private string $methodName)
@@ -56,6 +60,10 @@ class HasMethodType implements AccessoryType, CompoundType
 	{
 		if ($otherType instanceof UnionType || $otherType instanceof IntersectionType) {
 			return $otherType->isSuperTypeOf($this);
+		}
+
+		if ($this->isCallable()->yes() && $otherType->isCallable()->yes()) {
+			return TrinaryLogic::createYes();
 		}
 
 		if ($otherType instanceof self) {

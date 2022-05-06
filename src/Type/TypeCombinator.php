@@ -2,28 +2,22 @@
 
 namespace PHPStan\Type;
 
-use DateTime;
-use DateTimeImmutable;
-use DateTimeInterface;
-use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateUnionType;
-use Traversable;
 use function array_intersect_key;
 use function array_key_exists;
+use function array_map;
 use function array_merge;
 use function array_slice;
 use function array_splice;
@@ -40,7 +34,11 @@ class TypeCombinator
 
 	public static function addNull(Type $type): Type
 	{
-		return self::union($type, new NullType());
+		if ((new NullType())->isSuperTypeOf($type)->no()) {
+			return self::union($type, new NullType());
+		}
+
+		return $type;
 	}
 
 	public static function remove(Type $fromType, Type $typeToRemove): Type
@@ -50,15 +48,6 @@ class TypeCombinator
 				$fromType = self::remove($fromType, $unionTypeToRemove);
 			}
 			return $fromType;
-		}
-
-		if ($fromType instanceof UnionType) {
-			$innerTypes = [];
-			foreach ($fromType->getTypes() as $innerType) {
-				$innerTypes[] = self::remove($innerType, $typeToRemove);
-			}
-
-			return self::union(...$innerTypes);
 		}
 
 		$isSuperType = $typeToRemove->isSuperTypeOf($fromType);
@@ -76,85 +65,7 @@ class TypeCombinator
 			}
 		}
 
-		if ($fromType instanceof BooleanType) {
-			if ($typeToRemove instanceof ConstantBooleanType) {
-				return new ConstantBooleanType(!$typeToRemove->getValue());
-			}
-		} elseif ($fromType instanceof IterableType) {
-			$arrayType = new ArrayType(new MixedType(), new MixedType());
-			if ($typeToRemove->isSuperTypeOf($arrayType)->yes()) {
-				return new GenericObjectType(Traversable::class, [
-					$fromType->getIterableKeyType(),
-					$fromType->getIterableValueType(),
-				]);
-			}
-
-			$traversableType = new ObjectType(Traversable::class);
-			if ($typeToRemove->isSuperTypeOf($traversableType)->yes()) {
-				return new ArrayType($fromType->getIterableKeyType(), $fromType->getIterableValueType());
-			}
-		} elseif ($fromType instanceof IntegerRangeType) {
-			$type = $fromType->tryRemove($typeToRemove);
-			if ($type !== null) {
-				return $type;
-			}
-		} elseif ($fromType instanceof IntegerType) {
-			if ($typeToRemove instanceof IntegerRangeType || $typeToRemove instanceof ConstantIntegerType) {
-				if ($typeToRemove instanceof IntegerRangeType) {
-					$removeValueMin = $typeToRemove->getMin();
-					$removeValueMax = $typeToRemove->getMax();
-				} else {
-					$removeValueMin = $typeToRemove->getValue();
-					$removeValueMax = $typeToRemove->getValue();
-				}
-				$lowerPart = $removeValueMin !== null ? IntegerRangeType::fromInterval(null, $removeValueMin, -1) : null;
-				$upperPart = $removeValueMax !== null ? IntegerRangeType::fromInterval($removeValueMax, null, +1) : null;
-				if ($lowerPart !== null && $upperPart !== null) {
-					return new UnionType([$lowerPart, $upperPart]);
-				}
-				return $lowerPart ?? $upperPart ?? new NeverType();
-			}
-		} elseif ($fromType->isArray()->yes()) {
-			if ($typeToRemove instanceof ConstantArrayType && $typeToRemove->isIterableAtLeastOnce()->no()) {
-				return self::intersect($fromType, new NonEmptyArrayType());
-			}
-
-			if ($typeToRemove instanceof NonEmptyArrayType) {
-				return new ConstantArrayType([], []);
-			}
-
-			if ($fromType instanceof ConstantArrayType && $typeToRemove instanceof HasOffsetType) {
-				return $fromType->unsetOffset($typeToRemove->getOffsetType());
-			}
-		} elseif ($fromType instanceof StringType) {
-			if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '') {
-				return self::intersect($fromType, new AccessoryNonEmptyStringType());
-			}
-			if ($typeToRemove instanceof AccessoryNonEmptyStringType) {
-				return new ConstantStringType('');
-			}
-		} elseif ($fromType instanceof ObjectType && $fromType->getClassName() === DateTimeInterface::class) {
-			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === DateTimeImmutable::class) {
-				return new ObjectType(DateTime::class);
-			}
-
-			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === DateTime::class) {
-				return new ObjectType(DateTimeImmutable::class);
-			}
-		}
-
-		if ($fromType instanceof SubtractableType) {
-			$typeToSubtractFrom = $fromType;
-			if ($fromType instanceof TemplateType) {
-				$typeToSubtractFrom = $fromType->getBound();
-			}
-
-			if ($typeToSubtractFrom->isSuperTypeOf($typeToRemove)->yes()) {
-				return $fromType->subtract($typeToRemove);
-			}
-		}
-
-		return $fromType;
+		return $fromType->tryRemove($typeToRemove) ?? $fromType;
 	}
 
 	public static function removeNull(Type $type): Type
@@ -184,6 +95,9 @@ class TypeCombinator
 	public static function union(Type ...$types): Type
 	{
 		$typesCount = count($types);
+		if ($typesCount === 0) {
+			return new NeverType();
+		}
 
 		$benevolentTypes = [];
 		$benevolentUnionObject = null;
@@ -215,15 +129,15 @@ class TypeCombinator
 			$typesCount += count($typesInner) - 1;
 		}
 
+		if ($typesCount === 1) {
+			return $types[0];
+		}
+
 		$arrayTypes = [];
 		$arrayAccessoryTypes = [];
 		$scalarTypes = [];
 		$hasGenericScalarTypes = [];
 		for ($i = 0; $i < $typesCount; $i++) {
-			if ($types[$i] instanceof NeverType) {
-				unset($types[$i]);
-				continue;
-			}
 			if ($types[$i] instanceof ConstantScalarType) {
 				$type = $types[$i];
 				$scalarTypes[get_class($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
@@ -268,7 +182,13 @@ class TypeCombinator
 			}
 
 			$arrayTypes[] = $types[$i];
-			$arrayAccessoryTypes[] = [];
+
+			if ($types[$i]->isIterableAtLeastOnce()->yes()) {
+				$nonEmpty = new NonEmptyArrayType();
+				$arrayAccessoryTypes[] = [$nonEmpty->describe(VerbosityLevel::cache()) => $nonEmpty];
+			} else {
+				$arrayAccessoryTypes[] = [];
+			}
 			unset($types[$i]);
 		}
 
@@ -449,11 +369,7 @@ class TypeCombinator
 				$isSuperType = $typeWithoutSubtractedTypeA->isSuperTypeOf($b);
 			}
 			if ($isSuperType->yes()) {
-				$subtractedType = null;
-				if ($b instanceof SubtractableType) {
-					$subtractedType = $b->getSubtractedType();
-				}
-				$a = self::intersectWithSubtractedType($a, $subtractedType);
+				$a = self::intersectWithSubtractedType($a, $b);
 				return [$a, null];
 			}
 		}
@@ -466,26 +382,16 @@ class TypeCombinator
 				$isSuperType = $typeWithoutSubtractedTypeB->isSuperTypeOf($a);
 			}
 			if ($isSuperType->yes()) {
-				$subtractedType = null;
-				if ($a instanceof SubtractableType) {
-					$subtractedType = $a->getSubtractedType();
-				}
-				$b = self::intersectWithSubtractedType($b, $subtractedType);
+				$b = self::intersectWithSubtractedType($b, $a);
 				return [null, $b];
 			}
 		}
 
-		if (
-			!$b instanceof ConstantArrayType
-			&& $b->isSuperTypeOf($a)->yes()
-		) {
+		if ($b->isSuperTypeOf($a)->yes()) {
 			return [null, $b];
 		}
 
-		if (
-			!$a instanceof ConstantArrayType
-			&& $a->isSuperTypeOf($b)->yes()
-		) {
+		if ($a->isSuperTypeOf($b)->yes()) {
 			return [$a, null];
 		}
 
@@ -541,27 +447,36 @@ class TypeCombinator
 	}
 
 	private static function intersectWithSubtractedType(
-		SubtractableType $subtractableType,
-		?Type $subtractedType,
+		SubtractableType $a,
+		Type $b,
 	): Type
 	{
-		if ($subtractableType->getSubtractedType() === null) {
-			return $subtractableType;
+		if ($a->getSubtractedType() === null) {
+			return $a;
 		}
 
-		if ($subtractedType === null) {
-			return $subtractableType->getTypeWithoutSubtractedType();
+		if ($b instanceof SubtractableType) {
+			$subtractedType = $b->getSubtractedType();
+			if ($subtractedType === null) {
+				return $a->getTypeWithoutSubtractedType();
+			}
+		} else {
+			$subtractedTypeTmp = self::intersect($a->getTypeWithoutSubtractedType(), $a->getSubtractedType());
+			if ($b->isSuperTypeOf($subtractedTypeTmp)->yes()) {
+				return $a->getTypeWithoutSubtractedType();
+			}
+			$subtractedType = new MixedType(false, $b);
 		}
 
 		$subtractedType = self::intersect(
-			$subtractableType->getSubtractedType(),
+			$a->getSubtractedType(),
 			$subtractedType,
 		);
 		if ($subtractedType instanceof NeverType) {
 			$subtractedType = null;
 		}
 
-		return $subtractableType->changeSubtractedType($subtractedType);
+		return $a->changeSubtractedType($subtractedType);
 	}
 
 	/**
@@ -641,55 +556,10 @@ class TypeCombinator
 			];
 		}
 
-		/** @var ConstantArrayType[] $arrayTypes */
-		$arrayTypes = $arrayTypes;
-
-		/** @var int[] $constantKeyTypesNumbered */
-		$constantKeyTypesNumbered = $constantKeyTypesNumbered;
-
-		$constantArraysBuckets = [];
-		foreach ($arrayTypes as $arrayTypeAgain) {
-			$arrayIndex = 0;
-			foreach ($arrayTypeAgain->getKeyTypes() as $keyType) {
-				$arrayIndex += $constantKeyTypesNumbered[$keyType->getValue()];
-			}
-
-			if (!array_key_exists($arrayIndex, $constantArraysBuckets)) {
-				$bucket = [];
-				foreach ($arrayTypeAgain->getKeyTypes() as $i => $keyType) {
-					$bucket[$keyType->getValue()] = [
-						'keyType' => $keyType,
-						'valueType' => $arrayTypeAgain->getValueTypes()[$i],
-						'optional' => $arrayTypeAgain->isOptionalKey($i),
-					];
-				}
-				$constantArraysBuckets[$arrayIndex] = $bucket;
-				continue;
-			}
-
-			$bucket = $constantArraysBuckets[$arrayIndex];
-			foreach ($arrayTypeAgain->getKeyTypes() as $i => $keyType) {
-				$bucket[$keyType->getValue()]['valueType'] = self::union(
-					$bucket[$keyType->getValue()]['valueType'],
-					$arrayTypeAgain->getValueTypes()[$i],
-				);
-				$bucket[$keyType->getValue()]['optional'] = $bucket[$keyType->getValue()]['optional'] || $arrayTypeAgain->isOptionalKey($i);
-			}
-
-			$constantArraysBuckets[$arrayIndex] = $bucket;
-		}
-
-		$resultArrays = [];
-		foreach ($constantArraysBuckets as $bucket) {
-			$builder = ConstantArrayTypeBuilder::createEmpty();
-			foreach ($bucket as $data) {
-				$builder->setOffsetValueType($data['keyType'], $data['valueType'], $data['optional']);
-			}
-
-			$resultArrays[] = self::intersect($builder->getArray(), ...$accessoryTypes);
-		}
-
-		return self::reduceArrays($resultArrays);
+		return array_map(
+			static fn (Type $arrayType) => self::intersect($arrayType, ...$accessoryTypes),
+			self::reduceArrays($arrayTypes),
+		);
 	}
 
 	/**
@@ -709,16 +579,18 @@ class TypeCombinator
 			$arraysToProcess[] = $constantArray;
 		}
 
-		for ($i = 0; $i < count($arraysToProcess); $i++) {
-			for ($j = $i + 1; $j < count($arraysToProcess); $j++) {
+		for ($i = 0, $arraysToProcessCount = count($arraysToProcess); $i < $arraysToProcessCount; $i++) {
+			for ($j = $i + 1; $j < $arraysToProcessCount; $j++) {
 				if ($arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])) {
 					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
 					array_splice($arraysToProcess, $i--, 1);
+					$arraysToProcessCount--;
 					continue 2;
 
 				} elseif ($arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])) {
 					$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
 					array_splice($arraysToProcess, $j--, 1);
+					$arraysToProcessCount--;
 					continue 1;
 				}
 			}
@@ -789,16 +661,30 @@ class TypeCombinator
 
 			return $union;
 		}
+		$typesCount = count($types);
 
 		// transform A & (B & C) to A & B & C
-		for ($i = 0; $i < count($types); $i++) {
+		for ($i = 0; $i < $typesCount; $i++) {
 			$type = $types[$i];
 			if (!($type instanceof IntersectionType)) {
 				continue;
 			}
 
 			array_splice($types, $i--, 1, $type->getTypes());
+			$typesCount = count($types);
 		}
+
+		// move subtractables with subtracts before those without to avoid loosing them in the union logic
+		usort($types, static function (Type $a, Type $b): int {
+			if ($a instanceof SubtractableType && $a->getSubtractedType() !== null) {
+				return -1;
+			}
+			if ($b instanceof SubtractableType && $b->getSubtractedType() !== null) {
+				return 1;
+			}
+
+			return 0;
+		});
 
 		// transform IntegerType & ConstantIntegerType to ConstantIntegerType
 		// transform Child & Parent to Child
@@ -808,7 +694,6 @@ class TypeCombinator
 		// transform callable & int to never
 		// transform A & ~A to never
 		// transform int & string to never
-		$typesCount = count($types);
 		for ($i = 0; $i < $typesCount; $i++) {
 			for ($j = $i + 1; $j < $typesCount; $j++) {
 				if ($types[$j] instanceof SubtractableType) {

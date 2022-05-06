@@ -4,11 +4,16 @@ namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Terminal;
-use function array_map;
+use function array_unshift;
+use function explode;
+use function implode;
+use function sprintf;
+use function str_starts_with;
 use function strlen;
 use function wordwrap;
 use const DIRECTORY_SEPARATOR;
@@ -58,20 +63,56 @@ class ErrorsConsoleStyle extends SymfonyStyle
 			$maxHeaderWidth = $length;
 		}
 
-		$wrap = static fn ($rows): array => array_map(static fn ($row): array => array_map(static function ($s) use ($terminalWidth, $maxHeaderWidth) {
-					if ($terminalWidth > $maxHeaderWidth + 5) {
-						return wordwrap(
-							$s,
-							$terminalWidth - $maxHeaderWidth - 5,
-							"\n",
-							true,
-						);
-					}
+		// manual wrapping could be replaced with $table->setColumnMaxWidth()
+		// but it's buggy for <href> lines
+		// https://github.com/symfony/symfony/issues/45520
+		// https://github.com/symfony/symfony/issues/45521
+		$headers = $this->wrap($headers, $terminalWidth, $maxHeaderWidth);
+		foreach ($headers as $i => $header) {
+			$newHeader = [];
+			foreach (explode("\n", $header) as $h) {
+				$newHeader[] = sprintf('<info>%s</info>', $h);
+			}
 
-					return $s;
-		}, $row), $rows);
+			$headers[$i] = implode("\n", $newHeader);
+		}
 
-		parent::table($headers, $wrap($rows));
+		foreach ($rows as $i => $row) {
+			$rows[$i] = $this->wrap($row, $terminalWidth, $maxHeaderWidth);
+		}
+
+		$table = $this->createTable();
+		array_unshift($rows, $headers, new TableSeparator());
+		$table->setRows($rows);
+
+		$table->render();
+		$this->newLine();
+	}
+
+	/**
+	 * @param string[] $rows
+	 * @return string[]
+	 */
+	private function wrap(array $rows, int $terminalWidth, int $maxHeaderWidth): array
+	{
+		foreach ($rows as $i => $column) {
+			$columnRows = explode("\n", $column);
+			foreach ($columnRows as $k => $columnRow) {
+				if (str_starts_with($columnRow, '✏️')) {
+					continue;
+				}
+				$columnRows[$k] = wordwrap(
+					$columnRow,
+					$terminalWidth - $maxHeaderWidth - 5,
+					"\n",
+					true,
+				);
+			}
+
+			$rows[$i] = implode("\n", $columnRows);
+		}
+
+		return $rows;
 	}
 
 	public function createProgressBar(int $max = 0): ProgressBar

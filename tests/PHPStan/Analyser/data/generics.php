@@ -347,7 +347,7 @@ function varAnnotation($cb)
 	/** @var T */
 	$v = $cb();
 
-	assertType('T (function PHPStan\Generics\FunctionsAssertType\varAnnotation(), argument)', $v);
+	assertType('T (function PHPStan\Generics\FunctionsAssertType\varAnnotation(), parameter)', $v);
 
 	return $v;
 }
@@ -384,7 +384,7 @@ class C
 			}
 		};
 
-		assertType('T (class PHPStan\Generics\FunctionsAssertType\C, argument)', $a->g());
+		assertType('T (class PHPStan\Generics\FunctionsAssertType\C, parameter)', $a->g());
 	}
 }
 
@@ -930,8 +930,8 @@ class StdClassCollection
 
 function () {
 	$stdEmpty = new StdClassCollection([]);
-	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<(int|string), stdClass>', $stdEmpty);
-	assertType('array<stdClass>', $stdEmpty->getAll());
+	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<*NEVER*, *NEVER*>', $stdEmpty);
+	assertType('array{}', $stdEmpty->getAll());
 
 	$std = new StdClassCollection([new \stdClass()]);
 	assertType('PHPStan\Generics\FunctionsAssertType\StdClassCollection<int, stdClass>', $std);
@@ -952,7 +952,7 @@ class ClassWithMethodCachingIssue
 
 		/** @var T $b */
 		$b = doFoo();
-		assertType('T (method PHPStan\Generics\FunctionsAssertType\ClassWithMethodCachingIssue::doFoo(), argument)', $b);
+		assertType('T (method PHPStan\Generics\FunctionsAssertType\ClassWithMethodCachingIssue::doFoo(), parameter)', $b);
 	}
 
 	/**
@@ -965,7 +965,7 @@ class ClassWithMethodCachingIssue
 
 		/** @var T $b */
 		$b = doFoo();
-		assertType('T (method PHPStan\Generics\FunctionsAssertType\ClassWithMethodCachingIssue::doBar(), argument)', $b);
+		assertType('T (method PHPStan\Generics\FunctionsAssertType\ClassWithMethodCachingIssue::doBar(), parameter)', $b);
 	}
 
 }
@@ -1089,7 +1089,7 @@ function testGenericObjectWithoutClassType2($a)
 		return $a;
 	}
 
-	assertType('T of object (function PHPStan\Generics\FunctionsAssertType\testGenericObjectWithoutClassType2(), argument)', $b);
+	assertType('T of object~stdClass (function PHPStan\Generics\FunctionsAssertType\testGenericObjectWithoutClassType2(), argument)', $b);
 
 	return $a;
 }

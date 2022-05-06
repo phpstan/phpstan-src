@@ -15,7 +15,10 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -61,13 +64,30 @@ class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 				return new ConstantArrayType(
 					$keyTypes,
 					$valueTypes,
+					$keysParamType->getNextAutoIndexes(),
 				);
 			}
 		}
 
+		if ($keysParamType->isArray()->yes()) {
+			$itemType = $keysParamType->getIterableValueType();
+
+			if ((new IntegerType())->isSuperTypeOf($itemType)->no()) {
+				if ($itemType->toString() instanceof ErrorType) {
+					return new NeverType();
+				}
+
+				$keyType = $itemType->toString();
+			} else {
+				$keyType = $itemType;
+			}
+		} else {
+			$keyType = new MixedType();
+		}
+
 		$arrayType = new ArrayType(
-			$keysParamType instanceof ArrayType ? $keysParamType->getItemType() : new MixedType(),
-			$valuesParamType instanceof ArrayType ? $valuesParamType->getItemType() : new MixedType(),
+			$keyType,
+			$valuesParamType->isArray()->yes() ? $valuesParamType->getIterableValueType() : new MixedType(),
 		);
 
 		if ($keysParamType->isIterableAtLeastOnce()->yes() && $valuesParamType->isIterableAtLeastOnce()->yes()) {
@@ -95,6 +115,10 @@ class ArrayCombineFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		$sanitizedTypes = [];
 
 		foreach ($types as $type) {
+			if ((new IntegerType())->isSuperTypeOf($type)->no() && ! $type->toString() instanceof ErrorType) {
+				$type = $type->toString();
+			}
+
 			if (
 				!$type instanceof ConstantIntegerType
 				&& !$type instanceof ConstantStringType

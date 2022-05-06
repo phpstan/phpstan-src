@@ -22,6 +22,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_map;
 use function count;
 use function implode;
@@ -31,6 +32,8 @@ use function strpos;
 /** @api */
 class UnionType implements CompoundType
 {
+
+	use NonGeneralizableTypeTrait;
 
 	/** @var Type[] */
 	private array $types;
@@ -92,7 +95,7 @@ class UnionType implements CompoundType
 			return TrinaryLogic::createYes();
 		}
 
-		if ($type instanceof CompoundType && !$type instanceof CallableType) {
+		if ($type instanceof CompoundType && !$type instanceof CallableType && !$type instanceof TemplateType && !$type instanceof IntersectionType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
@@ -101,18 +104,30 @@ class UnionType implements CompoundType
 			$results[] = $innerType->accepts($type, $strictTypes);
 		}
 
+		if ($type instanceof TemplateUnionType) {
+			$results[] = $type->isAcceptedBy($this, $strictTypes);
+		}
+
 		return TrinaryLogic::createNo()->or(...$results);
 	}
 
 	public function isSuperTypeOf(Type $otherType): TrinaryLogic
 	{
-		if ($otherType instanceof self || $otherType instanceof IterableType) {
+		if (
+			($otherType instanceof self && !$otherType instanceof TemplateUnionType)
+			|| $otherType instanceof IterableType
+			|| $otherType instanceof NeverType
+		) {
 			return $otherType->isSubTypeOf($this);
 		}
 
 		$results = [];
 		foreach ($this->getTypes() as $innerType) {
 			$results[] = $innerType->isSuperTypeOf($otherType);
+		}
+
+		if ($otherType instanceof TemplateUnionType) {
+			$results[] = $otherType->isSubTypeOf($this);
 		}
 
 		return TrinaryLogic::createNo()->or(...$results);
@@ -380,6 +395,11 @@ class UnionType implements CompoundType
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isArray());
 	}
 
+	public function isString(): TrinaryLogic
+	{
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isString());
+	}
+
 	public function isNumericString(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isNumericString());
@@ -462,12 +482,12 @@ class UnionType implements CompoundType
 
 	public function isSmallerThan(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThan($otherType));
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThan($otherType));
 	}
 
 	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThanOrEqual($otherType));
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThanOrEqual($otherType));
 	}
 
 	public function getSmallerType(): Type
@@ -492,12 +512,12 @@ class UnionType implements CompoundType
 
 	public function isGreaterThan(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThan($type));
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThan($type));
 	}
 
 	public function isGreaterThanOrEqual(Type $otherType): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThanOrEqual($type));
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThanOrEqual($type));
 	}
 
 	public function toBoolean(): BooleanType
@@ -631,6 +651,11 @@ class UnionType implements CompoundType
 		return $this;
 	}
 
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => TypeCombinator::remove($type, $typeToRemove));
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */
@@ -643,6 +668,14 @@ class UnionType implements CompoundType
 	 * @param callable(Type $type): TrinaryLogic $getResult
 	 */
 	protected function unionResults(callable $getResult): TrinaryLogic
+	{
+		return TrinaryLogic::extremeIdentity(...array_map($getResult, $this->types));
+	}
+
+	/**
+	 * @param callable(Type $type): TrinaryLogic $getResult
+	 */
+	private function notBenevolentUnionResults(callable $getResult): TrinaryLogic
 	{
 		return TrinaryLogic::extremeIdentity(...array_map($getResult, $this->types));
 	}

@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function sprintf;
+use const PHP_VERSION_ID;
 
 /** @extends RuleTestCase<ConsistentConstructorRule> */
 class ConsistentConstructorRuleTest extends RuleTestCase
@@ -18,7 +20,7 @@ class ConsistentConstructorRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/consistent-constructor.php'], [
 			[
-				'Parameter #1 $b (int) of method ConsistentConstructor\Bar2::__construct() is not contravariant with parameter #1 $b (string) of method ConsistentConstructor\Bar::__construct().',
+				sprintf('Parameter #1 $b (int) of method ConsistentConstructor\Bar2::__construct() is not %s with parameter #1 $b (string) of method ConsistentConstructor\Bar::__construct().', PHP_VERSION_ID >= 70400 ? 'contravariant' : 'compatible'),
 				13,
 			],
 			[
@@ -30,7 +32,10 @@ class ConsistentConstructorRuleTest extends RuleTestCase
 
 	public function testRuleNoErrors(): void
 	{
-		$this->analyse([__DIR__ . '/data/consistent-constructor-no-errors.php'], []);
+		$this->analyse(
+			[__DIR__ . '/data/consistent-constructor-no-errors.php'],
+			PHP_VERSION_ID < 70400 ? [['Parameter #1 $b (ConsistentConstructorNoErrors\A) of method ConsistentConstructorNoErrors\Baz::__construct() is not compatible with parameter #1 $b (ConsistentConstructorNoErrors\B) of method ConsistentConstructorNoErrors\Foo::__construct().', 49]] : [],
+		);
 	}
 
 }

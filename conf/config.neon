@@ -893,6 +893,9 @@ services:
 			reportStatic: %reportStaticMethodSignatures%
 
 	-
+		class: PHPStan\Rules\Methods\MethodParameterComparisonHelper
+
+	-
 		class: PHPStan\Rules\MissingTypehintCheck
 		arguments:
 			checkMissingIterableValueType: %checkMissingIterableValueType%

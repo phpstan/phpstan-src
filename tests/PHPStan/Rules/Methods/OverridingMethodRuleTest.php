@@ -19,10 +19,13 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$phpVersion = new PhpVersion($this->phpVersionId);
+
 		return new OverridingMethodRule(
-			new PhpVersion($this->phpVersionId),
+			$phpVersion,
 			new MethodSignatureRule(true, true),
 			false,
+			new MethodParameterComparisonHelper($phpVersion),
 		);
 	}
 

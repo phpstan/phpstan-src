@@ -19,10 +19,13 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$phpVersion = new PhpVersion(PHP_VERSION_ID);
+
 		return new OverridingMethodRule(
-			new PhpVersion(PHP_VERSION_ID),
+			$phpVersion,
 			new MethodSignatureRule($this->reportMaybes, $this->reportStatic),
 			true,
+			new MethodParameterComparisonHelper($phpVersion),
 		);
 	}
 

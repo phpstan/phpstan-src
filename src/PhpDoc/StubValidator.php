@@ -36,6 +36,7 @@ use PHPStan\Rules\Generics\TemplateTypeCheck;
 use PHPStan\Rules\Generics\TraitTemplateTypeRule;
 use PHPStan\Rules\Generics\VarianceCheck;
 use PHPStan\Rules\Methods\ExistingClassesInTypehintsRule;
+use PHPStan\Rules\Methods\MethodParameterComparisonHelper;
 use PHPStan\Rules\Methods\MethodSignatureRule;
 use PHPStan\Rules\Methods\MissingMethodParameterTypehintRule;
 use PHPStan\Rules\Methods\MissingMethodReturnTypehintRule;
@@ -149,7 +150,7 @@ class StubValidator
 			new ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, $unresolvableTypeHelper, $phpVersion, true, false),
-			new OverridingMethodRule($phpVersion, new MethodSignatureRule(true, true), true),
+			new OverridingMethodRule($phpVersion, new MethodSignatureRule(true, true), true, new MethodParameterComparisonHelper($phpVersion)),
 
 			// level 2
 			new ClassAncestorsRule($genericAncestorsCheck, $crossCheckInterfacesHelper),

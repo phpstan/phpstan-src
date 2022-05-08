@@ -37,6 +37,7 @@ parameters:
 		disableCheckMissingIterableValueType: false
 		strictUnnecessaryNullsafePropertyFetch: false
 		looseComparison: false
+		consistentConstructor: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -210,7 +211,8 @@ parametersSchema:
 		illegalConstructorMethodCall: bool(),
 		disableCheckMissingIterableValueType: bool(),
 		strictUnnecessaryNullsafePropertyFetch: bool(),
-		looseComparison: bool()
+		looseComparison: bool(),
+		consistentConstructor: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

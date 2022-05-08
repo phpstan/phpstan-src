@@ -135,7 +135,6 @@ class OverridingMethodRule implements Rule
 
 		$methodVariant = ParametersAcceptorSelector::selectSingle($method->getVariants());
 		$methodReturnType = $methodVariant->getNativeReturnType();
-		$methodParameters = $methodVariant->getParameters();
 
 		if (
 			$this->phpVersion->hasTentativeReturnTypes()

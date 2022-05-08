@@ -96,6 +96,8 @@ class ResolvedPhpDocBlock
 	/** @var bool|'notLoaded'|null */
 	private bool|string|null $isPure = 'notLoaded';
 
+	private ?bool $hasConsistentConstructor = null;
+
 	private function __construct()
 	{
 	}
@@ -153,6 +155,7 @@ class ResolvedPhpDocBlock
 		$self->isInternal = false;
 		$self->isFinal = false;
 		$self->isPure = null;
+		$self->hasConsistentConstructor = false;
 
 		return $self;
 	}
@@ -197,6 +200,7 @@ class ResolvedPhpDocBlock
 		$result->isInternal = $this->isInternal();
 		$result->isFinal = $this->isFinal();
 		$result->isPure = $this->isPure();
+		$result->hasConsistentConstructor = $this->hasConsistentConstructor();
 
 		return $result;
 	}
@@ -505,6 +509,16 @@ class ResolvedPhpDocBlock
 			);
 		}
 		return $this->isFinal;
+	}
+
+	public function hasConsistentConstructor(): bool
+	{
+		if ($this->hasConsistentConstructor === null) {
+			$this->hasConsistentConstructor = $this->phpDocNodeResolver->resolveHasConsistentConstructor(
+				$this->phpDocNode,
+			);
+		}
+		return $this->hasConsistentConstructor;
 	}
 
 	public function getTemplateTypeMap(): TemplateTypeMap

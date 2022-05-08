@@ -11,3 +11,4 @@ parameters:
 		disableCheckMissingIterableValueType: true
 		strictUnnecessaryNullsafePropertyFetch: true
 		looseComparison: true
+		consistentConstructor: true

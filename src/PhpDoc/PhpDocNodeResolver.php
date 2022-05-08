@@ -452,6 +452,19 @@ class PhpDocNodeResolver
 		return false;
 	}
 
+	public function resolveHasConsistentConstructor(PhpDocNode $phpDocNode): bool
+	{
+		foreach (['@consistent-constructor', '@phpstan-consistent-constructor', '@psalm-consistent-constructor'] as $tagName) {
+			$tags = $phpDocNode->getTagsByName($tagName);
+
+			if (count($tags) > 0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private function shouldSkipType(string $tagName, Type $type): bool
 	{
 		if (strpos($tagName, '@psalm-') !== 0) {

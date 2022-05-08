@@ -34,4 +34,9 @@ class NewStaticRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleWithConsistentConstructor(): void
+	{
+		$this->analyse([__DIR__ . '/data/new-static-consistent-constructor.php'], []);
+	}
+
 }

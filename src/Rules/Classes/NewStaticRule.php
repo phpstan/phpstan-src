@@ -53,6 +53,10 @@ class NewStaticRule implements Rule
 			return [];
 		}
 
+		if ($constructor->getDeclaringClass()->hasConsistentConstructor()) {
+			return [];
+		}
+
 		if ($constructor instanceof PhpMethodReflection) {
 			if ($constructor->isFinal()->yes()) {
 				return [];

@@ -27,6 +27,10 @@ class ConsistentConstructorRuleTest extends RuleTestCase
 				'Method ConsistentConstructor\Foo2::__construct() overrides method ConsistentConstructor\Foo1::__construct() but misses parameter #1 $a.',
 				32,
 			],
+			[
+				'Parameter #1 $i of method ConsistentConstructor\ParentWithoutConstructorChildWithConstructorRequiredParams::__construct() is not optional.',
+				58,
+			],
 		]);
 	}
 

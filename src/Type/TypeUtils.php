@@ -7,6 +7,7 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use function array_merge;
 
@@ -171,6 +172,14 @@ class TypeUtils
 	public static function getConstantScalars(Type $type): array
 	{
 		return self::map(ConstantScalarType::class, $type, false);
+	}
+
+	/**
+	 * @return EnumCaseObjectType[]
+	 */
+	public static function getEnumCaseObjects(Type $type): array
+	{
+		return self::map(EnumCaseObjectType::class, $type, false);
 	}
 
 	/**

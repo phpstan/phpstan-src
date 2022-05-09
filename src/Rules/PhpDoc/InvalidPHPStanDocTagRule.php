@@ -40,6 +40,7 @@ class InvalidPHPStanDocTagRule implements Rule
 		'@phpstan-property',
 		'@phpstan-property-read',
 		'@phpstan-property-write',
+		'@phpstan-consistent-constructor',
 	];
 
 	public function __construct(private Lexer $phpDocLexer, private PhpDocParser $phpDocParser)

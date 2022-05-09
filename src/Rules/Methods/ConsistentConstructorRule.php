@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\Dummy\DummyConstructorReflection;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
@@ -46,17 +47,25 @@ class ConsistentConstructorRule implements Rule
 			return [];
 		}
 
-		if (! $parent->hasConstructor() || ! $parent->hasConsistentConstructor()) {
+		if (! $parent->hasConsistentConstructor()) {
 			return [];
 		}
 
-		$parentConstructor = $parent->getConstructor();
+		if ($parent->hasConstructor()) {
+			$parentConstructor = $parent->getConstructor();
+		} else {
+			$parentConstructor = $this->getEmptyConstructor($parent);
+		}
 
-		if (! $parentConstructor instanceof PhpMethodReflection) {
+		if (! $parentConstructor instanceof PhpMethodReflection && ! $parentConstructor instanceof MethodPrototypeReflection) {
 			return [];
 		}
 
-		return $this->methodParameterComparisonHelper->compare($this->getMethodPrototypeReflection($parentConstructor, $parent), $method);
+		if (! $parentConstructor instanceof MethodPrototypeReflection) {
+			$parentConstructor = $this->getMethodPrototypeReflection($parentConstructor, $parent);
+		}
+
+		return $this->methodParameterComparisonHelper->compare($parentConstructor, $method);
 	}
 
 	private function getMethodPrototypeReflection(PhpMethodReflection $methodReflection, ClassReflection $classReflection): MethodPrototypeReflection
@@ -70,6 +79,23 @@ class ConsistentConstructorRule implements Rule
 			$methodReflection->isAbstract(),
 			$methodReflection->isFinal()->yes(),
 			$classReflection->getNativeMethod($methodReflection->getName())->getVariants(),
+			null,
+		);
+	}
+
+	private function getEmptyConstructor(ClassReflection $classReflection): MethodPrototypeReflection
+	{
+		$emptyConstructor = new DummyConstructorReflection($classReflection);
+
+		return new MethodPrototypeReflection(
+			$emptyConstructor->getName(),
+			$classReflection,
+			$emptyConstructor->isStatic(),
+			$emptyConstructor->isPrivate(),
+			$emptyConstructor->isPublic(),
+			false,
+			$emptyConstructor->isFinal()->yes(),
+			$emptyConstructor->getVariants(),
 			null,
 		);
 	}

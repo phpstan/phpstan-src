@@ -33,3 +33,30 @@ class Foo2 extends Foo1
 	{
 	}
 }
+
+/** @phpstan-consistent-constructor */
+class ParentWithoutConstructor {}
+
+class ParentWithoutConstructorChildWithoutConstructor extends ParentWithoutConstructor{}
+
+class ParentWithoutConstructorChildWithConstructor extends ParentWithoutConstructor
+{
+	public function __construct()
+	{
+	}
+}
+
+class ParentWithoutConstructorChildWithConstructorOptionalParams extends ParentWithoutConstructor
+{
+	public function __construct(int $i = 1)
+	{
+	}
+}
+
+class ParentWithoutConstructorChildWithConstructorRequiredParams extends ParentWithoutConstructor
+{
+	public function __construct(int $i)
+	{
+	}
+}
+

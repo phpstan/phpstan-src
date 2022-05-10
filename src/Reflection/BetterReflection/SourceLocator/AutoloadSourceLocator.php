@@ -30,11 +30,13 @@ use function constant;
 use function count;
 use function defined;
 use function function_exists;
+use function get_class;
 use function interface_exists;
 use function is_file;
 use function is_float;
 use function is_int;
 use function is_nan;
+use function is_object;
 use function is_string;
 use function opcache_invalidate;
 use function restore_error_handler;
@@ -416,6 +418,10 @@ class AutoloadSourceLocator implements SourceLocator
 			$expr = $abs === INF ? new Expr\ConstFetch(new Name\FullyQualified('INF')) : new DNumber($abs);
 
 			return $value < 0 ? new Expr\UnaryMinus($expr) : $expr;
+		}
+
+		if (is_object($value)) {
+			return new Expr\New_(new Name\FullyQualified(get_class($value)));
 		}
 
 		return null;

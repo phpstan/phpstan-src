@@ -102,7 +102,11 @@ class AttributesCheck
 				$nodeAttributes['isAttribute'] = true;
 
 				$parameterErrors = $this->functionCallParametersCheck->check(
-					ParametersAcceptorSelector::selectSingle($attributeConstructor->getVariants()),
+					ParametersAcceptorSelector::selectFromArgs(
+						$scope,
+						$attribute->args,
+						$attributeConstructor->getVariants(),
+					),
 					$scope,
 					$attributeConstructor->getDeclaringClass()->isBuiltin(),
 					new New_($attribute->name, $attribute->args, $nodeAttributes),

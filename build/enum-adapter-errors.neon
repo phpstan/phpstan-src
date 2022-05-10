@@ -36,7 +36,7 @@ parameters:
 			path: ../src/PhpDoc/PhpDocInheritanceResolver.php
 
 		-
-			message: "#^Call to method getConstants\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			message: "#^Call to method getReflectionConstants\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/PhpDoc/TypeNodeResolver.php
 
@@ -51,7 +51,7 @@ parameters:
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Call to method getBackingValue\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnumBackedCase\\.$#"
+			message: "#^Call to method getValueExpr\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnumBackedCase\\.$#"
 			count: 2
 			path: ../src/Reflection/ClassReflection.php
 

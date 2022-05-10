@@ -32,6 +32,8 @@ use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
@@ -53,7 +55,6 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
@@ -107,6 +108,7 @@ class TypeNodeResolver
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
 		private TypeAliasResolverProvider $typeAliasResolverProvider,
 		private ConstantResolver $constantResolver,
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
 	{
 	}
@@ -843,7 +845,8 @@ class TypeNodeResolver
 				// convert * into .*? and escape everything else so the constants can be matched against the pattern
 				$pattern = '{^' . str_replace('\\*', '.*?', preg_quote($constantName)) . '$}D';
 				$constantTypes = [];
-				foreach ($classReflection->getNativeReflection()->getConstants() as $classConstantName => $constantValue) {
+				foreach ($classReflection->getNativeReflection()->getReflectionConstants() as $reflectionConstant) {
+					$classConstantName = $reflectionConstant->getName();
 					if (Strings::match($classConstantName, $pattern) === null) {
 						continue;
 					}
@@ -853,7 +856,17 @@ class TypeNodeResolver
 						continue;
 					}
 
-					$constantTypes[] = ConstantTypeHelper::getTypeFromValue($constantValue);
+					$declaringClassName = $reflectionConstant->getDeclaringClass()->getName();
+					if (!$this->getReflectionProvider()->hasClass($declaringClassName)) {
+						continue;
+					}
+
+					$constantTypes[] = $this->initializerExprTypeResolver->getType(
+						$reflectionConstant->getValueExpr(),
+						InitializerExprContext::fromClassReflection(
+							$this->getReflectionProvider()->getClass($declaringClassName),
+						),
+					);
 				}
 
 				if (count($constantTypes) === 0) {
@@ -871,7 +884,9 @@ class TypeNodeResolver
 				return new EnumCaseObjectType($classReflection->getName(), $constantName);
 			}
 
-			return ConstantTypeHelper::getTypeFromValue($classReflection->getConstant($constantName)->getValue());
+			$reflectionConstant = $classReflection->getConstant($constantName);
+
+			return $this->initializerExprTypeResolver->getType($reflectionConstant->getValueExpr(), InitializerExprContext::fromClassReflection($reflectionConstant->getDeclaringClass()));
 		}
 
 		if ($constExpr instanceof ConstExprFloatNode) {

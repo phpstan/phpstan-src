@@ -17,6 +17,7 @@ use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\TypeParser;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Reflection\ReflectionProvider\DummyReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
@@ -53,6 +54,7 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 		$reflectionProvider = new DummyReflectionProvider();
 		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
 		ReflectionProviderStaticAccessor::registerInstance($reflectionProvider);
+		$constantResolver = new ConstantResolver($reflectionProviderProvider, []);
 		$ignoredRegexValidator = new IgnoredRegexValidator(
 			$parser,
 			new TypeStringResolver(
@@ -83,7 +85,8 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 						}
 
 					}),
-					new ConstantResolver($reflectionProviderProvider, []),
+					$constantResolver,
+					new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider),
 				),
 			),
 		);

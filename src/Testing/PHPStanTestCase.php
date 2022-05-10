@@ -25,6 +25,7 @@ use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -161,6 +162,7 @@ abstract class PHPStanTestCase extends TestCase
 		return new DirectScopeFactory(
 			MutatingScope::class,
 			$reflectionProvider,
+			$container->getByType(InitializerExprTypeResolver::class),
 			$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
 			$container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
 			new Standard(),

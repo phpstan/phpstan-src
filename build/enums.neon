@@ -2,3 +2,8 @@ parameters:
 	excludePaths:
 		- ../tests/PHPStan/Fixture/TestEnum.php
 		- ../tests/PHPStan/Fixture/AnotherTestEnum.php
+
+	ignoreErrors:
+		-
+			message: '#^Access to constant ONE on an unknown class EnumTypeAssertions\\Foo\.$#'
+			path: ../tests/PHPStan/Analyser/NodeScopeResolverTest.php

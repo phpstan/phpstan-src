@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProv
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
@@ -25,6 +26,7 @@ class DirectScopeFactory implements ScopeFactory
 	public function __construct(
 		private string $scopeClass,
 		private ReflectionProvider $reflectionProvider,
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
 		private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
 		private Standard $printer,
@@ -79,6 +81,7 @@ class DirectScopeFactory implements ScopeFactory
 		return new $scopeClass(
 			$this,
 			$this->reflectionProvider,
+			$this->initializerExprTypeResolver,
 			$this->dynamicReturnTypeExtensionRegistryProvider->getRegistry(),
 			$this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry(),
 			$this->printer,

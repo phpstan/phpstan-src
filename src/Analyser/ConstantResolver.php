@@ -6,16 +6,20 @@ use PhpParser\Node\Name;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\ResourceType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function in_array;
+use const INF;
+use const NAN;
 use const PHP_INT_SIZE;
 
 class ConstantResolver
@@ -36,6 +40,20 @@ class ConstantResolver
 
 		/** @var string $resolvedConstantName */
 		$resolvedConstantName = $this->getReflectionProvider()->resolveConstantName($name, $scope);
+
+		$constantType = $this->resolvePredefinedConstant($resolvedConstantName);
+		if ($constantType !== null) {
+			return $constantType;
+		}
+
+		$constantReflection = $this->getReflectionProvider()->getConstant($name, $scope);
+		$constantType = $constantReflection->getValueType();
+
+		return $this->resolveConstantType($resolvedConstantName, $constantType);
+	}
+
+	public function resolvePredefinedConstant(string $resolvedConstantName): ?Type
+	{
 		// core, https://www.php.net/manual/en/reserved.constants.php
 		if ($resolvedConstantName === 'PHP_VERSION') {
 			return new IntersectionType([
@@ -245,10 +263,17 @@ class ConstantResolver
 		if ($resolvedConstantName === 'OPENSSL_VERSION_NUMBER') {
 			return IntegerRangeType::fromInterval(1, null);
 		}
+		if (in_array($resolvedConstantName, ['STDIN', 'STDOUT', 'STDERR'], true)) {
+			return new ResourceType();
+		}
+		if ($resolvedConstantName === 'NAN') {
+			return new ConstantFloatType(NAN);
+		}
+		if ($resolvedConstantName === 'INF') {
+			return new ConstantFloatType(INF);
+		}
 
-		$constantType = $this->getReflectionProvider()->getConstant($name, $scope)->getValueType();
-
-		return $this->resolveConstantType($resolvedConstantName, $constantType);
+		return null;
 	}
 
 	public function resolveConstantType(string $constantName, Type $constantType): Type

@@ -4,7 +4,10 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\BetterReflection\Reflection\ReflectionClass;
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use TestSingleFileSourceLocator\AFoo;
 use TestSingleFileSourceLocator\InCondition;
 use function class_alias;
@@ -31,12 +34,24 @@ class AutoloadSourceLocatorTest extends PHPStanTestCase
 		$someConstant = $reflector->reflectConstant('TestSingleFileSourceLocator\\SOME_CONSTANT');
 		$this->assertNotNull($someConstant->getFileName());
 		$this->assertSame('a.php', basename($someConstant->getFileName()));
-		$this->assertSame(1, $someConstant->getValue());
+
+		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
+		$someConstantValue = $initializerExprTypeResolver->getType(
+			$someConstant->getValueExpr(),
+			new InitializerExprContext($someConstant->getFileName()),
+		);
+		$this->assertInstanceOf(ConstantIntegerType::class, $someConstantValue);
+		$this->assertSame(1, $someConstantValue->getValue());
 
 		$anotherConstant = $reflector->reflectConstant('TestSingleFileSourceLocator\\ANOTHER_CONSTANT');
 		$this->assertNotNull($anotherConstant->getFileName());
 		$this->assertSame('a.php', basename($anotherConstant->getFileName()));
-		$this->assertSame(2, $anotherConstant->getValue());
+		$anotherConstantValue = $initializerExprTypeResolver->getType(
+			$anotherConstant->getValueExpr(),
+			new InitializerExprContext($anotherConstant->getFileName()),
+		);
+		$this->assertInstanceOf(ConstantIntegerType::class, $anotherConstantValue);
+		$this->assertSame(2, $anotherConstantValue->getValue());
 
 		$doFooFunctionReflection = $reflector->reflectFunction('TestSingleFileSourceLocator\\doFoo');
 		$this->assertSame('TestSingleFileSourceLocator\\doFoo', $doFooFunctionReflection->getName());

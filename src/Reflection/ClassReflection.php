@@ -23,7 +23,6 @@ use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\CircularTypeAliasDefinitionException;
-use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -114,6 +113,7 @@ class ClassReflection
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private FileTypeMapper $fileTypeMapper,
 		private StubPhpDocProvider $stubPhpDocProvider,
 		private PhpDocInheritanceResolver $phpDocInheritanceResolver,
@@ -582,7 +582,7 @@ class ClassReflection
 		foreach ($this->reflection->getCases() as $case) {
 			$valueType = null;
 			if ($case instanceof ReflectionEnumBackedCase) {
-				$valueType = ConstantTypeHelper::getTypeFromValue($case->getBackingValue());
+				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpr(), InitializerExprContext::fromClassReflection($this));
 			}
 			/** @var string $caseName */
 			$caseName = $case->getName();
@@ -605,7 +605,7 @@ class ClassReflection
 		$case = $this->reflection->getCase($name);
 		$valueType = null;
 		if ($case instanceof ReflectionEnumBackedCase) {
-			$valueType = ConstantTypeHelper::getTypeFromValue($case->getBackingValue());
+			$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpr(), InitializerExprContext::fromClassReflection($this));
 		}
 
 		return new EnumCaseReflection($this, $name, $valueType);
@@ -882,6 +882,7 @@ class ClassReflection
 			}
 
 			$this->constants[$name] = new ClassConstantReflection(
+				$this->initializerExprTypeResolver,
 				$declaringClass,
 				$reflectionConstant,
 				$phpDocType,
@@ -1171,6 +1172,7 @@ class ClassReflection
 	{
 		return new self(
 			$this->reflectionProvider,
+			$this->initializerExprTypeResolver,
 			$this->fileTypeMapper,
 			$this->stubPhpDocProvider,
 			$this->phpDocInheritanceResolver,

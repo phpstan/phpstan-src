@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use EnumTypeAssertions\Foo;
 use PHPStan\Testing\TypeInferenceTestCase;
 use stdClass;
 use function define;
@@ -570,6 +571,11 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		if (PHP_VERSION_ID >= 80100) {
 			define('TEST_OBJECT_CONSTANT', new stdClass());
+			define('TEST_NULL_CONSTANT', null);
+			define('TEST_TRUE_CONSTANT', true);
+			define('TEST_FALSE_CONSTANT', false);
+			define('TEST_ARRAY_CONSTANT', [true, false, null]);
+			define('TEST_ENUM_CONSTANT', Foo::ONE);
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/new-in-initializers-runtime.php');
 		}
 

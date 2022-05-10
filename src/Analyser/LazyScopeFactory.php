@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
@@ -71,6 +72,7 @@ class LazyScopeFactory implements ScopeFactory
 		return new $scopeClass(
 			$this,
 			$this->container->getByType(ReflectionProvider::class),
+			$this->container->getByType(InitializerExprTypeResolver::class),
 			$this->container->getByType(DynamicReturnTypeExtensionRegistryProvider::class)->getRegistry(),
 			$this->container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class)->getRegistry(),
 			$this->container->getByType(Standard::class),

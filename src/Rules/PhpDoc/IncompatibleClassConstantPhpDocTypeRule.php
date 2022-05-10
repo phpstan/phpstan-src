@@ -7,12 +7,13 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function sprintf;
@@ -26,6 +27,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 	public function __construct(
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
 	{
 	}
@@ -76,7 +78,7 @@ class IncompatibleClassConstantPhpDocTypeRule implements Rule
 				$constantName,
 			))->build();
 		} else {
-			$nativeType = ConstantTypeHelper::getTypeFromValue($constantReflection->getValue());
+			$nativeType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpr(), InitializerExprContext::fromClassReflection($constantReflection->getDeclaringClass()));
 			$isSuperType = $phpDocType->isSuperTypeOf($nativeType);
 			$verbosity = VerbosityLevel::getRecommendedLevelByType($phpDocType, $nativeType);
 			if ($isSuperType->no()) {

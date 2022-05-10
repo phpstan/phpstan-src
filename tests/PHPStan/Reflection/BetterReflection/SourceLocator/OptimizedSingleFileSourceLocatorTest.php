@@ -4,9 +4,11 @@ namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Type\VerbosityLevel;
 use SingleFileSourceLocatorTestClass;
-use stdClass;
 use TestSingleFileSourceLocator\AFoo;
 use function str_replace;
 use const PHP_VERSION_ID;
@@ -105,39 +107,44 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		return [
 			[
 				'ConstFile\\TABLE_NAME',
-				'resized_images',
+				"'resized_images'",
 			],
 			[
 				'ANOTHER_NAME',
-				'foo_images',
+				"'foo_images'",
 			],
 			[
 				'ConstFile\\ANOTHER_NAME',
-				'bar_images',
+				"'bar_images'",
 			],
 			[
 				'const_with_dir_const',
-				str_replace('\\', '/', __DIR__ . '/data'),
+				"'" . str_replace('\\', '/', __DIR__ . '/data') . "'",
 			],
 			[
 				'OPTIMIZED_SFSL_OBJECT_CONSTANT',
-				new stdClass(),
+				'stdClass',
 			],
 		];
 	}
 
 	/**
 	 * @dataProvider dataConst
-	 * @param mixed $value
 	 */
-	public function testConst(string $constantName, $value): void
+	public function testConst(string $constantName, string $valueTypeDescription): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedSingleFileSourceLocatorFactory::class);
 		$locator = $factory->create(__DIR__ . '/data/const.php');
 		$reflector = new DefaultReflector($locator);
 		$constant = $reflector->reflectConstant($constantName);
 		$this->assertSame($constantName, $constant->getName());
-		$this->assertEquals($value, $constant->getValue());
+
+		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
+		$valueType = $initializerExprTypeResolver->getType(
+			$constant->getValueExpr(),
+			new InitializerExprContext($constant->getFileName()),
+		);
+		$this->assertSame($valueTypeDescription, $valueType->describe(VerbosityLevel::precise()));
 	}
 
 	public function dataConstUnknown(): array

@@ -14,6 +14,7 @@ use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
@@ -39,6 +40,7 @@ class PhpFunctionReflection implements FunctionReflection
 	 * @param Type[] $phpDocParameterTypes
 	 */
 	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ReflectionFunction $reflection,
 		private Parser $parser,
 		private FunctionCallStatementFinder $functionCallStatementFinder,
@@ -103,6 +105,7 @@ class PhpFunctionReflection implements FunctionReflection
 	private function getParameters(): array
 	{
 		return array_map(fn (ReflectionParameter $reflection): PhpParameterReflection => new PhpParameterReflection(
+			$this->initializerExprTypeResolver,
 			$reflection,
 			$this->phpDocParameterTypes[$reflection->getName()] ?? null,
 			null,

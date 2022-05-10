@@ -6,6 +6,8 @@ use Bug4288\MyClass;
 use Bug4713\Service;
 use ExtendingKnownClassWithCheck\Foo;
 use PHPStan\File\FileHelper;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Testing\PHPStanTestCase;
@@ -371,7 +373,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(10, $defaultValue->getValue());
 
 		$nativeProperty = $class->getNativeReflection()->getProperty('test');
-		$this->assertSame(10, $nativeProperty->getDefaultValue());
+		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
+		$defaultValueType = $initializerExprTypeResolver->getType(
+			$nativeProperty->getDefaultValueExpr(),
+			InitializerExprContext::fromClassReflection($class->getNativeProperty('test')->getDeclaringClass()),
+		);
+		$this->assertInstanceOf(ConstantIntegerType::class, $defaultValueType);
+		$this->assertSame(10, $defaultValueType->getValue());
 	}
 
 	public function testBug4702(): void

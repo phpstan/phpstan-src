@@ -128,6 +128,10 @@ class ClassAttributesRuleTest extends RuleTestCase
 
 	public function testBug7171(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-7171.php'], [
 			[
 				'Parameter $repositoryClass of attribute class Bug7171\Entity constructor expects class-string<Bug7171\EntityRepository<T of object>>|null, \'stdClass\' given.',

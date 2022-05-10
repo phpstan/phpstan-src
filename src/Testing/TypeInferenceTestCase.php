@@ -13,6 +13,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
@@ -41,6 +42,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 		$fileHelper = self::getContainer()->getByType(FileHelper::class);
 		$resolver = new NodeScopeResolver(
 			$reflectionProvider,
+			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),

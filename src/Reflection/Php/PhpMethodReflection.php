@@ -14,6 +14,7 @@ use PHPStan\Parser\Parser;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
@@ -60,6 +61,7 @@ class PhpMethodReflection implements MethodReflection
 	 * @param Type[] $phpDocParameterTypes
 	 */
 	public function __construct(
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ClassReflection $declaringClass,
 		private ?ClassReflection $declaringTrait,
 		private BuiltinMethodReflection $reflection,
@@ -199,6 +201,7 @@ class PhpMethodReflection implements MethodReflection
 	{
 		if ($this->parameters === null) {
 			$this->parameters = array_map(fn (ReflectionParameter $reflection): PhpParameterReflection => new PhpParameterReflection(
+				$this->initializerExprTypeResolver,
 				$reflection,
 				$this->phpDocParameterTypes[$reflection->getName()] ?? null,
 				$this->getDeclaringClass()->getName(),

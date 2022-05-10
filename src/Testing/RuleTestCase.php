@@ -13,6 +13,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Registry;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
@@ -51,6 +52,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			$typeSpecifier = $this->getTypeSpecifier();
 			$nodeScopeResolver = new NodeScopeResolver(
 				$reflectionProvider,
+				self::getContainer()->getByType(InitializerExprTypeResolver::class),
 				self::getReflector(),
 				$this->getClassReflectionExtensionRegistryProvider(),
 				$this->getParser(),

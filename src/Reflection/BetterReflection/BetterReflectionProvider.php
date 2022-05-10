@@ -35,14 +35,14 @@ use PHPStan\Reflection\Constant\RuntimeConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\GlobalConstantReflection;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_key_exists;
 use function array_map;
@@ -68,6 +68,7 @@ class BetterReflectionProvider implements ReflectionProvider
 
 	public function __construct(
 		private ReflectionProvider\ReflectionProviderProvider $reflectionProviderProvider,
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ClassReflectionExtensionRegistryProvider $classReflectionExtensionRegistryProvider,
 		private Reflector $reflector,
 		private FileTypeMapper $fileTypeMapper,
@@ -127,6 +128,7 @@ class BetterReflectionProvider implements ReflectionProvider
 
 		$classReflection = new ClassReflection(
 			$this->reflectionProviderProvider->getReflectionProvider(),
+			$this->initializerExprTypeResolver,
 			$this->fileTypeMapper,
 			$this->stubPhpDocProvider,
 			$this->phpDocInheritanceResolver,
@@ -201,6 +203,7 @@ class BetterReflectionProvider implements ReflectionProvider
 
 		self::$anonymousClasses[$className] = new ClassReflection(
 			$this->reflectionProviderProvider->getReflectionProvider(),
+			$this->initializerExprTypeResolver,
 			$this->fileTypeMapper,
 			$this->stubPhpDocProvider,
 			$this->phpDocInheritanceResolver,
@@ -327,14 +330,8 @@ class BetterReflectionProvider implements ReflectionProvider
 		}
 
 		$constantReflection = $this->reflector->reflectConstant($constantName);
-		try {
-			$constantValue = $constantReflection->getValue();
-			$constantValueType = ConstantTypeHelper::getTypeFromValue($constantValue);
-			$fileName = $constantReflection->getFileName();
-		} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection) {
-			$constantValueType = new MixedType();
-			$fileName = null;
-		}
+		$fileName = $constantReflection->getFileName();
+		$constantValueType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpr(), new InitializerExprContext($fileName));
 
 		return $this->cachedConstants[$constantName] = new RuntimeConstantReflection(
 			$constantName,

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection\Dummy;
 
+use PhpParser\Node\Expr;
+use PHPStan\Node\Expr\MixedTypeExpr;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
@@ -50,6 +52,7 @@ class DummyConstantReflection implements ConstantReflection
 	}
 
 	/**
+	 * @deprecated
 	 * @return mixed
 	 */
 	public function getValue()
@@ -61,6 +64,11 @@ class DummyConstantReflection implements ConstantReflection
 	public function getValueType(): Type
 	{
 		return new MixedType();
+	}
+
+	public function getValueExpr(): Expr
+	{
+		return new MixedTypeExpr();
 	}
 
 	public function isDeprecated(): TrinaryLogic

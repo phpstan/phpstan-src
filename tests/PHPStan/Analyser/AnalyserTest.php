@@ -13,6 +13,7 @@ use PHPStan\Parser\RichParser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\Registry;
 use PHPStan\Testing\PHPStanTestCase;
@@ -471,6 +472,7 @@ class AnalyserTest extends PHPStanTestCase
 
 		$nodeScopeResolver = new NodeScopeResolver(
 			$reflectionProvider,
+			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			self::getReflector(),
 			$this->getClassReflectionExtensionRegistryProvider(),
 			$this->getParser(),

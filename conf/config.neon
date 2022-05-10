@@ -671,6 +671,9 @@ services:
 			parser: @defaultAnalysisParser
 
 	-
+		class: PHPStan\Reflection\InitializerExprTypeResolver
+
+	-
 		class: PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension
 
 	-

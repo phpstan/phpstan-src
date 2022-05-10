@@ -62,7 +62,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
-use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
@@ -695,6 +694,8 @@ class MutatingScope implements Scope
 					if ($type->isNonEmptyString()->yes()) {
 						$accessories[] = new AccessoryNonEmptyStringType();
 					}
+					// it is not useful to apply numeric and literal strings here.
+					// numeric string isn't certainly kept numeric: 3v4l.org/JERDB
 
 					return TypeCombinator::intersect(...$accessories);
 				}

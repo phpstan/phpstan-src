@@ -6,15 +6,11 @@ use function PHPStan\Testing\assertType;
 
 /**
  * @param string|int $stringOrInt
- * @param numeric-string $numericString
- * @param literal-string $literalString
  * @param non-empty-string $nonEmptyString
  */
 function foo(int $int, string $string, float $float, $stringOrInt, $numericString, $literalString, string $nonEmptyString) : void{
 	assertType('int', ~$int);
 	assertType('string', ~$string);
-	assertType('non-empty-string&numeric-string', ~$numericString);
-	assertType('literal-string', ~$literalString);
 	assertType('non-empty-string', ~$nonEmptyString);
 	assertType('int', ~$float);
 	assertType('int|string', ~$stringOrInt);

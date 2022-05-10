@@ -695,12 +695,6 @@ class MutatingScope implements Scope
 					if ($type->isNonEmptyString()->yes()) {
 						$accessories[] = new AccessoryNonEmptyStringType();
 					}
-					if ($type->isLiteralString()->yes()) {
-						$accessories[] = new AccessoryLiteralStringType();
-					}
-					if ($type->isNumericString()->yes()) {
-						$accessories[] = new AccessoryNumericStringType();
-					}
 
 					return TypeCombinator::intersect(...$accessories);
 				}

@@ -12,7 +12,6 @@ use PhpParser\Node\Scalar\MagicConst\Dir;
 use PhpParser\Node\Scalar\MagicConst\File;
 use PhpParser\Node\Scalar\MagicConst\Line;
 use PhpParser\Node\Scalar\String_;
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Node\Expr\MixedTypeExpr;
@@ -32,6 +31,7 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
@@ -65,7 +65,6 @@ class InitializerExprTypeResolver
 
 	public function __construct(
 		private ConstantResolver $constantResolver,
-		private Standard $printer,
 		private ReflectionProviderProvider $reflectionProviderProvider,
 	)
 	{
@@ -375,10 +374,27 @@ class InitializerExprTypeResolver
 			return new BooleanType();
 		}
 
+		if ($expr instanceof Expr\BitwiseNot) {
+			$exprType = $this->getType($expr->expr, $context);
+			return TypeTraverser::map($exprType, static function (Type $type, callable $traverse): Type {
+				if ($type instanceof UnionType || $type instanceof IntersectionType) {
+					return $traverse($type);
+				}
+				if ($type instanceof ConstantStringType) {
+					return new ConstantStringType(~$type->getValue());
+				}
+				if ($type instanceof StringType) {
+					return new StringType();
+				}
+				if ($type instanceof IntegerType || $type instanceof FloatType) {
+					return new IntegerType(); //no const types here, result depends on PHP_INT_SIZE
+				}
+				return new ErrorType();
+			});
+		}
+
 		// todo
 		/*
-		- [ ] Expr\BooleanNot
-		- [ ] Expr\BitwiseNot
 		- [ ] Expr\Ternary
 		- [ ] MagicConst\Class_
 		- [ ] MagicConst\Namespace_
@@ -387,8 +403,7 @@ class InitializerExprTypeResolver
 		- [ ] MagicConst\Trait_
 		 */
 
-		throw new ShouldNotHappenException($this->printer->prettyPrintExpr($expr));
-		//return new MixedType();
+		return new MixedType();
 	}
 
 	private function resolveConcatType(Expr\BinaryOp\Concat $node, InitializerExprContext $context): Type

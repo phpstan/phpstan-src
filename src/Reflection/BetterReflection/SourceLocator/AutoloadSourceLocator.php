@@ -18,10 +18,12 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\Node\Expr\MixedTypeExpr;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use ReflectionFunction;
+use UnitEnum;
 use function abs;
 use function array_key_exists;
 use function array_keys;
@@ -32,10 +34,13 @@ use function defined;
 use function function_exists;
 use function get_class;
 use function interface_exists;
+use function is_array;
+use function is_bool;
 use function is_file;
 use function is_float;
 use function is_int;
 use function is_nan;
+use function is_null;
 use function is_object;
 use function is_string;
 use function opcache_invalidate;
@@ -114,21 +119,16 @@ class AutoloadSourceLocator implements SourceLocator
 
 			$constantValue = @constant($constantName);
 			$valueExpr = $this->createExprFromValue($constantValue);
-			$reflection = ReflectionConstant::createFromNode(
+			return ReflectionConstant::createFromNode(
 				$reflector,
 				new FuncCall(new Name('define'), [
 					new Arg(new String_($constantName)),
-					new Arg($valueExpr ?? new String_('')),
+					new Arg($valueExpr),
 				]),
 				new LocatedSource('', $constantName, null),
 				null,
 				null,
 			);
-			if ($valueExpr === null) {
-				$reflection->populateValue($constantValue);
-			}
-
-			return $reflection;
 		}
 
 		if (!$identifier->isClass()) {
@@ -392,7 +392,7 @@ class AutoloadSourceLocator implements SourceLocator
 	/**
 	 * @param mixed $value
 	 */
-	private function createExprFromValue($value): ?Expr
+	private function createExprFromValue($value): Expr
 	{
 		if (is_string($value)) {
 			return new String_($value);
@@ -421,10 +421,39 @@ class AutoloadSourceLocator implements SourceLocator
 		}
 
 		if (is_object($value)) {
-			return new Expr\New_(new Name\FullyQualified(get_class($value)));
+			$class = get_class($value);
+			/** phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly.ReferenceViaFullyQualifiedName */
+			if (function_exists('enum_exists') && \enum_exists($class)) {
+				/** @var UnitEnum $value */
+				return new Expr\ClassConstFetch(
+					new Name\FullyQualified($class),
+					new \PhpParser\Node\Identifier($value->name),
+				);
+			}
+			return new Expr\New_(new Name\FullyQualified($class));
 		}
 
-		return null;
+		if (is_bool($value)) {
+			return new Expr\ConstFetch(new Name\FullyQualified($value ? 'true' : 'false'));
+		}
+
+		if (is_null($value)) {
+			return new Expr\ConstFetch(new Name\FullyQualified('null'));
+		}
+
+		if (is_array($value)) {
+			$items = [];
+			foreach ($value as $k => $v) {
+				$items[] = new Expr\ArrayItem(
+					$this->createExprFromValue($v),
+					$this->createExprFromValue($k),
+				);
+			}
+
+			return new Expr\Array_($items);
+		}
+
+		return new MixedTypeExpr();
 	}
 
 }

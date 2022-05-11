@@ -2402,6 +2402,13 @@ class MutatingScope implements Scope
 			}
 
 			$functionReflection = $this->reflectionProvider->getFunction($node->name, $this);
+			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+				$this,
+				$node->getArgs(),
+				$functionReflection->getVariants(),
+			);
+			$node = NamedArgumentsHelper::reorderFuncArguments($parametersAcceptor, $node);
+
 			foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions() as $dynamicFunctionReturnTypeExtension) {
 				if (!$dynamicFunctionReturnTypeExtension->isFunctionSupported($functionReflection)) {
 					continue;
@@ -2417,11 +2424,7 @@ class MutatingScope implements Scope
 				}
 			}
 
-			return ParametersAcceptorSelector::selectFromArgs(
-				$this,
-				$node->getArgs(),
-				$functionReflection->getVariants(),
-			)->getReturnType();
+			return $parametersAcceptor->getReturnType();
 		}
 
 		return new MixedType();

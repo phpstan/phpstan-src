@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\SignatureMap;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php8StubsMap;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Testing\PHPStanTestCase;
@@ -146,11 +147,13 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 		return new Php8SignatureMapProvider(
 			new FunctionSignatureMapProvider(
 				self::getContainer()->getByType(SignatureMapParser::class),
+				self::getContainer()->getByType(InitializerExprTypeResolver::class),
 				$phpVersion,
 			),
 			self::getContainer()->getByType(FileNodesFetcher::class),
 			self::getContainer()->getByType(FileTypeMapper::class),
 			$phpVersion,
+			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 		);
 	}
 

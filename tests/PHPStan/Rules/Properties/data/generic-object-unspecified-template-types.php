@@ -5,12 +5,12 @@ namespace GenericObjectUnspecifiedTemplateTypes;
 class Foo
 {
 
-	/** @var \ArrayObject<int, string> */
+	/** @var MyObject<int, string> */
 	private $obj;
 
 	public function __construct()
 	{
-		$this->obj = new \ArrayObject();
+		$this->obj = new MyObject();
 	}
 
 }
@@ -90,4 +90,16 @@ class Baz
 		$this->ints = new ArrayCollection2(['foo', 'bar']);
 	}
 
+}
+
+/**
+ * @template TKey of array-key
+ * @template TValue
+ */
+class MyObject
+{
+	/**
+	 * @param array<TKey, TValue>|object $input
+	 */
+	public function __construct($input = null) { }
 }

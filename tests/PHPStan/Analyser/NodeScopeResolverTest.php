@@ -871,8 +871,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4875.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6609.php');
 
-		define('ALREADY_DEFINED_CONSTANT', true);
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/already-defined-constant.php');
+		//define('ALREADY_DEFINED_CONSTANT', true);
+		//yield from $this->gatherAssertTypes(__DIR__ . '/data/already-defined-constant.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/value-of-generic.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/key-of-generic.php');

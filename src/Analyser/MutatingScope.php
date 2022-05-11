@@ -4173,9 +4173,12 @@ class MutatingScope implements Scope
 			$constantArrays = TypeUtils::getOldConstantArrays($this->getType($expr->var));
 			if (count($constantArrays) > 0) {
 				$setArrays = [];
-				$dimType = $this->getType($expr->dim);
+				$dimType = ArrayType::castToArrayKeyType($this->getType($expr->dim));
 				foreach ($constantArrays as $constantArray) {
-					$setArrays[] = $constantArray->setOffsetValueType($dimType, $type);
+					$setArrays[] = $constantArray->setOffsetValueType(
+						TypeCombinator::intersect($dimType, $constantArray->getKeyType()),
+						$type,
+					);
 				}
 				$scope = $this->specifyExpressionType(
 					$expr->var,

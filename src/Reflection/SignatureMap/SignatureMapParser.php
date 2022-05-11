@@ -71,6 +71,7 @@ class SignatureMapParser
 				new MixedType(),
 				$passedByReference,
 				$isVariadic,
+				null,
 			);
 		}
 

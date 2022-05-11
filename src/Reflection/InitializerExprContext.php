@@ -35,9 +35,29 @@ class InitializerExprContext
 
 		$file = $declaringFunction->getFileName();
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-		$classReflection = $reflectionProvider->getClass($declaringFunction->getDeclaringClass()->getName());
+		$className = $declaringFunction->getDeclaringClass()->getName();
+		if (!$reflectionProvider->hasClass($className)) {
+			return new self($file === false ? null : $file, null);
+		}
+
+		$classReflection = $reflectionProvider->getClass($className);
 
 		return new self($file === false ? null : $file, $classReflection);
+	}
+
+	public static function fromStubParameter(?string $className, string $stubFile): self
+	{
+		if ($className === null) {
+			return new self($stubFile, null);
+		}
+
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		if (!$reflectionProvider->hasClass($className)) {
+			return new self($stubFile, null);
+		}
+		$classReflection = $reflectionProvider->getClass($className);
+
+		return new self($stubFile, $classReflection);
 	}
 
 	public function getFile(): ?string

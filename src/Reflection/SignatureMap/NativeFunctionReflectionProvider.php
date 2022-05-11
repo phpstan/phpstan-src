@@ -59,7 +59,6 @@ class NativeFunctionReflectionProvider
 				null,
 				array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName, $phpDoc): NativeParameterReflection {
 					$type = $parameterSignature->getType();
-					$defaultValue = null;
 
 					$phpDocType = null;
 					if ($phpDoc !== null) {
@@ -103,20 +102,13 @@ class NativeFunctionReflectionProvider
 						);
 					}
 
-					if (
-						$lowerCasedFunctionName === 'array_reduce'
-						 && $parameterSignature->getName() === 'initial'
-					) {
-						$defaultValue = new NullType();
-					}
-
 					return new NativeParameterReflection(
 						$parameterSignature->getName(),
 						$parameterSignature->isOptional(),
 						TypehintHelper::decideType($type, $phpDocType),
 						$parameterSignature->passedByReference(),
 						$parameterSignature->isVariadic(),
-						$defaultValue,
+						$parameterSignature->getDefaultValue(),
 					);
 				}, $functionSignature->getParameters()),
 				$functionSignature->isVariadic(),

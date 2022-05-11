@@ -4,6 +4,8 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypehintHelper;
@@ -24,7 +26,11 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 	/** @var array<string, array{hasSideEffects: bool}>|null */
 	private ?array $functionMetadata = null;
 
-	public function __construct(private SignatureMapParser $parser, private PhpVersion $phpVersion)
+	public function __construct(
+		private SignatureMapParser $parser,
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private PhpVersion $phpVersion,
+	)
 	{
 	}
 
@@ -64,6 +70,10 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 				TypehintHelper::decideTypeFromReflection($nativeParameters[$i]->getType()),
 				$parameter->passedByReference(),
 				$parameter->isVariadic(),
+				$nativeParameters[$i]->isDefaultValueAvailable() ? $this->initializerExprTypeResolver->getType(
+					$nativeParameters[$i]->getDefaultValueExpr(),
+					InitializerExprContext::fromReflectionParameter($nativeParameters[$i]),
+				) : null,
 			);
 		}
 

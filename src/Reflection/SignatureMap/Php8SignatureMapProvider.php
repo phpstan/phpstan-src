@@ -12,6 +12,8 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Php8StubsMap;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
+use PHPStan\Reflection\InitializerExprContext;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
@@ -42,6 +44,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		private FileNodesFetcher $fileNodesFetcher,
 		private FileTypeMapper $fileTypeMapper,
 		private PhpVersion $phpVersion,
+		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
 	{
 		$this->map = new Php8StubsMap($phpVersion->getVersionId());
@@ -253,6 +256,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$nativeParameterType,
 				$nativeParameter->passedByReference()->yes() ? $functionMapParameter->passedByReference() : $nativeParameter->passedByReference(),
 				$nativeParameter->isVariadic(),
+				$nativeParameter->getDefaultValue(),
 			);
 		}
 
@@ -349,6 +353,10 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$parameterType,
 				$param->byRef ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),
 				$param->variadic,
+				$param->default !== null ? $this->initializerExprTypeResolver->getType(
+					$param->default,
+					InitializerExprContext::fromStubParameter($className, $stubFile),
+				) : null,
 			);
 
 			$variadic = $variadic || $param->variadic;

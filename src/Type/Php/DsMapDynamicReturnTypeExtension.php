@@ -7,13 +7,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
-use PHPStan\Type\Generic\TemplateType;
-use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
-use function array_filter;
-use function array_values;
+use PHPStan\Type\TypeWithClassName;
 use function count;
 
 final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
@@ -37,43 +32,36 @@ final class DsMapDynamicReturnTypeExtension implements DynamicMethodReturnTypeEx
 			$methodReflection->getVariants(),
 		)->getReturnType();
 
-		if (count($methodCall->getArgs()) > 1) {
+		$argsCount = count($methodCall->getArgs());
+		if ($argsCount > 1) {
 			return $returnType;
 		}
 
-		if ($returnType instanceof UnionType) {
-			$types = array_values(
-				array_filter(
-					$returnType->getTypes(),
-					static function (Type $type): bool {
-						if (
-							$type instanceof TemplateType
-							&& $type->getName() === 'TDefault'
-							&& (
-								$type->getScope()->equals(TemplateTypeScope::createWithMethod('Ds\Map', 'get'))
-								|| $type->getScope()->equals(TemplateTypeScope::createWithMethod('Ds\Map', 'remove'))
-							)
-						) {
-							return false;
-						}
-
-						return true;
-					},
-				),
-			);
-
-			if (count($types) === 1) {
-				return $types[0];
-			}
-
-			if (count($types) === 0) {
-				return $returnType;
-			}
-
-			return TypeCombinator::union(...$types);
+		if ($argsCount === 0) {
+			return $returnType;
 		}
 
-		return $returnType;
+		$mapType = $scope->getType($methodCall->var);
+		if (!$mapType instanceof TypeWithClassName) {
+			return $returnType;
+		}
+
+		$mapAncestor = $mapType->getAncestorWithClassName('Ds\Map');
+		if ($mapAncestor === null) {
+			return $returnType;
+		}
+
+		$mapAncestorClass = $mapAncestor->getClassReflection();
+		if ($mapAncestorClass === null) {
+			return $returnType;
+		}
+
+		$valueType = $mapAncestorClass->getActiveTemplateTypeMap()->getType('TValue');
+		if ($valueType === null) {
+			return $returnType;
+		}
+
+		return $valueType;
 	}
 
 }

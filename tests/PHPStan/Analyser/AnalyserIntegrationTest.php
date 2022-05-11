@@ -800,6 +800,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(59, $errors[3]->getLine());
 	}
 
+	public function testBug7214(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7214.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Method Bug7214\HelloWorld::getFoo() has no return type specified.', $errors[0]->getMessage());
+		$this->assertSame(6, $errors[0]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

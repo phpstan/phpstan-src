@@ -14,7 +14,7 @@ use PhpParser\Node\Scalar\MagicConst\Line;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\MutatingScope;
-use PHPStan\Node\Expr\MixedTypeExpr;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -72,8 +72,8 @@ class InitializerExprTypeResolver
 
 	public function getType(Expr $expr, InitializerExprContext $context): Type
 	{
-		if ($expr instanceof MixedTypeExpr) {
-			return new MixedType();
+		if ($expr instanceof TypeExpr) {
+			return $expr->getExprType();
 		}
 		if ($expr instanceof LNumber) {
 			return new ConstantIntegerType($expr->value);

@@ -34,9 +34,9 @@ use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
-use PHPStan\Node\Expr\MixedTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Php\PhpVersion;
@@ -643,8 +643,8 @@ class MutatingScope implements Scope
 				$this->getType($node->getValue()),
 			);
 		}
-		if ($node instanceof MixedTypeExpr) {
-			return new MixedType();
+		if ($node instanceof TypeExpr) {
+			return $node->getExprType();
 		}
 
 		if ($node instanceof OriginalPropertyTypeExpr) {

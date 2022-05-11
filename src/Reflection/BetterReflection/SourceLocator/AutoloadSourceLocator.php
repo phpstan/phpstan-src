@@ -3,11 +3,8 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PhpParser\Node\Arg;
-use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\DNumber;
-use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Const_;
 use PHPStan\BetterReflection\Identifier\Identifier;
@@ -18,13 +15,12 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Ast\Strategy\NodeToReflection;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
-use PHPStan\Node\Expr\MixedTypeExpr;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ConstantTypeHelper;
 use ReflectionClass;
 use ReflectionFunction;
-use UnitEnum;
-use function abs;
 use function array_key_exists;
 use function array_keys;
 use function class_exists;
@@ -32,16 +28,8 @@ use function constant;
 use function count;
 use function defined;
 use function function_exists;
-use function get_class;
 use function interface_exists;
-use function is_array;
-use function is_bool;
 use function is_file;
-use function is_float;
-use function is_int;
-use function is_nan;
-use function is_null;
-use function is_object;
 use function is_string;
 use function opcache_invalidate;
 use function restore_error_handler;
@@ -49,9 +37,6 @@ use function set_error_handler;
 use function spl_autoload_functions;
 use function strtolower;
 use function trait_exists;
-use const INF;
-use const PHP_INT_MAX;
-use const PHP_INT_MIN;
 use const PHP_VERSION_ID;
 
 /**
@@ -118,12 +103,11 @@ class AutoloadSourceLocator implements SourceLocator
 			}
 
 			$constantValue = @constant($constantName);
-			$valueExpr = $this->createExprFromValue($constantValue);
 			return ReflectionConstant::createFromNode(
 				$reflector,
 				new FuncCall(new Name('define'), [
 					new Arg(new String_($constantName)),
-					new Arg($valueExpr),
+					new Arg(new TypeExpr(ConstantTypeHelper::getTypeFromValue($constantValue))),
 				]),
 				new LocatedSource('', $constantName, null),
 				null,
@@ -387,73 +371,6 @@ class AutoloadSourceLocator implements SourceLocator
 	private function silenceErrors(): void
 	{
 		set_error_handler(static fn (): bool => true);
-	}
-
-	/**
-	 * @param mixed $value
-	 */
-	private function createExprFromValue($value): Expr
-	{
-		if (is_string($value)) {
-			return new String_($value);
-		}
-
-		if (is_int($value)) {
-			if ($value === PHP_INT_MIN) {
-				return new Expr\ConstFetch(new Name\FullyQualified('PHP_INT_MIN'));
-			} elseif ($value === PHP_INT_MAX) {
-				return new Expr\ConstFetch(new Name\FullyQualified('PHP_INT_MAX'));
-			}
-
-			$expr = new LNumber(abs($value));
-			return $value < 0 ? new Expr\UnaryMinus($expr) : $expr;
-		}
-
-		if (is_float($value)) {
-			if (is_nan($value)) {
-				return new Expr\ConstFetch(new Name\FullyQualified('NAN'));
-			}
-
-			$abs = abs($value);
-			$expr = $abs === INF ? new Expr\ConstFetch(new Name\FullyQualified('INF')) : new DNumber($abs);
-
-			return $value < 0 ? new Expr\UnaryMinus($expr) : $expr;
-		}
-
-		if (is_object($value)) {
-			$class = get_class($value);
-			/** phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly.ReferenceViaFullyQualifiedName */
-			if (function_exists('enum_exists') && \enum_exists($class)) {
-				/** @var UnitEnum $value */
-				return new Expr\ClassConstFetch(
-					new Name\FullyQualified($class),
-					new \PhpParser\Node\Identifier($value->name),
-				);
-			}
-			return new Expr\New_(new Name\FullyQualified($class));
-		}
-
-		if (is_bool($value)) {
-			return new Expr\ConstFetch(new Name\FullyQualified($value ? 'true' : 'false'));
-		}
-
-		if (is_null($value)) {
-			return new Expr\ConstFetch(new Name\FullyQualified('null'));
-		}
-
-		if (is_array($value)) {
-			$items = [];
-			foreach ($value as $k => $v) {
-				$items[] = new Expr\ArrayItem(
-					$this->createExprFromValue($v),
-					$this->createExprFromValue($k),
-				);
-			}
-
-			return new Expr\Array_($items);
-		}
-
-		return new MixedTypeExpr();
 	}
 
 }

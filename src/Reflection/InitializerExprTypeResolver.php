@@ -278,7 +278,10 @@ class InitializerExprTypeResolver
 				) {
 					$constantType = $constantReflection->getValueType();
 				} else {
-					$constantType = $this->getType($constantReflection->getValueExpr(), $context);
+					$constantType = $this->getType(
+						$constantReflection->getValueExpr(),
+						InitializerExprContext::fromClassReflection($constantReflection->getDeclaringClass()),
+					);
 				}
 
 				$constantType = $this->constantResolver->resolveConstantType(

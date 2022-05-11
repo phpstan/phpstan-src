@@ -2179,7 +2179,7 @@ class MutatingScope implements Scope
 				) {
 					$constantType = $constantReflection->getValueType();
 				} else {
-					$constantType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpr(), InitializerExprContext::fromScope($this));
+					$constantType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpr(), InitializerExprContext::fromClassReflection($constantReflection->getDeclaringClass()));
 				}
 
 				$constantType = $this->constantResolver->resolveConstantType(

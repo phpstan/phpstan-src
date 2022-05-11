@@ -142,7 +142,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
 		$valueType = $initializerExprTypeResolver->getType(
 			$constant->getValueExpr(),
-			new InitializerExprContext($constant->getFileName()),
+			InitializerExprContext::fromGlobalConstant($constant),
 		);
 		$this->assertSame($valueTypeDescription, $valueType->describe(VerbosityLevel::precise()));
 	}

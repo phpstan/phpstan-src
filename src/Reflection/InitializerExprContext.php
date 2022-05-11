@@ -5,11 +5,12 @@ namespace PHPStan\Reflection;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
+use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 
 class InitializerExprContext
 {
 
-	public function __construct(private ?string $file, private ?ClassReflection $classReflection = null)
+	private function __construct(private ?string $file, private ?ClassReflection $classReflection = null)
 	{
 	}
 
@@ -58,6 +59,11 @@ class InitializerExprContext
 		$classReflection = $reflectionProvider->getClass($className);
 
 		return new self($stubFile, $classReflection);
+	}
+
+	public static function fromGlobalConstant(ReflectionConstant $constant): self
+	{
+		return new self($constant->getFileName(), null);
 	}
 
 	public function getFile(): ?string

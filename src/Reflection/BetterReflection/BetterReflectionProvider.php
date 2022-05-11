@@ -331,7 +331,7 @@ class BetterReflectionProvider implements ReflectionProvider
 
 		$constantReflection = $this->reflector->reflectConstant($constantName);
 		$fileName = $constantReflection->getFileName();
-		$constantValueType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpr(), new InitializerExprContext($fileName));
+		$constantValueType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpr(), InitializerExprContext::fromGlobalConstant($constantReflection));
 
 		return $this->cachedConstants[$constantName] = new RuntimeConstantReflection(
 			$constantName,

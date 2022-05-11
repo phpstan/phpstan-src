@@ -36,4 +36,16 @@ Class Foo {
 			foreach ($arr[$key] as $x) {}
 		}
 	}
+
+	/**
+	 * @param 'foo'|'bar'|'baz' $key
+	 * @param array{foo: array<string>, bar: array<string>} $arr
+	 */
+	public function test4(string $key, array $arr): void
+	{
+		if ($arr[$key] === []) {
+			return;
+		}
+		\PHPStan\Testing\assertType('array{foo: array<string>, bar: array<string>}', $arr);
+	}
 }

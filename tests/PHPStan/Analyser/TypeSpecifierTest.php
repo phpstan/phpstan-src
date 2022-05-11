@@ -18,6 +18,7 @@ use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\VarLikeIdentifier;
 use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Node\Printer\Printer;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
@@ -55,7 +56,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 	protected function setUp(): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$this->printer = new Standard();
+		$this->printer = new Printer();
 		$this->typeSpecifier = self::getContainer()->getService('typeSpecifier');
 		$this->scope = $this->createScopeFactory($reflectionProvider, $this->typeSpecifier)->create(ScopeContext::create(''));
 		$this->scope = $this->scope->enterClass($reflectionProvider->getClass('DateTime'));

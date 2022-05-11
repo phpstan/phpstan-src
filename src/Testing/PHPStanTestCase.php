@@ -2,7 +2,6 @@
 
 namespace PHPStan\Testing;
 
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\DirectScopeFactory;
 use PHPStan\Analyser\Error;
@@ -21,6 +20,7 @@ use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvi
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
+use PHPStan\Node\Printer\Printer;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\TypeNodeResolver;
@@ -165,7 +165,7 @@ abstract class PHPStanTestCase extends TestCase
 			$container->getByType(InitializerExprTypeResolver::class),
 			$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
 			$container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
-			new Standard(),
+			new Printer(),
 			$typeSpecifier,
 			new PropertyReflectionFinder(),
 			$this->getParser(),

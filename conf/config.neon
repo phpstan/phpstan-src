@@ -389,7 +389,7 @@ services:
 		class: PhpParser\NodeVisitor\NodeConnectingVisitor
 
 	-
-		class: PhpParser\PrettyPrinter\Standard
+		class: PHPStan\Node\Printer\Printer
 
 	-
 		class: PHPStan\Broker\AnonymousClassNameHelper

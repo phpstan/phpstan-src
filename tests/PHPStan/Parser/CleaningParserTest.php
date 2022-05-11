@@ -5,8 +5,8 @@ namespace PHPStan\Parser;
 use PhpParser\Lexer\Emulative;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\File\FileReader;
+use PHPStan\Node\Printer\Printer;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Testing\PHPStanTestCase;
 use const PHP_VERSION_ID;
@@ -71,7 +71,7 @@ class CleaningParserTest extends PHPStanTestCase
 			),
 			new PhpVersion($phpVersionId),
 		);
-		$printer = new Standard();
+		$printer = new Printer();
 		$ast = $parser->parseFile($beforeFile);
 		$this->assertSame(FileReader::read($afterFile), "<?php\n" . $printer->prettyPrint($ast) . "\n");
 	}

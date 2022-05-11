@@ -5,10 +5,10 @@ namespace PHPStan\Analyser;
 use PhpParser\Lexer;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\Node\Printer\Printer;
 use PHPStan\Parser\RichParser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -463,7 +463,7 @@ class AnalyserTest extends PHPStanTestCase
 		]);
 
 		$reflectionProvider = $this->createReflectionProvider();
-		$printer = new Standard();
+		$printer = new Printer();
 		$fileHelper = $this->getFileHelper();
 
 		$typeSpecifier = self::getContainer()->getService('typeSpecifier');

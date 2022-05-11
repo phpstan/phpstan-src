@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Cast;
 
-use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Node\Printer\Printer;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -17,7 +17,7 @@ class InvalidPartOfEncapsedStringRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new InvalidPartOfEncapsedStringRule(
-			new Standard(),
+			new Printer(),
 			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false),
 		);
 	}

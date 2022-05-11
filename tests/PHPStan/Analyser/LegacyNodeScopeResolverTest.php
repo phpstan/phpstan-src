@@ -5,7 +5,7 @@ namespace PHPStan\Analyser;
 use Generator;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Exit_;
-use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Node\Printer\Printer;
 use PHPStan\Node\VirtualNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\TypeInferenceTestCase;
@@ -9399,7 +9399,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 					if ($node instanceof VirtualNode) {
 						return;
 					}
-					$printer = new Standard();
+					$printer = new Printer();
 					$printedNode = $printer->prettyPrint([$node]);
 					if ($printedNode !== $evaluatedPointExpression) {
 						return;

@@ -8,3 +8,14 @@ services:
 		class: DynamicMethodThrowTypeExtension\StaticMethodThrowTypeExtension
 		tags:
 			- phpstan.dynamicStaticMethodThrowTypeExtension
+
+	-
+		class: DynamicMethodThrowTypeExtensionNamedArgs\MethodThrowTypeExtension
+		tags:
+			- phpstan.dynamicMethodThrowTypeExtension
+
+	-
+		class: DynamicMethodThrowTypeExtensionNamedArgs\StaticMethodThrowTypeExtension
+		tags:
+			- phpstan.dynamicStaticMethodThrowTypeExtension
+

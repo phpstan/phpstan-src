@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
+use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php8StubsMap;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
@@ -136,7 +138,8 @@ class Php8SignatureMapProviderTest extends PHPStanTestCase
 	): void
 	{
 		$provider = $this->createProvider();
-		$signature = $provider->getFunctionSignature($functionName, null);
+		$reflector = self::getContainer()->getByType(Reflector::class);
+		$signature = $provider->getFunctionSignature($functionName, null, new ReflectionFunction($reflector->reflectFunction($functionName)));
 		$this->assertSignature($parameters, $returnType, $nativeReturnType, $variadic, $signature);
 	}
 

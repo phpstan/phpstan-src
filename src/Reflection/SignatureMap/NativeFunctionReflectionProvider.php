@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\SignatureMap;
 
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
@@ -46,14 +47,35 @@ class NativeFunctionReflectionProvider
 		if (!$this->signatureMapProvider->hasFunctionSignature($lowerCasedFunctionName)) {
 			return null;
 		}
-		$reflectionFunction = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null);
 
-		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $reflectionFunction->getParameters()));
+		$throwType = null;
+		$reflectionFunctionAdapter = null;
+		$isDeprecated = false;
+		try {
+			$reflectionFunction = $this->reflector->reflectFunction($functionName);
+			$reflectionFunctionAdapter = new ReflectionFunction($reflectionFunction);
+			if ($reflectionFunction->getFileName() !== null) {
+				$fileName = $reflectionFunction->getFileName();
+				$docComment = $reflectionFunction->getDocComment();
+				$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, $reflectionFunction->getName(), $docComment);
+				$throwsTag = $resolvedPhpDoc->getThrowsTag();
+				if ($throwsTag !== null) {
+					$throwType = $throwsTag->getType();
+				}
+				$isDeprecated = $reflectionFunction->isDeprecated();
+			}
+		} catch (IdentifierNotFound | InvalidIdentifierName) {
+			// pass
+		}
+
+		$functionSignature = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
+
+		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignature->getParameters()));
 
 		$variants = [];
 		$i = 0;
 		while ($this->signatureMapProvider->hasFunctionSignature($lowerCasedFunctionName, $i)) {
-			$functionSignature = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null, $i);
+			$functionSignature = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null, $reflectionFunctionAdapter, $i);
 			$variants[] = new FunctionVariant(
 				TemplateTypeMap::createEmpty(),
 				null,
@@ -122,26 +144,6 @@ class NativeFunctionReflectionProvider
 			$hasSideEffects = TrinaryLogic::createFromBoolean($this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName)['hasSideEffects']);
 		} else {
 			$hasSideEffects = TrinaryLogic::createMaybe();
-		}
-
-		$throwType = null;
-		$isDeprecated = false;
-		try {
-			$reflectionFunction = $this->reflector->reflectFunction($functionName);
-			if ($reflectionFunction->getFileName() !== null) {
-				$fileName = $reflectionFunction->getFileName();
-				$docComment = $reflectionFunction->getDocComment();
-				$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, $reflectionFunction->getName(), $docComment);
-				$throwsTag = $resolvedPhpDoc->getThrowsTag();
-				if ($throwsTag !== null) {
-					$throwType = $throwsTag->getType();
-				}
-				$isDeprecated = $reflectionFunction->isDeprecated();
-			}
-		} catch (IdentifierNotFound) {
-			// pass
-		} catch (InvalidIdentifierName) {
-			// pass
 		}
 
 		$functionReflection = new NativeFunctionReflection(

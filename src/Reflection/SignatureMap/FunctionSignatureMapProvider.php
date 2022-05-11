@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\InitializerExprContext;
@@ -50,14 +51,33 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 
 	public function getMethodSignature(string $className, string $methodName, ?ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature
 	{
-		$signature = $this->getFunctionSignature(sprintf('%s::%s', $className, $methodName), $className, $variant);
+		return $this->getFunctionSignature(sprintf('%s::%s', $className, $methodName), $className, $reflectionMethod, $variant);
+	}
+
+	public function getFunctionSignature(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction, int $variant = 0): FunctionSignature
+	{
+		$functionName = strtolower($functionName);
+		if ($variant > 0) {
+			$functionName .= '\'' . $variant;
+		}
+
+		if (!$this->hasFunctionSignature($functionName)) {
+			throw new ShouldNotHappenException();
+		}
+
+		$signatureMap = self::getSignatureMap();
+
+		$signature = $this->parser->getFunctionSignature(
+			$signatureMap[$functionName],
+			$className,
+		);
 		$parameters = [];
 		foreach ($signature->getParameters() as $i => $parameter) {
-			if ($reflectionMethod === null) {
+			if ($reflectionFunction === null) {
 				$parameters[] = $parameter;
 				continue;
 			}
-			$nativeParameters = $reflectionMethod->getParameters();
+			$nativeParameters = $reflectionFunction->getParameters();
 			if (!array_key_exists($i, $nativeParameters)) {
 				$parameters[] = $parameter;
 				continue;
@@ -77,10 +97,10 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 			);
 		}
 
-		if ($reflectionMethod === null) {
+		if ($reflectionFunction === null) {
 			$nativeReturnType = new MixedType();
 		} else {
-			$nativeReturnType = TypehintHelper::decideTypeFromReflection($reflectionMethod->getReturnType());
+			$nativeReturnType = TypehintHelper::decideTypeFromReflection($reflectionFunction->getReturnType());
 		}
 
 		return new FunctionSignature(
@@ -88,25 +108,6 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 			$signature->getReturnType(),
 			$nativeReturnType,
 			$signature->isVariadic(),
-		);
-	}
-
-	public function getFunctionSignature(string $functionName, ?string $className, int $variant = 0): FunctionSignature
-	{
-		$functionName = strtolower($functionName);
-		if ($variant > 0) {
-			$functionName .= '\'' . $variant;
-		}
-
-		if (!$this->hasFunctionSignature($functionName)) {
-			throw new ShouldNotHappenException();
-		}
-
-		$signatureMap = self::getSignatureMap();
-
-		return $this->parser->getFunctionSignature(
-			$signatureMap[$functionName],
-			$className,
 		);
 	}
 

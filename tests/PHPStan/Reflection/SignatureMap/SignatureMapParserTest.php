@@ -4,6 +4,11 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use DateInterval;
 use DateTime;
+use OutOfBoundsException;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
+use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Parser\ParserException;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -29,6 +34,7 @@ use function count;
 use function explode;
 use function sprintf;
 use function strpos;
+use function substr;
 
 class SignatureMapParserTest extends PHPStanTestCase
 {
@@ -469,6 +475,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 		$parser = self::getContainer()->getByType(SignatureMapParser::class);
 		$provider = new FunctionSignatureMapProvider($parser, self::getContainer()->getByType(InitializerExprTypeResolver::class), new PhpVersion($phpVersionId));
 		$signatureMap = $provider->getSignatureMap();
+		$reflector = self::getContainer()->getByType(Reflector::class);
 
 		$count = 0;
 		foreach (array_keys($signatureMap) as $functionName) {
@@ -476,10 +483,29 @@ class SignatureMapParserTest extends PHPStanTestCase
 			if (strpos($functionName, '::') !== false) {
 				$parts = explode('::', $functionName);
 				$className = $parts[0];
+				$realFunctionName = $parts[1];
+			} else {
+				$realFunctionName = $functionName;
+			}
+
+			if (strpos($realFunctionName, "'") !== false) {
+				$realFunctionName = substr($realFunctionName, 0, strpos($realFunctionName, "'"));
+			}
+
+			$reflectionFunction = null;
+
+			try {
+				if ($className !== null) {
+					$reflectionFunction = new ReflectionMethod($reflector->reflectClass($className)->getMethod($realFunctionName));
+				} else {
+					$reflectionFunction = new ReflectionFunction($reflector->reflectFunction($realFunctionName));
+				}
+			} catch (IdentifierNotFound | OutOfBoundsException $e) {
+				// pass
 			}
 
 			try {
-				$signature = $provider->getFunctionSignature($functionName, $className);
+				$signature = $provider->getFunctionSignature($functionName, $className, $reflectionFunction);
 				$count++;
 			} catch (ParserException $e) {
 				$this->fail(sprintf('Could not parse %s: %s.', $functionName, $e->getMessage()));

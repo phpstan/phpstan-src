@@ -7,6 +7,7 @@ use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php8StubsMap;
@@ -192,19 +193,19 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		return $signature;
 	}
 
-	public function getFunctionSignature(string $functionName, ?string $className, int $variant = 0): FunctionSignature
+	public function getFunctionSignature(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction, int $variant = 0): FunctionSignature
 	{
 		$lowerName = strtolower($functionName);
 		if (!array_key_exists($lowerName, $this->map->functions)) {
-			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $variant);
+			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $reflectionFunction, $variant);
 		}
 
 		if ($variant > 0) {
-			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $variant);
+			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $reflectionFunction, $variant);
 		}
 
 		if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName, 1)) {
-			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $variant);
+			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $reflectionFunction, $variant);
 		}
 
 		$stubFile = self::DIRECTORY . '/' . $this->map->functions[$lowerName];
@@ -222,7 +223,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 			if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName)) {
 				return $this->mergeSignatures(
 					$signature,
-					$this->functionSignatureMapProvider->getFunctionSignature($functionName, $className),
+					$this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $reflectionFunction),
 				);
 			}
 

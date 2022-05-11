@@ -194,7 +194,7 @@ class ParametersAcceptorSelectorTest extends PHPStanTestCase
 						new StringType(),
 						PassedByReference::createNo(),
 						false,
-						null,
+						new NullType(),
 					),
 				],
 				false,

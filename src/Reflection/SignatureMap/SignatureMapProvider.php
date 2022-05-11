@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
+use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 
 interface SignatureMapProvider
@@ -13,7 +14,7 @@ interface SignatureMapProvider
 
 	public function getMethodSignature(string $className, string $methodName, ?ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature;
 
-	public function getFunctionSignature(string $functionName, ?string $className, int $variant = 0): FunctionSignature;
+	public function getFunctionSignature(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction, int $variant = 0): FunctionSignature;
 
 	public function hasMethodMetadata(string $className, string $methodName): bool;
 

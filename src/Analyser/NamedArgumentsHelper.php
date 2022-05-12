@@ -68,6 +68,18 @@ final class NamedArgumentsHelper
 			return [];
 		}
 
+		// check whether the call actually has named args..
+		$hasNamedArgs = false;
+		foreach ($callArgs as $arg) {
+			if ($arg->name !== null) {
+				$hasNamedArgs = true;
+				break;
+			}
+		}
+		if (!$hasNamedArgs) {
+			return $callArgs;
+		}
+
 		$reorderedArgs = [];
 		$argumentPositions = [];
 		foreach ($signatureParameters as $i => $parameter) {

@@ -23,6 +23,10 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 	 */
 	public function testArgumentReorderAllNamed(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$funcName = new Name('json_encode');
 		$reflectionProvider = self::getContainer()->getByType(NativeFunctionReflectionProvider::class);
 		$functionReflection = $reflectionProvider->findFunctionReflection('json_encode');
@@ -73,6 +77,10 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 	 */
 	public function testArgumentReorderAllNamedWithSkipped(): void
 	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
 		$funcName = new Name('json_encode');
 		$reflectionProvider = self::getContainer()->getByType(NativeFunctionReflectionProvider::class);
 		$functionReflection = $reflectionProvider->findFunctionReflection('json_encode');

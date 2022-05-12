@@ -4174,26 +4174,18 @@ class MutatingScope implements Scope
 			if (count($constantArrays) > 0) {
 				$setArrays = [];
 				$dimType = $this->getType($expr->dim);
-				if ($dimType instanceof UnionType) {
-					$dimTypes = $dimType->getTypes();
-				} else {
-					$dimTypes = [$dimType];
-				}
-				foreach ($constantArrays as $constantArray) {
-					foreach ($dimTypes as $innerType) {
-						if ($constantArray->hasOffsetValueType($innerType)->no()) {
-							continue;
-						}
+				if (!$dimType instanceof UnionType) {
+					foreach ($constantArrays as $constantArray) {
 						$setArrays[] = $constantArray->setOffsetValueType(
-							TypeCombinator::intersect(ArrayType::castToArrayKeyType($innerType), $constantArray->getKeyType()),
-							$dimType instanceof UnionType ? TypeCombinator::intersect($type, $constantArray->getOffsetValueType($innerType)) : $type,
+							TypeCombinator::intersect(ArrayType::castToArrayKeyType($dimType), $constantArray->getKeyType()),
+							$type,
 						);
 					}
+					$scope = $this->specifyExpressionType(
+						$expr->var,
+						TypeCombinator::union(...$setArrays),
+					);
 				}
-				$scope = $this->specifyExpressionType(
-					$expr->var,
-					TypeCombinator::union(...$setArrays),
-				);
 			}
 		}
 

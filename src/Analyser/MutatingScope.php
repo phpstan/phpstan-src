@@ -3284,6 +3284,17 @@ class MutatingScope implements Scope
 			[
 				'this' => VariableTypeHolder::createYes(new ThisType($classReflection)),
 			],
+			[],
+			[],
+			null,
+			null,
+			true,
+			[],
+			[],
+			[],
+			[],
+			false,
+			$classReflection->isAnonymous() ? $this : null,
 		);
 	}
 

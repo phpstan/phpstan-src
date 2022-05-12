@@ -3741,8 +3741,20 @@ class NodeScopeResolver
 	 */
 	private function processTraitUse(Node\Stmt\TraitUse $node, MutatingScope $classScope, callable $nodeCallback): void
 	{
+		$parentTraitNames = [];
+		$parent = $classScope->getParentScope();
+		while ($parent !== null) {
+			if ($parent->isInTrait()) {
+				$parentTraitNames[] = $parent->getTraitReflection()->getName();
+			}
+			$parent = $parent->getParentScope();
+		}
+
 		foreach ($node->traits as $trait) {
 			$traitName = (string) $trait;
+			if (in_array($traitName, $parentTraitNames, true)) {
+				continue;
+			}
 			if (!$this->reflectionProvider->hasClass($traitName)) {
 				continue;
 			}

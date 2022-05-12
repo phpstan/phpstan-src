@@ -12,7 +12,7 @@ class Foo
 		$composer = array();
 		foreach (array('require', 'require-dev') as $linkType) {
 			if (isset($composer[$linkType])) {
-				assertType('array{require?: array<string, string>, require-dev?: array<string, string>}&non-empty-array', $composer);
+				assertType('array{require?: array<string, string>, require-dev?: array<string, string>}', $composer);
 				foreach ($composer[$linkType] as $x) {}
 			}
 		}

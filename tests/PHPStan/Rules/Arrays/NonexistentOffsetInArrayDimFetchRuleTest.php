@@ -387,7 +387,12 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	public function testBug7000(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-7000.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-7000.php'], [
+			[
+				"Offset 'require'|'require-dev' does not exist on array{require?: array<string, string>, require-dev?: array<string, string>}.",
+				16,
+			],
+		]);
 	}
 
 }

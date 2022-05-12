@@ -83,7 +83,7 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 			return [];
 		}
 
-		if ($dimType === null) {
+		if ($dimType === null || $scope->isSpecified($node)) {
 			return [];
 		}
 

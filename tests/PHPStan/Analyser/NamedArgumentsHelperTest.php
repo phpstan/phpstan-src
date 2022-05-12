@@ -14,6 +14,7 @@ use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use const PHP_VERSION_ID;
 
 final class NamedArgumentsHelperTest extends PHPStanTestCase
 {

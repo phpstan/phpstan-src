@@ -19,7 +19,7 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 {
 
 	/**
-	 * all arguments named and given in order
+	 * function call, all arguments named and given in order
 	 */
 	public function testArgumentReorderAllNamed(): void
 	{
@@ -73,7 +73,7 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 	}
 
 	/**
-	 * all args named, not in order
+	 * function call, all args named, not in order
 	 */
 	public function testArgumentReorderAllNamedWithSkipped(): void
 	{

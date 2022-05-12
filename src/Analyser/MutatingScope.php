@@ -4174,8 +4174,21 @@ class MutatingScope implements Scope
 			if (count($constantArrays) > 0) {
 				$setArrays = [];
 				$dimType = $this->getType($expr->dim);
+				if ($dimType instanceof UnionType) {
+					$dimTypes = $dimType->getTypes();
+				} else {
+					$dimTypes = [$dimType];
+				}
 				foreach ($constantArrays as $constantArray) {
-					$setArrays[] = $constantArray->setOffsetValueType($dimType, $type);
+					foreach ($dimTypes as $innerType) {
+						if ($constantArray->hasOffsetValueType($innerType)->no()) {
+							continue;
+						}
+						$setArrays[] = $constantArray->setOffsetValueType(
+							TypeCombinator::intersect(ArrayType::castToArrayKeyType($innerType), $constantArray->getKeyType()),
+							$dimType instanceof UnionType ? TypeCombinator::intersect($type, $constantArray->getOffsetValueType($innerType)) : $type,
+						);
+					}
 				}
 				$scope = $this->specifyExpressionType(
 					$expr->var,
@@ -4351,15 +4364,13 @@ class MutatingScope implements Scope
 	public function removeTypeFromExpression(Expr $expr, Type $typeToRemove): self
 	{
 		$exprType = $this->getType($expr);
-		$typeAfterRemove = TypeCombinator::remove($exprType, $typeToRemove);
 		if (
-			!$expr instanceof Variable
-			&& $exprType->equals($typeAfterRemove)
-			&& !$exprType instanceof ErrorType
-			&& !$exprType instanceof NeverType
+			$exprType instanceof NeverType ||
+			$typeToRemove instanceof NeverType
 		) {
 			return $this;
 		}
+		$typeAfterRemove = TypeCombinator::remove($exprType, $typeToRemove);
 		$scope = $this->specifyExpressionType(
 			$expr,
 			$typeAfterRemove,

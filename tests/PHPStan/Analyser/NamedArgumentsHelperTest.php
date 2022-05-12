@@ -54,9 +54,11 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 		$this->assertCount(3, $reorderedArgs);
 
 		$this->assertArrayHasKey(0, $reorderedArgs);
+		$this->assertNotNull($reorderedArgs[0]->name);
 		$this->assertSame('value', $reorderedArgs[0]->name->toString());
 
 		$this->assertArrayHasKey(1, $reorderedArgs);
+		$this->assertNotNull($reorderedArgs[1]->name);
 		$this->assertSame('flags', $reorderedArgs[1]->name->toString());
 
 		// "depths" arg was added with its default value based on the signature
@@ -102,6 +104,7 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 		$this->assertCount(3, $reorderedArgs);
 
 		$this->assertArrayHasKey(0, $reorderedArgs);
+		$this->assertNotNull($reorderedArgs[0]->name);
 		$this->assertSame('value', $reorderedArgs[0]->name->toString());
 
 		// "flags" arg was added with its default value based on the signature
@@ -111,6 +114,7 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 		$this->assertSame(0, $reorderedArgs[1]->value->getExprType()->getValue());
 
 		$this->assertArrayHasKey(2, $reorderedArgs);
+		$this->assertNotNull($reorderedArgs[2]->name);
 		$this->assertSame('depth', $reorderedArgs[2]->name->toString());
 	}
 

@@ -11,7 +11,6 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function count;
 use function ksort;

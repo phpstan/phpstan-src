@@ -86,13 +86,9 @@ class IssetCheck
 				)->build();
 			}
 
-			if ($hasOffsetValue->maybe()) {
-				return null;
-			}
-
 			// If offset is cannot be null, store this error message and see if one of the earlier offsets is.
 			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
-			if ($hasOffsetValue->yes()) {
+			if ($hasOffsetValue->yes() || $scope->isSpecified($expr)) {
 				if ($error !== null) {
 					return $error;
 				}

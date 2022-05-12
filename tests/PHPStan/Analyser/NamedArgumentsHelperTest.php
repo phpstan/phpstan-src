@@ -8,9 +8,12 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Type\Constant\ConstantIntegerType;
 
 final class NamedArgumentsHelperTest extends PHPStanTestCase
 {
@@ -23,6 +26,9 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 		$funcName = new Name('json_encode');
 		$reflectionProvider = self::getContainer()->getByType(NativeFunctionReflectionProvider::class);
 		$functionReflection = $reflectionProvider->findFunctionReflection('json_encode');
+		if ($functionReflection === null) {
+			throw new ShouldNotHappenException();
+		}
 		$parameterAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 
 		$args = [
@@ -45,12 +51,19 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 
 		$funcCall = NamedArgumentsHelper::reorderFuncArguments($parameterAcceptor, $funcCall);
 		$reorderedArgs = $funcCall->getArgs();
+		$this->assertCount(3, $reorderedArgs);
 
 		$this->assertArrayHasKey(0, $reorderedArgs);
 		$this->assertSame('value', $reorderedArgs[0]->name->toString());
 
 		$this->assertArrayHasKey(1, $reorderedArgs);
 		$this->assertSame('flags', $reorderedArgs[1]->name->toString());
+
+		// "depths" arg was added with its default value based on the signature
+		$this->assertArrayHasKey(2, $reorderedArgs);
+		$this->assertInstanceOf(TypeExpr::class, $reorderedArgs[2]->value);
+		$this->assertInstanceOf(ConstantIntegerType::class, $reorderedArgs[2]->value->getExprType());
+		$this->assertSame(512, $reorderedArgs[2]->value->getExprType()->getValue());
 	}
 
 	/**
@@ -61,6 +74,9 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 		$funcName = new Name('json_encode');
 		$reflectionProvider = self::getContainer()->getByType(NativeFunctionReflectionProvider::class);
 		$functionReflection = $reflectionProvider->findFunctionReflection('json_encode');
+		if ($functionReflection === null) {
+			throw new ShouldNotHappenException();
+		}
 		$parameterAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 
 		$args = [
@@ -83,14 +99,16 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 
 		$funcCall = NamedArgumentsHelper::reorderFuncArguments($parameterAcceptor, $funcCall);
 		$reorderedArgs = $funcCall->getArgs();
+		$this->assertCount(3, $reorderedArgs);
 
 		$this->assertArrayHasKey(0, $reorderedArgs);
 		$this->assertSame('value', $reorderedArgs[0]->name->toString());
 
+		// "flags" arg was added with its default value based on the signature
 		$this->assertArrayHasKey(1, $reorderedArgs);
-		$this->assertSame('flags', $reorderedArgs[1]->name->toString());
-		$this->assertInstanceOf(LNumber::class, $reorderedArgs[1]->value);
-		$this->assertSame(0, $reorderedArgs[1]->value->value);
+		$this->assertInstanceOf(TypeExpr::class, $reorderedArgs[1]->value);
+		$this->assertInstanceOf(ConstantIntegerType::class, $reorderedArgs[1]->value->getExprType());
+		$this->assertSame(0, $reorderedArgs[1]->value->getExprType()->getValue());
 
 		$this->assertArrayHasKey(2, $reorderedArgs);
 		$this->assertSame('depth', $reorderedArgs[2]->name->toString());

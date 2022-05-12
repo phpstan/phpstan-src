@@ -11,6 +11,7 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function count;
 use function ksort;
@@ -68,7 +69,6 @@ final class NamedArgumentsHelper
 			return [];
 		}
 
-		// check whether the call actually has named args..
 		$hasNamedArgs = false;
 		foreach ($callArgs as $arg) {
 			if ($arg->name !== null) {

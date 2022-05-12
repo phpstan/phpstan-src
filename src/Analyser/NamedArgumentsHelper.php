@@ -12,6 +12,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayType;
 use function array_key_exists;
+use function count;
 use function ksort;
 
 final class NamedArgumentsHelper
@@ -62,6 +63,10 @@ final class NamedArgumentsHelper
 	{
 		$signatureParameters = $parametersAcceptor->getParameters();
 		$callArgs = $callLike->getArgs();
+
+		if (count($callArgs) === 0) {
+			return [];
+		}
 
 		$reorderedArgs = [];
 		$argumentPositions = [];

@@ -949,4 +949,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7017.php'], $errors);
 	}
 
+	public function testBug4371(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4371.php'], [
+			[
+				'Parameter #1 $object_or_class of function is_a expects object, string given.',
+				14,
+			],
+			[
+				'Parameter #1 $object_or_class of function is_a expects object, string given.',
+				22,
+			]
+		]);
+	}
+
 }

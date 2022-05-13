@@ -19,7 +19,6 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PhpParser\PrettyPrinter\Standard;
-use PHPStan\Node\VirtualNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -1009,7 +1008,7 @@ class TypeSpecifier
 		?Expr $rootExpr = null,
 	): SpecifiedTypes
 	{
-		if ($expr instanceof Instanceof_ || $expr instanceof Expr\List_ || $expr instanceof VirtualNode) {
+		if ($expr instanceof Instanceof_ || $expr instanceof Expr\List_) {
 			return new SpecifiedTypes([], [], false, [], $rootExpr);
 		}
 

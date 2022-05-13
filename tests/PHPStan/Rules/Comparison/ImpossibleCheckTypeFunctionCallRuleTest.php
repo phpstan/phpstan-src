@@ -550,11 +550,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4371.php'], [
 			[
 				"Call to function is_a() with 'Bug4371\\\\Bar' and 'Bug4371\\\\Foo' will always evaluate to false.",
-				12,
+				14,
 			],
 			[
 				"Call to function is_a() with arguments 'Bug4371\\\\Bar', 'Bug4371\\\\Foo' and false will always evaluate to false.",
-				18,
+				21,
 			],
 		]);
 	}

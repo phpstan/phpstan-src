@@ -959,7 +959,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $object_or_class of function is_a expects object, string given.',
 				22,
-			]
+			],
 		]);
 	}
 

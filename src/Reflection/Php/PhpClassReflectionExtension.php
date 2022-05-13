@@ -755,7 +755,7 @@ class PhpClassReflectionExtension
 			}
 
 			$parameters[] = new NativeParameterWithPhpDocsReflection(
-				$phpDocParameterName,
+				$parameterSignature->getName(),
 				$parameterSignature->isOptional(),
 				$type ?? $parameterSignature->getType(),
 				$phpDocType ?? new MixedType(),

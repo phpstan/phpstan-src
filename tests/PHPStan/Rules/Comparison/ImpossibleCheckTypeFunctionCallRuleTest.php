@@ -535,4 +535,19 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/non-empty-string-impossible-type.php'], []);
 	}
 
+	public function testBug4371(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-4371.php'], [
+			[
+				"Call to function is_a() with 'Bug4371\\\\Bar' and 'Bug4371\\\\Foo' will always evaluate to false.",
+				12,
+			],
+			[
+				"Call to function is_a() with 'Bug4371\\\\Bar' and 'Bug4371\\\\Foo' will always evaluate to false.",
+				18,
+			],
+		]);
+	}
 }

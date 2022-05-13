@@ -15,6 +15,7 @@ use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -66,6 +67,7 @@ class InitializerExprTypeResolver
 	public function __construct(
 		private ConstantResolver $constantResolver,
 		private ReflectionProviderProvider $reflectionProviderProvider,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -121,49 +123,7 @@ class InitializerExprTypeResolver
 			return new ObjectWithoutClassType();
 		}
 		if ($expr instanceof Expr\Array_) {
-			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-			if (count($expr->items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-				$arrayBuilder->degradeToGeneralArray();
-			}
-			foreach ($expr->items as $item) {
-				if ($item === null) {
-					continue;
-				}
-				$valueType = $this->getType($item->value, $context);
-				if ($item->unpack) {
-					if ($valueType instanceof ConstantArrayType) {
-						$hasStringKey = false;
-						foreach ($valueType->getKeyTypes() as $keyType) {
-							if ($keyType instanceof ConstantStringType) {
-								$hasStringKey = true;
-								break;
-							}
-						}
-
-						foreach ($valueType->getValueTypes() as $i => $innerValueType) {
-							if ($hasStringKey) {
-								$arrayBuilder->setOffsetValueType($valueType->getKeyTypes()[$i], $innerValueType);
-							} else {
-								$arrayBuilder->setOffsetValueType(null, $innerValueType);
-							}
-						}
-					} else {
-						$arrayBuilder->degradeToGeneralArray();
-
-						if (! (new StringType())->isSuperTypeOf($valueType->getIterableKeyType())->no()) {
-							$arrayBuilder->setOffsetValueType($valueType->getIterableKeyType(), $valueType->getIterableValueType());
-						} else {
-							$arrayBuilder->setOffsetValueType(new IntegerType(), $valueType->getIterableValueType(), !$valueType->isIterableAtLeastOnce()->yes() && !$valueType->getIterableValueType()->isIterableAtLeastOnce()->yes());
-						}
-					}
-				} else {
-					$arrayBuilder->setOffsetValueType(
-						$item->key !== null ? $this->getType($item->key, $context) : null,
-						$valueType,
-					);
-				}
-			}
-			return $arrayBuilder->getArray();
+			return $this->getArrayType($expr, fn (Expr $expr): Type => $this->getType($expr, $context));
 		}
 		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$var = $this->getType($expr->var, $context);
@@ -577,6 +537,57 @@ class InitializerExprTypeResolver
 		}
 
 		return new MixedType();
+	}
+
+	/**
+	 * @param callable(Expr): Type $getTypeCallback
+	 */
+	public function getArrayType(Expr\Array_ $expr, callable $getTypeCallback): Type
+	{
+		$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+		if (count($expr->items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+			$arrayBuilder->degradeToGeneralArray();
+		}
+		foreach ($expr->items as $arrayItem) {
+			if ($arrayItem === null) {
+				continue;
+			}
+
+			$valueType = $getTypeCallback($arrayItem->value);
+			if ($arrayItem->unpack) {
+				if ($valueType instanceof ConstantArrayType) {
+					$hasStringKey = false;
+					foreach ($valueType->getKeyTypes() as $keyType) {
+						if ($keyType instanceof ConstantStringType) {
+							$hasStringKey = true;
+							break;
+						}
+					}
+
+					foreach ($valueType->getValueTypes() as $i => $innerValueType) {
+						if ($hasStringKey && $this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
+							$arrayBuilder->setOffsetValueType($valueType->getKeyTypes()[$i], $innerValueType);
+						} else {
+							$arrayBuilder->setOffsetValueType(null, $innerValueType);
+						}
+					}
+				} else {
+					$arrayBuilder->degradeToGeneralArray();
+
+					if (! (new StringType())->isSuperTypeOf($valueType->getIterableKeyType())->no() && $this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
+						$arrayBuilder->setOffsetValueType($valueType->getIterableKeyType(), $valueType->getIterableValueType());
+					} else {
+						$arrayBuilder->setOffsetValueType(new IntegerType(), $valueType->getIterableValueType(), !$valueType->isIterableAtLeastOnce()->yes() && !$valueType->getIterableValueType()->isIterableAtLeastOnce()->yes());
+					}
+				}
+			} else {
+				$arrayBuilder->setOffsetValueType(
+					$arrayItem->key !== null ? $getTypeCallback($arrayItem->key) : null,
+					$valueType,
+				);
+			}
+		}
+		return $arrayBuilder->getArray();
 	}
 
 	public function resolveName(Name $name, InitializerExprContext $context): string

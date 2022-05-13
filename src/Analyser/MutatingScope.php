@@ -1756,51 +1756,7 @@ class MutatingScope implements Scope
 			return $this->getTypeToInstantiateForNew($exprType);
 
 		} elseif ($node instanceof Array_) {
-			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-			if (count($node->items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-				$arrayBuilder->degradeToGeneralArray();
-			}
-			foreach ($node->items as $arrayItem) {
-				if ($arrayItem === null) {
-					continue;
-				}
-
-				$valueType = $this->getType($arrayItem->value);
-				if ($arrayItem->unpack) {
-					if ($valueType instanceof ConstantArrayType) {
-						$hasStringKey = false;
-						foreach ($valueType->getKeyTypes() as $keyType) {
-							if ($keyType instanceof ConstantStringType) {
-								$hasStringKey = true;
-								break;
-							}
-						}
-
-						foreach ($valueType->getValueTypes() as $i => $innerValueType) {
-							if ($hasStringKey && $this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
-								$arrayBuilder->setOffsetValueType($valueType->getKeyTypes()[$i], $innerValueType);
-							} else {
-								$arrayBuilder->setOffsetValueType(null, $innerValueType);
-							}
-						}
-					} else {
-						$arrayBuilder->degradeToGeneralArray();
-
-						if (! (new StringType())->isSuperTypeOf($valueType->getIterableKeyType())->no() && $this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
-							$arrayBuilder->setOffsetValueType($valueType->getIterableKeyType(), $valueType->getIterableValueType());
-						} else {
-							$arrayBuilder->setOffsetValueType(new IntegerType(), $valueType->getIterableValueType(), !$valueType->isIterableAtLeastOnce()->yes() && !$valueType->getIterableValueType()->isIterableAtLeastOnce()->yes());
-						}
-					}
-				} else {
-					$arrayBuilder->setOffsetValueType(
-						$arrayItem->key !== null ? $this->getType($arrayItem->key) : null,
-						$valueType,
-					);
-				}
-			}
-			return $arrayBuilder->getArray();
-
+			return $this->initializerExprTypeResolver->getArrayType($node, fn (Expr $expr): Type => $this->getType($expr));
 		} elseif ($node instanceof Int_) {
 			return $this->getType($node->expr)->toInteger();
 		} elseif ($node instanceof Bool_) {

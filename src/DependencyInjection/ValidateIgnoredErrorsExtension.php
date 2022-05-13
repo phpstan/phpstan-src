@@ -10,6 +10,7 @@ use Nette\Utils\Strings;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
 use PHPStan\Command\IgnoredRegexValidator;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\DirectTypeNodeResolverExtensionRegistryProvider;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeNodeResolverExtensionRegistry;
@@ -30,6 +31,7 @@ use function count;
 use function implode;
 use function is_array;
 use function sprintf;
+use const PHP_VERSION_ID;
 
 class ValidateIgnoredErrorsExtension extends CompilerExtension
 {
@@ -86,7 +88,7 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 
 					}),
 					$constantResolver,
-					new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider),
+					new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID)),
 				),
 			),
 		);

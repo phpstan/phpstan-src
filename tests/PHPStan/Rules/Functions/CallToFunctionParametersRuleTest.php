@@ -961,7 +961,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				22,
 			],
 		];
-		
+
 		if (PHP_VERSION_ID < 80000) {
 			// php 7.x had different parameter names
 			$errors = [

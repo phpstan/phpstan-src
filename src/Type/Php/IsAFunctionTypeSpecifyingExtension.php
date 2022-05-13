@@ -14,6 +14,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use function count;
@@ -51,7 +52,7 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 			if ($objectOrClassType->isString()->yes() && $allowString) {
 				return new SpecifiedTypes([], []);
 			}
-			if (!$objectOrClassType->isString()->yes()) {
+			if (!$objectOrClassType->isString()->yes() && !$objectOrClassType instanceof MixedType) {
 				return new SpecifiedTypes([], []);
 			}
 		}

@@ -187,6 +187,13 @@ class InitializerExprTypeResolver
 			}
 		}
 
+		if ($expr instanceof Expr\BinaryOp\Coalesce) {
+			$leftType = $this->getType($expr->left, $context);
+			$rightType = $this->getType($expr->right, $context);
+
+			return TypeCombinator::union(TypeCombinator::removeNull($leftType), $rightType);
+		}
+
 		if ($expr instanceof Expr\FuncCall && $expr->name instanceof Name && $expr->name->toLowerString() === 'constant') {
 			$firstArg = $expr->args[0] ?? null;
 			if ($firstArg instanceof Arg && $firstArg->value instanceof String_) {

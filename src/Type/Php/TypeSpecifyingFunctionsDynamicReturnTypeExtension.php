@@ -42,6 +42,7 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 			'in_array',
 			'is_numeric',
 			'is_int',
+			'is_a',
 			'is_array',
 			'is_bool',
 			'is_callable',

@@ -379,4 +379,47 @@ class InstantiationRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5553(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-5553.php'], []);
+	}
+
+	public function testBug7048(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-7048.php'], [
+			[
+				'Unknown parameter $recurrences in call to DatePeriod constructor.',
+				21,
+			],
+			[
+				'Missing parameter $end (DateTimeInterface|int) in call to DatePeriod constructor.',
+				18,
+			],
+			[
+				'Unknown parameter $isostr in call to DatePeriod constructor.',
+				25,
+			],
+			[
+				'Missing parameter $start (string) in call to DatePeriod constructor.',
+				24,
+			],
+			[
+				'Parameter #3 $end of class DatePeriod constructor expects DateTimeInterface|int, string given.',
+				41,
+			],
+			[
+				'Parameter $end of class DatePeriod constructor expects DateTimeInterface|int, string given.',
+				49,
+			],
+		]);
+	}
+
 }

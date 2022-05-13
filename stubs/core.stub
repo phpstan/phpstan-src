@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @param mixed $object_or_class
+ * @param ($allow_string is false ? object : object|string) $object_or_class
  * @param class-string $class
  * @param bool $allow_string
  * @return ($allow_string is false ? ($object_or_class is object ? bool : false) : bool)

@@ -23,6 +23,9 @@ use function is_a;
 class DirectScopeFactory implements ScopeFactory
 {
 
+	/**
+	 * @param class-string $scopeClass
+	 */
 	public function __construct(
 		private string $scopeClass,
 		private ReflectionProvider $reflectionProvider,

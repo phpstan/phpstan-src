@@ -24,6 +24,9 @@ class LazyScopeFactory implements ScopeFactory
 
 	private bool $explicitMixedInUnknownGenericNew;
 
+	/**
+	 * @param class-string $scopeClass
+	 */
 	public function __construct(
 		private string $scopeClass,
 		private Container $container,

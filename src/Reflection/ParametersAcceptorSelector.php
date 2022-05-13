@@ -301,7 +301,7 @@ class ParametersAcceptorSelector
 			return GenericParametersAcceptorResolver::resolve($types, self::combineAcceptors($acceptableAcceptors));
 		}
 
-		return self::combineAcceptors($winningAcceptors);
+		return GenericParametersAcceptorResolver::resolve($types, self::combineAcceptors($winningAcceptors));
 	}
 
 	/**

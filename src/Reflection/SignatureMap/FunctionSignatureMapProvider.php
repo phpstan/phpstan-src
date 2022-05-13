@@ -35,38 +35,40 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 	{
 	}
 
-	public function hasMethodSignature(string $className, string $methodName, int $variant = 0): bool
+	public function hasMethodSignature(string $className, string $methodName): bool
 	{
-		return $this->hasFunctionSignature(sprintf('%s::%s', $className, $methodName), $variant);
+		return $this->hasFunctionSignature(sprintf('%s::%s', $className, $methodName));
 	}
 
-	public function hasFunctionSignature(string $name, int $variant = 0): bool
+	public function hasFunctionSignature(string $name): bool
 	{
-		$signatureMap = $this->getSignatureMap();
-		if ($variant > 0) {
-			$name .= '\'' . $variant;
-		}
-		return array_key_exists(strtolower($name), $signatureMap);
+		return array_key_exists(strtolower($name), $this->getSignatureMap());
 	}
 
-	public function getMethodSignature(string $className, string $methodName, ?ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature
+	public function getMethodSignatures(string $className, string $methodName, ?ReflectionMethod $reflectionMethod): array
 	{
-		return $this->getFunctionSignature(sprintf('%s::%s', $className, $methodName), $className, $reflectionMethod, $variant);
+		return $this->getFunctionSignatures(sprintf('%s::%s', $className, $methodName), $className, $reflectionMethod);
 	}
 
-	public function getFunctionSignature(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction, int $variant = 0): FunctionSignature
+	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction): array
 	{
 		$functionName = strtolower($functionName);
-		if ($variant > 0) {
-			$functionName .= '\'' . $variant;
+
+		$signatures = [$this->createSignature($functionName, $className, $reflectionFunction)];
+		$i = 1;
+		$variantFunctionName = $functionName . '\'' . $i;
+		while ($this->hasFunctionSignature($variantFunctionName)) {
+			$signatures[] = $this->createSignature($variantFunctionName, $className, $reflectionFunction);
+			$i++;
+			$variantFunctionName = $functionName . '\'' . $i;
 		}
 
-		if (!$this->hasFunctionSignature($functionName)) {
-			throw new ShouldNotHappenException();
-		}
+		return $signatures;
+	}
 
+	private function createSignature(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction): FunctionSignature
+	{
 		$signatureMap = self::getSignatureMap();
-
 		$signature = $this->parser->getFunctionSignature(
 			$signatureMap[$functionName],
 			$className,

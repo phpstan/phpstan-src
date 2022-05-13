@@ -495,21 +495,14 @@ class PhpClassReflectionExtension
 		}
 
 		if ($this->signatureMapProvider->hasMethodSignature($declaringClassName, $methodReflection->getName())) {
-			$variantNumbers = [0];
-			$i = 1;
-			while ($this->signatureMapProvider->hasMethodSignature($declaringClassName, $methodReflection->getName(), $i)) {
-				$variantNumbers[] = $i;
-				$i++;
-			}
-
 			$variants = [];
 			$reflectionMethod = null;
 			$throwType = null;
 			if ($classReflection->getNativeReflection()->hasMethod($methodReflection->getName())) {
 				$reflectionMethod = $classReflection->getNativeReflection()->getMethod($methodReflection->getName());
 			}
-			foreach ($variantNumbers as $variantNumber) {
-				$methodSignature = $this->signatureMapProvider->getMethodSignature($declaringClassName, $methodReflection->getName(), $reflectionMethod, $variantNumber);
+			$methodSignatures = $this->signatureMapProvider->getMethodSignatures($declaringClassName, $methodReflection->getName(), $reflectionMethod);
+			foreach ($methodSignatures as $methodSignature) {
 				$phpDocParameterNameMapping = [];
 				foreach ($methodSignature->getParameters() as $parameter) {
 					$phpDocParameterNameMapping[$parameter->getName()] = $parameter->getName();
@@ -520,7 +513,7 @@ class PhpClassReflectionExtension
 				$phpDocParameterTypes = [];
 				$phpDocReturnType = null;
 				$stubPhpDocPair = null;
-				if (count($variantNumbers) === 1) {
+				if (count($methodSignatures) === 1) {
 					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
 					if ($stubPhpDocPair !== null) {
 						[$stubPhpDoc, $stubDeclaringClass] = $stubPhpDocPair;

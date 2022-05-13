@@ -8,13 +8,15 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 interface SignatureMapProvider
 {
 
-	public function hasMethodSignature(string $className, string $methodName, int $variant = 0): bool;
+	public function hasMethodSignature(string $className, string $methodName): bool;
 
-	public function hasFunctionSignature(string $name, int $variant = 0): bool;
+	public function hasFunctionSignature(string $name): bool;
 
-	public function getMethodSignature(string $className, string $methodName, ?ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature;
+	/** @return array<int, FunctionSignature> */
+	public function getMethodSignatures(string $className, string $methodName, ?ReflectionMethod $reflectionMethod): array;
 
-	public function getFunctionSignature(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction, int $variant = 0): FunctionSignature;
+	/** @return array<int, FunctionSignature> */
+	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction): array;
 
 	public function hasMethodMetadata(string $className, string $methodName): bool;
 

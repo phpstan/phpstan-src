@@ -51,22 +51,18 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		$this->map = new Php8StubsMap($phpVersion->getVersionId());
 	}
 
-	public function hasMethodSignature(string $className, string $methodName, int $variant = 0): bool
+	public function hasMethodSignature(string $className, string $methodName): bool
 	{
 		$lowerClassName = strtolower($className);
 		if ($lowerClassName === 'backedenum') {
 			return false;
 		}
 		if (!array_key_exists($lowerClassName, $this->map->classes)) {
-			return $this->functionSignatureMapProvider->hasMethodSignature($className, $methodName, $variant);
-		}
-
-		if ($variant > 0) {
-			return $this->functionSignatureMapProvider->hasMethodSignature($className, $methodName, $variant);
+			return $this->functionSignatureMapProvider->hasMethodSignature($className, $methodName);
 		}
 
 		if ($this->findMethodNode($className, $methodName) === null) {
-			return $this->functionSignatureMapProvider->hasMethodSignature($className, $methodName, $variant);
+			return $this->functionSignatureMapProvider->hasMethodSignature($className, $methodName);
 		}
 
 		return true;
@@ -146,66 +142,45 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		return true;
 	}
 
-	public function hasFunctionSignature(string $name, int $variant = 0): bool
+	public function hasFunctionSignature(string $name): bool
 	{
 		$lowerName = strtolower($name);
 		if (!array_key_exists($lowerName, $this->map->functions)) {
-			return $this->functionSignatureMapProvider->hasFunctionSignature($name, $variant);
-		}
-
-		if ($variant > 0) {
-			return $this->functionSignatureMapProvider->hasFunctionSignature($name, $variant);
+			return $this->functionSignatureMapProvider->hasFunctionSignature($name);
 		}
 
 		return true;
 	}
 
-	public function getMethodSignature(string $className, string $methodName, ?ReflectionMethod $reflectionMethod, int $variant = 0): FunctionSignature
+	public function getMethodSignatures(string $className, string $methodName, ?ReflectionMethod $reflectionMethod): array
 	{
 		$lowerClassName = strtolower($className);
 		if (!array_key_exists($lowerClassName, $this->map->classes)) {
-			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant);
-		}
-
-		if ($variant > 0) {
-			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant);
-		}
-
-		if ($this->functionSignatureMapProvider->hasMethodSignature($className, $methodName, 1)) {
-			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant);
+			return $this->functionSignatureMapProvider->getMethodSignatures($className, $methodName, $reflectionMethod);
 		}
 
 		$methodNode = $this->findMethodNode($className, $methodName);
 		if ($methodNode === null) {
-			return $this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant);
+			return $this->functionSignatureMapProvider->getMethodSignatures($className, $methodName, $reflectionMethod);
 		}
 
 		[$methodNode, $stubFile] = $methodNode;
 
 		$signature = $this->getSignature($methodNode, $className, $stubFile);
 		if ($this->functionSignatureMapProvider->hasMethodSignature($className, $methodName)) {
-			return $this->mergeSignatures(
-				$signature,
-				$this->functionSignatureMapProvider->getMethodSignature($className, $methodName, $reflectionMethod, $variant),
-			);
+			$functionMapSignatures = $this->functionSignatureMapProvider->getMethodSignatures($className, $methodName, $reflectionMethod);
+
+			return $this->getMergedSignatures($signature, $functionMapSignatures);
 		}
 
-		return $signature;
+		return [$signature];
 	}
 
-	public function getFunctionSignature(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction, int $variant = 0): FunctionSignature
+	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction): array
 	{
 		$lowerName = strtolower($functionName);
 		if (!array_key_exists($lowerName, $this->map->functions)) {
-			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $reflectionFunction, $variant);
-		}
-
-		if ($variant > 0) {
-			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $reflectionFunction, $variant);
-		}
-
-		if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName, 1)) {
-			return $this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $reflectionFunction, $variant);
+			return $this->functionSignatureMapProvider->getFunctionSignatures($functionName, $className, $reflectionFunction);
 		}
 
 		$stubFile = self::DIRECTORY . '/' . $this->map->functions[$lowerName];
@@ -221,16 +196,28 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 
 			$signature = $this->getSignature($functionNode->getNode(), null, $stubFile);
 			if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName)) {
-				return $this->mergeSignatures(
-					$signature,
-					$this->functionSignatureMapProvider->getFunctionSignature($functionName, $className, $reflectionFunction),
-				);
+				$functionMapSignatures = $this->functionSignatureMapProvider->getFunctionSignatures($functionName, $className, $reflectionFunction);
+
+				return $this->getMergedSignatures($signature, $functionMapSignatures);
 			}
 
-			return $signature;
+			return [$signature];
 		}
 
 		throw new ShouldNotHappenException(sprintf('Function %s stub not found in %s.', $functionName, $stubFile));
+	}
+
+	/**
+	 * @param array<int, FunctionSignature> $functionMapSignatures
+	 * @return array<int, FunctionSignature>
+	 */
+	private function getMergedSignatures(FunctionSignature $nativeSignature, array $functionMapSignatures): array
+	{
+		if (count($functionMapSignatures) === 1) {
+			return [$this->mergeSignatures($nativeSignature, $functionMapSignatures[0])];
+		}
+
+		return $functionMapSignatures;
 	}
 
 	private function mergeSignatures(FunctionSignature $nativeSignature, FunctionSignature $functionMapSignature): FunctionSignature

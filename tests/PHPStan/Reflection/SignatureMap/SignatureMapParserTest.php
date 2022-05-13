@@ -34,7 +34,6 @@ use function count;
 use function explode;
 use function sprintf;
 use function strpos;
-use function substr;
 
 class SignatureMapParserTest extends PHPStanTestCase
 {
@@ -489,7 +488,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 			}
 
 			if (strpos($realFunctionName, "'") !== false) {
-				$realFunctionName = substr($realFunctionName, 0, strpos($realFunctionName, "'"));
+				continue;
 			}
 
 			$reflectionFunction = null;
@@ -505,21 +504,23 @@ class SignatureMapParserTest extends PHPStanTestCase
 			}
 
 			try {
-				$signature = $provider->getFunctionSignature($functionName, $className, $reflectionFunction);
-				$count++;
+				$signatures = $provider->getFunctionSignatures($functionName, $className, $reflectionFunction);
+				$count += count($signatures);
 			} catch (ParserException $e) {
 				$this->fail(sprintf('Could not parse %s: %s.', $functionName, $e->getMessage()));
 			}
 
-			self::assertNotInstanceOf(ErrorType::class, $signature->getReturnType(), $functionName);
-			$optionalOcurred = false;
-			foreach ($signature->getParameters() as $parameter) {
-				if ($parameter->isOptional()) {
-					$optionalOcurred = true;
-				} elseif ($optionalOcurred) {
-					$this->fail(sprintf('%s contains required parameter after optional.', $functionName));
+			foreach ($signatures as $signature) {
+				self::assertNotInstanceOf(ErrorType::class, $signature->getReturnType(), $functionName);
+				$optionalOcurred = false;
+				foreach ($signature->getParameters() as $parameter) {
+					if ($parameter->isOptional()) {
+						$optionalOcurred = true;
+					} elseif ($optionalOcurred) {
+						$this->fail(sprintf('%s contains required parameter after optional.', $functionName));
+					}
+					self::assertNotInstanceOf(ErrorType::class, $parameter->getType(), sprintf('%s (parameter %s)', $functionName, $parameter->getName()));
 				}
-				self::assertNotInstanceOf(ErrorType::class, $parameter->getType(), sprintf('%s (parameter %s)', $functionName, $parameter->getName()));
 			}
 		}
 

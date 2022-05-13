@@ -68,14 +68,13 @@ class NativeFunctionReflectionProvider
 			// pass
 		}
 
-		$functionSignature = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
+		$functionSignatures = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
 
-		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignature->getParameters()));
+		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignatures[0]->getParameters()));
 
 		$variants = [];
-		$i = 0;
-		while ($this->signatureMapProvider->hasFunctionSignature($lowerCasedFunctionName, $i)) {
-			$functionSignature = $this->signatureMapProvider->getFunctionSignature($lowerCasedFunctionName, null, $reflectionFunctionAdapter, $i);
+		$functionSignatures = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
+		foreach ($functionSignatures as $functionSignature) {
 			$variants[] = new FunctionVariant(
 				TemplateTypeMap::createEmpty(),
 				null,
@@ -136,8 +135,6 @@ class NativeFunctionReflectionProvider
 				$functionSignature->isVariadic(),
 				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDoc !== null ? $this->getReturnTypeFromPhpDoc($phpDoc) : null),
 			);
-
-			$i++;
 		}
 
 		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {

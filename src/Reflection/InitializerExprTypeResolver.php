@@ -44,6 +44,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -194,6 +195,24 @@ class InitializerExprTypeResolver
 			return TypeCombinator::union(TypeCombinator::removeNull($leftType), $rightType);
 		}
 
+		if ($expr instanceof Expr\Ternary) {
+			$condType = $this->getType($expr->cond, $context);
+			$elseType = $this->getType($expr->else, $context);
+			if ($expr->if === null) {
+				return TypeCombinator::union(
+					TypeCombinator::remove($condType, StaticTypeFactory::falsey()),
+					$elseType,
+				);
+			}
+
+			$ifType = $this->getType($expr->if, $context);
+
+			return TypeCombinator::union(
+				TypeCombinator::remove($ifType, StaticTypeFactory::falsey()),
+				$elseType,
+			);
+		}
+
 		if ($expr instanceof Expr\FuncCall && $expr->name instanceof Name && $expr->name->toLowerString() === 'constant') {
 			$firstArg = $expr->args[0] ?? null;
 			if ($firstArg instanceof Arg && $firstArg->value instanceof String_) {
@@ -235,7 +254,6 @@ class InitializerExprTypeResolver
 
 		// todo
 		/*
-		- [ ] Expr\Ternary
 		- [ ] MagicConst\Class_
 		- [ ] MagicConst\Namespace_
 		- [ ] MagicConst\Method

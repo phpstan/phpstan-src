@@ -966,11 +966,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			// php 7.x had different parameter names
 			$errors = [
 				[
-					'Parameter #1 object_or_string of function is_a expects object, string given.',
+					'Parameter #1 $object_or_string of function is_a expects object, string given.',
 					14,
 				],
 				[
-					'Parameter #1 object_or_string of function is_a expects object, string given.',
+					'Parameter #1 $object_or_string of function is_a expects object, string given.',
 					22,
 				],
 			];

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bug4371;
 
 use function PHPStan\Testing\assertType;
+use Exception;
 
 class HelloWorld
 {

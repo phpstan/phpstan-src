@@ -14,10 +14,14 @@ class OperatorTypeSpecifyingExtensionRegistry
 	 * @param OperatorTypeSpecifyingExtension[] $extensions
 	 */
 	public function __construct(
-		Broker $broker,
+		?Broker $broker,
 		private array $extensions,
 	)
 	{
+		if ($broker === null) {
+			return;
+		}
+
 		foreach ($extensions as $extension) {
 			if (!$extension instanceof BrokerAwareExtension) {
 				continue;

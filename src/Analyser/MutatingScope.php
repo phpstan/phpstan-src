@@ -64,9 +64,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -75,11 +73,9 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -96,7 +92,6 @@ use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
@@ -123,10 +118,8 @@ use function count;
 use function dirname;
 use function get_class;
 use function in_array;
-use function is_float;
 use function is_string;
 use function ltrim;
-use function max;
 use function sprintf;
 use function str_starts_with;
 use function strlen;
@@ -138,16 +131,6 @@ use const PHP_INT_MIN;
 
 class MutatingScope implements Scope
 {
-
-	public const CALCULATE_SCALARS_LIMIT = 128;
-
-	private const OPERATOR_SIGIL_MAP = [
-		Node\Expr\AssignOp\Plus::class => '+',
-		Node\Expr\AssignOp\Minus::class => '-',
-		Node\Expr\AssignOp\Mul::class => '*',
-		Node\Expr\AssignOp\Pow::class => '^',
-		Node\Expr\AssignOp\Div::class => '/',
-	];
 
 	/** @var Type[] */
 	private array $resolvedTypes = [];
@@ -175,7 +158,6 @@ class MutatingScope implements Scope
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
-		private OperatorTypeSpecifyingExtensionRegistry $operatorTypeSpecifyingExtensionRegistry,
 		private Standard $printer,
 		private TypeSpecifier $typeSpecifier,
 		private PropertyReflectionFinder $propertyReflectionFinder,
@@ -708,7 +690,7 @@ class MutatingScope implements Scope
 			$leftType = $this->getType($node->left);
 			$rightType = $this->getType($node->right);
 
-			return $this->resolveEqualType($leftType, $rightType);
+			return $this->initializerExprTypeResolver->resolveEqualType($leftType, $rightType);
 		}
 
 		if ($node instanceof Expr\BinaryOp\NotEqual) {
@@ -908,7 +890,7 @@ class MutatingScope implements Scope
 				return new BooleanType();
 			}
 
-			return $this->resolveIdenticalType($leftType, $rightType);
+			return $this->initializerExprTypeResolver->resolveIdenticalType($leftType, $rightType);
 		}
 
 		if ($node instanceof Expr\BinaryOp\NotIdentical) {
@@ -994,418 +976,108 @@ class MutatingScope implements Scope
 			return $this->initializerExprTypeResolver->getUnaryMinusType($node->expr, fn (Expr $expr): Type => $this->getType($expr));
 		}
 
-		if ($node instanceof Expr\BinaryOp\Concat || $node instanceof Expr\AssignOp\Concat) {
-			return $this->resolveConcatType($node);
+		if ($node instanceof Expr\BinaryOp\Concat) {
+			return $this->initializerExprTypeResolver->getConcatType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
 		}
 
-		if (
-			$node instanceof Node\Expr\BinaryOp\Mul
-			|| $node instanceof Node\Expr\AssignOp\Mul
-		) {
-			if ($node instanceof Node\Expr\AssignOp) {
-				$leftType = $this->getType($node->var)->toNumber();
-				$rightType = $this->getType($node->expr)->toNumber();
-			} else {
-				$leftType = $this->getType($node->left)->toNumber();
-				$rightType = $this->getType($node->right)->toNumber();
-			}
-
-			$floatType = new FloatType();
-
-			if ($leftType instanceof ConstantIntegerType && $leftType->getValue() === 0) {
-				if ($floatType->isSuperTypeOf($rightType)->yes()) {
-					return new ConstantFloatType(0.0);
-				}
-				return new ConstantIntegerType(0);
-			}
-			if ($rightType instanceof ConstantIntegerType && $rightType->getValue() === 0) {
-				if ($floatType->isSuperTypeOf($leftType)->yes()) {
-					return new ConstantFloatType(0.0);
-				}
-				return new ConstantIntegerType(0);
-			}
+		if ($node instanceof Expr\AssignOp\Concat) {
+			return $this->initializerExprTypeResolver->getConcatType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
 		}
 
-		if (
-			$node instanceof Node\Expr\BinaryOp\Div
-			|| $node instanceof Node\Expr\AssignOp\Div
-			|| $node instanceof Node\Expr\BinaryOp\Mod
-			|| $node instanceof Node\Expr\AssignOp\Mod
-		) {
-			if ($node instanceof Node\Expr\AssignOp) {
-				$right = $node->expr;
-			} else {
-				$right = $node->right;
-			}
-			$rightType = $this->getType($right);
-
-			$integerType = $rightType->toInteger();
-			if (
-				$node instanceof Node\Expr\BinaryOp\Mod
-				|| $node instanceof Node\Expr\AssignOp\Mod
-			) {
-				if ($integerType instanceof ConstantIntegerType && $integerType->getValue() === 1) {
-					return new ConstantIntegerType(0);
-				}
-			}
-
-			$rightScalarTypes = TypeUtils::getConstantScalars($rightType->toNumber());
-			foreach ($rightScalarTypes as $scalarType) {
-
-				if (
-					$scalarType->getValue() === 0
-					|| $scalarType->getValue() === 0.0
-				) {
-					return new ErrorType();
-				}
-			}
+		if ($node instanceof BinaryOp\BitwiseAnd) {
+			return $this->initializerExprTypeResolver->getBitwiseAndType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
 		}
 
-		if (
-			(
-				$node instanceof Node\Expr\BinaryOp
-				|| $node instanceof Node\Expr\AssignOp
-			) && !$node instanceof Expr\BinaryOp\Coalesce && !$node instanceof Expr\AssignOp\Coalesce
-		) {
-			if ($node instanceof Node\Expr\AssignOp) {
-				$left = $node->var;
-				$right = $node->expr;
-			} else {
-				$left = $node->left;
-				$right = $node->right;
-			}
-
-			$leftTypes = TypeUtils::getConstantScalars($this->getType($left));
-			$rightTypes = TypeUtils::getConstantScalars($this->getType($right));
-
-			$leftTypesCount = count($leftTypes);
-			$rightTypesCount = count($rightTypes);
-			if ($leftTypesCount > 0 && $rightTypesCount > 0) {
-				$resultTypes = [];
-				$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
-				foreach ($leftTypes as $leftType) {
-					foreach ($rightTypes as $rightType) {
-						$resultType = $this->calculateFromScalars($node, $leftType, $rightType);
-						if ($generalize) {
-							$resultType = $resultType->generalize(GeneralizePrecision::lessSpecific());
-						}
-						$resultTypes[] = $resultType;
-					}
-				}
-				return TypeCombinator::union(...$resultTypes);
-			}
+		if ($node instanceof Expr\AssignOp\BitwiseAnd) {
+			return $this->initializerExprTypeResolver->getBitwiseAndType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
 		}
 
-		if ($node instanceof Node\Expr\BinaryOp\Mod || $node instanceof Expr\AssignOp\Mod) {
-			if ($node instanceof Node\Expr\AssignOp) {
-				$left = $node->var;
-				$right = $node->expr;
-			} else {
-				$left = $node->left;
-				$right = $node->right;
-			}
+		if ($node instanceof BinaryOp\BitwiseOr) {
+			return $this->initializerExprTypeResolver->getBitwiseOrType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
+		}
 
-			$leftType = $this->getType($left);
-			$rightType = $this->getType($right);
+		if ($node instanceof Expr\AssignOp\BitwiseOr) {
+			return $this->initializerExprTypeResolver->getBitwiseOrType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
+		}
 
-			$integer = new IntegerType();
-			$positiveInt = IntegerRangeType::fromInterval(0, null);
-			if ($integer->isSuperTypeOf($rightType)->yes()) {
-				$rangeMin = null;
-				$rangeMax = null;
+		if ($node instanceof BinaryOp\BitwiseXor) {
+			return $this->initializerExprTypeResolver->getBitwiseXorType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
+		}
 
-				if ($rightType instanceof IntegerRangeType) {
-					$rangeMax = $rightType->getMax() !== null ? $rightType->getMax() - 1 : null;
-				} elseif ($rightType instanceof ConstantIntegerType) {
-					$rangeMax = $rightType->getValue() - 1;
-				} elseif ($rightType instanceof UnionType) {
-					foreach ($rightType->getTypes() as $type) {
-						if ($type instanceof IntegerRangeType) {
-							if ($type->getMax() === null) {
-								$rangeMax = null;
-							} else {
-								$rangeMax = max($rangeMax, $type->getMax());
-							}
-						} elseif ($type instanceof ConstantIntegerType) {
-							$rangeMax = max($rangeMax, $type->getValue() - 1);
-						}
-					}
-				}
-
-				if ($positiveInt->isSuperTypeOf($leftType)->yes()) {
-					$rangeMin = 0;
-				} elseif ($rangeMax !== null) {
-					$rangeMin = $rangeMax * -1;
-				}
-
-				return IntegerRangeType::fromInterval($rangeMin, $rangeMax);
-			} elseif ($positiveInt->isSuperTypeOf($leftType)->yes()) {
-				return IntegerRangeType::fromInterval(0, null);
-			}
-
-			return new IntegerType();
+		if ($node instanceof Expr\AssignOp\BitwiseXor) {
+			return $this->initializerExprTypeResolver->getBitwiseXorType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
 		}
 
 		if ($node instanceof Expr\BinaryOp\Spaceship) {
-			return IntegerRangeType::fromInterval(-1, 1);
+			return $this->initializerExprTypeResolver->getSpaceshipType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof BinaryOp\Div) {
+			return $this->initializerExprTypeResolver->getDivType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Div) {
+			return $this->initializerExprTypeResolver->getDivType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof BinaryOp\Mod) {
+			return $this->initializerExprTypeResolver->getModType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Mod) {
+			return $this->initializerExprTypeResolver->getModType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof BinaryOp\Plus) {
+			return $this->initializerExprTypeResolver->getPlusType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Plus) {
+			return $this->initializerExprTypeResolver->getPlusType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof BinaryOp\Minus) {
+			return $this->initializerExprTypeResolver->getMinusType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Minus) {
+			return $this->initializerExprTypeResolver->getMinusType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof BinaryOp\Mul) {
+			return $this->initializerExprTypeResolver->getMulType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Mul) {
+			return $this->initializerExprTypeResolver->getMulType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof BinaryOp\Pow) {
+			return $this->initializerExprTypeResolver->getPowType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Pow) {
+			return $this->initializerExprTypeResolver->getPowType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof BinaryOp\ShiftLeft) {
+			return $this->initializerExprTypeResolver->getShiftLeftType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\ShiftLeft) {
+			return $this->initializerExprTypeResolver->getShiftLeftType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof BinaryOp\ShiftRight) {
+			return $this->initializerExprTypeResolver->getShiftRightType($node->left, $node->right, fn (Expr $expr): Type => $this->getType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\ShiftRight) {
+			return $this->initializerExprTypeResolver->getShiftRightType($node->var, $node->expr, fn (Expr $expr): Type => $this->getType($expr));
 		}
 
 		if ($node instanceof Expr\Clone_) {
 			return $this->getType($node->expr);
-		}
-
-		if (
-			$node instanceof Expr\AssignOp\ShiftLeft
-			|| $node instanceof Expr\BinaryOp\ShiftLeft
-			|| $node instanceof Expr\AssignOp\ShiftRight
-			|| $node instanceof Expr\BinaryOp\ShiftRight
-		) {
-			if ($node instanceof Node\Expr\AssignOp) {
-				$left = $node->var;
-				$right = $node->expr;
-			} else {
-				$left = $node->left;
-				$right = $node->right;
-			}
-
-			if (TypeCombinator::union(
-				$this->getType($left)->toNumber(),
-				$this->getType($right)->toNumber(),
-			) instanceof ErrorType) {
-				return new ErrorType();
-			}
-
-			return new IntegerType();
-		}
-
-		if (
-			$node instanceof Expr\AssignOp\BitwiseAnd
-			|| $node instanceof Expr\BinaryOp\BitwiseAnd
-			|| $node instanceof Expr\AssignOp\BitwiseOr
-			|| $node instanceof Expr\BinaryOp\BitwiseOr
-			|| $node instanceof Expr\AssignOp\BitwiseXor
-			|| $node instanceof Expr\BinaryOp\BitwiseXor
-		) {
-			if ($node instanceof Node\Expr\AssignOp) {
-				$left = $node->var;
-				$right = $node->expr;
-			} else {
-				$left = $node->left;
-				$right = $node->right;
-			}
-
-			$leftType = $this->getType($left);
-			$rightType = $this->getType($right);
-			$stringType = new StringType();
-
-			if ($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes()) {
-				return $stringType;
-			}
-
-			if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber()) instanceof ErrorType) {
-				return new ErrorType();
-			}
-
-			return new IntegerType();
-		}
-
-		if (
-			$node instanceof Node\Expr\BinaryOp\Plus
-			|| $node instanceof Node\Expr\BinaryOp\Minus
-			|| $node instanceof Node\Expr\BinaryOp\Mul
-			|| $node instanceof Node\Expr\BinaryOp\Pow
-			|| $node instanceof Node\Expr\BinaryOp\Div
-			|| $node instanceof Node\Expr\AssignOp\Plus
-			|| $node instanceof Node\Expr\AssignOp\Minus
-			|| $node instanceof Node\Expr\AssignOp\Mul
-			|| $node instanceof Node\Expr\AssignOp\Pow
-			|| $node instanceof Node\Expr\AssignOp\Div
-		) {
-			if ($node instanceof Node\Expr\AssignOp) {
-				$left = $node->var;
-				$right = $node->expr;
-			} else {
-				$left = $node->left;
-				$right = $node->right;
-			}
-
-			$leftType = $this->getType($left);
-			$rightType = $this->getType($right);
-
-			if ($node instanceof Expr\AssignOp\Plus || $node instanceof Expr\BinaryOp\Plus) {
-				$leftConstantArrays = TypeUtils::getOldConstantArrays($leftType);
-				$rightConstantArrays = TypeUtils::getOldConstantArrays($rightType);
-
-				$leftCount = count($leftConstantArrays);
-				$rightCount = count($rightConstantArrays);
-				if ($leftCount > 0 && $rightCount > 0
-					&& ($leftCount + $rightCount < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT)) {
-					$resultTypes = [];
-					foreach ($rightConstantArrays as $rightConstantArray) {
-						foreach ($leftConstantArrays as $leftConstantArray) {
-							$newArrayBuilder = ConstantArrayTypeBuilder::createFromConstantArray($rightConstantArray);
-							foreach ($leftConstantArray->getKeyTypes() as $i => $leftKeyType) {
-								$optional = $leftConstantArray->isOptionalKey($i);
-								$valueType = $leftConstantArray->getOffsetValueType($leftKeyType);
-								if (!$optional) {
-									if ($rightConstantArray->hasOffsetValueType($leftKeyType)->maybe()) {
-										$valueType = TypeCombinator::union($valueType, $rightConstantArray->getOffsetValueType($leftKeyType));
-									}
-								}
-								$newArrayBuilder->setOffsetValueType(
-									$leftKeyType,
-									$valueType,
-									$optional,
-								);
-							}
-							$resultTypes[] = $newArrayBuilder->getArray();
-						}
-					}
-
-					return TypeCombinator::union(...$resultTypes);
-				}
-
-				$arrayType = new ArrayType(new MixedType(), new MixedType());
-
-				if ($arrayType->isSuperTypeOf($leftType)->yes() && $arrayType->isSuperTypeOf($rightType)->yes()) {
-					if ($leftType->getIterableKeyType()->equals($rightType->getIterableKeyType())) {
-						// to preserve BenevolentUnionType
-						$keyType = $leftType->getIterableKeyType();
-					} else {
-						$keyTypes = [];
-						foreach ([
-							$leftType->getIterableKeyType(),
-							$rightType->getIterableKeyType(),
-						] as $keyType) {
-							$keyTypes[] = $keyType;
-						}
-						$keyType = TypeCombinator::union(...$keyTypes);
-					}
-
-					$arrayType = new ArrayType(
-						$keyType,
-						TypeCombinator::union($leftType->getIterableValueType(), $rightType->getIterableValueType()),
-					);
-
-					if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
-						return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
-					}
-					return $arrayType;
-				}
-
-				if ($leftType instanceof MixedType && $rightType instanceof MixedType) {
-					return new BenevolentUnionType([
-						new FloatType(),
-						new IntegerType(),
-						new ArrayType(new MixedType(), new MixedType()),
-					]);
-				}
-			}
-
-			if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType || $leftType instanceof UnionType) &&
-				($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType || $rightType instanceof UnionType) &&
-				!($node instanceof Node\Expr\BinaryOp\Pow || $node instanceof Node\Expr\AssignOp\Pow)) {
-
-				if ($leftType instanceof ConstantIntegerType) {
-					return $this->integerRangeMath(
-						$leftType,
-						$node,
-						$rightType,
-					);
-				} elseif ($leftType instanceof UnionType) {
-
-					$unionParts = [];
-
-					foreach ($leftType->getTypes() as $type) {
-						if ($type instanceof IntegerRangeType || $type instanceof ConstantIntegerType) {
-							$unionParts[] = $this->integerRangeMath($type, $node, $rightType);
-						} else {
-							$unionParts[] = $type;
-						}
-					}
-
-					$union = TypeCombinator::union(...$unionParts);
-					if ($leftType instanceof BenevolentUnionType) {
-						return TypeUtils::toBenevolentUnion($union)->toNumber();
-					}
-
-					return $union->toNumber();
-				}
-
-				return $this->integerRangeMath($leftType, $node, $rightType);
-			}
-
-			$operatorSigil = null;
-
-			if ($node instanceof BinaryOp) {
-				$operatorSigil = $node->getOperatorSigil();
-			}
-
-			if ($operatorSigil === null) {
-				$operatorSigil = self::OPERATOR_SIGIL_MAP[get_class($node)] ?? null;
-			}
-
-			if ($operatorSigil !== null) {
-				$operatorTypeSpecifyingExtensions = $this->operatorTypeSpecifyingExtensionRegistry->getOperatorTypeSpecifyingExtensions($operatorSigil, $leftType, $rightType);
-
-				/** @var Type[] $extensionTypes */
-				$extensionTypes = [];
-
-				foreach ($operatorTypeSpecifyingExtensions as $extension) {
-					$extensionTypes[] = $extension->specifyType($operatorSigil, $leftType, $rightType);
-				}
-
-				if (count($extensionTypes) > 0) {
-					return TypeCombinator::union(...$extensionTypes);
-				}
-			}
-
-			$types = TypeCombinator::union($leftType, $rightType);
-			if (
-				$leftType instanceof ArrayType
-				|| $rightType instanceof ArrayType
-				|| $types instanceof ArrayType
-			) {
-				return new ErrorType();
-			}
-
-			$leftNumberType = $leftType->toNumber();
-			$rightNumberType = $rightType->toNumber();
-			if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-				return new ErrorType();
-			}
-
-			if (
-				(new FloatType())->isSuperTypeOf($leftNumberType)->yes()
-				|| (new FloatType())->isSuperTypeOf($rightNumberType)->yes()
-			) {
-				return new FloatType();
-			}
-
-			if ($node instanceof Expr\AssignOp\Pow || $node instanceof Expr\BinaryOp\Pow) {
-				return new BenevolentUnionType([
-					new FloatType(),
-					new IntegerType(),
-				]);
-			}
-
-			$resultType = TypeCombinator::union($leftNumberType, $rightNumberType);
-			if ($node instanceof Expr\AssignOp\Div || $node instanceof Expr\BinaryOp\Div) {
-				if ($types instanceof MixedType || $resultType instanceof IntegerType) {
-					return new BenevolentUnionType([new IntegerType(), new FloatType()]);
-				}
-
-				return new UnionType([new IntegerType(), new FloatType()]);
-			}
-
-			if ($types instanceof MixedType
-				|| $leftType instanceof BenevolentUnionType
-				|| $rightType instanceof BenevolentUnionType
-			) {
-				return TypeUtils::toBenevolentUnion($resultType);
-			}
-
-			return $resultType;
 		}
 
 		if ($node instanceof LNumber) {
@@ -2224,204 +1896,6 @@ class MutatingScope implements Scope
 		return new MixedType();
 	}
 
-	private function resolveIdenticalType(Type $leftType, Type $rightType): BooleanType
-	{
-		$isSuperset = $leftType->isSuperTypeOf($rightType);
-		if ($isSuperset->no()) {
-			return new ConstantBooleanType(false);
-		} elseif (
-			$isSuperset->yes()
-			&& $leftType instanceof ConstantScalarType
-			&& $rightType instanceof ConstantScalarType
-			&& $leftType->getValue() === $rightType->getValue()
-		) {
-			return new ConstantBooleanType(true);
-		}
-
-		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
-			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveIdenticalType($leftValueType, $rightValueType));
-		}
-
-		return new BooleanType();
-	}
-
-	private function resolveEqualType(Type $leftType, Type $rightType): BooleanType
-	{
-		$stringType = new StringType();
-		$integerType = new IntegerType();
-		$floatType = new FloatType();
-		if (
-			($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
-			|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
-			|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
-		) {
-			return $this->resolveIdenticalType($leftType, $rightType);
-		}
-
-		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {
-			return new ConstantBooleanType($leftType->getValue() == $rightType->getValue()); // phpcs:ignore
-		}
-
-		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
-			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveEqualType($leftValueType, $rightValueType));
-		}
-
-		return new BooleanType();
-	}
-
-	/**
-	 * @param callable(Type, Type): BooleanType $valueComparisonCallback
-	 */
-	private function resolveConstantArrayTypeComparison(ConstantArrayType $leftType, ConstantArrayType $rightType, callable $valueComparisonCallback): BooleanType
-	{
-		$leftKeyTypes = $leftType->getKeyTypes();
-		$rightKeyTypes = $rightType->getKeyTypes();
-		$leftValueTypes = $leftType->getValueTypes();
-		$rightValueTypes = $rightType->getValueTypes();
-
-		$resultType = new ConstantBooleanType(true);
-
-		foreach ($leftKeyTypes as $i => $leftKeyType) {
-			$leftOptional = $leftType->isOptionalKey($i);
-			if ($leftOptional) {
-				$resultType = new BooleanType();
-			}
-
-			if (count($rightKeyTypes) === 0) {
-				if (!$leftOptional) {
-					return new ConstantBooleanType(false);
-				}
-				continue;
-			}
-
-			$found = false;
-			foreach ($rightKeyTypes as $j => $rightKeyType) {
-				unset($rightKeyTypes[$j]);
-
-				if ($leftKeyType->equals($rightKeyType)) {
-					$found = true;
-					break;
-				} elseif (!$rightType->isOptionalKey($j)) {
-					return new ConstantBooleanType(false);
-				}
-			}
-
-			if (!$found) {
-				if (!$leftOptional) {
-					return new ConstantBooleanType(false);
-				}
-				continue;
-			}
-
-			if (!isset($j)) {
-				throw new ShouldNotHappenException();
-			}
-
-			$rightOptional = $rightType->isOptionalKey($j);
-			if ($rightOptional) {
-				$resultType = new BooleanType();
-				if ($leftOptional) {
-					continue;
-				}
-			}
-
-			$leftIdenticalToRight = $valueComparisonCallback($leftValueTypes[$i], $rightValueTypes[$j]);
-			if ($leftIdenticalToRight instanceof ConstantBooleanType && !$leftIdenticalToRight->getValue()) {
-				return new ConstantBooleanType(false);
-			}
-			$resultType = TypeCombinator::union($resultType, $leftIdenticalToRight);
-		}
-
-		foreach (array_keys($rightKeyTypes) as $j) {
-			if (!$rightType->isOptionalKey($j)) {
-				return new ConstantBooleanType(false);
-			}
-			$resultType = new BooleanType();
-		}
-
-		return $resultType->toBoolean();
-	}
-
-	private function resolveConcatType(Expr\BinaryOp\Concat|Expr\AssignOp\Concat $node): Type
-	{
-		if ($node instanceof Node\Expr\AssignOp) {
-			$left = $node->var;
-			$right = $node->expr;
-		} else {
-			$left = $node->left;
-			$right = $node->right;
-		}
-
-		$leftStringType = $this->getType($left)->toString();
-		$rightStringType = $this->getType($right)->toString();
-		if (TypeCombinator::union(
-			$leftStringType,
-			$rightStringType,
-		) instanceof ErrorType) {
-			return new ErrorType();
-		}
-
-		if ($leftStringType instanceof ConstantStringType && $leftStringType->getValue() === '') {
-			return $rightStringType;
-		}
-
-		if ($rightStringType instanceof ConstantStringType && $rightStringType->getValue() === '') {
-			return $leftStringType;
-		}
-
-		if ($leftStringType instanceof ConstantStringType && $rightStringType instanceof ConstantStringType) {
-			return $leftStringType->append($rightStringType);
-		}
-
-		// we limit the number of union-types for performance reasons
-		if ($leftStringType instanceof UnionType && count($leftStringType->getTypes()) <= 16 && $rightStringType instanceof ConstantStringType) {
-			$constantStrings = TypeUtils::getConstantStrings($leftStringType);
-			if (count($constantStrings) > 0) {
-				$strings = [];
-				foreach ($constantStrings as $constantString) {
-					if ($constantString->getValue() === '') {
-						$strings[] = $rightStringType;
-
-						continue;
-					}
-					$strings[] = $constantString->append($rightStringType);
-				}
-				return TypeCombinator::union(...$strings);
-			}
-		}
-		if ($rightStringType instanceof UnionType && count($rightStringType->getTypes()) <= 16 && $leftStringType instanceof ConstantStringType) {
-			$constantStrings = TypeUtils::getConstantStrings($rightStringType);
-			if (count($constantStrings) > 0) {
-				$strings = [];
-				foreach ($constantStrings as $constantString) {
-					if ($constantString->getValue() === '') {
-						$strings[] = $leftStringType;
-
-						continue;
-					}
-					$strings[] = $leftStringType->append($constantString);
-				}
-				return TypeCombinator::union(...$strings);
-			}
-		}
-
-		$accessoryTypes = [];
-		if ($leftStringType->isNonEmptyString()->or($rightStringType->isNonEmptyString())->yes()) {
-			$accessoryTypes[] = new AccessoryNonEmptyStringType();
-		}
-
-		if ($leftStringType->isLiteralString()->and($rightStringType->isLiteralString())->yes()) {
-			$accessoryTypes[] = new AccessoryLiteralStringType();
-		}
-
-		if (count($accessoryTypes) > 0) {
-			$accessoryTypes[] = new StringType();
-			return new IntersectionType($accessoryTypes);
-		}
-
-		return new StringType();
-	}
-
 	private function getNullsafeShortCircuitingType(Expr $expr, Type $type): Type
 	{
 		if ($expr instanceof Expr\NullsafePropertyFetch || $expr instanceof Expr\NullsafeMethodCall) {
@@ -2682,7 +2156,6 @@ class MutatingScope implements Scope
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
 			$this->dynamicReturnTypeExtensionRegistry,
-			$this->operatorTypeSpecifyingExtensionRegistry,
 			$this->printer,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,
@@ -2788,104 +2261,6 @@ class MutatingScope implements Scope
 		}
 
 		return $offsetAccessibleType->getOffsetValueType($offsetType);
-	}
-
-	private function calculateFromScalars(Expr $node, ConstantScalarType $leftType, ConstantScalarType $rightType): Type
-	{
-		if ($leftType instanceof StringType && $rightType instanceof StringType) {
-			/** @var string $leftValue */
-			$leftValue = $leftType->getValue();
-			/** @var string $rightValue */
-			$rightValue = $rightType->getValue();
-
-			if ($node instanceof Expr\BinaryOp\BitwiseAnd || $node instanceof Expr\AssignOp\BitwiseAnd) {
-				return $this->getTypeFromValue($leftValue & $rightValue);
-			}
-
-			if ($node instanceof Expr\BinaryOp\BitwiseOr || $node instanceof Expr\AssignOp\BitwiseOr) {
-				return $this->getTypeFromValue($leftValue | $rightValue);
-			}
-
-			if ($node instanceof Expr\BinaryOp\BitwiseXor || $node instanceof Expr\AssignOp\BitwiseXor) {
-				return $this->getTypeFromValue($leftValue ^ $rightValue);
-			}
-		}
-
-		$leftValue = $leftType->getValue();
-		$rightValue = $rightType->getValue();
-
-		if ($node instanceof Node\Expr\BinaryOp\Spaceship) {
-			return $this->getTypeFromValue($leftValue <=> $rightValue);
-		}
-
-		$leftNumberType = $leftType->toNumber();
-		$rightNumberType = $rightType->toNumber();
-		if (TypeCombinator::union($leftNumberType, $rightNumberType) instanceof ErrorType) {
-			return new ErrorType();
-		}
-
-		if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
-			throw new ShouldNotHappenException();
-		}
-
-		/** @var float|int $leftNumberValue */
-		$leftNumberValue = $leftNumberType->getValue();
-
-		/** @var float|int $rightNumberValue */
-		$rightNumberValue = $rightNumberType->getValue();
-
-		if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {
-			return $this->getTypeFromValue($leftNumberValue + $rightNumberValue);
-		}
-
-		if ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus) {
-			return $this->getTypeFromValue($leftNumberValue - $rightNumberValue);
-		}
-
-		if ($node instanceof Node\Expr\BinaryOp\Mul || $node instanceof Node\Expr\AssignOp\Mul) {
-			return $this->getTypeFromValue($leftNumberValue * $rightNumberValue);
-		}
-
-		if ($node instanceof Node\Expr\BinaryOp\Pow || $node instanceof Node\Expr\AssignOp\Pow) {
-			return $this->getTypeFromValue($leftNumberValue ** $rightNumberValue);
-		}
-
-		if ($node instanceof Node\Expr\BinaryOp\Div || $node instanceof Node\Expr\AssignOp\Div) {
-			if ($rightNumberValue === 0 || $rightNumberValue === 0.0) {
-				return new ErrorType();
-			}
-			return $this->getTypeFromValue($leftNumberValue / $rightNumberValue);
-		}
-
-		if ($node instanceof Node\Expr\BinaryOp\Mod || $node instanceof Node\Expr\AssignOp\Mod) {
-			$rightIntegerValue = (int) $rightNumberValue;
-			if ($rightIntegerValue === 0) {
-				return new ErrorType();
-			}
-			return $this->getTypeFromValue(((int) $leftNumberValue) % $rightIntegerValue);
-		}
-
-		if ($node instanceof Expr\BinaryOp\ShiftLeft || $node instanceof Expr\AssignOp\ShiftLeft) {
-			return $this->getTypeFromValue($leftNumberValue << $rightNumberValue);
-		}
-
-		if ($node instanceof Expr\BinaryOp\ShiftRight || $node instanceof Expr\AssignOp\ShiftRight) {
-			return $this->getTypeFromValue($leftNumberValue >> $rightNumberValue);
-		}
-
-		if ($node instanceof Expr\BinaryOp\BitwiseAnd || $node instanceof Expr\AssignOp\BitwiseAnd) {
-			return $this->getTypeFromValue($leftNumberValue & $rightNumberValue);
-		}
-
-		if ($node instanceof Expr\BinaryOp\BitwiseOr || $node instanceof Expr\AssignOp\BitwiseOr) {
-			return $this->getTypeFromValue($leftNumberValue | $rightNumberValue);
-		}
-
-		if ($node instanceof Expr\BinaryOp\BitwiseXor || $node instanceof Expr\AssignOp\BitwiseXor) {
-			return $this->getTypeFromValue($leftNumberValue ^ $rightNumberValue);
-		}
-
-		return new MixedType();
 	}
 
 	private function resolveExactName(Name $name): ?string
@@ -5783,190 +5158,6 @@ class MutatingScope implements Scope
 		}
 
 		return $propertyReflection->getReadableType();
-	}
-
-	/**
-	 * @param ConstantIntegerType|IntegerRangeType $range
-	 * @param Node\Expr\AssignOp\Div|Node\Expr\AssignOp\Minus|Node\Expr\AssignOp\Mul|Node\Expr\AssignOp\Plus|Node\Expr\BinaryOp\Div|Node\Expr\BinaryOp\Minus|Node\Expr\BinaryOp\Mul|Node\Expr\BinaryOp\Plus $node
-	 * @param IntegerRangeType|ConstantIntegerType|UnionType $operand
-	 */
-	private function integerRangeMath(Type $range, Expr $node, Type $operand): Type
-	{
-		if ($range instanceof IntegerRangeType) {
-			$rangeMin = $range->getMin();
-			$rangeMax = $range->getMax();
-		} else {
-			$rangeMin = $range->getValue();
-			$rangeMax = $rangeMin;
-		}
-
-		if ($operand instanceof UnionType) {
-
-			$unionParts = [];
-
-			foreach ($operand->getTypes() as $type) {
-				if ($type instanceof IntegerRangeType || $type instanceof ConstantIntegerType) {
-					$unionParts[] = $this->integerRangeMath($range, $node, $type);
-				} else {
-					$unionParts[] = $type->toNumber();
-				}
-			}
-
-			$union = TypeCombinator::union(...$unionParts);
-			if ($operand instanceof BenevolentUnionType) {
-				return TypeUtils::toBenevolentUnion($union)->toNumber();
-			}
-
-			return $union->toNumber();
-		}
-
-		if ($node instanceof Node\Expr\BinaryOp\Plus || $node instanceof Node\Expr\AssignOp\Plus) {
-			if ($operand instanceof ConstantIntegerType) {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null ? $rangeMin + $operand->getValue() : null;
-
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null ? $rangeMax + $operand->getValue() : null;
-			} else {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null && $operand->getMin() !== null ? $rangeMin + $operand->getMin() : null;
-
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null && $operand->getMax() !== null ? $rangeMax + $operand->getMax() : null;
-			}
-		} elseif ($node instanceof Node\Expr\BinaryOp\Minus || $node instanceof Node\Expr\AssignOp\Minus) {
-			if ($operand instanceof ConstantIntegerType) {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null ? $rangeMin - $operand->getValue() : null;
-
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null ? $rangeMax - $operand->getValue() : null;
-			} else {
-				if ($rangeMin === $rangeMax && $rangeMin !== null
-					&& ($operand->getMin() === null || $operand->getMax() === null)) {
-					$min = null;
-					$max = $rangeMin;
-				} else {
-					if ($operand->getMin() === null) {
-						$min = null;
-					} elseif ($rangeMin !== null) {
-						if ($operand->getMax() !== null) {
-							/** @var int|float $min */
-							$min = $rangeMin - $operand->getMax();
-						} else {
-							/** @var int|float $min */
-							$min = $rangeMin - $operand->getMin();
-						}
-					} else {
-						$min = null;
-					}
-
-					if ($operand->getMax() === null) {
-						$min = null;
-						$max = null;
-					} elseif ($rangeMax !== null) {
-						if ($rangeMin !== null && $operand->getMin() === null) {
-							/** @var int|float $min */
-							$min = $rangeMin - $operand->getMax();
-							$max = null;
-						} elseif ($operand->getMin() !== null) {
-							/** @var int|float $max */
-							$max = $rangeMax - $operand->getMin();
-						} else {
-							$max = null;
-						}
-					} else {
-						$max = null;
-					}
-
-					if ($min !== null && $max !== null && $min > $max) {
-						[$min, $max] = [$max, $min];
-					}
-				}
-			}
-		} elseif ($node instanceof Node\Expr\BinaryOp\Mul || $node instanceof Node\Expr\AssignOp\Mul) {
-			if ($operand instanceof ConstantIntegerType) {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null ? $rangeMin * $operand->getValue() : null;
-
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null ? $rangeMax * $operand->getValue() : null;
-			} else {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null && $operand->getMin() !== null ? $rangeMin * $operand->getMin() : null;
-
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null && $operand->getMax() !== null ? $rangeMax * $operand->getMax() : null;
-			}
-
-			if ($min !== null && $max !== null && $min > $max) {
-				[$min, $max] = [$max, $min];
-			}
-
-			// invert maximas on multiplication with negative constants
-			if ((($range instanceof ConstantIntegerType && $range->getValue() < 0)
-				|| ($operand instanceof ConstantIntegerType && $operand->getValue() < 0))
-				&& ($min === null || $max === null)) {
-				[$min, $max] = [$max, $min];
-			}
-
-		} else {
-			if ($operand instanceof ConstantIntegerType) {
-				$min = $rangeMin !== null && $operand->getValue() !== 0 ? $rangeMin / $operand->getValue() : null;
-				$max = $rangeMax !== null && $operand->getValue() !== 0 ? $rangeMax / $operand->getValue() : null;
-			} else {
-				$min = $rangeMin !== null && $operand->getMin() !== null && $operand->getMin() !== 0 ? $rangeMin / $operand->getMin() : null;
-				$max = $rangeMax !== null && $operand->getMax() !== null && $operand->getMax() !== 0 ? $rangeMax / $operand->getMax() : null;
-			}
-
-			if ($range instanceof IntegerRangeType && $operand instanceof IntegerRangeType) {
-				if ($rangeMax === null && $operand->getMax() === null) {
-					$min = 0;
-				} elseif ($rangeMin === null && $operand->getMin() === null) {
-					$min = null;
-					$max = null;
-				}
-			}
-
-			if ($operand instanceof IntegerRangeType
-				&& ($operand->getMin() === null || $operand->getMax() === null)
-				|| ($rangeMin === null || $rangeMax === null)
-				|| is_float($min) || is_float($max)
-			) {
-				if (is_float($min)) {
-					$min = (int) $min;
-				}
-				if (is_float($max)) {
-					$max = (int) $max;
-				}
-
-				if ($min !== null && $max !== null && $min > $max) {
-					[$min, $max] = [$max, $min];
-				}
-
-				// invert maximas on division with negative constants
-				if ((($range instanceof ConstantIntegerType && $range->getValue() < 0)
-						|| ($operand instanceof ConstantIntegerType && $operand->getValue() < 0))
-					&& ($min === null || $max === null)) {
-					[$min, $max] = [$max, $min];
-				}
-
-				if ($min === null && $max === null) {
-					return new BenevolentUnionType([new IntegerType(), new FloatType()]);
-				}
-
-				return TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType());
-			}
-		}
-
-		if (is_float($min)) {
-			$min = null;
-		}
-		if (is_float($max)) {
-			$max = null;
-		}
-
-		return IntegerRangeType::fromInterval($min, $max);
 	}
 
 }

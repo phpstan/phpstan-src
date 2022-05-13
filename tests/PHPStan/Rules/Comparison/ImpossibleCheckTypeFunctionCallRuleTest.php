@@ -52,6 +52,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					31,
 				],
 				[
+					'Call to function is_a() with arguments \'Foo\', \'Throwable\' and true will always evaluate to false.',
+					35,
+				],
+				[
 					'Call to function is_callable() with array<int> will always evaluate to false.',
 					44,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
@@ -247,6 +251,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				[
 					'Call to function is_int() with string will always evaluate to false.',
 					31,
+				],
+				[
+					'Call to function is_a() with arguments \'Foo\', \'Throwable\' and true will always evaluate to false.',
+					35,
 				],
 				[
 					'Call to function is_callable() with array<int> will always evaluate to false.',

@@ -32,7 +32,7 @@ class Foo
 
 		}
 		$className = 'Foo';
-		if (is_a($className, \Throwable::class, true)) { // should be fine
+		if (is_a($className, \Throwable::class, true)) { // always false
 
 		}
 		if (is_array($callable)) {

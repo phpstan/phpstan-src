@@ -1082,7 +1082,7 @@ class ClassReflection
 			}
 
 			if (!$flagType instanceof ConstantIntegerType) {
-				throw new ShouldNotHappenException();
+				return null;
 			}
 
 			return $flagType->getValue();

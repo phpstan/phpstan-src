@@ -210,22 +210,7 @@ class InitializerExprTypeResolver
 		}
 
 		if ($expr instanceof Expr\BitwiseNot) {
-			$exprType = $this->getType($expr->expr, $context);
-			return TypeTraverser::map($exprType, static function (Type $type, callable $traverse): Type {
-				if ($type instanceof UnionType || $type instanceof IntersectionType) {
-					return $traverse($type);
-				}
-				if ($type instanceof ConstantStringType) {
-					return new ConstantStringType(~$type->getValue());
-				}
-				if ($type instanceof StringType) {
-					return new StringType();
-				}
-				if ($type instanceof IntegerType || $type instanceof FloatType) {
-					return new IntegerType(); //no const types here, result depends on PHP_INT_SIZE
-				}
-				return new ErrorType();
-			});
+			return $this->getBitwiseNotType($expr->expr, fn (Expr $expr): Type => $this->getType($expr, $context));
 		}
 
 		// todo
@@ -623,6 +608,29 @@ class InitializerExprTypeResolver
 		}
 
 		return $type;
+	}
+
+	/**
+	 * @param callable(Expr): Type $getTypeCallback
+	 */
+	public function getBitwiseNotType(Expr $expr, callable $getTypeCallback): Type
+	{
+		$exprType = $getTypeCallback($expr);
+		return TypeTraverser::map($exprType, static function (Type $type, callable $traverse): Type {
+			if ($type instanceof UnionType || $type instanceof IntersectionType) {
+				return $traverse($type);
+			}
+			if ($type instanceof ConstantStringType) {
+				return new ConstantStringType(~$type->getValue());
+			}
+			if ($type instanceof StringType) {
+				return new StringType();
+			}
+			if ($type instanceof IntegerType || $type instanceof FloatType) {
+				return new IntegerType(); //no const types here, result depends on PHP_INT_SIZE
+			}
+			return new ErrorType();
+		});
 	}
 
 	private function resolveName(Name $name, ?ClassReflection $classReflection): string

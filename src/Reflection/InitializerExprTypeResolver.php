@@ -71,6 +71,7 @@ class InitializerExprTypeResolver
 	{
 	}
 
+	/** @api */
 	public function getType(Expr $expr, InitializerExprContext $context): Type
 	{
 		if ($expr instanceof TypeExpr) {
@@ -616,7 +617,7 @@ class InitializerExprTypeResolver
 		return $constantClassType->getConstant($constantName)->getValueType();
 	}
 
-	public function resolveName(Name $name, ?ClassReflection $classReflection): string
+	private function resolveName(Name $name, ?ClassReflection $classReflection): string
 	{
 		$originalClass = (string) $name;
 		if ($classReflection !== null) {
@@ -635,8 +636,7 @@ class InitializerExprTypeResolver
 		return $originalClass;
 	}
 
-	/** @api */
-	public function resolveTypeByName(Name $name, ?ClassReflection $classReflection): TypeWithClassName
+	private function resolveTypeByName(Name $name, ?ClassReflection $classReflection): TypeWithClassName
 	{
 		if ($name->toLowerString() === 'static' && $classReflection !== null) {
 			return new StaticType($classReflection);

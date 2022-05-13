@@ -124,7 +124,6 @@ use function dirname;
 use function get_class;
 use function in_array;
 use function is_float;
-use function is_int;
 use function is_string;
 use function ltrim;
 use function max;
@@ -1007,32 +1006,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Node\Expr\UnaryMinus) {
-			$type = $this->getType($node->expr)->toNumber();
-			$scalarValues = TypeUtils::getConstantScalars($type);
-
-			if (count($scalarValues) > 0) {
-				$newTypes = [];
-				foreach ($scalarValues as $scalarValue) {
-					if ($scalarValue instanceof ConstantIntegerType) {
-						/** @var int|float $newValue */
-						$newValue = -$scalarValue->getValue();
-						if (!is_int($newValue)) {
-							return $type;
-						}
-						$newTypes[] = new ConstantIntegerType($newValue);
-					} elseif ($scalarValue instanceof ConstantFloatType) {
-						$newTypes[] = new ConstantFloatType(-$scalarValue->getValue());
-					}
-				}
-
-				return TypeCombinator::union(...$newTypes);
-			}
-
-			if ($type instanceof IntegerRangeType) {
-				return $this->resolveType(new Node\Expr\BinaryOp\Mul($node->expr, new LNumber(-1)));
-			}
-
-			return $type;
+			return $this->initializerExprTypeResolver->getUnaryMinusType($node->expr, fn (Expr $expr): Type => $this->getType($expr));
 		}
 
 		if ($node instanceof Expr\BinaryOp\Concat || $node instanceof Expr\AssignOp\Concat) {

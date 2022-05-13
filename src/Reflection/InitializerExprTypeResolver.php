@@ -137,32 +137,7 @@ class InitializerExprTypeResolver
 			return $this->getType($expr->expr, $context)->toNumber();
 		}
 		if ($expr instanceof Expr\UnaryMinus) {
-			$type = $this->getType($expr->expr, $context)->toNumber();
-			$scalarValues = TypeUtils::getConstantScalars($type);
-
-			if (count($scalarValues) > 0) {
-				$newTypes = [];
-				foreach ($scalarValues as $scalarValue) {
-					if ($scalarValue instanceof ConstantIntegerType) {
-						/** @var int|float $newValue */
-						$newValue = -$scalarValue->getValue();
-						if (!is_int($newValue)) {
-							return $type;
-						}
-						$newTypes[] = new ConstantIntegerType($newValue);
-					} elseif ($scalarValue instanceof ConstantFloatType) {
-						$newTypes[] = new ConstantFloatType(-$scalarValue->getValue());
-					}
-				}
-
-				return TypeCombinator::union(...$newTypes);
-			}
-
-			if ($type instanceof IntegerRangeType) {
-				return $this->getType(new Expr\BinaryOp\Mul($expr->expr, new LNumber(-1)), $context);
-			}
-
-			return $type;
+			return $this->getUnaryMinusType($expr->expr, fn (Expr $expr): Type => $this->getType($expr, $context));
 		}
 		if ($expr instanceof Expr\BinaryOp\Concat) {
 			return $this->resolveConcatType($expr, $context);
@@ -615,6 +590,39 @@ class InitializerExprTypeResolver
 		}
 
 		return $constantClassType->getConstant($constantName)->getValueType();
+	}
+
+	/**
+	 * @param callable(Expr): Type $getTypeCallback
+	 */
+	public function getUnaryMinusType(Expr $expr, callable $getTypeCallback): Type
+	{
+		$type = $getTypeCallback($expr)->toNumber();
+		$scalarValues = TypeUtils::getConstantScalars($type);
+
+		if (count($scalarValues) > 0) {
+			$newTypes = [];
+			foreach ($scalarValues as $scalarValue) {
+				if ($scalarValue instanceof ConstantIntegerType) {
+					/** @var int|float $newValue */
+					$newValue = -$scalarValue->getValue();
+					if (!is_int($newValue)) {
+						return $type;
+					}
+					$newTypes[] = new ConstantIntegerType($newValue);
+				} elseif ($scalarValue instanceof ConstantFloatType) {
+					$newTypes[] = new ConstantFloatType(-$scalarValue->getValue());
+				}
+			}
+
+			return TypeCombinator::union(...$newTypes);
+		}
+
+		if ($type instanceof IntegerRangeType) {
+			return $getTypeCallback(new Expr\BinaryOp\Mul($expr, new LNumber(-1)));
+		}
+
+		return $type;
 	}
 
 	private function resolveName(Name $name, ?ClassReflection $classReflection): string

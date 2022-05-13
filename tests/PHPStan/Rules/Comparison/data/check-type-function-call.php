@@ -860,3 +860,21 @@ class ArraySearch
 	}
 
 }
+
+class NonFinalSubclassMightImplementInterface {
+	/**
+	 * @param class-string<Foo> $classString
+	 */
+	public function doFoo($classString, Foo $obj): void {
+		if (is_a($classString, \Throwable::class, true)) { // should be fine
+
+		}
+
+		if (is_a($obj, \Throwable::class, true)) { // should be fine
+
+		}
+		if (is_a($obj, \Throwable::class)) { // should be fine
+
+		}
+	}
+}

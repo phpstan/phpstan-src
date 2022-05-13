@@ -142,3 +142,27 @@ trait TraitAsAttribute
 #[TraitAsAttribute]
 class ClassWithTraitAttribute
 {}
+
+#[\Attribute(flags: \Attribute::TARGET_CLASS)]
+class FlagsAttributeWithClassTarget
+{
+
+}
+
+#[\Attribute(flags: \Attribute::TARGET_PROPERTY)]
+class FlagsAttributeWithPropertyTarget
+{
+
+}
+
+#[FlagsAttributeWithClassTarget]
+class TestFlagsAttribute
+{
+
+}
+
+#[FlagsAttributeWithPropertyTarget]
+class TestWrongFlagsAttribute
+{
+
+}

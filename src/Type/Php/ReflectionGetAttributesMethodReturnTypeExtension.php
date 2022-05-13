@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
@@ -34,13 +33,14 @@ class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodR
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool
 	{
-		return $methodReflection->getName() === 'getAttributes';
+		return $methodReflection->getDeclaringClass()->getName() === $this->className
+			&& $methodReflection->getName() === 'getAttributes';
 	}
 
-	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
+	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
 		if (count($methodCall->getArgs()) === 0) {
-			return $this->getDefaultReturnType($scope, $methodCall, $methodReflection);
+			return null;
 		}
 		$argType = $scope->getType($methodCall->getArgs()[0]->value);
 
@@ -49,19 +49,10 @@ class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicMethodR
 		} elseif ($argType instanceof GenericClassStringType) {
 			$classType = $argType->getGenericType();
 		} else {
-			return $this->getDefaultReturnType($scope, $methodCall, $methodReflection);
+			return null;
 		}
 
 		return new ArrayType(new MixedType(), new GenericObjectType(ReflectionAttribute::class, [$classType]));
-	}
-
-	private function getDefaultReturnType(Scope $scope, MethodCall $methodCall, MethodReflection $methodReflection): Type
-	{
-		return ParametersAcceptorSelector::selectFromArgs(
-			$scope,
-			$methodCall->getArgs(),
-			$methodReflection->getVariants(),
-		)->getReturnType();
 	}
 
 }

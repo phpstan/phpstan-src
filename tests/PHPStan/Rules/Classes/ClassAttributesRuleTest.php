@@ -101,6 +101,10 @@ class ClassAttributesRuleTest extends RuleTestCase
 				'Trait ClassAttributes\TraitAsAttribute is not an Attribute class.',
 				142,
 			],
+			[
+				'Attribute class ClassAttributes\FlagsAttributeWithPropertyTarget does not have the class target.',
+				164,
+			],
 		]);
 	}
 

@@ -3,6 +3,11 @@
 namespace PHPStan\Reflection;
 
 use Attribute;
+use PhpParser\Node\Arg;
+use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Name\FullyQualified;
+use PHPStan\Analyser\NamedArgumentsHelper;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
@@ -23,6 +28,7 @@ use PHPStan\Reflection\Php\PhpClassReflectionExtension;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\CircularTypeAliasDefinitionException;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -48,6 +54,7 @@ use function implode;
 use function in_array;
 use function is_bool;
 use function is_file;
+use function is_int;
 use function reset;
 use function sprintf;
 use function strtolower;
@@ -1039,10 +1046,10 @@ class ClassReflection
 
 	public function isAttributeClass(): bool
 	{
-		return $this->findAttributeClass() !== null;
+		return $this->findAttributeFlags() !== null;
 	}
 
-	private function findAttributeClass(): ?Attribute
+	private function findAttributeFlags(): ?int
 	{
 		if ($this->isInterface() || $this->isTrait() || $this->isEnum()) {
 			return null;
@@ -1050,8 +1057,35 @@ class ClassReflection
 
 		$nativeAttributes = $this->reflection->getAttributes(Attribute::class);
 		if (count($nativeAttributes) === 1) {
-			/** @var Attribute */
-			return $nativeAttributes[0]->newInstance();
+			if (!$this->reflectionProvider->hasClass(Attribute::class)) {
+				return null;
+			}
+
+			$attributeClass = $this->reflectionProvider->getClass(Attribute::class);
+			$arguments = [];
+			foreach ($nativeAttributes[0]->getArgumentsExpressions() as $i => $expression) {
+				$arguments[] = new Arg($expression, false, false, [], is_int($i) ? null : new Identifier($i));
+			}
+
+			$attributeConstructor = $attributeClass->getConstructor();
+			$attributeConstructorVariant = ParametersAcceptorSelector::selectSingle($attributeConstructor->getVariants());
+
+			if (count($arguments) === 0) {
+				$flagType = $attributeConstructorVariant->getParameters()[0]->getDefaultValue();
+			} else {
+				$staticCall = NamedArgumentsHelper::reorderStaticCallArguments(
+					$attributeConstructorVariant,
+					new StaticCall(new FullyQualified(Attribute::class), $attributeConstructor->getName(), $arguments),
+				);
+				$flagExpr = $staticCall->getArgs()[0]->value;
+				$flagType = $this->initializerExprTypeResolver->getType($flagExpr, InitializerExprContext::fromClassReflection($this));
+			}
+
+			if (!$flagType instanceof ConstantIntegerType) {
+				throw new ShouldNotHappenException();
+			}
+
+			return $flagType->getValue();
 		}
 
 		return null;
@@ -1059,12 +1093,12 @@ class ClassReflection
 
 	public function getAttributeClassFlags(): int
 	{
-		$attribute = $this->findAttributeClass();
-		if ($attribute === null) {
+		$flags = $this->findAttributeFlags();
+		if ($flags === null) {
 			throw new ShouldNotHappenException();
 		}
 
-		return $attribute->flags;
+		return $flags;
 	}
 
 	public function getTemplateTypeMap(): TemplateTypeMap

@@ -62,8 +62,6 @@ use function strtolower;
 class InitializerExprTypeResolver
 {
 
-	private ?ReflectionProvider $reflectionProvider = null;
-
 	public function __construct(
 		private ConstantResolver $constantResolver,
 		private ReflectionProviderProvider $reflectionProviderProvider,
@@ -131,135 +129,7 @@ class InitializerExprTypeResolver
 			return $var->getOffsetValueType($dim);
 		}
 		if ($expr instanceof Expr\ClassConstFetch && $expr->name instanceof Identifier) {
-			$constantName = $expr->name->name;
-			$isObject = false;
-			if ($expr->class instanceof Name) {
-				$constantClass = (string) $expr->class;
-				$constantClassType = new ObjectType($constantClass);
-				$namesToResolve = [
-					'self',
-					'parent',
-				];
-				$classReflection = $context->getClass();
-				if ($classReflection !== null) {
-					if ($classReflection->isFinal()) {
-						$namesToResolve[] = 'static';
-					} elseif (strtolower($constantClass) === 'static') {
-						if (strtolower($constantName) === 'class') {
-							return new GenericClassStringType(new StaticType($classReflection));
-						}
-
-						$namesToResolve[] = 'static';
-						$isObject = true;
-					}
-				}
-				if (in_array(strtolower($constantClass), $namesToResolve, true)) {
-					$resolvedName = $this->resolveName($expr->class, $context);
-					if ($resolvedName === 'parent' && strtolower($constantName) === 'class') {
-						return new ClassStringType();
-					}
-					$constantClassType = $this->resolveTypeByName($expr->class, $context);
-				}
-
-				if (strtolower($constantName) === 'class') {
-					return new ConstantStringType($constantClassType->getClassName(), true);
-				}
-			} else {
-				$constantClassType = $this->getType($expr->class, $context);
-				$isObject = true;
-			}
-
-			if (strtolower($constantName) === 'class') {
-				return TypeTraverser::map(
-					$constantClassType,
-					static function (Type $type, callable $traverse): Type {
-						if ($type instanceof UnionType || $type instanceof IntersectionType) {
-							return $traverse($type);
-						}
-
-						if ($type instanceof NullType) {
-							return $type;
-						}
-
-						if ($type instanceof EnumCaseObjectType) {
-							return new GenericClassStringType(new ObjectType($type->getClassName()));
-						}
-
-						if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {
-							if ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
-								return new GenericClassStringType($type);
-							}
-
-							return new GenericClassStringType($type);
-						} elseif ($type instanceof TypeWithClassName) {
-							return new GenericClassStringType($type);
-						} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
-							return new ClassStringType();
-						}
-
-						return new ErrorType();
-					},
-				);
-			}
-
-			$referencedClasses = TypeUtils::getDirectClassNames($constantClassType);
-			$types = [];
-			foreach ($referencedClasses as $referencedClass) {
-				if (!$this->getReflectionProvider()->hasClass($referencedClass)) {
-					continue;
-				}
-
-				$constantClassReflection = $this->getReflectionProvider()->getClass($referencedClass);
-				if (!$constantClassReflection->hasConstant($constantName)) {
-					continue;
-				}
-
-				if ($constantClassReflection->isEnum() && $constantClassReflection->hasEnumCase($constantName)) {
-					$types[] = new EnumCaseObjectType($constantClassReflection->getName(), $constantName);
-					continue;
-				}
-
-				$constantReflection = $constantClassReflection->getConstant($constantName);
-				if (
-					$constantReflection instanceof ClassConstantReflection
-					&& $isObject
-					&& !$constantClassReflection->isFinal()
-					&& !$constantReflection->hasPhpDocType()
-				) {
-					return new MixedType();
-				}
-
-				if (
-					$isObject
-					&& (
-						!$constantReflection instanceof ClassConstantReflection
-						|| !$constantClassReflection->isFinal()
-					)
-				) {
-					$constantType = $constantReflection->getValueType();
-				} else {
-					$constantType = $this->getType(
-						$constantReflection->getValueExpr(),
-						InitializerExprContext::fromClassReflection($constantReflection->getDeclaringClass()),
-					);
-				}
-
-				$constantType = $this->constantResolver->resolveConstantType(
-					sprintf('%s::%s', $constantClassReflection->getName(), $constantName),
-					$constantType,
-				);
-				$types[] = $constantType;
-			}
-
-			if (count($types) > 0) {
-				return TypeCombinator::union(...$types);
-			}
-
-			if (!$constantClassType->hasConstant($constantName)->yes()) {
-				return new ErrorType();
-			}
-
-			return $constantClassType->getConstant($constantName)->getValueType();
+			return $this->getClassConstFetchType($expr->class, $expr->name->toString(), $context->getClass(), fn (Expr $expr): Type => $this->getType($expr, $context));
 		}
 		if ($expr instanceof Expr\UnaryPlus) {
 			return $this->getType($expr->expr, $context)->toNumber();
@@ -590,10 +460,140 @@ class InitializerExprTypeResolver
 		return $arrayBuilder->getArray();
 	}
 
-	public function resolveName(Name $name, InitializerExprContext $context): string
+	/**
+	 * @param callable(Expr): Type $getTypeCallback
+	 */
+	public function getClassConstFetchType(Name|Expr $class, string $constantName, ?ClassReflection $classReflection, callable $getTypeCallback): Type
+	{
+		$isObject = false;
+		if ($class instanceof Name) {
+			$constantClass = (string) $class;
+			$constantClassType = new ObjectType($constantClass);
+			$namesToResolve = [
+				'self',
+				'parent',
+			];
+			if ($classReflection !== null) {
+				if ($classReflection->isFinal()) {
+					$namesToResolve[] = 'static';
+				} elseif (strtolower($constantClass) === 'static') {
+					if (strtolower($constantName) === 'class') {
+						return new GenericClassStringType(new StaticType($classReflection));
+					}
+
+					$namesToResolve[] = 'static';
+					$isObject = true;
+				}
+			}
+			if (in_array(strtolower($constantClass), $namesToResolve, true)) {
+				$resolvedName = $this->resolveName($class, $classReflection);
+				if ($resolvedName === 'parent' && strtolower($constantName) === 'class') {
+					return new ClassStringType();
+				}
+				$constantClassType = $this->resolveTypeByName($class, $classReflection);
+			}
+
+			if (strtolower($constantName) === 'class') {
+				return new ConstantStringType($constantClassType->getClassName(), true);
+			}
+		} else {
+			$constantClassType = $getTypeCallback($class);
+			$isObject = true;
+		}
+
+		if (strtolower($constantName) === 'class') {
+			return TypeTraverser::map(
+				$constantClassType,
+				static function (Type $type, callable $traverse): Type {
+					if ($type instanceof UnionType || $type instanceof IntersectionType) {
+						return $traverse($type);
+					}
+
+					if ($type instanceof NullType) {
+						return $type;
+					}
+
+					if ($type instanceof EnumCaseObjectType) {
+						return new GenericClassStringType(new ObjectType($type->getClassName()));
+					}
+
+					if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {
+						if ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
+							return new GenericClassStringType($type);
+						}
+
+						return new GenericClassStringType($type);
+					} elseif ($type instanceof TypeWithClassName) {
+						return new GenericClassStringType($type);
+					} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
+						return new ClassStringType();
+					}
+
+					return new ErrorType();
+				},
+			);
+		}
+
+		$referencedClasses = TypeUtils::getDirectClassNames($constantClassType);
+		$types = [];
+		foreach ($referencedClasses as $referencedClass) {
+			if (!$this->getReflectionProvider()->hasClass($referencedClass)) {
+				continue;
+			}
+
+			$constantClassReflection = $this->getReflectionProvider()->getClass($referencedClass);
+			if (!$constantClassReflection->hasConstant($constantName)) {
+				continue;
+			}
+
+			if ($constantClassReflection->isEnum() && $constantClassReflection->hasEnumCase($constantName)) {
+				$types[] = new EnumCaseObjectType($constantClassReflection->getName(), $constantName);
+				continue;
+			}
+
+			$constantReflection = $constantClassReflection->getConstant($constantName);
+			if (
+				$constantReflection instanceof ClassConstantReflection
+				&& $isObject
+				&& !$constantClassReflection->isFinal()
+				&& !$constantReflection->hasPhpDocType()
+			) {
+				return new MixedType();
+			}
+
+			if (
+				$isObject
+				&& (
+					!$constantReflection instanceof ClassConstantReflection
+					|| !$constantClassReflection->isFinal()
+				)
+			) {
+				$constantType = $constantReflection->getValueType();
+			} else {
+				$constantType = $this->getType($constantReflection->getValueExpr(), InitializerExprContext::fromClassReflection($constantReflection->getDeclaringClass()));
+			}
+
+			$constantType = $this->constantResolver->resolveConstantType(
+				sprintf('%s::%s', $constantClassReflection->getName(), $constantName),
+				$constantType,
+			);
+			$types[] = $constantType;
+		}
+
+		if (count($types) > 0) {
+			return TypeCombinator::union(...$types);
+		}
+
+		if (!$constantClassType->hasConstant($constantName)->yes()) {
+			return new ErrorType();
+		}
+
+		return $constantClassType->getConstant($constantName)->getValueType();
+	}
+
+	public function resolveName(Name $name, ?ClassReflection $classReflection): string
 	{
 		$originalClass = (string) $name;
-		$classReflection = $context->getClass();
 		if ($classReflection !== null) {
 			if (in_array(strtolower($originalClass), [
 				'self',
@@ -611,15 +611,13 @@ class InitializerExprTypeResolver
 	}
 
 	/** @api */
-	public function resolveTypeByName(Name $name, InitializerExprContext $context): TypeWithClassName
+	public function resolveTypeByName(Name $name, ?ClassReflection $classReflection): TypeWithClassName
 	{
-		$classReflection = $context->getClass();
-
 		if ($name->toLowerString() === 'static' && $classReflection !== null) {
 			return new StaticType($classReflection);
 		}
 
-		$originalClass = $this->resolveName($name, $context);
+		$originalClass = $this->resolveName($name, $classReflection);
 		if ($classReflection !== null) {
 			$thisType = new ThisType($classReflection);
 			$ancestor = $thisType->getAncestorWithClassName($originalClass);
@@ -641,7 +639,7 @@ class InitializerExprTypeResolver
 
 	private function getReflectionProvider(): ReflectionProvider
 	{
-		return $this->reflectionProvider ??= $this->reflectionProviderProvider->getReflectionProvider();
+		return $this->reflectionProviderProvider->getReflectionProvider();
 	}
 
 }

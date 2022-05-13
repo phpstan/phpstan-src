@@ -159,10 +159,13 @@ abstract class PHPStanTestCase extends TestCase
 			$dynamicConstantNames = $container->getParameter('dynamicConstantNames');
 		}
 
+		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
+		$constantResolver = new ConstantResolver($reflectionProviderProvider, $dynamicConstantNames);
+
 		return new DirectScopeFactory(
 			MutatingScope::class,
 			$reflectionProvider,
-			$container->getByType(InitializerExprTypeResolver::class),
+			new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID)),
 			$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
 			$container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
 			new Printer(),
@@ -173,7 +176,7 @@ abstract class PHPStanTestCase extends TestCase
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container->getByType(PhpVersion::class),
 			$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
-			new ConstantResolver(new DirectReflectionProviderProvider($reflectionProvider), $dynamicConstantNames),
+			$constantResolver,
 		);
 	}
 

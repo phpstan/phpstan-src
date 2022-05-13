@@ -28,9 +28,7 @@ class Hello {
 
 	public function allFine() {
 		if(is_a(Bar::class, Foo::class, true)) { // no error
-			echo "This will never be true";
-		} else {
-			echo "NO";
+			echo "All good";
 		}
 	}
 }

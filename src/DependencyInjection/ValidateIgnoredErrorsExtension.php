@@ -10,6 +10,7 @@ use Nette\Utils\Strings;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
 use PHPStan\Command\IgnoredRegexValidator;
+use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\DirectTypeNodeResolverExtensionRegistryProvider;
 use PHPStan\PhpDoc\TypeNodeResolver;
@@ -23,6 +24,7 @@ use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Reflection\ReflectionProvider\DummyReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Type\DirectTypeAliasResolverProvider;
+use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
 use function array_keys;
@@ -88,7 +90,14 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 
 					}),
 					$constantResolver,
-					new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID)),
+					new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), new class implements OperatorTypeSpecifyingExtensionRegistryProvider {
+
+						public function getRegistry(): OperatorTypeSpecifyingExtensionRegistry
+						{
+							return new OperatorTypeSpecifyingExtensionRegistry(null, []);
+						}
+
+					}),
 				),
 			),
 		);

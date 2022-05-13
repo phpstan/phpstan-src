@@ -165,9 +165,8 @@ abstract class PHPStanTestCase extends TestCase
 		return new DirectScopeFactory(
 			MutatingScope::class,
 			$reflectionProvider,
-			new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID)),
+			new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), $container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class)),
 			$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
-			$container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class),
 			new Printer(),
 			$typeSpecifier,
 			new PropertyReflectionFinder(),

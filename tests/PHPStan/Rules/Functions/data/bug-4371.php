@@ -11,7 +11,7 @@ class Bar extends Foo {
 
 class Hello {
 	public function foo() {
-		if(is_a(Bar::class, Foo::class)) {
+		if(is_a(Bar::class, Foo::class)) { // should error
 			echo "This will never be true";
 		} else {
 			echo "NO";
@@ -19,7 +19,15 @@ class Hello {
 	}
 
 	public function bar() {
-		if(is_a(Bar::class, Foo::class, false)) {
+		if(is_a(Bar::class, Foo::class, false)) { // should error
+			echo "This will never be true";
+		} else {
+			echo "NO";
+		}
+	}
+
+	public function allFine() {
+		if(is_a(Bar::class, Foo::class, true)) { // no error
 			echo "This will never be true";
 		} else {
 			echo "NO";

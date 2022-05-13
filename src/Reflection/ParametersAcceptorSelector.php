@@ -150,15 +150,23 @@ class ParametersAcceptorSelector
 			}
 		}
 
+		$hasNamedArguments = false;
 		foreach ($args as $i => $arg) {
 			$type = $scope->getType($arg->value);
 			$index = $arg->name !== null ? $arg->name->toString() : $i;
+			if ($arg->name !== null) {
+				$hasNamedArguments = true;
+			}
 			if ($arg->unpack) {
 				$unpack = true;
 				$types[$index] = $type->getIterableValueType();
 			} else {
 				$types[$index] = $type;
 			}
+		}
+
+		if ($hasNamedArguments && count($parametersAcceptors) > 1) {
+			$parametersAcceptors = [$parametersAcceptors[0]];
 		}
 
 		return self::selectFromTypes($types, $parametersAcceptors, $unpack);

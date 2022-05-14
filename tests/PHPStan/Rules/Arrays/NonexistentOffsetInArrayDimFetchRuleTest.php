@@ -112,10 +112,6 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				253,
 			],
 			[
-				'Cannot access offset \'a\' on array{a: 1, b: 1}|(Closure(): void).',
-				258,
-			],
-			[
 				'Offset string does not exist on array<int, string>.',
 				308,
 			],

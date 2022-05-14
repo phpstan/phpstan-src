@@ -15,6 +15,7 @@ use function array_key_exists;
 use function array_keys;
 use function count;
 use function ksort;
+use function max;
 
 final class NamedArgumentsHelper
 {

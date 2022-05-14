@@ -5493,28 +5493,37 @@ class MutatingScope implements Scope
 			$node->getArgs(),
 		);
 
-		foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
-			if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
-				continue;
-			}
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$this,
+			$methodCall->getArgs(),
+			$constructorMethod->getVariants(),
+		);
+		$normalizedMethodCall = NamedArgumentsHelper::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 
-			$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
-				$constructorMethod,
-				$methodCall,
-				$this,
-			);
-			if ($resolvedType === null) {
-				continue;
-			}
+		if ($normalizedMethodCall !== null) {
+			foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
+				if (!$dynamicStaticMethodReturnTypeExtension->isStaticMethodSupported($constructorMethod)) {
+					continue;
+				}
 
-			$resolvedTypes[] = $resolvedType;
+				$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
+					$constructorMethod,
+					$normalizedMethodCall,
+					$this,
+				);
+				if ($resolvedType === null) {
+					continue;
+				}
+
+				$resolvedTypes[] = $resolvedType;
+			}
 		}
 
 		if (count($resolvedTypes) > 0) {
 			return TypeCombinator::union(...$resolvedTypes);
 		}
 
-		$methodResult = $this->getType($methodCall);
+		$methodResult = $this->getType($normalizedMethodCall);
 		if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
 			return $methodResult;
 		}
@@ -5560,7 +5569,7 @@ class MutatingScope implements Scope
 
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$this,
-			$methodCall->getArgs(),
+			$normalizedMethodCall->getArgs(),
 			$constructorMethod->getVariants(),
 		);
 
@@ -5669,6 +5678,20 @@ class MutatingScope implements Scope
 			return null;
 		}
 
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$this,
+			$methodCall->getArgs(),
+			$methodReflection->getVariants(),
+		);
+		if ($methodCall instanceof MethodCall) {
+			$normalizedMethodCall = NamedArgumentsHelper::reorderMethodArguments($parametersAcceptor, $methodCall);
+		} else {
+			$normalizedMethodCall = NamedArgumentsHelper::reorderStaticCallArguments($parametersAcceptor, $methodCall);
+		}
+		if ($normalizedMethodCall === null) {
+			return $parametersAcceptor->getReturnType();
+		}
+
 		$resolvedTypes = [];
 		foreach (TypeUtils::getDirectClassNames($typeWithMethod) as $className) {
 			if ($methodCall instanceof MethodCall) {
@@ -5677,7 +5700,7 @@ class MutatingScope implements Scope
 						continue;
 					}
 
-					$resolvedType = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($methodReflection, $methodCall, $this);
+					$resolvedType = $dynamicMethodReturnTypeExtension->getTypeFromMethodCall($methodReflection, $normalizedMethodCall, $this);
 					if ($resolvedType === null) {
 						continue;
 					}
@@ -5692,7 +5715,7 @@ class MutatingScope implements Scope
 
 					$resolvedType = $dynamicStaticMethodReturnTypeExtension->getTypeFromStaticMethodCall(
 						$methodReflection,
-						$methodCall,
+						$normalizedMethodCall,
 						$this,
 					);
 					if ($resolvedType === null) {
@@ -5708,11 +5731,7 @@ class MutatingScope implements Scope
 			return TypeCombinator::union(...$resolvedTypes);
 		}
 
-		return ParametersAcceptorSelector::selectFromArgs(
-			$this,
-			$methodCall->getArgs(),
-			$methodReflection->getVariants(),
-		)->getReturnType();
+		return $parametersAcceptor->getReturnType();
 	}
 
 	/** @api */

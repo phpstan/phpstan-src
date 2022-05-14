@@ -41,7 +41,7 @@ class ReadOnlyPropertyAssignRefRule implements Rule
 			if (!$scope->canAccessProperty($propertyReflection)) {
 				continue;
 			}
-			if (!$nativeReflection->isReadOnly()) {
+			if (!$nativeReflection->isReadOnly() && !$nativeReflection->isReadOnlyByPhpDoc()) {
 				continue;
 			}
 

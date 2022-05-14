@@ -452,6 +452,17 @@ class PhpDocNodeResolver
 		return false;
 	}
 
+	public function resolveIsReadonly(PhpDocNode $phpDocNode): bool
+	{
+		foreach ($phpDocNode->getTags() as $phpDocTagNode) {
+			if (in_array($phpDocTagNode->name, ['@readonly', '@psalm-readonly', '@phpstan-readonly'], true)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public function resolveHasConsistentConstructor(PhpDocNode $phpDocNode): bool
 	{
 		foreach (['@consistent-constructor', '@phpstan-consistent-constructor', '@psalm-consistent-constructor'] as $tagName) {

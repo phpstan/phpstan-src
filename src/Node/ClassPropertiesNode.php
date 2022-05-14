@@ -96,7 +96,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			if ($property->isStatic()) {
 				continue;
 			}
-			if ($property->getNativeType() === null) {
+			if ($property->getNativeType() === null && !$property->isReadonlyByPhpDoc()) {
 				continue;
 			}
 			if ($property->getDefault() !== null) {

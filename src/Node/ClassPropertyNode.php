@@ -21,6 +21,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		private ?string $phpDoc,
 		private bool $isPromoted,
 		Node $originalNode,
+		private bool $isReadonlyByPhpDoc = false,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());
@@ -75,6 +76,11 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 	public function isReadOnly(): bool
 	{
 		return (bool) ($this->flags & Class_::MODIFIER_READONLY);
+	}
+
+	public function isReadonlyByPhpDoc(): bool
+	{
+		return $this->isReadonlyByPhpDoc;
 	}
 
 	/**

@@ -213,13 +213,14 @@ class PhpClassReflectionExtension
 					$types[] = $value;
 				}
 
-				return new PhpPropertyReflection($declaringClassReflection, null, null, TypeCombinator::union(...$types), $classReflection->getNativeReflection()->getProperty($propertyName), null, false, false);
+				return new PhpPropertyReflection($declaringClassReflection, null, null, TypeCombinator::union(...$types), $classReflection->getNativeReflection()->getProperty($propertyName), null, false, false, false);
 			}
 		}
 
 		$deprecatedDescription = null;
 		$isDeprecated = false;
 		$isInternal = false;
+		$isReadonlyByPhpDoc = false;
 
 		if (
 			$includingAnnotations
@@ -325,6 +326,7 @@ class PhpClassReflectionExtension
 			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
 			$isInternal = $resolvedPhpDoc->isInternal();
+			$isReadonlyByPhpDoc = $resolvedPhpDoc->isReadonly();
 		}
 
 		if (
@@ -365,6 +367,7 @@ class PhpClassReflectionExtension
 			$deprecatedDescription,
 			$isDeprecated,
 			$isInternal,
+			$isReadonlyByPhpDoc,
 		);
 	}
 

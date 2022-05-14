@@ -79,25 +79,9 @@ final class NamedArgumentsHelper
 			return $callArgs;
 		}
 
-		$reorderedArgs = [];
 		$argumentPositions = [];
 		foreach ($signatureParameters as $i => $parameter) {
 			$argumentPositions[$parameter->getName()] = $i;
-
-			if (!$parameter->isOptional()) {
-				continue;
-			}
-
-			$defaultValue = $parameter->getDefaultValue();
-			if ($defaultValue === null) {
-				if (!$parameter->isVariadic()) {
-					throw new ShouldNotHappenException('A optional parameter must have a default value');
-				}
-				$defaultValue = new ConstantArrayType([], []);
-			}
-			$reorderedArgs[$i] = new Arg(
-				new TypeExpr($defaultValue),
-			);
 		}
 
 		foreach ($callArgs as $i => $arg) {
@@ -105,8 +89,37 @@ final class NamedArgumentsHelper
 				// add regular args as is
 				$reorderedArgs[$i] = $arg;
 			} elseif (array_key_exists($arg->name->toString(), $argumentPositions)) {
+				$arg = clone $arg;
+				$argName = $arg->name->toString();
+
+				// turn named arg into regular numeric arg
+				$arg->name = null;
 				// order named args into the position the signature expects them
-				$reorderedArgs[$argumentPositions[$arg->name->toString()]] = $arg;
+				$reorderedArgs[$argumentPositions[$argName]] = $arg;
+			}
+		}
+
+		// fill up all wholes with default values
+		foreach($reorderedArgs as $i => $arg) {
+			for ($j = 0; $j < $i; $j++ ) {
+				if (!array_key_exists($j, $reorderedArgs) && array_key_exists($j, $signatureParameters)) {
+					$parameter = $signatureParameters[$j];
+
+					if (!$parameter->isOptional()) {
+						continue;
+					}
+
+					$defaultValue = $parameter->getDefaultValue();
+					if ($defaultValue === null) {
+						if (!$parameter->isVariadic()) {
+							throw new ShouldNotHappenException('A optional parameter must have a default value');
+						}
+						$defaultValue = new ConstantArrayType([], []);
+					}
+					$reorderedArgs[$j] = new Arg(
+						new TypeExpr($defaultValue),
+					);
+				}
 			}
 		}
 

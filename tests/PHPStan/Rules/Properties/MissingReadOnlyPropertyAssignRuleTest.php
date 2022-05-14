@@ -16,7 +16,6 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 	{
 		return new MissingReadOnlyPropertyAssignRule([
 			'MissingReadOnlyPropertyAssign\\TestCase::setUp',
-			'MissingReadOnlyPropertyAssignPhpDoc\\TestCase::setUp',
 		]);
 	}
 
@@ -54,40 +53,6 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			[
 				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssign\AssignOp::$bar.',
 				87,
-			],
-		]);
-	}
-
-	public function testRulePhpDoc(): void
-	{
-		$this->analyse([__DIR__ . '/data/missing-readonly-property-assign-phpdoc.php'], [
-			[
-				'Class MissingReadOnlyPropertyAssignPhpDoc\Foo has an uninitialized readonly property $unassigned. Assign it in the constructor.',
-				24,
-			],
-			[
-				'Class MissingReadOnlyPropertyAssignPhpDoc\Foo has an uninitialized readonly property $unassigned2. Assign it in the constructor.',
-				30,
-			],
-			[
-				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssignPhpDoc\Foo::$readBeforeAssigned.',
-				54,
-			],
-			[
-				'Readonly property MissingReadOnlyPropertyAssignPhpDoc\Foo::$doubleAssigned is already assigned.',
-				58,
-			],
-			[
-				'Class MissingReadOnlyPropertyAssignPhpDoc\BarDoubleAssignInSetter has an uninitialized readonly property $foo. Assign it in the constructor.',
-				78,
-			],
-			[
-				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssignPhpDoc\AssignOp::$foo.',
-				122,
-			],
-			[
-				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssignPhpDoc\AssignOp::$bar.',
-				124,
 			],
 		]);
 	}

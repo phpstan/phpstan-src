@@ -77,27 +77,4 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/read-only-property.php'], $errors);
 	}
 
-	public function dataRulePhpDoc(): array
-	{
-		return [
-			[70000, []],
-			[70100, []],
-			[70200, []],
-			[70300, []],
-			[70400, []],
-			[80000, []],
-			[80100, []],
-		];
-	}
-
-	/**
-	 * @dataProvider dataRulePhpDoc
-	 * @param mixed[] $errors
-	 */
-	public function testRulePhpDoc(int $phpVersionId, array $errors): void
-	{
-		$this->phpVersionId = $phpVersionId;
-		$this->analyse([__DIR__ . '/data/read-only-property-phpdoc.php'], $errors);
-	}
-
 }

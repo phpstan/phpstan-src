@@ -12,6 +12,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayType;
 use function array_key_exists;
+use function array_keys;
 use function count;
 use function ksort;
 
@@ -21,11 +22,17 @@ final class NamedArgumentsHelper
 	public static function reorderFuncArguments(
 		ParametersAcceptor $parametersAcceptor,
 		FuncCall $functionCall,
-	): FuncCall
+	): ?FuncCall
 	{
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $functionCall);
+
+		if ($reorderedArgs === null) {
+			return null;
+		}
+
 		return new FuncCall(
 			$functionCall->name,
-			self::reorderArgs($parametersAcceptor, $functionCall),
+			$reorderedArgs,
 			$functionCall->getAttributes(),
 		);
 	}
@@ -33,12 +40,18 @@ final class NamedArgumentsHelper
 	public static function reorderMethodArguments(
 		ParametersAcceptor $parametersAcceptor,
 		MethodCall $methodCall,
-	): MethodCall
+	): ?MethodCall
 	{
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $methodCall);
+
+		if ($reorderedArgs === null) {
+			return null;
+		}
+
 		return new MethodCall(
 			$methodCall->var,
 			$methodCall->name,
-			self::reorderArgs($parametersAcceptor, $methodCall),
+			$reorderedArgs,
 			$methodCall->getAttributes(),
 		);
 	}
@@ -46,20 +59,26 @@ final class NamedArgumentsHelper
 	public static function reorderStaticCallArguments(
 		ParametersAcceptor $parametersAcceptor,
 		StaticCall $staticCall,
-	): StaticCall
+	): ?StaticCall
 	{
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $staticCall);
+
+		if ($reorderedArgs === null) {
+			return null;
+		}
+
 		return new StaticCall(
 			$staticCall->class,
 			$staticCall->name,
-			self::reorderArgs($parametersAcceptor, $staticCall),
+			$reorderedArgs,
 			$staticCall->getAttributes(),
 		);
 	}
 
 	/**
-	 * @return array<int, Arg>
+	 * @return ?array<int, Arg>
 	 */
-	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, CallLike $callLike): array
+	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, CallLike $callLike): ?array
 	{
 		$signatureParameters = $parametersAcceptor->getParameters();
 		$callArgs = $callLike->getArgs();
@@ -84,13 +103,14 @@ final class NamedArgumentsHelper
 			$argumentPositions[$parameter->getName()] = $i;
 		}
 
+		$reorderedArgs = [];
 		foreach ($callArgs as $i => $arg) {
 			if ($arg->name === null) {
 				// add regular args as is
 				$reorderedArgs[$i] = $arg;
 			} elseif (array_key_exists($arg->name->toString(), $argumentPositions)) {
-				$arg = clone $arg;
 				$argName = $arg->name->toString();
+				$arg = clone $arg;
 
 				// turn named arg into regular numeric arg
 				$arg->name = null;
@@ -99,28 +119,33 @@ final class NamedArgumentsHelper
 			}
 		}
 
-		// fill up all wholes with default values
-		foreach($reorderedArgs as $i => $arg) {
-			for ($j = 0; $j < $i; $j++ ) {
-				if (!array_key_exists($j, $reorderedArgs) && array_key_exists($j, $signatureParameters)) {
-					$parameter = $signatureParameters[$j];
-
-					if (!$parameter->isOptional()) {
-						continue;
-					}
-
-					$defaultValue = $parameter->getDefaultValue();
-					if ($defaultValue === null) {
-						if (!$parameter->isVariadic()) {
-							throw new ShouldNotHappenException('A optional parameter must have a default value');
-						}
-						$defaultValue = new ConstantArrayType([], []);
-					}
-					$reorderedArgs[$j] = new Arg(
-						new TypeExpr($defaultValue),
-					);
-				}
+		// fill up all wholes with default values until the last given argument
+		for ($j = 0; $j < max(array_keys($reorderedArgs)); $j++) {
+			if (array_key_exists($j, $reorderedArgs)) {
+				continue;
 			}
+			if (!array_key_exists($j, $signatureParameters)) {
+				throw new ShouldNotHappenException('Parameter signatures cannot have wholes');
+			}
+
+			$parameter = $signatureParameters[$j];
+
+			// we can only fill up optional parameters with default values
+			if (!$parameter->isOptional()) {
+				return null;
+			}
+
+			$defaultValue = $parameter->getDefaultValue();
+			if ($defaultValue === null) {
+				if (!$parameter->isVariadic()) {
+					throw new ShouldNotHappenException('A optional parameter must have a default value');
+				}
+				$defaultValue = new ConstantArrayType([], []);
+			}
+
+			$reorderedArgs[$j] = new Arg(
+				new TypeExpr($defaultValue),
+			);
 		}
 
 		ksort($reorderedArgs);

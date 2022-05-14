@@ -48,7 +48,7 @@ class UninitializedPropertyRule implements Rule
 
 		$errors = [];
 		foreach ($properties as $propertyName => $propertyNode) {
-			if ($propertyNode->isReadOnly() || $propertyNode->isReadonlyByPhpDoc()) {
+			if ($propertyNode->isReadOnly()) {
 				continue;
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -59,7 +59,7 @@ class UninitializedPropertyRule implements Rule
 		}
 
 		foreach ($prematureAccess as [$propertyName, $line, $propertyNode]) {
-			if ($propertyNode->isReadOnly() || $propertyNode->isReadonlyByPhpDoc()) {
+			if ($propertyNode->isReadOnly()) {
 				continue;
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf(

@@ -71,17 +71,10 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/uninitialized-property-promoted.php'], []);
 	}
-
 	public function testReadOnly(): void
 	{
 		// reported by a different rule
 		$this->analyse([__DIR__ . '/data/uninitialized-property-readonly.php'], []);
-	}
-
-	public function testReadOnlyPhpDoc(): void
-	{
-		// reported by a different rule
-		$this->analyse([__DIR__ . '/data/uninitialized-property-readonly-phpdoc.php'], []);
 	}
 
 }

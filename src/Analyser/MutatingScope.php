@@ -2200,20 +2200,21 @@ class MutatingScope implements Scope
 				$node->getArgs(),
 				$functionReflection->getVariants(),
 			);
-			$node = NamedArgumentsHelper::reorderFuncArguments($parametersAcceptor, $node);
+			$normalizedNode = NamedArgumentsHelper::reorderFuncArguments($parametersAcceptor, $node);
+			if ($normalizedNode !== null) {
+				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions() as $dynamicFunctionReturnTypeExtension) {
+					if (!$dynamicFunctionReturnTypeExtension->isFunctionSupported($functionReflection)) {
+						continue;
+					}
 
-			foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions() as $dynamicFunctionReturnTypeExtension) {
-				if (!$dynamicFunctionReturnTypeExtension->isFunctionSupported($functionReflection)) {
-					continue;
-				}
-
-				$resolvedType = $dynamicFunctionReturnTypeExtension->getTypeFromFunctionCall(
-					$functionReflection,
-					$node,
-					$this,
-				);
-				if ($resolvedType !== null) {
-					return $resolvedType;
+					$resolvedType = $dynamicFunctionReturnTypeExtension->getTypeFromFunctionCall(
+						$functionReflection,
+						$normalizedNode,
+						$this,
+					);
+					if ($resolvedType !== null) {
+						return $resolvedType;
+					}
 				}
 			}
 

@@ -1998,7 +1998,6 @@ class NodeScopeResolver
 						$methodReflection->getVariants(),
 					);
 
-					$expr = NamedArgumentsHelper::reorderMethodArguments($parametersAcceptor, $expr);
 					$methodThrowPoint = $this->getMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
 					if ($methodThrowPoint !== null) {
 						$throwPoints[] = $methodThrowPoint;
@@ -2080,8 +2079,7 @@ class NodeScopeResolver
 							$methodReflection->getVariants(),
 						);
 
-						$expr = NamedArgumentsHelper::reorderStaticCallArguments($parametersAcceptor, $expr);
-						$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $expr, $scope);
+						$methodThrowPoint = $this->getStaticMethodThrowPoint($methodReflection, $parametersAcceptor, $expr, $scope);
 						if ($methodThrowPoint !== null) {
 							$throwPoints[] = $methodThrowPoint;
 						}
@@ -2704,21 +2702,24 @@ class NodeScopeResolver
 		MutatingScope $scope,
 	): ?ThrowPoint
 	{
+		$normalizedFuncCall = $funcCall;
 		if ($parametersAcceptor !== null) {
-			$funcCall = NamedArgumentsHelper::reorderFuncArguments($parametersAcceptor, $funcCall);
+			$normalizedFuncCall = NamedArgumentsHelper::reorderFuncArguments($parametersAcceptor, $funcCall);
 		}
 
-		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {
-			if (!$extension->isFunctionSupported($functionReflection)) {
-				continue;
-			}
+		if ($normalizedFuncCall !== null) {
+			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicFunctionThrowTypeExtensions() as $extension) {
+				if (!$extension->isFunctionSupported($functionReflection)) {
+					continue;
+				}
 
-			$throwType = $extension->getThrowTypeFromFunctionCall($functionReflection, $funcCall, $scope);
-			if ($throwType === null) {
-				return null;
-			}
+				$throwType = $extension->getThrowTypeFromFunctionCall($functionReflection, $normalizedFuncCall, $scope);
+				if ($throwType === null) {
+					return null;
+				}
 
-			return ThrowPoint::createExplicit($scope, $throwType, $funcCall, false);
+				return ThrowPoint::createExplicit($scope, $throwType, $funcCall, false);
+			}
 		}
 
 		$throwType = $functionReflection->getThrowType();
@@ -2763,17 +2764,20 @@ class NodeScopeResolver
 
 	private function getMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, MethodCall $methodCall, MutatingScope $scope): ?ThrowPoint
 	{
-		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
-			if (!$extension->isMethodSupported($methodReflection)) {
-				continue;
-			}
+		$normalizedMethodCall = NamedArgumentsHelper::reorderMethodArguments($parametersAcceptor, $methodCall);
+		if ($normalizedMethodCall !== null) {
+			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
+				if (!$extension->isMethodSupported($methodReflection)) {
+					continue;
+				}
 
-			$throwType = $extension->getThrowTypeFromMethodCall($methodReflection, $methodCall, $scope);
-			if ($throwType === null) {
-				return null;
-			}
+				$throwType = $extension->getThrowTypeFromMethodCall($methodReflection, $normalizedMethodCall, $scope);
+				if ($throwType === null) {
+					return null;
+				}
 
-			return ThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
+				return ThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
+			}
 		}
 
 		$throwType = $methodReflection->getThrowType();
@@ -2831,19 +2835,22 @@ class NodeScopeResolver
 		return null;
 	}
 
-	private function getStaticMethodThrowPoint(MethodReflection $methodReflection, StaticCall $methodCall, MutatingScope $scope): ?ThrowPoint
+	private function getStaticMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, StaticCall $methodCall, MutatingScope $scope): ?ThrowPoint
 	{
-		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
-			if (!$extension->isStaticMethodSupported($methodReflection)) {
-				continue;
-			}
+		$normalizedMethodCall = NamedArgumentsHelper::reorderStaticCallArguments($parametersAcceptor, $methodCall);
+		if ($normalizedMethodCall !== null) {
+			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
+				if (!$extension->isStaticMethodSupported($methodReflection)) {
+					continue;
+				}
 
-			$throwType = $extension->getThrowTypeFromStaticMethodCall($methodReflection, $methodCall, $scope);
-			if ($throwType === null) {
-				return null;
-			}
+				$throwType = $extension->getThrowTypeFromStaticMethodCall($methodReflection, $normalizedMethodCall, $scope);
+				if ($throwType === null) {
+					return null;
+				}
 
-			return ThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
+				return ThrowPoint::createExplicit($scope, $throwType, $methodCall, false);
+			}
 		}
 
 		if ($methodReflection->getThrowType() !== null) {

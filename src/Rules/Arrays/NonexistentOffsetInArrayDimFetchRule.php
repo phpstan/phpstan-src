@@ -10,7 +10,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -59,7 +58,7 @@ class NonexistentOffsetInArrayDimFetchRule implements Rule
 
 		if (
 			$scope->isInExpressionAssign($node) && $isOffsetAccessible->yes()
-			|| ($scope->isUndefinedExpressionAllowed($node) || $scope->isSpecified($node)) && (!$isOffsetAccessible->no() || $scope->getType($node->var) instanceof StrictMixedType)
+			|| ($scope->isUndefinedExpressionAllowed($node) || $scope->isSpecified($node)) && !$isOffsetAccessible->no()
 		) {
 			return [];
 		}

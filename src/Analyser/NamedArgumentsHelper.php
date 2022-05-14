@@ -120,6 +120,10 @@ final class NamedArgumentsHelper
 			}
 		}
 
+		if (count($reorderedArgs) === 0) {
+			return [];
+		}
+
 		// fill up all wholes with default values until the last given argument
 		for ($j = 0; $j < max(array_keys($reorderedArgs)); $j++) {
 			if (array_key_exists($j, $reorderedArgs)) {

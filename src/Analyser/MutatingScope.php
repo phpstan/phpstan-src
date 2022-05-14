@@ -5523,7 +5523,7 @@ class MutatingScope implements Scope
 			return TypeCombinator::union(...$resolvedTypes);
 		}
 
-		$methodResult = $this->getType($normalizedMethodCall);
+		$methodResult = $this->getType($methodCall);
 		if ($methodResult instanceof NeverType && $methodResult->isExplicit()) {
 			return $methodResult;
 		}
@@ -5569,7 +5569,7 @@ class MutatingScope implements Scope
 
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$this,
-			$normalizedMethodCall->getArgs(),
+			$methodCall->getArgs(),
 			$constructorMethod->getVariants(),
 		);
 
@@ -5694,7 +5694,7 @@ class MutatingScope implements Scope
 
 		$resolvedTypes = [];
 		foreach (TypeUtils::getDirectClassNames($typeWithMethod) as $className) {
-			if ($methodCall instanceof MethodCall) {
+			if ($normalizedMethodCall instanceof MethodCall) {
 				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicMethodReturnTypeExtensionsForClass($className) as $dynamicMethodReturnTypeExtension) {
 					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {
 						continue;

@@ -56,21 +56,16 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 
 		$funcCall = NamedArgumentsHelper::reorderFuncArguments($parameterAcceptor, $funcCall);
 		$reorderedArgs = $funcCall->getArgs();
-		$this->assertCount(3, $reorderedArgs);
+		$this->assertCount(2, $reorderedArgs);
 
 		$this->assertArrayHasKey(0, $reorderedArgs);
-		$this->assertNotNull($reorderedArgs[0]->name);
-		$this->assertSame('value', $reorderedArgs[0]->name->toString());
+		$this->assertNull($reorderedArgs[0]->name, 'named-arg turned into regular numeric arg');
+		$this->assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at the right position');
 
 		$this->assertArrayHasKey(1, $reorderedArgs);
-		$this->assertNotNull($reorderedArgs[1]->name);
-		$this->assertSame('flags', $reorderedArgs[1]->name->toString());
-
-		// "depths" arg was added with its default value based on the signature
-		$this->assertArrayHasKey(2, $reorderedArgs);
-		$this->assertInstanceOf(TypeExpr::class, $reorderedArgs[2]->value);
-		$this->assertInstanceOf(ConstantIntegerType::class, $reorderedArgs[2]->value->getExprType());
-		$this->assertSame(512, $reorderedArgs[2]->value->getExprType()->getValue());
+		$this->assertNull($reorderedArgs[1]->name, 'named-arg turned into regular numeric arg');
+		$this->assertInstanceOf(LNumber::class, $reorderedArgs[1]->value, 'flags-arg at the right position');
+		$this->assertSame(0, $reorderedArgs[1]->value->value, 'flags-arg with default value');
 	}
 
 	/**
@@ -113,18 +108,18 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 		$this->assertCount(3, $reorderedArgs);
 
 		$this->assertArrayHasKey(0, $reorderedArgs);
-		$this->assertNotNull($reorderedArgs[0]->name);
-		$this->assertSame('value', $reorderedArgs[0]->name->toString());
+		$this->assertNull($reorderedArgs[0]->name, 'named-arg turned into regular numeric arg');
+		$this->assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at the right position');
 
-		// "flags" arg was added with its default value based on the signature
 		$this->assertArrayHasKey(1, $reorderedArgs);
-		$this->assertInstanceOf(TypeExpr::class, $reorderedArgs[1]->value);
-		$this->assertInstanceOf(ConstantIntegerType::class, $reorderedArgs[1]->value->getExprType());
-		$this->assertSame(0, $reorderedArgs[1]->value->getExprType()->getValue());
+		$this->assertNull($reorderedArgs[1]->name, 'named-arg turned into regular numeric arg');
+		$this->assertInstanceOf(LNumber::class, $reorderedArgs[1]->value, 'flags-arg at the right position');
+		$this->assertSame(0, $reorderedArgs[1]->value->value, 'flags-arg with default value');
 
 		$this->assertArrayHasKey(2, $reorderedArgs);
-		$this->assertNotNull($reorderedArgs[2]->name);
-		$this->assertSame('depth', $reorderedArgs[2]->name->toString());
+		$this->assertNull($reorderedArgs[2]->name, 'named-arg turned into regular numeric arg');
+		$this->assertInstanceOf(LNumber::class, $reorderedArgs[2]->value, 'depth-arg at the right position');
+		$this->assertSame(128, $reorderedArgs[2]->value->value, 'depth-arg with default value');
 	}
 
 }

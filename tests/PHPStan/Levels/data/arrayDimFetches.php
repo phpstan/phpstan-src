@@ -55,7 +55,7 @@ class Foo
 	 */
 	public function iterableOffset($iterable): void
 	{
-		unset($iterable['foo']);
+		var_dump($iterable['foo']);
 	}
 
 }

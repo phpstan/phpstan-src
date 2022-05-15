@@ -36,6 +36,16 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 		return $this->target;
 	}
 
+	public function getIf(): Type
+	{
+		return $this->if;
+	}
+
+	public function getElse(): Type
+	{
+		return $this->else;
+	}
+
 	public function isNegated(): bool
 	{
 		return $this->negated;

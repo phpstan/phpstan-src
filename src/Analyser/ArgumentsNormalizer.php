@@ -111,12 +111,14 @@ final class ArgumentsNormalizer
 				$reorderedArgs[$i] = $arg;
 			} elseif (array_key_exists($arg->name->toString(), $argumentPositions)) {
 				$argName = $arg->name->toString();
-				$arg = clone $arg;
-
-				// turn named arg into regular numeric arg
-				$arg->name = null;
 				// order named args into the position the signature expects them
-				$reorderedArgs[$argumentPositions[$argName]] = $arg;
+				$reorderedArgs[$argumentPositions[$argName]] = new Arg(
+					$arg->value,
+					$arg->byRef,
+					$arg->unpack,
+					$arg->getAttributes(),
+					null,
+				);
 			}
 		}
 

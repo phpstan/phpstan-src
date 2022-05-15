@@ -687,8 +687,17 @@ class MutatingScope implements Scope
 				if ($type instanceof ConstantStringType) {
 					return new ConstantStringType(~$type->getValue());
 				}
-				if ($type instanceof StringType) {
-					return new StringType();
+				if ($type->isString()->yes()) {
+					$accessories = [
+						new StringType(),
+					];
+					if ($type->isNonEmptyString()->yes()) {
+						$accessories[] = new AccessoryNonEmptyStringType();
+					}
+					// it is not useful to apply numeric and literal strings here.
+					// numeric string isn't certainly kept numeric: 3v4l.org/JERDB
+
+					return TypeCombinator::intersect(...$accessories);
 				}
 				if ($type instanceof IntegerType || $type instanceof FloatType) {
 					return new IntegerType(); //no const types here, result depends on PHP_INT_SIZE

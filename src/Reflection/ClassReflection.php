@@ -1077,6 +1077,9 @@ class ClassReflection
 					$attributeConstructorVariant,
 					new StaticCall(new FullyQualified(Attribute::class), $attributeConstructor->getName(), $arguments),
 				);
+				if ($staticCall === null) {
+					return null;
+				}
 				$flagExpr = $staticCall->getArgs()[0]->value;
 				$flagType = $this->initializerExprTypeResolver->getType($flagExpr, InitializerExprContext::fromClassReflection($this));
 			}

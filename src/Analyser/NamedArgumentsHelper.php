@@ -12,8 +12,10 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantArrayType;
 use function array_key_exists;
+use function array_keys;
 use function count;
 use function ksort;
+use function max;
 
 final class NamedArgumentsHelper
 {
@@ -21,11 +23,17 @@ final class NamedArgumentsHelper
 	public static function reorderFuncArguments(
 		ParametersAcceptor $parametersAcceptor,
 		FuncCall $functionCall,
-	): FuncCall
+	): ?FuncCall
 	{
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $functionCall);
+
+		if ($reorderedArgs === null) {
+			return null;
+		}
+
 		return new FuncCall(
 			$functionCall->name,
-			self::reorderArgs($parametersAcceptor, $functionCall),
+			$reorderedArgs,
 			$functionCall->getAttributes(),
 		);
 	}
@@ -33,12 +41,18 @@ final class NamedArgumentsHelper
 	public static function reorderMethodArguments(
 		ParametersAcceptor $parametersAcceptor,
 		MethodCall $methodCall,
-	): MethodCall
+	): ?MethodCall
 	{
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $methodCall);
+
+		if ($reorderedArgs === null) {
+			return null;
+		}
+
 		return new MethodCall(
 			$methodCall->var,
 			$methodCall->name,
-			self::reorderArgs($parametersAcceptor, $methodCall),
+			$reorderedArgs,
 			$methodCall->getAttributes(),
 		);
 	}
@@ -46,20 +60,26 @@ final class NamedArgumentsHelper
 	public static function reorderStaticCallArguments(
 		ParametersAcceptor $parametersAcceptor,
 		StaticCall $staticCall,
-	): StaticCall
+	): ?StaticCall
 	{
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $staticCall);
+
+		if ($reorderedArgs === null) {
+			return null;
+		}
+
 		return new StaticCall(
 			$staticCall->class,
 			$staticCall->name,
-			self::reorderArgs($parametersAcceptor, $staticCall),
+			$reorderedArgs,
 			$staticCall->getAttributes(),
 		);
 	}
 
 	/**
-	 * @return array<int, Arg>
+	 * @return ?array<int, Arg>
 	 */
-	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, CallLike $callLike): array
+	private static function reorderArgs(ParametersAcceptor $parametersAcceptor, CallLike $callLike): ?array
 	{
 		$signatureParameters = $parametersAcceptor->getParameters();
 		$callArgs = $callLike->getArgs();
@@ -79,13 +99,45 @@ final class NamedArgumentsHelper
 			return $callArgs;
 		}
 
-		$reorderedArgs = [];
 		$argumentPositions = [];
 		foreach ($signatureParameters as $i => $parameter) {
 			$argumentPositions[$parameter->getName()] = $i;
+		}
 
-			if (!$parameter->isOptional()) {
+		$reorderedArgs = [];
+		foreach ($callArgs as $i => $arg) {
+			if ($arg->name === null) {
+				// add regular args as is
+				$reorderedArgs[$i] = $arg;
+			} elseif (array_key_exists($arg->name->toString(), $argumentPositions)) {
+				$argName = $arg->name->toString();
+				$arg = clone $arg;
+
+				// turn named arg into regular numeric arg
+				$arg->name = null;
+				// order named args into the position the signature expects them
+				$reorderedArgs[$argumentPositions[$argName]] = $arg;
+			}
+		}
+
+		if (count($reorderedArgs) === 0) {
+			return [];
+		}
+
+		// fill up all wholes with default values until the last given argument
+		for ($j = 0; $j < max(array_keys($reorderedArgs)); $j++) {
+			if (array_key_exists($j, $reorderedArgs)) {
 				continue;
+			}
+			if (!array_key_exists($j, $signatureParameters)) {
+				throw new ShouldNotHappenException('Parameter signatures cannot have wholes');
+			}
+
+			$parameter = $signatureParameters[$j];
+
+			// we can only fill up optional parameters with default values
+			if (!$parameter->isOptional()) {
+				return null;
 			}
 
 			$defaultValue = $parameter->getDefaultValue();
@@ -95,19 +147,10 @@ final class NamedArgumentsHelper
 				}
 				$defaultValue = new ConstantArrayType([], []);
 			}
-			$reorderedArgs[$i] = new Arg(
+
+			$reorderedArgs[$j] = new Arg(
 				new TypeExpr($defaultValue),
 			);
-		}
-
-		foreach ($callArgs as $i => $arg) {
-			if ($arg->name === null) {
-				// add regular args as is
-				$reorderedArgs[$i] = $arg;
-			} elseif (array_key_exists($arg->name->toString(), $argumentPositions)) {
-				// order named args into the position the signature expects them
-				$reorderedArgs[$argumentPositions[$arg->name->toString()]] = $arg;
-			}
 		}
 
 		ksort($reorderedArgs);

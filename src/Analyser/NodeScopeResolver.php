@@ -2468,7 +2468,7 @@ class NodeScopeResolver
 								$scope = $scope->invalidateExpression($arg->value, true);
 							}
 						}
-						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $classReflection, $expr, $expr->class, $expr->getArgs(), $scope);
+						$constructorThrowPoint = $this->getConstructorThrowPoint($constructorReflection, $parametersAcceptor, $classReflection, $expr, $expr->class, $expr->getArgs(), $scope);
 						if ($constructorThrowPoint !== null) {
 							$throwPoints[] = $constructorThrowPoint;
 						}
@@ -2805,20 +2805,23 @@ class NodeScopeResolver
 	/**
 	 * @param Node\Arg[] $args
 	 */
-	private function getConstructorThrowPoint(MethodReflection $constructorReflection, ClassReflection $classReflection, New_ $new, Name $className, array $args, MutatingScope $scope): ?ThrowPoint
+	private function getConstructorThrowPoint(MethodReflection $constructorReflection, ParametersAcceptor $parametersAcceptor, ClassReflection $classReflection, New_ $new, Name $className, array $args, MutatingScope $scope): ?ThrowPoint
 	{
 		$methodCall = new StaticCall($className, $constructorReflection->getName(), $args);
-		foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
-			if (!$extension->isStaticMethodSupported($constructorReflection)) {
-				continue;
-			}
+		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
+		if ($normalizedMethodCall !== null) {
+			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
+				if (!$extension->isStaticMethodSupported($constructorReflection)) {
+					continue;
+				}
 
-			$throwType = $extension->getThrowTypeFromStaticMethodCall($constructorReflection, $methodCall, $scope);
-			if ($throwType === null) {
-				return null;
-			}
+				$throwType = $extension->getThrowTypeFromStaticMethodCall($constructorReflection, $normalizedMethodCall, $scope);
+				if ($throwType === null) {
+					return null;
+				}
 
-			return ThrowPoint::createExplicit($scope, $throwType, $new, false);
+				return ThrowPoint::createExplicit($scope, $throwType, $new, false);
+			}
 		}
 
 		if ($constructorReflection->getThrowType() !== null) {

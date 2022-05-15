@@ -10,6 +10,8 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\CallableType;
+use PHPStan\Type\ConditionalType;
+use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -21,6 +23,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeWithClassName;
 use Traversable;
 use function array_keys;
+use function array_merge;
 use function in_array;
 use function sprintf;
 
@@ -69,6 +72,15 @@ class MissingTypehintCheck
 				return $type;
 			}
 			if ($type instanceof AccessoryType) {
+				return $type;
+			}
+			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+				$iterablesWithMissingValueTypehint = array_merge(
+					$iterablesWithMissingValueTypehint,
+					$this->getIterableTypesWithMissingValueTypehint($type->getIf()),
+					$this->getIterableTypesWithMissingValueTypehint($type->getElse()),
+				);
+
 				return $type;
 			}
 			if ($type->isIterable()->yes()) {

@@ -289,8 +289,7 @@ class StubPhpDocProvider
 		$stubFiles = $this->stubFiles;
 		$extensions = $this->container->getServicesByTag(StubFilesExtension::EXTENSION_TAG);
 		foreach ($extensions as $extension) {
-			$extensionFiles = $extension->getFiles();
-			foreach ($extensionFiles as $extensionFile) {
+			foreach ($extension->getFiles() as $extensionFile) {
 				$stubFiles[] = $extensionFile;
 			}
 		}

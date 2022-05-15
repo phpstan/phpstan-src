@@ -9,6 +9,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 
 class StubSourceLocatorFactory
@@ -21,6 +22,7 @@ class StubSourceLocatorFactory
 		private Parser $php8Parser,
 		private PhpStormStubsSourceStubber $phpStormStubsSourceStubber,
 		private OptimizedSingleFileSourceLocatorRepository $optimizedSingleFileSourceLocatorRepository,
+		private Container $container,
 		private array $stubFiles,
 	)
 	{
@@ -30,7 +32,15 @@ class StubSourceLocatorFactory
 	{
 		$locators = [];
 		$astPhp8Locator = new Locator($this->php8Parser);
-		foreach ($this->stubFiles as $stubFile) {
+		$stubFiles = $this->stubFiles;
+		$extensions = $this->container->getServicesByTag(StubFilesExtension::EXTENSION_TAG);
+		foreach ($extensions as $extension) {
+			foreach ($extension->getFiles() as $extensionFile) {
+				$stubFiles[] = $extensionFile;
+			}
+		}
+
+		foreach ($stubFiles as $stubFile) {
 			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($stubFile);
 		}
 

@@ -7,7 +7,7 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name\FullyQualified;
-use PHPStan\Analyser\NamedArgumentsHelper;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
@@ -1073,7 +1073,7 @@ class ClassReflection
 			if (count($arguments) === 0) {
 				$flagType = $attributeConstructorVariant->getParameters()[0]->getDefaultValue();
 			} else {
-				$staticCall = NamedArgumentsHelper::reorderStaticCallArguments(
+				$staticCall = ArgumentsNormalizer::reorderStaticCallArguments(
 					$attributeConstructorVariant,
 					new StaticCall(new FullyQualified(Attribute::class), $attributeConstructor->getName(), $arguments),
 				);

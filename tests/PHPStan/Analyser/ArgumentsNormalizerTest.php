@@ -16,7 +16,7 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use const PHP_VERSION_ID;
 
-final class NamedArgumentsHelperTest extends PHPStanTestCase
+final class ArgumentsNormalizerTest extends PHPStanTestCase
 {
 
 	/**
@@ -54,7 +54,7 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 		];
 		$funcCall = new FuncCall($funcName, $args);
 
-		$funcCall = NamedArgumentsHelper::reorderFuncArguments($parameterAcceptor, $funcCall);
+		$funcCall = ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall);
 		$this->assertNotNull($funcCall);
 		$reorderedArgs = $funcCall->getArgs();
 		$this->assertCount(2, $reorderedArgs);
@@ -104,7 +104,7 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 		];
 		$funcCall = new FuncCall($funcName, $args);
 
-		$funcCall = NamedArgumentsHelper::reorderFuncArguments($parameterAcceptor, $funcCall);
+		$funcCall = ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall);
 		$this->assertNotNull($funcCall);
 		$reorderedArgs = $funcCall->getArgs();
 		$this->assertCount(3, $reorderedArgs);
@@ -150,7 +150,7 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 		];
 		$funcCall = new FuncCall($funcName, $args);
 
-		$this->assertNull(NamedArgumentsHelper::reorderFuncArguments($parameterAcceptor, $funcCall));
+		$this->assertNull(ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall));
 	}
 
 	public function testLeaveRegularCallAsIs(): void
@@ -173,7 +173,7 @@ final class NamedArgumentsHelperTest extends PHPStanTestCase
 		];
 		$funcCall = new FuncCall($funcName, $args);
 
-		$funcCall = NamedArgumentsHelper::reorderFuncArguments($parameterAcceptor, $funcCall);
+		$funcCall = ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall);
 		$this->assertNotNull($funcCall);
 		$reorderedArgs = $funcCall->getArgs();
 		$this->assertCount(2, $reorderedArgs);

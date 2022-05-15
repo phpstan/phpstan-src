@@ -17,7 +17,7 @@ use function count;
 use function ksort;
 use function max;
 
-final class NamedArgumentsHelper
+final class ArgumentsNormalizer
 {
 
 	public static function reorderFuncArguments(

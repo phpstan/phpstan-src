@@ -2704,7 +2704,7 @@ class NodeScopeResolver
 	{
 		$normalizedFuncCall = $funcCall;
 		if ($parametersAcceptor !== null) {
-			$normalizedFuncCall = NamedArgumentsHelper::reorderFuncArguments($parametersAcceptor, $funcCall);
+			$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $funcCall);
 		}
 
 		if ($normalizedFuncCall !== null) {
@@ -2764,7 +2764,7 @@ class NodeScopeResolver
 
 	private function getMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, MethodCall $methodCall, MutatingScope $scope): ?ThrowPoint
 	{
-		$normalizedMethodCall = NamedArgumentsHelper::reorderMethodArguments($parametersAcceptor, $methodCall);
+		$normalizedMethodCall = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $methodCall);
 		if ($normalizedMethodCall !== null) {
 			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicMethodThrowTypeExtensions() as $extension) {
 				if (!$extension->isMethodSupported($methodReflection)) {
@@ -2837,7 +2837,7 @@ class NodeScopeResolver
 
 	private function getStaticMethodThrowPoint(MethodReflection $methodReflection, ParametersAcceptor $parametersAcceptor, StaticCall $methodCall, MutatingScope $scope): ?ThrowPoint
 	{
-		$normalizedMethodCall = NamedArgumentsHelper::reorderStaticCallArguments($parametersAcceptor, $methodCall);
+		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 		if ($normalizedMethodCall !== null) {
 			foreach ($this->dynamicThrowTypeExtensionProvider->getDynamicStaticMethodThrowTypeExtensions() as $extension) {
 				if (!$extension->isStaticMethodSupported($methodReflection)) {

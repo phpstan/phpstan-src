@@ -2200,7 +2200,7 @@ class MutatingScope implements Scope
 				$node->getArgs(),
 				$functionReflection->getVariants(),
 			);
-			$normalizedNode = NamedArgumentsHelper::reorderFuncArguments($parametersAcceptor, $node);
+			$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
 			if ($normalizedNode !== null) {
 				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions() as $dynamicFunctionReturnTypeExtension) {
 					if (!$dynamicFunctionReturnTypeExtension->isFunctionSupported($functionReflection)) {
@@ -5498,7 +5498,7 @@ class MutatingScope implements Scope
 			$methodCall->getArgs(),
 			$constructorMethod->getVariants(),
 		);
-		$normalizedMethodCall = NamedArgumentsHelper::reorderStaticCallArguments($parametersAcceptor, $methodCall);
+		$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 
 		if ($normalizedMethodCall !== null) {
 			foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicStaticMethodReturnTypeExtensionsForClass($classReflection->getName()) as $dynamicStaticMethodReturnTypeExtension) {
@@ -5684,9 +5684,9 @@ class MutatingScope implements Scope
 			$methodReflection->getVariants(),
 		);
 		if ($methodCall instanceof MethodCall) {
-			$normalizedMethodCall = NamedArgumentsHelper::reorderMethodArguments($parametersAcceptor, $methodCall);
+			$normalizedMethodCall = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $methodCall);
 		} else {
-			$normalizedMethodCall = NamedArgumentsHelper::reorderStaticCallArguments($parametersAcceptor, $methodCall);
+			$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 		}
 		if ($normalizedMethodCall === null) {
 			return $parametersAcceptor->getReturnType();

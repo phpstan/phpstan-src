@@ -1006,16 +1006,17 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6305.php'], [
 			[
 				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
-				11
+				11,
 			],
 			[
 				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
-				14
+				14,
 			],
 			[
 				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
-				17
-			]
+				17,
+			],
 		]);
 	}
+
 }

@@ -759,7 +759,7 @@ class TypeSpecifier
 					}
 				}
 
-				$specifiedTypes = $this->specifyTypesFromAsserts($context, $rootExpr, $expr, $functionReflection->getVariants(), $scope);
+				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $functionReflection->getVariants(), $scope);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;
 				}
@@ -792,7 +792,7 @@ class TypeSpecifier
 						return $specifiedTypes;
 					}
 
-					$specifiedTypes = $this->specifyTypesFromAsserts($context, $rootExpr, $expr, $methodReflection->getVariants(), $scope);
+					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $methodReflection->getVariants(), $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
 					}
@@ -832,7 +832,7 @@ class TypeSpecifier
 					}
 				}
 
-				$specifiedTypes = $this->specifyTypesFromAsserts($context, $rootExpr, $expr, $staticMethodReflection->getVariants(), $scope);
+				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $staticMethodReflection->getVariants(), $scope);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;
 				}
@@ -1167,7 +1167,7 @@ class TypeSpecifier
 	/**
 	 * @param array<ParametersAcceptor> $variants
 	 */
-	private function specifyTypesFromAsserts(TypeSpecifierContext $context, ?Expr $rootExpr, Expr\CallLike $call, array $variants, Scope $scope): ?SpecifiedTypes
+	private function specifyTypesFromAsserts(TypeSpecifierContext $context, Expr\CallLike $call, array $variants, Scope $scope): ?SpecifiedTypes
 	{
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $call->getArgs(), $variants);
 
@@ -1233,7 +1233,6 @@ class TypeSpecifier
 				$assert->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
 				false,
 				$scope,
-				$rootExpr,
 			);
 			$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
 		}

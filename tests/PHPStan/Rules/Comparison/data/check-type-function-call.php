@@ -862,3 +862,17 @@ class ArraySearch
 	}
 
 }
+
+/**
+ * @phpstan-assert-if-true int $value
+ */
+function testIsInt(mixed $value): bool
+{
+	return is_int($value);
+}
+
+function (int $int) {
+	if (testIsInt($int)) {
+
+	}
+};

@@ -233,6 +233,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					'Call to function property_exists() with CheckTypeFunctionCall\Bug2221 and \'foo\' will always evaluate to true.',
 					788,
 				],
+				[
+					'Call to function testIsInt() with int will always evaluate to true.',
+					875,
+				],
 			],
 		);
 	}

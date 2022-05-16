@@ -913,6 +913,10 @@ class TypeNodeResolver
 		$type = $this->resolve($typeNode->type, $nameScope);
 		$offset = $this->resolve($typeNode->offset, $nameScope);
 
+		if ($type->isOffsetAccessible()->no() || $type->hasOffsetValueType($offset)->no()) {
+			return new ErrorType();
+		}
+
 		return new OffsetAccessType($type, $offset);
 	}
 

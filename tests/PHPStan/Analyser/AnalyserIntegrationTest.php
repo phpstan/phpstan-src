@@ -797,6 +797,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(49, $errors[5]->getLine());
 	}
 
+	public function testOffsetAccess(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/offset-access.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('PHPDoc tag @return contains unresolvable type.', $errors[0]->getMessage());
+		$this->assertSame(42, $errors[0]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

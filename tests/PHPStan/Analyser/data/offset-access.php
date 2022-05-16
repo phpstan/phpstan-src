@@ -27,6 +27,7 @@ function () {
  */
 function takeConditionalOffset(array $array, int $maybeZero): int
 {
+	return $array[0];
 }
 
 function () {
@@ -34,3 +35,10 @@ function () {
 	assertType('1|2|3', takeConditionalOffset([1, 2, 3], 1));
 	assertType('1|2|3', takeConditionalOffset([1, 2, 3], 2));
 };
+
+/**
+ * @return int[mixed]
+ */
+function impossibleOffset(int $value): mixed {
+	return $value;
+}

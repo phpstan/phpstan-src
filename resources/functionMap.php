@@ -6318,7 +6318,7 @@ return [
 'mb_ereg' => ['int|false', 'pattern'=>'string', 'string'=>'string', '&w_registers='=>'array'],
 'mb_ereg_match' => ['bool', 'pattern'=>'string', 'string'=>'string', 'option='=>'string'],
 'mb_ereg_replace' => ['string|false|null', 'pattern'=>'string', 'replacement'=>'string', 'string'=>'string', 'option='=>'string'],
-'mb_ereg_replace_callback' => ['string|false|null', 'pattern'=>'string', 'callback'=>'callable', 'string'=>'string', 'option='=>'string'],
+'mb_ereg_replace_callback' => ['string|false|null', 'pattern'=>'string', 'callback'=>'callable(array<int|string, string>):string', 'string'=>'string', 'option='=>'string'],
 'mb_ereg_search' => ['bool', 'pattern='=>'string', 'option='=>'string'],
 'mb_ereg_search_getpos' => ['int'],
 'mb_ereg_search_getregs' => ['array|false'],

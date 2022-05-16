@@ -46,9 +46,4 @@ class InaccessibleMethod implements ParametersAcceptor
 		return new MixedType();
 	}
 
-	public function getAsserts(): Assertions
-	{
-		return Assertions::createEmpty();
-	}
-
 }

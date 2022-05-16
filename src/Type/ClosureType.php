@@ -4,7 +4,6 @@ namespace PHPStan\Type;
 
 use Closure;
 use PHPStan\Analyser\OutOfClassScope;
-use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
@@ -325,11 +324,6 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	public function getReturnType(): Type
 	{
 		return $this->returnType;
-	}
-
-	public function getAsserts(): Assertions
-	{
-		return Assertions::createEmpty();
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

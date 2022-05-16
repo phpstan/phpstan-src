@@ -3,7 +3,6 @@
 namespace PHPStan\Type;
 
 use PHPStan\Analyser\OutOfClassScope;
-use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
@@ -224,11 +223,6 @@ class CallableType implements CompoundType, ParametersAcceptor
 	public function getReturnType(): Type
 	{
 		return $this->returnType;
-	}
-
-	public function getAsserts(): Assertions
-	{
-		return Assertions::createEmpty();
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

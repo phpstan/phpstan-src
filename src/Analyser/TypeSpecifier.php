@@ -253,7 +253,7 @@ class TypeSpecifier
 				) {
 					$argType = $scope->getType($exprNode->getArgs()[0]->value);
 
-					if ($argType->isString()->yes() && !$argType->isNonEmptyString()->yes()) {
+					if ($argType->isString()->yes()) {
 						return $this->create(
 							$exprNode->getArgs()[0]->value,
 							TypeCombinator::intersect($argType, new AccessoryNonEmptyStringType()),

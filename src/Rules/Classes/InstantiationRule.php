@@ -205,6 +205,7 @@ class InstantiationRule implements Rule
 				'Missing parameter $%s in call to ' . $classDisplayName . ' constructor.',
 				'Unknown parameter $%s in call to ' . $classDisplayName . ' constructor.',
 				'Return type of call to ' . $classDisplayName . ' constructor contains unresolvable type.',
+				'Parameter %s of class ' . $classDisplayName . ' constructor contains unresolvable type.',
 			],
 		));
 	}

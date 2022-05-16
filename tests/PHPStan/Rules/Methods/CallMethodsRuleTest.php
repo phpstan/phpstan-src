@@ -2451,4 +2451,22 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3284.php'], []);
 	}
 
+	public function testUnresolvableParameter(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/unresolvable-parameter.php'], [
+			[
+				'Parameter #2 $v of method UnresolvableParameter\HelloWorld::foo() contains unresolvable type.',
+				18,
+			],
+			[
+				'Parameter #2 $v of method UnresolvableParameter\HelloWorld::foo() contains unresolvable type.',
+				19,
+			],
+		]);
+	}
+
 }

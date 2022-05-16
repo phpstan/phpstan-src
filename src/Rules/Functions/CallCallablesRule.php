@@ -125,6 +125,7 @@ class CallCallablesRule implements Rule
 					'Missing parameter $%s in call to ' . $callableDescription . '.',
 					'Unknown parameter $%s in call to ' . $callableDescription . '.',
 					'Return type of call to ' . $callableDescription . ' contains unresolvable type.',
+					'Parameter %s of ' . $callableDescription . ' contains unresolvable type.',
 				],
 			),
 		);

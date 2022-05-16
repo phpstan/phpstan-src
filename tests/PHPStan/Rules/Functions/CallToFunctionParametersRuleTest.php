@@ -1036,7 +1036,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			];
 		}
 
-		$this->analyse([__DIR__ . '/data/bug-6305.php'], $errors);
+		$this->analyse([__DIR__ . '/data/is-subclass-allow-string.php'], $errors);
 	}
 
 }

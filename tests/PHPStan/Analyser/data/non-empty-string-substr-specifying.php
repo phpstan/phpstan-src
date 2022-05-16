@@ -52,16 +52,6 @@ class Foo {
 		}
 		assertType('string', $s);
 
-		if (substr($s, 10) == 'hallo') {
-			assertType('non-empty-string', $s);
-		}
-		assertType('string', $s);
-
-		if (substr($s, -10) == 'hallo') {
-			assertType('non-empty-string', $s);
-		}
-		assertType('string', $s);
-
 		$x = (substr($s, 10) === 'hallo');
 		assertType('string', $s);
 		var_dump($x);

@@ -84,10 +84,6 @@ final class ArgumentsNormalizer
 		$signatureParameters = $parametersAcceptor->getParameters();
 		$callArgs = $callLike->getArgs();
 
-		if (count($callArgs) === 0) {
-			return [];
-		}
-
 		$hasNamedArgs = false;
 		foreach ($callArgs as $arg) {
 			if ($arg->name !== null) {
@@ -95,7 +91,22 @@ final class ArgumentsNormalizer
 				break;
 			}
 		}
+
 		if (!$hasNamedArgs) {
+			$requiredArgsCount = 0;
+			foreach($signatureParameters as $parameter) {
+				if ($parameter->isOptional()) {
+					continue;
+				}
+
+				$requiredArgsCount++;
+			}
+
+			// required arguments are missing
+			if (count($callArgs) < $requiredArgsCount) {
+				return null;
+			}
+
 			return $callArgs;
 		}
 

@@ -186,4 +186,21 @@ final class ArgumentsNormalizerTest extends PHPStanTestCase
 		$this->assertSame(0, $reorderedArgs[1]->value->value);
 	}
 
+	public function testRegularCallMissingRequiredArgs(): void
+	{
+		$funcName = new Name('json_encode');
+		$reflectionProvider = self::getContainer()->getByType(NativeFunctionReflectionProvider::class);
+		$functionReflection = $reflectionProvider->findFunctionReflection('json_encode');
+		if ($functionReflection === null) {
+			throw new ShouldNotHappenException();
+		}
+		$parameterAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
+
+		$args = [];
+		$funcCall = new FuncCall($funcName, $args);
+
+		$funcCall = ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall);
+		$this->assertNull($funcCall);
+	}
+
 }

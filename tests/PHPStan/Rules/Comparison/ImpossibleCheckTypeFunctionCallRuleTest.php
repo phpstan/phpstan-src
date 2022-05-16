@@ -542,15 +542,4 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2755.php'], []);
 	}
 
-	public function testBug6697(): void
-	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('PHP 8.1+ required.');
-		}
-
-		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-6697.php'], []);
-	}
-
 }

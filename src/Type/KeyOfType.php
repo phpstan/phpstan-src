@@ -46,7 +46,7 @@ class KeyOfType implements CompoundType, LateResolvableType
 
 	public function isResolvable(): bool
 	{
-		return !TypeUtils::containsTemplateType($this->type) && $this->type->isIterable()->yes();
+		return !TypeUtils::containsTemplateType($this->type);
 	}
 
 	protected function getResult(): Type

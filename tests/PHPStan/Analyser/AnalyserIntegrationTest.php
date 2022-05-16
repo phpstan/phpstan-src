@@ -780,7 +780,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug7094(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7094.php');
-		$this->assertCount(5, $errors);
+		$this->assertCount(6, $errors);
 
 		$this->assertSame('Parameter #2 $val of method Bug7094\Foo::setAttribute() expects string, int given.', $errors[0]->getMessage());
 		$this->assertSame(75, $errors[0]->getLine());
@@ -788,11 +788,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(76, $errors[1]->getLine());
 		$this->assertSame('Parameter #2 $val of method Bug7094\Foo::setAttribute() expects string, int given.', $errors[2]->getMessage());
 		$this->assertSame(78, $errors[2]->getLine());
+		$this->assertSame('Return type of call to method Bug7094\Foo::getAttribute() contains unresolvable type.', $errors[3]->getMessage());
+		$this->assertSame(79, $errors[3]->getLine());
 
-		$this->assertSame('Parameter #1 $attr of method Bug7094\Foo::setAttributes() expects array{foo?: string, bar?: 5|6|7, baz?: bool}, non-empty-array<string, 5|6|7|bool|string> given.', $errors[3]->getMessage());
-		$this->assertSame(29, $errors[3]->getLine());
-		$this->assertSame('Parameter #1 $attr of method Bug7094\Foo::setAttributes() expects array{foo?: string, bar?: 5|6|7, baz?: bool}, array<\'bar\'|\'baz\'|\'foo\', 5|6|7|bool|string> given.', $errors[4]->getMessage());
-		$this->assertSame(49, $errors[4]->getLine());
+		$this->assertSame('Parameter #1 $attr of method Bug7094\Foo::setAttributes() expects array{foo?: string, bar?: 5|6|7, baz?: bool}, non-empty-array<string, 5|6|7|bool|string> given.', $errors[4]->getMessage());
+		$this->assertSame(29, $errors[4]->getLine());
+		$this->assertSame('Parameter #1 $attr of method Bug7094\Foo::setAttributes() expects array{foo?: string, bar?: 5|6|7, baz?: bool}, array<\'bar\'|\'baz\'|\'foo\', 5|6|7|bool|string> given.', $errors[5]->getMessage());
+		$this->assertSame(49, $errors[5]->getLine());
 	}
 
 	/**

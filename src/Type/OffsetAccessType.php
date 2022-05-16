@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -58,25 +57,12 @@ final class OffsetAccessType implements CompoundType, LateResolvableType
 	public function isResolvable(): bool
 	{
 		return !TypeUtils::containsTemplateType($this->type)
-			&& !TypeUtils::containsTemplateType($this->offset)
-			&& $this->type->hasOffsetValueType($this->offset)->yes();
+			&& !TypeUtils::containsTemplateType($this->offset);
 	}
 
 	protected function getResult(): Type
 	{
 		return $this->type->getOffsetValueType($this->offset);
-	}
-
-	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
-	{
-		if ($receivedType instanceof UnionType || $receivedType instanceof IntersectionType) {
-			return $receivedType->inferTemplateTypesOn($this);
-		}
-
-		$typeMap = $this->type->inferTemplateTypes($receivedType);
-		$offsetMap = $this->offset->inferTemplateTypes($receivedType);
-
-		return $typeMap->union($offsetMap);
 	}
 
 	/**

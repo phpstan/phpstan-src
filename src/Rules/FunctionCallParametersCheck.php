@@ -49,7 +49,7 @@ class FunctionCallParametersCheck
 
 	/**
 	 * @param Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall
-	 * @param array{string, string, string, string, string, string, string, string, string, string, string, string, string} $messages
+	 * @param array{string, string, string, string, string, string, string, string, string, string, string, string, string, string} $messages
 	 * @return RuleError[]
 	 */
 	public function check(
@@ -265,6 +265,18 @@ class FunctionCallParametersCheck
 					) : $parameterDescription,
 					$parameterType->describe($verbosityLevel),
 					$argumentValueType->describe($verbosityLevel),
+				))->line($argumentLine)->build();
+			}
+
+			if ($this->unresolvableTypeHelper->containsUnresolvableType($parameterType)) {
+				$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					$messages[13],
+					$argumentName === null ? sprintf(
+						'#%d %s',
+						$i + 1,
+						$parameterDescription,
+					) : $parameterDescription,
 				))->line($argumentLine)->build();
 			}
 

@@ -62,6 +62,7 @@ class CallToFunctionParametersRule implements Rule
 				'Missing parameter $%s in call to function ' . $functionName . '.',
 				'Unknown parameter $%s in call to function ' . $functionName . '.',
 				'Return type of call to function ' . $functionName . ' contains unresolvable type.',
+				'Parameter %s of function ' . $functionName . ' contains unresolvable type.',
 			],
 		);
 	}

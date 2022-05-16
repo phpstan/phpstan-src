@@ -76,6 +76,7 @@ class CallStaticMethodsRule implements Rule
 				'Missing parameter $%s in call to ' . $lowercasedMethodName . '.',
 				'Unknown parameter $%s in call to ' . $lowercasedMethodName . '.',
 				'Return type of call to ' . $lowercasedMethodName . ' contains unresolvable type.',
+				'Parameter %s of ' . $lowercasedMethodName . ' contains unresolvable type.',
 			],
 		));
 

@@ -144,3 +144,19 @@ function takesNotNull($value) : void {
 	validateNotNull($value);
 	assertType('mixed~null', $value);
 }
+
+
+/**
+ * @template T of object
+ * @param object $object
+ * @param class-string<T> $class
+ * @phpstan-assert T $object
+ */
+function validateClassType(object $object, string $class) {}
+
+class ClassToValidate {}
+
+function (object $object) {
+	validateClassType($object, ClassToValidate::class);
+	assertType('AssertDocblock\ClassToValidate', $object);
+};

@@ -14,7 +14,7 @@ use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function array_map;
 
-class ResolvedFunctionVariant implements ParametersAcceptor
+class ResolvedFunctionVariant implements ParametersAcceptor, ParametersAcceptorWithAsserts
 {
 
 	/** @var ParameterReflection[]|null */

@@ -43,6 +43,7 @@ class FunctionCallParametersCheck
 		private bool $checkArgumentsPassedByReference,
 		private bool $checkExtraArguments,
 		private bool $checkMissingTypehints,
+		private bool $checkUnresolvableParameterTypes,
 	)
 	{
 	}
@@ -268,7 +269,11 @@ class FunctionCallParametersCheck
 				))->line($argumentLine)->build();
 			}
 
-			if ($this->unresolvableTypeHelper->containsUnresolvableType($parameterType)) {
+			if (
+				$this->checkArgumentTypes
+				&& $this->checkUnresolvableParameterTypes
+				&& $this->unresolvableTypeHelper->containsUnresolvableType($parameterType)
+			) {
 				$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
 				$errors[] = RuleErrorBuilder::message(sprintf(
 					$messages[13],

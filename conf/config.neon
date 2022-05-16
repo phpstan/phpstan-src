@@ -38,6 +38,7 @@ parameters:
 		strictUnnecessaryNullsafePropertyFetch: false
 		looseComparison: false
 		consistentConstructor: false
+		checkUnresolvableParameterTypes: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -213,6 +214,7 @@ parametersSchema:
 		strictUnnecessaryNullsafePropertyFetch: bool(),
 		looseComparison: bool(),
 		consistentConstructor: bool()
+		checkUnresolvableParameterTypes: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -841,6 +843,7 @@ services:
 			checkArgumentsPassedByReference: %checkArgumentsPassedByReference%
 			checkExtraArguments: %checkExtraArguments%
 			checkMissingTypehints: %checkMissingTypehints%
+			checkUnresolvableParameterTypes: %featureToggles.checkUnresolvableParameterTypes%
 
 	-
 		class: PHPStan\Rules\FunctionDefinitionCheck

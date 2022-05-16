@@ -12,3 +12,4 @@ parameters:
 		strictUnnecessaryNullsafePropertyFetch: true
 		looseComparison: true
 		consistentConstructor: true
+		checkUnresolvableParameterTypes: true

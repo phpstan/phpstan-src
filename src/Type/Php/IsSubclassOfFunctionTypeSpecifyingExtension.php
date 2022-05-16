@@ -9,8 +9,11 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\Generic\GenericClassStringType;
 use function count;
 use function strtolower;
 
@@ -41,6 +44,11 @@ class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 		$classType = $scope->getType($node->getArgs()[1]->value);
 		$allowStringType = isset($node->getArgs()[2]) ? $scope->getType($node->getArgs()[2]->value) : new ConstantBooleanType(true);
 		$allowString = !$allowStringType->equals(new ConstantBooleanType(false));
+
+		// prevent false-positives in IsAFunctionTypeSpecifyingHelper
+		if ($objectOrClassType instanceof GenericClassStringType && $classType instanceof GenericClassStringType) {
+			return new SpecifiedTypes([], []);
+		}
 
 		return $this->typeSpecifier->create(
 			$node->getArgs()[0]->value,

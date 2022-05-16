@@ -1001,7 +1001,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4371.php'], $errors);
 	}
 
-	public function testBug6305(): void
+	public function testIsSubclassAllowString(): void
 	{
 		$errors = [
 			[

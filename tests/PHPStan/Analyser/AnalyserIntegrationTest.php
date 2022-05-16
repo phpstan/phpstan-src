@@ -807,6 +807,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(42, $errors[0]->getLine());
 	}
 
+	public function testUnresolvableParameter(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/unresolvable-parameter.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Parameter #2 $array of function array_map expects array, array<int, string>|false given.', $errors[0]->getMessage());
+		$this->assertSame(18, $errors[0]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

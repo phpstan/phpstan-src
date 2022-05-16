@@ -10,6 +10,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\LateResolvableType;
@@ -74,7 +75,7 @@ class ParametersAcceptorSelector
 				$parameters = $acceptor->getParameters();
 				$callbackParameters = [];
 				foreach ($arrayMapArgs as $arg) {
-					$callbackParameters[] = new DummyParameter('item', $scope->getType($arg->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null);
+					$callbackParameters[] = new DummyParameter('item', self::getIterableValueType($scope->getType($arg->value)), false, PassedByReference::createNo(), false, null);
 				}
 				$parameters[0] = new NativeParameterReflection(
 					$parameters[0]->getName(),
@@ -104,12 +105,12 @@ class ParametersAcceptorSelector
 					if ($mode instanceof ConstantIntegerType) {
 						if ($mode->getValue() === ARRAY_FILTER_USE_KEY) {
 							$arrayFilterParameters = [
-								new DummyParameter('key', $scope->getType($args[0]->value)->getIterableKeyType(), false, PassedByReference::createNo(), false, null),
+								new DummyParameter('key', self::getIterableKeyType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
 							];
 						} elseif ($mode->getValue() === ARRAY_FILTER_USE_BOTH) {
 							$arrayFilterParameters = [
-								new DummyParameter('item', $scope->getType($args[0]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
-								new DummyParameter('key', $scope->getType($args[0]->value)->getIterableKeyType(), false, PassedByReference::createNo(), false, null),
+								new DummyParameter('item', self::getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
+								new DummyParameter('key', self::getIterableKeyType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
 							];
 						}
 					}
@@ -122,7 +123,7 @@ class ParametersAcceptorSelector
 					$parameters[1]->isOptional(),
 					new CallableType(
 						$arrayFilterParameters ?? [
-							new DummyParameter('item', $scope->getType($args[0]->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null),
+							new DummyParameter('item', self::getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
 						],
 						new MixedType(),
 						false,
@@ -393,6 +394,44 @@ class ParametersAcceptorSelector
 			$isVariadic,
 			$returnType,
 		);
+	}
+
+	private static function getIterableValueType(Type $type): Type
+	{
+		if ($type instanceof UnionType) {
+			$types = [];
+			foreach ($type->getTypes() as $innerType) {
+				$iterableValueType = $innerType->getIterableValueType();
+				if ($iterableValueType instanceof ErrorType) {
+					continue;
+				}
+
+				$types[] = $iterableValueType;
+			}
+
+			return TypeCombinator::union(...$types);
+		}
+
+		return $type->getIterableValueType();
+	}
+
+	private static function getIterableKeyType(Type $type): Type
+	{
+		if ($type instanceof UnionType) {
+			$types = [];
+			foreach ($type->getTypes() as $innerType) {
+				$iterableKeyType = $innerType->getIterableKeyType();
+				if ($iterableKeyType instanceof ErrorType) {
+					continue;
+				}
+
+				$types[] = $iterableKeyType;
+			}
+
+			return TypeCombinator::union(...$types);
+		}
+
+		return $type->getIterableKeyType();
 	}
 
 }

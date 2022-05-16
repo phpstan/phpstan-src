@@ -1001,4 +1001,23 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4371.php'], $errors);
 	}
 
+	public function testBug6305(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-6305.php'], [
+			[
+				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
+				11
+			],
+			[
+				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
+				14
+			],
+			[
+				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
+				17
+			]
+		]);
+	}
 }

@@ -34,6 +34,7 @@ class CallCallablesRuleTest extends RuleTestCase
 				true,
 				true,
 				true,
+				true,
 			),
 			$ruleLevelHelper,
 			true,

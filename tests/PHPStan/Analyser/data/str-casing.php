@@ -19,13 +19,13 @@ class Foo {
 		assertType("'Abc'", ucfirst('abc'));
 		assertType("'Hello World'", ucwords('hello world'));
 
-		assertType("non-empty-string&numeric-string", strtolower($numericS));
-		assertType("non-empty-string&numeric-string", strtoupper($numericS));
-		assertType("non-empty-string&numeric-string", mb_strtolower($numericS));
-		assertType("non-empty-string&numeric-string", mb_strtoupper($numericS));
-		assertType("non-empty-string&numeric-string", lcfirst($numericS));
-		assertType("non-empty-string&numeric-string", ucfirst($numericS));
-		assertType("non-empty-string&numeric-string", ucwords($numericS));
+		assertType("numeric-string", strtolower($numericS));
+		assertType("numeric-string", strtoupper($numericS));
+		assertType("numeric-string", mb_strtolower($numericS));
+		assertType("numeric-string", mb_strtoupper($numericS));
+		assertType("numeric-string", lcfirst($numericS));
+		assertType("numeric-string", ucfirst($numericS));
+		assertType("numeric-string", ucwords($numericS));
 
 		assertType("non-empty-string", strtolower($nonE));
 		assertType("non-empty-string", strtoupper($nonE));

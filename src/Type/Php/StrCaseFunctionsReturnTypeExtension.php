@@ -56,6 +56,13 @@ class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			return new ConstantStringType($fnName($argType->getValue()));
 		}
 
+		if ($argType->isNumericString()->yes()) {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNumericStringType(),
+			]);
+		}
+
 		$accessoryTypes = [];
 		if ($argType->isNonEmptyString()->yes()) {
 			$accessoryTypes[] = new AccessoryNonEmptyStringType();
@@ -63,9 +70,7 @@ class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		if ($argType->isLiteralString()->yes()) {
 			$accessoryTypes[] = new AccessoryLiteralStringType();
 		}
-		if ($argType->isNumericString()->yes()) {
-			$accessoryTypes[] = new AccessoryNumericStringType();
-		}
+
 		if (count($accessoryTypes) > 0) {
 			$accessoryTypes[] = new StringType();
 			return new IntersectionType($accessoryTypes);

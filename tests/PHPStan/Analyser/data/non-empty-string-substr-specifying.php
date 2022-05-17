@@ -11,8 +11,16 @@ class Foo {
 			assertType('non-empty-string', $s);
 		}
 		assertType('string', $s);
+		if ('hallo' === substr($s, 10)) {
+			assertType('non-empty-string', $s);
+		}
+		assertType('string', $s);
 
 		if (substr($s, -10) === 'hallo') {
+			assertType('non-empty-string', $s);
+		}
+		assertType('string', $s);
+		if ('hallo' === substr($s, -10)) {
 			assertType('non-empty-string', $s);
 		}
 		assertType('string', $s);
@@ -46,8 +54,16 @@ class Foo {
 			assertType('string', $s);
 		}
 		assertType('string', $s);
+		if ('' === substr($s, $offset, $length)) {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
 
 		if (substr($s, $offset, $length) == '') {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+		if ('' == substr($s, $offset, $length)) {
 			assertType('string', $s);
 		}
 		assertType('string', $s);

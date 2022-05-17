@@ -21,8 +21,8 @@ class Foo
 		assertType('false', [1] === [2]);
 		assertType('false', [1] !== [1]);
 		assertType('true', [1] !== [2]);
-		assertType('true', [$s] === [$s]);
-		assertType('false', [$s] !== [$s]);
+		assertType('bool', [$s] === [$s]);
+		assertType('bool', [$s] !== [$s]);
 
 		$a = [1];
 		if (doFoo()) {
@@ -49,6 +49,24 @@ class Foo
 
 		assertType('bool', $a === $b);
 		assertType('bool', $a !== $b);
+	}
+
+	/**
+	 * @param array{a?: int} $a
+	 * @param array{b?: int} $b
+	 */
+	function doBar(array $a, array $b): void
+	{
+		assertType('bool', $a === $b);
+	}
+
+	/**
+	 * @param array{c: int, d?: int} $a
+	 * @param array{e: int, f?: int} $b
+	 */
+	function doBaz(array $a, array $b): void
+	{
+		assertType('false', $a === $b);
 	}
 
 }

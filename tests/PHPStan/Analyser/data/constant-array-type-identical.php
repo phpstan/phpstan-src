@@ -21,8 +21,8 @@ class Foo
 		assertType('false', [1] === [2]);
 		assertType('false', [1] !== [1]);
 		assertType('true', [1] !== [2]);
-		assertType('bool', [$s] === [$s]);
-		assertType('bool', [$s] !== [$s]);
+		assertType('true', [$s] === [$s]);
+		assertType('false', [$s] !== [$s]);
 
 		$a = [1];
 		if (doFoo()) {

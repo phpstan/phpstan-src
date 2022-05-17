@@ -2274,19 +2274,19 @@ class MutatingScope implements Scope
 	 */
 	private function resolveConstantArrayTypeComparison(ConstantArrayType $leftType, ConstantArrayType $rightType, callable $valueComparisonCallback): BooleanType
 	{
-		$leftValueTypes = $leftType->getValueTypes();
-		$rightKeyTypes = $rightType->getKeyTypes();
-		$rightValueTypes = $rightType->getValueTypes();
-		$hasOptional = false;
-		foreach ($leftType->getKeyTypes() as $i => $keyType) {
-			if (!array_key_exists($i, $rightKeyTypes)) {
-				if ($leftType->isOptionalKey($i)) {
-					$hasOptional = true;
-					continue;
-				}
-				return new ConstantBooleanType(false);
-			}
+		if ($leftType->hasOptionalKeys() || $rightType->hasOptionalKeys()) {
+			return new BooleanType();
+		}
 
+		$leftKeyTypes = $leftType->getKeyTypes();
+		$rightKeyTypes = $rightType->getKeyTypes();
+		if (count($leftKeyTypes) !== count($rightKeyTypes)) {
+			return new ConstantBooleanType(false);
+		}
+
+		$leftValueTypes = $leftType->getValueTypes();
+		$rightValueTypes = $rightType->getValueTypes();
+		foreach ($leftKeyTypes as $i => $keyType) {
 			$rightKeyType = $rightKeyTypes[$i];
 			if (!$keyType->equals($rightKeyType)) {
 				return new ConstantBooleanType(false);
@@ -2295,38 +2295,9 @@ class MutatingScope implements Scope
 			$leftValueType = $leftValueTypes[$i];
 			$rightValueType = $rightValueTypes[$i];
 			$leftIdenticalToRight = $valueComparisonCallback($leftValueType, $rightValueType);
-			if ($leftIdenticalToRight instanceof ConstantBooleanType) {
-				if (!$leftIdenticalToRight->getValue()) {
-					return new ConstantBooleanType(false);
-				}
-				$isLeftOptional = $leftType->isOptionalKey($i);
-				if ($isLeftOptional || $rightType->isOptionalKey($i)) {
-					$hasOptional = true;
-				}
-				continue;
+			if ($leftIdenticalToRight instanceof ConstantBooleanType && !$leftIdenticalToRight->getValue()) {
+				return new ConstantBooleanType(false);
 			}
-
-			$hasOptional = true;
-		}
-
-		if (!isset($i)) {
-			$i = 0;
-		} else {
-			$i++;
-		}
-
-		$rightKeyTypesCount = count($rightKeyTypes);
-		for (; $i < $rightKeyTypesCount; $i++) {
-			if ($rightType->isOptionalKey($i)) {
-				$hasOptional = true;
-				continue;
-			}
-
-			return new ConstantBooleanType(false);
-		}
-
-		if ($hasOptional) {
-			return new BooleanType();
 		}
 
 		return new ConstantBooleanType(true);

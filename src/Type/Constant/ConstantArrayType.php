@@ -130,6 +130,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->optionalKeys;
 	}
 
+	public function hasOptionalKeys(): bool
+	{
+		return count($this->optionalKeys) > 0;
+	}
+
 	/**
 	 * @return self[]
 	 */

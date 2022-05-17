@@ -1001,4 +1001,42 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4371.php'], $errors);
 	}
 
+	public function testIsSubclassAllowString(): void
+	{
+		$errors = [
+			[
+				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
+				11,
+			],
+			[
+				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
+				14,
+			],
+			[
+				'Parameter #1 $object_or_class of function is_subclass_of expects object, string given.',
+				17,
+			],
+		];
+
+		if (PHP_VERSION_ID < 80000) {
+			// php 7.x had different parameter names
+			$errors = [
+				[
+					'Parameter #1 $object_or_string of function is_subclass_of expects object, string given.',
+					11,
+				],
+				[
+					'Parameter #1 $object_or_string of function is_subclass_of expects object, string given.',
+					14,
+				],
+				[
+					'Parameter #1 $object_or_string of function is_subclass_of expects object, string given.',
+					17,
+				],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/is-subclass-allow-string.php'], $errors);
+	}
+
 }

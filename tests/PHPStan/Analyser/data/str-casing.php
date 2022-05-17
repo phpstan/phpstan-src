@@ -8,9 +8,9 @@ class Foo {
 	/**
 	 * @param numeric-string $numericS
 	 * @param non-empty-string $nonE
-	 * @return string
+	 * @param literal-string $literal
 	 */
-	public function bar($numericS, $nonE): string {
+	public function bar($numericS, $nonE, $literal) {
 		assertType("'abc'", strtolower('ABC'));
 		assertType("'ABC'", strtoupper('abc'));
 		assertType("'abc'", mb_strtolower('ABC'));
@@ -34,5 +34,13 @@ class Foo {
 		assertType("non-empty-string", lcfirst($nonE));
 		assertType("non-empty-string", ucfirst($nonE));
 		assertType("non-empty-string", ucwords($nonE));
+
+		assertType("literal-string", strtolower($literal));
+		assertType("literal-string", strtoupper($literal));
+		assertType("literal-string", mb_strtolower($literal));
+		assertType("literal-string", mb_strtoupper($literal));
+		assertType("literal-string", lcfirst($literal));
+		assertType("literal-string", ucfirst($literal));
+		assertType("literal-string", ucwords($literal));
 	}
 }

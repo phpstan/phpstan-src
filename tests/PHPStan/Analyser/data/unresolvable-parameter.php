@@ -20,3 +20,20 @@ class TestDoxPrinter
 		);
 	}
 }
+
+interface Collection
+{
+	/**
+	 * @param string-class $class
+	 * @return mixed
+	 */
+	public function pipeInto($class);
+}
+
+class User
+{
+}
+
+function (Collection $collection) {
+	$collection->pipeInto(User::class);
+};

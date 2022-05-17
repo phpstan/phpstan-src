@@ -2286,6 +2286,7 @@ class MutatingScope implements Scope
 
 		$leftValueTypes = $leftType->getValueTypes();
 		$rightValueTypes = $rightType->getValueTypes();
+		$resultType = new ConstantBooleanType(true);
 		foreach ($leftKeyTypes as $i => $keyType) {
 			$rightKeyType = $rightKeyTypes[$i];
 			if (!$keyType->equals($rightKeyType)) {
@@ -2298,9 +2299,10 @@ class MutatingScope implements Scope
 			if ($leftIdenticalToRight instanceof ConstantBooleanType && !$leftIdenticalToRight->getValue()) {
 				return new ConstantBooleanType(false);
 			}
+			$resultType = TypeCombinator::union($resultType, $leftIdenticalToRight);
 		}
 
-		return new ConstantBooleanType(true);
+		return $resultType->toBoolean();
 	}
 
 	private function resolveConcatType(Expr\BinaryOp\Concat|Expr\AssignOp\Concat $node): Type

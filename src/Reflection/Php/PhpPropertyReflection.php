@@ -30,7 +30,7 @@ class PhpPropertyReflection implements PropertyReflection
 		private ?string $deprecatedDescription,
 		private bool $isDeprecated,
 		private bool $isInternal,
-		private bool $isReadOnlyByPhpDoc = false,
+		private bool $isReadOnlyByPhpDoc,
 	)
 	{
 	}

@@ -49,5 +49,9 @@ class Foo {
 		assertType("literal-string&non-empty-string", mb_strtolower('ABC', 'UTF-8'));
 		assertType("literal-string&non-empty-string", mb_strtoupper('abc', 'UTF-8'));
 		assertType("literal-string&non-empty-string", ucwords('hello|world!', "|"));
+
+		// invalid char conversions still lead to non-empty-string
+		assertType("literal-string&non-empty-string", mb_strtolower("\xfe\xff\x65\xe5\x67\x2c\x8a\x9e", 'CP1252'));
+
 	}
 }

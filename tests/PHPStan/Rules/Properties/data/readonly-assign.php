@@ -184,3 +184,15 @@ class Unserialization
 	}
 
 }
+
+class TestCase
+{
+
+	private readonly int $foo;
+
+	protected function setUp(): void
+	{
+		$this->foo = 1; // additional constructor - fine
+	}
+
+}

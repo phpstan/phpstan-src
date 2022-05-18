@@ -189,3 +189,19 @@ class Unserialization
 	}
 
 }
+
+class TestCase
+{
+
+	/**
+	 * @var int
+	 * @readonly
+	 */
+	private $foo;
+
+	protected function setUp(): void
+	{
+		$this->foo = 1; // additional constructor - fine
+	}
+
+}

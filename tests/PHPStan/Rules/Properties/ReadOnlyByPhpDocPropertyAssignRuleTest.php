@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -13,7 +14,14 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ReadOnlyByPhpDocPropertyAssignRule(new PropertyReflectionFinder());
+		return new ReadOnlyByPhpDocPropertyAssignRule(
+			new PropertyReflectionFinder(),
+			new ConstructorsHelper(
+				[
+					'ReadonlyPropertyAssignPhpDoc\\TestCase::setUp',
+				],
+			),
+		);
 	}
 
 	public function testRule(): void

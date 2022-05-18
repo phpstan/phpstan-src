@@ -5,13 +5,10 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertiesNode;
-use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use ReflectionException;
-use function array_key_exists;
-use function explode;
 use function sprintf;
 
 /**
@@ -20,15 +17,9 @@ use function sprintf;
 class UninitializedPropertyRule implements Rule
 {
 
-	/** @var array<string, string[]> */
-	private array $additionalConstructorsCache = [];
-
-	/**
-	 * @param string[] $additionalConstructors
-	 */
 	public function __construct(
 		private ReadWritePropertiesExtensionProvider $extensionProvider,
-		private array $additionalConstructors,
+		private ConstructorsHelper $constructorsHelper,
 	)
 	{
 	}
@@ -44,7 +35,7 @@ class UninitializedPropertyRule implements Rule
 			throw new ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
-		[$properties, $prematureAccess] = $node->getUninitializedProperties($scope, $this->getConstructors($classReflection), $this->extensionProvider->getExtensions());
+		[$properties, $prematureAccess] = $node->getUninitializedProperties($scope, $this->constructorsHelper->getConstructors($classReflection), $this->extensionProvider->getExtensions());
 
 		$errors = [];
 		foreach ($properties as $propertyName => $propertyNode) {
@@ -70,48 +61,6 @@ class UninitializedPropertyRule implements Rule
 		}
 
 		return $errors;
-	}
-
-	/**
-	 * @return string[]
-	 */
-	private function getConstructors(ClassReflection $classReflection): array
-	{
-		if (array_key_exists($classReflection->getName(), $this->additionalConstructorsCache)) {
-			return $this->additionalConstructorsCache[$classReflection->getName()];
-		}
-		$constructors = [];
-		if ($classReflection->hasConstructor()) {
-			$constructors[] = $classReflection->getConstructor()->getName();
-		}
-
-		$nativeReflection = $classReflection->getNativeReflection();
-		foreach ($this->additionalConstructors as $additionalConstructor) {
-			[$className, $methodName] = explode('::', $additionalConstructor);
-			if (!$nativeReflection->hasMethod($methodName)) {
-				continue;
-			}
-			$nativeMethod = $nativeReflection->getMethod($methodName);
-			if ($nativeMethod->getDeclaringClass()->getName() !== $nativeReflection->getName()) {
-				continue;
-			}
-
-			try {
-				$prototype = $nativeMethod->getPrototype();
-			} catch (ReflectionException) {
-				$prototype = $nativeMethod;
-			}
-
-			if ($prototype->getDeclaringClass()->getName() !== $className) {
-				continue;
-			}
-
-			$constructors[] = $methodName;
-		}
-
-		$this->additionalConstructorsCache[$classReflection->getName()] = $constructors;
-
-		return $constructors;
 	}
 
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -14,9 +15,11 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MissingReadOnlyByPhpDocPropertyAssignRule([
-			'MissingReadOnlyPropertyAssignPhpDoc\\TestCase::setUp',
-		]);
+		return new MissingReadOnlyByPhpDocPropertyAssignRule(
+			new ConstructorsHelper([
+				'MissingReadOnlyPropertyAssignPhpDoc\\TestCase::setUp',
+			]),
+		);
 	}
 
 	public function testRule(): void

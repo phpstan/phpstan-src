@@ -2282,8 +2282,6 @@ class MutatingScope implements Scope
 		$resultType = new ConstantBooleanType(true);
 
 		foreach ($leftKeyTypes as $i => $leftKeyType) {
-			unset($leftKeyTypes[$i]);
-
 			$leftOptional = $leftType->isOptionalKey($i);
 			if ($leftOptional) {
 				$resultType = new BooleanType();
@@ -2296,7 +2294,6 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$rightOptional = false;
 			$found = false;
 			foreach ($rightKeyTypes as $j => $rightKeyType) {
 				unset($rightKeyTypes[$j]);

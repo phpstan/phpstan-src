@@ -219,3 +219,34 @@ function (ChildClass2 $c): void {
 	assertType('int', $c->doFoo(1));
 	assertType('string', $c->doFoo('foo'));
 };
+
+/**
+ * @template T of object
+ */
+class ConditionalTypeFromClassScopeGenerics
+{
+
+	/**
+	 * @return (T is \Exception ? string : int)
+	 */
+	public function doFoo()
+	{
+
+	}
+
+}
+
+class TestConditionalTypeFromClassScopeGenerics
+{
+
+	/**
+	 * @param ConditionalTypeFromClassScopeGenerics<\Exception> $a
+	 * @param ConditionalTypeFromClassScopeGenerics<\stdClass> $b
+	 */
+	public function doFoo(ConditionalTypeFromClassScopeGenerics $a, ConditionalTypeFromClassScopeGenerics $b)
+	{
+		assertType('string', $a->doFoo());
+		assertType('int', $b->doFoo());
+	}
+
+}

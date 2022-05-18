@@ -1387,6 +1387,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\StrCaseFunctionsReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\StrlenFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

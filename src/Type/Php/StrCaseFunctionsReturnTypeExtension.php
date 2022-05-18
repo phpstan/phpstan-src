@@ -16,7 +16,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\UnionType;
 use function count;
 use function in_array;
 use function is_callable;

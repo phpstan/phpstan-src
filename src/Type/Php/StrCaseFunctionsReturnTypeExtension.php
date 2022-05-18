@@ -14,6 +14,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
@@ -62,10 +63,7 @@ class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeEx
 					$strings[] = new ConstantStringType($fnName($constantString->getValue()));
 				}
 
-				if (count($strings) === 1) {
-					return $strings[0];
-				}
-				return new UnionType($strings);
+				return TypeCombinator::union(...$strings);
 			}
 		}
 

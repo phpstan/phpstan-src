@@ -9,8 +9,9 @@ class Foo {
 	 * @param numeric-string $numericS
 	 * @param non-empty-string $nonE
 	 * @param literal-string $literal
+	 * @param 'foo'|'Foo' $edgeUnion
 	 */
-	public function bar($numericS, $nonE, $literal) {
+	public function bar($numericS, $nonE, $literal, $edgeUnion) {
 		assertType("'abc'", strtolower('ABC'));
 		assertType("'ABC'", strtoupper('abc'));
 		assertType("'abc'", mb_strtolower('ABC'));
@@ -42,6 +43,8 @@ class Foo {
 		assertType("string", lcfirst($literal));
 		assertType("string", ucfirst($literal));
 		assertType("string", ucwords($literal));
+
+		assertType("'foo'", lcfirst($edgeUnion));
 	}
 
 	public function foo() {

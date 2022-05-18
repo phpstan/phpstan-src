@@ -180,8 +180,6 @@ services:
 		class: PHPStan\Rules\Properties\MissingReadOnlyByPhpDocPropertyAssignRule
 		arguments:
 			additionalConstructors: %additionalConstructors%
-		tags:
-			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule

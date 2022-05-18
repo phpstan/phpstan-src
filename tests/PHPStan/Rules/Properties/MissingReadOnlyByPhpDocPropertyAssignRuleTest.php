@@ -27,31 +27,31 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/missing-readonly-property-assign-phpdoc.php'], [
 			[
-				'Class MissingReadOnlyPropertyAssignPhpDoc\Foo has an uninitialized readonly property $unassigned. Assign it in the constructor.',
+				'Class MissingReadOnlyPropertyAssignPhpDoc\Foo has an uninitialized @readonly property $unassigned. Assign it in the constructor.',
 				16,
 			],
 			[
-				'Class MissingReadOnlyPropertyAssignPhpDoc\Foo has an uninitialized readonly property $unassigned2. Assign it in the constructor.',
+				'Class MissingReadOnlyPropertyAssignPhpDoc\Foo has an uninitialized @readonly property $unassigned2. Assign it in the constructor.',
 				19,
 			],
 			[
-				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssignPhpDoc\Foo::$readBeforeAssigned.',
+				'Access to an uninitialized @readonly property MissingReadOnlyPropertyAssignPhpDoc\Foo::$readBeforeAssigned.',
 				36,
 			],
 			[
-				'Readonly property MissingReadOnlyPropertyAssignPhpDoc\Foo::$doubleAssigned is already assigned.',
+				'@readonly property MissingReadOnlyPropertyAssignPhpDoc\Foo::$doubleAssigned is already assigned.',
 				40,
 			],
 			[
-				'Class MissingReadOnlyPropertyAssignPhpDoc\BarDoubleAssignInSetter has an uninitialized readonly property $foo. Assign it in the constructor.',
+				'Class MissingReadOnlyPropertyAssignPhpDoc\BarDoubleAssignInSetter has an uninitialized @readonly property $foo. Assign it in the constructor.',
 				57,
 			],
 			[
-				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssignPhpDoc\AssignOp::$foo.',
+				'Access to an uninitialized @readonly property MissingReadOnlyPropertyAssignPhpDoc\AssignOp::$foo.',
 				92,
 			],
 			[
-				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssignPhpDoc\AssignOp::$bar.',
+				'Access to an uninitialized @readonly property MissingReadOnlyPropertyAssignPhpDoc\AssignOp::$bar.',
 				94,
 			],
 		]);

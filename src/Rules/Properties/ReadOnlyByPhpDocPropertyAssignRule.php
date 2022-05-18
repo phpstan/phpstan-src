@@ -52,13 +52,13 @@ class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 			$declaringClass = $nativeReflection->getDeclaringClass();
 
 			if (!$scope->isInClass()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
 				continue;
 			}
 
 			$scopeClassReflection = $scope->getClassReflection();
 			if ($scopeClassReflection->getName() !== $declaringClass->getName()) {
-				$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
+				$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is assigned outside of its declaring class.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
 				continue;
 			}
 
@@ -69,13 +69,13 @@ class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 
 			if (strtolower($scopeMethod->getName()) === '__construct' || strtolower($scopeMethod->getName()) === '__unserialize') {
 				if (!$scope->getType($propertyFetch->var) instanceof ThisType) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is not assigned on $this.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
+					$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is not assigned on $this.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
 				}
 
 				continue;
 			}
 
-			$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of the constructor.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
+			$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is assigned outside of the constructor.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
 		}
 
 		return $errors;

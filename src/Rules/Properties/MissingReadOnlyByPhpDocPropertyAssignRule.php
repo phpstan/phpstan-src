@@ -51,7 +51,7 @@ class MissingReadOnlyByPhpDocPropertyAssignRule implements Rule
 				continue;
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Class %s has an uninitialized readonly property $%s. Assign it in the constructor.',
+				'Class %s has an uninitialized @readonly property $%s. Assign it in the constructor.',
 				$classReflection->getDisplayName(),
 				$propertyName,
 			))->line($propertyNode->getLine())->build();
@@ -62,7 +62,7 @@ class MissingReadOnlyByPhpDocPropertyAssignRule implements Rule
 				continue;
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Access to an uninitialized readonly property %s::$%s.',
+				'Access to an uninitialized @readonly property %s::$%s.',
 				$classReflection->getDisplayName(),
 				$propertyName,
 			))->line($line)->build();
@@ -73,7 +73,7 @@ class MissingReadOnlyByPhpDocPropertyAssignRule implements Rule
 				continue;
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Readonly property %s::$%s is already assigned.',
+				'@readonly property %s::$%s is already assigned.',
 				$classReflection->getDisplayName(),
 				$propertyName,
 			))->line($line)->build();

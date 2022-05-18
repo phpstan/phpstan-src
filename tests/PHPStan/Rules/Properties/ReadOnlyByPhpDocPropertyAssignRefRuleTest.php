@@ -20,15 +20,15 @@ class ReadOnlyByPhpDocPropertyAssignRefRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/readonly-assign-ref-phpdoc.php'], [
 			[
-				'Readonly property ReadOnlyPropertyAssignRefPhpDoc\Foo::$foo is assigned by reference.',
+				'@readonly property ReadOnlyPropertyAssignRefPhpDoc\Foo::$foo is assigned by reference.',
 				22,
 			],
 			[
-				'Readonly property ReadOnlyPropertyAssignRefPhpDoc\Foo::$bar is assigned by reference.',
+				'@readonly property ReadOnlyPropertyAssignRefPhpDoc\Foo::$bar is assigned by reference.',
 				23,
 			],
 			[
-				'Readonly property ReadOnlyPropertyAssignRefPhpDoc\Foo::$bar is assigned by reference.',
+				'@readonly property ReadOnlyPropertyAssignRefPhpDoc\Foo::$bar is assigned by reference.',
 				34,
 			],
 		]);

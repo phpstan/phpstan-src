@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -77,17 +76,11 @@ class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			]);
 		}
 
-		$accessoryTypes = [];
 		if ($argType->isNonEmptyString()->yes()) {
-			$accessoryTypes[] = new AccessoryNonEmptyStringType();
-		}
-		if ($argType->isLiteralString()->yes()) {
-			$accessoryTypes[] = new AccessoryLiteralStringType();
-		}
-
-		if (count($accessoryTypes) > 0) {
-			$accessoryTypes[] = new StringType();
-			return new IntersectionType($accessoryTypes);
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNonEmptyStringType(),
+			]);
 		}
 
 		return new StringType();

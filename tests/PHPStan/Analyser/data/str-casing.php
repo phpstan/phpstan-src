@@ -35,23 +35,23 @@ class Foo {
 		assertType("non-empty-string", ucfirst($nonE));
 		assertType("non-empty-string", ucwords($nonE));
 
-		assertType("literal-string", strtolower($literal));
-		assertType("literal-string", strtoupper($literal));
-		assertType("literal-string", mb_strtolower($literal));
-		assertType("literal-string", mb_strtoupper($literal));
-		assertType("literal-string", lcfirst($literal));
-		assertType("literal-string", ucfirst($literal));
-		assertType("literal-string", ucwords($literal));
+		assertType("string", strtolower($literal));
+		assertType("string", strtoupper($literal));
+		assertType("string", mb_strtolower($literal));
+		assertType("string", mb_strtoupper($literal));
+		assertType("string", lcfirst($literal));
+		assertType("string", ucfirst($literal));
+		assertType("string", ucwords($literal));
 	}
 
 	public function foo() {
 		// calls with a 2nd arg could be more precise, but there was no use-case yet to support it
-		assertType("literal-string&non-empty-string", mb_strtolower('ABC', 'UTF-8'));
-		assertType("literal-string&non-empty-string", mb_strtoupper('abc', 'UTF-8'));
-		assertType("literal-string&non-empty-string", ucwords('hello|world!', "|"));
+		assertType("non-empty-string", mb_strtolower('ABC', 'UTF-8'));
+		assertType("non-empty-string", mb_strtoupper('abc', 'UTF-8'));
+		assertType("non-empty-string", ucwords('hello|world!', "|"));
 
 		// invalid char conversions still lead to non-empty-string
-		assertType("literal-string&non-empty-string", mb_strtolower("\xfe\xff\x65\xe5\x67\x2c\x8a\x9e", 'CP1252'));
+		assertType("non-empty-string", mb_strtolower("\xfe\xff\x65\xe5\x67\x2c\x8a\x9e", 'CP1252'));
 
 	}
 }

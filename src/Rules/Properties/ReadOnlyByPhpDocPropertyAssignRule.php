@@ -5,11 +5,13 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\PropertyAssignNode;
+use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ThisType;
+use function in_array;
 use function sprintf;
 use function strtolower;
 
@@ -19,7 +21,10 @@ use function strtolower;
 class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 {
 
-	public function __construct(private PropertyReflectionFinder $propertyReflectionFinder)
+	public function __construct(
+		private PropertyReflectionFinder $propertyReflectionFinder,
+		private ConstructorsHelper $constructorsHelper,
+	)
 	{
 	}
 
@@ -67,7 +72,10 @@ class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 				throw new ShouldNotHappenException();
 			}
 
-			if (strtolower($scopeMethod->getName()) === '__construct' || strtolower($scopeMethod->getName()) === '__unserialize') {
+			if (
+				in_array($scopeMethod->getName(), $this->constructorsHelper->getConstructors($scopeClassReflection), true)
+				|| strtolower($scopeMethod->getName()) === '__unserialize'
+			) {
 				if (!$scope->getType($propertyFetch->var) instanceof ThisType) {
 					$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is not assigned on $this.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
 				}

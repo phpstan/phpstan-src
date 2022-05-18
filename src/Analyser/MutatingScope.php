@@ -143,6 +143,8 @@ class MutatingScope implements Scope
 
 	private ?string $namespace;
 
+	private ?self $scopeOutOfFirstLevelStatement = null;
+
 	/**
 	 * @param array<string, Type> $constantTypes
 	 * @param VariableTypeHolder[] $variableTypes
@@ -3897,7 +3899,11 @@ class MutatingScope implements Scope
 
 	public function exitFirstLevelStatements(): self
 	{
-		return $this->scopeFactory->create(
+		if ($this->scopeOutOfFirstLevelStatement !== null) {
+			return $this->scopeOutOfFirstLevelStatement;
+		}
+
+		return $this->scopeOutOfFirstLevelStatement = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->constantTypes,

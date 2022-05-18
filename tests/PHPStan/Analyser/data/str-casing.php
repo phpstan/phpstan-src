@@ -43,4 +43,11 @@ class Foo {
 		assertType("literal-string", ucfirst($literal));
 		assertType("literal-string", ucwords($literal));
 	}
+
+	public function foo() {
+		// calls with a 2nd arg could be more precise, but there was no use-case yet to support it
+		assertType("literal-string&non-empty-string", mb_strtolower('ABC', 'UTF-8'));
+		assertType("literal-string&non-empty-string", mb_strtoupper('abc', 'UTF-8'));
+		assertType("literal-string&non-empty-string", ucwords('hello|world!', "|"));
+	}
 }

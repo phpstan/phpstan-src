@@ -15,6 +15,8 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 use function count;
 use function in_array;
 use function is_callable;
@@ -47,13 +49,25 @@ class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		$argType = $scope->getType($args[0]->value);
+		$fnName = $functionReflection->getName();
+		if (!is_callable($fnName)) {
+			throw new ShouldNotHappenException();
+		}
 
-		if ($argType instanceof ConstantStringType) {
-			$fnName = $functionReflection->getName();
-			if (!is_callable($fnName)) {
-				throw new ShouldNotHappenException();
+		if (count($args) === 1) {
+			$constantStrings = TypeUtils::getConstantStrings($argType);
+			if (count($constantStrings) > 0) {
+				$strings = [];
+
+				foreach ($constantStrings as $constantString) {
+					$strings[] = new ConstantStringType($fnName($constantString->getValue()));
+				}
+
+				if (count($strings) === 1) {
+					return $strings[0];
+				}
+				return new UnionType($strings);
 			}
-			return new ConstantStringType($fnName($argType->getValue()));
 		}
 
 		if ($argType->isNumericString()->yes()) {

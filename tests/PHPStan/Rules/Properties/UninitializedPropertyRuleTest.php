@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -35,9 +36,11 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 
 				},
 			]),
-			[
-				'UninitializedProperty\\TestCase::setUp',
-			],
+			new ConstructorsHelper(
+				[
+					'UninitializedProperty\\TestCase::setUp',
+				],
+			),
 		);
 	}
 

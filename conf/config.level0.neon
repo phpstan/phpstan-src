@@ -67,6 +67,7 @@ rules:
 	- PHPStan\Rules\Operators\InvalidAssignVarRule
 	- PHPStan\Rules\Properties\AccessPropertiesInAssignRule
 	- PHPStan\Rules\Properties\AccessStaticPropertiesInAssignRule
+	- PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule
 	- PHPStan\Rules\Properties\PropertyAttributesRule
 	- PHPStan\Rules\Properties\ReadOnlyPropertyRule
 	- PHPStan\Rules\Variables\UnsetRule
@@ -178,15 +179,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Properties\MissingReadOnlyByPhpDocPropertyAssignRule
-		arguments:
-			additionalConstructors: %additionalConstructors%
-
-	-
-		class: PHPStan\Rules\Properties\MissingReadOnlyPropertyAssignRule
-		arguments:
-			additionalConstructors: %additionalConstructors%
-		tags:
-			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Properties\OverridingPropertyRule
@@ -198,8 +190,6 @@ services:
 
 	-
 		class: PHPStan\Rules\Properties\UninitializedPropertyRule
-		arguments:
-			additionalConstructors: %additionalConstructors%
 
 	-
 		class: PHPStan\Rules\Properties\WritingToReadOnlyPropertiesRule
@@ -241,3 +231,8 @@ services:
 			globalTypeAliases: %typeAliases%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Reflection\ConstructorsHelper
+		arguments:
+			additionalConstructors: %additionalConstructors%

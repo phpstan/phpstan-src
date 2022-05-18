@@ -201,6 +201,21 @@ parameters:
 			path: ../src/Reflection/ClassReflection.php
 
 		-
+			message: "#^Call to method getMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ConstructorsHelper.php
+
+		-
+			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ConstructorsHelper.php
+
+		-
+			message: "#^Call to method hasMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Reflection/ConstructorsHelper.php
+
+		-
 			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Reflection/Native/NativeMethodReflection.php
@@ -284,51 +299,6 @@ parameters:
 			message: "#^Call to method getMethods\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Rules/Methods/MissingMethodImplementationRule.php
-
-		-
-			message: "#^Call to method getMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Rules/Properties/MissingReadOnlyByPhpDocPropertyAssignRule.php
-
-		-
-			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Rules/Properties/MissingReadOnlyByPhpDocPropertyAssignRule.php
-
-		-
-			message: "#^Call to method hasMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Rules/Properties/MissingReadOnlyByPhpDocPropertyAssignRule.php
-
-		-
-			message: "#^Call to method getMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Rules/Properties/MissingReadOnlyPropertyAssignRule.php
-
-		-
-			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Rules/Properties/MissingReadOnlyPropertyAssignRule.php
-
-		-
-			message: "#^Call to method hasMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Rules/Properties/MissingReadOnlyPropertyAssignRule.php
-
-		-
-			message: "#^Call to method getMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Rules/Properties/UninitializedPropertyRule.php
-
-		-
-			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Rules/Properties/UninitializedPropertyRule.php
-
-		-
-			message: "#^Call to method hasMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
-			path: ../src/Rules/Properties/UninitializedPropertyRule.php
 
 		-
 			message: "#^Call to method isFinal\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"

@@ -21,7 +21,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		private ?string $phpDoc,
 		private bool $isPromoted,
 		Node $originalNode,
-		private bool $isReadonlyByPhpDoc = false,
+		private bool $isReadonlyByPhpDoc,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());

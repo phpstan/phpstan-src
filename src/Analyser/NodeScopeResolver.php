@@ -507,6 +507,7 @@ class NodeScopeResolver
 						$phpDoc,
 						true,
 						$param,
+						false,
 					), $methodScope);
 				}
 			}

@@ -55,6 +55,14 @@ class Foo
 	 */
 	public function iterableOffset($iterable): void
 	{
+		var_dump($iterable['foo']);
+	}
+
+	/**
+	 * @param iterable<int|string, object> $iterable
+	 */
+	public function iterableOffsetWithUnset($iterable): void
+	{
 		unset($iterable['foo']);
 	}
 

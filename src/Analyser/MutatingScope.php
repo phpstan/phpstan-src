@@ -2274,62 +2274,72 @@ class MutatingScope implements Scope
 	 */
 	private function resolveConstantArrayTypeComparison(ConstantArrayType $leftType, ConstantArrayType $rightType, callable $valueComparisonCallback): BooleanType
 	{
-		$leftValueTypes = $leftType->getValueTypes();
+		$leftKeyTypes = $leftType->getKeyTypes();
 		$rightKeyTypes = $rightType->getKeyTypes();
+		$leftValueTypes = $leftType->getValueTypes();
 		$rightValueTypes = $rightType->getValueTypes();
-		$hasOptional = false;
-		foreach ($leftType->getKeyTypes() as $i => $keyType) {
-			if (!array_key_exists($i, $rightKeyTypes)) {
-				if ($leftType->isOptionalKey($i)) {
-					$hasOptional = true;
-					continue;
-				}
-				return new ConstantBooleanType(false);
+
+		$resultType = new ConstantBooleanType(true);
+
+		foreach ($leftKeyTypes as $i => $leftKeyType) {
+			$leftOptional = $leftType->isOptionalKey($i);
+			if ($leftOptional) {
+				$resultType = new BooleanType();
 			}
 
-			$rightKeyType = $rightKeyTypes[$i];
-			if (!$keyType->equals($rightKeyType)) {
-				return new ConstantBooleanType(false);
-			}
-
-			$leftValueType = $leftValueTypes[$i];
-			$rightValueType = $rightValueTypes[$i];
-			$leftIdenticalToRight = $valueComparisonCallback($leftValueType, $rightValueType);
-			if ($leftIdenticalToRight instanceof ConstantBooleanType) {
-				if (!$leftIdenticalToRight->getValue()) {
+			if (count($rightKeyTypes) === 0) {
+				if (!$leftOptional) {
 					return new ConstantBooleanType(false);
 				}
-				$isLeftOptional = $leftType->isOptionalKey($i);
-				if ($isLeftOptional || $rightType->isOptionalKey($i)) {
-					$hasOptional = true;
+				continue;
+			}
+
+			$found = false;
+			foreach ($rightKeyTypes as $j => $rightKeyType) {
+				unset($rightKeyTypes[$j]);
+
+				if ($leftKeyType->equals($rightKeyType)) {
+					$found = true;
+					break;
+				} elseif (!$rightType->isOptionalKey($j)) {
+					return new ConstantBooleanType(false);
+				}
+			}
+
+			if (!$found) {
+				if (!$leftOptional) {
+					return new ConstantBooleanType(false);
 				}
 				continue;
 			}
 
-			$hasOptional = true;
-		}
-
-		if (!isset($i)) {
-			$i = 0;
-		} else {
-			$i++;
-		}
-
-		$rightKeyTypesCount = count($rightKeyTypes);
-		for (; $i < $rightKeyTypesCount; $i++) {
-			if ($rightType->isOptionalKey($i)) {
-				$hasOptional = true;
-				continue;
+			if (!isset($j)) {
+				throw new ShouldNotHappenException();
 			}
 
-			return new ConstantBooleanType(false);
+			$rightOptional = $rightType->isOptionalKey($j);
+			if ($rightOptional) {
+				$resultType = new BooleanType();
+				if ($leftOptional) {
+					continue;
+				}
+			}
+
+			$leftIdenticalToRight = $valueComparisonCallback($leftValueTypes[$i], $rightValueTypes[$j]);
+			if ($leftIdenticalToRight instanceof ConstantBooleanType && !$leftIdenticalToRight->getValue()) {
+				return new ConstantBooleanType(false);
+			}
+			$resultType = TypeCombinator::union($resultType, $leftIdenticalToRight);
 		}
 
-		if ($hasOptional) {
-			return new BooleanType();
+		foreach (array_keys($rightKeyTypes) as $j) {
+			if (!$rightType->isOptionalKey($j)) {
+				return new ConstantBooleanType(false);
+			}
+			$resultType = new BooleanType();
 		}
 
-		return new ConstantBooleanType(true);
+		return $resultType->toBoolean();
 	}
 
 	private function resolveConcatType(Expr\BinaryOp\Concat|Expr\AssignOp\Concat $node): Type

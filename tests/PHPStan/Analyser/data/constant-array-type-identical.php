@@ -51,4 +51,30 @@ class Foo
 		assertType('bool', $a !== $b);
 	}
 
+	/**
+	 * @param array{a?: int} $a
+	 * @param array{b?: int} $b
+	 */
+	function doBar(array $a, array $b): void
+	{
+		assertType('bool', $a === $b);
+		assertType('bool', $a == $b);
+
+		assertType('bool', $a !== $b);
+		assertType('bool', $a != $b);
+	}
+
+	/**
+	 * @param array{c: int, d?: int} $a
+	 * @param array{e: int, f?: int} $b
+	 */
+	function doBaz(array $a, array $b): void
+	{
+		assertType('false', $a === $b);
+		assertType('false', $a == $b);
+
+		assertType('true', $a !== $b);
+		assertType('true', $a != $b);
+	}
+
 }

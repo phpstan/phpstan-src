@@ -288,6 +288,21 @@ parameters:
 		-
 			message: "#^Call to method getMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
+			path: ../src/Rules/Properties/MissingReadOnlyByPhpDocPropertyAssignRule.php
+
+		-
+			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Properties/MissingReadOnlyByPhpDocPropertyAssignRule.php
+
+		-
+			message: "#^Call to method hasMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Properties/MissingReadOnlyByPhpDocPropertyAssignRule.php
+
+		-
+			message: "#^Call to method getMethod\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
 			path: ../src/Rules/Properties/MissingReadOnlyPropertyAssignRule.php
 
 		-

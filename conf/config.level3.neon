@@ -4,6 +4,10 @@ includes:
 conditionalTags:
 	PHPStan\Rules\Arrays\ArrayUnpackingRule:
 		phpstan.rules.rule: %featureToggles.arrayUnpacking%
+	PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRefRule:
+		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
+	PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule:
+		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
 
 rules:
 	- PHPStan\Rules\Arrays\ArrayDestructuringRule
@@ -81,3 +85,9 @@ services:
 
 	-
 		class: PHPStan\Rules\Arrays\ArrayUnpackingRule
+
+	-
+		class: PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRefRule
+
+	-
+		class: PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyAssignRule

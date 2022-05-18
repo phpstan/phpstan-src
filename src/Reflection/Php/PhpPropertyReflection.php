@@ -30,6 +30,7 @@ class PhpPropertyReflection implements PropertyReflection
 		private ?string $deprecatedDescription,
 		private bool $isDeprecated,
 		private bool $isInternal,
+		private bool $isReadOnlyByPhpDoc,
 	)
 	{
 	}
@@ -72,6 +73,11 @@ class PhpPropertyReflection implements PropertyReflection
 	public function isReadOnly(): bool
 	{
 		return $this->reflection->isReadOnly();
+	}
+
+	public function isReadOnlyByPhpDoc(): bool
+	{
+		return $this->isReadOnlyByPhpDoc;
 	}
 
 	public function getReadableType(): Type

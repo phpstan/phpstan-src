@@ -96,6 +96,8 @@ class ResolvedPhpDocBlock
 	/** @var bool|'notLoaded'|null */
 	private bool|string|null $isPure = 'notLoaded';
 
+	private ?bool $isReadOnly = null;
+
 	private ?bool $hasConsistentConstructor = null;
 
 	private function __construct()
@@ -155,6 +157,7 @@ class ResolvedPhpDocBlock
 		$self->isInternal = false;
 		$self->isFinal = false;
 		$self->isPure = null;
+		$self->isReadOnly = false;
 		$self->hasConsistentConstructor = false;
 
 		return $self;
@@ -200,6 +203,7 @@ class ResolvedPhpDocBlock
 		$result->isInternal = $this->isInternal();
 		$result->isFinal = $this->isFinal();
 		$result->isPure = $this->isPure();
+		$result->isReadOnly = $this->isReadOnly();
 		$result->hasConsistentConstructor = $this->hasConsistentConstructor();
 
 		return $result;
@@ -549,6 +553,16 @@ class ResolvedPhpDocBlock
 		}
 
 		return $this->isPure;
+	}
+
+	public function isReadOnly(): bool
+	{
+		if ($this->isReadOnly === null) {
+			$this->isReadOnly = $this->phpDocNodeResolver->resolveIsReadOnly(
+				$this->phpDocNode,
+			);
+		}
+		return $this->isReadOnly;
 	}
 
 	/**

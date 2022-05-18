@@ -13,3 +13,4 @@ parameters:
 		looseComparison: true
 		consistentConstructor: true
 		checkUnresolvableParameterTypes: true
+		readOnlyByPhpDoc: true

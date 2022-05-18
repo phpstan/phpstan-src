@@ -507,6 +507,7 @@ class NodeScopeResolver
 						$phpDoc,
 						true,
 						$param,
+						false,
 					), $methodScope);
 				}
 			}
@@ -657,16 +658,17 @@ class NodeScopeResolver
 			}
 			foreach ($stmt->props as $prop) {
 				$this->processStmtNode($prop, $scope, $nodeCallback);
-				$docComment = $stmt->getDocComment();
+				[,,,,,,,,,$isReadOnly, $docComment] = $this->getPhpDocs($scope, $stmt);
 				$nodeCallback(
 					new ClassPropertyNode(
 						$prop->name->toString(),
 						$stmt->flags,
 						$stmt->type,
 						$prop->default,
-						$docComment !== null ? $docComment->getText() : null,
+						$docComment,
 						false,
 						$prop,
+						$isReadOnly,
 					),
 					$scope,
 				);
@@ -3839,9 +3841,9 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool, bool|null}
+	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, string|null}
 	 */
-	public function getPhpDocs(Scope $scope, Node\FunctionLike $functionLike): array
+	public function getPhpDocs(Scope $scope, Node\FunctionLike|Node\Stmt\Property $node): array
 	{
 		$templateTypeMap = TemplateTypeMap::createEmpty();
 		$phpDocParameterTypes = [];
@@ -3852,8 +3854,9 @@ class NodeScopeResolver
 		$isInternal = false;
 		$isFinal = false;
 		$isPure = false;
-		$docComment = $functionLike->getDocComment() !== null
-			? $functionLike->getDocComment()->getText()
+		$isReadOnly = false;
+		$docComment = $node->getDocComment() !== null
+			? $node->getDocComment()->getText()
 			: null;
 
 		$file = $scope->getFile();
@@ -3862,29 +3865,29 @@ class NodeScopeResolver
 		$resolvedPhpDoc = null;
 		$functionName = null;
 
-		if ($functionLike instanceof Node\Stmt\ClassMethod) {
+		if ($node instanceof Node\Stmt\ClassMethod) {
 			if (!$scope->isInClass()) {
 				throw new ShouldNotHappenException();
 			}
-			$functionName = $functionLike->name->name;
+			$functionName = $node->name->name;
 			$positionalParameterNames = array_map(static function (Node\Param $param): string {
 				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
 					throw new ShouldNotHappenException();
 				}
 
 				return $param->var->name;
-			}, $functionLike->getParams());
+			}, $node->getParams());
 			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 				$docComment,
 				$file,
 				$scope->getClassReflection(),
 				$trait,
-				$functionLike->name->name,
+				$node->name->name,
 				$positionalParameterNames,
 			);
 
-			if ($functionLike->name->toLowerString() === '__construct') {
-				foreach ($functionLike->params as $param) {
+			if ($node->name->toLowerString() === '__construct') {
+				foreach ($node->params as $param) {
 					if ($param->flags === 0) {
 						continue;
 					}
@@ -3919,8 +3922,8 @@ class NodeScopeResolver
 					$phpDocParameterTypes[$param->var->name] = $phpDocType;
 				}
 			}
-		} elseif ($functionLike instanceof Node\Stmt\Function_) {
-			$functionName = trim($scope->getNamespace() . '\\' . $functionLike->name->name, '\\');
+		} elseif ($node instanceof Node\Stmt\Function_) {
+			$functionName = trim($scope->getNamespace() . '\\' . $node->name->name, '\\');
 		}
 
 		if ($docComment !== null && $resolvedPhpDoc === null) {
@@ -3945,10 +3948,12 @@ class NodeScopeResolver
 				}
 				$phpDocParameterTypes[$paramName] = $paramType;
 			}
-			$nativeReturnType = $scope->getFunctionType($functionLike->getReturnType(), false, false);
-			$phpDocReturnType = $this->getPhpDocReturnType($resolvedPhpDoc, $nativeReturnType);
-			if ($phpDocReturnType !== null && $scope->isInClass()) {
-				$phpDocReturnType = $this->transformStaticType($scope->getClassReflection(), $phpDocReturnType);
+			if ($node instanceof Node\FunctionLike) {
+				$nativeReturnType = $scope->getFunctionType($node->getReturnType(), false, false);
+				$phpDocReturnType = $this->getPhpDocReturnType($resolvedPhpDoc, $nativeReturnType);
+				if ($phpDocReturnType !== null && $scope->isInClass()) {
+					$phpDocReturnType = $this->transformStaticType($scope->getClassReflection(), $phpDocReturnType);
+				}
 			}
 			$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
 			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
@@ -3956,9 +3961,10 @@ class NodeScopeResolver
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isFinal = $resolvedPhpDoc->isFinal();
 			$isPure = $resolvedPhpDoc->isPure();
+			$isReadOnly = $resolvedPhpDoc->isReadOnly();
 		}
 
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $isReadOnly, $docComment];
 	}
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type

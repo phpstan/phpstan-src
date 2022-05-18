@@ -2274,32 +2274,72 @@ class MutatingScope implements Scope
 	 */
 	private function resolveConstantArrayTypeComparison(ConstantArrayType $leftType, ConstantArrayType $rightType, callable $valueComparisonCallback): BooleanType
 	{
-		if ($leftType->hasOptionalKeys() || $rightType->hasOptionalKeys()) {
-			return new BooleanType();
-		}
-
 		$leftKeyTypes = $leftType->getKeyTypes();
 		$rightKeyTypes = $rightType->getKeyTypes();
-		if (count($leftKeyTypes) !== count($rightKeyTypes)) {
-			return new ConstantBooleanType(false);
-		}
-
 		$leftValueTypes = $leftType->getValueTypes();
 		$rightValueTypes = $rightType->getValueTypes();
+
 		$resultType = new ConstantBooleanType(true);
-		foreach ($leftKeyTypes as $i => $keyType) {
-			$rightKeyType = $rightKeyTypes[$i];
-			if (!$keyType->equals($rightKeyType)) {
-				return new ConstantBooleanType(false);
+
+		foreach ($leftKeyTypes as $i => $leftKeyType) {
+			unset($leftKeyTypes[$i]);
+
+			$leftOptional = $leftType->isOptionalKey($i);
+			if ($leftOptional) {
+				$resultType = new BooleanType();
 			}
 
-			$leftValueType = $leftValueTypes[$i];
-			$rightValueType = $rightValueTypes[$i];
-			$leftIdenticalToRight = $valueComparisonCallback($leftValueType, $rightValueType);
+			if (count($rightKeyTypes) === 0) {
+				if (!$leftOptional) {
+					return new ConstantBooleanType(false);
+				}
+				continue;
+			}
+
+			$rightOptional = false;
+			$found = false;
+			foreach ($rightKeyTypes as $j => $rightKeyType) {
+				unset($rightKeyTypes[$j]);
+
+				if ($leftKeyType->equals($rightKeyType)) {
+					$found = true;
+					break;
+				} elseif (!$rightType->isOptionalKey($j)) {
+					return new ConstantBooleanType(false);
+				}
+			}
+
+			if (!$found) {
+				if (!$leftOptional) {
+					return new ConstantBooleanType(false);
+				}
+				continue;
+			}
+
+			if (!isset($j)) {
+				throw new ShouldNotHappenException();
+			}
+
+			$rightOptional = $rightType->isOptionalKey($j);
+			if ($rightOptional) {
+				$resultType = new BooleanType();
+				if ($leftOptional) {
+					continue;
+				}
+			}
+
+			$leftIdenticalToRight = $valueComparisonCallback($leftValueTypes[$i], $rightValueTypes[$j]);
 			if ($leftIdenticalToRight instanceof ConstantBooleanType && !$leftIdenticalToRight->getValue()) {
 				return new ConstantBooleanType(false);
 			}
 			$resultType = TypeCombinator::union($resultType, $leftIdenticalToRight);
+		}
+
+		foreach (array_keys($rightKeyTypes) as $j) {
+			if (!$rightType->isOptionalKey($j)) {
+				return new ConstantBooleanType(false);
+			}
+			$resultType = new BooleanType();
 		}
 
 		return $resultType->toBoolean();

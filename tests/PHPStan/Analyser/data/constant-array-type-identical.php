@@ -58,6 +58,10 @@ class Foo
 	function doBar(array $a, array $b): void
 	{
 		assertType('bool', $a === $b);
+		assertType('bool', $a == $b);
+
+		assertType('bool', $a !== $b);
+		assertType('bool', $a != $b);
 	}
 
 	/**
@@ -67,6 +71,10 @@ class Foo
 	function doBaz(array $a, array $b): void
 	{
 		assertType('false', $a === $b);
+		assertType('false', $a == $b);
+
+		assertType('true', $a !== $b);
+		assertType('true', $a != $b);
 	}
 
 }

@@ -3899,11 +3899,15 @@ class MutatingScope implements Scope
 
 	public function exitFirstLevelStatements(): self
 	{
+		if (!$this->inFirstLevelStatement) {
+			return $this;
+		}
+
 		if ($this->scopeOutOfFirstLevelStatement !== null) {
 			return $this->scopeOutOfFirstLevelStatement;
 		}
 
-		return $this->scopeOutOfFirstLevelStatement = $this->scopeFactory->create(
+		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->constantTypes,
@@ -3922,6 +3926,12 @@ class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 		);
+		$scope->resolvedTypes = $this->resolvedTypes;
+		$scope->truthyScopes = $this->truthyScopes;
+		$scope->falseyScopes = $this->falseyScopes;
+		$this->scopeOutOfFirstLevelStatement = $scope;
+
+		return $scope;
 	}
 
 	/** @api */

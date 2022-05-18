@@ -495,7 +495,10 @@ class NodeScopeResolver
 					if (!$param->var instanceof Variable || !is_string($param->var->name)) {
 						throw new ShouldNotHappenException();
 					}
-					[,,,,,,,,,$isReadonly, $phpDoc] = $this->getPhpDocs($scope, $param);
+					$phpDoc = null;
+					if ($param->getDocComment() !== null) {
+						$phpDoc = $param->getDocComment()->getText();
+					}
 					$nodeCallback(new ClassPropertyNode(
 						$param->var->name,
 						$param->flags,
@@ -504,7 +507,6 @@ class NodeScopeResolver
 						$phpDoc,
 						true,
 						$param,
-						$isReadonly,
 					), $methodScope);
 				}
 			}
@@ -655,7 +657,7 @@ class NodeScopeResolver
 			}
 			foreach ($stmt->props as $prop) {
 				$this->processStmtNode($prop, $scope, $nodeCallback);
-				[,,,,,,,,,$isReadonly, $docComment] = $this->getPhpDocs($scope, $stmt);
+				[,,,,,,,,,$isReadOnly, $docComment] = $this->getPhpDocs($scope, $stmt);
 				$nodeCallback(
 					new ClassPropertyNode(
 						$prop->name->toString(),
@@ -665,7 +667,7 @@ class NodeScopeResolver
 						$docComment,
 						false,
 						$prop,
-						$isReadonly,
+						$isReadOnly,
 					),
 					$scope,
 				);
@@ -3840,7 +3842,7 @@ class NodeScopeResolver
 	/**
 	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, string|null}
 	 */
-	public function getPhpDocs(Scope $scope, Node $node): array
+	public function getPhpDocs(Scope $scope, Node\FunctionLike|Node\Stmt\Property $node): array
 	{
 		$templateTypeMap = TemplateTypeMap::createEmpty();
 		$phpDocParameterTypes = [];
@@ -3851,7 +3853,7 @@ class NodeScopeResolver
 		$isInternal = false;
 		$isFinal = false;
 		$isPure = false;
-		$isReadonly = false;
+		$isReadOnly = false;
 		$docComment = $node->getDocComment() !== null
 			? $node->getDocComment()->getText()
 			: null;
@@ -3958,10 +3960,10 @@ class NodeScopeResolver
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isFinal = $resolvedPhpDoc->isFinal();
 			$isPure = $resolvedPhpDoc->isPure();
-			$isReadonly = $resolvedPhpDoc->isReadonly();
+			$isReadOnly = $resolvedPhpDoc->isReadOnly();
 		}
 
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $isReadonly, $docComment];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $isReadOnly, $docComment];
 	}
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type

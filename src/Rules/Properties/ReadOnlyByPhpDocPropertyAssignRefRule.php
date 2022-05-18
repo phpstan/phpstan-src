@@ -11,7 +11,7 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\AssignRef>
  */
-class ReadOnlyPropertyAssignRefRule implements Rule
+class ReadOnlyByPhpDocPropertyAssignRefRule implements Rule
 {
 
 	public function __construct(private PropertyReflectionFinder $propertyReflectionFinder)
@@ -41,7 +41,7 @@ class ReadOnlyPropertyAssignRefRule implements Rule
 			if (!$scope->canAccessProperty($propertyReflection)) {
 				continue;
 			}
-			if (!$nativeReflection->isReadOnly()) {
+			if (!$nativeReflection->isReadOnlyByPhpDoc()) {
 				continue;
 			}
 

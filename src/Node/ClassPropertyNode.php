@@ -78,7 +78,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		return (bool) ($this->flags & Class_::MODIFIER_READONLY);
 	}
 
-	public function isReadonlyByPhpDoc(): bool
+	public function isReadOnlyByPhpDoc(): bool
 	{
 		return $this->isReadonlyByPhpDoc;
 	}

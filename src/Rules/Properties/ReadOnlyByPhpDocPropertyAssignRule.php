@@ -16,7 +16,7 @@ use function strtolower;
 /**
  * @implements Rule<PropertyAssignNode>
  */
-class ReadOnlyPropertyAssignRule implements Rule
+class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 {
 
 	public function __construct(private PropertyReflectionFinder $propertyReflectionFinder)
@@ -45,7 +45,7 @@ class ReadOnlyPropertyAssignRule implements Rule
 			if (!$scope->canAccessProperty($propertyReflection)) {
 				continue;
 			}
-			if (!$nativeReflection->isReadOnly()) {
+			if (!$nativeReflection->isReadOnlyByPhpDoc()) {
 				continue;
 			}
 

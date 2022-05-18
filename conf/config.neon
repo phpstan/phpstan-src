@@ -39,6 +39,7 @@ parameters:
 		looseComparison: false
 		consistentConstructor: false
 		checkUnresolvableParameterTypes: false
+		readOnlyByPhpDoc: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -215,6 +216,7 @@ parametersSchema:
 		looseComparison: bool(),
 		consistentConstructor: bool()
 		checkUnresolvableParameterTypes: bool()
+		readOnlyByPhpDoc: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

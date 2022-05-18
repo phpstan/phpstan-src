@@ -220,7 +220,7 @@ class PhpClassReflectionExtension
 		$deprecatedDescription = null;
 		$isDeprecated = false;
 		$isInternal = false;
-		$isReadonlyByPhpDoc = false;
+		$isReadOnlyByPhpDoc = false;
 
 		if (
 			$includingAnnotations
@@ -326,7 +326,7 @@ class PhpClassReflectionExtension
 			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
 			$isInternal = $resolvedPhpDoc->isInternal();
-			$isReadonlyByPhpDoc = $resolvedPhpDoc->isReadonly();
+			$isReadOnlyByPhpDoc = $resolvedPhpDoc->isReadOnly();
 		}
 
 		if (
@@ -367,7 +367,7 @@ class PhpClassReflectionExtension
 			$deprecatedDescription,
 			$isDeprecated,
 			$isInternal,
-			$isReadonlyByPhpDoc,
+			$isReadOnlyByPhpDoc,
 		);
 	}
 

@@ -46,6 +46,7 @@ function validateStringOrNonEmptyIntArray(array $arr) : bool {
 }
 
 /**
+ * @param mixed $value
  * @phpstan-assert !null $value
  */
 function validateNotNull($value) : void {}
@@ -138,6 +139,9 @@ function takesStringOrNonEmptyIntArray(array $arr) : void {
 	}
 }
 
+/**
+ * @param mixed $value
+ */
 function takesNotNull($value) : void {
 	assertType('mixed', $value);
 
@@ -152,7 +156,7 @@ function takesNotNull($value) : void {
  * @param class-string<T> $class
  * @phpstan-assert T $object
  */
-function validateClassType(object $object, string $class) {}
+function validateClassType(object $object, string $class): void {}
 
 class ClassToValidate {}
 
@@ -168,6 +172,15 @@ class A {
 	 */
 	public function testInt(mixed $x): bool
 	{
+		return is_int($x);
+	}
+
+	/**
+	 * @phpstan-assert-if-true !int $x
+	 */
+	public function testNotInt(mixed $x): bool
+	{
+		return !is_int($x);
 	}
 }
 
@@ -175,12 +188,19 @@ class B extends A
 {
 	public function testInt(mixed $y): bool
 	{
+		return parent::testInt($y);
 	}
 }
 
 function (A $a, $i) {
 	if ($a->testInt($i)) {
 		assertType('int', $i);
+	} else {
+		assertType('mixed', $i);
+	}
+
+	if ($a->testNotInt($i)) {
+		assertType('mixed~int', $i);
 	} else {
 		assertType('mixed', $i);
 	}
@@ -191,5 +211,33 @@ function (B $b, $i) {
 		assertType('int', $i);
 	} else {
 		assertType('mixed', $i);
+	}
+};
+
+function (A $a, string $i) {
+	if ($a->testInt($i)) {
+		assertType('*NEVER*', $i);
+	} else {
+		assertType('string', $i);
+	}
+
+	if ($a->testNotInt($i)) {
+		assertType('string', $i);
+	} else {
+		assertType('string', $i);
+	}
+};
+
+function (A $a, int $i) {
+	if ($a->testInt($i)) {
+		assertType('int', $i);
+	} else {
+		assertType('int', $i);
+	}
+
+	if ($a->testNotInt($i)) {
+		assertType('*NEVER*', $i);
+	} else {
+		assertType('int', $i);
 	}
 };

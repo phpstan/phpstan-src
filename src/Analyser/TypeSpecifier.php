@@ -20,6 +20,7 @@ use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Internal\AssertVariableResolver;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithAsserts;
@@ -45,6 +46,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -1189,6 +1191,11 @@ class TypeSpecifier
 			return null;
 		}
 
+		$originalAsserts = null;
+		if ($parametersAcceptor instanceof ResolvedFunctionVariant) {
+			$originalAsserts = Assertions::fromParametersAcceptor($parametersAcceptor->getOriginalParametersAcceptor())->getAll();
+		}
+
 		$argsMap = [];
 		$parameters = $parametersAcceptor->getParameters();
 		foreach ($call->getArgs() as $i => $arg) {
@@ -1210,7 +1217,7 @@ class TypeSpecifier
 		/** @var SpecifiedTypes|null $types */
 		$types = null;
 
-		foreach ($asserts as $assert) {
+		foreach ($asserts as $i => $assert) {
 			$missing = false;
 			$assertExpr = AssertVariableResolver::map($assert->getParameter(), static function (string $variable) use ($argsMap, &$missing): ?Expr {
 				if (array_key_exists($variable, $argsMap)) {
@@ -1225,12 +1232,25 @@ class TypeSpecifier
 				continue;
 			}
 
+			$containsClassTemplate = false;
+			if (isset($originalAsserts[$i])) {
+				TypeTraverser::map($originalAsserts[$i]->getType(), static function (Type $type, callable $traverse) use (&$containsClassTemplate): Type {
+					if ($type instanceof TemplateType && $type->getScope()->getClassName() !== null) {
+						$containsClassTemplate = true;
+						return $type;
+					}
+
+					return $traverse($type);
+				});
+			}
+
 			$newTypes = $this->create(
 				$assertExpr,
 				$assert->getType(),
 				$assert->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
 				false,
 				$scope,
+				$containsClassTemplate ? $call : null,
 			);
 			$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
 		}

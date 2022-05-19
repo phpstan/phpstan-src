@@ -54,6 +54,14 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssign\AssignOp::$bar.',
 				87,
 			],
+			[
+				'Readonly property MissingReadOnlyPropertyAssign\DoubleAssign::$foo is already assigned.',
+				128,
+			],
+			[
+				'Class MissingReadOnlyPropertyAssign\Foo has an maybe uninitialized readonly property $foo.',
+				139,
+			],
 		]);
 	}
 

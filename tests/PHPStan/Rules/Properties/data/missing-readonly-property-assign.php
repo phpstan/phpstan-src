@@ -101,3 +101,42 @@ class AssignRef
 	}
 
 }
+
+class ValidDoubleAssign
+{
+	private readonly int $foo;
+
+	public function __construct(int $foo)
+	{
+		if (rand(0, 1)) {
+			$this->foo = $foo;
+		} else {
+			$this->foo = 0;
+		}
+	}
+}
+
+class DoubleAssign
+{
+	private readonly int $foo;
+
+	public function __construct(int $foo)
+	{
+		if (rand(0, 1)) {
+			$this->foo = $foo;
+		}
+		$this->foo = 0;
+	}
+}
+
+class MaybeUninitialized
+{
+	private readonly int $foo;
+
+	public function __construct(int $foo)
+	{
+		if (rand(0, 1)) {
+			$this->foo = $foo;
+		}
+	}
+}

@@ -160,3 +160,36 @@ function (object $object) {
 	validateClassType($object, ClassToValidate::class);
 	assertType('AssertDocblock\ClassToValidate', $object);
 };
+
+
+class A {
+	/**
+	 * @phpstan-assert-if-true int $x
+	 */
+	public function testInt(mixed $x): bool
+	{
+	}
+}
+
+class B extends A
+{
+	public function testInt(mixed $y): bool
+	{
+	}
+}
+
+function (A $a, $i) {
+	if ($a->testInt($i)) {
+		assertType('int', $i);
+	} else {
+		assertType('mixed', $i);
+	}
+};
+
+function (B $b, $i) {
+	if ($b->testInt($i)) {
+		assertType('int', $i);
+	} else {
+		assertType('mixed', $i);
+	}
+};

@@ -1207,10 +1207,6 @@ class TypeSpecifier
 			$argsMap[$paramName] = $arg->value;
 		}
 
-		if ($call instanceof MethodCall) {
-			$argsMap['this'] = $call->var;
-		}
-
 		/** @var SpecifiedTypes|null $types */
 		$types = null;
 

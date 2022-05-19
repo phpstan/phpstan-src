@@ -134,6 +134,11 @@ class InitializerExprContext implements NamespaceAnswerer
 		);
 	}
 
+	public static function createEmpty(): self
+	{
+		return new self(null, null, null, null, null, null);
+	}
+
 	public function getFile(): ?string
 	{
 		return $this->file;

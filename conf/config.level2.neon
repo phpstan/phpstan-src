@@ -33,6 +33,8 @@ rules:
 	- PHPStan\Rules\Operators\InvalidComparisonOperationRule
 	- PHPStan\Rules\PhpDoc\FunctionConditionalReturnTypeRule
 	- PHPStan\Rules\PhpDoc\MethodConditionalReturnTypeRule
+	- PHPStan\Rules\PhpDoc\FunctionAssertRule
+	- PHPStan\Rules\PhpDoc\MethodAssertRule
 	- PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule

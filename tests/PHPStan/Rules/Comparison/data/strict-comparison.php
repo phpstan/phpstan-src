@@ -974,3 +974,11 @@ class ArrayWithNonEmptyStringValue
 	}
 
 }
+
+function () {
+	INF === INF;
+	NAN === NAN;
+
+	INF !== INF;
+	NAN !== NAN;
+};

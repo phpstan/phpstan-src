@@ -234,6 +234,22 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					'Strict comparison using === between 1000 and 1000 will always evaluate to true.',
 					910,
 				],
+				[
+					'Strict comparison using === between INF and INF will always evaluate to true.',
+					979,
+				],
+				[
+					'Strict comparison using === between NAN and NAN will always evaluate to false.',
+					980,
+				],
+				[
+					'Strict comparison using !== between INF and INF will always evaluate to false.',
+					982,
+				],
+				[
+					'Strict comparison using !== between NAN and NAN will always evaluate to true.',
+					983,
+				],
 			],
 		);
 	}
@@ -375,6 +391,14 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				[
 					'Strict comparison using === between mixed and \'foo\' will always evaluate to false.',
 					808,
+				],
+				[
+					'Strict comparison using === between NAN and NAN will always evaluate to false.',
+					980,
+				],
+				[
+					'Strict comparison using !== between INF and INF will always evaluate to false.',
+					982,
 				],
 			],
 		);

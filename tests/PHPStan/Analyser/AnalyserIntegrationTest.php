@@ -1025,6 +1025,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(30, $errors[0]->getLine());
 	}
 
+	public function testAssertDocblock(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/assert-docblock.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Call to method AssertDocblock\A::testInt() with string will always evaluate to false.', $errors[0]->getMessage());
+		$this->assertSame(218, $errors[0]->getLine());
+		$this->assertSame('Call to method AssertDocblock\A::testNotInt() with int will always evaluate to false.', $errors[1]->getMessage());
+		$this->assertSame(238, $errors[1]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

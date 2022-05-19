@@ -77,6 +77,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\OffsetAccessType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -340,6 +341,14 @@ class TypeNodeResolver
 					new ArrayType(new IntegerType(), new MixedType()),
 					new NonEmptyArrayType(),
 				));
+
+			case 'empty':
+				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
+				if ($type !== null) {
+					return $type;
+				}
+
+				return StaticTypeFactory::falsey();
 		}
 
 		if ($nameScope->getClassName() !== null) {

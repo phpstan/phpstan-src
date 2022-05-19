@@ -1050,7 +1050,9 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-offset-unset.php');
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/assert-docblock.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/assert-empty.php');
 	}
 
 	/**

@@ -24,6 +24,14 @@ class Assertions
 	/**
 	 * @return AssertTag[]
 	 */
+	public function getAll(): array
+	{
+		return $this->asserts;
+	}
+
+	/**
+	 * @return AssertTag[]
+	 */
 	public function getAsserts(): array
 	{
 		return array_filter($this->asserts, static fn (AssertTag $assert) => $assert->getIf() === AssertTag::NULL);

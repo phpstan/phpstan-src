@@ -1149,16 +1149,13 @@ class InitializerExprTypeResolver
 
 	public function resolveIdenticalType(Type $leftType, Type $rightType): BooleanType
 	{
+		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {
+			return new ConstantBooleanType($leftType->getValue() === $rightType->getValue());
+		}
+
 		$isSuperset = $leftType->isSuperTypeOf($rightType);
 		if ($isSuperset->no()) {
 			return new ConstantBooleanType(false);
-		} elseif (
-			$isSuperset->yes()
-			&& $leftType instanceof ConstantScalarType
-			&& $rightType instanceof ConstantScalarType
-			&& $leftType->getValue() === $rightType->getValue()
-		) {
-			return new ConstantBooleanType(true);
 		}
 
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {

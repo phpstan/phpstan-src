@@ -92,12 +92,6 @@ class ResolvedPhpDocBlock
 	/** @var array<AssertTag>|false */
 	private array|false $assertTags = false;
 
-	/** @var array<AssertTag>|false */
-	private array|false $assertIfTrueTags = false;
-
-	/** @var array<AssertTag>|false */
-	private array|false $assertIfFalseTags = false;
-
 	private DeprecatedTag|false|null $deprecatedTag = false;
 
 	private ?bool $isDeprecated = null;
@@ -172,8 +166,6 @@ class ResolvedPhpDocBlock
 		$self->typeAliasTags = [];
 		$self->typeAliasImportTags = [];
 		$self->assertTags = [];
-		$self->assertIfTrueTags = [];
-		$self->assertIfFalseTags = [];
 		$self->deprecatedTag = null;
 		$self->isDeprecated = false;
 		$self->isInternal = false;
@@ -225,9 +217,7 @@ class ResolvedPhpDocBlock
 		$result->mixinTags = $this->getMixinTags();
 		$result->typeAliasTags = $this->getTypeAliasTags();
 		$result->typeAliasImportTags = $this->getTypeAliasImportTags();
-		$result->assertTags = self::mergeAssertTags($this->getAssertTags(), $parents);
-		$result->assertIfTrueTags = self::mergeAssertIfTrueTags($this->getAssertIfTrueTags(), $parents);
-		$result->assertIfFalseTags = self::mergeAssertIfFalseTags($this->getAssertIfFalseTags(), $parents);
+		$result->assertTags = self::mergeAssertTags($this->getAssertTags(), $parents, $parentPhpDocBlocks);
 		$result->deprecatedTag = self::mergeDeprecatedTags($this->getDeprecatedTag(), $parents);
 		$result->isDeprecated = $result->deprecatedTag !== null;
 		$result->isInternal = $this->isInternal();
@@ -276,18 +266,17 @@ class ResolvedPhpDocBlock
 			$returnTag = $returnTag->withType($transformedType);
 		}
 
-		$assertVariableResolver = new AssertVariableResolver(static function (string $variable) use ($parameterNameMapping): ?Node\Expr {
-			if (array_key_exists($variable, $parameterNameMapping)) {
-				return new Node\Expr\Variable($parameterNameMapping[$variable]);
-			}
-
-			return null;
-		});
-
-		$assertTagsCallback = static fn (AssertTag $tag): AssertTag => $tag->withParameter($assertVariableResolver->map($tag->getParameter()));
-		$assertTags = array_map($assertTagsCallback, $this->getAssertTags());
-		$assertIfTrueTags = array_map($assertTagsCallback, $this->getAssertIfTrueTags());
-		$assertIfFalseTags = array_map($assertTagsCallback, $this->getAssertIfFalseTags());
+		$assertTags = $this->getAssertTags();
+		if (count($assertTags) > 0) {
+			$assertTags = array_map(static fn (AssertTag $tag): AssertTag => $tag->withParameter(
+				AssertVariableResolver::map(
+					$tag->getParameter(),
+					static fn (string $variable): ?Node\Expr => array_key_exists($variable, $parameterNameMapping)
+						? new Node\Expr\Variable($parameterNameMapping[$variable])
+						: null,
+				),
+			), $assertTags);
+		}
 
 		$self = new self();
 		$self->phpDocNode = $this->phpDocNode;
@@ -311,8 +300,6 @@ class ResolvedPhpDocBlock
 		$self->typeAliasTags = $this->typeAliasTags;
 		$self->typeAliasImportTags = $this->typeAliasImportTags;
 		$self->assertTags = $assertTags;
-		$self->assertIfTrueTags = $assertIfTrueTags;
-		$self->assertIfFalseTags = $assertIfFalseTags;
 		$self->deprecatedTag = $this->deprecatedTag;
 		$self->isDeprecated = $this->isDeprecated;
 		$self->isInternal = $this->isInternal;
@@ -537,37 +524,6 @@ class ResolvedPhpDocBlock
 
 		return $this->assertTags;
 	}
-
-	/**
-	 * @return array<AssertTag>
-	 */
-	public function getAssertIfTrueTags(): array
-	{
-		if ($this->assertIfTrueTags === false) {
-			$this->assertIfTrueTags = $this->phpDocNodeResolver->resolveAssertIfTrueTags(
-				$this->phpDocNode,
-				$this->getNameScope(),
-			);
-		}
-
-		return $this->assertIfTrueTags;
-	}
-
-	/**
-	 * @return array<AssertTag>
-	 */
-	public function getAssertIfFalseTags(): array
-	{
-		if ($this->assertIfFalseTags === false) {
-			$this->assertIfFalseTags = $this->phpDocNodeResolver->resolveAssertIfFalseTags(
-				$this->phpDocNode,
-				$this->getNameScope(),
-			);
-		}
-
-		return $this->assertIfFalseTags;
-	}
-
 
 	public function getDeprecatedTag(): ?DeprecatedTag
 	{
@@ -813,61 +769,28 @@ class ResolvedPhpDocBlock
 	/**
 	 * @param array<AssertTag> $assertTags
 	 * @param array<int, self> $parents
+	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
 	 * @return array<AssertTag>
 	 */
-	private static function mergeAssertTags(array $assertTags, array $parents): array
+	private static function mergeAssertTags(array $assertTags, array $parents, array $parentPhpDocBlocks): array
 	{
 		if (count($assertTags) > 0) {
 			return $assertTags;
 		}
-		foreach ($parents as $parent) {
+		foreach ($parents as $i => $parent) {
 			$result = $parent->getAssertTags();
 			if (count($result) === 0) {
 				continue;
 			}
-			return $result;
-		}
 
-		return $assertTags;
-	}
+			$phpDocBlock = $parentPhpDocBlocks[$i];
 
-	/**
-	 * @param array<AssertTag> $assertTags
-	 * @param array<int, self> $parents
-	 * @return array<AssertTag>
-	 */
-	private static function mergeAssertIfTrueTags(array $assertTags, array $parents): array
-	{
-		if (count($assertTags) > 0) {
-			return $assertTags;
-		}
-		foreach ($parents as $parent) {
-			$result = $parent->getAssertIfTrueTags();
-			if (count($result) === 0) {
-				continue;
-			}
-			return $result;
-		}
-
-		return $assertTags;
-	}
-
-	/**
-	 * @param array<AssertTag> $assertTags
-	 * @param array<int, self> $parents
-	 * @return array<AssertTag>
-	 */
-	private static function mergeAssertIfFalseTags(array $assertTags, array $parents): array
-	{
-		if (count($assertTags) > 0) {
-			return $assertTags;
-		}
-		foreach ($parents as $parent) {
-			$result = $parent->getAssertIfFalseTags();
-			if (count($result) === 0) {
-				continue;
-			}
-			return $result;
+			return array_map(
+				static fn (AssertTag $assertTag) => $assertTag->withParameter(
+					$phpDocBlock->transformAssertTagParameterWithParameterNameMapping($assertTag->getParameter()),
+				),
+				$result,
+			);
 		}
 
 		return $assertTags;

@@ -34,6 +34,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_map;
+use function array_merge;
 use function array_reverse;
 use function assert;
 use function count;
@@ -411,62 +412,37 @@ class PhpDocNodeResolver
 	 */
 	public function resolveAssertTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
-		$resolved = [];
+		foreach (['@phpstan', '@psalm'] as $prefix) {
+			$resolved = array_merge(
+				$this->resolveAssertTagsFor($phpDocNode, $nameScope, $prefix . '-assert', AssertTag::NULL),
+				$this->resolveAssertTagsFor($phpDocNode, $nameScope, $prefix . '-assert-if-true', AssertTag::IF_TRUE),
+				$this->resolveAssertTagsFor($phpDocNode, $nameScope, $prefix . '-assert-if-false', AssertTag::IF_FALSE),
+			);
 
-		foreach (['@psalm-assert', '@phpstan-assert'] as $tagName) {
-			foreach ($phpDocNode->getAssertTagValues($tagName) as $assertTagValue) {
-				$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
-				$parameter = $this->parseAssertExpr($assertTagValue->parameter);
-				if ($parameter === null) {
-					continue;
-				}
-
-				$resolved[] = new AssertTag($type, $parameter, $assertTagValue->isNegated);
+			if (count($resolved) > 0) {
+				return $resolved;
 			}
 		}
 
-		return $resolved;
+		return [];
 	}
 
 	/**
+	 * @param AssertTag::NULL|AssertTag::IF_TRUE|AssertTag::IF_FALSE $if
 	 * @return AssertTag[]
 	 */
-	public function resolveAssertIfTrueTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	private function resolveAssertTagsFor(PhpDocNode $phpDocNode, NameScope $nameScope, string $tagName, string $if): array
 	{
 		$resolved = [];
 
-		foreach (['@psalm-assert-if-true', '@phpstan-assert-if-true'] as $tagName) {
-			foreach ($phpDocNode->getAssertTagValues($tagName) as $assertTagValue) {
-				$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
-				$parameter = $this->parseAssertExpr($assertTagValue->parameter);
-				if ($parameter === null) {
-					continue;
-				}
-
-				$resolved[] = new AssertTag($type, $parameter, $assertTagValue->isNegated);
+		foreach ($phpDocNode->getAssertTagValues($tagName) as $assertTagValue) {
+			$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
+			$parameter = $this->parseAssertExpr($assertTagValue->parameter);
+			if ($parameter === null) {
+				continue;
 			}
-		}
 
-		return $resolved;
-	}
-
-	/**
-	 * @return AssertTag[]
-	 */
-	public function resolveAssertIfFalseTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
-	{
-		$resolved = [];
-
-		foreach (['@psalm-assert-if-false', '@phpstan-assert-if-false'] as $tagName) {
-			foreach ($phpDocNode->getAssertTagValues($tagName) as $assertTagValue) {
-				$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
-				$parameter = $this->parseAssertExpr($assertTagValue->parameter);
-				if ($parameter === null) {
-					continue;
-				}
-
-				$resolved[] = new AssertTag($type, $parameter, $assertTagValue->isNegated);
-			}
+			$resolved[] = new AssertTag($if, $type, $parameter, $assertTagValue->isNegated);
 		}
 
 		return $resolved;

@@ -1175,8 +1175,6 @@ class TypeSpecifier
 			return null;
 		}
 
-		$asserts = $parametersAcceptor->getAsserts();
-
 		if ($context->null()) {
 			$asserts = $parametersAcceptor->getAsserts()->getAsserts();
 		} elseif ($context->truthy()) {
@@ -1216,16 +1214,20 @@ class TypeSpecifier
 		/** @var SpecifiedTypes|null $types */
 		$types = null;
 
-		$assertVariableResolver = new AssertVariableResolver(static function (string $variable) use ($argsMap): ?Expr {
-			if (array_key_exists($variable, $argsMap)) {
-				return $argsMap[$variable];
-			}
-
-			return null;
-		});
-
 		foreach ($asserts as $assert) {
-			$assertExpr = $assertVariableResolver->map($assert->getParameter());
+			$missing = false;
+			$assertExpr = AssertVariableResolver::map($assert->getParameter(), static function (string $variable) use ($argsMap, &$missing): ?Expr {
+				if (array_key_exists($variable, $argsMap)) {
+					return $argsMap[$variable];
+				}
+
+				$missing = true;
+				return null;
+			});
+
+			if ($missing) {
+				continue;
+			}
 
 			$newTypes = $this->create(
 				$assertExpr,

@@ -2,6 +2,8 @@
 
 namespace PHPStan\PhpDoc;
 
+use PhpParser\Node\Expr;
+use PHPStan\Internal\AssertVariableResolver;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
@@ -99,6 +101,17 @@ class PhpDocBlock
 			}
 
 			return $traverse($type);
+		});
+	}
+
+	public function transformAssertTagParameterWithParameterNameMapping(Expr $expr): Expr
+	{
+		return AssertVariableResolver::map($expr, function (string $variable): ?Expr {
+			if (array_key_exists($variable, $this->parameterNameMapping)) {
+				return new Expr\Variable($this->parameterNameMapping[$variable]);
+			}
+
+			return null;
 		});
 	}
 

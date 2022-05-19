@@ -1,0 +1,16 @@
+<?php
+
+namespace AssertStub;
+
+class Foo
+{
+
+	/**
+	 * @phpstan-assert-if-true int $p
+	 */
+	public function doFoo($p)
+	{
+
+	}
+
+}

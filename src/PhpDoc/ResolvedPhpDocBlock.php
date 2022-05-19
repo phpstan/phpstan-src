@@ -225,9 +225,9 @@ class ResolvedPhpDocBlock
 		$result->mixinTags = $this->getMixinTags();
 		$result->typeAliasTags = $this->getTypeAliasTags();
 		$result->typeAliasImportTags = $this->getTypeAliasImportTags();
-		$result->assertTags = $this->getAssertTags();
-		$result->assertIfTrueTags = $this->getAssertIfTrueTags();
-		$result->assertIfFalseTags = $this->getAssertIfFalseTags();
+		$result->assertTags = self::mergeAssertTags($this->getAssertTags(), $parents);
+		$result->assertIfTrueTags = self::mergeAssertIfTrueTags($this->getAssertIfTrueTags(), $parents);
+		$result->assertIfFalseTags = self::mergeAssertIfFalseTags($this->getAssertIfFalseTags(), $parents);
 		$result->deprecatedTag = self::mergeDeprecatedTags($this->getDeprecatedTag(), $parents);
 		$result->isDeprecated = $result->deprecatedTag !== null;
 		$result->isInternal = $this->isInternal();
@@ -808,6 +808,69 @@ class ResolvedPhpDocBlock
 			)->toImplicit(),
 			$phpDocBlock,
 		);
+	}
+
+	/**
+	 * @param array<AssertTag> $assertTags
+	 * @param array<int, self> $parents
+	 * @return array<AssertTag>
+	 */
+	private static function mergeAssertTags(array $assertTags, array $parents): array
+	{
+		if (count($assertTags) > 0) {
+			return $assertTags;
+		}
+		foreach ($parents as $parent) {
+			$result = $parent->getAssertTags();
+			if (count($result) === 0) {
+				continue;
+			}
+			return $result;
+		}
+
+		return $assertTags;
+	}
+
+	/**
+	 * @param array<AssertTag> $assertTags
+	 * @param array<int, self> $parents
+	 * @return array<AssertTag>
+	 */
+	private static function mergeAssertIfTrueTags(array $assertTags, array $parents): array
+	{
+		if (count($assertTags) > 0) {
+			return $assertTags;
+		}
+		foreach ($parents as $parent) {
+			$result = $parent->getAssertIfTrueTags();
+			if (count($result) === 0) {
+				continue;
+			}
+			return $result;
+		}
+
+		return $assertTags;
+	}
+
+	/**
+	 * @param array<AssertTag> $assertTags
+	 * @param array<int, self> $parents
+	 * @return array<AssertTag>
+	 */
+	private static function mergeAssertIfFalseTags(array $assertTags, array $parents): array
+	{
+		if (count($assertTags) > 0) {
+			return $assertTags;
+		}
+		foreach ($parents as $parent) {
+			$result = $parent->getAssertIfFalseTags();
+			if (count($result) === 0) {
+				continue;
+			}
+			return $result;
+		}
+
+		return $assertTags;
 	}
 
 	/**

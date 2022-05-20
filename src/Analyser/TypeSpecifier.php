@@ -1232,16 +1232,23 @@ class TypeSpecifier
 				continue;
 			}
 
-			$containsClassTemplate = false;
+			$containsUnresolvedTemplate = false;
 			if (isset($originalAsserts[$i])) {
-				TypeTraverser::map($originalAsserts[$i]->getType(), static function (Type $type, callable $traverse) use (&$containsClassTemplate): Type {
-					if ($type instanceof TemplateType && $type->getScope()->getClassName() !== null) {
-						$containsClassTemplate = true;
-						return $type;
-					}
+				$templateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
+				TypeTraverser::map(
+					$originalAsserts[$i]->getType(),
+					static function (Type $type, callable $traverse) use ($templateTypeMap, &$containsUnresolvedTemplate): Type {
+						if ($type instanceof TemplateType && $type->getScope()->getClassName() !== null) {
+							$resolvedType = $templateTypeMap->getType($type->getName());
+							if ($resolvedType === null || $type->getBound()->equals($resolvedType)) {
+								$containsUnresolvedTemplate = true;
+								return $type;
+							}
+						}
 
-					return $traverse($type);
-				});
+						return $traverse($type);
+					}
+				);
 			}
 
 			$newTypes = $this->create(
@@ -1250,7 +1257,7 @@ class TypeSpecifier
 				$assert->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
 				false,
 				$scope,
-				$containsClassTemplate ? $call : null,
+				$containsUnresolvedTemplate ? $call : null,
 			);
 			$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
 		}

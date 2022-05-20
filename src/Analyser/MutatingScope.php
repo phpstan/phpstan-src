@@ -2373,7 +2373,7 @@ class MutatingScope implements Scope
 		$stack = $this->inFunctionCallsStack;
 		$stack[] = $reflection;
 
-		return $this->scopeFactory->create(
+		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->constantTypes,
@@ -2392,6 +2392,11 @@ class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 		);
+		$scope->resolvedTypes = $this->resolvedTypes;
+		$scope->truthyScopes = $this->truthyScopes;
+		$scope->falseyScopes = $this->falseyScopes;
+
+		return $scope;
 	}
 
 	public function popInFunctionCall(): self
@@ -2399,7 +2404,7 @@ class MutatingScope implements Scope
 		$stack = $this->inFunctionCallsStack;
 		array_pop($stack);
 
-		return $this->scopeFactory->create(
+		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->constantTypes,
@@ -2418,6 +2423,11 @@ class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 		);
+		$scope->resolvedTypes = $this->resolvedTypes;
+		$scope->truthyScopes = $this->truthyScopes;
+		$scope->falseyScopes = $this->falseyScopes;
+
+		return $scope;
 	}
 
 	/** @api */
@@ -3165,7 +3175,7 @@ class MutatingScope implements Scope
 		$currentlyAssignedExpressions = $this->currentlyAssignedExpressions;
 		$currentlyAssignedExpressions[$exprString] = true;
 
-		return $this->scopeFactory->create(
+		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->constantTypes,
@@ -3184,6 +3194,11 @@ class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 		);
+		$scope->resolvedTypes = $this->resolvedTypes;
+		$scope->truthyScopes = $this->truthyScopes;
+		$scope->falseyScopes = $this->falseyScopes;
+
+		return $scope;
 	}
 
 	public function exitExpressionAssign(Expr $expr): self
@@ -3192,7 +3207,7 @@ class MutatingScope implements Scope
 		$currentlyAssignedExpressions = $this->currentlyAssignedExpressions;
 		unset($currentlyAssignedExpressions[$exprString]);
 
-		return $this->scopeFactory->create(
+		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->constantTypes,
@@ -3211,6 +3226,11 @@ class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 		);
+		$scope->resolvedTypes = $this->resolvedTypes;
+		$scope->truthyScopes = $this->truthyScopes;
+		$scope->falseyScopes = $this->falseyScopes;
+
+		return $scope;
 	}
 
 	/** @api */
@@ -3226,7 +3246,7 @@ class MutatingScope implements Scope
 		$currentlyAllowedUndefinedExpressions = $this->currentlyAllowedUndefinedExpressions;
 		$currentlyAllowedUndefinedExpressions[$exprString] = true;
 
-		return $this->scopeFactory->create(
+		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->constantTypes,
@@ -3245,6 +3265,11 @@ class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 		);
+		$scope->resolvedTypes = $this->resolvedTypes;
+		$scope->truthyScopes = $this->truthyScopes;
+		$scope->falseyScopes = $this->falseyScopes;
+
+		return $scope;
 	}
 
 	public function unsetAllowedUndefinedExpression(Expr $expr): self
@@ -3253,7 +3278,7 @@ class MutatingScope implements Scope
 		$currentlyAllowedUndefinedExpressions = $this->currentlyAllowedUndefinedExpressions;
 		unset($currentlyAllowedUndefinedExpressions[$exprString]);
 
-		return $this->scopeFactory->create(
+		$scope = $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->constantTypes,
@@ -3272,6 +3297,11 @@ class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 		);
+		$scope->resolvedTypes = $this->resolvedTypes;
+		$scope->truthyScopes = $this->truthyScopes;
+		$scope->falseyScopes = $this->falseyScopes;
+
+		return $scope;
 	}
 
 	/** @api */

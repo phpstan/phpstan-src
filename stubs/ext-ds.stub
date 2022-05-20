@@ -7,15 +7,15 @@ use Countable;
 use JsonSerializable;
 use OutOfBoundsException;
 use OutOfRangeException;
-use Traversable;
+use IteratorAggregate;
 use UnderflowException;
 
 /**
  * @template-covariant TKey
  * @template-covariant TValue
- * @extends Traversable<TKey, TValue>
+ * @extends IteratorAggregate<TKey, TValue>
  */
-interface Collection extends Traversable, Countable, JsonSerializable
+interface Collection extends IteratorAggregate, Countable, JsonSerializable
 {
 	/**
 	 * @return Collection<TKey, TValue>

@@ -220,7 +220,7 @@ class PhpClassReflectionExtension
 		$deprecatedDescription = null;
 		$isDeprecated = false;
 		$isInternal = false;
-		$isReadOnlyByPhpDoc = false;
+		$isReadOnlyByPhpDoc = $classReflection->isImmutable();
 
 		if (
 			$includingAnnotations
@@ -326,7 +326,7 @@ class PhpClassReflectionExtension
 			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
 			$isInternal = $resolvedPhpDoc->isInternal();
-			$isReadOnlyByPhpDoc = $resolvedPhpDoc->isReadOnly();
+			$isReadOnlyByPhpDoc = $isReadOnlyByPhpDoc || $resolvedPhpDoc->isReadOnly();
 		}
 
 		if (

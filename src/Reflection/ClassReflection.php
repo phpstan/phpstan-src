@@ -85,6 +85,8 @@ class ClassReflection
 
 	private ?bool $isFinal = null;
 
+	private ?bool $isImmutable = null;
+
 	private ?bool $hasConsistentConstructor = null;
 
 	private ?TemplateTypeMap $templateTypeMap = null;
@@ -1027,6 +1029,16 @@ class ClassReflection
 		}
 
 		return $this->isFinal;
+	}
+
+	public function isImmutable(): bool
+	{
+		if ($this->isImmutable === null) {
+			$resolvedPhpDoc = $this->getResolvedPhpDoc();
+			$this->isImmutable = $resolvedPhpDoc !== null && $resolvedPhpDoc->isImmutable();
+		}
+
+		return $this->isImmutable;
 	}
 
 	public function hasConsistentConstructor(): bool

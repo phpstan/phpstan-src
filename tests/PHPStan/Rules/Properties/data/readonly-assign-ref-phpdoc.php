@@ -35,3 +35,21 @@ class Bar
 	}
 
 }
+
+/** @phpstan-immutable */
+class Immutable
+{
+
+	/** @var int */
+	private $foo;
+
+	/** @var int */
+	public $bar;
+
+	public function doFoo()
+	{
+		$foo = &$this->foo;
+		$bar = &$this->bar;
+	}
+
+}

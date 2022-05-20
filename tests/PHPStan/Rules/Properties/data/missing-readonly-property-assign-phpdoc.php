@@ -109,3 +109,35 @@ class AssignRef
 	}
 
 }
+
+/** @phpstan-immutable */
+class Immutable
+{
+
+	private int $assigned;
+
+	private int $unassigned;
+
+	private int $unassigned2;
+
+	private int $readBeforeAssigned;
+
+	private int $doubleAssigned;
+
+	public function __construct()
+	{
+		$this->assigned = 1;
+
+		echo $this->readBeforeAssigned;
+		$this->readBeforeAssigned = 1;
+
+		$this->doubleAssigned = 1;
+		$this->doubleAssigned = 2;
+	}
+
+	public function setUnassigned2(int $i): void
+	{
+		$this->unassigned2 = $i;
+	}
+
+}

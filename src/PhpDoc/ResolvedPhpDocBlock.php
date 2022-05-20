@@ -98,6 +98,8 @@ class ResolvedPhpDocBlock
 
 	private ?bool $isReadOnly = null;
 
+	private ?bool $isImmutable = null;
+
 	private ?bool $hasConsistentConstructor = null;
 
 	private function __construct()
@@ -563,6 +565,16 @@ class ResolvedPhpDocBlock
 			);
 		}
 		return $this->isReadOnly;
+	}
+
+	public function isImmutable(): bool
+	{
+		if ($this->isImmutable === null) {
+			$this->isImmutable = $this->phpDocNodeResolver->resolveIsImmutable(
+				$this->phpDocNode,
+			);
+		}
+		return $this->isImmutable;
 	}
 
 	/**

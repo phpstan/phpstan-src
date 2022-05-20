@@ -205,3 +205,26 @@ class TestCase
 	}
 
 }
+
+/** @phpstan-immutable */
+class Immutable
+{
+
+	/** @var int */
+	private $foo;
+
+	protected $bar;
+
+	public $baz;
+
+	public function __construct(int $foo)
+	{
+		$this->foo = $foo; // constructor - fine
+	}
+
+	public function setFoo(int $foo): void
+	{
+		$this->foo = $foo; // setter - report
+	}
+
+}

@@ -3,43 +3,30 @@
 namespace PHPStan\Node;
 
 use PhpParser\Node;
-use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleError;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
+/**
+ * @extends RuleTestCase<Rule>
+ */
 class AttributeRuleTest extends RuleTestCase
 {
 
-	public const ERROR_MESSAGE = 'Found Attribute';
-
+	/**
+	 * @return Rule<Node\Attribute>
+	 */
 	protected function getRule(): Rule
 	{
-		return new class() implements Rule {
-
-			public function getNodeType(): string
-			{
-				return Node\Attribute::class;
-			}
-
-			/**
-			 * @param Node\Attribute $node
-			 * @return RuleError[]
-			 */
-			public function processNode(Node $node, Scope $scope): array
-			{
-				return [AttributeRuleTest::ERROR_MESSAGE];
-			}
-
-		};
+		return new AttributeRule();
 	}
 
 	public function dataRule(): iterable
 	{
 		yield [
 			__DIR__ . '/data/attributes.php',
-			self::ERROR_MESSAGE,
-			[8, 16,	20,	23,	26,	27,	34, 40],
+			AttributeRule::ERROR_MESSAGE,
+			[8, 16, 20, 23, 26, 27, 34, 40],
 		];
 	}
 

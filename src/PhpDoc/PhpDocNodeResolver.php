@@ -465,6 +465,19 @@ class PhpDocNodeResolver
 		return false;
 	}
 
+	public function resolveIsImmutable(PhpDocNode $phpDocNode): bool
+	{
+		foreach (['@immutable', '@psalm-immutable', '@phpstan-immutable'] as $tagName) {
+			$tags = $phpDocNode->getTagsByName($tagName);
+
+			if (count($tags) > 0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public function resolveHasConsistentConstructor(PhpDocNode $phpDocNode): bool
 	{
 		foreach (['@consistent-constructor', '@phpstan-consistent-constructor', '@psalm-consistent-constructor'] as $tagName) {

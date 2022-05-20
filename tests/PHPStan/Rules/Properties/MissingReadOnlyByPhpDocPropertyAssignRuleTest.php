@@ -57,6 +57,22 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 				'Access to an uninitialized @readonly property MissingReadOnlyPropertyAssignPhpDoc\AssignOp::$bar.',
 				94,
 			],
+			[
+				'Class MissingReadOnlyPropertyAssignPhpDoc\Immutable has an uninitialized @readonly property $unassigned. Assign it in the constructor.',
+				119,
+			],
+			[
+				'Class MissingReadOnlyPropertyAssignPhpDoc\Immutable has an uninitialized @readonly property $unassigned2. Assign it in the constructor.',
+				121,
+			],
+			[
+				'Access to an uninitialized @readonly property MissingReadOnlyPropertyAssignPhpDoc\Immutable::$readBeforeAssigned.',
+				131,
+			],
+			[
+				'@readonly property MissingReadOnlyPropertyAssignPhpDoc\Immutable::$doubleAssigned is already assigned.',
+				135,
+			],
 		]);
 	}
 

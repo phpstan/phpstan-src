@@ -3854,7 +3854,7 @@ class NodeScopeResolver
 		$isInternal = false;
 		$isFinal = false;
 		$isPure = false;
-		$isReadOnly = false;
+		$isReadOnly = $scope->isInClass() && $scope->getClassReflection()->isImmutable();
 		$docComment = $node->getDocComment() !== null
 			? $node->getDocComment()->getText()
 			: null;
@@ -3961,7 +3961,7 @@ class NodeScopeResolver
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isFinal = $resolvedPhpDoc->isFinal();
 			$isPure = $resolvedPhpDoc->isPure();
-			$isReadOnly = $resolvedPhpDoc->isReadOnly();
+			$isReadOnly = $isReadOnly || $resolvedPhpDoc->isReadOnly();
 		}
 
 		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $isReadOnly, $docComment];

@@ -28,3 +28,16 @@ class Bar
 	}
 
 }
+
+/** @phpstan-immutable */
+class Immutable
+{
+
+	private int $bar;
+
+	public function __construct()
+	{
+
+	}
+
+}

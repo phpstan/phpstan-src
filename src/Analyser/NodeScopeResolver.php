@@ -8,6 +8,7 @@ use DivisionByZeroError;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
+use PhpParser\Node\AttributeGroup;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
@@ -395,13 +396,7 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Node\Stmt\Function_) {
 			$hasYield = false;
 			$throwPoints = [];
-			foreach ($stmt->attrGroups as $attrGroup) {
-				foreach ($attrGroup->attrs as $attr) {
-					foreach ($attr->args as $arg) {
-						$this->processExprNode($arg->value, $scope, $nodeCallback, ExpressionContext::createDeep());
-					}
-				}
-			}
+			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
 			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
@@ -456,13 +451,7 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
 			$hasYield = false;
 			$throwPoints = [];
-			foreach ($stmt->attrGroups as $attrGroup) {
-				foreach ($attrGroup->attrs as $attr) {
-					foreach ($attr->args as $arg) {
-						$this->processExprNode($arg->value, $scope, $nodeCallback, ExpressionContext::createDeep());
-					}
-				}
-			}
+			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
 			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
@@ -633,13 +622,7 @@ class NodeScopeResolver
 			}
 
 			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
-			foreach ($stmt->attrGroups as $attrGroup) {
-				foreach ($attrGroup->attrs as $attr) {
-					foreach ($attr->args as $arg) {
-						$this->processExprNode($arg->value, $classScope, $classStatementsGatherer, ExpressionContext::createDeep());
-					}
-				}
-			}
+			$this->processAttributeGroups($stmt->attrGroups, $classScope, $classStatementsGatherer);
 
 			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer);
 			$nodeCallback(new ClassPropertiesNode($stmt, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getTraitProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls()), $classScope);
@@ -649,13 +632,8 @@ class NodeScopeResolver
 		} elseif ($stmt instanceof Node\Stmt\Property) {
 			$hasYield = false;
 			$throwPoints = [];
-			foreach ($stmt->attrGroups as $attrGroup) {
-				foreach ($attrGroup->attrs as $attr) {
-					foreach ($attr->args as $arg) {
-						$this->processExprNode($arg->value, $scope, $nodeCallback, ExpressionContext::createDeep());
-					}
-				}
-			}
+			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
+
 			foreach ($stmt->props as $prop) {
 				$this->processStmtNode($prop, $scope, $nodeCallback);
 				[,,,,,,,,,$isReadOnly, $docComment] = $this->getPhpDocs($scope, $stmt);
@@ -1406,13 +1384,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			if ($stmt instanceof Node\Stmt\ClassConst) {
-				foreach ($stmt->attrGroups as $attrGroup) {
-					foreach ($attrGroup->attrs as $attr) {
-						foreach ($attr->args as $arg) {
-							$this->processExprNode($arg->value, $scope, $nodeCallback, ExpressionContext::createDeep());
-						}
-					}
-				}
+				$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
 			}
 			foreach ($stmt->consts as $const) {
 				$nodeCallback($const, $scope);
@@ -3108,13 +3080,7 @@ class NodeScopeResolver
 		callable $nodeCallback,
 	): void
 	{
-		foreach ($param->attrGroups as $attrGroup) {
-			foreach ($attrGroup->attrs as $attr) {
-				foreach ($attr->args as $arg) {
-					$this->processExprNode($arg->value, $scope, $nodeCallback, ExpressionContext::createDeep());
-				}
-			}
-		}
+		$this->processAttributeGroups($param->attrGroups, $scope, $nodeCallback);
 		$nodeCallback($param, $scope);
 		if ($param->type !== null) {
 			$nodeCallback($param->type, $scope);
@@ -3124,6 +3090,28 @@ class NodeScopeResolver
 		}
 
 		$this->processExprNode($param->default, $scope, $nodeCallback, ExpressionContext::createDeep());
+	}
+
+	/**
+	 * @param AttributeGroup[] $attrGroups
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processAttributeGroups(
+		array $attrGroups,
+		MutatingScope $scope,
+		callable $nodeCallback,
+	): void
+	{
+		foreach ($attrGroups as $attrGroup) {
+			foreach ($attrGroup->attrs as $attr) {
+				foreach ($attr->args as $arg) {
+					$this->processExprNode($arg->value, $scope, $nodeCallback, ExpressionContext::createDeep());
+					$nodeCallback($arg, $scope);
+				}
+				$nodeCallback($attr, $scope);
+			}
+			$nodeCallback($attrGroup, $scope);
+		}
 	}
 
 	/**

@@ -3480,6 +3480,23 @@ class MutatingScope implements Scope
 			$exprString = sprintf('$%s', $variableName);
 			$nativeTypes[$exprString] = $nativeType;
 
+			$conditionalExpressions = [];
+			foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
+				if ($conditionalExprString === $exprString) {
+					continue;
+				}
+
+				foreach ($holders as $holder) {
+					foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionExprString2) {
+						if ($conditionExprString2 === $exprString) {
+							continue 3;
+						}
+					}
+				}
+
+				$conditionalExpressions[$conditionalExprString] = $holders;
+			}
+
 			return $this->scopeFactory->create(
 				$this->context,
 				$this->isDeclareStrictTypes(),
@@ -3488,7 +3505,7 @@ class MutatingScope implements Scope
 				$this->getNamespace(),
 				$variableTypes,
 				$this->moreSpecificTypes,
-				$this->conditionalExpressions,
+				$conditionalExpressions,
 				$this->inClosureBindScopeClass,
 				$this->anonymousFunctionReflection,
 				$this->inFirstLevelStatement,

@@ -11,18 +11,18 @@ use PHPStan\BetterReflection\Reflection\ReflectionConstant;
 class InitializerExprContext
 {
 
-	private function __construct(private ?string $file, private ?ClassReflection $classReflection = null)
+	private function __construct(private ?string $file, private ?string $className)
 	{
 	}
 
 	public static function fromScope(Scope $scope): self
 	{
-		return new self($scope->getFile(), $scope->getClassReflection());
+		return new self($scope->getFile(), $scope->isInClass() ? $scope->getClassReflection()->getName() : null);
 	}
 
 	public static function fromClassReflection(ClassReflection $classReflection): self
 	{
-		return new self($classReflection->getFileName(), $classReflection);
+		return new self($classReflection->getFileName(), $classReflection->getName());
 	}
 
 	public static function fromReflectionParameter(ReflectionParameter $parameter): self
@@ -36,30 +36,13 @@ class InitializerExprContext
 		// method
 
 		$file = $declaringFunction->getFileName();
-		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-		$className = $declaringFunction->getDeclaringClass()->getName();
-		if (!$reflectionProvider->hasClass($className)) {
-			return new self($file === false ? null : $file, null);
-		}
 
-		$classReflection = $reflectionProvider->getClass($className);
-
-		return new self($file === false ? null : $file, $classReflection);
+		return new self($file === false ? null : $file, $declaringFunction->getDeclaringClass()->getName());
 	}
 
 	public static function fromStubParameter(?string $className, string $stubFile): self
 	{
-		if ($className === null) {
-			return new self($stubFile, null);
-		}
-
-		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-		if (!$reflectionProvider->hasClass($className)) {
-			return new self($stubFile, null);
-		}
-		$classReflection = $reflectionProvider->getClass($className);
-
-		return new self($stubFile, $classReflection);
+		return new self($stubFile, $className);
 	}
 
 	public static function fromGlobalConstant(ReflectionConstant $constant): self
@@ -72,9 +55,9 @@ class InitializerExprContext
 		return $this->file;
 	}
 
-	public function getClass(): ?ClassReflection
+	public function getClassName(): ?string
 	{
-		return $this->classReflection;
+		return $this->className;
 	}
 
 }

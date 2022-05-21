@@ -2,11 +2,13 @@
 
 namespace PHPStan\Reflection\BetterReflection;
 
+use Phar;
 use PhpParser\Parser;
 use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\PhpStormStubsSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\Type\AggregateSourceLocator;
+use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr4Mapping;
 use PHPStan\BetterReflection\SourceLocator\Type\EvaledCodeSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\MemoizingSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
@@ -14,12 +16,14 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
+use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\RectorAutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
 use function array_merge;
 use function array_unique;
+use function extension_loaded;
 use function is_dir;
 use function is_file;
 
@@ -42,6 +46,7 @@ class BetterReflectionSourceLocatorFactory
 		private OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
 		private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
 		private AutoloadSourceLocator $autoloadSourceLocator,
+		private OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
 		private array $scanFiles,
 		private array $scanDirectories,
 		private array $analysedPaths,
@@ -97,6 +102,17 @@ class BetterReflectionSourceLocatorFactory
 				continue;
 			}
 			$locators[] = $locator;
+		}
+
+		if (extension_loaded('phar')) {
+			$pharProtocolPath = Phar::running();
+			if ($pharProtocolPath !== '') {
+				$locators[] = $this->optimizedPsrAutoloaderLocatorFactory->create(
+					Psr4Mapping::fromArrayMappings([
+						'PHPStan\\Testing\\' => [$pharProtocolPath . '/src/Testing/'],
+					]),
+				);
+			}
 		}
 
 		$locators[] = new RectorAutoloadSourceLocator();

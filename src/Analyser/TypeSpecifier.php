@@ -242,6 +242,27 @@ class TypeSpecifier
 						}
 					}
 				}
+
+				if (
+					$exprNode instanceof FuncCall
+					&& $exprNode->name instanceof Name
+					&& strtolower($exprNode->name->toString()) === 'substr'
+					&& isset($exprNode->getArgs()[0])
+					&& $constantType instanceof ConstantStringType
+					&& $constantType->getValue() !== ''
+				) {
+					$argType = $scope->getType($exprNode->getArgs()[0]->value);
+
+					if ($argType->isString()->yes()) {
+						return $this->create(
+							$exprNode->getArgs()[0]->value,
+							TypeCombinator::intersect($argType, new AccessoryNonEmptyStringType()),
+							$context,
+							false,
+							$scope,
+						);
+					}
+				}
 			}
 
 			$rightType = $scope->getType($expr->right);

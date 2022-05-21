@@ -115,7 +115,6 @@ use function array_keys;
 use function array_map;
 use function array_pop;
 use function count;
-use function dirname;
 use function get_class;
 use function in_array;
 use function is_string;
@@ -1397,51 +1396,8 @@ class MutatingScope implements Scope
 			return $this->getType($node->expr)->toString();
 		} elseif ($node instanceof Node\Expr\Cast\Array_) {
 			return $this->getType($node->expr)->toArray();
-		} elseif ($node instanceof Node\Scalar\MagicConst\Line) {
-			return new ConstantIntegerType($node->getLine());
-		} elseif ($node instanceof Node\Scalar\MagicConst\Class_) {
-			if (!$this->isInClass()) {
-				return new ConstantStringType('');
-			}
-
-			return new ConstantStringType($this->getClassReflection()->getName(), true);
-		} elseif ($node instanceof Node\Scalar\MagicConst\Dir) {
-			return new ConstantStringType(dirname($this->getFile()));
-		} elseif ($node instanceof Node\Scalar\MagicConst\File) {
-			return new ConstantStringType($this->getFile());
-		} elseif ($node instanceof Node\Scalar\MagicConst\Namespace_) {
-			return new ConstantStringType($this->namespace ?? '');
-		} elseif ($node instanceof Node\Scalar\MagicConst\Method) {
-			if ($this->isInAnonymousFunction()) {
-				return new ConstantStringType('{closure}');
-			}
-
-			$function = $this->getFunction();
-			if ($function === null) {
-				return new ConstantStringType('');
-			}
-			if ($function instanceof MethodReflection) {
-				return new ConstantStringType(
-					sprintf('%s::%s', $function->getDeclaringClass()->getName(), $function->getName()),
-				);
-			}
-
-			return new ConstantStringType($function->getName());
-		} elseif ($node instanceof Node\Scalar\MagicConst\Function_) {
-			if ($this->isInAnonymousFunction()) {
-				return new ConstantStringType('{closure}');
-			}
-			$function = $this->getFunction();
-			if ($function === null) {
-				return new ConstantStringType('');
-			}
-
-			return new ConstantStringType($function->getName());
-		} elseif ($node instanceof Node\Scalar\MagicConst\Trait_) {
-			if (!$this->isInTrait()) {
-				return new ConstantStringType('');
-			}
-			return new ConstantStringType($this->getTraitReflection()->getName(), true);
+		} elseif ($node instanceof Node\Scalar\MagicConst) {
+			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
 		} elseif ($node instanceof Object_) {
 			$castToObject = static function (Type $type): Type {
 				if ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {

@@ -9,6 +9,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\DNumber;
 use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\MagicConst;
 use PhpParser\Node\Scalar\MagicConst\Dir;
 use PhpParser\Node\Scalar\MagicConst\File;
 use PhpParser\Node\Scalar\MagicConst\Line;
@@ -313,14 +314,33 @@ class InitializerExprTypeResolver
 			return new BooleanType();
 		}
 
-		// todo
-		/*
-		- [ ] MagicConst\Class_
-		- [ ] MagicConst\Namespace_
-		- [ ] MagicConst\Method
-		- [ ] MagicConst\Function_
-		- [ ] MagicConst\Trait_
-		 */
+		if ($expr instanceof MagicConst\Class_) {
+			if ($context->getClassName() === null) {
+				return new ConstantStringType('');
+			}
+
+			return new ConstantStringType($context->getClassName(), true);
+		}
+
+		if ($expr instanceof MagicConst\Namespace_) {
+			return new ConstantStringType($context->getNamespace() ?? '');
+		}
+
+		if ($expr instanceof MagicConst\Method) {
+			return new ConstantStringType($context->getMethod() ?? '');
+		}
+
+		if ($expr instanceof MagicConst\Function_) {
+			return new ConstantStringType($context->getFunction() ?? '');
+		}
+
+		if ($expr instanceof MagicConst\Trait_) {
+			if ($context->getTraitName() === null) {
+				return new ConstantStringType('');
+			}
+
+			return new ConstantStringType($context->getTraitName(), true);
+		}
 
 		return new MixedType();
 	}

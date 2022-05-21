@@ -295,11 +295,8 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		return $this->functionSignatureMapProvider->getFunctionMetadata($functionName);
 	}
 
-	/**
-	 * @param ClassMethod|Function_ $function
-	 */
 	private function getSignature(
-		FunctionLike $function,
+		ClassMethod|Function_ $function,
 		?string $className,
 		string $stubFile,
 	): FunctionSignature
@@ -343,7 +340,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$param->variadic,
 				$param->default !== null ? $this->initializerExprTypeResolver->getType(
 					$param->default,
-					InitializerExprContext::fromStubParameter($className, $stubFile),
+					InitializerExprContext::fromStubParameter($className, $stubFile, $function),
 				) : null,
 			);
 

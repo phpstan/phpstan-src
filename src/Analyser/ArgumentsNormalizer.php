@@ -132,7 +132,7 @@ final class ArgumentsNormalizer
 				continue;
 			}
 			if (!array_key_exists($j, $signatureParameters)) {
-				throw new ShouldNotHappenException('Parameter signatures cannot have wholes');
+				throw new ShouldNotHappenException('Parameter signatures cannot have holes');
 			}
 
 			$parameter = $signatureParameters[$j];
@@ -145,7 +145,7 @@ final class ArgumentsNormalizer
 			$defaultValue = $parameter->getDefaultValue();
 			if ($defaultValue === null) {
 				if (!$parameter->isVariadic()) {
-					throw new ShouldNotHappenException('A optional parameter must have a default value');
+					throw new ShouldNotHappenException('An optional parameter must have a default value');
 				}
 				$defaultValue = new ConstantArrayType([], []);
 			}

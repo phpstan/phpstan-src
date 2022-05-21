@@ -178,6 +178,10 @@ class AnalyseCommand extends Command
 		}
 
 		if ($errorFormat === null) {
+			$errorFormat = $inceptionResult->getContainer()->getParameter('errorFormat');
+		}
+
+		if ($errorFormat === null) {
 			$errorFormat = 'table';
 			$ciDetector = new CiDetector();
 

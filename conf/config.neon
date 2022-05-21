@@ -164,6 +164,7 @@ parameters:
 		- ZEND_THREAD_SAFE
 	customRulesetUsed: null
 	editorUrl: null
+	errorFormat: null
 	__validate: true
 
 extensions:
@@ -315,6 +316,7 @@ parametersSchema:
 	scanDirectories: listOf(string())
 	fixerTmpDir: string()
 	editorUrl: schema(string(), nullable())
+	errorFormat: schema(string(), nullable())
 
 	# irrelevant Nette parameters
 	debugMode: bool()

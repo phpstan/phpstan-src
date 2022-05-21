@@ -6,184 +6,296 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\LNumber;
-use PhpParser\Node\Scalar\String_;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
-use PHPStan\ShouldNotHappenException;
+use PHPStan\Reflection\FunctionVariant;
+use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Testing\PHPStanTestCase;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use const PHP_VERSION_ID;
+use PHPStan\Type\FloatType;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
+use PHPStan\Type\VerbosityLevel;
+use function count;
 
-final class ArgumentsNormalizerTest extends PHPStanTestCase
+class ArgumentsNormalizerTest extends PHPStanTestCase
 {
 
-	/**
-	 * function call, all arguments named and given in order
-	 */
-	public function testArgumentReorderAllNamed(): void
+	public function dataReorderValid(): iterable
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
-		$funcName = new Name('json_encode');
-		$reflectionProvider = self::getContainer()->getByType(NativeFunctionReflectionProvider::class);
-		$functionReflection = $reflectionProvider->findFunctionReflection('json_encode');
-		if ($functionReflection === null) {
-			throw new ShouldNotHappenException();
-		}
-		$parameterAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
-
-		$args = [
-			new Arg(
-				new LNumber(0),
-				false,
-				false,
-				[],
-				new Identifier('flags'),
-			),
-			new Arg(
-				new String_('my json value'),
-				false,
-				false,
-				[],
-				new Identifier('value'),
-			),
+		yield [
+			[
+				['one', false, null],
+				['two', false, null],
+				['three', false, null],
+			],
+			[
+				[new IntegerType(), null],
+				[new StringType(), null],
+				[new FloatType(), null],
+			],
+			[
+				new IntegerType(),
+				new StringType(),
+				new FloatType(),
+			],
 		];
-		$funcCall = new FuncCall($funcName, $args);
 
-		$funcCall = ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall);
-		$this->assertNotNull($funcCall);
-		$reorderedArgs = $funcCall->getArgs();
-		$this->assertCount(2, $reorderedArgs);
+		yield [
+			[
+				['one', false, null],
+				['two', false, null],
+				['three', false, null],
+			],
+			[
+				[new IntegerType(), 'one'],
+				[new StringType(), 'two'],
+				[new FloatType(), 'three'],
+			],
+			[
+				new IntegerType(),
+				new StringType(),
+				new FloatType(),
+			],
+		];
 
-		$this->assertArrayHasKey(0, $reorderedArgs);
-		$this->assertNull($reorderedArgs[0]->name, 'named-arg turned into regular numeric arg');
-		$this->assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at the right position');
+		yield [
+			[
+				['one', false, null],
+				['two', false, null],
+				['three', false, null],
+			],
+			[
+				[new StringType(), 'two'],
+				[new IntegerType(), 'one'],
+				[new FloatType(), 'three'],
+			],
+			[
+				new IntegerType(),
+				new StringType(),
+				new FloatType(),
+			],
+		];
 
-		$this->assertArrayHasKey(1, $reorderedArgs);
-		$this->assertNull($reorderedArgs[1]->name, 'named-arg turned into regular numeric arg');
-		$this->assertInstanceOf(LNumber::class, $reorderedArgs[1]->value, 'flags-arg at the right position');
-		$this->assertSame(0, $reorderedArgs[1]->value->value);
+		// could be invalid
+		yield [
+			[
+				['one', false, null],
+				['two', false, null],
+				['three', false, null],
+			],
+			[
+				[new StringType(), 'two'],
+				[new IntegerType(), 'one'],
+			],
+			[
+				new IntegerType(),
+				new StringType(),
+			],
+		];
+
+		yield [
+			[
+				['one', false, null],
+				['two', false, null],
+				['three', false, null],
+			],
+			[
+				[new IntegerType(), null],
+				[new StringType(), 'two'],
+			],
+			[
+				new IntegerType(),
+				new StringType(),
+			],
+		];
+
+		yield [
+			[
+				['one', true, new IntegerType()],
+				['two', true, new StringType()],
+				['three', true, new FloatType()],
+			],
+			[],
+			[],
+		];
+
+		yield [
+			[
+				['one', true, new IntegerType()],
+				['two', true, new StringType()],
+				['three', true, new FloatType()],
+			],
+			[
+				[new StringType(), 'two'],
+			],
+			[
+				new IntegerType(),
+				new StringType(),
+			],
+		];
+
+		yield [
+			[
+				['one', true, new IntegerType()],
+				['two', true, new StringType()],
+				['three', true, new FloatType()],
+			],
+			[
+				[new StringType(), 'one'],
+			],
+			[
+				new StringType(),
+			],
+		];
+
+		yield [
+			[
+				['one', true, new IntegerType()],
+				['two', true, new StringType()],
+				['three', true, new FloatType()],
+			],
+			[
+				[new StringType(), 'onee'],
+			],
+			[],
+		];
+
+		yield [
+			[
+				['one', true, new IntegerType()],
+				['two', true, new StringType()],
+				['three', true, new FloatType()],
+			],
+			[
+				[new IntegerType(), null],
+				[new StringType(), 'onee'],
+			],
+			[
+				new IntegerType(),
+			],
+		];
 	}
 
 	/**
-	 * function call, all args named, not in order
+	 * @dataProvider dataReorderValid
+	 * @param array<int, array{string, bool, ?Type}> $parameterSettings
+	 * @param array<int, array{Type, ?string}> $argumentSettings
+	 * @param array<int, Type> $expectedArgumentTypes
 	 */
-	public function testArgumentReorderAllNamedWithSkipped(): void
+	public function testReorderValid(
+		array $parameterSettings,
+		array $argumentSettings,
+		array $expectedArgumentTypes,
+	): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
+		$parameters = [];
+		foreach ($parameterSettings as [$name, $optional, $defaultValue]) {
+			$parameters[] = new DummyParameter(
+				$name,
+				new MixedType(),
+				$optional,
+				null,
+				false,
+				$defaultValue,
+			);
 		}
 
-		$funcName = new Name('json_encode');
-		$reflectionProvider = self::getContainer()->getByType(NativeFunctionReflectionProvider::class);
-		$functionReflection = $reflectionProvider->findFunctionReflection('json_encode');
-		if ($functionReflection === null) {
-			throw new ShouldNotHappenException();
+		$arguments = [];
+		foreach ($argumentSettings as [$type, $name]) {
+			$arguments[] = new Arg(new TypeExpr($type), false, false, [], $name === null ? null : new Identifier($name));
 		}
-		$parameterAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 
-		$args = [
-			new Arg(
-				new LNumber(128),
+		$normalized = ArgumentsNormalizer::reorderFuncArguments(
+			new FunctionVariant(
+				TemplateTypeMap::createEmpty(),
+				TemplateTypeMap::createEmpty(),
+				$parameters,
 				false,
-				false,
-				[],
-				new Identifier('depth'),
+				new MixedType(),
 			),
-			new Arg(
-				new String_('my json value'),
-				false,
-				false,
-				[],
-				new Identifier('value'),
-			),
-		];
-		$funcCall = new FuncCall($funcName, $args);
+			new FuncCall(new Name('foo'), $arguments),
+		);
+		$this->assertNotNull($normalized);
 
-		$funcCall = ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall);
-		$this->assertNotNull($funcCall);
-		$reorderedArgs = $funcCall->getArgs();
-		$this->assertCount(3, $reorderedArgs);
-
-		$this->assertArrayHasKey(0, $reorderedArgs);
-		$this->assertNull($reorderedArgs[0]->name, 'named-arg turned into regular numeric arg');
-		$this->assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at the right position');
-
-		$this->assertArrayHasKey(1, $reorderedArgs);
-		$this->assertNull($reorderedArgs[1]->name, 'named-arg turned into regular numeric arg');
-		$this->assertInstanceOf(TypeExpr::class, $reorderedArgs[1]->value, 'flags-arg at the right position');
-		$this->assertInstanceOf(ConstantIntegerType::class, $reorderedArgs[1]->value->getExprType());
-		$this->assertSame(0, $reorderedArgs[1]->value->getExprType()->getValue(), 'flags-arg with default value');
-
-		$this->assertArrayHasKey(2, $reorderedArgs);
-		$this->assertNull($reorderedArgs[2]->name, 'named-arg turned into regular numeric arg');
-		$this->assertInstanceOf(LNumber::class, $reorderedArgs[2]->value, 'depth-arg at the right position');
-		$this->assertSame(128, $reorderedArgs[2]->value->value);
+		$actualArguments = $normalized->getArgs();
+		$this->assertCount(count($expectedArgumentTypes), $actualArguments);
+		foreach ($actualArguments as $i => $actualArgument) {
+			$this->assertNull($actualArgument->name);
+			$value = $actualArgument->value;
+			$this->assertInstanceOf(TypeExpr::class, $value);
+			$this->assertSame(
+				$expectedArgumentTypes[$i]->describe(VerbosityLevel::precise()),
+				$value->getExprType()->describe(VerbosityLevel::precise()),
+			);
+		}
 	}
 
-	public function testMissingRequiredParameter(): void
+	public function dataReorderInvalid(): iterable
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0.');
-		}
-
-		$funcName = new Name('json_encode');
-		$reflectionProvider = self::getContainer()->getByType(NativeFunctionReflectionProvider::class);
-		$functionReflection = $reflectionProvider->findFunctionReflection('json_encode');
-		if ($functionReflection === null) {
-			throw new ShouldNotHappenException();
-		}
-		$parameterAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
-
-		$args = [
-			new Arg(
-				new LNumber(128),
-				false,
-				false,
-				[],
-				new Identifier('depth'),
-			),
+		yield [
+			[
+				['one', false, null],
+				['two', false, null],
+				['three', false, null],
+			],
+			[
+				[new StringType(), 'two'],
+			],
 		];
-		$funcCall = new FuncCall($funcName, $args);
 
-		$this->assertNull(ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall));
+		yield [
+			[
+				['one', false, null],
+				['two', false, null],
+				['three', false, null],
+			],
+			[
+				[new IntegerType(), null],
+				[new StringType(), 'three'],
+			],
+		];
 	}
 
-	public function testLeaveRegularCallAsIs(): void
+	/**
+	 * @dataProvider dataReorderInvalid
+	 * @param array<int, array{string, bool, ?Type}> $parameterSettings
+	 * @param array<int, array{Type, ?string}> $argumentSettings
+	 */
+	public function testReorderInvalid(
+		array $parameterSettings,
+		array $argumentSettings,
+	): void
 	{
-		$funcName = new Name('json_encode');
-		$reflectionProvider = self::getContainer()->getByType(NativeFunctionReflectionProvider::class);
-		$functionReflection = $reflectionProvider->findFunctionReflection('json_encode');
-		if ($functionReflection === null) {
-			throw new ShouldNotHappenException();
+		$parameters = [];
+		foreach ($parameterSettings as [$name, $optional, $defaultValue]) {
+			$parameters[] = new DummyParameter(
+				$name,
+				new MixedType(),
+				$optional,
+				null,
+				false,
+				$defaultValue,
+			);
 		}
-		$parameterAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 
-		$args = [
-			new Arg(
-				new String_('my json value'),
+		$arguments = [];
+		foreach ($argumentSettings as [$type, $name]) {
+			$arguments[] = new Arg(new TypeExpr($type), false, false, [], $name === null ? null : new Identifier($name));
+		}
+
+		$normalized = ArgumentsNormalizer::reorderFuncArguments(
+			new FunctionVariant(
+				TemplateTypeMap::createEmpty(),
+				TemplateTypeMap::createEmpty(),
+				$parameters,
+				false,
+				new MixedType(),
 			),
-			new Arg(
-				new LNumber(0),
-			),
-		];
-		$funcCall = new FuncCall($funcName, $args);
-
-		$funcCall = ArgumentsNormalizer::reorderFuncArguments($parameterAcceptor, $funcCall);
-		$this->assertNotNull($funcCall);
-		$reorderedArgs = $funcCall->getArgs();
-		$this->assertCount(2, $reorderedArgs);
-
-		$this->assertArrayHasKey(0, $reorderedArgs);
-		$this->assertInstanceOf(String_::class, $reorderedArgs[0]->value, 'value-arg at unchanged position');
-
-		$this->assertArrayHasKey(1, $reorderedArgs);
-		$this->assertInstanceOf(LNumber::class, $reorderedArgs[1]->value, 'flags-arg at unchanged position');
-		$this->assertSame(0, $reorderedArgs[1]->value->value);
+			new FuncCall(new Name('foo'), $arguments),
+		);
+		$this->assertNull($normalized);
 	}
 
 }

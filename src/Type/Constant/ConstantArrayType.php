@@ -35,6 +35,7 @@ use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_pop;
+use function array_reverse;
 use function array_slice;
 use function array_unique;
 use function array_values;
@@ -631,6 +632,36 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			(int) $nextAutoIndex,
 			[],
 		);
+	}
+
+	public function reverse(bool $preserveKeys = false): self
+	{
+		$keyTypesReversed = array_reverse($this->keyTypes, true);
+		$keyTypes = array_values($keyTypesReversed);
+		$keyTypesReversedKeys = array_keys($keyTypesReversed);
+		$optionalKeys = array_map(static fn (int $optionalKey): int => $keyTypesReversedKeys[$optionalKey], $this->optionalKeys);
+
+		$reversed = new self($keyTypes, array_reverse($this->valueTypes), $this->nextAutoIndexes, $optionalKeys);
+
+		return $preserveKeys ? $reversed : $reversed->reindex();
+	}
+
+	public function reindex(): self
+	{
+		$keyTypes = [];
+		$autoIndex = 0;
+
+		foreach ($this->keyTypes as $keyType) {
+			if (!$keyType instanceof ConstantIntegerType) {
+				$keyTypes[] = $keyType;
+				continue;
+			}
+
+			$keyTypes[] = new ConstantIntegerType($autoIndex);
+			$autoIndex++;
+		}
+
+		return new self($keyTypes, $this->valueTypes, [$autoIndex], $this->optionalKeys);
 	}
 
 	public function toBoolean(): BooleanType

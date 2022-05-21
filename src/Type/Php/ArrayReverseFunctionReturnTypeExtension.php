@@ -6,7 +6,10 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
 class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -23,7 +26,15 @@ class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		return $scope->getType($functionCall->getArgs()[0]->value);
+		$type = $scope->getType($functionCall->getArgs()[0]->value);
+		$preserveKeysType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : new NeverType();
+		$preserveKeys = $preserveKeysType instanceof ConstantBooleanType ? $preserveKeysType->getValue() : false;
+
+		if ($type instanceof ConstantArrayType) {
+			return $type->reverse($preserveKeys);
+		}
+
+		return $type;
 	}
 
 }

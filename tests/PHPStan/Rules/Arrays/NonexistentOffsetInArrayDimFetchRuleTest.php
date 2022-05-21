@@ -112,6 +112,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				253,
 			],
 			[
+				'Cannot access offset \'a\' on array{a: 1, b: 1}|(Closure(): void).',
+				258,
+			],
+			[
 				'Offset string does not exist on array<int, string>.',
 				308,
 			],
@@ -395,7 +399,21 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	public function testBug7229(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-7229.php'], []);
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-7229.php'], [
+			[
+				'Cannot access offset string on mixed.',
+				24,
+			],
+			[
+				'Cannot access offset string on mixed.',
+				29,
+			],
+			[
+				'Cannot access offset string on mixed.',
+				32,
+			],
+		]);
 	}
 
 }

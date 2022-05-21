@@ -28,5 +28,10 @@
         "message": "Cannot access offset 'foo' on iterable<int|string, object>.",
         "line": 58,
         "ignorable": true
+    },
+    {
+        "message": "Cannot access offset 'foo' on iterable<int|string, object>.",
+        "line": 66,
+        "ignorable": true
     }
 ]

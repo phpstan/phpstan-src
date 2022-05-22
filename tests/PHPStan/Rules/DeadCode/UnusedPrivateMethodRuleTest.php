@@ -40,6 +40,10 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 				'Method UnusedPrivateMethod\Lorem::doBaz() is unused.',
 				97,
 			],
+			[
+				'Method UnusedPrivateMethod\UsingFooTrait::doBar() is unused.',
+				133,
+			],
 		]);
 	}
 

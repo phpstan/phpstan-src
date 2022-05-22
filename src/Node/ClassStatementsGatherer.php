@@ -117,7 +117,7 @@ class ClassStatementsGatherer
 		if ($scope->getClassReflection()->getName() !== $this->classReflection->getName()) {
 			return;
 		}
-		if ($node instanceof ClassPropertyNode && !$scope->isInTrait()) {
+		if ($node instanceof ClassPropertyNode) {
 			$this->properties[] = $node;
 			if ($node->isPromoted()) {
 				$this->propertyUsages[] = new PropertyWrite(
@@ -127,7 +127,7 @@ class ClassStatementsGatherer
 			}
 			return;
 		}
-		if ($node instanceof Node\Stmt\ClassMethod && !$scope->isInTrait()) {
+		if ($node instanceof Node\Stmt\ClassMethod) {
 			$this->methods[] = $node;
 			return;
 		}

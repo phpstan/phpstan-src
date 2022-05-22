@@ -104,9 +104,11 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 				__DIR__ . '/traits/TraitWithTypeSpecification.php',
 			],
 		);
-		$this->assertCount(1, $errors);
-		$this->assertStringContainsString('Access to an undefined property', $errors[0]->getMessage());
-		$this->assertSame(18, $errors[0]->getLine());
+		$this->assertCount(2, $errors);
+		$this->assertStringContainsString('$string is never read, only written.', $errors[0]->getMessage());
+		$this->assertSame(9, $errors[0]->getLine());
+		$this->assertStringContainsString('Access to an undefined property', $errors[1]->getMessage());
+		$this->assertSame(18, $errors[1]->getLine());
 	}
 
 	public function testDuplicateMethodDefinition(): void

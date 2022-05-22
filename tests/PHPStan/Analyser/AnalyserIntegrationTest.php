@@ -363,7 +363,8 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug4288(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4288.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Property Bug4288\MyClass::$test is never read, only written.', $errors[0]->getMessage());
 
 		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass(MyClass::class);

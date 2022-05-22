@@ -21,6 +21,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use function array_key_exists;
 use function array_keys;
+use function array_merge;
 use function count;
 use function in_array;
 
@@ -30,10 +31,11 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 
 	/**
 	 * @param ClassPropertyNode[] $properties
+	 * @param ClassPropertyNode[] $traitProperties
 	 * @param array<int, PropertyRead|PropertyWrite> $propertyUsages
 	 * @param array<int, MethodCall> $methodCalls
 	 */
-	public function __construct(private ClassLike $class, private array $properties, private array $propertyUsages, private array $methodCalls)
+	public function __construct(private ClassLike $class, private array $properties, private array $traitProperties, private array $propertyUsages, private array $methodCalls)
 	{
 		parent::__construct($class->getAttributes());
 	}
@@ -49,6 +51,14 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	public function getProperties(): array
 	{
 		return $this->properties;
+	}
+
+	/**
+	 * @return ClassPropertyNode[]
+	 */
+	public function getTraitProperties(): array
+	{
+		return $this->traitProperties;
 	}
 
 	/**
@@ -92,7 +102,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$classReflection = $scope->getClassReflection();
 
 		$properties = [];
-		foreach ($this->getProperties() as $property) {
+		foreach (array_merge($this->getProperties(), $this->getTraitProperties()) as $property) {
 			if ($property->isStatic()) {
 				continue;
 			}

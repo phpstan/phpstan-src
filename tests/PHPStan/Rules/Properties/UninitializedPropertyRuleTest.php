@@ -67,6 +67,14 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				'Class UninitializedProperty\TestExtension has an uninitialized property $uninited. Give it default value or assign it in the constructor.',
 				122,
 			],
+			[
+				'Class UninitializedProperty\FooTraitClass has an uninitialized property $bar. Give it default value or assign it in the constructor.',
+				157,
+			],
+			[
+				'Class UninitializedProperty\FooTraitClass has an uninitialized property $baz. Give it default value or assign it in the constructor.',
+				159,
+			],
 		]);
 	}
 
@@ -85,6 +93,20 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 	{
 		// reported by a different rule
 		$this->analyse([__DIR__ . '/data/uninitialized-property-readonly-phpdoc.php'], []);
+	}
+
+	public function testBug7219(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7219.php'], [
+			[
+				'Class Bug7219\Foo has an uninitialized property $id. Give it default value or assign it in the constructor.',
+				8,
+			],
+			[
+				'Class Bug7219\Foo has an uninitialized property $email. Give it default value or assign it in the constructor.',
+				15,
+			],
+		]);
 	}
 
 }

@@ -101,3 +101,55 @@ class AssignRef
 	}
 
 }
+
+trait FooTrait
+{
+
+	private readonly int $assigned;
+
+	private int $unassignedButNotReadOnly;
+
+	private int $readBeforeAssignedNotReadOnly;
+
+	private readonly int $unassigned;
+
+	private readonly int $unassigned2;
+
+	private readonly int $readBeforeAssigned;
+
+	private readonly int $doubleAssigned;
+
+	private int $doubleAssignedNotReadOnly;
+
+	public function setUnassigned2(int $i): void
+	{
+		$this->unassigned2 = $i;
+	}
+
+}
+
+class FooTraitClass
+{
+
+	use FooTrait;
+
+	public function __construct(
+		private readonly int $promoted,
+	)
+	{
+		$this->assigned = 1;
+
+		echo $this->readBeforeAssignedNotReadOnly;
+		$this->readBeforeAssignedNotReadOnly = 1;
+
+		echo $this->readBeforeAssigned;
+		$this->readBeforeAssigned = 1;
+
+		$this->doubleAssigned = 1;
+		$this->doubleAssigned = 2;
+
+		$this->doubleAssignedNotReadOnly = 1;
+		$this->doubleAssignedNotReadOnly = 2;
+	}
+
+}

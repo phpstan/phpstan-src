@@ -632,15 +632,15 @@ class NodeScopeResolver
 				throw new ShouldNotHappenException();
 			}
 
+			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
 			foreach ($stmt->attrGroups as $attrGroup) {
 				foreach ($attrGroup->attrs as $attr) {
 					foreach ($attr->args as $arg) {
-						$this->processExprNode($arg->value, $classScope, $nodeCallback, ExpressionContext::createDeep());
+						$this->processExprNode($arg->value, $classScope, $classStatementsGatherer, ExpressionContext::createDeep());
 					}
 				}
 			}
 
-			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
 			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer);
 			$nodeCallback(new ClassPropertiesNode($stmt, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls()), $classScope);
 			$nodeCallback(new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls()), $classScope);

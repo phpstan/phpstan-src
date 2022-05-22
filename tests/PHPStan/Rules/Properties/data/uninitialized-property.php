@@ -148,3 +148,31 @@ class ImplicitArrayCreation2
 	}
 
 }
+
+trait FooTrait
+{
+
+	private int $foo;
+
+	private int $bar;
+
+	private int $baz;
+
+	public function setBaz()
+	{
+		$this->baz = 1;
+	}
+
+}
+
+class FooTraitClass
+{
+
+	use FooTrait;
+
+	public function __construct()
+	{
+		$this->foo = 1;
+	}
+
+}

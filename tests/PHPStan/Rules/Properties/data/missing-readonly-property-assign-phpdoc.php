@@ -141,3 +141,58 @@ class Immutable
 	}
 
 }
+
+trait FooTrait
+{
+
+	/** @readonly */
+	private int $assigned;
+
+	private int $unassignedButNotReadOnly;
+
+	private int $readBeforeAssignedNotReadOnly;
+
+	/** @readonly */
+	private int $unassigned;
+
+	/** @readonly */
+	private int $unassigned2;
+
+	/** @readonly */
+	private int $readBeforeAssigned;
+
+	/** @readonly */
+	private int $doubleAssigned;
+
+	private int $doubleAssignedNotReadOnly;
+
+	public function setUnassigned2(int $i): void
+	{
+		$this->unassigned2 = $i;
+	}
+
+}
+
+class FooTraitClass
+{
+
+	use FooTrait;
+
+	public function __construct()
+	{
+		$this->assigned = 1;
+
+		echo $this->readBeforeAssignedNotReadOnly;
+		$this->readBeforeAssignedNotReadOnly = 1;
+
+		echo $this->readBeforeAssigned;
+		$this->readBeforeAssigned = 1;
+
+		$this->doubleAssigned = 1;
+		$this->doubleAssigned = 2;
+
+		$this->doubleAssignedNotReadOnly = 1;
+		$this->doubleAssignedNotReadOnly = 2;
+	}
+
+}

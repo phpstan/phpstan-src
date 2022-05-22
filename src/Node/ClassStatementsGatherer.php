@@ -28,6 +28,9 @@ class ClassStatementsGatherer
 	/** @var ClassPropertyNode[] */
 	private array $properties = [];
 
+	/** @var ClassPropertyNode[] */
+	private array $traitProperties = [];
+
 	/** @var Node\Stmt\ClassMethod[] */
 	private array $methods = [];
 
@@ -60,6 +63,14 @@ class ClassStatementsGatherer
 	public function getProperties(): array
 	{
 		return $this->properties;
+	}
+
+	/**
+	 * @return ClassPropertyNode[]
+	 */
+	public function getTraitProperties(): array
+	{
+		return $this->traitProperties;
 	}
 
 	/**
@@ -125,6 +136,10 @@ class ClassStatementsGatherer
 					$scope,
 				);
 			}
+			return;
+		}
+		if ($node instanceof ClassPropertyNode && $scope->isInTrait()) {
+			$this->traitProperties[] = $node;
 			return;
 		}
 		if ($node instanceof Node\Stmt\ClassMethod && !$scope->isInTrait()) {

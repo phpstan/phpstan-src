@@ -19,9 +19,15 @@ class Foo
 		assertType('array<string, int>', array_reverse($b, true));
 	}
 
-	/** @param array{a: 'foo', b: 'bar', c?: 'baz'} $a */
-	public function constantArrays(array $a): void
+	/**
+	 * @param array{a: 'foo', b: 'bar', c?: 'baz'} $a
+	 * @param array{17: 'foo', 19: 'bar'}|array{foo: 17, bar: 19} $b
+	 */
+	public function constantArrays(array $a, array $b): void
 	{
+		assertType('array{}', array_reverse([]));
+		assertType('array{}', array_reverse([], true));
+
 		assertType('array{1337, null, 42}', array_reverse([42, null, 1337]));
 		assertType('array{2: 1337, 1: null, 0: 42}', array_reverse([42, null, 1337], true));
 
@@ -36,5 +42,8 @@ class Foo
 
 		assertType('array{c?: \'baz\', b: \'bar\', a: \'foo\'}', array_reverse($a));
 		assertType('array{c?: \'baz\', b: \'bar\', a: \'foo\'}', array_reverse($a, true));
+
+		assertType('array{\'bar\', \'foo\'}|array{bar: 19, foo: 17}', array_reverse($b));
+		assertType('array{19: \'bar\', 17: \'foo\'}|array{bar: 19, foo: 17}', array_reverse($b, true));
 	}
 }

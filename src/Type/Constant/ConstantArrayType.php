@@ -646,7 +646,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $preserveKeys ? $reversed : $reversed->reindex();
 	}
 
-	public function reindex(): self
+	private function reindex(): self
 	{
 		$keyTypes = [];
 		$autoIndex = 0;

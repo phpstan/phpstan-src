@@ -549,4 +549,28 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7079.php'], []);
 	}
 
+	public function testConditionalTypesInference(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/conditional-types-inference.php'], [
+			[
+				'Call to function testIsInt() with string will always evaluate to false.',
+				49,
+			],
+			[
+				'Call to function testIsNotInt() with string will always evaluate to true.',
+				55,
+			],
+			[
+				'Call to function testIsInt() with int will always evaluate to true.',
+				66,
+			],
+			[
+				'Call to function testIsNotInt() with int will always evaluate to false.',
+				72,
+			],
+		]);
+	}
+
 }

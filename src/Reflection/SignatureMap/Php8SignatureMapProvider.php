@@ -7,7 +7,6 @@ use PhpParser\Node\FunctionLike;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
-use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php8StubsMap;
@@ -22,6 +21,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
+use ReflectionFunctionAbstract;
 use function array_key_exists;
 use function array_map;
 use function count;
@@ -176,7 +176,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 		return [$signature];
 	}
 
-	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction): array
+	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunctionAbstract|null $reflectionFunction): array
 	{
 		$lowerName = strtolower($functionName);
 		if (!array_key_exists($lowerName, $this->map->functions)) {

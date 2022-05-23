@@ -10,6 +10,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypehintHelper;
+use ReflectionFunctionAbstract;
 use function array_change_key_case;
 use function array_key_exists;
 use function array_keys;
@@ -50,7 +51,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		return $this->getFunctionSignatures(sprintf('%s::%s', $className, $methodName), $className, $reflectionMethod);
 	}
 
-	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction): array
+	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunctionAbstract|null $reflectionFunction): array
 	{
 		$functionName = strtolower($functionName);
 
@@ -66,8 +67,11 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		return $signatures;
 	}
 
-	private function createSignature(string $functionName, ?string $className, ReflectionFunction|ReflectionMethod|null $reflectionFunction): FunctionSignature
+	private function createSignature(string $functionName, ?string $className, ReflectionFunctionAbstract|null $reflectionFunction): FunctionSignature
 	{
+		if (!$reflectionFunction instanceof ReflectionMethod && !$reflectionFunction instanceof ReflectionFunction && $reflectionFunction !== null) {
+			throw new ShouldNotHappenException();
+		}
 		$signatureMap = self::getSignatureMap();
 		$signature = $this->parser->getFunctionSignature(
 			$signatureMap[$functionName],

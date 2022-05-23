@@ -602,19 +602,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$keyTypes = array_slice($this->keyTypes, $offset, $limit);
 		$valueTypes = array_slice($this->valueTypes, $offset, $limit);
 
-		if (!$preserveKeys) {
-			$i = 0;
-			/** @var array<int, ConstantIntegerType|ConstantStringType> $keyTypes */
-			$keyTypes = array_map(static function ($keyType) use (&$i) {
-				if ($keyType instanceof ConstantIntegerType) {
-					$i++;
-					return new ConstantIntegerType($i - 1);
-				}
-
-				return $keyType;
-			}, $keyTypes);
-		}
-
 		/** @var int|float $nextAutoIndex */
 		$nextAutoIndex = 0;
 		foreach ($keyTypes as $keyType) {
@@ -626,12 +613,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$nextAutoIndex = max($nextAutoIndex, $keyType->getValue() + 1);
 		}
 
-		return new self(
-			$keyTypes,
-			$valueTypes,
-			(int) $nextAutoIndex,
-			[],
-		);
+		$slice = new self($keyTypes, $valueTypes, (int) $nextAutoIndex, []);
+
+		return $preserveKeys ? $slice : $slice->reindex();
 	}
 
 	public function reverse(bool $preserveKeys = false): self

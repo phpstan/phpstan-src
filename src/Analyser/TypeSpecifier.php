@@ -19,7 +19,10 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -27,6 +30,7 @@ use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -57,6 +61,7 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
+use function array_key_exists;
 use function array_merge;
 use function array_reverse;
 use function count;
@@ -681,6 +686,14 @@ class TypeSpecifier
 
 					return $extension->specifyTypes($functionReflection, $expr, $scope, $context);
 				}
+
+				if (count($expr->getArgs()) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $functionReflection->getVariants());
+					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
+					if ($specifiedTypes !== null) {
+						return $specifiedTypes;
+					}
+				}
 			}
 
 			return $this->handleDefaultTruthyOrFalseyContext($context, $rootExpr, $expr, $scope);
@@ -700,6 +713,14 @@ class TypeSpecifier
 						}
 
 						return $extension->specifyTypes($methodReflection, $expr, $scope, $context);
+					}
+
+					if (count($expr->getArgs()) > 0) {
+						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants());
+						$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
+						if ($specifiedTypes !== null) {
+							return $specifiedTypes;
+						}
 					}
 				}
 			}
@@ -726,6 +747,14 @@ class TypeSpecifier
 						}
 
 						return $extension->specifyTypes($staticMethodReflection, $expr, $scope, $context);
+					}
+				}
+
+				if (count($expr->getArgs()) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $staticMethodReflection->getVariants());
+					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
+					if ($specifiedTypes !== null) {
+						return $specifiedTypes;
 					}
 				}
 			}
@@ -949,6 +978,98 @@ class TypeSpecifier
 		}
 
 		return new SpecifiedTypes([], [], false, [], $rootExpr);
+	}
+
+	private function specifyTypesFromConditionalReturnType(
+		TypeSpecifierContext $context,
+		Expr\CallLike $call,
+		ParametersAcceptor $parametersAcceptor,
+		Scope $scope,
+	): ?SpecifiedTypes
+	{
+		if (!$parametersAcceptor instanceof ResolvedFunctionVariant) {
+			return null;
+		}
+
+		$returnType = $parametersAcceptor->getOriginalParametersAcceptor()->getReturnType();
+		if (!$returnType instanceof ConditionalTypeForParameter) {
+			return null;
+		}
+
+		if ($context->true()) {
+			$leftType = new ConstantBooleanType(true);
+			$rightType = new ConstantBooleanType(false);
+		} elseif ($context->false()) {
+			$leftType = new ConstantBooleanType(false);
+			$rightType = new ConstantBooleanType(true);
+		} elseif ($context->null()) {
+			$leftType = new MixedType();
+			$rightType = new NeverType();
+		} else {
+			return null;
+		}
+
+		$argsMap = [];
+		$parameters = $parametersAcceptor->getParameters();
+		foreach ($call->getArgs() as $i => $arg) {
+			if ($arg->unpack) {
+				continue;
+			}
+
+			if ($arg->name !== null) {
+				$paramName = $arg->name->toString();
+			} elseif (isset($parameters[$i])) {
+				$paramName = $parameters[$i]->getName();
+			} else {
+				continue;
+			}
+
+			$argsMap['$' . $paramName] = $arg->value;
+		}
+
+		return $this->getConditionalSpecifiedTypes($returnType, $leftType, $rightType, $scope, $argsMap);
+	}
+
+	/**
+	 * @param array<string, Expr> $argsMap
+	 */
+	public function getConditionalSpecifiedTypes(
+		ConditionalTypeForParameter $conditionalType,
+		Type $leftType,
+		Type $rightType,
+		Scope $scope,
+		array $argsMap,
+	): ?SpecifiedTypes
+	{
+		$parameterName = $conditionalType->getParameterName();
+		if (!array_key_exists($parameterName, $argsMap)) {
+			return null;
+		}
+
+		$ifType = $conditionalType->getIf();
+		$elseType = $conditionalType->getElse();
+
+		if ($leftType->isSuperTypeOf($ifType)->yes() && $rightType->isSuperTypeOf($elseType)->yes()) {
+			return $this->create(
+				$argsMap[$parameterName],
+				$conditionalType->getTarget(),
+				$conditionalType->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
+				false,
+				$scope,
+			);
+		}
+
+		if ($leftType->isSuperTypeOf($elseType)->yes() && $rightType->isSuperTypeOf($ifType)->yes()) {
+			return $this->create(
+				$argsMap[$parameterName],
+				$conditionalType->getTarget(),
+				$conditionalType->isNegated() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createFalse(),
+				false,
+				$scope,
+			);
+		}
+
+		return null;
 	}
 
 	/**

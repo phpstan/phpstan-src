@@ -213,7 +213,6 @@ class AnalyseCommand extends Command
 			} elseif ($ci->getCiName() === CiDetector::CI_TEAMCITY) {
 				$errorFormatter = new TeamcityErrorFormatter(
 					$container->getService('simpleRelativePathHelper'),
-					$errorFormatter,
 				);
 			}
 		} catch (CiNotDetectedException) {

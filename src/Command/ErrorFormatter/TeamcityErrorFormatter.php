@@ -18,17 +18,12 @@ use const PHP_EOL;
 class TeamcityErrorFormatter implements ErrorFormatter
 {
 
-	public function __construct(
-		private RelativePathHelper $relativePathHelper,
-		private ErrorFormatter $errorFormatter,
-	)
+	public function __construct(private RelativePathHelper $relativePathHelper)
 	{
 	}
 
 	public function formatErrors(AnalysisResult $analysisResult, Output $output): int
 	{
-		$this->errorFormatter->formatErrors($analysisResult, $output);
-
 		$result = '';
 		$fileSpecificErrors = $analysisResult->getFileSpecificErrors();
 		$notFileSpecificErrors = $analysisResult->getNotFileSpecificErrors();

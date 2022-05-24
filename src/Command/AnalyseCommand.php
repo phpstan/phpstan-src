@@ -7,9 +7,7 @@ use OndraM\CiDetector\Exception\CiNotDetectedException;
 use PHPStan\Analyser\ResultCache\ResultCacheClearer;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
-use PHPStan\Command\ErrorFormatter\GithubErrorFormatter;
 use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
-use PHPStan\Command\ErrorFormatter\TeamcityErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\File\CouldNotWriteFileException;
@@ -185,6 +183,18 @@ class AnalyseCommand extends Command
 
 		if ($errorFormat === null) {
 			$errorFormat = 'table';
+			$ciDetector = new CiDetector();
+
+			try {
+				$ci = $ciDetector->detect();
+				if ($ci->getCiName() === CiDetector::CI_GITHUB_ACTIONS) {
+					$errorFormat = 'github';
+				} elseif ($ci->getCiName() === CiDetector::CI_TEAMCITY) {
+					$errorFormat = 'teamcity';
+				}
+			} catch (CiNotDetectedException) {
+				// pass
+			}
 		}
 
 		$container = $inceptionResult->getContainer();
@@ -196,27 +206,6 @@ class AnalyseCommand extends Command
 				implode(', ', array_map(static fn (string $name): string => substr($name, strlen('errorFormatter.')), $container->findServiceNamesByType(ErrorFormatter::class))),
 			));
 			return 1;
-		}
-
-		/** @var ErrorFormatter $errorFormatter */
-		$errorFormatter = $container->getService($errorFormatterServiceName);
-
-		$ciDetector = new CiDetector();
-
-		try {
-			$ci = $ciDetector->detect();
-			if ($ci->getCiName() === CiDetector::CI_GITHUB_ACTIONS) {
-				$errorFormatter = new GithubErrorFormatter(
-					$container->getService('simpleRelativePathHelper'),
-					$errorFormatter,
-				);
-			} elseif ($ci->getCiName() === CiDetector::CI_TEAMCITY) {
-				$errorFormatter = new TeamcityErrorFormatter(
-					$container->getService('simpleRelativePathHelper'),
-				);
-			}
-		} catch (CiNotDetectedException) {
-			// pass
 		}
 
 		$generateBaselineFile = $inceptionResult->getGenerateBaselineFile();
@@ -443,6 +432,9 @@ class AnalyseCommand extends Command
 				$_SERVER['argv'][0],
 			);
 		}
+
+		/** @var ErrorFormatter $errorFormatter */
+		$errorFormatter = $container->getService($errorFormatterServiceName);
 
 		return $inceptionResult->handleReturn(
 			$errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput()),

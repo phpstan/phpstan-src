@@ -2,6 +2,8 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use PHPStan\Command\AnalysisResult;
+use PHPStan\Command\Output;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
@@ -95,6 +97,14 @@ class TeamcityErrorFormatterTest extends ErrorFormatterTestCase
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
 		$formatter = new TeamcityErrorFormatter(
 			$relativePathHelper,
+			new class implements ErrorFormatter {
+
+				public function formatErrors(AnalysisResult $analysisResult, Output $output): int
+				{
+					return 0;
+				}
+
+			},
 		);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(

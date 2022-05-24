@@ -32,7 +32,7 @@ class MethodParameterComparisonHelper
 	/**
 	 * @return RuleError[]
 	 */
-	public function compare(MethodPrototypeReflection $prototype, PhpMethodFromParserNodeReflection $method): array
+	public function compare(MethodPrototypeReflection $prototype, PhpMethodFromParserNodeReflection $method, bool $ignorable = false): array
 	{
 		/** @var RuleError[] $messages */
 		$messages = [];
@@ -44,7 +44,7 @@ class MethodParameterComparisonHelper
 		$prototypeAfterVariadic = false;
 		foreach ($prototypeVariant->getParameters() as $i => $prototypeParameter) {
 			if (!array_key_exists($i, $methodParameters)) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$error = RuleErrorBuilder::message(sprintf(
 					'Method %s::%s() overrides method %s::%s() but misses parameter #%d $%s.',
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
@@ -52,14 +52,21 @@ class MethodParameterComparisonHelper
 					$prototype->getName(),
 					$i + 1,
 					$prototypeParameter->getName(),
-				))->nonIgnorable()->build();
+				));
+
+				if (! $ignorable) {
+					$error->nonIgnorable();
+				}
+
+				$messages[] = $error->build();
+
 				continue;
 			}
 
 			$methodParameter = $methodParameters[$i];
 			if ($prototypeParameter->passedByReference()->no()) {
 				if (!$methodParameter->passedByReference()->no()) {
-					$messages[] = RuleErrorBuilder::message(sprintf(
+					$error = RuleErrorBuilder::message(sprintf(
 						'Parameter #%d $%s of method %s::%s() is passed by reference but parameter #%d $%s of method %s::%s() is not passed by reference.',
 						$i + 1,
 						$methodParameter->getName(),
@@ -69,10 +76,16 @@ class MethodParameterComparisonHelper
 						$prototypeParameter->getName(),
 						$prototype->getDeclaringClass()->getDisplayName(),
 						$prototype->getName(),
-					))->nonIgnorable()->build();
+					));
+
+					if (! $ignorable) {
+						$error->nonIgnorable();
+					}
+
+					$messages[] = $error->build();
 				}
 			} elseif ($methodParameter->passedByReference()->no()) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$error = RuleErrorBuilder::message(sprintf(
 					'Parameter #%d $%s of method %s::%s() is not passed by reference but parameter #%d $%s of method %s::%s() is passed by reference.',
 					$i + 1,
 					$methodParameter->getName(),
@@ -82,7 +95,13 @@ class MethodParameterComparisonHelper
 					$prototypeParameter->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				));
+
+				if (! $ignorable) {
+					$error->nonIgnorable();
+				}
+
+				$messages[] = $error->build();
 			}
 
 			if ($prototypeParameter->isVariadic()) {
@@ -90,17 +109,24 @@ class MethodParameterComparisonHelper
 				if (!$methodParameter->isVariadic()) {
 					if (!$methodParameter->isOptional()) {
 						if (count($methodParameters) !== $i + 1) {
-							$messages[] = RuleErrorBuilder::message(sprintf(
+							$error = RuleErrorBuilder::message(sprintf(
 								'Parameter #%d $%s of method %s::%s() is not optional.',
 								$i + 1,
 								$methodParameter->getName(),
 								$method->getDeclaringClass()->getDisplayName(),
 								$method->getName(),
-							))->nonIgnorable()->build();
+							));
+
+							if (! $ignorable) {
+								$error->nonIgnorable();
+							}
+
+							$messages[] = $error->build();
+
 							continue;
 						}
 
-						$messages[] = RuleErrorBuilder::message(sprintf(
+						$error = RuleErrorBuilder::message(sprintf(
 							'Parameter #%d $%s of method %s::%s() is not variadic but parameter #%d $%s of method %s::%s() is variadic.',
 							$i + 1,
 							$methodParameter->getName(),
@@ -110,16 +136,29 @@ class MethodParameterComparisonHelper
 							$prototypeParameter->getName(),
 							$prototype->getDeclaringClass()->getDisplayName(),
 							$prototype->getName(),
-						))->nonIgnorable()->build();
+						));
+
+						if (! $ignorable) {
+							$error->nonIgnorable();
+						}
+
+						$messages[] = $error->build();
+
 						continue;
 					} elseif (count($methodParameters) === $i + 1) {
-						$messages[] = RuleErrorBuilder::message(sprintf(
+						$error = RuleErrorBuilder::message(sprintf(
 							'Parameter #%d $%s of method %s::%s() is not variadic.',
 							$i + 1,
 							$methodParameter->getName(),
 							$method->getDeclaringClass()->getDisplayName(),
 							$method->getName(),
-						))->nonIgnorable()->build();
+						));
+
+						if (! $ignorable) {
+							$error->nonIgnorable();
+						}
+
+						$messages[] = $error->build();
 					}
 				}
 			} elseif ($methodParameter->isVariadic()) {
@@ -133,7 +172,7 @@ class MethodParameterComparisonHelper
 							continue;
 						}
 
-						$messages[] = RuleErrorBuilder::message(sprintf(
+						$error = RuleErrorBuilder::message(sprintf(
 							'Parameter #%d ...$%s (%s) of method %s::%s() is not contravariant with parameter #%d $%s (%s) of method %s::%s().',
 							$i + 1,
 							$methodParameter->getName(),
@@ -145,11 +184,17 @@ class MethodParameterComparisonHelper
 							$remainingPrototypeParameter->getNativeType()->describe(VerbosityLevel::typeOnly()),
 							$prototype->getDeclaringClass()->getDisplayName(),
 							$prototype->getName(),
-						))->nonIgnorable()->build();
+						));
+
+						if (! $ignorable) {
+							$error->nonIgnorable();
+						}
+
+						$messages[] = $error->build();
 					}
 					break;
 				}
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$error = RuleErrorBuilder::message(sprintf(
 					'Parameter #%d $%s of method %s::%s() is variadic but parameter #%d $%s of method %s::%s() is not variadic.',
 					$i + 1,
 					$methodParameter->getName(),
@@ -159,12 +204,19 @@ class MethodParameterComparisonHelper
 					$prototypeParameter->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				));
+
+				if (! $ignorable) {
+					$error->nonIgnorable();
+				}
+
+				$messages[] = $error->build();
+
 				continue;
 			}
 
 			if ($prototypeParameter->isOptional() && !$methodParameter->isOptional()) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$error = RuleErrorBuilder::message(sprintf(
 					'Parameter #%d $%s of method %s::%s() is required but parameter #%d $%s of method %s::%s() is optional.',
 					$i + 1,
 					$methodParameter->getName(),
@@ -174,7 +226,13 @@ class MethodParameterComparisonHelper
 					$prototypeParameter->getName(),
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				));
+
+				if (! $ignorable) {
+					$error->nonIgnorable();
+				}
+
+				$messages[] = $error->build();
 			}
 
 			$methodParameterType = $methodParameter->getNativeType();
@@ -186,7 +244,7 @@ class MethodParameterComparisonHelper
 			$prototypeParameterType = $prototypeParameter->getNativeType();
 			if (!$this->phpVersion->supportsParameterTypeWidening()) {
 				if (!$methodParameterType->equals($prototypeParameterType)) {
-					$messages[] = RuleErrorBuilder::message(sprintf(
+					$error = RuleErrorBuilder::message(sprintf(
 						'Parameter #%d $%s (%s) of method %s::%s() does not match parameter #%d $%s (%s) of method %s::%s().',
 						$i + 1,
 						$methodParameter->getName(),
@@ -198,7 +256,13 @@ class MethodParameterComparisonHelper
 						$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
 						$prototype->getDeclaringClass()->getDisplayName(),
 						$prototype->getName(),
-					))->nonIgnorable()->build();
+					));
+
+					if (! $ignorable) {
+						$error->nonIgnorable();
+					}
+
+					$messages[] = $error->build();
 				}
 				continue;
 			}
@@ -208,7 +272,7 @@ class MethodParameterComparisonHelper
 			}
 
 			if ($this->phpVersion->supportsParameterContravariance()) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$error = RuleErrorBuilder::message(sprintf(
 					'Parameter #%d $%s (%s) of method %s::%s() is not contravariant with parameter #%d $%s (%s) of method %s::%s().',
 					$i + 1,
 					$methodParameter->getName(),
@@ -220,9 +284,15 @@ class MethodParameterComparisonHelper
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				));
+
+				if (! $ignorable) {
+					$error->nonIgnorable();
+				}
+
+				$messages[] = $error->build();
 			} else {
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$error = RuleErrorBuilder::message(sprintf(
 					'Parameter #%d $%s (%s) of method %s::%s() is not compatible with parameter #%d $%s (%s) of method %s::%s().',
 					$i + 1,
 					$methodParameter->getName(),
@@ -234,7 +304,13 @@ class MethodParameterComparisonHelper
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$prototype->getName(),
-				))->nonIgnorable()->build();
+				));
+
+				if (! $ignorable) {
+					$error->nonIgnorable();
+				}
+
+				$messages[] = $error->build();
 			}
 		}
 
@@ -252,26 +328,42 @@ class MethodParameterComparisonHelper
 				&& $prototypeAfterVariadic
 				&& !$methodParameter->isVariadic()
 			) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
+				$error = RuleErrorBuilder::message(sprintf(
 					'Parameter #%d $%s of method %s::%s() is not variadic.',
 					$j + 1,
 					$methodParameter->getName(),
 					$method->getDeclaringClass()->getDisplayName(),
 					$method->getName(),
-				))->nonIgnorable()->build();
+				));
+
+				if (! $ignorable) {
+					$error->nonIgnorable();
+				}
+
+				$messages[] = $error->build();
+
 				continue;
 			}
 
-			if (!$methodParameter->isOptional()) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
-					'Parameter #%d $%s of method %s::%s() is not optional.',
-					$j + 1,
-					$methodParameter->getName(),
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
-				))->nonIgnorable()->build();
+			if ($methodParameter->isOptional()) {
 				continue;
 			}
+
+			$error = RuleErrorBuilder::message(sprintf(
+				'Parameter #%d $%s of method %s::%s() is not optional.',
+				$j + 1,
+				$methodParameter->getName(),
+				$method->getDeclaringClass()->getDisplayName(),
+				$method->getName(),
+			));
+
+			if (! $ignorable) {
+				$error->nonIgnorable();
+			}
+
+			$messages[] = $error->build();
+
+			continue;
 		}
 
 		return $messages;

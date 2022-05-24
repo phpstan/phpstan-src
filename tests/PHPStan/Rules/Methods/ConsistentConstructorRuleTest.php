@@ -31,6 +31,10 @@ class ConsistentConstructorRuleTest extends RuleTestCase
 				'Parameter #1 $i of method ConsistentConstructor\ParentWithoutConstructorChildWithConstructorRequiredParams::__construct() is not optional.',
 				58,
 			],
+			[
+				'Method ConsistentConstructor\FakeConnection::__construct() overrides method ConsistentConstructor\TestConnection::__construct() but misses parameter #1 $i.',
+				78,
+			],
 		]);
 	}
 

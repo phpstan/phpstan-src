@@ -60,3 +60,23 @@ class ParentWithoutConstructorChildWithConstructorRequiredParams extends ParentW
 	}
 }
 
+
+/** @phpstan-consistent-constructor */
+class Connection
+{
+	public function __construct(int $i)
+	{
+	}
+}
+
+class TestConnection extends Connection
+{
+}
+
+class FakeConnection extends TestConnection
+{
+	public function __construct()
+	{
+	}
+}
+

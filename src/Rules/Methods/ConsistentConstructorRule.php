@@ -47,10 +47,6 @@ class ConsistentConstructorRule implements Rule
 			return [];
 		}
 
-		if (! $parent->hasConsistentConstructor()) {
-			return [];
-		}
-
 		if ($parent->hasConstructor()) {
 			$parentConstructor = $parent->getConstructor();
 		} else {
@@ -61,11 +57,15 @@ class ConsistentConstructorRule implements Rule
 			return [];
 		}
 
+		if (! $parentConstructor->getDeclaringClass()->hasConsistentConstructor()) {
+			return [];
+		}
+
 		if (! $parentConstructor instanceof MethodPrototypeReflection) {
 			$parentConstructor = $this->getMethodPrototypeReflection($parentConstructor, $parent);
 		}
 
-		return $this->methodParameterComparisonHelper->compare($parentConstructor, $method);
+		return $this->methodParameterComparisonHelper->compare($parentConstructor, $method, true);
 	}
 
 	private function getMethodPrototypeReflection(PhpMethodReflection $methodReflection, ClassReflection $classReflection): MethodPrototypeReflection

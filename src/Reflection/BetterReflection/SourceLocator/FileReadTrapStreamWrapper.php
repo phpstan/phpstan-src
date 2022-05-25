@@ -3,14 +3,29 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\ShouldNotHappenException;
+use function count;
+use function fclose;
+use function feof;
+use function fflush;
+use function fopen;
+use function fread;
+use function fseek;
+use function ftell;
+use function is_resource;
 use function stat;
+use function stream_set_blocking;
+use function stream_set_read_buffer;
+use function stream_set_timeout;
 use function stream_wrapper_register;
 use function stream_wrapper_restore;
 use function stream_wrapper_unregister;
-use const SEEK_CUR;
-use const SEEK_END;
-use const SEEK_SET;
+use const STREAM_BUFFER_NONE;
+use const STREAM_OPTION_BLOCKING;
+use const STREAM_OPTION_READ_BUFFER;
+use const STREAM_OPTION_READ_TIMEOUT;
+use const STREAM_OPTION_WRITE_BUFFER;
 use const STREAM_URL_STAT_QUIET;
+use const STREAM_USE_PATH;
 
 /**
  * This class will operate as a stream wrapper, intercepting any access to a file while
@@ -37,9 +52,8 @@ final class FileReadTrapStreamWrapper
 	/** @var string[] */
 	public static array $autoloadLocatedFiles = [];
 
-	private bool $readFromFile = false;
-
-	private int $seekPosition = 0;
+	/** @var resource|null */
+	private $handle = null;
 
 	/**
 	 * @param string[] $streamWrapperProtocols
@@ -95,10 +109,15 @@ final class FileReadTrapStreamWrapper
 	public function stream_open($path, $mode, $options, &$openedPath): bool
 	{
 		self::$autoloadLocatedFiles[] = $path;
-		$this->readFromFile = false;
-		$this->seekPosition = 0;
+		return $this->invokeWithRealFileStreamWrapper(function ($path, $mode, $options) use (&$openedPath) {
+			$this->handle = fopen($path, $mode);
+			$isResource = is_resource($this->handle);
+			if ($isResource && $options & STREAM_USE_PATH) {
+				$openedPath = $path;
+			}
 
-		return true;
+			return $isResource;
+		}, [$path, $mode, $options]);
 	}
 
 	/**
@@ -110,12 +129,7 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_read($count): string
 	{
-		$this->readFromFile = true;
-
-		// Dummy return value that is also valid PHP for require(). We'll read
-		// and process the file elsewhere, so it's OK to provide dummy data for
-		// this read.
-		return '';
+		return $this->invokeWithRealFileStreamWrapper(fn ($count) => fread($this->handle, $count), [$count]);
 	}
 
 	/**
@@ -125,7 +139,15 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_close(): void
 	{
-		// no op
+		$this->invokeWithRealFileStreamWrapper(function (): void {
+			$this->stream_flush();
+
+			if (is_resource($this->handle)) {
+				fclose($this->handle);
+			}
+
+			$this->handle = null;
+		}, []);
 	}
 
 	/**
@@ -142,7 +164,7 @@ final class FileReadTrapStreamWrapper
 			return false;
 		}
 
-		return $this->url_stat(self::$autoloadLocatedFiles[0], STREAM_URL_STAT_QUIET);
+		return $this->url_stat(self::$autoloadLocatedFiles[count(self::$autoloadLocatedFiles) - 1], STREAM_URL_STAT_QUIET);
 	}
 
 	/**
@@ -202,17 +224,17 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_eof(): bool
 	{
-		return $this->readFromFile;
+		return $this->invokeWithRealFileStreamWrapper(fn () => feof($this->handle), []);
 	}
 
 	public function stream_flush(): bool
 	{
-		return true;
+		return $this->invokeWithRealFileStreamWrapper(fn () => fflush($this->handle), []);
 	}
 
 	public function stream_tell(): int
 	{
-		return $this->seekPosition;
+		return $this->invokeWithRealFileStreamWrapper(fn () => ftell($this->handle), []);
 	}
 
 	/**
@@ -221,26 +243,7 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_seek($offset, $whence): bool
 	{
-		switch ($whence) {
-			// Behavior is the same for a zero-length file
-			case SEEK_SET:
-			case SEEK_END:
-				if ($offset < 0) {
-					return false;
-				}
-				$this->seekPosition = $offset;
-				return true;
-
-			case SEEK_CUR:
-				if ($offset < 0) {
-					return false;
-				}
-				$this->seekPosition += $offset;
-				return true;
-
-			default:
-				return false;
-		}
+		return $this->invokeWithRealFileStreamWrapper(fn ($offset, $whence) => fseek($this->handle, $offset, $whence) === 0, [$offset, $whence]);
 	}
 
 	/**
@@ -250,7 +253,32 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function stream_set_option($option, $arg1, $arg2): bool
 	{
-		return false;
+		return $this->invokeWithRealFileStreamWrapper(function ($option, $arg1, $arg2) {
+			switch ($option) {
+				case STREAM_OPTION_BLOCKING:
+					// This works for the local adapter. It doesn't do anything for
+					// memory streams.
+					return stream_set_blocking($this->handle, $arg1);
+
+				case STREAM_OPTION_READ_TIMEOUT:
+					return stream_set_timeout($this->handle, $arg1, $arg2);
+
+				case STREAM_OPTION_READ_BUFFER:
+					if ($arg1 === STREAM_BUFFER_NONE) {
+						return stream_set_read_buffer($this->handle, 0) === 0;
+					}
+
+					return stream_set_read_buffer($this->handle, $arg2) === 0;
+
+				case STREAM_OPTION_WRITE_BUFFER:
+					// todo
+					// $this->streamWriteBuffer = $arg1 === STREAM_BUFFER_NONE ? 0 : $arg2;
+
+					return true;
+			}
+
+			return false;
+		}, [$option, $arg1, $arg2]);
 	}
 
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection;
 
+use Composer\Autoload\ClassLoader;
 use Phar;
 use PhpParser\Parser;
 use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
@@ -20,8 +21,10 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLoca
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
+use ReflectionClass;
 use function array_merge;
 use function array_unique;
+use function dirname;
 use function extension_loaded;
 use function is_dir;
 use function is_file;
@@ -95,13 +98,37 @@ class BetterReflectionSourceLocatorFactory
 
 		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
 
-		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
+		$classLoaders = ClassLoader::getRegisteredLoaders();
+		$classLoaderReflection = new ReflectionClass(ClassLoader::class);
+		$locators = [];
+		if ($classLoaderReflection->hasProperty('vendorDir')) {
+			$vendorDirProperty = $classLoaderReflection->getProperty('vendorDir');
+			$vendorDirProperty->setAccessible(true);
+			foreach ($classLoaders as $classLoader) {
+				$composerProjectPath = dirname($vendorDirProperty->getValue($classLoader));
+				if ($composerProjectPath === dirname(__DIR__, 3)) {
+					continue;
+				}
+				var_dump($composerProjectPath);
+				if (!is_file($composerProjectPath . '/composer.json')) {
+					continue;
+				}
+
+				$composerSourceLocator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerProjectPath);
+				if ($composerSourceLocator === null) {
+					continue;
+				}
+				$locators[] = $composerSourceLocator;
+			}
+		}
+
+		/*foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
 			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
 			if ($locator === null) {
 				continue;
 			}
 			$locators[] = $locator;
-		}
+		}*/
 
 		if (extension_loaded('phar')) {
 			$pharProtocolPath = Phar::running();

@@ -6,7 +6,6 @@ use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
 use function sprintf;
-use const PHP_VERSION_ID;
 
 class GithubErrorFormatterTest extends ErrorFormatterTestCase
 {
@@ -18,10 +17,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			0,
 			0,
-			'
- [OK] No errors
-
-',
+			'',
 		];
 
 		yield [
@@ -29,16 +25,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			1,
 			0,
-			' ------ -------------------------------------------------------------------
-  Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
- ------ -------------------------------------------------------------------
-  4      Foo
- ------ -------------------------------------------------------------------
-
-
- [ERROR] Found 1 error
-
-::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=4,col=0::Foo
+			'::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=4,col=0::Foo
 ',
 		];
 
@@ -47,16 +34,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			0,
 			1,
-			' -- ---------------------
-     Error
- -- ---------------------
-     first generic error
- -- ---------------------
-
-
- [ERROR] Found 1 error
-
-::error ::first generic error
+			'::error ::first generic error
 ',
 		];
 
@@ -65,25 +43,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			4,
 			0,
-			' ------ -------------------------------------------------------------------
-  Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
- ------ -------------------------------------------------------------------
-  2      Bar
-         Bar2
-  4      Foo
- ------ -------------------------------------------------------------------
-
- ------ ---------
-  Line   foo.php
- ------ ---------
-  1      Foo
-  5      Bar
-         Bar2
- ------ ---------
-
- [ERROR] Found 4 errors
-
-::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=2,col=0::Bar%0ABar2
+			'::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=2,col=0::Bar%0ABar2
 ::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=4,col=0::Foo
 ::error file=foo.php,line=1,col=0::Foo
 ::error file=foo.php,line=5,col=0::Bar%0ABar2
@@ -95,17 +55,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			0,
 			2,
-			' -- ----------------------
-     Error
- -- ----------------------
-     first generic error
-     second generic error
- -- ----------------------
-
-
- [ERROR] Found 2 errors
-
-::error ::first generic error
+			'::error ::first generic error
 ::error ::second generic error
 ',
 		];
@@ -115,32 +65,7 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			4,
 			2,
-			' ------ -------------------------------------------------------------------
-  Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
- ------ -------------------------------------------------------------------
-  2      Bar
-         Bar2
-  4      Foo
- ------ -------------------------------------------------------------------
-
- ------ ---------
-  Line   foo.php
- ------ ---------
-  1      Foo
-  5      Bar
-         Bar2
- ------ ---------
-
- -- ----------------------
-     Error
- -- ----------------------
-     first generic error
-     second generic error
- -- ----------------------
-
- [ERROR] Found 6 errors
-
-::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=2,col=0::Bar%0ABar2
+			'::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=2,col=0::Bar%0ABar2
 ::error file=folder with unicode 😃/file name with "spaces" and unicode 😃.php,line=4,col=0::Foo
 ::error file=foo.php,line=1,col=0::Foo
 ::error file=foo.php,line=5,col=0::Bar%0ABar2
@@ -162,9 +87,6 @@ class GithubErrorFormatterTest extends ErrorFormatterTestCase
 		string $expected,
 	): void
 	{
-		if (PHP_VERSION_ID >= 80100) {
-			self::markTestSkipped('Skipped on PHP 8.1 because of different result');
-		}
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
 		$formatter = new GithubErrorFormatter(
 			$relativePathHelper,

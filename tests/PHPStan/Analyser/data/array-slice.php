@@ -23,22 +23,66 @@ class Foo
 		assertType('array', array_slice($arr, 1, 2));
 	}
 
-	/**
-	 * @param array<int, bool> $arr1
-	 * @param array<string, int> $arr2
-	 * @param array{17: 'foo', b: 'bar', 19: 'baz'} $arr3
-	 * @param array{17: 'foo', 19: 'bar', 21: 'baz'}|array{foo: 17, bar: 19, baz: 21} $arr4
-	 */
-	public function preserveTypes(array $arr1, array $arr2, array $arr3, array $arr4): void
+	public function normalArrays(array $arr): void
 	{
-		assertType('array<int, bool>', array_slice($arr1, 1, 2));
-		assertType('array<int, bool>', array_slice($arr1, 1, 2, true));
-		assertType('array<string, int>', array_slice($arr2, 1, 2));
-		assertType('array<string, int>', array_slice($arr2, 1, 2, true));
-		assertType('array{b: \'bar\', 0: \'baz\'}', array_slice($arr3, 1, 2));
-		assertType('array{b: \'bar\', 19: \'baz\'}', array_slice($arr3, 1, 2, true));
-		assertType('array{\'bar\', \'baz\'}|array{bar: 19, baz: 21}', array_slice($arr4, 1, 2));
-		assertType('array{19: \'bar\', 21: \'baz\'}|array{bar: 19, baz: 21}', array_slice($arr4, 1, 2, true));
+		/** @var array<int, bool> $arr */
+		assertType('array<int, bool>', array_slice($arr, 1, 2));
+		assertType('array<int, bool>', array_slice($arr, 1, 2, true));
+
+		/** @var array<string, int> $arr */
+		assertType('array<string, int>', array_slice($arr, 1, 2));
+		assertType('array<string, int>', array_slice($arr, 1, 2, true));
+	}
+
+	public function constantArrays(array $arr): void
+	{
+		/** @var array{17: 'foo', b: 'bar', 19: 'baz'} $arr */
+		assertType('array{b: \'bar\', 0: \'baz\'}', array_slice($arr, 1, 2));
+		assertType('array{b: \'bar\', 19: \'baz\'}', array_slice($arr, 1, 2, true));
+
+		/** @var array{17: 'foo', 19: 'bar', 21: 'baz'}|array{foo: 17, bar: 19, baz: 21} $arr */
+		assertType('array{\'bar\', \'baz\'}|array{bar: 19, baz: 21}', array_slice($arr, 1, 2));
+		assertType('array{19: \'bar\', 21: \'baz\'}|array{bar: 19, baz: 21}', array_slice($arr, 1, 2, true));
+	}
+
+	public function constantArraysWithOptionalKeys(array $arr): void
+	{
+		/** @var array{a?: 0, b: 1, c: 2} $arr */
+		assertType('array{a?: 0, b?: 1}', array_slice($arr, 0, 1));
+		assertType('array{a?: 0, b: 1, c: 2}', array_slice($arr, 0));
+		assertType('array{a?: 0, b: 1, c: 2}', array_slice($arr, -99));
+		assertType('array{a?: 0, b: 1, c: 2}', array_slice($arr, 0, 99));
+		assertType('array{a?: 0}', array_slice($arr, 0, -2));
+		assertType('array{}', array_slice($arr, 0, -3));
+		assertType('array{}', array_slice($arr, 0, -99));
+		assertType('array{}', array_slice($arr, -99, -99));
+		assertType('array{}', array_slice($arr, 99));
+
+		/** @var array{a?: 0, b?: 1, c: 2, d: 3, e: 4} $arr */
+		assertType('array{c?: 2, d?: 3, e?: 4}', array_slice($arr, 2, 1));
+		assertType('array{b?: 1, c?: 2, d: 3, e?: 4}', array_slice($arr, 1, 3));
+		assertType('array{e: 4}', array_slice($arr, -1));
+		assertType('array{d: 3}', array_slice($arr, -2, 1));
+
+		/** @var array{a: 0, b: 1, c: 2, d?: 3, e?: 4} $arr */
+		assertType('array{c: 2}', array_slice($arr, 2, 1));
+		assertType('array{c?: 2, d?: 3, e?: 4}', array_slice($arr, -1));
+		assertType('array{b?: 1, c?: 2, d?: 3}', array_slice($arr, -2, 1));
+		assertType('array{a: 0, b: 1, c?: 2, d?: 3}', array_slice($arr, 0, -1));
+		assertType('array{a: 0, b?: 1, c?: 2}', array_slice($arr, 0, -2));
+
+		/** @var array{a: 0, b?: 1, c: 2, d?: 3, e: 4} $arr */
+		assertType('array{b?: 1, c: 2, d?: 3, e?: 4}', array_slice($arr, 1, 2));
+		assertType('array{a: 0, b?: 1, c?: 2}', array_slice($arr, 0, 2));
+		assertType('array{a: 0}', array_slice($arr, 0, 1));
+		assertType('array{b?: 1, c?: 2}', array_slice($arr, 1, 1));
+		assertType('array{c?: 2, d?: 3, e?: 4}', array_slice($arr, 2, 1));
+		assertType('array{a: 0, b?: 1, c: 2, d?: 3}', array_slice($arr, 0, -1));
+		assertType('array{c?: 2, d?: 3, e: 4}', array_slice($arr, -2));
+
+		/** @var array{a: 0, b?: 1, c: 2} $arr */
+		assertType('array{a: 0, b?: 1}', array_slice($arr, 0, -1));
+		assertType('array{a: 0}', array_slice($arr, -3, 1));
 	}
 
 }

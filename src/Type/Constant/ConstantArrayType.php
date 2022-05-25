@@ -45,7 +45,7 @@ use function implode;
 use function in_array;
 use function is_int;
 use function is_string;
-use function max;
+use function min;
 use function pow;
 use function sort;
 use function sprintf;
@@ -643,25 +643,77 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function slice(int $offset, ?int $limit, bool $preserveKeys = false): self
 	{
-		if (count($this->keyTypes) === 0) {
+		$keyTypesCount = count($this->keyTypes);
+		if ($keyTypesCount === 0) {
 			return $this;
 		}
 
-		$keyTypes = array_slice($this->keyTypes, $offset, $limit);
-		$valueTypes = array_slice($this->valueTypes, $offset, $limit);
-
-		/** @var int|float $nextAutoIndex */
-		$nextAutoIndex = 0;
-		foreach ($keyTypes as $keyType) {
-			if (!$keyType instanceof ConstantIntegerType) {
-				continue;
-			}
-
-			/** @var int|float $nextAutoIndex */
-			$nextAutoIndex = max($nextAutoIndex, $keyType->getValue() + 1);
+		$limit ??= $keyTypesCount;
+		if ($limit < 0) {
+			// Negative limits prevent access to the most right n elements
+			return $this->removeLastElements($limit * -1)
+				->slice($offset, null, $preserveKeys);
 		}
 
-		$slice = new self($keyTypes, $valueTypes, (int) $nextAutoIndex, []);
+		if ($keyTypesCount + $offset <= 0) {
+			// A negative offset cannot reach left outside the array
+			$offset = 0;
+		}
+
+		if ($offset < 0) {
+			/*
+			 * Transforms the problem with the negative offset in one with a positive offset using array reversion.
+			 * The reason is belows handling of optional keys which works only from left to right.
+			 *
+			 * e.g.
+			 * array{a: 0, b: 1, c: 2, d: 3, e: 4}
+			 * with offset -4 and limit 2 (which would be sliced to array{b: 1, c: 2})
+			 *
+			 * is transformed via reversion to
+			 *
+			 * array{e: 4, d: 3, c: 2, b: 1, a: 0}
+			 * with offset 2 and limit 2 (which will be sliced to array{c: 2, b: 1} and then reversed again)
+			 */
+			$offset *= -1;
+			$reversedLimit = min($limit, $offset);
+			$reversedOffset = $offset - $reversedLimit;
+			return $this->reverse(true)
+				->slice($reversedOffset, $reversedLimit, $preserveKeys)
+				->reverse(true);
+		}
+
+		if ($offset > 0) {
+			return $this->removeFirstElements($offset, false)
+				->slice(0, $limit, $preserveKeys);
+		}
+
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		$nonOptionalElementsCount = 0;
+		$hasOptional = false;
+		for ($i = 0; $nonOptionalElementsCount < $limit && $i < $keyTypesCount; $i++) {
+			$isOptional = $this->isOptionalKey($i);
+			if (!$isOptional) {
+				$nonOptionalElementsCount++;
+			} else {
+				$hasOptional = true;
+			}
+
+			$isLastElement = $nonOptionalElementsCount >= $limit || $i + 1 >= $keyTypesCount;
+			if ($isLastElement && $limit < $keyTypesCount && $hasOptional) {
+				// If the slice is not full yet, but has at least one optional key
+				// the last non-optional element is going to be optional.
+				// Otherwise, it would not fit into the slice if previous non-optional keys are there.
+				$isOptional = true;
+			}
+
+			$builder->setOffsetValueType($this->keyTypes[$i], $this->valueTypes[$i], $isOptional);
+		}
+
+		$slice = $builder->getArray();
+		if (!$slice instanceof self) {
+			throw new ShouldNotHappenException();
+		}
 
 		return $preserveKeys ? $slice : $slice->reindex();
 	}

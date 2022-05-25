@@ -1890,6 +1890,11 @@ services:
 
 	# Error formatters
 
+	-
+		class: PHPStan\Command\ErrorFormatter\CiDetectedErrorFormatter
+		autowired:
+			- PHPStan\Command\ErrorFormatter\CiDetectedErrorFormatter
+
 	errorFormatter.raw:
 		class: PHPStan\Command\ErrorFormatter\RawErrorFormatter
 
@@ -1928,7 +1933,6 @@ services:
 		class: PHPStan\Command\ErrorFormatter\GithubErrorFormatter
 		arguments:
 			relativePathHelper: @simpleRelativePathHelper
-			errorFormatter: @errorFormatter.table
 
 	errorFormatter.teamcity:
 		class: PHPStan\Command\ErrorFormatter\TeamcityErrorFormatter

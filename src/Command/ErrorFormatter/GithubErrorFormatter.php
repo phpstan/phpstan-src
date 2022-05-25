@@ -19,15 +19,12 @@ class GithubErrorFormatter implements ErrorFormatter
 
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,
-		private ErrorFormatter $errorFormatter,
 	)
 	{
 	}
 
 	public function formatErrors(AnalysisResult $analysisResult, Output $output): int
 	{
-		$this->errorFormatter->formatErrors($analysisResult, $output);
-
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			$metas = [
 				'file' => $this->relativePathHelper->getRelativePath($fileSpecificError->getFile()),

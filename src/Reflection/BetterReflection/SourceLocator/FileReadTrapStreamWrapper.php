@@ -163,6 +163,21 @@ final class FileReadTrapStreamWrapper
 	 */
 	public function url_stat($path, $flags)
 	{
+		return $this->invokeWithRealFileStreamWrapper(static function ($path, $flags) {
+			if (($flags & STREAM_URL_STAT_QUIET) !== 0) {
+				return @stat($path);
+			}
+
+			return stat($path);
+		}, [$path, $flags]);
+	}
+
+	/**
+	 * @param mixed[] $args
+	 * @return mixed
+	 */
+	private function invokeWithRealFileStreamWrapper(callable $cb, array $args)
+	{
 		if (self::$registeredStreamWrapperProtocols === null) {
 			throw new ShouldNotHappenException(self::class . ' not registered: cannot operate. Do not call this method directly.');
 		}
@@ -171,11 +186,7 @@ final class FileReadTrapStreamWrapper
 			stream_wrapper_restore($protocol);
 		}
 
-		if (($flags & STREAM_URL_STAT_QUIET) !== 0) {
-			$result = @stat($path);
-		} else {
-			$result = stat($path);
-		}
+		$result = $cb(...$args);
 
 		foreach (self::$registeredStreamWrapperProtocols as $protocol) {
 			stream_wrapper_unregister($protocol);

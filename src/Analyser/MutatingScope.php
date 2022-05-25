@@ -2475,8 +2475,8 @@ class MutatingScope implements Scope
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		?bool $isPure,
-		bool $acceptsNamedArguments,
+		?bool $isPure = null,
+		bool $acceptsNamedArguments = true,
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -2578,8 +2578,8 @@ class MutatingScope implements Scope
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		?bool $isPure,
-		bool $acceptsNamedArguments,
+		?bool $isPure = null,
+		bool $acceptsNamedArguments = true,
 	): self
 	{
 		return $this->enterFunctionLike(

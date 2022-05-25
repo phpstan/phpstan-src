@@ -53,6 +53,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		private bool $isInternal,
 		private bool $isFinal,
 		private ?bool $isPure,
+		private bool $acceptsNamedArguments,
 	)
 	{
 		$this->functionLike = $functionLike;
@@ -205,6 +206,11 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 	public function isGenerator(): bool
 	{
 		return $this->nodeIsOrContainsYield($this->functionLike);
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->acceptsNamedArguments;
 	}
 
 	private function nodeIsOrContainsYield(Node $node): bool

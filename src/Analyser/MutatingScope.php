@@ -2475,7 +2475,8 @@ class MutatingScope implements Scope
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		?bool $isPure = null,
+		?bool $isPure,
+		bool $acceptsNamedArguments,
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -2499,6 +2500,7 @@ class MutatingScope implements Scope
 				$isInternal,
 				$isFinal,
 				$isPure,
+				$acceptsNamedArguments,
 			),
 			!$classMethod->isStatic(),
 		);
@@ -2576,7 +2578,8 @@ class MutatingScope implements Scope
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		?bool $isPure = null,
+		?bool $isPure,
+		bool $acceptsNamedArguments,
 	): self
 	{
 		return $this->enterFunctionLike(
@@ -2595,6 +2598,7 @@ class MutatingScope implements Scope
 				$isInternal,
 				$isFinal,
 				$isPure,
+				$acceptsNamedArguments,
 			),
 			false,
 		);
@@ -2610,7 +2614,7 @@ class MutatingScope implements Scope
 		foreach (ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters() as $parameter) {
 			$parameterType = $parameter->getType();
 			if ($parameter->isVariadic()) {
-				if ($this->phpVersion->supportsNamedArguments()) {
+				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()) {
 					$parameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $parameterType);
 				} else {
 					$parameterType = new ArrayType(new IntegerType(), $parameterType);
@@ -2620,7 +2624,7 @@ class MutatingScope implements Scope
 
 			$nativeParameterType = $parameter->getNativeType();
 			if ($parameter->isVariadic()) {
-				if ($this->phpVersion->supportsNamedArguments()) {
+				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()) {
 					$nativeParameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $nativeParameterType);
 				} else {
 					$nativeParameterType = new ArrayType(new IntegerType(), $nativeParameterType);

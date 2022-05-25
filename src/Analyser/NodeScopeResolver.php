@@ -398,7 +398,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);
@@ -419,6 +419,7 @@ class NodeScopeResolver
 				$isInternal,
 				$isFinal,
 				$isPure,
+				$acceptsNamedArguments,
 			);
 			$nodeCallback(new InFunctionNode($stmt), $functionScope);
 
@@ -453,7 +454,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);
@@ -474,6 +475,7 @@ class NodeScopeResolver
 				$isInternal,
 				$isFinal,
 				$isPure,
+				$acceptsNamedArguments,
 			);
 
 			if ($stmt->name->toLowerString() === '__construct') {
@@ -637,7 +639,7 @@ class NodeScopeResolver
 
 			foreach ($stmt->props as $prop) {
 				$this->processStmtNode($prop, $scope, $nodeCallback);
-				[,,,,,,,,,$isReadOnly, $docComment] = $this->getPhpDocs($scope, $stmt);
+				[,,,,,,,,,,$isReadOnly, $docComment] = $this->getPhpDocs($scope, $stmt);
 				$nodeCallback(
 					new ClassPropertyNode(
 						$prop->name->toString(),
@@ -3828,7 +3830,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, string|null}
+	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null}
 	 */
 	public function getPhpDocs(Scope $scope, Node\FunctionLike|Node\Stmt\Property $node): array
 	{
@@ -3841,6 +3843,7 @@ class NodeScopeResolver
 		$isInternal = false;
 		$isFinal = false;
 		$isPure = false;
+		$acceptsNamedArguments = true;
 		$isReadOnly = $scope->isInClass() && $scope->getClassReflection()->isImmutable();
 		$docComment = $node->getDocComment() !== null
 			? $node->getDocComment()->getText()
@@ -3948,10 +3951,11 @@ class NodeScopeResolver
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isFinal = $resolvedPhpDoc->isFinal();
 			$isPure = $resolvedPhpDoc->isPure();
+			$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
 			$isReadOnly = $isReadOnly || $resolvedPhpDoc->isReadOnly();
 		}
 
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $isReadOnly, $docComment];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment];
 	}
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type

@@ -43,6 +43,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		bool $isInternal,
 		bool $isFinal,
 		?bool $isPure,
+		bool $acceptsNamedArguments,
 	)
 	{
 		$name = strtolower($classMethod->name->name);
@@ -83,6 +84,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$isInternal,
 			$isFinal || $classMethod->isFinal(),
 			$isPure,
+			$acceptsNamedArguments,
 		);
 	}
 

@@ -102,6 +102,8 @@ class ResolvedPhpDocBlock
 
 	private ?bool $hasConsistentConstructor = null;
 
+	private ?bool $acceptsNamedArguments = null;
+
 	private function __construct()
 	{
 	}
@@ -161,6 +163,7 @@ class ResolvedPhpDocBlock
 		$self->isPure = null;
 		$self->isReadOnly = false;
 		$self->hasConsistentConstructor = false;
+		$self->acceptsNamedArguments = true;
 
 		return $self;
 	}
@@ -207,6 +210,7 @@ class ResolvedPhpDocBlock
 		$result->isPure = $this->isPure();
 		$result->isReadOnly = $this->isReadOnly();
 		$result->hasConsistentConstructor = $this->hasConsistentConstructor();
+		$result->acceptsNamedArguments = $this->acceptsNamedArguments();
 
 		return $result;
 	}
@@ -525,6 +529,16 @@ class ResolvedPhpDocBlock
 			);
 		}
 		return $this->hasConsistentConstructor;
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		if ($this->acceptsNamedArguments === null) {
+			$this->acceptsNamedArguments = $this->phpDocNodeResolver->resolveAcceptsNamedArguments(
+				$this->phpDocNode,
+			);
+		}
+		return $this->acceptsNamedArguments;
 	}
 
 	public function getTemplateTypeMap(): TemplateTypeMap

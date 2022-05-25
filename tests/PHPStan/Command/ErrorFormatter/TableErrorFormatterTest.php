@@ -14,6 +14,11 @@ use const PHP_VERSION_ID;
 class TableErrorFormatterTest extends ErrorFormatterTestCase
 {
 
+	protected function setUp(): void
+	{
+		putenv('GITHUB_ACTIONS');
+	}
+
 	protected function tearDown(): void
 	{
 		putenv('COLUMNS');

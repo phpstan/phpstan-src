@@ -12,7 +12,7 @@ function noNamedArgumentsInFunction(float ...$args)
 	assertType('array<int, float>', $args);
 }
 
-class Baz
+class Baz extends Foo implements Bar
 {
 	/**
 	 * @no-named-arguments
@@ -21,4 +21,30 @@ class Baz
 	{
 		assertType('array<int, float>', $args);
 	}
+
+	public function noNamedArgumentsInParent(float ...$args)
+	{
+		assertType('array<int, float>', $args);
+	}
+
+	public function noNamedArgumentsInInterface(float ...$args)
+	{
+		assertType('array<int, float>', $args);
+	}
+}
+
+abstract class Foo
+{
+	/**
+	 * @no-named-arguments
+	 */
+	abstract public function noNamedArgumentsInParent(float ...$args);
+}
+
+interface Bar
+{
+	/**
+	 * @no-named-arguments
+	 */
+	public function noNamedArgumentsInInterface();
 }

@@ -180,9 +180,11 @@ class ResolvedPhpDocBlock
 		// skip $result->phpDocNode
 		// skip $result->phpDocString - just for stubs
 		$phpDocNodes = $this->phpDocNodes;
+		$acceptsNamedArguments = $this->acceptsNamedArguments();
 		foreach ($parents as $parent) {
 			foreach ($parent->phpDocNodes as $phpDocNode) {
 				$phpDocNodes[] = $phpDocNode;
+				$acceptsNamedArguments = $acceptsNamedArguments && $parent->acceptsNamedArguments();
 			}
 		}
 		$result->phpDocNodes = $phpDocNodes;
@@ -210,7 +212,7 @@ class ResolvedPhpDocBlock
 		$result->isPure = $this->isPure();
 		$result->isReadOnly = $this->isReadOnly();
 		$result->hasConsistentConstructor = $this->hasConsistentConstructor();
-		$result->acceptsNamedArguments = $this->acceptsNamedArguments();
+		$result->acceptsNamedArguments = $acceptsNamedArguments;
 
 		return $result;
 	}

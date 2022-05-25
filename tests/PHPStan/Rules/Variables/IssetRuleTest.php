@@ -384,4 +384,12 @@ class IssetRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7318(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = true;
+
+		$this->analyse([__DIR__ . '/../Properties/data/bug-7318.php'], []);
+	}
+
 }

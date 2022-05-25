@@ -19,6 +19,7 @@ class TableErrorFormatter implements ErrorFormatter
 
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,
+		private CiDetectedErrorFormatter $ciDetectedErrorFormatter,
 		private bool $showTipsOfTheDay,
 		private ?string $editorUrl,
 	)
@@ -31,6 +32,7 @@ class TableErrorFormatter implements ErrorFormatter
 		Output $output,
 	): int
 	{
+		$this->ciDetectedErrorFormatter->formatErrors($analysisResult, $output);
 		$projectConfigFile = 'phpstan.neon';
 		if ($analysisResult->getProjectConfigFile() !== null) {
 			$projectConfigFile = $this->relativePathHelper->getRelativePath($analysisResult->getProjectConfigFile());

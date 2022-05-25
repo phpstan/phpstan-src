@@ -3,7 +3,10 @@
 namespace PHPStan\Command;
 
 use PHPStan\Analyser\ResultCache\ResultCacheClearer;
+use PHPStan\Command\ErrorFormatter\CiDetectedErrorFormatter;
+use PHPStan\Command\ErrorFormatter\GithubErrorFormatter;
 use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
+use PHPStan\Command\ErrorFormatter\TeamcityErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
@@ -64,7 +67,10 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 		$memoryLimitFile = self::getContainer()->getParameter('memoryLimitFile');
 
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), __DIR__, [], DIRECTORY_SEPARATOR);
-		$errorFormatter = new TableErrorFormatter($relativePathHelper, false, null);
+		$errorFormatter = new TableErrorFormatter($relativePathHelper, new CiDetectedErrorFormatter(
+			new GithubErrorFormatter($relativePathHelper),
+			new TeamcityErrorFormatter($relativePathHelper),
+		), false, null);
 		$analysisResult = $analyserApplication->analyse(
 			[$path],
 			true,

@@ -159,7 +159,11 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		if (PHP_VERSION_ID >= 80100) {
 			self::markTestSkipped('Skipped on PHP 8.1 because of different result');
 		}
-		$formatter = new TableErrorFormatter(new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/'), false, null);
+		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
+		$formatter = new TableErrorFormatter($relativePathHelper, new CiDetectedErrorFormatter(
+			new GithubErrorFormatter($relativePathHelper),
+			new TeamcityErrorFormatter($relativePathHelper),
+		), false, null);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
@@ -171,7 +175,11 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 	public function testEditorUrlWithTrait(): void
 	{
-		$formatter = new TableErrorFormatter(new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/'), false, 'editor://%file%/%line%');
+		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
+		$formatter = new TableErrorFormatter($relativePathHelper, new CiDetectedErrorFormatter(
+			new GithubErrorFormatter($relativePathHelper),
+			new TeamcityErrorFormatter($relativePathHelper),
+		), false, 'editor://%file%/%line%');
 		$error = new Error('Test', 'Foo.php (in context of trait)', 12, true, 'Foo.php', 'Bar.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], false, null, true), $this->getOutput());
 
@@ -181,7 +189,11 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	public function testBug6727(): void
 	{
 		putenv('COLUMNS=30');
-		$formatter = new TableErrorFormatter(new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/'), false, null);
+		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
+		$formatter = new TableErrorFormatter($relativePathHelper, new CiDetectedErrorFormatter(
+			new GithubErrorFormatter($relativePathHelper),
+			new TeamcityErrorFormatter($relativePathHelper),
+		), false, null);
 		$formatter->formatErrors(
 			new AnalysisResult(
 				[

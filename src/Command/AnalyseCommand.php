@@ -3,7 +3,6 @@
 namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
-use OndraM\CiDetector\Exception\CiNotDetectedException;
 use PHPStan\Analyser\ResultCache\ResultCacheClearer;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\ErrorFormatter;
@@ -183,18 +182,6 @@ class AnalyseCommand extends Command
 
 		if ($errorFormat === null) {
 			$errorFormat = 'table';
-			$ciDetector = new CiDetector();
-
-			try {
-				$ci = $ciDetector->detect();
-				if ($ci->getCiName() === CiDetector::CI_GITHUB_ACTIONS) {
-					$errorFormat = 'github';
-				} elseif ($ci->getCiName() === CiDetector::CI_TEAMCITY) {
-					$errorFormat = 'teamcity';
-				}
-			} catch (CiNotDetectedException) {
-				// pass
-			}
 		}
 
 		$container = $inceptionResult->getContainer();

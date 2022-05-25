@@ -491,6 +491,11 @@ class PhpDocNodeResolver
 		return false;
 	}
 
+	public function resolveAcceptsNamedArguments(PhpDocNode $phpDocNode): bool
+	{
+		return count($phpDocNode->getTagsByName('@no-named-arguments')) === 0;
+	}
+
 	private function shouldSkipType(string $tagName, Type $type): bool
 	{
 		if (strpos($tagName, '@psalm-') !== 0) {

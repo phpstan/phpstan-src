@@ -872,7 +872,7 @@ class PhpClassReflectionExtension
 			$constructor,
 			$namespace,
 		)->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,
@@ -884,6 +884,7 @@ class PhpClassReflectionExtension
 			$isInternal,
 			$isFinal,
 			$isPure,
+			$acceptsNamedArguments,
 		);
 
 		$propertyTypes = [];

@@ -89,15 +89,11 @@ class IssetCheck
 			// If offset is cannot be null, store this error message and see if one of the earlier offsets is.
 			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
 			if ($hasOffsetValue->yes() || $scope->isSpecified($expr)) {
-				if ($error !== null) {
-					return $error;
-				}
-
 				if (!$this->checkAdvancedIsset) {
 					return null;
 				}
 
-				$error = $this->generateError($type->getOffsetValueType($dimType), sprintf(
+				$error ??= $this->generateError($type->getOffsetValueType($dimType), sprintf(
 					'Offset %s on %s %s always exists and',
 					$dimType->describe(VerbosityLevel::value()),
 					$type->describe(VerbosityLevel::value()),

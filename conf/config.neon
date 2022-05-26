@@ -27,6 +27,7 @@ parameters:
 			- CallbackFilterIterator
 			- FilterIterator
 			- RecursiveCallbackFilterIterator
+			- AppendIterator
 		explicitMixedInUnknownGenericNew: false
 		explicitMixedViaIsArray: false
 		arrayFilter: false

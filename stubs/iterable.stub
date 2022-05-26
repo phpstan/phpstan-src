@@ -275,3 +275,26 @@ class RecursiveArrayIterator extends ArrayIterator implements RecursiveIterator 
      */
     public function uksort($cmp_function) { }
 }
+
+
+/**
+ * @template TKey of array-key
+ * @template TValue
+ * @template TIterator as Iterator<TKey, TValue>
+ *
+ * @template-extends IteratorIterator<TKey, TValue, TIterator>
+ */
+class AppendIterator extends IteratorIterator {
+
+    /**
+     * @param TIterator $iterator
+     * @return void
+     */
+    public function append(Iterator $iterator) {}
+
+    /**
+     * @return ArrayIterator<TKey, TValue>
+     */
+    public function getArrayIterator() {}
+
+}

@@ -290,6 +290,7 @@ class CommandHelper
 			$createDir($tmpDir);
 		}
 
+		/** @var array<callable>|false $autoloadFunctionsBefore */
 		$autoloadFunctionsBefore = spl_autoload_functions();
 
 		try {
@@ -374,6 +375,8 @@ class CommandHelper
 		foreach ($container->getParameter('bootstrapFiles') as $bootstrapFileFromArray) {
 			self::executeBootstrapFile($bootstrapFileFromArray, $container, $errorOutput, $debugEnabled);
 		}
+
+		/** @var array<callable>|false $autoloadFunctionsAfter */
 		$autoloadFunctionsAfter = spl_autoload_functions();
 
 		$newAutoloadFunctions = [];

@@ -127,6 +127,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -1785,29 +1786,27 @@ class NodeScopeResolver
 				&& count($expr->getArgs()) >= 1
 			) {
 				$arrayArg = $expr->getArgs()[0]->value;
-				$constantArrays = TypeUtils::getConstantArrays($scope->getType($arrayArg));
+				$arrayArgType = $scope->getType($arrayArg);
 				$scope = $scope->invalidateExpression($arrayArg);
-				if (count($constantArrays) > 0) {
-					$resultArrayTypes = [];
 
-					foreach ($constantArrays as $constantArray) {
-						if ($functionReflection->getName() === 'array_pop') {
-							$resultArrayTypes[] = $constantArray->removeLast();
-						} else {
-							$resultArrayTypes[] = $constantArray->removeFirst();
-						}
+				$functionName = $functionReflection->getName();
+				$arrayArgType = TypeTraverser::map($arrayArgType, static function (Type $type, callable $traverse) use ($functionName): Type {
+					if ($type instanceof UnionType || $type instanceof IntersectionType) {
+						return $traverse($type);
 					}
+					if ($type instanceof ConstantArrayType) {
+						return $functionName === 'array_pop' ? $type->removeLast() : $type->removeFirst();
+					}
+					if ($type->isIterableAtLeastOnce()->yes()) {
+						return $type->toArray();
+					}
+					return $type;
+				});
 
-					$scope = $scope->specifyExpressionType(
-						$arrayArg,
-						TypeCombinator::union(...$resultArrayTypes),
-					);
-				} else {
-					$arrays = TypeUtils::getAnyArrays($scope->getType($arrayArg));
-					if (count($arrays) > 0) {
-						$scope = $scope->specifyExpressionType($arrayArg, TypeCombinator::union(...$arrays));
-					}
-				}
+				$scope = $scope->specifyExpressionType(
+					$arrayArg,
+					$arrayArgType,
+				);
 			}
 
 			if (

@@ -558,7 +558,17 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$keyTypes = $this->keyTypes;
 		$valueTypes = $this->valueTypes;
 		$optionalKeys = $this->optionalKeys;
-		unset($optionalKeys[$i]);
+
+		if ($this->isOptionalKey($i)) {
+			unset($optionalKeys[$i]);
+			// Removing the last optional element makes the previous non-optional element optional
+			for ($j = $i - 1; $j >= 0; $j--) {
+				if (!$this->isOptionalKey($j)) {
+					$optionalKeys[] = $j;
+					break;
+				}
+			}
+		}
 
 		$removedKeyType = array_pop($keyTypes);
 		array_pop($valueTypes);
@@ -577,9 +587,17 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function removeFirst(): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$makeNextNonOptionalOptional = false;
 		foreach ($this->keyTypes as $i => $keyType) {
+			$isOptional = $this->isOptionalKey($i);
 			if ($i === 0) {
+				$makeNextNonOptionalOptional = $isOptional;
 				continue;
+			}
+
+			if (!$isOptional && $makeNextNonOptionalOptional) {
+				$isOptional = true;
+				$makeNextNonOptionalOptional = false;
 			}
 
 			$valueType = $this->valueTypes[$i];
@@ -587,7 +605,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				$keyType = null;
 			}
 
-			$builder->setOffsetValueType($keyType, $valueType);
+			$builder->setOffsetValueType($keyType, $valueType, $isOptional);
 		}
 
 		return $builder->getArray();

@@ -84,7 +84,7 @@
 				"src/"
 			]
 		},
-		"files": ["src/dumpType.php","src/Testing/functions.php"]
+		"files": ["src/dumpType.php", "src/autoloadFunctions.php", "src/Testing/functions.php"]
 	},
 	"autoload-dev": {
 		"psr-4": {

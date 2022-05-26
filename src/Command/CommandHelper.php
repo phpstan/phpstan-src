@@ -51,6 +51,7 @@ use function is_readable;
 use function is_string;
 use function mkdir;
 use function register_shutdown_function;
+use function spl_autoload_functions;
 use function sprintf;
 use function str_ends_with;
 use function str_repeat;
@@ -289,6 +290,8 @@ class CommandHelper
 			$createDir($tmpDir);
 		}
 
+		$autoloadFunctionsBefore = spl_autoload_functions();
+
 		try {
 			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile, $autoloadFile, $singleReflectionFile, $singleReflectionInsteadOfFile);
 		} catch (InvalidConfigurationException | AssertionException $e) {
@@ -370,6 +373,23 @@ class CommandHelper
 
 		foreach ($container->getParameter('bootstrapFiles') as $bootstrapFileFromArray) {
 			self::executeBootstrapFile($bootstrapFileFromArray, $container, $errorOutput, $debugEnabled);
+		}
+		$autoloadFunctionsAfter = spl_autoload_functions();
+
+		$newAutoloadFunctions = [];
+		if ($autoloadFunctionsBefore !== false && $autoloadFunctionsAfter !== false) {
+			$newAutoloadFunctions = [];
+			foreach ($autoloadFunctionsAfter as $after) {
+				foreach ($autoloadFunctionsBefore as $before) {
+					if ($after === $before) {
+						continue 2;
+					}
+				}
+
+				$newAutoloadFunctions[] = $after;
+			}
+
+			$GLOBALS['__phpstanAutoloadFunctions'] = $newAutoloadFunctions;
 		}
 
 		if (PHP_VERSION_ID >= 80000) {

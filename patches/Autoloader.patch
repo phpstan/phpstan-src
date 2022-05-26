@@ -1,0 +1,12 @@
+@package hoa/consistency
+
+--- Prelude.php	2017-05-02 14:18:12.000000000 +0200
++++ Prelude.php	2022-05-26 14:23:50.000000000 +0200
+@@ -44,7 +44,6 @@
+     );
+ }
+
+-require_once __DIR__ . DIRECTORY_SEPARATOR . 'Autoloader.php';
+ require_once __DIR__ . DIRECTORY_SEPARATOR . 'Consistency.php';
+
+ $define = function ($constantName, $constantValue, $case = false) {

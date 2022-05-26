@@ -7,7 +7,10 @@ use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use function class_exists;
+use function interface_exists;
 use function PHPStan\autoloadFunctions;
+use function trait_exists;
 
 class AutoloadFunctionsSourceLocator implements SourceLocator
 {
@@ -18,9 +21,14 @@ class AutoloadFunctionsSourceLocator implements SourceLocator
 			return null;
 		}
 
+		$className = $identifier->getName();
+		if (class_exists($className, false) || interface_exists($className, false) || trait_exists($className, false)) {
+			return null;
+		}
+
 		$autoloadFunctions = autoloadFunctions();
 		foreach ($autoloadFunctions as $autoloadFunction) {
-			$autoloadFunction($identifier->getName());
+			$autoloadFunction($className);
 		}
 
 		return null;

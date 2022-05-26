@@ -93,7 +93,7 @@ class IssetCheck
 					return null;
 				}
 
-				$error = $this->generateError($type->getOffsetValueType($dimType), sprintf(
+				$error ??= $this->generateError($type->getOffsetValueType($dimType), sprintf(
 					'Offset %s on %s %s always exists and',
 					$dimType->describe(VerbosityLevel::value()),
 					$type->describe(VerbosityLevel::value()),

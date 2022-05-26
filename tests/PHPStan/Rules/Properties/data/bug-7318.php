@@ -17,5 +17,17 @@ class HelloWorld
 
 		if (empty($types['Bar']['prop']['unique'])) {
 		}
+
+		/** @var array{Bar: array{prop: array{unique: boolean}}} $types */
+		$types = ['Bar' => ['prop' => ['unique' => true]]];
+
+		if ($types['Bar']['prop']['unique'] ?? false) {
+		}
+
+		if (isset($types['Bar']['prop']['unique'])) {
+		}
+
+		if (empty($types['Bar']['prop']['unique'])) {
+		}
 	}
 }

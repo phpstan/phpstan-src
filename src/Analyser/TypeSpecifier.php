@@ -1204,6 +1204,28 @@ class TypeSpecifier
 			}
 		}
 
+		if (
+			$expr instanceof StaticCall
+			&& $expr->name instanceof Node\Identifier
+			&& $scope !== null
+		) {
+			$methodName = $expr->name->toString();
+			if ($expr->class instanceof Name) {
+				$calledOnType = $scope->resolveTypeByName($expr->class);
+			} else {
+				$calledOnType = $scope->getType($expr->class);
+			}
+
+			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
+			if ($methodReflection === null || $methodReflection->hasSideEffects()->yes()) {
+				if (isset($resultType) && !TypeCombinator::containsNull($resultType)) {
+					return $this->createNullsafeTypes($rootExpr, $originalExpr, $scope, $context, $overwrite, $type);
+				}
+
+				return new SpecifiedTypes([], [], false, [], $rootExpr);
+			}
+		}
+
 		$sureTypes = [];
 		$sureNotTypes = [];
 		$exprString = $this->printer->prettyPrintExpr($expr);

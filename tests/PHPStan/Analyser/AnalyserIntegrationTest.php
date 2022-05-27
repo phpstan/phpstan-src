@@ -766,9 +766,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 		$errors = $this->runAnalyse(__DIR__ . '/data/discussion-7124.php');
 		$this->assertCount(4, $errors);
-		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int): bool, Closure(int, bool): bool given.', $errors[0]->getMessage());
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int=): bool, Closure(int, bool): bool given.', $errors[0]->getMessage());
 		$this->assertSame(38, $errors[0]->getLine());
-		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int): bool, Closure(int): bool given.', $errors[1]->getMessage());
+		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(bool, int=): bool, Closure(int): bool given.', $errors[1]->getMessage());
 		$this->assertSame(45, $errors[1]->getLine());
 		$this->assertSame('Parameter #2 $callback of function Discussion7124\filter expects callable(int): bool, Closure(bool): bool given.', $errors[2]->getMessage());
 		$this->assertSame(52, $errors[2]->getLine());
@@ -912,6 +912,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Method PrestaShopBundleInfiniteRunBug\XmlLoader::getEntityInfo() has no return type specified.', $errors[1]->getMessage());
 		$this->assertSame('Method PrestaShopBundleInfiniteRunBug\XmlLoader::getEntityInfo() has parameter $entity with no type specified.', $errors[2]->getMessage());
 		$this->assertSame('Method PrestaShopBundleInfiniteRunBug\XmlLoader::getEntityInfo() has parameter $exists with no type specified.', $errors[3]->getMessage());
+	}
+
+	public function testBug7320(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7320.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Parameter #1 $c of function Bug7320\foo expects callable(int=): void, Closure(int): void given.', $errors[0]->getMessage());
+		$this->assertSame(13, $errors[0]->getLine());
 	}
 
 	/**

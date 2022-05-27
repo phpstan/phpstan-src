@@ -462,6 +462,13 @@ services:
 			- phpstan.stubFilesExtension
 
 	-
+		class: PHPStan\PhpDoc\DefaultStubFilesProvider
+		arguments:
+			stubFiles: %stubFiles%
+		autowired:
+			- PHPStan\PhpDoc\StubFilesProvider
+
+	-
 		class: PHPStan\Analyser\Analyser
 		arguments:
 			internalErrorsCountLimit: %internalErrorsCountLimit%
@@ -511,7 +518,6 @@ services:
 			tempResultCachePath: %tempResultCachePath%
 			analysedPaths: %analysedPaths%
 			composerAutoloaderProjectPaths: %composerAutoloaderProjectPaths%
-			stubFiles: %stubFiles%
 			usedLevel: %usedLevel%
 			cliAutoloadFile: %cliAutoloadFile%
 			bootstrapFiles: %bootstrapFiles%
@@ -615,8 +621,6 @@ services:
 
 	-
 		implement: PHPStan\File\FileExcluderRawFactory
-		arguments:
-			stubFiles: %stubFiles%
 
 	fileExcluderAnalyse:
 		class: PHPStan\File\FileExcluder
@@ -1773,7 +1777,6 @@ services:
 		class: PHPStan\PhpDoc\StubPhpDocProvider
 		arguments:
 			parser: @defaultAnalysisParser
-			stubFiles: %stubFiles%
 
 	# Reflection providers
 

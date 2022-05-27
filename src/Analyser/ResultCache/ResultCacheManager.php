@@ -14,6 +14,7 @@ use PHPStan\Dependency\ExportedNodeFetcher;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
+use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use Throwable;
@@ -54,7 +55,6 @@ class ResultCacheManager
 	/**
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
-	 * @param string[] $stubFiles
 	 * @param string[] $bootstrapFiles
 	 * @param string[] $scanFiles
 	 * @param string[] $scanDirectories
@@ -64,11 +64,11 @@ class ResultCacheManager
 		private ExportedNodeFetcher $exportedNodeFetcher,
 		private FileFinder $scanFileFinder,
 		private ReflectionProvider $reflectionProvider,
+		private StubFilesProvider $stubFilesProvider,
 		private string $cacheFilePath,
 		private string $tempResultCachePath,
 		private array $analysedPaths,
 		private array $composerAutoloaderProjectPaths,
-		private array $stubFiles,
 		private string $usedLevel,
 		private ?string $cliAutoloadFile,
 		private array $bootstrapFiles,
@@ -180,7 +180,7 @@ class ResultCacheManager
 		$filteredExportedNodes = [];
 		$newFileAppeared = false;
 
-		foreach ($this->stubFiles as $stubFile) {
+		foreach ($this->getStubFiles() as $stubFile) {
 			if (!array_key_exists($stubFile, $errors)) {
 				continue;
 			}
@@ -817,7 +817,7 @@ php;
 	private function getStubFiles(): array
 	{
 		$stubFiles = [];
-		foreach ($this->stubFiles as $stubFile) {
+		foreach ($this->stubFilesProvider->getStubFiles() as $stubFile) {
 			$stubFiles[$stubFile] = $this->getFileHash($stubFile);
 		}
 

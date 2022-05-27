@@ -7,7 +7,6 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Trait_;
-use PHPStan\DependencyInjection\Container;
 use PHPStan\Parser\Parser;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
@@ -58,14 +57,10 @@ class StubPhpDocProvider
 	/** @var array<string, array<string>> */
 	private array $knownFunctionParameterNames = [];
 
-	/**
-	 * @param string[] $stubFiles
-	 */
 	public function __construct(
 		private Parser $parser,
 		private FileTypeMapper $fileTypeMapper,
-		private Container $container,
-		private array $stubFiles,
+		private StubFilesProvider $stubFilesProvider,
 	)
 	{
 	}
@@ -269,7 +264,7 @@ class StubPhpDocProvider
 		$this->initializing = true;
 
 		try {
-			foreach ($this->getStubFiles() as $stubFile) {
+			foreach ($this->stubFilesProvider->getStubFiles() as $stubFile) {
 				$nodes = $this->parser->parseFile($stubFile);
 				foreach ($nodes as $node) {
 					$this->initializeKnownElementNode($stubFile, $node);
@@ -279,22 +274,6 @@ class StubPhpDocProvider
 			$this->initializing = false;
 			$this->initialized = true;
 		}
-	}
-
-	/**
-	 * @return string[]
-	 */
-	private function getStubFiles(): array
-	{
-		$stubFiles = $this->stubFiles;
-		$extensions = $this->container->getServicesByTag(StubFilesExtension::EXTENSION_TAG);
-		foreach ($extensions as $extension) {
-			foreach ($extension->getFiles() as $extensionFile) {
-				$stubFiles[] = $extensionFile;
-			}
-		}
-
-		return $stubFiles;
 	}
 
 	private function initializeKnownElementNode(string $stubFile, Node $node): void

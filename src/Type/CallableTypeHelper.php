@@ -29,6 +29,11 @@ class CallableTypeHelper
 
 			$ourParameter = $ourParameters[$i];
 			$ourParameterType = $ourParameter->getType();
+
+			if ($ourParameter->isOptional() && !$theirParameter->isOptional()) {
+				return TrinaryLogic::createNo();
+			}
+
 			if ($treatMixedAsAny) {
 				$isSuperType = $theirParameter->getType()->accepts($ourParameterType, true);
 			} else {

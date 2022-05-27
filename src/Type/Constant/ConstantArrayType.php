@@ -549,32 +549,48 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function removeLast(): self
 	{
-		if (count($this->keyTypes) === 0) {
+		return $this->removeLastElements(1);
+	}
+
+	/** @param positive-int $length */
+	private function removeLastElements(int $length): self
+	{
+		$keyTypesCount = count($this->keyTypes);
+		if ($keyTypesCount === 0) {
 			return $this;
 		}
-
-		$i = count($this->keyTypes) - 1;
 
 		$keyTypes = $this->keyTypes;
 		$valueTypes = $this->valueTypes;
 		$optionalKeys = $this->optionalKeys;
+		$nextAutoindex = $this->nextAutoIndexes;
 
-		if ($this->isOptionalKey($i)) {
-			unset($optionalKeys[$i]);
-			// Removing the last optional element makes the previous non-optional element optional
-			for ($j = $i - 1; $j >= 0; $j--) {
-				if (!$this->isOptionalKey($j)) {
-					$optionalKeys[] = $j;
-					break;
+		$optionalKeysRemoved = 0;
+		$newLength = $keyTypesCount - $length;
+		for ($i = $keyTypesCount - 1; $i >= 0; $i--) {
+			$isOptional = $this->isOptionalKey($i);
+
+			if ($i >= $newLength) {
+				if ($isOptional) {
+					$optionalKeysRemoved++;
+					unset($optionalKeys[$i]);
 				}
-			}
-		}
 
-		$removedKeyType = array_pop($keyTypes);
-		array_pop($valueTypes);
-		$nextAutoindex = $removedKeyType instanceof ConstantIntegerType
-			? $removedKeyType->getValue()
-			: $this->getNextAutoIndex(); // @phpstan-ignore-line
+				$removedKeyType = array_pop($keyTypes);
+				array_pop($valueTypes);
+				$nextAutoindex = $removedKeyType instanceof ConstantIntegerType
+					? $removedKeyType->getValue()
+					: $this->getNextAutoIndex(); // @phpstan-ignore-line
+				continue;
+			}
+
+			if ($isOptional || $optionalKeysRemoved <= 0) {
+				continue;
+			}
+
+			$optionalKeys[] = $i;
+			$optionalKeysRemoved--;
+		}
 
 		return new self(
 			$keyTypes,
@@ -584,31 +600,45 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		);
 	}
 
-	public function removeFirst(): Type
+	public function removeFirst(): self
+	{
+		return $this->removeFirstElements(1);
+	}
+
+	/** @param positive-int $length */
+	private function removeFirstElements(int $length, bool $reindex = true): self
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
-		$makeNextNonOptionalOptional = false;
+
+		$optionalKeysIgnored = 0;
 		foreach ($this->keyTypes as $i => $keyType) {
 			$isOptional = $this->isOptionalKey($i);
-			if ($i === 0) {
-				$makeNextNonOptionalOptional = $isOptional;
+			if ($i <= $length - 1) {
+				if ($isOptional) {
+					$optionalKeysIgnored++;
+				}
 				continue;
 			}
 
-			if (!$isOptional && $makeNextNonOptionalOptional) {
+			if (!$isOptional && $optionalKeysIgnored > 0) {
 				$isOptional = true;
-				$makeNextNonOptionalOptional = false;
+				$optionalKeysIgnored--;
 			}
 
 			$valueType = $this->valueTypes[$i];
-			if ($keyType instanceof ConstantIntegerType) {
+			if ($reindex && $keyType instanceof ConstantIntegerType) {
 				$keyType = null;
 			}
 
 			$builder->setOffsetValueType($keyType, $valueType, $isOptional);
 		}
 
-		return $builder->getArray();
+		$array = $builder->getArray();
+		if (!$array instanceof self) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $array;
 	}
 
 	public function slice(int $offset, ?int $limit, bool $preserveKeys = false): self

@@ -150,7 +150,15 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			static fn (): string => 'Closure',
 			fn (): string => sprintf(
 				'Closure(%s): %s',
-				implode(', ', array_map(static fn (ParameterReflection $parameter): string => sprintf('%s%s', $parameter->isVariadic() ? '...' : '', $parameter->getType()->describe($level)), $this->parameters)),
+				implode(', ', array_map(
+					static fn (ParameterReflection $param): string => sprintf(
+						'%s%s%s',
+						$param->isVariadic() ? '...' : '',
+						$param->getType()->describe($level),
+						$param->isOptional() && !$param->isVariadic() ? '=' : '',
+					),
+					$this->parameters,
+				)),
 				$this->returnType->describe($level),
 			),
 		);

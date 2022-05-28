@@ -69,7 +69,7 @@ class AnalyseApplication
 				$input,
 			);
 
-			$projectStubFiles = $this->stubFilesProvider->getStubFiles();
+			$projectStubFiles = $this->stubFilesProvider->getProjectStubFiles();
 
 			if ($resultCache->isFullAnalysis() && count($projectStubFiles) !== 0) {
 				$stubErrors = $this->stubValidator->validate($projectStubFiles, $debug);

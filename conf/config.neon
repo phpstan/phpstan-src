@@ -470,6 +470,7 @@ services:
 		class: PHPStan\PhpDoc\DefaultStubFilesProvider
 		arguments:
 			stubFiles: %stubFiles%
+			currentWorkingDirectory: %currentWorkingDirectory%
 		autowired:
 			- PHPStan\PhpDoc\StubFilesProvider
 

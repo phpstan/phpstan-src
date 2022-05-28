@@ -3,8 +3,10 @@
 namespace PHPStan\Rules\Properties;
 
 use PHPStan\Reflection\ConstructorsHelper;
+use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function in_array;
 use const PHP_VERSION_ID;
 
 /**
@@ -18,6 +20,32 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		return new MissingReadOnlyByPhpDocPropertyAssignRule(
 			new ConstructorsHelper([
 				'MissingReadOnlyPropertyAssignPhpDoc\\TestCase::setUp',
+			]),
+			new DirectReadWritePropertiesExtensionProvider([
+				new class() implements ReadWritePropertiesExtension {
+
+					public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
+					{
+						return $this->isEntityId($property, $propertyName);
+					}
+
+					public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
+					{
+						return $this->isEntityId($property, $propertyName);
+					}
+
+					public function isInitialized(PropertyReflection $property, string $propertyName): bool
+					{
+						return $this->isEntityId($property, $propertyName);
+					}
+
+					private function isEntityId(PropertyReflection $property, string $propertyName): bool
+					{
+						return $property->getDeclaringClass()->getName() === 'MissingReadOnlyPropertyAssignPhpDoc\\Entity'
+							&& in_array($propertyName, ['id'], true);
+					}
+
+				},
 			]),
 		);
 	}

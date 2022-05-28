@@ -10,4 +10,9 @@ class EmptyStubFilesProvider implements StubFilesProvider
 		return [];
 	}
 
+	public function getProjectStubFiles(): array
+	{
+		return [];
+	}
+
 }

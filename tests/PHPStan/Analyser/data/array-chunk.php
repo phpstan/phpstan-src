@@ -7,7 +7,7 @@ use function PHPStan\Testing\assertType;
 class Foo
 {
 
-	public function normalArrays(array $arr): void
+	public function generalArrays(array $arr): void
 	{
 		/** @var mixed[] $arr */
 		assertType('array<int, array<int, mixed>>', array_chunk($arr, 2));
@@ -16,6 +16,10 @@ class Foo
 		/** @var array<string, int> $arr */
 		assertType('array<int, array<int, int>>', array_chunk($arr, 2));
 		assertType('array<int, array<string, int>>', array_chunk($arr, 2, true));
+
+		/** @var non-empty-array<int|string, bool> $arr */
+		assertType('array<int, non-empty-array<int, bool>>', array_chunk($arr, 1));
+		assertType('array<int, non-empty-array<int|string, bool>>', array_chunk($arr, 1, true));
 	}
 
 

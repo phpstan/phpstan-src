@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -13,6 +14,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function count;
@@ -36,20 +38,32 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 		$preserveKeysType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
 		$preserveKeys = $preserveKeysType instanceof ConstantBooleanType ? $preserveKeysType->getValue() : false;
 
-		if (!$arrayType->isIterable()->yes() || !$lengthType instanceof ConstantIntegerType || $lengthType->getValue() < 1) {
+		if (!$arrayType->isArray()->yes() || !$lengthType instanceof ConstantIntegerType || $lengthType->getValue() < 1) {
 			return null;
 		}
 
-		return TypeTraverser::map($arrayType, static function (Type $type, callable $traverse) use ($lengthType, $preserveKeys): Type {
+		return TypeTraverser::map($arrayType, function (Type $type, callable $traverse) use ($lengthType, $preserveKeys): Type {
 			if ($type instanceof UnionType || $type instanceof IntersectionType) {
 				return $traverse($type);
 			}
 			if ($type instanceof ConstantArrayType) {
 				return $type->chunk($lengthType->getValue(), $preserveKeys);
 			}
-			$chunkType = $preserveKeys ? $type : new ArrayType(new IntegerType(), $type->getIterableValueType());
-			return new ArrayType(new IntegerType(), $chunkType);
+			return new ArrayType(new IntegerType(), $this->determineChunkTypeForGeneralArray($type, $preserveKeys));
 		});
+	}
+
+	private function determineChunkTypeForGeneralArray(Type $type, bool $preserveKeys): Type
+	{
+		if ($preserveKeys) {
+			return $type;
+		}
+
+		$chunkType = new ArrayType(new IntegerType(), $type->getIterableValueType());
+		if ($type->isIterableAtLeastOnce()->yes()) {
+			$chunkType = TypeCombinator::intersect($chunkType, new NonEmptyArrayType());
+		}
+		return $chunkType;
 	}
 
 }

@@ -6,6 +6,7 @@ use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
 use PHPStan\Internal\BytesHelper;
+use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\PhpDoc\StubValidator;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,6 +26,7 @@ class AnalyseApplication
 		private ResultCacheManagerFactory $resultCacheManagerFactory,
 		private IgnoredErrorHelper $ignoredErrorHelper,
 		private int $internalErrorsCountLimit,
+		private StubFilesProvider $stubFilesProvider,
 	)
 	{
 	}
@@ -67,10 +69,8 @@ class AnalyseApplication
 				$input,
 			);
 
-			$projectStubFiles = [];
-			if ($projectConfigArray !== null) {
-				$projectStubFiles = $projectConfigArray['parameters']['stubFiles'] ?? [];
-			}
+			$projectStubFiles = $this->stubFilesProvider->getStubFiles();
+
 			if ($resultCache->isFullAnalysis() && count($projectStubFiles) !== 0) {
 				$stubErrors = $this->stubValidator->validate($projectStubFiles, $debug);
 				$intermediateAnalyserResult = new AnalyserResult(

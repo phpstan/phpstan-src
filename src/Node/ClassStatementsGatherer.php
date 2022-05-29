@@ -40,9 +40,6 @@ class ClassStatementsGatherer
 	/** @var array<int, PropertyWrite|PropertyRead> */
 	private array $propertyUsages = [];
 
-	/** @var array<int, PropertyWrite|PropertyRead> */
-	private array $traitPropertyUsages = [];
-
 	/** @var Node\Stmt\ClassConst[] */
 	private array $constants = [];
 
@@ -101,14 +98,6 @@ class ClassStatementsGatherer
 	}
 
 	/**
-	 * @return array<int, PropertyWrite|PropertyRead>
-	 */
-	public function getTraitPropertyUsages(): array
-	{
-		return $this->traitPropertyUsages;
-	}
-
-	/**
 	 * @return Node\Stmt\ClassConst[]
 	 */
 	public function getConstants(): array
@@ -152,7 +141,7 @@ class ClassStatementsGatherer
 		if ($node instanceof ClassPropertyNode && $scope->isInTrait()) {
 			$this->traitProperties[] = $node;
 			if ($node->isPromoted()) {
-				$this->traitPropertyUsages[] = new PropertyWrite(
+				$this->propertyUsages[] = new PropertyWrite(
 					new PropertyFetch(new Expr\Variable('this'), new Identifier($node->getName())),
 					$scope,
 				);

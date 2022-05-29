@@ -1806,6 +1806,7 @@ class NodeScopeResolver
 				$scope = $scope->specifyExpressionType(
 					$arrayArg,
 					$arrayArgType,
+					$arrayArgType,
 				);
 			}
 
@@ -1891,7 +1892,7 @@ class NodeScopeResolver
 					);
 				}
 
-				$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType);
+				$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType, $arrayType);
 			}
 
 			if (
@@ -1914,6 +1915,7 @@ class NodeScopeResolver
 				}
 				$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType(
 					$arrayArg,
+					new ArrayType($arrayArgType->getIterableKeyType(), $valueType),
 					new ArrayType($arrayArgType->getIterableKeyType(), $valueType),
 				);
 			}

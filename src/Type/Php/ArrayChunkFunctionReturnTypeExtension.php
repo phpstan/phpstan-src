@@ -42,28 +42,24 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 			return null;
 		}
 
-		return TypeTraverser::map($arrayType, function (Type $type, callable $traverse) use ($lengthType, $preserveKeys): Type {
+		return TypeTraverser::map($arrayType, static function (Type $type, callable $traverse) use ($lengthType, $preserveKeys): Type {
 			if ($type instanceof UnionType || $type instanceof IntersectionType) {
 				return $traverse($type);
 			}
+
 			if ($type instanceof ConstantArrayType) {
 				return $type->chunk($lengthType->getValue(), $preserveKeys);
 			}
-			return new ArrayType(new IntegerType(), $this->determineChunkTypeForGeneralArray($type, $preserveKeys));
-		});
-	}
 
-	private function determineChunkTypeForGeneralArray(Type $type, bool $preserveKeys): Type
-	{
-		if ($preserveKeys) {
-			return $type;
-		}
-
-		$chunkType = new ArrayType(new IntegerType(), $type->getIterableValueType());
-		if ($type->isIterableAtLeastOnce()->yes()) {
+			$chunkType = $preserveKeys ? $type : new ArrayType(new IntegerType(), $type->getIterableValueType());
 			$chunkType = TypeCombinator::intersect($chunkType, new NonEmptyArrayType());
-		}
-		return $chunkType;
+
+			$resultType = new ArrayType(new IntegerType(), $chunkType);
+			if ($type->isIterableAtLeastOnce()->yes()) {
+				$resultType = TypeCombinator::intersect($type, new NonEmptyArrayType());
+			}
+			return $resultType;
+		});
 	}
 
 }

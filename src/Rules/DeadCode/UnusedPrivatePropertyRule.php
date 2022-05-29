@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\Property\PropertyRead;
+use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -31,6 +32,7 @@ class UnusedPrivatePropertyRule implements Rule
 	 * @param string[] $alwaysReadTags
 	 */
 	public function __construct(
+		private ConstructorsHelper $constructorsHelper,
 		private ReadWritePropertiesExtensionProvider $extensionProvider,
 		private array $alwaysWrittenTags,
 		private array $alwaysReadTags,
@@ -158,13 +160,7 @@ class UnusedPrivatePropertyRule implements Rule
 			}
 		}
 
-		$constructors = [];
-		$classReflection = $scope->getClassReflection();
-		if ($classReflection->hasConstructor()) {
-			$constructors[] = $classReflection->getConstructor()->getName();
-		}
-
-		[$uninitializedProperties] = $node->getUninitializedProperties($scope, $constructors, $this->extensionProvider->getExtensions());
+		[$uninitializedProperties] = $node->getUninitializedProperties($scope, $this->constructorsHelper->getConstructors($scope->getClassReflection()), $this->extensionProvider->getExtensions());
 
 		$errors = [];
 		foreach ($properties as $name => $data) {

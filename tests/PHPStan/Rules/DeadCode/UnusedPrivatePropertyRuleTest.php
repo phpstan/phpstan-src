@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\DeadCode;
 
+use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
@@ -25,6 +26,7 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new UnusedPrivatePropertyRule(
+			new ConstructorsHelper([]),
 			new DirectReadWritePropertiesExtensionProvider([
 				new class() implements ReadWritePropertiesExtension {
 

@@ -11699,7 +11699,7 @@ return [
 'strcoll' => ['int', 'str1'=>'string', 'str2'=>'string'],
 'strcspn' => ['int', 'str'=>'string', 'mask'=>'string', 'start='=>'int', 'length='=>'int'],
 'stream_bucket_append' => ['void', 'brigade'=>'resource', 'bucket'=>'object'],
-'stream_bucket_make_writeable' => ['object|null', 'brigade'=>'resource'],
+'stream_bucket_make_writeable' => ['stdClass|null', 'brigade'=>'resource'],
 'stream_bucket_new' => ['object', 'stream'=>'resource', 'buffer'=>'string'],
 'stream_bucket_prepend' => ['void', 'brigade'=>'resource', 'bucket'=>'object'],
 'stream_context_create' => ['resource', 'options='=>'array', 'params='=>'array'],

@@ -196,3 +196,12 @@ class FooTraitClass
 	}
 
 }
+
+
+class Entity
+{
+
+	/** @readonly */
+	private int $id; // does not complain about being uninitialized because of a ReadWritePropertiesExtension
+
+}

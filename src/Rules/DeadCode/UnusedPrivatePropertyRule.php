@@ -158,13 +158,7 @@ class UnusedPrivatePropertyRule implements Rule
 			}
 		}
 
-		$constructors = [];
-		$classReflection = $scope->getClassReflection();
-		if ($classReflection->hasConstructor()) {
-			$constructors[] = $classReflection->getConstructor()->getName();
-		}
-
-		[$uninitializedProperties] = $node->getUninitializedProperties($scope, $constructors, $this->extensionProvider->getExtensions());
+		[$uninitializedProperties] = $node->getUninitializedProperties($scope, [], $this->extensionProvider->getExtensions());
 
 		$errors = [];
 		foreach ($properties as $name => $data) {

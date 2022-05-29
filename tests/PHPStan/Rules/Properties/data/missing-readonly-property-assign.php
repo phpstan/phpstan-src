@@ -160,3 +160,22 @@ class Entity
 	private readonly int $id; // does not complain about being uninitialized because of a ReadWritePropertiesExtension
 
 }
+
+trait BarTrait
+{
+
+	public readonly int $foo;
+
+	public function __construct(public readonly int $bar)
+	{
+		$this->foo = 17;
+	}
+
+}
+
+class BarClass
+{
+
+	use BarTrait;
+
+}

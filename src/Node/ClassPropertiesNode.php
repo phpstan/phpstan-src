@@ -33,9 +33,10 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	 * @param ClassPropertyNode[] $properties
 	 * @param ClassPropertyNode[] $traitProperties
 	 * @param array<int, PropertyRead|PropertyWrite> $propertyUsages
+	 * @param array<int, PropertyRead|PropertyWrite> $traitPropertyUsages
 	 * @param array<int, MethodCall> $methodCalls
 	 */
-	public function __construct(private ClassLike $class, private array $properties, private array $traitProperties, private array $propertyUsages, private array $methodCalls)
+	public function __construct(private ClassLike $class, private array $properties, private array $traitProperties, private array $propertyUsages, private array $traitPropertyUsages, private array $methodCalls)
 	{
 		parent::__construct($class->getAttributes());
 	}
@@ -67,6 +68,14 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	public function getPropertyUsages(): array
 	{
 		return $this->propertyUsages;
+	}
+
+	/**
+	 * @return array<int, PropertyRead|PropertyWrite>
+	 */
+	public function getTraitPropertyUsages(): array
+	{
+		return $this->traitPropertyUsages;
 	}
 
 	public function getType(): string
@@ -137,7 +146,7 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		$prematureAccess = [];
 		$additionalAssigns = [];
 		$originalProperties = $properties;
-		foreach ($this->getPropertyUsages() as $usage) {
+		foreach (array_merge($this->getPropertyUsages(), $this->getTraitPropertyUsages()) as $usage) {
 			$fetch = $usage->getFetch();
 			if (!$fetch instanceof PropertyFetch) {
 				continue;

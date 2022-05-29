@@ -730,6 +730,25 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $preserveKeys ? $reversed : $reversed->reindex();
 	}
 
+	/** @param positive-int $length */
+	public function chunk(int $length, bool $preserveKeys = false): self
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		$keyTypesCount = count($this->keyTypes);
+		for ($i = 0; $i < $keyTypesCount; $i += $length) {
+			$chunk = $this->slice($i, $length, true);
+			$builder->setOffsetValueType(null, $preserveKeys ? $chunk : $chunk->getValuesArray());
+		}
+
+		$chunks = $builder->getArray();
+		if (!$chunks instanceof self) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $chunks;
+	}
+
 	private function reindex(): self
 	{
 		$keyTypes = [];

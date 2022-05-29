@@ -1,0 +1,3 @@
+parameters:
+	excludePaths:
+		- ../tests/PHPStan/Rules/Properties/MissingReadOnlyPropertyAssignRuleTest.php

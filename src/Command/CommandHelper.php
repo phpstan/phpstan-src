@@ -379,9 +379,8 @@ class CommandHelper
 		/** @var array<callable>|false $autoloadFunctionsAfter */
 		$autoloadFunctionsAfter = spl_autoload_functions();
 
-		$newAutoloadFunctions = [];
 		if ($autoloadFunctionsBefore !== false && $autoloadFunctionsAfter !== false) {
-			$newAutoloadFunctions = [];
+			$newAutoloadFunctions = $GLOBALS['__phpstanAutoloadFunctions'] ?? [];
 			foreach ($autoloadFunctionsAfter as $after) {
 				foreach ($autoloadFunctionsBefore as $before) {
 					if ($after === $before) {

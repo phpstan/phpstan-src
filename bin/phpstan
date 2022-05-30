@@ -72,6 +72,10 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 	$autoloaderInWorkingDirectory = getcwd() . '/vendor/autoload.php';
 	$composerAutoloaderProjectPaths = [];
+
+	/** @var array<callable>|false $autoloadFunctionsBefore */
+	$autoloadFunctionsBefore = spl_autoload_functions();
+
 	if (is_file($autoloaderInWorkingDirectory)) {
 		$composerAutoloaderProjectPaths[] = dirname($autoloaderInWorkingDirectory, 2);
 
@@ -106,6 +110,32 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	};
 
 	$autoloadProjectAutoloaderFile('/../../autoload.php');
+
+	/** @var array<callable>|false $autoloadFunctionsAfter */
+	$autoloadFunctionsAfter = spl_autoload_functions();
+
+	if ($autoloadFunctionsBefore !== false && $autoloadFunctionsAfter !== false) {
+		$newAutoloadFunctions = [];
+		foreach ($autoloadFunctionsAfter as $after) {
+			if (
+				is_array($after)
+				&& count($after) > 0
+				&& is_object($after[0])
+				&& get_class($after[0]) === \Composer\Autoload\ClassLoader::class
+			) {
+				continue;
+			}
+			foreach ($autoloadFunctionsBefore as $before) {
+				if ($after === $before) {
+					continue 2;
+				}
+			}
+
+			$newAutoloadFunctions[] = $after;
+		}
+
+		$GLOBALS['__phpstanAutoloadFunctions'] = $newAutoloadFunctions;
+	}
 
 	$devOrPharLoader->register(true);
 

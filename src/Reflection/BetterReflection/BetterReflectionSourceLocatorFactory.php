@@ -21,8 +21,8 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLoca
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ReflectionClassSourceLocator;
+use PHPStan\Reflection\BetterReflection\SourceLocator\RewriteClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
-use PHPStan\Reflection\BetterReflection\SourceLocator\SkipWrongClassSourceLocator;
 use function array_merge;
 use function array_unique;
 use function extension_loaded;
@@ -123,7 +123,7 @@ class BetterReflectionSourceLocatorFactory
 			}
 		}
 
-		$locators[] = new SkipWrongClassSourceLocator(new AggregateSourceLocator($fileLocators));
+		$locators[] = new RewriteClassAliasSourceLocator(new AggregateSourceLocator($fileLocators));
 		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
 
 		$locators[] = $this->autoloadSourceLocator;

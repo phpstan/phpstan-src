@@ -95,4 +95,30 @@ class Foo {
 		assertType('string', $s);
 		var_dump($x);
 	}
+
+
+	// strchr() is an alias of strstr()
+	public function nonEmptyStrchr(string $s, string $needle, bool $before_needle): void
+	{
+		if (strchr($s, 'abc') === 'hallo') {
+			assertType('non-empty-string', $s);
+		}
+		assertType('string', $s);
+		if ('hallo' === strchr($s, 'abc')) {
+			assertType('non-empty-string', $s);
+		}
+
+		if (strchr($s, $needle, $before_needle) == '') {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+		if ('' == strchr($s, $needle, $before_needle)) {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+
+		$x = (strchr($s, $needle) === 'hallo');
+		assertType('string', $s);
+		var_dump($x);
+	}
 }

@@ -20,7 +20,6 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLo
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
-use PHPStan\Reflection\BetterReflection\SourceLocator\RectorAutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ReflectionClassSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipWrongClassSourceLocator;
@@ -127,7 +126,6 @@ class BetterReflectionSourceLocatorFactory
 		$locators[] = new SkipWrongClassSourceLocator(new AggregateSourceLocator($fileLocators));
 		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
 
-		$locators[] = new RectorAutoloadSourceLocator();
 		$locators[] = $this->autoloadSourceLocator;
 		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);

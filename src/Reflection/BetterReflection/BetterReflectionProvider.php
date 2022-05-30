@@ -37,6 +37,7 @@ use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\GlobalConstantReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
@@ -221,14 +222,14 @@ class BetterReflectionProvider implements ReflectionProvider
 		return self::$anonymousClasses[$className];
 	}
 
-	public function hasFunction(Node\Name $nameNode, ?Scope $scope): bool
+	public function hasFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool
 	{
-		return $this->resolveFunctionName($nameNode, $scope) !== null;
+		return $this->resolveFunctionName($nameNode, $namespaceAnswerer) !== null;
 	}
 
-	public function getFunction(Node\Name $nameNode, ?Scope $scope): FunctionReflection
+	public function getFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): FunctionReflection
 	{
-		$functionName = $this->resolveFunctionName($nameNode, $scope);
+		$functionName = $this->resolveFunctionName($nameNode, $namespaceAnswerer);
 		if ($functionName === null) {
 			throw new FunctionNotFoundException((string) $nameNode);
 		}
@@ -294,7 +295,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		);
 	}
 
-	public function resolveFunctionName(Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveFunctionName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
 		return $this->resolveName($nameNode, function (string $name): bool {
 			try {
@@ -310,17 +311,17 @@ class BetterReflectionProvider implements ReflectionProvider
 				return $this->phpstormStubsSourceStubber->isPresentFunction($name) !== false;
 			}
 			return false;
-		}, $scope);
+		}, $namespaceAnswerer);
 	}
 
-	public function hasConstant(Node\Name $nameNode, ?Scope $scope): bool
+	public function hasConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool
 	{
-		return $this->resolveConstantName($nameNode, $scope) !== null;
+		return $this->resolveConstantName($nameNode, $namespaceAnswerer) !== null;
 	}
 
-	public function getConstant(Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
+	public function getConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): GlobalConstantReflection
 	{
-		$constantName = $this->resolveConstantName($nameNode, $scope);
+		$constantName = $this->resolveConstantName($nameNode, $namespaceAnswerer);
 		if ($constantName === null) {
 			throw new ConstantNotFoundException((string) $nameNode);
 		}
@@ -340,7 +341,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		);
 	}
 
-	public function resolveConstantName(Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveConstantName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
 		return $this->resolveName($nameNode, function (string $name): bool {
 			try {
@@ -352,7 +353,7 @@ class BetterReflectionProvider implements ReflectionProvider
 				// pass
 			}
 			return false;
-		}, $scope);
+		}, $namespaceAnswerer);
 	}
 
 	/**
@@ -361,12 +362,12 @@ class BetterReflectionProvider implements ReflectionProvider
 	private function resolveName(
 		Node\Name $nameNode,
 		Closure $existsCallback,
-		?Scope $scope,
+		?NamespaceAnswerer $namespaceAnswerer,
 	): ?string
 	{
 		$name = (string) $nameNode;
-		if ($scope !== null && $scope->getNamespace() !== null && !$nameNode->isFullyQualified()) {
-			$namespacedName = sprintf('%s\\%s', $scope->getNamespace(), $name);
+		if ($namespaceAnswerer !== null && $namespaceAnswerer->getNamespace() !== null && !$nameNode->isFullyQualified()) {
+			$namespacedName = sprintf('%s\\%s', $namespaceAnswerer->getNamespace(), $name);
 			if ($existsCallback($namespacedName)) {
 				return $namespacedName;
 			}

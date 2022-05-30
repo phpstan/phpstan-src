@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Name;
+use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -32,7 +33,7 @@ class ConstantResolver
 	{
 	}
 
-	public function resolveConstant(Name $name, ?Scope $scope): ?Type
+	public function resolveConstant(Name $name, ?NamespaceAnswerer $scope): ?Type
 	{
 		if (!$this->getReflectionProvider()->hasConstant($name, $scope)) {
 			return null;

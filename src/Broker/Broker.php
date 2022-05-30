@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
+use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 
@@ -85,49 +86,49 @@ class Broker implements ReflectionProvider
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function hasFunction(Node\Name $nameNode, ?Scope $scope): bool
+	public function hasFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool
 	{
-		return $this->reflectionProvider->hasFunction($nameNode, $scope);
+		return $this->reflectionProvider->hasFunction($nameNode, $namespaceAnswerer);
 	}
 
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function getFunction(Node\Name $nameNode, ?Scope $scope): FunctionReflection
+	public function getFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): FunctionReflection
 	{
-		return $this->reflectionProvider->getFunction($nameNode, $scope);
+		return $this->reflectionProvider->getFunction($nameNode, $namespaceAnswerer);
 	}
 
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function resolveFunctionName(Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveFunctionName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
-		return $this->reflectionProvider->resolveFunctionName($nameNode, $scope);
+		return $this->reflectionProvider->resolveFunctionName($nameNode, $namespaceAnswerer);
 	}
 
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function hasConstant(Node\Name $nameNode, ?Scope $scope): bool
+	public function hasConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool
 	{
-		return $this->reflectionProvider->hasConstant($nameNode, $scope);
+		return $this->reflectionProvider->hasConstant($nameNode, $namespaceAnswerer);
 	}
 
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function getConstant(Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
+	public function getConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): GlobalConstantReflection
 	{
-		return $this->reflectionProvider->getConstant($nameNode, $scope);
+		return $this->reflectionProvider->getConstant($nameNode, $namespaceAnswerer);
 	}
 
 	/**
 	 * @deprecated Use PHPStan\Reflection\ReflectionProvider instead
 	 */
-	public function resolveConstantName(Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveConstantName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
-		return $this->reflectionProvider->resolveConstantName($nameNode, $scope);
+		return $this->reflectionProvider->resolveConstantName($nameNode, $namespaceAnswerer);
 	}
 
 	/**

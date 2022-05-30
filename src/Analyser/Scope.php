@@ -10,6 +10,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\TrinaryLogic;
@@ -17,7 +18,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 
 /** @api */
-interface Scope extends ClassMemberAccessAnswerer
+interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 {
 
 	public function getFile(): string;
@@ -36,8 +37,6 @@ interface Scope extends ClassMemberAccessAnswerer
 	public function getFunction();
 
 	public function getFunctionName(): ?string;
-
-	public function getNamespace(): ?string;
 
 	public function getParentScope(): ?self;
 

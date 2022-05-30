@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\GlobalConstantReflection;
+use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
 use function strtolower;
 
@@ -65,34 +66,34 @@ class MemoizingReflectionProvider implements ReflectionProvider
 		return $this->provider->getAnonymousClassReflection($classNode, $scope);
 	}
 
-	public function hasFunction(Node\Name $nameNode, ?Scope $scope): bool
+	public function hasFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool
 	{
-		return $this->provider->hasFunction($nameNode, $scope);
+		return $this->provider->hasFunction($nameNode, $namespaceAnswerer);
 	}
 
-	public function getFunction(Node\Name $nameNode, ?Scope $scope): FunctionReflection
+	public function getFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): FunctionReflection
 	{
-		return $this->provider->getFunction($nameNode, $scope);
+		return $this->provider->getFunction($nameNode, $namespaceAnswerer);
 	}
 
-	public function resolveFunctionName(Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveFunctionName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
-		return $this->provider->resolveFunctionName($nameNode, $scope);
+		return $this->provider->resolveFunctionName($nameNode, $namespaceAnswerer);
 	}
 
-	public function hasConstant(Node\Name $nameNode, ?Scope $scope): bool
+	public function hasConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool
 	{
-		return $this->provider->hasConstant($nameNode, $scope);
+		return $this->provider->hasConstant($nameNode, $namespaceAnswerer);
 	}
 
-	public function getConstant(Node\Name $nameNode, ?Scope $scope): GlobalConstantReflection
+	public function getConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): GlobalConstantReflection
 	{
-		return $this->provider->getConstant($nameNode, $scope);
+		return $this->provider->getConstant($nameNode, $namespaceAnswerer);
 	}
 
-	public function resolveConstantName(Node\Name $nameNode, ?Scope $scope): ?string
+	public function resolveConstantName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
-		return $this->provider->resolveConstantName($nameNode, $scope);
+		return $this->provider->resolveConstantName($nameNode, $namespaceAnswerer);
 	}
 
 }

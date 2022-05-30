@@ -10,6 +10,7 @@ use PHPStan\BetterReflection\SourceLocator\Ast\Locator;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\SourceLocator\SourceStubber\ReflectionSourceStubber;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use ReflectionClass;
 
 class ReflectionClassSourceLocator implements SourceLocator
 {
@@ -35,10 +36,12 @@ class ReflectionClassSourceLocator implements SourceLocator
 			return null;
 		}
 
+		$reflection = new ReflectionClass($className);
+
 		return $this->astLocator->findReflection(
 			$reflector,
-			new LocatedSource($stub->getStub(), $className, $stub->getFileName()),
-			$identifier,
+			new LocatedSource($stub->getStub(), $reflection->getName(), $stub->getFileName()),
+			new Identifier($reflection->getName(), new IdentifierType(IdentifierType::IDENTIFIER_CLASS)),
 		);
 	}
 

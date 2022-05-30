@@ -20,7 +20,7 @@ class Foo {
 			assertType('non-empty-string', $s);
 		}
 		assertType('string', $s);
-		if ('hallo' === strstr($s, -10)) {
+		if ('hallo' === strstr($s, $needle)) {
 			assertType('non-empty-string', $s);
 		}
 		assertType('string', $s);
@@ -68,6 +68,30 @@ class Foo {
 		var_dump($x);
 
 		$x = (strstr($s, $needle) !== 'hallo');
+		assertType('string', $s);
+		var_dump($x);
+	}
+
+	public function nonEmptyStristr(string $s, string $needle, bool $before_needle): void
+	{
+		if (stristr($s, 'abc') === 'hallo') {
+			assertType('non-empty-string', $s);
+		}
+		assertType('string', $s);
+		if ('hallo' === stristr($s, 'abc')) {
+			assertType('non-empty-string', $s);
+		}
+
+		if (stristr($s, $needle, $before_needle) == '') {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+		if ('' == stristr($s, $needle, $before_needle)) {
+			assertType('string', $s);
+		}
+		assertType('string', $s);
+
+		$x = (stristr($s, $needle) === 'hallo');
 		assertType('string', $s);
 		var_dump($x);
 	}

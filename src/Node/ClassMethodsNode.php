@@ -3,7 +3,6 @@
 namespace PHPStan\Node;
 
 use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeAbstract;
 use PHPStan\Node\Method\MethodCall;
 

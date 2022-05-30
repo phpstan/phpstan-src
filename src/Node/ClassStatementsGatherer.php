@@ -28,10 +28,7 @@ class ClassStatementsGatherer
 	/** @var ClassPropertyNode[] */
 	private array $properties = [];
 
-	/** @var ClassPropertyNode[] */
-	private array $traitProperties = [];
-
-	/** @var Node\Stmt\ClassMethod[] */
+	/** @var ClassMethod[] */
 	private array $methods = [];
 
 	/** @var \PHPStan\Node\Method\MethodCall[] */
@@ -66,15 +63,7 @@ class ClassStatementsGatherer
 	}
 
 	/**
-	 * @return ClassPropertyNode[]
-	 */
-	public function getTraitProperties(): array
-	{
-		return $this->traitProperties;
-	}
-
-	/**
-	 * @return Node\Stmt\ClassMethod[]
+	 * @return ClassMethod[]
 	 */
 	public function getMethods(): array
 	{
@@ -128,7 +117,7 @@ class ClassStatementsGatherer
 		if ($scope->getClassReflection()->getName() !== $this->classReflection->getName()) {
 			return;
 		}
-		if ($node instanceof ClassPropertyNode && !$scope->isInTrait()) {
+		if ($node instanceof ClassPropertyNode) {
 			$this->properties[] = $node;
 			if ($node->isPromoted()) {
 				$this->propertyUsages[] = new PropertyWrite(
@@ -138,18 +127,8 @@ class ClassStatementsGatherer
 			}
 			return;
 		}
-		if ($node instanceof ClassPropertyNode && $scope->isInTrait()) {
-			$this->traitProperties[] = $node;
-			if ($node->isPromoted()) {
-				$this->propertyUsages[] = new PropertyWrite(
-					new PropertyFetch(new Expr\Variable('this'), new Identifier($node->getName())),
-					$scope,
-				);
-			}
-			return;
-		}
-		if ($node instanceof Node\Stmt\ClassMethod && !$scope->isInTrait()) {
-			$this->methods[] = $node;
+		if ($node instanceof Node\Stmt\ClassMethod) {
+			$this->methods[] = new ClassMethod($node, $scope->isInTrait());
 			return;
 		}
 		if ($node instanceof Node\Stmt\ClassConst) {

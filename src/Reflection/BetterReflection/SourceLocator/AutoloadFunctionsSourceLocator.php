@@ -15,6 +15,10 @@ use function trait_exists;
 class AutoloadFunctionsSourceLocator implements SourceLocator
 {
 
+	public function __construct(private ReflectionClassSourceLocator $reflectionClassSourceLocator)
+	{
+	}
+
 	public function locateIdentifier(Reflector $reflector, Identifier $identifier): ?Reflection
 	{
 		if (!$identifier->isClass()) {
@@ -29,6 +33,10 @@ class AutoloadFunctionsSourceLocator implements SourceLocator
 		$autoloadFunctions = autoloadFunctions();
 		foreach ($autoloadFunctions as $autoloadFunction) {
 			$autoloadFunction($className);
+			$reflection = $this->reflectionClassSourceLocator->locateIdentifier($reflector, $identifier);
+			if ($reflection !== null) {
+				return $reflection;
+			}
 		}
 
 		return null;

@@ -48,17 +48,20 @@ class UnusedPrivateMethodRule implements Rule
 
 		$methods = [];
 		foreach ($node->getMethods() as $method) {
-			if (!$method->isPrivate()) {
+			if (!$method->getNode()->isPrivate()) {
 				continue;
 			}
-			$methodName = $method->name->toString();
+			if ($method->isDeclaredInTrait()) {
+				continue;
+			}
+			$methodName = $method->getNode()->name->toString();
 			if ($constructor !== null && $constructor->getName() === $methodName) {
 				continue;
 			}
 			if (strtolower($methodName) === '__clone') {
 				continue;
 			}
-			$methods[$method->name->toString()] = $method;
+			$methods[$methodName] = $method;
 		}
 
 		$arrayCalls = [];
@@ -146,13 +149,13 @@ class UnusedPrivateMethodRule implements Rule
 		}
 
 		$errors = [];
-		foreach ($methods as $methodName => $methodNode) {
+		foreach ($methods as $methodName => $method) {
 			$methodType = 'Method';
-			if ($methodNode->isStatic()) {
+			if ($method->getNode()->isStatic()) {
 				$methodType = 'Static method';
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf('%s %s::%s() is unused.', $methodType, $classReflection->getDisplayName(), $methodName))
-				->line($methodNode->getLine())
+				->line($method->getNode()->getLine())
 				->identifier('deadCode.unusedMethod')
 				->metadata([
 					'classOrder' => $node->getClass()->getAttribute('statementOrder'),

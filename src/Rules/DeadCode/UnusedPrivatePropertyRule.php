@@ -60,6 +60,9 @@ class UnusedPrivatePropertyRule implements Rule
 			if (!$property->isPrivate()) {
 				continue;
 			}
+			if ($property->isDeclaredInTrait()) {
+				continue;
+			}
 
 			$alwaysRead = false;
 			$alwaysWritten = false;

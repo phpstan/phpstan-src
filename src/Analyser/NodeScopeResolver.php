@@ -500,6 +500,7 @@ class NodeScopeResolver
 						true,
 						$param,
 						false,
+						$scope->isInTrait(),
 					), $methodScope);
 				}
 			}
@@ -628,7 +629,7 @@ class NodeScopeResolver
 			$this->processAttributeGroups($stmt->attrGroups, $classScope, $classStatementsGatherer);
 
 			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer);
-			$nodeCallback(new ClassPropertiesNode($stmt, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getTraitProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls()), $classScope);
+			$nodeCallback(new ClassPropertiesNode($stmt, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls()), $classScope);
 			$nodeCallback(new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls()), $classScope);
 			$nodeCallback(new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches()), $classScope);
 			$classReflection->evictPrivateSymbols();
@@ -650,6 +651,7 @@ class NodeScopeResolver
 						false,
 						$prop,
 						$isReadOnly,
+						$scope->isInTrait(),
 					),
 					$scope,
 				);

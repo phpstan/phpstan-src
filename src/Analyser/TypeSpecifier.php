@@ -250,7 +250,7 @@ class TypeSpecifier
 				if (
 					$exprNode instanceof FuncCall
 					&& $exprNode->name instanceof Name
-					&& strtolower($exprNode->name->toString()) === 'substr'
+					&& in_array(strtolower($exprNode->name->toString()), ['substr', 'strstr', 'stristr', 'strchr', 'strrchr'], true)
 					&& isset($exprNode->getArgs()[0])
 					&& $constantType instanceof ConstantStringType
 					&& $constantType->getValue() !== ''

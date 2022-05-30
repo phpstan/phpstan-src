@@ -205,3 +205,23 @@ class Entity
 	private int $id; // does not complain about being uninitialized because of a ReadWritePropertiesExtension
 
 }
+
+trait BarTrait
+{
+
+	/** @readonly */
+	public int $foo;
+
+	public function __construct()
+	{
+		$this->foo = 17;
+	}
+
+}
+
+class BarClass
+{
+
+	use BarTrait;
+
+}

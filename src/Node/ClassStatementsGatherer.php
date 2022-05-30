@@ -140,6 +140,12 @@ class ClassStatementsGatherer
 		}
 		if ($node instanceof ClassPropertyNode && $scope->isInTrait()) {
 			$this->traitProperties[] = $node;
+			if ($node->isPromoted()) {
+				$this->propertyUsages[] = new PropertyWrite(
+					new PropertyFetch(new Expr\Variable('this'), new Identifier($node->getName())),
+					$scope,
+				);
+			}
 			return;
 		}
 		if ($node instanceof Node\Stmt\ClassMethod && !$scope->isInTrait()) {

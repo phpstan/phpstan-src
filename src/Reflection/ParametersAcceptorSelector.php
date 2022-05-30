@@ -142,6 +142,36 @@ class ParametersAcceptorSelector
 					),
 				];
 			}
+
+			if (isset($args[0]) && (bool) $args[0]->getAttribute('isArrayWalkArg')) {
+				$arrayWalkParameters = [
+					new DummyParameter('item', self::getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createReadsArgument(), false, null),
+					new DummyParameter('key', self::getIterableKeyType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),
+				];
+				if (isset($args[2])) {
+					$arrayWalkParameters[] = new DummyParameter('arg', $scope->getType($args[2]->value), false, PassedByReference::createNo(), false, null);
+				}
+
+				$acceptor = $parametersAcceptors[0];
+				$parameters = $acceptor->getParameters();
+				$parameters[1] = new NativeParameterReflection(
+					$parameters[1]->getName(),
+					$parameters[1]->isOptional(),
+					new CallableType($arrayWalkParameters, new MixedType(), false),
+					$parameters[1]->passedByReference(),
+					$parameters[1]->isVariadic(),
+					$parameters[1]->getDefaultValue(),
+				);
+				$parametersAcceptors = [
+					new FunctionVariant(
+						$acceptor->getTemplateTypeMap(),
+						$acceptor->getResolvedTemplateTypeMap(),
+						$parameters,
+						$acceptor->isVariadic(),
+						$acceptor->getReturnType(),
+					),
+				];
+			}
 		}
 
 		if (count($parametersAcceptors) === 1) {

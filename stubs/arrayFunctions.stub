@@ -17,23 +17,6 @@ function array_reduce(
 ) {}
 
 /**
- * @template TKey of array-key
- * @template TValue of mixed
- * @template TUser of mixed
- *
- * @param array<TKey, TValue> $one
- * @param callable(TValue, TKey, TUser=): mixed $two
- * @param TUser $three
- *
- * @return true
- */
-function array_walk(
-    array &$one,
-    callable $two,
-    $three = null
-): bool {}
-
-/**
  * @template T of mixed
  *
  * @param array<T> $one

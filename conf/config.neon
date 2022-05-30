@@ -378,6 +378,11 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\ArrayWalkArgVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Parser\NewAssignedToPropertyVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor

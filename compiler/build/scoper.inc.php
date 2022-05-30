@@ -172,6 +172,7 @@ return [
 		},
 		function (string $filePath, string $prefix, string $content): string {
 			if (!in_array($filePath, [
+				'bin/phpstan',
 				'src/Testing/TestCaseSourceLocatorFactory.php',
 				'src/Testing/PHPStanTestCase.php',
 				'vendor/ondrejmirtes/better-reflection/src/SourceLocator/Type/ComposerSourceLocator.php',

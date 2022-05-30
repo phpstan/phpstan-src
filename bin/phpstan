@@ -120,10 +120,15 @@ use Symfony\Component\Console\Helper\ProgressBar;
 			if (
 				is_array($after)
 				&& count($after) > 0
-				&& is_object($after[0])
-				&& get_class($after[0]) === \Composer\Autoload\ClassLoader::class
 			) {
-				continue;
+				if (is_object($after[0])
+					&& get_class($after[0]) === \Composer\Autoload\ClassLoader::class
+				) {
+					continue;
+				}
+				if ($after[0] === 'PHPStan\\PharAutoloader') {
+					continue;
+				}
 			}
 			foreach ($autoloadFunctionsBefore as $before) {
 				if ($after === $before) {

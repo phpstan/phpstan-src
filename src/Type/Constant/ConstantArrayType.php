@@ -573,7 +573,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			if ($i >= $newLength) {
 				if ($isOptional) {
 					$optionalKeysRemoved++;
-					unset($optionalKeys[$i]);
+					foreach ($optionalKeys as $key => $value) {
+						if ($value === $i) {
+							unset($optionalKeys[$key]);
+							break;
+						}
+					}
 				}
 
 				$removedKeyType = array_pop($keyTypes);

@@ -127,7 +127,7 @@ class BetterReflectionSourceLocatorFactory
 		$locators[] = new RewriteClassAliasSourceLocator(new AggregateSourceLocator($fileLocators));
 		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
 
-		$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher);
+		$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
 		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 

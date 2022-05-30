@@ -63,7 +63,7 @@ class AutoloadSourceLocator implements SourceLocator
 	/** @var array<string, int> */
 	private array $startLineByClass = [];
 
-	public function __construct(private FileNodesFetcher $fileNodesFetcher)
+	public function __construct(private FileNodesFetcher $fileNodesFetcher, private bool $executeAutoloadersInFileReadTrap)
 	{
 	}
 
@@ -320,6 +320,10 @@ class AutoloadSourceLocator implements SourceLocator
 			}
 
 			return [[$filename], $reflection->getName(), $reflection->getStartLine() !== false ? $reflection->getStartLine() : null];
+		}
+
+		if (!$this->executeAutoloadersInFileReadTrap) {
+			return null;
 		}
 
 		$this->silenceErrors();

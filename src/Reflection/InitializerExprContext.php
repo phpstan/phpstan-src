@@ -15,7 +15,7 @@ use function implode;
 use function sprintf;
 
 /** @api */
-class InitializerExprContext
+class InitializerExprContext implements NamespaceAnswerer
 {
 
 	private function __construct(

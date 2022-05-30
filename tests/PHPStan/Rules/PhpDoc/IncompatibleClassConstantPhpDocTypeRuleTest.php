@@ -44,4 +44,9 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7352(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7352.php'], []);
+	}
+
 }

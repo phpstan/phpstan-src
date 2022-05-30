@@ -108,7 +108,7 @@ class InitializerExprTypeResolver
 				return new NullType();
 			}
 
-			$constant = $this->constantResolver->resolveConstant($expr->name, null);
+			$constant = $this->constantResolver->resolveConstant($expr->name, $context);
 			if ($constant !== null) {
 				return $constant;
 			}

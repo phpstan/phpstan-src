@@ -704,9 +704,6 @@ services:
 			parser: @defaultAnalysisParser
 
 	-
-		class: PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator
-
-	-
 		class: PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker
 
 	-

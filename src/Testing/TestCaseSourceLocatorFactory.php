@@ -14,6 +14,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\PhpInternalSourceLocator;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
+use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceLocator;
 use ReflectionClass;
 use function dirname;
@@ -24,9 +25,9 @@ class TestCaseSourceLocatorFactory
 
 	public function __construct(
 		private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerJsonAndInstalledJsonSourceLocatorMaker,
-		private AutoloadSourceLocator $autoloadSourceLocator,
 		private Parser $phpParser,
 		private Parser $php8Parser,
+		private FileNodesFetcher $fileNodesFetcher,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 		private ReflectionSourceStubber $reflectionSourceStubber,
 	)
@@ -59,7 +60,7 @@ class TestCaseSourceLocatorFactory
 		$astPhp8Locator = new Locator($this->php8Parser);
 
 		$locators[] = new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber);
-		$locators[] = $this->autoloadSourceLocator;
+		$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher);
 		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 

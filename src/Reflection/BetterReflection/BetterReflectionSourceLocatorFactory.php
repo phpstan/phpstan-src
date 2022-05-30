@@ -23,6 +23,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\PhpVersionBlacklistSourceL
 use PHPStan\Reflection\BetterReflection\SourceLocator\RectorAutoloadSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ReflectionClassSourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\SkipClassAliasSourceLocator;
+use PHPStan\Reflection\BetterReflection\SourceLocator\SkipWrongClassSourceLocator;
 use function array_merge;
 use function array_unique;
 use function extension_loaded;
@@ -91,38 +92,40 @@ class BetterReflectionSourceLocatorFactory
 			$analysedDirectories[] = $analysedPath;
 		}
 
+		$fileLocators = [];
 		$analysedFiles = array_unique(array_merge($analysedFiles, $this->scanFiles));
 		foreach ($analysedFiles as $analysedFile) {
-			$locators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($analysedFile);
+			$fileLocators[] = $this->optimizedSingleFileSourceLocatorRepository->getOrCreate($analysedFile);
 		}
 
 		$directories = array_unique(array_merge($analysedDirectories, $this->scanDirectories));
 		foreach ($directories as $directory) {
-			$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory);
+			$fileLocators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory);
 		}
 
 		$astPhp8Locator = new Locator($this->php8Parser);
-
-		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
 
 		foreach ($this->composerAutoloaderProjectPaths as $composerAutoloaderProjectPath) {
 			$locator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerAutoloaderProjectPath);
 			if ($locator === null) {
 				continue;
 			}
-			$locators[] = $locator;
+			$fileLocators[] = $locator;
 		}
 
 		if (extension_loaded('phar')) {
 			$pharProtocolPath = Phar::running();
 			if ($pharProtocolPath !== '') {
-				$locators[] = $this->optimizedPsrAutoloaderLocatorFactory->create(
+				$fileLocators[] = $this->optimizedPsrAutoloaderLocatorFactory->create(
 					Psr4Mapping::fromArrayMappings([
 						'PHPStan\\Testing\\' => [$pharProtocolPath . '/src/Testing/'],
 					]),
 				);
 			}
 		}
+
+		$locators[] = new SkipWrongClassSourceLocator(new AggregateSourceLocator($fileLocators));
+		$locators[] = new SkipClassAliasSourceLocator(new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber));
 
 		$locators[] = new RectorAutoloadSourceLocator();
 		$locators[] = $this->autoloadSourceLocator;

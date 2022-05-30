@@ -587,12 +587,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/array_walk.php'], [
 			[
-				'Parameter #2 $callback of function array_walk expects callable(int, string, mixed): mixed, Closure(stdClass, float): \'\' given.',
+				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(stdClass, float): \'\' given.',
 				6,
 			],
 			[
-				'Parameter #2 $callback of function array_walk expects callable(int, string, string): mixed, Closure(int, string, int): \'\' given.',
+				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\', \'extra\'): mixed, Closure(int, string, int): \'\' given.',
 				14,
+			],
+			[
+				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(int, string, int): \'\' given.',
+				23,
 			],
 		]);
 	}
@@ -601,12 +605,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/array_walk_arrow.php'], [
 			[
-				'Parameter #2 $callback of function array_walk expects callable(int, string, mixed): mixed, Closure(stdClass, float): \'\' given.',
+				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(stdClass, float): \'\' given.',
 				6,
 			],
 			[
-				'Parameter #2 $callback of function array_walk expects callable(int, string, string): mixed, Closure(int, string, int): \'\' given.',
+				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\', \'extra\'): mixed, Closure(int, string, int): \'\' given.',
 				12,
+			],
+			[
+				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(int, string, int): \'\' given.',
+				19,
 			],
 		]);
 	}

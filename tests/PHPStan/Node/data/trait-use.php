@@ -10,6 +10,6 @@ trait MyTrait {
 
 class WithTraitUse {
 
-	use TraitWithReturn;
+	use MyTrait;
 
 }

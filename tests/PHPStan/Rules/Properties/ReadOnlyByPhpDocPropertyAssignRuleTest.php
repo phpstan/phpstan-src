@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ReadOnlyByPhpDocPropertyAssignRule>
@@ -90,6 +91,20 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\Immutable::$foo is assigned outside of the constructor.',
 				227,
+			],
+		]);
+	}
+
+	public function testBug7361(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-7361.php'], [
+			[
+				'@readonly property Bug7361\Example::$foo is assigned outside of the constructor.',
+				12,
 			],
 		]);
 	}

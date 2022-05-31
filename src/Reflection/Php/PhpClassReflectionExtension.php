@@ -300,7 +300,7 @@ class PhpClassReflectionExtension
 				if ($nativeClassReflection->getConstructor() !== null) {
 					$positionalParameterNames = array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $nativeClassReflection->getConstructor()->getParameters());
 				}
-				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
+				$resolvedConstructorPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
 					$constructorDocComment,
 					$declaringClassReflection->getFileName(),
 					$declaringClassReflection,
@@ -308,7 +308,7 @@ class PhpClassReflectionExtension
 					$constructorName,
 					$positionalParameterNames,
 				);
-				$paramTags = $resolvedPhpDoc->getParamTags();
+				$paramTags = $resolvedConstructorPhpDoc->getParamTags();
 				if (isset($paramTags[$propertyReflection->getName()])) {
 					$phpDocType = $paramTags[$propertyReflection->getName()]->getType();
 				}

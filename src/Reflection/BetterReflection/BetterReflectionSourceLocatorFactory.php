@@ -70,6 +70,7 @@ class BetterReflectionSourceLocatorFactory
 
 		$astLocator = new Locator($this->parser);
 		$locators[] = new AutoloadFunctionsSourceLocator(
+			new AutoloadSourceLocator($this->fileNodesFetcher, false),
 			new ReflectionClassSourceLocator(
 				$astLocator,
 				$this->reflectionSourceStubber,

@@ -56,7 +56,7 @@ class FileCacheStorage implements CacheStorage
 				return null;
 			}
 
-			$cacheItem = require $filePath;
+			$cacheItem = @include $filePath;
 			if (!$cacheItem instanceof CacheItem) {
 				return null;
 			}

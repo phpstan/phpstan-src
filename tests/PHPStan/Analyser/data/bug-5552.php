@@ -6,7 +6,7 @@ use function PHPStan\Testing\assertType;
 
 class HelloWorld
 {
-	public function happyPath($mixed, object $o, string $s, B $b): void
+	public function happyPath($mixed, object $o, string $s): void
 	{
 		if (get_parent_class($mixed) === A::class) {
 			assertType('Bug5552\A|class-string<Bug5552\A>', $mixed);
@@ -39,5 +39,3 @@ class HelloWorld
 }
 
 class A {}
-
-class B extends A {}

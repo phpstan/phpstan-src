@@ -2,17 +2,25 @@
 
 namespace PHPStan\Tests;
 
+use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ResolvedMethodReflection;
+use PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnionTypeMethodReflection;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
+use PHPStan\Type\IntersectionType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 class GetByPrimaryDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
@@ -208,4 +216,108 @@ class ConditionalGetSingle implements DynamicMethodReturnTypeExtension {
 		return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
 	}
 
+}
+
+/**
+ * Modify return types by reresolving static/$this type with virtual interfaces removed.
+ *
+ * Used in atk4/data repo.
+ */
+class Bug7344DynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
+{
+	public function getClass(): string
+	{
+		return \Bug7344\Model::class;
+	}
+
+	public function isMethodSupported(MethodReflection $methodReflection): bool
+	{
+		return true;
+	}
+
+	protected function unresolveMethodReflection(ResolvedMethodReflection $methodReflection): MethodReflection
+	{
+		$methodReflection = \Closure::bind(function () use ($methodReflection) { return $methodReflection->reflection; }, null, ResolvedMethodReflection::class)();
+		if (!$methodReflection instanceof ChangedTypeMethodReflection) {
+			throw new \Exception('Unexpected method reflection class: ' . get_class($methodReflection));
+		}
+
+		$methodReflection = \Closure::bind(function () use ($methodReflection) { return $methodReflection->reflection; }, null, ChangedTypeMethodReflection::class)();
+
+		return $methodReflection;
+	}
+
+	protected function resolveMethodReflection(MethodReflection $methodReflection, Type $calledOnType): MethodReflection
+	{
+		$resolver = (new CalledOnTypeUnresolvedMethodPrototypeReflection(
+			$methodReflection,
+			$methodReflection->getDeclaringClass(),
+			false,
+			$calledOnType
+		));
+
+		return $resolver->getTransformedMethod();
+	}
+
+	protected function reresolveMethodReflection(MethodReflection $methodReflection, Type $calledOnType): MethodReflection
+	{
+		if ($methodReflection instanceof UnionTypeMethodReflection) {
+			$methodReflection = new UnionTypeMethodReflection(
+				$methodReflection->getName(),
+				array_map(
+					function ($v) use ($calledOnType) { return $this->reresolveMethodReflection($v, $calledOnType); },
+					\Closure::bind(function () use ($methodReflection) { return $methodReflection->methods; }, null, UnionTypeMethodReflection::class)()
+				)
+			);
+		} else {
+			$methodReflection = $this->unresolveMethodReflection($methodReflection);
+			$methodReflection = $this->resolveMethodReflection($methodReflection, $calledOnType);
+		}
+
+		return $methodReflection;
+	}
+
+	protected function removeVirtualInterfacesFromType(Type $type): Type
+	{
+		if ($type instanceof IntersectionType) {
+			$types = [];
+			foreach ($type->getTypes() as $t) {
+				$t = $this->removeVirtualInterfacesFromType($t);
+				if (!$t instanceof NeverType) {
+					$types[] = $t;
+				}
+			}
+
+			return count($types) === 0 ? new NeverType() : TypeCombinator::intersect(...$types);
+		}
+
+		if ($type instanceof ObjectType && $type->isInstanceOf(\Bug7344\PhpdocTypeInterface::class)->yes()) {
+			return new NeverType();
+		}
+
+		return $type->traverse(\Closure::fromCallable([$this, 'removeVirtualInterfacesFromType']));
+	}
+
+	public function getTypeFromMethodCall(
+		MethodReflection $methodReflection,
+		MethodCall $methodCall,
+		Scope $scope
+	): Type {
+		// resolve static type and remove all virtual interfaces from it
+		if ($methodCall instanceof StaticCall) {
+			$classNameType = $scope->getType(new ClassConstFetch($methodCall->class, 'class'));
+			$calledOnOrigType = new ObjectType($classNameType->getValue());
+		} else {
+			$calledOnOrigType = $scope->getType($methodCall->var);
+		}
+		$calledOnType = $this->removeVirtualInterfacesFromType($calledOnOrigType);
+
+		$methodReflectionReresolved = $this->reresolveMethodReflection($methodReflection, $calledOnType);
+
+		return ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$methodCall->getArgs(),
+			$methodReflectionReresolved->getVariants()
+		)->getReturnType();
+	}
 }

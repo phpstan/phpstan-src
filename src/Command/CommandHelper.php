@@ -30,6 +30,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
+use TypeError;
 use function array_diff_key;
 use function array_key_exists;
 use function array_map;
@@ -207,9 +208,9 @@ class CommandHelper
 			} catch (InvalidStateException | FileNotFoundException $e) {
 				$errorOutput->writeLineFormatted($e->getMessage());
 				throw new InceptionNotSuccessfulException();
-			} catch (\TypeError $e) {
+			} catch (TypeError $e) {
 				if (pathinfo($projectConfigFile, PATHINFO_EXTENSION) === 'php') {
-					$errorOutput->writeLineFormatted(sprintf('Invalid .php project config given: '. $e->getMessage()));
+					$errorOutput->writeLineFormatted(sprintf('Invalid .php project config given: ' . $e->getMessage()));
 					throw new InceptionNotSuccessfulException();
 				}
 

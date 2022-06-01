@@ -290,6 +290,19 @@ class PhpClassReflectionExtension
 			} elseif (isset($varTags[$propertyName])) {
 				$phpDocType = $varTags[$propertyName]->getType();
 			}
+
+			if (!isset($phpDocBlockClassReflection)) {
+				throw new ShouldNotHappenException();
+			}
+
+			$phpDocType = $phpDocType !== null ? TemplateTypeHelper::resolveTemplateTypes(
+				$phpDocType,
+				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
+			) : null;
+			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
+			$isDeprecated = $resolvedPhpDoc->isDeprecated();
+			$isInternal = $resolvedPhpDoc->isInternal();
+			$isReadOnlyByPhpDoc = $isReadOnlyByPhpDoc || $resolvedPhpDoc->isReadOnly();
 		}
 
 		if ($phpDocType === null) {
@@ -313,20 +326,6 @@ class PhpClassReflectionExtension
 					$phpDocType = $paramTags[$propertyReflection->getName()]->getType();
 				}
 			}
-		}
-
-		if ($resolvedPhpDoc !== null) {
-			if (!isset($phpDocBlockClassReflection)) {
-				throw new ShouldNotHappenException();
-			}
-			$phpDocType = $phpDocType !== null ? TemplateTypeHelper::resolveTemplateTypes(
-				$phpDocType,
-				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
-			) : null;
-			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
-			$isDeprecated = $resolvedPhpDoc->isDeprecated();
-			$isInternal = $resolvedPhpDoc->isInternal();
-			$isReadOnlyByPhpDoc = $isReadOnlyByPhpDoc || $resolvedPhpDoc->isReadOnly();
 		}
 
 		if (

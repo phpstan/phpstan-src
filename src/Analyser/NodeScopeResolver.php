@@ -1661,11 +1661,9 @@ class NodeScopeResolver
 			return $expr;
 		}
 
-		if ($expr instanceof Expr\CallLike || $expr instanceof Expr\Match_) {
-			$exprType = $scope->getType($expr);
-			if ($exprType instanceof NeverType && $exprType->isExplicit()) {
-				return $expr;
-			}
+		$exprType = $scope->getType($expr);
+		if ($exprType instanceof NeverType && $exprType->isExplicit()) {
+			return $expr;
 		}
 
 		return null;

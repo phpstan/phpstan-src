@@ -190,8 +190,8 @@ class CommandHelper
 				throw new InceptionNotSuccessfulException();
 			}
 
-			if (!in_array(pathinfo($projectConfigFile, PATHINFO_EXTENSION), ['neon', 'dist'], true)) {
-				$errorOutput->writeLineFormatted(sprintf('Project config file-extension should be either .neon or .neon.dist.'));
+			if (!in_array(pathinfo($projectConfigFile, PATHINFO_EXTENSION), ['neon', 'dist', 'php'], true)) {
+				$errorOutput->writeLineFormatted(sprintf('Project config file-extension should be either .neon, .neon.dist or .php.'));
 				throw new InceptionNotSuccessfulException();
 			}
 
@@ -207,7 +207,15 @@ class CommandHelper
 			} catch (InvalidStateException | FileNotFoundException $e) {
 				$errorOutput->writeLineFormatted($e->getMessage());
 				throw new InceptionNotSuccessfulException();
+			} catch (\TypeError $e) {
+				if (pathinfo($projectConfigFile, PATHINFO_EXTENSION) === 'php') {
+					$errorOutput->writeLineFormatted(sprintf('Invalid .php project config given: '. $e->getMessage()));
+					throw new InceptionNotSuccessfulException();
+				}
+
+				throw $e;
 			}
+
 			$defaultParameters = [
 				'rootDir' => $containerFactory->getRootDirectory(),
 				'currentWorkingDirectory' => $containerFactory->getCurrentWorkingDirectory(),

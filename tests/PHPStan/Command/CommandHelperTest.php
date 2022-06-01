@@ -92,8 +92,26 @@ class CommandHelperTest extends TestCase
 			],
 			[
 				'',
-				'Project config file-extension should be either .neon or .neon.dist.',
+				'',
 				__DIR__ . '/data/config.php',
+				null,
+				[
+					'level' => '3',
+				],
+				false,
+			],
+			[
+				'',
+				'Invalid .php project config given: Nette\DI\Config\Adapters\PhpAdapter::load(): Return value must be of type array, int returned',
+				__DIR__ . '/data/invalid-config.php',
+				null,
+				[],
+				true,
+			],
+			[
+				'',
+				'Project config file-extension should be either .neon, .neon.dist or .php.',
+				__DIR__ . '/data/something.else',
 				null,
 				[],
 				true,

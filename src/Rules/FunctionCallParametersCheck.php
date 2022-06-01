@@ -355,7 +355,7 @@ class FunctionCallParametersCheck
 				TypeTraverser::map(
 					$parametersAcceptor->getReturnTypeWithUnresolvableTemplateTypes(),
 					static function (Type $type, callable $traverse) use (&$returnTemplateTypes): Type {
-						if ($type instanceof ConditionalType) {
+						while ($type instanceof ConditionalType && $type->isResolvable()) {
 							$type = $type->resolve();
 						}
 

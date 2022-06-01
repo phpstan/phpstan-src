@@ -2469,4 +2469,14 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+
+	public function testConditionalComplexTemplates(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/conditional-complex-templates.php'], []);
+	}
+
 }

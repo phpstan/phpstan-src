@@ -5,6 +5,7 @@ use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\ClearResultCacheCommand;
 use PHPStan\Command\FixerWorkerCommand;
 use PHPStan\Command\WorkerCommand;
+use PHPStan\Internal\ComposerHelper;
 use Symfony\Component\Console\Helper\ProgressBar;
 
 (function () {
@@ -24,6 +25,13 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 	$devOrPharLoader = require_once __DIR__ . '/../vendor/autoload.php';
 	require_once __DIR__ . '/../preload.php';
+	$composer = ComposerHelper::getComposerConfig(getcwd());
+
+	if ($composer !== null) {
+		$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig(getcwd(), $composer);
+	} else {
+		$vendorDirectory = getcwd() . '/' . 'vendor';
+	}
 	$devOrPharLoader->unregister();
 
 	$composerAutoloadFiles = $GLOBALS['__composer_autoload_files'];
@@ -70,7 +78,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 		'8825ede83f2f289127722d4e842cf7e8' => true,
 	];
 
-	$autoloaderInWorkingDirectory = getcwd() . '/vendor/autoload.php';
+	$autoloaderInWorkingDirectory = $vendorDirectory . '/autoload.php';
 	$composerAutoloaderProjectPaths = [];
 
 	/** @var array<callable>|false $autoloadFunctionsBefore */

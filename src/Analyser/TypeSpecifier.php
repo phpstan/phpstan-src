@@ -32,6 +32,7 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -325,6 +326,48 @@ class TypeSpecifier
 					if ($type !== null) {
 						return $this->create($exprNode->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
 					}
+				}
+
+				if (
+					!$context->null()
+					&& $exprNode instanceof FuncCall
+					&& $exprNode->name instanceof Name
+					&& strtolower((string) $exprNode->name) === 'get_parent_class'
+					&& isset($exprNode->getArgs()[0])
+					&& $constantType instanceof ConstantStringType
+					&& $constantType->getValue() !== ''
+				) {
+					$argType = $scope->getType($exprNode->getArgs()[0]->value);
+					$objectType = new ObjectType($constantType->getValue());
+					$classStringType = new GenericClassStringType($objectType);
+
+					if ($argType->isString()->yes()) {
+						return $this->create(
+							$exprNode->getArgs()[0]->value,
+							$classStringType,
+							$context,
+							false,
+							$scope,
+						);
+					}
+
+					if ((new ObjectWithoutClassType())->isSuperTypeOf($argType)->yes()) {
+						return $this->create(
+							$exprNode->getArgs()[0]->value,
+							$objectType,
+							$context,
+							false,
+							$scope,
+						);
+					}
+
+					return $this->create(
+						$exprNode->getArgs()[0]->value,
+						TypeCombinator::union($objectType, $classStringType),
+						$context,
+						false,
+						$scope,
+					);
 				}
 			}
 

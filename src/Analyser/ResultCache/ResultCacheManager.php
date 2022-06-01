@@ -14,6 +14,7 @@ use PHPStan\Dependency\ExportedNodeFetcher;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
+use PHPStan\Internal\ComposerHelper;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
@@ -795,7 +796,13 @@ php;
 	{
 		$data = [];
 		foreach ($this->composerAutoloaderProjectPaths as $autoloadPath) {
-			$filePath = $autoloadPath . '/vendor/composer/installed.php';
+			$composer = ComposerHelper::getComposerConfig($autoloadPath);
+
+			if ($composer === null) {
+				continue;
+			}
+
+			$filePath = ComposerHelper::getVendorDirFromComposerConfig($autoloadPath, $composer) . '/composer/installed.php';
 			if (!is_file($filePath)) {
 				continue;
 			}

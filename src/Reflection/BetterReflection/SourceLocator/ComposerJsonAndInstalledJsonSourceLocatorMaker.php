@@ -10,6 +10,7 @@ use PHPStan\BetterReflection\SourceLocator\Type\Composer\Psr\Psr4Mapping;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
+use PHPStan\Internal\ComposerHelper;
 use function array_filter;
 use function array_key_exists;
 use function array_map;
@@ -33,23 +34,20 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 
 	public function create(string $projectInstallationPath): ?SourceLocator
 	{
-		$composerJsonPath = $projectInstallationPath . '/composer.json';
-		if (!is_file($composerJsonPath)) {
+		$composer = ComposerHelper::getComposerConfig($projectInstallationPath);
+
+		if ($composer === null) {
 			return null;
 		}
-		$installedJsonPath = $projectInstallationPath . '/vendor/composer/installed.json';
+
+		$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig($projectInstallationPath, $composer);
+
+		$installedJsonPath = $vendorDirectory . '/composer/installed.json';
 		if (!is_file($installedJsonPath)) {
 			return null;
 		}
 
 		$installedJsonDirectoryPath = dirname($installedJsonPath);
-
-		try {
-			$composerJsonContents = FileReader::read($composerJsonPath);
-			$composer = Json::decode($composerJsonContents, Json::FORCE_ARRAY);
-		} catch (CouldNotReadFileException | JsonException) {
-			return null;
-		}
 
 		try {
 			$installedJsonContents = FileReader::read($installedJsonPath);
@@ -66,7 +64,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			$dev ? $this->prefixPaths($this->packageToClassMapPaths($composer, 'autoload-dev'), $projectInstallationPath . '/') : [],
 			...array_map(fn (array $package): array => $this->prefixPaths(
 				$this->packageToClassMapPaths($package),
-				$this->packagePrefixPath($projectInstallationPath, $installedJsonDirectoryPath, $package),
+				$this->packagePrefixPath($installedJsonDirectoryPath, $package, $vendorDirectory),
 			), $installed),
 		);
 		$classMapFiles = array_filter($classMapPaths, 'is_file');
@@ -76,7 +74,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 			$dev ? $this->prefixPaths($this->packageToFilePaths($composer, 'autoload-dev'), $projectInstallationPath . '/') : [],
 			...array_map(fn (array $package): array => $this->prefixPaths(
 				$this->packageToFilePaths($package),
-				$this->packagePrefixPath($projectInstallationPath, $installedJsonDirectoryPath, $package),
+				$this->packagePrefixPath($installedJsonDirectoryPath, $package, $vendorDirectory),
 			), $installed),
 		);
 
@@ -87,9 +85,9 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 				$dev ? $this->prefixWithInstallationPath($this->packageToPsr4AutoloadNamespaces($composer, 'autoload-dev'), $projectInstallationPath) : [],
 				...array_map(fn (array $package): array => $this->prefixWithPackagePath(
 					$this->packageToPsr4AutoloadNamespaces($package),
-					$projectInstallationPath,
 					$installedJsonDirectoryPath,
 					$package,
+					$vendorDirectory,
 				), $installed),
 			)),
 		);
@@ -100,9 +98,9 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 				$dev ? $this->prefixWithInstallationPath($this->packageToPsr0AutoloadNamespaces($composer, 'autoload-dev'), $projectInstallationPath) : [],
 				...array_map(fn (array $package): array => $this->prefixWithPackagePath(
 					$this->packageToPsr0AutoloadNamespaces($package),
-					$projectInstallationPath,
 					$installedJsonDirectoryPath,
 					$package,
+					$vendorDirectory,
 				), $installed),
 			)),
 		);
@@ -174,16 +172,16 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 * @param mixed[] $package
 	 */
 	private function packagePrefixPath(
-		string $projectInstallationPath,
 		string $installedJsonDirectoryPath,
 		array $package,
+		string $vendorDirectory,
 	): string
 	{
 		if (array_key_exists('install-path', $package)) {
 			return $installedJsonDirectoryPath . '/' . $package['install-path'] . '/';
 		}
 
-		return $projectInstallationPath . '/vendor/' . $package['name'] . '/';
+		return $vendorDirectory . '/' . $package['name'] . '/';
 	}
 
 	/**
@@ -192,9 +190,9 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 *
 	 * @return array<string, array<int, string>>
 	 */
-	private function prefixWithPackagePath(array $paths, string $projectInstallationPath, string $installedJsonDirectoryPath, array $package): array
+	private function prefixWithPackagePath(array $paths, string $installedJsonDirectoryPath, array $package, string $vendorDirectory): array
 	{
-		$prefix = $this->packagePrefixPath($projectInstallationPath, $installedJsonDirectoryPath, $package);
+		$prefix = $this->packagePrefixPath($installedJsonDirectoryPath, $package, $vendorDirectory);
 
 		return array_map(fn (array $paths): array => $this->prefixPaths($paths, $prefix), $paths);
 	}

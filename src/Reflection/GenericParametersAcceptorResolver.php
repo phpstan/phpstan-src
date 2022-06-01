@@ -2,8 +2,10 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
@@ -59,7 +61,9 @@ class GenericParametersAcceptorResolver
 
 			$paramType = $param->getType();
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType));
-			$passedArgs['$' . $param->getName()] = $argType;
+
+			$passedArgType = $param->isVariadic() ? new ArrayType(new MixedType(), $argType) : $argType;
+			$passedArgs['$' . $param->getName()] = $passedArgType;
 		}
 
 		$resolvedTemplateTypeMap = new TemplateTypeMap(array_merge(

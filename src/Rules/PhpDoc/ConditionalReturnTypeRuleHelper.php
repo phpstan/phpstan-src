@@ -5,9 +5,11 @@ namespace PHPStan\Rules\PhpDoc;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
@@ -52,7 +54,11 @@ class ConditionalReturnTypeRuleHelper
 					$errors[] = RuleErrorBuilder::message(sprintf('Conditional return type references unknown parameter $%s.', $parameterName))->build();
 					continue;
 				}
-				$subjectType = $parametersByName[$parameterName]->getType();
+				$parameter = $parametersByName[$parameterName];
+				$subjectType = $parameter->getType();
+				if ($parameter->isVariadic()) {
+					$subjectType = new ArrayType(new MixedType(), $subjectType);
+				}
 			}
 
 			$targetType = $conditionalType->getTarget();

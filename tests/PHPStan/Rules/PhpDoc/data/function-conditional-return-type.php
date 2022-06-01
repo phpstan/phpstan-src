@@ -118,3 +118,19 @@ function fill11(int $i): array
 {
 
 }
+
+/**
+ * @return ($i is int ? non-empty-array : array)
+ */
+function fill12(int ...$i): array
+{
+
+}
+
+/**
+ * @return ($i is array<int> ? non-empty-array : array)
+ */
+function fill13(int ...$i): array
+{
+
+}

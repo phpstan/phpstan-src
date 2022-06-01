@@ -60,6 +60,14 @@ class FunctionConditionalReturnTypeRuleTest extends RuleTestCase
 				'Condition "int is not string" in conditional return type is always true.',
 				117,
 			],
+			[
+				'Condition "array<int> is int" in conditional return type is always false.',
+				125,
+			],
+			[
+				'Condition "array<int> is array<int>" in conditional return type is always true.',
+				133,
+			],
 		]);
 	}
 

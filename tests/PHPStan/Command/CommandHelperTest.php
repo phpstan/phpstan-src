@@ -90,6 +90,14 @@ class CommandHelperTest extends TestCase
 				],
 				false,
 			],
+			[
+				'',
+				'Project config file-extension should be either .neon or .neon.dist.',
+				__DIR__ . '/data/config.php',
+				null,
+				[],
+				true,
+			],
 		];
 	}
 

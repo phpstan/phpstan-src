@@ -43,6 +43,7 @@ use function get_class;
 use function getcwd;
 use function gettype;
 use function implode;
+use function in_array;
 use function ini_get;
 use function ini_set;
 use function is_dir;
@@ -50,6 +51,7 @@ use function is_file;
 use function is_readable;
 use function is_string;
 use function mkdir;
+use function pathinfo;
 use function register_shutdown_function;
 use function spl_autoload_functions;
 use function sprintf;
@@ -59,6 +61,7 @@ use function strpos;
 use function sys_get_temp_dir;
 use const DIRECTORY_SEPARATOR;
 use const E_ERROR;
+use const PATHINFO_EXTENSION;
 use const PHP_VERSION_ID;
 
 class CommandHelper
@@ -184,6 +187,11 @@ class CommandHelper
 		if ($projectConfigFile !== null) {
 			if (!is_file($projectConfigFile)) {
 				$errorOutput->writeLineFormatted(sprintf('Project config file at path %s does not exist.', $projectConfigFile));
+				throw new InceptionNotSuccessfulException();
+			}
+
+			if (!in_array(pathinfo($projectConfigFile, PATHINFO_EXTENSION), ['neon', 'dist'], true)) {
+				$errorOutput->writeLineFormatted(sprintf('Project config file-extension should be either .neon or .neon.dist.'));
 				throw new InceptionNotSuccessfulException();
 			}
 

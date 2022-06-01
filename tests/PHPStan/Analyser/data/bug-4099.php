@@ -28,14 +28,14 @@ class Foo
 
 		if (!array_key_exists('inner', $arr['key'])) {
 			assertType('array{key: *NEVER*}', $arr);
-			//assertNativeType('array(\'key\' => mixed)', $arr);
+			assertNativeType('array&hasOffset(\'key\')', $arr);
 			assertType('*NEVER*', $arr['key']);
-			//assertNativeType('mixed', $arr['key']);
+			assertNativeType('mixed', $arr['key']);
 			throw new \Exception('need key.inner');
 		}
 
 		assertType('array{key: array{inner: mixed}}', $arr);
-		assertNativeType('array{key: array{inner: mixed}}', $arr);
+		assertNativeType('array&hasOffset(\'key\')', $arr);
 	}
 
 }

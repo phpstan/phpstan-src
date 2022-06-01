@@ -3432,13 +3432,11 @@ class MutatingScope implements Scope
 			$variableTypes = $this->getVariableTypes();
 			$variableTypes[$variableName] = VariableTypeHolder::createYes($type);
 
-			if ($nativeType === null) {
-				$nativeType = $type;
-			}
-
 			$nativeTypes = $this->nativeExpressionTypes;
 			$exprString = sprintf('$%s', $variableName);
-			$nativeTypes[$exprString] = $nativeType;
+			if ($nativeType !== null) {
+				$nativeTypes[$exprString] = $nativeType;
+			}
 
 			$conditionalExpressions = [];
 			foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
@@ -3522,7 +3520,7 @@ class MutatingScope implements Scope
 			$scope = $this->invalidateExpression($expr);
 		}
 
-		return $scope->specifyExpressionType($expr, $type);
+		return $scope->specifyExpressionType($expr, $type, $type);
 	}
 
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false): self
@@ -3669,16 +3667,11 @@ class MutatingScope implements Scope
 		) {
 			return $this;
 		}
-		$typeAfterRemove = TypeCombinator::remove($exprType, $typeToRemove);
-		$scope = $this->specifyExpressionType(
+		return $this->specifyExpressionType(
 			$expr,
-			$typeAfterRemove,
+			TypeCombinator::remove($exprType, $typeToRemove),
+			TypeCombinator::remove($this->getNativeType($expr), $typeToRemove),
 		);
-		if ($expr instanceof Variable && is_string($expr->name)) {
-			$scope->nativeExpressionTypes[sprintf('$%s', $expr->name)] = TypeCombinator::remove($this->getNativeType($expr), $typeToRemove);
-		}
-
-		return $scope;
 	}
 
 	/**
@@ -3756,11 +3749,11 @@ class MutatingScope implements Scope
 			$type = $typeSpecification['type'];
 			$originalExprType = $this->getType($expr);
 			if ($typeSpecification['sure']) {
-				$scope = $scope->specifyExpressionType($expr, $specifiedTypes->shouldOverwrite() ? $type : TypeCombinator::intersect($type, $originalExprType));
-
-				if ($expr instanceof Variable && is_string($expr->name)) {
-					$scope->nativeExpressionTypes[sprintf('$%s', $expr->name)] = $specifiedTypes->shouldOverwrite() ? $type : TypeCombinator::intersect($type, $this->getNativeType($expr));
-				}
+				$scope = $scope->specifyExpressionType(
+					$expr,
+					$specifiedTypes->shouldOverwrite() ? $type : TypeCombinator::intersect($type, $originalExprType),
+					$specifiedTypes->shouldOverwrite() ? $type : TypeCombinator::intersect($type, $this->getNativeType($expr)),
+				);
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
 			}

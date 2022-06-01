@@ -10,6 +10,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use function array_merge;
+use function array_unique;
 
 /** @api */
 class TypeUtils
@@ -145,14 +146,12 @@ class TypeUtils
 		if ($type instanceof UnionType || $type instanceof IntersectionType) {
 			$classNames = [];
 			foreach ($type->getTypes() as $innerType) {
-				if (!$innerType instanceof TypeWithClassName) {
-					continue;
+				foreach (static::getDirectClassNames($innerType) as $n) {
+					$classNames[] = $n;
 				}
-
-				$classNames[] = $innerType->getClassName();
 			}
 
-			return $classNames;
+			return array_unique($classNames);
 		}
 
 		return [];

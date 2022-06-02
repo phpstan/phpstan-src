@@ -96,6 +96,17 @@
 			</property>
 		</properties>
 	</rule>
+	<rule ref="SlevomatCodingStandard.Classes.ClassMemberSpacing">
+		<properties>
+			<property name="linesCountBetweenMembers" value="1"/>
+		</properties>
+	</rule>
+	<rule ref="SlevomatCodingStandard.Classes.MethodSpacing">
+		<properties>
+			<property name="minLinesCount" value="1"/>
+			<property name="maxLinesCount" value="1"/>
+		</properties>
+	</rule>
 	<rule ref="SlevomatCodingStandard.Classes.ModernClassNameReference"/>
 	<rule ref="SlevomatCodingStandard.Functions.StaticClosure"/>
 	<rule ref="SlevomatCodingStandard.Operators.DisallowEqualOperators"/>
@@ -124,13 +135,6 @@
 	<rule ref="SlevomatCodingStandard.Namespaces.UseSpacing"/>
 	<rule ref="SlevomatCodingStandard.PHP.UselessSemicolon"/>
 	<rule ref="SlevomatCodingStandard.PHP.UselessParentheses"/>
-	<rule ref="Squiz.WhiteSpace.FunctionSpacing">
-		<properties>
-			<property name="spacing" value="1" />
-			<property name="spacingBeforeFirst" value="1"/>
-			<property name="spacingAfterLast" value="1"/>
-		</properties>
-	</rule>
 	<rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
 		<exclude-pattern>src/Reflection/BetterReflection/SourceLocator/AutoloadSourceLocator.php</exclude-pattern>
 	</rule>

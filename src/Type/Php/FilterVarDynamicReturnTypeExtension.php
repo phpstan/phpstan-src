@@ -153,7 +153,6 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return $type;
 	}
 
-
 	private function determineExactType(Type $in, int $filterValue): ?Type
 	{
 		if (($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN') && $in instanceof BooleanType)
@@ -207,7 +206,6 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 		return null;
 	}
-
 
 	private function hasFlag(int $flag, ?Node\Arg $expression, Scope $scope): bool
 	{

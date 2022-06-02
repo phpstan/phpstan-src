@@ -18,7 +18,6 @@ class SimpleXMLElementClassPropertyReflectionExtension implements PropertiesClas
 		return $classReflection->getName() === 'SimpleXMLElement' || $classReflection->isSubclassOf('SimpleXMLElement');
 	}
 
-
 	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
 	{
 		return new SimpleXMLElementProperty($classReflection, new BenevolentUnionType([new ObjectType($classReflection->getName()), new NullType()]));

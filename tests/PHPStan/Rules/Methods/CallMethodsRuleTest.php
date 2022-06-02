@@ -2418,7 +2418,6 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
-
 	public function testBug6904(): void
 	{
 		if (PHP_VERSION_ID < 80100) {
@@ -2431,7 +2430,6 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-6904.php'], []);
 	}
-
 
 	public function testBug6917(): void
 	{
@@ -2468,7 +2466,6 @@ class CallMethodsRuleTest extends RuleTestCase
 			],
 		]);
 	}
-
 
 	public function testConditionalComplexTemplates(): void
 	{

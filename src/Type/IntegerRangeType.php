@@ -146,18 +146,15 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return $this->min;
 	}
 
-
 	public function getMax(): ?int
 	{
 		return $this->max;
 	}
 
-
 	public function describe(VerbosityLevel $level): string
 	{
 		return sprintf('int<%s, %s>', $this->min ?? 'min', $this->max ?? 'max');
 	}
-
 
 	public function shift(int $amount): Type
 	{
@@ -193,7 +190,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return self::fromInterval($min, $max);
 	}
 
-
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof parent) {
@@ -206,7 +202,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 		return TrinaryLogic::createNo();
 	}
-
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
@@ -266,7 +261,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	{
 		return $type instanceof self && $this->min === $type->min && $this->max === $type->max;
 	}
-
 
 	public function generalize(GeneralizePrecision $precision): Type
 	{

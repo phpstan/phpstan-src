@@ -34,7 +34,6 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 		return $this->treatPhpDocTypesAsCertain;
 	}
 
-
 	public function testRule(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

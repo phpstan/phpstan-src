@@ -58,7 +58,6 @@ class InvalidAssignVarRule implements Rule
 		return [];
 	}
 
-
 	private function containsNonAssignableExpression(Expr $expr): bool
 	{
 		if ($expr instanceof Expr\Variable) {

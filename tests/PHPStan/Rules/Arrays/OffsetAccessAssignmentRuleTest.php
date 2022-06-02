@@ -129,7 +129,6 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/new-offset-stub.php'], []);
 	}
 
-
 	public function testRuleWithNullsafeVariant(): void
 	{
 		if (PHP_VERSION_ID < 80000) {

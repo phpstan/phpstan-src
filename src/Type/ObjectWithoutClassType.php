@@ -146,7 +146,6 @@ class ObjectWithoutClassType implements SubtractableType
 		return $this->subtractedType;
 	}
 
-
 	public function traverse(callable $cb): Type
 	{
 		$subtractedType = $this->subtractedType !== null ? $cb($this->subtractedType) : null;

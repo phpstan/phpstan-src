@@ -44,6 +44,7 @@ class StaticMethodCallCheck
 	)
 	{
 	}
+
 	/**
 	 * @param Name|Expr $class
 	 * @return array{RuleError[], MethodReflection|null}

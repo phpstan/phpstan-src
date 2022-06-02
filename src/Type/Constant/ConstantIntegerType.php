@@ -32,7 +32,6 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 		return $this->value;
 	}
 
-
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof self) {

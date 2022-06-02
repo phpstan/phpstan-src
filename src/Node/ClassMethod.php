@@ -2,19 +2,29 @@
 
 namespace PHPStan\Node;
 
-class ClassMethod
+use PhpParser\Node\Stmt\ClassMethod as PhpParserClassMethod;
+
+class ClassMethod extends PhpParserClassMethod
 {
 
 	public function __construct(
-		private \PhpParser\Node\Stmt\ClassMethod $node,
+		\PhpParser\Node\Stmt\ClassMethod $node,
 		private bool $isDeclaredInTrait,
 	)
 	{
+		parent::__construct($node->name, [
+			'flags' => $node->flags,
+			'byRef' => $node->byRef,
+			'params' => $node->params,
+			'returnType' => $node->returnType,
+			'stmts' => $node->stmts,
+			'attrGroups' => $node->attrGroups,
+		], $node->attributes);
 	}
 
-	public function getNode(): \PhpParser\Node\Stmt\ClassMethod
+	public function getNode(): PhpParserClassMethod
 	{
-		return $this->node;
+		return $this;
 	}
 
 	public function isDeclaredInTrait(): bool

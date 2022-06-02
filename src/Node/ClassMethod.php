@@ -12,7 +12,6 @@ class ClassMethod
 	{
 	}
 
-
 	public function getNode(): \PhpParser\Node\Stmt\ClassMethod
 	{
 		return $this->node;

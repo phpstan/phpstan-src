@@ -29,7 +29,6 @@ trait JustNullableTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
-
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof self) {

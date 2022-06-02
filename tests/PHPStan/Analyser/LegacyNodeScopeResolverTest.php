@@ -6896,7 +6896,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		];
 	}
 
-
 	public function dataForLoopVariables(): array
 	{
 		return [
@@ -6932,8 +6931,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			],
 		];
 	}
-
-
 
 	/**
 	 * @dataProvider dataLoopVariables

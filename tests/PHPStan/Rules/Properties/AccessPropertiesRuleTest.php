@@ -673,7 +673,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4808.php'], []);
 	}
 
-
 	public function testBug5868(): void
 	{
 		if (PHP_VERSION_ID < 80000) {

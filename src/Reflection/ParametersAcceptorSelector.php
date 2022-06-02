@@ -226,6 +226,7 @@ class ParametersAcceptorSelector
 
 		return $has;
 	}
+
 	/**
 	 * @param array<int|string, Type> $types
 	 * @param ParametersAcceptor[] $parametersAcceptors

@@ -420,7 +420,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-
 	public function testPutCsvWithStringable(): void
 	{
 		if (PHP_VERSION_ID < 80000) {

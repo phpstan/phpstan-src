@@ -135,7 +135,6 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$this->assertSame(trim(Neon::encode(['parameters' => ['ignoreErrors' => $expected]], Neon::BLOCK)), trim($this->getOutputContent()), sprintf('%s: output do not match', $message));
 	}
 
-
 	public function testFormatErrorMessagesRegexEscape(): void
 	{
 		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));

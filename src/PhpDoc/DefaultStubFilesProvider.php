@@ -5,6 +5,7 @@ namespace PHPStan\PhpDoc;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Internal\ComposerHelper;
 use function array_filter;
+use function array_values;
 use function strpos;
 
 class DefaultStubFilesProvider implements StubFilesProvider
@@ -56,10 +57,10 @@ class DefaultStubFilesProvider implements StubFilesProvider
 			return $this->getStubFiles();
 		}
 
-		return $this->cachedProjectFiles = array_filter(
+		return $this->cachedProjectFiles = array_values(array_filter(
 			$this->getStubFiles(),
 			fn (string $file): bool => strpos($file, ComposerHelper::getVendorDirFromComposerConfig($this->currentWorkingDirectory, $composerConfig)) === false
-		);
+		));
 	}
 
 }

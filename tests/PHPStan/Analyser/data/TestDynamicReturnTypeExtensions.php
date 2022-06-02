@@ -2,17 +2,26 @@
 
 namespace PHPStan\Tests;
 
+use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ResolvedMethodReflection;
+use PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection;
+use PHPStan\Reflection\Type\UnionTypeMethodReflection;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 class GetByPrimaryDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
@@ -206,6 +215,28 @@ class ConditionalGetSingle implements DynamicMethodReturnTypeExtension {
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
 		return ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getReturnType();
+	}
+
+}
+
+class Bug7344DynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
+{
+	public function getClass(): string
+	{
+		return \Bug7344\Model::class;
+	}
+
+	public function isMethodSupported(MethodReflection $methodReflection): bool
+	{
+		return $methodReflection->getName() === 'getModel';
+	}
+
+	public function getTypeFromMethodCall(
+		MethodReflection $methodReflection,
+		MethodCall $methodCall,
+		Scope $scope
+	): Type {
+		return new IntegerType();
 	}
 
 }

@@ -145,11 +145,9 @@ class TypeUtils
 		if ($type instanceof UnionType || $type instanceof IntersectionType) {
 			$classNames = [];
 			foreach ($type->getTypes() as $innerType) {
-				if (!$innerType instanceof TypeWithClassName) {
-					continue;
+				foreach (self::getDirectClassNames($innerType) as $n) {
+					$classNames[] = $n;
 				}
-
-				$classNames[] = $innerType->getClassName();
 			}
 
 			return $classNames;

@@ -60,9 +60,6 @@ phpstan-result-cache:
 phpstan-generate-baseline:
 	php -d memory_limit=448M bin/phpstan --generate-baseline
 
-phpstan-validate-stub-files:
-	php bin/phpstan analyse -c conf/config.stubFiles.neon -l 8 tests/notAutoloaded/empty.php
-
 phpstan-pro:
 	php -d memory_limit=448M bin/phpstan --pro
 

@@ -91,7 +91,7 @@ jobs:
         run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"
 
       - name: "PHPStan"
-        run: "make phpstan && make phpstan-validate-stub-files"
+        run: "make phpstan"
 
   static-analysis-with-result-cache:
     name: "PHPStan with result cache"

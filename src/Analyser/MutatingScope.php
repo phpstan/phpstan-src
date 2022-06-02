@@ -5009,39 +5009,29 @@ class MutatingScope implements Scope
 
 	private function getTypeToInstantiateForNew(Type $type): Type
 	{
-		$decideType = static function (Type $type): ?Type {
-			if ($type instanceof ConstantStringType) {
-				return new ObjectType($type->getValue());
-			}
-			if ($type instanceof GenericClassStringType) {
-				return $type->getGenericType();
-			}
-			if ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
-				return $type;
-			}
-			return null;
-		};
-
 		if ($type instanceof UnionType) {
-			$types = [];
-			foreach ($type->getTypes() as $innerType) {
-				$decidedType = $decideType($innerType);
-				if ($decidedType === null) {
-					return new ObjectWithoutClassType();
-				}
-
-				$types[] = $decidedType;
-			}
-
+			$types = array_map(fn (Type $type) => $this->getTypeToInstantiateForNew($type), $type->getTypes());
 			return TypeCombinator::union(...$types);
 		}
 
-		$decidedType = $decideType($type);
-		if ($decidedType === null) {
-			return new ObjectWithoutClassType();
+		if ($type instanceof IntersectionType) {
+			$types = array_map(fn (Type $type) => $this->getTypeToInstantiateForNew($type), $type->getTypes());
+			return TypeCombinator::intersect(...$types);
 		}
 
-		return $decidedType;
+		if ($type instanceof ConstantStringType) {
+			return new ObjectType($type->getValue());
+		}
+
+		if ($type instanceof GenericClassStringType) {
+			return $type->getGenericType();
+		}
+
+		if ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
+			return $type;
+		}
+
+		return new ObjectWithoutClassType();
 	}
 
 	/** @api */

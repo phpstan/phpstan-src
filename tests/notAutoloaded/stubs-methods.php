@@ -90,3 +90,16 @@ class YetYetAnotherFoo
 	}
 
 }
+
+trait StubbedTrait
+{
+	/**
+	 * @param int $int
+	 *
+	 * @return void
+	 */
+	public function doFoo($int)
+	{
+
+	}
+}

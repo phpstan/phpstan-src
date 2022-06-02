@@ -1,0 +1,3 @@
+parameters:
+	stubFiles:
+		- data/trait-stubs.stub

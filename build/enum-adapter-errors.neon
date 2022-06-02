@@ -257,7 +257,7 @@ parameters:
 
 		-
 			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 3
+			count: 4
 			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
 
 		-
@@ -277,7 +277,7 @@ parameters:
 
 		-
 			message: "#^Call to method isTrait\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
+			count: 2
 			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
 
 		-
@@ -334,6 +334,11 @@ parameters:
 			message: "#^Call to method getProperty\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../tests/PHPStan/Analyser/AnalyserIntegrationTest.php
+
+		-
+			message: "#^Call to method getProperty\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/PhpDoc/PhpDocInheritanceResolver.php
 
 		-
 			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"

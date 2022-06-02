@@ -127,6 +127,16 @@ class PhpDocInheritanceResolver
 
 		if ($propertyName !== null && $classReflection->getNativeReflection()->hasProperty($propertyName)) {
 			$stub = $this->stubPhpDocProvider->findPropertyPhpDoc($classReflection->getName(), $propertyName);
+
+			if ($stub === null) {
+				$propertyReflection = $classReflection->getNativeReflection()->getProperty($propertyName);
+
+				$propertyDeclaringClass = $propertyReflection->getBetterReflection()->getDeclaringClass();
+
+				if ($propertyDeclaringClass->isTrait() && (! $propertyReflection->getDeclaringClass()->isTrait() || $propertyReflection->getDeclaringClass()->getName() !== $propertyDeclaringClass->getName())) {
+					$stub = $this->stubPhpDocProvider->findPropertyPhpDoc($propertyDeclaringClass->getName(), $propertyName);
+				}
+			}
 			if ($stub !== null) {
 				return $stub;
 			}

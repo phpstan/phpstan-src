@@ -225,3 +225,20 @@ function (YetYetAnotherFoo $foo): void {
 	$string = $foo->doFoo('test');
 	$foo->doFoo($string);
 };
+
+trait StubbedTrait
+{
+	public function doFoo($int)
+	{
+
+	}
+}
+
+class ClassUsingStubbedTrait
+{
+	use StubbedTrait;
+}
+
+function (ClassUsingStubbedTrait $foo): void {
+	$foo->doFoo('string');
+};

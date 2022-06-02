@@ -596,6 +596,24 @@ class PhpClassReflectionExtension
 		$resolvedPhpDoc = null;
 		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
 		$phpDocBlockClassReflection = $declaringClass;
+
+		if ($methodReflection->getReflection() !== null) {
+			$methodDeclaringClass = $methodReflection->getReflection()->getBetterReflection()->getDeclaringClass();
+
+			if ($stubPhpDocPair === null && $methodDeclaringClass->isTrait()) {
+				if (! $methodReflection->getDeclaringClass()->isTrait() || $methodDeclaringClass->getName() !== $methodReflection->getDeclaringClass()->getName()) {
+					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors(
+						$this->reflectionProviderProvider->getReflectionProvider()->getClass($methodDeclaringClass->getName()),
+						$methodReflection->getName(),
+						array_map(
+							static fn (ReflectionParameter $parameter): string => $parameter->getName(),
+							$methodReflection->getParameters(),
+						),
+					);
+				}
+			}
+		}
+
 		if ($stubPhpDocPair !== null) {
 			[$resolvedPhpDoc, $phpDocBlockClassReflection] = $stubPhpDocPair;
 		}

@@ -1,5 +1,3 @@
-includes:
-	- config.stubFiles.neon
 parameters:
 	bootstrapFiles:
 		- ../stubs/runtime/ReflectionUnionType.php
@@ -104,6 +102,28 @@ parameters:
 	typeAliases: []
 	universalObjectCratesClasses:
 		- stdClass
+	stubFiles:
+		- ../stubs/ReflectionAttribute.stub
+		- ../stubs/ReflectionClass.stub
+		- ../stubs/ReflectionClassConstant.stub
+		- ../stubs/ReflectionFunctionAbstract.stub
+		- ../stubs/ReflectionMethod.stub
+		- ../stubs/ReflectionParameter.stub
+		- ../stubs/ReflectionProperty.stub
+		- ../stubs/iterable.stub
+		- ../stubs/ArrayObject.stub
+		- ../stubs/WeakReference.stub
+		- ../stubs/ext-ds.stub
+		- ../stubs/PDOStatement.stub
+		- ../stubs/date.stub
+		- ../stubs/mysqli.stub
+		- ../stubs/zip.stub
+		- ../stubs/dom.stub
+		- ../stubs/spl.stub
+		- ../stubs/SplObjectStorage.stub
+		- ../stubs/Exception.stub
+		- ../stubs/arrayFunctions.stub
+		- ../stubs/core.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit

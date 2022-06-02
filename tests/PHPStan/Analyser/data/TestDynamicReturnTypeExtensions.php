@@ -15,6 +15,7 @@ use PHPStan\Reflection\Type\UnionTypeMethodReflection;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -218,11 +219,6 @@ class ConditionalGetSingle implements DynamicMethodReturnTypeExtension {
 
 }
 
-/**
- * Modify return types by reresolving static/$this type with virtual interfaces removed.
- *
- * Used in atk4/data repo.
- */
 class Bug7344DynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 	public function getClass(): string
@@ -232,70 +228,7 @@ class Bug7344DynamicReturnTypeExtension implements DynamicMethodReturnTypeExtens
 
 	public function isMethodSupported(MethodReflection $methodReflection): bool
 	{
-		return true;
-	}
-
-	protected function unresolveMethodReflection(ResolvedMethodReflection $methodReflection): MethodReflection
-	{
-		$methodReflection = \Closure::bind(function () use ($methodReflection) { return $methodReflection->reflection; }, null, ResolvedMethodReflection::class)();
-		if (!$methodReflection instanceof ChangedTypeMethodReflection) {
-			throw new \Exception('Unexpected method reflection class: ' . get_class($methodReflection));
-		}
-
-		$methodReflection = \Closure::bind(function () use ($methodReflection) { return $methodReflection->reflection; }, null, ChangedTypeMethodReflection::class)();
-
-		return $methodReflection;
-	}
-
-	protected function resolveMethodReflection(MethodReflection $methodReflection, Type $calledOnType): MethodReflection
-	{
-		$resolver = (new CalledOnTypeUnresolvedMethodPrototypeReflection(
-			$methodReflection,
-			$methodReflection->getDeclaringClass(),
-			false,
-			$calledOnType
-		));
-
-		return $resolver->getTransformedMethod();
-	}
-
-	protected function reresolveMethodReflection(MethodReflection $methodReflection, Type $calledOnType): MethodReflection
-	{
-		if ($methodReflection instanceof UnionTypeMethodReflection) {
-			$methodReflection = new UnionTypeMethodReflection(
-				$methodReflection->getName(),
-				array_map(
-					function ($v) use ($calledOnType) { return $this->reresolveMethodReflection($v, $calledOnType); },
-					\Closure::bind(function () use ($methodReflection) { return $methodReflection->methods; }, null, UnionTypeMethodReflection::class)()
-				)
-			);
-		} else {
-			$methodReflection = $this->unresolveMethodReflection($methodReflection);
-			$methodReflection = $this->resolveMethodReflection($methodReflection, $calledOnType);
-		}
-
-		return $methodReflection;
-	}
-
-	protected function removeVirtualInterfacesFromType(Type $type): Type
-	{
-		if ($type instanceof IntersectionType) {
-			$types = [];
-			foreach ($type->getTypes() as $t) {
-				$t = $this->removeVirtualInterfacesFromType($t);
-				if (!$t instanceof NeverType) {
-					$types[] = $t;
-				}
-			}
-
-			return count($types) === 0 ? new NeverType() : TypeCombinator::intersect(...$types);
-		}
-
-		if ($type instanceof ObjectType && $type->isInstanceOf(\Bug7344\PhpdocTypeInterface::class)->yes()) {
-			return new NeverType();
-		}
-
-		return $type->traverse(\Closure::fromCallable([$this, 'removeVirtualInterfacesFromType']));
+		return $methodReflection->getName() === 'getModel';
 	}
 
 	public function getTypeFromMethodCall(
@@ -303,21 +236,7 @@ class Bug7344DynamicReturnTypeExtension implements DynamicMethodReturnTypeExtens
 		MethodCall $methodCall,
 		Scope $scope
 	): Type {
-		// resolve static type and remove all virtual interfaces from it
-		if ($methodCall instanceof StaticCall) {
-			$classNameType = $scope->getType(new ClassConstFetch($methodCall->class, 'class'));
-			$calledOnOrigType = new ObjectType($classNameType->getValue());
-		} else {
-			$calledOnOrigType = $scope->getType($methodCall->var);
-		}
-		$calledOnType = $this->removeVirtualInterfacesFromType($calledOnOrigType);
-
-		$methodReflectionReresolved = $this->reresolveMethodReflection($methodReflection, $calledOnType);
-
-		return ParametersAcceptorSelector::selectFromArgs(
-			$scope,
-			$methodCall->getArgs(),
-			$methodReflectionReresolved->getVariants()
-		)->getReturnType();
+		return new IntegerType();
 	}
+
 }

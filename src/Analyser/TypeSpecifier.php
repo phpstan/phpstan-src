@@ -360,13 +360,15 @@ class TypeSpecifier
 						);
 					}
 
-					return $this->create(
-						$exprNode->getArgs()[0]->value,
-						TypeCombinator::union($objectType, $classStringType),
-						$context,
-						false,
-						$scope,
-					);
+					if ($argType instanceof MixedType) {
+						return $this->create(
+							$exprNode->getArgs()[0]->value,
+							TypeCombinator::union($objectType, $classStringType),
+							$context,
+							false,
+							$scope,
+						);
+					}
 				}
 			}
 

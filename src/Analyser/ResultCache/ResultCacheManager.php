@@ -824,7 +824,7 @@ php;
 	private function getStubFiles(): array
 	{
 		$stubFiles = [];
-		foreach ($this->stubFilesProvider->getStubFiles() as $stubFile) {
+		foreach ($this->stubFilesProvider->getProjectStubFiles() as $stubFile) {
 			$stubFiles[$stubFile] = $this->getFileHash($stubFile);
 		}
 

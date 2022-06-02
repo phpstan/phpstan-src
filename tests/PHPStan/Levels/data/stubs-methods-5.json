@@ -48,5 +48,10 @@
         "message": "Parameter #1 $j of method StubsIntegrationTest\\YetYetAnotherFoo::doFoo() expects int, string given.",
         "line": 226,
         "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $int of method StubsIntegrationTest\\ClassUsingStubbedTrait::doFoo() expects int, string given.",
+        "line": 243,
+        "ignorable": true
     }
 ]

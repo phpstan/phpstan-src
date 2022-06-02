@@ -1,0 +1,17 @@
+<?php
+
+namespace TraitStubs;
+
+trait TraitA
+{
+
+	/** @var int */
+	public $notTypedFoo;
+
+	/**
+	 * @param string $int
+	 *
+	 * @return string
+	 */
+	public function doFoo($int) {}
+}

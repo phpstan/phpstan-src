@@ -15,15 +15,6 @@ use function trim;
 final class ComposerHelper
 {
 
-	public static function getComposerJsonPath(string $root): string
-	{
-		$envComposer = getenv('COMPOSER');
-		$fileName = is_string($envComposer) ? $envComposer : 'composer.json';
-		$fileName = basename(trim($fileName));
-
-		return $root . '/' . $fileName;
-	}
-
 	/** @return array<string, mixed> */
 	public static function getComposerConfig(string $root): ?array
 	{
@@ -40,6 +31,15 @@ final class ComposerHelper
 		} catch (CouldNotReadFileException | JsonException) {
 			return null;
 		}
+	}
+
+	private static function getComposerJsonPath(string $root): string
+	{
+		$envComposer = getenv('COMPOSER');
+		$fileName = is_string($envComposer) ? $envComposer : 'composer.json';
+		$fileName = basename(trim($fileName));
+
+		return $root . '/' . $fileName;
 	}
 
 	/**

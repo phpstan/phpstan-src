@@ -1,17 +1,18 @@
 #!/usr/bin/env php
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 use Httpful\Request;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-(function () {
+(function (): void {
 	require_once __DIR__ . '/../vendor/autoload.php';
 
 	$command = new class() extends Symfony\Component\Console\Command\Command {
 
-		protected function configure()
+		protected function configure(): void
 		{
 			$this->setName('run');
 			$this->addArgument('fromCommit', InputArgument::REQUIRED);
@@ -21,12 +22,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 		protected function execute(InputInterface $input, OutputInterface $output)
 		{
 			$commitLines = $this->exec(['git', 'log', sprintf('%s..%s', $input->getArgument('fromCommit'), $input->getArgument('toCommit')), '--reverse', '--pretty=%H %s']);
-			$commits = array_map(function (string $line): array {
+			$commits = array_map(static function (string $line): array {
 				[$hash, $message] = explode(' ', $line, 2);
 
 				return [
 					'hash' => $hash,
-					'message' => $message
+					'message' => $message,
 				];
 			}, explode("\n", $commitLines));
 
@@ -39,7 +40,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 					->send();
 				if ($searchPullRequestsResponse->code !== 200) {
 					$output->writeln(var_export($searchPullRequestsResponse->body, true));
-					throw new \InvalidArgumentException((string) $searchPullRequestsResponse->code);
+					throw new InvalidArgumentException((string) $searchPullRequestsResponse->code);
 				}
 				$searchPullRequestsResponse = $searchPullRequestsResponse->body;
 
@@ -49,7 +50,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 					->send();
 				if ($searchIssuesResponse->code !== 200) {
 					$output->writeln(var_export($searchIssuesResponse->body, true));
-					throw new \InvalidArgumentException((string) $searchIssuesResponse->code);
+					throw new InvalidArgumentException((string) $searchIssuesResponse->code);
 				}
 				$searchIssuesResponse = $searchIssuesResponse->body;
 				$items = array_merge($searchPullRequestsResponse->items, $searchIssuesResponse->items);
@@ -79,18 +80,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 		/**
 		 * @param string[] $commandParts
-		 * @return string
 		 */
 		private function exec(array $commandParts): string
 		{
-			$command = implode(' ', array_map(function (string $part): string {
-				return escapeshellarg($part);
-			}, $commandParts));
+			$command = implode(' ', array_map(static fn (string $part): string => escapeshellarg($part), $commandParts));
 
 			exec($command, $outputLines, $statusCode);
 			$output = implode("\n", $outputLines);
 			if ($statusCode !== 0) {
-				throw new \InvalidArgumentException(sprintf('Command %s failed: %s', $command, $output));
+				throw new InvalidArgumentException(sprintf('Command %s failed: %s', $command, $output));
 			}
 
 			return $output;
@@ -98,9 +96,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 	};
 
-	$application = new \Symfony\Component\Console\Application();
+	$application = new Application();
 	$application->add($command);
 	$application->setDefaultCommand('run', true);
 	$application->run();
-
 })();

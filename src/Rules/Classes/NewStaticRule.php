@@ -57,6 +57,12 @@ class NewStaticRule implements Rule
 			return [];
 		}
 
+		foreach ($classReflection->getImmediateInterfaces() as $interface) {
+			if ($interface->hasConstructor()) {
+				return [];
+			}
+		}
+
 		if ($constructor instanceof PhpMethodReflection) {
 			if ($constructor->isFinal()->yes()) {
 				return [];

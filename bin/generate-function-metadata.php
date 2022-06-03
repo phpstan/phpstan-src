@@ -1,33 +1,38 @@
 #!/usr/bin/env php
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
+use JetBrains\PhpStorm\Pure;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitor\NodeConnectingVisitor;
+use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
+use PHPStan\File\FileReader;
+use PHPStan\File\FileWriter;
+use PHPStan\ShouldNotHappenException;
 
-(function () {
+(function (): void {
 	require_once __DIR__ . '/../vendor/autoload.php';
 
 	$parser = (new ParserFactory())->create(ParserFactory::ONLY_PHP7);
 	$finder = new Symfony\Component\Finder\Finder();
 	$finder->in(__DIR__ . '/../vendor/jetbrains/phpstorm-stubs')->files()->name('*.php');
 
-	$visitor = new class() extends \PhpParser\NodeVisitorAbstract {
+	$visitor = new class() extends NodeVisitorAbstract {
 
 		/** @var string[] */
-		public $functions = [];
+		public array $functions = [];
 
 		/** @var string[] */
-		public $methods = [];
+		public array $methods = [];
 
 		public function enterNode(Node $node)
 		{
 			if ($node instanceof Node\Stmt\Function_) {
 				foreach ($node->attrGroups as $attrGroup) {
 					foreach ($attrGroup->attrs as $attr) {
-						if ($attr->name->toString() === \JetBrains\PhpStorm\Pure::class) {
+						if ($attr->name->toString() === Pure::class) {
 							$this->functions[] = $node->namespacedName->toLowerString();
 							break 2;
 						}
@@ -38,12 +43,12 @@ use PhpParser\ParserFactory;
 			if ($node instanceof Node\Stmt\ClassMethod) {
 				$class = $node->getAttribute('parent');
 				if (!$class instanceof Node\Stmt\ClassLike) {
-					throw new \PHPStan\ShouldNotHappenException($node->name->toString());
+					throw new ShouldNotHappenException($node->name->toString());
 				}
 				$className = $class->namespacedName->toString();
 				foreach ($node->attrGroups as $attrGroup) {
 					foreach ($attrGroup->attrs as $attr) {
-						if ($attr->name->toString() === \JetBrains\PhpStorm\Pure::class) {
+						if ($attr->name->toString() === Pure::class) {
 							$this->methods[] = sprintf('%s::%s', $className, $node->name->toString());
 							break 2;
 						}
@@ -53,6 +58,7 @@ use PhpParser\ParserFactory;
 
 			return null;
 		}
+
 	};
 
 	foreach ($finder as $stubFile) {
@@ -63,7 +69,7 @@ use PhpParser\ParserFactory;
 		$traverser->addVisitor($visitor);
 
 		$traverser->traverse(
-			$parser->parse(\PHPStan\File\FileReader::read($path))
+			$parser->parse(FileReader::read($path)),
 		);
 	}
 
@@ -79,7 +85,7 @@ use PhpParser\ParserFactory;
 				], true)) {
 					continue;
 				}
-				throw new \PHPStan\ShouldNotHappenException($functionName);
+				throw new ShouldNotHappenException($functionName);
 			}
 		}
 		$metadata[$functionName] = ['hasSideEffects' => false];
@@ -88,7 +94,7 @@ use PhpParser\ParserFactory;
 	foreach ($visitor->methods as $methodName) {
 		if (array_key_exists($methodName, $metadata)) {
 			if ($metadata[$methodName]['hasSideEffects']) {
-				throw new \PHPStan\ShouldNotHappenException($methodName);
+				throw new ShouldNotHappenException($methodName);
 			}
 		}
 		$metadata[$methodName] = ['hasSideEffects' => false];
@@ -127,6 +133,5 @@ php;
 		);
 	}
 
-	\PHPStan\File\FileWriter::write(__DIR__ . '/../resources/functionMetadata.php', sprintf($template, $content));
-
+	FileWriter::write(__DIR__ . '/../resources/functionMetadata.php', sprintf($template, $content));
 })();

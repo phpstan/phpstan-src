@@ -8,6 +8,7 @@
 	<arg name="cache" value="tmp/cache/phpcs"/>
 	<arg name="ignore" value="compiler/tests/*/data,tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter,tests/e2e/anon-class"/>
 	<arg value="sp"/>
+	<file>bin</file>
 	<file>src</file>
 	<file>tests</file>
 	<file>compiler/src</file>

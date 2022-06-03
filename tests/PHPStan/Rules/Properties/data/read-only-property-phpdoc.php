@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.1
 
 namespace ReadOnlyPropertyPhpDoc;
 
@@ -20,4 +20,14 @@ class Foo
 	 */
 	private $baz = 0;
 
+}
+
+final class ErrorResponse
+{
+	public function __construct(
+		/** @readonly */
+		public string $message = ''
+	)
+	{
+	}
 }

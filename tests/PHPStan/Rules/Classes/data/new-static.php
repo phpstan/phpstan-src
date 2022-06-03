@@ -115,3 +115,33 @@ class ClassExtendingAbstractConstructor extends AbstractConstructor
 	}
 
 }
+
+interface FooInterface
+{
+	public function __construct();
+}
+
+interface BarInterface extends FooInterface {}
+
+class VendorFoo
+{
+	public function __construct()
+	{
+	}
+}
+
+class Foo extends VendorFoo implements FooInterface
+{
+	static function build()
+	{
+		return new static();
+	}
+}
+
+class Bar extends VendorFoo implements BarInterface
+{
+	static function build()
+	{
+		return new static();
+	}
+}

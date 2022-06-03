@@ -27,7 +27,7 @@ class ReadOnlyByPhpDocPropertyRule implements Rule
 
 		$errors = [];
 		if ($node->getDefault() !== null) {
-			 $errors[] = RuleErrorBuilder::message('@readonly property cannot have a default value.')->nonIgnorable()->build();
+			 $errors[] = RuleErrorBuilder::message('@readonly property cannot have a default value.')->build();
 		}
 
 		return $errors;

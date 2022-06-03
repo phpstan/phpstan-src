@@ -11,7 +11,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 (function () {
 	error_reporting(E_ALL);
 	ini_set('display_errors', 'stderr');
-    if (version_compare(PHP_VERSION, '7.4.0', '<')) {
+	if (version_compare(PHP_VERSION, '7.4.0', '<')) {
 		// PHP earlier than 7.4.x with OpCache triggers a bug when we intercept
 		// custom autoloaders' reads to discover file paths. See PHPStan #4881.
 		ini_set('opcache.enable', 'Off');

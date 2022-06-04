@@ -7,6 +7,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntersectionType;
@@ -16,6 +18,7 @@ use Throwable;
 use function array_shift;
 use function count;
 use function is_string;
+use function preg_match;
 use function sprintf;
 
 class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -38,6 +41,16 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$formatType = $scope->getType($args[0]->value);
+
+		if ($formatType instanceof ConstantStringType) {
+			if (preg_match('/^%\.?[0-9]+[bdeEfFouxX]$/', $formatType->getValue()) === 1) {
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryNumericStringType(),
+				]);
+			}
+		}
+
 		if ($formatType->isNonEmptyString()->yes()) {
 			$returnType = new IntersectionType([
 				new StringType(),

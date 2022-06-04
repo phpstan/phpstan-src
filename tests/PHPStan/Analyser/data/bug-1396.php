@@ -2,8 +2,6 @@
 
 namespace Bug1396;
 
-use PhpParser\Node;
-use PhpParser\Node\Expr;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use function PHPStan\Testing\assertType;
@@ -18,7 +16,7 @@ class TypeSpecifier2
 	): SpecifiedTypes
 	{
 		if ($constantType->getValue() === null) {
-			return $this->create();
+			return new SpecifiedTypes();
 		}
 
 		if (
@@ -26,12 +24,5 @@ class TypeSpecifier2
 		) {
 			assertType('string', $constantType->getValue());
 		}
-	}
-
-	/** @api */
-	public function create(
-	): SpecifiedTypes
-	{
-		return new SpecifiedTypes();
 	}
 }

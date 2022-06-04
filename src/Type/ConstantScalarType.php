@@ -7,7 +7,7 @@ interface ConstantScalarType extends ConstantType
 {
 
 	/**
-	 * @return int|float|string|bool|null
+	 * @return int|float|string|bool
 	 */
 	public function getValue();
 

@@ -360,7 +360,7 @@ class TypeSpecifier
 						);
 					}
 
-				    return $this->create(
+					return $this->create(
 						$exprNode->getArgs()[0]->value,
 						TypeCombinator::union($objectType, $classStringType),
 						$context,

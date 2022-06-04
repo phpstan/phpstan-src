@@ -6,9 +6,9 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use function PHPStan\Testing\assertType;
 
-class TypeSpecifier2
+class HelloWorld
 {
-	public function specifyTypesInCondition(
+	public function doFoo(
 		ConstantScalarType $constantType
 	): SpecifiedTypes
 	{

@@ -8,9 +8,6 @@ use function PHPStan\Testing\assertType;
 
 class TypeSpecifier2
 {
-	/**
-	 * @api
-	 */
 	public function specifyTypesInCondition(
 		ConstantScalarType $constantType
 	): SpecifiedTypes

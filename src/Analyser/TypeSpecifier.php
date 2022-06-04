@@ -267,12 +267,6 @@ class TypeSpecifier
 						);
 					}
 				}
-
-				if (
-					$constantType instanceof ConstantStringType
-				) {
-					\PHPStan\dumpType($constantType->getValue());
-				}
 			}
 
 			$rightType = $scope->getType($expr->right);

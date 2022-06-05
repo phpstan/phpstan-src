@@ -12,6 +12,10 @@ class HelloWorld
 		assertType('numeric-string', sprintf('%.14F', $f));
 		assertType('numeric-string', sprintf('%.14F', $s));
 
+		assertType('numeric-string', sprintf('%1.14F', $i));
+		assertType('numeric-string', sprintf('%2.14F', $f));
+		assertType('numeric-string', sprintf('%3.14F', $s));
+
 		assertType('numeric-string', sprintf('%14F', $i));
 		assertType('numeric-string', sprintf('%14F', $f));
 		assertType('numeric-string', sprintf('%14F', $s));
@@ -22,11 +26,16 @@ class HelloWorld
 		assertType('non-empty-string', sprintf('%14s', $i));
 
 		assertType('numeric-string', sprintf('%14b', $i));
+		assertType('non-empty-string', sprintf('%14c', $i)); // binary string
 		assertType('numeric-string', sprintf('%14d', $i));
 		assertType('numeric-string', sprintf('%14e', $i));
 		assertType('numeric-string', sprintf('%14E', $i));
 		assertType('numeric-string', sprintf('%14f', $i));
 		assertType('numeric-string', sprintf('%14F', $i));
+		assertType('numeric-string', sprintf('%14g', $i));
+		assertType('numeric-string', sprintf('%14G', $i));
+		assertType('numeric-string', sprintf('%14h', $i));
+		assertType('numeric-string', sprintf('%14H', $i));
 		assertType('numeric-string', sprintf('%14o', $i));
 		assertType('numeric-string', sprintf('%14u', $i));
 		assertType('numeric-string', sprintf('%14x', $i));

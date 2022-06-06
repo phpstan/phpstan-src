@@ -137,6 +137,11 @@ class NativeMethodReflection implements ExtendedMethodReflection
 		return $this->hasSideEffects;
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		return true;
+	}
+
 	private function isVoid(): bool
 	{
 		foreach ($this->variants as $variant) {

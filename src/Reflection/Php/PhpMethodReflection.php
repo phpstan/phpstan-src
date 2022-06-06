@@ -78,6 +78,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		private bool $isInternal,
 		private bool $isFinal,
 		private ?bool $isPure,
+		private bool $acceptsNamedArguments,
 	)
 	{
 	}
@@ -417,6 +418,11 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		}
 
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function acceptsNamedArguments(): bool
+	{
+		return $this->acceptsNamedArguments;
 	}
 
 }

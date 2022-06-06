@@ -26,6 +26,7 @@ interface PhpMethodReflectionFactory
 		bool $isInternal,
 		bool $isFinal,
 		?bool $isPure = null,
+		bool $acceptsNamedArguments = true,
 	): PhpMethodReflection;
 
 }

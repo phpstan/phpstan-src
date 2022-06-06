@@ -67,6 +67,16 @@ class MethodSignatureRule implements Rule
 		$errors = [];
 		$declaringClass = $method->getDeclaringClass();
 		foreach ($this->collectParentMethods($methodName, $method->getDeclaringClass()) as $parentMethod) {
+			if ($parentMethod->acceptsNamedArguments() && ! $method->acceptsNamedArguments()) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Method %s::%s() should accept named arguments as method %s::%s() does',
+					$method->getDeclaringClass()->getDisplayName(),
+					$method->getName(),
+					$parentMethod->getDeclaringClass()->getDisplayName(),
+					$parentMethod->getName(),
+				))->build();
+			}
+
 			$parentVariants = $parentMethod->getVariants();
 			if (count($parentVariants) !== 1) {
 				continue;

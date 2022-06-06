@@ -374,4 +374,20 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testOverridenMethodWithNoNamedArguments(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/no-named-arguments.php'], [
+			[
+				'Method NoNamedArguments\Baz::namedArgumentsInParent() should accept named arguments as method NoNamedArguments\Foo::namedArgumentsInParent() does',
+				10,
+			],
+			[
+				'Method NoNamedArguments\Baz::namedArgumentsInInterface() should accept named arguments as method NoNamedArguments\Bar::namedArgumentsInInterface() does',
+				15,
+			],
+		]);
+	}
+
 }

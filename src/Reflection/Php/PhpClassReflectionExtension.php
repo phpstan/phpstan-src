@@ -705,6 +705,7 @@ class PhpClassReflectionExtension
 		$isInternal = $resolvedPhpDoc->isInternal();
 		$isFinal = $resolvedPhpDoc->isFinal();
 		$isPure = $resolvedPhpDoc->isPure();
+		$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
 
 		return $this->methodReflectionFactory->create(
 			$declaringClass,
@@ -719,6 +720,7 @@ class PhpClassReflectionExtension
 			$isInternal,
 			$isFinal,
 			$isPure,
+			$acceptsNamedArguments,
 		);
 	}
 

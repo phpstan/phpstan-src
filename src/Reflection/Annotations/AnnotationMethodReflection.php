@@ -110,6 +110,11 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function acceptsNamedArguments(): bool
+	{
+		return true;
+	}
+
 	public function getDocComment(): ?string
 	{
 		return null;

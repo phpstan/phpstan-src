@@ -49,4 +49,13 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7352.php'], []);
 	}
 
+	public function testBug7352WithNoNamespace(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7352-with-no-namespace.php'], []);
+	}
+
+	public function testBug7352WithSubNamespace(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7352-with-sub-namespace.php'], []);
+	}
 }

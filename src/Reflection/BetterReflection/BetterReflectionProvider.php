@@ -365,7 +365,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		?NamespaceAnswerer $namespaceAnswerer,
 	): ?string
 	{
-		$name = (string) $nameNode;
+		$name = (string) ($nameNode->hasAttribute('namespacedName') ? $nameNode->getAttribute('namespacedName') : $nameNode);
 		if ($namespaceAnswerer !== null && $namespaceAnswerer->getNamespace() !== null && !$nameNode->isFullyQualified()) {
 			$namespacedName = sprintf('%s\\%s', $namespaceAnswerer->getNamespace(), $name);
 			if ($existsCallback($namespacedName)) {

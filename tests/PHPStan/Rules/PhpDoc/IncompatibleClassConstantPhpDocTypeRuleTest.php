@@ -58,4 +58,5 @@ class IncompatibleClassConstantPhpDocTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-7352-with-sub-namespace.php'], []);
 	}
+
 }

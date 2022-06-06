@@ -6,6 +6,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.nodeConnectingVisitorRule%
 	PHPStan\Rules\Properties\MissingReadOnlyByPhpDocPropertyAssignRule:
 		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
+	PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyRule:
+		phpstan.rules.rule: %featureToggles.readOnlyByPhpDoc%
 	PHPStan\Rules\Properties\UninitializedPropertyRule:
 		phpstan.rules.rule: %checkUninitializedProperties%
 	PHPStan\Rules\Methods\ConsistentConstructorRule:
@@ -187,6 +189,9 @@ services:
 			reportMaybes: %reportMaybesInPropertyPhpDocTypes%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Properties\ReadOnlyByPhpDocPropertyRule
 
 	-
 		class: PHPStan\Rules\Properties\UninitializedPropertyRule

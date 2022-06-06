@@ -115,7 +115,7 @@ class BetterReflectionProvider implements ReflectionProvider
 
 		try {
 			$reflectionClass = $this->reflector->reflectClass($className);
-		} catch (IdentifierNotFound) {
+		} catch (IdentifierNotFound | InvalidIdentifierName) {
 			throw new ClassNotFoundException($className);
 		}
 

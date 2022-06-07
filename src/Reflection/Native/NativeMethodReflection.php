@@ -4,8 +4,8 @@ namespace PHPStan\Reflection\Native;
 
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodPrototypeReflection;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\BuiltinMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
@@ -16,7 +16,7 @@ use PHPStan\Type\VoidType;
 use ReflectionException;
 use function strtolower;
 
-class NativeMethodReflection implements MethodReflection
+class NativeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**

@@ -13,10 +13,10 @@ use PHPStan\Parser\FunctionCallStatementFinder;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodPrototypeReflection;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
@@ -44,7 +44,7 @@ use function time;
 use const PHP_VERSION_ID;
 
 /** @api */
-class PhpMethodReflection implements MethodReflection
+class PhpMethodReflection implements ExtendedMethodReflection
 {
 
 	/** @var PhpParameterReflection[]|null */

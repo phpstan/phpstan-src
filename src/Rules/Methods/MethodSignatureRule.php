@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
@@ -120,7 +120,7 @@ class MethodSignatureRule implements Rule
 	}
 
 	/**
-	 * @return MethodReflection[]
+	 * @return ExtendedMethodReflection[]
 	 */
 	private function collectParentMethods(string $methodName, ClassReflection $class): array
 	{

@@ -4,14 +4,14 @@ namespace PHPStan\Reflection\Annotations;
 
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariant;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 
-class AnnotationMethodReflection implements MethodReflection
+class AnnotationMethodReflection implements ExtendedMethodReflection
 {
 
 	/** @var FunctionVariant[]|null */

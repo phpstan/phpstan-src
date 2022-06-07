@@ -395,7 +395,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		if ($classOrObject instanceof ConstantStringType) {
 			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 			if (!$reflectionProvider->hasClass($classOrObject->getValue())) {
-				return ConstantArrayTypeAndMethod::createUnknown();
+				return null;
 			}
 			$type = new ObjectType($reflectionProvider->getClass($classOrObject->getValue())->getName());
 		} elseif ($classOrObject instanceof GenericClassStringType) {

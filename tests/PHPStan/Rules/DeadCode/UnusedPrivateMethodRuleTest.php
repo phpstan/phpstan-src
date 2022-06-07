@@ -76,4 +76,18 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7389(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7389.php'], [
+			[
+				'Method Bug7389\HelloWorld::getTest() is unused.',
+				11,
+			],
+			[
+				'Method Bug7389\HelloWorld::getTest1() is unused.',
+				23,
+			],
+		]);
+	}
+
 }

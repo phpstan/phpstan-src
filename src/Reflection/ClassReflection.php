@@ -63,7 +63,7 @@ use function strtolower;
 class ClassReflection
 {
 
-	/** @var MethodReflection[] */
+	/** @var ExtendedMethodReflection[] */
 	private array $methods = [];
 
 	/** @var PropertyReflection[] */
@@ -365,7 +365,7 @@ class ClassReflection
 		return false;
 	}
 
-	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
+	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection
 	{
 		$key = $methodName;
 		if ($scope->isInClass()) {
@@ -377,7 +377,7 @@ class ClassReflection
 					continue;
 				}
 
-				$method = $extension->getMethod($this, $methodName);
+				$method = $this->wrapExtendedMethod($extension->getMethod($this, $methodName));
 				if ($scope->canCallMethod($method)) {
 					return $this->methods[$key] = $method;
 				}
@@ -392,12 +392,21 @@ class ClassReflection
 		return $this->methods[$key];
 	}
 
+	private function wrapExtendedMethod(MethodReflection $method): ExtendedMethodReflection
+	{
+		if ($method instanceof ExtendedMethodReflection) {
+			return $method;
+		}
+
+		return new WrappedExtendedMethodReflection($method);
+	}
+
 	public function hasNativeMethod(string $methodName): bool
 	{
 		return $this->getPhpExtension()->hasNativeMethod($this, $methodName);
 	}
 
-	public function getNativeMethod(string $methodName): MethodReflection
+	public function getNativeMethod(string $methodName): ExtendedMethodReflection
 	{
 		if (!$this->hasNativeMethod($methodName)) {
 			throw new MissingMethodFromReflectionException($this->getName(), $methodName);
@@ -410,7 +419,7 @@ class ClassReflection
 		return $this->findConstructor() !== null;
 	}
 
-	public function getConstructor(): MethodReflection
+	public function getConstructor(): ExtendedMethodReflection
 	{
 		$constructor = $this->findConstructor();
 		if ($constructor === null) {

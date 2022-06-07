@@ -4,15 +4,15 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariant;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 
-class EnumCasesMethodReflection implements MethodReflection
+class EnumCasesMethodReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(private ClassReflection $declaringClass, private Type $returnType)

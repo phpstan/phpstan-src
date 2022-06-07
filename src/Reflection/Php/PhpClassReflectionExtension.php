@@ -19,6 +19,7 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension;
 use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
@@ -68,10 +69,10 @@ class PhpClassReflectionExtension
 	/** @var PhpPropertyReflection[][] */
 	private array $nativeProperties = [];
 
-	/** @var MethodReflection[][] */
+	/** @var ExtendedMethodReflection[][] */
 	private array $methodsIncludingAnnotations = [];
 
-	/** @var MethodReflection[][] */
+	/** @var ExtendedMethodReflection[][] */
 	private array $nativeMethods = [];
 
 	/** @var array<string, array<string, Type>> */
@@ -375,6 +376,9 @@ class PhpClassReflectionExtension
 		return $classReflection->getNativeReflection()->hasMethod($methodName);
 	}
 
+	/**
+	 * @return ExtendedMethodReflection
+	 */
 	public function getMethod(ClassReflection $classReflection, string $methodName): MethodReflection
 	{
 		if (isset($this->methodsIncludingAnnotations[$classReflection->getCacheKey()][$methodName])) {
@@ -411,7 +415,7 @@ class PhpClassReflectionExtension
 		return false;
 	}
 
-	public function getNativeMethod(ClassReflection $classReflection, string $methodName): MethodReflection
+	public function getNativeMethod(ClassReflection $classReflection, string $methodName): ExtendedMethodReflection
 	{
 		if (isset($this->nativeMethods[$classReflection->getCacheKey()][$methodName])) {
 			return $this->nativeMethods[$classReflection->getCacheKey()][$methodName];
@@ -450,7 +454,7 @@ class PhpClassReflectionExtension
 		ClassReflection $classReflection,
 		BuiltinMethodReflection $methodReflection,
 		bool $includingAnnotations,
-	): MethodReflection
+	): ExtendedMethodReflection
 	{
 		if ($includingAnnotations && $this->annotationsMethodsClassReflectionExtension->hasMethod($classReflection, $methodReflection->getName())) {
 			$hierarchyDistances = $classReflection->getClassHierarchyDistances();

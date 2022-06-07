@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\Annotations;
 
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -11,7 +12,7 @@ use function count;
 class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 
-	/** @var MethodReflection[][] */
+	/** @var ExtendedMethodReflection[][] */
 	private array $methods = [];
 
 	public function hasMethod(ClassReflection $classReflection, string $methodName): bool
@@ -27,6 +28,9 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 		return isset($this->methods[$classReflection->getCacheKey()][$methodName]);
 	}
 
+	/**
+	 * @return ExtendedMethodReflection
+	 */
 	public function getMethod(ClassReflection $classReflection, string $methodName): MethodReflection
 	{
 		return $this->methods[$classReflection->getCacheKey()][$methodName];
@@ -36,7 +40,7 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 		ClassReflection $classReflection,
 		ClassReflection $declaringClass,
 		string $methodName,
-	): ?MethodReflection
+	): ?ExtendedMethodReflection
 	{
 		$methodTags = $classReflection->getMethodTags();
 		if (isset($methodTags[$methodName])) {

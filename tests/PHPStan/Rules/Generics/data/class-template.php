@@ -79,3 +79,19 @@ new /** @template TypeAlias */ class
 {
 
 };
+
+/**
+ * @template T of 'string'
+ */
+class Sit
+{
+
+}
+
+/**
+ * @template T of 5
+ */
+class Amet
+{
+
+}

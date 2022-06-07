@@ -7,6 +7,8 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -55,8 +57,16 @@ final class TemplateTypeFactory
 			return new TemplateStringType($scope, $strategy, $variance, $name, $bound);
 		}
 
+		if ($bound instanceof ConstantStringType && ($boundClass === ConstantStringType::class || $bound instanceof TemplateType)) {
+			return new TemplateConstantStringType($scope, $strategy, $variance, $name, $bound);
+		}
+
 		if ($bound instanceof IntegerType && ($boundClass === IntegerType::class || $bound instanceof TemplateType)) {
 			return new TemplateIntegerType($scope, $strategy, $variance, $name, $bound);
+		}
+
+		if ($bound instanceof ConstantIntegerType && ($boundClass === ConstantIntegerType::class || $bound instanceof TemplateType)) {
+			return new TemplateConstantIntegerType($scope, $strategy, $variance, $name, $bound);
 		}
 
 		if ($bound instanceof FloatType && ($boundClass === FloatType::class || $bound instanceof TemplateType)) {

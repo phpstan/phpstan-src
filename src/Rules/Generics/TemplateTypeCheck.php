@@ -13,6 +13,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateType;
@@ -101,7 +103,9 @@ class TemplateTypeCheck
 				$boundTypeClass !== MixedType::class
 				&& $boundTypeClass !== ConstantArrayType::class
 				&& $boundTypeClass !== ArrayType::class
+				&& $boundTypeClass !== ConstantStringType::class
 				&& $boundTypeClass !== StringType::class
+				&& $boundTypeClass !== ConstantIntegerType::class
 				&& $boundTypeClass !== IntegerType::class
 				&& $boundTypeClass !== FloatType::class
 				&& $boundTypeClass !== BooleanType::class

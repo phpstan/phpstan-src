@@ -1,4 +1,4 @@
-<?php // lint >= 8.1
+<?php // lint >= 8.0
 
 namespace ReadOnlyPropertyPhpDoc;
 

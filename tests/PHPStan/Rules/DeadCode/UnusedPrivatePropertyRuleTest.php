@@ -118,6 +118,16 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 				$tip,
 			],
 			[
+				'Property UnusedPrivateProperty\ArrayAssign::$foo is never read, only written.',
+				162,
+				$tip,
+			],
+			[
+				'Property UnusedPrivateProperty\ListAssign::$foo is never read, only written.',
+				191,
+				$tip,
+			],
+			[
 				'Property UnusedPrivateProperty\WriteToCollection::$collection1 is never read, only written.',
 				221,
 				$tip,

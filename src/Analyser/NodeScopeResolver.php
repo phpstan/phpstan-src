@@ -3467,7 +3467,7 @@ class NodeScopeResolver
 				}
 
 				$itemScope = $scope;
-				if ($arrayItem->value instanceof ArrayDimFetch && $arrayItem->value->dim === null) {
+				if ($enterExpressionAssign) {
 					$itemScope = $itemScope->enterExpressionAssign($arrayItem->value);
 				}
 				$itemScope = $this->lookForSetAllowedUndefinedExpressions($itemScope, $arrayItem->value);

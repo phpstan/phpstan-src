@@ -4,9 +4,9 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodPrototypeReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
@@ -32,7 +32,7 @@ class MethodParameterComparisonHelper
 	/**
 	 * @return RuleError[]
 	 */
-	public function compare(MethodPrototypeReflection $prototype, PhpMethodFromParserNodeReflection $method, bool $ignorable = false): array
+	public function compare(MethodPrototypeReflection $prototype, MethodReflection $method, bool $ignorable = false): array
 	{
 		/** @var RuleError[] $messages */
 		$messages = [];
@@ -64,6 +64,11 @@ class MethodParameterComparisonHelper
 			}
 
 			$methodParameter = $methodParameters[$i];
+
+			if (! $methodParameter instanceof ParameterReflectionWithPhpDocs) {
+				continue;
+			}
+
 			if ($prototypeParameter->passedByReference()->no()) {
 				if (!$methodParameter->passedByReference()->no()) {
 					$error = RuleErrorBuilder::message(sprintf(

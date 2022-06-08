@@ -14,3 +14,4 @@ parameters:
 		consistentConstructor: true
 		checkUnresolvableParameterTypes: true
 		readOnlyByPhpDoc: true
+		inheritingMethodsRule: true

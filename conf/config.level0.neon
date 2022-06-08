@@ -12,6 +12,8 @@ conditionalTags:
 		phpstan.rules.rule: %checkUninitializedProperties%
 	PHPStan\Rules\Methods\ConsistentConstructorRule:
 		phpstan.rules.rule: %featureToggles.consistentConstructor%
+	PHPStan\Rules\Classes\InheritingClassMethodRule:
+		phpstan.rules.rule: %featureToggles.inheritingMethodsRule%
 
 rules:
 	- PHPStan\Rules\Api\ApiInstantiationRule
@@ -236,6 +238,9 @@ services:
 			globalTypeAliases: %typeAliases%
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Classes\InheritingClassMethodRule
 
 	-
 		class: PHPStan\Reflection\ConstructorsHelper

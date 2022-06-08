@@ -29,14 +29,6 @@ class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 				25,
 			],
 			[
-				'PHPDoc tag @param has invalid value ($invalid): Unexpected token "$invalid", expected type at offset 24',
-				25,
-			],
-			[
-				'PHPDoc tag @param has invalid value ($invalid Foo): Unexpected token "$invalid", expected type at offset 43',
-				25,
-			],
-			[
 				'PHPDoc tag @param has invalid value (A & B | C $paramNameA): Unexpected token "|", expected variable at offset 72',
 				25,
 			],
@@ -76,10 +68,10 @@ class InvalidPhpDocTagValueRuleTest extends RuleTestCase
 				'PHPDoc tag @var has invalid value (\\\Foo|\Bar $test): Unexpected token "\\\\\\\Foo|\\\Bar", expected type at offset 9',
 				29,
 			],
-			/*[
-				'PHPDoc tag @var has invalid value ...',
+			[
+				'PHPDoc tag @var has invalid value (callable(int)): Unexpected token "(", expected TOKEN_HORIZONTAL_WS at offset 17',
 				59,
-			],*/
+			],
 			[
 				'PHPDoc tag @var has invalid value ((Foo|Bar): Unexpected token "*/", expected \')\' at offset 18',
 				62,

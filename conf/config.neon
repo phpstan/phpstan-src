@@ -39,6 +39,7 @@ parameters:
 		consistentConstructor: false
 		checkUnresolvableParameterTypes: false
 		readOnlyByPhpDoc: false
+		phpDocParserRequireWhitespaceBeforeDescription: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -239,6 +240,7 @@ parametersSchema:
 		consistentConstructor: bool()
 		checkUnresolvableParameterTypes: bool()
 		readOnlyByPhpDoc: bool()
+		phpDocParserRequireWhitespaceBeforeDescription: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -453,6 +455,8 @@ services:
 
 	-
 		class: PHPStan\PhpDocParser\Parser\PhpDocParser
+		arguments:
+			requireWhitespaceBeforeDescription: %featureToggles.phpDocParserRequireWhitespaceBeforeDescription%
 
 	-
 		class: PHPStan\PhpDoc\PhpDocInheritanceResolver

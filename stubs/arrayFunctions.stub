@@ -48,3 +48,16 @@ function uksort(
     array &$one,
     callable $two
 ): bool {}
+
+/**
+ * @template T of mixed
+ *
+ * @param array<T> $one
+ * @param array<T> $two
+ * @param callable(T, T): int<-1, 1> $three
+ */
+function array_udiff(
+    array $one,
+    array $two,
+    callable $three
+): int {}

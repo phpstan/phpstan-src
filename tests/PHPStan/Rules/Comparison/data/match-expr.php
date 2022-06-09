@@ -170,3 +170,13 @@ class ThrowsTag {
 		};
 	}
 }
+
+function (): string {
+	$foo = fn(): int => rand();
+	$bar = fn(): int => rand();
+	return match ($foo <=> $bar) {
+		1 => 'up',
+		0 => 'neutral',
+		-1 => 'down',
+	};
+};

@@ -29,7 +29,6 @@ use PhpParser\Node\Scalar\EncapsedStringPart;
 use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
@@ -37,6 +36,7 @@ use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Php\PhpVersion;
@@ -159,7 +159,7 @@ class MutatingScope implements Scope
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,
-		private Standard $printer,
+		private ExprPrinter $exprPrinter,
 		private TypeSpecifier $typeSpecifier,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private Parser $parser,
@@ -645,14 +645,7 @@ class MutatingScope implements Scope
 
 	private function getNodeKey(Expr $node): string
 	{
-		/** @var string|null $key */
-		$key = $node->getAttribute('phpstan_cache_printer');
-		if ($key === null) {
-			$key = $this->printer->prettyPrintExpr($node);
-			$node->setAttribute('phpstan_cache_printer', $key);
-		}
-
-		return $key;
+		return $this->exprPrinter->printExpr($node);
 	}
 
 	private function resolveType(Expr $node): Type
@@ -2114,7 +2107,7 @@ class MutatingScope implements Scope
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
 			$this->dynamicReturnTypeExtensionRegistry,
-			$this->printer,
+			$this->exprPrinter,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,
 			$this->parser,
@@ -3284,7 +3277,7 @@ class MutatingScope implements Scope
 		$nativeTypes = $this->nativeExpressionTypes;
 		$nativeTypes[sprintf('$%s', $variableName)] = $type;
 
-		$variableString = $this->printer->prettyPrintExpr(new Variable($variableName));
+		$variableString = $this->exprPrinter->printExpr(new Variable($variableName));
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;
 		foreach (array_keys($moreSpecificTypeHolders) as $key) {
 			$matches = Strings::matchAll((string) $key, '#\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*#');

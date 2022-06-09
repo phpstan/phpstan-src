@@ -2,9 +2,9 @@
 
 namespace PHPStan\Analyser;
 
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -76,7 +76,7 @@ class LazyScopeFactory implements ScopeFactory
 			$this->container->getByType(ReflectionProvider::class),
 			$this->container->getByType(InitializerExprTypeResolver::class),
 			$this->container->getByType(DynamicReturnTypeExtensionRegistryProvider::class)->getRegistry(),
-			$this->container->getByType(Standard::class),
+			$this->container->getByType(ExprPrinter::class),
 			$this->container->getByType(TypeSpecifier::class),
 			$this->container->getByType(PropertyReflectionFinder::class),
 			$this->container->getService('currentPhpVersionSimpleParser'),

@@ -2,8 +2,8 @@
 
 namespace PHPStan\Analyser;
 
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
@@ -30,7 +30,7 @@ class DirectScopeFactory implements ScopeFactory
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private DynamicReturnTypeExtensionRegistryProvider $dynamicReturnTypeExtensionRegistryProvider,
-		private Standard $printer,
+		private ExprPrinter $exprPrinter,
 		private TypeSpecifier $typeSpecifier,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private Parser $parser,
@@ -84,7 +84,7 @@ class DirectScopeFactory implements ScopeFactory
 			$this->reflectionProvider,
 			$this->initializerExprTypeResolver,
 			$this->dynamicReturnTypeExtensionRegistryProvider->getRegistry(),
-			$this->printer,
+			$this->exprPrinter,
 			$this->typeSpecifier,
 			$this->propertyReflectionFinder,
 			$this->parser,

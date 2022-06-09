@@ -20,7 +20,7 @@ use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvi
 use PHPStan\DependencyInjection\Type\DynamicReturnTypeExtensionRegistryProvider;
 use PHPStan\DependencyInjection\Type\OperatorTypeSpecifyingExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
-use PHPStan\Node\Printer\Printer;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\TypeNodeResolver;
@@ -167,7 +167,7 @@ abstract class PHPStanTestCase extends TestCase
 			$reflectionProvider,
 			new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), $container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class)),
 			$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
-			new Printer(),
+			$container->getByType(ExprPrinter::class),
 			$typeSpecifier,
 			new PropertyReflectionFinder(),
 			$this->getParser(),

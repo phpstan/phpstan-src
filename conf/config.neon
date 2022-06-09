@@ -423,6 +423,9 @@ services:
 		class: PhpParser\NodeVisitor\NodeConnectingVisitor
 
 	-
+		class: PHPStan\Node\Printer\ExprPrinter
+
+	-
 		class: PHPStan\Node\Printer\Printer
 
 	-

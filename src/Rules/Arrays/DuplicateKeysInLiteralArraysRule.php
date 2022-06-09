@@ -3,9 +3,9 @@
 namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\LiteralArrayNode;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ConstantScalarType;
@@ -22,7 +22,7 @@ class DuplicateKeysInLiteralArraysRule implements Rule
 {
 
 	public function __construct(
-		private Standard $printer,
+		private ExprPrinter $exprPrinter,
 	)
 	{
 	}
@@ -55,7 +55,7 @@ class DuplicateKeysInLiteralArraysRule implements Rule
 				continue;
 			}
 
-			$printedValue = $this->printer->prettyPrintExpr($key);
+			$printedValue = $this->exprPrinter->printExpr($key);
 			$value = $keyType->getValue();
 			$printedValues[$value][] = $printedValue;
 

@@ -3,8 +3,8 @@
 namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
@@ -15,7 +15,7 @@ use function sprintf;
 class NoopRule implements Rule
 {
 
-	public function __construct(private Standard $printer)
+	public function __construct(private ExprPrinter $exprPrinter)
 	{
 	}
 
@@ -54,7 +54,7 @@ class NoopRule implements Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				'Expression "%s" on a separate line does not do anything.',
-				$this->printer->prettyPrintExpr($originalExpr),
+				$this->exprPrinter->printExpr($originalExpr),
 			))->line($expr->getLine())
 				->identifier('deadCode.noopExpression')
 				->metadata([

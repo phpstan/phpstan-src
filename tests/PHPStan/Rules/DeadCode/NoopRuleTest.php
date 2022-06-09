@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\DeadCode;
 
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -14,7 +15,7 @@ class NoopRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new NoopRule(new Printer());
+		return new NoopRule(new ExprPrinter(new Printer()));
 	}
 
 	public function testRule(): void

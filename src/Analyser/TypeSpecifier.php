@@ -18,7 +18,7 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
-use PhpParser\PrettyPrinter\Standard;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -84,7 +84,7 @@ class TypeSpecifier
 	 * @param StaticMethodTypeSpecifyingExtension[] $staticMethodTypeSpecifyingExtensions
 	 */
 	public function __construct(
-		private Standard $printer,
+		private ExprPrinter $exprPrinter,
 		private ReflectionProvider $reflectionProvider,
 		private array $functionTypeSpecifyingExtensions,
 		private array $methodTypeSpecifyingExtensions,
@@ -332,8 +332,8 @@ class TypeSpecifier
 				return $types;
 			}
 
-			$leftExprString = $this->printer->prettyPrintExpr($expr->left);
-			$rightExprString = $this->printer->prettyPrintExpr($expr->right);
+			$leftExprString = $this->exprPrinter->printExpr($expr->left);
+			$rightExprString = $this->exprPrinter->printExpr($expr->right);
 			if ($leftExprString === $rightExprString) {
 				if (!$expr->left instanceof Expr\Variable || !$expr->right instanceof Expr\Variable) {
 					return new SpecifiedTypes([], [], false, [], $rootExpr);
@@ -475,8 +475,8 @@ class TypeSpecifier
 				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 			}
 
-			$leftExprString = $this->printer->prettyPrintExpr($expr->left);
-			$rightExprString = $this->printer->prettyPrintExpr($expr->right);
+			$leftExprString = $this->exprPrinter->printExpr($expr->left);
+			$rightExprString = $this->exprPrinter->printExpr($expr->right);
 			if ($leftExprString === $rightExprString) {
 				if (!$expr->left instanceof Expr\Variable || !$expr->right instanceof Expr\Variable) {
 					return new SpecifiedTypes([], [], false, [], $rootExpr);
@@ -1228,7 +1228,7 @@ class TypeSpecifier
 
 		$sureTypes = [];
 		$sureNotTypes = [];
-		$exprString = $this->printer->prettyPrintExpr($expr);
+		$exprString = $this->exprPrinter->printExpr($expr);
 		if ($context->false()) {
 			$sureNotTypes[$exprString] = [$expr, $type];
 		} elseif ($context->true()) {
@@ -1297,7 +1297,7 @@ class TypeSpecifier
 		$sureNotTypes = [];
 
 		if ($type instanceof IntegerRangeType || $type instanceof ConstantIntegerType) {
-			$exprString = $this->printer->prettyPrintExpr($expr);
+			$exprString = $this->exprPrinter->printExpr($expr);
 			if ($context->false()) {
 				$sureNotTypes[$exprString] = [$expr, $type];
 			} elseif ($context->true()) {

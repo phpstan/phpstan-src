@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -16,7 +17,7 @@ class DuplicateKeysInLiteralArraysRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new DuplicateKeysInLiteralArraysRule(
-			new Printer(),
+			new ExprPrinter(new Printer()),
 		);
 	}
 

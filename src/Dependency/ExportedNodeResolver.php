@@ -7,7 +7,6 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassNode;
@@ -21,6 +20,7 @@ use PHPStan\Dependency\ExportedNode\ExportedPhpDocNode;
 use PHPStan\Dependency\ExportedNode\ExportedPropertiesNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
 use PHPStan\Dependency\ExportedNode\ExportedTraitUseAdaptation;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use function array_map;
@@ -30,7 +30,7 @@ use function is_string;
 class ExportedNodeResolver
 {
 
-	public function __construct(private FileTypeMapper $fileTypeMapper, private Standard $printer)
+	public function __construct(private FileTypeMapper $fileTypeMapper, private ExprPrinter $exprPrinter)
 	{
 	}
 
@@ -356,7 +356,7 @@ class ExportedNodeResolver
 			foreach ($node->consts as $const) {
 				$constants[] = new ExportedClassConstantNode(
 					$const->name->toString(),
-					$this->printer->prettyPrintExpr($const->value),
+					$this->exprPrinter->printExpr($const->value),
 				);
 			}
 
@@ -379,7 +379,7 @@ class ExportedNodeResolver
 
 			return new ExportedEnumCaseNode(
 				$node->name->toString(),
-				$node->expr !== null ? $this->printer->prettyPrintExpr($node->expr) : null,
+				$node->expr !== null ? $this->exprPrinter->printExpr($node->expr) : null,
 				$this->exportPhpDocNode(
 					$fileName,
 					$namespacedName,

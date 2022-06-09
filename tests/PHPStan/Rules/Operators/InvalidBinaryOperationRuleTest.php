@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Operators;
 
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
@@ -17,7 +18,7 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new InvalidBinaryOperationRule(
-			new Printer(),
+			new ExprPrinter(new Printer()),
 			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false),
 		);
 	}

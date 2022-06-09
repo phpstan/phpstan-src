@@ -3,8 +3,8 @@
 namespace PHPStan\Rules\Cast;
 
 use PhpParser\Node;
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -20,7 +20,7 @@ class InvalidPartOfEncapsedStringRule implements Rule
 {
 
 	public function __construct(
-		private Standard $printer,
+		private ExprPrinter $exprPrinter,
 		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
@@ -56,7 +56,7 @@ class InvalidPartOfEncapsedStringRule implements Rule
 			}
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Part %s (%s) of encapsed string cannot be cast to string.',
-				$this->printer->prettyPrintExpr($part),
+				$this->exprPrinter->printExpr($part),
 				$partType->describe(VerbosityLevel::value()),
 			))->line($part->getLine())->build();
 		}

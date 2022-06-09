@@ -2,9 +2,9 @@
 
 namespace PHPStan\Analyser;
 
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Broker\BrokerFactory;
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_merge;
 
@@ -22,7 +22,7 @@ class TypeSpecifierFactory
 	public function create(): TypeSpecifier
 	{
 		$typeSpecifier = new TypeSpecifier(
-			$this->container->getByType(Standard::class),
+			$this->container->getByType(ExprPrinter::class),
 			$this->container->getByType(ReflectionProvider::class),
 			$this->container->getServicesByTag(self::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG),
 			$this->container->getServicesByTag(self::METHOD_TYPE_SPECIFYING_EXTENSION_TAG),

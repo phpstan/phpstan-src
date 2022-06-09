@@ -3,9 +3,9 @@
 namespace PHPStan\Rules\Operators;
 
 use PhpParser\Node;
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -24,7 +24,7 @@ class InvalidBinaryOperationRule implements Rule
 {
 
 	public function __construct(
-		private Standard $printer,
+		private ExprPrinter $exprPrinter,
 		private RuleLevelHelper $ruleLevelHelper,
 	)
 	{
@@ -51,12 +51,14 @@ class InvalidBinaryOperationRule implements Rule
 			$rightVariable = new Node\Expr\Variable($rightName);
 			if ($node instanceof Node\Expr\AssignOp) {
 				$newNode = clone $node;
+				$newNode->setAttribute('phpstan_cache_printer', null);
 				$left = $node->var;
 				$right = $node->expr;
 				$newNode->var = $leftVariable;
 				$newNode->expr = $rightVariable;
 			} else {
 				$newNode = clone $node;
+				$newNode->setAttribute('phpstan_cache_printer', null);
 				$left = $node->left;
 				$right = $node->right;
 				$newNode->left = $leftVariable;
@@ -104,7 +106,7 @@ class InvalidBinaryOperationRule implements Rule
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Binary operation "%s" between %s and %s results in an error.',
-					substr(substr($this->printer->prettyPrintExpr($newNode), strlen($leftName) + 2), 0, -(strlen($rightName) + 2)),
+					substr(substr($this->exprPrinter->printExpr($newNode), strlen($leftName) + 2), 0, -(strlen($rightName) + 2)),
 					$scope->getType($left)->describe(VerbosityLevel::value()),
 					$scope->getType($right)->describe(VerbosityLevel::value()),
 				))->line($left->getLine())->build(),

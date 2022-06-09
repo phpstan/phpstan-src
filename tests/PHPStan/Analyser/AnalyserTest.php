@@ -8,6 +8,7 @@ use PhpParser\Parser\Php7;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
 use PHPStan\Parser\RichParser;
 use PHPStan\Php\PhpVersion;
@@ -463,7 +464,6 @@ class AnalyserTest extends PHPStanTestCase
 		]);
 
 		$reflectionProvider = $this->createReflectionProvider();
-		$printer = new Printer();
 		$fileHelper = $this->getFileHelper();
 
 		$typeSpecifier = self::getContainer()->getService('typeSpecifier');
@@ -499,7 +499,7 @@ class AnalyserTest extends PHPStanTestCase
 				new NameResolver(),
 				self::getContainer(),
 			),
-			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, $printer)),
+			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, new ExprPrinter(new Printer()))),
 			$reportUnmatchedIgnoredErrors,
 		);
 

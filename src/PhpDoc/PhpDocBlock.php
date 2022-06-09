@@ -111,7 +111,7 @@ class PhpDocBlock
 		ClassReflection $classReflection,
 		?string $trait,
 		string $propertyName,
-		string $file,
+		?string $file,
 		?bool $explicit,
 		array $originalPositionalParameterNames, // unused
 		array $newPositionalParameterNames, // unused
@@ -141,7 +141,7 @@ class PhpDocBlock
 		ClassReflection $classReflection,
 		?string $trait, // unused
 		string $constantName,
-		string $file,
+		?string $file,
 		?bool $explicit,
 		array $originalPositionalParameterNames, // unused
 		array $newPositionalParameterNames, // unused

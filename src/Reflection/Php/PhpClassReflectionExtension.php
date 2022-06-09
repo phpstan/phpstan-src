@@ -252,37 +252,34 @@ class PhpClassReflectionExtension
 			? $propertyReflection->getDocComment()
 			: null;
 
-		$declaringTraitName = null;
 		$phpDocType = null;
 		$resolvedPhpDoc = null;
-		if ($declaringClassReflection->getFileName() !== null) {
-			$declaringTraitName = $this->findPropertyTrait($propertyReflection);
-			$constructorName = null;
-			if ($propertyReflection->isPromoted()) {
-				if ($declaringClassReflection->hasConstructor()) {
-					$constructorName = $declaringClassReflection->getConstructor()->getName();
-				}
+		$declaringTraitName = $this->findPropertyTrait($propertyReflection);
+		$constructorName = null;
+		if ($propertyReflection->isPromoted()) {
+			if ($declaringClassReflection->hasConstructor()) {
+				$constructorName = $declaringClassReflection->getConstructor()->getName();
 			}
-
-			if ($constructorName === null) {
-				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
-					$docComment,
-					$declaringClassReflection,
-					$declaringClassReflection->getFileName(),
-					$declaringTraitName,
-					$propertyName,
-				);
-			} elseif ($docComment !== null) {
-				$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-					$declaringClassReflection->getFileName(),
-					$declaringClassName,
-					$declaringTraitName,
-					$constructorName,
-					$docComment,
-				);
-			}
-			$phpDocBlockClassReflection = $declaringClassReflection;
 		}
+
+		if ($constructorName === null) {
+			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForProperty(
+				$docComment,
+				$declaringClassReflection,
+				$declaringClassReflection->getFileName(),
+				$declaringTraitName,
+				$propertyName,
+			);
+		} elseif ($docComment !== null) {
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+				$declaringClassReflection->getFileName(),
+				$declaringClassName,
+				$declaringTraitName,
+				$constructorName,
+				$docComment,
+			);
+		}
+		$phpDocBlockClassReflection = $declaringClassReflection;
 
 		if ($resolvedPhpDoc !== null) {
 			$varTags = $resolvedPhpDoc->getVarTags();
@@ -290,10 +287,6 @@ class PhpClassReflectionExtension
 				$phpDocType = $varTags[0]->getType();
 			} elseif (isset($varTags[$propertyName])) {
 				$phpDocType = $varTags[$propertyName]->getType();
-			}
-
-			if (!isset($phpDocBlockClassReflection)) {
-				throw new ShouldNotHappenException();
 			}
 
 			$phpDocType = $phpDocType !== null ? TemplateTypeHelper::resolveTemplateTypes(
@@ -307,7 +300,7 @@ class PhpClassReflectionExtension
 		}
 
 		if ($phpDocType === null) {
-			if (isset($constructorName) && $declaringClassReflection->getFileName() !== null) {
+			if (isset($constructorName)) {
 				$constructorDocComment = $declaringClassReflection->getConstructor()->getDocComment();
 				$nativeClassReflection = $declaringClassReflection->getNativeReflection();
 				$positionalParameterNames = [];
@@ -649,7 +642,6 @@ class PhpClassReflectionExtension
 		if (
 			$methodReflection instanceof NativeBuiltinMethodReflection
 			&& $methodReflection->isConstructor()
-			&& $declaringClass->getFileName() !== null
 		) {
 			foreach ($methodReflection->getParameters() as $parameter) {
 				if (!$parameter->isPromoted()) {

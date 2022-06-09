@@ -866,9 +866,6 @@ class ClassReflection
 				throw new MissingConstantFromReflectionException($this->getName(), $name);
 			}
 
-			$deprecatedDescription = null;
-			$isDeprecated = false;
-			$isInternal = false;
 			$declaringClass = $this->reflectionProvider->getClass($reflectionConstant->getDeclaringClass()->getName());
 			$fileName = $declaringClass->getFileName();
 			$phpDocType = null;
@@ -876,7 +873,7 @@ class ClassReflection
 				$declaringClass->getName(),
 				$name,
 			);
-			if ($resolvedPhpDoc === null && $fileName !== null) {
+			if ($resolvedPhpDoc === null) {
 				$docComment = null;
 				if ($reflectionConstant->getDocComment() !== false) {
 					$docComment = $reflectionConstant->getDocComment();
@@ -889,14 +886,12 @@ class ClassReflection
 				);
 			}
 
-			if ($resolvedPhpDoc !== null) {
-				$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
-				$isDeprecated = $resolvedPhpDoc->isDeprecated();
-				$isInternal = $resolvedPhpDoc->isInternal();
-				$varTags = $resolvedPhpDoc->getVarTags();
-				if (isset($varTags[0]) && count($varTags) === 1) {
-					$phpDocType = $varTags[0]->getType();
-				}
+			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
+			$isDeprecated = $resolvedPhpDoc->isDeprecated();
+			$isInternal = $resolvedPhpDoc->isInternal();
+			$varTags = $resolvedPhpDoc->getVarTags();
+			if (isset($varTags[0]) && count($varTags) === 1) {
+				$phpDocType = $varTags[0]->getType();
 			}
 
 			$this->constants[$name] = new ClassConstantReflection(
@@ -1252,10 +1247,6 @@ class ClassReflection
 		}
 
 		$fileName = $this->getFileName();
-		if ($fileName === null) {
-			return null;
-		}
-
 		if (is_bool($this->reflectionDocComment)) {
 			$docComment = $this->reflection->getDocComment();
 			$this->reflectionDocComment = $docComment !== false ? $docComment : null;

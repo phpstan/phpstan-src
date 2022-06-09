@@ -661,6 +661,11 @@ class MutatingScope implements Scope
 			return new NeverType(true);
 		}
 
+		$exprString = $this->getNodeKey($node);
+		if (isset($this->moreSpecificTypes[$exprString]) && $this->moreSpecificTypes[$exprString]->getCertainty()->yes()) {
+			return $this->moreSpecificTypes[$exprString]->getType();
+		}
+
 		if ($node instanceof Expr\BinaryOp\Smaller) {
 			return $this->getType($node->left)->isSmallerThan($this->getType($node->right))->toBooleanType();
 		}
@@ -1510,11 +1515,6 @@ class MutatingScope implements Scope
 			}
 
 			return TypeCombinator::union(...$types);
-		}
-
-		$exprString = $this->getNodeKey($node);
-		if (isset($this->moreSpecificTypes[$exprString]) && $this->moreSpecificTypes[$exprString]->getCertainty()->yes()) {
-			return $this->moreSpecificTypes[$exprString]->getType();
 		}
 
 		if ($node instanceof Expr\Isset_) {

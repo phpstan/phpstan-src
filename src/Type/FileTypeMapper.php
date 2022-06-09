@@ -69,14 +69,16 @@ class FileTypeMapper
 
 	/** @api */
 	public function getResolvedPhpDoc(
-		string $fileName,
+		?string $fileName,
 		?string $className,
 		?string $traitName,
 		?string $functionName,
 		string $docComment,
 	): ResolvedPhpDocBlock
 	{
-		$fileName = $this->fileHelper->normalizePath($fileName);
+		if ($fileName !== null) {
+			$fileName = $this->fileHelper->normalizePath($fileName);
+		}
 
 		if ($className === null && $traitName !== null) {
 			throw new ShouldNotHappenException();
@@ -91,6 +93,11 @@ class FileTypeMapper
 		if (isset($this->resolvedPhpDocBlockCache[$phpDocKey])) {
 			return $this->resolvedPhpDocBlockCache[$phpDocKey];
 		}
+
+		if ($fileName === null) {
+			return $this->createResolvedPhpDocBlock($phpDocKey, new NameScope(null, []), $docComment, null);
+		}
+
 		$nameScopeMap = [];
 
 		if (!isset($this->inProcess[$fileName])) {
@@ -118,7 +125,7 @@ class FileTypeMapper
 		return $this->createResolvedPhpDocBlock($phpDocKey, $this->inProcess[$fileName][$nameScopeKey], $docComment, $fileName);
 	}
 
-	private function createResolvedPhpDocBlock(string $phpDocKey, NameScope $nameScope, string $phpDocString, string $fileName): ResolvedPhpDocBlock
+	private function createResolvedPhpDocBlock(string $phpDocKey, NameScope $nameScope, string $phpDocString, ?string $fileName): ResolvedPhpDocBlock
 	{
 		$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
 		if ($this->resolvedPhpDocBlockCacheCount >= 2048) {
@@ -580,21 +587,21 @@ class FileTypeMapper
 	}
 
 	private function getNameScopeKey(
-		string $file,
+		?string $file,
 		?string $class,
 		?string $trait,
 		?string $function,
 	): string
 	{
 		if ($class === null && $trait === null && $function === null) {
-			return md5(sprintf('%s', $file));
+			return md5(sprintf('%s', $file ?? 'no-file'));
 		}
 
 		if ($class !== null && strpos($class, 'class@anonymous') !== false) {
 			throw new ShouldNotHappenException('Wrong anonymous class name, FilTypeMapper should be called with ClassReflection::getName().');
 		}
 
-		return md5(sprintf('%s-%s-%s-%s', $file, $class, $trait, $function));
+		return md5(sprintf('%s-%s-%s-%s', $file ?? 'no-file', $class, $trait, $function));
 	}
 
 }

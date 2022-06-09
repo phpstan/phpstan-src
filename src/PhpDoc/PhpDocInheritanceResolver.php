@@ -66,7 +66,7 @@ class PhpDocInheritanceResolver
 	 */
 	public function resolvePhpDocForMethod(
 		?string $docComment,
-		string $fileName,
+		?string $fileName,
 		ClassReflection $classReflection,
 		?string $declaringTraitName,
 		string $methodName,

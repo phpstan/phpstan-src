@@ -623,20 +623,18 @@ class PhpClassReflectionExtension
 		}
 
 		if ($resolvedPhpDoc === null) {
-			if ($declaringClass->getFileName() !== null) {
-				$docComment = $methodReflection->getDocComment();
-				$positionalParameterNames = array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters());
+			$docComment = $methodReflection->getDocComment();
+			$positionalParameterNames = array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters());
 
-				$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
-					$docComment,
-					$declaringClass->getFileName(),
-					$declaringClass,
-					$declaringTraitName,
-					$methodReflection->getName(),
-					$positionalParameterNames,
-				);
-				$phpDocBlockClassReflection = $declaringClass;
-			}
+			$resolvedPhpDoc = $this->phpDocInheritanceResolver->resolvePhpDocForMethod(
+				$docComment,
+				$declaringClass->getFileName(),
+				$declaringClass,
+				$declaringTraitName,
+				$methodReflection->getName(),
+				$positionalParameterNames,
+			);
+			$phpDocBlockClassReflection = $declaringClass;
 		}
 
 		$declaringTrait = null;
@@ -647,15 +645,7 @@ class PhpClassReflectionExtension
 			$declaringTrait = $reflectionProvider->getClass($declaringTraitName);
 		}
 
-		$templateTypeMap = TemplateTypeMap::createEmpty();
 		$phpDocParameterTypes = [];
-		$phpDocReturnType = null;
-		$phpDocThrowType = null;
-		$deprecatedDescription = null;
-		$isDeprecated = false;
-		$isInternal = false;
-		$isFinal = false;
-		$isPure = false;
 		if (
 			$methodReflection instanceof NativeBuiltinMethodReflection
 			&& $methodReflection->isConstructor()
@@ -697,33 +687,32 @@ class PhpClassReflectionExtension
 				$phpDocParameterTypes[$parameter->getName()] = $phpDocType;
 			}
 		}
-		if ($resolvedPhpDoc !== null) {
-			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
-			foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
-				if (array_key_exists($paramName, $phpDocParameterTypes)) {
-					continue;
-				}
-				$phpDocParameterTypes[$paramName] = $paramTag->getType();
+
+		$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
+		foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
+			if (array_key_exists($paramName, $phpDocParameterTypes)) {
+				continue;
 			}
-			foreach ($phpDocParameterTypes as $paramName => $paramType) {
-				$phpDocParameterTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
-					$paramType,
-					$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
-				);
-			}
-			$nativeReturnType = TypehintHelper::decideTypeFromReflection(
-				$methodReflection->getReturnType(),
-				null,
-				$declaringClass->getName(),
-			);
-			$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
-			$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
-			$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
-			$isDeprecated = $resolvedPhpDoc->isDeprecated();
-			$isInternal = $resolvedPhpDoc->isInternal();
-			$isFinal = $resolvedPhpDoc->isFinal();
-			$isPure = $resolvedPhpDoc->isPure();
+			$phpDocParameterTypes[$paramName] = $paramTag->getType();
 		}
+		foreach ($phpDocParameterTypes as $paramName => $paramType) {
+			$phpDocParameterTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
+				$paramType,
+				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
+			);
+		}
+		$nativeReturnType = TypehintHelper::decideTypeFromReflection(
+			$methodReflection->getReturnType(),
+			null,
+			$declaringClass->getName(),
+		);
+		$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
+		$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
+		$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
+		$isDeprecated = $resolvedPhpDoc->isDeprecated();
+		$isInternal = $resolvedPhpDoc->isInternal();
+		$isFinal = $resolvedPhpDoc->isFinal();
+		$isPure = $resolvedPhpDoc->isPure();
 
 		return $this->methodReflectionFactory->create(
 			$declaringClass,

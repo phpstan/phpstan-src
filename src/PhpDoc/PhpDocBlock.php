@@ -27,7 +27,7 @@ class PhpDocBlock
 	 */
 	private function __construct(
 		private string $docComment,
-		private string $file,
+		private ?string $file,
 		private ClassReflection $classReflection,
 		private ?string $trait,
 		private bool $explicit,
@@ -42,7 +42,7 @@ class PhpDocBlock
 		return $this->docComment;
 	}
 
-	public function getFile(): string
+	public function getFile(): ?string
 	{
 		return $this->file;
 	}
@@ -171,7 +171,7 @@ class PhpDocBlock
 		ClassReflection $classReflection,
 		?string $trait,
 		string $methodName,
-		string $file,
+		?string $file,
 		?bool $explicit,
 		array $originalPositionalParameterNames,
 		array $newPositionalParameterNames,
@@ -201,7 +201,7 @@ class PhpDocBlock
 		ClassReflection $classReflection,
 		?string $trait,
 		string $name,
-		string $file,
+		?string $file,
 		string $hasMethodName,
 		string $getMethodName,
 		string $resolveMethodName,
@@ -322,7 +322,7 @@ class PhpDocBlock
 		array $positionalParameterNames,
 	): ?self
 	{
-		if ($classReflection->getFileName() !== null && $classReflection->$hasMethodName($name)) {
+		if ($classReflection->$hasMethodName($name)) {
 			/** @var PropertyReflection|MethodReflection|ConstantReflection $parentReflection */
 			$parentReflection = $classReflection->$getMethodName($name);
 			if ($parentReflection->isPrivate()) {

@@ -114,7 +114,7 @@ class ResolvedPhpDocBlock
 	public static function create(
 		PhpDocNode $phpDocNode,
 		string $phpDocString,
-		string $filename,
+		?string $filename,
 		NameScope $nameScope,
 		TemplateTypeMap $templateTypeMap,
 		array $templateTags,

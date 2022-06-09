@@ -618,6 +618,32 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testArrayUdiffCallback(): void
+	{
+		$this->analyse([__DIR__ . '/data/array_udiff.php'], [
+			[
+				'Parameter #3 $data_comp_func of function array_udiff expects callable(int, int): int<-1, 1>, Closure(string, string): string given.',
+				6,
+			],
+			[
+				'Parameter #3 $data_comp_func of function array_udiff expects callable(int, int): int<-1, 1>, Closure(int, int): non-empty-string given.',
+				14,
+			],
+			[
+				'Parameter #1 $arr1 of function array_udiff expects array<string>, null given.',
+				20,
+			],
+			[
+				'Parameter #2 $arr2 of function array_udiff expects array<string>, null given.',
+				21,
+			],
+			[
+				'Parameter #3 $data_comp_func of function array_udiff expects callable(string, string): int<-1, 1>, Closure(string, int): non-empty-string given.',
+				22,
+			],
+		]);
+	}
+
 	public function testPregReplaceCallback(): void
 	{
 		$this->analyse([__DIR__ . '/data/preg_replace_callback.php'], [

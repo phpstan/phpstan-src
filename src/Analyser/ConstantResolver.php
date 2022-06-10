@@ -35,12 +35,11 @@ class ConstantResolver
 
 	public function resolveConstant(Name $name, ?NamespaceAnswerer $scope): ?Type
 	{
-		$provider = $this->getReflectionProvider();
-		if (!($provider->hasConstant($name, $scope) ?? $provider->hasConstant($name, /* fallback to global */null))) {
+		if (!$this->getReflectionProvider()->hasConstant($name, $scope)) {
 			return null;
 		}
 
-		$resolvedConstantName = $provider->resolveConstantName($name, $scope) ?? $provider->resolveConstantName($name, /* fallback to global */null);
+		$resolvedConstantName = $this->getReflectionProvider()->resolveConstantName($name, $scope) ?? $this->getReflectionProvider()->resolveConstantName($name, /* fallback to global */null);
 		if ($resolvedConstantName === null) {
 			return null;
 		}
@@ -50,7 +49,7 @@ class ConstantResolver
 			return $constantType;
 		}
 
-		$constantReflection = $provider->getConstant($name, $scope) ?? $provider->getConstant($name, /* fallback to global */null);
+		$constantReflection = $this->getReflectionProvider()->getConstant($name, $scope);
 		$constantType = $constantReflection->getValueType();
 
 		return $this->resolveConstantType($resolvedConstantName, $constantType);

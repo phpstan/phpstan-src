@@ -3495,7 +3495,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($expr instanceof FuncCall && $expr->name instanceof Name && $type instanceof ConstantBooleanType && !$type->getValue()) {
-			$functionName = $this->reflectionProvider->resolveFunctionName($expr->name, $this);
+			$functionName = $this->reflectionProvider->resolveFunctionName($expr->name, $this) ?? $this->reflectionProvider->resolveFunctionName($expr->name, /* fallback to global */null);
 			if ($functionName !== null && in_array(strtolower($functionName), [
 				'is_dir',
 				'is_file',

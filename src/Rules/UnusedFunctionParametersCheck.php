@@ -62,7 +62,7 @@ class UnusedFunctionParametersCheck
 		$variableNames = [];
 		if ($node instanceof Node) {
 			if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name) {
-				$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
+				$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope) ?? $this->reflectionProvider->resolveFunctionName($node->name, /* fallback to global */null);
 				if ($functionName === 'func_get_args') {
 					return $scope->getDefinedVariables();
 				}

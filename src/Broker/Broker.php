@@ -104,7 +104,7 @@ class Broker implements ReflectionProvider
 	 */
 	public function resolveFunctionName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
-		return $this->reflectionProvider->resolveFunctionName($nameNode, $namespaceAnswerer);
+		return $this->reflectionProvider->resolveFunctionName($nameNode, $namespaceAnswerer) ?? $this->reflectionProvider->resolveFunctionName($nameNode, /* fallback to global */null);
 	}
 
 	/**

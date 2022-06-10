@@ -78,7 +78,7 @@ class MemoizingReflectionProvider implements ReflectionProvider
 
 	public function resolveFunctionName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
-		return $this->provider->resolveFunctionName($nameNode, $namespaceAnswerer);
+		return $this->provider->resolveFunctionName($nameNode, $namespaceAnswerer) ?? $this->provider->resolveFunctionName($nameNode, /* fallback to global */null);
 	}
 
 	public function hasConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool
@@ -93,7 +93,7 @@ class MemoizingReflectionProvider implements ReflectionProvider
 
 	public function resolveConstantName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
-		return $this->provider->resolveConstantName($nameNode, $namespaceAnswerer);
+		return $this->provider->resolveConstantName($nameNode, $namespaceAnswerer) ?? $this->provider->resolveConstantName($nameNode, /* fallback to global */null);
 	}
 
 }

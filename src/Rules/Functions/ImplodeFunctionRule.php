@@ -40,7 +40,7 @@ class ImplodeFunctionRule implements Rule
 			return [];
 		}
 
-		$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
+		$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope) ?? $this->reflectionProvider->resolveFunctionName($node->name, /* fallback to global */null);
 		if (!in_array($functionName, ['implode', 'join'], true)) {
 			return [];
 		}

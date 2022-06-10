@@ -49,8 +49,13 @@ class CallToNonExistentFunctionRule implements Rule
 		$name = (string) $node->name;
 
 		if ($this->checkFunctionNameCase) {
-			/** @var string $calledFunctionName */
-			$calledFunctionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
+			$calledFunctionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope) ?? $this->reflectionProvider->resolveFunctionName($node->name, /* fallback to global */null);
+			if ($calledFunctionName === null) {
+				return [
+					RuleErrorBuilder::message(sprintf('Function %s not found.', $name))->discoveringSymbolsTip()->build(),
+				];
+			}
+
 			if (
 				strtolower($function->getName()) === strtolower($calledFunctionName)
 				&& $function->getName() !== $calledFunctionName

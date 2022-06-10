@@ -36,7 +36,7 @@ class RandomIntParametersRule implements Rule
 			return [];
 		}
 
-		if ($this->reflectionProvider->resolveFunctionName($node->name, $scope) !== 'random_int') {
+		if (($this->reflectionProvider->resolveFunctionName($node->name, $scope) ?? $this->reflectionProvider->resolveFunctionName($node->name, /* fallback to global */null)) !== 'random_int') {
 			return [];
 		}
 

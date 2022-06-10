@@ -49,8 +49,12 @@ class FunctionCallableRule implements Rule
 				if ($this->checkFunctionNameCase) {
 					$function = $this->reflectionProvider->getFunction($functionName, $scope);
 
-					/** @var string $calledFunctionName */
-					$calledFunctionName = $this->reflectionProvider->resolveFunctionName($functionName, $scope);
+					$calledFunctionName = $this->reflectionProvider->resolveFunctionName($functionName, $scope) ?? $this->reflectionProvider->resolveFunctionName($functionName, /* fallback to global */ null);
+					if ($calledFunctionName === null) {
+						return [
+							RuleErrorBuilder::message(sprintf('Function %s not found.', $functionNameName))->discoveringSymbolsTip()->build(),
+						];
+					}
 					if (
 						strtolower($function->getName()) === strtolower($calledFunctionName)
 						&& $function->getName() !== $calledFunctionName

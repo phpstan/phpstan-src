@@ -224,12 +224,12 @@ class BetterReflectionProvider implements ReflectionProvider
 
 	public function hasFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool
 	{
-		return $this->resolveFunctionName($nameNode, $namespaceAnswerer) !== null;
+		return ($this->resolveFunctionName($nameNode, $namespaceAnswerer) ?? $this->resolveFunctionName($nameNode, /* fallback to global */null)) !== null;
 	}
 
 	public function getFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): FunctionReflection
 	{
-		$functionName = $this->resolveFunctionName($nameNode, $namespaceAnswerer);
+		$functionName = $this->resolveFunctionName($nameNode, $namespaceAnswerer) ?? $this->resolveFunctionName($nameNode, /* fallback to global */null);
 		if ($functionName === null) {
 			throw new FunctionNotFoundException((string) $nameNode);
 		}

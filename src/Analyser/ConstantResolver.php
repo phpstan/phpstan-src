@@ -35,19 +35,22 @@ class ConstantResolver
 
 	public function resolveConstant(Name $name, ?NamespaceAnswerer $scope): ?Type
 	{
-		if (!$this->getReflectionProvider()->hasConstant($name, $scope)) {
+		$provider = $this->getReflectionProvider();
+		if (!($provider->hasConstant($name, $scope) ?? $provider->hasConstant($name, /* fallback to global */null))) {
 			return null;
 		}
 
-		/** @var string $resolvedConstantName */
-		$resolvedConstantName = $this->getReflectionProvider()->resolveConstantName($name, $scope);
+		$resolvedConstantName = $provider->resolveConstantName($name, $scope) ?? $provider->resolveConstantName($name, /* fallback to global */null);
+		if ($resolvedConstantName === null) {
+			return null;
+		}
 
 		$constantType = $this->resolvePredefinedConstant($resolvedConstantName);
 		if ($constantType !== null) {
 			return $constantType;
 		}
 
-		$constantReflection = $this->getReflectionProvider()->getConstant($name, $scope);
+		$constantReflection = $provider->getConstant($name, $scope) ?? $provider->getConstant($name, /* fallback to global */null);
 		$constantType = $constantReflection->getValueType();
 
 		return $this->resolveConstantType($resolvedConstantName, $constantType);

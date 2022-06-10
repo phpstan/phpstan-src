@@ -316,12 +316,12 @@ class BetterReflectionProvider implements ReflectionProvider
 
 	public function hasConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): bool
 	{
-		return $this->resolveConstantName($nameNode, $namespaceAnswerer) !== null;
+		return ($this->resolveConstantName($nameNode, $namespaceAnswerer) ?? $this->resolveConstantName($nameNode, /* fallback to global */null)) !== null;
 	}
 
 	public function getConstant(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): GlobalConstantReflection
 	{
-		$constantName = $this->resolveConstantName($nameNode, $namespaceAnswerer);
+		$constantName = $this->resolveConstantName($nameNode, $namespaceAnswerer) ?? $this->resolveConstantName($nameNode, /* fallback to global */null);
 		if ($constantName === null) {
 			throw new ConstantNotFoundException((string) $nameNode);
 		}
@@ -365,7 +365,8 @@ class BetterReflectionProvider implements ReflectionProvider
 		?NamespaceAnswerer $namespaceAnswerer,
 	): ?string
 	{
-		$name = (string) ($nameNode->hasAttribute('namespacedName') ? $nameNode->getAttribute('namespacedName') : $nameNode);
+		$nameNode = $namespaceAnswerer && $nameNode->hasAttribute('namespacedName') ? $nameNode->getAttribute('namespacedName') : $nameNode;
+		$name = (string) $nameNode;
 		if ($namespaceAnswerer !== null && $namespaceAnswerer->getNamespace() !== null && !$nameNode->isFullyQualified()) {
 			$namespacedName = sprintf('%s\\%s', $namespaceAnswerer->getNamespace(), $name);
 			if ($existsCallback($namespacedName)) {

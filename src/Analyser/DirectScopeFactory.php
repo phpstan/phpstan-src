@@ -38,6 +38,7 @@ class DirectScopeFactory implements ScopeFactory
 		private bool $treatPhpDocTypesAsCertain,
 		private PhpVersion $phpVersion,
 		private bool $explicitMixedInUnknownGenericNew,
+		private bool $explicitMixedForGlobalVariables,
 		private ConstantResolver $constantResolver,
 	)
 	{
@@ -110,6 +111,7 @@ class DirectScopeFactory implements ScopeFactory
 			$afterExtractCall,
 			$parentScope,
 			$this->explicitMixedInUnknownGenericNew,
+			$this->explicitMixedForGlobalVariables,
 		);
 	}
 

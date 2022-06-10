@@ -23,6 +23,8 @@ class LazyScopeFactory implements ScopeFactory
 
 	private bool $explicitMixedInUnknownGenericNew;
 
+	private bool $explicitMixedForGlobalVariables;
+
 	/**
 	 * @param class-string $scopeClass
 	 */
@@ -33,6 +35,7 @@ class LazyScopeFactory implements ScopeFactory
 	{
 		$this->treatPhpDocTypesAsCertain = $container->getParameter('treatPhpDocTypesAsCertain');
 		$this->explicitMixedInUnknownGenericNew = $this->container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'];
+		$this->explicitMixedForGlobalVariables = $this->container->getParameter('featureToggles')['explicitMixedForGlobalVariables'];
 	}
 
 	/**
@@ -102,6 +105,7 @@ class LazyScopeFactory implements ScopeFactory
 			$afterExtractCall,
 			$parentScope,
 			$this->explicitMixedInUnknownGenericNew,
+			$this->explicitMixedForGlobalVariables,
 		);
 	}
 

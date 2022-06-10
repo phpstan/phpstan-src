@@ -495,7 +495,7 @@ class MutatingScope implements Scope
 	public function getVariableType(string $variableName): Type
 	{
 		if ($this->isGlobalVariable($variableName)) {
-			return new ArrayType(new StringType(), new MixedType());
+			return new ArrayType(new StringType(), new MixedType(true));
 		}
 
 		if ($this->hasVariableType($variableName)->no()) {

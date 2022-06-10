@@ -32,3 +32,8 @@ array_udiff(
 	},
 );
 
+array_udiff(
+	["25","26"],
+	["26","27"],
+	'strcasecmp',
+);

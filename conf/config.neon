@@ -1227,6 +1227,11 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\DateTimeFromFormatDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\DateTimeModifyReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension

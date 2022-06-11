@@ -78,7 +78,11 @@ class TableErrorFormatter implements ErrorFormatter
 				}
 				if (is_string($this->editorUrl)) {
 					$editorFile = $error->getTraitFilePath() ?? $error->getFilePath();
-					$url = str_replace(['%file%', '%line%'], [$editorFile, (string) $error->getLine()], $this->editorUrl);
+					$url = str_replace(
+						['%file%', '%rel_file%', '%line%'],
+						[$editorFile, $this->relativePathHelper->getRelativePath($editorFile), (string) $error->getLine()],
+						$this->editorUrl,
+					);
 					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $this->relativePathHelper->getRelativePath($editorFile) . '</>';
 				}
 				$rows[] = [

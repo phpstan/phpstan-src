@@ -47,7 +47,7 @@ class InitializerExprContext implements NamespaceAnswerer
 	{
 		$parts = explode('\\', $name);
 		if (count($parts) > 1) {
-			return implode('\\', array_slice($parts, 0, 1));
+			return implode('\\', array_slice($parts, 0, -1));
 		}
 
 		return null;

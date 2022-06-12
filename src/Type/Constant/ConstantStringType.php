@@ -6,6 +6,7 @@ use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\InaccessibleMethod;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
@@ -46,6 +47,8 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	use ConstantScalarTypeTrait;
 	use ConstantScalarToBooleanTrait;
+
+	private ?ObjectType $objectType = null;
 
 	/** @api */
 	public function __construct(private string $value, private bool $isClassString = false)
@@ -106,7 +109,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 			// We are transforming constant class-string to ObjectType. But we need to filter out
 			// an uncertainty originating in possible ObjectType's class subtypes.
-			$objectType = new ObjectType($this->getValue());
+			$objectType = $this->getObjectType();
 
 			// Do not use TemplateType's isSuperTypeOf handling directly because it takes ObjectType
 			// uncertainty into account.
@@ -401,6 +404,26 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	public function canAccessConstants(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->isClassString());
+	}
+
+	public function hasConstant(string $constantName): TrinaryLogic
+	{
+		return $this->getObjectType()->hasConstant($constantName);
+	}
+
+	public function getConstant(string $constantName): ConstantReflection
+	{
+		return $this->getObjectType()->getConstant($constantName);
+	}
+
+	private function getObjectType(): ObjectType
+	{
+		return $this->objectType ??= new ObjectType($this->value);
 	}
 
 	/**

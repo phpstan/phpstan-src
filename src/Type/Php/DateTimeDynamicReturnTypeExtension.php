@@ -14,7 +14,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function count;
-use function date_create;
 use function in_array;
 
 class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -22,26 +21,27 @@ class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return in_array($functionReflection->getName(), ['date_create', 'date_create_immutable'], true);
+		return in_array($functionReflection->getName(), ['date_create_from_format', 'date_create_immutable_from_format'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 
-		if (count($functionCall->getArgs()) < 1) {
+		if (count($functionCall->getArgs()) < 2) {
 			return $defaultReturnType;
 		}
 
-		$datetime = $scope->getType($functionCall->getArgs()[0]->value);
+		$format = $scope->getType($functionCall->getArgs()[0]->value);
+		$datetime = $scope->getType($functionCall->getArgs()[1]->value);
 
-		if (!$datetime instanceof ConstantStringType) {
+		if (!$format instanceof ConstantStringType || !$datetime instanceof ConstantStringType) {
 			return $defaultReturnType;
 		}
 
-		$isValid = date_create($datetime->getValue()) !== false;
+		$isValid = (DateTime::createFromFormat($format->getValue(), $datetime->getValue()) !== false);
 
-		$className = $functionReflection->getName() === 'date_create' ? DateTime::class : DateTimeImmutable::class;
+		$className = $functionReflection->getName() === 'date_create_from_format' ? DateTime::class : DateTimeImmutable::class;
 		return $isValid ? new ObjectType($className) : new ConstantBooleanType(false);
 	}
 

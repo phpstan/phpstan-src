@@ -410,8 +410,8 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4650.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-2906.php');
 
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/DateTimeCreateDynamicReturnTypes.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/DateTimeDynamicReturnTypes.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/DateTimeFromFormatDynamicReturnTypes.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/DateTimeModifyReturnTypes.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4821.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4838.php');

@@ -27,6 +27,7 @@ parameters:
 			- RecursiveCallbackFilterIterator
 			- AppendIterator
 		explicitMixedInUnknownGenericNew: false
+		explicitMixedForGlobalVariables: false
 		explicitMixedViaIsArray: false
 		arrayFilter: false
 		arrayUnpacking: false
@@ -228,6 +229,7 @@ parametersSchema:
 		disableRuntimeReflectionProvider: bool(),
 		skipCheckGenericClasses: listOf(string()),
 		explicitMixedInUnknownGenericNew: bool(),
+		explicitMixedForGlobalVariables: bool(),
 		explicitMixedViaIsArray: bool(),
 		arrayFilter: bool(),
 		arrayUnpacking: bool(),

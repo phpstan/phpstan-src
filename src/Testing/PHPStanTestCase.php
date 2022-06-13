@@ -175,6 +175,7 @@ abstract class PHPStanTestCase extends TestCase
 			$this->shouldTreatPhpDocTypesAsCertain(),
 			$container->getByType(PhpVersion::class),
 			$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
+			$container->getParameter('featureToggles')['explicitMixedForGlobalVariables'],
 			$constantResolver,
 		);
 	}

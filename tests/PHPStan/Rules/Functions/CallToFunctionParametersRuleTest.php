@@ -1077,4 +1077,25 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6987.php'], []);
 	}
 
+	public function testDiscussion7450WithoutCheckExplicitMixed(): void
+	{
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/discussion-7450.php'], []);
+	}
+
+	public function testDiscussion7450WithCheckExplicitMixed(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/discussion-7450.php'], [
+			[
+				'Parameter #1 $foo of function Discussion7450\foo expects array{policy: non-empty-string, entitlements: array<non-empty-string>}, array{policy: mixed, entitlements: mixed} given.',
+				18,
+			],
+			[
+				'Parameter #1 $foo of function Discussion7450\foo expects array{policy: non-empty-string, entitlements: array<non-empty-string>}, array{policy: mixed, entitlements: mixed} given.',
+				28,
+			],
+		]);
+	}
+
 }

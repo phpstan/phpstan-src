@@ -25,18 +25,16 @@ class DateTimeCreateDynamicReturnTypeExtension implements DynamicFunctionReturnT
 		return in_array($functionReflection->getName(), ['date_create', 'date_create_immutable'], true);
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-
 		if (count($functionCall->getArgs()) < 1) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		$datetime = $scope->getType($functionCall->getArgs()[0]->value);
 
 		if (!$datetime instanceof ConstantStringType) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		$isValid = date_create($datetime->getValue()) !== false;

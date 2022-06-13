@@ -1224,6 +1224,11 @@ services:
 			- phpstan.dynamicStaticMethodThrowTypeExtension
 
 	-
+		class: PHPStan\Type\Php\DateTimeCreateDynamicReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicFunctionReturnTypeExtension
+
+	-
 		class: PHPStan\Type\Php\DateTimeDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

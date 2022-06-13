@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Stmt;
 
+/** @api */
 class StatementExitPoint
 {
 

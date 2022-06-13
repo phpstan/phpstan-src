@@ -8,6 +8,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use Throwable;
 
+/** @api */
 class ThrowPoint
 {
 

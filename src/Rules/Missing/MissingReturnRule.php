@@ -16,6 +16,7 @@ use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
@@ -64,6 +65,8 @@ class MissingReturnRule implements Rule
 		} else {
 			throw new ShouldNotHappenException();
 		}
+
+		$returnType = TypeUtils::resolveLateResolvableTypes($returnType);
 
 		$isVoidSuperType = $returnType->isSuperTypeOf(new VoidType());
 		if ($isVoidSuperType->yes() && !$returnType instanceof MixedType) {

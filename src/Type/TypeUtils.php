@@ -10,6 +10,8 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateType;
 use function array_merge;
+use function array_unique;
+use function array_values;
 
 /** @api */
 class TypeUtils
@@ -150,7 +152,7 @@ class TypeUtils
 				}
 			}
 
-			return $classNames;
+			return array_values(array_unique($classNames));
 		}
 
 		return [];

@@ -5606,6 +5606,11 @@ final class MutatingScope implements Scope
 				$list[] = $templateType;
 				continue;
 			}
+			$default = $tag->getDefault();
+			if ($default !== null) {
+				$list[] = $default;
+				continue;
+			}
 			$bound = $tag->getBound();
 			if ($bound instanceof MixedType && $bound->isExplicitMixed()) {
 				$bound = new MixedType(false);

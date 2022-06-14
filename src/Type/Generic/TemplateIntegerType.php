@@ -4,6 +4,7 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
+use PHPStan\Type\Type;
 
 /** @api */
 final class TemplateIntegerType extends IntegerType implements TemplateType
@@ -22,6 +23,7 @@ final class TemplateIntegerType extends IntegerType implements TemplateType
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
 		IntegerType $bound,
+		?Type $default,
 	)
 	{
 		parent::__construct();
@@ -30,6 +32,7 @@ final class TemplateIntegerType extends IntegerType implements TemplateType
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
+		$this->default = $default;
 	}
 
 	protected function shouldGeneralizeInferredType(): bool

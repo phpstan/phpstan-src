@@ -19,6 +19,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
 		GenericObjectType $bound,
+		?Type $default,
 	)
 	{
 		parent::__construct($bound->getClassName(), $bound->getTypes());
@@ -28,6 +29,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
+		$this->default = $default;
 	}
 
 	protected function recreate(string $className, array $types, ?Type $subtractedType): GenericObjectType
@@ -38,6 +40,7 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 			$this->variance,
 			$this->name,
 			$this->getBound(),
+			$this->default,
 		);
 	}
 

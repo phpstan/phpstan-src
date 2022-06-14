@@ -32,6 +32,8 @@ trait TemplateTypeTrait
 	/** @var TBound */
 	private Type $bound;
 
+	private ?Type $default;
+
 	public function getName(): string
 	{
 		return $this->name;
@@ -48,6 +50,11 @@ trait TemplateTypeTrait
 		return $this->bound;
 	}
 
+	public function getDefault(): ?Type
+	{
+		return $this->default;
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		$basicDescription = function () use ($level): string {
@@ -57,10 +64,12 @@ trait TemplateTypeTrait
 			} else { // @phpstan-ignore-line
 				$boundDescription = sprintf(' of %s', $this->bound->describe($level));
 			}
+			$defaultDescription = $this->default !== null ? sprintf(' = %s', $this->default->describe($level)) : '';
 			return sprintf(
-				'%s%s',
+				'%s%s%s',
 				$this->name,
 				$boundDescription,
+				$defaultDescription,
 			);
 		};
 
@@ -84,6 +93,7 @@ trait TemplateTypeTrait
 			$this->variance,
 			$this->name,
 			TemplateTypeHelper::toArgument($this->getBound()),
+			$this->default !== null ? TemplateTypeHelper::toArgument($this->default) : null,
 		);
 	}
 
@@ -101,6 +111,7 @@ trait TemplateTypeTrait
 			$removedBound,
 			$this->getVariance(),
 			$this->getStrategy(),
+			$this->getDefault(),
 		);
 	}
 
@@ -117,6 +128,7 @@ trait TemplateTypeTrait
 			$bound->getTypeWithoutSubtractedType(),
 			$this->getVariance(),
 			$this->getStrategy(),
+			$this->getDefault(),
 		);
 	}
 
@@ -133,6 +145,7 @@ trait TemplateTypeTrait
 			$bound->changeSubtractedType($subtractedType),
 			$this->getVariance(),
 			$this->getStrategy(),
+			$this->getDefault(),
 		);
 	}
 
@@ -274,7 +287,9 @@ trait TemplateTypeTrait
 	public function traverse(callable $cb): Type
 	{
 		$bound = $cb($this->getBound());
-		if ($this->getBound() === $bound) {
+		$default = $this->getDefault() !== null ? $cb($this->getDefault()) : null;
+
+		if ($this->getBound() === $bound && $this->getDefault() === $default) {
 			return $this;
 		}
 
@@ -284,6 +299,7 @@ trait TemplateTypeTrait
 			$bound,
 			$this->getVariance(),
 			$this->getStrategy(),
+			$default,
 		);
 	}
 
@@ -307,6 +323,7 @@ trait TemplateTypeTrait
 			$properties['variance'],
 			$properties['name'],
 			$properties['bound'],
+			$properties['default'] ?? null,
 		);
 	}
 

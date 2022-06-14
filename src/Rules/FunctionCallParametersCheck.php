@@ -359,7 +359,7 @@ class FunctionCallParametersCheck
 							$type = $type->resolve();
 						}
 
-						if ($type instanceof TemplateType) {
+						if ($type instanceof TemplateType && $type->getDefault() === null) {
 							$returnTemplateTypes[$type->getName()] = true;
 							return $type;
 						}

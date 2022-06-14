@@ -31,3 +31,5 @@ class Bar
 	}
 
 }
+
+static fn (int $value): iterable => yield $value;

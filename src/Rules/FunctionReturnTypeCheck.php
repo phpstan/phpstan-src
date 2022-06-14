@@ -77,6 +77,10 @@ class FunctionReturnTypeCheck
 			];
 		}
 
+		if ($returnNode instanceof Expr\Yield_ || $returnNode instanceof Expr\YieldFrom) {
+			return [];
+		}
+
 		$returnValueType = $scope->getType($returnValue);
 		$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType, $returnValueType);
 

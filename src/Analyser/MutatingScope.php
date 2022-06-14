@@ -1241,9 +1241,40 @@ class MutatingScope implements Scope
 			}
 
 			if ($node instanceof Expr\ArrowFunction) {
-				$returnType = $this->enterArrowFunctionWithoutReflection($node, $callableParameters)->getType($node->expr);
-				if ($node->returnType !== null) {
-					$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
+				$arrowScope = $this->enterArrowFunctionWithoutReflection($node, $callableParameters);
+
+				if ($node->expr instanceof Expr\Yield_ || $node->expr instanceof Expr\YieldFrom) {
+					$yieldNode = $node->expr;
+
+					if ($yieldNode instanceof Expr\Yield_) {
+						if ($yieldNode->key === null) {
+							$keyType = new IntegerType();
+						} else {
+							$keyType = $arrowScope->getType($yieldNode->key);
+						}
+
+						if ($yieldNode->value === null) {
+							$valueType = new NullType();
+						} else {
+							$valueType = $arrowScope->getType($yieldNode->value);
+						}
+					} else {
+						$yieldFromType = $arrowScope->getType($yieldNode->expr);
+						$keyType = $yieldFromType->getIterableKeyType();
+						$valueType = $yieldFromType->getIterableValueType();
+					}
+
+					$returnType = new GenericObjectType(Generator::class, [
+						$keyType,
+						$valueType,
+						new MixedType(),
+						new VoidType(),
+					]);
+				} else {
+					$returnType = $arrowScope->getType($node->expr);
+					if ($node->returnType !== null) {
+						$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
+					}
 				}
 			} else {
 				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);

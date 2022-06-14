@@ -10,6 +10,8 @@ use PHPStan\TrinaryLogic;
  * @phpstan-pure
  * @param mixed $value
  * @return mixed
+ *
+ * @throws void
  */
 function assertType(string $type, $value) // phpcs:ignore
 {
@@ -25,6 +27,8 @@ function assertType(string $type, $value) // phpcs:ignore
  * @phpstan-pure
  * @param mixed $value
  * @return mixed
+ *
+ * @throws void
  */
 function assertNativeType(string $type, $value) // phpcs:ignore
 {
@@ -35,6 +39,8 @@ function assertNativeType(string $type, $value) // phpcs:ignore
  * @phpstan-pure
  * @param mixed $variable
  * @return mixed
+ *
+ * @throws void
  */
 function assertVariableCertainty(TrinaryLogic $certainty, $variable) // phpcs:ignore
 {

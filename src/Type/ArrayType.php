@@ -350,15 +350,19 @@ class ArrayType implements Type
 				return new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
 			}
 
+			if ($offsetType instanceof UnionType) {
+				return $traverse($offsetType);
+			}
+
 			if ($offsetType instanceof FloatType || $offsetType->isNumericString()->yes()) {
 				return new IntegerType();
 			}
 
-			if ($offsetType instanceof StringType || $offsetType->isNonEmptyString()->yes()) {
+			if ($offsetType->isString()->yes()) {
 				return $offsetType;
 			}
 
-			if ($offsetType instanceof UnionType || $offsetType instanceof IntersectionType) {
+			if ($offsetType instanceof IntersectionType) {
 				return $traverse($offsetType);
 			}
 

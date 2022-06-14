@@ -3102,6 +3102,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
+	 * @deprecated Use enterCatchType
 	 * @param Node\Name[] $classes
 	 */
 	public function enterCatch(array $classes, ?string $variableName): self

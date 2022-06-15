@@ -65,6 +65,7 @@ parameters:
 			- 'PHPStan\Broker\ClassAutoloadingException'
 			- 'LogicException'
 			- 'TypeError'
+			- 'DivisionByZeroError'
 		check:
 			missingCheckedExceptionInThrows: true
 			tooWideThrowType: true

@@ -7,6 +7,7 @@ use function fgets;
 use function file_get_contents;
 use function function_exists;
 use function is_file;
+use function is_numeric;
 use function is_resource;
 use function pclose;
 use function popen;
@@ -26,6 +27,17 @@ class CpuCoreCounter
 
 		if (!function_exists('proc_open')) {
 			return $this->count = 1;
+		}
+
+		// Support for Kubernetes pods with limited resources
+		// See: https://github.com/phpstan/phpstan/issues/7479
+		if (@is_file('/sys/fs/cgroup/cpu/cpu.cfs_quota_us') && @is_file('/sys/fs/cgroup/cpu/cpu.cfs_period_us')) {
+			$quota = @file_get_contents('/sys/fs/cgroup/cpu/cpu.cfs_quota_us');
+			$period = @file_get_contents('/sys/fs/cgroup/cpu/cpu.cfs_period_us');
+
+			if (is_numeric($quota) && is_numeric($period) && $period > 0) {
+				return $this->count = (int) ($quota / $period);
+			}
 		}
 
 		// from brianium/paratest

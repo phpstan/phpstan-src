@@ -6,6 +6,7 @@ use PHPStan\Analyser\Error;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
+use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
 use function putenv;
 use function sprintf;
@@ -164,11 +165,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		if (PHP_VERSION_ID >= 80100) {
 			self::markTestSkipped('Skipped on PHP 8.1 because of different result');
 		}
-		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
-		$formatter = new TableErrorFormatter($relativePathHelper, new CiDetectedErrorFormatter(
-			new GithubErrorFormatter($relativePathHelper),
-			new TeamcityErrorFormatter($relativePathHelper),
-		), false, null);
+		$formatter = $this->createErrorFormatter(null);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
@@ -180,11 +177,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 	public function testEditorUrlWithTrait(): void
 	{
-		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
-		$formatter = new TableErrorFormatter($relativePathHelper, new CiDetectedErrorFormatter(
-			new GithubErrorFormatter($relativePathHelper),
-			new TeamcityErrorFormatter($relativePathHelper),
-		), false, 'editor://%file%/%line%');
+		$formatter = $this->createErrorFormatter('editor://%file%/%line%');
 		$error = new Error('Test', 'Foo.php (in context of trait)', 12, true, 'Foo.php', 'Bar.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], false, null, true), $this->getOutput());
 
@@ -193,11 +186,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 	public function testEditorUrlWithRelativePath(): void
 	{
-		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
-		$formatter = new TableErrorFormatter($relativePathHelper, new CiDetectedErrorFormatter(
-			new GithubErrorFormatter($relativePathHelper),
-			new TeamcityErrorFormatter($relativePathHelper),
-		), false, 'editor://custom/path/%relFile%/%line%');
+		$formatter = $this->createErrorFormatter('editor://custom/path/%relFile%/%line%');
 		$error = new Error('Test', 'Foo.php', 12, true, self::DIRECTORY_PATH . '/rel/Foo.php');
 		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], false, null, true), $this->getOutput(true));
 
@@ -207,11 +196,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	public function testBug6727(): void
 	{
 		putenv('COLUMNS=30');
-		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
-		$formatter = new TableErrorFormatter($relativePathHelper, new CiDetectedErrorFormatter(
-			new GithubErrorFormatter($relativePathHelper),
-			new TeamcityErrorFormatter($relativePathHelper),
-		), false, null);
+		$formatter = $this->createErrorFormatter(null);
 		$formatter->formatErrors(
 			new AnalysisResult(
 				[
@@ -231,6 +216,22 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			$this->getOutput(),
 		);
 		self::expectNotToPerformAssertions();
+	}
+
+	private function createErrorFormatter(?string $editorUrl): TableErrorFormatter
+	{
+		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
+
+		return new TableErrorFormatter(
+			$relativePathHelper,
+			new SimpleRelativePathHelper(self::DIRECTORY_PATH),
+			new CiDetectedErrorFormatter(
+				new GithubErrorFormatter($relativePathHelper),
+				new TeamcityErrorFormatter($relativePathHelper),
+			),
+			false,
+			$editorUrl,
+		);
 	}
 
 }

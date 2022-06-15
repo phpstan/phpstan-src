@@ -1949,6 +1949,7 @@ services:
 	errorFormatter.table:
 		class: PHPStan\Command\ErrorFormatter\TableErrorFormatter
 		arguments:
+			simpleRelativePathHelper: @simpleRelativePathHelper
 			showTipsOfTheDay: %tipsOfTheDay%
 			editorUrl: %editorUrl%
 

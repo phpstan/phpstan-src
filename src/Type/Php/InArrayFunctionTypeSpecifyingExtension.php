@@ -9,8 +9,11 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\MixedType;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function count;
 use function strtolower;
@@ -41,6 +44,7 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			return new SpecifiedTypes([], []);
 		}
 
+		$needleType = $scope->getType($node->getArgs()[0]->value);
 		$arrayValueType = $scope->getType($node->getArgs()[1]->value)->getIterableValueType();
 
 		if (
@@ -48,16 +52,38 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			|| count(TypeUtils::getConstantScalars($arrayValueType)) > 0
 			|| count(TypeUtils::getEnumCaseObjects($arrayValueType)) > 0
 		) {
-			return $this->typeSpecifier->create(
+			$specifiedTypes = $this->typeSpecifier->create(
 				$node->getArgs()[0]->value,
 				$arrayValueType,
 				$context,
 				false,
 				$scope,
 			);
+		} else {
+			$specifiedTypes = new SpecifiedTypes([], []);
 		}
 
-		return new SpecifiedTypes([], []);
+		if (
+			$context->truthy()
+			|| count(TypeUtils::getConstantScalars($needleType)) > 0
+			|| count(TypeUtils::getEnumCaseObjects($needleType)) > 0
+		) {
+			if ($context->truthy()) {
+				$arrayValueType = TypeCombinator::union($arrayValueType, $needleType);
+			} else {
+				$arrayValueType = TypeCombinator::remove($arrayValueType, $needleType);
+			}
+
+			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+				$node->getArgs()[1]->value,
+				new ArrayType(new MixedType(), $arrayValueType),
+				TypeSpecifierContext::createTrue(),
+				false,
+				$scope,
+			));
+		}
+
+		return $specifiedTypes;
 	}
 
 }

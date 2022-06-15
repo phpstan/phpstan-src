@@ -191,6 +191,19 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		$this->assertStringContainsString('Bar.php', $this->getOutputContent());
 	}
 
+	public function testEditorUrlWithRelativePath(): void
+	{
+		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
+		$formatter = new TableErrorFormatter($relativePathHelper, new CiDetectedErrorFormatter(
+			new GithubErrorFormatter($relativePathHelper),
+			new TeamcityErrorFormatter($relativePathHelper),
+		), false, 'editor://custom/path/%relFile%/%line%');
+		$error = new Error('Test', 'Foo.php', 12, true, self::DIRECTORY_PATH . '/rel/Foo.php');
+		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], false, null, true), $this->getOutput(true));
+
+		$this->assertStringContainsString('editor://custom/path/rel/Foo.php', $this->getOutputContent(true));
+	}
+
 	public function testBug6727(): void
 	{
 		putenv('COLUMNS=30');

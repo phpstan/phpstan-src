@@ -41,6 +41,7 @@ parameters:
 		checkUnresolvableParameterTypes: false
 		readOnlyByPhpDoc: false
 		phpDocParserRequireWhitespaceBeforeDescription: false
+		runtimeReflectionRules: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -243,6 +244,7 @@ parametersSchema:
 		checkUnresolvableParameterTypes: bool()
 		readOnlyByPhpDoc: bool()
 		phpDocParserRequireWhitespaceBeforeDescription: bool()
+		runtimeReflectionRules: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

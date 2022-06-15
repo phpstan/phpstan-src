@@ -16,3 +16,4 @@ parameters:
 		checkUnresolvableParameterTypes: true
 		readOnlyByPhpDoc: true
 		phpDocParserRequireWhitespaceBeforeDescription: true
+		runtimeReflectionRules: true

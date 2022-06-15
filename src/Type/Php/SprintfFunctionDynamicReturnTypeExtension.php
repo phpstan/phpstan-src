@@ -43,6 +43,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		$formatType = $scope->getType($args[0]->value);
 
 		if ($formatType instanceof ConstantStringType) {
+			// The printf format is %[argnum$][flags][width][.precision]
 			if (preg_match('/^%([0-9]+\$)?[0-9]*\.?[0-9]+[bdeEfFgGhHouxX]$/', $formatType->getValue()) === 1) {
 				return new IntersectionType([
 					new StringType(),

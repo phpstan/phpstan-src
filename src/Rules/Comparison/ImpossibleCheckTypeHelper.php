@@ -11,6 +11,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -27,7 +28,6 @@ use function count;
 use function implode;
 use function in_array;
 use function is_string;
-use function reset;
 use function sprintf;
 use function strtolower;
 
@@ -189,10 +189,12 @@ class ImpossibleCheckTypeHelper
 			return null;
 		}
 
-		if (count($sureTypes) === 1 && count($sureNotTypes) === 0) {
-			$sureType = reset($sureTypes);
+		$results = [];
+
+		foreach ($sureTypes as $sureType) {
 			if (self::isSpecified($scope, $node, $sureType[0])) {
-				return null;
+				$results[] = TrinaryLogic::createMaybe();
+				continue;
 			}
 
 			if ($this->treatPhpDocTypesAsCertain) {
@@ -204,18 +206,13 @@ class ImpossibleCheckTypeHelper
 			/** @var Type $resultType */
 			$resultType = $sureType[1];
 
-			$isSuperType = $resultType->isSuperTypeOf($argumentType);
-			if ($isSuperType->yes()) {
-				return true;
-			} elseif ($isSuperType->no()) {
-				return false;
-			}
+			$results[] = $resultType->isSuperTypeOf($argumentType);
+		}
 
-			return null;
-		} elseif (count($sureNotTypes) === 1 && count($sureTypes) === 0) {
-			$sureNotType = reset($sureNotTypes);
+		foreach ($sureNotTypes as $sureNotType) {
 			if (self::isSpecified($scope, $node, $sureNotType[0])) {
-				return null;
+				$results[] = TrinaryLogic::createMaybe();
+				continue;
 			}
 
 			if ($this->treatPhpDocTypesAsCertain) {
@@ -227,15 +224,15 @@ class ImpossibleCheckTypeHelper
 			/** @var Type $resultType */
 			$resultType = $sureNotType[1];
 
-			$isSuperType = $resultType->isSuperTypeOf($argumentType);
-			if ($isSuperType->yes()) {
-				return false;
-			} elseif ($isSuperType->no()) {
-				return true;
-			}
+			$results[] = $resultType->isSuperTypeOf($argumentType)->negate();
 		}
 
-		return null;
+		if (count($results) === 0) {
+			return null;
+		}
+
+		$result = TrinaryLogic::createYes()->and(...$results);
+		return $result->maybe() ? null : $result->yes();
 	}
 
 	private static function isSpecified(Scope $scope, Expr $node, Expr $expr): bool

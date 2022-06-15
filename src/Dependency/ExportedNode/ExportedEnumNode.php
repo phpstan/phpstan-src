@@ -4,6 +4,7 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
 use function array_map;
 use function count;
@@ -14,8 +15,16 @@ class ExportedEnumNode implements ExportedNode, JsonSerializable
 	/**
 	 * @param string[] $implements
 	 * @param ExportedNode[] $statements
+	 * @param ExportedAttributeNode[] $attributes
 	 */
-	public function __construct(private string $name, private ?string $scalarType, private ?ExportedPhpDocNode $phpDoc, private array $implements, private array $statements)
+	public function __construct(
+		private string $name,
+		private ?string $scalarType,
+		private ?ExportedPhpDocNode $phpDoc,
+		private array $implements,
+		private array $statements,
+		private array $attributes,
+	)
 	{
 	}
 
@@ -49,6 +58,18 @@ class ExportedEnumNode implements ExportedNode, JsonSerializable
 			return false;
 		}
 
+		if (count($this->attributes) !== count($node->attributes)) {
+			return false;
+		}
+
+		foreach ($this->attributes as $i => $attribute) {
+			if ($attribute->equals($node->attributes[$i])) {
+				continue;
+			}
+
+			return false;
+		}
+
 		return $this->name === $node->name
 			&& $this->scalarType === $node->scalarType
 			&& $this->implements === $node->implements;
@@ -66,6 +87,7 @@ class ExportedEnumNode implements ExportedNode, JsonSerializable
 			$properties['phpDoc'],
 			$properties['implements'],
 			$properties['statements'],
+			$properties['attributes'],
 		);
 	}
 
@@ -83,6 +105,7 @@ class ExportedEnumNode implements ExportedNode, JsonSerializable
 				'phpDoc' => $this->phpDoc,
 				'implements' => $this->implements,
 				'statements' => $this->statements,
+				'attributes' => $this->attributes,
 			],
 		];
 	}
@@ -103,6 +126,12 @@ class ExportedEnumNode implements ExportedNode, JsonSerializable
 
 				return $nodeType::decode($node['data']);
 			}, $data['statements']),
+			array_map(static function (array $parameterData): ExportedAttributeNode {
+				if ($parameterData['type'] !== ExportedAttributeNode::class) {
+					throw new ShouldNotHappenException();
+				}
+				return ExportedAttributeNode::decode($parameterData['data']);
+			}, $data['attributes']),
 		);
 	}
 

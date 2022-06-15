@@ -4,7 +4,9 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
+use function array_map;
 use function count;
 
 class ExportedPropertiesNode implements JsonSerializable, ExportedNode
@@ -12,6 +14,7 @@ class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 
 	/**
 	 * @param string[] $names
+	 * @param ExportedAttributeNode[] $attributes
 	 */
 	public function __construct(
 		private array $names,
@@ -21,6 +24,7 @@ class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 		private bool $private,
 		private bool $static,
 		private bool $readonly,
+		private array $attributes,
 	)
 	{
 	}
@@ -53,6 +57,17 @@ class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 			}
 		}
 
+		if (count($this->attributes) !== count($node->attributes)) {
+			return false;
+		}
+
+		foreach ($this->attributes as $i => $ourAttribute) {
+			$theirAttribute = $node->attributes[$i];
+			if (!$ourAttribute->equals($theirAttribute)) {
+				return false;
+			}
+		}
+
 		return $this->type === $node->type
 			&& $this->public === $node->public
 			&& $this->private === $node->private
@@ -74,6 +89,7 @@ class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 			$properties['private'],
 			$properties['static'],
 			$properties['readonly'],
+			$properties['attributes'],
 		);
 	}
 
@@ -91,6 +107,12 @@ class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 			$data['private'],
 			$data['static'],
 			$data['readonly'],
+			array_map(static function (array $parameterData): ExportedAttributeNode {
+				if ($parameterData['type'] !== ExportedAttributeNode::class) {
+					throw new ShouldNotHappenException();
+				}
+				return ExportedAttributeNode::decode($parameterData['data']);
+			}, $data['attributes']),
 		);
 	}
 
@@ -110,6 +132,7 @@ class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 				'private' => $this->private,
 				'static' => $this->static,
 				'readonly' => $this->readonly,
+				'attributes' => $this->attributes,
 			],
 		];
 	}

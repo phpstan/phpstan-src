@@ -199,6 +199,10 @@ class ClassConstantRuleTest extends RuleTestCase
 						'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
 						18,
 					],
+					[
+						'Accessing ::class constant on an expression is supported only on PHP 8.0 and later.',
+						19,
+					],
 				],
 			],
 			[

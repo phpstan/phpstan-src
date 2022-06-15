@@ -16,6 +16,7 @@ class Foo
 		echo $string::class;
 		echo $stdOrNull::class;
 		echo $stringOrNull::class;
+		echo 'Foo'::class;
 	}
 
 }

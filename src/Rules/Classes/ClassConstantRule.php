@@ -130,7 +130,7 @@ class ClassConstantRule implements Rule
 					];
 				}
 
-				if ($classType->isString()->yes()) {
+				if (!$class instanceof Node\Scalar\String_ && $classType->isString()->yes()) {
 					return [
 						RuleErrorBuilder::message('Accessing ::class constant on a dynamic string is not supported in PHP.')
 							->nonIgnorable()

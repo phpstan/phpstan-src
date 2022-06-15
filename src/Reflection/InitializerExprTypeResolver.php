@@ -1700,6 +1700,8 @@ class InitializerExprTypeResolver
 			if (strtolower($constantName) === 'class') {
 				return new ConstantStringType($constantClassType->getClassName(), true);
 			}
+		} elseif ($class instanceof String_ && strtolower($constantName) === 'class') {
+			return new ConstantStringType($class->value, true);
 		} else {
 			$constantClassType = $getTypeCallback($class);
 			$isObject = true;

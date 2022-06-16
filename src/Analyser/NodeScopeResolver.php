@@ -1825,7 +1825,7 @@ class NodeScopeResolver
 
 				/**
 				 * @param Arg[] $callArgs
-				 * @param callable(?Type, Type, bool=): void $setOffsetValueType
+				 * @param callable(?Type, Type, bool): void $setOffsetValueType
 				 */
 				$setOffsetValueTypes = static function (Scope $scope, array $callArgs, callable $setOffsetValueType, ?bool &$nonConstantArrayWasUnpacked = null): void {
 					foreach ($callArgs as $callArg) {
@@ -1850,7 +1850,7 @@ class NodeScopeResolver
 							}
 							continue;
 						}
-						$setOffsetValueType(null, $callArgType);
+						$setOffsetValueType(null, $callArgType, false);
 					}
 				};
 
@@ -1861,7 +1861,7 @@ class NodeScopeResolver
 					$setOffsetValueTypes(
 						$scope,
 						$callArgs,
-						static function (?Type $offsetType, Type $valueType, bool $optional = false) use (&$arrayTypeBuilder): void {
+						static function (?Type $offsetType, Type $valueType, bool $optional) use (&$arrayTypeBuilder): void {
 							$arrayTypeBuilder->setOffsetValueType($offsetType, $valueType, $optional);
 						},
 						$nonConstantArrayWasUnpacked,
@@ -1890,8 +1890,14 @@ class NodeScopeResolver
 					$setOffsetValueTypes(
 						$scope,
 						$callArgs,
-						static function (?Type $offsetType, Type $valueType) use (&$arrayType): void {
+						static function (?Type $offsetType, Type $valueType, bool $optional) use (&$arrayType): void {
+							$isIterableAtLeastOnce = $arrayType->isIterableAtLeastOnce()->yes() || !$optional;
 							$arrayType = $arrayType->setOffsetValueType($offsetType, $valueType);
+							if ($isIterableAtLeastOnce) {
+								return;
+							}
+
+							$arrayType = TypeCombinator::union(...TypeUtils::getArrays($arrayType));
 						},
 					);
 				}

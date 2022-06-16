@@ -6,6 +6,7 @@ use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -674,12 +675,19 @@ class TypeCombinator
 			$typesCount = count($types);
 		}
 
-		// move subtractables with subtracts before those without to avoid loosing them in the union logic
 		usort($types, static function (Type $a, Type $b): int {
+			// move subtractables with subtracts before those without to avoid loosing them in the union logic
 			if ($a instanceof SubtractableType && $a->getSubtractedType() !== null) {
 				return -1;
 			}
 			if ($b instanceof SubtractableType && $b->getSubtractedType() !== null) {
+				return 1;
+			}
+
+			if ($a instanceof ConstantArrayType && !$b instanceof ConstantArrayType) {
+				return -1;
+			}
+			if ($b instanceof ConstantArrayType && !$a instanceof ConstantArrayType) {
 				return 1;
 			}
 
@@ -767,6 +775,22 @@ class TypeCombinator
 					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof HasOffsetType) {
 						$types[$j] = $types[$j]->makeOffsetRequired($types[$i]->getOffsetType());
 						array_splice($types, $i--, 1);
+						$typesCount--;
+						continue 2;
+					}
+
+					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof ArrayType && !$types[$j] instanceof ConstantArrayType) {
+						$newArray = ConstantArrayTypeBuilder::createEmpty();
+						$valueTypes = $types[$i]->getValueTypes();
+						foreach ($types[$i]->getKeyTypes() as $k => $keyType) {
+							$newArray->setOffsetValueType(
+								self::intersect($keyType, $types[$j]->getIterableKeyType()),
+								self::intersect($valueTypes[$k], $types[$j]->getIterableValueType()),
+								$types[$i]->isOptionalKey($k),
+							);
+						}
+						$types[$i] = $newArray->getArray();
+						array_splice($types, $j--, 1);
 						$typesCount--;
 						continue 2;
 					}

@@ -19,7 +19,7 @@ function arrayUnshift(array $a, array $b, array $c, array $d, array $arr): void
 	assertType('array<int|string>', $a);
 
 	/** @var non-empty-array<string> $arr */
-	array_push($arr, ...$b);
+	array_unshift($arr, ...$b);
 	assertType('non-empty-array<int|string>', $arr);
 
 	array_unshift($b, ...[]);

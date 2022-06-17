@@ -63,4 +63,11 @@ class Baz
 		}
 	}
 
+	public function doBaz($mixed): void
+	{
+		if ($mixed instanceof Type) {
+
+		}
+	}
+
 }

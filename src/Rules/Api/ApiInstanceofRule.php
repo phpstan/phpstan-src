@@ -79,7 +79,7 @@ class ApiInstanceofRule implements Rule
 	 */
 	private function processCoveredClass(Node\Expr\Instanceof_ $node, Scope $scope, ClassReflection $classReflection): array
 	{
-		if ($classReflection->isSubclassOf(Type::class)) {
+		if ($classReflection->getName() === Type::class || $classReflection->isSubclassOf(Type::class)) {
 			return [];
 		}
 

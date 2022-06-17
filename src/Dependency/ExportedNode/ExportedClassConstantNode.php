@@ -33,9 +33,8 @@ class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 			return false;
 		}
 
-		foreach ($this->attributes as $i => $ourAttribute) {
-			$theirAttribute = $node->attributes[$i];
-			if (!$ourAttribute->equals($theirAttribute)) {
+		foreach ($this->attributes as $i => $attribute) {
+			if (!$attribute->equals($node->attributes[$i])) {
 				return false;
 			}
 		}
@@ -66,11 +65,11 @@ class ExportedClassConstantNode implements ExportedNode, JsonSerializable
 		return new self(
 			$data['name'],
 			$data['value'],
-			array_map(static function (array $parameterData): ExportedAttributeNode {
-				if ($parameterData['type'] !== ExportedAttributeNode::class) {
+			array_map(static function (array $attributeData): ExportedAttributeNode {
+				if ($attributeData['type'] !== ExportedAttributeNode::class) {
 					throw new ShouldNotHappenException();
 				}
-				return ExportedAttributeNode::decode($parameterData['data']);
+				return ExportedAttributeNode::decode($attributeData['data']);
 			}, $data['attributes']),
 		);
 	}

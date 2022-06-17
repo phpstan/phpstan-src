@@ -63,11 +63,9 @@ class ExportedEnumNode implements ExportedNode, JsonSerializable
 		}
 
 		foreach ($this->attributes as $i => $attribute) {
-			if ($attribute->equals($node->attributes[$i])) {
-				continue;
+			if (!$attribute->equals($node->attributes[$i])) {
+				return false;
 			}
-
-			return false;
 		}
 
 		return $this->name === $node->name
@@ -126,11 +124,11 @@ class ExportedEnumNode implements ExportedNode, JsonSerializable
 
 				return $nodeType::decode($node['data']);
 			}, $data['statements']),
-			array_map(static function (array $parameterData): ExportedAttributeNode {
-				if ($parameterData['type'] !== ExportedAttributeNode::class) {
+			array_map(static function (array $attributeData): ExportedAttributeNode {
+				if ($attributeData['type'] !== ExportedAttributeNode::class) {
 					throw new ShouldNotHappenException();
 				}
-				return ExportedAttributeNode::decode($parameterData['data']);
+				return ExportedAttributeNode::decode($attributeData['data']);
 			}, $data['attributes']),
 		);
 	}

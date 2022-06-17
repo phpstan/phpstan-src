@@ -4,15 +4,14 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
-use PHPStan\ShouldNotHappenException;
-use function array_map;
+use ReturnTypeWillChange;
 use function count;
 
 class ExportedAttributeNode implements ExportedNode, JsonSerializable
 {
 
 	/**
-	 * @param ExportedAttributeArgumentNode[] $args
+	 * @param array<int|string, string> $args argument name or index(string|int) => value expression (string)
 	 */
 	public function __construct(
 		private string $name,
@@ -27,18 +26,21 @@ class ExportedAttributeNode implements ExportedNode, JsonSerializable
 			return false;
 		}
 
+		if ($this->name !== $node->name) {
+			return false;
+		}
+
 		if (count($this->args) !== count($node->args)) {
 			return false;
 		}
 
-		foreach ($this->args as $i => $ourAttribute) {
-			$theirAttribute = $node->args[$i];
-			if (!$ourAttribute->equals($theirAttribute)) {
+		foreach ($this->args as $argName => $argValue) {
+			if (!isset($node->args[$argName]) || $argValue !== $node->args[$argName]) {
 				return false;
 			}
 		}
 
-		return $this->name === $node->name;
+		return true;
 	}
 
 	/**
@@ -56,6 +58,7 @@ class ExportedAttributeNode implements ExportedNode, JsonSerializable
 	/**
 	 * @return mixed
 	 */
+	#[ReturnTypeWillChange]
 	public function jsonSerialize()
 	{
 		return [
@@ -75,12 +78,7 @@ class ExportedAttributeNode implements ExportedNode, JsonSerializable
 	{
 		return new self(
 			$data['name'],
-			array_map(static function (array $parameterData): ExportedAttributeArgumentNode {
-				if ($parameterData['type'] !== ExportedAttributeArgumentNode::class) {
-					throw new ShouldNotHappenException();
-				}
-				return ExportedAttributeArgumentNode::decode($parameterData['data']);
-			}, $data['args']),
+			$data['args'],
 		);
 	}
 

@@ -7,7 +7,6 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
-use PHPStan\Dependency\ExportedNode\ExportedAttributeArgumentNode;
 use PHPStan\Dependency\ExportedNode\ExportedAttributeNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode;
@@ -411,12 +410,8 @@ class ExportedNodeResolver
 		foreach ($attributeGroups as $attributeGroup) {
 			foreach ($attributeGroup->attrs as $attribute) {
 				$args = [];
-				foreach ($attribute->args as $arg) {
-					$args[] = new ExportedAttributeArgumentNode(
-						$arg->name !== null ? $arg->name->name : null,
-						$this->exprPrinter->printExpr($arg->value),
-						$arg->byRef,
-					);
+				foreach ($attribute->args as $i => $arg) {
+					$args[$arg->name->name ?? $i] = $this->exprPrinter->printExpr($arg->value);
 				}
 
 				$nodes[] = new ExportedAttributeNode(

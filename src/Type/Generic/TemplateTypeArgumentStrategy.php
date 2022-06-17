@@ -4,7 +4,6 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 
 /**
@@ -15,16 +14,6 @@ class TemplateTypeArgumentStrategy implements TemplateTypeStrategy
 
 	public function accepts(TemplateType $left, Type $right, bool $strictTypes): TrinaryLogic
 	{
-		if ($right instanceof IntersectionType) {
-			foreach ($right->getTypes() as $type) {
-				if ($this->accepts($left, $type, $strictTypes)->yes()) {
-					return TrinaryLogic::createYes();
-				}
-			}
-
-			return TrinaryLogic::createNo();
-		}
-
 		if ($right instanceof CompoundType) {
 			$accepts = $right->isAcceptedBy($left, $strictTypes);
 		} else {

@@ -421,7 +421,12 @@ class NodeScopeResolver
 				$isPure,
 				$acceptsNamedArguments,
 			);
-			$nodeCallback(new InFunctionNode($stmt), $functionScope);
+			$functionReflection = $functionScope->getFunction();
+			if (!$functionReflection instanceof FunctionReflection) {
+				throw new ShouldNotHappenException();
+			}
+
+			$nodeCallback(new InFunctionNode($functionReflection, $stmt), $functionScope);
 
 			$gatheredReturnStatements = [];
 			$executionEnds = [];
@@ -506,7 +511,11 @@ class NodeScopeResolver
 			}
 
 			if ($stmt->getAttribute('virtual', false) === false) {
-				$nodeCallback(new InClassMethodNode($stmt), $methodScope);
+				$methodReflection = $methodScope->getFunction();
+				if (!$methodReflection instanceof MethodReflection) {
+					throw new ShouldNotHappenException();
+				}
+				$nodeCallback(new InClassMethodNode($methodReflection, $stmt), $methodScope);
 			}
 
 			if ($stmt->stmts !== null) {
@@ -2978,7 +2987,12 @@ class NodeScopeResolver
 
 		$closureScope = $scope->enterAnonymousFunction($expr, $callableParameters);
 		$closureScope = $closureScope->processClosureScope($scope, null, $byRefUses);
-		$nodeCallback(new InClosureNode($expr), $closureScope);
+		$closureType = $closureScope->getAnonymousFunctionReflection();
+		if (!$closureType instanceof ClosureType) {
+			throw new ShouldNotHappenException();
+		}
+
+		$nodeCallback(new InClosureNode($closureType, $expr), $closureScope);
 
 		$gatheredReturnStatements = [];
 		$gatheredYieldStatements = [];

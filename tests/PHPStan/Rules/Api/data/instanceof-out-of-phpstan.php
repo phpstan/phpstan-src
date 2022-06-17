@@ -4,6 +4,8 @@ namespace App\TestInstanceof;
 
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 
 class Foo
 {
@@ -35,6 +37,18 @@ class Bar
 		}
 
 		if ($o instanceof ClassReflection) { // maybe - report
+
+		}
+	}
+
+}
+
+class Baz
+{
+
+	public function doFoo(Type $type): void
+	{
+		if ($type instanceof ObjectType) {
 
 		}
 	}

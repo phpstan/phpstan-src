@@ -36,17 +36,17 @@ class ApiInstanceofRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/instanceof-out-of-phpstan.php'], [
 			[
 				'Although PHPStan\Reflection\ClassReflection is covered by backward compatibility promise, this instanceof assumption might break because it\'s not guaranteed to always stay the same.',
-				13,
+				15,
 				$instanceofTip,
 			],
 			[
 				'Asking about instanceof PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator is not covered by backward compatibility promise. The class might change in a minor PHPStan version.',
-				17,
+				19,
 				$tip,
 			],
 			[
 				'Although PHPStan\Reflection\ClassReflection is covered by backward compatibility promise, this instanceof assumption might break because it\'s not guaranteed to always stay the same.',
-				37,
+				39,
 				$instanceofTip,
 			],
 		]);

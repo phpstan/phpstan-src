@@ -43,8 +43,8 @@ class Bar implements DynamicMethodReturnTypeExtension
 		new \ReflectionMethod($o, 'foo');
 		new \ReflectionClass(\stdClass::class);
 		new \ReflectionClassConstant(\stdClass::class, 'foo');
-		new \ReflectionEnum(\stdClass::class);
-		new \ReflectionEnumBackedCase(\stdClass::class, 'foo');
+
+
 		new \ReflectionZendExtension('foo');
 		new \ReflectionExtension('foo');
 		new \ReflectionFunction('foo');
@@ -53,6 +53,8 @@ class Bar implements DynamicMethodReturnTypeExtension
 		new \ReflectionProperty(\stdClass::class, 'foo');
 		new \ReflectionGenerator($g);
 		new \ReflectionFiber($f);
+		new \ReflectionEnum(\stdClass::class);
+		new \ReflectionEnumBackedCase(\stdClass::class, 'foo');
 	}
 
 }

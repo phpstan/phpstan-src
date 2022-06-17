@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Api;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<RuntimeReflectionInstantiationRule>
@@ -18,7 +19,7 @@ class RuntimeReflectionInstantiationRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/runtime-reflection-instantiation.php'], [
+		$errors = [
 			[
 				'Creating new ReflectionMethod is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
 				43,
@@ -30,14 +31,6 @@ class RuntimeReflectionInstantiationRuleTest extends RuleTestCase
 			[
 				'Creating new ReflectionClassConstant is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
 				45,
-			],
-			[
-				'Creating new ReflectionEnum is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
-				46,
-			],
-			[
-				'Creating new ReflectionEnumBackedCase is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
-				47,
 			],
 			[
 				'Creating new ReflectionZendExtension is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
@@ -67,11 +60,22 @@ class RuntimeReflectionInstantiationRuleTest extends RuleTestCase
 				'Creating new ReflectionGenerator is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
 				54,
 			],
-			[
+		];
+		if (PHP_VERSION_ID >= 80100) {
+			$errors[] = [
 				'Creating new ReflectionFiber is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
 				55,
-			],
-		]);
+			];
+			$errors[] = [
+				'Creating new ReflectionEnum is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
+				56,
+			];
+			$errors[] = [
+				'Creating new ReflectionEnumBackedCase is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
+				57,
+			];
+		}
+		$this->analyse([__DIR__ . '/data/runtime-reflection-instantiation.php'], $errors);
 	}
 
 }

@@ -1924,6 +1924,17 @@ class NodeScopeResolver
 				$scope = $scope->assignVariable('http_response_header', new ArrayType(new IntegerType(), new StringType()));
 			}
 
+			if (isset($functionReflection) && $functionReflection->getName() === 'shuffle') {
+				$arrayArg = $expr->getArgs()[0]->value;
+				$arrayArgType = $scope->getType($arrayArg);
+
+				if ($arrayArgType instanceof ConstantArrayType) {
+					$arrayArgType = $arrayArgType->getValuesArray()->generalizeToArray();
+				}
+
+				$scope = $scope->specifyExpressionType($arrayArg, $arrayArgType, $arrayArgType);
+			}
+
 			if (
 				isset($functionReflection)
 				&& $functionReflection->getName() === 'array_splice'

@@ -2,8 +2,10 @@
 
 namespace App\TestInstanceof;
 
+use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 
@@ -49,6 +51,14 @@ class Baz
 	public function doFoo(Type $type): void
 	{
 		if ($type instanceof ObjectType) {
+
+		}
+	}
+
+	public function doBar(Scope $scope): void
+	{
+		$function = $scope->getFunction();
+		if ($function instanceof MethodReflection) {
 
 		}
 	}

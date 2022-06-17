@@ -11,6 +11,8 @@ use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeWithClassName;
+use PHPStan\Type\UnionType;
 use function count;
 use function sprintf;
 
@@ -84,6 +86,15 @@ class ApiInstanceofRule implements Rule
 		$instanceofType = $scope->getType($node);
 		if ($instanceofType instanceof ConstantBooleanType) {
 			return [];
+		}
+
+		$exprType = $scope->getType($node->expr);
+		if ($exprType instanceof UnionType) {
+			foreach ($exprType->getTypes() as $innerType) {
+				if ($innerType instanceof TypeWithClassName && $innerType->getClassName() === $classReflection->getName()) {
+					return [];
+				}
+			}
 		}
 
 		return [

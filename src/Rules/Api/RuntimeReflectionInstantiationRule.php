@@ -9,10 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use ReflectionClass;
 use ReflectionClassConstant;
-use ReflectionEnum;
-use ReflectionEnumBackedCase;
 use ReflectionExtension;
-use ReflectionFiber;
 use ReflectionFunction;
 use ReflectionGenerator;
 use ReflectionMethod;
@@ -56,8 +53,8 @@ class RuntimeReflectionInstantiationRule implements Rule
 			ReflectionMethod::class,
 			ReflectionClass::class,
 			ReflectionClassConstant::class,
-			ReflectionEnum::class,
-			ReflectionEnumBackedCase::class,
+			'ReflectionEnum',
+			'ReflectionEnumBackedCase',
 			ReflectionZendExtension::class,
 			ReflectionExtension::class,
 			ReflectionFunction::class,
@@ -65,7 +62,7 @@ class RuntimeReflectionInstantiationRule implements Rule
 			ReflectionParameter::class,
 			ReflectionProperty::class,
 			ReflectionGenerator::class,
-			ReflectionFiber::class,
+			'ReflectionFiber',
 		], true)) {
 			return [];
 		}

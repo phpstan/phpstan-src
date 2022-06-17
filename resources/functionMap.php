@@ -13022,7 +13022,7 @@ return [
 'xdiff_string_rabdiff' => ['string', 'old_data'=>'string', 'new_data'=>'string'],
 'xhprof_disable' => ['array'],
 'xhprof_enable' => ['void', 'flags='=>'int', 'options='=>'array'],
-'xhprof_sample_disable' => ['array'],
+'xhprof_sample_disable' => ['array<string,string>'],
 'xhprof_sample_enable' => ['void'],
 'xml_error_string' => ['string', 'code'=>'int'],
 'xml_get_current_byte_index' => ['int', 'parser'=>'resource'],

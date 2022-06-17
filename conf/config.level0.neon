@@ -12,6 +12,8 @@ conditionalTags:
 		phpstan.rules.rule: %checkUninitializedProperties%
 	PHPStan\Rules\Methods\ConsistentConstructorRule:
 		phpstan.rules.rule: %featureToggles.consistentConstructor%
+	PHPStan\Rules\Api\ApiInstanceofRule:
+		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
 	PHPStan\Rules\Api\RuntimeReflectionFunctionRule:
 		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
 	PHPStan\Rules\Api\RuntimeReflectionInstantiationRule:
@@ -80,6 +82,8 @@ rules:
 	- PHPStan\Rules\Whitespace\FileWhitespaceRule
 
 services:
+	-
+		class: PHPStan\Rules\Api\ApiInstanceofRule
 	-
 		class: PHPStan\Rules\Api\NodeConnectingVisitorAttributesRule
 	-

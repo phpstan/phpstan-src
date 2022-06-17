@@ -1,0 +1,71 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Rules\Api;
+
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
+use function count;
+use function sprintf;
+
+/**
+ * @implements Rule<Node\Expr\Instanceof_>
+ */
+class ApiInstanceofRule implements Rule
+{
+
+	public function __construct(
+		private ApiRuleHelper $apiRuleHelper,
+		private ReflectionProvider $reflectionProvider,
+	)
+	{
+	}
+
+	public function getNodeType(): string
+	{
+		return Node\Expr\Instanceof_::class;
+	}
+
+	public function processNode(Node $node, Scope $scope): array
+	{
+		if (!$node->class instanceof Node\Name) {
+			return [];
+		}
+
+		$className = $scope->resolveName($node->class);
+		if (!$this->reflectionProvider->hasClass($className)) {
+			return [];
+		}
+
+		$classReflection = $this->reflectionProvider->getClass($className);
+		if (!$this->apiRuleHelper->isPhpStanCode($scope, $classReflection->getName(), $classReflection->getFileName())) {
+			return [];
+		}
+
+		$ruleError = RuleErrorBuilder::message(sprintf(
+			'Asking about instanceof %s is not covered by backward compatibility promise. The %s might change in a minor PHPStan version.',
+			$classReflection->getDisplayName(),
+			$classReflection->isInterface() ? 'interface' : 'class',
+		))->tip(sprintf(
+			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
+			'https://github.com/phpstan/phpstan/discussions',
+		))->build();
+
+		$docBlock = $classReflection->getResolvedPhpDoc();
+		if ($docBlock === null) {
+			return [$ruleError];
+		}
+
+		foreach ($docBlock->getPhpDocNodes() as $phpDocNode) {
+			$apiTags = $phpDocNode->getTagsByName('@api');
+			if (count($apiTags) > 0) {
+				return [];
+			}
+		}
+
+		return [$ruleError];
+	}
+
+}

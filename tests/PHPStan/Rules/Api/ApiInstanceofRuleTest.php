@@ -28,12 +28,26 @@ class ApiInstanceofRuleTest extends RuleTestCase
 			"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
 			'https://github.com/phpstan/phpstan/discussions',
 		);
+		$instanceofTip = sprintf(
+			"In case of questions how to solve this correctly, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
+			'https://github.com/phpstan/phpstan/discussions',
+		);
 
 		$this->analyse([__DIR__ . '/data/instanceof-out-of-phpstan.php'], [
+			[
+				'Although PHPStan\Reflection\ClassReflection is covered by backward compatibility promise, this instanceof assumption might break because it\'s not guaranteed to always stay the same.',
+				13,
+				$instanceofTip,
+			],
 			[
 				'Asking about instanceof PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadSourceLocator is not covered by backward compatibility promise. The class might change in a minor PHPStan version.',
 				17,
 				$tip,
+			],
+			[
+				'Although PHPStan\Reflection\ClassReflection is covered by backward compatibility promise, this instanceof assumption might break because it\'s not guaranteed to always stay the same.',
+				37,
+				$instanceofTip,
 			],
 		]);
 	}

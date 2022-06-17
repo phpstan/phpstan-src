@@ -4,9 +4,12 @@ namespace PHPStan\Rules\Api;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use function count;
 use function sprintf;
 
@@ -61,11 +64,32 @@ class ApiInstanceofRule implements Rule
 		foreach ($docBlock->getPhpDocNodes() as $phpDocNode) {
 			$apiTags = $phpDocNode->getTagsByName('@api');
 			if (count($apiTags) > 0) {
-				return [];
+				return $this->processCoveredClass($node, $scope, $classReflection);
 			}
 		}
 
 		return [$ruleError];
+	}
+
+	/**
+	 * @return RuleError[]
+	 */
+	private function processCoveredClass(Node\Expr\Instanceof_ $node, Scope $scope, ClassReflection $classReflection): array
+	{
+		$instanceofType = $scope->getType($node);
+		if ($instanceofType instanceof ConstantBooleanType) {
+			return [];
+		}
+
+		return [
+			RuleErrorBuilder::message(sprintf(
+				'Although %s is covered by backward compatibility promise, this instanceof assumption might break because it\'s not guaranteed to always stay the same.',
+				$classReflection->getDisplayName(),
+			))->tip(sprintf(
+				"In case of questions how to solve this correctly, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
+				'https://github.com/phpstan/phpstan/discussions',
+			))->build(),
+		];
 	}
 
 }

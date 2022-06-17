@@ -20,3 +20,23 @@ class Foo
 	}
 
 }
+
+class Bar
+{
+
+	public function doBar(ClassReflection $classReflection, object $o): void
+	{
+		if ($classReflection instanceof ClassReflection) { // yes - do not report
+
+		}
+
+		if ($classReflection instanceof ClassReflection) { // no - do not report
+
+		}
+
+		if ($o instanceof ClassReflection) { // maybe - report
+
+		}
+	}
+
+}

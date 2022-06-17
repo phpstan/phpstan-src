@@ -53,7 +53,7 @@ class ApiStaticCallRule implements Rule
 
 		$methodReflection = $classReflection->getNativeMethod($methodName);
 		$declaringClass = $methodReflection->getDeclaringClass();
-		if (!$this->apiRuleHelper->isPhpStanCode($scope, $declaringClass->getName(), $declaringClass->getFileName() ?: null)) {
+		if (!$this->apiRuleHelper->isPhpStanCode($scope, $declaringClass->getName(), $declaringClass->getFileName())) {
 			return [];
 		}
 

@@ -54,7 +54,7 @@ class ApiInterfaceExtendsRule implements Rule
 		}
 
 		$extendedInterfaceReflection = $this->reflectionProvider->getClass($extendedInterface);
-		if (!$this->apiRuleHelper->isPhpStanCode($scope, $extendedInterfaceReflection->getName(), $extendedInterfaceReflection->getFileName() ?: null)) {
+		if (!$this->apiRuleHelper->isPhpStanCode($scope, $extendedInterfaceReflection->getName(), $extendedInterfaceReflection->getFileName())) {
 			return [];
 		}
 

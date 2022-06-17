@@ -54,7 +54,7 @@ class ApiClassImplementsRule implements Rule
 		}
 
 		$implementedClassReflection = $this->reflectionProvider->getClass($implementedClassName);
-		if (!$this->apiRuleHelper->isPhpStanCode($scope, $implementedClassReflection->getName(), $implementedClassReflection->getFileName() ?: null)) {
+		if (!$this->apiRuleHelper->isPhpStanCode($scope, $implementedClassReflection->getName(), $implementedClassReflection->getFileName())) {
 			return [];
 		}
 

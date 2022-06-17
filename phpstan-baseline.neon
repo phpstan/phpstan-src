@@ -278,41 +278,6 @@ parameters:
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
 
 		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 1
-			path: src/Rules/Api/ApiClassExtendsRule.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 1
-			path: src/Rules/Api/ApiClassImplementsRule.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 1
-			path: src/Rules/Api/ApiInstantiationRule.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 1
-			path: src/Rules/Api/ApiInterfaceExtendsRule.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 1
-			path: src/Rules/Api/ApiMethodCallRule.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 1
-			path: src/Rules/Api/ApiStaticCallRule.php
-
-		-
-			message: "#^Short ternary operator is not allowed\\. Use null coalesce operator if applicable or consider using long ternary\\.$#"
-			count: 1
-			path: src/Rules/Api/ApiTraitUseRule.php
-
-		-
 			message: "#^Binary operation \"\\+\" between array\\{class\\-string\\<TNodeType of PhpParser\\\\Node\\>\\} and array\\<string, class\\-string\\>\\|false results in an error\\.$#"
 			count: 1
 			path: src/Rules/Registry.php

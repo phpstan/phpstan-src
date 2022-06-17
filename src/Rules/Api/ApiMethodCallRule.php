@@ -38,7 +38,7 @@ class ApiMethodCallRule implements Rule
 		}
 
 		$declaringClass = $methodReflection->getDeclaringClass();
-		if (!$this->apiRuleHelper->isPhpStanCode($scope, $declaringClass->getName(), $declaringClass->getFileName() ?: null)) {
+		if (!$this->apiRuleHelper->isPhpStanCode($scope, $declaringClass->getName(), $declaringClass->getFileName())) {
 			return [];
 		}
 

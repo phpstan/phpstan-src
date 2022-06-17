@@ -41,7 +41,7 @@ class ApiTraitUseRule implements Rule
 			}
 
 			$traitReflection = $this->reflectionProvider->getClass($traitName);
-			if (!$this->apiRuleHelper->isPhpStanCode($scope, $traitReflection->getName(), $traitReflection->getFileName() ?: null)) {
+			if (!$this->apiRuleHelper->isPhpStanCode($scope, $traitReflection->getName(), $traitReflection->getFileName())) {
 				continue;
 			}
 

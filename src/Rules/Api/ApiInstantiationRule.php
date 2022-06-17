@@ -40,7 +40,7 @@ class ApiInstantiationRule implements Rule
 		}
 
 		$classReflection = $this->reflectionProvider->getClass($className);
-		if (!$this->apiRuleHelper->isPhpStanCode($scope, $classReflection->getName(), $classReflection->getFileName() ?: null)) {
+		if (!$this->apiRuleHelper->isPhpStanCode($scope, $classReflection->getName(), $classReflection->getFileName())) {
 			return [];
 		}
 

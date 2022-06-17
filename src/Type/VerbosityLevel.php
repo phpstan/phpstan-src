@@ -60,6 +60,11 @@ class VerbosityLevel
 		return $this->value === self::TYPE_ONLY;
 	}
 
+	public function isValue(): bool
+	{
+		return $this->value === self::VALUE;
+	}
+
 	/** @api */
 	public static function getRecommendedLevelByType(Type $acceptingType, ?Type $acceptedType = null): self
 	{

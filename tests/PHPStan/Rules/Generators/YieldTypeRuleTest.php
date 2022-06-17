@@ -59,4 +59,14 @@ class YieldTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7484(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7484.php'], [
+			[
+				'Generator expects key type K of int|string, (K of int)|string given.',
+				21,
+			],
+		]);
+	}
+
 }

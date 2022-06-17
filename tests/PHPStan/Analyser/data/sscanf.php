@@ -5,13 +5,13 @@ namespace Sscanf;
 use function PHPStan\Testing\assertType;
 
 function foo(string $s) {
-	assertType('int|null', sscanf($s, $s, $first, $second));
-	assertType('array|null', sscanf($s, $s));
+	assertType('int|null', sscanf('20-20', '%d-%d', $first, $second));
+	assertType('array{int, int}|null', sscanf('20-20', '%d-%d'));
 }
 
 function sscanfFormatInference(string $s) {
-	assertType('int|null', sscanf('20-20', '%d-%d', $first, $second));
-	assertType('array{int, int}|null', sscanf('20-20', '%d-%d'));
+	assertType('int|null', sscanf($s, $s, $first, $second));
+	assertType('array|null', sscanf($s, $s));
 
 	assertType('array{string}|null', sscanf($s, '%c'));
 	assertType('array{int}|null', sscanf($s, '%d'));

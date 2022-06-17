@@ -23,7 +23,7 @@ class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnT
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'sscanf';
+		return in_array($functionReflection->getName(), ['sscanf', 'fscanf'], true);
 	}
 
 	public function getTypeFromFunctionCall(

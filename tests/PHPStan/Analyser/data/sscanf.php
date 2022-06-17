@@ -2,7 +2,6 @@
 
 namespace Sscanf;
 
-use sscanf;
 use function PHPStan\Testing\assertType;
 
 function foo(string $s) {
@@ -10,7 +9,7 @@ function foo(string $s) {
 	assertType('array|null', sscanf($s, $s));
 }
 
-function bar(string $s) {
+function sscanfFormatInference(string $s) {
 	assertType('int|null', sscanf('20-20', '%d-%d', $first, $second));
 	assertType('array{int, int}|null', sscanf('20-20', '%d-%d'));
 
@@ -26,6 +25,13 @@ function bar(string $s) {
 
 	$mandate = "January 01 2000";
 	list($month, $day, $year) = sscanf($mandate, "%s %d %d");
+	assertType('string', $month);
+	assertType('int', $day);
+	assertType('int', $year);
+}
+
+function fscanfFormatInference($r) {
+	list($month, $day, $year) = fscanf($r, "%s %d %d");
 	assertType('string', $month);
 	assertType('int', $day);
 	assertType('int', $year);

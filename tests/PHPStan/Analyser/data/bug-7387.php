@@ -42,27 +42,4 @@ class HelloWorld
 		assertType('numeric-string', sprintf('%14X', $i));
 
 	}
-
-	public function positionalArgs($mixed, int $i, float $f, string $s) {
-		// https://3v4l.org/vVL0c
-		assertType('non-empty-string', sprintf('%2$14s', $mixed, $i));
-
-		assertType('numeric-string', sprintf('%2$.14F', $mixed, $i));
-		assertType('numeric-string', sprintf('%2$.14F', $mixed, $f));
-		assertType('numeric-string', sprintf('%2$.14F', $mixed, $s));
-
-		assertType('numeric-string', sprintf('%2$1.14F', $mixed, $i));
-		assertType('numeric-string', sprintf('%2$2.14F', $mixed, $f));
-		assertType('numeric-string', sprintf('%2$3.14F', $mixed, $s));
-
-		assertType('numeric-string', sprintf('%2$14F', $mixed, $i));
-		assertType('numeric-string', sprintf('%2$14F', $mixed, $f));
-		assertType('numeric-string', sprintf('%2$14F', $mixed, $s));
-
-		assertType('numeric-string', sprintf('%10$14F', $mixed, $s));
-	}
-
-	public function invalidPositionalArgFormat($mixed, string $s) {
-		assertType('string', sprintf('%0$14F', $mixed, $s));
-	}
 }

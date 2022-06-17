@@ -66,6 +66,8 @@ class RuntimeReflectionInstantiationRuleTest extends RuleTestCase
 				'Creating new ReflectionFiber is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
 				55,
 			];
+		}
+		if (PHP_VERSION_ID >= 80000) {
 			$errors[] = [
 				'Creating new ReflectionEnum is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
 				56,

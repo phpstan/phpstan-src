@@ -827,8 +827,8 @@ class UnionTypeTest extends PHPStanTestCase
 					),
 					new NullType(),
 				),
-				'(TFoo)|null',
-				'(TFoo)|null',
+				'TFoo|null',
+				'TFoo|null',
 			],
 			[
 				TypeCombinator::union(

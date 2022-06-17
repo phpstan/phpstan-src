@@ -18,6 +18,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -206,8 +207,18 @@ class UnionType implements CompoundType
 			foreach ($types as $i => $type) {
 				if ($type instanceof ClosureType || $type instanceof CallableType || $type instanceof TemplateUnionType) {
 					$typeNames[] = sprintf('(%s)', $type->describe($level));
-				} elseif ($type instanceof TemplateType && $i < (count($types) - 1) && ($level->isTypeOnly() || $level->isValue())) {
-					$typeNames[] = sprintf('(%s)', $type->describe($level));
+				} elseif ($type instanceof TemplateType) {
+					$isLast = $i >= count($types) - 1;
+					$bound = $type->getBound();
+					if (
+						!$isLast
+						&& ($level->isTypeOnly() || $level->isValue())
+						&& !($bound instanceof MixedType && $bound->getSubtractedType() === null && !$bound instanceof TemplateMixedType)
+					) {
+						$typeNames[] = sprintf('(%s)', $type->describe($level));
+					} else {
+						$typeNames[] = $type->describe($level);
+					}
 				} elseif ($type instanceof IntersectionType) {
 					$intersectionDescription = $type->describe($level);
 					if (strpos($intersectionDescription, '&') !== false) {

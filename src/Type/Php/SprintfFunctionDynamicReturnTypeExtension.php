@@ -33,7 +33,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		$args = $functionCall->getArgs();
 		if (count($args) === 0) {
@@ -43,7 +43,13 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		$formatType = $scope->getType($args[0]->value);
 
 		if ($formatType instanceof ConstantStringType) {
-			if (preg_match('/^%[0-9]*\.?[0-9]+[bdeEfFgGhHouxX]$/', $formatType->getValue()) === 1) {
+			// The printf format is %[argnum$][flags][width][.precision]
+			if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]+[bdeEfFgGhHouxX]$/', $formatType->getValue(), $matches) === 1) {
+				// invalid positional argument
+				if (array_key_exists(1, $matches) && $matches[1] === '0$') {
+					return null;
+				}
+
 				return new IntersectionType([
 					new StringType(),
 					new AccessoryNumericStringType(),

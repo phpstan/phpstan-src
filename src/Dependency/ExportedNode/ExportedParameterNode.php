@@ -4,17 +4,24 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
+use function array_map;
+use function count;
 
 class ExportedParameterNode implements ExportedNode, JsonSerializable
 {
 
+	/**
+	 * @param ExportedAttributeNode[] $attributes
+	 */
 	public function __construct(
 		private string $name,
 		private ?string $type,
 		private bool $byRef,
 		private bool $variadic,
 		private bool $hasDefault,
+		private array $attributes,
 	)
 	{
 	}
@@ -23,6 +30,16 @@ class ExportedParameterNode implements ExportedNode, JsonSerializable
 	{
 		if (!$node instanceof self) {
 			return false;
+		}
+
+		if (count($this->attributes) !== count($node->attributes)) {
+			return false;
+		}
+
+		foreach ($this->attributes as $i => $attribute) {
+			if (!$attribute->equals($node->attributes[$i])) {
+				return false;
+			}
 		}
 
 		return $this->name === $node->name
@@ -44,6 +61,7 @@ class ExportedParameterNode implements ExportedNode, JsonSerializable
 			$properties['byRef'],
 			$properties['variadic'],
 			$properties['hasDefault'],
+			$properties['attributes'],
 		);
 	}
 
@@ -61,6 +79,7 @@ class ExportedParameterNode implements ExportedNode, JsonSerializable
 				'byRef' => $this->byRef,
 				'variadic' => $this->variadic,
 				'hasDefault' => $this->hasDefault,
+				'attributes' => $this->attributes,
 			],
 		];
 	}
@@ -77,6 +96,12 @@ class ExportedParameterNode implements ExportedNode, JsonSerializable
 			$data['byRef'],
 			$data['variadic'],
 			$data['hasDefault'],
+			array_map(static function (array $attributeData): ExportedAttributeNode {
+				if ($attributeData['type'] !== ExportedAttributeNode::class) {
+					throw new ShouldNotHappenException();
+				}
+				return ExportedAttributeNode::decode($attributeData['data']);
+			}, $data['attributes']),
 		);
 	}
 

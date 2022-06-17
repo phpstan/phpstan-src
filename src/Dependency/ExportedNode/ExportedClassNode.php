@@ -17,6 +17,7 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 	 * @param string[] $usedTraits
 	 * @param ExportedTraitUseAdaptation[] $traitUseAdaptations
 	 * @param ExportedNode[] $statements
+	 * @param ExportedAttributeNode[] $attributes
 	 */
 	public function __construct(
 		private string $name,
@@ -28,6 +29,7 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 		private array $usedTraits,
 		private array $traitUseAdaptations,
 		private array $statements,
+		private array $attributes,
 	)
 	{
 	}
@@ -48,6 +50,16 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 			}
 		} else {
 			return false;
+		}
+
+		if (count($this->attributes) !== count($node->attributes)) {
+			return false;
+		}
+
+		foreach ($this->attributes as $i => $attribute) {
+			if (!$attribute->equals($node->attributes[$i])) {
+				return false;
+			}
 		}
 
 		if (count($this->traitUseAdaptations) !== count($node->traitUseAdaptations)) {
@@ -97,6 +109,7 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 			$properties['usedTraits'],
 			$properties['traitUseAdaptations'],
 			$properties['statements'],
+			$properties['attributes'],
 		);
 	}
 
@@ -118,6 +131,7 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 				'usedTraits' => $this->usedTraits,
 				'traitUseAdaptations' => $this->traitUseAdaptations,
 				'statements' => $this->statements,
+				'attributes' => $this->attributes,
 			],
 		];
 	}
@@ -147,6 +161,12 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 
 				return $nodeType::decode($node['data']);
 			}, $data['statements']),
+			array_map(static function (array $attributeData): ExportedAttributeNode {
+				if ($attributeData['type'] !== ExportedAttributeNode::class) {
+					throw new ShouldNotHappenException();
+				}
+				return ExportedAttributeNode::decode($attributeData['data']);
+			}, $data['attributes']),
 		);
 	}
 

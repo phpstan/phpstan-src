@@ -14,6 +14,7 @@ class ExportedMethodNode implements ExportedNode, JsonSerializable
 
 	/**
 	 * @param ExportedParameterNode[] $parameters
+	 * @param ExportedAttributeNode[] $attributes
 	 */
 	public function __construct(
 		private string $name,
@@ -26,6 +27,7 @@ class ExportedMethodNode implements ExportedNode, JsonSerializable
 		private bool $static,
 		private ?string $returnType,
 		private array $parameters,
+		private array $attributes,
 	)
 	{
 	}
@@ -59,6 +61,16 @@ class ExportedMethodNode implements ExportedNode, JsonSerializable
 			return false;
 		}
 
+		if (count($this->attributes) !== count($node->attributes)) {
+			return false;
+		}
+
+		foreach ($this->attributes as $i => $attribute) {
+			if (!$attribute->equals($node->attributes[$i])) {
+				return false;
+			}
+		}
+
 		return $this->name === $node->name
 			&& $this->byRef === $node->byRef
 			&& $this->public === $node->public
@@ -86,6 +98,7 @@ class ExportedMethodNode implements ExportedNode, JsonSerializable
 			$properties['static'],
 			$properties['returnType'],
 			$properties['parameters'],
+			$properties['attributes'],
 		);
 	}
 
@@ -108,6 +121,7 @@ class ExportedMethodNode implements ExportedNode, JsonSerializable
 				'static' => $this->static,
 				'returnType' => $this->returnType,
 				'parameters' => $this->parameters,
+				'attributes' => $this->attributes,
 			],
 		];
 	}
@@ -134,6 +148,12 @@ class ExportedMethodNode implements ExportedNode, JsonSerializable
 				}
 				return ExportedParameterNode::decode($parameterData['data']);
 			}, $data['parameters']),
+			array_map(static function (array $attributeData): ExportedAttributeNode {
+				if ($attributeData['type'] !== ExportedAttributeNode::class) {
+					throw new ShouldNotHappenException();
+				}
+				return ExportedAttributeNode::decode($attributeData['data']);
+			}, $data['attributes']),
 		);
 	}
 

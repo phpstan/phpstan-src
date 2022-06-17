@@ -7,6 +7,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use PHPStan\Dependency\ExportedNode\ExportedAttributeNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassConstantsNode;
 use PHPStan\Dependency\ExportedNode\ExportedClassNode;
@@ -95,6 +96,7 @@ class ExportedNodeResolver
 					throw new ShouldNotHappenException();
 				}, $adaptations),
 				$this->exportClassStatements($node->stmts, $fileName, $className),
+				$this->exportAttributeNodes($node->attrGroups),
 			);
 		}
 
@@ -138,6 +140,7 @@ class ExportedNodeResolver
 				),
 				$implementsNames,
 				$this->exportClassStatements($node->stmts, $fileName, $enumName),
+				$this->exportAttributeNodes($node->attrGroups),
 			);
 		}
 
@@ -164,6 +167,7 @@ class ExportedNodeResolver
 				$node->byRef,
 				$this->printType($node->returnType),
 				$this->exportParameterNodes($node->params),
+				$this->exportAttributeNodes($node->attrGroups),
 			);
 		}
 
@@ -243,6 +247,7 @@ class ExportedNodeResolver
 				$param->byRef,
 				$param->variadic,
 				$param->default !== null,
+				$this->exportAttributeNodes($param->attrGroups),
 			);
 		}
 
@@ -318,6 +323,7 @@ class ExportedNodeResolver
 					$node->isStatic(),
 					$this->printType($node->returnType),
 					$this->exportParameterNodes($node->params),
+					$this->exportAttributeNodes($node->attrGroups),
 				);
 			}
 		}
@@ -342,6 +348,7 @@ class ExportedNodeResolver
 				$node->isPrivate(),
 				$node->isStatic(),
 				$node->isReadonly(),
+				$this->exportAttributeNodes($node->attrGroups),
 			);
 		}
 
@@ -357,6 +364,7 @@ class ExportedNodeResolver
 				$constants[] = new ExportedClassConstantNode(
 					$const->name->toString(),
 					$this->exprPrinter->printExpr($const->value),
+					$this->exportAttributeNodes($node->attrGroups),
 				);
 			}
 
@@ -390,6 +398,30 @@ class ExportedNodeResolver
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param Node\AttributeGroup[] $attributeGroups
+	 * @return ExportedAttributeNode[]
+	 */
+	private function exportAttributeNodes(array $attributeGroups): array
+	{
+		$nodes = [];
+		foreach ($attributeGroups as $attributeGroup) {
+			foreach ($attributeGroup->attrs as $attribute) {
+				$args = [];
+				foreach ($attribute->args as $i => $arg) {
+					$args[$arg->name->name ?? $i] = $this->exprPrinter->printExpr($arg->value);
+				}
+
+				$nodes[] = new ExportedAttributeNode(
+					$attribute->name->toString(),
+					$args,
+				);
+			}
+		}
+
+		return $nodes;
 	}
 
 }

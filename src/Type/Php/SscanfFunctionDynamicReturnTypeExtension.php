@@ -17,7 +17,6 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 use function preg_match_all;
-use function var_dump;
 
 class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

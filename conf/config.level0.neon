@@ -14,6 +14,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.consistentConstructor%
 	PHPStan\Rules\Api\RuntimeReflectionFunctionRule:
 		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
+	PHPStan\Rules\Api\RuntimeReflectionInstantiationRule:
+		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
 
 rules:
 	- PHPStan\Rules\Api\ApiInstantiationRule
@@ -82,6 +84,8 @@ services:
 		class: PHPStan\Rules\Api\NodeConnectingVisitorAttributesRule
 	-
 		class: PHPStan\Rules\Api\RuntimeReflectionFunctionRule
+	-
+		class: PHPStan\Rules\Api\RuntimeReflectionInstantiationRule
 	-
 		class: PHPStan\Rules\Classes\ExistingClassInClassExtendsRule
 		tags:

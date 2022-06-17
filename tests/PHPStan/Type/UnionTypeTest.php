@@ -791,6 +791,63 @@ class UnionTypeTest extends PHPStanTestCase
 				'int<0, 4>|int<6, 10>',
 				'int<0, 4>|int<6, 10>',
 			],
+			[
+				TypeCombinator::union(
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('foo'),
+						'TFoo',
+						new IntegerType(),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new NullType(),
+				),
+				'(TFoo of int)|null',
+				'(TFoo of int)|null',
+			],
+			[
+				TypeCombinator::union(
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('foo'),
+						'TFoo',
+						new IntegerType(),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new GenericClassStringType(new ObjectType('Abc')),
+				),
+				'class-string<Abc>|TFoo of int',
+				'class-string<Abc>|TFoo of int',
+			],
+			[
+				TypeCombinator::union(
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('foo'),
+						'TFoo',
+						new MixedType(true),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new NullType(),
+				),
+				'(TFoo)|null',
+				'(TFoo)|null',
+			],
+			[
+				TypeCombinator::union(
+					TemplateTypeFactory::create(
+						TemplateTypeScope::createWithClass('foo'),
+						'TFoo',
+						TemplateTypeFactory::create(
+							TemplateTypeScope::createWithClass('foo'),
+							'TBar',
+							new MixedType(true),
+							TemplateTypeVariance::createInvariant(),
+						),
+						TemplateTypeVariance::createInvariant(),
+					),
+					new NullType(),
+				),
+				'(TFoo of TBar)|null',
+				'(TFoo of TBar)|null',
+			],
 		];
 	}
 

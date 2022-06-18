@@ -72,4 +72,14 @@ class HelloWorld
 		// https://3v4l.org/2m50L
 		assertType('non-empty-string', sprintf("%%d", $i));
 	}
+
+	public function vsprintf(array $array)
+	{
+		assertType('numeric-string', vsprintf("%4d", explode('-', '1988-8-1')));
+		assertType('numeric-string', vsprintf("%4d", $array));
+		assertType('numeric-string', vsprintf("%4d", ['123']));
+		assertType('non-empty-string', vsprintf("%s", ['123']));
+		// too many arguments.. php silently allows it
+		assertType('numeric-string', vsprintf("%4d", ['123', '456']));
+	}
 }

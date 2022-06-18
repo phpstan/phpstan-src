@@ -296,6 +296,8 @@ class Bug7385MethodTypeSpecifyingExtension implements TypeSpecifierAwareExtensio
 			new ObjectType(\Bug7385\Iface::class)
 		);
 
+		throw new \Error('reached: ' . $type->describe(\PHPStan\Type\VerbosityLevel::precise()));
+
 		return $this->typeSpecifier->create($methodCall->var, $type, TypeSpecifierContext::createNull());
 	}
 }

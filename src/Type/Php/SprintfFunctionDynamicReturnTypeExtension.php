@@ -15,6 +15,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use Throwable;
+use function array_key_exists;
 use function array_shift;
 use function count;
 use function is_string;

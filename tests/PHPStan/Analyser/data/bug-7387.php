@@ -25,6 +25,8 @@ class HelloWorld
 		// https://3v4l.org/fmVIg
 		assertType('non-empty-string', sprintf('%14s', $i));
 
+		assertType('numeric-string', sprintf('%d', $i));
+
 		assertType('numeric-string', sprintf('%14b', $i));
 		assertType('non-empty-string', sprintf('%14c', $i)); // binary string
 		assertType('numeric-string', sprintf('%14d', $i));
@@ -64,5 +66,10 @@ class HelloWorld
 
 	public function invalidPositionalArgFormat($mixed, string $s) {
 		assertType('string', sprintf('%0$14F', $mixed, $s));
+	}
+
+	public function escapedPercent(int $i) {
+		// https://3v4l.org/2m50L
+		assertType('non-empty-string', sprintf("%%d", $i));
 	}
 }

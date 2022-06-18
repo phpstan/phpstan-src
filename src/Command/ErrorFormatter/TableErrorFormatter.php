@@ -7,6 +7,7 @@ use PHPStan\Command\AnalyseCommand;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
+use PHPStan\File\SimpleRelativePathHelper;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use function array_map;
 use function count;
@@ -19,6 +20,7 @@ class TableErrorFormatter implements ErrorFormatter
 
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,
+		private SimpleRelativePathHelper $simpleRelativePathHelper,
 		private CiDetectedErrorFormatter $ciDetectedErrorFormatter,
 		private bool $showTipsOfTheDay,
 		private ?string $editorUrl,
@@ -78,7 +80,11 @@ class TableErrorFormatter implements ErrorFormatter
 				}
 				if (is_string($this->editorUrl)) {
 					$editorFile = $error->getTraitFilePath() ?? $error->getFilePath();
-					$url = str_replace(['%file%', '%line%'], [$editorFile, (string) $error->getLine()], $this->editorUrl);
+					$url = str_replace(
+						['%file%', '%relFile%', '%line%'],
+						[$editorFile, $this->simpleRelativePathHelper->getRelativePath($editorFile), (string) $error->getLine()],
+						$this->editorUrl,
+					);
 					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $this->relativePathHelper->getRelativePath($editorFile) . '</>';
 				}
 				$rows[] = [

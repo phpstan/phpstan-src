@@ -25,38 +25,46 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 
 	protected const DIRECTORY_PATH = '/data/folder/with space/and unicode 😃/project';
 
-	private ?StreamOutput $outputStream = null;
+	private const KIND_DECORATED = 'decorated';
+	private const KIND_PLAIN = 'plain';
 
-	private ?Output $output = null;
+	/** @var array<string, StreamOutput> */
+	private array $outputStream = [];
 
-	private function getOutputStream(): StreamOutput
+	/** @var array<string, Output> */
+	private array $output = [];
+
+	private function getOutputStream(bool $decorated = false): StreamOutput
 	{
-		if ($this->outputStream === null) {
+		$kind = $decorated ? self::KIND_DECORATED : self::KIND_PLAIN;
+		if (!isset($this->outputStream[$kind])) {
 			$resource = fopen('php://memory', 'w', false);
 			if ($resource === false) {
 				throw new ShouldNotHappenException();
 			}
-			$this->outputStream = new StreamOutput($resource, StreamOutput::VERBOSITY_NORMAL, false);
+			$this->outputStream[$kind] = new StreamOutput($resource, StreamOutput::VERBOSITY_NORMAL, $decorated);
 		}
 
-		return $this->outputStream;
+		return $this->outputStream[$kind];
 	}
 
-	protected function getOutput(): Output
+	protected function getOutput(bool $decorated = false): Output
 	{
-		if ($this->output === null) {
-			$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $this->getOutputStream());
-			$this->output = new SymfonyOutput($this->getOutputStream(), new SymfonyStyle($errorConsoleStyle));
+		$kind = $decorated ? self::KIND_DECORATED : self::KIND_PLAIN;
+		if (!isset($this->output[$kind])) {
+			$outputStream = $this->getOutputStream($decorated);
+			$errorConsoleStyle = new ErrorsConsoleStyle(new StringInput(''), $outputStream);
+			$this->output[$kind] = new SymfonyOutput($outputStream, new SymfonyStyle($errorConsoleStyle));
 		}
 
-		return $this->output;
+		return $this->output[$kind];
 	}
 
-	protected function getOutputContent(): string
+	protected function getOutputContent(bool $decorated = false): string
 	{
-		rewind($this->getOutputStream()->getStream());
+		rewind($this->getOutputStream($decorated)->getStream());
 
-		$contents = stream_get_contents($this->getOutputStream()->getStream());
+		$contents = stream_get_contents($this->getOutputStream($decorated)->getStream());
 		if ($contents === false) {
 			throw new ShouldNotHappenException();
 		}

@@ -20,5 +20,5 @@ function () {
 	$m = random_int(0, 1) === 0 ? new Model() : new class() extends Model implements Iface {};
 	assertType('Bug7385\Model', $m);
 	$m->assertHasIface();
-	assertType('Bug7385\Model&Bug7391\Iface', $m);
+	assertType('Bug7385\Iface&Bug7385\Model', $m);
 };

@@ -84,7 +84,7 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		try {
-			if ($functionReflection->getName() === 'sprtinf') {
+			if ($functionReflection->getName() === 'sprintf') {
 				$value = @sprintf($format, ...$values);
 			} else {
 				$value = @vsprintf($format, $values);

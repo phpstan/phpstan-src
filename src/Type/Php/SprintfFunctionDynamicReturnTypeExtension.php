@@ -18,16 +18,18 @@ use Throwable;
 use function array_key_exists;
 use function array_shift;
 use function count;
+use function in_array;
 use function is_string;
 use function preg_match;
 use function sprintf;
+use function vsprintf;
 
 class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'sprintf';
+		return in_array($functionReflection->getName(), ['sprintf', 'vsprintf'], true);
 	}
 
 	public function getTypeFromFunctionCall(
@@ -42,7 +44,6 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$formatType = $scope->getType($args[0]->value);
-
 		if ($formatType instanceof ConstantStringType) {
 			// The printf format is %[argnum$][flags][width][.precision]
 			if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*[bdeEfFgGhHouxX]$/', $formatType->getValue(), $matches) === 1) {
@@ -83,7 +84,11 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		try {
-			$value = @sprintf($format, ...$values);
+			if ($functionReflection->getName() === 'sprtinf') {
+				$value = @sprintf($format, ...$values);
+			} else {
+				$value = @vsprintf($format, $values);
+			}
 		} catch (Throwable) {
 			return $returnType;
 		}

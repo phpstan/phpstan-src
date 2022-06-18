@@ -31,7 +31,6 @@ class NonEmptyStringFunctionsReturnTypeExtension implements DynamicFunctionRetur
 			'preg_quote',
 			'rawurlencode',
 			'rawurldecode',
-			'vsprintf',
 		], true);
 	}
 

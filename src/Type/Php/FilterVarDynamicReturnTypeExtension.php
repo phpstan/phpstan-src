@@ -245,8 +245,8 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		if (isset($range['min']) || isset($range['max'])) {
-			$min = is_int($range['min'] ?? null) ? $range['min'] : null;
-			$max = is_int($range['max'] ?? null) ? $range['max'] : null;
+			$min = isset($range['min']) && is_int($range['min']) ? $range['min'] : null;
+			$max = isset($range['max']) && is_int($range['max']) ? $range['max'] : null;
 			$otherTypes['range'] = new IntegerRangeType($min, $max);
 		}
 

@@ -1,5 +1,7 @@
 # https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
+name: "Create tag"
+
 on:
   # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch
   workflow_dispatch:

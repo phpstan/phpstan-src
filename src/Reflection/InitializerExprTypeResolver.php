@@ -1097,6 +1097,10 @@ class InitializerExprTypeResolver
 						throw new ShouldNotHappenException();
 					}
 
+					if ($rightNumberType->getValue() < 0) {
+						return new ErrorType();
+					}
+
 					$resultType = $this->getTypeFromValue($leftNumberType->getValue() << $rightNumberType->getValue());
 					if ($generalize) {
 						$resultType = $resultType->generalize(GeneralizePrecision::lessSpecific());
@@ -1144,6 +1148,10 @@ class InitializerExprTypeResolver
 
 					if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
 						throw new ShouldNotHappenException();
+					}
+
+					if ($rightNumberType->getValue() < 0) {
+						return new ErrorType();
 					}
 
 					$resultType = $this->getTypeFromValue($leftNumberType->getValue() >> $rightNumberType->getValue());

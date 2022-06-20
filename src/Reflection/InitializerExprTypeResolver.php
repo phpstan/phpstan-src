@@ -955,6 +955,27 @@ class InitializerExprTypeResolver
 			]);
 		}
 
+		$mixedArray = new ArrayType(new MixedType(), new MixedType());
+		if (
+			($leftType->isArray()->yes() && $rightType->isSuperTypeOf($mixedArray)->no())
+			|| ($rightType->isArray()->yes() && $leftType->isSuperTypeOf($mixedArray)->no())
+		) {
+			return new ErrorType();
+		}
+
+		if (
+			($leftType->isArray()->yes() && $rightType->isSuperTypeOf($mixedArray)->yes())
+			|| ($rightType->isArray()->yes() && $leftType->isSuperTypeOf($mixedArray)->yes())
+		) {
+			$arrayType = new ArrayType(new MixedType(), new MixedType());
+
+			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
+				return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+			}
+
+			return $arrayType;
+		}
+
 		return $this->resolveCommonMath(new BinaryOp\Plus($left, $right), $leftType, $rightType);
 	}
 

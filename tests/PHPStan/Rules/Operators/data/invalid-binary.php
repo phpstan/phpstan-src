@@ -254,3 +254,18 @@ function benevolentPlus(array $a, int $i): void {
 		echo $k + $i;
 	}
 };
+
+function (int $int) {
+	$int + [];
+};
+
+function ($mixed, array $arr) {
+	if (is_array($mixed)) {
+		return;
+	}
+	$mixed + $arr; // mixed~array + array
+};
+
+function noErrorOnMixedPlusArray($mixed, array $arr) {
+	$mixed + $arr;
+};

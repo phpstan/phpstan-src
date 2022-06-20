@@ -190,6 +190,10 @@ class Foo
 		$severalSumWithStaticConst2 = 1 + static::INT_CONST + 1;
 		$severalSumWithStaticConst3 = 1 + 1 + static::INT_CONST;
 
+		if (!is_array($mixed)) {
+			$mixedNoArray = $mixed;
+		}
+
 		die;
 	}
 

@@ -995,7 +995,7 @@ return [
 'closelog' => ['bool'],
 'Closure::__construct' => ['void'],
 'Closure::__invoke' => ['', '...args='=>''],
-'Closure::bind' => ['Closure', 'old'=>'Closure', 'to'=>'?object', 'scope='=>'object|string'],
+'Closure::bind' => ['Closure', 'old'=>'Closure', 'to'=>'?object', 'scope='=>'object|string|null'],
 'Closure::bindTo' => ['Closure', 'new'=>'?object', 'newscope='=>'object|string'],
 'Closure::call' => ['', 'to'=>'object', '...parameters='=>''],
 'Closure::fromCallable' => ['Closure', 'callable'=>'callable'],

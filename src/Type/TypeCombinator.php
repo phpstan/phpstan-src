@@ -161,6 +161,9 @@ class TypeCombinator
 				$intermediateArrayType = null;
 				$intermediateAccessoryTypes = [];
 				foreach ($types[$i]->getTypes() as $innerType) {
+					if ($innerType instanceof TemplateType) {
+						continue 2;
+					}
 					if ($innerType instanceof ArrayType) {
 						$intermediateArrayType = $innerType;
 						continue;

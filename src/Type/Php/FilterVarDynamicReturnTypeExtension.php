@@ -158,7 +158,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$otherTypes = $this->getOtherTypes($flagsArg, $scope, $typeOptionNames);
 
 		if ($inputType->isNonEmptyString()->yes()
-			&& $type instanceof StringType
+			&& $type->isString()->yes()
 			&& !$this->canStringBeSanitized($filterValue, $flagsArg, $scope)) {
 			$type = TypeCombinator::intersect($type, new AccessoryNonEmptyStringType());
 		}

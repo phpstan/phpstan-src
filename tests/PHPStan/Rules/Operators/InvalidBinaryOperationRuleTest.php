@@ -242,6 +242,10 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				'Binary operation "/" between 10 and literal-string results in an error.',
 				222,
 			],
+			[
+				'Binary operation "+" between int and array{} results in an error.',
+				259,
+			],
 		]);
 	}
 

@@ -254,3 +254,7 @@ function benevolentPlus(array $a, int $i): void {
 		echo $k + $i;
 	}
 };
+
+function (int $int) {
+	$int + [];
+};

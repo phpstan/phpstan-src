@@ -2696,8 +2696,12 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mixed - $mixed',
 			],
 			[
-				'*ERROR*',
+				'array',
 				'$mixed + []',
+			],
+			[
+				'*ERROR*',
+				'$integer + []',
 			],
 			[
 				'124',

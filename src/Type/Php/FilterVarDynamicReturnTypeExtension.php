@@ -165,9 +165,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 		if (isset($otherTypes['range'])) {
 			if ($type instanceof ConstantScalarType) {
-				if ($type->getValue() < $otherTypes['range']->getMin()
-					|| $type->getValue() > $otherTypes['range']->getMax()
-				) {
+				if ($otherTypes['range']->isSuperTypeOf($type)->no()) {
 					$type = $otherTypes['default'];
 				}
 
@@ -209,7 +207,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	/**
 	 * @param list<string> $typeOptionNames
-	 * @return array{default: Type, range?: IntegerRangeType}
+	 * @return array{default: Type, range?: Type}
 	 */
 	private function getOtherTypes(?Node\Arg $flagsArg, Scope $scope, array $typeOptionNames): array
 	{
@@ -246,7 +244,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		if (isset($range['min']) || isset($range['max'])) {
 			$min = isset($range['min']) && is_int($range['min']) ? $range['min'] : null;
 			$max = isset($range['max']) && is_int($range['max']) ? $range['max'] : null;
-			$otherTypes['range'] = new IntegerRangeType($min, $max);
+			$otherTypes['range'] = IntegerRangeType::fromInterval($min, $max);
 		}
 
 		return $otherTypes;

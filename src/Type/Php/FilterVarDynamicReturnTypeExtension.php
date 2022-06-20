@@ -21,12 +21,11 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\UnionType;
+use PHPStan\Type\TypeCombinator;
 use function is_int;
 use function sprintf;
 use function strtolower;
@@ -161,7 +160,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		if ($inputType->isNonEmptyString()->yes()
 			&& $type instanceof StringType
 			&& !$this->canStringBeSanitized($filterValue, $flagsArg, $scope)) {
-			$type = new IntersectionType([$type, new AccessoryNonEmptyStringType()]);
+			$type = TypeCombinator::intersect($type, new AccessoryNonEmptyStringType());
 		}
 
 		if (isset($otherTypes['range'])) {
@@ -183,7 +182,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		if (isset($otherTypes['default']) && $otherTypes['default']->isSuperTypeOf($type)->no()) {
-			$type = new UnionType([$type, $otherTypes['default']]);
+			$type = TypeCombinator::union($type, $otherTypes['default']);
 		}
 
 		if ($this->hasFlag($this->getConstant('FILTER_FORCE_ARRAY'), $flagsArg, $scope)) {

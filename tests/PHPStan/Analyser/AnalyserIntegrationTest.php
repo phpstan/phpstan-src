@@ -859,6 +859,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug7500(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7500.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Method Bug7500\HelloWorld::computeForFrontByPosition() should return array<T of Bug7500\PositionEntityInterface&Bug7500\TgEntityInterface> but returns array<Bug7500\PositionEntityInterface&Bug7500\TgEntityInterface>.', $errors[0]->getMessage());
+		$this->assertSame(38, $errors[0]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

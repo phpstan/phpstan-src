@@ -12,6 +12,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use function array_filter;
 use function array_values;
 use function count;
+use function function_exists;
 use function is_file;
 
 class AnalyserRunner
@@ -58,7 +59,7 @@ class AnalyserRunner
 
 		if (
 			!$debug
-			&& $allowParallel
+			&& $allowParallel && function_exists('proc_open')
 			&& $mainScript !== null
 			&& $schedule->getNumberOfProcesses() > 0
 		) {

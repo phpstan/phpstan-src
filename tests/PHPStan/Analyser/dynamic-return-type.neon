@@ -35,3 +35,7 @@ services:
 		class: PHPStan\Tests\Bug7344DynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension
+	-
+		class: PHPStan\Tests\Bug7391BDynamicStaticMethodReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicStaticMethodReturnTypeExtension

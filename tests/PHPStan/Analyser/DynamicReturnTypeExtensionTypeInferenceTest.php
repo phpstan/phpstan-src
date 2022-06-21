@@ -19,6 +19,7 @@ class DynamicReturnTypeExtensionTypeInferenceTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-compound-types.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/dynamic-method-return-getsingle-conditional.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7344.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7391b.php');
 	}
 
 	/**

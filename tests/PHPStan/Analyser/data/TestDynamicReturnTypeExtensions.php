@@ -4,6 +4,7 @@ namespace PHPStan\Tests;
 
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
@@ -239,4 +240,26 @@ class Bug7344DynamicReturnTypeExtension implements DynamicMethodReturnTypeExtens
 		return new IntegerType();
 	}
 
+}
+
+class Bug7391BDynamicStaticMethodReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
+{
+	public function getClass(): string
+	{
+		return \Bug7391B\Foo::class;
+	}
+
+	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
+	{
+		return $methodReflection->getName() === 'm';
+	}
+
+	public function getTypeFromStaticMethodCall(
+		MethodReflection $methodReflection,
+		StaticCall $methodCall,
+		Scope $scope
+	): Type {
+		// return instantiated type from class string
+		return $scope->getType(new New_($methodCall->class));
+	}
 }

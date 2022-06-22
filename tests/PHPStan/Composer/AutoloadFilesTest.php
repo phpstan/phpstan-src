@@ -61,7 +61,6 @@ class AutoloadFilesTest extends TestCase
 			'hoa/protocol/Wrapper.php', // Hoa isn't prefixed, no need to load this eagerly
 			'jetbrains/phpstorm-stubs/PhpStormStubsMap.php', // added to phpstan-dist/bootstrap.php
 			'myclabs/deep-copy/src/DeepCopy/deep_copy.php', // dev dependency of PHPUnit
-			'phpstan/php-8-stubs/Php8StubsMap.php',
 			'react/promise-stream/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'react/promise-timer/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'react/promise/src/functions_include.php', // added to phpstan-dist/bootstrap.php

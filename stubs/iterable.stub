@@ -206,20 +206,34 @@ class FilterIterator extends IteratorIterator
 }
 
 /**
- * @template-covariant TKey
- * @template-covariant TValue
+ * @template TKey
+ * @template TValue
  * @template TIterator as Traversable<TKey, TValue>
  *
  * @extends FilterIterator<TKey, TValue, TIterator>
  */
 class CallbackFilterIterator extends FilterIterator
 {
+    /**
+     * @param Iterator<TKey, TValue> $iterator
+     * @param callable(TValue, TKey, Iterator<TKey, TValue>): bool $callback
+     */
+    public function __construct(Iterator $iterator, callable $callback) {}
 
+    /**
+     * @return TValue|null
+     */
+    public function current() {}
+
+    /**
+     * @return TKey|null
+     */
+    public function key() {}
 }
 
 /**
- * @template-covariant TKey
- * @template-covariant TValue
+ * @template TKey
+ * @template TValue
  * @template TIterator as Traversable<TKey, TValue>
  *
  * @extends CallbackFilterIterator<TKey, TValue, TIterator>

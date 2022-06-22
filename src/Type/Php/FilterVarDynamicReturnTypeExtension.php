@@ -15,16 +15,18 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\UnionType;
+use PHPStan\Type\TypeCombinator;
+use function is_int;
 use function sprintf;
 use function strtolower;
 
@@ -40,6 +42,9 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	/** @var array<int, Type>|null */
 	private ?array $filterTypeMap = null;
+
+	/** @var array<int, list<string>>|null */
+	private ?array $filterTypeOptions = null;
 
 	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
@@ -91,6 +96,24 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return $this->filterTypeMap;
 	}
 
+	/**
+	 * @return array<int, list<string>>
+	 */
+	private function getFilterTypeOptions(): array
+	{
+		if ($this->filterTypeOptions !== null) {
+			return $this->filterTypeOptions;
+		}
+
+		$this->filterTypeOptions = [
+			$this->getConstant('FILTER_VALIDATE_INT') => ['min_range', 'max_range'],
+			// PHPStan does not yet support FloatRangeType
+			// $this->getConstant('FILTER_VALIDATE_FLOAT') => ['min_range', 'max_range'],
+		];
+
+		return $this->filterTypeOptions;
+	}
+
 	private function getConstant(string $constantName): int
 	{
 		$constant = $this->reflectionProvider->getConstant(new Node\Name($constantName), null);
@@ -129,21 +152,35 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$flagsArg = $functionCall->getArgs()[2] ?? null;
 		$inputType = $scope->getType($functionCall->getArgs()[0]->value);
 		$exactType = $this->determineExactType($inputType, $filterValue);
+		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
+
+		$typeOptionNames = $this->getFilterTypeOptions()[$filterValue] ?? [];
+		$otherTypes = $this->getOtherTypes($flagsArg, $scope, $typeOptionNames);
+
+		if ($inputType->isNonEmptyString()->yes()
+			&& $type->isString()->yes()
+			&& !$this->canStringBeSanitized($filterValue, $flagsArg, $scope)) {
+			$type = TypeCombinator::intersect($type, new AccessoryNonEmptyStringType());
+		}
+
+		if (isset($otherTypes['range'])) {
+			if ($type instanceof ConstantScalarType) {
+				if ($otherTypes['range']->isSuperTypeOf($type)->no()) {
+					$type = $otherTypes['default'];
+				}
+
+				unset($otherTypes['default']);
+			} else {
+				$type = $otherTypes['range'];
+			}
+		}
+
 		if ($exactType !== null) {
-			$type = $exactType;
-		} else {
-			$type = $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
-			$otherType = $this->getOtherType($flagsArg, $scope);
+			unset($otherTypes['default']);
+		}
 
-			if ($inputType->isNonEmptyString()->yes()
-				&& $type instanceof StringType
-				&& !$this->canStringBeSanitized($filterValue, $flagsArg, $scope)) {
-				$type = new IntersectionType([$type, new AccessoryNonEmptyStringType()]);
-			}
-
-			if ($otherType->isSuperTypeOf($type)->no()) {
-				$type = new UnionType([$type, $otherType]);
-			}
+		if (isset($otherTypes['default']) && $otherTypes['default']->isSuperTypeOf($type)->no()) {
+			$type = TypeCombinator::union($type, $otherTypes['default']);
 		}
 
 		if ($this->hasFlag($this->getConstant('FILTER_FORCE_ARRAY'), $flagsArg, $scope)) {
@@ -168,43 +205,74 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return null;
 	}
 
-	private function getOtherType(?Node\Arg $flagsArg, Scope $scope): Type
+	/**
+	 * @param list<string> $typeOptionNames
+	 * @return array{default: Type, range?: Type}
+	 */
+	private function getOtherTypes(?Node\Arg $flagsArg, Scope $scope, array $typeOptionNames): array
 	{
 		$falseType = new ConstantBooleanType(false);
 		if ($flagsArg === null) {
-			return $falseType;
+			return ['default' => $falseType];
 		}
 
-		$defaultType = $this->getDefault($flagsArg, $scope);
-		if ($defaultType !== null) {
-			return $defaultType;
+		$typeOptions = $this->getOptions($flagsArg, $scope, 'default', ...$typeOptionNames);
+		$defaultType = $typeOptions['default'] ?? null;
+		if ($defaultType === null) {
+			$defaultType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsArg, $scope)
+				? new NullType()
+				: $falseType;
 		}
 
-		if ($this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsArg, $scope)) {
-			return new NullType();
+		$otherTypes = ['default' => $defaultType];
+		$range = [];
+		if (isset($typeOptions['min_range'])) {
+			if ($typeOptions['min_range'] instanceof ConstantScalarType) {
+				$range['min'] = $typeOptions['min_range']->getValue();
+			} elseif ($typeOptions['min_range'] instanceof IntegerRangeType) {
+				$range['min'] = $typeOptions['min_range']->getMin();
+			}
+		}
+		if (isset($typeOptions['max_range'])) {
+			if ($typeOptions['max_range'] instanceof ConstantScalarType) {
+				$range['max'] = $typeOptions['max_range']->getValue();
+			} elseif ($typeOptions['max_range'] instanceof IntegerRangeType) {
+				$range['max'] = $typeOptions['max_range']->getMax();
+			}
 		}
 
-		return $falseType;
+		if (isset($range['min']) || isset($range['max'])) {
+			$min = isset($range['min']) && is_int($range['min']) ? $range['min'] : null;
+			$max = isset($range['max']) && is_int($range['max']) ? $range['max'] : null;
+			$otherTypes['range'] = IntegerRangeType::fromInterval($min, $max);
+		}
+
+		return $otherTypes;
 	}
 
-	private function getDefault(Node\Arg $expression, Scope $scope): ?Type
+	/**
+	 * @return array<string, ?Type>
+	 */
+	private function getOptions(Node\Arg $expression, Scope $scope, string ...$optionNames): array
 	{
+		$options = [];
+
 		$exprType = $scope->getType($expression->value);
 		if (!$exprType instanceof ConstantArrayType) {
-			return null;
+			return $options;
 		}
 
 		$optionsType = $exprType->getOffsetValueType(new ConstantStringType('options'));
 		if (!$optionsType instanceof ConstantArrayType) {
-			return null;
+			return $options;
 		}
 
-		$defaultType = $optionsType->getOffsetValueType(new ConstantStringType('default'));
-		if (!$defaultType instanceof ErrorType) {
-			return $defaultType;
+		foreach ($optionNames as $optionName) {
+			$type = $optionsType->getOffsetValueType(new ConstantStringType($optionName));
+			$options[$optionName] = $type instanceof ErrorType ? null : $type;
 		}
 
-		return null;
+		return $options;
 	}
 
 	private function hasFlag(int $flag, ?Node\Arg $expression, Scope $scope): bool

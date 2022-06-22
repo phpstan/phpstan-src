@@ -6,8 +6,12 @@ use function PHPStan\Testing\assertType;
 
 class Foo
 {
-	/** @param non-empty-string $str */
-	public function run(string $str): void
+	/**
+	 * @param non-empty-string $str
+	 * @param positive-int $positive_int
+	 * @param negative-int $negative_int
+	 */
+	public function run(string $str, int $int, int $positive_int, int $negative_int): void
 	{
 		assertType('non-empty-string', $str);
 
@@ -48,6 +52,45 @@ class Foo
 		assertType('string|false', $return);
 
 		$return = filter_var($str, FILTER_VALIDATE_INT);
+		assertType('int|false', $return);
+
+		$return = filter_var($str, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+		assertType('int<1, max>|false', $return);
+
+		$return = filter_var($str, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1], 'flags' => FILTER_NULL_ON_FAILURE]);
+		assertType('int<1, max>|null', $return);
+
+		$return = filter_var($str, FILTER_VALIDATE_INT, ['options' => ['max_range' => 0]]);
+		assertType('int<min, 0>|false', $return);
+
+		$return = filter_var($str, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 9]]);
+		assertType('int<1, 9>|false', $return);
+
+		$return = filter_var(100, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 9]]);
+		assertType('false', $return);
+
+		$return = filter_var(100, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 1]]);
+		assertType('false', $return);
+
+		$return = filter_var(1, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 9]]);
+		assertType('1', $return);
+
+		$return = filter_var(1, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 1]]);
+		assertType('1', $return);
+
+		$return = filter_var(9, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 9]]);
+		assertType('9', $return);
+
+		$return = filter_var(1.0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 9]]);
+		assertType('int<1, 9>|false', $return);
+
+		$return = filter_var($str, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => $positive_int]]);
+		assertType('int<1, max>|false', $return);
+
+		$return = filter_var($str, FILTER_VALIDATE_INT, ['options' => ['min_range' => $negative_int, 'max_range' => 0]]);
+		assertType('int<min, 0>|false', $return);
+
+		$return = filter_var($str, FILTER_VALIDATE_INT, ['options' => ['min_range' => $int, 'max_range' => $int]]);
 		assertType('int|false', $return);
 
 		$str2 = '';

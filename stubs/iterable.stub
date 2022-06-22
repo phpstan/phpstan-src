@@ -321,3 +321,27 @@ class NoRewindIterator extends IteratorIterator {
     public function key() {}
 }
 
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @template TIterator as Iterator<TKey, TValue>
+ *
+ * @template-implements OuterIterator<TKey, TValue>
+ * @template-extends IteratorIterator<TKey, TValue, TIterator>
+ */
+class LimitIterator extends IteratorIterator implements OuterIterator {
+    /**
+     * @param TIterator $iterator
+     */
+    public function __construct(Iterator $iterator, int $offset = 0, int $count = -1) {}
+
+    /**
+     * @return TValue
+     */
+    public function current() {}
+
+    /**
+     * @return TKey
+     */
+    public function key() {}
+}

@@ -59,5 +59,7 @@ return [
 	],
 	'old' => [
 		'implode\'2' => ['string', 'pieces'=>'array', 'glue'=>'string'],
+		'preg_replace_callback' => ['string|array|null', 'regex'=>'string|array', 'callback'=>'callable(array<int|string, string>):string', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int'],
+		'preg_replace_callback_array' => ['string|array|null', 'pattern'=>'array<string,callable>', 'subject'=>'string|array', 'limit='=>'int', '&w_count='=>'int'],
 	],
 ];

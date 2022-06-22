@@ -29,6 +29,7 @@ parameters:
 			- NoRewindIterator
 			- LimitIterator
 			- InfiniteIterator
+			- CachingIterator
 		explicitMixedInUnknownGenericNew: false
 		explicitMixedForGlobalVariables: false
 		explicitMixedViaIsArray: false

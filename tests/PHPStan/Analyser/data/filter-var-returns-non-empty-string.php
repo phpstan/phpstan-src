@@ -69,7 +69,13 @@ class Foo
 		$return = filter_var(100, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 9]]);
 		assertType('false', $return);
 
+		$return = filter_var(100, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 1]]);
+		assertType('false', $return);
+
 		$return = filter_var(1, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 9]]);
+		assertType('1', $return);
+
+		$return = filter_var(1, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 1]]);
 		assertType('1', $return);
 
 		$return = filter_var(9, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 9]]);

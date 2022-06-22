@@ -1390,8 +1390,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new StringType(),
 					new ClassStringType(),
 				],
-				StringType::class,
-				'string',
+				UnionType::class,
+				'class-string|string',
 			],
 			[
 				[
@@ -1438,8 +1438,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new GenericClassStringType(new ObjectType(Exception::class)),
 					new StringType(),
 				],
-				StringType::class,
-				'string',
+				UnionType::class,
+				'class-string<Exception>|string',
 			],
 			[
 				[

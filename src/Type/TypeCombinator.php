@@ -25,6 +25,7 @@ use function array_splice;
 use function array_values;
 use function count;
 use function get_class;
+use function in_array;
 use function is_int;
 use function md5;
 use function usort;
@@ -362,6 +363,12 @@ class TypeCombinator
 			}
 		}
 		if ($a instanceof IntegerRangeType && $b instanceof IntegerRangeType) {
+			return null;
+		}
+
+		if (($a instanceof ClassStringType || $b instanceof ClassStringType) &&
+			in_array('string', [$a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value())], true)
+		) {
 			return null;
 		}
 

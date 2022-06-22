@@ -250,3 +250,46 @@ class TestConditionalTypeFromClassScopeGenerics
 	}
 
 }
+
+class Container
+{
+	/**
+	 * @template T
+	 * @param string|class-string<T> $id
+	 * @return ($id is class-string ? T : string)
+	 */
+	public function get(string $id)
+	{
+		if (\class_exists($id)) {
+			/** @var class-string<T> */
+			return new $id;
+		}
+
+		return $id;
+	}
+
+	/**
+	 * @param string|class-string<\DateTimeInterface> $id
+	 * @return ($id is class-string ? \DateTimeInterface : string)
+	 */
+	public function getDateTime(string $id)
+	{
+		if (\is_a($id, \DateTimeInterface::class, true)) {
+			return new $id;
+		}
+
+		return $id;
+	}
+
+}
+
+function (Container $c)
+{
+	assertType('string', $c->get(''));
+	assertType('DateTime', $c->get(\DateTime::class));
+	assertType('DateTimeImmutable', $c->get(\DateTimeImmutable::class));
+	assertType('DateTime', $c->get('DateTime'));
+	assertType('DateTimeInterface', $c->getDateTime(\DateTime::class));
+	assertType('DateTimeInterface', $c->getDateTime(\DateTimeImmutable::class));
+	assertType('DateTimeInterface', $c->getDateTime('DateTime'));
+};

@@ -37,7 +37,7 @@ function testUnbounded(
 	assertType('class-string', unbounded($classString));
 	assertType('class-string<stdClass>', unbounded($genericClassString));
 
-	assertType('string', unbounded(rand(0,1) === 1 ? 'hello' : $classString));
+	assertType('class-string|string', unbounded(rand(0,1) === 1 ? 'hello' : $classString));
 
 	assertType('array{foo: int}', unbounded($arrayShape));
 

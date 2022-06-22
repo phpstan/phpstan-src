@@ -94,6 +94,7 @@ class UnionTypeTest extends PHPStanTestCase
 		$constantStringType = new ConstantStringType('foo');
 		$constantIntegerType = new ConstantIntegerType(42);
 		$templateTypeScope = TemplateTypeScope::createWithClass('Foo');
+		$classStringType = new ClassStringType();
 
 		$mixedParam = new NativeParameterReflection('foo', false, $mixedType, PassedByReference::createNo(), false, null);
 		$integerParam = new NativeParameterReflection('n', false, $integerType, PassedByReference::createNo(), false, null);
@@ -140,6 +141,7 @@ class UnionTypeTest extends PHPStanTestCase
 		yield [TemplateTypeFactory::create($templateTypeScope, 'T', new ObjectWithoutClassType(), TemplateTypeVariance::createInvariant())];
 		yield [new ThisType($reflectionProvider->getClass('Foo'))];
 		yield [new UnionType([$integerType, $stringType])];
+		yield [new UnionType([$classStringType, $stringType])];
 		yield [new VoidType()];
 	}
 

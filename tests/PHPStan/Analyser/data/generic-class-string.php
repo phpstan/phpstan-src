@@ -64,10 +64,12 @@ function testString($a) {
 		assertType('string', $a);
 	}
 
+	assertType('class-string<DateTimeInterface>|string', $a);
+
 	if (is_subclass_of($a, C::class)) {
 		assertType('int', $a::f());
 	} else {
-		assertType('string', $a);
+		assertType('class-string<DateTimeInterface>|string', $a);
 	}
 }
 
@@ -84,10 +86,12 @@ function testStringObject($a) {
 		assertType('object|string', $a);
 	}
 
+	assertType('class-string<DateTimeInterface>|object|string', $a);
+
 	if (is_subclass_of($a, C::class)) {
 		assertType('int', $a::f());
 	} else {
-		assertType('object|string', $a);
+		assertType('class-string<DateTimeInterface>|object|string', $a);
 	}
 }
 
@@ -122,7 +126,7 @@ function testClassStringAsClassName($a, string $b) {
 	if (is_subclass_of($a, $b, false)) {
 		assertType('DateTimeInterface', $a);
 	} else {
-		assertType('object|string', $a);
+		assertType('class-string<DateTimeInterface>|object|string', $a);
 	}
 }
 

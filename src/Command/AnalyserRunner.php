@@ -59,7 +59,8 @@ class AnalyserRunner
 
 		if (
 			!$debug
-			&& $allowParallel && function_exists('proc_open')
+			&& $allowParallel
+			&& function_exists('proc_open')
 			&& $mainScript !== null
 			&& $schedule->getNumberOfProcesses() > 0
 		) {

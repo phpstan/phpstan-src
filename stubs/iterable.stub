@@ -404,3 +404,35 @@ class CachingIterator extends IteratorIterator implements OuterIterator, ArrayAc
      */
     public function key() {}
 }
+
+/**
+ * @template TKey
+ * @template TValue
+ * @template TIterator of Traversable<TKey, TValue>
+ *
+ * @template-extends FilterIterator<TKey, TValue, TIterator>
+ */
+class RegexIterator extends FilterIterator {
+    const MATCH = 0 ;
+    const GET_MATCH = 1 ;
+    const ALL_MATCHES = 2 ;
+    const SPLIT = 3 ;
+    const REPLACE = 4 ;
+    const USE_KEY = 1 ;
+
+    /**
+     * @param Iterator<TKey, TValue> $iterator
+     * @param self::MATCH|self::GET_MATCH|self::ALL_MATCHES|self::SPLIT|self::REPLACE $mode
+     */
+    public function __construct(Iterator $iterator, string $regex, int $mode = self::MATCH, int $flags = 0, int $preg_flags = 0) {}
+
+    /**
+     * @return TValue
+     */
+    public function current() {}
+
+    /**
+     * @return TKey
+     */
+    public function key() {}
+}

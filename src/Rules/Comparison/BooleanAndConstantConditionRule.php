@@ -78,10 +78,13 @@ class BooleanAndConstantConditionRule implements Rule
 
 				return $ruleErrorBuilder->tip($tipText);
 			};
-			$errors[] = $addTipRight(RuleErrorBuilder::message(sprintf(
-				'Right side of && is always %s.',
-				$rightType->getValue() ? 'true' : 'false',
-			)))->line($originalNode->right->getLine())->build();
+
+			if (!$scope->isInFirstLevelStatement()) {
+				$errors[] = $addTipRight(RuleErrorBuilder::message(sprintf(
+					'Right side of && is always %s.',
+					$rightType->getValue() ? 'true' : 'false',
+				)))->line($originalNode->right->getLine())->build();
+			}
 		}
 
 		if (count($errors) === 0) {
@@ -100,10 +103,12 @@ class BooleanAndConstantConditionRule implements Rule
 					return $ruleErrorBuilder->tip($tipText);
 				};
 
-				$errors[] = $addTip(RuleErrorBuilder::message(sprintf(
-					'Result of && is always %s.',
-					$nodeType->getValue() ? 'true' : 'false',
-				)))->build();
+				if (!$scope->isInFirstLevelStatement()) {
+					$errors[] = $addTip(RuleErrorBuilder::message(sprintf(
+						'Result of && is always %s.',
+						$nodeType->getValue() ? 'true' : 'false',
+					)))->build();
+				}
 			}
 		}
 

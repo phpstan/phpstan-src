@@ -2,13 +2,13 @@
 
 namespace PHPStan\Node;
 
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BinaryOp\LogicalOr;
-use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
 
 /** @api */
-class BooleanOrNode extends NodeAbstract implements VirtualNode
+class BooleanOrNode extends Expr implements VirtualNode
 {
 
 	public function __construct(private BooleanOr|LogicalOr $originalNode, private Scope $rightScope)

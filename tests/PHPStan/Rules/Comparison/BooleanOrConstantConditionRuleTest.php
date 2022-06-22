@@ -186,4 +186,15 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6258.php'], []);
 	}
 
+	public function testBug2741(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-2741-or.php'], [
+			[
+				'Right side of || is always false.',
+				21,
+			],
+		]);
+	}
+
 }

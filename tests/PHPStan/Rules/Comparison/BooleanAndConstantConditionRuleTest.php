@@ -224,4 +224,15 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2870.php'], []);
 	}
 
+	public function testBug2741(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-2741.php'], [
+			[
+				'Right side of && is always false.',
+				21,
+			],
+		]);
+	}
+
 }

@@ -2270,7 +2270,7 @@ class NodeScopeResolver
 				$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
 			}
 
-			$nodeCallback(new BooleanAndNode($expr, $leftResult->getTruthyScope()), $scope);
+			$this->callNodeCallbackWithExpression($nodeCallback, new BooleanAndNode($expr, $leftResult->getTruthyScope()), $scope, $context);
 
 			return new ExpressionResult(
 				$leftMergedWithRightScope,
@@ -2289,7 +2289,7 @@ class NodeScopeResolver
 				$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
 			}
 
-			$nodeCallback(new BooleanOrNode($expr, $leftResult->getFalseyScope()), $scope);
+			$this->callNodeCallbackWithExpression($nodeCallback, new BooleanOrNode($expr, $leftResult->getFalseyScope()), $scope, $context);
 
 			return new ExpressionResult(
 				$leftMergedWithRightScope,

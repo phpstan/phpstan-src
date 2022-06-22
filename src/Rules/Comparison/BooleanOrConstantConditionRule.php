@@ -78,10 +78,13 @@ class BooleanOrConstantConditionRule implements Rule
 
 				return $ruleErrorBuilder->tip($tipText);
 			};
-			$messages[] = $addTipRight(RuleErrorBuilder::message(sprintf(
-				'Right side of || is always %s.',
-				$rightType->getValue() ? 'true' : 'false',
-			)))->line($originalNode->right->getLine())->build();
+
+			if (!$scope->isInFirstLevelStatement()) {
+				$messages[] = $addTipRight(RuleErrorBuilder::message(sprintf(
+					'Right side of || is always %s.',
+					$rightType->getValue() ? 'true' : 'false',
+				)))->line($originalNode->right->getLine())->build();
+			}
 		}
 
 		if (count($messages) === 0) {
@@ -99,10 +102,13 @@ class BooleanOrConstantConditionRule implements Rule
 
 					return $ruleErrorBuilder->tip($tipText);
 				};
-				$messages[] = $addTip(RuleErrorBuilder::message(sprintf(
-					'Result of || is always %s.',
-					$nodeType->getValue() ? 'true' : 'false',
-				)))->build();
+
+				if (!$scope->isInFirstLevelStatement()) {
+					$messages[] = $addTip(RuleErrorBuilder::message(sprintf(
+						'Result of || is always %s.',
+						$nodeType->getValue() ? 'true' : 'false',
+					)))->build();
+				}
 			}
 		}
 

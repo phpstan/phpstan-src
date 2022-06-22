@@ -27,6 +27,7 @@ class TypeSpecifierFactory
 			$this->container->getServicesByTag(self::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG),
 			$this->container->getServicesByTag(self::METHOD_TYPE_SPECIFYING_EXTENSION_TAG),
 			$this->container->getServicesByTag(self::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG),
+			$this->container->getParameter('rememberPossiblyImpureFunctionValues'),
 		);
 
 		foreach (array_merge(

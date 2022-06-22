@@ -92,6 +92,7 @@ parameters:
 	propertyAlwaysReadTags: []
 	additionalConstructors: []
 	treatPhpDocTypesAsCertain: true
+	rememberPossiblyImpureFunctionValues: true
 	tipsOfTheDay: true
 	reportMagicMethods: false
 	reportMagicProperties: false
@@ -295,6 +296,7 @@ parametersSchema:
 	propertyAlwaysReadTags: listOf(string())
 	additionalConstructors: listOf(string())
 	treatPhpDocTypesAsCertain: bool()
+	rememberPossiblyImpureFunctionValues: bool()
 	reportMagicMethods: bool()
 	reportMagicProperties: bool()
 	ignoreErrors: listOf(

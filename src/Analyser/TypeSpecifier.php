@@ -89,6 +89,7 @@ class TypeSpecifier
 		private array $functionTypeSpecifyingExtensions,
 		private array $methodTypeSpecifyingExtensions,
 		private array $staticMethodTypeSpecifyingExtensions,
+		private bool $rememberPossiblyImpureFunctionValues,
 	)
 	{
 		foreach (array_merge($functionTypeSpecifyingExtensions, $methodTypeSpecifyingExtensions, $staticMethodTypeSpecifyingExtensions) as $extension) {
@@ -1182,7 +1183,12 @@ class TypeSpecifier
 			}
 
 			$functionReflection = $this->reflectionProvider->getFunction($expr->name, $scope);
-			if ($functionReflection->hasSideEffects()->yes()) {
+			$hasSideEffects = $functionReflection->hasSideEffects();
+			if ($hasSideEffects->yes()) {
+				return new SpecifiedTypes([], [], false, [], $rootExpr);
+			}
+
+			if (!$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no()) {
 				return new SpecifiedTypes([], [], false, [], $rootExpr);
 			}
 		}
@@ -1195,7 +1201,11 @@ class TypeSpecifier
 			$methodName = $expr->name->toString();
 			$calledOnType = $scope->getType($expr->var);
 			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
-			if ($methodReflection === null || $methodReflection->hasSideEffects()->yes()) {
+			if (
+				$methodReflection === null
+				|| $methodReflection->hasSideEffects()->yes()
+				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
+			) {
 				if (isset($resultType) && !TypeCombinator::containsNull($resultType)) {
 					return $this->createNullsafeTypes($rootExpr, $originalExpr, $scope, $context, $overwrite, $type);
 				}
@@ -1217,7 +1227,11 @@ class TypeSpecifier
 			}
 
 			$methodReflection = $scope->getMethodReflection($calledOnType, $methodName);
-			if ($methodReflection === null || $methodReflection->hasSideEffects()->yes()) {
+			if (
+				$methodReflection === null
+				|| $methodReflection->hasSideEffects()->yes()
+				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
+			) {
 				if (isset($resultType) && !TypeCombinator::containsNull($resultType)) {
 					return $this->createNullsafeTypes($rootExpr, $originalExpr, $scope, $context, $overwrite, $type);
 				}

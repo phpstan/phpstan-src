@@ -311,12 +311,12 @@ class NoRewindIterator extends IteratorIterator {
     public function __construct(Iterator $iterator) {}
 
     /**
-     * @return TValue|null
+     * @return TValue
      */
     public function current() {}
 
     /**
-     * @return TKey|null
+     * @return TKey
      */
     public function key() {}
 }

@@ -217,7 +217,6 @@ class CallbackFilterIterator extends FilterIterator
 
 }
 
-
 /**
  * @template-covariant TKey
  * @template-covariant TValue
@@ -276,7 +275,6 @@ class RecursiveArrayIterator extends ArrayIterator implements RecursiveIterator 
     public function uksort($cmp_function) { }
 }
 
-
 /**
  * @template TKey of array-key
  * @template TValue
@@ -298,3 +296,28 @@ class AppendIterator extends IteratorIterator {
     public function getArrayIterator() {}
 
 }
+
+/**
+ * @template-covariant TKey
+ * @template-covariant TValue
+ * @template TIterator as Iterator<TKey, TValue>
+ *
+ * @template-extends IteratorIterator<TKey, TValue, TIterator>
+ */
+class NoRewindIterator extends IteratorIterator {
+    /**
+     * @param TIterator $iterator
+     */
+    public function __construct(Iterator $iterator) {}
+
+    /**
+     * @return TValue
+     */
+    public function current() {}
+
+    /**
+     * @return TKey
+     */
+    public function key() {}
+}
+

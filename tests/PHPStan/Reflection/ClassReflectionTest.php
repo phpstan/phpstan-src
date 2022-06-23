@@ -311,7 +311,7 @@ class ClassReflectionTest extends PHPStanTestCase
 
 	public function testIs(): void
 	{
-		$className = get_class($this);
+		$className = static::class;
 
 		$reflectionProvider = $this->createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass($className);

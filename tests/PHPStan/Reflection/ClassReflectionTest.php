@@ -28,7 +28,9 @@ use NestedTraits\BazChild;
 use NestedTraits\BazTrait;
 use NestedTraits\NoTrait;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\IntegerType;
+use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use WrongClassConstantFile\SecuredRouter;
 use function array_map;
@@ -305,6 +307,19 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = $this->createReflectionProvider();
 		$enum = $reflectionProvider->getClass('PHPStan\Fixture\TestEnum');
 		$this->assertInstanceOf(IntegerType::class, $enum->getBackedEnumType());
+	}
+
+	public function testIs(): void
+	{
+		$className = get_class($this);
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$classReflection = $reflectionProvider->getClass($className);
+
+		$this->assertTrue($classReflection->is($className));
+		$this->assertTrue($classReflection->is(PHPStanTestCase::class));
+		$this->assertTrue($classReflection->is(TestCase::class));
+		$this->assertFalse($classReflection->is(RuleTestCase::class));
 	}
 
 }

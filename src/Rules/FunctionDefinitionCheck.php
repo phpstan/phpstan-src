@@ -22,6 +22,7 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
@@ -326,6 +327,18 @@ class FunctionDefinitionCheck
 		if (count($templateTypes) > 0) {
 			foreach ($parametersAcceptor->getParameters() as $parameter) {
 				TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
+					if ($type instanceof TemplateType) {
+						unset($templateTypes[$type->getName()]);
+						return $traverse($type);
+					}
+
+					return $traverse($type);
+				});
+			}
+
+			$returnType = $parametersAcceptor->getReturnType();
+			if ($returnType instanceof ConditionalTypeForParameter && !$returnType->isNegated()) {
+				TypeTraverser::map($returnType, static function (Type $type, callable $traverse) use (&$templateTypes): Type {
 					if ($type instanceof TemplateType) {
 						unset($templateTypes[$type->getName()]);
 						return $traverse($type);

@@ -28,6 +28,7 @@ parameters:
 			- AppendIterator
 			- NoRewindIterator
 			- LimitIterator
+			- InfiniteIterator
 		explicitMixedInUnknownGenericNew: false
 		explicitMixedForGlobalVariables: false
 		explicitMixedViaIsArray: false

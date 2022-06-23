@@ -1889,6 +1889,8 @@ services:
 		class: PHPStan\Reflection\BetterReflection\BetterReflectionProvider
 		arguments:
 			reflector: @betterReflectionReflector
+			# see: https://github.com/phpstan/phpstan/issues/6650
+			relativePathHelper: @simpleRelativePathHelper
 		autowired: false
 
 	-

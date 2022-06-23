@@ -30,6 +30,7 @@ parameters:
 			- LimitIterator
 			- InfiniteIterator
 			- CachingIterator
+			- RegexIterator
 		explicitMixedInUnknownGenericNew: false
 		explicitMixedForGlobalVariables: false
 		explicitMixedViaIsArray: false

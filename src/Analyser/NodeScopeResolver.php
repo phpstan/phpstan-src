@@ -256,6 +256,7 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * @api
 	 * @param Node\Stmt[] $stmts
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */

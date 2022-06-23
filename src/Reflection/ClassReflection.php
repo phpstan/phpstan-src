@@ -639,6 +639,11 @@ class ClassReflection
 		return $this->anonymousFilename !== null;
 	}
 
+	public function is(string $className): bool
+	{
+		return $this->getName() === $className || $this->isSubclassOf($className);
+	}
+
 	public function isSubclassOf(string $className): bool
 	{
 		if (isset($this->subclasses[$className])) {

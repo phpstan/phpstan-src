@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
@@ -60,6 +61,17 @@ class GenericParametersAcceptorResolver
 			$paramType = $param->getType();
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType));
 			$passedArgs['$' . $param->getName()] = $argType;
+		}
+
+		$returnType = $parametersAcceptor->getReturnType();
+		if (
+			$returnType instanceof ConditionalTypeForParameter
+			&& !$returnType->isNegated()
+			&& array_key_exists($returnType->getParameterName(), $passedArgs)
+		) {
+			$paramType = $returnType->getTarget();
+			$argType = $passedArgs[$returnType->getParameterName()];
+			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType));
 		}
 
 		$resolvedTemplateTypeMap = new TemplateTypeMap(array_merge(

@@ -309,4 +309,14 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/true-typehint.php'], $errors);
 	}
 
+	public function testConditionalReturnType(): void
+	{
+		$this->analyse([__DIR__ . '/data/conditional-return-type.php'], [
+			[
+				'Template type T of method MethodConditionalReturnType\Container::notGet() is not referenced in a parameter.',
+				17,
+			],
+		]);
+	}
+
 }

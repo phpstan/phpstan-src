@@ -438,16 +438,16 @@ class RegexIterator extends FilterIterator {
 }
 
 /**
- * @template-implements Iterator<void, void>
+ * @template-implements Iterator<never, never>
  */
 class EmptyIterator implements Iterator {
     /**
-     * @return void
+     * @return never
      */
     public function current() {}
 
     /**
-     * @return void
+     * @return never
      */
     public function key() {}
 

@@ -1,0 +1,5 @@
+includes:
+	- baseline.neon
+
+parameters:
+	resultCachePath: %tmpDir%/myResultCacheFile.php

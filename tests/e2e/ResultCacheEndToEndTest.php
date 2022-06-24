@@ -18,6 +18,7 @@ use function ksort;
 use function sort;
 use function sprintf;
 use function str_replace;
+use function sys_get_temp_dir;
 use function unlink;
 use const DIRECTORY_SEPARATOR;
 use const FILE_APPEND;
@@ -127,16 +128,24 @@ class ResultCacheEndToEndTest extends TestCase
 		$this->assertResultCache(__DIR__ . '/resultCache_1.php');
 	}
 
+	public function testResultCachePath(): void
+	{
+		$this->runPhpstan(0, __DIR__ . '/phpstan_resultcachepath.neon');
+
+		$this->assertFileExists(sys_get_temp_dir() . '/phpstan/myResultCacheFile.php');
+		$this->assertResultCache(__DIR__ . '/resultCache_1.php', sys_get_temp_dir() . '/phpstan/myResultCacheFile.php');
+	}
+
 	/**
 	 * @return mixed[]
 	 */
-	private function runPhpstan(int $expectedExitCode): array
+	private function runPhpstan(int $expectedExitCode, string $phpstanConfigPath = __DIR__ . '/phpstan.neon'): array
 	{
 		exec(sprintf(
 			'%s %s analyse -c %s -l 5 --no-progress --error-format json lib 2>&1',
 			escapeshellarg(PHP_BINARY),
 			escapeshellarg(__DIR__ . '/../../bin/phpstan'),
-			escapeshellarg(__DIR__ . '/phpstan.neon'),
+			escapeshellarg($phpstanConfigPath),
 		), $outputLines, $exitCode);
 		$output = implode("\n", $outputLines);
 
@@ -178,10 +187,9 @@ class ResultCacheEndToEndTest extends TestCase
 		return $helper->getRelativePath($path);
 	}
 
-	private function assertResultCache(string $expectedCachePath): void
+	private function assertResultCache(string $expectedCachePath, string $actualCachePath = __DIR__ . '/tmp/resultCache.php'): void
 	{
-		$resultCachePath = __DIR__ . '/tmp/resultCache.php';
-		$resultCache = $this->transformResultCache(require $resultCachePath);
+		$resultCache = $this->transformResultCache(require $actualCachePath);
 		$expectedResultCachePath = require $expectedCachePath;
 		$this->assertSame($expectedResultCachePath, $resultCache);
 	}

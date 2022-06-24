@@ -1155,10 +1155,43 @@ class TypeSpecifier
 			return new SpecifiedTypes([], [], false, [], $rootExpr);
 		}
 
-		while ($expr instanceof Expr\Assign) {
-			$expr = $expr->var;
+		$specifiedExprs = [];
+
+		if ($expr instanceof Expr\Assign) {
+			$specifiedExprs[] = $expr->var;
+
+			while ($expr->expr instanceof Expr\Assign) {
+				$specifiedExprs[] = $expr->expr->var;
+				$expr = $expr->expr;
+			}
+		} else {
+			$specifiedExprs[] = $expr;
 		}
 
+		$types = null;
+
+		foreach ($specifiedExprs as $specifiedExpr) {
+			$newTypes = $this->createForExpr($specifiedExpr, $type, $context, $overwrite, $scope, $rootExpr);
+
+			if ($types === null) {
+				$types = $newTypes;
+			} else {
+				$types = $types->unionWith($newTypes);
+			}
+		}
+
+		return $types;
+	}
+
+	private function createForExpr(
+		Expr $expr,
+		Type $type,
+		TypeSpecifierContext $context,
+		bool $overwrite = false,
+		?Scope $scope = null,
+		?Expr $rootExpr = null,
+	): SpecifiedTypes
+	{
 		if ($scope !== null) {
 			if ($context->true()) {
 				$resultType = TypeCombinator::intersect($scope->getType($expr), $type);

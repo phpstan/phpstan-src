@@ -284,7 +284,7 @@ return [
 'array_key_exists' => ['bool', 'key'=>'string|int', 'search'=>'array'],
 'array_key_first' => ['int|string|null', 'array' => 'array'],
 'array_key_last' => ['int|string|null', 'array' => 'array'],
-'array_keys' => ['array', 'input'=>'array', 'search_value='=>'mixed', 'strict='=>'bool'],
+'array_keys' => ['list<array-key>', 'input'=>'array', 'search_value='=>'mixed', 'strict='=>'bool'],
 'array_map' => ['array', 'callback'=>'?callable', 'array'=>'array', '...args='=>'array'],
 'array_merge' => ['array', 'arr1'=>'array', '...args='=>'array'],
 'array_merge_recursive' => ['array', 'arr1'=>'array', '...args='=>'array'],

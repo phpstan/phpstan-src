@@ -436,3 +436,23 @@ class RegexIterator extends FilterIterator {
      */
     public function key() {}
 }
+
+/**
+ * @template-implements Iterator<void, void>
+ */
+class EmptyIterator implements Iterator {
+    /**
+     * @return void
+     */
+    public function current() {}
+
+    /**
+     * @return void
+     */
+    public function key() {}
+
+    /**
+     * @return false
+     */
+    public function valid() {}
+}

@@ -142,6 +142,10 @@ class CommandHelper
 		}
 		$currentWorkingDirectoryFileHelper = new FileHelper($currentWorkingDirectory);
 		$currentWorkingDirectory = $currentWorkingDirectoryFileHelper->getWorkingDirectory();
+
+		/** @var array<callable>|false $autoloadFunctionsBefore */
+		$autoloadFunctionsBefore = spl_autoload_functions();
+
 		if ($autoloadFile !== null) {
 			$autoloadFile = $currentWorkingDirectoryFileHelper->absolutizePath($autoloadFile);
 			if (!is_file($autoloadFile)) {
@@ -289,9 +293,6 @@ class CommandHelper
 			$tmpDir = sys_get_temp_dir() . '/phpstan';
 			$createDir($tmpDir);
 		}
-
-		/** @var array<callable>|false $autoloadFunctionsBefore */
-		$autoloadFunctionsBefore = spl_autoload_functions();
 
 		try {
 			$container = $containerFactory->create($tmpDir, $additionalConfigFiles, $paths, $composerAutoloaderProjectPaths, $analysedPathsFromConfig, $level ?? self::DEFAULT_LEVEL, $generateBaselineFile, $autoloadFile, $singleReflectionFile, $singleReflectionInsteadOfFile);

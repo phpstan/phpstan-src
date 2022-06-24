@@ -244,7 +244,7 @@ class FixerApplication
 		}
 
 		$fixerProcess->start($loop);
-		$fixerProcess->on('exit', static function ($exitCode) use ($output, $loop): void {
+		$fixerProcess->on('exit', function ($exitCode) use ($output, $loop): void {
 			$loop->stop();
 			if ($exitCode === null) {
 				return;
@@ -253,6 +253,7 @@ class FixerApplication
 				return;
 			}
 			$output->writeln(sprintf('<fg=red>PHPStan Pro process exited with code %d.</>', $exitCode));
+			@unlink($this->fixerTmpDir . '/phar-info.json');
 		});
 
 		$loop->run();

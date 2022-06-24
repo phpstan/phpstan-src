@@ -342,9 +342,8 @@ class TypeSpecifier
 			}
 
 			if ($context->true()) {
-				$type = TypeCombinator::intersect($scope->getType($expr->right), $scope->getType($expr->left));
-				$leftTypes = $this->create($expr->left, $type, $context, false, $scope, $rootExpr);
-				$rightTypes = $this->create($expr->right, $type, $context, false, $scope, $rootExpr);
+				$leftTypes = $this->create($expr->left, $exprRightType, $context, false, $scope, $rootExpr);
+				$rightTypes = $this->create($expr->right, $exprLeftType, $context, false, $scope, $rootExpr);
 				return $leftTypes->unionWith($rightTypes);
 			} elseif ($context->false()) {
 				return $this->create($expr->left, $exprLeftType, $context, false, $scope, $rootExpr)->normalize($scope)

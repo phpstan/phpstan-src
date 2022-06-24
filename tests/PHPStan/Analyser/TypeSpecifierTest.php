@@ -422,7 +422,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Variable('foo'),
 					new Variable('bar'),
 				),
-				['$foo' => 'Bar', '$bar' => 'Bar'],
+				['$foo' => 'Bar', '$bar' => 'mixed'], // could be '$bar' => 'Bar'
 				[],
 			],
 			[
@@ -1067,7 +1067,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$foo' => 'array<string, mixed>',
-					'array_filter($foo, \'is_string\', ARRAY_FILTER_USE_KEY)' => 'array<string, mixed>',
+					'array_filter($foo, \'is_string\', ARRAY_FILTER_USE_KEY)' => 'array', // could be 'array<string, mixed>'
 				],
 				[],
 			],

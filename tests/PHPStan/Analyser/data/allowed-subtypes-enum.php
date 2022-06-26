@@ -1,0 +1,27 @@
+<?php
+
+namespace AllowedSubtypesEnum;
+
+use function PHPStan\Testing\assertType;
+
+enum Foo {
+	case A;
+	case B;
+	case C;
+}
+
+function foo(Foo $foo): void {
+	assertType('AllowedSubtypesEnum\\Foo', $foo);
+
+	if ($foo === Foo::B) {
+		return;
+	}
+
+	assertType('AllowedSubtypesEnum\\Foo~AllowedSubtypesEnum\\Foo::B', $foo);
+
+	if ($foo === Foo::C) {
+		return;
+	}
+
+	assertType('AllowedSubtypesEnum\\Foo::A', $foo);
+}

@@ -31,6 +31,7 @@ class LazyClassReflectionExtensionRegistryProvider implements ClassReflectionExt
 				$this->container->getByType(Broker::class),
 				array_merge([$phpClassReflectionExtension], $this->container->getServicesByTag(BrokerFactory::PROPERTIES_CLASS_REFLECTION_EXTENSION_TAG), [$annotationsPropertiesClassReflectionExtension]),
 				array_merge([$phpClassReflectionExtension], $this->container->getServicesByTag(BrokerFactory::METHODS_CLASS_REFLECTION_EXTENSION_TAG), [$annotationsMethodsClassReflectionExtension]),
+				$this->container->getServicesByTag(BrokerFactory::ALLOWED_SUB_TYPES_CLASS_REFLECTION_EXTENSION_TAG),
 			);
 		}
 

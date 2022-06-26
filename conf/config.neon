@@ -841,6 +841,16 @@ services:
 			- phpstan.broker.methodsClassReflectionExtension
 
 	-
+		class: PHPStan\Reflection\Php\DateTimeInterfaceAllowedSubTypesClassReflectionExtension
+		tags:
+			- phpstan.broker.allowedSubTypesClassReflectionExtension
+
+	-
+		class: PHPStan\Reflection\Php\EnumAllowedSubTypesClassReflectionExtension
+		tags:
+			- phpstan.broker.allowedSubTypesClassReflectionExtension
+
+	-
 		class: PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension
 		tags:
 			- phpstan.broker.propertiesClassReflectionExtension

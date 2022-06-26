@@ -120,6 +120,7 @@ class ClassReflection
 	/**
 	 * @param PropertiesClassReflectionExtension[] $propertiesClassReflectionExtensions
 	 * @param MethodsClassReflectionExtension[] $methodsClassReflectionExtensions
+	 * @param AllowedSubTypesClassReflectionExtension[] $allowedSubTypesClassReflectionExtensions
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
@@ -130,6 +131,7 @@ class ClassReflection
 		private PhpVersion $phpVersion,
 		private array $propertiesClassReflectionExtensions,
 		private array $methodsClassReflectionExtensions,
+		private array $allowedSubTypesClassReflectionExtensions,
 		private string $displayName,
 		private ReflectionClass|ReflectionEnum $reflection,
 		private ?string $anonymousFilename,
@@ -1292,6 +1294,7 @@ class ClassReflection
 			$this->phpVersion,
 			$this->propertiesClassReflectionExtensions,
 			$this->methodsClassReflectionExtensions,
+			$this->allowedSubTypesClassReflectionExtensions,
 			$this->displayName,
 			$this->reflection,
 			$this->anonymousFilename,
@@ -1489,6 +1492,28 @@ class ClassReflection
 		}
 
 		return $types;
+	}
+
+	/**
+	 * @return array<Type>|null
+	 */
+	public function getAllowedSubTypes(): ?array
+	{
+		$subTypes = [];
+
+		foreach ($this->allowedSubTypesClassReflectionExtensions as $allowedSubTypesClassReflectionExtension) {
+			if (!$allowedSubTypesClassReflectionExtension->supports($this)) {
+				continue;
+			}
+
+			$subTypes[] = $allowedSubTypesClassReflectionExtension->getAllowedSubTypes($this);
+		}
+
+		if (count($subTypes) === 0) {
+			return null;
+		}
+
+		return array_merge(...$subTypes);
 	}
 
 }

@@ -3,6 +3,7 @@
 namespace PHPStan\Command;
 
 use PHPStan\Analyser\Error;
+use PHPStan\Collectors\CollectedData;
 use function count;
 use function usort;
 
@@ -18,12 +19,14 @@ class AnalysisResult
 	 * @param string[] $notFileSpecificErrors
 	 * @param string[] $internalErrors
 	 * @param string[] $warnings
+	 * @param CollectedData[] $collectedData
 	 */
 	public function __construct(
 		array $fileSpecificErrors,
 		private array $notFileSpecificErrors,
 		private array $internalErrors,
 		private array $warnings,
+		private array $collectedData,
 		private bool $defaultLevelUsed,
 		private ?string $projectConfigFile,
 		private bool $savedResultCache,
@@ -90,6 +93,14 @@ class AnalysisResult
 	public function hasWarnings(): bool
 	{
 		return count($this->warnings) > 0;
+	}
+
+	/**
+	 * @return CollectedData[]
+	 */
+	public function getCollectedData(): array
+	{
+		return $this->collectedData;
 	}
 
 	public function isDefaultLevelUsed(): bool

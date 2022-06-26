@@ -2,11 +2,14 @@
 
 namespace PHPStan\Testing;
 
+use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Collectors\Collector;
+use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\File\FileHelper;
@@ -14,7 +17,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Rules\Registry;
+use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
 use function array_map;
@@ -36,6 +39,14 @@ abstract class RuleTestCase extends PHPStanTestCase
 	 */
 	abstract protected function getRule(): Rule;
 
+	/**
+	 * @return array<Collector<Node, mixed>>
+	 */
+	protected function getCollectors(): array
+	{
+		return [];
+	}
+
 	protected function getTypeSpecifier(): TypeSpecifier
 	{
 		return self::getContainer()->getService('typeSpecifier');
@@ -44,9 +55,10 @@ abstract class RuleTestCase extends PHPStanTestCase
 	private function getAnalyser(): Analyser
 	{
 		if ($this->analyser === null) {
-			$registry = new Registry([
+			$ruleRegistry = new RuleRegistry([
 				$this->getRule(),
 			]);
+			$collectorRegistry = new CollectorRegistry($this->getCollectors());
 
 			$reflectionProvider = $this->createReflectionProvider();
 			$typeSpecifier = $this->getTypeSpecifier();
@@ -78,7 +90,8 @@ abstract class RuleTestCase extends PHPStanTestCase
 			);
 			$this->analyser = new Analyser(
 				$fileAnalyser,
-				$registry,
+				$ruleRegistry,
+				$collectorRegistry,
 				$nodeScopeResolver,
 				50,
 			);

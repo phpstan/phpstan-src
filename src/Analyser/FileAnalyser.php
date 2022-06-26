@@ -9,6 +9,8 @@ use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\NotAClassReflection;
 use PHPStan\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\Collectors\CollectedData;
+use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Node\FileNode;
 use PHPStan\Parser\Parser;
@@ -60,10 +62,16 @@ class FileAnalyser
 		string $file,
 		array $analysedFiles,
 		RuleRegistry $ruleRegistry,
+		CollectorRegistry $collectorRegistry,
 		?callable $outerNodeCallback,
 	): FileAnalyserResult
 	{
+		/** @var Error[] $fileErrors */
 		$fileErrors = [];
+
+		/** @var CollectedData[] $fileCollectedData */
+		$fileCollectedData = [];
+
 		$fileDependencies = [];
 		$exportedNodes = [];
 		if (is_file($file)) {
@@ -72,7 +80,7 @@ class FileAnalyser
 				$parserNodes = $this->parser->parseFile($file);
 				$linesToIgnore = $this->getLinesToIgnoreFromTokens($file, $parserNodes);
 				$temporaryFileErrors = [];
-				$nodeCallback = function (Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, &$exportedNodes, $file, $ruleRegistry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
+				$nodeCallback = function (Node $node, Scope $scope) use (&$fileErrors, &$fileCollectedData, &$fileDependencies, &$exportedNodes, $file, $ruleRegistry, $collectorRegistry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
 					if ($node instanceof Node\Stmt\Trait_) {
 						foreach (array_keys($linesToIgnore[$file] ?? []) as $lineToIgnore) {
 							if ($lineToIgnore < $node->getStartLine() || $lineToIgnore > $node->getEndLine()) {
@@ -185,6 +193,36 @@ class FileAnalyser
 						}
 					}
 
+					foreach ($collectorRegistry->getCollectors($nodeType) as $collector) {
+						try {
+							$collectedData = $collector->processNode($node, $scope);
+						} catch (AnalysedCodeException $e) {
+							if (isset($uniquedAnalysedCodeExceptionMessages[$e->getMessage()])) {
+								continue;
+							}
+
+							$uniquedAnalysedCodeExceptionMessages[$e->getMessage()] = true;
+							$fileErrors[] = new Error($e->getMessage(), $file, $node->getLine(), $e, null, null, $e->getTip());
+							continue;
+						} catch (IdentifierNotFound $e) {
+							$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
+							continue;
+						} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection $e) {
+							$fileErrors[] = new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e);
+							continue;
+						}
+
+						if ($collectedData === null) {
+							continue;
+						}
+
+						$fileCollectedData[] = new CollectedData(
+							$collectedData,
+							$scope->getFile(),
+							get_class($collector),
+						);
+					}
+
 					try {
 						$dependencies = $this->dependencyResolver->resolveDependencies($node, $scope);
 						foreach ($dependencies->getFileDependencies($scope->getFile(), $analysedFiles) as $dependentFile) {
@@ -270,7 +308,7 @@ class FileAnalyser
 
 		$fileErrors = array_merge($fileErrors, $this->collectedErrors);
 
-		return new FileAnalyserResult($fileErrors, array_values(array_unique($fileDependencies)), $exportedNodes);
+		return new FileAnalyserResult($fileErrors, $fileCollectedData, array_values(array_unique($fileDependencies)), $exportedNodes);
 	}
 
 	/**

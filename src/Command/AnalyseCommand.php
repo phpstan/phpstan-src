@@ -358,6 +358,7 @@ class AnalyseCommand extends Command
 					$analysisResult->getInternalErrors(),
 					$analysisResult->getInternalErrors(),
 					[],
+					$analysisResult->getCollectedData(),
 					$analysisResult->isDefaultLevelUsed(),
 					$analysisResult->getProjectConfigFile(),
 					$analysisResult->isResultCacheSaved(),

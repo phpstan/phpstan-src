@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\ResultCache;
 
 use PHPStan\Analyser\Error;
+use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\ExportedNode;
 
 class ResultCache
@@ -12,6 +13,7 @@ class ResultCache
 	 * @param string[] $filesToAnalyse
 	 * @param mixed[] $meta
 	 * @param array<string, array<Error>> $errors
+	 * @param array<string, array<CollectedData>> $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
 	 */
@@ -21,6 +23,7 @@ class ResultCache
 		private int $lastFullAnalysisTime,
 		private array $meta,
 		private array $errors,
+		private array $collectedData,
 		private array $dependencies,
 		private array $exportedNodes,
 	)
@@ -59,6 +62,14 @@ class ResultCache
 	public function getErrors(): array
 	{
 		return $this->errors;
+	}
+
+	/**
+	 * @return array<string, array<CollectedData>>
+	 */
+	public function getCollectedData(): array
+	{
+		return $this->collectedData;
 	}
 
 	/**

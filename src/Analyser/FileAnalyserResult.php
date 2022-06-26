@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\ExportedNode;
 
 class FileAnalyserResult
@@ -9,10 +10,16 @@ class FileAnalyserResult
 
 	/**
 	 * @param Error[] $errors
+	 * @param CollectedData[] $collectedData
 	 * @param array<int, string> $dependencies
 	 * @param array<int, ExportedNode> $exportedNodes
 	 */
-	public function __construct(private array $errors, private array $dependencies, private array $exportedNodes)
+	public function __construct(
+		private array $errors,
+		private array $collectedData,
+		private array $dependencies,
+		private array $exportedNodes,
+	)
 	{
 	}
 
@@ -22,6 +29,14 @@ class FileAnalyserResult
 	public function getErrors(): array
 	{
 		return $this->errors;
+	}
+
+	/**
+	 * @return CollectedData[]
+	 */
+	public function getCollectedData(): array
+	{
+		return $this->collectedData;
 	}
 
 	/**

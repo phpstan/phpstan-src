@@ -211,6 +211,20 @@ class FixerWorkerCommand extends Command
 			$fileSpecificErrors[] = $error;
 		}
 
+		$collectedData = [];
+		foreach ($analyserResult->getCollectedData() as $data) {
+			if (
+				$tmpFile !== null
+				&& $insteadOfFile !== null
+			) {
+				if ($data->getFilePath() === $insteadOfFile) {
+					$data = $data->changeFilePath($tmpFile);
+				}
+			}
+
+			$collectedData[] = $data;
+		}
+
 		$dependencies = null;
 		if ($analyserResult->getDependencies() !== null) {
 			$dependencies = [];
@@ -250,6 +264,7 @@ class FixerWorkerCommand extends Command
 		return new AnalyserResult(
 			$fileSpecificErrors,
 			$analyserResult->getInternalErrors(),
+			$collectedData,
 			$dependencies,
 			$exportedNodes,
 			$analyserResult->hasReachedInternalErrorsCountLimit(),

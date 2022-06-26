@@ -53,6 +53,7 @@ class AnalyseApplication
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			$errors = $ignoredErrorHelperResult->getErrors();
 			$internalErrors = [];
+			$collectedData = [];
 			$savedResultCache = false;
 			if ($errorOutput->isDebug()) {
 				$errorOutput->writeLineFormatted('Result cache was not saved because of ignoredErrorHelperResult errors.');
@@ -76,6 +77,7 @@ class AnalyseApplication
 				$intermediateAnalyserResult = new AnalyserResult(
 					array_merge($intermediateAnalyserResult->getErrors(), $stubErrors),
 					$intermediateAnalyserResult->getInternalErrors(),
+					$intermediateAnalyserResult->getCollectedData(),
 					$intermediateAnalyserResult->getDependencies(),
 					$intermediateAnalyserResult->getExportedNodes(),
 					$intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
@@ -86,6 +88,7 @@ class AnalyseApplication
 			$analyserResult = $resultCacheResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $files, count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit());
+			$collectedData = $analyserResult->getCollectedData();
 			$savedResultCache = $resultCacheResult->isSaved();
 			if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
 				$errors[] = sprintf('Reached internal errors count limit of %d, exiting...', $this->internalErrorsCountLimit);
@@ -109,6 +112,7 @@ class AnalyseApplication
 			$notFileSpecificErrors,
 			$internalErrors,
 			[],
+			$collectedData,
 			$defaultLevelUsed,
 			$projectConfigFile,
 			$savedResultCache,
@@ -135,7 +139,7 @@ class AnalyseApplication
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressFinish();
-			return new AnalyserResult([], [], [], [], false);
+			return new AnalyserResult([], [], [], [], [], false);
 		}
 
 		if (!$debug) {

@@ -39,6 +39,7 @@ final class AnalysisResultTest extends PHPStanTestCase
 				[],
 				[],
 				[],
+				[],
 				false,
 				null,
 				true,

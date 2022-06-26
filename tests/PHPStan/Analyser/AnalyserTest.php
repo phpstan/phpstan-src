@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Lexer;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
+use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\Dependency\ExportedNodeResolver;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
@@ -16,7 +17,7 @@ use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\AlwaysFailRule;
-use PHPStan\Rules\Registry;
+use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
 use function array_map;
@@ -459,9 +460,10 @@ class AnalyserTest extends PHPStanTestCase
 
 	private function createAnalyser(bool $reportUnmatchedIgnoredErrors): Analyser
 	{
-		$registry = new Registry([
+		$ruleRegistry = new RuleRegistry([
 			new AlwaysFailRule(),
 		]);
+		$collectorRegistry = new CollectorRegistry([]);
 
 		$reflectionProvider = $this->createReflectionProvider();
 		$fileHelper = $this->getFileHelper();
@@ -505,7 +507,8 @@ class AnalyserTest extends PHPStanTestCase
 
 		return new Analyser(
 			$fileAnalyser,
-			$registry,
+			$ruleRegistry,
+			$collectorRegistry,
 			$nodeScopeResolver,
 			50,
 		);

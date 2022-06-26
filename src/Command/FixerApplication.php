@@ -511,7 +511,7 @@ class FixerApplication
 		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput(), $fixerSuggestionId);
 		if (count($resultCache->getFilesToAnalyse()) === 0) {
 			$result = $resultCacheManager->process(
-				new AnalyserResult([], [], [], [], false),
+				new AnalyserResult([], [], [], [], [], false),
 				$resultCache,
 				$inceptionResult->getErrorOutput(),
 				false,

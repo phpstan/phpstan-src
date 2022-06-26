@@ -6,6 +6,7 @@ use Clue\React\NDJson\Decoder;
 use Clue\React\NDJson\Encoder;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\Rules\Registry as RuleRegistry;
@@ -191,7 +192,9 @@ class WorkerCommand extends Command
 		$fileAnalyser = $container->getByType(FileAnalyser::class);
 		/** @var RuleRegistry $ruleRegistry */
 		$ruleRegistry = $container->getByType(RuleRegistry::class);
-		$in->on('data', function (array $json) use ($fileAnalyser, $ruleRegistry, $out, $analysedFiles, $tmpFile, $insteadOfFile, $output): void {
+		/** @var CollectorRegistry $collectorRegistry */
+		$collectorRegistry = $container->getByType(CollectorRegistry::class);
+		$in->on('data', function (array $json) use ($fileAnalyser, $ruleRegistry, $collectorRegistry, $out, $analysedFiles, $tmpFile, $insteadOfFile, $output): void {
 			$action = $json['action'];
 			if ($action !== 'analyse') {
 				return;
@@ -200,6 +203,7 @@ class WorkerCommand extends Command
 			$internalErrorsCount = 0;
 			$files = $json['files'];
 			$errors = [];
+			$collectedData = [];
 			$dependencies = [];
 			$exportedNodes = [];
 			foreach ($files as $file) {
@@ -207,12 +211,15 @@ class WorkerCommand extends Command
 					if ($file === $insteadOfFile) {
 						$file = $tmpFile;
 					}
-					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $ruleRegistry, null);
+					$fileAnalyserResult = $fileAnalyser->analyseFile($file, $analysedFiles, $ruleRegistry, $collectorRegistry, null);
 					$fileErrors = $fileAnalyserResult->getErrors();
 					$dependencies[$file] = $fileAnalyserResult->getDependencies();
 					$exportedNodes[$file] = $fileAnalyserResult->getExportedNodes();
 					foreach ($fileErrors as $fileError) {
 						$errors[] = $fileError;
+					}
+					foreach ($fileAnalyserResult->getCollectedData() as $data) {
+						$collectedData[] = $data;
 					}
 				} catch (Throwable $t) {
 					$this->errorCount++;
@@ -234,6 +241,7 @@ class WorkerCommand extends Command
 				'action' => 'result',
 				'result' => [
 					'errors' => $errors,
+					'collectedData' => $collectedData,
 					'dependencies' => $dependencies,
 					'exportedNodes' => $exportedNodes,
 					'filesCount' => count($files),

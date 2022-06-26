@@ -179,7 +179,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	{
 		$formatter = $this->createErrorFormatter('editor://%file%/%line%');
 		$error = new Error('Test', 'Foo.php (in context of trait)', 12, true, 'Foo.php', 'Bar.php');
-		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], false, null, true), $this->getOutput());
+		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true), $this->getOutput());
 
 		$this->assertStringContainsString('Bar.php', $this->getOutputContent());
 	}
@@ -188,7 +188,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	{
 		$formatter = $this->createErrorFormatter('editor://custom/path/%relFile%/%line%');
 		$error = new Error('Test', 'Foo.php', 12, true, self::DIRECTORY_PATH . '/rel/Foo.php');
-		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], false, null, true), $this->getOutput(true));
+		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true), $this->getOutput(true));
 
 		$this->assertStringContainsString('editor://custom/path/rel/Foo.php', $this->getOutputContent(true));
 	}
@@ -206,6 +206,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 						5,
 					),
 				],
+				[],
 				[],
 				[],
 				[],

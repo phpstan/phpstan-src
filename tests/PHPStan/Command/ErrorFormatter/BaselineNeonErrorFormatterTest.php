@@ -144,6 +144,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			['Escape Regex without file # ~ <> \' ()'],
 			[],
 			[],
+			[],
 			false,
 			null,
 			true,
@@ -177,6 +178,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
 		$result = new AnalysisResult(
 			[new Error('Test %value%', 'Testfile')],
+			[],
 			[],
 			[],
 			[],
@@ -240,6 +242,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
 		$result = new AnalysisResult(
 			$errors,
+			[],
 			[],
 			[],
 			[],
@@ -396,6 +399,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter = new BaselineNeonErrorFormatter(new SimpleRelativePathHelper(self::DIRECTORY_PATH));
 		$result = new AnalysisResult(
 			$errors,
+			[],
 			[],
 			[],
 			[],

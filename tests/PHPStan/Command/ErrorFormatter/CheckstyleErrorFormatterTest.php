@@ -150,6 +150,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			[],
 			[],
 			[],
+			[],
 			false,
 			null,
 			true,

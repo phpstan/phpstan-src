@@ -3,6 +3,8 @@
 namespace PHPStan\Analyser;
 
 use Closure;
+use PHPStan\Collectors\CollectedData;
+use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
 use function array_fill_keys;
@@ -16,6 +18,7 @@ class Analyser
 	public function __construct(
 		private FileAnalyser $fileAnalyser,
 		private RuleRegistry $ruleRegistry,
+		private CollectorRegistry $collectorRegistry,
 		private NodeScopeResolver $nodeScopeResolver,
 		private int $internalErrorsCountLimit,
 	)
@@ -43,7 +46,12 @@ class Analyser
 		$this->nodeScopeResolver->setAnalysedFiles($allAnalysedFiles);
 		$allAnalysedFiles = array_fill_keys($allAnalysedFiles, true);
 
+		/** @var Error[] $errors */
 		$errors = [];
+
+		/** @var CollectedData[] $collectedData */
+		$collectedData = [];
+
 		$internalErrorsCount = 0;
 		$reachedInternalErrorsCountLimit = false;
 		$dependencies = [];
@@ -58,9 +66,11 @@ class Analyser
 					$file,
 					$allAnalysedFiles,
 					$this->ruleRegistry,
+					$this->collectorRegistry,
 					null,
 				);
 				$errors = array_merge($errors, $fileAnalyserResult->getErrors());
+				$collectedData = array_merge($collectedData, $fileAnalyserResult->getCollectedData());
 				$dependencies[$file] = $fileAnalyserResult->getDependencies();
 
 				$fileExportedNodes = $fileAnalyserResult->getExportedNodes();
@@ -96,6 +106,7 @@ class Analyser
 		return new AnalyserResult(
 			$errors,
 			[],
+			$collectedData,
 			$internalErrorsCount === 0 ? $dependencies : null,
 			$exportedNodes,
 			$reachedInternalErrorsCountLimit,

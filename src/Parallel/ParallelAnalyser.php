@@ -8,6 +8,7 @@ use Clue\React\NDJson\Encoder;
 use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
+use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\ExportedNode;
 use PHPStan\Process\ProcessHelper;
 use React\EventLoop\StreamSelectLoop;
@@ -64,6 +65,7 @@ class ParallelAnalyser
 		$numberOfProcesses = $schedule->getNumberOfProcesses();
 		$errors = [];
 		$internalErrors = [];
+		$collectedData = [];
 
 		$server = new TcpServer('127.0.0.1:0', $loop);
 		$this->processPool = new ProcessPool($server);
@@ -136,7 +138,7 @@ class ParallelAnalyser
 				$commandOptions,
 				$input,
 			), $loop, $this->processTimeout);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$dependencies, &$exportedNodes, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$collectedData, &$dependencies, &$exportedNodes, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {
 						$internalErrors[] = sprintf('Internal error: %s', $jsonError);
@@ -144,6 +146,10 @@ class ParallelAnalyser
 					}
 
 					$errors[] = Error::decode($jsonError);
+				}
+
+				foreach ($json['collectedData'] as $jsonData) {
+					$collectedData[] = CollectedData::decode($jsonData);
 				}
 
 				/**
@@ -211,6 +217,7 @@ class ParallelAnalyser
 		return new AnalyserResult(
 			$errors,
 			$internalErrors,
+			$collectedData,
 			$internalErrorsCount === 0 ? $dependencies : null,
 			$exportedNodes,
 			$reachedInternalErrorsCountLimit,

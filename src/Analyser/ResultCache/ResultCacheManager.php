@@ -8,6 +8,7 @@ use Nette\Neon\Neon;
 use OutOfBoundsException;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
+use PHPStan\Collectors\CollectedData;
 use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNode;
 use PHPStan\Dependency\ExportedNodeFetcher;
@@ -45,7 +46,7 @@ use const PHP_VERSION_ID;
 class ResultCacheManager
 {
 
-	private const CACHE_VERSION = 'v9-project-extensions';
+	private const CACHE_VERSION = 'v10-collectedData';
 
 	/** @var array<string, string> */
 	private array $fileHashes = [];
@@ -91,13 +92,13 @@ class ResultCacheManager
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because of debug mode.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], []);
 		}
 		if ($onlyFiles) {
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because only files were passed as analysed paths.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], []);
 		}
 
 		$cacheFilePath = $this->cacheFilePath;
@@ -112,7 +113,7 @@ class ResultCacheManager
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the cache file does not exist.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], []);
 		}
 
 		try {
@@ -124,7 +125,7 @@ class ResultCacheManager
 
 			@unlink($cacheFilePath);
 
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], []);
 		}
 
 		if (!is_array($data)) {
@@ -133,7 +134,7 @@ class ResultCacheManager
 				$output->writeLineFormatted('Result cache not used because the cache file is corrupted.');
 			}
 
-			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], []);
 		}
 
 		$meta = $this->getMeta($allAnalysedFiles, $projectConfigArray);
@@ -141,7 +142,7 @@ class ResultCacheManager
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache not used because the metadata do not match.');
 			}
-			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], []);
 		}
 
 		if (time() - $data['lastFullAnalysisTime'] >= 60 * 60 * 24 * 7) {
@@ -149,7 +150,7 @@ class ResultCacheManager
 				$output->writeLineFormatted('Result cache not used because it\'s more than 7 days since last full analysis.');
 			}
 			// run full analysis if the result cache is older than 7 days
-			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], []);
 		}
 
 		foreach ($data['projectExtensionFiles'] as $extensionFile => $fileHash) {
@@ -157,7 +158,7 @@ class ResultCacheManager
 				if ($output->isDebug()) {
 					$output->writeLineFormatted(sprintf('Result cache not used because extension file %s was not found.', $extensionFile));
 				}
-				return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], []);
+				return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], []);
 			}
 
 			if ($this->getFileHash($extensionFile) === $fileHash) {
@@ -168,7 +169,7 @@ class ResultCacheManager
 				$output->writeLineFormatted(sprintf('Result cache not used because extension file %s hash does not match.', $extensionFile));
 			}
 
-			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], []);
+			return new ResultCache($allAnalysedFiles, true, time(), $meta, [], [], [], []);
 		}
 
 		$invertedDependencies = $data['dependencies'];
@@ -176,8 +177,10 @@ class ResultCacheManager
 		$filesToAnalyse = [];
 		$invertedDependenciesToReturn = [];
 		$errors = $data['errorsCallback']();
+		$collectedData = $data['collectedDataCallback']();
 		$exportedNodes = $data['exportedNodesCallback']();
 		$filteredErrors = [];
+		$filteredCollectedData = [];
 		$filteredExportedNodes = [];
 		$newFileAppeared = false;
 
@@ -192,6 +195,9 @@ class ResultCacheManager
 		foreach ($allAnalysedFiles as $analysedFile) {
 			if (array_key_exists($analysedFile, $errors)) {
 				$filteredErrors[$analysedFile] = $errors[$analysedFile];
+			}
+			if (array_key_exists($analysedFile, $collectedData)) {
+				$filteredCollectedData[$analysedFile] = $collectedData[$analysedFile];
 			}
 			if (array_key_exists($analysedFile, $exportedNodes)) {
 				$filteredExportedNodes[$analysedFile] = $exportedNodes[$analysedFile];
@@ -257,7 +263,7 @@ class ResultCacheManager
 			}
 		}
 
-		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $meta, $filteredErrors, $invertedDependenciesToReturn, $filteredExportedNodes);
+		return new ResultCache(array_unique($filesToAnalyse), false, $data['lastFullAnalysisTime'], $meta, $filteredErrors, $filteredCollectedData, $invertedDependenciesToReturn, $filteredExportedNodes);
 	}
 
 	/**
@@ -308,8 +314,13 @@ class ResultCacheManager
 			$freshErrorsByFile[$error->getFilePath()][] = $error;
 		}
 
+		$freshCollectedDataByFile = [];
+		foreach ($analyserResult->getCollectedData() as $collectedData) {
+			$freshCollectedDataByFile[$collectedData->getFilePath()][] = $collectedData;
+		}
+
 		$meta = $resultCache->getMeta();
-		$doSave = function (array $errorsByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
+		$doSave = function (array $errorsByFile, $collectedDataByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isDebug()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -344,7 +355,7 @@ class ResultCacheManager
 				}
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $resultCacheName, $errorsByFile, $dependencies, $exportedNodes, $meta);
+			$this->save($resultCache->getLastFullAnalysisTime(), $resultCacheName, $errorsByFile, $collectedDataByFile, $dependencies, $exportedNodes, $meta);
 
 			if ($output->isDebug()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -356,7 +367,7 @@ class ResultCacheManager
 		if ($resultCache->isFullAnalysis()) {
 			$saved = false;
 			if ($save !== false) {
-				$saved = $doSave($freshErrorsByFile, $analyserResult->getDependencies(), $analyserResult->getExportedNodes(), is_string($save) ? $save : null);
+				$saved = $doSave($freshErrorsByFile, $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getExportedNodes(), is_string($save) ? $save : null);
 			} else {
 				if ($output->isDebug()) {
 					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
@@ -367,12 +378,13 @@ class ResultCacheManager
 		}
 
 		$errorsByFile = $this->mergeErrors($resultCache, $freshErrorsByFile);
+		$collectedDataByFile = $this->mergeCollectedData($resultCache, $freshCollectedDataByFile);
 		$dependencies = $this->mergeDependencies($resultCache, $analyserResult->getDependencies());
 		$exportedNodes = $this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes());
 
 		$saved = false;
 		if ($save !== false) {
-			$saved = $doSave($errorsByFile, $dependencies, $exportedNodes, is_string($save) ? $save : null);
+			$saved = $doSave($errorsByFile, $collectedDataByFile, $dependencies, $exportedNodes, is_string($save) ? $save : null);
 		}
 
 		$flatErrors = [];
@@ -382,9 +394,17 @@ class ResultCacheManager
 			}
 		}
 
+		$flatCollectedData = [];
+		foreach ($collectedDataByFile as $fileCollectedData) {
+			foreach ($fileCollectedData as $collectedData) {
+				$flatCollectedData[] = $collectedData;
+			}
+		}
+
 		return new ResultCacheProcessResult(new AnalyserResult(
 			$flatErrors,
 			$internalErrors,
+			$flatCollectedData,
 			$dependencies,
 			$exportedNodes,
 			$analyserResult->hasReachedInternalErrorsCountLimit(),
@@ -407,6 +427,24 @@ class ResultCacheManager
 		}
 
 		return $errorsByFile;
+	}
+
+	/**
+	 * @param array<string, array<CollectedData>> $freshCollectedDataByFile
+	 * @return array<string, array<CollectedData>>
+	 */
+	private function mergeCollectedData(ResultCache $resultCache, array $freshCollectedDataByFile): array
+	{
+		$collectedDataByFile = $resultCache->getCollectedData();
+		foreach ($resultCache->getFilesToAnalyse() as $file) {
+			if (!array_key_exists($file, $freshCollectedDataByFile)) {
+				unset($collectedDataByFile[$file]);
+				continue;
+			}
+			$collectedDataByFile[$file] = $freshCollectedDataByFile[$file];
+		}
+
+		return $collectedDataByFile;
 	}
 
 	/**
@@ -471,6 +509,7 @@ class ResultCacheManager
 
 	/**
 	 * @param array<string, array<Error>> $errors
+	 * @param array<string, array<CollectedData>> $collectedData
 	 * @param array<string, array<string>> $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
 	 * @param mixed[] $meta
@@ -479,6 +518,7 @@ class ResultCacheManager
 		int $lastFullAnalysisTime,
 		?string $resultCacheName,
 		array $errors,
+		array $collectedData,
 		array $dependencies,
 		array $exportedNodes,
 		array $meta,
@@ -515,6 +555,7 @@ class ResultCacheManager
 		}
 
 		ksort($errors);
+		ksort($collectedData);
 		ksort($invertedDependencies);
 
 		foreach ($invertedDependencies as $file => $fileData) {
@@ -531,6 +572,7 @@ return [
 	'meta' => %s,
 	'projectExtensionFiles' => %s,
 	'errorsCallback' => static function (): array { return %s; },
+	'collectedDataCallback' => static function (): array { return %s; },
 	'dependencies' => %s,
 	'exportedNodesCallback' => static function (): array { return %s; },
 ];
@@ -556,6 +598,7 @@ php;
 				var_export($meta, true),
 				var_export($this->getProjectExtensionFiles($projectConfigArray, $dependencies), true),
 				var_export($errors, true),
+				var_export($collectedData, true),
 				var_export($invertedDependencies, true),
 				var_export($exportedNodes, true),
 			),

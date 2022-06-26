@@ -6,6 +6,7 @@ use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Broker\Broker;
+use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\DerivativeContainerFactory;
 use PHPStan\Php\PhpVersion;
@@ -49,7 +50,7 @@ use PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\ExistingClassesInPropertiesRule;
 use PHPStan\Rules\Properties\MissingPropertyTypehintRule;
-use PHPStan\Rules\Registry;
+use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ObjectType;
 use Throwable;
@@ -83,6 +84,7 @@ class StubValidator
 		]);
 
 		$ruleRegistry = $this->getRuleRegistry($container);
+		$collectorRegistry = $this->getCollectorRegistry($container);
 
 		/** @var FileAnalyser $fileAnalyser */
 		$fileAnalyser = $container->getByType(FileAnalyser::class);
@@ -103,6 +105,7 @@ class StubValidator
 					$stubFile,
 					$analysedFiles,
 					$ruleRegistry,
+					$collectorRegistry,
 					static function (): void {
 					},
 				)->getErrors();
@@ -126,7 +129,7 @@ class StubValidator
 		return $errors;
 	}
 
-	private function getRuleRegistry(Container $container): Registry
+	private function getRuleRegistry(Container $container): RuleRegistry
 	{
 		$fileTypeMapper = $container->getByType(FileTypeMapper::class);
 		$genericObjectTypeCheck = $container->getByType(GenericObjectTypeCheck::class);
@@ -182,7 +185,12 @@ class StubValidator
 			new MissingPropertyTypehintRule($missingTypehintCheck),
 		];
 
-		return new Registry($rules);
+		return new RuleRegistry($rules);
+	}
+
+	private function getCollectorRegistry(Container $container): CollectorRegistry
+	{
+		return new CollectorRegistry([]);
 	}
 
 }

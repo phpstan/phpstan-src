@@ -96,6 +96,7 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 			$genericErrors,
 			[],
 			[],
+			[],
 			false,
 			null,
 			true,

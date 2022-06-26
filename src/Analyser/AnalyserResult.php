@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\ExportedNode;
 use function usort;
 
@@ -13,6 +14,7 @@ class AnalyserResult
 
 	/**
 	 * @param Error[] $errors
+	 * @param CollectedData[] $collectedData
 	 * @param string[] $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
@@ -20,6 +22,7 @@ class AnalyserResult
 	public function __construct(
 		private array $errors,
 		private array $internalErrors,
+		private array $collectedData,
 		private ?array $dependencies,
 		private array $exportedNodes,
 		private bool $reachedInternalErrorsCountLimit,
@@ -63,6 +66,14 @@ class AnalyserResult
 	public function getInternalErrors(): array
 	{
 		return $this->internalErrors;
+	}
+
+	/**
+	 * @return CollectedData[]
+	 */
+	public function getCollectedData(): array
+	{
+		return $this->collectedData;
 	}
 
 	/**

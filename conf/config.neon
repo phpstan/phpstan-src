@@ -581,6 +581,13 @@ services:
 			storage: @cacheStorage
 
 	-
+		class: PHPStan\Collectors\Registry
+		factory: @PHPStan\Collectors\RegistryFactory::create
+
+	-
+		class: PHPStan\Collectors\RegistryFactory
+
+	-
 		class: PHPStan\Command\AnalyseApplication
 		arguments:
 			internalErrorsCountLimit: %internalErrorsCountLimit%

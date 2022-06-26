@@ -39,6 +39,26 @@ parameters:
 			path: src/Analyser/NodeScopeResolver.php
 
 		-
+			message: "#^Binary operation \"\\+\" between array\\{class\\-string\\<TNodeType of PhpParser\\\\Node\\>\\} and array\\<string, class\\-string\\>\\|false results in an error\\.$#"
+			count: 1
+			path: src/Collectors/Registry.php
+
+		-
+			message: "#^Method PHPStan\\\\Collectors\\\\Registry\\:\\:__construct\\(\\) has parameter \\$collectors with generic interface PHPStan\\\\Collectors\\\\Collector but does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Collectors/Registry.php
+
+		-
+			message: "#^Property PHPStan\\\\Collectors\\\\Registry\\:\\:\\$cache with generic interface PHPStan\\\\Collectors\\\\Collector does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Collectors/Registry.php
+
+		-
+			message: "#^Property PHPStan\\\\Collectors\\\\Registry\\:\\:\\$collectors with generic interface PHPStan\\\\Collectors\\\\Collector does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Collectors/Registry.php
+
+		-
 			message: "#^Anonymous function has an unused use \\$container\\.$#"
 			count: 1
 			path: src/Command/CommandHelper.php

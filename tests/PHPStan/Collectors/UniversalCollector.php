@@ -7,7 +7,8 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @template TNodeType of Node
- * @implements Collector<TNodeType>
+ * @template TValue
+ * @implements Collector<TNodeType, TValue>
  */
 class UniversalCollector implements Collector
 {
@@ -15,12 +16,12 @@ class UniversalCollector implements Collector
 	/** @phpstan-var class-string<TNodeType> */
 	private $nodeType;
 
-	/** @var (callable(TNodeType, Scope): mixed) */
+	/** @var (callable(TNodeType, Scope): TValue) */
 	private $processNodeCallback;
 
 	/**
 	 * @param class-string<TNodeType> $nodeType
-	 * @param (callable(TNodeType, Scope): mixed) $processNodeCallback
+	 * @param (callable(TNodeType, Scope): TValue) $processNodeCallback
 	 */
 	public function __construct(string $nodeType, callable $processNodeCallback)
 	{
@@ -35,7 +36,7 @@ class UniversalCollector implements Collector
 
 	/**
 	 * @param TNodeType $node
-	 * @return mixed
+	 * @return TValue
 	 */
 	public function processNode(Node $node, Scope $scope)
 	{

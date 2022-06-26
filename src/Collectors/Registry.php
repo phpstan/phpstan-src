@@ -29,7 +29,7 @@ class Registry
 	 * @template TNodeType of Node
 	 * @phpstan-param class-string<TNodeType> $nodeType
 	 * @param Node $nodeType
-	 * @phpstan-return array<Collector<TNodeType>>
+	 * @phpstan-return array<Collector<TNodeType, mixed>>
 	 * @return Collector[]
 	 */
 	public function getCollectors(string $nodeType): array
@@ -48,7 +48,7 @@ class Registry
 		}
 
 		/**
-		 * @phpstan-var array<Collector<TNodeType>> $selectedCollectors
+		 * @phpstan-var array<Collector<TNodeType, mixed>> $selectedCollectors
 		 * @var Collector[] $selectedCollectors
 		 */
 		$selectedCollectors = $this->cache[$nodeType];

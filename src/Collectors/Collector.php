@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 
 /**
  * @phpstan-template TNodeType of Node
+ * @phpstan-template TValue
  */
 interface Collector
 {
@@ -18,7 +19,7 @@ interface Collector
 
 	/**
 	 * @phpstan-param TNodeType $node
-	 * @return mixed Collected data
+	 * @return TValue Collected data
 	 */
 	public function processNode(Node $node, Scope $scope);
 

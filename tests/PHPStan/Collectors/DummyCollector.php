@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
 /**
- * @implements Collector<Node\Expr\FuncCall>
+ * @implements Collector<Node\Expr\FuncCall, array{}>
  */
 class DummyCollector implements Collector
 {

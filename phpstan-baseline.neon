@@ -44,17 +44,17 @@ parameters:
 			path: src/Collectors/Registry.php
 
 		-
-			message: "#^Method PHPStan\\\\Collectors\\\\Registry\\:\\:__construct\\(\\) has parameter \\$collectors with generic interface PHPStan\\\\Collectors\\\\Collector but does not specify its types\\: TNodeType$#"
+			message: "#^Method PHPStan\\\\Collectors\\\\Registry\\:\\:__construct\\(\\) has parameter \\$collectors with generic interface PHPStan\\\\Collectors\\\\Collector but does not specify its types\\: TNodeType, TValue$#"
 			count: 1
 			path: src/Collectors/Registry.php
 
 		-
-			message: "#^Property PHPStan\\\\Collectors\\\\Registry\\:\\:\\$cache with generic interface PHPStan\\\\Collectors\\\\Collector does not specify its types\\: TNodeType$#"
+			message: "#^Property PHPStan\\\\Collectors\\\\Registry\\:\\:\\$cache with generic interface PHPStan\\\\Collectors\\\\Collector does not specify its types\\: TNodeType, TValue$#"
 			count: 1
 			path: src/Collectors/Registry.php
 
 		-
-			message: "#^Property PHPStan\\\\Collectors\\\\Registry\\:\\:\\$collectors with generic interface PHPStan\\\\Collectors\\\\Collector does not specify its types\\: TNodeType$#"
+			message: "#^Property PHPStan\\\\Collectors\\\\Registry\\:\\:\\$collectors with generic interface PHPStan\\\\Collectors\\\\Collector does not specify its types\\: TNodeType, TValue$#"
 			count: 1
 			path: src/Collectors/Registry.php
 

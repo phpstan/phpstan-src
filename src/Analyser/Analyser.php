@@ -3,7 +3,7 @@
 namespace PHPStan\Analyser;
 
 use Closure;
-use PHPStan\Rules\Registry;
+use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
 use function array_fill_keys;
 use function array_merge;
@@ -15,7 +15,7 @@ class Analyser
 
 	public function __construct(
 		private FileAnalyser $fileAnalyser,
-		private Registry $registry,
+		private RuleRegistry $ruleRegistry,
 		private NodeScopeResolver $nodeScopeResolver,
 		private int $internalErrorsCountLimit,
 	)
@@ -57,7 +57,7 @@ class Analyser
 				$fileAnalyserResult = $this->fileAnalyser->analyseFile(
 					$file,
 					$allAnalysedFiles,
-					$this->registry,
+					$this->ruleRegistry,
 					null,
 				);
 				$errors = array_merge($errors, $fileAnalyserResult->getErrors());

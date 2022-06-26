@@ -18,7 +18,7 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\NonIgnorableRuleError;
-use PHPStan\Rules\Registry;
+use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Rules\TipRuleError;
 use function array_key_exists;
 use function array_keys;
@@ -59,7 +59,7 @@ class FileAnalyser
 	public function analyseFile(
 		string $file,
 		array $analysedFiles,
-		Registry $registry,
+		RuleRegistry $ruleRegistry,
 		?callable $outerNodeCallback,
 	): FileAnalyserResult
 	{
@@ -72,7 +72,7 @@ class FileAnalyser
 				$parserNodes = $this->parser->parseFile($file);
 				$linesToIgnore = $this->getLinesToIgnoreFromTokens($file, $parserNodes);
 				$temporaryFileErrors = [];
-				$nodeCallback = function (Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, &$exportedNodes, $file, $registry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
+				$nodeCallback = function (Node $node, Scope $scope) use (&$fileErrors, &$fileDependencies, &$exportedNodes, $file, $ruleRegistry, $outerNodeCallback, $analysedFiles, &$linesToIgnore, &$temporaryFileErrors): void {
 					if ($node instanceof Node\Stmt\Trait_) {
 						foreach (array_keys($linesToIgnore[$file] ?? []) as $lineToIgnore) {
 							if ($lineToIgnore < $node->getStartLine() || $lineToIgnore > $node->getEndLine()) {
@@ -87,7 +87,7 @@ class FileAnalyser
 					}
 					$uniquedAnalysedCodeExceptionMessages = [];
 					$nodeType = get_class($node);
-					foreach ($registry->getRules($nodeType) as $rule) {
+					foreach ($ruleRegistry->getRules($nodeType) as $rule) {
 						try {
 							$ruleErrors = $rule->processNode($node, $scope);
 						} catch (AnalysedCodeException $e) {

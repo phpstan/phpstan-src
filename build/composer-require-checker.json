@@ -2,7 +2,7 @@
   "symbol-whitelist" : [
     "null", "true", "false",
     "static", "self", "parent",
-    "array", "string", "int", "float", "bool", "iterable", "callable", "void", "object",
+    "array", "string", "int", "float", "bool", "iterable", "callable", "void", "object", "mixed",
     "PHPUnit\\Framework\\TestCase", "PHPUnit\\Framework\\AssertionFailedError", "Composer\\Autoload\\ClassLoader", "PHPUnit\\Framework\\ExpectationFailedException",
     "JSON_THROW_ON_ERROR", "JSON_INVALID_UTF8_IGNORE", "JsonSerializable", "SimpleXMLElement", "PHPStan\\ExtensionInstaller\\GeneratedConfig", "Nette\\DI\\InvalidConfigurationException",
     "FILTER_SANITIZE_EMAIL", "FILTER_SANITIZE_EMAIL", "FILTER_SANITIZE_ENCODED", "FILTER_SANITIZE_MAGIC_QUOTES", "FILTER_SANITIZE_NUMBER_FLOAT",

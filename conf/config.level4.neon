@@ -22,6 +22,12 @@ rules:
 conditionalTags:
 	PHPStan\Rules\Comparison\ConstantLooseComparisonRule:
 		phpstan.rules.rule: %featureToggles.looseComparison%
+	PHPStan\Rules\Traits\TraitDeclarationCollector:
+		phpstan.collector: %featureToggles.notAnalysedTrait%
+	PHPStan\Rules\Traits\TraitUseCollector:
+		phpstan.collector: %featureToggles.notAnalysedTrait%
+	PHPStan\Rules\Traits\NotAnalysedTraitRule:
+		phpstan.rules.rule: %featureToggles.notAnalysedTrait%
 
 parameters:
 	checkAdvancedIsset: true
@@ -175,3 +181,12 @@ services:
 		class: PHPStan\Rules\Properties\NullsafePropertyFetchRule
 		tags:
 			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Traits\TraitDeclarationCollector
+
+	-
+		class: PHPStan\Rules\Traits\TraitUseCollector
+
+	-
+		class: PHPStan\Rules\Traits\NotAnalysedTraitRule

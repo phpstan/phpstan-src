@@ -137,4 +137,9 @@ class ClassAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testAllowDynamicPropertiesAttribute(): void
+	{
+		$this->analyse([__DIR__ . '/data/allow-dynamic-properties-attribute.php'], []);
+	}
+
 }

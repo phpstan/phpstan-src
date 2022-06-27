@@ -67,3 +67,10 @@ if (\PHP_VERSION_ID < 80100 && !class_exists('ReturnTypeWillChange', false)) {
 	{
 	}
 }
+
+if (\PHP_VERSION_ID < 80200 && !class_exists('AllowDynamicProperties', false)) {
+	#[Attribute(Attribute::TARGET_CLASS)]
+	final class AllowDynamicProperties
+	{
+	}
+}

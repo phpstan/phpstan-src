@@ -137,4 +137,13 @@ class ClassAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testAllowDynamicPropertiesAttribute(): void
+	{
+		if (PHP_VERSION_ID >= 80200) {
+			$this->markTestSkipped('Test requires PHP < 8.2.');
+		}
+
+		$this->analyse([__DIR__ . '/data/allow-dynamic-properties-attribute.php'], []);
+	}
+
 }

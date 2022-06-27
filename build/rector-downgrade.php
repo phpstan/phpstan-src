@@ -10,6 +10,7 @@ use Rector\DowngradePhp74\Rector\Property\DowngradeTypedPropertyRector;
 use Rector\DowngradePhp80\Rector\Catch_\DowngradeNonCapturingCatchesRector;
 use Rector\DowngradePhp80\Rector\Class_\DowngradePropertyPromotionRector;
 use Rector\DowngradePhp80\Rector\ClassMethod\DowngradeTrailingCommasInParamUseRector;
+use Rector\DowngradePhp80\Rector\FunctionLike\DowngradeMixedTypeDeclarationRector;
 use Rector\DowngradePhp80\Rector\FunctionLike\DowngradeUnionTypeDeclarationRector;
 use Rector\DowngradePhp80\Rector\Property\DowngradeUnionTypeTypedPropertyRector;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -39,6 +40,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 		$services->set(DowngradeUnionTypeTypedPropertyRector::class);
 		$services->set(DowngradePropertyPromotionRector::class);
 		$services->set(DowngradeUnionTypeDeclarationRector::class);
+		$services->set(DowngradeMixedTypeDeclarationRector::class);
 	}
 
 	if ($targetPhpVersionId < 70400) {

@@ -6,8 +6,8 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
 /**
- * @phpstan-template TNodeType of Node
- * @phpstan-template TValue
+ * @phpstan-template-covariant TNodeType of Node
+ * @phpstan-template-covariant TValue
  */
 interface Collector
 {

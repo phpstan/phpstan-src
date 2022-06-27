@@ -39,6 +39,11 @@ parameters:
 			path: src/Analyser/NodeScopeResolver.php
 
 		-
+			message: "#^Template type TNodeType is declared as covariant, but occurs in contravariant position in parameter node of method PHPStan\\\\Collectors\\\\Collector\\:\\:processNode\\(\\)\\.$#"
+			count: 1
+			path: src/Collectors/Collector.php
+
+		-
 			message: "#^Binary operation \"\\+\" between array\\{class\\-string\\<TNodeType of PhpParser\\\\Node\\>\\} and array\\<string, class\\-string\\>\\|false results in an error\\.$#"
 			count: 1
 			path: src/Collectors/Registry.php

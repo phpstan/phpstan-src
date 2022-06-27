@@ -7,6 +7,7 @@ use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\RuleErrorTransformer;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
@@ -86,6 +87,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				$nodeScopeResolver,
 				$this->getParser(),
 				self::getContainer()->getByType(DependencyResolver::class),
+				new RuleErrorTransformer(),
 				true,
 			);
 			$this->analyser = new Analyser(

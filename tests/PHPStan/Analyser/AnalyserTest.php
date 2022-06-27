@@ -502,6 +502,7 @@ class AnalyserTest extends PHPStanTestCase
 				self::getContainer(),
 			),
 			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, new ExprPrinter(new Printer()))),
+			new RuleErrorTransformer(),
 			$reportUnmatchedIgnoredErrors,
 		);
 

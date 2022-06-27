@@ -524,6 +524,9 @@ services:
 			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
+		class: PHPStan\Analyser\RuleErrorTransformer
+
+	-
 		class: PHPStan\Analyser\IgnoredErrorHelper
 		arguments:
 			ignoreErrors: %ignoreErrors%

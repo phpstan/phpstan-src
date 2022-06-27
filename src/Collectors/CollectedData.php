@@ -10,10 +10,11 @@ class CollectedData implements JsonSerializable
 {
 
 	/**
+	 * @param mixed $data
 	 * @param class-string<Collector<Node, mixed>> $collectorType
 	 */
 	public function __construct(
-		private mixed $data,
+		private $data,
 		private string $filePath,
 		private string $collectorType,
 	)

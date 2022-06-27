@@ -7,9 +7,10 @@ use Nette\DI\CompilerExtension;
 use Nette\Schema\Expect;
 use PHPStan\Analyser\TypeSpecifierFactory;
 use PHPStan\Broker\BrokerFactory;
+use PHPStan\Collectors\RegistryFactory as CollectorRegistryFactory;
 use PHPStan\Parser\RichParser;
 use PHPStan\PhpDoc\TypeNodeResolverExtension;
-use PHPStan\Rules\RegistryFactory;
+use PHPStan\Rules\RegistryFactory as RuleRegistryFactory;
 use PHPStan\ShouldNotHappenException;
 use function count;
 use function sprintf;
@@ -27,12 +28,13 @@ class ConditionalTagsExtension extends CompilerExtension
 			BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG => $bool,
 			BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG => $bool,
 			BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
-			RegistryFactory::RULE_TAG => $bool,
+			RuleRegistryFactory::RULE_TAG => $bool,
 			TypeNodeResolverExtension::EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::METHOD_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::STATIC_METHOD_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			RichParser::VISITOR_SERVICE_TAG => $bool,
+			CollectorRegistryFactory::COLLECTOR_TAG => $bool,
 		])->min(1));
 	}
 

@@ -25,7 +25,7 @@ class CollectedDataNode extends NodeAbstract
 	 * @param class-string<TCollector> $collectorType
 	 * @return array<string, list<TValue>>
 	 */
-	public function get(string $collectorType): mixed
+	public function get(string $collectorType): array
 	{
 		$result = [];
 		foreach ($this->collectedData as $collectedData) {

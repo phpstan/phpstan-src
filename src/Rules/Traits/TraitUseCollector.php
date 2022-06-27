@@ -8,7 +8,7 @@ use PHPStan\Collectors\Collector;
 use function array_map;
 
 /**
- * @implements Collector<Node\Stmt\TraitUse, list<int, string>>
+ * @implements Collector<Node\Stmt\TraitUse, list<string>>
  */
 class TraitUseCollector implements Collector
 {

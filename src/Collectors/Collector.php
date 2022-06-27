@@ -19,7 +19,7 @@ interface Collector
 
 	/**
 	 * @phpstan-param TNodeType $node
-	 * @return TValue Collected data
+	 * @return TValue|null Collected data
 	 */
 	public function processNode(Node $node, Scope $scope);
 

@@ -6,9 +6,9 @@ on:
   pull_request:
   push:
     branches:
-      - "1.7.x"
+      - "1.8.x"
     tags:
-      - '1.7.*'
+      - '1.8.*'
 
 concurrency:
   group: phar-${{ github.ref }} # will be canceled on subsequent pushes in both branches and pull requests
@@ -93,14 +93,14 @@ jobs:
       - name: "Composer dump"
         run: "composer install --no-interaction --no-progress"
         env:
-          COMPOSER_ROOT_VERSION: "1.7.x-dev"
+          COMPOSER_ROOT_VERSION: "1.8.x-dev"
 
       - name: "Compile PHAR for checksum"
         working-directory: "compiler/build"
         run: "php box.phar compile --no-parallel"
         env:
           PHAR_CHECKSUM: "1"
-          COMPOSER_ROOT_VERSION: "1.7.x-dev"
+          COMPOSER_ROOT_VERSION: "1.8.x-dev"
 
       - name: "Re-sign PHAR"
         run: "php compiler/build/resign.php tmp/phpstan.phar"
@@ -123,29 +123,29 @@ jobs:
   integration-tests:
     if: github.event_name == 'pull_request'
     needs: compiler-tests
-    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@1.7.x
+    uses: phpstan/phpstan/.github/workflows/integration-tests.yml@1.8.x
     with:
-      ref: 1.7.x
+      ref: 1.8.x
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   extension-tests:
     if: github.event_name == 'pull_request'
     needs: compiler-tests
-    uses: phpstan/phpstan/.github/workflows/extension-tests.yml@1.7.x
+    uses: phpstan/phpstan/.github/workflows/extension-tests.yml@1.8.x
     with:
-      ref: 1.7.x
+      ref: 1.8.x
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   other-tests:
     if: github.event_name == 'pull_request'
     needs: compiler-tests
-    uses: phpstan/phpstan/.github/workflows/other-tests.yml@1.7.x
+    uses: phpstan/phpstan/.github/workflows/other-tests.yml@1.8.x
     with:
-      ref: 1.7.x
+      ref: 1.8.x
       phar-checksum: ${{needs.compiler-tests.outputs.checksum}}
 
   commit:
-    if: "github.ref == 'refs/heads/1.7.x' || startsWith(github.ref, 'refs/tags/')"
+    if: "github.ref == 'refs/heads/1.8.x' || startsWith(github.ref, 'refs/tags/')"
     needs: compiler-tests
     name: "Commit PHAR"
     runs-on: "ubuntu-latest"
@@ -166,7 +166,7 @@ jobs:
           repository: phpstan/phpstan
           path: phpstan-dist
           token: ${{ secrets.PAT }}
-          ref: 1.7.x
+          ref: 1.8.x
 
       - name: "Check PHAR checksum"
         id: checksum-difference

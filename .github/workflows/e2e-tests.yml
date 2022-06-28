@@ -8,12 +8,12 @@ on:
       - 'compiler/**'
   push:
     branches:
-      - "1.7.x"
+      - "1.8.x"
     paths-ignore:
       - 'compiler/**'
 
 env:
-  COMPOSER_ROOT_VERSION: "1.7.x-dev"
+  COMPOSER_ROOT_VERSION: "1.8.x-dev"
 
 concurrency:
   group: e2e-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches

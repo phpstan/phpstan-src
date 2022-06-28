@@ -46,7 +46,11 @@ class NotAnalysedTraitRule implements Rule
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Trait %s is used zero times and is not analysed.',
 				$name,
-			))->file($file)->line($line)->build();
+			))
+				->file($file)
+				->line($line)
+				->tip('See: https://phpstan.org/blog/how-phpstan-analyses-traits')
+				->build();
 		}
 
 		return $errors;

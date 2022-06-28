@@ -30,6 +30,7 @@ class NotAnalysedTraitRuleTest extends RuleTestCase
 			[
 				'Trait NotAnalysedTrait\Bar is used zero times and is not analysed.',
 				10,
+				'See: https://phpstan.org/blog/how-phpstan-analyses-traits',
 			],
 		]);
 	}

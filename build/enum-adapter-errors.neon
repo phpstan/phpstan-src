@@ -291,6 +291,11 @@ parameters:
 			path: ../src/Reflection/Php/PhpMethodReflection.php
 
 		-
+			message: "#^Call to method getMethods\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Api/ApiClassConstFetchRule.php
+
+		-
 			message: "#^Call to method getShortName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../src/Rules/Cast/InvalidCastRule.php

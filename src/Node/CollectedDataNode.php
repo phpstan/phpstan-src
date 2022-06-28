@@ -8,6 +8,7 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Collector;
 use function array_key_exists;
 
+/** @api */
 class CollectedDataNode extends NodeAbstract
 {
 

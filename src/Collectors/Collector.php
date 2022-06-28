@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 
 /**
+ * @api
  * @phpstan-template-covariant TNodeType of Node
  * @phpstan-template-covariant TValue
  */

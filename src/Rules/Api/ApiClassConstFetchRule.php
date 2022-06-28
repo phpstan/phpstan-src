@@ -9,6 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function count;
 use function sprintf;
+use function strpos;
 
 /**
  * @implements Rule<Node\Expr\ClassConstFetch>
@@ -58,13 +59,26 @@ class ApiClassConstFetchRule implements Rule
 		))->build();
 
 		$docBlock = $classReflection->getResolvedPhpDoc();
-		if ($docBlock === null) {
-			return [$ruleError];
+		if ($docBlock !== null) {
+			foreach ($docBlock->getPhpDocNodes() as $phpDocNode) {
+				$apiTags = $phpDocNode->getTagsByName('@api');
+				if (count($apiTags) > 0) {
+					return [];
+				}
+			}
 		}
 
-		foreach ($docBlock->getPhpDocNodes() as $phpDocNode) {
-			$apiTags = $phpDocNode->getTagsByName('@api');
-			if (count($apiTags) > 0) {
+		if ($node->name->toLowerString() === 'class') {
+			foreach ($classReflection->getNativeReflection()->getMethods() as $methodReflection) {
+				$methodDocComment = $methodReflection->getDocComment();
+				if ($methodDocComment === false) {
+					continue;
+				}
+
+				if (strpos($methodDocComment, '@api') === false) {
+					continue;
+				}
+
 				return [];
 			}
 		}

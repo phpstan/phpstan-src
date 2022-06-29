@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+/** @api */
 interface ReadWritePropertiesExtensionProvider
 {
 

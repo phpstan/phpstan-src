@@ -44,7 +44,7 @@ if ($_SERVER['PHAR_CHECKSUM'] ?? false) {
 return [
 	'prefix' => $prefix,
 	'finders' => [],
-	'files-whitelist' => $stubs,
+	'exclude-files' => $stubs,
 	'patchers' => [
 		function (string $filePath, string $prefix, string $content): string {
 			if ($filePath !== 'bin/phpstan') {
@@ -272,18 +272,18 @@ return [
 			return str_replace(sprintf('\'%s\\\\JetBrains\\\\', $prefix), '\'JetBrains\\\\', $content);
 		}
 	],
-	'whitelist' => [
-		'PHPStan\*',
-		'PhpParser\*',
-		'Hoa\*',
-		'Symfony\Polyfill\Php80\*',
-		'Symfony\Polyfill\Mbstring\*',
-		'Symfony\Polyfill\Intl\Normalizer\*',
-		'Symfony\Polyfill\Php73\*',
-		'Symfony\Polyfill\Php74\*',
-		'Symfony\Polyfill\Php72\*',
-		'Symfony\Polyfill\Intl\Grapheme\*',
+	'expose-namespaces' => [
+		'PHPStan',
+		'PhpParser',
+		'Hoa',
+		'Symfony\Polyfill\Php80',
+		'Symfony\Polyfill\Mbstring',
+		'Symfony\Polyfill\Intl\Normalizer',
+		'Symfony\Polyfill\Php73',
+		'Symfony\Polyfill\Php74',
+		'Symfony\Polyfill\Php72',
+		'Symfony\Polyfill\Intl\Grapheme',
 	],
-	'whitelist-global-functions' => false,
-	'whitelist-global-classes' => false,
+	'expose-global-functions' => false,
+	'expose-global-classes' => false,
 ];

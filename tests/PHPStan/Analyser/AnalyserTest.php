@@ -17,6 +17,7 @@ use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\AlwaysFailRule;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
@@ -485,6 +486,7 @@ class AnalyserTest extends PHPStanTestCase
 			$fileHelper,
 			$typeSpecifier,
 			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
+			self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
 			false,
 			true,
 			[],

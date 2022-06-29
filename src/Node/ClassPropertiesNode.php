@@ -16,6 +16,7 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -33,7 +34,13 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	 * @param array<int, PropertyRead|PropertyWrite> $propertyUsages
 	 * @param array<int, MethodCall> $methodCalls
 	 */
-	public function __construct(private ClassLike $class, private array $properties, private array $propertyUsages, private array $methodCalls)
+	public function __construct(
+		private ClassLike $class,
+		private ReadWritePropertiesExtensionProvider $readWritePropertiesExtensionProvider,
+		private array $properties,
+		private array $propertyUsages,
+		private array $methodCalls,
+	)
 	{
 		parent::__construct($class->getAttributes());
 	}
@@ -74,13 +81,13 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 
 	/**
 	 * @param string[] $constructors
-	 * @param ReadWritePropertiesExtension[] $extensions
+	 * @param ReadWritePropertiesExtension[]|null $extensions
 	 * @return array{array<string, ClassPropertyNode>, array<array{string, int, ClassPropertyNode}>, array<array{string, int, ClassPropertyNode}>}
 	 */
 	public function getUninitializedProperties(
 		Scope $scope,
 		array $constructors,
-		array $extensions,
+		?array $extensions = null,
 	): array
 	{
 		if (!$this->getClass() instanceof Class_) {
@@ -103,6 +110,10 @@ class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 				continue;
 			}
 			$properties[$property->getName()] = $property;
+		}
+
+		if ($extensions === null) {
+			$extensions = $this->readWritePropertiesExtensionProvider->getExtensions();
 		}
 
 		foreach (array_keys($properties) as $name) {

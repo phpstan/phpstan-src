@@ -16,32 +16,36 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new UninitializedPropertyRule(
-			new DirectReadWritePropertiesExtensionProvider([
-				new class() implements ReadWritePropertiesExtension {
-
-					public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
-					{
-						return false;
-					}
-
-					public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
-					{
-						return false;
-					}
-
-					public function isInitialized(PropertyReflection $property, string $propertyName): bool
-					{
-						return $property->getDeclaringClass()->getName() === 'UninitializedProperty\\TestExtension' && $propertyName === 'inited';
-					}
-
-				},
-			]),
 			new ConstructorsHelper(
 				[
 					'UninitializedProperty\\TestCase::setUp',
 				],
 			),
 		);
+	}
+
+	protected function getReadWritePropertiesExtensions(): array
+	{
+		return [
+			new class() implements ReadWritePropertiesExtension {
+
+				public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
+				{
+					return false;
+				}
+
+				public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
+				{
+					return false;
+				}
+
+				public function isInitialized(PropertyReflection $property, string $propertyName): bool
+				{
+					return $property->getDeclaringClass()->getName() === 'UninitializedProperty\\TestExtension' && $propertyName === 'inited';
+				}
+
+			},
+		];
 	}
 
 	public function testRule(): void

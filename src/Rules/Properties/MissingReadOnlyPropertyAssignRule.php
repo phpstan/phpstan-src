@@ -19,7 +19,6 @@ class MissingReadOnlyPropertyAssignRule implements Rule
 
 	public function __construct(
 		private ConstructorsHelper $constructorsHelper,
-		private ReadWritePropertiesExtensionProvider $extensionProvider,
 	)
 	{
 	}
@@ -35,7 +34,7 @@ class MissingReadOnlyPropertyAssignRule implements Rule
 			throw new ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
-		[$properties, $prematureAccess, $additionalAssigns] = $node->getUninitializedProperties($scope, $this->constructorsHelper->getConstructors($classReflection), $this->extensionProvider->getExtensions());
+		[$properties, $prematureAccess, $additionalAssigns] = $node->getUninitializedProperties($scope, $this->constructorsHelper->getConstructors($classReflection));
 
 		$errors = [];
 		foreach ($properties as $propertyName => $propertyNode) {

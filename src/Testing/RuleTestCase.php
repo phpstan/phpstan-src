@@ -20,6 +20,8 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
@@ -46,6 +48,14 @@ abstract class RuleTestCase extends PHPStanTestCase
 	 * @return array<Collector<Node, mixed>>
 	 */
 	protected function getCollectors(): array
+	{
+		return [];
+	}
+
+	/**
+	 * @return ReadWritePropertiesExtension[]
+	 */
+	protected function getReadWritePropertiesExtensions(): array
 	{
 		return [];
 	}
@@ -78,6 +88,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				self::getContainer()->getByType(FileHelper::class),
 				$typeSpecifier,
 				self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
+				new DirectReadWritePropertiesExtensionProvider($this->getReadWritePropertiesExtensions()),
 				$this->shouldPolluteScopeWithLoopInitialAssignments(),
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 				[],

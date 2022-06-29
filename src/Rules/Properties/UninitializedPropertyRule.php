@@ -18,7 +18,6 @@ class UninitializedPropertyRule implements Rule
 {
 
 	public function __construct(
-		private ReadWritePropertiesExtensionProvider $extensionProvider,
 		private ConstructorsHelper $constructorsHelper,
 	)
 	{
@@ -35,7 +34,7 @@ class UninitializedPropertyRule implements Rule
 			throw new ShouldNotHappenException();
 		}
 		$classReflection = $scope->getClassReflection();
-		[$properties, $prematureAccess] = $node->getUninitializedProperties($scope, $this->constructorsHelper->getConstructors($classReflection), $this->extensionProvider->getExtensions());
+		[$properties, $prematureAccess] = $node->getUninitializedProperties($scope, $this->constructorsHelper->getConstructors($classReflection));
 
 		$errors = [];
 		foreach ($properties as $propertyName => $propertyNode) {

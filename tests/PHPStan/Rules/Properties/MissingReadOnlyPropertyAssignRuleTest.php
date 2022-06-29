@@ -21,33 +21,37 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			new ConstructorsHelper([
 				'MissingReadOnlyPropertyAssign\\TestCase::setUp',
 			]),
-			new DirectReadWritePropertiesExtensionProvider([
-				new class() implements ReadWritePropertiesExtension {
-
-					public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
-					{
-						return $this->isEntityId($property, $propertyName);
-					}
-
-					public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
-					{
-						return $this->isEntityId($property, $propertyName);
-					}
-
-					public function isInitialized(PropertyReflection $property, string $propertyName): bool
-					{
-						return $this->isEntityId($property, $propertyName);
-					}
-
-					private function isEntityId(PropertyReflection $property, string $propertyName): bool
-					{
-						return $property->getDeclaringClass()->getName() === 'MissingReadOnlyPropertyAssign\\Entity'
-							&& in_array($propertyName, ['id'], true);
-					}
-
-				},
-			]),
 		);
+	}
+
+	protected function getReadWritePropertiesExtensions(): array
+	{
+		return [
+			new class() implements ReadWritePropertiesExtension {
+
+				public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
+				{
+					return $this->isEntityId($property, $propertyName);
+				}
+
+				public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
+				{
+					return $this->isEntityId($property, $propertyName);
+				}
+
+				public function isInitialized(PropertyReflection $property, string $propertyName): bool
+				{
+					return $this->isEntityId($property, $propertyName);
+				}
+
+				private function isEntityId(PropertyReflection $property, string $propertyName): bool
+				{
+					return $property->getDeclaringClass()->getName() === 'MissingReadOnlyPropertyAssign\\Entity'
+						&& in_array($propertyName, ['id'], true);
+				}
+
+			},
+		];
 	}
 
 	public function testRule(): void

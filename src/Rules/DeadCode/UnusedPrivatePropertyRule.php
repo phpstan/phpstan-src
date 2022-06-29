@@ -161,7 +161,7 @@ class UnusedPrivatePropertyRule implements Rule
 			}
 		}
 
-		[$uninitializedProperties] = $node->getUninitializedProperties($scope, [], $this->extensionProvider->getExtensions());
+		[$uninitializedProperties] = $node->getUninitializedProperties($scope, []);
 
 		$errors = [];
 		foreach ($properties as $name => $data) {

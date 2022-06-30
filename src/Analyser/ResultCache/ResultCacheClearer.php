@@ -4,7 +4,6 @@ namespace PHPStan\Analyser\ResultCache;
 
 use Symfony\Component\Finder\Finder;
 use function dirname;
-use function is_file;
 use function unlink;
 
 class ResultCacheClearer

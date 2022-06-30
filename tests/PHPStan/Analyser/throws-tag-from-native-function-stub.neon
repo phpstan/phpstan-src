@@ -1,0 +1,3 @@
+parameters:
+	stubFiles:
+		- data/throws-tag-from-native-function.stub

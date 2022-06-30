@@ -202,7 +202,15 @@ class IteratorIterator implements OuterIterator {
  */
 class FilterIterator extends IteratorIterator
 {
+    /**
+     * @return TValue
+     */
+    public function current() {}
 
+    /**
+     * @return TKey
+     */
+    public function key() {}
 }
 
 /**

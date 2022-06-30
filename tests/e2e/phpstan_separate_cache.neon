@@ -1,0 +1,7 @@
+# test whether a config, which does not define tmpDir or resultCachePath, will get a separate md5-hashed result cache
+
+includes:
+	- baseline.neon
+
+parameters:
+	level: 2

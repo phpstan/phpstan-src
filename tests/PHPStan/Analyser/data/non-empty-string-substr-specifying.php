@@ -75,5 +75,10 @@ class Foo {
 		$x = (substr($s, 10) !== 'hallo');
 		assertType('string', $s);
 		var_dump($x);
+
+		$x = 'hallo';
+		if (substr($x, 0, PHP_INT_MAX) !== 'foo') {
+			assertType('\'hallo\'', $x);
+		}
 	}
 }

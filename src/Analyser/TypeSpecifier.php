@@ -249,7 +249,8 @@ class TypeSpecifier
 				}
 
 				if (
-					$exprNode instanceof FuncCall
+					$context->truthy()
+					&& $exprNode instanceof FuncCall
 					&& $exprNode->name instanceof Name
 					&& in_array(strtolower($exprNode->name->toString()), ['substr', 'strstr', 'stristr', 'strchr', 'strrchr', 'strtolower', 'strtoupper', 'mb_strtolower', 'mb_strtoupper', 'ucfirst', 'lcfirst', 'ucwords'], true)
 					&& isset($exprNode->getArgs()[0])

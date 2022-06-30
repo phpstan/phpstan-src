@@ -5,4 +5,4 @@
  *
  * @throws void
  */
-function random_int(int $min, int $max): int {}
+function gzclose($strem): bool {}

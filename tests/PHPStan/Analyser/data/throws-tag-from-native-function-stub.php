@@ -8,12 +8,13 @@ use function PHPStan\Testing\assertVariableCertainty;
 class Foo
 {
 
-	public function doFoo(): void
+	/** @param resource $stream */
+	public function doFoo($stream): void
 	{
 		try {
-			$int = random_int(1, 2);
+			$bool = gzclose($stream);
 		} finally {
-			assertVariableCertainty(TrinaryLogic::createYes(), $int);
+			assertVariableCertainty(TrinaryLogic::createYes(), $bool);
 		}
 	}
 

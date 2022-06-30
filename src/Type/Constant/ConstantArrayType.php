@@ -824,6 +824,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function generalizeToArray(): Type
 	{
+		if ($this->isEmpty()) {
+			return $this;
+		}
+
 		$arrayType = new ArrayType($this->getKeyType(), $this->getItemType());
 		if ($this->isIterableAtLeastOnce()->yes()) {
 			return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());

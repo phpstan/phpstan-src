@@ -5121,20 +5121,20 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 		];
 	}
 
-	/**
-	 * @dataProvider dataArrayFunctions
-	 */
-	public function testArrayFunctions(
-		string $description,
-		string $expression,
-	): void
-	{
-		$this->assertTypes(
-			__DIR__ . '/data/array-functions.php',
-			$description,
-			$expression,
-		);
-	}
+//	/**
+//	 * @dataProvider dataArrayFunctions
+//	 */
+//	public function testArrayFunctions(
+//		string $description,
+//		string $expression,
+//	): void
+//	{
+//		$this->assertTypes(
+//			__DIR__ . '/data/array-functions.php',
+//			$description,
+//			$expression,
+//		);
+//	}
 
 	public function dataFunctions(): array
 	{

@@ -183,19 +183,19 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/private-property-trait.php'], []);
 	}
 
-	public function testBug3636(): void
-	{
-		$this->alwaysWrittenTags = [];
-		$this->alwaysReadTags = [];
-		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
-		$this->analyse([__DIR__ . '/data/bug-3636.php'], [
-			[
-				'Property Bug3636\Bar::$date is never written, only read.',
-				22,
-				$tip,
-			],
-		]);
-	}
+//	public function testBug3636(): void
+//	{
+//		$this->alwaysWrittenTags = [];
+//		$this->alwaysReadTags = [];
+//		$tip = 'See: https://phpstan.org/developing-extensions/always-read-written-properties';
+//		$this->analyse([__DIR__ . '/data/bug-3636.php'], [
+//			[
+//				'Property Bug3636\Bar::$date is never written, only read.',
+//				22,
+//				$tip,
+//			],
+//		]);
+//	}
 
 	public function testPromotedProperties(): void
 	{

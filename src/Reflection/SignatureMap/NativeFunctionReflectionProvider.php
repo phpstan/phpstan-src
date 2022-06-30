@@ -61,6 +61,7 @@ class NativeFunctionReflectionProvider
 				$throwsTag = $resolvedPhpDoc->getThrowsTag();
 				if ($throwsTag !== null) {
 					$throwType = $throwsTag->getType();
+					var_dump($throwType->describe(\PHPStan\Type\VerbosityLevel::precise()));
 				}
 				$isDeprecated = $reflectionFunction->isDeprecated();
 			}
@@ -69,10 +70,10 @@ class NativeFunctionReflectionProvider
 		}
 
 		$functionSignatures = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
-
 		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignatures[0]->getParameters()));
 		if ($phpDoc !== null && $phpDoc->getThrowsTag() !== null) {
 			$throwType = $phpDoc->getThrowsTag()->getType();
+			var_dump($throwType->describe(\PHPStan\Type\VerbosityLevel::precise()));
 		}
 
 		$variants = [];

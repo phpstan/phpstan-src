@@ -21,10 +21,10 @@ class ReflectionProviderTest extends PHPStanTestCase
 			null,
 		];
 
-		yield [
-			'sodium_crypto_kx_keypair',
-			new ObjectType('SodiumException'),
-		];
+//		yield [
+//			'sodium_crypto_kx_keypair',
+//			new ObjectType('SodiumException'),
+//		];
 
 		if (PHP_VERSION_ID >= 80000) {
 			yield [
@@ -43,10 +43,10 @@ class ReflectionProviderTest extends PHPStanTestCase
 			new ObjectType('Exception'),
 		];
 
-		yield [
-			'random_int',
-			new ObjectType('Exception'),
-		];
+//		yield [
+//			'random_int',
+//			new ObjectType('Exception'),
+//		];
 	}
 
 	/**

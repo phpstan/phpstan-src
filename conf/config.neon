@@ -1747,6 +1747,9 @@ services:
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
+	-
+		class: PHPStan\Type\ClosureTypeFactory
+
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver
 		factory: @PHPStan\Rules\Exceptions\DefaultExceptionTypeResolver

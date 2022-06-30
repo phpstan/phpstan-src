@@ -40,7 +40,7 @@ class PregSplitDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		if ($flagsArg !== null && $this->bitwiseFlagAnalyser->bitwiseOrContainsConstant($flagsArg->value, $scope, 'PREG_SPLIT_OFFSET_CAPTURE')->yes()) {
 			$type = new ArrayType(
 				new IntegerType(),
-				new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new StringType(), IntegerRangeType::fromInterval(0, null)]),
+				new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new StringType(), IntegerRangeType::fromInterval(0, null)], [2]),
 			);
 			return TypeCombinator::union($type, new ConstantBooleanType(false));
 		}

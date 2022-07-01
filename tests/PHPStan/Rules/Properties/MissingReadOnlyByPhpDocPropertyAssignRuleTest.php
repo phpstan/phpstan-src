@@ -121,6 +121,22 @@ class MissingReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 				'@readonly property MissingReadOnlyPropertyAssignPhpDoc\FooTraitClass::$doubleAssigned is already assigned.',
 				192,
 			],
+			[
+				'Class MissingReadOnlyPropertyAssignPhpDoc\A has an uninitialized @readonly property $a. Assign it in the constructor.',
+				233,
+			],
+			[
+				'Class MissingReadOnlyPropertyAssignPhpDoc\B has an uninitialized @readonly property $b. Assign it in the constructor.',
+				240,
+			],
+			[
+				'Access to an uninitialized @readonly property MissingReadOnlyPropertyAssignPhpDoc\B::$b.',
+				244,
+			],
+			[
+				'@readonly property MissingReadOnlyPropertyAssignPhpDoc\C::$c is already assigned.',
+				257,
+			],
 		]);
 	}
 

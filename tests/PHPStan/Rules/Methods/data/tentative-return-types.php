@@ -43,3 +43,53 @@ class Lorem implements \IteratorAggregate
 	}
 
 }
+
+class TypedIterator implements \Iterator
+{
+
+	public function current(): mixed
+	{
+	}
+
+	public function next(): void
+	{
+	}
+
+	public function key(): mixed
+	{
+	}
+
+	public function valid(): bool
+	{
+	}
+
+	public function rewind(): void
+	{
+	}
+
+}
+
+class UntypedIterator implements \Iterator
+{
+
+	public function current()
+	{
+	}
+
+	public function next()
+	{
+	}
+
+	public function key()
+	{
+	}
+
+	public function valid()
+	{
+	}
+
+	public function rewind()
+	{
+	}
+
+}

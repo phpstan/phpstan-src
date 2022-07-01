@@ -372,6 +372,10 @@ class MethodParameterComparisonHelper
 	public function isTypeCompatible(Type $methodParameterType, Type $prototypeParameterType, bool $supportsContravariance): bool
 	{
 		if ($methodParameterType instanceof MixedType) {
+			if ($prototypeParameterType instanceof MixedType) {
+				return !$methodParameterType->isExplicitMixed() || $prototypeParameterType->isExplicitMixed();
+			}
+
 			return true;
 		}
 

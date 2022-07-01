@@ -258,6 +258,8 @@ class PhpDocNodeResolver
 				$variance = TemplateTypeVariance::createInvariant();
 			} elseif (in_array($tagName, ['@template-covariant', '@psalm-template-covariant', '@phpstan-template-covariant'], true)) {
 				$variance = TemplateTypeVariance::createCovariant();
+			} elseif (in_array($tagName, ['@template-contravariant', '@psalm-template-contravariant', '@phpstan-template-contravariant'], true)) {
+				$variance = TemplateTypeVariance::createContravariant();
 			} else {
 				continue;
 			}

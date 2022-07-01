@@ -97,6 +97,21 @@ class GenericObjectTypeTest extends PHPStanTestCase
 				new GenericObjectType(C\Covariant::class, [new ObjectType('DateTimeInterface')]),
 				TrinaryLogic::createMaybe(),
 			],
+			'contravariant with equals types' => [
+				new GenericObjectType(C\Contravariant::class, [new ObjectType('DateTime')]),
+				new GenericObjectType(C\Contravariant::class, [new ObjectType('DateTime')]),
+				TrinaryLogic::createYes(),
+			],
+			'contravariant with sub type' => [
+				new GenericObjectType(C\Contravariant::class, [new ObjectType('DateTime')]),
+				new GenericObjectType(C\Contravariant::class, [new ObjectType('DateTimeInterface')]),
+				TrinaryLogic::createYes(),
+			],
+			'contravariant with super type' => [
+				new GenericObjectType(C\Contravariant::class, [new ObjectType('DateTimeInterface')]),
+				new GenericObjectType(C\Contravariant::class, [new ObjectType('DateTime')]),
+				TrinaryLogic::createMaybe(),
+			],
 			[
 				new ObjectType(ReflectionClass::class),
 				new GenericObjectType(ReflectionClass::class, [

@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * We can consider that this method will never throw an exception
+ *
+ * @throws void
+ */
+function gzclose($strem): bool {}

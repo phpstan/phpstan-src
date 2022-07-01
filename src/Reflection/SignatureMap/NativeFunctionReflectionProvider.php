@@ -71,6 +71,9 @@ class NativeFunctionReflectionProvider
 		$functionSignatures = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
 
 		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignatures[0]->getParameters()));
+		if ($phpDoc !== null && $phpDoc->getThrowsTag() !== null) {
+			$throwType = $phpDoc->getThrowsTag()->getType();
+		}
 
 		$variants = [];
 		$functionSignatures = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);

@@ -22,6 +22,7 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
@@ -75,6 +76,8 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 			$reflectionProvider = $this->createReflectionProvider();
 			$typeSpecifier = $this->getTypeSpecifier();
+
+			$readWritePropertiesExtensions = $this->getReadWritePropertiesExtensions();
 			$nodeScopeResolver = new NodeScopeResolver(
 				$reflectionProvider,
 				self::getContainer()->getByType(InitializerExprTypeResolver::class),
@@ -88,7 +91,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				self::getContainer()->getByType(FileHelper::class),
 				$typeSpecifier,
 				self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
-				new DirectReadWritePropertiesExtensionProvider($this->getReadWritePropertiesExtensions()),
+				$readWritePropertiesExtensions !== [] ? new DirectReadWritePropertiesExtensionProvider($readWritePropertiesExtensions) : self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
 				$this->shouldPolluteScopeWithLoopInitialAssignments(),
 				$this->shouldPolluteScopeWithAlwaysIterableForeach(),
 				[],

@@ -872,12 +872,18 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug7554(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7554.php');
-		$this->assertCount(3, $errors);
+		$this->assertCount(2, $errors);
+
+		$this->assertSame('Parameter #1 $value of function count expects array|Countable, array<int, array<int, int<0, max>|string>>|false given.', $errors[0]->getMessage());
+		$this->assertSame(26, $errors[0]->getLine());
+
+		$this->assertSame('Cannot access offset int<1, max> on array<int, array{string, int<0, max>}>|false.', $errors[1]->getMessage());
+		$this->assertSame(27, $errors[1]->getLine());
 	}
 
 	/**
 	 * @param string[]|null $allAnalysedFiles
-	 * @return Error[]
+	 * @return Error[]q
 	 */
 	private function runAnalyse(string $file, ?array $allAnalysedFiles = null): array
 	{

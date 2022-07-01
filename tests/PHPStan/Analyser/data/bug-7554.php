@@ -7,6 +7,7 @@ class Readline
 	/**
 	 * Control-B binding.
 	 * Move cursor backward one word.
+	 * @param mixed $line
 	 */
 	public function _bindControlB($line, int $current): void
 	{

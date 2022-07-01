@@ -2476,4 +2476,17 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/conditional-complex-templates.php'], []);
 	}
 
+	public function testBug6291(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6291.php'], []);
+	}
+
 }

@@ -61,7 +61,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->baseClass;
 	}
 
-	public function getClassReflection(): ?ClassReflection
+	public function getClassReflection(): ClassReflection
 	{
 		return $this->classReflection;
 	}
@@ -419,7 +419,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
 		$classReflection = $this->getClassReflection();
-		if ($classReflection !== null && $classReflection->isEnum() && $subtractedType !== null) {
+		if ($classReflection->isEnum() && $subtractedType !== null) {
 			$cases = [];
 			foreach (array_keys($classReflection->getEnumCases()) as $constantName) {
 				$cases[$constantName] = new EnumCaseObjectType($classReflection->getName(), $constantName);
@@ -443,10 +443,10 @@ class StaticType implements TypeWithClassName, SubtractableType
 			}
 
 			if (count($cases) === 1) {
-				return $cases[0];
+				return TypeCombinator::intersect($this, $cases[0]);
 			}
 
-			return new UnionType(array_values($cases));
+			return TypeCombinator::intersect($this, new UnionType(array_values($cases)));
 		}
 
 		return new self($this->classReflection, $subtractedType);
@@ -459,7 +459,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		if ($this->isSuperTypeOf($typeToRemove)->yes()) {
+		if ($this->getStaticObjectType()->isSuperTypeOf($typeToRemove)->yes()) {
 			return $this->subtract($typeToRemove);
 		}
 

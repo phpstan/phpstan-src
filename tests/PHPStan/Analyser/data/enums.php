@@ -13,11 +13,13 @@ enum Foo
 	public function doFoo(): void
 	{
 		if ($this === self::ONE) {
-			assertType(self::class . '::ONE', $this);
+			assertType('$this(EnumTypeAssertions\Foo)&' . self::class . '::ONE', $this);
 			return;
+		} else {
+			assertType('$this(EnumTypeAssertions\Foo)&' . self::class . '::TWO', $this);
 		}
 
-		assertType(self::class . '::TWO', $this);
+		assertType('$this(EnumTypeAssertions\Foo)&' . self::class . '::TWO', $this);
 	}
 
 }

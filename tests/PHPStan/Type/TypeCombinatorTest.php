@@ -2082,6 +2082,43 @@ class TypeCombinatorTest extends PHPStanTestCase
 			MixedType::class,
 			'mixed~int<17, 18>=implicit',
 		];
+
+		$reflectionProvider = $this->createReflectionProvider();
+		yield [
+			[
+				new StaticType($reflectionProvider->getClass(stdClass::class)),
+				new ThisType($reflectionProvider->getClass(stdClass::class)),
+			],
+			StaticType::class,
+			'static(stdClass)',
+		];
+
+		yield [
+			[
+				new StaticType($reflectionProvider->getClass(stdClass::class)),
+				new ObjectType(stdClass::class),
+			],
+			ObjectType::class,
+			'stdClass',
+		];
+
+		yield [
+			[
+				new StaticType($reflectionProvider->getClass(stdClass::class)),
+				new EnumCaseObjectType(stdClass::class, 'foo'),
+			],
+			UnionType::class,
+			'static(stdClass)|stdClass::foo',
+		];
+
+		yield [
+			[
+				new ThisType($reflectionProvider->getClass(stdClass::class)),
+				new EnumCaseObjectType(stdClass::class, 'foo'),
+			],
+			UnionType::class,
+			'$this(stdClass)|stdClass::foo',
+		];
 	}
 
 	/**
@@ -3410,6 +3447,41 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			MixedType::class,
 			'mixed~int<17, max>=implicit',
+		];
+		yield [
+			[
+				new StaticType($reflectionProvider->getClass(stdClass::class)),
+				new ThisType($reflectionProvider->getClass(stdClass::class)),
+			],
+			ThisType::class,
+			'$this(stdClass)',
+		];
+
+		yield [
+			[
+				new StaticType($reflectionProvider->getClass(stdClass::class)),
+				new ObjectType(stdClass::class),
+			],
+			StaticType::class,
+			'static(stdClass)',
+		];
+
+		yield [
+			[
+				new StaticType($reflectionProvider->getClass(stdClass::class)),
+				new EnumCaseObjectType(stdClass::class, 'foo'),
+			],
+			IntersectionType::class,
+			'static(stdClass)&stdClass::foo',
+		];
+
+		yield [
+			[
+				new ThisType($reflectionProvider->getClass(stdClass::class)),
+				new EnumCaseObjectType(stdClass::class, 'foo'),
+			],
+			IntersectionType::class,
+			'$this(stdClass)&stdClass::foo',
 		];
 	}
 

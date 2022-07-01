@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\TrinaryLogic;
 use function sprintf;
 
 /** @api */
@@ -29,6 +30,31 @@ class ThisType extends StaticType
 	public function describe(VerbosityLevel $level): string
 	{
 		return sprintf('$this(%s)', $this->getStaticObjectType()->describe($level));
+	}
+
+	public function isSuperTypeOf(Type $type): TrinaryLogic
+	{
+		if ($type instanceof self) {
+			return $this->getStaticObjectType()->isSuperTypeOf($type);
+		}
+
+		if ($type instanceof CompoundType) {
+			return $type->isSubTypeOf($this);
+		}
+
+		$parent = new parent($this->getClassReflection(), $this->getSubtractedType());
+
+		return $parent->isSuperTypeOf($type)->and(TrinaryLogic::createMaybe());
+	}
+
+	public function changeSubtractedType(?Type $subtractedType): Type
+	{
+		$type = parent::changeSubtractedType($subtractedType);
+		if ($type instanceof parent) {
+			return new self($type->getClassReflection(), $subtractedType);
+		}
+
+		return $type;
 	}
 
 	/**

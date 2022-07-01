@@ -268,10 +268,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createMaybe();
 		}
 
+		$transformResult = static fn (TrinaryLogic $result) => $result;
 		if ($this->subtractedType !== null) {
 			$isSuperType = $this->subtractedType->isSuperTypeOf($type);
 			if ($isSuperType->yes()) {
 				return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createNo();
+			}
+			if ($isSuperType->maybe()) {
+				$transformResult = static fn (TrinaryLogic $result) => $result->and(TrinaryLogic::createMaybe());
 			}
 		}
 
@@ -289,7 +293,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$thatClassName = $type->getClassName();
 
 		if ($thatClassName === $thisClassName) {
-			return TrinaryLogic::createYes();
+			return $transformResult(TrinaryLogic::createYes());
 		}
 
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
@@ -302,11 +306,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$thatClassReflection = $reflectionProvider->getClass($thatClassName);
 
 		if ($thisClassReflection->getName() === $thatClassReflection->getName()) {
-			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createYes();
+			return self::$superTypes[$thisDescription][$description] = $transformResult(TrinaryLogic::createYes());
 		}
 
 		if ($thatClassReflection->isSubclassOf($thisClassName)) {
-			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createYes();
+			return self::$superTypes[$thisDescription][$description] = $transformResult(TrinaryLogic::createYes());
 		}
 
 		if ($thisClassReflection->isSubclassOf($thatClassName)) {

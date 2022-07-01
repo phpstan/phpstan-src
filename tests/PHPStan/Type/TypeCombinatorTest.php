@@ -2119,6 +2119,27 @@ class TypeCombinatorTest extends PHPStanTestCase
 			UnionType::class,
 			'$this(stdClass)|stdClass::foo',
 		];
+
+		yield [
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\ThisSubtractable\Foo::class), // phpcs:ignore
+					new UnionType([new ObjectType(\ThisSubtractable\Bar::class), new ObjectType(\ThisSubtractable\Baz::class)]), // phpcs:ignore
+				),
+				new UnionType([
+					new IntersectionType([
+						new ThisType($reflectionProvider->getClass(\ThisSubtractable\Foo::class)), // phpcs:ignore
+						new ObjectType(\ThisSubtractable\Bar::class), // phpcs:ignore
+					]),
+					new IntersectionType([
+						new ThisType($reflectionProvider->getClass(\ThisSubtractable\Foo::class)), // phpcs:ignore
+						new ObjectType(\ThisSubtractable\Baz::class), // phpcs:ignore
+					]),
+				]),
+			],
+			ThisType::class,
+			'$this(ThisSubtractable\Foo)',
+		];
 	}
 
 	/**

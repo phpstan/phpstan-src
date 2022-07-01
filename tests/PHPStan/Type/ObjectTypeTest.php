@@ -10,6 +10,7 @@ use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Exception;
 use Generator;
 use InvalidArgumentException;
 use Iterator;
@@ -18,6 +19,7 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasPropertyType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -26,6 +28,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use SimpleXMLElement;
 use stdClass;
 use Throwable;
+use ThrowPoints\TryCatch\MyInvalidArgumentException;
 use Traversable;
 use function sprintf;
 
@@ -298,7 +301,7 @@ class ObjectTypeTest extends PHPStanTestCase
 			39 => [
 				new ObjectType(Throwable::class, new ObjectType(InvalidArgumentException::class)),
 				new ObjectType('Exception'),
-				TrinaryLogic::createYes(),
+				TrinaryLogic::createMaybe(),
 			],
 			40 => [
 				new ObjectType(Throwable::class, new ObjectType('Exception')),
@@ -313,7 +316,7 @@ class ObjectTypeTest extends PHPStanTestCase
 			42 => [
 				new ObjectType(Throwable::class, new ObjectType('Exception')),
 				new ObjectType(Throwable::class),
-				TrinaryLogic::createYes(),
+				TrinaryLogic::createMaybe(),
 			],
 			43 => [
 				new ObjectType(Throwable::class),
@@ -358,6 +361,49 @@ class ObjectTypeTest extends PHPStanTestCase
 					new ObjectType(DateTimeInterface::class),
 					TemplateTypeVariance::createInvariant(),
 				),
+				TrinaryLogic::createMaybe(),
+			],
+			49 => [
+				new ObjectType(Exception::class, new ObjectType(InvalidArgumentException::class)),
+				new ObjectType(InvalidArgumentException::class),
+				TrinaryLogic::createNo(),
+			],
+			50 => [
+				new ObjectType(Exception::class, new ObjectType(InvalidArgumentException::class)),
+				new ObjectType(MyInvalidArgumentException::class),
+				TrinaryLogic::createNo(),
+			],
+			51 => [
+				new ObjectType(Exception::class, new ObjectType(InvalidArgumentException::class)),
+				new ObjectType(LogicException::class),
+				TrinaryLogic::createMaybe(),
+			],
+			52 => [
+				new ObjectType(InvalidArgumentException::class, new ObjectType(MyInvalidArgumentException::class)),
+				new ObjectType(Exception::class),
+				TrinaryLogic::createMaybe(),
+			],
+			53 => [
+				new ObjectType(InvalidArgumentException::class, new ObjectType(MyInvalidArgumentException::class)),
+				new ObjectType(Exception::class, new ObjectType(InvalidArgumentException::class)),
+				TrinaryLogic::createNo(),
+			],
+			54 => [
+				new ObjectType(InvalidArgumentException::class),
+				new ObjectType(Exception::class, new ObjectType(InvalidArgumentException::class)),
+				TrinaryLogic::createNo(),
+			],
+			55 => [
+				new ObjectType(stdClass::class, new ObjectType(Throwable::class)),
+				new ObjectType(Throwable::class),
+				TrinaryLogic::createNo(),
+			],
+			56 => [
+				new ObjectType(Type::class, new UnionType([
+					new ObjectType(ConstantIntegerType::class),
+					new ObjectType(IntegerRangeType::class),
+				])),
+				new ObjectType(IntegerType::class),
 				TrinaryLogic::createMaybe(),
 			],
 		];

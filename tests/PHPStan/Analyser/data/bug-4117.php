@@ -30,13 +30,14 @@ class GenericList implements IteratorAggregate
 	public function broken(int $key)
 	{
 		$item = $this->items[$key] ?? null;
+		assertType('T (class Bug4117Types\GenericList, argument)|null', $item);
 		if ($item) {
 			assertType("T of mixed~0|0.0|''|'0'|array{}|false|null (class Bug4117Types\GenericList, argument)", $item);
 		} else {
 			assertType("(array{}&T (class Bug4117Types\GenericList, argument))|(0.0&T (class Bug4117Types\GenericList, argument))|(0&T (class Bug4117Types\GenericList, argument))|(''&T (class Bug4117Types\GenericList, argument))|('0'&T (class Bug4117Types\GenericList, argument))|(T (class Bug4117Types\GenericList, argument)&false)|null", $item);
 		}
 
-		assertType("T of mixed~0|0.0|''|'0'|array{}|false|null (class Bug4117Types\GenericList, argument)|null", $item);
+		assertType('T (class Bug4117Types\GenericList, argument)|null', $item);
 
 		return $item;
 	}

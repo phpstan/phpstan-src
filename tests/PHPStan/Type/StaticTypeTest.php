@@ -253,6 +253,23 @@ class StaticTypeTest extends PHPStanTestCase
 				new ObjectType(FinalChild::class),
 				TrinaryLogic::createYes(),
 			],
+			[
+				new ThisType(
+					$reflectionProvider->getClass(\ThisSubtractable\Foo::class), // phpcs:ignore
+					new UnionType([new ObjectType(\ThisSubtractable\Bar::class), new ObjectType(\ThisSubtractable\Baz::class)]), // phpcs:ignore
+				),
+				new UnionType([
+					new IntersectionType([
+						new ThisType($reflectionProvider->getClass(\ThisSubtractable\Foo::class)), // phpcs:ignore
+						new ObjectType(\ThisSubtractable\Bar::class), // phpcs:ignore
+					]),
+					new IntersectionType([
+						new ThisType($reflectionProvider->getClass(\ThisSubtractable\Foo::class)), // phpcs:ignore
+						new ObjectType(\ThisSubtractable\Baz::class), // phpcs:ignore
+					]),
+				]),
+				TrinaryLogic::createNo(),
+			],
 		];
 	}
 

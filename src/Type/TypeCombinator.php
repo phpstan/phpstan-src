@@ -459,7 +459,36 @@ class TypeCombinator
 			return $a;
 		}
 
-		if ($b instanceof SubtractableType) {
+		if ($b instanceof IntersectionType) {
+			$subtractableTypes = [];
+			foreach ($b->getTypes() as $innerType) {
+				if (!$innerType instanceof SubtractableType) {
+					continue;
+				}
+
+				$subtractableTypes[] = $innerType;
+			}
+
+			if (count($subtractableTypes) === 0) {
+				return $a->getTypeWithoutSubtractedType();
+			}
+
+			$subtractedTypes = [];
+			foreach ($subtractableTypes as $subtractableType) {
+				if ($subtractableType->getSubtractedType() === null) {
+					continue;
+				}
+
+				$subtractedTypes[] = $subtractableType->getSubtractedType();
+			}
+
+			if (count($subtractedTypes) === 0) {
+				return $a->getTypeWithoutSubtractedType();
+
+			}
+
+			$subtractedType = self::union(...$subtractedTypes);
+		} elseif ($b instanceof SubtractableType) {
 			$subtractedType = $b->getSubtractedType();
 			if ($subtractedType === null) {
 				return $a->getTypeWithoutSubtractedType();

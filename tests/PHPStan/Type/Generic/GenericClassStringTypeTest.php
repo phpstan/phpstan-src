@@ -9,7 +9,9 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ClassStringType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -144,6 +146,14 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 				new GenericClassStringType(new StaticType($reflectionProvider->getClass(Throwable::class))),
 				new ConstantStringType(Exception::class),
 				TrinaryLogic::createYes(),
+			],
+			18 => [
+				new GenericClassStringType(new ObjectType(Type::class, new UnionType([
+					new ObjectType(ConstantIntegerType::class),
+					new ObjectType(IntegerRangeType::class),
+				]))),
+				new ConstantStringType(IntegerType::class),
+				TrinaryLogic::createMaybe(),
 			],
 		];
 	}

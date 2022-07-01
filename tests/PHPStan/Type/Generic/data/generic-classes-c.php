@@ -6,6 +6,10 @@ namespace PHPStan\Type\Test\C;
 interface Invariant {
 }
 
+/** @template-contravariant T */
+interface Contravariant {
+}
+
 /** @template-covariant T */
 interface Covariant {
 }

@@ -70,6 +70,7 @@ rules:
 	- PHPStan\Rules\Methods\CallMethodsRule
 	- PHPStan\Rules\Methods\CallStaticMethodsRule
 	- PHPStan\Rules\Methods\ExistingClassesInTypehintsRule
+	- PHPStan\Rules\Methods\FinalPrivateMethodRule
 	- PHPStan\Rules\Methods\MethodCallableRule
 	- PHPStan\Rules\Methods\MissingMethodImplementationRule
 	- PHPStan\Rules\Methods\MethodAttributesRule

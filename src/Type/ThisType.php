@@ -57,6 +57,20 @@ class ThisType extends StaticType
 		return $type;
 	}
 
+	public function traverse(callable $cb): Type
+	{
+		$subtractedType = $this->getSubtractedType() !== null ? $cb($this->getSubtractedType()) : null;
+
+		if ($subtractedType !== $this->getSubtractedType()) {
+			return new self(
+				$this->getClassReflection(),
+				$subtractedType,
+			);
+		}
+
+		return $this;
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

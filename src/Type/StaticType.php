@@ -399,6 +399,15 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	public function traverse(callable $cb): Type
 	{
+		$subtractedType = $this->subtractedType !== null ? $cb($this->subtractedType) : null;
+
+		if ($subtractedType !== $this->subtractedType) {
+			return new self(
+				$this->classReflection,
+				$subtractedType,
+			);
+		}
+
 		return $this;
 	}
 

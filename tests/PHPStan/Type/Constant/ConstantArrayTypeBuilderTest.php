@@ -2,8 +2,11 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\TestCase;
 
@@ -96,6 +99,18 @@ class ConstantArrayTypeBuilderTest extends TestCase
 
 		$builder->setOffsetValueType(null, new ConstantIntegerType(17));
 		$this->assertSame('array{0: 17|bool|null, 1?: 17|null, 2?: 17}', $builder->getArray()->describe(VerbosityLevel::precise()));
+	}
+
+	public function testBug7554(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createFromConstantArray(new ConstantArrayType(
+			[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+			[new StringType(), IntegerRangeType::fromInterval(0, null)]
+		));
+
+		$this->expectException(ShouldNotHappenException::class);
+		$this->expectExceptionMessage('Internal error.');
+		$builder->setOffsetValueType(new ConstantIntegerType(1), new IntegerRangeType(0, null));
 	}
 
 }

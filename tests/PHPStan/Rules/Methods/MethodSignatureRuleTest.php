@@ -376,9 +376,18 @@ class MethodSignatureRuleTest extends RuleTestCase
 
 	public function testBug7652(): void
 	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
 		$this->reportMaybes = true;
 		$this->reportStatic = true;
 		$this->analyse([__DIR__ . '/data/bug-7652.php'], [
+			[
+				'Return type mixed of method Bug7652\Options::offsetGet() is not covariant with tentative return type mixed of method ArrayAccess::offsetGet().',
+				23,
+				'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.',
+			],
 			[
 				'Parameter #1 $offset (TOffset of key-of<TArray of array>) of method Bug7652\Options::offsetSet() should be contravariant with parameter $offset (key-of<array>|null) of method ArrayAccess<key-of<TArray of array>,value-of<TArray of array>>::offsetSet()',
 				30,

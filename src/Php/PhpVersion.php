@@ -186,4 +186,9 @@ class PhpVersion
 		return $this->versionId < 70300;
 	}
 
+	public function producesWarningForFinalPrivateMethods(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 }

@@ -1749,6 +1749,8 @@ services:
 
 	-
 		class: PHPStan\Type\ClosureTypeFactory
+		arguments:
+			parser: @currentPhpVersionPhpParser
 
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver

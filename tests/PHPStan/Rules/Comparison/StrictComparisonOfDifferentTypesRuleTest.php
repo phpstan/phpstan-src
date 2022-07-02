@@ -566,4 +566,10 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7257(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = false;
+		$this->analyse([__DIR__ . '/data/bug-7257.php'], []);
+	}
+
 }

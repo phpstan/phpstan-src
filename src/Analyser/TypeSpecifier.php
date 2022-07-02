@@ -304,7 +304,10 @@ class TypeSpecifier
 			$types = null;
 			$exprLeftType = $scope->getType($expr->left);
 			$exprRightType = $scope->getType($expr->right);
-			if ($exprLeftType instanceof ConstantType || $exprLeftType instanceof EnumCaseObjectType) {
+			if (
+				$exprLeftType instanceof ConstantType && !$exprRightType->equals($exprLeftType) && $exprRightType->isSuperTypeOf($exprLeftType)->yes()
+				|| $exprLeftType instanceof EnumCaseObjectType
+			) {
 				$types = $this->create(
 					$expr->right,
 					$exprLeftType,
@@ -314,7 +317,10 @@ class TypeSpecifier
 					$rootExpr,
 				);
 			}
-			if ($exprRightType instanceof ConstantType || $exprRightType instanceof EnumCaseObjectType) {
+			if (
+				$exprRightType instanceof ConstantType && !$exprLeftType->equals($exprRightType) && $exprLeftType->isSuperTypeOf($exprRightType)->yes()
+				|| $exprRightType instanceof EnumCaseObjectType
+			) {
 				$leftType = $this->create(
 					$expr->left,
 					$exprRightType,

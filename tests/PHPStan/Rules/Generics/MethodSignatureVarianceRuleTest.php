@@ -126,7 +126,7 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				152,
 			],
 			[
-				'Template type K is declared as covariant, but occurs in contravariant position in parameter l of method MethodSignatureVariance\C::a().',
+				'Template type K is declared as covariant, but occurs in invariant position in parameter l of method MethodSignatureVariance\C::a().',
 				152,
 			],
 			[
@@ -158,11 +158,11 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				182,
 			],
 			[
-				'Template type K is declared as covariant, but occurs in contravariant position in return type of method MethodSignatureVariance\C::l().',
+				'Template type K is declared as covariant, but occurs in invariant position in return type of method MethodSignatureVariance\C::l().',
 				185,
 			],
 			[
-				'Template type K is declared as covariant, but occurs in contravariant position in return type of method MethodSignatureVariance\C::m().',
+				'Template type K is declared as covariant, but occurs in invariant position in return type of method MethodSignatureVariance\C::m().',
 				188,
 			],
 		]);

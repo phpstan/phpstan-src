@@ -3401,7 +3401,7 @@ class MutatingScope implements Scope
 				[],
 				$this->afterExtractCall,
 				$this->parentScope,
-			);
+			)->invalidateExpression($expr);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			return $this->specifyExpressionType(
 				$expr->var,
@@ -3499,7 +3499,7 @@ class MutatingScope implements Scope
 				$this->inFunctionCallsStack,
 				$this->afterExtractCall,
 				$this->parentScope,
-			);
+			)->invalidateExpression($expr);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$constantArrays = TypeUtils::getOldConstantArrays($this->getType($expr->var));
 			if (count($constantArrays) > 0) {

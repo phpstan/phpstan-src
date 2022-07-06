@@ -16,10 +16,13 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 use function array_map;
 use function array_unique;
 use function count;
@@ -62,6 +65,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$splitLength = 1;
 		}
 
+		$encoding = null;
 		if ($functionReflection->getName() === 'mb_str_split') {
 			if (count($functionCall->getArgs()) >= 3) {
 				$strings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[2]->value));
@@ -85,22 +89,30 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		$stringType = $scope->getType($functionCall->getArgs()[0]->value);
-		if (!$stringType instanceof ConstantStringType) {
-			return TypeCombinator::intersect(
-				new ArrayType(new IntegerType(), new StringType()),
-				new NonEmptyArrayType(),
-			);
-		}
-		$stringValue = $stringType->getValue();
 
-		$items = isset($encoding)
-			? mb_str_split($stringValue, $splitLength, $encoding)
-			: str_split($stringValue, $splitLength);
-		if ($items === false) {
-			throw new ShouldNotHappenException();
-		}
+		return TypeTraverser::map($stringType, static function (Type $type, callable $traverse) use ($encoding, $splitLength, $scope): Type {
+			if ($type instanceof UnionType || $type instanceof IntersectionType) {
+				return $traverse($type);
+			}
 
-		return self::createConstantArrayFrom($items, $scope);
+			if (!$type instanceof ConstantStringType) {
+				return TypeCombinator::intersect(
+					new ArrayType(new IntegerType(), new StringType()),
+					new NonEmptyArrayType(),
+				);
+			}
+
+			$stringValue = $type->getValue();
+
+			$items = $encoding !== null
+				? mb_str_split($stringValue, $splitLength, $encoding)
+				: str_split($stringValue, $splitLength);
+			if ($items === false) {
+				throw new ShouldNotHappenException();
+			}
+
+			return self::createConstantArrayFrom($items, $scope);
+		});
 	}
 
 	/**

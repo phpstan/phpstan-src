@@ -5356,7 +5356,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
-				'non-empty-array<int, string>',
+				'array{\'a\'|\'g\', \'b\'|\'h\', \'c\'|\'i\', \'d\'|\'j\', \'e\'|\'k\', \'f\'|\'l\'}',
 				'$strSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
@@ -8744,7 +8744,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
-				'non-empty-array<int, string>',
+				'array{\'a\'|\'g\', \'b\'|\'h\', \'c\'|\'i\', \'d\'|\'j\', \'e\'|\'k\', \'f\'|\'l\'}',
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
@@ -8800,7 +8800,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndVariableEncoding',
 			],
 			[
-				'non-empty-array<int, string>',
+				'array{\'a\'|\'g\', \'b\'|\'h\', \'c\'|\'i\', \'d\'|\'j\', \'e\'|\'k\', \'f\'|\'l\'}',
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndValidEncoding',
 			],
 			[

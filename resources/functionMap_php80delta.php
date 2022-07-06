@@ -74,7 +74,7 @@ return [
 		'imagescale' => ['false|object', 'im'=>'resource', 'new_width'=>'int', 'new_height='=>'int', 'method='=>'int'],
 		'ldap_set_rebind_proc' => ['bool', 'ldap'=>'resource', 'callback'=>'?callable'],
 		'mb_decode_numericentity' => ['string|false', 'string'=>'string', 'convmap'=>'array', 'encoding='=>'string'],
-		'mb_str_split' => ['non-empty-array<int,string>', 'str'=>'string', 'split_length='=>'positive-int', 'encoding='=>'string'],
+		'mb_str_split' => ['array<int,string>', 'str'=>'string', 'split_length='=>'positive-int', 'encoding='=>'string'],
 		'mb_strlen' => ['0|positive-int', 'str'=>'string', 'encoding='=>'string'],
 		'mktime' => ['int|false', 'hour'=>'int', 'minute='=>'int', 'second='=>'int', 'month='=>'int', 'day='=>'int', 'year='=>'int'],
 		'odbc_exec' => ['resource|false', 'connection_id'=>'resource', 'query'=>'string'],

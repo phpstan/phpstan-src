@@ -39,7 +39,7 @@ return [
 		'FFI::typeof' => ['FFI\CType', '&ptr'=>'FFI\CData'],
 		'FFI::type' => ['FFI\CType', 'type'=>'string'],
 		'get_mangled_object_vars' => ['array', 'obj'=>'object'],
-		'mb_str_split' => ['non-empty-array<int,string>|false', 'str'=>'string', 'split_length='=>'int', 'encoding='=>'string'],
+		'mb_str_split' => ['array<int,string>|false', 'str'=>'string', 'split_length='=>'int', 'encoding='=>'string'],
 		'password_algos' => ['array<int, string>'],
 		'password_hash' => ['string|false', 'password'=>'string', 'algo'=>'string|null', 'options='=>'array'],
 		'password_needs_rehash' => ['bool', 'hash'=>'string', 'algo'=>'string|null', 'options='=>'array'],

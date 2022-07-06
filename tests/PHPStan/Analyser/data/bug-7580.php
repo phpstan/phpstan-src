@@ -15,4 +15,4 @@ assertType('array{}|array{\'x\'}', mb_str_split($v, 1));
 function x(): string { throw new \Exception(); };
 $v = x();
 assertType('string', $v);
-assertType('non-empty-array<int, string>', mb_str_split($v, 1));
+assertType('array<int, string>', mb_str_split($v, 1));

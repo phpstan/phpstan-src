@@ -104,10 +104,6 @@ class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 				'Ternary operator condition is always true.',
 				9,
 			],
-			[
-				'Ternary operator condition is always true.',
-				20,
-			],
 		]);
 	}
 

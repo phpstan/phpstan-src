@@ -8716,7 +8716,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$mbStrSplitConstantStringWithoutDefinedParameters',
 			],
 			[
@@ -8724,7 +8724,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithoutDefinedSplitLength',
 			],
 			[
-				'non-empty-array<int, string>',
+				'array<int, string>',
 				'$mbStrSplitStringWithoutDefinedSplitLength',
 			],
 			[
@@ -8740,7 +8740,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithFailureSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$mbStrSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
@@ -8748,7 +8748,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLength',
 			],
 			[
@@ -8760,7 +8760,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithOneSplitLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$mbStrSplitConstantStringWithOneSplitLengthAndVariableEncoding',
 			],
 			[
@@ -8772,7 +8772,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLengthAndVariableEncoding',
 			],
 			[
@@ -8788,7 +8788,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithFailureSplitLengthAndVariableEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndValidEncoding',
 			],
 			[
@@ -8796,7 +8796,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndVariableEncoding',
 			],
 			[
@@ -8808,11 +8808,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndVariableEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndValidEncoding',
 			],
 			[
@@ -8820,7 +8820,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndVariableEncoding',
 			],
 		];

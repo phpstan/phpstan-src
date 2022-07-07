@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -27,6 +28,7 @@ class IssetRuleTest extends RuleTestCase
 			true,
 			$this->treatPhpDocTypesAsCertain,
 			$this->strictUnnecessaryNullsafePropertyFetch,
+			new PhpVersion(PHP_VERSION_ID),
 		));
 	}
 
@@ -403,6 +405,18 @@ class IssetRuleTest extends RuleTestCase
 		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-6163.php'], []);
+	}
+
+	public function testBug7571(): void
+	{
+		if (PHP_VERSION_ID > 80000) {
+			$this->markTestSkipped('Test requires PHP 7 and bellow.');
+		}
+
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = true;
+
+		$this->analyse([__DIR__ . '/data/bug-7571.php'], []);
 	}
 
 }

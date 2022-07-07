@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Variables;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -27,6 +28,7 @@ class EmptyRuleTest extends RuleTestCase
 			true,
 			$this->treatPhpDocTypesAsCertain,
 			$this->strictUnnecessaryNullsafePropertyFetch,
+			new PhpVersion(PHP_VERSION_ID),
 		));
 	}
 

@@ -5,6 +5,7 @@ namespace PHPStan\Rules;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Properties\PropertyDescriptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Type\MixedType;
@@ -22,6 +23,7 @@ class IssetCheck
 		private bool $checkAdvancedIsset,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $strictUnnecessaryNullsafePropertyFetch,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -41,6 +43,10 @@ class IssetCheck
 			if ($error === null) {
 				if ($hasVariable->yes()) {
 					if ($expr->name === '_SESSION') {
+						return null;
+					}
+
+					if ($this->phpVersion->supportsNonStaticsMethodsBeingCalledStatically()) {
 						return null;
 					}
 

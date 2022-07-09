@@ -211,12 +211,12 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$allowOctal = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_OCTAL'), $flagsArg, $scope);
 			$allowHex = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_HEX'), $flagsArg, $scope);
 
-			if ($allowOctal && preg_match('/\A0[oO][0-7]+\z/', $value)) {
+			if ($allowOctal && preg_match('/\A0[oO][0-7]+\z/', $value) === 1) {
 				$octalValue = octdec($value);
 				return is_int($octalValue) ? new ConstantIntegerType($octalValue) : $defaultType;
 			}
 
-			if ($allowHex && preg_match('/\A0[xX][0-9A-Fa-f]+\z/', $value)) {
+			if ($allowHex && preg_match('/\A0[xX][0-9A-Fa-f]+\z/', $value) === 1) {
 				$hexValue = hexdec($value);
 				return is_int($hexValue) ? new ConstantIntegerType($hexValue) : $defaultType;
 			}

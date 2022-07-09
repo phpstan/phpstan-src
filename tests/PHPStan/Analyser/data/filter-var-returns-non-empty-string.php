@@ -114,5 +114,17 @@ class Foo
 
 		$return = filter_var('-1', FILTER_VALIDATE_INT);
 		assertType('-1', $return);
+
+		$return = filter_var('0o10', FILTER_VALIDATE_INT);
+		assertType('false', $return);
+
+		$return = filter_var('0o10', FILTER_VALIDATE_INT, FILTER_FLAG_ALLOW_OCTAL);
+		assertType('8', $return);
+
+		$return = filter_var('0x10', FILTER_VALIDATE_INT);
+		assertType('false', $return);
+
+		$return = filter_var('0x10', FILTER_VALIDATE_INT, FILTER_FLAG_ALLOW_HEX);
+		assertType('16', $return);
 	}
 }

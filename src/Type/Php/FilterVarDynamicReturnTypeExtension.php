@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node;
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
@@ -26,7 +27,10 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function hexdec;
 use function is_int;
+use function octdec;
+use function preg_match;
 use function sprintf;
 use function strtolower;
 
@@ -155,7 +159,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$defaultType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsArg, $scope)
 			? new NullType
 			: new ConstantBooleanType(false);
-		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType);
+		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType, $flagsArg, $scope);
 		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 
 		$typeOptionNames = $this->getFilterTypeOptions()[$filterValue] ?? [];
@@ -194,7 +198,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return $type;
 	}
 
-	private function determineExactType(Type $in, int $filterValue, Type $defaultType): ?Type
+	private function determineExactType(Type $in, int $filterValue, Type $defaultType, ?Arg $flagsArg, Scope $scope): ?Type
 	{
 		if (($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN') && $in instanceof BooleanType)
 			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in instanceof IntegerType)
@@ -203,7 +207,21 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in instanceof ConstantStringType) {
-			return filter_var($in->getValue(), FILTER_VALIDATE_INT) === false ? $defaultType : $in->toInteger();
+			$value = $in->getValue();
+			$allowOctal = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_OCTAL'), $flagsArg, $scope);
+			$allowHex = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_HEX'), $flagsArg, $scope);
+
+			if ($allowOctal && preg_match('/\A0[oO][0-7]+\z/', $value)) {
+				$octalValue = octdec($value);
+				return is_int($octalValue) ? new ConstantIntegerType($octalValue) : $defaultType;
+			}
+
+			if ($allowHex && preg_match('/\A0[xX][0-9A-Fa-f]+\z/', $value)) {
+				$hexValue = hexdec($value);
+				return is_int($hexValue) ? new ConstantIntegerType($hexValue) : $defaultType;
+			}
+
+			return preg_match('/\A[+-]?(?:0|[1-9][0-9]*)\z/', $value) ? $in->toInteger() : $defaultType;
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in instanceof IntegerType) {

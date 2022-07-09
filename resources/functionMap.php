@@ -7992,7 +7992,7 @@ return [
 'ocifetchinto' => ['int|false', 'stmt'=>'', '&w_output'=>'array', 'mode='=>'int'],
 'ocigetbufferinglob' => ['bool'],
 'ocisetbufferinglob' => ['bool', 'flag'=>'bool'],
-'octdec' => ['int', 'octal_number'=>'string'],
+'octdec' => ['int|float', 'octal_number'=>'string'],
 'odbc_autocommit' => ['mixed', 'connection_id'=>'resource', 'onoff='=>'bool'],
 'odbc_binmode' => ['bool', 'result_id'=>'int', 'mode'=>'int'],
 'odbc_close' => ['void', 'connection_id'=>'resource'],

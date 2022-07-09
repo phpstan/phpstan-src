@@ -243,6 +243,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		$typeOptions = $this->getOptions($flagsArg, $scope, 'default', ...$typeOptionNames);
+		$defaultType = $typeOptions['default'] ?? $defaultType;
 		$otherTypes = ['default' => $defaultType];
 		$range = [];
 		if (isset($typeOptions['min_range'])) {

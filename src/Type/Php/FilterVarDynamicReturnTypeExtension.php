@@ -157,7 +157,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$inputType = $scope->getType($functionCall->getArgs()[0]->value);
 
 		$defaultType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsArg, $scope)
-			? new NullType
+			? new NullType()
 			: new ConstantBooleanType(false);
 		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType, $flagsArg, $scope);
 		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;

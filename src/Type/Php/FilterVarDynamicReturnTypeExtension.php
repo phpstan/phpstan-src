@@ -221,7 +221,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 				return is_int($hexValue) ? new ConstantIntegerType($hexValue) : $defaultType;
 			}
 
-			return preg_match('/\A[+-]?(?:0|[1-9][0-9]*)\z/', $value) ? $in->toInteger() : $defaultType;
+			return preg_match('/\A[+-]?(?:0|[1-9][0-9]*)\z/', $value) === 1 ? $in->toInteger() : $defaultType;
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in instanceof IntegerType) {

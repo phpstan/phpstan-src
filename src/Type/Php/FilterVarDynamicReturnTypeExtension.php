@@ -151,11 +151,15 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 		$flagsArg = $functionCall->getArgs()[2] ?? null;
 		$inputType = $scope->getType($functionCall->getArgs()[0]->value);
-		$exactType = $this->determineExactType($inputType, $filterValue);
+
+		$defaultType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsArg, $scope)
+			? new NullType
+			: new ConstantBooleanType(false);
+		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType);
 		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 
 		$typeOptionNames = $this->getFilterTypeOptions()[$filterValue] ?? [];
-		$otherTypes = $this->getOtherTypes($flagsArg, $scope, $typeOptionNames);
+		$otherTypes = $this->getOtherTypes($flagsArg, $scope, $typeOptionNames, $defaultType);
 
 		if ($inputType->isNonEmptyString()->yes()
 			&& $type->isString()->yes()
@@ -190,12 +194,16 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return $type;
 	}
 
-	private function determineExactType(Type $in, int $filterValue): ?Type
+	private function determineExactType(Type $in, int $filterValue, Type $defaultType): ?Type
 	{
 		if (($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN') && $in instanceof BooleanType)
 			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in instanceof IntegerType)
 			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in instanceof FloatType)) {
 			return $in;
+		}
+
+		if ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in instanceof ConstantStringType) {
+			return filter_var($in->getValue(), FILTER_VALIDATE_INT) === false ? $defaultType : $in->toInteger();
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in instanceof IntegerType) {
@@ -209,7 +217,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	 * @param list<string> $typeOptionNames
 	 * @return array{default: Type, range?: Type}
 	 */
-	private function getOtherTypes(?Node\Arg $flagsArg, Scope $scope, array $typeOptionNames): array
+	private function getOtherTypes(?Node\Arg $flagsArg, Scope $scope, array $typeOptionNames, Type $defaultType): array
 	{
 		$falseType = new ConstantBooleanType(false);
 		if ($flagsArg === null) {
@@ -217,13 +225,6 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		$typeOptions = $this->getOptions($flagsArg, $scope, 'default', ...$typeOptionNames);
-		$defaultType = $typeOptions['default'] ?? null;
-		if ($defaultType === null) {
-			$defaultType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsArg, $scope)
-				? new NullType()
-				: $falseType;
-		}
-
 		$otherTypes = ['default' => $defaultType];
 		$range = [];
 		if (isset($typeOptions['min_range'])) {

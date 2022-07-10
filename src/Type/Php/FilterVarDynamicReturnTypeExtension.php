@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node;
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
@@ -26,7 +27,10 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function hexdec;
 use function is_int;
+use function octdec;
+use function preg_match;
 use function sprintf;
 use function strtolower;
 
@@ -151,11 +155,15 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 		$flagsArg = $functionCall->getArgs()[2] ?? null;
 		$inputType = $scope->getType($functionCall->getArgs()[0]->value);
-		$exactType = $this->determineExactType($inputType, $filterValue);
+
+		$defaultType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsArg, $scope)
+			? new NullType()
+			: new ConstantBooleanType(false);
+		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType, $flagsArg, $scope);
 		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 
 		$typeOptionNames = $this->getFilterTypeOptions()[$filterValue] ?? [];
-		$otherTypes = $this->getOtherTypes($flagsArg, $scope, $typeOptionNames);
+		$otherTypes = $this->getOtherTypes($flagsArg, $scope, $typeOptionNames, $defaultType);
 
 		if ($inputType->isNonEmptyString()->yes()
 			&& $type->isString()->yes()
@@ -190,12 +198,30 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return $type;
 	}
 
-	private function determineExactType(Type $in, int $filterValue): ?Type
+	private function determineExactType(Type $in, int $filterValue, Type $defaultType, ?Arg $flagsArg, Scope $scope): ?Type
 	{
 		if (($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN') && $in instanceof BooleanType)
 			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in instanceof IntegerType)
 			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in instanceof FloatType)) {
 			return $in;
+		}
+
+		if ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in instanceof ConstantStringType) {
+			$value = $in->getValue();
+			$allowOctal = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_OCTAL'), $flagsArg, $scope);
+			$allowHex = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_HEX'), $flagsArg, $scope);
+
+			if ($allowOctal && preg_match('/\A0[oO][0-7]+\z/', $value) === 1) {
+				$octalValue = octdec($value);
+				return is_int($octalValue) ? new ConstantIntegerType($octalValue) : $defaultType;
+			}
+
+			if ($allowHex && preg_match('/\A0[xX][0-9A-Fa-f]+\z/', $value) === 1) {
+				$hexValue = hexdec($value);
+				return is_int($hexValue) ? new ConstantIntegerType($hexValue) : $defaultType;
+			}
+
+			return preg_match('/\A[+-]?(?:0|[1-9][0-9]*)\z/', $value) === 1 ? $in->toInteger() : $defaultType;
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in instanceof IntegerType) {
@@ -209,7 +235,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	 * @param list<string> $typeOptionNames
 	 * @return array{default: Type, range?: Type}
 	 */
-	private function getOtherTypes(?Node\Arg $flagsArg, Scope $scope, array $typeOptionNames): array
+	private function getOtherTypes(?Node\Arg $flagsArg, Scope $scope, array $typeOptionNames, Type $defaultType): array
 	{
 		$falseType = new ConstantBooleanType(false);
 		if ($flagsArg === null) {
@@ -217,13 +243,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		$typeOptions = $this->getOptions($flagsArg, $scope, 'default', ...$typeOptionNames);
-		$defaultType = $typeOptions['default'] ?? null;
-		if ($defaultType === null) {
-			$defaultType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsArg, $scope)
-				? new NullType()
-				: $falseType;
-		}
-
+		$defaultType = $typeOptions['default'] ?? $defaultType;
 		$otherTypes = ['default' => $defaultType];
 		$range = [];
 		if (isset($typeOptions['min_range'])) {

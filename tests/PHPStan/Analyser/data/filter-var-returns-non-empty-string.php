@@ -100,8 +100,31 @@ class Foo
 		$return = filter_var($str2, FILTER_VALIDATE_URL);
 		assertType('string|false', $return);
 
-		$str2 = 'foo';
-		$return = filter_var($str2, FILTER_VALIDATE_INT);
-		assertType('int|false', $return);
+		$return = filter_var('foo', FILTER_VALIDATE_INT);
+		assertType('false', $return);
+
+		$return = filter_var('foo', FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
+		assertType('null', $return);
+
+		$return = filter_var('1', FILTER_VALIDATE_INT);
+		assertType('1', $return);
+
+		$return = filter_var('0', FILTER_VALIDATE_INT);
+		assertType('0', $return);
+
+		$return = filter_var('-1', FILTER_VALIDATE_INT);
+		assertType('-1', $return);
+
+		$return = filter_var('0o10', FILTER_VALIDATE_INT);
+		assertType('false', $return);
+
+		$return = filter_var('0o10', FILTER_VALIDATE_INT, FILTER_FLAG_ALLOW_OCTAL);
+		assertType('8', $return);
+
+		$return = filter_var('0x10', FILTER_VALIDATE_INT);
+		assertType('false', $return);
+
+		$return = filter_var('0x10', FILTER_VALIDATE_INT, FILTER_FLAG_ALLOW_HEX);
+		assertType('16', $return);
 	}
 }

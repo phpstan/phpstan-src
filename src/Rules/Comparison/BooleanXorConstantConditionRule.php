@@ -1,19 +1,21 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace PHPStan\Rules\Comparison;
 
+use PhpParser\Node;
+use PhpParser\Node\Expr\BinaryOp\LogicalXor;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PhpParser\Node;
-use PhpParser\Node\Expr\BinaryOp\LogicalXor;
+use function sprintf;
 
 /**
- * @implements \Rule<LogicalXor>
+ * @implements Rule<LogicalXor>
  */
 class BooleanXorConstantConditionRule implements Rule
 {
+
 	public function __construct(
 		private bool $treatPhpDocTypesAsCertain,
 	)

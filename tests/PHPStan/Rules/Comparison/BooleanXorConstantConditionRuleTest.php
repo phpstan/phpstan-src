@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Comparison;
 
-use PHPStan\Rules\Comparison\BooleanXorConstantConditionRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -19,18 +18,7 @@ class BooleanXorConstantConditionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new BooleanXorConstantConditionRule(
-			new ConstantConditionRuleHelper(
-				new ImpossibleCheckTypeHelper(
-					$this->createReflectionProvider(),
-					$this->getTypeSpecifier(),
-					[],
-					$this->treatPhpDocTypesAsCertain,
-				),
-				$this->treatPhpDocTypesAsCertain,
-			),
-			$this->treatPhpDocTypesAsCertain,
-		);
+		return new BooleanXorConstantConditionRule($this->treatPhpDocTypesAsCertain);
 	}
 
 	public function dataRule(): array
@@ -56,9 +44,9 @@ class BooleanXorConstantConditionRuleTest extends RuleTestCase
 						24,
 					],
 					[
-						"Result of xor is always false.",
+						'Result of xor is always false.',
 						33,
-						"Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.",
+						'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 					],
 				],
 			],

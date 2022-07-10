@@ -4,7 +4,7 @@ namespace BooleanXor;
 
 true xor true;
 
-function foo(): bool
+function alwaysFalse(): bool
 {
 	return true xor true;
 }

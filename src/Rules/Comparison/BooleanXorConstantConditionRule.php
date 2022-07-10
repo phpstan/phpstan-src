@@ -3,18 +3,18 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\LogicalXor;
 
 /**
- * @implements Rule<LogicalXor>
+ * @implements \Rule<LogicalXor>
  */
-class BooleanXorConstantConditionRule implements \PHPStan\Rules\Rule
+class BooleanXorConstantConditionRule implements Rule
 {
 	public function __construct(
-		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
 	)
 	{

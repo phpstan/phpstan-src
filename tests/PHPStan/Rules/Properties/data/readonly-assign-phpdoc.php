@@ -228,3 +228,49 @@ class Immutable
 	}
 
 }
+
+/** @immutable */
+class A
+{
+
+	/** @var string */
+	public $a;
+
+	public function __construct() {
+		$this->a = ''; // constructor - fine
+	}
+
+}
+
+class B extends A
+{
+
+	/** @var string */
+	public $b;
+
+	public function __construct()
+	{
+		parent::__construct();
+		$this->b = ''; // constructor - fine
+	}
+
+	public function mod()
+	{
+		$this->b = 'input'; // setter - report
+		$this->a = 'input2'; // setter - report
+	}
+
+}
+
+class C extends B
+{
+
+	/** @var string */
+	public $c;
+
+	public function mod()
+	{
+		$this->c = 'input'; // setter - report
+	}
+
+}

@@ -28,6 +28,18 @@ class ReadOnlyByPhpDocPropertyRuleTest extends RuleTestCase
 				'@readonly property cannot have a default value.',
 				21,
 			],
+			[
+				'@readonly property cannot have a default value.',
+				39,
+			],
+			[
+				'@readonly property cannot have a default value.',
+				46,
+			],
+			[
+				'@readonly property cannot have a default value.',
+				53,
+			],
 		]);
 	}
 

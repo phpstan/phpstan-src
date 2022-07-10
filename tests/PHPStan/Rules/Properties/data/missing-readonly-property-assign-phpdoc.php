@@ -225,3 +225,36 @@ class BarClass
 	use BarTrait;
 
 }
+
+/** @immutable */
+class A
+{
+
+	public string $a;
+
+}
+
+class B extends A
+{
+
+	public string $b;
+
+	public function __construct()
+	{
+		$b = $this->b;
+	}
+
+}
+
+class C extends B
+{
+
+	public string $c;
+
+	public function __construct()
+	{
+		$this->c = '';
+		$this->c = '';
+	}
+
+}

@@ -39,6 +39,22 @@ class ReadOnlyByPhpDocPropertyAssignRefRuleTest extends RuleTestCase
 				'@readonly property ReadOnlyPropertyAssignRefPhpDoc\Immutable::$bar is assigned by reference.',
 				52,
 			],
+			[
+				'@readonly property ReadOnlyPropertyAssignRefPhpDoc\A::$a is assigned by reference.',
+				66,
+			],
+			[
+				'@readonly property ReadOnlyPropertyAssignRefPhpDoc\B::$b is assigned by reference.',
+				79,
+			],
+			[
+				'@readonly property ReadOnlyPropertyAssignRefPhpDoc\A::$a is assigned by reference.',
+				80,
+			],
+			[
+				'@readonly property ReadOnlyPropertyAssignRefPhpDoc\C::$c is assigned by reference.',
+				93,
+			],
 		]);
 	}
 

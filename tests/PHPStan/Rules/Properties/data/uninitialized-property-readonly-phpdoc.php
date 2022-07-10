@@ -41,3 +41,25 @@ class Immutable
 	}
 
 }
+
+/** @immutable */
+class A
+{
+
+	public string $a;
+
+}
+
+class B extends A
+{
+
+	public string $b;
+
+}
+
+class C extends B
+{
+
+	public string $c;
+
+}

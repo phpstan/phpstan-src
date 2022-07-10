@@ -53,3 +53,44 @@ class Immutable
 	}
 
 }
+
+/** @immutable */
+class A
+{
+
+	/** @var string */
+	public $a;
+
+	public function mod()
+	{
+		$a = &$this->a;
+	}
+
+}
+
+class B extends A
+{
+
+	/** @var string */
+	public $b;
+
+	public function mod()
+	{
+		$b = &$this->b;
+		$a = &$this->a;
+	}
+
+}
+
+class C extends B
+{
+
+	/** @var string */
+	public $c;
+
+	public function mod()
+	{
+		$c = &$this->c;
+	}
+
+}

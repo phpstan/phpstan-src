@@ -1045,6 +1045,11 @@ class ClassReflection
 		if ($this->isImmutable === null) {
 			$resolvedPhpDoc = $this->getResolvedPhpDoc();
 			$this->isImmutable = $resolvedPhpDoc !== null && $resolvedPhpDoc->isImmutable();
+
+			$parentClass = $this->getParentClass();
+			if ($parentClass !== null && !$this->isImmutable) {
+				$this->isImmutable = $parentClass->isImmutable();
+			}
 		}
 
 		return $this->isImmutable;

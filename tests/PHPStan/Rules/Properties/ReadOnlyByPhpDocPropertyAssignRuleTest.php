@@ -92,6 +92,18 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 				'@readonly property ReadonlyPropertyAssignPhpDoc\Immutable::$foo is assigned outside of the constructor.',
 				227,
 			],
+			[
+				'@readonly property ReadonlyPropertyAssignPhpDoc\B::$b is assigned outside of the constructor.',
+				259,
+			],
+			[
+				'@readonly property ReadonlyPropertyAssignPhpDoc\A::$a is assigned outside of its declaring class.',
+				260,
+			],
+			[
+				'@readonly property ReadonlyPropertyAssignPhpDoc\C::$c is assigned outside of the constructor.',
+				273,
+			],
 		]);
 	}
 

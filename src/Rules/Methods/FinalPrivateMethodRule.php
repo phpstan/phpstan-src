@@ -37,6 +37,10 @@ class FinalPrivateMethodRule implements Rule
 			return [];
 		}
 
+		if ($method->getName() === '__construct') {
+			return [];
+		}
+
 		if (!$method->isFinal()->yes() || !$method->isPrivate()) {
 			return [];
 		}

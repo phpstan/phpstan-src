@@ -22,3 +22,12 @@ class Foo
 	}
 
 }
+
+class ConstructorsAreExcluded
+{
+
+	final private function __construct()
+	{
+	}
+
+}

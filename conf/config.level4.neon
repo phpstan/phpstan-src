@@ -56,6 +56,13 @@ services:
 			- phpstan.rules.rule
 
 	-
+		class: PHPStan\Rules\Comparison\BooleanXorConstantConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+		tags:
+			- phpstan.rules.rule
+
+	-
 		class: PHPStan\Rules\Comparison\BooleanNotConstantConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%

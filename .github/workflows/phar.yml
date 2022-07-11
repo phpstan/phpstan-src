@@ -243,5 +243,5 @@ jobs:
           commit_author: "Ondrej Mirtes <ondrej@mirtes.cz>"
           commit_options: "--gpg-sign"
           repository: phpstan-dist
-          commit_message: "PHPStan ${{github.ref_name}}\n\n${{ steps.git-log.outputs.log }}"
+          commit_message: "PHPStan ${{github.ref_name}}"
           tagging_message: ${{github.ref_name}}

@@ -41,6 +41,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -55,6 +56,7 @@ use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
+use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
@@ -136,6 +138,16 @@ class TypeSpecifier
 				} else {
 					$type = new ObjectType($className);
 				}
+
+				$exprType = $scope->getType($exprNode);
+				if ($exprType instanceof GenericObjectType && $type instanceof TypeWithClassName) {
+					$type = new GenericObjectType(
+						$type->getClassName(),
+						$exprType->getTypes(),
+						$type instanceof SubtractableType ? $type->getSubtractedType() : null,
+					);
+				}
+
 				return $this->create($exprNode, $type, $context, false, $scope, $rootExpr);
 			}
 

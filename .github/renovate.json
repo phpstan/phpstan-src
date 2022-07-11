@@ -21,6 +21,11 @@
       "groupName": "build-cs"
     },
     {
+      "matchPaths": ["apigen/**"],
+      "enabled": true,
+      "groupName": "apigen"
+    },
+    {
       "matchPaths": ["compiler/**"],
       "enabled": true,
       "groupName": "compiler"

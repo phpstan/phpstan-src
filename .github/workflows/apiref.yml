@@ -1,0 +1,47 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "API Reference"
+
+on:
+  push:
+    branches:
+      - "1.8.x"
+    tags:
+      - '1.8.*'
+
+concurrency:
+  group: apigen-${{ github.ref }} # will be canceled on subsequent pushes in both branches and pull requests
+  cancel-in-progress: true
+
+jobs:
+  apigen:
+    name: "Run ApiGen"
+
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 60
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Install ApiGen dependencies"
+        working-directory: "apigen"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Run ApiGen"
+        run: "apigen/vendor/bin/apigen src --output docs"
+
+      - name: "Upload docs"
+        uses: actions/upload-artifact@v3
+        with:
+          name: docs
+          path: docs

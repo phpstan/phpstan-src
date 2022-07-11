@@ -4,3 +4,6 @@ parameters:
 services:
 	analyzer.filter:
 		factory: PHPStan\ApiGen\Filter(excludeProtected: %excludeProtected%, excludePrivate: %excludePrivate%, excludeTagged: %excludeTagged%)
+
+	renderer.filter:
+		factory: PHPStan\ApiGen\RendererFilter

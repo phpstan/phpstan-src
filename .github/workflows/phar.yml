@@ -191,7 +191,9 @@ jobs:
         run: chmod 755 phpstan-dist/phpstan.phar
 
       - name: "Update checksum"
-        run: echo ${{needs.compiler-tests.outputs.checksum}} > phpstan-dist/.phar-checksum
+        run: |
+          echo ${{needs.compiler-tests.outputs.checksum}} > phpstan-dist/.phar-checksum
+          echo ${{ github.event.after }} >> phpstan-dist/.phar-checksum
 
       - name: "Sign PHAR"
         working-directory: phpstan-dist

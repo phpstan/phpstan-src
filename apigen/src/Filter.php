@@ -29,10 +29,6 @@ class Filter extends \ApiGen\Analyzer\Filter
 			return true;
 		}
 
-		if (Strings::startsWith($name, 'PHPStan\\PhpDocParser\\')) {
-			return true;
-		}
-
 		if (Strings::startsWith($name, 'PHPStan\\BetterReflection\\')) {
 			return true;
 		}
@@ -113,8 +109,22 @@ class Filter extends \ApiGen\Analyzer\Filter
 	public function filterMemberInfo(ClassLikeInfo $classLike, MemberInfo $member): bool
 	{
 		$className = $classLike->name->full;
+		if (Strings::startsWith($className, "PhpParser\\")) {
+			return true;
+		}
+		if (Strings::startsWith($className, 'PHPStan\\PhpDocParser\\')) {
+			return true;
+		}
+
+		if (Strings::startsWith($className, 'PHPStan\\BetterReflection\\')) {
+			return true;
+		}
 		if (!$member instanceof MethodInfo) {
 			return !Strings::startsWith($className, 'PHPStan\\');
+		}
+
+		if (!Strings::startsWith($className, 'PHPStan\\')) {
+			return false;
 		}
 
 		if (isset($classLike->tags['api'])) {

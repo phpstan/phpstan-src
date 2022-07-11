@@ -63,10 +63,6 @@ jobs:
           restore-keys: |
             rector-v1-phar-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-
 
-      - name: "Delete Rector downgrade cache"
-        if: github.event_name != 'pull_request'
-        run: "rm -f tmp/rectorCache.php"
-
       - name: "Prepare for PHAR compilation"
         working-directory: "compiler"
         run: "php bin/prepare"

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d5623b5745915847053716d8ce7bb564",
+    "content-hash": "cca72dc10f8d1df2104049e381d62fcb",
     "packages": [],
     "packages-dev": [
         {
@@ -13,12 +13,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/ApiGen/ApiGen.git",
-                "reference": "31d3291d929232cbf6fed3bb4475b7b337687ffd"
+                "reference": "52f74870943620f96c669d730596fc1091117441"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ApiGen/ApiGen/zipball/31d3291d929232cbf6fed3bb4475b7b337687ffd",
-                "reference": "31d3291d929232cbf6fed3bb4475b7b337687ffd",
+                "url": "https://api.github.com/repos/ApiGen/ApiGen/zipball/52f74870943620f96c669d730596fc1091117441",
+                "reference": "52f74870943620f96c669d730596fc1091117441",
                 "shasum": ""
             },
             "require": {
@@ -81,9 +81,9 @@
             "description": "PHP source code API generator.",
             "support": {
                 "issues": "https://github.com/ApiGen/ApiGen/issues",
-                "source": "https://github.com/ApiGen/ApiGen/tree/v7.0.0-alpha"
+                "source": "https://github.com/ApiGen/ApiGen/tree/master"
             },
-            "time": "2022-07-10T09:17:41+00:00"
+            "time": "2022-07-10T16:43:45+00:00"
         },
         {
             "name": "dflydev/dot-access-data",

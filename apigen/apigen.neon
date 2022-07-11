@@ -1,3 +1,6 @@
+parameters:
+	themeDir: theme
+
 services:
 	analyzer.filter:
 		factory: PHPStan\ApiGen\Filter(excludeProtected: %excludeProtected%, excludePrivate: %excludePrivate%, excludeTagged: %excludeTagged%)

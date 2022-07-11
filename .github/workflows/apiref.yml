@@ -86,3 +86,19 @@ jobs:
           AWS_REGION: 'eu-west-1'
           AWS_ACCESS_KEY_ID: ${{ secrets.APIREF_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.APIREF_AWS_SECRET_ACCESS_KEY }}
+
+      - uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          repository: "phpstan/phpstan"
+          event-type: check_website_links
+
+      - name: "Check for broken links"
+        uses: ScholliYT/Broken-Links-Crawler-Action@v3
+        with:
+          website_url: 'https://apiref.phpstan.org/${{ github.ref_name }}/index.html'
+          resolve_before_filtering: 'true'
+          verbose: 'true'
+          max_retry_time: 30
+          max_retries: 5
+          max_depth: 1

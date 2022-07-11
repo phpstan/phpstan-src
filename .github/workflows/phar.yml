@@ -156,10 +156,6 @@ jobs:
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
 
-      - name: "Get Git log"
-        id: git-log
-        run: echo ::set-output name=log::$(git log ${{ github.event.before }}..${{ github.event.after }} --reverse --pretty='%H %s' | sed -e 's/^/https:\/\/github.com\/phpstan\/phpstan-src\/commit\//')
-
       - name: "Checkout phpstan-dist"
         uses: actions/checkout@v3
         with:
@@ -167,6 +163,15 @@ jobs:
           path: phpstan-dist
           token: ${{ secrets.PAT }}
           ref: 1.8.x
+
+      - name: "Get previous pushed dist commit"
+        id: previous-commit
+        working-directory: phpstan-dist
+        run: echo ::set-output name=sha::$(sed -n '2p' .phar-checksum)
+
+      - name: "Get Git log"
+        id: git-log
+        run: echo ::set-output name=log::$(git log ${{ steps.previous-commit.outputs.sha }}..${{ github.event.after }} --reverse --pretty='%H %s' | sed -e 's/^/https:\/\/github.com\/phpstan\/phpstan-src\/commit\//')
 
       - name: "Check PHAR checksum"
         id: checksum-difference

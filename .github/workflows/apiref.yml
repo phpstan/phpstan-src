@@ -98,6 +98,6 @@ jobs:
         with:
           website_url: 'https://apiref.phpstan.org/${{ github.ref_name }}/index.html'
           resolve_before_filtering: 'true'
-          verbose: 'true'
+          verbose: 'warning'
           max_retry_time: 30
           max_retries: 5

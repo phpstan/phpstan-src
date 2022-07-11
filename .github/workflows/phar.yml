@@ -173,7 +173,7 @@ jobs:
         working-directory: phpstan-dist
         run: |
           checksum=${{needs.compiler-tests.outputs.checksum}}
-          if [[ $(< .phar-checksum) != "$checksum" ]]; then
+          if [[ $(head -n 1 .phar-checksum) != "$checksum" ]]; then
             echo "::set-output name=result::different
           else
             echo "::set-output name=result::same

@@ -578,7 +578,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-5474.php'], [
 			[
 				'Strict comparison using !== between array{test: 1} and array{test: 1} will always evaluate to false.',
-				24,
+				25,
 			],
 		]);
 	}

@@ -428,7 +428,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6000.php'], [
 			[
 				'Offset \'classmap\' does not exist on array{psr-4?: array<string, array<string>|string>, classmap?: array<int, string>}.',
-				11,
+				12,
 			],
 		]);
 	}

@@ -16,9 +16,11 @@ class HelloWorld
 	}
 }
 
-$helloWorld = new HelloWorld();
-$x = $y = $helloWorld->load();
-assertType('array{default?: int}', $y);
-if ($x !== $y) {
+function (): void {
+	$helloWorld = new HelloWorld();
+	$x = $y = $helloWorld->load();
 	assertType('array{default?: int}', $y);
-}
+	if ($x !== $y) {
+		assertType('array{default?: int}', $y);
+	}
+};

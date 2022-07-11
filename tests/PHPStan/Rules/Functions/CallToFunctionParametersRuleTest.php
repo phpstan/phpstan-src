@@ -1110,10 +1110,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testBug5474(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-5474.php'], [
+		$this->analyse([__DIR__ . '/../Comparison/data/bug-5474.php'], [
 			[
 				'Parameter #1 $data of function Bug5474\testData expects array{test: int}, *NEVER* given.',
-				25,
+				26,
 			],
 		]);
 	}

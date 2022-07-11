@@ -2,10 +2,6 @@
 
 namespace Bug5474;
 
-$data = ['test' => 1];
-$data2 = ['test' => 1];
-$data3 = ['test' => 5];
-
 /**
  * @phpstan-param array{test: int} $data
  * @return void
@@ -21,14 +17,20 @@ function returnData3() {
 	return ['test' => 5];
 }
 
-if ($data !== $data2) {
-	testData($data);
-}
+function (): void {
+	$data = ['test' => 1];
+	$data2 = ['test' => 1];
+	$data3 = ['test' => 5];
 
-if ($data !== $data3) {
-	testData($data);
-}
+	if ($data !== $data2) {
+		testData($data);
+	}
 
-if ($data !== returnData3()) {
-	testData($data);
-}
+	if ($data !== $data3) {
+		testData($data);
+	}
+
+	if ($data !== returnData3()) {
+		testData($data);
+	}
+};

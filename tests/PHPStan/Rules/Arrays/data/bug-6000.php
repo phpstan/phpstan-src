@@ -2,12 +2,14 @@
 
 namespace Bug6000;
 
-/** @var array{psr-4?: array<string, string|string[]>, classmap?: list<string>} $data */
-$data = [];
+function (): void {
+	/** @var array{psr-4?: array<string, string|string[]>, classmap?: list<string>} $data */
+	$data = [];
 
-foreach ($data as $key => $value) {
-	if ($key === 'classmap') {
-		echo implode(', ', $value); // not working :(
-		echo implode(', ', $data[$key]); // this works though?!
+	foreach ($data as $key => $value) {
+		if ($key === 'classmap') {
+			echo implode(', ', $value); // not working :(
+			echo implode(', ', $data[$key]); // this works though?!
+		}
 	}
-}
+};

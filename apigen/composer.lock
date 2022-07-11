@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f0e4d40f641012ef0d5f71471dc9a6ea",
+    "content-hash": "d5623b5745915847053716d8ce7bb564",
     "packages": [],
     "packages-dev": [
         {
             "name": "apigen/apigen",
-            "version": "v7.0.0-alpha",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ApiGen/ApiGen.git",
-                "reference": "a57cf8d20469feb23acd557994be80a18b41ead5"
+                "reference": "31d3291d929232cbf6fed3bb4475b7b337687ffd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ApiGen/ApiGen/zipball/a57cf8d20469feb23acd557994be80a18b41ead5",
-                "reference": "a57cf8d20469feb23acd557994be80a18b41ead5",
+                "url": "https://api.github.com/repos/ApiGen/ApiGen/zipball/31d3291d929232cbf6fed3bb4475b7b337687ffd",
+                "reference": "31d3291d929232cbf6fed3bb4475b7b337687ffd",
                 "shasum": ""
             },
             "require": {
@@ -46,6 +46,7 @@
             "suggest": {
                 "ext-pcntl": "for multiprocess rendering"
             },
+            "default-branch": true,
             "bin": [
                 "bin/apigen"
             ],
@@ -1957,7 +1958,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "apigen/apigen": 15
+        "apigen/apigen": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

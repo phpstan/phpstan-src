@@ -38,7 +38,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Run ApiGen"
-        run: "apigen/vendor/bin/apigen src --output docs"
+        run: "apigen/vendor/bin/apigen -c apigen/apigen.neon --output docs -- src"
 
       - name: "Upload docs"
         uses: actions/upload-artifact@v3

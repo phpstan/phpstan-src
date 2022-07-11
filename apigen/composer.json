@@ -3,6 +3,11 @@
 		"php": "^8.1"
 	},
 	"require-dev": {
-		"apigen/apigen": "^7.0@alpha"
+		"apigen/apigen": "dev-master#31d3291d929232cbf6fed3bb4475b7b337687ffd"
+	},
+	"autoload": {
+		"psr-4": {
+			"PHPStan\\ApiGen\\": "src"
+		}
 	}
 }

@@ -456,6 +456,7 @@ class ClassReflection
 		return $extension;
 	}
 
+	/** @internal */
 	public function evictPrivateSymbols(): void
 	{
 		foreach ($this->constants as $name => $constant) {

@@ -169,8 +169,15 @@ jobs:
         working-directory: phpstan-dist
         run: echo ::set-output name=sha::$(sed -n '2p' .phar-checksum)
 
+      - name: "Checkout phpstan-src"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          path: phpstan-src
+
       - name: "Get Git log"
         id: git-log
+        working-directory: phpstan-src
         run: echo ::set-output name=log::$(git log ${{ steps.previous-commit.outputs.sha }}..${{ github.event.after }} --reverse --pretty='%H %s' | sed -e 's/^/https:\/\/github.com\/phpstan\/phpstan-src\/commit\//')
 
       - name: "Check PHAR checksum"

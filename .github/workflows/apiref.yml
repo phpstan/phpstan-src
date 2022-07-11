@@ -6,11 +6,14 @@ on:
   push:
     branches:
       - "1.8.x"
-    tags:
-      - '1.8.*'
+    paths:
+      - 'src/**'
+      - 'composer.lock'
+      - 'apigen/**'
+      - '.github/workflows/apiref.yml'
 
 concurrency:
-  group: apigen-${{ github.ref }} # will be canceled on subsequent pushes in both branches and pull requests
+  group: apigen-${{ github.ref }} # will be canceled on subsequent pushes in branch
   cancel-in-progress: true
 
 jobs:
@@ -45,3 +48,41 @@ jobs:
         with:
           name: docs
           path: docs
+
+  deploy:
+    name: "Deploy"
+    needs:
+      - apigen
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "Install Node"
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      - name: "Download docs"
+        uses: actions/download-artifact@v3
+        with:
+          name: docs
+          path: docs
+
+      - name: "Sync with S3"
+        uses: jakejarvis/s3-sync-action@v0.5.1
+        with:
+          args: --exclude '.git*/*' --follow-symlinks
+        env:
+          SOURCE_DIR: './docs'
+          DEST_DIR: ${{ github.ref_name }}
+          AWS_REGION: 'eu-west-1'
+          AWS_S3_BUCKET: "web-apiref.phpstan.org"
+          AWS_ACCESS_KEY_ID: ${{ secrets.APIREF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.APIREF_AWS_SECRET_ACCESS_KEY }}
+
+      - name: "Invalidate CloudFront"
+        uses: chetan/invalidate-cloudfront-action@v2
+        env:
+          DISTRIBUTION: "E37G1C2KWNAPBD"
+          PATHS: '/${{ github.ref_name }}/*'
+          AWS_REGION: 'eu-west-1'
+          AWS_ACCESS_KEY_ID: ${{ secrets.APIREF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.APIREF_AWS_SECRET_ACCESS_KEY }}

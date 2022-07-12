@@ -11,6 +11,7 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Exception;
+use ExtendsThrowable\ExtendsThrowable;
 use Generator;
 use InvalidArgumentException;
 use Iterator;
@@ -404,6 +405,16 @@ class ObjectTypeTest extends PHPStanTestCase
 					new ObjectType(IntegerRangeType::class),
 				])),
 				new ObjectType(IntegerType::class),
+				TrinaryLogic::createMaybe(),
+			],
+			57 => [
+				new ObjectType(Throwable::class),
+				new ObjectType(ExtendsThrowable::class),
+				TrinaryLogic::createYes(),
+			],
+			58 => [
+				new ObjectType(Throwable::class, new ObjectType(InvalidArgumentException::class)),
+				new ObjectType(ExtendsThrowable::class),
 				TrinaryLogic::createMaybe(),
 			],
 		];

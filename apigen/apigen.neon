@@ -1,4 +1,5 @@
 parameters:
+	title: PHPStan
 	themeDir: theme
 
 services:

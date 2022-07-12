@@ -142,9 +142,4 @@ class ClassAttributesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/allow-dynamic-properties-attribute.php'], []);
 	}
 
-	public function testSensitiveParameterAttribute(): void
-	{
-		$this->analyse([__DIR__ . '/data/sensitive-parameter.php'], []);
-	}
-
 }

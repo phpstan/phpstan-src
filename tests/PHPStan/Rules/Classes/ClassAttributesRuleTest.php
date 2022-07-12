@@ -146,4 +146,5 @@ class ClassAttributesRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/sensitive-parameter.php'], []);
 	}
+
 }

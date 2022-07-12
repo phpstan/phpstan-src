@@ -17,4 +17,12 @@ class HelloWorld
 			assertType('non-empty-array<int, string>', $array);
 		}
 	}
+
+	/** @param array<int> $haystack */
+	public function nonConstantNeedle(int $needle, array $haystack): void
+	{
+		if (in_array($needle, $haystack, true)) {
+			assertType('non-empty-array<int>', $haystack);
+		}
+	}
 }

@@ -42,12 +42,14 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		}
 		$strictNodeType = $scope->getType($node->getArgs()[2]->value);
 		if (!(new ConstantBooleanType(true))->isSuperTypeOf($strictNodeType)->yes()) {
-			return new SpecifiedTypes([], []);
+			return new SpecifiedTypes();
 		}
 
 		$needleType = $scope->getType($node->getArgs()[0]->value);
 		$arrayType = $scope->getType($node->getArgs()[1]->value);
 		$arrayValueType = $arrayType->getIterableValueType();
+
+		$specifiedTypes = new SpecifiedTypes();
 
 		if (
 			$context->truthy()
@@ -61,8 +63,6 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 				false,
 				$scope,
 			);
-		} else {
-			$specifiedTypes = new SpecifiedTypes([], []);
 		}
 
 		if (
@@ -71,31 +71,21 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			|| count(TypeUtils::getEnumCaseObjects($needleType)) > 0
 		) {
 			if ($context->truthy()) {
-				$arrayValueType = TypeCombinator::union($arrayValueType, $needleType);
+				$arrayType = TypeCombinator::intersect(
+					new ArrayType(new MixedType(), TypeCombinator::union($arrayValueType, $needleType)),
+					new NonEmptyArrayType(),
+				);
 			} else {
-				$arrayValueType = TypeCombinator::remove($arrayValueType, $needleType);
+				$arrayType = new ArrayType(new MixedType(), TypeCombinator::remove($arrayValueType, $needleType));
 			}
 
-			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
-				$node->getArgs()[1]->value,
-				new ArrayType(new MixedType(), $arrayValueType),
-				TypeSpecifierContext::createTrue(),
-				false,
-				$scope,
-			));
-		}
-
-		if (
-			$context->truthy()
-			&& $arrayType->isArray()->yes()
-		) {
-			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
-				$node->getArgs()[1]->value,
-				TypeCombinator::intersect($arrayType, new NonEmptyArrayType()),
-				$context,
-				false,
-				$scope,
-			));
+				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+					$node->getArgs()[1]->value,
+					$arrayType,
+					TypeSpecifierContext::createTrue(),
+					false,
+					$scope,
+				));
 		}
 
 		return $specifiedTypes;

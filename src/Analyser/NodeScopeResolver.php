@@ -1209,6 +1209,7 @@ class NodeScopeResolver
 
 				$catchType = TypeCombinator::union(...array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types));
 				$originalCatchType = $catchType;
+				$isThrowable = $originalCatchType instanceof TypeWithClassName && strtolower($originalCatchType->getClassName()) === 'throwable';
 				$catchType = TypeCombinator::remove($catchType, $pastCatchTypes);
 				$pastCatchTypes = TypeCombinator::union($pastCatchTypes, $originalCatchType);
 				$matchingThrowPoints = [];
@@ -1230,6 +1231,9 @@ class NodeScopeResolver
 						$matchingThrowPoints[] = $throwPoint;
 					}
 					if ($isSuperType->yes()) {
+						continue;
+					}
+					if ($isThrowable) {
 						continue;
 					}
 					$newThrowPoints[] = $throwPoint->subtractCatchType($catchType);

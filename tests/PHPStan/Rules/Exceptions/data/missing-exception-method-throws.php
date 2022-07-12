@@ -57,4 +57,32 @@ class Foo
 		}
 	}
 
+	public function doSit(): void
+	{
+		try {
+			$this->throwsInterface();
+		} catch (\Throwable $e) {
+
+		}
+	}
+
+	public function doSit2(): void
+	{
+		try {
+			$this->throwsInterface();
+		} catch (\InvalidArgumentException $e) {
+
+		} catch (\Throwable $e) {
+
+		}
+	}
+
+	/**
+	 * @throws \ExtendsThrowable\ExtendsThrowable
+	 */
+	private function throwsInterface(): void
+	{
+
+	}
+
 }

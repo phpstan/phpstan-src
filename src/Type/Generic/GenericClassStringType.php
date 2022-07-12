@@ -96,10 +96,6 @@ class GenericClassStringType extends ClassStringType
 				$isSuperType = $genericType->isSuperTypeOf($objectType);
 			}
 
-			// Explicitly handle the uncertainty for Maybe.
-			if ($isSuperType->maybe()) {
-				return TrinaryLogic::createNo();
-			}
 			return $isSuperType;
 		} elseif ($type instanceof self) {
 			return $this->type->isSuperTypeOf($type->type);

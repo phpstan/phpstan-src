@@ -73,7 +73,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 			8 => [
 				new GenericClassStringType(new ObjectType(InvalidArgumentException::class)),
 				new ConstantStringType(Exception::class),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
 			9 => [
 				new GenericClassStringType(new ObjectType(stdClass::class)),
@@ -128,7 +128,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 					TemplateTypeVariance::createInvariant(),
 				)),
 				new ConstantStringType(Throwable::class),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
 			15 => [
 				new GenericClassStringType(new StaticType($reflectionProvider->getClass(Exception::class))),
@@ -138,7 +138,7 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 			16 => [
 				new GenericClassStringType(new StaticType($reflectionProvider->getClass(InvalidArgumentException::class))),
 				new ConstantStringType(Exception::class),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
 			17 => [
 				new GenericClassStringType(new StaticType($reflectionProvider->getClass(Throwable::class))),

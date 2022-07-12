@@ -3020,8 +3020,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new GenericClassStringType(new ObjectType(InvalidArgumentException::class)),
 					new ConstantStringType(Exception::class),
 				],
-				NeverType::class,
-				'*NEVER*',
+				IntersectionType::class,
+				"'Exception'&class-string<InvalidArgumentException>",
 			],
 			[
 				[

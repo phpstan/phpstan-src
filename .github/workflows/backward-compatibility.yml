@@ -7,6 +7,9 @@ on:
   push:
     branches:
       - "1.8.x"
+    paths:
+      - 'src/**'
+      - '.github/workflows/backward-compatibility.yml'
 
 env:
   COMPOSER_ROOT_VERSION: "1.8.x-dev"

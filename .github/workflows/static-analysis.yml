@@ -6,11 +6,13 @@ on:
   pull_request:
     paths-ignore:
       - 'compiler/**'
+      - 'apigen/**'
   push:
     branches:
       - "1.8.x"
     paths-ignore:
       - 'compiler/**'
+      - 'apigen/**'
 
 env:
   COMPOSER_ROOT_VERSION: "1.8.x-dev"

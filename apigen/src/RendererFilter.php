@@ -6,10 +6,12 @@ use ApiGen\Index\FileIndex;
 use ApiGen\Index\NamespaceIndex;
 use ApiGen\Info\ClassLikeInfo;
 use ApiGen\Info\FunctionInfo;
+use ApiGen\Renderer\Filter;
 use Nette\Utils\Strings;
 
-class RendererFilter extends \ApiGen\Renderer\Filter
+class RendererFilter extends Filter
 {
+
 	public function filterTreePage(): bool
 	{
 		return parent::filterTreePage();
@@ -70,7 +72,7 @@ class RendererFilter extends \ApiGen\Renderer\Filter
 	private function isClassRendered(ClassLikeInfo $classLike): bool
 	{
 		$className = $classLike->name->full;
-		if (Strings::startsWith($className, "PhpParser\\")) {
+		if (Strings::startsWith($className, 'PhpParser\\')) {
 			return true;
 		}
 		if (Strings::startsWith($className, 'PHPStan\\PhpDocParser\\')) {

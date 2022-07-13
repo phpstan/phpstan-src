@@ -11,13 +11,15 @@ use PhpParser\Node;
 use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode;
+use function substr;
 
 class Filter extends \ApiGen\Analyzer\Filter
 {
+
 	public function filterClassLikeNode(Node\Stmt\ClassLike $node): bool
 	{
 		$name = $node->namespacedName->toString();
-		if (Strings::startsWith($name, "PhpParser\\")) {
+		if (Strings::startsWith($name, 'PhpParser\\')) {
 			return true;
 		}
 
@@ -109,7 +111,7 @@ class Filter extends \ApiGen\Analyzer\Filter
 	public function filterMemberInfo(ClassLikeInfo $classLike, MemberInfo $member): bool
 	{
 		$className = $classLike->name->full;
-		if (Strings::startsWith($className, "PhpParser\\")) {
+		if (Strings::startsWith($className, 'PhpParser\\')) {
 			return true;
 		}
 		if (Strings::startsWith($className, 'PHPStan\\PhpDocParser\\')) {
@@ -155,9 +157,11 @@ class Filter extends \ApiGen\Analyzer\Filter
 		$tags = [];
 
 		foreach ($node->getTags() as $tag) {
-			if (!$tag->value instanceof InvalidTagValueNode) {
-				$tags[substr($tag->name, 1)][] = $tag->value;
+			if ($tag->value instanceof InvalidTagValueNode) {
+				continue;
 			}
+
+			$tags[substr($tag->name, 1)][] = $tag->value;
 		}
 
 		return $tags;

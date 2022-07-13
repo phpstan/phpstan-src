@@ -13,6 +13,7 @@
 	<file>tests</file>
 	<file>compiler/src</file>
 	<file>compiler/tests</file>
+	<file>apigen/src</file>
 
 	<rule ref="build-cs/vendor/consistence-community/coding-standard/Consistence/ruleset.xml">
 		<exclude name="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.InvalidFormat"/>
@@ -94,6 +95,7 @@
 				<element key="src" value="PHPStan"/>
 				<element key="tests/PHPStan" value="PHPStan"/>
 				<element key="tests/e2e" value="PHPStan\Tests"/>
+				<element key="apigen/src" value="PHPStan\ApiGen"/>
 			</property>
 		</properties>
 	</rule>

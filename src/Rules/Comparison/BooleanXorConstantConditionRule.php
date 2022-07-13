@@ -8,6 +8,7 @@ use PHPStan\Node\BooleanXorNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use function count;
 use function sprintf;
 
 /**

@@ -15,10 +15,7 @@ class BooleanXorNode extends Expr implements VirtualNode
 		parent::__construct($originalNode->getAttributes());
 	}
 
-	/**
-	 * @return LogicalXor
-	 */
-	public function getOriginalNode()
+	public function getOriginalNode(): LogicalXor
 	{
 		return $this->originalNode;
 	}

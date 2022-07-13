@@ -28,7 +28,7 @@ class BooleanXorConstantConditionRuleTest extends RuleTestCase
 				),
 				$this->treatPhpDocTypesAsCertain,
 			),
-			$this->treatPhpDocTypesAsCertain
+			$this->treatPhpDocTypesAsCertain,
 		);
 	}
 

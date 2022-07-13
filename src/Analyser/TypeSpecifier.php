@@ -1161,6 +1161,10 @@ class TypeSpecifier
 			return new SpecifiedTypes([], [], false, [], $rootExpr);
 		}
 
+		if ($expr instanceof ClassConstFetch || ($expr instanceof ArrayDimFetch && $expr->var instanceof ClassConstFetch)) {
+			return new SpecifiedTypes([], [], false, [], $rootExpr);
+		}
+
 		$specifiedExprs = [];
 
 		if ($expr instanceof Expr\Assign) {

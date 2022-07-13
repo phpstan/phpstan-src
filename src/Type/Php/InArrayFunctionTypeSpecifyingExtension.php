@@ -16,6 +16,7 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function count;
@@ -68,28 +69,35 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			);
 		}
 
+		// "Simple" all constant cases that always evaluate to true still need a nudge (e.g. needle 'foo' in haystack {'foo', 'bar'})
+		if ($arrayType instanceof ConstantArrayType && $needleType instanceof ConstantScalarType) {
+			foreach ($arrayType->getValueTypes() as $i => $valueType) {
+				if (!$arrayType->isOptionalKey($i) && $valueType->equals($needleType)) {
+					return $specifiedTypes;
+				}
+			}
+		}
+
+		// If e.g. needle is 'a' and haystack non-empty-array<int, 'a'> we can be sure that this always evaluates to true
+		// Belows HasOffset::isSuperTypeOf cannot deal with that since it calls ArrayType::hasOffsetValueType and that returns maybe at max
+		if ($needleType instanceof ConstantScalarType && $arrayType->isIterableAtLeastOnce()->yes() && $arrayValueType->equals($needleType)) {
+			return $specifiedTypes;
+		}
+
 		if (
 			$context->truthy()
 			|| count(TypeUtils::getConstantScalars($needleType)) > 0
 			|| count(TypeUtils::getEnumCaseObjects($needleType)) > 0
 		) {
 			// Specify haystack type
-			$arrayKeyType = $arrayType->getIterableKeyType();
 			if ($context->truthy()) {
 				$newArrayType = TypeCombinator::intersect(
-					new ArrayType($arrayKeyType, TypeCombinator::union($arrayValueType, $needleType)),
+					new ArrayType(new MixedType(), TypeCombinator::union($arrayValueType, $needleType)),
+					new HasOffsetType(new MixedType(), $needleType),
 					new NonEmptyArrayType(),
 				);
-
-				if (!$needleType instanceof ConstantScalarType || !$arrayType->isIterableAtLeastOnce()->yes() || !$arrayValueType->equals($needleType)) {
-					// TODO: hasOffset(int, 'a')::isSuperTypeOf(non-empty-array<int, 'a'>) does not return yes because ArrayType::hasOffsetValueType returns maybe
-					$offsetType = $arrayType instanceof ConstantArrayType
-						? $arrayType->getOffsetType($needleType)
-						: $arrayKeyType;
-					$newArrayType = TypeCombinator::intersect($newArrayType, new HasOffsetType($offsetType, $needleType));
-				}
 			} else {
-				$newArrayType = new ArrayType($arrayKeyType, TypeCombinator::remove($arrayValueType, $needleType));
+				$newArrayType = new ArrayType(new MixedType(), TypeCombinator::remove($arrayValueType, $needleType));
 			}
 
 			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(

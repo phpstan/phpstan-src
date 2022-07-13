@@ -865,7 +865,15 @@ class InArray2
 {
 
 	/** @param non-empty-array<int, int> $haystack */
-	public function checkWithNonConstants(int $needle, array $haystack): void
+	public function nonConstants(int $needle, array $haystack): void
+	{
+		if (in_array($needle, $haystack, true)) {
+
+		}
+	}
+
+	/** @param array{'self', string} $haystack */
+	public function slevomatCsBug(string $needle, array $haystack): void
 	{
 		if (in_array($needle, $haystack, true)) {
 

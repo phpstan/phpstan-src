@@ -114,7 +114,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		return $this->offsetValueType;
+		return $offsetType->equals($this->offsetType) ? $this->offsetValueType : new ErrorType();
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type

@@ -860,3 +860,16 @@ class ArraySearch
 	}
 
 }
+
+class InArray2
+{
+
+	/** @param non-empty-array<int, int> $haystack */
+	public function checkWithNonConstants(int $needle, array $haystack): void
+	{
+		if (in_array($needle, $haystack, true)) {
+
+		}
+	}
+
+}

@@ -9,11 +9,13 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use function count;
@@ -56,6 +58,7 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			|| count(TypeUtils::getConstantScalars($arrayValueType)) > 0
 			|| count(TypeUtils::getEnumCaseObjects($arrayValueType)) > 0
 		) {
+			// Specify needle type
 			$specifiedTypes = $this->typeSpecifier->create(
 				$node->getArgs()[0]->value,
 				$arrayValueType,
@@ -70,22 +73,32 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			|| count(TypeUtils::getConstantScalars($needleType)) > 0
 			|| count(TypeUtils::getEnumCaseObjects($needleType)) > 0
 		) {
+			// Specify haystack type
+			$arrayKeyType = $arrayType->getIterableKeyType();
 			if ($context->truthy()) {
-				$arrayType = TypeCombinator::intersect(
-					new ArrayType(new MixedType(), TypeCombinator::union($arrayValueType, $needleType)),
+				$newArrayType = TypeCombinator::intersect(
+					new ArrayType($arrayKeyType, TypeCombinator::union($arrayValueType, $needleType)),
 					new NonEmptyArrayType(),
 				);
+
+				if (!$needleType instanceof ConstantScalarType || !$arrayType->isIterableAtLeastOnce()->yes() || !$arrayValueType->equals($needleType)) {
+					// TODO: hasOffset(int, 'a')::isSuperTypeOf(non-empty-array<int, 'a'>) does not return yes because ArrayType::hasOffsetValueType returns maybe
+					$offsetType = $arrayType instanceof ConstantArrayType
+						? $arrayType->getOffsetType($needleType)
+						: $arrayKeyType;
+					$newArrayType = TypeCombinator::intersect($newArrayType, new HasOffsetType($offsetType, $needleType));
+				}
 			} else {
-				$arrayType = new ArrayType(new MixedType(), TypeCombinator::remove($arrayValueType, $needleType));
+				$newArrayType = new ArrayType($arrayKeyType, TypeCombinator::remove($arrayValueType, $needleType));
 			}
 
-				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
-					$node->getArgs()[1]->value,
-					$arrayType,
-					TypeSpecifierContext::createTrue(),
-					false,
-					$scope,
-				));
+			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+				$node->getArgs()[1]->value,
+				$newArrayType,
+				TypeSpecifierContext::createTrue(),
+				false,
+				$scope,
+			));
 		}
 
 		return $specifiedTypes;

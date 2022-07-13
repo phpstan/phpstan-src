@@ -10,12 +10,14 @@ class Foo
 	 * @param string $r
 	 * @param $mixed
 	 * @param string[] $strings
+	 * @param string[] $moreStrings
 	 */
 	public function doFoo(
 		string $s,
 		string $r,
 		$mixed,
-		array $strings
+		array $strings,
+		array $moreStrings
 	)
 	{
 		if (!in_array($s, ['foo', 'bar'], true)) {
@@ -26,7 +28,7 @@ class Foo
 			return;
 		}
 
-		if (in_array($r, $strings, true)) {
+		if (in_array($r, $moreStrings, true)) {
 			return;
 		}
 

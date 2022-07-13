@@ -33,9 +33,12 @@ class HasOffsetType implements CompoundType, AccessoryType
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
+	private Type $offsetValueType;
+
 	/** @api */
-	public function __construct(private Type $offsetType)
+	public function __construct(private Type $offsetType, ?Type $offsetValueType = null)
 	{
+		$this->offsetValueType = $offsetValueType ?? new MixedType();
 	}
 
 	public function getOffsetType(): Type
@@ -64,7 +67,8 @@ class HasOffsetType implements CompoundType, AccessoryType
 			return TrinaryLogic::createYes();
 		}
 		return $type->isOffsetAccessible()
-			->and($type->hasOffsetValueType($this->offsetType));
+			->and($type->hasOffsetValueType($this->offsetType))
+			->and($this->offsetValueType->isSuperTypeOf($type->getOffsetValueType($this->offsetType)));
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
@@ -110,7 +114,7 @@ class HasOffsetType implements CompoundType, AccessoryType
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		return new MixedType();
+		return $this->offsetValueType;
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type

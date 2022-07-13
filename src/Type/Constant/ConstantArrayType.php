@@ -29,6 +29,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_keys;
@@ -530,6 +531,23 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return new ArrayType($this->getKeyType(), $this->getItemType());
+	}
+
+	public function getOffsetType(Type $offsetValueType): Type
+	{
+		return TypeTraverser::map($offsetValueType, function (Type $type, callable $traverse): Type {
+			if ($type instanceof UnionType || $type instanceof IntersectionType) {
+				return $traverse($type);
+			}
+
+			foreach ($this->valueTypes as $i => $valueType) {
+				if ($valueType->equals($type)) {
+					return $this->keyTypes[$i];
+				}
+			}
+
+			return new ErrorType(); // undefined offset value
+		});
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic

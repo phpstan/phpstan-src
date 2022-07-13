@@ -14,7 +14,7 @@ class HelloWorld
 	public function sayHello(array $array): void
 	{
 		if(in_array("thing", $array, true)){
-			assertType('non-empty-array<int, string>', $array);
+			assertType('non-empty-array<int, string>&hasOffset(int)', $array);
 		}
 	}
 
@@ -22,7 +22,7 @@ class HelloWorld
 	public function nonConstantNeedle(int $needle, array $haystack): void
 	{
 		if (in_array($needle, $haystack, true)) {
-			assertType('non-empty-array<int>', $haystack);
+			assertType('non-empty-array<int>&hasOffset((int|string))', $haystack);
 		}
 	}
 }

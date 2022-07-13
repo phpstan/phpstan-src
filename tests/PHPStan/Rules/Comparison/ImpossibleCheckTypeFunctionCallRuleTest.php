@@ -109,6 +109,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					244,
 				],
 				[
+					'Call to function in_array() with arguments \'bar\'|\'foo\', array{\'foo\', \'bar\'} and true will always evaluate to true.',
+					248,
+				],
+				[
 					'Call to function in_array() with arguments \'foo\', array{\'foo\'} and true will always evaluate to true.',
 					252,
 				],
@@ -474,6 +478,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			[
 				'Call to function in_array() with arguments \'a\', non-empty-array<int, \'a\'> and true will always evaluate to true.',
 				39,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Call to function in_array() with arguments \'b\', non-empty-array<int, \'a\'> and true will always evaluate to false.',
@@ -482,6 +487,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			[
 				'Call to function in_array() with arguments int, array{} and true will always evaluate to false.',
 				47,
+			],
+			[
+				'Call to function in_array() with arguments int, array<int, string> and true will always evaluate to false.',
+				61,
 			],
 		]);
 	}

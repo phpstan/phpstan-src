@@ -12,14 +12,10 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
@@ -77,65 +73,6 @@ class ImpossibleCheckTypeHelper
 					return null;
 				} elseif ($functionName === 'array_search') {
 					return null;
-				} elseif ($functionName === 'in_array' && $argsCount >= 3) {
-					$haystackType = $scope->getType($node->getArgs()[1]->value);
-					if ($haystackType instanceof MixedType) {
-						return null;
-					}
-
-					if (!$haystackType->isArray()->yes()) {
-						return null;
-					}
-
-					$constantArrays = TypeUtils::getOldConstantArrays($haystackType);
-					$needleType = $scope->getType($node->getArgs()[0]->value);
-					$valueType = $haystackType->getIterableValueType();
-					$constantNeedleTypesCount = count(TypeUtils::getConstantScalars($needleType));
-					$constantHaystackTypesCount = count(TypeUtils::getConstantScalars($valueType));
-					$isNeedleSupertype = $needleType->isSuperTypeOf($valueType);
-					if (count($constantArrays) === 0) {
-						if ($haystackType->isIterableAtLeastOnce()->yes()) {
-							if ($constantNeedleTypesCount === 1 && $constantHaystackTypesCount === 1) {
-								if ($isNeedleSupertype->yes()) {
-									return true;
-								}
-								if ($isNeedleSupertype->no()) {
-									return false;
-								}
-							}
-						}
-						return null;
-					}
-
-					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {
-						$haystackArrayTypes = TypeUtils::getArrays($haystackType);
-						if (count($haystackArrayTypes) === 1 && $haystackArrayTypes[0]->getIterableValueType() instanceof NeverType) {
-							return null;
-						}
-
-						if ($isNeedleSupertype->maybe() || $isNeedleSupertype->yes()) {
-							foreach ($haystackArrayTypes as $haystackArrayType) {
-								foreach (TypeUtils::getConstantScalars($haystackArrayType->getIterableValueType()) as $constantScalarType) {
-									if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
-										continue 2;
-									}
-								}
-
-								return null;
-							}
-						}
-
-						if ($isNeedleSupertype->yes()) {
-							$hasConstantNeedleTypes = $constantNeedleTypesCount > 0;
-							$hasConstantHaystackTypes = $constantHaystackTypesCount > 0;
-							if (
-								(!$hasConstantNeedleTypes && !$hasConstantHaystackTypes)
-								|| $hasConstantNeedleTypes !== $hasConstantHaystackTypes
-							) {
-								return null;
-							}
-						}
-					}
 				} elseif ($functionName === 'method_exists' && $argsCount >= 2) {
 					$objectType = $scope->getType($node->getArgs()[0]->value);
 					$methodType = $scope->getType($node->getArgs()[1]->value);

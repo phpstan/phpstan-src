@@ -1,0 +1,17 @@
+{
+	"name": "phpstan/changelog-generator",
+	"require": {
+		"php": "^8.1",
+		"php-http/client-common": "^2.5",
+		"php-http/discovery": "^1.14",
+		"guzzlehttp/guzzle": "^7.4",
+		"http-interop/http-factory-guzzle": "^1.2",
+		"knplabs/github-api": "^3.7",
+		"symfony/console": "^6.1"
+	},
+	"autoload": {
+		"psr-4": {
+			"PHPStan\\ChangelogGenerator\\": "src"
+		}
+	}
+}

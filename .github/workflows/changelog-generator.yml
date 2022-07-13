@@ -1,0 +1,47 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Build Changelog Generator"
+
+on:
+  pull_request:
+    paths:
+      - 'changelog-generator/**'
+      - '.github/workflows/changelog-generator.yml'
+  push:
+    branches:
+      - "1.8.x"
+    paths:
+      - 'changelog-generator/**'
+      - '.github/workflows/changelog-generator.yml'
+
+concurrency:
+  group: changelog-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
+  cancel-in-progress: true
+
+jobs:
+  changelog-generator:
+    name: "Build Changelog Generator"
+
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 60
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Install Changelog Generator dependencies"
+        working-directory: "changelog-generator"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "PHPStan"
+        working-directory: "changelog-generator"
+        run: "../bin/phpstan"

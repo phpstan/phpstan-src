@@ -60,4 +60,9 @@ class ParamAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testSensitiveParameterAttribute(): void
+	{
+		$this->analyse([__DIR__ . '/data/sensitive-parameter.php'], []);
+	}
+
 }

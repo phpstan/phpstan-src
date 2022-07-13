@@ -74,3 +74,10 @@ if (\PHP_VERSION_ID < 80200 && !class_exists('AllowDynamicProperties', false)) {
 	{
 	}
 }
+
+if (\PHP_VERSION_ID < 80200 && !class_exists('SensitiveParameter', false)) {
+	#[Attribute(Attribute::TARGET_PARAMETER)]
+	final class SensitiveParameter
+	{
+	}
+}

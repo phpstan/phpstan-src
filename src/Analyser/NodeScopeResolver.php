@@ -62,6 +62,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
 use PHPStan\Node\BooleanAndNode;
 use PHPStan\Node\BooleanOrNode;
+use PHPStan\Node\BooleanXorNode;
 use PHPStan\Node\BreaklessWhileLoopNode;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Node\ClassConstantsNode;
@@ -2291,6 +2292,25 @@ class NodeScopeResolver
 			}
 
 			$this->callNodeCallbackWithExpression($nodeCallback, new BooleanOrNode($expr, $leftResult->getFalseyScope()), $scope, $context);
+
+			return new ExpressionResult(
+				$leftMergedWithRightScope,
+				$leftResult->hasYield() || $rightResult->hasYield(),
+				array_merge($leftResult->getThrowPoints(), $rightResult->getThrowPoints()),
+				static fn (): MutatingScope => $leftMergedWithRightScope->filterByTruthyValue($expr),
+				static fn (): MutatingScope => $rightResult->getScope()->filterByFalseyValue($expr),
+			);
+		} elseif ($expr instanceof BinaryOp\LogicalXor) {
+			$leftResult = $this->processExprNode($expr->left, $scope, $nodeCallback, $context->enterDeep());
+			$rightResult = $this->processExprNode($expr->right, $leftResult->getFalseyScope(), $nodeCallback, $context);
+			$rightExprType = $rightResult->getScope()->getType($expr->right);
+			if ($rightExprType instanceof NeverType && $rightExprType->isExplicit()) {
+				$leftMergedWithRightScope = $leftResult->getTruthyScope();
+			} else {
+				$leftMergedWithRightScope = $leftResult->getScope()->mergeWith($rightResult->getScope());
+			}
+
+			$this->callNodeCallbackWithExpression($nodeCallback, new BooleanXorNode($expr, $leftResult->getFalseyScope()), $scope, $context);
 
 			return new ExpressionResult(
 				$leftMergedWithRightScope,

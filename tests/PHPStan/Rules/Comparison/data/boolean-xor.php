@@ -2,26 +2,24 @@
 
 namespace BooleanXor;
 
-true xor true;
-
-function alwaysFalse(): bool
+function leftAlwaysTrue(bool $right): bool
 {
-	return true xor true;
+	return true xor $right;
 }
 
-function maybe(bool $left, bool $right): bool
+function rightAlwaysTrue(bool $left): bool
 {
-	return $left xor $right;
+	return $left xor true;
 }
 
-$foo = new stdClass();
-$bar = new stdClass();
-
-$foo xor $bar;
-
-function alwaysTrue(): bool
+function leftAlwaysFalse(bool $right): bool
 {
-	return 1 xor 0;
+	return false xor $right;
+}
+
+function rightAlwaysFalse(bool $left): bool
+{
+	return $left xor false;
 }
 
 /**
@@ -31,4 +29,9 @@ function alwaysTrue(): bool
 function phpdocAlways(bool $left, bool $right): bool
 {
 	return $left xor $right;
+}
+
+function skip(\DateTimeImmutable $date): void
+{
+	$date instanceof \stdClass xor $date instanceof \DateTimeImmutable;
 }

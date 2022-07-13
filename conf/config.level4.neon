@@ -28,6 +28,8 @@ conditionalTags:
 		phpstan.collector: %featureToggles.notAnalysedTrait%
 	PHPStan\Rules\Traits\NotAnalysedTraitRule:
 		phpstan.rules.rule: %featureToggles.notAnalysedTrait%
+	PHPStan\Rules\Comparison\BooleanXorConstantConditionRule:
+		phpstan.rules.rule: %featureToggles.booleanXorConstantConditionRule%
 
 parameters:
 	checkAdvancedIsset: true
@@ -59,8 +61,6 @@ services:
 		class: PHPStan\Rules\Comparison\BooleanXorConstantConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-		tags:
-			- phpstan.rules.rule
 
 	-
 		class: PHPStan\Rules\Comparison\BooleanNotConstantConditionRule

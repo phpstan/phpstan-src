@@ -48,6 +48,7 @@ parameters:
 		phpDocParserRequireWhitespaceBeforeDescription: false
 		runtimeReflectionRules: false
 		notAnalysedTrait: false
+		booleanXorConstantConditionRule: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -253,6 +254,7 @@ parametersSchema:
 		phpDocParserRequireWhitespaceBeforeDescription: bool()
 		runtimeReflectionRules: bool()
 		notAnalysedTrait: bool()
+		booleanXorConstantConditionRule: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

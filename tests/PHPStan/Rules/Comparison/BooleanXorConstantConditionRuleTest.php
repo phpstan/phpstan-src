@@ -18,7 +18,18 @@ class BooleanXorConstantConditionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new BooleanXorConstantConditionRule($this->treatPhpDocTypesAsCertain);
+		return new BooleanXorConstantConditionRule(
+			new ConstantConditionRuleHelper(
+				new ImpossibleCheckTypeHelper(
+					$this->createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					[],
+					$this->treatPhpDocTypesAsCertain,
+				),
+				$this->treatPhpDocTypesAsCertain,
+			),
+			$this->treatPhpDocTypesAsCertain
+		);
 	}
 
 	public function dataRule(): array
@@ -28,24 +39,29 @@ class BooleanXorConstantConditionRuleTest extends RuleTestCase
 				true,
 				[
 					[
-						'Result of xor is always false.',
-						5,
+						'Left side of xor is always true.',
+						7,
 					],
 					[
-						'Result of xor is always false.',
-						9,
+						'Right side of xor is always true.',
+						12,
 					],
 					[
-						'Result of xor is always false.',
-						20,
+						'Left side of xor is always false.',
+						17,
 					],
 					[
-						'Result of xor is always true.',
-						24,
+						'Right side of xor is always false.',
+						22,
 					],
 					[
-						'Result of xor is always false.',
-						33,
+						'Left side of xor is always true.',
+						31,
+						'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+					],
+					[
+						'Right side of xor is always true.',
+						31,
 						'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 					],
 				],
@@ -54,20 +70,20 @@ class BooleanXorConstantConditionRuleTest extends RuleTestCase
 				false,
 				[
 					[
-						'Result of xor is always false.',
-						5,
+						'Left side of xor is always true.',
+						7,
 					],
 					[
-						'Result of xor is always false.',
-						9,
+						'Right side of xor is always true.',
+						12,
 					],
 					[
-						'Result of xor is always false.',
-						20,
+						'Left side of xor is always false.',
+						17,
 					],
 					[
-						'Result of xor is always true.',
-						24,
+						'Right side of xor is always false.',
+						22,
 					],
 				],
 			],

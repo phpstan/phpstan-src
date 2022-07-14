@@ -867,7 +867,7 @@ class InArray2
 	/** @param non-empty-array<int, int> $haystack */
 	public function nonConstants(int $needle, array $haystack): void
 	{
-		if (in_array($needle, $haystack, true)) {
+		if (in_array($needle, $haystack, true)) { // bool
 
 		}
 	}
@@ -875,7 +875,7 @@ class InArray2
 	/** @param array{'self', string} $haystack */
 	public function slevomatCsBug(string $needle, array $haystack): void
 	{
-		if (in_array($needle, $haystack, true)) {
+		if (in_array($needle, $haystack, true)) { // bool
 
 		}
 	}
@@ -886,14 +886,18 @@ class InArray2
 	 */
 	public function triggersIfArrayIsNarrowedDownTwiceWithConstant(array $genericHaystack, array $constantHaystack): void
 	{
-		if (in_array('foo', $genericHaystack, true)) {
-			if (in_array('foo', $genericHaystack, true)) {
+		if (in_array('foo', $genericHaystack, true)) { // bool
+			if (in_array('foo', $genericHaystack, true)) { // true
 
 			}
 		}
 
-		if (in_array('foo', $constantHaystack, true)) {
-			if (in_array('foo', $constantHaystack, true)) {
+		if (in_array('foo', $constantHaystack, true)) { // bool
+			if (in_array('foo', $constantHaystack, true)) { // true
+
+			}
+		} else {
+			if (in_array('foo', $constantHaystack, true)) { // false
 
 			}
 		}

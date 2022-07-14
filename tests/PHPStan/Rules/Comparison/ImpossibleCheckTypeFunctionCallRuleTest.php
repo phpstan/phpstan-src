@@ -241,6 +241,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					'Call to function in_array() with arguments \'foo\', array{0?: \'foo\'}&non-empty-array and true will always evaluate to true.',
 					896,
 				],
+				[
+					'Call to function in_array() with arguments \'foo\', array{0?: *NEVER*} and true will always evaluate to false.',
+					900,
+				],
 			],
 		);
 	}
@@ -336,6 +340,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				[
 					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
 					693,
+				],
+				[
+					'Call to function in_array() with arguments \'foo\', array{0?: *NEVER*} and true will always evaluate to false.',
+					900,
 				],
 			],
 		);

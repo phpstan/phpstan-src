@@ -549,7 +549,12 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/slevomat-cs-in-array.php'], []);
+		$this->analyse([__DIR__ . '/data/slevomat-cs-in-array.php'], [
+			[
+				'Call to function in_array() with arguments \'abstract methods\'|\'constructor\'|\'destructor\'|\'final methods\'|\'magic methods\'|\'private constants\'|\'private methods\'|\'private properties\'|\'private static…\'|\'private static…\'|\'protected abstract…\'|\'protected constants\'|\'protected final…\'|\'protected methods\'|\'protected properties\'|\'protected static…\'|\'protected static…\'|\'protected static…\'|\'protected static…\'|\'public abstract…\'|\'public constants\'|\'public final methods\'|\'public methods\'|\'public properties\'|\'public static…\'|\'public static final…\'|\'public static…\'|\'public static…\'|\'static constructors\'|\'static methods\'|\'static properties\', array{0: \'final methods\'|\'private static…\'|\'protected final…\'|\'public abstract…\'|\'public constants\'|\'public final methods\'|\'public static…\'|\'static constructors\'|\'static properties\', 1: \'abstract methods\'|\'private methods\'|\'protected abstract…\'|\'protected constants\'|\'protected final…\'|\'protected static…\'|\'protected static…\'|\'public properties\'|\'public static final…\', 2?: \'private constants\'|\'private static…\'|\'protected abstract…\'|\'protected properties\'|\'protected static…\'|\'public abstract…\'|\'public static…\'|\'public static final…\'|\'static methods\', 3?: \'constructor\'|\'private properties\'|\'protected static…\'|\'protected static…\'|\'public static…\', 4?: \'destructor\'|\'protected static…\'|\'protected static…\'|\'public static…\', 5?: \'protected methods\'|\'public methods\'|\'public static…\', 6?: \'protected methods\'|\'protected static…\', 7?: \'private methods\'|\'private static…\', ...} and true will always evaluate to true.',
+				132,
+			],
+		]);
 	}
 
 	public function testNonEmptySpecifiedString(): void

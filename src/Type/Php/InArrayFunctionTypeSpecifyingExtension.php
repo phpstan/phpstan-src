@@ -13,12 +13,18 @@ use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 use function count;
 use function strtolower;
 
@@ -55,6 +61,15 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		$specifiedTypes = new SpecifiedTypes();
 
 		if (
+			$arrayType instanceof ConstantArrayType && !$arrayType->isEmpty()
+			&& count(TypeUtils::getConstantScalars($needleType)) === 0 && $arrayValueType->isSuperTypeOf($needleType)->yes()
+		) {
+			// Avoid false-positives with e.g. a string needle and array{'self', string} as haystack
+			// For such cases there seems to be nothing more that we can specify unfortunately
+			return $specifiedTypes;
+		}
+
+		if (
 			$context->truthy()
 			|| count(TypeUtils::getConstantScalars($arrayValueType)) > 0
 			|| count(TypeUtils::getEnumCaseObjects($arrayValueType)) > 0
@@ -69,15 +84,6 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			);
 		}
 
-		// "Simple" all constant cases that always evaluate to true still need a nudge (e.g. needle 'foo' in haystack {'foo', 'bar'})
-		if ($arrayType instanceof ConstantArrayType && $needleType instanceof ConstantScalarType) {
-			foreach ($arrayType->getValueTypes() as $i => $valueType) {
-				if (!$arrayType->isOptionalKey($i) && $valueType->equals($needleType)) {
-					return $specifiedTypes;
-				}
-			}
-		}
-
 		// If e.g. needle is 'a' and haystack non-empty-array<int, 'a'> we can be sure that this always evaluates to true
 		// Belows HasOffset::isSuperTypeOf cannot deal with that since it calls ArrayType::hasOffsetValueType and that returns maybe at max
 		if ($needleType instanceof ConstantScalarType && $arrayType->isIterableAtLeastOnce()->yes() && $arrayValueType->equals($needleType)) {
@@ -90,14 +96,48 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			|| count(TypeUtils::getEnumCaseObjects($needleType)) > 0
 		) {
 			// Specify haystack type
-			if ($context->truthy()) {
-				$newArrayType = TypeCombinator::intersect(
-					new ArrayType(new MixedType(), TypeCombinator::union($arrayValueType, $needleType)),
-					new HasOffsetType(new MixedType(), $needleType),
-					new NonEmptyArrayType(),
+			if ($arrayType instanceof ConstantArrayType) {
+				$newArrayType = TypeTraverser::map(
+					$arrayType->getOffsetType($needleType),
+					static function (Type $offsetType, callable $traverse) use ($context, $arrayType, $needleType): Type {
+						if ($offsetType instanceof UnionType || $offsetType instanceof IntersectionType) {
+							 return $traverse($offsetType);
+						}
+
+						$resultArray = $arrayType;
+						if ($context->truthy()) {
+							$resultArray = $resultArray->makeOffsetRequired($offsetType);
+						} elseif ($offsetType instanceof ConstantIntegerType && $resultArray->isOptionalKey($offsetType->getValue())) {
+							$resultArray = $resultArray->unsetOffset($offsetType);
+						}
+
+						if ($offsetType instanceof ConstantIntegerType && $resultArray instanceof ConstantArrayType && $resultArray->hasOffsetValueType($offsetType)->yes()) {
+							// If haystack is e.g. {string, string|null} and needle null, we can further narrow string|null
+							$builder = ConstantArrayTypeBuilder::createFromConstantArray($resultArray);
+							$builder->setOffsetValueType(
+								$offsetType,
+								$context->truthy() ? $needleType : TypeCombinator::remove($resultArray->getOffsetValueType($offsetType), $needleType),
+								$resultArray->isOptionalKey($offsetType->getValue()),
+							);
+							$resultArray = $builder->getArray();
+						}
+
+						return $resultArray;
+					},
 				);
 			} else {
-				$newArrayType = new ArrayType(new MixedType(), TypeCombinator::remove($arrayValueType, $needleType));
+				if ($context->truthy()) {
+					$newArrayType = TypeCombinator::intersect(
+						new ArrayType(new MixedType(), TypeCombinator::union($arrayValueType, $needleType)),
+						new HasOffsetType(new MixedType(), $needleType),
+						new NonEmptyArrayType(),
+					);
+				} else {
+					$newArrayType = new ArrayType(
+						new MixedType(),
+						TypeCombinator::remove($arrayValueType, $needleType),
+					);
+				}
 			}
 
 			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(

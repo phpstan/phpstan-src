@@ -109,6 +109,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					244,
 				],
 				[
+					'Call to function in_array() with arguments \'bar\'|\'foo\', array{\'foo\', \'bar\'} and true will always evaluate to true.',
+					248,
+				],
+				[
 					'Call to function in_array() with arguments \'foo\', array{\'foo\'} and true will always evaluate to true.',
 					252,
 				],
@@ -238,11 +242,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					890,
 				],
 				[
-					'Call to function in_array() with arguments \'foo\', array{0?: \'foo\'}&non-empty-array and true will always evaluate to true.',
+					'Call to function in_array() with arguments \'foo\', array{\'foo\'} and true will always evaluate to true.',
 					896,
 				],
 				[
-					'Call to function in_array() with arguments \'foo\', array{0?: *NEVER*} and true will always evaluate to false.',
+					'Call to function in_array() with arguments \'foo\', array and true will always evaluate to false.',
 					900,
 				],
 			],
@@ -342,7 +346,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					693,
 				],
 				[
-					'Call to function in_array() with arguments \'foo\', array{0?: *NEVER*} and true will always evaluate to false.',
+					'Call to function in_array() with arguments \'foo\', array and true will always evaluate to false.',
 					900,
 				],
 			],

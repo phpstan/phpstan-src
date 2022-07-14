@@ -233,6 +233,14 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					'Call to function property_exists() with CheckTypeFunctionCall\Bug2221 and \'foo\' will always evaluate to true.',
 					786,
 				],
+				[
+					'Call to function in_array() with arguments \'foo\', non-empty-array<string> and true will always evaluate to true.',
+					890,
+				],
+				[
+					'Call to function in_array() with arguments \'foo\', array{0?: \'foo\'}&non-empty-array and true will always evaluate to true.',
+					896,
+				],
 			],
 		);
 	}

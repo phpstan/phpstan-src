@@ -880,4 +880,23 @@ class InArray2
 		}
 	}
 
+	/**
+	 * @param array<string> $genericHaystack
+	 * @param array{0?: 'foo'} $constantHaystack
+	 */
+	public function triggersIfArrayIsNarrowedDownTwiceWithConstant(array $genericHaystack, array $constantHaystack): void
+	{
+		if (in_array('foo', $genericHaystack, true)) {
+			if (in_array('foo', $genericHaystack, true)) {
+
+			}
+		}
+
+		if (in_array('foo', $constantHaystack, true)) {
+			if (in_array('foo', $constantHaystack, true)) {
+
+			}
+		}
+	}
+
 }

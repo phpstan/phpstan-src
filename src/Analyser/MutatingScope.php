@@ -1525,6 +1525,7 @@ class MutatingScope implements Scope
 				$filteringExpr = null;
 				foreach ($arm->conds as $armCond) {
 					$armCondExpr = new BinaryOp\Identical($cond, $armCond);
+
 					if ($filteringExpr === null) {
 						$filteringExpr = $armCondExpr;
 						continue;
@@ -1533,8 +1534,12 @@ class MutatingScope implements Scope
 					$filteringExpr = new BinaryOp\BooleanOr($filteringExpr, $armCondExpr);
 				}
 
-				$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
-				$types[] = $truthyScope->getType($arm->body);
+				$filteringExprType = $matchScope->getType($filteringExpr);
+
+				if (!(new ConstantBooleanType(false))->isSuperTypeOf($filteringExprType)->yes()) {
+					$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
+					$types[] = $truthyScope->getType($arm->body);
+				}
 
 				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
 			}

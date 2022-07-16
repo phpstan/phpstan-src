@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type\Php;
 
-use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\FuncCall;
@@ -27,17 +26,17 @@ use function strtolower;
 final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
-	/** @var array<string, array{0: int, 1: int}> */
+	/** @var array<string, array{0: int, 1: int, 2: bool}> */
 	private array $strContainingFunctions = [
-		'fnmatch' => [1, 0],
-		'str_contains' => [0, 1],
-		'str_starts_with' => [0, 1],
-		'str_ends_with' => [0, 1],
-		'strpos' => [0, 1],
-		'strrpos' => [0, 1],
-		'stripos' => [0, 1],
-		'strripos' => [0, 1],
-		'strstr' => [0, 1],
+		'fnmatch' => [1, 0, true],
+		'str_contains' => [0, 1, true],
+		'str_starts_with' => [0, 1, true],
+		'str_ends_with' => [0, 1, true],
+		'strpos' => [0, 1, false],
+		'strrpos' => [0, 1, false],
+		'stripos' => [0, 1, false],
+		'strripos' => [0, 1, false],
+		'strstr' => [0, 1, false],
 	];
 
 	private TypeSpecifier $typeSpecifier;
@@ -58,7 +57,7 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 		$args = $node->getArgs();
 
 		if (count($args) >= 2) {
-			[$hackstackArg, $needleArg] = $this->strContainingFunctions[strtolower($functionReflection->getName())];
+			[$hackstackArg, $needleArg, $evaluatesToBoolean] = $this->strContainingFunctions[strtolower($functionReflection->getName())];
 
 			$haystackType = $scope->getType($args[$hackstackArg]->value);
 			$needleType = $scope->getType($args[$needleArg]->value);
@@ -76,21 +75,23 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 					$accessories[] = new AccessoryNumericStringType();
 				}
 
+				$rootExpr = $evaluatesToBoolean
+					? new BooleanAnd(
+						new NotIdentical(
+							$args[$needleArg]->value,
+							new String_(''),
+						),
+						new FuncCall(new Name('FAUX_FUNCTION_' . $functionReflection->getName()), $args),
+					)
+					: new FuncCall(new Name('FAUX_FUNCTION_' . $functionReflection->getName()), $args);
+
 				return $this->typeSpecifier->create(
 					$args[$hackstackArg]->value,
 					new IntersectionType($accessories),
 					$context,
 					false,
 					$scope,
-					new BooleanAnd(
-						new NotIdentical(
-							$args[$needleArg]->value,
-							new String_(''),
-						),
-						new FuncCall(new Name('FAUX_FUNCTION'), [
-							new Arg($args[$needleArg]->value),
-						]),
-					),
+					$rootExpr,
 				);
 			}
 		}

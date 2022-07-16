@@ -691,7 +691,7 @@ class TypeSpecifier
 						continue;
 					}
 
-					return $extension->specifyTypes($functionReflection, $expr, $scope, $context);
+					return $this->specifyRootExpr($extension->specifyTypes($functionReflection, $expr, $scope, $context), $scope, $context);
 				}
 
 				if (count($expr->getArgs()) > 0) {
@@ -719,7 +719,7 @@ class TypeSpecifier
 							continue;
 						}
 
-						return $extension->specifyTypes($methodReflection, $expr, $scope, $context);
+						return $this->specifyRootExpr($extension->specifyTypes($methodReflection, $expr, $scope, $context), $scope, $context);
 					}
 
 					if (count($expr->getArgs()) > 0) {
@@ -753,7 +753,7 @@ class TypeSpecifier
 							continue;
 						}
 
-						return $extension->specifyTypes($staticMethodReflection, $expr, $scope, $context);
+						return $this->specifyRootExpr($extension->specifyTypes($staticMethodReflection, $expr, $scope, $context), $scope, $context);
 					}
 				}
 
@@ -1419,6 +1419,23 @@ class TypeSpecifier
 		}
 
 		return array_merge(...$extensionsForClass);
+	}
+
+	private function specifyRootExpr(SpecifiedTypes $specifiedTypes, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		$rootExpr = $specifiedTypes->getRootExpr();
+		if ($rootExpr === null || $context->null()) {
+			return $specifiedTypes;
+		}
+
+		$rootExprType = $scope->getType($rootExpr);
+		if (!$rootExprType instanceof BooleanType || $rootExprType instanceof ConstantBooleanType) {
+			return $specifiedTypes;
+		}
+
+		return $specifiedTypes->unionWith(
+			$this->create($rootExpr, new ConstantBooleanType(true), $context),
+		);
 	}
 
 }

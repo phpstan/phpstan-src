@@ -532,7 +532,16 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/non-empty-string-impossible-type.php'], []);
+		$this->analyse([__DIR__ . '/data/non-empty-string-impossible-type.php'], [
+			[
+				'Call to function str_contains() with non-empty-string and \'foo\' will always evaluate to true.',
+				26,
+			],
+			[
+				'Call to function str_contains() with non-empty-string and \'foo\' will always evaluate to true.',
+				36,
+			],
+		]);
 	}
 
 	public function testBug2755(): void

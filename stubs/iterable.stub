@@ -276,7 +276,7 @@ class RecursiveArrayIterator extends ArrayIterator implements RecursiveIterator 
 }
 
 /**
- * @template TKey of array-key
+ * @template TKey
  * @template TValue
  * @template TIterator as Iterator<TKey, TValue>
  *
@@ -291,7 +291,7 @@ class AppendIterator extends IteratorIterator {
     public function append(Iterator $iterator) {}
 
     /**
-     * @return ArrayIterator<TKey, TValue>
+     * @return ArrayIterator<array-key, TValue>
      */
     public function getArrayIterator() {}
 

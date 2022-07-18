@@ -403,6 +403,11 @@ class CachingIterator extends IteratorIterator implements OuterIterator, ArrayAc
      * @return TKey
      */
     public function key() {}
+
+    /**
+     * @return array<array-key, TValue>
+     */
+    public function getCache() {}
 }
 
 /**

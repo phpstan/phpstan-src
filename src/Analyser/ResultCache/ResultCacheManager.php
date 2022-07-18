@@ -616,7 +616,7 @@ php;
 			(!array_key_exists('tmpDir', $projectConfig['parameters']) || $projectConfig['parameters']['tmpDir'] === null)
 		) {
 
-			return dirname($this->cacheFilePath) . '/resultCache-' . md5(Neon::encode([$this->analysedPaths, $this->getPhpstanVersion()])) . '.php';
+			return dirname($this->cacheFilePath) . '/resultCache-' . md5(Neon::encode([$this->analysedPaths, $this->getPhpStanVersion()])) . '.php';
 		}
 
 		return $this->cacheFilePath;

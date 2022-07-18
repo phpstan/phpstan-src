@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ReadOnlyByPhpDocPropertyAssignRefRule>
@@ -56,6 +57,15 @@ class ReadOnlyByPhpDocPropertyAssignRefRuleTest extends RuleTestCase
 				93,
 			],
 		]);
+	}
+
+	public function testRuleIgnoresNativeReadonly(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/readonly-assign-ref-phpdoc-and-native.php'], []);
 	}
 
 }

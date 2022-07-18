@@ -38,7 +38,7 @@ class MissingReadOnlyByPhpDocPropertyAssignRule implements Rule
 
 		$errors = [];
 		foreach ($properties as $propertyName => $propertyNode) {
-			if (!$propertyNode->isReadOnlyByPhpDoc()) {
+			if (!$propertyNode->isReadOnlyByPhpDoc() || $propertyNode->isReadOnly()) {
 				continue;
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -49,7 +49,7 @@ class MissingReadOnlyByPhpDocPropertyAssignRule implements Rule
 		}
 
 		foreach ($prematureAccess as [$propertyName, $line, $propertyNode]) {
-			if (!$propertyNode->isReadOnlyByPhpDoc()) {
+			if (!$propertyNode->isReadOnlyByPhpDoc() || $propertyNode->isReadOnly()) {
 				continue;
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -60,7 +60,7 @@ class MissingReadOnlyByPhpDocPropertyAssignRule implements Rule
 		}
 
 		foreach ($additionalAssigns as [$propertyName, $line, $propertyNode]) {
-			if (!$propertyNode->isReadOnlyByPhpDoc()) {
+			if (!$propertyNode->isReadOnlyByPhpDoc() || $propertyNode->isReadOnly()) {
 				continue;
 			}
 			$errors[] = RuleErrorBuilder::message(sprintf(

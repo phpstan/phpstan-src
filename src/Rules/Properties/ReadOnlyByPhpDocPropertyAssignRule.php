@@ -50,7 +50,7 @@ class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 			if (!$scope->canAccessProperty($propertyReflection)) {
 				continue;
 			}
-			if (!$nativeReflection->isReadOnlyByPhpDoc()) {
+			if (!$nativeReflection->isReadOnlyByPhpDoc() || $nativeReflection->isReadOnly()) {
 				continue;
 			}
 

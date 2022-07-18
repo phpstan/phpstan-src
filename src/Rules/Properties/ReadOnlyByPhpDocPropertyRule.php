@@ -21,7 +21,7 @@ class ReadOnlyByPhpDocPropertyRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->isReadOnlyByPhpDoc()) {
+		if (!$node->isReadOnlyByPhpDoc() || $node->isReadOnly()) {
 			return [];
 		}
 

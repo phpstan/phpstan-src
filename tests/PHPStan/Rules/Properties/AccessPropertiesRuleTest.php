@@ -594,20 +594,19 @@ class AccessPropertiesRuleTest extends RuleTestCase
 			],
 		];
 
-		if (PHP_VERSION_ID < 80200) {
-			$errors[] = [
-				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-				26,
-			];
-			$errors[] = [
-				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-				27,
-			];
-			$errors[] = [
-				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
-				28,
-			];
-		}
+		$errorsWithMore = $errors;
+		$errorsWithMore[] = [
+			'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
+			26,
+		];
+		$errorsWithMore[] = [
+			'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
+			27,
+		];
+		$errorsWithMore[] = [
+			'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
+			28,
+		];
 
 		return [
 			[false, PHP_VERSION_ID < 80200 ? [
@@ -616,7 +615,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 					23,
 				],
 			] : $errors],
-			[true, $errors],
+			[true, $errorsWithMore],
 		];
 	}
 

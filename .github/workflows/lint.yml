@@ -30,6 +30,7 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2"
 
     steps:
       - name: "Checkout"
@@ -48,7 +49,7 @@ jobs:
         run: "composer install --no-interaction --no-progress"
 
       - name: "Install PHP for code transform"
-        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1' && matrix.php-version != '8.2'
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
@@ -56,12 +57,12 @@ jobs:
 
       - name: "Rector downgrade cache key"
         id: rector-cache-key
-        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1' && matrix.php-version != '8.2'
         run: |
           echo "::set-output name=sha::$(php build/rector-cache-files-hash.php)"
 
       - name: "Rector downgrade cache"
-        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1' && matrix.php-version != '8.2'
         uses: actions/cache@v3
         with:
           path: ./tmp/rectorCache.php
@@ -70,11 +71,11 @@ jobs:
             rector-v1-lint-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
 
       - name: "Transform source code"
-        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1' && matrix.php-version != '8.2'
         run: "build/transform-source ${{ matrix.php-version }}"
 
       - name: "Reinstall matrix PHP version"
-        if: matrix.php-version != '8.0' && matrix.php-version != '8.1'
+        if: matrix.php-version != '8.0' && matrix.php-version != '8.1' && matrix.php-version != '8.2'
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"

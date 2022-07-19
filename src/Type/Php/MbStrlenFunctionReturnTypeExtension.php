@@ -120,7 +120,7 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 					continue;
 				}
 
-				$length = mb_strlen($stringScalar->getValue(), $encoding);
+				$length = @mb_strlen($stringScalar->getValue(), $encoding);
 				if ($length === false) {
 					throw new ShouldNotHappenException(sprintf('Got false on a supported encoding %s and value %s', $encoding, var_export($stringScalar->getValue(), true)));
 				}

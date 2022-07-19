@@ -105,9 +105,12 @@ jobs:
     timeout-minutes: 60
 
     strategy:
+      fail-fast: false
       matrix:
         php-version:
           - "8.0"
+          - "8.1"
+          - "8.2"
 
     steps:
       - name: "Checkout"
@@ -127,7 +130,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./tmp
-          key: "result-cache-v4"
+          key: "result-cache-v4-${{ matrix.php-version }}"
 
       - name: "PHPStan with result cache"
         run: |

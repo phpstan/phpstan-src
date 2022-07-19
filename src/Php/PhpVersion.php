@@ -191,4 +191,9 @@ class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function deprecatesDynamicProperties(): bool
+	{
+		return $this->versionId >= 80200;
+	}
+
 }

@@ -8,7 +8,6 @@ use PhpParser\Node\Identifier;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
@@ -33,7 +32,6 @@ class AccessPropertiesRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
-		private PhpVersion $phpVersion,
 		private bool $reportMagicProperties,
 		private bool $checkDynamicProperties,
 	)
@@ -167,15 +165,7 @@ class AccessPropertiesRule implements Rule
 
 	private function canAccessUndefinedProperties(Scope $scope, Node\Expr $node): bool
 	{
-		if (!$scope->isUndefinedExpressionAllowed($node)) {
-			return false;
-		}
-
-		if ($this->checkDynamicProperties) {
-			return false;
-		}
-
-		return !$this->phpVersion->deprecatesDynamicProperties();
+		return $scope->isUndefinedExpressionAllowed($node) && !$this->checkDynamicProperties;
 	}
 
 }

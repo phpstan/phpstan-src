@@ -129,7 +129,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return TrinaryLogic::createYes();
 		}
 
-		return TrinaryLogic::createMaybe();
+		if ($classReflection->allowsDynamicProperties()) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		return TrinaryLogic::createNo();
 	}
 
 	public function getProperty(string $propertyName, ClassMemberAccessAnswerer $scope): PropertyReflection

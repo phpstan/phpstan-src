@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Properties;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -20,12 +19,10 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 	private bool $checkDynamicProperties;
 
-	private int $phpVersionId;
-
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		return new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false), new PhpVersion($this->phpVersionId), true, $this->checkDynamicProperties);
+		return new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, $this->checkThisOnly, $this->checkUnionTypes, false), true, $this->checkDynamicProperties);
 	}
 
 	public function testAccessProperties(): void
@@ -33,7 +30,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse(
 			[__DIR__ . '/data/access-properties.php'],
 			[
@@ -165,7 +161,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = false;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse(
 			[__DIR__ . '/data/access-properties.php'],
 			[
@@ -280,7 +275,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/access-properties-assign-op.php'], [
 			[
 				'Access to an undefined property TestAccessProperties\AssignOpNonexistentProperty::$flags.',
@@ -294,7 +288,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = true;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse(
 			[__DIR__ . '/data/access-properties.php'],
 			[
@@ -315,7 +308,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/access-properties-after-isnull.php'], [
 			[
 				'Cannot access property $fooProperty on null.',
@@ -357,7 +349,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/date-interval-child-properties.php'], [
 			[
 				'Access to an undefined property AccessPropertiesDateIntervalChild\DateIntervalChild::$nonexistent.',
@@ -371,7 +362,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 
 		$this->analyse([__DIR__ . '/data/access-properties-class-exists.php'], [
 			[
@@ -402,7 +392,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/mixin.php'], [
 			[
 				'Access to an undefined property MixinProperties\GenericFoo<ReflectionClass>::$namee.',
@@ -416,7 +405,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-3947.php'], []);
 	}
 
@@ -425,7 +413,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 
 		$this->analyse([__DIR__ . '/data/nullsafe-property-fetch.php'], [
 			[
@@ -456,7 +443,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-3371.php'], []);
 	}
 
@@ -465,7 +451,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-4527.php'], []);
 	}
 
@@ -474,7 +459,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-4808.php'], []);
 	}
 
@@ -486,7 +470,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-5868.php'], [
 			[
 				'Cannot access property $child on Bug5868PropertyFetch\Foo|null.',
@@ -516,7 +499,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-6385.php'], [
 			[
 				'Access to an undefined property UnitEnum::$value.',
@@ -537,7 +519,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-6566.php'], []);
 	}
 
@@ -546,7 +527,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$errors = [
 			[
 				'Cannot access property $prop on string.',
@@ -561,20 +541,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				15,
 			],
 		];
-		if (PHP_VERSION_ID >= 80200) {
-			$errors[] = [
-				'Access to an undefined property object|string::$prop.',
-				24,
-			];
-			$errors[] = [
-				'Access to an undefined property object|string::$prop.',
-				25,
-			];
-			$errors[] = [
-				'Access to an undefined property object|string::$prop.',
-				26,
-			];
-		}
 		$this->analyse([__DIR__ . '/data/bug-6899.php'], $errors);
 	}
 
@@ -583,7 +549,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-6026.php'], []);
 	}
 
@@ -592,14 +557,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$errors = [];
-		if (PHP_VERSION_ID >= 80200) {
-			$errors[] = [
-				'Access to an undefined property object::$someProperty.',
-				9,
-			];
-		}
 		$this->analyse([__DIR__ . '/data/bug-3659.php'], $errors);
 	}
 
@@ -630,13 +588,35 @@ class AccessPropertiesRuleTest extends RuleTestCase
 				'Access to an undefined property DynamicProperties\Bar::$dynamicProperty.',
 				16,
 			],
+			[
+				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
+				23,
+			],
 		];
 
+		if (PHP_VERSION_ID < 80200) {
+			$errors[] = [
+				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
+				26,
+			];
+			$errors[] = [
+				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
+				27,
+			];
+			$errors[] = [
+				'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
+				28,
+			];
+		}
+
 		return [
-			[false, 80000, []],
-			[true, 80000, $errors],
-			[false, 80200, $errors],
-			[true, 80200, $errors],
+			[false, PHP_VERSION_ID < 80200 ? [
+				[
+					'Access to an undefined property DynamicProperties\Baz::$dynamicProperty.',
+					23,
+				],
+			] : $errors],
+			[true, $errors],
 		];
 	}
 
@@ -644,12 +624,11 @@ class AccessPropertiesRuleTest extends RuleTestCase
 	 * @dataProvider dataDynamicProperties
 	 * @param mixed[] $errors
 	 */
-	public function testDynamicProperties(bool $checkDynamicProperties, int $phpVersionId, array $errors): void
+	public function testDynamicProperties(bool $checkDynamicProperties, array $errors): void
 	{
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = $checkDynamicProperties;
-		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/dynamic-properties.php'], $errors);
 	}
 
@@ -658,14 +637,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$errors = [];
-		if (PHP_VERSION_ID >= 80200) {
-			$errors[] = [
-				'Access to an undefined property object::$message.',
-				11,
-			];
-		}
 		$this->analyse([__DIR__ . '/data/bug-4559.php'], $errors);
 	}
 
@@ -674,7 +646,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-3171.php'], []);
 	}
 
@@ -683,7 +654,6 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = true;
-		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/bug-3171.php'], []);
 	}
 

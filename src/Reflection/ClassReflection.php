@@ -339,6 +339,17 @@ class ClassReflection
 		return $traits;
 	}
 
+	public function allowsDynamicProperties(): bool
+	{
+		if (!$this->phpVersion->deprecatesDynamicProperties()) {
+			return true;
+		}
+
+		$attributes = $this->reflection->getAttributes('AllowDynamicProperties');
+
+		return count($attributes) > 0;
+	}
+
 	public function hasProperty(string $propertyName): bool
 	{
 		if ($this->isEnum()) {

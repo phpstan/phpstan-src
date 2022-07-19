@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -17,7 +18,7 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		return new AccessPropertiesInAssignRule(
-			new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, false, true, false), true, true),
+			new AccessPropertiesRule($reflectionProvider, new RuleLevelHelper($reflectionProvider, true, false, true, false), new PhpVersion(PHP_VERSION_ID), true, true),
 		);
 	}
 

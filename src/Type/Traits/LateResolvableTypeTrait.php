@@ -12,6 +12,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
@@ -34,6 +35,10 @@ trait LateResolvableTypeTrait
 	{
 		if ($type instanceof NeverType) {
 			return TrinaryLogic::createYes();
+		}
+
+		if ($type instanceof LateResolvableType) {
+			$type = $type->resolve();
 		}
 
 		$isSuperType = $this->resolve()->isSuperTypeOf($type);

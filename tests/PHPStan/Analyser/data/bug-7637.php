@@ -7,6 +7,10 @@ use function PHPStan\Testing\assertType;
 
 class HelloWorld
 {
+
+	/** @var mixed[] */
+	private static $properties = [];
+
 	/**
 	 * Returns a property.
 	 *

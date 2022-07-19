@@ -174,11 +174,12 @@ class AccessStaticPropertiesRule implements Rule
 			]);
 		}
 
-		if ($scope->isUndefinedExpressionAllowed($node)) {
+		$has = $classType->hasProperty($name);
+		if (!$has->no() && $scope->isUndefinedExpressionAllowed($node)) {
 			return [];
 		}
 
-		if (!$classType->hasProperty($name)->yes()) {
+		if (!$has->yes()) {
 			if ($scope->isSpecified($node)) {
 				return $messages;
 			}

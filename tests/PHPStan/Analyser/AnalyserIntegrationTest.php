@@ -888,10 +888,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertCount(2, $errors);
 
 		$this->assertSame('Method Bug7637\HelloWorld::getProperty() has invalid return type Bug7637\rex_backend_login.', $errors[0]->getMessage());
-		$this->assertSame(50, $errors[0]->getLine());
+		$this->assertSame(54, $errors[0]->getLine());
 
 		$this->assertSame('Method Bug7637\HelloWorld::getProperty() has invalid return type Bug7637\rex_timer.', $errors[1]->getMessage());
-		$this->assertSame(50, $errors[1]->getLine());
+		$this->assertSame(54, $errors[1]->getLine());
 	}
 
 	/**

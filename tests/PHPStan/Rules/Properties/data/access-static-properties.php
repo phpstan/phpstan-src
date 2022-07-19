@@ -225,3 +225,29 @@ class AccessWithStatic
 	}
 
 }
+
+class DoesNotAllowDynamicProperties
+{
+
+	public function doFoo()
+	{
+		if (isset(self::$foo)) {
+			echo self::$foo;
+		}
+	}
+
+}
+
+
+#[\AllowDynamicProperties]
+class AllowsDynamicProperties
+{
+
+	public function doFoo()
+	{
+		if (isset(self::$foo)) {
+			echo self::$foo;
+		}
+	}
+
+}

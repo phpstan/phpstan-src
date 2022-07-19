@@ -98,140 +98,140 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				],
 				[
 					'Call to function property_exists() with $this(CheckTypeFunctionCall\FinalClassWithPropertyExists) and \'fooProperty\' will always evaluate to true.',
-					209,
+					210,
 				],
 				[
 					'Call to function in_array() with arguments int, array{\'foo\', \'bar\'} and true will always evaluate to false.',
-					235,
+					236,
 				],
 				[
 					'Call to function in_array() with arguments \'bar\'|\'foo\', array{\'baz\', \'lorem\'} and true will always evaluate to false.',
-					244,
+					245,
 				],
 				[
 					'Call to function in_array() with arguments \'foo\', array{\'foo\'} and true will always evaluate to true.',
-					252,
+					253,
 				],
 				[
 					'Call to function in_array() with arguments \'foo\', array{\'foo\', \'bar\'} and true will always evaluate to true.',
-					256,
+					257,
 				],
 				[
 					'Call to function in_array() with arguments \'bar\', array{}|array{\'foo\'} and true will always evaluate to false.',
-					320,
+					321,
 				],
 				[
 					'Call to function in_array() with arguments \'baz\', array{0: \'bar\', 1?: \'foo\'} and true will always evaluate to false.',
-					336,
+					337,
 				],
 				[
 					'Call to function in_array() with arguments \'foo\', array{} and true will always evaluate to false.',
-					343,
+					344,
 				],
 				[
 					'Call to function array_key_exists() with \'a\' and array{a: 1, b?: 2} will always evaluate to true.',
-					360,
+					361,
 				],
 				[
 					'Call to function array_key_exists() with \'c\' and array{a: 1, b?: 2} will always evaluate to false.',
-					366,
+					367,
 				],
 				[
 					'Call to function is_string() with mixed will always evaluate to false.',
-					560,
+					561,
 				],
 				[
 					'Call to function is_callable() with mixed will always evaluate to false.',
-					571,
+					572,
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExists\' and \'testWithStringFirst…\' will always evaluate to true.',
-					585,
+					586,
 				],
 				[
 					'Call to function method_exists() with \'UndefinedClass\' and string will always evaluate to false.',
-					594,
+					595,
 				],
 				[
 					'Call to function method_exists() with \'UndefinedClass\' and \'test\' will always evaluate to false.',
-					597,
+					598,
 				],
 				[
 					'Call to function method_exists() with CheckTypeFunctionCall\MethodExists and \'testWithNewObjectIn…\' will always evaluate to true.',
-					609,
+					610,
 				],
 				[
 					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'method\' will always evaluate to true.',
-					624,
+					625,
 				],
 				[
 					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'someAnother\' will always evaluate to true.',
-					627,
+					628,
 				],
 				[
 					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'unknown\' will always evaluate to false.',
-					630,
+					631,
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'method\' will always evaluate to true.',
-					633,
+					634,
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'someAnother\' will always evaluate to true.',
-					636,
+					637,
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
-					639,
+					640,
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'method\' will always evaluate to true.',
-					642,
+					643,
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'someAnother\' will always evaluate to true.',
-					645,
+					646,
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
-					648,
+					649,
 				],
 				[
 					'Call to function is_string() with string will always evaluate to true.',
-					677,
+					678,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
 					'Call to function assert() with true will always evaluate to true.',
-					692,
+					693,
 				],
 				[
 					'Call to function is_numeric() with \'123\' will always evaluate to true.',
-					692,
+					693,
 				],
 				[
 					'Call to function assert() with false will always evaluate to false.',
-					693,
+					694,
 				],
 				[
 					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
-					693,
+					694,
 				],
 				[
 					'Call to function assert() with true will always evaluate to true.',
-					700,
+					701,
 				],
 				[
 					'Call to function is_numeric() with 123|float will always evaluate to true.',
-					700,
+					701,
 				],
 				[
 					'Call to function property_exists() with CheckTypeFunctionCall\Bug2221 and \'foo\' will always evaluate to true.',
-					782,
+					784,
 				],
 				[
 					'Call to function property_exists() with CheckTypeFunctionCall\Bug2221 and \'foo\' will always evaluate to true.',
-					786,
+					788,
 				],
 			],
 		);
@@ -271,63 +271,63 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				],
 				[
 					'Call to function in_array() with arguments int, array{\'foo\', \'bar\'} and true will always evaluate to false.',
-					235,
+					236,
 				],
 				[
 					'Call to function in_array() with arguments \'bar\'|\'foo\', array{\'baz\', \'lorem\'} and true will always evaluate to false.',
-					244,
+					245,
 				],
 				[
 					'Call to function in_array() with arguments \'bar\', array{}|array{\'foo\'} and true will always evaluate to false.',
-					320,
+					321,
 				],
 				[
 					'Call to function in_array() with arguments \'baz\', array{0: \'bar\', 1?: \'foo\'} and true will always evaluate to false.',
-					336,
+					337,
 				],
 				[
 					'Call to function in_array() with arguments \'foo\', array{} and true will always evaluate to false.',
-					343,
+					344,
 				],
 				[
 					'Call to function array_key_exists() with \'c\' and array{a: 1, b?: 2} will always evaluate to false.',
-					366,
+					367,
 				],
 				[
 					'Call to function is_string() with mixed will always evaluate to false.',
-					560,
+					561,
 				],
 				[
 					'Call to function is_callable() with mixed will always evaluate to false.',
-					571,
+					572,
 				],
 				[
 					'Call to function method_exists() with \'UndefinedClass\' and string will always evaluate to false.',
-					594,
+					595,
 				],
 				[
 					'Call to function method_exists() with \'UndefinedClass\' and \'test\' will always evaluate to false.',
-					597,
+					598,
 				],
 				[
 					'Call to function method_exists() with $this(CheckTypeFunctionCall\MethodExistsWithTrait) and \'unknown\' will always evaluate to false.',
-					630,
+					631,
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
-					639,
+					640,
 				],
 				[
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
-					648,
+					649,
 				],
 				[
 					'Call to function assert() with false will always evaluate to false.',
-					693,
+					694,
 				],
 				[
 					'Call to function is_numeric() with \'blabla\' will always evaluate to false.',
-					693,
+					694,
 				],
 			],
 		);

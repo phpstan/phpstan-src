@@ -374,4 +374,16 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7652(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-7652.php'], [
+			[
+				'Parameter #1 $offset (TOffset of key-of<TArray of array>) of method Bug7652\Options::offsetSet() should be contravariant with parameter $offset (key-of<array>|null) of method ArrayAccess<key-of<TArray of array>,value-of<TArray of array>>::offsetSet()',
+				30,
+			],
+		]);
+	}
+
 }

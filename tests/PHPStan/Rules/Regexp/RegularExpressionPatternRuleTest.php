@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Regexp;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function sprintf;
 use const PHP_VERSION_ID;
 
 /**
@@ -124,11 +125,16 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 			$this->markTestSkipped('This test requires PHP >= 7.3.0');
 		}
 
+		$messagePart = 'alphanumeric or backslash';
+		if (PHP_VERSION_ID >= 80200) {
+			$messagePart = 'alphanumeric, backslash, or NUL';
+		}
+
 		$this->analyse(
 			[__DIR__ . '/data/valid-regex-pattern.php'],
 			[
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
 					6,
 				],
 				[
@@ -136,7 +142,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					7,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
 					11,
 				],
 				[
@@ -144,7 +150,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					12,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
 					16,
 				],
 				[
@@ -152,7 +158,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					17,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
 					21,
 				],
 				[
@@ -160,7 +166,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					22,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
 					26,
 				],
 				[
@@ -168,7 +174,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					27,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
 					29,
 				],
 				[
@@ -176,7 +182,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					29,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
 					32,
 				],
 				[
@@ -184,7 +190,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					33,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
 					35,
 				],
 				[
@@ -192,7 +198,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					35,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
 					38,
 				],
 				[
@@ -200,7 +206,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					39,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
 					41,
 				],
 				[
@@ -208,7 +214,7 @@ class RegularExpressionPatternRuleTest extends RuleTestCase
 					41,
 				],
 				[
-					'Regex pattern is invalid: Delimiter must not be alphanumeric or backslash in pattern: nok',
+					sprintf('Regex pattern is invalid: Delimiter must not be %s in pattern: nok', $messagePart),
 					43,
 				],
 				[

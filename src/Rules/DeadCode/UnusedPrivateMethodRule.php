@@ -120,31 +120,29 @@ class UnusedPrivateMethodRule implements Rule
 				if (!$arrayType instanceof ConstantArrayType) {
 					continue;
 				}
-				$typeAndMethod = $arrayType->findTypeAndMethodName();
-				if ($typeAndMethod === null) {
-					continue;
+				foreach ($arrayType->findTypeAndMethodNames() as $typeAndMethod) {
+					if ($typeAndMethod->isUnknown()) {
+						return [];
+					}
+					if (!$typeAndMethod->getCertainty()->yes()) {
+						return [];
+					}
+					$calledOnType = $typeAndMethod->getType();
+					if ($classType->isSuperTypeOf($calledOnType)->no()) {
+						continue;
+					}
+					if ($calledOnType instanceof MixedType) {
+						continue;
+					}
+					$inMethod = $arrayScope->getFunction();
+					if (!$inMethod instanceof MethodReflection) {
+						continue;
+					}
+					if ($inMethod->getName() === $typeAndMethod->getMethod()) {
+						continue;
+					}
+					unset($methods[$typeAndMethod->getMethod()]);
 				}
-				if ($typeAndMethod->isUnknown()) {
-					return [];
-				}
-				if (!$typeAndMethod->getCertainty()->yes()) {
-					return [];
-				}
-				$calledOnType = $typeAndMethod->getType();
-				if ($classType->isSuperTypeOf($calledOnType)->no()) {
-					continue;
-				}
-				if ($calledOnType instanceof MixedType) {
-					continue;
-				}
-				$inMethod = $arrayScope->getFunction();
-				if (!$inMethod instanceof MethodReflection) {
-					continue;
-				}
-				if ($inMethod->getName() === $typeAndMethod->getMethod()) {
-					continue;
-				}
-				unset($methods[$typeAndMethod->getMethod()]);
 			}
 		}
 

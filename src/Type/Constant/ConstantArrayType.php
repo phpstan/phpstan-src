@@ -29,12 +29,14 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_pop;
+use function array_push;
 use function array_reverse;
 use function array_slice;
 use function array_unique;
@@ -340,12 +342,17 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isCallable(): TrinaryLogic
 	{
-		$typeAndMethod = $this->findTypeAndMethodName();
-		if ($typeAndMethod === null) {
+		$typeAndMethods = $this->findTypeAndMethodNames();
+		if ($typeAndMethods === []) {
 			return TrinaryLogic::createNo();
 		}
 
-		return $typeAndMethod->getCertainty();
+		$results = array_map(
+			static fn (ConstantArrayTypeAndMethod $typeAndMethod): TrinaryLogic => $typeAndMethod->getCertainty(),
+			$typeAndMethods,
+		);
+
+		return TrinaryLogic::createYes()->and(...$results);
 	}
 
 	/**
@@ -353,25 +360,33 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 */
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
-		$typeAndMethodName = $this->findTypeAndMethodName();
-		if ($typeAndMethodName === null) {
+		$typeAndMethodNames = $this->findTypeAndMethodNames();
+		if ($typeAndMethodNames === []) {
 			throw new ShouldNotHappenException();
 		}
 
-		if ($typeAndMethodName->isUnknown() || !$typeAndMethodName->getCertainty()->yes()) {
-			return [new TrivialParametersAcceptor()];
+		$acceptors = [];
+		foreach ($typeAndMethodNames as $typeAndMethodName) {
+			if ($typeAndMethodName->isUnknown() || !$typeAndMethodName->getCertainty()->yes()) {
+				$acceptors[] = new TrivialParametersAcceptor();
+				continue;
+			}
+
+			$method = $typeAndMethodName->getType()
+				->getMethod($typeAndMethodName->getMethod(), $scope);
+
+			if (!$scope->canCallMethod($method)) {
+				$acceptors[] = new InaccessibleMethod($method);
+				continue;
+			}
+
+			array_push($acceptors, ...$method->getVariants());
 		}
 
-		$method = $typeAndMethodName->getType()
-			->getMethod($typeAndMethodName->getMethod(), $scope);
-
-		if (!$scope->canCallMethod($method)) {
-			return [new InaccessibleMethod($method)];
-		}
-
-		return $method->getVariants();
+		return $acceptors;
 	}
 
+	/** @deprecated Use findTypeAndMethodNames() instead  */
 	public function findTypeAndMethodName(): ?ConstantArrayTypeAndMethod
 	{
 		if (count($this->keyTypes) !== 2) {
@@ -416,6 +431,64 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return null;
+	}
+
+	/** @return ConstantArrayTypeAndMethod[] */
+	public function findTypeAndMethodNames(): array
+	{
+		if (count($this->keyTypes) !== 2) {
+			return [];
+		}
+
+		if ($this->keyTypes[0]->isSuperTypeOf(new ConstantIntegerType(0))->no()) {
+			return [];
+		}
+
+		if ($this->keyTypes[1]->isSuperTypeOf(new ConstantIntegerType(1))->no()) {
+			return [];
+		}
+
+		[$classOrObjects, $methods] = $this->valueTypes;
+		$classOrObjects = TypeUtils::flattenTypes($classOrObjects);
+		$methods = TypeUtils::flattenTypes($methods);
+
+		$typeAndMethods = [];
+		foreach ($classOrObjects as $classOrObject) {
+			if ($classOrObject instanceof ConstantStringType) {
+				$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+				if (!$reflectionProvider->hasClass($classOrObject->getValue())) {
+					continue;
+				}
+				$type = new ObjectType($reflectionProvider->getClass($classOrObject->getValue())->getName());
+			} elseif ($classOrObject instanceof GenericClassStringType) {
+				$type = $classOrObject->getGenericType();
+			} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($classOrObject)->yes()) {
+				$type = $classOrObject;
+			} else {
+				$typeAndMethods[] = ConstantArrayTypeAndMethod::createUnknown();
+				continue;
+			}
+
+			foreach ($methods as $method) {
+				if (!$method instanceof ConstantStringType) {
+					$typeAndMethods[] = ConstantArrayTypeAndMethod::createUnknown();
+					continue;
+				}
+
+				$has = $type->hasMethod($method->getValue());
+				if ($has->no()) {
+					continue;
+				}
+
+				if ($this->isOptionalKey(0) || $this->isOptionalKey(1)) {
+					$has = $has->and(TrinaryLogic::createMaybe());
+				}
+
+				$typeAndMethods[] = ConstantArrayTypeAndMethod::createConcrete($type, $method->getValue(), $has);
+			}
+		}
+
+		return $typeAndMethods;
 	}
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic

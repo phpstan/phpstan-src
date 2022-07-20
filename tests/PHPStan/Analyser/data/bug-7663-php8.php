@@ -7,10 +7,12 @@ use function PHPStan\Testing\assertType;
 class HelloWorld8
 {
 	/**
-	 * @param 'de_DE'|'en_US' $language
+	 * @param 'de_DE'|'pretty-long' $str
 	 */
-	public function sayHello($language): void
+	public function sayHello($str): void
 	{
-		assertType("''", substr('de_DE', 10, -10));
+		assertType("''", substr('de_DE', 5, -5));
+		assertType("'y'", substr('pretty-long', 5, -5));
+		assertType("''|'y'", substr($str, 5, -5));
 	}
 }

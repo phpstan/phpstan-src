@@ -7,13 +7,19 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use function count;
+use function is_bool;
+use function substr;
 
 class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -40,11 +46,30 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 
 			$negativeOffset = IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($offset)->yes();
 			$zeroOffset = (new ConstantIntegerType(0))->isSuperTypeOf($offset)->yes();
+			$length = null;
 			$positiveLength = false;
 
 			if (count($args) === 3) {
 				$length = $scope->getType($args[2]->value);
 				$positiveLength = IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($length)->yes();
+			}
+
+			$constantStrings = TypeUtils::getConstantStrings($string);
+			if (count($constantStrings) > 0 &&
+				$offset instanceof ConstantIntegerType &&
+				(count($args) === 2 || $length instanceof ConstantIntegerType)) {
+				$results = [];
+				foreach ($constantStrings as $constantString) {
+					$substr = substr($constantString->getValue(), $offset->getValue(), $length ? $length->getValue() : null);
+
+					if (is_bool($substr)) {
+						$results[] = new ConstantBooleanType($substr);
+					} else {
+						$results[] = new ConstantStringType($substr);
+					}
+				}
+
+				return TypeCombinator::union(...$results);
 			}
 
 			if ($string->isNonEmptyString()->yes() && ($negativeOffset || $zeroOffset && $positiveLength)) {

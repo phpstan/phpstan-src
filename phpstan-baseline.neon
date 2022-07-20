@@ -352,11 +352,6 @@ parameters:
 			path: src/Type/Php/JsonThrowOnErrorDynamicReturnTypeExtension.php
 
 		-
-			message: "#^Call to function is_bool\\(\\) with string will always evaluate to false\\.$#"
-			count: 1
-			path: src/Type/Php/SubstrDynamicReturnTypeExtension.php
-
-		-
 			message: "#^Unreachable statement \\- code above always terminates\\.$#"
 			count: 1
 			path: tests/PHPStan/Analyser/AnalyserTest.php

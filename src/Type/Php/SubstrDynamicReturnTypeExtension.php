@@ -10,6 +10,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
@@ -57,10 +58,14 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			$constantStrings = TypeUtils::getConstantStrings($string);
 			if (count($constantStrings) > 0 &&
 				$offset instanceof ConstantIntegerType &&
-				(count($args) === 2 || $length instanceof ConstantIntegerType)) {
+				($length === null || $length instanceof ConstantIntegerType)) {
 				$results = [];
 				foreach ($constantStrings as $constantString) {
-					$substr = substr($constantString->getValue(), $offset->getValue(), $length ? $length->getValue() : null);
+					$substr = substr(
+						$constantString->getValue(),
+						$offset->getValue(),
+						$length !== null ? $length->getValue() : null
+					);
 
 					if (is_bool($substr)) {
 						$results[] = new ConstantBooleanType($substr);

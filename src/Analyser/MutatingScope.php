@@ -3434,7 +3434,12 @@ class MutatingScope implements Scope
 		if ($expr instanceof ConstFetch) {
 			$constantTypes = $this->constantTypes;
 			$constantName = new FullyQualified($expr->name->toString());
-			$constantTypes[$constantName->toCodeString()] = $type;
+
+			if ($type instanceof NeverType) {
+				unset($constantTypes[$constantName->toCodeString()]);
+			} else {
+				$constantTypes[$constantName->toCodeString()] = $type;
+			}
 
 			return $this->scopeFactory->create(
 				$this->context,

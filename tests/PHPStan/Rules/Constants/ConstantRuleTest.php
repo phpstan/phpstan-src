@@ -28,10 +28,11 @@ class ConstantRuleTest extends RuleTestCase
 				10,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
-			/*[
+			[
 				'Constant DEFINED_CONSTANT_IF not found.',
 				21,
-			],*/
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
 		]);
 	}
 

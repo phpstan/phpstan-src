@@ -36,7 +36,13 @@ final class MissingPropertyTypehintRule implements Rule
 		}
 
 		$propertyReflection = $scope->getClassReflection()->getNativeProperty($node->getName());
+
+		if ($propertyReflection->isPromoted()) {
+			return [];
+		}
+
 		$propertyType = $propertyReflection->getReadableType();
+
 		if ($propertyType instanceof MixedType && !$propertyType->isExplicitMixed()) {
 			return [
 				RuleErrorBuilder::message(sprintf(

@@ -4,7 +4,7 @@ namespace Bug7663;
 
 use function PHPStan\Testing\assertType;
 
-class HelloWorld7
+class HelloWorld8
 {
 	/**
 	 * @param 'de_DE'|'en_US' $language
@@ -18,6 +18,6 @@ class HelloWorld7
 		assertType("'_DE'|'_US'", substr($language, -3));
 		assertType("'_'", substr($language, -3, 1));
 
-		assertType("false", substr('de_DE', 10, -10));
+		assertType("''", substr('de_DE', 10, -10));
 	}
 }

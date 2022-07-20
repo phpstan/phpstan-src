@@ -17,5 +17,7 @@ class HelloWorld
 		assertType("'de_DE'|'en_US'", substr($language, 0, 10));
 
 		assertType("'DE'|'US'", substr($language, 3));
+		assertType("'_DE'|'_US'", substr($language, -3));
+		assertType("'_'", substr($language, -3, 1));
 	}
 }

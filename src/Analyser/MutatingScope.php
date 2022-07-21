@@ -3698,6 +3698,23 @@ class MutatingScope implements Scope
 		);
 	}
 
+	private function addTypeToExpression(Expr $expr, Type $type): self
+	{
+		$originalExprType = $this->getType($expr);
+		$nativeType = $this->getNativeType($expr);
+
+		if ($originalExprType->equals($nativeType)) {
+			$newType = TypeCombinator::intersect($type, $originalExprType);
+			return $this->specifyExpressionType($expr, $newType, $newType);
+		}
+
+		return $this->specifyExpressionType(
+			$expr,
+			TypeCombinator::intersect($type, $originalExprType),
+			TypeCombinator::intersect($type, $nativeType),
+		);
+	}
+
 	public function removeTypeFromExpression(Expr $expr, Type $typeToRemove): self
 	{
 		$exprType = $this->getType($expr);
@@ -3787,13 +3804,12 @@ class MutatingScope implements Scope
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
 			$type = $typeSpecification['type'];
-			$originalExprType = $this->getType($expr);
 			if ($typeSpecification['sure']) {
-				$scope = $scope->specifyExpressionType(
-					$expr,
-					$specifiedTypes->shouldOverwrite() ? $type : TypeCombinator::intersect($type, $originalExprType),
-					$specifiedTypes->shouldOverwrite() ? $type : TypeCombinator::intersect($type, $this->getNativeType($expr)),
-				);
+				if ($specifiedTypes->shouldOverwrite()) {
+					$scope = $scope->specifyExpressionType($expr, $type, $type);
+				} else {
+					$scope = $scope->addTypeToExpression($expr, $type);
+				}
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
 			}

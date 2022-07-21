@@ -69,11 +69,7 @@ class ConstantConditionRuleHelper
 			return new BooleanType();
 		}
 
-		if ($this->treatPhpDocTypesAsCertain) {
-			return $scope->getType($expr)->toBoolean();
-		}
-
-		return $scope->getNativeType($expr)->toBoolean();
+		return $scope->getType($expr)->toBoolean();
 	}
 
 	public function getNativeBooleanType(Scope $scope, Expr $expr): BooleanType

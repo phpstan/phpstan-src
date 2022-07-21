@@ -137,6 +137,14 @@ class CallCallablesRuleTest extends RuleTestCase
 				'Trying to invoke array{\'CallCallables\\\\CallableInForeach\', \'bar\'|\'foo\'} but it might not be a callable.',
 				179,
 			],
+			[
+				'Trying to invoke array{\'CallCallables\\\\ConstantArrayUnionCallables\'|\'DateTimeImmutable\', \'doFoo\'} but it might not be a callable.',
+				205,
+			],
+			[
+				'Trying to invoke array{\'CallCallables\\\ConstantArrayUnionCallables\', \'doBaz\'|\'doFoo\'} but it might not be a callable.',
+				212,
+			],
 		]);
 	}
 

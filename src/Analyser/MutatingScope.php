@@ -1525,6 +1525,7 @@ class MutatingScope implements Scope
 				$filteringExpr = null;
 				foreach ($arm->conds as $armCond) {
 					$armCondExpr = new BinaryOp\Identical($cond, $armCond);
+
 					if ($filteringExpr === null) {
 						$filteringExpr = $armCondExpr;
 						continue;
@@ -1533,8 +1534,12 @@ class MutatingScope implements Scope
 					$filteringExpr = new BinaryOp\BooleanOr($filteringExpr, $armCondExpr);
 				}
 
-				$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
-				$types[] = $truthyScope->getType($arm->body);
+				$filteringExprType = $matchScope->getType($filteringExpr);
+
+				if (!(new ConstantBooleanType(false))->isSuperTypeOf($filteringExprType)->yes()) {
+					$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
+					$types[] = $truthyScope->getType($arm->body);
+				}
 
 				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
 			}
@@ -3228,6 +3233,10 @@ class MutatingScope implements Scope
 
 	public function setAllowedUndefinedExpression(Expr $expr): self
 	{
+		if ($this->phpVersion->deprecatesDynamicProperties() && $expr instanceof Expr\StaticPropertyFetch) {
+			return $this;
+		}
+
 		$exprString = $this->getNodeKey($expr);
 		$currentlyAllowedUndefinedExpressions = $this->currentlyAllowedUndefinedExpressions;
 		$currentlyAllowedUndefinedExpressions[$exprString] = true;
@@ -3425,7 +3434,12 @@ class MutatingScope implements Scope
 		if ($expr instanceof ConstFetch) {
 			$constantTypes = $this->constantTypes;
 			$constantName = new FullyQualified($expr->name->toString());
-			$constantTypes[$constantName->toCodeString()] = $type;
+
+			if ($type instanceof NeverType) {
+				unset($constantTypes[$constantName->toCodeString()]);
+			} else {
+				$constantTypes[$constantName->toCodeString()] = $type;
+			}
 
 			return $this->scopeFactory->create(
 				$this->context,

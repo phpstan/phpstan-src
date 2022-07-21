@@ -205,7 +205,11 @@ class IssetCheck
 				return null;
 			}
 
-			return RuleErrorBuilder::message(sprintf('Using nullsafe property access "?->%s" %s is unnecessary. Use -> instead.', $expr->name->name ?? '(Expression)', $operatorDescription))->build();
+			if ($expr->name instanceof Node\Identifier) {
+				return RuleErrorBuilder::message(sprintf('Using nullsafe property access "?->%s" %s is unnecessary. Use -> instead.', $expr->name->name, $operatorDescription))->build();
+			}
+
+			return RuleErrorBuilder::message(sprintf('Using nullsafe property access "?->(Expression)" %s is unnecessary. Use -> instead.', $operatorDescription))->build();
 		}
 
 		return null;

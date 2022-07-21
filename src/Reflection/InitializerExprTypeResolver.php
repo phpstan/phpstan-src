@@ -1207,6 +1207,7 @@ class InitializerExprTypeResolver
 		}
 
 		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {
+			// @phpstan-ignore-next-line
 			return new ConstantBooleanType($leftType->getValue() == $rightType->getValue()); // phpcs:ignore
 		}
 

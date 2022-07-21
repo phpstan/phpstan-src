@@ -107,7 +107,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 			$items = $encoding === null
 				? str_split($stringValue, $splitLength)
-				: mb_str_split($stringValue, $splitLength, $encoding);
+				: @mb_str_split($stringValue, $splitLength, $encoding);
 			if ($items === false) {
 				throw new ShouldNotHappenException();
 			}

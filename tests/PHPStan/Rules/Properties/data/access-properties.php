@@ -2,6 +2,7 @@
 
 namespace TestAccessProperties;
 
+#[\AllowDynamicProperties]
 class FooAccessProperties
 {
 
@@ -253,6 +254,7 @@ class PropertyExists
 
 }
 
+#[\AllowDynamicProperties]
 class NullCoalesce
 {
 
@@ -274,6 +276,7 @@ class NullCoalesce
 
 }
 
+#[\AllowDynamicProperties]
 class IssetPropertyInWhile
 {
 
@@ -301,6 +304,7 @@ class AnonyousClass
 
 }
 
+#[\AllowDynamicProperties]
 class PropertyIssetOnPossibleFalse
 {
 
@@ -371,6 +375,7 @@ class AccessPropertyWithDimFetch
 
 }
 
+#[\AllowDynamicProperties]
 class AccessInIsset
 {
 

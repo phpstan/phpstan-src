@@ -198,6 +198,7 @@ final class FinalClassWithMethodExists
 
 }
 
+#[\AllowDynamicProperties]
 final class FinalClassWithPropertyExists
 {
 
@@ -757,6 +758,7 @@ class AssertIsNumeric
 
 }
 
+#[\AllowDynamicProperties]
 class Bug2221
 {
 

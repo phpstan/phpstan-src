@@ -89,11 +89,12 @@ class AccessPropertiesRule implements Rule
 			];
 		}
 
-		if ($this->canAccessUndefinedProperties($scope, $node)) {
+		$has = $type->hasProperty($name);
+		if (!$has->no() && $this->canAccessUndefinedProperties($scope, $node)) {
 			return [];
 		}
 
-		if (!$type->hasProperty($name)->yes()) {
+		if (!$has->yes()) {
 			if ($scope->isSpecified($node)) {
 				return [];
 			}

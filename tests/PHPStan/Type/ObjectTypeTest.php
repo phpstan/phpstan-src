@@ -32,6 +32,7 @@ use Throwable;
 use ThrowPoints\TryCatch\MyInvalidArgumentException;
 use Traversable;
 use function sprintf;
+use const PHP_VERSION_ID;
 
 class ObjectTypeTest extends PHPStanTestCase
 {
@@ -264,7 +265,7 @@ class ObjectTypeTest extends PHPStanTestCase
 			32 => [
 				new ObjectType(Closure::class),
 				new HasPropertyType('d'),
-				TrinaryLogic::createMaybe(),
+				PHP_VERSION_ID < 80200 ? TrinaryLogic::createMaybe() : TrinaryLogic::createNo(),
 			],
 			33 => [
 				new ObjectType(DateInterval::class),

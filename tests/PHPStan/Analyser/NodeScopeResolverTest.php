@@ -652,7 +652,12 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5817.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-chunk.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-column.php');
+
+		if (PHP_VERSION_ID < 80200) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-column.php');
+		} else {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-column-php82.php');
+		}
 		if (PHP_VERSION_ID >= 80000) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-column-php8.php');
 		} else {
@@ -857,7 +862,9 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7078.php');
 		}
 
-		if (PHP_VERSION_ID >= 80000) {
+		if (PHP_VERSION_ID >= 80200) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/mb-strlen-php82.php');
+		} elseif (PHP_VERSION_ID >= 80000) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/mb-strlen-php8.php');
 		} elseif (PHP_VERSION_ID < 70300) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/mb-strlen-php72.php');
@@ -925,9 +932,14 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/collected-data.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7550.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7580.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/this-subtractable.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/this-subtractable
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7621-1.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7621-2.php');
+
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/match-expression-inference.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-15p
+
 	}
 
 	/**

@@ -40,7 +40,7 @@ class ReflectionClassSourceLocator implements SourceLocator
 
 		return $this->astLocator->findReflection(
 			$reflector,
-			new LocatedSource($stub->getStub(), $reflection->getName(), $stub->getFileName()),
+			new LocatedSource($stub->getStub(), $reflection->getName(), null),
 			new Identifier($reflection->getName(), new IdentifierType(IdentifierType::IDENTIFIER_CLASS)),
 		);
 	}

@@ -2554,8 +2554,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ObjectType(\Test\Foo::class),
 					new HasPropertyType('fooProperty'),
 				],
-				IntersectionType::class,
-				'Test\Foo&hasProperty(fooProperty)',
+				PHP_VERSION_ID < 80200 ? IntersectionType::class : NeverType::class,
+				PHP_VERSION_ID < 80200 ? 'Test\Foo&hasProperty(fooProperty)' : '*NEVER*',
 			],
 			[
 				[
@@ -2619,8 +2619,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 					]),
 					new HasPropertyType('fooProperty'),
 				],
-				UnionType::class,
-				'(Test\FirstInterface&hasProperty(fooProperty))|(Test\Foo&hasProperty(fooProperty))',
+				PHP_VERSION_ID < 80200 ? UnionType::class : NeverType::class,
+				PHP_VERSION_ID < 80200 ? '(Test\FirstInterface&hasProperty(fooProperty))|(Test\Foo&hasProperty(fooProperty))' : '*NEVER*',
 			],
 			[
 				[

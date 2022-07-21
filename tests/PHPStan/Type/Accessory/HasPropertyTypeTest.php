@@ -17,6 +17,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
+use const PHP_VERSION_ID;
 
 class HasPropertyTypeTest extends PHPStanTestCase
 {
@@ -47,7 +48,7 @@ class HasPropertyTypeTest extends PHPStanTestCase
 			[
 				new HasPropertyType('foo'),
 				new ObjectType(Closure::class),
-				TrinaryLogic::createMaybe(),
+				PHP_VERSION_ID < 80200 ? TrinaryLogic::createMaybe() : TrinaryLogic::createNo(),
 			],
 			[
 				new HasPropertyType('foo'),

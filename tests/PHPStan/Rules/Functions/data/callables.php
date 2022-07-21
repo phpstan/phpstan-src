@@ -186,3 +186,51 @@ class CallableInForeach
 	}
 
 }
+
+class ConstantArrayUnionCallables
+{
+
+	public function doFoo(): void
+	{
+	}
+
+	public function doBar(): void
+	{
+	}
+
+	public function invalidClass(): void
+	{
+		$class = rand(0, 1) ? __CLASS__ : \DateTimeImmutable::class;
+		$callable = [$class, 'doFoo'];
+		$callable();
+	}
+
+	public function invalidMethod(): void
+	{
+		$method = rand(0, 1) ? 'doFoo' : 'doBaz';
+		$callable = [__CLASS__, $method];
+		$callable();
+	}
+
+	public function classAndMethodValid(): void
+	{
+		$class = rand(0, 1) ? __CLASS__ : ConstantArrayUnionCallablesTest::class;
+		$method = rand(0, 1) ? 'doFoo' : 'doBar';
+		$callable = [$class, $method];
+		$callable();
+	}
+
+}
+
+class ConstantArrayUnionCallablesTest
+{
+
+	public function doFoo(): void
+	{
+	}
+
+	public function doBar(): void
+	{
+	}
+
+}

@@ -239,16 +239,33 @@ class AnalyseCommand extends Command
 			);
 		} catch (Throwable $t) {
 			if ($debug) {
-				$inceptionResult->getStdOutput()->writeRaw(sprintf(
+				$stdOutput = $inceptionResult->getStdOutput();
+				$stdOutput->writeRaw(sprintf(
 					'Uncaught %s: %s in %s:%d',
 					get_class($t),
 					$t->getMessage(),
 					$t->getFile(),
 					$t->getLine(),
 				));
-				$inceptionResult->getStdOutput()->writeLineFormatted('');
-				$inceptionResult->getStdOutput()->writeRaw($t->getTraceAsString());
-				$inceptionResult->getStdOutput()->writeLineFormatted('');
+				$stdOutput->writeLineFormatted('');
+				$stdOutput->writeRaw($t->getTraceAsString());
+				$stdOutput->writeLineFormatted('');
+
+				$previous = $t->getPrevious();
+				while ($previous !== null) {
+					$stdOutput->writeLineFormatted('');
+					$stdOutput->writeLineFormatted('Caused by:');
+					$stdOutput->writeRaw(sprintf(
+						'Uncaught %s: %s in %s:%d',
+						get_class($previous),
+						$previous->getMessage(),
+						$previous->getFile(),
+						$previous->getLine(),
+					));
+					$stdOutput->writeRaw($previous->getTraceAsString());
+					$stdOutput->writeLineFormatted('');
+					$previous = $previous->getPrevious();
+				}
 
 				return $inceptionResult->handleReturn(1);
 			}

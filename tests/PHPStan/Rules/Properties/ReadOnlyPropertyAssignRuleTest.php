@@ -111,4 +111,18 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testFeature7648(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/feature-7648.php'], [
+			[
+				'Readonly property Feature7648\Request::$offset is assigned outside of the constructor.',
+				23,
+			],
+		]);
+	}
+
 }

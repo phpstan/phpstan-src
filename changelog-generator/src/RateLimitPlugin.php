@@ -33,7 +33,7 @@ class RateLimitPlugin implements Plugin
 		$api = $this->client->api('rate_limit');
 
 		/** @var RateLimitResource $resource */
-		$resource = $api->getResource('core');
+		$resource = $api->getResource('search');
 		if ($resource->getRemaining() < 10) {
 			$reset = $resource->getReset();
 			$sleepFor = $reset - time();

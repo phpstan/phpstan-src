@@ -77,12 +77,24 @@ class InvalidBinaryOperationRule implements Rule
 				'',
 				$callback,
 			)->getType();
+			$nativeLeftType = $this->ruleLevelHelper->findTypeToCheck(
+				$scope->doNotTreatPhpDocTypesAsCertain(),
+				$left,
+				'',
+				$callback,
+			)->getType();
 			if ($leftType instanceof ErrorType) {
 				return [];
 			}
 
 			$rightType = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
+				$right,
+				'',
+				$callback,
+			)->getType();
+			$nativeRightType = $this->ruleLevelHelper->findTypeToCheck(
+				$scope->doNotTreatPhpDocTypesAsCertain(),
 				$right,
 				'',
 				$callback,
@@ -96,8 +108,8 @@ class InvalidBinaryOperationRule implements Rule
 			}
 
 			$scope = $scope
-				->assignVariable($leftName, $leftType)
-				->assignVariable($rightName, $rightType);
+				->assignVariable($leftName, $leftType, $nativeLeftType)
+				->assignVariable($rightName, $rightType, $nativeRightType);
 
 			if (!$scope->getType($newNode) instanceof ErrorType) {
 				return [];

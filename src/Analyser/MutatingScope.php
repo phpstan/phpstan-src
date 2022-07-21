@@ -2736,6 +2736,7 @@ class MutatingScope implements Scope
 	): self
 	{
 		$variableTypes = [];
+		$nativeTypes = [];
 		foreach ($closure->params as $i => $parameter) {
 			$isNullable = $this->isParameterValueNullable($parameter);
 			$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
@@ -2760,9 +2761,9 @@ class MutatingScope implements Scope
 			$variableTypes[$parameter->var->name] = VariableTypeHolder::createYes(
 				$parameterType,
 			);
+			$nativeTypes[sprintf('$%s', $parameter->var->name)] = $parameterType;
 		}
 
-		$nativeTypes = [];
 		$moreSpecificTypes = [];
 		foreach ($closure->uses as $use) {
 			if (!is_string($use->var->name)) {

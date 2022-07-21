@@ -1372,7 +1372,7 @@ class NodeScopeResolver
 				$scope = $scope->assignVariable(
 					$var->name,
 					new MixedType(),
-					new MixedType()
+					new MixedType(),
 				);
 				$vars[] = $var->name;
 			}
@@ -1407,7 +1407,7 @@ class NodeScopeResolver
 			$scope = $scope->assignVariable(
 				$stmt->var->name,
 				new MixedType(),
-				new MixedType()
+				new MixedType(),
 			);
 		} elseif ($stmt instanceof Node\Stmt\Const_ || $stmt instanceof Node\Stmt\ClassConst) {
 			$hasYield = false;
@@ -1936,7 +1936,7 @@ class NodeScopeResolver
 				$scope = $scope->assignVariable(
 					'http_response_header',
 					new ArrayType(new IntegerType(), new StringType()),
-					new ArrayType(new IntegerType(), new StringType())
+					new ArrayType(new IntegerType(), new StringType()),
 				);
 			}
 
@@ -3003,7 +3003,7 @@ class NodeScopeResolver
 					$scope = $scope->assignVariable(
 						$inAssignRightSideVariableName,
 						$variableType,
-						$variableType
+						$variableType,
 					);
 				}
 			}

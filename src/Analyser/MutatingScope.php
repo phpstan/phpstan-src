@@ -3037,7 +3037,7 @@ class MutatingScope implements Scope
 		$scope = $this->assignVariable(
 			$valueName,
 			$this->getType($iteratee)->getIterableValueType(),
-			$this->getNativeType($iteratee)->getIterableValueType()
+			$this->getNativeType($iteratee)->getIterableValueType(),
 		);
 
 		if ($keyName !== null) {
@@ -3049,13 +3049,11 @@ class MutatingScope implements Scope
 
 	public function enterForeachKey(Expr $iteratee, string $keyName): self
 	{
-		$scope = $this->assignVariable(
+		return $this->assignVariable(
 			$keyName,
 			$this->getType($iteratee)->getIterableKeyType(),
-			$this->getNativeType($iteratee)->getIterableKeyType()
+			$this->getNativeType($iteratee)->getIterableKeyType(),
 		);
-
-		return $scope;
 	}
 
 	/**
@@ -3078,7 +3076,7 @@ class MutatingScope implements Scope
 		return $this->assignVariable(
 			$variableName,
 			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
-			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class))
+			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
 		);
 	}
 

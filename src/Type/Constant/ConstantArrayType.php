@@ -575,31 +575,50 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function unsetOffset(Type $offsetType): Type
 	{
 		$offsetType = ArrayType::castToArrayKeyType($offsetType);
-		if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
-			foreach ($this->keyTypes as $i => $keyType) {
-				if ($keyType->getValue() === $offsetType->getValue()) {
-					$keyTypes = $this->keyTypes;
-					unset($keyTypes[$i]);
-					$valueTypes = $this->valueTypes;
-					unset($valueTypes[$i]);
 
-					$newKeyTypes = [];
-					$newValueTypes = [];
-					$newOptionalKeys = [];
-
-					$k = 0;
-					foreach ($keyTypes as $j => $newKeyType) {
-						$newKeyTypes[] = $newKeyType;
-						$newValueTypes[] = $valueTypes[$j];
-						if (in_array($j, $this->optionalKeys, true)) {
-							$newOptionalKeys[] = $k;
-						}
-						$k++;
-					}
-
-					return new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys);
-				}
+		$results = [];
+		foreach (TypeUtils::getConstantScalars($offsetType) as $constantScalar) {
+			if (!$constantScalar instanceof ConstantIntegerType && !$constantScalar instanceof ConstantStringType) {
+				continue;
 			}
+
+			$hasKey = false;
+			foreach ($this->keyTypes as $i => $keyType) {
+				if ($keyType->getValue() !== $constantScalar->getValue()) {
+					continue;
+				}
+
+				$hasKey = true;
+				$keyTypes = $this->keyTypes;
+				unset($keyTypes[$i]);
+				$valueTypes = $this->valueTypes;
+				unset($valueTypes[$i]);
+
+				$newKeyTypes = [];
+				$newValueTypes = [];
+				$newOptionalKeys = [];
+
+				$k = 0;
+				foreach ($keyTypes as $j => $newKeyType) {
+					$newKeyTypes[] = $newKeyType;
+					$newValueTypes[] = $valueTypes[$j];
+					if (in_array($j, $this->optionalKeys, true)) {
+						$newOptionalKeys[] = $k;
+					}
+					$k++;
+				}
+
+				$results[] = new self($newKeyTypes, $newValueTypes, $this->nextAutoIndexes, $newOptionalKeys);
+				break;
+			}
+			if ($hasKey) {
+				continue;
+			}
+
+			$results[] = $this;
+		}
+		if ($results !== []) {
+			return TypeCombinator::union(...$results);
 		}
 
 		return new ArrayType($this->getKeyType(), $this->getItemType());

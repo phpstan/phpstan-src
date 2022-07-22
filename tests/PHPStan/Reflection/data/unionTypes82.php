@@ -2,17 +2,10 @@
 
 namespace NativeUnionTypes82;
 
-class Foo {
-	function trueUnion(true|null $trueUnion): void
-	{
-	}
+class Truthy {
+	public true $truthy = true;
 
-	function trueUnion(): true|null
-	{
-	}
+	public function foo(true $v): true {
 
-	function alwaysTrue(): true
-	{
-		return true;
 	}
 }

@@ -1,6 +1,6 @@
 <?php // lint >= 8.2
 
-namespace NativeUnionTypes82;
+namespace NativeTrueType;
 
 class Truthy {
 	public true $truthy = true;

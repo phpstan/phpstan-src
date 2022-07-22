@@ -273,4 +273,15 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/intersection-types.php'], $errors);
 	}
 
+	public function testTrueTypehint(): void
+	{
+		if (PHP_VERSION_ID < 80200) {
+			return;
+		}
+
+		$this->analyse([__DIR__ . '/data/true-typehint.php'], [
+			[],
+		]);
+	}
+
 }

@@ -122,4 +122,15 @@ class MissingMethodParameterTypehintRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/filter-iterator-child-class.php'], []);
 	}
 
+	public function testBug7662(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7662.php'], [
+			[
+				'Method Bug7662\Foo::__construct() has parameter $bar with no value type specified in iterable type array.',
+				6,
+				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
+			],
+		]);
+	}
+
 }

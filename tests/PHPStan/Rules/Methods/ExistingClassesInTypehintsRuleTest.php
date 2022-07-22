@@ -291,4 +291,35 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function dataTrueTypes(): array
+	{
+		return [
+			[80200, []],
+			[
+				80100,
+				[
+					[
+						'Parameter $v of method NativeTrueType\Truthy::foo() has invalid type NativeTrueType\true.',
+						8,
+					],
+					[
+						'Method NativeTrueType\Truthy::foo() has invalid return type NativeTrueType\true.',
+						8,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataTrueTypes
+	 * @param mixed[] $errors
+	 */
+	public function testTrueTypehint(int $phpVersion, array $errors): void
+	{
+		$this->phpVersionId = $phpVersion;
+
+		$this->analyse([__DIR__ . '/data/true-typehint.php'], $errors);
+	}
+
 }

@@ -295,19 +295,6 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 	{
 		return [
 			[80200, []],
-			[
-				80100,
-				[
-					[
-						'Parameter $v of method NativeTrueType\Truthy::foo() has invalid type NativeTrueType\true.',
-						8,
-					],
-					[
-						'Method NativeTrueType\Truthy::foo() has invalid return type NativeTrueType\true.',
-						8,
-					],
-				],
-			],
 		];
 	}
 

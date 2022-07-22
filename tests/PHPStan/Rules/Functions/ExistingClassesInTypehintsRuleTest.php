@@ -280,15 +280,6 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				80200,
 				[],
 			],
-			[
-				80100,
-				[
-					[
-						'Function NativeTrueType\alwaysTrue() has invalid return type NativeTrueType\true.',
-						5,
-					],
-				],
-			],
 		];
 	}
 

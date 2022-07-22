@@ -55,9 +55,11 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			}
 
 			$constantStrings = TypeUtils::getConstantStrings($string);
-			if (count($constantStrings) > 0 &&
-				$offset instanceof ConstantIntegerType &&
-				($length === null || $length instanceof ConstantIntegerType)) {
+			if (
+				count($constantStrings) > 0
+				&& $offset instanceof ConstantIntegerType
+				&& ($length === null || $length instanceof ConstantIntegerType)
+			) {
 				$results = [];
 				foreach ($constantStrings as $constantString) {
 					if ($length !== null) {

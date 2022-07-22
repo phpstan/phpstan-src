@@ -29,6 +29,8 @@ class TypehintHelper
 				return new BooleanType();
 			case 'false':
 				return new ConstantBooleanType(false);
+			case 'true':
+				return new ConstantBooleanType(true);
 			case 'string':
 				return new StringType();
 			case 'float':
@@ -117,6 +119,9 @@ class TypehintHelper
 		}
 		if (str_ends_with(strtolower($reflectionTypeString), '\\mixed')) {
 			$reflectionTypeString = 'mixed';
+		}
+		if (str_ends_with(strtolower($reflectionTypeString), '\\true')) {
+			$reflectionTypeString = 'true';
 		}
 		if (str_ends_with(strtolower($reflectionTypeString), '\\false')) {
 			$reflectionTypeString = 'false';

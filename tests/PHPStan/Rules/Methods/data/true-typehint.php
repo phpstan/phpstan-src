@@ -8,4 +8,12 @@ class Truthy {
 	public function foo(true $v): true {
 
 	}
+
+	function trueUnion(true|null $trueUnion): void
+	{
+	}
+
+	function trueUnionReturn(): true|null
+	{
+	}
 }

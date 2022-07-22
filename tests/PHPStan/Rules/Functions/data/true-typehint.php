@@ -9,3 +9,8 @@ class Truthy {
 
 	}
 }
+
+function alwaysTrue(): true
+{
+	return true;
+}

@@ -273,15 +273,31 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/intersection-types.php'], $errors);
 	}
 
-	public function testTrueTypehint(): void
+	public function dataTrueTypes(): array
 	{
-		if (PHP_VERSION_ID < 80200) {
-			return;
-		}
+		return [
+			[80200, []],
+			[
+				80100,
+				[
+					[
+						'Function NativeTrueType\alwaysTrue() has invalid return type NativeTrueType\true.',
+						13,
+					],
+				],
+			],
+		];
+	}
 
-		$this->analyse([__DIR__ . '/data/true-typehint.php'], [
-			[],
-		]);
+	/**
+	 * @dataProvider dataTrueTypes
+	 * @param mixed[] $errors
+	 */
+	public function testTrueTypehint(int $phpVersion, array $errors): void
+	{
+		$this->phpVersionId = $phpVersion;
+
+		$this->analyse([__DIR__ . '/data/true-typehint.php'], $errors);
 	}
 
 }

@@ -52,6 +52,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					31,
 				],
 				[
+					'Call to function is_callable() with array<int> will always evaluate to false.',
+					44,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				],
+				[
 					'Call to function assert() with false will always evaluate to false.',
 					48,
 				],

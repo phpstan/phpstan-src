@@ -201,7 +201,7 @@ jobs:
       - name: "Update checksum"
         run: |
           echo ${{needs.compiler-tests.outputs.checksum}} > phpstan-dist/.phar-checksum
-          echo ${{ github.event.after }} >> phpstan-dist/.phar-checksum
+          echo ${{ github.event.head_commit.id }} >> phpstan-dist/.phar-checksum
 
       - name: "Sign PHAR"
         working-directory: phpstan-dist

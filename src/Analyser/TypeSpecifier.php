@@ -863,14 +863,22 @@ class TypeSpecifier
 					&& $var->dim !== null
 					&& !$scope->getType($var->var) instanceof MixedType
 				) {
-					$type = $this->create(
-						$var->var,
-						new HasOffsetType($scope->getType($var->dim)),
-						$context,
-						false,
-						$scope,
-						$rootExpr,
-					)->unionWith(
+					$dimType = $scope->getType($var->dim);
+
+					if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
+						$type = $this->create(
+							$var->var,
+							new HasOffsetType($dimType),
+							$context,
+							false,
+							$scope,
+							$rootExpr,
+						);
+					} else {
+						$type = new SpecifiedTypes();
+					}
+
+					$type = $type->unionWith(
 						$this->create($var, new NullType(), TypeSpecifierContext::createFalse(), false, $scope, $rootExpr),
 					);
 				} else {

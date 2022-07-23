@@ -15,7 +15,7 @@ class AsyncTask{
 		if(self::$threadLocalStorage !== null){
 			assertType('ArrayObject<int, array<string, mixed>>', self::$threadLocalStorage);
 			if (isset(self::$threadLocalStorage[$h = spl_object_id($this)])) {
-				assertType('ArrayObject<int, array<string, mixed>>&hasOffset(int)', self::$threadLocalStorage);
+				assertType('ArrayObject<int, array<string, mixed>>', self::$threadLocalStorage);
 				unset(self::$threadLocalStorage[$h]);
 				assertType('ArrayObject<int, array<string, mixed>>', self::$threadLocalStorage);
 				if(self::$threadLocalStorage->count() === 0){

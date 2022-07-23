@@ -8334,7 +8334,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherArrayCopy',
 			],
 			[
-				"array<'a'|'b'|'c', 1|2|3|4|null>",
+				'array{a: 1|2|3, b?: 2|3|null, c?: 4}',
 				'$yetAnotherArrayCopy',
 			],
 			[

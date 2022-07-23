@@ -11,6 +11,8 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
@@ -47,6 +49,9 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 			return new SpecifiedTypes();
 		}
 		$keyType = $scope->getType($node->getArgs()[0]->value);
+		if (!$keyType instanceof ConstantIntegerType && !$keyType instanceof ConstantStringType) {
+			return new SpecifiedTypes();
+		}
 
 		if ($context->truthy()) {
 			$type = TypeCombinator::intersect(

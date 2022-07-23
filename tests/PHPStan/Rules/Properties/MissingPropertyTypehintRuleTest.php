@@ -62,17 +62,7 @@ class MissingPropertyTypehintRuleTest extends RuleTestCase
 
 	public function testPromotedProperties(): void
 	{
-		$this->analyse([__DIR__ . '/data/promoted-properties-missing-typehint.php'], [
-			[
-				'Property PromotedPropertiesMissingTypehint\Foo::$lorem has no type specified.',
-				15,
-			],
-			[
-				'Property PromotedPropertiesMissingTypehint\Foo::$ipsum type has no value type specified in iterable type array.',
-				16,
-				MissingTypehintCheck::MISSING_ITERABLE_VALUE_TYPE_TIP,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/promoted-properties-missing-typehint.php'], []);
 	}
 
 }

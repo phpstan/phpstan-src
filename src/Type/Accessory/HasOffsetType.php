@@ -4,6 +4,8 @@ namespace PHPStan\Type\Accessory;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
@@ -33,11 +35,17 @@ class HasOffsetType implements CompoundType, AccessoryType
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
-	/** @api */
+	/**
+	 * @api
+	 * @param ConstantStringType|ConstantIntegerType $offsetType
+	 */
 	public function __construct(private Type $offsetType)
 	{
 	}
 
+	/**
+	 * @return ConstantStringType|ConstantIntegerType
+	 */
 	public function getOffsetType(): Type
 	{
 		return $this->offsetType;

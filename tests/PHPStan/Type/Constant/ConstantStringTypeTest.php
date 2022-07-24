@@ -151,12 +151,13 @@ class ConstantStringTypeTest extends PHPStanTestCase
 
 	public function testGeneralize(): void
 	{
-		$this->assertSame('literal-string&non-empty-string', (new ConstantStringType('NonexistentClass'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('literal-string&non-falsy-string', (new ConstantStringType('NonexistentClass'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('literal-string', (new ConstantStringType(''))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&non-empty-string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('literal-string&non-falsy-string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('literal-string&non-empty-string', (new ConstantStringType('0'))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('string', (new ConstantStringType(''))->generalize(GeneralizePrecision::lessSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('string', (new ConstantStringType('a'))->generalize(GeneralizePrecision::lessSpecific())->describe(VerbosityLevel::precise()));
-		$this->assertSame('literal-string&non-empty-string', (new ConstantStringType(stdClass::class))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
+		$this->assertSame('literal-string&non-falsy-string', (new ConstantStringType(stdClass::class))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('class-string', (new ConstantStringType(stdClass::class, true))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 		$this->assertSame('class-string', (new ConstantStringType('NonexistentClass', true))->generalize(GeneralizePrecision::moreSpecific())->describe(VerbosityLevel::precise()));
 	}

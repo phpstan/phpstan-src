@@ -222,6 +222,11 @@ class ArrayType implements Type
 		return TrinaryLogic::createNo();
 	}
 
+	public function isNonFalsyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

@@ -626,7 +626,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				6,
 			],
 			[
-				'Parameter #3 $data_comp_func of function array_udiff expects callable(int, int): int<-1, 1>, Closure(int, int): non-empty-string given.',
+				'Parameter #3 $data_comp_func of function array_udiff expects callable(int, int): int<-1, 1>, Closure(int, int): non-falsy-string given.',
 				14,
 			],
 			[

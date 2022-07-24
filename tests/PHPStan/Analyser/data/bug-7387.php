@@ -23,12 +23,12 @@ class HelloWorld
 
 	public function specifiers(int $i) {
 		// https://3v4l.org/fmVIg
-		assertType('non-empty-string', sprintf('%14s', $i));
+		assertType('non-falsy-string', sprintf('%14s', $i));
 
 		assertType('numeric-string', sprintf('%d', $i));
 
 		assertType('numeric-string', sprintf('%14b', $i));
-		assertType('non-empty-string', sprintf('%14c', $i)); // binary string
+		assertType('non-falsy-string', sprintf('%14c', $i)); // binary string
 		assertType('numeric-string', sprintf('%14d', $i));
 		assertType('numeric-string', sprintf('%14e', $i));
 		assertType('numeric-string', sprintf('%14E', $i));
@@ -47,7 +47,7 @@ class HelloWorld
 
 	public function positionalArgs($mixed, int $i, float $f, string $s) {
 		// https://3v4l.org/vVL0c
-		assertType('non-empty-string', sprintf('%2$14s', $mixed, $i));
+		assertType('non-falsy-string', sprintf('%2$14s', $mixed, $i));
 
 		assertType('numeric-string', sprintf('%2$.14F', $mixed, $i));
 		assertType('numeric-string', sprintf('%2$.14F', $mixed, $f));
@@ -70,7 +70,7 @@ class HelloWorld
 
 	public function escapedPercent(int $i) {
 		// https://3v4l.org/2m50L
-		assertType('non-empty-string', sprintf("%%d", $i));
+		assertType('non-falsy-string', sprintf("%%d", $i));
 	}
 
 	public function vsprintf(array $array)
@@ -78,7 +78,7 @@ class HelloWorld
 		assertType('numeric-string', vsprintf("%4d", explode('-', '1988-8-1')));
 		assertType('numeric-string', vsprintf("%4d", $array));
 		assertType('numeric-string', vsprintf("%4d", ['123']));
-		assertType('non-empty-string', vsprintf("%s", ['123']));
+		assertType('non-falsy-string', vsprintf("%s", ['123']));
 		// too many arguments.. php silently allows it
 		assertType('numeric-string', vsprintf("%4d", ['123', '456']));
 	}

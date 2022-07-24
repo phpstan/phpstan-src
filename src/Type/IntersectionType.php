@@ -16,6 +16,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -205,8 +206,32 @@ class IntersectionType implements CompoundType
 	{
 		$typesToDescribe = [];
 		$skipTypeNames = [];
+
+		$nonEmptyStr = false;
+		$nonFalsyStr = false;
 		foreach ($this->getSortedTypes() as $type) {
-			if ($type instanceof AccessoryNonEmptyStringType || $type instanceof AccessoryLiteralStringType || $type instanceof AccessoryNumericStringType) {
+			if ($type instanceof AccessoryNonEmptyStringType
+				|| $type instanceof AccessoryLiteralStringType
+				|| $type instanceof AccessoryNumericStringType
+				|| $type instanceof AccessoryNonFalsyStringType
+			) {
+				if ($type instanceof AccessoryNonFalsyStringType) {
+					$nonFalsyStr = true;
+				}
+				if ($type instanceof AccessoryNonEmptyStringType) {
+					$nonEmptyStr = true;
+				}
+				if ($nonEmptyStr && $nonFalsyStr) {
+					// prevent redundant 'non-empty-string&non-falsy-string'
+					foreach ($typesToDescribe as $key => $typeToDescribe) {
+						if (!($typeToDescribe instanceof AccessoryNonEmptyStringType)) {
+							continue;
+						}
+
+						unset($typesToDescribe[$key]);
+					}
+				}
+
 				$typesToDescribe[] = $type;
 				$skipTypeNames[] = 'string';
 				continue;
@@ -399,6 +424,11 @@ class IntersectionType implements CompoundType
 	public function isNonEmptyString(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isNonEmptyString());
+	}
+
+	public function isNonFalsyString(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isNonFalsyString());
 	}
 
 	public function isLiteralString(): TrinaryLogic

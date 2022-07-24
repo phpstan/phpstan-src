@@ -8,11 +8,11 @@ class Foo {
 	public function strtolower(string $s): void
 	{
 		if (strtolower($s) === 'hallo') {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if ('hallo' === strtolower($s)) {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 
@@ -28,11 +28,11 @@ class Foo {
 	public function strtoupper(string $s): void
 	{
 		if (strtoupper($s) === 'HA') {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if ('hallo' === strtoupper($s)) {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 
@@ -48,11 +48,11 @@ class Foo {
 	public function mb_strtoupper(string $s): void
 	{
 		if (mb_strtoupper($s) === 'HA') {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if ('hallo' === mb_strtoupper($s)) {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 
@@ -68,11 +68,11 @@ class Foo {
 	public function mb_strtolower(string $s): void
 	{
 		if (mb_strtolower($s) === 'hallo') {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if ('hallo' === mb_strtolower($s)) {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 
@@ -88,11 +88,11 @@ class Foo {
 	public function ucfirst(string $s): void
 	{
 		if (ucfirst($s) === 'Hallo') {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if ('hallo' === ucfirst($s)) {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 
@@ -108,11 +108,11 @@ class Foo {
 	public function lcfirst(string $s): void
 	{
 		if (lcfirst($s) === 'hallo') {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if ('hallo' === lcfirst($s)) {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 
@@ -128,11 +128,11 @@ class Foo {
 	public function ucwords(string $s): void
 	{
 		if (ucwords($s) === 'Hallo') {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if ('hallo' === ucwords($s)) {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 

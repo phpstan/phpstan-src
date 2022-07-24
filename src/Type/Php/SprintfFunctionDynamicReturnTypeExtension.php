@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
@@ -59,7 +60,12 @@ class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			}
 		}
 
-		if ($formatType->isNonEmptyString()->yes()) {
+		if ($formatType->isNonFalsyString()->yes()) {
+			$returnType = new IntersectionType([
+				new StringType(),
+				new AccessoryNonFalsyStringType(),
+			]);
+		} elseif ($formatType->isNonEmptyString()->yes()) {
 			$returnType = new IntersectionType([
 				new StringType(),
 				new AccessoryNonEmptyStringType(),

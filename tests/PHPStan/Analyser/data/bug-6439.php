@@ -50,7 +50,7 @@ class HelloWorld
 		// union should contain 32 elements
 		assertType("'1'|'10'|'10a'|'11'|'11a'|'12'|'12a'|'13'|'13a'|'14'|'14a'|'15'|'15a'|'16'|'16a'|'1a'|'2'|'2a'|'3'|'3a'|'4'|'4a'|'5'|'5a'|'6'|'6a'|'7'|'7a'|'8'|'8a'|'9'|'9a'", $s16);
 		// fallback to the more general form
-		assertType("literal-string&non-empty-string", $s17);
+		assertType("literal-string&non-falsy-string", $s17);
 	}
 
 	/**

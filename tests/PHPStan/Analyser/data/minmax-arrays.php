@@ -116,7 +116,7 @@ function dummy5(int $i, int $j): void
 }
 
 function dummy6(string $s, string $t): void {
-	assertType('array{0?: non-empty-string, 1?: non-empty-string}', array_filter([$s, $t]));
+	assertType('array{0?: non-falsy-string, 1?: non-falsy-string}', array_filter([$s, $t]));
 }
 
 class HelloWorld

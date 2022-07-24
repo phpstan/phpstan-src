@@ -26,6 +26,7 @@ use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -242,7 +243,13 @@ class TypeSpecifier
 						$argType = $scope->getType($exprNode->getArgs()[0]->value);
 						if ($argType->isString()->yes()) {
 							$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-							$valueTypes = $this->create($exprNode->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $newContext, false, $scope, $rootExpr);
+
+							$accessory = new AccessoryNonEmptyStringType();
+							if ($constantType->getValue() >= 2) {
+								$accessory = new AccessoryNonFalsyStringType();
+							}
+							$valueTypes = $this->create($exprNode->getArgs()[0]->value, $accessory, $newContext, false, $scope, $rootExpr);
+
 							return $funcTypes->unionWith($valueTypes);
 						}
 					}
@@ -260,6 +267,16 @@ class TypeSpecifier
 					$argType = $scope->getType($exprNode->getArgs()[0]->value);
 
 					if ($argType->isString()->yes()) {
+						if ($constantType->getValue() !== '0') {
+							return $this->create(
+								$exprNode->getArgs()[0]->value,
+								TypeCombinator::intersect($argType, new AccessoryNonFalsyStringType()),
+								$context,
+								false,
+								$scope,
+							);
+						}
+
 						return $this->create(
 							$exprNode->getArgs()[0]->value,
 							TypeCombinator::intersect($argType, new AccessoryNonEmptyStringType()),
@@ -570,7 +587,12 @@ class TypeSpecifier
 				) {
 					$argType = $scope->getType($expr->right->getArgs()[0]->value);
 					if ($argType->isString()->yes()) {
-						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $context, false, $scope, $rootExpr));
+						$accessory = new AccessoryNonEmptyStringType();
+						if ($leftType instanceof ConstantIntegerType && $leftType->getValue() >= 2) {
+							$accessory = new AccessoryNonFalsyStringType();
+						}
+
+						$result = $result->unionWith($this->create($expr->right->getArgs()[0]->value, $accessory, $context, false, $scope, $rootExpr));
 					}
 				}
 			}

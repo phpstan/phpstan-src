@@ -104,6 +104,8 @@ interface Type
 
 	public function isNonEmptyString(): TrinaryLogic;
 
+	public function isNonFalsyString(): TrinaryLogic;
+
 	public function isLiteralString(): TrinaryLogic;
 
 	public function getSmallerType(): Type;

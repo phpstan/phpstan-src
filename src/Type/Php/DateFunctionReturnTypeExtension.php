@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -87,6 +88,13 @@ class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtens
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryNumericStringType(),
+			]);
+		}
+
+		if ($type->isNonFalsyString()->yes()) {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 

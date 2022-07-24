@@ -14,6 +14,7 @@ use Iterator;
 use PHPStan\Fixture\FinalClass;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -1900,6 +1901,28 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new IntersectionType([
 						new StringType(),
 						new AccessoryNonEmptyStringType(),
+					]),
+				],
+				StringType::class,
+				'string',
+			],
+			[
+				[
+					new ConstantStringType('0'),
+					new IntersectionType([
+						new StringType(),
+						new AccessoryNonFalsyStringType(),
+					]),
+				],
+				IntersectionType::class,
+				'non-empty-string',
+			],
+			[
+				[
+					new ConstantStringType(''),
+					new IntersectionType([
+						new StringType(),
+						new AccessoryNonFalsyStringType(),
 					]),
 				],
 				StringType::class,

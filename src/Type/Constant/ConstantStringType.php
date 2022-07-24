@@ -15,6 +15,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
@@ -258,6 +259,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return TrinaryLogic::createFromBoolean($this->getValue() !== '');
 	}
 
+	public function isNonFalsyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->getValue() !== '' && $this->getValue() !== '0');
+	}
+
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
@@ -330,6 +336,14 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		}
 
 		if ($this->getValue() !== '' && $precision->isMoreSpecific()) {
+			if ($this->getValue() !== '0') {
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryNonFalsyStringType(),
+					new AccessoryLiteralStringType(),
+				]);
+			}
+
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryNonEmptyStringType(),

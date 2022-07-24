@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -60,7 +61,11 @@ class StrRepeatFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 		$accessoryTypes = [];
 		if ($inputType->isNonEmptyString()->yes()) {
 			if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($multiplierType)->yes()) {
-				$accessoryTypes[] = new AccessoryNonEmptyStringType();
+				if ($inputType->isNonFalsyString()->yes()) {
+					$accessoryTypes[] = new AccessoryNonFalsyStringType();
+				} else {
+					$accessoryTypes[] = new AccessoryNonEmptyStringType();
+				}
 			}
 		}
 

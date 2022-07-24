@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
@@ -37,7 +38,9 @@ class StrPadFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		$lengthType = $scope->getType($args[1]->value);
 
 		$accessoryTypes = [];
-		if ($inputType->isNonEmptyString()->yes() || IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($lengthType)->yes()) {
+		if ($inputType->isNonFalsyString()->yes()) {
+			$accessoryTypes[] = new AccessoryNonFalsyStringType();
+		} elseif ($inputType->isNonEmptyString()->yes() || IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($lengthType)->yes()) {
 			$accessoryTypes[] = new AccessoryNonEmptyStringType();
 		}
 

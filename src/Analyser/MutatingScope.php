@@ -64,6 +64,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -1109,8 +1110,12 @@ class MutatingScope implements Scope
 				}
 
 				$isNonEmpty = false;
+				$isNonFalsy = false;
 				$isLiteralString = true;
 				foreach ($parts as $partType) {
+					if ($partType->isNonFalsyString()->yes()) {
+						$isNonFalsy = true;
+					}
 					if ($partType->isNonEmptyString()->yes()) {
 						$isNonEmpty = true;
 					}
@@ -1121,9 +1126,12 @@ class MutatingScope implements Scope
 				}
 
 				$accessoryTypes = [];
-				if ($isNonEmpty === true) {
+				if ($isNonFalsy === true) {
+					$accessoryTypes[] = new AccessoryNonFalsyStringType();
+				} elseif ($isNonEmpty === true) {
 					$accessoryTypes[] = new AccessoryNonEmptyStringType();
 				}
+
 				if ($isLiteralString === true) {
 					$accessoryTypes[] = new AccessoryLiteralStringType();
 				}

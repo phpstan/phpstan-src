@@ -177,6 +177,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isNonFalsyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

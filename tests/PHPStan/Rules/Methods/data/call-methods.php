@@ -1829,3 +1829,29 @@ class WeirdArrayBug
 	}
 
 }
+
+class NonFalsyString {
+	/**
+	 * @param '0' $literalZero
+	 * @param numeric-string $numericS
+	 * @param non-falsy-string $nonFalsey
+	 * @param non-empty-string $nonEmpty
+	 * @param literal-string $literalString
+	 */
+	public function doFoo($literalZero, string $s, string $nonFalsey, $numericS, $nonEmpty, $literalString, int $i) {
+		$this->acceptsNonFalsyString($nonFalsey);
+
+		$this->acceptsNonFalsyString($numericS);
+		$this->acceptsNonFalsyString($literalZero);
+		$this->acceptsNonFalsyString($s);
+		$this->acceptsNonFalsyString($nonEmpty);
+		$this->acceptsNonFalsyString($literalString);
+		$this->acceptsNonFalsyString($i);
+	}
+
+	/**
+	 * @param non-falsy-string $string
+	 */
+	public function acceptsNonFalsyString(string $string) {
+	}
+}

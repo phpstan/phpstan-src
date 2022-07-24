@@ -9,6 +9,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
@@ -50,7 +51,7 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return $type->isNonEmptyString();
+		return $type->isNonFalsyString();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -63,7 +64,11 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 			return TrinaryLogic::createYes();
 		}
 
-		return $type->isNonEmptyString();
+		if ($type->isNonEmptyString()->yes()) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		return $type->isNonFalsyString();
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
@@ -72,7 +77,7 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return $otherType->isNonEmptyString()
+		return $otherType->isNonFalsyString()
 			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
 	}
 
@@ -108,7 +113,7 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 		}
 
 		if ((new ConstantIntegerType(0))->isSuperTypeOf($offsetType)->yes()) {
-			return new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]);
+			return new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
 		}
 
 		return new StringType();
@@ -136,7 +141,10 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 
 	public function toInteger(): Type
 	{
-		return new IntegerType();
+		return new UnionType([
+			IntegerRangeType::fromInterval(null, -1),
+			IntegerRangeType::fromInterval(1, null),
+		]);
 	}
 
 	public function toFloat(): Type
@@ -169,6 +177,11 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 	}
 
 	public function isNonEmptyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
+	public function isNonFalsyString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
 	}

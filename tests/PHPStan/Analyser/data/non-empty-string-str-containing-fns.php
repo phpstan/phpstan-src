@@ -101,11 +101,11 @@ class Foo {
 		assertType('string', $s);
 
 		if (strstr($s, ':') === 'hallo') {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if (strstr($s, ':', true) === 'hallo') {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 		assertType('string', $s);
 		if (strstr($s, ':', true) !== false) {

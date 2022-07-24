@@ -78,6 +78,10 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
+		if ($acceptingType->isNonFalsyString()->yes()) {
+			return TrinaryLogic::createMaybe();
+		}
+
 		if ($acceptingType->isNonEmptyString()->yes()) {
 			return TrinaryLogic::createYes();
 		}
@@ -174,6 +178,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	public function isNonEmptyString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function isNonFalsyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isLiteralString(): TrinaryLogic

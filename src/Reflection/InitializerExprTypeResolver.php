@@ -22,6 +22,7 @@ use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
@@ -404,7 +405,11 @@ class InitializerExprTypeResolver
 		}
 
 		$accessoryTypes = [];
-		if ($leftStringType->isNonEmptyString()->or($rightStringType->isNonEmptyString())->yes()) {
+		if ($leftStringType->isNonEmptyString()->and($rightStringType->isNonEmptyString())->yes()) {
+			$accessoryTypes[] = new AccessoryNonFalsyStringType();
+		} elseif ($leftStringType->isNonFalsyString()->or($rightStringType->isNonFalsyString())->yes()) {
+			$accessoryTypes[] = new AccessoryNonFalsyStringType();
+		} elseif ($leftStringType->isNonEmptyString()->or($rightStringType->isNonEmptyString())->yes()) {
 			$accessoryTypes[] = new AccessoryNonEmptyStringType();
 		}
 

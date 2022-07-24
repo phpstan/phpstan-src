@@ -63,6 +63,10 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 			return TrinaryLogic::createYes();
 		}
 
+		if ($type->isNonFalsyString()->yes()) {
+			return TrinaryLogic::createYes();
+		}
+
 		return $type->isNonEmptyString();
 	}
 
@@ -171,6 +175,11 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 	public function isNonEmptyString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function isNonFalsyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isLiteralString(): TrinaryLogic

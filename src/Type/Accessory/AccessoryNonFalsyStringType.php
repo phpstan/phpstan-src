@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
@@ -24,7 +25,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
+class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 {
 
 	use MaybeCallableTypeTrait;
@@ -89,7 +90,7 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return 'non-empty-string';
+		return 'non-falsy-string';
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic
@@ -147,7 +148,7 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 
 	public function toBoolean(): BooleanType
 	{
-		return new BooleanType();
+		return new ConstantBooleanType(true);
 	}
 
 	public function toString(): Type

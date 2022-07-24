@@ -41,6 +41,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -240,6 +241,12 @@ class TypeNodeResolver
 				return new IntersectionType([
 					new StringType(),
 					new AccessoryNonEmptyStringType(),
+				]);
+
+			case 'non-falsy-string':
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryNonFalsyStringType(),
 				]);
 
 			case 'bool':

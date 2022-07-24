@@ -999,6 +999,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-filter-constant.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-intersect-key-constant.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/composer-array-bug.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/tagged-unions.php');
 	}
 
 	/**

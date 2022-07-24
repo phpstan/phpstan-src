@@ -1126,9 +1126,15 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		$otherKeys = $otherArray->keyTypes;
-		foreach ($this->keyTypes as $keyType) {
+		foreach ($this->keyTypes as $i => $keyType) {
 			foreach ($otherArray->keyTypes as $j => $otherKeyType) {
 				if (!$keyType->equals($otherKeyType)) {
+					continue;
+				}
+
+				$valueType = $this->valueTypes[$i];
+				$otherValueType = $otherArray->valueTypes[$j];
+				if ($valueType->isSuperTypeOf($otherValueType)->no()) {
 					continue;
 				}
 

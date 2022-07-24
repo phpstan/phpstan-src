@@ -27,7 +27,7 @@ class Foo
 
 		foreach ($options as $key => $option) {
 			if (isset($option['only_in_country'])) {
-				assertType("array{value: 'a'|'b'|'c', checked: false, only_in_country: array{0: 'BE'|'DE', 1?: 'CH', 2?: 'DE', 3?: 'DK', 4?: 'FR', 5?: 'NL', 6?: 'SE'}}", $option);
+				assertType("array{value: 'a', checked: false, only_in_country: array{'DE'}}|array{value: 'b', checked: false, only_in_country: array{'BE', 'CH', 'DE', 'DK', 'FR', 'NL', 'SE'}}", $option);
 				continue;
 			}
 		}

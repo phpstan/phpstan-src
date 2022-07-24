@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -812,6 +813,20 @@ class TypeCombinator
 
 					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof HasOffsetType) {
 						$types[$j] = $types[$j]->makeOffsetRequired($types[$i]->getOffsetType());
+						array_splice($types, $i--, 1);
+						$typesCount--;
+						continue 2;
+					}
+
+					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof HasOffsetValueType) {
+						$types[$i] = $types[$i]->setOffsetValueType($types[$j]->getOffsetType(), $types[$j]->getValueType());
+						array_splice($types, $j--, 1);
+						$typesCount--;
+						continue;
+					}
+
+					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof HasOffsetValueType) {
+						$types[$j] = $types[$j]->setOffsetValueType($types[$i]->getOffsetType(), $types[$i]->getValueType());
 						array_splice($types, $i--, 1);
 						$typesCount--;
 						continue 2;

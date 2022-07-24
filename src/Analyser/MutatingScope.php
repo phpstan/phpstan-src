@@ -64,6 +64,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClosureType;
@@ -3515,22 +3516,13 @@ class MutatingScope implements Scope
 				$this->parentScope,
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			$constantArrays = TypeUtils::getOldConstantArrays($this->getType($expr->var));
-			if (count($constantArrays) > 0) {
-				$setArrays = [];
-				$dimType = ArrayType::castToArrayKeyType($this->getType($expr->dim));
-				if (!$dimType instanceof UnionType) {
-					foreach ($constantArrays as $constantArray) {
-						$setArrays[] = $constantArray->setOffsetValueType(
-							TypeCombinator::intersect($dimType, $constantArray->getKeyType()),
-							$type,
-						);
-					}
-					$scope = $this->specifyExpressionType(
-						$expr->var,
-						TypeCombinator::union(...$setArrays),
-					);
-				}
+			$dimType = ArrayType::castToArrayKeyType($this->getType($expr->dim));
+			if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
+				$exprVarType = $this->getType($expr->var);
+				$scope = $this->specifyExpressionType(
+					$expr->var,
+					TypeCombinator::intersect($exprVarType, new HasOffsetValueType($dimType, $type)),
+				);
 			}
 		}
 

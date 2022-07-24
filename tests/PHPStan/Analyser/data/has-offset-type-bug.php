@@ -38,4 +38,23 @@ class Foo
 		assertType('array<string, int<1, max>>', $fileErrorsCounts);
 	}
 
+	/**
+	 * @param mixed[] $result
+	 * @return void
+	 */
+	public function doBar(array $result): void
+	{
+		assertType('array', $result);
+		assert($result['totals']['file_errors'] === 3);
+		assertType("array&hasOffsetValue('totals', hasOffsetValue('file_errors', 3))", $result);
+		assertType("hasOffsetValue('file_errors', 3)", $result['totals']);
+		assertType('3', $result['totals']['file_errors']);
+		assertType('mixed', $result['totals']['errors']);
+		assert($result['totals']['errors'] === 0);
+		assertType("array&hasOffsetValue('totals', hasOffsetValue('errors', 0)&hasOffsetValue('file_errors', 3))", $result);
+		assertType("hasOffsetValue('errors', 0)&hasOffsetValue('file_errors', 3)", $result['totals']);
+		assertType('3', $result['totals']['file_errors']);
+		assertType('0', $result['totals']['errors']);
+	}
+
 }

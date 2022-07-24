@@ -65,7 +65,7 @@ class Foo
 	public function arrayReplaceUnionTypeArrayShapes($array1, $array2): void
 	{
 		assertType("array<int, array{bar: '2'}|array{foo: '1'}>", array_replace($array1, $array1));
-		assertType("array<int, array{bar: '2'|'3'}|array{foo: '1'|'2'}>", array_replace($array1, $array2));
-		assertType("array<int, array{bar: '2'|'3'}|array{foo: '1'|'2'}>", array_replace($array2, $array1));
+		assertType("array<int, array{bar: '2'}|array{bar: '3'}|array{foo: '1'}|array{foo: '2'}>", array_replace($array1, $array2));
+		assertType("array<int, array{bar: '2'}|array{bar: '3'}|array{foo: '1'}|array{foo: '2'}>", array_replace($array2, $array1));
 	}
 }

@@ -695,7 +695,7 @@ class UnionTypeTest extends PHPStanTestCase
 					]),
 					new ConstantStringType('aaa'),
 				),
-				'\'aaa\'|array{a: int|string, b: bool|float}',
+				'\'aaa\'|array{a: int, b: float}|array{a: string, b: bool}',
 				'array<string, bool|float|int|string>|string',
 			],
 			[
@@ -757,7 +757,7 @@ class UnionTypeTest extends PHPStanTestCase
 						new FloatType(),
 					]),
 				),
-				'array{0: int|string, 1?: bool, 2?: float}',
+				'array{int, bool, float}|array{string}',
 				'array<int, bool|float|int|string>',
 			],
 			[

@@ -3056,7 +3056,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"sprintf('%s %s', 'foo', 'bar')",
 			],
 			[
-				'array{}|array{0: \'password\'|\'username\', 1?: \'password\'}',
+				'array{}|array{\'password\'}|array{0: \'username\', 1?: \'password\'}',
 				'$coalesceArray',
 			],
 			[
@@ -4571,7 +4571,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_intersect_key($integers, [])',
 			],
 			[
-				'array{1|4, 2|5, 3|6}',
+				'array{1, 2, 3}|array{4, 5, 6}',
 				'array_intersect_key(...[$integers, [4, 5, 6]])',
 			],
 			[
@@ -5389,7 +5389,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
-				'array{\'a\'|\'g\', \'b\'|\'h\', \'c\'|\'i\', \'d\'|\'j\', \'e\'|\'k\', \'f\'|\'l\'}',
+				"array{'a', 'b', 'c', 'd', 'e', 'f'}|array{'g', 'h', 'i', 'j', 'k', 'l'}",
 				'$strSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
@@ -5632,7 +5632,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'range(1, doFoo() ? 1 : 2)',
 			],
 			[
-				'array{0: -1|1, 1?: 0|2, 2?: 1, 3?: 2}',
+				'array{0: -1, 1: 0, 2: 1, 3?: 2}|array{0: 1, 1?: 2}',
 				'range(doFoo() ? -1 : 1, doFoo() ? 1 : 2)',
 			],
 			[
@@ -8347,19 +8347,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$array[\'b\']',
 			],
 			[
-				'array{a: 1|2|3, b: 2|3, c?: 4}',
+				'array{a: 1, b: 2}|array{a: 3, b: 3, c: 4}',
 				'$array',
 			],
 			[
-				'array{a: 1|2|3, b: 2|3|null, c?: 4}',
+				'array{a: 1, b: 2}|array{a: 3, b: 3, c: 4}|array{a: 3, b: null}',
 				'$arrayCopy',
 			],
 			[
-				'array{a: 1|2|3, c?: 4}',
+				'array{a: 2}',
 				'$anotherArrayCopy',
 			],
 			[
-				'array{a: 1|2|3, b?: 2|3|null, c?: 4}',
+				'array{a: 1, b: 2}|array{a: 2}|array{a: 3, b: 3, c: 4}|array{a: 3, b: null}',
 				'$yetAnotherArrayCopy',
 			],
 			[
@@ -8391,7 +8391,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$lookup[$a] ?? false',
 			],
 			[
-				'\'foo\'|false',
+				'\'foo\'',
 				'$nullableArray[\'a\'] ?? false',
 			],
 			[
@@ -8399,7 +8399,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$nullableArray[\'b\'] ?? false',
 			],
 			[
-				'\'baz\'|false',
+				'\'baz\'',
 				'$nullableArray[\'c\'] ?? false',
 			],
 		];
@@ -8777,7 +8777,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
-				'array{\'a\'|\'g\', \'b\'|\'h\', \'c\'|\'i\', \'d\'|\'j\', \'e\'|\'k\', \'f\'|\'l\'}',
+				"array{'a', 'b', 'c', 'd', 'e', 'f'}|array{'g', 'h', 'i', 'j', 'k', 'l'}",
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
@@ -8833,7 +8833,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndVariableEncoding',
 			],
 			[
-				'array{\'a\'|\'g\', \'b\'|\'h\', \'c\'|\'i\', \'d\'|\'j\', \'e\'|\'k\', \'f\'|\'l\'}',
+				"array{'a', 'b', 'c', 'd', 'e', 'f'}|array{'g', 'h', 'i', 'j', 'k', 'l'}",
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndValidEncoding',
 			],
 			[

@@ -714,8 +714,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 						new StringType(),
 					]),
 				],
-				ConstantArrayType::class,
-				'array{foo: DateTimeImmutable|null, bar: int|string}',
+				UnionType::class,
+				'array{foo: DateTimeImmutable, bar: int}|array{foo: null, bar: string}',
 			],
 			[
 				[
@@ -732,8 +732,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 						new NullType(),
 					]),
 				],
-				ConstantArrayType::class,
-				'array{foo: DateTimeImmutable|null, bar?: int}',
+				UnionType::class,
+				'array{foo: DateTimeImmutable, bar: int}|array{foo: null}',
 			],
 			[
 				[
@@ -754,8 +754,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 						new IntegerType(),
 					]),
 				],
-				ConstantArrayType::class,
-				'array{foo: DateTimeImmutable|null, bar: int|string, baz?: int}',
+				UnionType::class,
+				'array{foo: DateTimeImmutable, bar: int}|array{foo: null, bar: string, baz: int}',
 			],
 			[
 				[

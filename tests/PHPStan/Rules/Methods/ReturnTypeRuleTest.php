@@ -724,4 +724,15 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7511.php'], []);
 	}
 
+	public function testTaggedUnions(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/tagged-unions.php'], [
+			[
+				'Method TaggedUnionReturnCheck\HelloWorld::sayHello() should return array{updated: false, id: null}|array{updated: true, id: int} but returns array{updated: false, id: 5}.',
+				12,
+			],
+		]);
+	}
+
 }

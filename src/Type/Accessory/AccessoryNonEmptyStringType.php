@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Accessory;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -18,7 +17,7 @@ use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
-use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
+use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -30,10 +29,10 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 	use MaybeCallableTypeTrait;
 	use NonObjectTypeTrait;
 	use NonIterableTypeTrait;
-	use TruthyBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
 	use NonRemoveableTypeTrait;
+	use UndecidedBooleanTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -143,11 +142,6 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 	public function toFloat(): Type
 	{
 		return new FloatType();
-	}
-
-	public function toBoolean(): BooleanType
-	{
-		return new BooleanType();
 	}
 
 	public function toString(): Type

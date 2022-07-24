@@ -3,10 +3,8 @@
 namespace PHPStan\Type\Accessory;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
@@ -144,11 +142,6 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 	public function toFloat(): Type
 	{
 		return new FloatType();
-	}
-
-	public function toBoolean(): BooleanType
-	{
-		return new ConstantBooleanType(true);
 	}
 
 	public function toString(): Type

@@ -16,7 +16,7 @@ interface SignatureMapProvider
 	public function getMethodSignatures(string $className, string $methodName, ?ReflectionMethod $reflectionMethod): array;
 
 	/** @return array<int, FunctionSignature> */
-	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunctionAbstract|null $reflectionFunction): array;
+	public function getFunctionSignatures(string $functionName, ?string $className, ?ReflectionFunctionAbstract $reflectionFunction): array;
 
 	public function hasMethodMetadata(string $className, string $methodName): bool;
 

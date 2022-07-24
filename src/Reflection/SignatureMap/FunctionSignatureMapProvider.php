@@ -51,7 +51,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		return $this->getFunctionSignatures(sprintf('%s::%s', $className, $methodName), $className, $reflectionMethod);
 	}
 
-	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunctionAbstract|null $reflectionFunction): array
+	public function getFunctionSignatures(string $functionName, ?string $className, ?ReflectionFunctionAbstract $reflectionFunction): array
 	{
 		$functionName = strtolower($functionName);
 
@@ -67,7 +67,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 		return $signatures;
 	}
 
-	private function createSignature(string $functionName, ?string $className, ReflectionFunctionAbstract|null $reflectionFunction): FunctionSignature
+	private function createSignature(string $functionName, ?string $className, ?ReflectionFunctionAbstract $reflectionFunction): FunctionSignature
 	{
 		if (!$reflectionFunction instanceof ReflectionMethod && !$reflectionFunction instanceof ReflectionFunction && $reflectionFunction !== null) {
 			throw new ShouldNotHappenException();

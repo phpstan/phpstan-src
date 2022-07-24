@@ -2316,7 +2316,7 @@ class MutatingScope implements Scope
 
 		$originalClass = $this->resolveName($name);
 		if ($this->isInClass()) {
-			if ($this->inClosureBindScopeClass !== null && $this->inClosureBindScopeClass !== 'static' && $originalClass === $this->getClassReflection()->getName()) {
+			if ($this->inClosureBindScopeClass === $originalClass && $this->inClosureBindScopeClass !== 'static') {
 				if ($this->reflectionProvider->hasClass($this->inClosureBindScopeClass)) {
 					return new ThisType($this->reflectionProvider->getClass($this->inClosureBindScopeClass));
 				}

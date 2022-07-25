@@ -46,13 +46,13 @@ class Foo
 	{
 		assertType('array', $result);
 		assert($result['totals']['file_errors'] === 3);
-		assertType("array&hasOffsetValue('totals', hasOffsetValue('file_errors', 3))", $result);
-		assertType("hasOffsetValue('file_errors', 3)", $result['totals']);
+		assertType("array", $result);
+		assertType("mixed", $result['totals']);
 		assertType('3', $result['totals']['file_errors']);
 		assertType('mixed', $result['totals']['errors']);
 		assert($result['totals']['errors'] === 0);
-		assertType("array&hasOffsetValue('totals', hasOffsetValue('errors', 0)&hasOffsetValue('file_errors', 3))", $result);
-		assertType("hasOffsetValue('errors', 0)&hasOffsetValue('file_errors', 3)", $result['totals']);
+		assertType("array", $result);
+		assertType("mixed", $result['totals']);
 		assertType('3', $result['totals']['file_errors']);
 		assertType('0', $result['totals']['errors']);
 	}
@@ -82,8 +82,24 @@ class TryMixed
 	{
 		if (isset($mixed[0])) {
 			assertType("mixed~null", $mixed[0]);
-			assertType("aaa&hasOffsetValue(0, mixed~null)", $mixed);
+			assertType("mixed", $mixed);
+		} else {
+			assertType("mixed", $mixed);
 		}
+
+		assertType("mixed", $mixed);
+	}
+
+	public function doFoo2($mixed)
+	{
+		if (isset($mixed['foo'])) {
+			assertType("mixed~null", $mixed['foo']);
+			assertType("mixed", $mixed);
+		} else {
+			assertType("mixed", $mixed);
+		}
+
+		assertType("mixed", $mixed);
 	}
 
 	public function doBar(\SimpleXMLElement $xml)

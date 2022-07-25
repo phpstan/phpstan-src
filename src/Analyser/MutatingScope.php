@@ -3519,10 +3519,22 @@ class MutatingScope implements Scope
 			$dimType = ArrayType::castToArrayKeyType($this->getType($expr->dim));
 			if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
 				$exprVarType = $this->getType($expr->var);
-				$scope = $this->specifyExpressionType(
-					$expr->var,
-					TypeCombinator::intersect($exprVarType, new HasOffsetValueType($dimType, $type)),
-				);
+				if (!$exprVarType instanceof MixedType) {
+					$types = [
+						new ArrayType(new MixedType(), new MixedType()),
+						new ObjectType(ArrayAccess::class),
+					];
+					if ($dimType instanceof ConstantIntegerType) {
+						$types[] = new StringType();
+					}
+					$scope = $this->specifyExpressionType(
+						$expr->var,
+						TypeCombinator::intersect(
+							TypeCombinator::intersect($exprVarType, TypeCombinator::union(...$types)),
+							new HasOffsetValueType($dimType, $type),
+						),
+					);
+				}
 			}
 		}
 

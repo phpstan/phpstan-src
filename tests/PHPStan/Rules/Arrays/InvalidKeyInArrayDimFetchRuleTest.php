@@ -35,6 +35,10 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 				'Invalid array key type DateTimeImmutable.',
 				31,
 			],
+			[
+				'Invalid array key type DateTimeImmutable.',
+				41,
+			],
 		]);
 	}
 

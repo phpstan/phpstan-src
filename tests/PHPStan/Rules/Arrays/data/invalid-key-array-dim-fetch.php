@@ -35,3 +35,7 @@ $array = doFoo();
 foreach ($array as $i => $val) {
 	echo $array[$i];
 }
+
+/** @var array|null $arrayOrNull */
+$arrayOrNull = doFoo();
+$arrayOrNull[new \DateTimeImmutable()] = 1;

@@ -651,6 +651,8 @@ return [
 	'UConverter::getSubstChars' => ['hasSideEffects' => false],
 	'UConverter::reasonText' => ['hasSideEffects' => false],
 	'UnitEnum::cases' => ['hasSideEffects' => false],
+	'XmlReader::next' => ['hasSideEffects' => true],
+	'XmlReader::read' => ['hasSideEffects' => true],
 	'Zookeeper::getAcl' => ['hasSideEffects' => false],
 	'Zookeeper::getChildren' => ['hasSideEffects' => false],
 	'Zookeeper::getClientId' => ['hasSideEffects' => false],

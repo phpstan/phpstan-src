@@ -90,7 +90,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 		$stringType = $scope->getType($functionCall->getArgs()[0]->value);
 
-		return TypeTraverser::map($stringType, static function (Type $type, callable $traverse) use ($encoding, $splitLength, $scope): Type {
+		return TypeTraverser::map($stringType, function (Type $type, callable $traverse) use ($encoding, $splitLength, $scope): Type {
 			if ($type instanceof UnionType || $type instanceof IntersectionType) {
 				return $traverse($type);
 			}
@@ -98,7 +98,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			if (!$type instanceof ConstantStringType) {
 				$returnType = new ArrayType(new IntegerType(), new StringType());
 
-				return $encoding === null
+				return $encoding === null && !$this->phpVersion->strSplitReturnsEmptyArray()
 					? TypeCombinator::intersect($returnType, new NonEmptyArrayType())
 					: $returnType;
 			}

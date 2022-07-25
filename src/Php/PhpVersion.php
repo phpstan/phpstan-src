@@ -196,4 +196,9 @@ class PhpVersion
 		return $this->versionId >= 80200;
 	}
 
+	public function strSplitReturnsEmptyArray(): bool
+	{
+		return $this->versionId >= 80200;
+	}
+
 }

@@ -5328,7 +5328,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$gettimeofdayBenevolent',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				match (true) {
+					PHP_VERSION_ID >= 80200 => 'array<int, string>',
+					PHP_VERSION_ID >= 80000 => 'non-empty-array<int, string>',
+					default => 'non-empty-array<int, string>|false',
+				},
 				'$strSplitConstantStringWithoutDefinedParameters',
 			],
 			[
@@ -5336,7 +5340,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithoutDefinedSplitLength',
 			],
 			[
-				'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80200 ? 'non-empty-array<int, string>' : 'array<int, string>',
 				'$strSplitStringWithoutDefinedSplitLength',
 			],
 			[
@@ -5352,7 +5356,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithFailureSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				match (true) {
+					PHP_VERSION_ID >= 80200 => 'array<int, string>',
+					PHP_VERSION_ID >= 80000 => 'non-empty-array<int, string>',
+					default => 'non-empty-array<int, string>|false',
+				},
 				'$strSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
@@ -5360,7 +5368,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				match (true) {
+					PHP_VERSION_ID >= 80200 => 'array<int, string>',
+					PHP_VERSION_ID >= 80000 => 'non-empty-array<int, string>',
+					default => 'non-empty-array<int, string>|false',
+				},
 				'$strSplitConstantStringWithVariableStringAndVariableSplitLength',
 			],
 			// parse_url

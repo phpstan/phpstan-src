@@ -37,11 +37,11 @@ class HelloWorld
 						'abs' => 0,
 						'rel' => 0,
 					];
-					assertType('non-empty-array<\'Ostatní\', array{abs: int, rel: (float|int)}>', $otherData);
+					assertType('array{Ostatní: array{abs: 0, rel: 0}}>', $otherData);
 				}
 				$otherData[$key]['abs'] += $count;
 				$otherData[$key]['rel'] += $count / $total * 100;
-				assertType('non-empty-array<\'Ostatní\', array{abs: int, rel: (float|int)}>', $otherData);
+				assertType('array{Ostatní: array{abs: int, rel: (float|int)}}', $otherData);
 			}
 			$i++;
 		}

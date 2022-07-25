@@ -11,6 +11,7 @@ use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -260,6 +261,15 @@ class ArrayType implements Type
 	{
 		if ($offsetType === null) {
 			$offsetType = new IntegerType();
+		}
+
+		if (
+			($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType)
+			&& $offsetType->isSuperTypeOf($this->keyType)->yes()
+		) {
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$builder->setOffsetValueType($offsetType, $valueType);
+			return $builder->getArray();
 		}
 
 		return TypeCombinator::intersect(new self(

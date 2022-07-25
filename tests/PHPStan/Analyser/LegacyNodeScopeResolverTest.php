@@ -1149,7 +1149,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$intArrayForRewritingFirstElement[1]',
 			],
 			[
-				'stdClass&hasOffsetValue(0, \'error\')',
+				'ArrayAccess&stdClass&hasOffsetValue(0, \'error\')',
 				'$obj',
 			],
 			[
@@ -4739,7 +4739,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_pop($stringKeys)',
 			],
 			[
-				'array<stdClass>&hasOffset(\'baz\')',
+				'array<stdClass>&hasOffsetValue(\'baz\', stdClass)',
 				'$stdClassesWithIsset',
 			],
 			[
@@ -7940,11 +7940,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$array',
 			],
 			[
-				'array',
+				'array&hasOffsetValue(\'key\', DateTimeImmutable)',
 				'$generalArray',
 			],
 			[
-				'mixed', // should be DateTimeImmutable
+				'DateTimeImmutable',
 				'$generalArray[\'key\']',
 			],
 			[
@@ -8346,7 +8346,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mixedArrayKeyExists',
 			],
 			[
-				'array<int>&hasOffset(\'a\')',
+				'array<int>&hasOffsetValue(\'a\', int)',
 				'$integers',
 			],
 			[

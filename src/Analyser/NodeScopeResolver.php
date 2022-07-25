@@ -1415,7 +1415,7 @@ class NodeScopeResolver
 				} else {
 					$constName = $const->name->toString();
 				}
-				$scope = $scope->specifyExpressionType(new ConstFetch(new Name\FullyQualified($constName)), $scope->getType($const->value));
+				$scope = $scope->assignExpression(new ConstFetch(new Name\FullyQualified($constName)), $scope->getType($const->value));
 			}
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
@@ -1558,7 +1558,7 @@ class NodeScopeResolver
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
 		if (!$exprType->equals($exprTypeWithoutNull)) {
 			$nativeType = $scope->getNativeType($exprToSpecify);
-			$scope = $scope->specifyExpressionType(
+			$scope = $scope->assignExpression(
 				$exprToSpecify,
 				$exprTypeWithoutNull,
 				TypeCombinator::removeNull($nativeType),
@@ -1595,7 +1595,7 @@ class NodeScopeResolver
 	private function revertNonNullability(MutatingScope $scope, array $specifiedExpressions): MutatingScope
 	{
 		foreach ($specifiedExpressions as $specifiedExpressionResult) {
-			$scope = $scope->specifyExpressionType(
+			$scope = $scope->assignExpression(
 				$specifiedExpressionResult->getExpression(),
 				$specifiedExpressionResult->getOriginalType(),
 				$specifiedExpressionResult->getOriginalNativeType(),
@@ -1823,7 +1823,7 @@ class NodeScopeResolver
 					return $type;
 				});
 
-				$scope = $scope->specifyExpressionType(
+				$scope = $scope->assignExpression(
 					$arrayArg,
 					$arrayArgType,
 					$arrayArgType,
@@ -1918,7 +1918,7 @@ class NodeScopeResolver
 					);
 				}
 
-				$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType, $arrayType);
+				$scope = $scope->invalidateExpression($arrayArg)->assignExpression($arrayArg, $arrayType, $arrayType);
 			}
 
 			if (
@@ -1936,7 +1936,7 @@ class NodeScopeResolver
 					$arrayArgType = $arrayArgType->getValuesArray()->generalizeToArray();
 				}
 
-				$scope = $scope->specifyExpressionType($arrayArg, $arrayArgType, $arrayArgType);
+				$scope = $scope->assignExpression($arrayArg, $arrayArgType, $arrayArgType);
 			}
 
 			if (
@@ -1950,7 +1950,7 @@ class NodeScopeResolver
 				if (count($expr->getArgs()) >= 4) {
 					$valueType = TypeCombinator::union($valueType, $scope->getType($expr->getArgs()[3]->value)->getIterableValueType());
 				}
-				$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType(
+				$scope = $scope->invalidateExpression($arrayArg)->assignExpression(
 					$arrayArg,
 					new ArrayType($arrayArgType->getIterableKeyType(), $valueType),
 					new ArrayType($arrayArgType->getIterableKeyType(), $valueType),
@@ -3659,7 +3659,7 @@ class NodeScopeResolver
 		}
 
 		if (count($variableLessTags) === 1 && $defaultExpr !== null) {
-			$scope = $scope->specifyExpressionType($defaultExpr, $variableLessTags[0]->getType());
+			$scope = $scope->assignExpression($defaultExpr, $variableLessTags[0]->getType());
 		}
 
 		return $scope;

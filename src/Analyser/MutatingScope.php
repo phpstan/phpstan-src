@@ -3425,7 +3425,7 @@ class MutatingScope implements Scope
 		return $this;
 	}
 
-	public function specifyExpressionType(Expr $expr, Type $type, ?Type $nativeType = null): self
+	private function specifyExpressionType(Expr $expr, Type $type, ?Type $nativeType = null): self
 	{
 		if ($expr instanceof Node\Scalar || $expr instanceof Array_) {
 			return $this;
@@ -3550,7 +3550,7 @@ class MutatingScope implements Scope
 		]);
 	}
 
-	public function assignExpression(Expr $expr, Type $type): self
+	public function assignExpression(Expr $expr, Type $type, ?Type $nativeType = null): self
 	{
 		$scope = $this;
 		if ($expr instanceof PropertyFetch) {
@@ -3560,7 +3560,7 @@ class MutatingScope implements Scope
 			$scope = $this->invalidateExpression($expr);
 		}
 
-		return $scope->specifyExpressionType($expr, $type, $type);
+		return $scope->specifyExpressionType($expr, $type, $nativeType);
 	}
 
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false): self

@@ -7940,11 +7940,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$array',
 			],
 			[
-				'array&hasOffsetValue(\'key\', DateTimeImmutable)',
+				'array&hasOffsetValue(\'key\', mixed~null)',
 				'$generalArray',
 			],
 			[
-				'DateTimeImmutable',
+				'mixed',
 				'$generalArray[\'key\']',
 			],
 			[

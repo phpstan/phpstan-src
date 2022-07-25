@@ -35,7 +35,7 @@ class Foo
 		$foos[0] = null;
 
 		assertType('null', $foos[0]);
-		assertType('non-empty-array<Bug2112\Foo|null>', $foos);
+		assertType('non-empty-array<Bug2112\Foo|null>&hasOffsetValue(0, null)', $foos);
 	}
 
 }

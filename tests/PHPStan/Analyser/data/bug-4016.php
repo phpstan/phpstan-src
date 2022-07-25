@@ -27,7 +27,7 @@ class Foo
 	{
 		assertType('array<int, int>', $a);
 		$a[1] = 2;
-		assertType('non-empty-array<int, int>', $a);
+		assertType('non-empty-array<int, int>&hasOffsetValue(1, 2)', $a);
 
 		unset($a[1]);
 		assertType('array<int, int>', $a);

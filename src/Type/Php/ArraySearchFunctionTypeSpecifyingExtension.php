@@ -10,7 +10,9 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
 use function strtolower;
 
@@ -43,7 +45,7 @@ class ArraySearchFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 
 		return $this->typeSpecifier->create(
 			$arrayArg,
-			TypeCombinator::intersect($scope->getType($arrayArg), new NonEmptyArrayType()),
+			TypeCombinator::intersect(TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), $scope->getType($arrayArg)), new NonEmptyArrayType()),
 			$context,
 			false,
 			$scope,

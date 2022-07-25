@@ -293,7 +293,7 @@ class GeneralizeConstantStringType
 	public function doFoo2(array $a, string $s): void
 	{
 		$a[''] = 2;
-		assertType('non-empty-array<string, int>', $a);
+		assertType('non-empty-array<string, int>&hasOffsetValue(\'\', 2)', $a);
 	}
 
 }

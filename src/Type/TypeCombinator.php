@@ -678,6 +678,10 @@ class TypeCombinator
 			}
 
 			$union = self::union(...$topLevelUnionSubTypes);
+			if ($union instanceof NeverType) {
+				return $union;
+			}
+
 			if ($type instanceof BenevolentUnionType) {
 				$union = TypeUtils::toBenevolentUnion($union);
 			}

@@ -65,9 +65,9 @@ class Foo
 	{
 		assertType("array{}|array{min?: bool|float|int|string|null, max?: bool|float|int|string|null}", $range);
 		if (isset($range['min']) || isset($range['max'])) {
-			assertType("array{min?: bool|float|int|string, max?: bool|float|int|string|null}", $range);
+			assertType("array{min?: bool|float|int|string|null, max?: bool|float|int|string|null}&non-empty-array", $range);
 		} else {
-			assertType("array{}", $range);
+			assertType("array{}|array{min?: bool|float|int|string|null, max?: bool|float|int|string|null}", $range);
 		}
 
 		assertType("array{}|array{min?: bool|float|int|string|null, max?: bool|float|int|string|null}", $range);
@@ -82,7 +82,7 @@ class TryMixed
 	{
 		if (isset($mixed[0])) {
 			assertType("mixed~null", $mixed[0]);
-			assertType("mixed", $mixed);
+			assertType("mixed~null", $mixed);
 		} else {
 			assertType("mixed", $mixed);
 		}
@@ -94,7 +94,7 @@ class TryMixed
 	{
 		if (isset($mixed['foo'])) {
 			assertType("mixed~null", $mixed['foo']);
-			assertType("mixed", $mixed);
+			assertType("mixed~null", $mixed);
 		} else {
 			assertType("mixed", $mixed);
 		}

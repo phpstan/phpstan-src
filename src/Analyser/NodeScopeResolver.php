@@ -1552,34 +1552,42 @@ class NodeScopeResolver
 		return $scope;
 	}
 
-	private function ensureShallowNonNullability(MutatingScope $scope, Expr $exprToSpecify): EnsuredNonNullabilityResult
+	private function ensureShallowNonNullability(MutatingScope $scope, Scope $originalScope, Expr $exprToSpecify): EnsuredNonNullabilityResult
 	{
 		$exprType = $scope->getType($exprToSpecify);
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
-		if (!$exprType->equals($exprTypeWithoutNull)) {
-			$nativeType = $scope->getNativeType($exprToSpecify);
-			$scope = $scope->assignExpression(
-				$exprToSpecify,
-				$exprTypeWithoutNull,
-				TypeCombinator::removeNull($nativeType),
-			);
-
-			return new EnsuredNonNullabilityResult(
-				$scope,
-				[
-					new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType),
-				],
-			);
+		if ($exprType->equals($exprTypeWithoutNull)) {
+			$originalExprType = $originalScope->getType($exprToSpecify);
+			$originalNativeType = $originalScope->getNativeType($exprToSpecify);
+			if (!$originalExprType->equals($exprTypeWithoutNull)) {
+				return new EnsuredNonNullabilityResult($scope, [
+					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType),
+				]);
+			}
+			return new EnsuredNonNullabilityResult($scope, []);
 		}
 
-		return new EnsuredNonNullabilityResult($scope, []);
+		$nativeType = $scope->getNativeType($exprToSpecify);
+		$scope = $scope->assignExpression(
+			$exprToSpecify,
+			$exprTypeWithoutNull,
+			TypeCombinator::removeNull($nativeType),
+		);
+
+		return new EnsuredNonNullabilityResult(
+			$scope,
+			[
+				new EnsuredNonNullabilityResultExpression($exprToSpecify, $exprType, $nativeType),
+			],
+		);
 	}
 
 	private function ensureNonNullability(MutatingScope $scope, Expr $expr): EnsuredNonNullabilityResult
 	{
 		$specifiedExpressions = [];
-		$scope = $this->lookForExpressionCallback($scope, $expr, function ($scope, $expr) use (&$specifiedExpressions) {
-			$result = $this->ensureShallowNonNullability($scope, $expr);
+		$originalScope = $scope;
+		$scope = $this->lookForExpressionCallback($scope, $expr, function ($scope, $expr) use (&$specifiedExpressions, $originalScope) {
+			$result = $this->ensureShallowNonNullability($scope, $originalScope, $expr);
 			foreach ($result->getSpecifiedExpressions() as $specifiedExpression) {
 				$specifiedExpressions[] = $specifiedExpression;
 			}
@@ -2032,7 +2040,7 @@ class NodeScopeResolver
 			$hasYield = $hasYield || $result->hasYield();
 			$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 		} elseif ($expr instanceof Expr\NullsafeMethodCall) {
-			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $expr->var);
+			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $scope, $expr->var);
 			$exprResult = $this->processExprNode(new MethodCall($expr->var, $expr->name, $expr->args, $expr->getAttributes()), $nonNullabilityResult->getScope(), $nodeCallback, $context);
 			$scope = $this->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 
@@ -2179,7 +2187,7 @@ class NodeScopeResolver
 				$scope = $result->getScope();
 			}
 		} elseif ($expr instanceof Expr\NullsafePropertyFetch) {
-			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $expr->var);
+			$nonNullabilityResult = $this->ensureShallowNonNullability($scope, $scope, $expr->var);
 			$exprResult = $this->processExprNode(new PropertyFetch($expr->var, $expr->name, $expr->getAttributes()), $nonNullabilityResult->getScope(), $nodeCallback, $context);
 			$scope = $this->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 

@@ -71,21 +71,28 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			|| count(TypeUtils::getEnumCaseObjects($needleType)) > 0
 		) {
 			if ($context->truthy()) {
-				$arrayType = TypeCombinator::intersect(
-					new ArrayType(new MixedType(), TypeCombinator::union($arrayValueType, $needleType)),
-					new NonEmptyArrayType(),
-				);
+				$arrayValueType = TypeCombinator::union($arrayValueType, $needleType);
 			} else {
-				$arrayType = new ArrayType(new MixedType(), TypeCombinator::remove($arrayValueType, $needleType));
+				$arrayValueType = TypeCombinator::remove($arrayValueType, $needleType);
 			}
 
-				$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
-					$node->getArgs()[1]->value,
-					$arrayType,
-					TypeSpecifierContext::createTrue(),
-					false,
-					$scope,
-				));
+			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+				$node->getArgs()[1]->value,
+				new ArrayType(new MixedType(), $arrayValueType),
+				TypeSpecifierContext::createTrue(),
+				false,
+				$scope,
+			));
+		}
+
+		if ($context->truthy() && $arrayType->isArray()->yes()) {
+			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+				$node->getArgs()[1]->value,
+				TypeCombinator::intersect($arrayType, new NonEmptyArrayType()),
+				$context,
+				false,
+				$scope,
+			));
 		}
 
 		return $specifiedTypes;

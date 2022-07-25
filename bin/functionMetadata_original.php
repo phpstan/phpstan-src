@@ -142,4 +142,7 @@ return [
 	'DateTimeImmutable::getOffset' => ['hasSideEffects' => false],
 	'DateTimeImmutable::getTimestamp' => ['hasSideEffects' => false],
 	'DateTimeImmutable::getTimezone' => ['hasSideEffects' => false],
+
+	'XmlReader::next' => ['hasSideEffects' => true],
+	'XmlReader::read' => ['hasSideEffects' => true],
 ];

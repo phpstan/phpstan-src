@@ -3,6 +3,7 @@
 namespace Bug7689;
 
 use \XMLReader;
+use function PHPStan\Testing\assertType;
 
 class Reader extends XMLReader
 {
@@ -35,12 +36,14 @@ function keyValue(Reader $reader, string $namespace = null): array
 		if (Reader::ELEMENT === $reader->nodeType) {
 
 		} else {
+			assertType('bool', $reader->read());
 			if (!$reader->read()) {
 				break;
 			}
 		}
 	} while (Reader::END_ELEMENT !== $reader->nodeType);
 
+	assertType('bool', $reader->read());
 	$reader->read();
 
 	return $values;

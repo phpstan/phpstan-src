@@ -75,7 +75,7 @@ class Foo
 		$list = [];
 		$list[] = '1';
 		$list['1'] = true;
-		assertType('non-empty-array<int, mixed>', $list);
+		assertType('non-empty-array<int, mixed>&hasOffsetValue(1, true)', $list);
 	}
 
 	public function withFullListFunctionality(): void
@@ -91,7 +91,7 @@ class Foo
 		/** @var list $list2 */
 		$list2 = [];
 		$list2[2] = '1';//Most likely to create a gap in indexes
-		assertType('non-empty-array<int, mixed>', $list2);
+		assertType('non-empty-array<int, mixed>&hasOffsetValue(2, \'1\')', $list2);
 	}
 
 }

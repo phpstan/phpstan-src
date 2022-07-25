@@ -83,7 +83,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 		return $otherType->isOffsetAccessible()
 			->and($otherType->hasOffsetValueType($this->offsetType))
-			->and($this->valueType->isSuperTypeOf($otherType->getOffsetValueType($this->offsetType)))
+			->and($otherType->getOffsetValueType($this->offsetType)->isSuperTypeOf($this->valueType))
 			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
 	}
 

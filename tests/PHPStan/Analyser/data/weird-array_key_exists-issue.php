@@ -37,7 +37,7 @@ class HelloWorld
 						'abs' => 0,
 						'rel' => 0,
 					];
-					assertType('array{Ostatní: array{abs: 0, rel: 0}}>', $otherData);
+					assertType('array{Ostatní: array{abs: 0, rel: 0}}', $otherData);
 				}
 				$otherData[$key]['abs'] += $count;
 				$otherData[$key]['rel'] += $count / $total * 100;

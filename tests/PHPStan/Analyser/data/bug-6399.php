@@ -33,16 +33,16 @@ class AsyncTask{
 
 		assertType('ArrayObject<int, array<string, mixed>>', self::$threadLocalStorage);
 		if (isset(self::$threadLocalStorage[1])) {
-			assertType('ArrayObject<int, array<string, mixed>>&hasOffset(1)', self::$threadLocalStorage);
+			assertType('ArrayObject<int, array<string, mixed>>&hasOffsetValue(1, array<string, mixed>)', self::$threadLocalStorage);
 		} else {
 			assertType('ArrayObject<int, array<string, mixed>>', self::$threadLocalStorage);
 		}
 
 		assertType('ArrayObject<int, array<string, mixed>>', self::$threadLocalStorage);
 		if (isset(self::$threadLocalStorage[1]) && isset(self::$threadLocalStorage[2])) {
-			assertType('ArrayObject<int, array<string, mixed>>&hasOffset(1)&hasOffset(2)', self::$threadLocalStorage);
+			assertType('ArrayObject<int, array<string, mixed>>&hasOffsetValue(1, array<string, mixed>)&hasOffsetValue(2, array<string, mixed>)', self::$threadLocalStorage);
 			unset(self::$threadLocalStorage[2]);
-			assertType('ArrayObject<int, array<string, mixed>>&hasOffset(1)', self::$threadLocalStorage);
+			assertType('ArrayObject<int, array<string, mixed>>&hasOffsetValue(1, array<string, mixed>)', self::$threadLocalStorage);
 		}
 	}
 

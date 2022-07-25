@@ -1149,7 +1149,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$intArrayForRewritingFirstElement[1]',
 			],
 			[
-				'stdClass',
+				'stdClass&hasOffsetValue(0, \'error\')',
 				'$obj',
 			],
 			[

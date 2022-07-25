@@ -5138,6 +5138,14 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	public function dataFunctions(): array
 	{
+		$strSplitDefaultReturnType = 'non-empty-array<int, string>|false';
+		if (PHP_VERSION_ID >= 80000) {
+			$strSplitDefaultReturnType = 'non-empty-array<int, string>';
+		}
+		if (PHP_VERSION_ID >= 80200) {
+			$strSplitDefaultReturnType = 'array<int, string>';
+		}
+
 		return [
 			[
 				'string',
@@ -5328,11 +5336,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$gettimeofdayBenevolent',
 			],
 			[
-				match (true) {
-					PHP_VERSION_ID >= 80200 => 'array<int, string>',
-					PHP_VERSION_ID >= 80000 => 'non-empty-array<int, string>',
-					default => 'non-empty-array<int, string>|false',
-				},
+				$strSplitDefaultReturnType,
 				'$strSplitConstantStringWithoutDefinedParameters',
 			],
 			[
@@ -5356,11 +5360,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithFailureSplitLength',
 			],
 			[
-				match (true) {
-					PHP_VERSION_ID >= 80200 => 'array<int, string>',
-					PHP_VERSION_ID >= 80000 => 'non-empty-array<int, string>',
-					default => 'non-empty-array<int, string>|false',
-				},
+				$strSplitDefaultReturnType,
 				'$strSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
@@ -5368,11 +5368,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
-				match (true) {
-					PHP_VERSION_ID >= 80200 => 'array<int, string>',
-					PHP_VERSION_ID >= 80000 => 'non-empty-array<int, string>',
-					default => 'non-empty-array<int, string>|false',
-				},
+				$strSplitDefaultReturnType,
 				'$strSplitConstantStringWithVariableStringAndVariableSplitLength',
 			],
 			// parse_url

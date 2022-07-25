@@ -92,7 +92,7 @@ class TypeUtils
 	 */
 	public static function getConstantStrings(Type $type): array
 	{
-		return self::map(ConstantStringType::class, $type, false);
+		return self::map(ConstantStringType::class, $type);
 	}
 
 	/**
@@ -100,7 +100,7 @@ class TypeUtils
 	 */
 	public static function getConstantIntegers(Type $type): array
 	{
-		return self::map(ConstantIntegerType::class, $type, false);
+		return self::map(ConstantIntegerType::class, $type);
 	}
 
 	/**
@@ -108,7 +108,7 @@ class TypeUtils
 	 */
 	public static function getConstantTypes(Type $type): array
 	{
-		return self::map(ConstantType::class, $type, false);
+		return self::map(ConstantType::class, $type);
 	}
 
 	/**
@@ -116,7 +116,7 @@ class TypeUtils
 	 */
 	public static function getAnyConstantTypes(Type $type): array
 	{
-		return self::map(ConstantType::class, $type, false, false);
+		return self::map(ConstantType::class, $type, false);
 	}
 
 	/**
@@ -124,7 +124,7 @@ class TypeUtils
 	 */
 	public static function getAnyArrays(Type $type): array
 	{
-		return self::map(ArrayType::class, $type, true, false);
+		return self::map(ArrayType::class, $type, false);
 	}
 
 	/**
@@ -163,7 +163,7 @@ class TypeUtils
 	 */
 	public static function getIntegerRanges(Type $type): array
 	{
-		return self::map(IntegerRangeType::class, $type, false);
+		return self::map(IntegerRangeType::class, $type);
 	}
 
 	/**
@@ -171,7 +171,7 @@ class TypeUtils
 	 */
 	public static function getConstantScalars(Type $type): array
 	{
-		return self::map(ConstantScalarType::class, $type, false);
+		return self::map(ConstantScalarType::class, $type);
 	}
 
 	/**
@@ -179,7 +179,7 @@ class TypeUtils
 	 */
 	public static function getEnumCaseObjects(Type $type): array
 	{
-		return self::map(EnumCaseObjectType::class, $type, false);
+		return self::map(EnumCaseObjectType::class, $type);
 	}
 
 	/**
@@ -188,7 +188,7 @@ class TypeUtils
 	 */
 	public static function getOldConstantArrays(Type $type): array
 	{
-		return self::map(ConstantArrayType::class, $type, false);
+		return self::map(ConstantArrayType::class, $type);
 	}
 
 	/**
@@ -197,7 +197,6 @@ class TypeUtils
 	private static function map(
 		string $typeClass,
 		Type $type,
-		bool $inspectIntersections,
 		bool $stopOnUnmatched = true,
 	): array
 	{
@@ -222,7 +221,7 @@ class TypeUtils
 			return $matchingTypes;
 		}
 
-		if ($inspectIntersections && $type instanceof IntersectionType) {
+		if ($type instanceof IntersectionType) {
 			$matchingTypes = [];
 			foreach ($type->getTypes() as $innerType) {
 				if (!$innerType instanceof $typeClass) {
@@ -327,7 +326,7 @@ class TypeUtils
 	 */
 	public static function getAccessoryTypes(Type $type): array
 	{
-		return self::map(AccessoryType::class, $type, true, false);
+		return self::map(AccessoryType::class, $type, false);
 	}
 
 	public static function containsCallable(Type $type): bool

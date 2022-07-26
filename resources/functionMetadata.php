@@ -488,6 +488,7 @@ return [
 	'ReflectionClass::isInternal' => ['hasSideEffects' => false],
 	'ReflectionClass::isIterable' => ['hasSideEffects' => false],
 	'ReflectionClass::isIterateable' => ['hasSideEffects' => false],
+	'ReflectionClass::isReadOnly' => ['hasSideEffects' => false],
 	'ReflectionClass::isSubclassOf' => ['hasSideEffects' => false],
 	'ReflectionClass::isTrait' => ['hasSideEffects' => false],
 	'ReflectionClass::isUserDefined' => ['hasSideEffects' => false],

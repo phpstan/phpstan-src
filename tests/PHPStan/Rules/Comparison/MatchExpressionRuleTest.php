@@ -12,9 +12,16 @@ use const PHP_VERSION_ID;
 class MatchExpressionRuleTest extends RuleTestCase
 {
 
+	private bool $treatPhpDocTypesAsCertain = true;
+
 	protected function getRule(): Rule
 	{
 		return new MatchExpressionRule(true);
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	public function testRule(): void
@@ -206,6 +213,15 @@ class MatchExpressionRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 		$this->analyse([__DIR__ . '/data/bug-6647.php'], []);
+	}
+
+	public function testBug7622(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-7622.php'], []);
 	}
 
 }

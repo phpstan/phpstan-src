@@ -17,14 +17,14 @@ class HelloWorld
 	{
 		assertType("array{categoryKeys: array<string>, tagNames: array<string>}", $filters);
 
-		unset($filters['page']); // @phpstan-ignore-line
+		unset($filters['page']);
 		assertType("array{categoryKeys: array<string>, tagNames: array<string>}", $filters);
 
-		unset($filters['limit']); // @phpstan-ignore-line // this line should also throw a phpstan error
+		unset($filters['limit']);
 		assertType("array{categoryKeys: array<string>, tagNames: array<string>}", $filters);
 
 		assertType('*ERROR*', $filters['something']);
-		var_dump($filters['something']); // phpstan should error here?
+		var_dump($filters['something']);
 
 		$this->test($filters);
 	}
@@ -39,7 +39,7 @@ class HelloWorld
 	{
 		assertType("array{categoryKeys: array<string>, tagNames: array<string>}", $filters);
 		assertType('*ERROR*', $filters['something']);
-		var_dump($filters['something']); // @phpstan-ignore-line
+		var_dump($filters['something']);
 
 		$this->test($filters);
 	}

@@ -57,4 +57,18 @@ class UnsetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4289.php'], []);
 	}
 
+	public function testBug5223(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-5223.php'], [
+			[
+				'Cannot unset offset \'page\' on array{categoryKeys: array<string>, tagNames: array<string>}.',
+				20,
+			],
+			[
+				'Cannot unset offset \'limit\' on array{categoryKeys: array<string>, tagNames: array<string>}.',
+				23,
+			],
+		]);
+	}
+
 }

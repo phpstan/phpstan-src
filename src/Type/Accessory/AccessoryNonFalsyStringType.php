@@ -64,10 +64,6 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 			return TrinaryLogic::createYes();
 		}
 
-		if ($type->isNonEmptyString()->yes()) {
-			return TrinaryLogic::createMaybe();
-		}
-
 		return $type->isNonFalsyString();
 	}
 

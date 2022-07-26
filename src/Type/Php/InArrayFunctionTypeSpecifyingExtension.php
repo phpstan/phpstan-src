@@ -11,11 +11,18 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 use function count;
 use function strtolower;
 
@@ -52,6 +59,15 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 		$specifiedTypes = new SpecifiedTypes();
 
 		if (
+			$arrayType instanceof ConstantArrayType && !$arrayType->isEmpty()
+			&& count(TypeUtils::getConstantScalars($needleType)) === 0 && $arrayValueType->isSuperTypeOf($needleType)->yes()
+		) {
+			// Avoid false-positives with e.g. a string needle and array{'self', string} as haystack
+			// For such cases there seems to be nothing more that we can specify unfortunately
+			return $specifiedTypes;
+		}
+
+		if (
 			$context->truthy()
 			|| count(TypeUtils::getConstantScalars($arrayValueType)) > 0
 			|| count(TypeUtils::getEnumCaseObjects($arrayValueType)) > 0
@@ -79,6 +95,51 @@ class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
 				$node->getArgs()[1]->value,
 				new ArrayType(new MixedType(), $arrayValueType),
+				TypeSpecifierContext::createTrue(),
+				false,
+				$scope,
+			));
+		}
+
+		if ($arrayType instanceof ConstantArrayType) {
+			$newArrayType = TypeTraverser::map(
+				$arrayType->getOffsetType($needleType),
+				static function (Type $offsetType, callable $traverse) use ($context, $arrayType, $needleType): Type {
+					if ($offsetType instanceof UnionType || $offsetType instanceof IntersectionType) {
+						return $traverse($offsetType);
+					}
+
+					$resultArray = $arrayType;
+					if ($context->truthy()) {
+						$resultArray = $resultArray->makeOffsetRequired($offsetType);
+					} elseif ($offsetType instanceof ConstantIntegerType && $resultArray->isOptionalKey($offsetType->getValue())) {
+						$resultArray = $resultArray->unsetOffset($offsetType);
+					}
+
+					if (
+						$offsetType instanceof ConstantIntegerType
+						&& $resultArray instanceof ConstantArrayType
+						&& $resultArray->hasOffsetValueType($offsetType)->yes()
+					) {
+						// If haystack is e.g. {string, string|null} and needle null, we can further narrow string|null
+						$builder = ConstantArrayTypeBuilder::createFromConstantArray($resultArray);
+						$builder->setOffsetValueType(
+							$offsetType,
+							$context->truthy()
+								? $needleType
+								: TypeCombinator::remove($resultArray->getOffsetValueType($offsetType), $needleType),
+							$resultArray->isOptionalKey($offsetType->getValue()),
+						);
+						$resultArray = $builder->getArray();
+					}
+
+					return $resultArray;
+				},
+			);
+
+			$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+				$node->getArgs()[1]->value,
+				$newArrayType,
 				TypeSpecifierContext::createTrue(),
 				false,
 				$scope,

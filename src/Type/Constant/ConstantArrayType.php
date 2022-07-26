@@ -564,6 +564,39 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new ErrorType(); // undefined offset
 	}
 
+	public function getOffsetType(Type $offsetValueType): Type
+	{
+		$matchingOffsetTypes = [];
+		$all = true;
+		foreach ($this->valueTypes as $i => $valueType) {
+			if ($valueType->isSuperTypeOf($offsetValueType)->no()) {
+				$all = false;
+				continue;
+			}
+
+			$matchingOffsetTypes[] = $this->keyTypes[$i];
+		}
+
+		if ($all) {
+			if (count($this->keyTypes) === 0) {
+				return new ErrorType();
+			}
+
+			return $this->getIterableKeyType();
+		}
+
+		if (count($matchingOffsetTypes) > 0) {
+			$type = TypeCombinator::union(...$matchingOffsetTypes);
+			if ($type instanceof ErrorType) {
+				return new MixedType();
+			}
+
+			return $type;
+		}
+
+		return new ErrorType(); // undefined offset value
+	}
+
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		$builder = ConstantArrayTypeBuilder::createFromConstantArray($this);

@@ -862,3 +862,36 @@ class ArraySearch
 	}
 
 }
+
+class InArray2
+{
+
+	/** @param non-empty-array<int, int> $haystack */
+	public function nonConstants(int $needle, array $haystack): void
+	{
+		if (in_array($needle, $haystack, true)) { // bool
+
+		}
+	}
+
+	/** @param array{'self', string} $haystack */
+	public function slevomatCsBug(string $needle, array $haystack): void
+	{
+		if (in_array($needle, $haystack, true)) { // bool
+
+		}
+	}
+
+	/**
+	 * @param array{0?: 'foo'} $constantHaystack
+	 */
+	public function triggersIfArrayIsNarrowedDownTwiceWithConstant(array $constantHaystack): void
+	{
+		if (in_array('foo', $constantHaystack, true)) { // bool
+			if (in_array('foo', $constantHaystack, true)) { // true
+
+			}
+		}
+	}
+
+}

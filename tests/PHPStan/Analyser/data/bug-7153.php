@@ -25,7 +25,7 @@ function () {
 	assertType('array{string, string|null}', $data);
 
 	if (in_array(null, $data, true)) {
-		assertType('array{string, string|null}', $data);
+		assertType('array{string, null}', $data);
 		throw new Exception();
 	}
 

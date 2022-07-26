@@ -12,11 +12,9 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
@@ -105,36 +103,6 @@ class ImpossibleCheckTypeHelper
 							}
 						}
 						return null;
-					}
-
-					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {
-						$haystackArrayTypes = TypeUtils::getArrays($haystackType);
-						if (count($haystackArrayTypes) === 1 && $haystackArrayTypes[0]->getIterableValueType() instanceof NeverType) {
-							return null;
-						}
-
-						if ($isNeedleSupertype->maybe() || $isNeedleSupertype->yes()) {
-							foreach ($haystackArrayTypes as $haystackArrayType) {
-								foreach (TypeUtils::getConstantScalars($haystackArrayType->getIterableValueType()) as $constantScalarType) {
-									if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
-										continue 2;
-									}
-								}
-
-								return null;
-							}
-						}
-
-						if ($isNeedleSupertype->yes()) {
-							$hasConstantNeedleTypes = $constantNeedleTypesCount > 0;
-							$hasConstantHaystackTypes = $constantHaystackTypesCount > 0;
-							if (
-								(!$hasConstantNeedleTypes && !$hasConstantHaystackTypes)
-								|| $hasConstantNeedleTypes !== $hasConstantHaystackTypes
-							) {
-								return null;
-							}
-						}
 					}
 				} elseif ($functionName === 'method_exists' && $argsCount >= 2) {
 					$objectType = $scope->getType($node->getArgs()[0]->value);

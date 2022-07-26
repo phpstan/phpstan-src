@@ -109,6 +109,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					245,
 				],
 				[
+					'Call to function in_array() with arguments \'bar\'|\'foo\', array{\'foo\', \'bar\'} and true will always evaluate to true.',
+					249,
+				],
+				[
 					'Call to function in_array() with arguments \'foo\', array{\'foo\'} and true will always evaluate to true.',
 					253,
 				],
@@ -232,6 +236,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				[
 					'Call to function property_exists() with CheckTypeFunctionCall\Bug2221 and \'foo\' will always evaluate to true.',
 					788,
+				],
+				[
+					'Call to function in_array() with arguments \'foo\', array{\'foo\'} and true will always evaluate to true.',
+					891,
 				],
 			],
 		);

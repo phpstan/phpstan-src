@@ -1141,4 +1141,20 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7138.php'], []);
 	}
 
+	public function testBug2911(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-2911.php'], [
+			[
+				'Parameter #1 $array of function Bug2911\bar expects array{bar: string}, non-empty-array given.',
+				23,
+			],
+		]);
+	}
+
+	public function testBug7156(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-7156.php'], []);
+	}
+
 }

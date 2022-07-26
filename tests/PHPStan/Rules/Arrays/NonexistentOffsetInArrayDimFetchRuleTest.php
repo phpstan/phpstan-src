@@ -433,4 +433,24 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5743(): void
+	{
+		$this->analyse([__DIR__ . '/../Comparison/data/bug-5743.php'], [
+			[
+				'Offset 1|int<3, max> does not exist on array{}.',
+				10,
+			],
+		]);
+	}
+
+	public function testBug6364(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6364.php'], []);
+	}
+
+	public function testBug5758(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5758.php'], []);
+	}
+
 }

@@ -73,6 +73,10 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
+		if ($otherType instanceof AccessoryNonEmptyStringType) {
+			return TrinaryLogic::createYes();
+		}
+
 		return $otherType->isNonFalsyString()
 			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
 	}

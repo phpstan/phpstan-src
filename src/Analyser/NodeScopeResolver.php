@@ -1160,7 +1160,9 @@ class NodeScopeResolver
 				}
 			}
 
-			if (!$hasDefaultCase) {
+			$exhaustive = $scopeForBranches->getType($stmt->cond) instanceof NeverType;
+
+			if (!$hasDefaultCase && !$exhaustive) {
 				$alwaysTerminating = false;
 			}
 
@@ -1169,7 +1171,7 @@ class NodeScopeResolver
 				$alwaysTerminating = $alwaysTerminating && $branchFinalScopeResult->isAlwaysTerminating();
 			}
 
-			if (!$hasDefaultCase || $finalScope === null) {
+			if ((!$hasDefaultCase && !$exhaustive) || $finalScope === null) {
 				$finalScope = $scope->mergeWith($finalScope);
 			}
 

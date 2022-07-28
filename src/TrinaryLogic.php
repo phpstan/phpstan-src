@@ -28,22 +28,23 @@ class TrinaryLogic
 
 	public static function createYes(): self
 	{
-		return self::create(self::YES);
+		return self::$registry[self::YES] ??= new self(self::YES);
 	}
 
 	public static function createNo(): self
 	{
-		return self::create(self::NO);
+		return self::$registry[self::NO] ??= new self(self::NO);
 	}
 
 	public static function createMaybe(): self
 	{
-		return self::create(self::MAYBE);
+		return self::$registry[self::MAYBE] ??= new self(self::MAYBE);
 	}
 
 	public static function createFromBoolean(bool $value): self
 	{
-		return self::create($value ? self::YES : self::NO);
+		$yesNo = $value ? self::YES : self::NO;
+		return self::$registry[$yesNo] ??= new self($yesNo);
 	}
 
 	private static function create(int $value): self

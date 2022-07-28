@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use PHPStan\IterativeTrinary;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\MethodReflection;
@@ -137,16 +138,17 @@ class UnionType implements CompoundType
 			return $otherType->isSubTypeOf($this);
 		}
 
-		$results = [];
-		foreach ($this->getTypes() as $innerType) {
-			$results[] = $innerType->isSuperTypeOf($otherType);
-		}
+		return IterativeTrinary::or((function () use ($otherType) {
+			foreach ($this->getTypes() as $innerType) {
+				yield $innerType->isSuperTypeOf($otherType);
+			}
 
-		if ($otherType instanceof TemplateUnionType) {
-			$results[] = $otherType->isSubTypeOf($this);
-		}
+			if (!($otherType instanceof TemplateUnionType)) {
+				return;
+			}
 
-		return TrinaryLogic::createNo()->or(...$results);
+			yield $otherType->isSubTypeOf($this);
+		})());
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic

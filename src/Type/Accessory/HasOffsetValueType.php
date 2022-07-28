@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Accessory;
 
+use PHPStan\IterativeTrinary;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -70,9 +71,12 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		if ($this->equals($type)) {
 			return TrinaryLogic::createYes();
 		}
-		return $type->isOffsetAccessible()
-			->and($type->hasOffsetValueType($this->offsetType))
-			->and($this->valueType->isSuperTypeOf($type->getOffsetValueType($this->offsetType)));
+
+		return IterativeTrinary::and((function () use ($type) {
+			yield $type->isOffsetAccessible();
+			yield $type->hasOffsetValueType($this->offsetType);
+			yield $this->valueType->isSuperTypeOf($type->getOffsetValueType($this->offsetType));
+		})());
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
@@ -81,10 +85,12 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return $otherType->isOffsetAccessible()
-			->and($otherType->hasOffsetValueType($this->offsetType))
-			->and($otherType->getOffsetValueType($this->offsetType)->isSuperTypeOf($this->valueType))
-			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
+		return IterativeTrinary::and((function () use ($otherType) {
+			yield $otherType->isOffsetAccessible();
+			yield $otherType->hasOffsetValueType($this->offsetType);
+			yield $otherType->getOffsetValueType($this->offsetType)->isSuperTypeOf($this->valueType);
+			yield $otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe();
+		})());
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic

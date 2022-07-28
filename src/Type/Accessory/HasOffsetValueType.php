@@ -70,9 +70,17 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		if ($this->equals($type)) {
 			return TrinaryLogic::createYes();
 		}
-		return $type->isOffsetAccessible()
-			->and($type->hasOffsetValueType($this->offsetType))
-			->and($this->valueType->isSuperTypeOf($type->getOffsetValueType($this->offsetType)));
+
+		$isOffsetAccessible = $type->isOffsetAccessible();
+		if (!$isOffsetAccessible->yes()) {
+			return $isOffsetAccessible;
+		}
+		$hasOffsetValueType = $type->hasOffsetValueType($this->offsetType);
+		if (!$hasOffsetValueType->yes()) {
+			return $hasOffsetValueType;
+		}
+
+		return $this->valueType->isSuperTypeOf($type->getOffsetValueType($this->offsetType));
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic

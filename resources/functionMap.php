@@ -1904,7 +1904,7 @@ return [
 'DOMDocument::createCDATASection' => ['DOMCDATASection', 'data'=>'string'],
 'DOMDocument::createComment' => ['DOMComment', 'data'=>'string'],
 'DOMDocument::createDocumentFragment' => ['DOMDocumentFragment'],
-'DOMDocument::createElement' => ['DOMElement', 'name'=>'string', 'value='=>'string'],
+'DOMDocument::createElement' => ['DOMElement|false', 'name'=>'string', 'value='=>'string'],
 'DOMDocument::createElementNS' => ['DOMElement', 'namespaceuri'=>'string', 'qualifiedname'=>'string', 'value='=>'string'],
 'DOMDocument::createEntityReference' => ['DOMEntityReference', 'name'=>'string'],
 'DOMDocument::createProcessingInstruction' => ['DOMProcessingInstruction', 'target'=>'string', 'data='=>'string'],

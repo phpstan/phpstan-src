@@ -60,7 +60,7 @@ class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatement
 
 	public function getType(): string
 	{
-		return 'PHPStan_Node_FunctionReturnStatementsNode';
+		return 'PHPStan_Node_MethodReturnStatementsNode';
 	}
 
 	/**

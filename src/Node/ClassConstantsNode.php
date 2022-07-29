@@ -43,7 +43,7 @@ class ClassConstantsNode extends NodeAbstract implements VirtualNode
 
 	public function getType(): string
 	{
-		return 'PHPStan_Node_ClassPropertiesNode';
+		return 'PHPStan_Node_ClassConstantsNode';
 	}
 
 	/**

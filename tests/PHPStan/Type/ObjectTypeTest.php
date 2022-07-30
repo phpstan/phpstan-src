@@ -26,6 +26,7 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use SimpleXMLElement;
 use stdClass;
 use Throwable;
@@ -417,6 +418,16 @@ class ObjectTypeTest extends PHPStanTestCase
 				new ObjectType(Throwable::class, new ObjectType(InvalidArgumentException::class)),
 				new ObjectType(ExtendsThrowable::class),
 				TrinaryLogic::createMaybe(),
+			],
+			59 => [
+				new ObjectType(DateTime::class),
+				new ObjectType(ConstantNumericComparisonTypeTrait::class),
+				TrinaryLogic::createNo(),
+			],
+			60 => [
+				new ObjectType(ConstantNumericComparisonTypeTrait::class),
+				new ObjectType(DateTime::class),
+				TrinaryLogic::createNo(),
 			],
 		];
 	}

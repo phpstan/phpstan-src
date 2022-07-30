@@ -10,6 +10,8 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\VerbosityLevel;
+use function array_merge;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -57,6 +59,8 @@ class ExistingClassInInstanceOfRule implements Rule
 			return [];
 		}
 
+		$errors = [];
+
 		if (!$this->reflectionProvider->hasClass($name)) {
 			if ($scope->isInClassExists($name)) {
 				return [];
@@ -66,10 +70,24 @@ class ExistingClassInInstanceOfRule implements Rule
 				RuleErrorBuilder::message(sprintf('Class %s not found.', $name))->line($class->getLine())->discoveringSymbolsTip()->build(),
 			];
 		} elseif ($this->checkClassCaseSensitivity) {
-			return $this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($name, $class)]);
+			$errors = array_merge(
+				$errors,
+				$this->classCaseSensitivityCheck->checkClassNames([new ClassNameNodePair($name, $class)]),
+			);
 		}
 
-		return [];
+		$classReflection = $this->reflectionProvider->getClass($name);
+		$expressionType = $scope->getType($node->expr);
+
+		if ($classReflection->isTrait()) {
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'Instanceof between %s and trait %s will always evaluate to false.',
+				$expressionType->describe(VerbosityLevel::typeOnly()),
+				$name,
+			))->build();
+		}
+
+		return $errors;
 	}
 
 }

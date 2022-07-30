@@ -6,11 +6,13 @@ use PhpParser\Node;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -26,6 +28,7 @@ class InvalidBinaryOperationRule implements Rule
 	public function __construct(
 		private ExprPrinter $exprPrinter,
 		private RuleLevelHelper $ruleLevelHelper,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -111,6 +114,30 @@ class InvalidBinaryOperationRule implements Rule
 					$scope->getType($right)->describe(VerbosityLevel::value()),
 				))->line($left->getLine())->build(),
 			];
+		}
+
+		if ($this->phpVersion->deprecatesBitwiseOperationsWithFloat()) {
+			if (
+				$node instanceof Node\Expr\BinaryOp\ShiftRight
+				|| $node instanceof Node\Expr\BinaryOp\ShiftLeft
+				|| $node instanceof Node\Expr\BinaryOp\BitwiseOr
+				|| $node instanceof Node\Expr\BinaryOp\BitwiseAnd
+				|| $node instanceof Node\Expr\BinaryOp\BitwiseXor
+			) {
+				$leftType = $scope->getType($node->left);
+				$rightType = $scope->getType($node->right);
+				$floatType = new FloatType();
+				if (!$floatType->isSuperTypeOf($leftType)->no() || !$floatType->isSuperTypeOf($rightType)->no()) {
+					return [
+						RuleErrorBuilder::message(sprintf(
+							'Binary %s operation between %s and %s is deprecated in PHP 8.1.',
+							$node->getOperatorSigil(),
+							$leftType->describe(VerbosityLevel::typeOnly()),
+							$rightType->describe(VerbosityLevel::typeOnly()),
+						))->build(),
+					];
+				}
+			}
 		}
 
 		return [];

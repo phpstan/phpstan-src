@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Operators;
 
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\Printer;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -15,11 +16,14 @@ use const PHP_VERSION_ID;
 class InvalidBinaryOperationRuleTest extends RuleTestCase
 {
 
+	private int $phpVersion = PHP_VERSION_ID;
+
 	protected function getRule(): Rule
 	{
 		return new InvalidBinaryOperationRule(
 			new ExprPrinter(new Printer()),
 			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false),
+			new PhpVersion($this->phpVersion),
 		);
 	}
 
@@ -267,6 +271,55 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				12,
 			],
 		]);
+	}
+
+	public function testBug7700PHP81(): void
+	{
+		$this->phpVersion = 80100;
+		$this->analyse([__DIR__ . '/data/bug-7700.php'], [
+			[
+				'Binary >> operation between float and int is deprecated in PHP 8.1.',
+				8,
+			],
+			[
+				'Binary << operation between int and float is deprecated in PHP 8.1.',
+				9,
+			],
+			[
+				'Binary & operation between float and int is deprecated in PHP 8.1.',
+				11,
+			],
+			[
+				'Binary & operation between int and float is deprecated in PHP 8.1.',
+				12,
+			],
+			[
+				'Binary | operation between float and int is deprecated in PHP 8.1.',
+				14,
+			],
+			[
+				'Binary | operation between int and float is deprecated in PHP 8.1.',
+				15,
+			],
+			[
+				'Binary ^ operation between float and int is deprecated in PHP 8.1.',
+				17,
+			],
+			[
+				'Binary ^ operation between int and float is deprecated in PHP 8.1.',
+				18,
+			],
+			[
+				'Binary >> operation between float|int and int is deprecated in PHP 8.1.',
+				20,
+			],
+		]);
+	}
+
+	public function testBug7700PHP80(): void
+	{
+		$this->phpVersion = 80000;
+		$this->analyse([__DIR__ . '/data/bug-7700.php'], []);
 	}
 
 }

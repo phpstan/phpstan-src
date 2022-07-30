@@ -60,7 +60,7 @@ class ImpossibleInstanceOfRule implements Rule
 			}
 		}
 
-		if ($className !== null) {
+		if ($className !== null && $this->reflectionProvider->hasClass($className)) {
 			$classReflection = $this->reflectionProvider->getClass($className);
 
 			if ($classReflection->isTrait()) {

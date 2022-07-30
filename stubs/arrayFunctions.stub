@@ -67,3 +67,144 @@ function array_udiff(
  * @return ($value is __always-list ? true : false)
  */
 function array_is_list(array $value): bool {}
+
+/**
+ * @template TK of mixed
+ * @template TV of mixed
+ *
+ * @param array<TK, TV> $one
+ * @param array<TK, TV> $two
+ * @param callable(TK, TK): int<-1, 1> $three
+ * @return array<TK, TV>
+ */
+function array_diff_uassoc(
+    array $one,
+    array $two,
+    callable $three
+): array {}
+
+/**
+ * @template TK of mixed
+ * @template TV of mixed
+ *
+ * @param array<TK, TV> $one
+ * @param array<TK, TV> $two
+ * @param callable(TK, TK): int<-1, 1> $three
+ * @return array<TK, TV>
+ */
+function array_diff_ukey(
+    array $one,
+    array $two,
+    callable $three
+): array {}
+
+/**
+ * @template TK of mixed
+ * @template TV of mixed
+ *
+ * @param array<TK, TV> $one
+ * @param array<TK, TV> $two
+ * @param callable(TK, TK): int<-1, 1> $three
+ * @return array<TK, TV>
+ */
+function array_intersect_uassoc(
+    array $one,
+    array $two,
+    callable $three
+): array {}
+
+/**
+ * @template TK of mixed
+ * @template TV of mixed
+ *
+ * @param array<TK, TV> $one
+ * @param array<TK, TV> $two
+ * @param callable(TK, TK): int<-1, 1> $three
+ *
+ * @return array<TK, TV>
+ */
+function array_intersect_ukey(
+    array $one,
+    array $two,
+    callable $three
+): array {}
+
+/**
+ * @template TK of mixed
+ * @template TV of mixed
+ *
+ * @param array<TK, TV> $one
+ * @param array<TK, TV> $two
+ * @param callable(TV, TV): int<-1, 1> $three
+ *
+ * @return array<TK, TV>
+ */
+function array_udiff_assoc(
+    array $one,
+    array $two,
+    callable $three
+): array {}
+
+/**
+ * @template TK of mixed
+ * @template TV of mixed
+ *
+ * @param array<TK, TV> $one
+ * @param array<TK, TV> $two
+ * @param callable(TV, TV): int<-1, 1> $three
+ * @param callable(TK, TK): int<-1, 1> $four
+ * @return array<TK, TV>
+ */
+function array_udiff_uassoc(
+    array $one,
+    array $two,
+    callable $three,
+    callable $four
+): array {}
+
+/**
+ * @template TK of mixed
+ * @template TV of mixed
+ *
+ * @param array<TK, TV> $one
+ * @param array<TK, TV> $two
+ * @param callable(TV, TV): int<-1, 1> $three
+ * @return array<TK, TV>
+ */
+function array_uintersect_assoc(
+    array $one,
+    array $two,
+    callable $three,
+): array {}
+
+/**
+ * @template TK of mixed
+ * @template TV of mixed
+ *
+ * @param array<TK, TV> $one
+ * @param array<TK, TV> $two
+ * @param callable(TV, TV): int<-1, 1> $three
+ * @param callable(TK, TK): int<-1, 1> $four
+ * @return array<TK, TV>
+ */
+function array_uintersect_uassoc(
+    array $one,
+    array $two,
+    callable $three,
+    callable $four
+): array {}
+
+/**
+ * @template TK of mixed
+ * @template TV of mixed
+ *
+ * @param array<TK, TV> $one
+ * @param array<TK, TV> $two
+ * @param callable(TV, TV): int<-1, 1> $three
+ * @return array<TK, TV>
+ */
+function array_uintersect(
+    array $one,
+    array $two,
+    callable $three,
+): array {}

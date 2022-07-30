@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -24,7 +23,6 @@ class ImpossibleInstanceOfRule implements Rule
 	public function __construct(
 		private bool $checkAlwaysTrueInstanceof,
 		private bool $treatPhpDocTypesAsCertain,
-		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}
@@ -38,7 +36,6 @@ class ImpossibleInstanceOfRule implements Rule
 	{
 		$instanceofType = $scope->getType($node);
 		$expressionType = $scope->getType($node->expr);
-		$className = null;
 
 		if ($node->class instanceof Node\Name) {
 			$className = $scope->resolveName($node->class);
@@ -53,20 +50,6 @@ class ImpossibleInstanceOfRule implements Rule
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Instanceof between %s and %s results in an error.',
-						$expressionType->describe(VerbosityLevel::typeOnly()),
-						$classType->describe(VerbosityLevel::typeOnly()),
-					))->build(),
-				];
-			}
-		}
-
-		if ($className !== null && $this->reflectionProvider->hasClass($className)) {
-			$classReflection = $this->reflectionProvider->getClass($className);
-
-			if ($classReflection->isTrait()) {
-				return [
-					RuleErrorBuilder::message(sprintf(
-						'Instanceof between %s and trait %s will always evaluate to false.',
 						$expressionType->describe(VerbosityLevel::typeOnly()),
 						$classType->describe(VerbosityLevel::typeOnly()),
 					))->build(),

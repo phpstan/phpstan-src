@@ -60,4 +60,14 @@ class ExistingClassInInstanceOfRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/instanceof-class-exists.php'], []);
 	}
 
+	public function testBug7720(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7720.php'], [
+			[
+				'Instanceof between mixed and trait Bug7720\FooBar will always evaluate to false.',
+				17,
+			],
+		]);
+	}
+
 }

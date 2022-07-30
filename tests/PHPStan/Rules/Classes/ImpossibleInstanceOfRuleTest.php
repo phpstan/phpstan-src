@@ -17,11 +17,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ImpossibleInstanceOfRule(
-			$this->checkAlwaysTrueInstanceOf,
-			$this->treatPhpDocTypesAsCertain,
-			$this->createReflectionProvider(),
-		);
+		return new ImpossibleInstanceOfRule($this->checkAlwaysTrueInstanceOf, $this->treatPhpDocTypesAsCertain);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -348,18 +344,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6213.php'], []);
-	}
-
-	public function testBug7720(): void
-	{
-		$this->checkAlwaysTrueInstanceOf = true;
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-7720.php'], [
-			[
-				'Instanceof between mixed and trait Bug7720\FooBar will always evaluate to false.',
-				17,
-			],
-		]);
 	}
 
 }

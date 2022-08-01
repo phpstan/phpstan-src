@@ -36,10 +36,20 @@ class MatchExpressionRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$matchCondition = $node->getCondition();
+		$matchConditionType = $scope->getType($matchCondition);
+
+		$unionTypes = [];
+		$unionTypeCount = 0;
+		if ($matchConditionType instanceof UnionType) {
+			$unionTypes = $matchConditionType->getTypes();
+			$unionTypeCount = count($unionTypes);
+		}
+
 		$nextArmIsDead = false;
 		$errors = [];
 		$armsCount = count($node->getArms());
 		$hasDefault = false;
+		$armTypeMatchCount = 0;
 		foreach ($node->getArms() as $i => $arm) {
 			if ($nextArmIsDead) {
 				$errors[] = RuleErrorBuilder::message('Match arm is unreachable because previous comparison is always true.')->line($arm->getLine())->build();
@@ -57,6 +67,11 @@ class MatchExpressionRule implements Rule
 				);
 				$armConditionResult = $armConditionScope->getType($armConditionExpr);
 				if (!$armConditionResult instanceof ConstantBooleanType) {
+					$matchConditionCurrentType = $unionTypes[$i] ?? null;
+					if ($matchConditionCurrentType !== null) {
+						$armConditionType = $armConditionScope->getType($armCondition->getCondition());
+						$armTypeMatchCount += $matchConditionCurrentType->accepts($armConditionType, true)->yes() ? 1 : 0;
+					}
 					continue;
 				}
 
@@ -83,7 +98,7 @@ class MatchExpressionRule implements Rule
 			}
 		}
 
-		if (!$hasDefault && !$nextArmIsDead) {
+		if (!$hasDefault && !$nextArmIsDead && !$this->matchesAllUnionTypes($unionTypeCount, $armTypeMatchCount)) {
 			$remainingType = $node->getEndScope()->getType($matchCondition);
 			if (
 				!$remainingType instanceof NeverType
@@ -126,6 +141,11 @@ class MatchExpressionRule implements Rule
 		}
 
 		return $throwsType->isSuperTypeOf(new ObjectType(UnhandledMatchError::class))->yes();
+	}
+
+	private function matchesAllUnionTypes(int $unionTypeCount, int $armTypeMatchCount): bool
+	{
+		return $unionTypeCount > 0 && $unionTypeCount === $armTypeMatchCount;
 	}
 
 }

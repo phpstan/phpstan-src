@@ -8,3 +8,5 @@
 /tests/tmp
 /tests/.phpunit.result.cache
 tmp/.memory_limit
+/.docker/
+docker-compose.yml

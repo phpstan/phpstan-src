@@ -57,6 +57,7 @@ class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnT
 					$type = new FloatType();
 				}
 
+				$type = TypeCombinator::addNull($type);
 				$arrayBuilder->setOffsetValueType(new ConstantIntegerType($i), $type);
 			}
 

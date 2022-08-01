@@ -38,12 +38,7 @@ class MatchExpressionRule implements Rule
 		$matchCondition = $node->getCondition();
 		$matchConditionType = $scope->getType($matchCondition);
 
-		$unionTypes = [];
-		$unionTypeCount = 0;
-		if ($matchConditionType instanceof UnionType) {
-			$unionTypes = $matchConditionType->getTypes();
-			$unionTypeCount = count($unionTypes);
-		}
+		$unionTypeCount = $matchConditionType instanceof UnionType ? count($matchConditionType->getTypes()) : 0;
 
 		$nextArmIsDead = false;
 		$errors = [];
@@ -67,11 +62,11 @@ class MatchExpressionRule implements Rule
 				);
 				$armConditionResult = $armConditionScope->getType($armConditionExpr);
 				if (!$armConditionResult instanceof ConstantBooleanType) {
-					$matchConditionCurrentType = $unionTypes[$i] ?? null;
-					if ($matchConditionCurrentType !== null) {
+					if ($matchConditionType instanceof UnionType) {
 						$armConditionType = $armConditionScope->getType($armCondition->getCondition());
-						$armTypeMatchCount += $matchConditionCurrentType->accepts($armConditionType, true)->yes() ? 1 : 0;
+						$armTypeMatchCount += $matchConditionType->accepts($armConditionType, true)->yes() ? 1 : 0;
 					}
+
 					continue;
 				}
 

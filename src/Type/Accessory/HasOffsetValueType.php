@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Accessory;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -39,7 +40,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	{
 	}
 
-	public function getOffsetType(): Type
+	public function getOffsetType(): ConstantStringType|ConstantIntegerType
 	{
 		return $this->offsetType;
 	}
@@ -129,7 +130,19 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
-		return $this;
+		if ($offsetType === null) {
+			return $this;
+		}
+
+		if (!$offsetType->equals($this->offsetType)) {
+			return $this;
+		}
+
+		if (!$offsetType instanceof ConstantIntegerType && !$offsetType instanceof ConstantStringType) {
+			throw new ShouldNotHappenException();
+		}
+
+		return new self($offsetType, $valueType);
 	}
 
 	public function unsetOffset(Type $offsetType): Type

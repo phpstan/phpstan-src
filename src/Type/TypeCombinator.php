@@ -20,6 +20,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateUnionType;
 use function array_intersect_key;
 use function array_key_exists;
+use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_slice;
@@ -29,6 +30,7 @@ use function count;
 use function get_class;
 use function is_int;
 use function md5;
+use function sprintf;
 use function usort;
 
 /** @api */
@@ -171,7 +173,12 @@ class TypeCombinator
 						continue;
 					}
 					if ($innerType instanceof AccessoryType || $innerType instanceof CallableType) {
-						$intermediateAccessoryTypes[$innerType->describe(VerbosityLevel::cache())] = $innerType;
+						if ($innerType instanceof HasOffsetValueType) {
+							$intermediateAccessoryTypes[sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()))][] = $innerType;
+							continue;
+						}
+
+						$intermediateAccessoryTypes[$innerType->describe(VerbosityLevel::cache())][] = $innerType;
 						continue;
 					}
 				}
@@ -191,7 +198,7 @@ class TypeCombinator
 
 			if ($types[$i]->isIterableAtLeastOnce()->yes()) {
 				$nonEmpty = new NonEmptyArrayType();
-				$arrayAccessoryTypes[] = [$nonEmpty->describe(VerbosityLevel::cache()) => $nonEmpty];
+				$arrayAccessoryTypes[] = [$nonEmpty->describe(VerbosityLevel::cache()) => [$nonEmpty]];
 			} else {
 				$arrayAccessoryTypes[] = [];
 			}
@@ -205,11 +212,22 @@ class TypeCombinator
 		/** @var ArrayType[] $arrayTypes */
 		$arrayTypes = $arrayTypes;
 
-		$arrayAccessoryTypesToProcess = [];
+		$commonArrayAccessoryTypesKeys = [];
 		if (count($arrayAccessoryTypes) > 1) {
-			$arrayAccessoryTypesToProcess = array_values(array_intersect_key(...$arrayAccessoryTypes));
+			$commonArrayAccessoryTypesKeys = array_keys(array_intersect_key(...$arrayAccessoryTypes));
 		} elseif (count($arrayAccessoryTypes) > 0) {
-			$arrayAccessoryTypesToProcess = array_values($arrayAccessoryTypes[0]);
+			$commonArrayAccessoryTypesKeys = array_keys($arrayAccessoryTypes[0]);
+		}
+
+		$arrayAccessoryTypesToProcess = [];
+		foreach ($commonArrayAccessoryTypesKeys as $commonKey) {
+			$typesToUnion = [];
+			foreach ($arrayAccessoryTypes as $array) {
+				foreach ($array[$commonKey] as $arrayAccessoryType) {
+					$typesToUnion[] = $arrayAccessoryType;
+				}
+			}
+			$arrayAccessoryTypesToProcess[] = self::union(...$typesToUnion);
 		}
 
 		$types = array_values(
@@ -365,6 +383,11 @@ class TypeCombinator
 		}
 		if ($a instanceof IntegerRangeType && $b instanceof IntegerRangeType) {
 			return null;
+		}
+		if ($a instanceof HasOffsetValueType && $b instanceof HasOffsetValueType) {
+			if ($a->getOffsetType()->equals($b->getOffsetType())) {
+				return [new HasOffsetValueType($a->getOffsetType(), self::union($a->getValueType(), $b->getValueType())), null];
+			}
 		}
 
 		if ($a instanceof SubtractableType) {

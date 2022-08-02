@@ -266,6 +266,8 @@ class ArrayType implements Type
 	{
 		if ($offsetType === null) {
 			$offsetType = new IntegerType();
+		} else {
+			$offsetType = self::castToArrayKeyType($offsetType);
 		}
 
 		if (
@@ -277,10 +279,15 @@ class ArrayType implements Type
 			return $builder->getArray();
 		}
 
-		return TypeCombinator::intersect(new self(
-			TypeCombinator::union($this->keyType, self::castToArrayKeyType($offsetType)),
+		$array = new self(
+			TypeCombinator::union($this->keyType, $offsetType),
 			$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType,
-		), new NonEmptyArrayType());
+		);
+		if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
+			return TypeCombinator::intersect($array, new HasOffsetValueType($offsetType, $valueType), new NonEmptyArrayType());
+		}
+
+		return TypeCombinator::intersect($array, new NonEmptyArrayType());
 	}
 
 	public function unsetOffset(Type $offsetType): Type

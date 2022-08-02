@@ -59,21 +59,25 @@ function GetASCConfig()
 		{
 			assertType("array<string>&hasOffsetValue('bsw', string)", $result);
 			$result['bsw'] = (int) $result['bsw'];
-			assertType('*NEVER*', $result); // should be non-empty-array<string|int>&hasOffsetValue('bsw', int)
+			assertType("non-empty-array<int|string>&hasOffsetValue('bsw', int)", $result);
 		}
 
-		assertType("non-empty-array<1|string>&hasOffsetValue('bsw', 1)", $result); // should be non-empty-array<1|string>&hasOffsetValue('bsw', int)
+		assertType("non-empty-array<int|string>&hasOffsetValue('bsw', int)", $result);
 
 		if (!isset($result['bew']))
 		{
+			assertType("non-empty-array<int|string>&hasOffsetValue('bsw', int)", $result);
 			$result['bew'] = 5;
+			assertType("non-empty-array<int|string>&hasOffsetValue('bew', 5)&hasOffsetValue('bsw', int)", $result);
 		}
 		else
 		{
+			assertType("non-empty-array<int|string>&hasOffsetValue('bew', int|string)&hasOffsetValue('bsw', int)", $result);
 			$result['bew'] = (int) $result['bew'];
+			assertType("non-empty-array<int|string>&hasOffsetValue('bew', int)&hasOffsetValue('bsw', int)", $result);
 		}
 
-		assertType("non-empty-array<int|string>&hasOffsetValue('bsw', 1)", $result); // should be non-empty-array<int|string>&hasOffsetValue('bsw', int)&hasOffsetValue('bew', int)
+		assertType("non-empty-array<int|string>&hasOffsetValue('bew', int)&hasOffsetValue('bsw', int)", $result);
 
 		foreach (['utc', 'ssi'] as $field)
 		{
@@ -83,7 +87,7 @@ function GetASCConfig()
 			}
 		}
 
-		assertType("non-empty-array<int|string>&hasOffsetValue('bsw', 1)", $result); // should be non-empty-array<int|string>&hasOffsetValue('bsw', int)&hasOffsetValue('bew', int)
+		assertType("non-empty-array<int|string>&hasOffsetValue('bew', int)&hasOffsetValue('bsw', int)", $result);
 	}
 
 	assertType('non-empty-array<int|string|false>', $result);

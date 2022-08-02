@@ -19,6 +19,7 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasOffsetType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -2213,6 +2214,72 @@ class TypeCombinatorTest extends PHPStanTestCase
 			IntersectionType::class,
 			'literal-string&non-empty-string',
 		];
+
+		yield [
+			[
+				new HasOffsetValueType(new ConstantStringType('a'), new ConstantIntegerType(1)),
+				new HasOffsetValueType(new ConstantStringType('a'), new IntegerType()),
+			],
+			HasOffsetValueType::class,
+			'hasOffsetValue(\'a\', int)',
+		];
+
+		yield [
+			[
+				TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new HasOffsetValueType(new ConstantStringType('a'), new ConstantIntegerType(1))),
+				TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new HasOffsetValueType(new ConstantStringType('a'), new IntegerType())),
+			],
+			IntersectionType::class,
+			'array&hasOffsetValue(\'a\', int)',
+		];
+
+		yield [
+			[
+				new IntersectionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new HasOffsetValueType(
+						new ConstantStringType('a'),
+						StaticTypeFactory::falsey(),
+					),
+				]),
+				new IntersectionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new HasOffsetValueType(
+						new ConstantStringType('a'),
+						StaticTypeFactory::truthy(),
+					),
+				]),
+			],
+			IntersectionType::class,
+			"array&hasOffsetValue('a', mixed)",
+		];
+
+		yield [
+			[
+				new IntersectionType([
+					new ArrayType(new IntegerType(), new ArrayType(new MixedType(), new MixedType())),
+					new HasOffsetValueType(
+						new ConstantIntegerType(0),
+						new IntersectionType([
+							new ArrayType(new MixedType(), new MixedType()),
+							new HasOffsetValueType(new ConstantStringType('code'), new ConstantIntegerType(1)),
+						]),
+					),
+				]),
+				new IntersectionType([
+					new ArrayType(new IntegerType(), new ArrayType(new MixedType(), new MixedType())),
+					new HasOffsetValueType(
+						new ConstantIntegerType(0),
+						new IntersectionType([
+							new ArrayType(new MixedType(), new MixedType()),
+							new HasOffsetValueType(new ConstantStringType('code'), new MixedType(true, new ConstantIntegerType(1))),
+						]),
+					),
+				]),
+			],
+			IntersectionType::class,
+			"array<int, array>&hasOffsetValue(0, array&hasOffsetValue('code', mixed))",
+		];
 	}
 
 	/**
@@ -3603,6 +3670,24 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			ConstantStringType::class,
 			"'0'",
+		];
+
+		yield [
+			[
+				new HasOffsetValueType(new ConstantStringType('a'), new ConstantIntegerType(1)),
+				new HasOffsetValueType(new ConstantStringType('a'), new IntegerType()),
+			],
+			HasOffsetValueType::class,
+			'hasOffsetValue(\'a\', 1)',
+		];
+
+		yield [
+			[
+				TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new HasOffsetValueType(new ConstantStringType('a'), new ConstantIntegerType(1))),
+				TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new HasOffsetValueType(new ConstantStringType('a'), new IntegerType())),
+			],
+			IntersectionType::class,
+			'array&hasOffsetValue(\'a\', 1)',
 		];
 	}
 

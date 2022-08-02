@@ -74,7 +74,7 @@ final class ArrayItemRemoval
 
 		$settings['limit'] = (int) $settings['limit'];
 
-		assertType("non-empty-array<string, mixed>&hasOffsetValue('limit', float|int<1, max>|numeric-string)&hasOffsetValue('limit', int)&hasOffsetValue('remove', 'all'|'first'|'last')", $settings);
+		assertType("non-empty-array<string, mixed>&hasOffsetValue('limit', int)&hasOffsetValue('remove', 'all'|'first'|'last')", $settings);
 
 		return $settings;
 	}

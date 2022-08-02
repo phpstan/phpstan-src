@@ -39,7 +39,7 @@ function doFoo() {
 	$data['radio'] = normalizePrice($data['radio']);
 
 	$data['invoicing'] = $data['invoicing'] === 'ANO';
-	assertType("non-empty-array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>&hasOffsetValue('invoicing', bool)&hasOffsetValue('languages', non-empty-array<int, string>)", $data);
+	assertType("non-empty-array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>&hasOffsetValue('invoicing', bool)&hasOffsetValue('languages', non-empty-array<int, string>)&hasOffsetValue('radio', mixed)&hasOffsetValue('videoOnline', mixed)&hasOffsetValue('videoTvc', mixed)", $data);
 }
 
 function normalizePrice($value)

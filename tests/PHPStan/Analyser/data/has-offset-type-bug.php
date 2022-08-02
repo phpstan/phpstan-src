@@ -111,3 +111,53 @@ class TryMixed
 	}
 
 }
+
+
+class AssignVsNarrow
+{
+
+	/**
+	 * @param array{a: string} $a
+	 * @return void
+	 */
+	public function doFoo(array $a)
+	{
+		if (is_int($a['a'])) {
+			assertType('*NEVER*', $a);
+		}
+	}
+
+	/**
+	 * @param array{a: string} $a
+	 * @return void
+	 */
+	public function doBar(array $a, int $i)
+	{
+		$a['a'] = $i;
+		assertType('array{a: int}', $a);
+	}
+
+	/**
+	 * @param array<string, string> $a
+	 * @return void
+	 */
+	public function doFoo2(array $a)
+	{
+		if (is_int($a['a'])) {
+			assertType('*NEVER*', $a);
+		}
+	}
+
+	/**
+	 * @param array<string, string> $a
+	 * @return void
+	 */
+	public function doBar2(array $a, int $i, string $s)
+	{
+		$a['a'] = $i;
+		assertType('non-empty-array<string, int|string>&hasOffsetValue(\'a\', int)', $a);
+		$a['a'] = $s;
+		assertType('non-empty-array<string, int|string>&hasOffsetValue(\'a\', string)', $a);
+	}
+
+}

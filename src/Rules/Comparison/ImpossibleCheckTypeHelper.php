@@ -77,6 +77,13 @@ class ImpossibleCheckTypeHelper
 					return null;
 				} elseif ($functionName === 'array_search') {
 					return null;
+				} elseif ($functionName === 'is_array') {
+					$argumentType = $scope->getType($node->getArgs()[0]->value);
+					if ($argumentType->isArray()->yes()) {
+						return true;
+					}
+
+					return null;
 				} elseif ($functionName === 'in_array' && $argsCount >= 3) {
 					$haystackType = $scope->getType($node->getArgs()[1]->value);
 					if ($haystackType instanceof MixedType) {

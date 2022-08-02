@@ -872,7 +872,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(27, $errors[1]->getLine());
 	}
 
-	public function testBug7737(): void
+	public function testBug7637(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7637.php');
 		$this->assertCount(2, $errors);
@@ -882,6 +882,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 
 		$this->assertSame('Method Bug7637\HelloWorld::getProperty() has invalid return type Bug7637\rex_timer.', $errors[1]->getMessage());
 		$this->assertSame(54, $errors[1]->getLine());
+	}
+
+	public function testBug7737(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7737.php');
+		$this->assertNoErrors($errors);
 	}
 
 	/**

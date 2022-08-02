@@ -72,6 +72,7 @@ use PHPStan\Node\ClassStatementsGatherer;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Node\DoWhileLoopConditionNode;
 use PHPStan\Node\ExecutionEndNode;
+use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
@@ -3728,12 +3729,12 @@ class NodeScopeResolver
 			$scope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 		}
 		$iterateeType = $scope->getType($stmt->expr);
-		if ($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)) {
+		if (
+			($stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name))
+			&& ($stmt->keyVar === null || ($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)))
+		) {
 			$keyVarName = null;
-			if ($stmt->keyVar !== null
-				&& $stmt->keyVar instanceof Variable
-				&& is_string($stmt->keyVar->name)
-			) {
+			if ($stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)) {
 				$keyVarName = $stmt->keyVar->name;
 			}
 			$scope = $scope->enterForeach(
@@ -3762,6 +3763,18 @@ class NodeScopeResolver
 			) {
 				$scope = $scope->enterForeachKey($stmt->expr, $stmt->keyVar->name);
 				$vars[] = $stmt->keyVar->name;
+			} elseif ($stmt->keyVar !== null) {
+				$scope = $this->processAssignVar(
+					$scope,
+					$stmt->keyVar,
+					new GetIterableKeyTypeExpr($stmt->expr),
+					static function (): void {
+					},
+					ExpressionContext::createDeep(),
+					static fn (MutatingScope $scope): ExpressionResult => new ExpressionResult($scope, false, []),
+					true,
+				)->getScope();
+				$vars = array_merge($vars, $this->getAssignedVariables($stmt->keyVar));
 			}
 		}
 

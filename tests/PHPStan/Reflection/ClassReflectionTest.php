@@ -7,6 +7,7 @@ use Attributes\IsAttribute;
 use Attributes\IsAttribute2;
 use Attributes\IsAttribute3;
 use Attributes\IsNotAttribute;
+use Exception;
 use GenericInheritance\C;
 use HasTraitUse\Bar;
 use HasTraitUse\Baz;
@@ -27,11 +28,14 @@ use NestedTraits\BarTrait;
 use NestedTraits\BazChild;
 use NestedTraits\BazTrait;
 use NestedTraits\NoTrait;
+use PHPStan\Rules\Rule;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\IntegerType;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use stdClass;
 use WrongClassConstantFile\SecuredRouter;
 use function array_map;
 use function array_values;
@@ -165,6 +169,38 @@ class ClassReflectionTest extends PHPStanTestCase
 				IsAttribute3::class,
 				true,
 				Attribute::IS_REPEATABLE | Attribute::TARGET_PROPERTY,
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataIsThrowable
+	 */
+	public function testIsThrowable(string $className, bool $expected): void
+	{
+		$reflectionProvider = $this->createReflectionProvider();
+		$reflection = $reflectionProvider->getClass($className);
+		$this->assertSame($expected, $reflection->isThrowable());
+	}
+
+	public function dataIsThrowable(): array
+	{
+		return [
+			[
+				Exception::class,
+				true,
+			],
+			[
+				ShouldNotHappenException::class,
+				true,
+			],
+			[
+				stdClass::class,
+				false,
+			],
+			[
+				Rule::class,
+				false,
 			],
 		];
 	}

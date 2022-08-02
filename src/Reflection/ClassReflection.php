@@ -1204,6 +1204,11 @@ class ClassReflection
 		return $this->isGeneric;
 	}
 
+	public function isThrowable(): bool
+	{
+		return array_key_exists('Throwable', $this->reflection->getInterfaces());
+	}
+
 	/**
 	 * @param array<int, Type> $types
 	 */

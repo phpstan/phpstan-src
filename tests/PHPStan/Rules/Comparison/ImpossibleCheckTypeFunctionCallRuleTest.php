@@ -622,11 +622,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6938.php'], [
 			[
 				'Call to function is_array() with array<int, string> will always evaluate to true.',
-				12
+				12,
 			],
 			[
 				'Call to function is_array() with array<int, string> will always evaluate to true.',
-				17
+				17,
 			],
 		]);
 	}

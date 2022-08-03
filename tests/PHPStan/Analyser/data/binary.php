@@ -193,6 +193,9 @@ class Foo
 		if (!is_array($mixed)) {
 			$mixedNoArray = $mixed;
 		}
+		if (!is_int($mixed)) {
+			$mixedNoInt = $mixed;
+		}
 		if (!is_float($mixed)) {
 			$mixedNoFloat = $mixed;
 		}

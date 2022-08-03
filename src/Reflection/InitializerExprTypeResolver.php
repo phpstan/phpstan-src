@@ -454,13 +454,11 @@ class InitializerExprTypeResolver
 					}
 				} else {
 					$arrayBuilder->degradeToGeneralArray();
-					$optional = !$valueType->isIterableAtLeastOnce()->yes() && !$valueType->getIterableValueType()->isIterableAtLeastOnce()->yes();
 
-					if (! (new StringType())->isSuperTypeOf($valueType->getIterableKeyType())->no() && $this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
-						$arrayBuilder->setOffsetValueType($valueType->getIterableKeyType(), $valueType->getIterableValueType(), $optional);
-					} else {
-						$arrayBuilder->setOffsetValueType(new IntegerType(), $valueType->getIterableValueType(), $optional);
-					}
+					$offsetType = !(new StringType())->isSuperTypeOf($valueType->getIterableKeyType())->no() && $this->phpVersion->supportsArrayUnpackingWithStringKeys()
+						? $valueType->getIterableKeyType()
+						: new IntegerType();
+					$arrayBuilder->setOffsetValueType($offsetType, $valueType->getIterableValueType(), !$valueType->isIterableAtLeastOnce()->yes());
 				}
 			} else {
 				$arrayBuilder->setOffsetValueType(

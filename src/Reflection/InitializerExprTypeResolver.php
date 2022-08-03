@@ -455,7 +455,7 @@ class InitializerExprTypeResolver
 				} else {
 					$arrayBuilder->degradeToGeneralArray();
 
-					$offsetType = !(new StringType())->isSuperTypeOf($valueType->getIterableKeyType())->no() && $this->phpVersion->supportsArrayUnpackingWithStringKeys()
+					$offsetType = $this->phpVersion->supportsArrayUnpackingWithStringKeys() && !(new StringType())->isSuperTypeOf($valueType->getIterableKeyType())->no()
 						? $valueType->getIterableKeyType()
 						: new IntegerType();
 					$arrayBuilder->setOffsetValueType($offsetType, $valueType->getIterableValueType(), !$valueType->isIterableAtLeastOnce()->yes());

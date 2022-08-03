@@ -49,11 +49,6 @@ parameters:
 			path: src/Collectors/Collector.php
 
 		-
-			message: "#^Binary operation \"\\+\" between array\\{class\\-string\\<TNodeType of PhpParser\\\\Node\\>\\} and array\\<string, class\\-string\\>\\|false results in an error\\.$#"
-			count: 1
-			path: src/Collectors/Registry.php
-
-		-
 			message: "#^Method PHPStan\\\\Collectors\\\\Registry\\:\\:__construct\\(\\) has parameter \\$collectors with generic interface PHPStan\\\\Collectors\\\\Collector but does not specify its types\\: TNodeType, TValue$#"
 			count: 1
 			path: src/Collectors/Registry.php
@@ -306,11 +301,6 @@ parameters:
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"
 			count: 1
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
-
-		-
-			message: "#^Binary operation \"\\+\" between array\\{class\\-string\\<TNodeType of PhpParser\\\\Node\\>\\} and array\\<string, class\\-string\\>\\|false results in an error\\.$#"
-			count: 1
-			path: src/Rules/Registry.php
 
 		-
 			message: "#^Method PHPStan\\\\Rules\\\\Registry\\:\\:__construct\\(\\) has parameter \\$rules with generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"

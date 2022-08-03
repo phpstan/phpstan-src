@@ -194,6 +194,9 @@ class Foo
 			$mixedNoArray = $mixed;
 		}
 
+		/** @var int|array $intOrArray */
+		$intOrArray = doFoo();
+
 		die;
 	}
 

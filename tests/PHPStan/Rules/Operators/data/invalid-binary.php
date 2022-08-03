@@ -265,7 +265,3 @@ function ($mixed, array $arr) {
 	}
 	$mixed + $arr; // mixed~array + array
 };
-
-function noErrorOnMixedPlusArray($mixed, array $arr) {
-	$mixed + $arr;
-};

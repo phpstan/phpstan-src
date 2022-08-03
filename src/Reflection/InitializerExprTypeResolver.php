@@ -955,25 +955,30 @@ class InitializerExprTypeResolver
 			]);
 		}
 
-		$mixedArray = new ArrayType(new MixedType(), new MixedType());
 		if (
-			($leftType->isArray()->yes() && $rightType->isSuperTypeOf($mixedArray)->no())
-			|| ($rightType->isArray()->yes() && $leftType->isSuperTypeOf($mixedArray)->no())
+			($arrayType->isSuperTypeOf($leftType)->yes() && $arrayType->isSuperTypeOf($rightType)->no())
+			|| ($arrayType->isSuperTypeOf($rightType)->yes() && $arrayType->isSuperTypeOf($leftType)->no())
 		) {
 			return new ErrorType();
 		}
 
 		if (
-			($leftType->isArray()->yes() && $rightType->isSuperTypeOf($mixedArray)->yes())
-			|| ($rightType->isArray()->yes() && $leftType->isSuperTypeOf($mixedArray)->yes())
+			($arrayType->isSuperTypeOf($leftType)->yes() && $arrayType->isSuperTypeOf($rightType)->maybe())
+			|| ($arrayType->isSuperTypeOf($rightType)->yes() && $arrayType->isSuperTypeOf($leftType)->maybe())
+			|| ($arrayType->isSuperTypeOf($leftType)->maybe() && $arrayType->isSuperTypeOf($rightType)->maybe())
+			|| ($arrayType->isSuperTypeOf($rightType)->maybe() && $arrayType->isSuperTypeOf($leftType)->maybe())
 		) {
-			$arrayType = new ArrayType(new MixedType(), new MixedType());
+			if ($rightType->isArray()->yes() || $leftType->isArray()->yes()) {
+				$resultType = new ArrayType(new MixedType(), new MixedType());
 
-			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
-				return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+				if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
+					return TypeCombinator::intersect($resultType, new NonEmptyArrayType());
+				}
+
+				return $resultType;
 			}
 
-			return $arrayType;
+			return TypeCombinator::union($leftType, $rightType);
 		}
 
 		return $this->resolveCommonMath(new BinaryOp\Plus($left, $right), $leftType, $rightType);

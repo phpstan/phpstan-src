@@ -325,10 +325,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createMaybe();
 		}
 
-		if ($thisClassReflection->isInterface() && !$thatClassReflection->getNativeReflection()->isFinal()) {
-			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createMaybe();
-		}
-
 		if ($thatClassReflection->isInterface() && !$thisClassReflection->getNativeReflection()->isFinal()) {
 			return self::$superTypes[$thisDescription][$description] = TrinaryLogic::createMaybe();
 		}

@@ -3528,21 +3528,40 @@ class MutatingScope implements Scope
 			if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
 				$exprVarType = $this->getType($expr->var);
 				if (!$exprVarType instanceof MixedType) {
-					$types = [
-						new ArrayType(new MixedType(), new MixedType()),
-						new ObjectType(ArrayAccess::class),
-						new NullType(),
-					];
-					if ($dimType instanceof ConstantIntegerType) {
-						$types[] = new StringType();
+					if ($exprVarType instanceof IntersectionType && count($exprVarType->getTypes()) > 8) {
+						// degrade to faster regular array
+						$constantArrays = TypeUtils::getOldConstantArrays($this->getType($expr->var));
+						if (count($constantArrays) > 0) {
+							$setArrays = [];
+							foreach ($constantArrays as $constantArray) {
+								$setArrays[] = $constantArray->setOffsetValueType(
+									TypeCombinator::intersect($dimType, $constantArray->getKeyType()),
+									$type,
+								);
+							}
+							$scope = $this->specifyExpressionType(
+								$expr->var,
+								TypeCombinator::union(...$setArrays),
+							);
+						}
+					} else {
+						$types = [
+							new ArrayType(new MixedType(), new MixedType()),
+							new ObjectType(ArrayAccess::class),
+							new NullType(),
+						];
+						if ($dimType instanceof ConstantIntegerType) {
+							$types[] = new StringType();
+						}
+
+						$scope = $this->specifyExpressionType(
+							$expr->var,
+							TypeCombinator::intersect(
+								TypeCombinator::intersect($exprVarType, TypeCombinator::union(...$types)),
+								new HasOffsetValueType($dimType, $type),
+							),
+						);
 					}
-					$scope = $this->specifyExpressionType(
-						$expr->var,
-						TypeCombinator::intersect(
-							TypeCombinator::intersect($exprVarType, TypeCombinator::union(...$types)),
-							new HasOffsetValueType($dimType, $type),
-						),
-					);
 				}
 			}
 		}

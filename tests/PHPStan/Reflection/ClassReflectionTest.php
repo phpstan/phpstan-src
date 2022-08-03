@@ -7,6 +7,7 @@ use Attributes\IsAttribute;
 use Attributes\IsAttribute2;
 use Attributes\IsAttribute3;
 use Attributes\IsNotAttribute;
+use Countable;
 use GenericInheritance\C;
 use HasTraitUse\Bar;
 use HasTraitUse\Baz;
@@ -319,6 +320,7 @@ class ClassReflectionTest extends PHPStanTestCase
 		$this->assertTrue($classReflection->is($className));
 		$this->assertTrue($classReflection->is(PHPStanTestCase::class));
 		$this->assertTrue($classReflection->is(TestCase::class));
+		$this->assertTrue($classReflection->is(Countable::class));
 		$this->assertFalse($classReflection->is(RuleTestCase::class));
 	}
 

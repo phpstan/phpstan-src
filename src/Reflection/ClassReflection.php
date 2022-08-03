@@ -653,7 +653,7 @@ class ClassReflection
 
 	public function is(string $className): bool
 	{
-		return $this->getName() === $className || $this->isSubclassOf($className);
+		return $this->getName() === $className || $this->isSubclassOf($className) || $this->implementsInterface($className);
 	}
 
 	public function isSubclassOf(string $className): bool

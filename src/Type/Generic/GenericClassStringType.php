@@ -8,6 +8,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
@@ -170,6 +171,26 @@ class GenericClassStringType extends ClassStringType
 	public static function __set_state(array $properties): Type
 	{
 		return new self($properties['type']);
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->isClassString()) {
+			$generic = $this->getGenericType();
+
+			if ($generic instanceof ObjectType) {
+				$classReflection = $generic->getClassReflection();
+				if (
+					$classReflection !== null
+					&& $classReflection->isFinal()
+					&& $generic->getClassName() === $typeToRemove->getValue()
+				) {
+					return new NeverType();
+				}
+			}
+		}
+
+		return parent::tryRemove($typeToRemove);
 	}
 
 }

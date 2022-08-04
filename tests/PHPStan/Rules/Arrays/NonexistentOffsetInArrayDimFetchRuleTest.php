@@ -167,6 +167,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Offset \'feature_pretty…\' does not exist on array{version: non-empty-string, commit: string|null, pretty_version: string|null, feature_version: non-empty-string, feature_pretty_version?: string|null}.',
 				504,
 			],
+			[
+				"Cannot access offset 'foo' on bool.",
+				517,
+			],
 		]);
 	}
 
@@ -248,7 +252,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-3782.php'], [
 			[
-				'Cannot access offset (int|string) on Bug3782\HelloWorld.',
+				'Cannot access offset (int|string) on $this(Bug3782\HelloWorld)|(ArrayAccess&Bug3782\HelloWorld).',
 				11,
 			],
 		]);

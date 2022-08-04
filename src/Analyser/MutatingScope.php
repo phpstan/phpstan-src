@@ -3523,6 +3523,7 @@ class MutatingScope implements Scope
 					$types = [
 						new ArrayType(new MixedType(), new MixedType()),
 						new ObjectType(ArrayAccess::class),
+						new NullType(),
 					];
 					if ($dimType instanceof ConstantIntegerType) {
 						$types[] = new StringType();

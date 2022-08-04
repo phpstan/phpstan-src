@@ -6,6 +6,11 @@ parameters:
 			path: src/Analyser/DirectScopeFactory.php
 
 		-
+			message: "#^Cannot assign offset 'realCount' to array\\|string\\.$#"
+			count: 1
+			path: src/Analyser/IgnoredErrorHelperResult.php
+
+		-
 			message: "#^Function is_a\\(\\) is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
 			count: 1
 			path: src/Analyser/LazyScopeFactory.php

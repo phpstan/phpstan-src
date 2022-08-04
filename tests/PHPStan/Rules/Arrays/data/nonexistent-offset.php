@@ -508,3 +508,13 @@ class VersionGuesser
 		return $versionData;
 	}
 }
+
+class OnBool
+{
+
+	public function doFoo(bool $b)
+	{
+		$b['foo'] = 1;
+	}
+
+}

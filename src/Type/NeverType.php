@@ -172,7 +172,7 @@ class NeverType implements CompoundType
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
-		return new NeverType();
+		return new ErrorType();
 	}
 
 	public function unsetOffset(Type $offsetType): Type

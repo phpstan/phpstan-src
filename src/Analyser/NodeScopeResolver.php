@@ -3374,6 +3374,17 @@ class NodeScopeResolver
 			foreach (array_reverse($offsetTypes) as $i => $offsetType) {
 				/** @var Type $offsetValueType */
 				$offsetValueType = array_pop($offsetValueTypeStack);
+				if (!$offsetValueType instanceof MixedType) {
+					$types = [
+						new ArrayType(new MixedType(), new MixedType()),
+						new ObjectType(ArrayAccess::class),
+						new NullType(),
+					];
+					if ($offsetType !== null && (new IntegerType())->isSuperTypeOf($offsetType)->yes()) {
+						$types[] = new StringType();
+					}
+					$offsetValueType = TypeCombinator::intersect($offsetValueType, TypeCombinator::union(...$types));
+				}
 				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
 			}
 

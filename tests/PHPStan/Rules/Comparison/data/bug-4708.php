@@ -53,7 +53,7 @@ function GetASCConfig()
 		{
 			assertType('array<string>|true', $result);
 			$result['bsw'] = 1;
-			assertType('*ERROR*', $result); // should be non-empty-array<string|1>&hasOffsetValue('bsw', 1)
+			assertType("non-empty-array<1|string>&hasOffsetValue('bsw', 1)", $result);
 		}
 		else
 		{
@@ -62,7 +62,7 @@ function GetASCConfig()
 			assertType('*NEVER*', $result); // should be non-empty-array<string|int>&hasOffsetValue('bsw', int)
 		}
 
-		assertType('*ERROR*', $result); // should have a better result
+		assertType("non-empty-array<1|string>&hasOffsetValue('bsw', 1)", $result); // should have an int
 
 		if (!isset($result['bew']))
 		{
@@ -73,7 +73,7 @@ function GetASCConfig()
 			$result['bew'] = (int) $result['bew'];
 		}
 
-		assertType('array{bew: int}', $result); // missing bsw key
+		assertType("non-empty-array<int|string>&hasOffsetValue('bsw', 1)", $result); // missing bsw key
 
 		foreach (['utc', 'ssi'] as $field)
 		{
@@ -84,7 +84,7 @@ function GetASCConfig()
 		}
 	}
 
-	assertType("non-empty-array<'bew'|'dberror'|'result'|'ssi'|'utc', 'xyz'|int|false>", $result); // should be non-empty-array<int|string|false>
+	assertType("non-empty-array<int|string|false>", $result);
 
 	return $result;
 }

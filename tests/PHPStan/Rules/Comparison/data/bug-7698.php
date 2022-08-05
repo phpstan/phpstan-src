@@ -27,3 +27,11 @@ function matchIt()
 	};
 }
 
+function matchGetClassString()
+{
+	$t = new Test(new A());
+	echo match (get_class($t->value)) {
+		A::class => 'A',
+		B::class => 'B'
+	};
+}

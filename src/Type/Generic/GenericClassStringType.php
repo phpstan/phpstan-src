@@ -15,6 +15,7 @@ use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -178,7 +179,7 @@ class GenericClassStringType extends ClassStringType
 		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->isClassString()) {
 			$generic = $this->getGenericType();
 
-			if ($generic instanceof ObjectType) {
+			if ($generic instanceof TypeWithClassName) {
 				$classReflection = $generic->getClassReflection();
 				if (
 					$classReflection !== null

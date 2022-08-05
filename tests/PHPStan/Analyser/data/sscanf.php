@@ -36,3 +36,9 @@ function fscanfFormatInference($r) {
 	assertType('int', $day);
 	assertType('int', $year);
 }
+
+function fooo() {
+	assertType('array{non-empty-string}|null', sscanf( "123456" , "%0s"));
+	assertType('array{non-empty-string}|null', sscanf( "123456" , "%3s"));
+	assertType('array{int, int, int}|null', sscanf('00ccff', '%2x%2x%2x'));
+}

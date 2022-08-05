@@ -19,7 +19,7 @@ function foo(array $arr): void
 function foo2(array $arr): void
 {
 	$arrSpread = [...$arr];
-	assertType('non-empty-array<int, non-empty-array>', $arrSpread);
+	assertType('array<int, non-empty-array>', $arrSpread);
 }
 
 /**

@@ -177,4 +177,12 @@ class EmptyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7424.php'], []);
 	}
 
+	public function testBug7724(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
+
+		$this->analyse([__DIR__ . '/data/bug-7724.php'], []);
+	}
+
 }

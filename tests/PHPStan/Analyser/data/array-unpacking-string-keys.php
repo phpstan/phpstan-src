@@ -20,7 +20,7 @@ function foo(array $a, array $b)
 {
 	$c = [...$a, ...$b];
 
-	assertType('non-empty-array<int|string, int>', $c);
+	assertType('array<int|string, int>', $c);
 }
 
 /**
@@ -31,7 +31,7 @@ function bar(array $a, array $b)
 {
 	$c = [...$a, ...$b];
 
-	assertType('non-empty-array<int>', $c);
+	assertType('array<int>', $c);
 }
 
 /**
@@ -42,5 +42,27 @@ function baz(array $a, array $b)
 {
 	$c = [...$a, ...$b];
 
-	assertType('non-empty-array<string, int>', $c);
+	assertType('array<string, int>', $c);
+}
+
+/**
+ * @param non-empty-array<string, int> $a
+ * @param array<int, int> $b
+ */
+function nonEmptyArray1(array $a, array $b)
+{
+	$c = [...$a, ...$b];
+
+	assertType('non-empty-array<int|string, int>', $c);
+}
+
+/**
+ * @param array<string, int> $a
+ * @param non-empty-array<int, int> $b
+ */
+function nonEmptyArray2(array $a, array $b)
+{
+	$c = [...$a, ...$b];
+
+	assertType('non-empty-array<int|string, int>', $c);
 }

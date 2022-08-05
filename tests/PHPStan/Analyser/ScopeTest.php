@@ -29,7 +29,7 @@ class ScopeTest extends PHPStanTestCase
 			[
 				new ConstantStringType('a'),
 				new ConstantStringType('b'),
-				'literal-string&non-empty-string',
+				'literal-string&non-falsy-string',
 			],
 			[
 				new ConstantIntegerType(0),
@@ -139,7 +139,7 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(1),
 					new ConstantIntegerType(1),
 				]),
-				'array<literal-string&non-empty-string, 1>',
+				'array<literal-string&non-falsy-string, 1>',
 			],
 			[
 				new ConstantArrayType([
@@ -154,7 +154,7 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(1),
 					new ConstantIntegerType(2),
 				]),
-				'array<literal-string&non-empty-string, int<1, max>>',
+				'array<literal-string&non-falsy-string, int<1, max>>',
 			],
 			[
 				new UnionType([

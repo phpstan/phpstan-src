@@ -452,6 +452,11 @@ class UnionType implements CompoundType
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isNonEmptyString());
 	}
 
+	public function isNonFalsyString(): TrinaryLogic
+	{
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isNonFalsyString());
+	}
+
 	public function isLiteralString(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isLiteralString());

@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -86,10 +87,17 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			}
 
 			if ($string->isNonEmptyString()->yes() && ($negativeOffset || $zeroOffset && $positiveLength)) {
-				  return new IntersectionType([
-					  new StringType(),
-					  new AccessoryNonEmptyStringType(),
-				  ]);
+				if ($string->isNonFalsyString()->yes()) {
+					return new IntersectionType([
+						new StringType(),
+						new AccessoryNonFalsyStringType(),
+					]);
+
+				}
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
+				]);
 			}
 		}
 

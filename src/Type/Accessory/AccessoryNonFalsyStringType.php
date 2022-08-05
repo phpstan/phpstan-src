@@ -9,27 +9,28 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
-use PHPStan\Type\Traits\NonCallableTypeTrait;
+use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
-use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
+use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class AccessoryNumericStringType implements CompoundType, AccessoryType
+class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 {
 
-	use NonCallableTypeTrait;
+	use MaybeCallableTypeTrait;
 	use NonObjectTypeTrait;
 	use NonIterableTypeTrait;
-	use UndecidedBooleanTypeTrait;
+	use TruthyBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
 	use NonRemoveableTypeTrait;
@@ -50,7 +51,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return $type->isNumericString();
+		return $type->isNonFalsyString();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -63,7 +64,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return TrinaryLogic::createYes();
 		}
 
-		return $type->isNumericString();
+		return $type->isNonFalsyString();
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
@@ -72,20 +73,16 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return $otherType->isNumericString()
+		if ($otherType instanceof AccessoryNonEmptyStringType) {
+			return TrinaryLogic::createYes();
+		}
+
+		return $otherType->isNonFalsyString()
 			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		if ($acceptingType->isNonFalsyString()->yes()) {
-			return TrinaryLogic::createMaybe();
-		}
-
-		if ($acceptingType->isNonEmptyString()->yes()) {
-			return TrinaryLogic::createYes();
-		}
-
 		return $this->isSubTypeOf($acceptingType);
 	}
 
@@ -96,7 +93,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return 'numeric-string';
+		return 'non-falsy-string';
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic
@@ -113,6 +110,10 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	{
 		if ($this->hasOffsetValueType($offsetType)->no()) {
 			return new ErrorType();
+		}
+
+		if ((new ConstantIntegerType(0))->isSuperTypeOf($offsetType)->yes()) {
+			return new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
 		}
 
 		return new StringType();
@@ -135,15 +136,15 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function toNumber(): Type
 	{
-		return new UnionType([
-			$this->toInteger(),
-			$this->toFloat(),
-		]);
+		return new ErrorType();
 	}
 
 	public function toInteger(): Type
 	{
-		return new IntegerType();
+		return new UnionType([
+			IntegerRangeType::fromInterval(null, -1),
+			IntegerRangeType::fromInterval(1, null),
+		]);
 	}
 
 	public function toFloat(): Type
@@ -172,7 +173,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function isNumericString(): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isNonEmptyString(): TrinaryLogic
@@ -182,7 +183,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 
 	public function isNonFalsyString(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return TrinaryLogic::createYes();
 	}
 
 	public function isLiteralString(): TrinaryLogic

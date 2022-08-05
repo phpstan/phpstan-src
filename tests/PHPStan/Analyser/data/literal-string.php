@@ -13,10 +13,12 @@ class Foo
 		assertType('literal-string', $literalString);
 		assertType('literal-string', $literalString . '');
 		assertType('literal-string', '' . $literalString);
-		assertType('literal-string&non-empty-string', $literalString . 'foo');
-		assertType('literal-string&non-empty-string', 'foo' . $literalString);
-		assertType('literal-string&non-empty-string', "foo ${literalString}");
-		assertType('literal-string&non-empty-string', "${literalString} foo");
+		assertType('literal-string&non-empty-string', $literalString . '0');
+		assertType('literal-string&non-empty-string', '0' . $literalString);
+		assertType('literal-string&non-falsy-string', $literalString . 'foo');
+		assertType('literal-string&non-falsy-string', 'foo' . $literalString);
+		assertType('literal-string&non-falsy-string', "foo ${literalString}");
+		assertType('literal-string&non-falsy-string', "${literalString} foo");
 		assertType('string', $string . '');
 		assertType('string', '' . $string);
 		assertType('string', $literalString . $string);
@@ -31,7 +33,7 @@ class Foo
 			"'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'",
 			str_repeat('a', 99)
 		);
-		assertType('literal-string&non-empty-string', str_repeat('a', 100));
+		assertType('literal-string&non-falsy-string', str_repeat('a', 100));
 		assertType("'?,?,?,'", str_repeat('?,', 3));
 		assertType("*NEVER*", str_repeat('?,', -3));
 

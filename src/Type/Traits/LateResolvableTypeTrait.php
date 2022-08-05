@@ -225,6 +225,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isNonEmptyString();
 	}
 
+	public function isNonFalsyString(): TrinaryLogic
+	{
+		return $this->resolve()->isNonFalsyString();
+	}
+
 	public function isLiteralString(): TrinaryLogic
 	{
 		return $this->resolve()->isLiteralString();

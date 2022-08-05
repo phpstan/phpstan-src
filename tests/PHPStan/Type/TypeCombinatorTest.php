@@ -13,7 +13,9 @@ use InvalidArgumentException;
 use Iterator;
 use PHPStan\Fixture\FinalClass;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -1907,6 +1909,28 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			[
 				[
+					new ConstantStringType('0'),
+					new IntersectionType([
+						new StringType(),
+						new AccessoryNonFalsyStringType(),
+					]),
+				],
+				IntersectionType::class,
+				'non-empty-string',
+			],
+			[
+				[
+					new ConstantStringType(''),
+					new IntersectionType([
+						new StringType(),
+						new AccessoryNonFalsyStringType(),
+					]),
+				],
+				StringType::class,
+				'string',
+			],
+			[
+				[
 					new StringType(),
 					new UnionType([
 						new ConstantStringType(''),
@@ -2139,6 +2163,55 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			ThisType::class,
 			'$this(ThisSubtractable\Foo)',
+		];
+
+		yield [
+			[
+				TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType()),
+				TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType()),
+			],
+			IntersectionType::class,
+			'non-empty-string',
+		];
+
+		yield [
+			[
+				TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType()),
+				new ConstantStringType('0'),
+			],
+			IntersectionType::class,
+			'non-empty-string',
+		];
+
+		yield [
+			[
+				TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType()),
+				new ConstantStringType('0'),
+			],
+			IntersectionType::class,
+			'non-empty-string',
+		];
+
+		yield [
+			[
+				TypeCombinator::intersect(new StringType(), new AccessoryLiteralStringType(), new AccessoryNonFalsyStringType()),
+				new ConstantStringType('bar'),
+				new ConstantStringType('baz'),
+				new ConstantStringType('foo'),
+			],
+			IntersectionType::class,
+			'literal-string&non-falsy-string',
+		];
+
+		yield [
+			[
+				TypeCombinator::intersect(new StringType(), new AccessoryLiteralStringType(), new AccessoryNonEmptyStringType()),
+				new ConstantStringType('bar'),
+				new ConstantStringType('baz'),
+				new ConstantStringType('foo'),
+			],
+			IntersectionType::class,
+			'literal-string&non-empty-string',
 		];
 	}
 
@@ -3503,6 +3576,33 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			IntersectionType::class,
 			'$this(stdClass)&stdClass::foo',
+		];
+
+		yield [
+			[
+				TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType()),
+				TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType()),
+			],
+			IntersectionType::class,
+			'non-falsy-string',
+		];
+
+		yield [
+			[
+				TypeCombinator::intersect(new StringType(), new AccessoryNonFalsyStringType()),
+				new ConstantStringType('0'),
+			],
+			NeverType::class,
+			'*NEVER*',
+		];
+
+		yield [
+			[
+				TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType()),
+				new ConstantStringType('0'),
+			],
+			ConstantStringType::class,
+			"'0'",
 		];
 	}
 

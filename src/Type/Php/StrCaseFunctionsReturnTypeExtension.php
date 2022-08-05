@@ -8,6 +8,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -70,6 +71,13 @@ class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			return new IntersectionType([
 				new StringType(),
 				new AccessoryNumericStringType(),
+			]);
+		}
+
+		if ($argType->isNonFalsyString()->yes()) {
+			return new IntersectionType([
+				new StringType(),
+				new AccessoryNonFalsyStringType(),
 			]);
 		}
 

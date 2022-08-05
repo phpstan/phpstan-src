@@ -17,7 +17,7 @@ use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
-use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
+use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
@@ -29,10 +29,10 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 	use MaybeCallableTypeTrait;
 	use NonObjectTypeTrait;
 	use NonIterableTypeTrait;
-	use TruthyBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
 	use NonRemoveableTypeTrait;
+	use UndecidedBooleanTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -60,6 +60,10 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		}
 
 		if ($this->equals($type)) {
+			return TrinaryLogic::createYes();
+		}
+
+		if ($type->isNonFalsyString()->yes()) {
 			return TrinaryLogic::createYes();
 		}
 
@@ -171,6 +175,11 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 	public function isNonEmptyString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function isNonFalsyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isLiteralString(): TrinaryLogic

@@ -505,6 +505,30 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $code of method Test\\ValueOfParam::foo() expects \'John F. Kennedy…\'|\'La Guardia Airport\', \'Newark Liberty…\' given.',
 				1802,
 			],
+			[
+				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, numeric-string given.',
+				1844,
+			],
+			[
+				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, \'0\' given.',
+				1845,
+			],
+			[
+				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, string given.',
+				1846,
+			],
+			[
+				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, non-empty-string given.',
+				1847,
+			],
+			[
+				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, literal-string given.',
+				1848,
+			],
+			[
+				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, int given.',
+				1849,
+			],
 		]);
 	}
 
@@ -799,6 +823,30 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $code of method Test\\ValueOfParam::foo() expects \'John F. Kennedy…\'|\'La Guardia Airport\', \'Newark Liberty…\' given.',
 				1802,
+			],
+			[
+				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, numeric-string given.',
+				1844,
+			],
+			[
+				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, \'0\' given.',
+				1845,
+			],
+			[
+				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, string given.',
+				1846,
+			],
+			[
+				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, non-empty-string given.',
+				1847,
+			],
+			[
+				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, literal-string given.',
+				1848,
+			],
+			[
+				'Parameter #1 $string of method Test\NonFalsyString::acceptsNonFalsyString() expects non-falsy-string, int given.',
+				1849,
 			],
 		]);
 	}

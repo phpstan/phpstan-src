@@ -164,7 +164,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				443,
 			],
 			[
-				'Offset \'feature_pretty…\' does not exist on array{version: non-empty-string, commit: string|null, pretty_version: string|null, feature_version: non-empty-string, feature_pretty_version?: string|null}.',
+				'Offset \'feature_pretty…\' does not exist on array{version: non-falsy-string, commit: string|null, pretty_version: string|null, feature_version: non-falsy-string, feature_pretty_version?: string|null}.',
 				504,
 			],
 			[

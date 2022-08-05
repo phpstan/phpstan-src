@@ -116,7 +116,7 @@ class Foo
 	public function doFoo3(string $s): void
 	{
 		if ($s) {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		} else {
 			assertType('\'\'|\'0\'', $s);
 		}
@@ -148,13 +148,13 @@ class Foo
 			return;
 		}
 
-		assertType('non-empty-string', $s);
+		assertType('non-falsy-string', $s);
 	}
 
 	public function doEmpty2(string $s): void
 	{
 		if (!empty($s)) {
-			assertType('non-empty-string', $s);
+			assertType('non-falsy-string', $s);
 		}
 	}
 
@@ -181,7 +181,7 @@ class ImplodingStrings
 	{
 		assertType('string', implode($s, $nonEmptyArrayWithStrings));
 		assertType('string', implode('', $nonEmptyArrayWithStrings));
-		assertType('non-empty-string', implode(' ', $nonEmptyArrayWithStrings));
+		assertType('non-falsy-string', implode(' ', $nonEmptyArrayWithStrings));
 		assertType('string', implode($nonEmptyArrayWithStrings));
 	}
 
@@ -203,7 +203,7 @@ class ImplodingStrings
 	{
 		assertType('non-empty-string', implode($s, $nonEmptyArrayWithNonEmptyStrings));
 		assertType('non-empty-string', implode('', $nonEmptyArrayWithNonEmptyStrings));
-		assertType('non-empty-string', implode(' ', $nonEmptyArrayWithNonEmptyStrings));
+		assertType('non-falsy-string', implode(' ', $nonEmptyArrayWithNonEmptyStrings));
 		assertType('non-empty-string', implode($nonEmptyArrayWithNonEmptyStrings));
 	}
 
@@ -212,7 +212,7 @@ class ImplodingStrings
 		// coming from issue #5291
 		$s = array(1, $i);
 
-		assertType('non-empty-string', implode("a", $s));
+		assertType('non-falsy-string', implode("a", $s));
 	}
 
 	/**
@@ -233,7 +233,7 @@ class ImplodingStrings
 		// coming from issue #5291
 		$s = array(1, $i);
 
-		assertType('non-empty-string', join("a", $s));
+		assertType('non-falsy-string', join("a", $s));
 	}
 
 	/**
@@ -256,7 +256,7 @@ class LiteralString
 
 	function x(string $tableName, string $original): void
 	{
-		assertType('non-empty-string', "from `$tableName`");
+		assertType('non-falsy-string', "from `$tableName`");
 	}
 
 	/**

@@ -10,6 +10,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -168,7 +169,11 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		if ($inputType->isNonEmptyString()->yes()
 			&& $type->isString()->yes()
 			&& !$this->canStringBeSanitized($filterValue, $flagsArg, $scope)) {
-			$type = TypeCombinator::intersect($type, new AccessoryNonEmptyStringType());
+			$accessory = new AccessoryNonEmptyStringType();
+			if ($inputType->isNonFalsyString()->yes()) {
+				$accessory = new AccessoryNonFalsyStringType();
+			}
+			$type = TypeCombinator::intersect($type, $accessory);
 		}
 
 		if (isset($otherTypes['range'])) {

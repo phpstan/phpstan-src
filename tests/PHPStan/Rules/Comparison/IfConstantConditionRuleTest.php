@@ -116,4 +116,10 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug5370(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-5370.php'], []);
+	}
+
 }

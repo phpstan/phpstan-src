@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
@@ -65,7 +66,9 @@ class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 
 		$accessoryTypes = [];
 		if ($arrayType->isIterableAtLeastOnce()->yes()) {
-			if ($arrayType->getIterableValueType()->isNonEmptyString()->yes() || $separatorType->isNonEmptyString()->yes()) {
+			if ($arrayType->getIterableValueType()->isNonFalsyString()->yes() || $separatorType->isNonFalsyString()->yes()) {
+				$accessoryTypes[] = new AccessoryNonFalsyStringType();
+			} elseif ($arrayType->getIterableValueType()->isNonEmptyString()->yes() || $separatorType->isNonEmptyString()->yes()) {
 				$accessoryTypes[] = new AccessoryNonEmptyStringType();
 			}
 		}

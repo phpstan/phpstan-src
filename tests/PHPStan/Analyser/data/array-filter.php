@@ -27,11 +27,11 @@ function withMixedInsteadOfArray($var1): void
 function withoutCallback(array $map1, array $map2, array $map3): void
 {
 	$filtered1 = array_filter($map1);
-	assertType('array<string, float|int<min, -1>|int<1, max>|non-empty-string|true>', $filtered1);
+	assertType('array<string, float|int<min, -1>|int<1, max>|non-falsy-string|true>', $filtered1);
 
 	$filtered2 = array_filter($map2, null, ARRAY_FILTER_USE_KEY);
-	assertType('array<string, float|int<min, -1>|int<1, max>|non-empty-string|true>', $filtered2);
+	assertType('array<string, float|int<min, -1>|int<1, max>|non-falsy-string|true>', $filtered2);
 
 	$filtered3 = array_filter($map3, null, ARRAY_FILTER_USE_BOTH);
-	assertType('array<string, float|int<min, -1>|int<1, max>|non-empty-string|true>', $filtered3);
+	assertType('array<string, float|int<min, -1>|int<1, max>|non-falsy-string|true>', $filtered3);
 }

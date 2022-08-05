@@ -2256,15 +2256,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'false ? 1 : 2',
 			],
 			[
-				'12|non-empty-string',
+				'12|non-falsy-string',
 				'$string ?: 12',
 			],
 			[
-				'12|non-empty-string',
+				'12|non-falsy-string',
 				'$stringOrNull ?: 12',
 			],
 			[
-				'12|non-empty-string',
+				'12|non-falsy-string',
 				'@$stringOrNull ?: 12',
 			],
 			[
@@ -2436,11 +2436,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'min(1, 2.2, 3.3)',
 			],
 			[
-				'non-empty-string',
+				'non-falsy-string',
 				'"Hello $world"',
 			],
 			[
-				'non-empty-string',
+				'non-falsy-string',
 				'$string .= "str"',
 			],
 			[
@@ -2948,15 +2948,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$decrementedFooString',
 			],
 			[
-				'literal-string&non-empty-string',
+				'literal-string&non-falsy-string',
 				'$conditionalString . $conditionalString',
 			],
 			[
-				'literal-string&non-empty-string',
+				'literal-string&non-falsy-string',
 				'$conditionalString . $anotherConditionalString',
 			],
 			[
-				'literal-string&non-empty-string',
+				'literal-string&non-falsy-string',
 				'$anotherConditionalString . $conditionalString',
 			],
 			[
@@ -3080,7 +3080,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$simpleXMLReturningXML',
 			],
 			[
-				'non-empty-string',
+				'non-falsy-string',
 				'$xmlString',
 			],
 			[
@@ -7956,7 +7956,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrayAppendedInForeach',
 			],
 			[
-				'non-empty-array<int<0, max>, literal-string&non-empty-string>', // could be 'array<int<0, max>, \'bar\'|\'baz\'|\'foo\'>'
+				'non-empty-array<int<0, max>, literal-string&non-falsy-string>', // could be 'array<int<0, max>, \'bar\'|\'baz\'|\'foo\'>'
 				'$anotherArrayAppendedInForeach',
 			],
 			[

@@ -49,12 +49,12 @@ class Foo {
 
 	public function foo() {
 		// calls with a 2nd arg could be more precise, but there was no use-case yet to support it
-		assertType("non-empty-string", mb_strtolower('ABC', 'UTF-8'));
-		assertType("non-empty-string", mb_strtoupper('abc', 'UTF-8'));
-		assertType("non-empty-string", ucwords('hello|world!', "|"));
+		assertType("non-falsy-string", mb_strtolower('ABC', 'UTF-8'));
+		assertType("non-falsy-string", mb_strtoupper('abc', 'UTF-8'));
+		assertType("non-falsy-string", ucwords('hello|world!', "|"));
 
-		// invalid char conversions still lead to non-empty-string
-		assertType("non-empty-string", mb_strtolower("\xfe\xff\x65\xe5\x67\x2c\x8a\x9e", 'CP1252'));
+		// invalid char conversions still lead to non-falsy-string
+		assertType("non-falsy-string", mb_strtolower("\xfe\xff\x65\xe5\x67\x2c\x8a\x9e", 'CP1252'));
 
 	}
 }

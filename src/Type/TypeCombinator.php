@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
@@ -403,7 +404,8 @@ class TypeCombinator
 		if (
 			$a instanceof ConstantStringType
 			&& $a->getValue() === ''
-			&& $b->describe(VerbosityLevel::value()) === 'non-empty-string'
+			&& ($b->describe(VerbosityLevel::value()) === 'non-empty-string'
+			|| $b->describe(VerbosityLevel::value()) === 'non-falsy-string')
 		) {
 			return [null, new StringType()];
 		}
@@ -411,9 +413,32 @@ class TypeCombinator
 		if (
 			$b instanceof ConstantStringType
 			&& $b->getValue() === ''
-			&& $a->describe(VerbosityLevel::value()) === 'non-empty-string'
+			&& ($a->describe(VerbosityLevel::value()) === 'non-empty-string'
+				|| $a->describe(VerbosityLevel::value()) === 'non-falsy-string')
 		) {
 			return [new StringType(), null];
+		}
+
+		if (
+			$a instanceof ConstantStringType
+			&& $a->getValue() === '0'
+			&& $b->describe(VerbosityLevel::value()) === 'non-falsy-string'
+		) {
+			return [null, new IntersectionType([
+				new StringType(),
+				new AccessoryNonEmptyStringType(),
+			])];
+		}
+
+		if (
+			$b instanceof ConstantStringType
+			&& $b->getValue() === '0'
+			&& $a->describe(VerbosityLevel::value()) === 'non-falsy-string'
+		) {
+			return [new IntersectionType([
+				new StringType(),
+				new AccessoryNonEmptyStringType(),
+			]), null];
 		}
 
 		return null;

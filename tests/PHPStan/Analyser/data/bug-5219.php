@@ -11,8 +11,8 @@ class HelloWorld
 	{
 		$header = sprintf('%s-%s', '', implode('-', [$x]));
 
-		assertType('non-empty-string', $header);
-		assertType('non-empty-array<non-empty-string, string>', [$header => $message]);
+		assertType('non-falsy-string', $header);
+		assertType('non-empty-array<non-falsy-string, string>', [$header => $message]);
 	}
 
 	protected function bar(string $message): void

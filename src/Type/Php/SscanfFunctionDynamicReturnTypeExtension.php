@@ -5,12 +5,14 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -43,17 +45,26 @@ class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			return null;
 		}
 
-		if (preg_match_all('/%[cdeEfosux]{1}/', $formatType->getValue(), $matches) > 0) {
+		if (preg_match_all('/%(\d*)([cdeEfosux]{1})/', $formatType->getValue(), $matches) > 0) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 
 			for ($i = 0; $i < count($matches[0]); $i++) {
-				$type = new StringType();
+				$length = $matches[1][$i];
+				$specifier = $matches[2][$i];
 
-				if (in_array($matches[0][$i], ['%d', '%o', '%u', '%x'], true)) {
+				$type = new StringType();
+				if ($length !== '') {
+					$type = new IntersectionType([
+						$type,
+						new AccessoryNonEmptyStringType(),
+					]);
+				}
+
+				if (in_array($specifier, ['d', 'o', 'u', 'x'], true)) {
 					$type = new IntegerType();
 				}
 
-				if (in_array($matches[0][$i], ['%e', '%E', '%f'], true)) {
+				if (in_array($specifier, ['e', 'E', 'f'], true)) {
 					$type = new FloatType();
 				}
 

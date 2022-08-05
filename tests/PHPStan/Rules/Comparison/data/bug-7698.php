@@ -21,7 +21,7 @@ function matchIt()
 {
 	$t = new Test(new A());
 	$class = $t->value::class;
-	echo match ($t->value::class) {
+	echo match ($class) {
 		A::class => 'A',
 		B::class => 'B'
 	};

@@ -7,6 +7,14 @@ use function PHPStan\Testing\assertType;
 class A {}
 
 /**
+ * @param class-string<A> $class
+ */
+function bar($class): string
+{
+	assertType('class-string', ltrim($class, '\\'));
+}
+
+/**
  * @param class-string $class
  * @return class-string
  */

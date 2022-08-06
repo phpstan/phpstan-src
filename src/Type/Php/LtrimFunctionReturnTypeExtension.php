@@ -4,7 +4,6 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -16,7 +15,7 @@ use function ltrim;
 class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public function __construct(private PhpVersion $phpVersion)
+	public function __construct()
 	{
 	}
 

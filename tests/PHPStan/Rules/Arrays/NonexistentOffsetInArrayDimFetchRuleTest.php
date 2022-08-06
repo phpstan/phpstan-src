@@ -479,4 +479,24 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7469(): void
+	{
+		$expected = [];
+
+		if (PHP_VERSION_ID < 80000) {
+			$expected = [
+				[
+					"Cannot access offset 'languages' on array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>|false.",
+					29,
+				],
+				[
+					"Cannot access offset 'languages' on array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>|false.",
+					29,
+				],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-7469.php'], $expected);
+	}
+
 }

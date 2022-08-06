@@ -71,4 +71,9 @@ class UnsetRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug3391(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3391.php'], []);
+	}
+
 }

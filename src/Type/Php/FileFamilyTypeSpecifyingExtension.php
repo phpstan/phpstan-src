@@ -12,7 +12,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\StringType;
 use function count;
 use function in_array;
 use function strtolower;
@@ -79,9 +78,9 @@ final class FileFamilyTypeSpecifyingExtension implements FunctionTypeSpecifyingE
 		if (count($args) >= 1) {
 			$fileType = $scope->getType($args[0]->value);
 
-			if ($fileType->isString()->yes()) {
+			if ($fileType->isString()->yes() && !$fileType->isNonEmptyString()->yes()) {
 				$nonEmptyString = [
-					new StringType(),
+					$fileType,
 					new AccessoryNonEmptyStringType(),
 				];
 

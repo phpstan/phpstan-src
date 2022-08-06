@@ -6,6 +6,27 @@ use function PHPStan\Testing\assertType;
 
 class Foo
 {
+	/**
+	 * @param non-empty-string $nonES
+	 * @param non-falsy-string $nonFalsyString
+	 * @param numeric-string $numericString
+	 */
+	public function strTypes($nonES, $nonFalsyString, $numericString) {
+		if (is_dir($nonES)) {
+			assertType('non-empty-string', $nonES);
+		}
+		assertType('non-empty-string', $nonES);
+
+		if (is_dir($nonFalsyString)) {
+			assertType('non-falsy-string', $nonFalsyString);
+		}
+		assertType('non-falsy-string', $nonFalsyString);
+
+		if (is_dir($numericString)) {
+			assertType('numeric-string', $numericString);
+		}
+		assertType('numeric-string', $numericString);
+	}
 
 	public function fileNonEmptyStrings(string $s): void
 	{

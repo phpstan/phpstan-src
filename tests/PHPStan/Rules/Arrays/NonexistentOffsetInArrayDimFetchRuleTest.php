@@ -489,6 +489,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 					"Cannot access offset 'languages' on array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>|false.",
 					29,
 				],
+				[
+					"Cannot access offset 'languages' on array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>|false.",
+					29,
+				],
 			];
 		}
 

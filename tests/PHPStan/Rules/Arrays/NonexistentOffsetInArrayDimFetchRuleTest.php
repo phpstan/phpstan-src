@@ -481,6 +481,10 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	public function testBug7469(): void
 	{
+		if (PHP_VERSION_ID > 80000) {
+			$this->markTestSkipped('Test requires PHP 7.x.');
+		}
+
 		$this->analyse([__DIR__ . '/data/bug-7469.php'], []);
 	}
 

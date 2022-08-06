@@ -243,6 +243,7 @@ class TypeNodeResolver
 					new AccessoryNonEmptyStringType(),
 				]);
 
+			case 'truthy-string':
 			case 'non-falsy-string':
 				return new IntersectionType([
 					new StringType(),

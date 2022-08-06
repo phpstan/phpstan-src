@@ -481,11 +481,18 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	public function testBug7469(): void
 	{
-		if (PHP_VERSION_ID > 80000) {
-			$this->markTestSkipped('Test requires PHP 7.x.');
+		$expected = [];
+
+		if (PHP_VERSION_ID < 80000) {
+			$expected = [
+				[
+					"Cannot access offset 'languages' on array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>|false.",
+					29,
+				],
+			];
 		}
 
-		$this->analyse([__DIR__ . '/data/bug-7469.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-7469.php'], $expected);
 	}
 
 }

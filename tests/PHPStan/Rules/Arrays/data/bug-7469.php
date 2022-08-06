@@ -26,10 +26,6 @@ function doFoo() {
 
 	$data = array_combine($keys, $line);
 
-	if ($data === false) {
-		throw new \Exception('Unable to combine');
-	}
-
 	$data['languages'] = explode(',', $data['languages']);
 	array_walk($data['languages'], static function (&$item) {
 		$item = strtolower(trim($item));

@@ -15,10 +15,6 @@ use function ltrim;
 class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
-	public function __construct()
-	{
-	}
-
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return $functionReflection->getName() === 'ltrim';

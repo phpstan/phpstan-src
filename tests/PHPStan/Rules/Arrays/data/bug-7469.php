@@ -5,6 +5,10 @@ namespace Bug7469;
 function doFoo() {
 	$line = file_get_contents('php://input');
 
+	if ($line === false) {
+		throw new \Exception('Failed to read input');
+	}
+
 	$keys = [
 		'lastName',
 		'firstName',

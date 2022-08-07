@@ -11,6 +11,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\ResourceType;
@@ -35,7 +36,7 @@ class GettypeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 
 		$valueType = $scope->getType($functionCall->getArgs()[0]->value);
 
-		return TypeTraverser::map($valueType, static function (Type $valueType, callable $traverse): Type {
+		$type = TypeTraverser::map($valueType, static function (Type $valueType, callable $traverse): Type {
 			if ($valueType instanceof UnionType || $valueType instanceof IntersectionType) {
 				return $traverse($valueType);
 			}
@@ -83,6 +84,12 @@ class GettypeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 
 			return $valueType;
 		});
+
+		if ($type instanceof MixedType) {
+			return null;
+		}
+
+		return $type;
 	}
 
 }

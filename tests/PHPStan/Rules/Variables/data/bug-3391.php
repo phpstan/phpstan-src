@@ -2,6 +2,8 @@
 
 namespace Bug3391;
 
+use function PHPStan\Testing\assertType;
+
 class HelloWorld
 {
 	/**
@@ -20,9 +22,11 @@ class HelloWorld
 
 		$data['foo'] = 'a';
 		$data['bar'] = 'b';
+		assertType("hasOffsetValue('bar', 'b')&hasOffsetValue('foo', 'a')&non-empty-array", $data);
 
 		unset($data['id']);
 
+		assertType("array&hasOffsetValue('bar', 'b')&hasOffsetValue('foo', 'a')", $data);
 		return $data;
 	}
 }

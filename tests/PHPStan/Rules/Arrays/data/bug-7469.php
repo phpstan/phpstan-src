@@ -2,6 +2,8 @@
 
 namespace Bug7469;
 
+use function PHPStan\Testing\assertType;
+
 function doFoo() {
 	$line = file_get_contents('php://input');
 
@@ -30,12 +32,14 @@ function doFoo() {
 	array_walk($data['languages'], static function (&$item) {
 		$item = strtolower(trim($item));
 	});
+	assertType("non-empty-array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>&hasOffsetValue('languages', non-empty-array<int, string>)", $data);
 
 	$data['videoOnline'] = normalizePrice($data['videoOnline']);
 	$data['videoTvc'] = normalizePrice($data['videoTvc']);
 	$data['radio'] = normalizePrice($data['radio']);
 
 	$data['invoicing'] = $data['invoicing'] === 'ANO';
+	assertType("non-empty-array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>&hasOffsetValue('invoicing', bool)&hasOffsetValue('languages', non-empty-array<int, string>)", $data);
 }
 
 function normalizePrice($value)

@@ -2,6 +2,8 @@
 
 namespace Bug7417;
 
+use function PHPStan\Testing\assertType;
+
 /**
  * Reads configuration data from the storage.
  * @return array|bool
@@ -18,9 +20,9 @@ function doFoo() {
 // in core.extension so this will come before it's base theme.
 	$extensions['theme']['test_subtheme'] = 0;
 	$extensions['theme']['test_subsubtheme'] = 0;
+	assertType('non-empty-array', $extensions); // could be more precise
 	unset($extensions['theme']['test_basetheme']);
 	unset($extensions['theme']['test_subsubtheme']);
 	unset($extensions['theme']['test_subtheme']);
+	assertType("hasOffsetValue('theme', mixed)&non-empty-array", $extensions);
 }
-
-

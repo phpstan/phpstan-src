@@ -81,7 +81,7 @@ class GettypeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExt
 				return new ConstantStringType('object');
 			}
 
-			return new ConstantStringType('unknown type');
+			return $valueType;
 		});
 	}
 

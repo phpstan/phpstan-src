@@ -33,7 +33,7 @@ function doFoo(bool $b, int $i, float $f, $d, $r, string $s, array $a, $mixed, $
 	assertType("'resource'|'resource (closed)'", gettype($r));
 	assertType("'boolean'|'resource'|'resource (closed)'", gettype($resource));
 	assertType("'NULL'", gettype($null));
-	assertType("'unknown type'", gettype($mixed));
+	assertType("mixed", gettype($mixed));
 
 	assertType("'integer'|'string'", gettype($intOrString));
 }

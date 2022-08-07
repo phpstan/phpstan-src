@@ -218,6 +218,7 @@ function () {
 
 	$nullOverwrittenInSwitchToOne = null;
 	switch (doFoo()) {
+		case 0:
 		case 1:
 			if (doFoo()) {
 				throw new \Exception();

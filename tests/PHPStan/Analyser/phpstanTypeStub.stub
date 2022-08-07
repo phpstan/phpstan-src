@@ -1,0 +1,10 @@
+<?php
+
+namespace PhpstanTypeStubFiles;
+
+/**
+ * @phpstan-type AnotherType = array{foo: int}
+ */
+class Foo
+{
+}

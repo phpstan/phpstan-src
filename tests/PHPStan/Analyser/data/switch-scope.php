@@ -36,7 +36,7 @@ function test($param): void
 }
 
 
-function testNoBreak($param): void
+function testNoBreak($param, string $s, int $i): void
 {
 	switch ($param) {
 		case 'a':
@@ -53,4 +53,47 @@ function testNoBreak($param): void
 		}
 	}
 	assertType("mixed", $param);
+
+	switch ($s) {
+		case 'a':
+		case 'b':
+		case 'c':
+		case 'd':
+		{
+			assertType("'a'|'b'|'c'|'d'", $s);
+		}
+		default:
+		{
+			assertType("string", $s);
+		}
+	}
+	assertType("string", $s);
+
+	switch ($i)	{
+		case 0:
+			assertType("0", $i);
+		default: {
+			assertType("int", $i);
+
+		}
+	}
+	assertType("int", $i);
+}
+
+function switchTrue($mixed) {
+	switch(true)
+	{
+		case $mixed === 2:
+			assertType("2", $mixed);
+			break;
+		case is_array($mixed):
+			assertType("array", $mixed);
+			break;
+		case is_int($mixed):
+			assertType("int<min, 1>|int<3, max>", $mixed);
+			break;
+		default:
+			assertType("mixed~2|array", $mixed); // should be "mixed~int|array"
+	}
+	assertType("mixed", $mixed);
 }

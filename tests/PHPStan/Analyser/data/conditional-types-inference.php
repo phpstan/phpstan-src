@@ -78,3 +78,16 @@ function (int $value) {
 	assertIsInt($value);
 	assertType('int', $value);
 };
+
+/**
+ * @return ($condition is true ? void : never)
+ */
+function invariant(bool $condition, string $message): void
+{
+	assert($condition, $message);
+}
+
+function (mixed $value) {
+	invariant(is_array($value), 'must be array');
+	assertType('array', $value);
+};

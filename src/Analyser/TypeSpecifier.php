@@ -1085,30 +1085,35 @@ class TypeSpecifier
 			return null;
 		}
 
+		$targetType = $conditionalType->getTarget();
 		$ifType = $conditionalType->getIf();
 		$elseType = $conditionalType->getElse();
 
 		if ($leftType->isSuperTypeOf($ifType)->yes() && $rightType->isSuperTypeOf($elseType)->yes()) {
-			return $this->create(
-				$argsMap[$parameterName],
-				$conditionalType->getTarget(),
-				$conditionalType->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
-				false,
-				$scope,
-			);
+			$context = $conditionalType->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue();
+		} elseif ($leftType->isSuperTypeOf($elseType)->yes() && $rightType->isSuperTypeOf($ifType)->yes()) {
+			$context = $conditionalType->isNegated() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createFalse();
+		} else {
+			return null;
 		}
 
-		if ($leftType->isSuperTypeOf($elseType)->yes() && $rightType->isSuperTypeOf($ifType)->yes()) {
-			return $this->create(
-				$argsMap[$parameterName],
-				$conditionalType->getTarget(),
-				$conditionalType->isNegated() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createFalse(),
-				false,
-				$scope,
-			);
+		$specifiedTypes = $this->create(
+			$argsMap[$parameterName],
+			$targetType,
+			$context,
+			false,
+			$scope,
+		);
+
+		if ($targetType instanceof ConstantBooleanType) {
+			if (!$targetType->getValue()) {
+				$context = $context->negate();
+			}
+
+			$specifiedTypes = $specifiedTypes->unionWith($this->specifyTypesInCondition($scope, $argsMap[$parameterName], $context));
 		}
 
-		return null;
+		return $specifiedTypes;
 	}
 
 	/**

@@ -120,6 +120,7 @@ class BetterReflectionSourceLocatorFactory
 				$fileLocators[] = $this->optimizedPsrAutoloaderLocatorFactory->create(
 					Psr4Mapping::fromArrayMappings([
 						'PHPStan\\Testing\\' => [$pharProtocolPath . '/src/Testing/'],
+						'PHPStan\\BetterReflection\\' => [$pharProtocolPath . '/vendor/ondrejmirtes/better-reflection/src/'],
 					]),
 				);
 			}

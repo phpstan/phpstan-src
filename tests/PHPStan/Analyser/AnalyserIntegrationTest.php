@@ -890,6 +890,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug7762(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7762.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Function json_decode invoked with 0 parameters, 1-4 required.', $errors[0]->getMessage());
+		$this->assertSame('Function json_encode invoked with 0 parameters, 1-3 required.', $errors[1]->getMessage());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

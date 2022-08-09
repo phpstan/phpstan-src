@@ -24,4 +24,12 @@ class HelloWorld
 
 		assertType('array{string|null, int|null, string|null, int|null, string|null}', $exceptionComponents);
 	}
+
+	// see https://3v4l.org/Y5T2R
+	public static function edgeCase(string $dimension): void
+	{
+		$result = sscanf($dimension, '%[%[]');
+		assertType('array{string|null}|null', $result);
+	}
+
 }

@@ -2,7 +2,11 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\ArrayDimFetch;
+use PhpParser\Node\Expr\BinaryOp\Identical;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -48,8 +52,18 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		if (count($node->getArgs()) < 2) {
 			return new SpecifiedTypes();
 		}
-		$keyType = $scope->getType($node->getArgs()[0]->value);
+		$key = $node->getArgs()[0]->value;
+		$array = $node->getArgs()[1]->value;
+		$keyType = $scope->getType($key);
 		if (!$keyType instanceof ConstantIntegerType && !$keyType instanceof ConstantStringType) {
+			if ($context->truthy()) {
+				$arrayDimFetch = new ArrayDimFetch(
+					$array,
+					$key,
+				);
+				return $this->typeSpecifier->create($arrayDimFetch, $scope->getType($array)->getIterableValueType(), $context, false, $scope, new Identical($arrayDimFetch, new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT'))));
+			}
+
 			return new SpecifiedTypes();
 		}
 
@@ -63,7 +77,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		}
 
 		return $this->typeSpecifier->create(
-			$node->getArgs()[1]->value,
+			$array,
 			$type,
 			$context,
 			false,

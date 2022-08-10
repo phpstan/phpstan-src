@@ -67,3 +67,26 @@ class Baz
 	}
 
 }
+
+class AsXML
+{
+
+	public function asXML(): void
+	{
+		$element = new SimpleXMLElement('');
+
+		assertType('string|false', $element->asXML());
+
+		assertType('bool', $element->asXML('/tmp/foo.xml'));
+	}
+
+	public function saveXML(): void
+	{
+		$element = new SimpleXMLElement('');
+
+		assertType('string|false', $element->saveXML());
+
+		assertType('bool', $element->saveXML('/tmp/foo.xml'));
+	}
+
+}

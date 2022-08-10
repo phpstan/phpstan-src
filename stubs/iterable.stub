@@ -89,6 +89,16 @@ class Generator implements Iterator
 class SimpleXMLElement implements Traversable, ArrayAccess, Iterator, RecursiveIterator
 {
 
+	/**
+	 * @return ($filename is null ? string|false : bool)
+	 */
+	public function asXML(?string $filename = null) {  }
+
+	/**
+	 * @return ($filename is null ? string|false : bool)
+	 */
+	public function saveXML(?string $filename = null) {  }
+
 }
 
 /**

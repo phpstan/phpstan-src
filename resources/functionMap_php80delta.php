@@ -87,6 +87,7 @@ return [
 		'PhpToken::getTokenName' => ['string'],
 		'preg_match_all' => ['0|positive-int|false', 'pattern'=>'string', 'subject'=>'string', '&w_subpatterns='=>'array', 'flags='=>'int', 'offset='=>'int'],
 		'proc_get_status' => ['array{command: string, pid: int, running: bool, signaled: bool, stopped: bool, exitcode: int, termsig: int, stopsig: int}', 'process'=>'resource'],
+		'session_set_cookie_params' => ['bool', 'lifetime_or_options'=>'int', 'path'=>'?string', 'domain'=>'?string', 'secure'=>'?bool', 'httponly'=>'?bool'],
 		'set_error_handler' => ['?callable', 'callback'=>'null|callable(int,string,string,int):bool', 'error_types='=>'int'],
 		'socket_addrinfo_lookup' => ['AddressInfo[]', 'node'=>'string', 'service='=>'mixed', 'hints='=>'array'],
 		'socket_select' => ['int|false', '&rw_read'=>'Socket[]|null', '&rw_write'=>'Socket[]|null', '&rw_except'=>'Socket[]|null', 'seconds'=>'int|null', 'microseconds='=>'int'],

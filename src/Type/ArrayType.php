@@ -25,6 +25,7 @@ use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_merge;
+use function count;
 use function is_float;
 use function is_int;
 use function key;
@@ -279,8 +280,13 @@ class ArrayType implements Type
 			return $builder->getArray();
 		}
 
+		$keyType = TypeCombinator::union($this->keyType, $offsetType);
+		if (count(TypeUtils::getConstantScalars($keyType)) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+			$keyType = $keyType->generalize(GeneralizePrecision::moreSpecific());
+		}
+
 		$array = new self(
-			TypeCombinator::union($this->keyType, $offsetType),
+			$keyType,
 			$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType,
 		);
 		if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {

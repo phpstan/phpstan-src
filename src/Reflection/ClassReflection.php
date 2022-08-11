@@ -1264,10 +1264,6 @@ class ClassReflection
 
 	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
 	{
-		if ($this->stubPhpDocBlock !== null) {
-			return $this->stubPhpDocBlock;
-		}
-
 		$fileName = $this->getFileName();
 		if (is_bool($this->reflectionDocComment)) {
 			$docComment = $this->reflection->getDocComment();
@@ -1275,10 +1271,22 @@ class ClassReflection
 		}
 
 		if ($this->reflectionDocComment === null) {
-			return null;
+			return $this->stubPhpDocBlock;
 		}
 
-		return $this->fileTypeMapper->getResolvedPhpDoc($fileName, $this->getName(), null, null, $this->reflectionDocComment);
+		$fileResolvedPhpdoc = $this->fileTypeMapper->getResolvedPhpDoc(
+			$fileName,
+			$this->getName(),
+			null,
+			null,
+			$this->reflectionDocComment,
+		);
+
+		if ($this->stubPhpDocBlock === null) {
+			return $fileResolvedPhpdoc;
+		}
+
+		return $this->stubPhpDocBlock->fillWith($fileResolvedPhpdoc);
 	}
 
 	private function getFirstExtendsTag(): ?ExtendsTag

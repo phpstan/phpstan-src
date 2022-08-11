@@ -117,6 +117,26 @@ class PhpDocInheritanceResolver
 	private function docBlockToResolvedDocBlock(PhpDocBlock $phpDocBlock, ?string $traitName, ?string $functionName, ?string $propertyName, ?string $constantName): ResolvedPhpDocBlock
 	{
 		$classReflection = $phpDocBlock->getClassReflection();
+
+		$fileResolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+			$phpDocBlock->getFile(),
+			$classReflection->getName(),
+			$traitName,
+			$functionName,
+			$phpDocBlock->getDocComment(),
+		);
+
+		$stubResolvedPhpDoc = $this->getStubResolvedDocBlock($phpDocBlock, $functionName, $propertyName, $constantName);
+		if ($stubResolvedPhpDoc === null) {
+			return $fileResolvedPhpDoc;
+		}
+
+		return $stubResolvedPhpDoc->fillWith($fileResolvedPhpDoc, $phpDocBlock);
+	}
+
+	private function getStubResolvedDocBlock(PhpDocBlock $phpDocBlock, ?string $functionName, ?string $propertyName, ?string $constantName): ?ResolvedPhpDocBlock
+	{
+		$classReflection = $phpDocBlock->getClassReflection();
 		if ($functionName !== null && $classReflection->getNativeReflection()->hasMethod($functionName)) {
 			$methodReflection = $classReflection->getNativeReflection()->getMethod($functionName);
 			$stub = $this->stubPhpDocProvider->findMethodPhpDoc($classReflection->getName(), $functionName, array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));
@@ -149,13 +169,7 @@ class PhpDocInheritanceResolver
 			}
 		}
 
-		return $this->fileTypeMapper->getResolvedPhpDoc(
-			$phpDocBlock->getFile(),
-			$classReflection->getName(),
-			$traitName,
-			$functionName,
-			$phpDocBlock->getDocComment(),
-		);
+		return null;
 	}
 
 }

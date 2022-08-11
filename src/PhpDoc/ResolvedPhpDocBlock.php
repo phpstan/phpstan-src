@@ -79,10 +79,10 @@ class ResolvedPhpDocBlock
 	/** @var array<MixinTag>|false */
 	private array|false $mixinTags = false;
 
-	/** @var array<TypeAliasTag>|false */
+	/** @var array<string, TypeAliasTag>|false */
 	private array|false $typeAliasTags = false;
 
-	/** @var array<TypeAliasImportTag>|false */
+	/** @var array<string, TypeAliasImportTag>|false */
 	private array|false $typeAliasImportTags = false;
 
 	private DeprecatedTag|false|null $deprecatedTag = false;
@@ -213,6 +213,52 @@ class ResolvedPhpDocBlock
 		$result->isReadOnly = $this->isReadOnly();
 		$result->hasConsistentConstructor = $this->hasConsistentConstructor();
 		$result->acceptsNamedArguments = $acceptsNamedArguments;
+
+		return $result;
+	}
+
+	public function fillWith(self $resolvedPhpDocBlock, ?PhpDocBlock $phpDocBlock = null): self
+	{
+		// new property also needs to be added to createEmpty()
+		$result = new self();
+		$result->phpDocNode = $this->phpDocNode;
+		$result->phpDocString = $this->phpDocString;
+		$phpDocNodes = $this->phpDocNodes;
+		foreach ($resolvedPhpDocBlock->getPhpDocNodes() as $phpDocNode) {
+			$phpDocNodes[] = $phpDocNode;
+		}
+		$result->phpDocNodes = $phpDocNodes;
+		$result->filename = $this->filename;
+		// skip $result->nameScope
+		$result->templateTypeMap = $this->templateTypeMap;
+		$result->templateTags = $this->templateTags;
+		$result->phpDocNodeResolver = $this->phpDocNodeResolver;
+		$result->varTags = $phpDocBlock !== null
+			? self::mergeVarTags($this->getVarTags(), [$resolvedPhpDocBlock], [$phpDocBlock])
+			: $this->getVarTags();
+		$result->methodTags = $this->getMethodTags() + $resolvedPhpDocBlock->getMethodTags();
+		$result->propertyTags = $this->getPropertyTags() + $resolvedPhpDocBlock->getPropertyTags();
+		$result->extendsTags = $this->getExtendsTags() + $resolvedPhpDocBlock->getExtendsTags();
+		$result->implementsTags = $this->getImplementsTags() + $resolvedPhpDocBlock->getImplementsTags();
+		$result->usesTags = $this->getUsesTags() + $resolvedPhpDocBlock->getUsesTags();
+		$result->paramTags = $phpDocBlock !== null
+			? self::mergeParamTags($this->getParamTags(), [$resolvedPhpDocBlock], [$phpDocBlock])
+			: $this->getParamTags();
+		$result->returnTag = $phpDocBlock !== null
+			? self::mergeReturnTags($this->getReturnTag(), [$resolvedPhpDocBlock], [$phpDocBlock])
+			: $this->getReturnTag();
+		$result->throwsTag = self::mergeThrowsTags($this->getThrowsTag(), [$resolvedPhpDocBlock]);
+		$result->mixinTags = $this->getMixinTags() + $resolvedPhpDocBlock->getMixinTags();
+		$result->typeAliasTags = $this->getTypeAliasTags() + $resolvedPhpDocBlock->getTypeAliasTags();
+		$result->typeAliasImportTags = $this->getTypeAliasImportTags() + $resolvedPhpDocBlock->getTypeAliasImportTags();
+		$result->deprecatedTag = self::mergeDeprecatedTags($this->getDeprecatedTag(), [$resolvedPhpDocBlock]);
+		$result->isDeprecated = $result->deprecatedTag !== null;
+		$result->isInternal = $this->isInternal() || $resolvedPhpDocBlock->isInternal();
+		$result->isFinal = $this->isFinal() || $resolvedPhpDocBlock->isFinal();
+		$result->isPure = $this->isPure() ?? $resolvedPhpDocBlock->isPure();
+		$result->isReadOnly = $this->isReadOnly() || $resolvedPhpDocBlock->isReadOnly();
+		$result->hasConsistentConstructor = $this->hasConsistentConstructor() || $resolvedPhpDocBlock->hasConsistentConstructor();
+		$result->acceptsNamedArguments = $this->acceptsNamedArguments() && $resolvedPhpDocBlock->acceptsNamedArguments();
 
 		return $result;
 	}

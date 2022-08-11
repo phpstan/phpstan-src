@@ -3,7 +3,13 @@
 namespace PhpstanTypeStubFiles;
 
 /**
+ * This shouldn't change anything.
  */
 class Foo
 {
+	/** This shouldn't change anything. */
+	public $string;
+
+	/** @param array<string> $test2 */
+	public function test($test1, $test2): void;
 }

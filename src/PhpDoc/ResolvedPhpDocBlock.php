@@ -100,6 +100,8 @@ class ResolvedPhpDocBlock
 
 	private ?bool $isImmutable = null;
 
+	private ?bool $isAllowedPrivateMutation = null;
+
 	private ?bool $hasConsistentConstructor = null;
 
 	private ?bool $acceptsNamedArguments = null;
@@ -162,6 +164,8 @@ class ResolvedPhpDocBlock
 		$self->isFinal = false;
 		$self->isPure = null;
 		$self->isReadOnly = false;
+		$self->isImmutable = false;
+		$self->isAllowedPrivateMutation = false;
 		$self->hasConsistentConstructor = false;
 		$self->acceptsNamedArguments = true;
 
@@ -211,6 +215,8 @@ class ResolvedPhpDocBlock
 		$result->isFinal = $this->isFinal();
 		$result->isPure = $this->isPure();
 		$result->isReadOnly = $this->isReadOnly();
+		$result->isImmutable = $this->isImmutable();
+		$result->isAllowedPrivateMutation = $this->isAllowedPrivateMutation();
 		$result->hasConsistentConstructor = $this->hasConsistentConstructor();
 		$result->acceptsNamedArguments = $acceptsNamedArguments;
 
@@ -591,6 +597,17 @@ class ResolvedPhpDocBlock
 			);
 		}
 		return $this->isImmutable;
+	}
+
+	public function isAllowedPrivateMutation(): bool
+	{
+		if ($this->isAllowedPrivateMutation === null) {
+			$this->isAllowedPrivateMutation = $this->phpDocNodeResolver->resolveAllowPrivateMutation(
+				$this->phpDocNode,
+			);
+		}
+
+		return $this->isAllowedPrivateMutation;
 	}
 
 	/**

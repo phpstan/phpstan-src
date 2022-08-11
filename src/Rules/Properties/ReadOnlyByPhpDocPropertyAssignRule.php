@@ -83,6 +83,10 @@ class ReadOnlyByPhpDocPropertyAssignRule implements Rule
 				continue;
 			}
 
+			if ($nativeReflection->isAllowedPrivateMutation()) {
+				continue;
+			}
+
 			$errors[] = RuleErrorBuilder::message(sprintf('@readonly property %s::$%s is assigned outside of the constructor.', $declaringClass->getDisplayName(), $propertyReflection->getName()))->build();
 		}
 

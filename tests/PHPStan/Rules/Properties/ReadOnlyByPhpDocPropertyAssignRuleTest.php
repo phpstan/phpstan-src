@@ -33,10 +33,6 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 				40,
 			],
 			[
-				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$psalm is assigned outside of the constructor.',
-				41,
-			],
-			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$bar is assigned outside of its declaring class.',
 				53,
 			],

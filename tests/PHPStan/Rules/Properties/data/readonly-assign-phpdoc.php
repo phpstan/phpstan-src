@@ -38,7 +38,7 @@ class Foo
 	public function setFoo(int $foo): void
 	{
 		$this->foo = $foo; // setter - report
-		$this->psalm = $foo; // setter - report, but Psalm allowed private mutation
+		$this->psalm = $foo; // do not report -allowed private mutation
 	}
 
 }

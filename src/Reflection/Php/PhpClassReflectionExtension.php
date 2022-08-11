@@ -214,7 +214,7 @@ class PhpClassReflectionExtension
 					$types[] = $value;
 				}
 
-				return new PhpPropertyReflection($declaringClassReflection, null, null, TypeCombinator::union(...$types), $classReflection->getNativeReflection()->getProperty($propertyName), null, false, false, false);
+				return new PhpPropertyReflection($declaringClassReflection, null, null, TypeCombinator::union(...$types), $classReflection->getNativeReflection()->getProperty($propertyName), null, false, false, false, false);
 			}
 		}
 
@@ -222,6 +222,7 @@ class PhpClassReflectionExtension
 		$isDeprecated = false;
 		$isInternal = false;
 		$isReadOnlyByPhpDoc = $classReflection->isImmutable();
+		$isAllowedPrivateMutation = false;
 
 		if (
 			$includingAnnotations
@@ -297,6 +298,7 @@ class PhpClassReflectionExtension
 			$isDeprecated = $resolvedPhpDoc->isDeprecated();
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isReadOnlyByPhpDoc = $isReadOnlyByPhpDoc || $resolvedPhpDoc->isReadOnly();
+			$isAllowedPrivateMutation = $resolvedPhpDoc->isAllowedPrivateMutation();
 		}
 
 		if ($phpDocType === null) {
@@ -361,6 +363,7 @@ class PhpClassReflectionExtension
 			$isDeprecated,
 			$isInternal,
 			$isReadOnlyByPhpDoc,
+			$isAllowedPrivateMutation,
 		);
 	}
 

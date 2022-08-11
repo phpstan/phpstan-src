@@ -454,7 +454,7 @@ class PhpDocNodeResolver
 
 	public function resolveIsReadOnly(PhpDocNode $phpDocNode): bool
 	{
-		foreach (['@readonly', '@psalm-readonly', '@phpstan-readonly', '@psalm-readonly-allow-private-mutation'] as $tagName) {
+		foreach (['@readonly', '@psalm-readonly', '@phpstan-readonly', '@phpstan-readonly-allow-private-mutation', '@psalm-readonly-allow-private-mutation'] as $tagName) {
 			$tags = $phpDocNode->getTagsByName($tagName);
 
 			if (count($tags) > 0) {
@@ -503,6 +503,19 @@ class PhpDocNodeResolver
 		}
 
 		return $this->unresolvableTypeHelper->containsUnresolvableType($type);
+	}
+
+	public function resolveAllowPrivateMutation(PhpDocNode $phpDocNode): bool
+	{
+		foreach (['@phpstan-readonly-allow-private-mutation', '@phpstan-allow-private-mutation', '@psalm-readonly-allow-private-mutation', '@psalm-allow-private-mutation'] as $tagName) {
+			$tags = $phpDocNode->getTagsByName($tagName);
+
+			if (count($tags) > 0) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

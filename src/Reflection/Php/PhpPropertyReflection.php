@@ -31,6 +31,7 @@ class PhpPropertyReflection implements PropertyReflection
 		private bool $isDeprecated,
 		private bool $isInternal,
 		private bool $isReadOnlyByPhpDoc,
+		private bool $isAllowedPrivateMutation,
 	)
 	{
 	}
@@ -167,6 +168,11 @@ class PhpPropertyReflection implements PropertyReflection
 	public function isInternal(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean($this->isInternal);
+	}
+
+	public function isAllowedPrivateMutation(): bool
+	{
+		return $this->isAllowedPrivateMutation;
 	}
 
 	public function getNativeReflection(): ReflectionProperty

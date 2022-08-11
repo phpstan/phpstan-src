@@ -3,12 +3,16 @@
 namespace PhpstanTypeStubFiles;
 
 /**
- * This shouldn't change anything.
+ * @phpstan-template T of object
+ * @phpstan-extends Bar<\DateTime>
  */
-class Foo
+class Foo extends Bar
 {
 	/** This shouldn't change anything. */
 	public $string;
+
+	/** @var T */
+	public $template;
 
 	/** @param array<string> $test2 */
 	public function test($test1, $test2): void;

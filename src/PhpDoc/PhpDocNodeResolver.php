@@ -454,7 +454,7 @@ class PhpDocNodeResolver
 
 	public function resolveIsReadOnly(PhpDocNode $phpDocNode): bool
 	{
-		foreach (['@readonly', '@psalm-readonly', '@phpstan-readonly'] as $tagName) {
+		foreach (['@readonly', '@psalm-readonly', '@phpstan-readonly', '@psalm-readonly-allow-private-mutation'] as $tagName) {
 			$tags = $phpDocNode->getTagsByName($tagName);
 
 			if (count($tags) > 0) {

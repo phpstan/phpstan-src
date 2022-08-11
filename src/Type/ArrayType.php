@@ -293,7 +293,7 @@ class ArrayType implements Type
 			}
 		}
 
-		$array = new self($keyType, $itemType,);
+		$array = new self($keyType, $itemType);
 		if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
 			return TypeCombinator::intersect($array, new HasOffsetValueType($offsetType, $valueType), new NonEmptyArrayType());
 		}

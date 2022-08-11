@@ -19,6 +19,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -26,6 +27,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use function array_map;
+use function array_values;
 use function count;
 use function implode;
 use function in_array;
@@ -40,21 +42,43 @@ class IntersectionType implements CompoundType
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
 
+	/** @var Type[] */
+	private array $types;
+
 	private bool $sortedTypes = false;
 
 	/**
 	 * @api
 	 * @param Type[] $types
 	 */
-	public function __construct(private array $types)
+	public function __construct(array $types)
 	{
-		if (count($types) < 2) {
+		$hasOffsetValueTypeCount = 0;
+		$newTypes = [];
+		foreach ($types as $type) {
+			if (!$type instanceof HasOffsetValueType) {
+				$newTypes[] = $type;
+				continue;
+			}
+
+			$hasOffsetValueTypeCount++;
+			if ($hasOffsetValueTypeCount > 32) {
+				continue;
+			}
+
+			$newTypes[] = $type;
+		}
+
+		$newTypes = array_values($newTypes);
+		if (count($newTypes) < 2) {
 			throw new ShouldNotHappenException(sprintf(
 				'Cannot create %s with: %s',
 				self::class,
-				implode(', ', array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::value()), $types)),
+				implode(', ', array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::value()), $newTypes)),
 			));
 		}
+
+		$this->types = $newTypes;
 	}
 
 	/**

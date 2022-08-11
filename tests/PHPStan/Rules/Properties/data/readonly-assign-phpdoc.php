@@ -23,14 +23,22 @@ class Foo
 	 */
 	public $baz;
 
+	/**
+	 * @var int
+	 * @psalm-readonly-allow-private-mutation
+	 */
+	public $psalm;
+
 	public function __construct(int $foo)
 	{
 		$this->foo = $foo; // constructor - fine
+		$this->psalm = $foo; // constructor - fine
 	}
 
 	public function setFoo(int $foo): void
 	{
 		$this->foo = $foo; // setter - report
+		$this->psalm = $foo; // setter - report, but Psalm allowed private mutation
 	}
 
 }
@@ -44,11 +52,13 @@ class Bar extends Foo
 		$this->foo = $foo; // do not report - private property
 		$this->bar = $bar; // report - not in declaring class
 		$this->baz = $baz; // report - not in declaring class
+		$this->psalm = $bar; // report - not in declaring class
 	}
 
 	public function setBar(int $bar): void
 	{
 		$this->bar = $bar; // report - not in declaring class
+		$this->psalm = $bar; // report - not in declaring class
 	}
 
 }

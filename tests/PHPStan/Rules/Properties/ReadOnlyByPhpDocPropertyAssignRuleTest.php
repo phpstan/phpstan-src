@@ -30,79 +30,91 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/readonly-assign-phpdoc.php'], [
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$foo is assigned outside of the constructor.',
-				33,
+				40,
+			],
+			[
+				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$psalm is assigned outside of the constructor.',
+				41,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$bar is assigned outside of its declaring class.',
-				45,
+				53,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$baz is assigned outside of its declaring class.',
-				46,
+				54,
+			],
+			[
+				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$psalm is assigned outside of its declaring class.',
+				55,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$bar is assigned outside of its declaring class.',
-				51,
+				60,
+			],
+			[
+				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$psalm is assigned outside of its declaring class.',
+				61,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$baz is assigned outside of its declaring class.',
-				58,
+				68,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\FooArrays::$details is assigned outside of the constructor.',
-				77,
+				87,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\FooArrays::$details is assigned outside of the constructor.',
-				78,
+				88,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\NotThis::$foo is not assigned on $this.',
-				108,
+				118,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\PostInc::$foo is assigned outside of the constructor.',
-				124,
+				134,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\PostInc::$foo is assigned outside of the constructor.',
-				125,
+				135,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\PostInc::$foo is assigned outside of the constructor.',
-				127,
+				137,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\ListAssign::$foo is assigned outside of the constructor.',
-				148,
+				158,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\ListAssign::$foo is assigned outside of the constructor.',
-				153,
-			],
-			[
-				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$baz is assigned outside of its declaring class.',
 				163,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$baz is assigned outside of its declaring class.',
-				164,
+				173,
+			],
+			[
+				'@readonly property ReadonlyPropertyAssignPhpDoc\Foo::$baz is assigned outside of its declaring class.',
+				174,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\Immutable::$foo is assigned outside of the constructor.',
-				227,
+				237,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\B::$b is assigned outside of the constructor.',
-				259,
+				269,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\A::$a is assigned outside of its declaring class.',
-				260,
+				270,
 			],
 			[
 				'@readonly property ReadonlyPropertyAssignPhpDoc\C::$c is assigned outside of the constructor.',
-				273,
+				283,
 			],
 		]);
 	}

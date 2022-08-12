@@ -68,6 +68,11 @@ function foobarIdentical($x, $y)
 	}
 	assertType('bool|string', $x);
 
+	if ('boolean' === gettype($x)) {
+		assertType('bool', $x);
+		return;
+	}
+
 	if (gettype($y) === 'string' || gettype($y) === 'integer') {
 		assertType('int|string', $y);
 	}
@@ -82,5 +87,11 @@ function foobarEqual($x)
 		assertType('int', $x);
 		return;
 	}
-	assertType('bool|string', $x);
+
+	if ('boolean' == gettype($x)) {
+		assertType('bool', $x);
+		return;
+	}
+	
+	assertType('string', $x);
 }

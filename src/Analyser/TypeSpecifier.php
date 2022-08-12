@@ -447,6 +447,17 @@ class TypeSpecifier
 						$rootExpr,
 					);
 				}
+
+				if (
+					$exprNode instanceof FuncCall
+					&& $exprNode->name instanceof Name
+					&& strtolower($exprNode->name->toString()) === 'gettype'
+					&& isset($exprNode->getArgs()[0])
+					&& $constantType instanceof ConstantStringType
+				) {
+					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
+				}
+
 			}
 
 			$leftType = $scope->getType($expr->left);
@@ -528,25 +539,6 @@ class TypeSpecifier
 					$context,
 					$rootExpr,
 				);
-			}
-
-			if (
-				$expr->left instanceof FuncCall
-				&& $expr->left->name instanceof Name
-				&& strtolower($expr->left->name->toString()) === 'gettype'
-				&& isset($expr->left->getArgs()[0])
-				&& $rightType instanceof ConstantStringType
-			) {
-				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
-			}
-			if (
-				$expr->right instanceof FuncCall
-				&& $expr->right->name instanceof Name
-				&& strtolower($expr->right->name->toString()) === 'gettype'
-				&& isset($expr->right->getArgs()[0])
-				&& $leftType instanceof ConstantStringType
-			) {
-				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 			}
 
 			$stringType = new StringType();

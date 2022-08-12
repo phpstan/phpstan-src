@@ -288,6 +288,44 @@ class TypeSpecifier
 						);
 					}
 				}
+
+				if (
+					$exprNode instanceof FuncCall
+					&& $exprNode->name instanceof Name
+					&& strtolower($exprNode->name->toString()) === 'gettype'
+					&& isset($exprNode->getArgs()[0])
+					&& $constantType instanceof ConstantStringType
+				) {
+					$type = null;
+					if ($constantType->getValue() === 'string') {
+						$type = new StringType();
+					}
+					if ($constantType->getValue() === 'array') {
+						$type = new ArrayType(new MixedType(), new MixedType());
+					}
+					if ($constantType->getValue() === 'boolean') {
+						$type = new BooleanType();
+					}
+					if ($constantType->getValue() === 'resource' || $constantType->getValue() === 'resource (closed)') {
+						$type = new ResourceType();
+					}
+					if ($constantType->getValue() === 'integer') {
+						$type = new IntegerType();
+					}
+					if ($constantType->getValue() === 'double') {
+						$type = new FloatType();
+					}
+					if ($constantType->getValue() === 'NULL') {
+						$type = new NullType();
+					}
+					if ($constantType->getValue() === 'object') {
+						$type = new ObjectWithoutClassType();
+					}
+
+					if ($type !== null) {
+						return $this->create($exprNode->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
+					}
+				}
 			}
 
 			$rightType = $scope->getType($expr->right);
@@ -492,35 +530,6 @@ class TypeSpecifier
 				);
 			}
 
-			$getttypeType = static function (ConstantStringType $constantStringType) {
-				$type = null;
-				if ($constantStringType->getValue() === 'string') {
-					$type = new StringType();
-				}
-				if ($constantStringType->getValue() === 'array') {
-					$type = new ArrayType(new MixedType(), new MixedType());
-				}
-				if ($constantStringType->getValue() === 'boolean') {
-					$type = new BooleanType();
-				}
-				if ($constantStringType->getValue() === 'resource' || $constantStringType->getValue() === 'resource (closed)') {
-					$type = new ResourceType();
-				}
-				if ($constantStringType->getValue() === 'integer') {
-					$type = new IntegerType();
-				}
-				if ($constantStringType->getValue() === 'double') {
-					$type = new FloatType();
-				}
-				if ($constantStringType->getValue() === 'NULL') {
-					$type = new NullType();
-				}
-				if ($constantStringType->getValue() === 'object') {
-					$type = new ObjectWithoutClassType();
-				}
-				return $type;
-			};
-
 			if (
 				$expr->left instanceof FuncCall
 				&& $expr->left->name instanceof Name
@@ -528,11 +537,7 @@ class TypeSpecifier
 				&& isset($expr->left->getArgs()[0])
 				&& $rightType instanceof ConstantStringType
 			) {
-				$type = $getttypeType($rightType);
-
-				if ($type !== null) {
-					return $this->create($expr->left->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
-				}
+				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 			}
 			if (
 				$expr->right instanceof FuncCall
@@ -541,11 +546,7 @@ class TypeSpecifier
 				&& isset($expr->right->getArgs()[0])
 				&& $leftType instanceof ConstantStringType
 			) {
-				$type = $getttypeType($leftType);
-
-				if ($type !== null) {
-					return $this->create($expr->right->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
-				}
+				return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 			}
 
 			$stringType = new StringType();

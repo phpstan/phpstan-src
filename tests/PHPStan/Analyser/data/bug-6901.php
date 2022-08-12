@@ -55,3 +55,32 @@ function bar($y)
 	assertType('float|object|resource|null', $y);
 	return 0;
 }
+
+/**
+ * @param int|string|bool $x
+ * @param int|string|bool $y
+ */
+function foobarIdentical($x, $y)
+{
+	if (gettype($x) === 'integer') {
+		assertType('int', $x);
+		return;
+	}
+	assertType('bool|string', $x);
+
+	if (gettype($y) === 'string' || gettype($y) === 'integer') {
+		assertType('int|string', $y);
+	}
+}
+
+/**
+ * @param int|string|bool $x
+ */
+function foobarEqual($x)
+{
+	if (gettype($x) == 'integer') {
+		assertType('int', $x);
+		return;
+	}
+	assertType('bool|string', $x);
+}

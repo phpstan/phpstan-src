@@ -14,7 +14,7 @@ assertType('0|1', PHP_DEBUG);
 assertType('int<1, max>', PHP_MAXPATHLEN);
 assertType('non-empty-string', PHP_OS);
 assertType('\'apache\'|\'apache2handler\'|\'cgi\'|\'cli\'|\'cli-server\'|\'embed\'|\'fpm-fcgi\'|\'litespeed\'|\'phpdbg\'|non-empty-string', PHP_SAPI);
-assertType("'\n'|'\r\n'", PHP_EOL);
+assertType('"\n"|"\r\n"', PHP_EOL);
 assertType('4|8', PHP_INT_SIZE);
 assertType('string', DEFAULT_INCLUDE_PATH);
 assertType('string', PEAR_INSTALL_DIR);

@@ -458,6 +458,23 @@ class TypeSpecifier
 					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 				}
 
+				if (
+					$exprNode instanceof FuncCall
+					&& $exprNode->name instanceof Name
+					&& strtolower($exprNode->name->toString()) === 'get_class'
+					&& isset($exprNode->getArgs()[0])
+					&& $constantType instanceof ConstantStringType
+				) {
+					return $this->specifyTypesInCondition(
+						$scope,
+						new Instanceof_(
+							$exprNode->getArgs()[0]->value,
+							new Name($constantType->getValue()),
+						),
+						$context,
+						$rootExpr,
+					);
+				}
 			}
 
 			$leftType = $scope->getType($expr->left);
@@ -503,42 +520,6 @@ class TypeSpecifier
 				&& $rightType instanceof ConstantArrayType && $rightType->isEmpty()
 			) {
 				return $this->create($expr->left, new NonEmptyArrayType(), $context->negate(), false, $scope, $rootExpr);
-			}
-
-			if (
-				$expr->left instanceof FuncCall
-				&& $expr->left->name instanceof Name
-				&& strtolower($expr->left->name->toString()) === 'get_class'
-				&& isset($expr->left->getArgs()[0])
-				&& $rightType instanceof ConstantStringType
-			) {
-				return $this->specifyTypesInCondition(
-					$scope,
-					new Instanceof_(
-						$expr->left->getArgs()[0]->value,
-						new Name($rightType->getValue()),
-					),
-					$context,
-					$rootExpr,
-				);
-			}
-
-			if (
-				$expr->right instanceof FuncCall
-				&& $expr->right->name instanceof Name
-				&& strtolower($expr->right->name->toString()) === 'get_class'
-				&& isset($expr->right->getArgs()[0])
-				&& $leftType instanceof ConstantStringType
-			) {
-				return $this->specifyTypesInCondition(
-					$scope,
-					new Instanceof_(
-						$expr->right->getArgs()[0]->value,
-						new Name($leftType->getValue()),
-					),
-					$context,
-					$rootExpr,
-				);
 			}
 
 			$stringType = new StringType();

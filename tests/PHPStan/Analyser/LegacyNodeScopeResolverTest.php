@@ -2796,7 +2796,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$integer ^ 3',
 			],
 			[
-				'\'' . "\x01" . '\'',
+				'"\001"',
 				'"x" ^ "y"',
 			],
 			[

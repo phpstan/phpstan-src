@@ -30,6 +30,7 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -52,6 +53,7 @@ use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
@@ -488,6 +490,62 @@ class TypeSpecifier
 					$context,
 					$rootExpr,
 				);
+			}
+
+			$getttypeType = static function (ConstantStringType $constantStringType) {
+				$type = null;
+				if ($constantStringType->getValue() === 'string') {
+					$type = new StringType();
+				}
+				if ($constantStringType->getValue() === 'array') {
+					$type = new ArrayType(new MixedType(), new MixedType());
+				}
+				if ($constantStringType->getValue() === 'boolean') {
+					$type = new BooleanType();
+				}
+				if ($constantStringType->getValue() === 'resource' || $constantStringType->getValue() === 'resource (closed)') {
+					$type = new ResourceType();
+				}
+				if ($constantStringType->getValue() === 'integer') {
+					$type = new IntegerType();
+				}
+				if ($constantStringType->getValue() === 'double') {
+					$type = new FloatType();
+				}
+				if ($constantStringType->getValue() === 'NULL') {
+					$type = new NullType();
+				}
+				if ($constantStringType->getValue() === 'object') {
+					$type = new ObjectWithoutClassType();
+				}
+				return $type;
+			};
+
+			if (
+				$expr->left instanceof FuncCall
+				&& $expr->left->name instanceof Name
+				&& strtolower($expr->left->name->toString()) === 'gettype'
+				&& isset($expr->left->getArgs()[0])
+				&& $rightType instanceof ConstantStringType
+			) {
+				$type = $getttypeType($rightType);
+
+				if ($type !== null) {
+					return $this->create($expr->left->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
+				}
+			}
+			if (
+				$expr->right instanceof FuncCall
+				&& $expr->right->name instanceof Name
+				&& strtolower($expr->right->name->toString()) === 'gettype'
+				&& isset($expr->right->getArgs()[0])
+				&& $leftType instanceof ConstantStringType
+			) {
+				$type = $getttypeType($leftType);
+
+				if ($type !== null) {
+					return $this->create($expr->right->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
+				}
 			}
 
 			$stringType = new StringType();

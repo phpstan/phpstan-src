@@ -17,6 +17,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
+use function in_array;
 
 class IsNumericFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -25,7 +26,7 @@ class IsNumericFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
-		return $functionReflection->getName() === 'is_numeric'
+		return in_array($functionReflection->getName(), ['is_numeric', 'ctype_digit'], true)
 			&& !$context->null();
 	}
 

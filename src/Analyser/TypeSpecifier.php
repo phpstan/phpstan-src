@@ -30,6 +30,7 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -52,6 +53,7 @@ use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
@@ -286,6 +288,44 @@ class TypeSpecifier
 						);
 					}
 				}
+
+				if (
+					$exprNode instanceof FuncCall
+					&& $exprNode->name instanceof Name
+					&& strtolower($exprNode->name->toString()) === 'gettype'
+					&& isset($exprNode->getArgs()[0])
+					&& $constantType instanceof ConstantStringType
+				) {
+					$type = null;
+					if ($constantType->getValue() === 'string') {
+						$type = new StringType();
+					}
+					if ($constantType->getValue() === 'array') {
+						$type = new ArrayType(new MixedType(), new MixedType());
+					}
+					if ($constantType->getValue() === 'boolean') {
+						$type = new BooleanType();
+					}
+					if ($constantType->getValue() === 'resource' || $constantType->getValue() === 'resource (closed)') {
+						$type = new ResourceType();
+					}
+					if ($constantType->getValue() === 'integer') {
+						$type = new IntegerType();
+					}
+					if ($constantType->getValue() === 'double') {
+						$type = new FloatType();
+					}
+					if ($constantType->getValue() === 'NULL') {
+						$type = new NullType();
+					}
+					if ($constantType->getValue() === 'object') {
+						$type = new ObjectWithoutClassType();
+					}
+
+					if ($type !== null) {
+						return $this->create($exprNode->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
+					}
+				}
 			}
 
 			$rightType = $scope->getType($expr->right);
@@ -407,6 +447,17 @@ class TypeSpecifier
 						$rootExpr,
 					);
 				}
+
+				if (
+					$exprNode instanceof FuncCall
+					&& $exprNode->name instanceof Name
+					&& strtolower($exprNode->name->toString()) === 'gettype'
+					&& isset($exprNode->getArgs()[0])
+					&& $constantType instanceof ConstantStringType
+				) {
+					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
+				}
+
 			}
 
 			$leftType = $scope->getType($expr->left);

@@ -51,7 +51,6 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 			'is_iterable',
 			'is_null',
 			'is_object',
-			'is_resource',
 			'is_scalar',
 			'is_string',
 			'is_subclass_of',

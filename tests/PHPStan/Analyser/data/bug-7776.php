@@ -13,5 +13,3 @@ function test(array $settings = []): bool {
 	assertType('array{page?: int, search?: string}', $settings);
 	return isset($copy['search']);
 }
-
-test();

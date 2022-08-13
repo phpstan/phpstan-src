@@ -5,6 +5,9 @@ namespace Bug5908;
 use function PHPStan\Testing\assertType;
 
 function foo($mixed, string $s) {
+    ctype_digit($mixed);
+    assertType('mixed', $mixed);
+
 	if (ctype_digit($mixed)) {
 		assertType('float|int|numeric-string', $mixed);
 	}

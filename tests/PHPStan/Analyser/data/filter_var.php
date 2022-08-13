@@ -5,6 +5,9 @@ namespace FilterVar;
 use function PHPStan\Testing\assertType;
 
 function doBar($mixed) {
+    filter_var($mixed, FILTER_VALIDATE_FLOAT);
+    assertType('mixed', $mixed);
+
 	if (filter_var($mixed, FILTER_VALIDATE_FLOAT)) {
 		assertType('float', $mixed);
 	}

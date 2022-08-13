@@ -8126,7 +8126,7 @@ return [
 'openssl_x509_free' => ['void', 'x509'=>'resource'],
 'openssl_x509_parse' => ['array|false', 'x509cert'=>'string|resource', 'shortnames='=>'bool'],
 'openssl_x509_read' => ['resource|false', 'x509certdata'=>'string|resource'],
-'ord' => ['int', 'character'=>'string'],
+'ord' => ['int<0, 255>', 'character'=>'string'],
 'OuterIterator::getInnerIterator' => ['Iterator'],
 'OutOfBoundsException::__clone' => ['void'],
 'OutOfBoundsException::__construct' => ['void', 'message='=>'string', 'code='=>'int', 'previous='=>'(?Throwable)|(?OutOfBoundsException)'],

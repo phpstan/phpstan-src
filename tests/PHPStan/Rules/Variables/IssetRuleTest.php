@@ -413,4 +413,11 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6997.php'], []);
 	}
 
+	public function testBug7776(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = false;
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-7776.php'], []);
+	}
+
 }

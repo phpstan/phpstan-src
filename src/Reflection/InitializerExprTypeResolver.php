@@ -452,9 +452,9 @@ class InitializerExprTypeResolver
 
 					foreach ($valueType->getValueTypes() as $i => $innerValueType) {
 						if ($hasStringKey && $this->phpVersion->supportsArrayUnpackingWithStringKeys()) {
-							$arrayBuilder->setOffsetValueType($valueType->getKeyTypes()[$i], $innerValueType);
+							$arrayBuilder->setOffsetValueType($valueType->getKeyTypes()[$i], $innerValueType, $valueType->isOptionalKey($i));
 						} else {
-							$arrayBuilder->setOffsetValueType(null, $innerValueType);
+							$arrayBuilder->setOffsetValueType(null, $innerValueType, $valueType->isOptionalKey($i));
 						}
 					}
 				} else {

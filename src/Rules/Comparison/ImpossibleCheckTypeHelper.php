@@ -68,6 +68,7 @@ class ImpossibleCheckTypeHelper
 					'interface_exists',
 					'trait_exists',
 					'enum_exists',
+					'is_subclass_of',
 				], true)) {
 					return null;
 				}

@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+namespace Bug3979;
+
 class A { }
 class B extends A { }
 class C { }

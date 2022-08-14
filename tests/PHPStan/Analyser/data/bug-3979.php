@@ -20,3 +20,7 @@ function check_class($value, $class_type): bool
 
 var_dump(check_class("B", "A")); // true
 var_dump(check_class("C", "A")); // false
+var_dump(check_class("B", A::class)); // true
+var_dump(check_class("C", A::class)); // false
+var_dump(check_class(B::class, A::class)); // true
+var_dump(check_class(C::class, A::class)); // false

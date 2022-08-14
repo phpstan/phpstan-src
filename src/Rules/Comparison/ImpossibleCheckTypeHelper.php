@@ -63,12 +63,17 @@ class ImpossibleCheckTypeHelper
 
 					return $assertValue->getValue();
 				}
+				if ($functionName === 'is_subclass_of' && $argsCount >= 2) {
+					$classType = $scope->getType($node->getArgs()[1]->value);
+					if (!$classType instanceof ConstantStringType) {
+						return null;
+					}
+				}
 				if (in_array($functionName, [
 					'class_exists',
 					'interface_exists',
 					'trait_exists',
 					'enum_exists',
-					'is_subclass_of',
 					'count',
 					'sizeof',
 					'defined',

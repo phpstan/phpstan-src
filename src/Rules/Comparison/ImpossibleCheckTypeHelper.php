@@ -69,16 +69,14 @@ class ImpossibleCheckTypeHelper
 					'trait_exists',
 					'enum_exists',
 					'is_subclass_of',
+					'count',
+					'sizeof',
+					'defined',
+					'array_search',
 				], true)) {
 					return null;
 				}
-				if (in_array($functionName, ['count', 'sizeof'], true)) {
-					return null;
-				} elseif ($functionName === 'defined') {
-					return null;
-				} elseif ($functionName === 'array_search') {
-					return null;
-				} elseif ($functionName === 'in_array' && $argsCount >= 3) {
+				if ($functionName === 'in_array' && $argsCount >= 3) {
 					$haystackType = $scope->getType($node->getArgs()[1]->value);
 					if ($haystackType instanceof MixedType) {
 						return null;

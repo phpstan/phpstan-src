@@ -13,7 +13,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -122,17 +122,17 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		$string = new StringType();
-		$integer = new IntegerType();
+		$port = IntegerRangeType::fromInterval(0, 65535);
 		$false = new ConstantBooleanType(false);
 		$null = new NullType();
 
 		$stringOrFalseOrNull = TypeCombinator::union($string, $false, $null);
-		$integerOrFalseOrNull = TypeCombinator::union($integer, $false, $null);
+		$portOrFalseOrNull = TypeCombinator::union($port, $false, $null);
 
 		$this->componentTypesPairedConstants = [
 			PHP_URL_SCHEME => $stringOrFalseOrNull,
 			PHP_URL_HOST => $stringOrFalseOrNull,
-			PHP_URL_PORT => $integerOrFalseOrNull,
+			PHP_URL_PORT => $portOrFalseOrNull,
 			PHP_URL_USER => $stringOrFalseOrNull,
 			PHP_URL_PASS => $stringOrFalseOrNull,
 			PHP_URL_PATH => $stringOrFalseOrNull,
@@ -143,7 +143,7 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 		$this->componentTypesPairedStrings = [
 			'scheme' => $string,
 			'host' => $string,
-			'port' => $integer,
+			'port' => $port,
 			'user' => $string,
 			'pass' => $string,
 			'path' => $string,

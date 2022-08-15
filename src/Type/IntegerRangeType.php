@@ -20,9 +20,8 @@ use const PHP_INT_MIN;
 class IntegerRangeType extends IntegerType implements CompoundType
 {
 
-	public function __construct(private ?int $min, private ?int $max)
+	private function __construct(private ?int $min, private ?int $max)
 	{
-		// this constructor can be made private when PHP 7.2 is the minimum
 		parent::__construct();
 		assert($min === null || $max === null || $min <= $max);
 		assert($min !== null || $max !== null);

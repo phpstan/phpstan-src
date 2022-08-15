@@ -2101,8 +2101,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 		];
 		yield [
 			[
-				new MixedType(false, new IntegerRangeType(17, null)),
-				new IntegerRangeType(19, null),
+				new MixedType(false, IntegerRangeType::fromInterval(17, null)),
+				IntegerRangeType::fromInterval(19, null),
 			],
 			MixedType::class,
 			'mixed~int<17, 18>=implicit',
@@ -3603,7 +3603,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 		];
 		yield [
 			[
-				new MixedType(false, new IntegerRangeType(17, null)),
+				new MixedType(false, IntegerRangeType::fromInterval(17, null)),
 				new MixedType(),
 			],
 			MixedType::class,

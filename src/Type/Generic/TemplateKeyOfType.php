@@ -46,6 +46,24 @@ final class TemplateKeyOfType extends KeyOfType implements TemplateType
 		return $this;
 	}
 
+	protected function getResult(): Type
+	{
+		$result = $this->getBound()->getResult();
+
+		$type = TemplateTypeFactory::create(
+			$this->getScope(),
+			$this->getName(),
+			$result,
+			$this->getVariance(),
+		);
+
+		if ($this->isArgument()) {
+			$type = TemplateTypeHelper::toArgument($type);
+		}
+
+		return $type;
+	}
+
 	protected function shouldGeneralizeInferredType(): bool
 	{
 		return false;

@@ -418,6 +418,16 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\ClosureArgVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
+		class: PHPStan\Parser\ArrowFunctionArgVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Parser\NewAssignedToPropertyVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor

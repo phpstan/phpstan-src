@@ -108,6 +108,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
+use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
@@ -2960,7 +2961,31 @@ class NodeScopeResolver
 
 		$byRefUses = [];
 
-		if ($passedToType !== null && !$passedToType->isCallable()->no()) {
+		$callableParameters = null;
+		$closureCallArgs = $expr->getAttribute('closureCallArgs');
+
+		if ($closureCallArgs !== null) {
+			$acceptors = $scope->getType($expr)->getCallableParametersAcceptors($scope);
+			if (count($acceptors) === 1) {
+				$callableParameters = $acceptors[0]->getParameters();
+
+				foreach ($callableParameters as $index => $callableParameter) {
+					if (!isset($closureCallArgs[$index])) {
+						continue;
+					}
+
+					$type = $scope->getType($closureCallArgs[$index]->value);
+					$callableParameters[$index] = new NativeParameterReflection(
+						$callableParameter->getName(),
+						$callableParameter->isOptional(),
+						$type,
+						$callableParameter->passedByReference(),
+						$callableParameter->isVariadic(),
+						$callableParameter->getDefaultValue(),
+					);
+				}
+			}
+		} elseif ($passedToType !== null && !$passedToType->isCallable()->no()) {
 			if ($passedToType instanceof UnionType) {
 				$passedToType = TypeCombinator::union(...array_filter(
 					$passedToType->getTypes(),
@@ -2968,13 +2993,10 @@ class NodeScopeResolver
 				));
 			}
 
-			$callableParameters = null;
 			$acceptors = $passedToType->getCallableParametersAcceptors($scope);
 			if (count($acceptors) === 1) {
 				$callableParameters = $acceptors[0]->getParameters();
 			}
-		} else {
-			$callableParameters = null;
 		}
 
 		$useScope = $scope;
@@ -3101,7 +3123,31 @@ class NodeScopeResolver
 			$nodeCallback($expr->returnType, $scope);
 		}
 
-		if ($passedToType !== null && !$passedToType->isCallable()->no()) {
+		$callableParameters = null;
+		$arrowFunctionCallArgs = $expr->getAttribute('arrowFunctionCallArgs');
+
+		if ($arrowFunctionCallArgs !== null) {
+			$acceptors = $scope->getType($expr)->getCallableParametersAcceptors($scope);
+			if (count($acceptors) === 1) {
+				$callableParameters = $acceptors[0]->getParameters();
+
+				foreach ($callableParameters as $index => $callableParameter) {
+					if (!isset($arrowFunctionCallArgs[$index])) {
+						continue;
+					}
+
+					$type = $scope->getType($arrowFunctionCallArgs[$index]->value);
+					$callableParameters[$index] = new NativeParameterReflection(
+						$callableParameter->getName(),
+						$callableParameter->isOptional(),
+						$type,
+						$callableParameter->passedByReference(),
+						$callableParameter->isVariadic(),
+						$callableParameter->getDefaultValue(),
+					);
+				}
+			}
+		} elseif ($passedToType !== null && !$passedToType->isCallable()->no()) {
 			if ($passedToType instanceof UnionType) {
 				$passedToType = TypeCombinator::union(...array_filter(
 					$passedToType->getTypes(),
@@ -3109,13 +3155,10 @@ class NodeScopeResolver
 				));
 			}
 
-			$callableParameters = null;
 			$acceptors = $passedToType->getCallableParametersAcceptors($scope);
 			if (count($acceptors) === 1) {
 				$callableParameters = $acceptors[0]->getParameters();
 			}
-		} else {
-			$callableParameters = null;
 		}
 
 		$arrowFunctionScope = $scope->enterArrowFunction($expr, $callableParameters);

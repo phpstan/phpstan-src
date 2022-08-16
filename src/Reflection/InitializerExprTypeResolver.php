@@ -523,8 +523,18 @@ class InitializerExprTypeResolver
 			return $stringType;
 		}
 
-		if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber()) instanceof ErrorType) {
+		$leftNumberType = $leftType->toNumber();
+		$rightNumberType = $rightType->toNumber();
+
+		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
 			return new ErrorType();
+		}
+
+		if ($rightNumberType instanceof ConstantIntegerType && $rightNumberType->getValue() >= 0) {
+			return IntegerRangeType::fromInterval(0, $rightNumberType->getValue());
+		}
+		if ($leftNumberType instanceof ConstantIntegerType && $leftNumberType->getValue() >= 0) {
+			return IntegerRangeType::fromInterval(0, $leftNumberType->getValue());
 		}
 
 		return new IntegerType();

@@ -2744,8 +2744,16 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'5 & 3',
 			],
 			[
-				'int',
+				'int<0, 3>',
 				'$integer & 3',
+			],
+			[
+				'int<0, 7>',
+				'7 & $integer',
+			],
+			[
+				'int',
+				'$integer & $integer',
 			],
 			[
 				'\'x\'',
@@ -2812,7 +2820,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'"5" ^ 3',
 			],
 			[
-				'int',
+				'int<0, 3>',
 				'$integer &= 3',
 			],
 			[

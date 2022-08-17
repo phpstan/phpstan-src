@@ -183,6 +183,13 @@ return [
 			return str_replace(sprintf('%s\\Composer\\Autoload\\ClassLoader', $prefix), 'Composer\\Autoload\\ClassLoader', $content);
 		},
 		function (string $filePath, string $prefix, string $content): string {
+			if ($filePath !== 'src/Internal/ComposerHelper.php') {
+				return $content;
+			}
+
+			return str_replace(sprintf('%s\\Composer\\InstalledVersions', $prefix), 'Composer\\InstalledVersions', $content);
+		},
+		function (string $filePath, string $prefix, string $content): string {
 			if ($filePath !== 'vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php') {
 				return $content;
 			}

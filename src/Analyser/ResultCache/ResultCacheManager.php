@@ -2,10 +2,8 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
-use Jean85\PrettyVersions;
 use Nette\DI\Definitions\Statement;
 use Nette\Neon\Neon;
-use OutOfBoundsException;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Collectors\CollectedData;
@@ -731,7 +729,7 @@ php;
 
 		return [
 			'cacheVersion' => self::CACHE_VERSION,
-			'phpstanVersion' => $this->getPhpStanVersion(),
+			'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
 			'phpVersion' => PHP_VERSION_ID,
 			'projectConfig' => $projectConfigArray,
 			'analysedPaths' => $this->analysedPaths,
@@ -803,15 +801,6 @@ php;
 		ksort($hashes);
 
 		return $hashes;
-	}
-
-	private function getPhpStanVersion(): string
-	{
-		try {
-			return PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
-		} catch (OutOfBoundsException) {
-			return 'Version unknown';
-		}
 	}
 
 	/**

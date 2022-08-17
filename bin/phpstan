@@ -152,16 +152,9 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 	$devOrPharLoader->register(true);
 
-	$version = 'Version unknown';
-	try {
-		$version = \Jean85\PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion() ?: $version;
-	} catch (\OutOfBoundsException $e) {
-
-	}
-
 	$application = new \Symfony\Component\Console\Application(
 		'PHPStan - PHP Static Analysis Tool',
-		$version
+		ComposerHelper::getPhpStanVersion()
 	);
 	$application->setDefaultCommand('analyse');
 	ProgressBar::setFormatDefinition('file_download', ' [%bar%] %percent:3s%% %fileSize%');

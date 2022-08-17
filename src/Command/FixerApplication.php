@@ -8,9 +8,7 @@ use Composer\CaBundle\CaBundle;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
-use Jean85\PrettyVersions;
 use Nette\Utils\Json;
-use OutOfBoundsException;
 use Phar;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
@@ -22,6 +20,7 @@ use PHPStan\File\FileMonitor;
 use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
+use PHPStan\Internal\ComposerHelper;
 use PHPStan\Parallel\Scheduler;
 use PHPStan\Process\CpuCoreCounter;
 use PHPStan\Process\ProcessCanceledException;
@@ -146,7 +145,7 @@ class FixerApplication
 				'analysedPaths' => $this->analysedPaths,
 				'projectConfigFile' => $projectConfigFile,
 				'filesCount' => $filesCount,
-				'phpstanVersion' => $this->getPhpstanVersion(),
+				'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
 			]]);
 			$decoder->on('data', function (array $data) use (
 				$loop,
@@ -555,15 +554,6 @@ class FixerApplication
 		$this->processInProgress = $process->run();
 
 		return $this->processInProgress->then(static fn (string $output): array => Json::decode($output, Json::FORCE_ARRAY));
-	}
-
-	private function getPhpstanVersion(): string
-	{
-		try {
-			return PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
-		} catch (OutOfBoundsException) {
-			return 'Version unknown';
-		}
 	}
 
 	private function isDockerRunning(): bool

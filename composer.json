@@ -6,6 +6,7 @@
 	],
 	"require": {
 		"php": "^8.0",
+		"composer-runtime-api": "^2.0",
 		"clue/block-react": "^1.4",
 		"clue/ndjson-react": "^1.0",
 		"composer/ca-bundle": "^1.2",
@@ -13,7 +14,6 @@
 		"hoa/compiler": "3.17.08.08",
 		"hoa/exception": "^1.0",
 		"hoa/regex": "1.17.01.13",
-		"jean85/pretty-package-versions": "^1.0.3",
 		"jetbrains/phpstorm-stubs": "dev-master#01006d9854679672fc8b85c6d5063ea6f25226ac",
 		"nette/bootstrap": "^3.0",
 		"nette/di": "^3.0.11",
@@ -68,7 +68,6 @@
 		"platform-check": false,
 		"sort-packages": true,
 		"allow-plugins": {
-			"composer/package-versions-deprecated": true,
 			"vaimo/composer-patches": true
 		}
 	},

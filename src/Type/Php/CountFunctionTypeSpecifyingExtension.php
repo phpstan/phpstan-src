@@ -10,9 +10,7 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\MixedType;
 use function count;
 use function in_array;
 
@@ -39,7 +37,7 @@ class CountFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExte
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		if (!(new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($scope->getType($node->getArgs()[0]->value))->yes()) {
+		if (!$scope->getType($node->getArgs()[0]->value)->isArray()->yes()) {
 			return new SpecifiedTypes([], []);
 		}
 

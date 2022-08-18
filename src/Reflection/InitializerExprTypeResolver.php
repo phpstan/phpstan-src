@@ -927,9 +927,7 @@ class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
-		$arrayType = new ArrayType(new MixedType(), new MixedType());
-
-		if ($arrayType->isSuperTypeOf($leftType)->yes() && $arrayType->isSuperTypeOf($rightType)->yes()) {
+		if ($leftType->isArray()->yes() && $rightType->isArray()->yes()) {
 			if ($leftType->getIterableKeyType()->equals($rightType->getIterableKeyType())) {
 				// to preserve BenevolentUnionType
 				$keyType = $leftType->getIterableKeyType();

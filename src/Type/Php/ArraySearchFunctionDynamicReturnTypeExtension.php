@@ -6,12 +6,10 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
@@ -35,7 +33,7 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 		}
 
 		$haystackArgType = $scope->getType($functionCall->getArgs()[1]->value);
-		$haystackIsArray = (new ArrayType(new MixedType(), new MixedType()))->isSuperTypeOf($haystackArgType);
+		$haystackIsArray = $haystackArgType->isArray();
 		if ($haystackIsArray->no()) {
 			return new NullType();
 		}

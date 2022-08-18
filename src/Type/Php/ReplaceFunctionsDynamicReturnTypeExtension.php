@@ -90,13 +90,11 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 			}
 		}
 
-		$stringType = new StringType();
-
-		$isStringSuperType = $stringType->isSuperTypeOf($subjectArgumentType);
+		$isStringSuperType = $subjectArgumentType->isString();
 		$isArraySuperType = $subjectArgumentType->isArray();
 		$compareSuperTypes = $isStringSuperType->compareTo($isArraySuperType);
 		if ($compareSuperTypes === $isStringSuperType) {
-			return $stringType;
+			return new StringType();
 		} elseif ($compareSuperTypes === $isArraySuperType) {
 			if ($subjectArgumentType instanceof ArrayType) {
 				return $subjectArgumentType->generalizeValues();

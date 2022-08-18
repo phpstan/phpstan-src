@@ -522,11 +522,10 @@ class TypeSpecifier
 				return $this->create($expr->left, new NonEmptyArrayType(), $context->negate(), false, $scope, $rootExpr);
 			}
 
-			$stringType = new StringType();
 			$integerType = new IntegerType();
 			$floatType = new FloatType();
 			if (
-				($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
+				($leftType->isString()->yes() && $rightType->isString()->yes())
 				|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
 				|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
 			) {

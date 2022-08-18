@@ -308,7 +308,7 @@ class ArrayType implements Type
 
 	public function isCallable(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe()->and((new StringType())->isSuperTypeOf($this->itemType));
+		return TrinaryLogic::createMaybe()->and($this->itemType->isString());
 	}
 
 	/**

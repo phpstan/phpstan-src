@@ -156,7 +156,7 @@ class StaticMethodCallCheck
 			if (!(new ObjectWithoutClassType())->isSuperTypeOf($classType)->yes()) {
 				return [[], null];
 			}
-		} elseif ((new StringType())->isSuperTypeOf($classType)->yes()) {
+		} elseif ($classType->isString()->yes()) {
 			return [[], null];
 		}
 

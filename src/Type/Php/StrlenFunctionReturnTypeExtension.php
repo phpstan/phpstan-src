@@ -14,7 +14,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -97,7 +96,7 @@ class StrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 			return IntegerRangeType::fromInterval(1, null);
 		}
 
-		if ((new StringType())->isSuperTypeOf($argType)->yes() && $isNonEmpty->no()) {
+		if ($argType->isString()->yes() && $isNonEmpty->no()) {
 			return new ConstantIntegerType(0);
 		}
 

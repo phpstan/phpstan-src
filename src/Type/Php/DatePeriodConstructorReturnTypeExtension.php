@@ -14,7 +14,6 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use function strtolower;
 
@@ -47,7 +46,7 @@ class DatePeriodConstructorReturnTypeExtension implements DynamicStaticMethodRet
 		}
 
 		$firstArgType = $scope->getType($methodCall->getArgs()[0]->value);
-		if ((new StringType())->isSuperTypeOf($firstArgType)->yes()) {
+		if ($firstArgType->isString()->yes()) {
 			$firstArgType = new ObjectType(DateTime::class);
 		}
 		$thirdArgType = null;

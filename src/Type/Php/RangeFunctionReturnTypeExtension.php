@@ -129,7 +129,7 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			return new ArrayType(new IntegerType(), $numberType);
 		}
 
-		$isString = (new StringType())->isSuperTypeOf($argType)->yes();
+		$isString = $argType->isString()->yes();
 		if ($isString) {
 			return new ArrayType(new IntegerType(), new StringType());
 		}

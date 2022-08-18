@@ -461,7 +461,7 @@ class InitializerExprTypeResolver
 				} else {
 					$arrayBuilder->degradeToGeneralArray();
 
-					$offsetType = $this->phpVersion->supportsArrayUnpackingWithStringKeys() && !(new StringType())->isSuperTypeOf($valueType->getIterableKeyType())->no()
+					$offsetType = $this->phpVersion->supportsArrayUnpackingWithStringKeys() && !$valueType->getIterableKeyType()->isString()->no()
 						? $valueType->getIterableKeyType()
 						: new IntegerType();
 					$arrayBuilder->setOffsetValueType($offsetType, $valueType->getIterableValueType(), !$valueType->isIterableAtLeastOnce()->yes());
@@ -522,10 +522,8 @@ class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
-		$stringType = new StringType();
-
-		if ($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes()) {
-			return $stringType;
+		if ($leftType->isString()->yes() && $rightType->isString()->yes()) {
+			return new StringType();
 		}
 
 		$leftNumberType = $leftType->toNumber();
@@ -591,10 +589,8 @@ class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
-		$stringType = new StringType();
-
-		if ($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes()) {
-			return $stringType;
+		if ($leftType->isString()->yes() && $rightType->isString()->yes()) {
+			return new StringType();
 		}
 
 		if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber()) instanceof ErrorType) {
@@ -650,10 +646,8 @@ class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
-		$stringType = new StringType();
-
-		if ($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes()) {
-			return $stringType;
+		if ($leftType->isString()->yes() && $rightType->isString()->yes()) {
+			return new StringType();
 		}
 
 		if (TypeCombinator::union($leftType->toNumber(), $rightType->toNumber()) instanceof ErrorType) {
@@ -1240,11 +1234,10 @@ class InitializerExprTypeResolver
 
 	public function resolveEqualType(Type $leftType, Type $rightType): BooleanType
 	{
-		$stringType = new StringType();
 		$integerType = new IntegerType();
 		$floatType = new FloatType();
 		if (
-			($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
+			($leftType->isString()->yes() && $rightType->isString()->yes())
 			|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
 			|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
 		) {

@@ -16,7 +16,6 @@ use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use function count;
 
@@ -50,7 +49,7 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 	{
 		$objectType = $scope->getType($node->getArgs()[0]->value);
 		if (!$objectType instanceof ObjectType) {
-			if ((new StringType())->isSuperTypeOf($objectType)->yes()) {
+			if ($objectType->isString()->yes()) {
 				return new SpecifiedTypes([], []);
 			}
 		}

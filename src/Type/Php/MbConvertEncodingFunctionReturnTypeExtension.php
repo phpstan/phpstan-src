@@ -32,7 +32,7 @@ class MbConvertEncodingFunctionReturnTypeExtension implements DynamicFunctionRet
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
-		$isString = (new StringType())->isSuperTypeOf($argType);
+		$isString = $argType->isString();
 		$isArray = $argType->isArray();
 		$compare = $isString->compareTo($isArray);
 		if ($compare === $isString) {

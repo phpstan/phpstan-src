@@ -33,7 +33,7 @@ class ArrayRandFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
 		$isInteger = (new IntegerType())->isSuperTypeOf($firstArgType->getIterableKeyType());
-		$isString = (new StringType())->isSuperTypeOf($firstArgType->getIterableKeyType());
+		$isString = $firstArgType->getIterableKeyType()->isString();
 
 		if ($isInteger->yes()) {
 			$valueType = new IntegerType();

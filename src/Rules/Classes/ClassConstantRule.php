@@ -130,7 +130,7 @@ class ClassConstantRule implements Rule
 					];
 				}
 
-				if ((new StringType())->isSuperTypeOf($classType)->yes()) {
+				if ($classType->isString()->yes()) {
 					return [
 						RuleErrorBuilder::message('Accessing ::class constant on a dynamic string is not supported in PHP.')
 							->nonIgnorable()
@@ -140,7 +140,7 @@ class ClassConstantRule implements Rule
 			}
 		}
 
-		if ((new StringType())->isSuperTypeOf($classType)->yes()) {
+		if ($classType->isString()->yes()) {
 			return $messages;
 		}
 

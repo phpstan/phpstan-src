@@ -17,7 +17,6 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -147,7 +146,7 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			|| TypeCombinator::remove($argType, $numeric)->isNonEmptyString()->yes()
 		) {
 			$range = IntegerRangeType::fromInterval(1, null);
-		} elseif ((new StringType())->isSuperTypeOf($argType)->yes() && $isNonEmpty->no()) {
+		} elseif ($argType->isString()->yes() && $isNonEmpty->no()) {
 			$range = new ConstantIntegerType(0);
 		} else {
 			$range = TypeCombinator::remove(

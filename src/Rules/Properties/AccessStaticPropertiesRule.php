@@ -150,7 +150,7 @@ class AccessStaticPropertiesRule implements Rule
 			}
 		}
 
-		if ((new StringType())->isSuperTypeOf($classType)->yes()) {
+		if ($classType->isString()->yes()) {
 			return [];
 		}
 

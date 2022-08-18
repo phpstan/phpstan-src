@@ -11,7 +11,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -37,12 +36,11 @@ class ArrayUnpackingRule implements Rule
 			return [];
 		}
 
-		$stringType = new StringType();
 		$typeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			new GetIterableKeyTypeExpr($node->value),
 			'',
-			static fn (Type $type): bool => $stringType->isSuperTypeOf($type)->no(),
+			static fn (Type $type): bool => $type->isString()->no(),
 		);
 
 		$keyType = $typeResult->getType();
@@ -50,7 +48,7 @@ class ArrayUnpackingRule implements Rule
 			return $typeResult->getUnknownClassErrors();
 		}
 
-		$isString = $stringType->isSuperTypeOf($keyType);
+		$isString = $keyType->isString();
 		if ($isString->no()) {
 			return [];
 		}

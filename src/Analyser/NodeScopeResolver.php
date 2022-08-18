@@ -116,6 +116,8 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
@@ -151,6 +153,7 @@ use TypeError;
 use UnhandledMatchError;
 use function array_fill_keys;
 use function array_filter;
+use function array_intersect;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
@@ -160,10 +163,14 @@ use function array_slice;
 use function base64_decode;
 use function count;
 use function in_array;
+use function ini_get;
 use function is_array;
 use function is_int;
 use function is_string;
+use function mb_parse_str;
+use function parse_str;
 use function sprintf;
+use function str_split;
 use function str_starts_with;
 use function strtolower;
 use function trim;
@@ -1979,6 +1986,105 @@ class NodeScopeResolver
 
 			if (isset($functionReflection) && str_starts_with($functionReflection->getName(), 'openssl')) {
 				$scope = $scope->afterOpenSslCall($functionReflection->getName());
+			}
+
+			if (
+				isset($functionReflection)
+				&& in_array($functionReflection->getName(), ['parse_str', 'mb_parse_str'], true)
+				&& count($expr->getArgs()) === 1
+				&& PHP_VERSION_ID < 80000
+			) {
+				$scope = $scope->afterExtractCall();
+			}
+
+			if (
+				isset($functionReflection)
+				&& in_array($functionReflection->getName(), ['parse_str', 'mb_parse_str'], true)
+				&& count($expr->getArgs()) === 2
+			) {
+				$stringToParse = $expr->getArgs()[0]->value;
+				$arrayResultArg = $expr->getArgs()[1]->value;
+
+				// parse_str doesn't allow an empty string as a key in a resulted array
+				$possibleArrayKeysAfterParseStr = new UnionType([
+					new IntegerType(),
+					new IntersectionType([
+						new StringType(),
+						new AccessoryNonEmptyStringType(),
+					]),
+				]);
+
+				$constantStrings = TypeUtils::getConstantStrings($scope->getType($stringToParse));
+
+				if (count($constantStrings) > 0) {
+					$results = [];
+
+					$arrayToTypeCallable = function (array $array) use (&$arrayToTypeCallable): ConstantArrayType {
+						return new ConstantArrayType(
+							array_map(
+								fn (int|string $key) => is_int($key) ? new ConstantIntegerType($key) : new ConstantStringType($key),
+								array_keys($array)
+							),
+							array_map(
+								fn (string|array $value) => is_string($value) ? new ConstantStringType($value) : $arrayToTypeCallable($value),
+								array_values($array)
+							),
+						);
+					};
+
+					foreach ($constantStrings as $constantString) {
+						// it throws warnings if max_input_nesting_level or max_input_vars are reached
+						@$functionReflection->getName()($constantString->getValue(), $result);
+						$results[] = $arrayToTypeCallable($result);
+					}
+					$scope = $scope->specifyExpressionType($arrayResultArg, TypeCombinator::union(...$results));
+				} elseif (
+					$scope->getType($stringToParse)->isNumericString()->yes()
+					&& count(
+						array_intersect(
+							str_split(ini_get('arg_separator.input')),
+							str_split(AccessoryNumericStringType::getPossibleChars()),
+						)
+					) === 0 // if numeric-string doesn't contain any chars used as separator
+				) {
+					$scope = $scope->specifyExpressionType(
+						$arrayResultArg,
+						new IntersectionType([
+							new ArrayType(
+								// numeric-string can become non-empty-string here,
+								// because some non-digit chars will be replaced by an underscore
+								$possibleArrayKeysAfterParseStr,
+								new ConstantStringType(''),
+							),
+							new NonEmptyArrayType()
+						])
+					);
+				} elseif ($scope->getType($stringToParse)->isNonEmptyString()->no()) {
+					$scope = $scope->specifyExpressionType($arrayResultArg, ConstantArrayTypeBuilder::createEmpty()->getArray());
+				} else {
+					// The default value is 64, it's too much for PHPStan.
+					// Analysis still works fast if this value is lowered to something around 16 or less.
+					// This can be advised to those who want to get more precise type here.
+					$maxNestingLevel = (int) ini_get('max_input_nesting_level');
+					if ($maxNestingLevel <= 16) {
+						$nestedArray = new ArrayType($possibleArrayKeysAfterParseStr, new StringType());
+						for ($i = 0; $i < $maxNestingLevel; $i++) {
+							$nestedArray = new ArrayType(
+								$possibleArrayKeysAfterParseStr,
+								TypeCombinator::union($nestedArray, new StringType()),
+							);
+						}
+						$scope = $scope->specifyExpressionType($arrayResultArg, $nestedArray);
+					} else {
+						$scope = $scope->specifyExpressionType(
+							$arrayResultArg,
+							new IntersectionType([
+								new ArrayType($possibleArrayKeysAfterParseStr, new MixedType()),
+								new NonEmptyArrayType()
+							])
+						);
+					}
+				}
 			}
 
 			if (isset($functionReflection) && $functionReflection->hasSideEffects()->yes()) {

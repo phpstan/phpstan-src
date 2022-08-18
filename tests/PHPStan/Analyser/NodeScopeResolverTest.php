@@ -1007,6 +1007,12 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6170.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Arrays/data/slevomat-foreach-array-key-exists-bug.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-key-exists.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/parse-str.php');
+		if (PHP_VERSION_ID >= 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/parse-str-one-arg-php8.php');
+		} else {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/parse-str-one-arg-php7.php');
+		}
 	}
 
 	/**

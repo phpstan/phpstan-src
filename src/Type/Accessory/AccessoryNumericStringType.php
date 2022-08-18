@@ -200,6 +200,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		return new StringType();
 	}
 
+	public static function getPossibleChars(): string
+	{
+		return "+-0123456789eE. \t\n\r\f\v"; // https://www.php.net/manual/en/language.types.numeric-strings.php
+	}
+
 	public static function __set_state(array $properties): Type
 	{
 		return new self();

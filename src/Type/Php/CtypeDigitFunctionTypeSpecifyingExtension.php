@@ -42,7 +42,7 @@ class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		$argType = $scope->getType($node->getArgs()[0]->value);
 		$intRange = new UnionType([
 			IntegerRangeType::fromInterval(48, 57), // ASCII-codes for 0-9
-			IntegerRangeType::createAllGreaterThanOrEqualTo(256) // Starting from 256 ints are interpreted as strings
+			IntegerRangeType::createAllGreaterThanOrEqualTo(256), // Starting from 256 ints are interpreted as strings
 		]);
 
 		if ((new StringType())->isSuperTypeOf($argType)->yes()) {

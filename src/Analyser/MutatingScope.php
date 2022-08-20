@@ -3527,7 +3527,7 @@ class MutatingScope implements Scope
 			$dimType = ArrayType::castToArrayKeyType($this->getType($expr->dim));
 			if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
 				$exprVarType = $this->getType($expr->var);
-				if (!$exprVarType instanceof MixedType) {
+				if (!$exprVarType instanceof MixedType && !$exprVarType->isArray()->no()) {
 					$types = [
 						new ArrayType(new MixedType(), new MixedType()),
 						new ObjectType(ArrayAccess::class),

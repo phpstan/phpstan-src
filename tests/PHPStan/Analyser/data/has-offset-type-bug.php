@@ -106,7 +106,7 @@ class TryMixed
 	{
 		if (isset($xml['foo'])) {
 			assertType('SimpleXMLElement', $xml['foo']);
-			assertType("SimpleXMLElement&hasOffsetValue('foo', SimpleXMLElement)", $xml);
+			assertType("SimpleXMLElement&hasOffset('foo')", $xml);
 		}
 	}
 

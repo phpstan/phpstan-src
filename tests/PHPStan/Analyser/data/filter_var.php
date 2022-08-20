@@ -53,3 +53,15 @@ function doFoo($mixed) {
 		assertType('string', $mixed);
 	}
 }
+
+function doString(string $s) {
+	if (filter_var($s, FILTER_VALIDATE_URL)) {
+		assertType('string', $s);
+	}
+	if (filter_var($s, FILTER_VALIDATE_DOMAIN)) {
+		assertType('string', $s);
+	}
+	if (filter_var($s, FILTER_VALIDATE_EMAIL)) {
+		assertType('string', $s);
+	}
+}

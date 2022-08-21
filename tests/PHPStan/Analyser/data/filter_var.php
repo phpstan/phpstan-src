@@ -44,24 +44,24 @@ function doFoo($mixed) {
 		assertType('bool', $mixed);
 	}
 	if (filter_var($mixed, FILTER_VALIDATE_URL)) {
-		assertType('string', $mixed);
+		assertType('non-empty-string', $mixed);
 	}
 	if (filter_var($mixed, FILTER_VALIDATE_DOMAIN)) {
-		assertType('string', $mixed);
+		assertType('non-empty-string', $mixed);
 	}
 	if (filter_var($mixed, FILTER_VALIDATE_EMAIL)) {
-		assertType('string', $mixed);
+		assertType('non-empty-string', $mixed);
 	}
 }
 
 function doString(string $s) {
 	if (filter_var($s, FILTER_VALIDATE_URL)) {
-		assertType('string', $s);
+		assertType('non-empty-string', $s);
 	}
 	if (filter_var($s, FILTER_VALIDATE_DOMAIN)) {
-		assertType('string', $s);
+		assertType('non-empty-string', $s);
 	}
 	if (filter_var($s, FILTER_VALIDATE_EMAIL)) {
-		assertType('string', $s);
+		assertType('non-empty-string', $s);
 	}
 }

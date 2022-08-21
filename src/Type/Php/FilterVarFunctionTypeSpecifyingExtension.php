@@ -9,11 +9,13 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use function count;
 use function in_array;
@@ -64,7 +66,10 @@ class FilterVarFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 			$type = new BooleanType();
 		}
 		if (in_array($flagsType->getValue(), [FILTER_VALIDATE_DOMAIN, FILTER_VALIDATE_URL, FILTER_VALIDATE_EMAIL], true)) {
-			$type = new StringType();
+			$type = new IntersectionType([
+				new StringType(),
+				new AccessoryNonEmptyStringType(),
+			]);
 		}
 		if ($flagsType->getValue() === FILTER_VALIDATE_INT) {
 			$type = new IntegerType();

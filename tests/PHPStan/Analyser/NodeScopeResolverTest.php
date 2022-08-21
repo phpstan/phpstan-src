@@ -983,6 +983,14 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/composer-non-empty-array-after-unset.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Arrays/data/bug-6000.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/prestashop-breakdowns-empty-array.php');
+
+		if (PHP_VERSION_ID < 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/loose-comparisons-php7.php');
+		}
+		if (PHP_VERSION_ID >= 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/loose-comparisons-php8.php');
+		}
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/loose-comparisons.php');
 	}
 
 	/**

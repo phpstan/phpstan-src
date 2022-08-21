@@ -20,7 +20,6 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
 use function count;
 use function defined;
 use function in_array;
@@ -73,21 +72,21 @@ class FilterVarFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 		// and native types of true and false, and is not case-sensitive when validating strings.
 		if (defined('FILTER_VALIDATE_BOOL')) { // requires php 8.0+
 			if (in_array($flagsType->getValue(), [FILTER_VALIDATE_BOOL, FILTER_VALIDATE_BOOLEAN], true)) {
-				$type = new UnionType([
+				$type = TypeCombinator::union(
 					new BooleanType(),
 					new StringType(),
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
-				]);
+				);
 			}
 		} else {
 			if ($flagsType->getValue() === FILTER_VALIDATE_BOOLEAN) {
-				$type = new UnionType([
+				$type = TypeCombinator::union(
 					new BooleanType(),
 					new StringType(),
 					new ConstantIntegerType(0),
 					new ConstantIntegerType(1),
-				]);
+				);
 			}
 		}
 

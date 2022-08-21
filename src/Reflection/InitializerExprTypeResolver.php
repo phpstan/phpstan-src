@@ -1253,6 +1253,15 @@ class InitializerExprTypeResolver
 			return $this->resolveIdenticalType($leftType, $rightType);
 		}
 
+		if ($leftType instanceof ConstantArrayType && $leftType->isEmpty() && $rightType instanceof ConstantScalarType) {
+			// @phpstan-ignore-next-line
+			return new ConstantBooleanType($rightType->getValue() == []); // phpcs:ignore
+		}
+		if ($rightType instanceof ConstantArrayType && $rightType->isEmpty() && $leftType instanceof ConstantScalarType) {
+			// @phpstan-ignore-next-line
+			return new ConstantBooleanType($leftType->getValue() == []); // phpcs:ignore
+		}
+
 		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {
 			// @phpstan-ignore-next-line
 			return new ConstantBooleanType($leftType->getValue() == $rightType->getValue()); // phpcs:ignore

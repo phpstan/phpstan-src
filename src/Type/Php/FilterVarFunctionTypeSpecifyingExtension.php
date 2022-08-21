@@ -14,10 +14,13 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\IntegerType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function count;
+use function defined;
 use function in_array;
 use function strtolower;
 use const FILTER_VALIDATE_BOOL;
@@ -62,17 +65,41 @@ class FilterVarFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 		if ($flagsType->getValue() === FILTER_VALIDATE_FLOAT) {
 			$type = new FloatType();
 		}
-		if (in_array($flagsType->getValue(), [FILTER_VALIDATE_BOOL, FILTER_VALIDATE_BOOLEAN], true)) {
-			$type = new BooleanType();
+
+		// note that FILTER_VALIDATE_BOOLEAN tries to be smart, recognizing words like Yes, No, Off, On, both string
+		// and native types of true and false, and is not case-sensitive when validating strings.
+		if (defined('FILTER_VALIDATE_BOOL')) { // requires php 8.0+
+			if (in_array($flagsType->getValue(), [FILTER_VALIDATE_BOOL, FILTER_VALIDATE_BOOLEAN], true)) {
+				$type = new UnionType([
+					new BooleanType(),
+					new StringType(),
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+				]);
+			}
+		} else {
+			if ($flagsType->getValue() === FILTER_VALIDATE_BOOLEAN) {
+				$type = new UnionType([
+					new BooleanType(),
+					new StringType(),
+					new ConstantIntegerType(0),
+					new ConstantIntegerType(1),
+				]);
+			}
 		}
+
 		if (in_array($flagsType->getValue(), [FILTER_VALIDATE_DOMAIN, FILTER_VALIDATE_URL, FILTER_VALIDATE_EMAIL], true)) {
 			$type = new IntersectionType([
 				new StringType(),
 				new AccessoryNonEmptyStringType(),
 			]);
 		}
+		// 0 will be filtered out and therefore wont be considered as an int by filter_var
 		if ($flagsType->getValue() === FILTER_VALIDATE_INT) {
-			$type = new IntegerType();
+			$type = TypeCombinator::union(
+				IntegerRangeType::fromInterval(null, -1),
+				IntegerRangeType::fromInterval(1, null),
+			);
 		}
 
 		if ($type !== null) {

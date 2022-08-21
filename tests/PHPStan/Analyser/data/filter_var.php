@@ -35,13 +35,13 @@ function doFoo($mixed) {
 		assertType('float', $mixed);
 	}
 	if (filter_var($mixed, FILTER_VALIDATE_INT)) {
-		assertType('int', $mixed);
+		assertType('int<min, -1>|int<1, max>', $mixed);
 	}
 	if (filter_var($mixed, FILTER_VALIDATE_BOOL)) {
-		assertType('bool', $mixed);
+		assertType('0|1|bool|string', $mixed);
 	}
 	if (filter_var($mixed, FILTER_VALIDATE_BOOLEAN)) {
-		assertType('bool', $mixed);
+		assertType('0|1|bool|string', $mixed);
 	}
 	if (filter_var($mixed, FILTER_VALIDATE_URL)) {
 		assertType('non-empty-string', $mixed);

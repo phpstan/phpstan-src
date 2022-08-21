@@ -2,7 +2,9 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
@@ -52,11 +54,12 @@ class FilterVarFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		if (count($node->getArgs()) < 2) {
+		$args = $node->getArgs();
+		if (count($args) < 2) {
 			return new SpecifiedTypes();
 		}
 
-		$flagsType = $scope->getType($node->getArgs()[1]->value);
+		$flagsType = $scope->getType($args[1]->value);
 		if (!$flagsType instanceof ConstantIntegerType) {
 			return new SpecifiedTypes();
 		}
@@ -104,11 +107,15 @@ class FilterVarFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 
 		if ($type !== null) {
 			return $this->typeSpecifier->create(
-				$node->getArgs()[0]->value,
+				$args[0]->value,
 				$type,
 				$context,
 				false,
 				$scope,
+				new BooleanAnd(
+					$args[0]->value,
+					new FuncCall(new Name('FAUX_FUNCTION'), $args),
+				),
 			);
 		}
 

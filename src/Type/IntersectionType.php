@@ -565,13 +565,6 @@ class IntersectionType implements CompoundType
 		return $type;
 	}
 
-	public function toString(): Type
-	{
-		$type = $this->intersectTypes(static fn (Type $type): Type => $type->toString());
-
-		return $type;
-	}
-
 	public function toInteger(): Type
 	{
 		$type = $this->intersectTypes(static fn (Type $type): Type => $type->toInteger());
@@ -582,6 +575,13 @@ class IntersectionType implements CompoundType
 	public function toFloat(): Type
 	{
 		$type = $this->intersectTypes(static fn (Type $type): Type => $type->toFloat());
+
+		return $type;
+	}
+
+	public function toString(): Type
+	{
+		$type = $this->intersectTypes(static fn (Type $type): Type => $type->toString());
 
 		return $type;
 	}

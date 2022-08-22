@@ -470,6 +470,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $description;
 	}
 
+	public function toBoolean(): BooleanType
+	{
+		if ($this->isInstanceOf('SimpleXMLElement')->yes()) {
+			return new BooleanType();
+		}
+
+		return new ConstantBooleanType(true);
+	}
+
 	public function toNumber(): Type
 	{
 		if ($this->isInstanceOf('SimpleXMLElement')->yes()) {
@@ -570,15 +579,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		} while ($classReflection !== null);
 
 		return new ConstantArrayType($arrayKeys, $arrayValues);
-	}
-
-	public function toBoolean(): BooleanType
-	{
-		if ($this->isInstanceOf('SimpleXMLElement')->yes()) {
-			return new BooleanType();
-		}
-
-		return new ConstantBooleanType(true);
 	}
 
 	public function canAccessProperties(): TrinaryLogic

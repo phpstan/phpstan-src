@@ -328,11 +328,6 @@ class ArrayType implements Type
 		return new ErrorType();
 	}
 
-	public function toString(): Type
-	{
-		return new ErrorType();
-	}
-
 	public function toInteger(): Type
 	{
 		return TypeCombinator::union(
@@ -347,6 +342,11 @@ class ArrayType implements Type
 			new ConstantFloatType(0.0),
 			new ConstantFloatType(1.0),
 		);
+	}
+
+	public function toString(): Type
+	{
+		return new ErrorType();
 	}
 
 	public function toArray(): Type

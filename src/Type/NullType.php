@@ -119,11 +119,6 @@ class NullType implements ConstantScalarType
 		return new ConstantIntegerType(0);
 	}
 
-	public function toString(): Type
-	{
-		return new ConstantStringType('');
-	}
-
 	public function toInteger(): Type
 	{
 		return $this->toNumber();
@@ -132,6 +127,11 @@ class NullType implements ConstantScalarType
 	public function toFloat(): Type
 	{
 		return $this->toNumber()->toFloat();
+	}
+
+	public function toString(): Type
+	{
+		return new ConstantStringType('');
 	}
 
 	public function toArray(): Type

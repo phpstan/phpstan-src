@@ -189,17 +189,17 @@ class IterableType implements CompoundType
 		return new ErrorType();
 	}
 
-	public function toString(): Type
-	{
-		return new ErrorType();
-	}
-
 	public function toInteger(): Type
 	{
 		return new ErrorType();
 	}
 
 	public function toFloat(): Type
+	{
+		return new ErrorType();
+	}
+
+	public function toString(): Type
 	{
 		return new ErrorType();
 	}

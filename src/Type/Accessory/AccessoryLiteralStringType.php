@@ -128,6 +128,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		return TrinaryLogic::createNo();
 	}
 
+	public function toBoolean(): BooleanType
+	{
+		return new BooleanType();
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();
@@ -146,11 +151,6 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 	public function toString(): Type
 	{
 		return $this;
-	}
-
-	public function toBoolean(): BooleanType
-	{
-		return new BooleanType();
 	}
 
 	public function toArray(): Type

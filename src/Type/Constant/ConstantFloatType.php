@@ -72,14 +72,14 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 		return TrinaryLogic::createNo();
 	}
 
-	public function toString(): Type
-	{
-		return new ConstantStringType((string) $this->value);
-	}
-
 	public function toInteger(): Type
 	{
 		return new ConstantIntegerType((int) $this->value);
+	}
+
+	public function toString(): Type
+	{
+		return new ConstantStringType((string) $this->value);
 	}
 
 	/**

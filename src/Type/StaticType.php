@@ -372,14 +372,14 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return TrinaryLogic::createYes();
 	}
 
+	public function toBoolean(): BooleanType
+	{
+		return $this->getStaticObjectType()->toBoolean();
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();
-	}
-
-	public function toString(): Type
-	{
-		return $this->getStaticObjectType()->toString();
 	}
 
 	public function toInteger(): Type
@@ -392,14 +392,14 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return new ErrorType();
 	}
 
+	public function toString(): Type
+	{
+		return $this->getStaticObjectType()->toString();
+	}
+
 	public function toArray(): Type
 	{
 		return $this->getStaticObjectType()->toArray();
-	}
-
-	public function toBoolean(): BooleanType
-	{
-		return $this->getStaticObjectType()->toBoolean();
 	}
 
 	public function traverse(callable $cb): Type

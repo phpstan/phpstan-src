@@ -203,17 +203,17 @@ class NeverType implements CompoundType
 		return $this;
 	}
 
-	public function toString(): Type
-	{
-		return $this;
-	}
-
 	public function toInteger(): Type
 	{
 		return $this;
 	}
 
 	public function toFloat(): Type
+	{
+		return $this;
+	}
+
+	public function toString(): Type
 	{
 		return $this;
 	}

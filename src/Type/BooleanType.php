@@ -45,14 +45,6 @@ class BooleanType implements Type
 		return $this->toInteger();
 	}
 
-	public function toString(): Type
-	{
-		return TypeCombinator::union(
-			new ConstantStringType(''),
-			new ConstantStringType('1'),
-		);
-	}
-
 	public function toInteger(): Type
 	{
 		return TypeCombinator::union(
@@ -66,6 +58,14 @@ class BooleanType implements Type
 		return TypeCombinator::union(
 			new ConstantFloatType(0.0),
 			new ConstantFloatType(1.0),
+		);
+	}
+
+	public function toString(): Type
+	{
+		return TypeCombinator::union(
+			new ConstantStringType(''),
+			new ConstantStringType('1'),
 		);
 	}
 

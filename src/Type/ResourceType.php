@@ -44,11 +44,6 @@ class ResourceType implements Type
 		return new ErrorType();
 	}
 
-	public function toString(): Type
-	{
-		return new StringType();
-	}
-
 	public function toInteger(): Type
 	{
 		return new IntegerType();
@@ -57,6 +52,11 @@ class ResourceType implements Type
 	public function toFloat(): Type
 	{
 		return new ErrorType();
+	}
+
+	public function toString(): Type
+	{
+		return new StringType();
 	}
 
 	public function toArray(): Type

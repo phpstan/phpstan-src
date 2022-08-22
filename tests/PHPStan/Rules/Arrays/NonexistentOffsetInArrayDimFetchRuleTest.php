@@ -429,12 +429,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	public function testBug6000(): void
 	{
 		$this->checkExplicitMixed = true;
-		$this->analyse([__DIR__ . '/data/bug-6000.php'], [
-			[
-				'Offset \'classmap\' does not exist on array{psr-4?: array<string, array<string>|string>, classmap?: array<int, string>}.',
-				12,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-6000.php'], []);
 	}
 
 	public function testBug5743(): void
@@ -506,6 +501,11 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/bug-7763.php'], []);
+	}
+
+	public function testSpecifyExistentOffsetWhenEnteringForeach(): void
+	{
+		$this->analyse([__DIR__ . '/data/specify-existent-offset-when-entering-foreach.php'], []);
 	}
 
 }

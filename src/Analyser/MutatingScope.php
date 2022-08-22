@@ -3143,6 +3143,13 @@ class MutatingScope implements Scope
 		$scope = $this->assignVariable($keyName, $iterateeType->getIterableKeyType());
 		$scope->nativeExpressionTypes[sprintf('$%s', $keyName)] = $nativeIterateeType->getIterableKeyType();
 
+		if ($iterateeType->isArray()->yes()) {
+			$scope = $scope->specifyExpressionType(
+				new Expr\ArrayDimFetch($iteratee, new Variable($keyName)),
+				$iterateeType->getIterableValueType(),
+			);
+		}
+
 		return $scope;
 	}
 

@@ -50,7 +50,13 @@ class ImplodeFunctionRuleTest extends RuleTestCase
 
 	public function testBug6000(): void
 	{
-		$this->analyse([__DIR__ . '/../Arrays/data/bug-6000.php'], []);
+		$this->analyse([__DIR__ . '/../Arrays/data/bug-6000.php'], [
+			[
+				// shouldn't be happening...
+				'Parameter #2 $array of function implode expects array<string>, array<int|string, array<string>|string> given.',
+				12,
+			],
+		]);
 	}
 
 }

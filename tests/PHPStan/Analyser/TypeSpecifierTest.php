@@ -102,7 +102,15 @@ class TypeSpecifierTest extends PHPStanTestCase
 			[
 				$this->createFunctionCall('is_numeric'),
 				['$foo' => 'float|int|numeric-string'],
-				['$foo' => '~float|int'],
+				['$foo' => '~float|int|numeric-string'],
+			],
+			[
+				new Expr\BinaryOp\BooleanAnd(
+					$this->createFunctionCall('is_string'),
+					$this->createFunctionCall('is_numeric'),
+				),
+				['$foo' => 'numeric-string'],
+				['$foo' => '~numeric-string'],
 			],
 			[
 				$this->createFunctionCall('is_scalar'),

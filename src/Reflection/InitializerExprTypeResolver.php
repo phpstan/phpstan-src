@@ -46,6 +46,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -1370,6 +1371,9 @@ class InitializerExprTypeResolver
 		$rightNumberType = $rightType->toNumber();
 		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
 			return new ErrorType();
+		}
+		if ($leftNumberType instanceof NeverType || $rightNumberType instanceof NeverType) {
+			return new NeverType();
 		}
 
 		if (

@@ -16,6 +16,7 @@ use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
@@ -120,6 +121,9 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function unsetOffset(Type $offsetType): Type
 	{
+		if ($this->subtractedType !== null) {
+			return new self($this->isExplicitMixed, TypeCombinator::remove($this->subtractedType, new ConstantArrayType([], [])));
+		}
 		return $this;
 	}
 

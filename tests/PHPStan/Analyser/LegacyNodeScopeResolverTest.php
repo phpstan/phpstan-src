@@ -2308,11 +2308,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$line',
 			],
 			[
-				(new ConstantStringType(__DIR__ . '/data'))->describe(VerbosityLevel::precise()),
+				'literal-string&non-falsy-string',
 				'$dir',
 			],
 			[
-				(new ConstantStringType(__DIR__ . '/data/binary.php'))->describe(VerbosityLevel::precise()),
+				'literal-string&non-falsy-string',
 				'$file',
 			],
 			[

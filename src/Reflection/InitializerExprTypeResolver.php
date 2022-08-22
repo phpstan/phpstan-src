@@ -118,11 +118,11 @@ class InitializerExprTypeResolver
 		}
 		if ($expr instanceof File) {
 			$file = $context->getFile();
-			return $file !== null ? new ConstantStringType($file) : new StringType();
+			return $file !== null ? (new ConstantStringType($file))->generalize(GeneralizePrecision::moreSpecific()) : new StringType();
 		}
 		if ($expr instanceof Dir) {
 			$file = $context->getFile();
-			return $file !== null ? new ConstantStringType(dirname($file)) : new StringType();
+			return $file !== null ? (new ConstantStringType(dirname($file)))->generalize(GeneralizePrecision::moreSpecific()) : new StringType();
 		}
 		if ($expr instanceof Line) {
 			return new ConstantIntegerType($expr->getLine());

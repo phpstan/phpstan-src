@@ -10,7 +10,6 @@ use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\VerbosityLevel;
 use SingleFileSourceLocatorTestClass;
 use TestSingleFileSourceLocator\AFoo;
-use function str_replace;
 use const PHP_VERSION_ID;
 
 class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
@@ -119,7 +118,7 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 			],
 			[
 				'const_with_dir_const',
-				"'" . str_replace('\\', '/', __DIR__ . '/data') . "'",
+				'literal-string&non-falsy-string',
 			],
 			[
 				'OPTIMIZED_SFSL_OBJECT_CONSTANT',

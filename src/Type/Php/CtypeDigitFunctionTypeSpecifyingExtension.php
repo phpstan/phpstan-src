@@ -13,7 +13,9 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\UnionType;
+use PHPStan\Type\IntersectionType;
+use PHPStan\Type\StringType;
+use PHPStan\Type\TypeCombinator;
 use function strtolower;
 
 class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
@@ -42,10 +44,13 @@ class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		];
 
 		if ($context->true()) {
-			$types[] = new AccessoryNumericStringType();
+			$types[] = new IntersectionType([
+				new StringType(),
+				new AccessoryNumericStringType(),
+			]);
 		}
 
-		return $this->typeSpecifier->create($node->getArgs()[0]->value, new UnionType($types), $context, false, $scope);
+		return $this->typeSpecifier->create($node->getArgs()[0]->value, TypeCombinator::union(...$types), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

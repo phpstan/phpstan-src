@@ -28,7 +28,7 @@ class MethodAttributesRuleTest extends RuleTestCase
 			new AttributesCheck(
 				$reflectionProvider,
 				new FunctionCallParametersCheck(
-					new RuleLevelHelper($reflectionProvider, true, false, true, false),
+					new RuleLevelHelper($reflectionProvider, true, false, true, false, false),
 					new NullsafeCheck(),
 					new PhpVersion($this->phpVersion),
 					new UnresolvableTypeHelper(),

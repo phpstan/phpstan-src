@@ -19,7 +19,7 @@ class MethodCallableRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, false);
+		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, false, false);
 
 		return new MethodCallableRule(
 			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),

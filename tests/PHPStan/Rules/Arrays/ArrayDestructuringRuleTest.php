@@ -15,7 +15,7 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false);
+		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false);
 
 		return new ArrayDestructuringRule(
 			$ruleLevelHelper,

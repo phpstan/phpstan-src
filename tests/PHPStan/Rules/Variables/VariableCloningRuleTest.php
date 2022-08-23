@@ -15,7 +15,7 @@ class VariableCloningRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new VariableCloningRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false));
+		return new VariableCloningRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false));
 	}
 
 	public function testClone(): void

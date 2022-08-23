@@ -34,6 +34,7 @@ class RuleLevelHelper
 		private bool $checkThisOnly,
 		private bool $checkUnionTypes,
 		private bool $checkExplicitMixed,
+		private bool $checkImplicitMixed,
 	)
 	{
 	}
@@ -57,6 +58,26 @@ class RuleLevelHelper
 				if (
 					$type instanceof MixedType
 					&& $type->isExplicitMixed()
+				) {
+					return new StrictMixedType();
+				}
+
+				return $traverse($type);
+			};
+			$acceptingType = TypeTraverser::map($acceptingType, $traverse);
+			$acceptedType = TypeTraverser::map($acceptedType, $traverse);
+		}
+
+		if (
+			$this->checkImplicitMixed
+		) {
+			$traverse = static function (Type $type, callable $traverse): Type {
+				if ($type instanceof TemplateMixedType) {
+					return $type->toStrictMixedType();
+				}
+				if (
+					$type instanceof MixedType
+					&& !$type->isExplicitMixed()
 				) {
 					return new StrictMixedType();
 				}
@@ -132,6 +153,15 @@ class RuleLevelHelper
 			&& $type instanceof MixedType
 			&& !$type instanceof TemplateMixedType
 			&& $type->isExplicitMixed()
+		) {
+			return new FoundTypeResult(new StrictMixedType(), [], [], null);
+		}
+
+		if (
+			$this->checkImplicitMixed
+			&& $type instanceof MixedType
+			&& !$type instanceof TemplateMixedType
+			&& !$type->isExplicitMixed()
 		) {
 			return new FoundTypeResult(new StrictMixedType(), [], [], null);
 		}

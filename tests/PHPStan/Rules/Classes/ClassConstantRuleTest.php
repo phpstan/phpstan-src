@@ -20,7 +20,7 @@ class ClassConstantRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ClassConstantRule($broker, new RuleLevelHelper($broker, true, false, true, false), new ClassCaseSensitivityCheck($broker, true), new PhpVersion($this->phpVersion));
+		return new ClassConstantRule($broker, new RuleLevelHelper($broker, true, false, true, false, false), new ClassCaseSensitivityCheck($broker, true), new PhpVersion($this->phpVersion));
 	}
 
 	public function testClassConstant(): void

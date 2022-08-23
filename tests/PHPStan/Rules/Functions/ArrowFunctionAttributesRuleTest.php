@@ -26,7 +26,7 @@ class ArrowFunctionAttributesRuleTest extends RuleTestCase
 			new AttributesCheck(
 				$reflectionProvider,
 				new FunctionCallParametersCheck(
-					new RuleLevelHelper($reflectionProvider, true, false, true, false),
+					new RuleLevelHelper($reflectionProvider, true, false, true, false, false),
 					new NullsafeCheck(),
 					new PhpVersion(80000),
 					new UnresolvableTypeHelper(),

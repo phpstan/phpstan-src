@@ -71,3 +71,15 @@ enum BackedEnumWithFloatType: float
 enum BackedEnumWithBoolType: bool
 {
 }
+
+enum EnumWithSerialize {
+	case Bar;
+
+	public function __serialize() {
+	}
+
+	public function __unserialize(array $data) {
+
+	}
+}
+

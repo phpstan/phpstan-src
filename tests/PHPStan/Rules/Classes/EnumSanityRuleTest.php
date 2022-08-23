@@ -68,6 +68,14 @@ class EnumSanityRuleTest extends RuleTestCase
 				'Backed enum EnumSanity\BackedEnumWithBoolType can have only "int" or "string" type.',
 				71,
 			],
+			[
+				'Enum EnumSanity\EnumWithSerialize contains magic method __serialize().',
+				78,
+			],
+			[
+				'Enum EnumSanity\EnumWithSerialize contains magic method __unserialize().',
+				81,
+			],
 		]);
 	}
 

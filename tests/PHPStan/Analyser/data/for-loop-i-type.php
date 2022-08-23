@@ -39,7 +39,7 @@ class Foo
 		$foo = null;
 		for($i = 1; $i < count([]); $i++) {
 			$foo = new \stdClass();
-			assertType('string', $i); // should be *NEVER*
+			assertType('*NEVER*', $i);
 		}
 
 		assertType('1', $i);

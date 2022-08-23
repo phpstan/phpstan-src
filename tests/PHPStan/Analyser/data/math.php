@@ -139,4 +139,21 @@ class Foo
 
 	}
 
+	public function never(): void
+	{
+		for ($i = 1; $i < count([]); $i++) {
+			assertType('*NEVER*', $i);
+			assertType('*NEVER*', $i + 2);
+			assertType('*NEVER*', 2 + $i);
+			assertType('*NEVER*', $i - 2);
+			assertType('*NEVER*', 2 - $i);
+			assertType('*NEVER*', $i * 2);
+			assertType('*NEVER*', 2 * $i);
+			assertType('*NEVER*', $i ** 2);
+			assertType('*NEVER*', 2 ** $i);
+			assertType('*NEVER*', $i / 2);
+			assertType('*NEVER*', 2 / $i);
+		}
+	}
+
 }

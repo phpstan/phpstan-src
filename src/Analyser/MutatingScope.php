@@ -1474,7 +1474,7 @@ class MutatingScope implements Scope
 					$newTypes[] = $this->getTypeFromValue($varValue);
 				}
 				return TypeCombinator::union(...$newTypes);
-			} elseif ($stringType->isSuperTypeOf($varType)->yes()) {
+			} elseif ($varType->isString()->yes()) {
 				if ($varType->isLiteralString()->yes()) {
 					return new IntersectionType([$stringType, new AccessoryLiteralStringType()]);
 				}

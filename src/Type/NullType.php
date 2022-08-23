@@ -236,6 +236,16 @@ class NullType implements ConstantScalarType
 		return new MixedType();
 	}
 
+	public function looseCompare(Type $type): BooleanType
+	{
+		if ($type instanceof ConstantScalarType) {
+			// @phpstan-ignore-next-line
+			return new ConstantBooleanType($this->getValue() == $type->getValue()); // phpcs:ignore
+		}
+
+		return $type->looseCompare($this);
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

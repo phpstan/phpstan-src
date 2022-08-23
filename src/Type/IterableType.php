@@ -13,6 +13,7 @@ use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use PHPStan\Type\Traits\NonLooseComparableTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use Traversable;
@@ -29,6 +30,7 @@ class IterableType implements CompoundType
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use NonLooseComparableTrait;
 
 	/** @api */
 	public function __construct(

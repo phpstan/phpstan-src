@@ -24,6 +24,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use PHPStan\Type\Traits\NonLooseComparableTrait;
 use function array_map;
 use function count;
 use function implode;
@@ -35,6 +36,7 @@ class UnionType implements CompoundType
 {
 
 	use NonGeneralizableTypeTrait;
+	use NonLooseComparableTrait;
 
 	private bool $sortedTypes = false;
 

@@ -14,6 +14,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use PHPStan\Type\Traits\NonLooseComparableTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
@@ -23,6 +24,7 @@ class StrictMixedType implements CompoundType
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use NonLooseComparableTrait;
 
 	public function getReferencedClasses(): array
 	{

@@ -25,6 +25,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use PHPStan\Type\Traits\NonLooseComparableTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use function array_map;
 use function array_values;
@@ -41,6 +42,7 @@ class IntersectionType implements CompoundType
 
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use NonLooseComparableTrait;
 
 	/** @var Type[] */
 	private array $types;

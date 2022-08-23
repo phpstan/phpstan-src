@@ -24,6 +24,7 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\NonLooseComparableTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
@@ -41,6 +42,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	use NonOffsetAccessibleTypeTrait;
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use NonLooseComparableTrait;
 
 	private ObjectType $objectType;
 

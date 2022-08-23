@@ -1202,7 +1202,7 @@ class InitializerExprTypeResolver
 		}
 
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
-			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveIdenticalType($leftValueType, $rightValueType));
+			return self::resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveIdenticalType($leftValueType, $rightValueType));
 		}
 
 		return new BooleanType();
@@ -1210,42 +1210,13 @@ class InitializerExprTypeResolver
 
 	public function resolveEqualType(Type $leftType, Type $rightType): BooleanType
 	{
-		$stringType = new StringType();
-		$integerType = new IntegerType();
-		$floatType = new FloatType();
-		if (
-			($stringType->isSuperTypeOf($leftType)->yes() && $stringType->isSuperTypeOf($rightType)->yes())
-			|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
-			|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
-		) {
-			return $this->resolveIdenticalType($leftType, $rightType);
-		}
-
-		if ($leftType instanceof ConstantArrayType && $leftType->isEmpty() && $rightType instanceof ConstantScalarType) {
-			// @phpstan-ignore-next-line
-			return new ConstantBooleanType($rightType->getValue() == []); // phpcs:ignore
-		}
-		if ($rightType instanceof ConstantArrayType && $rightType->isEmpty() && $leftType instanceof ConstantScalarType) {
-			// @phpstan-ignore-next-line
-			return new ConstantBooleanType($leftType->getValue() == []); // phpcs:ignore
-		}
-
-		if ($leftType instanceof ConstantScalarType && $rightType instanceof ConstantScalarType) {
-			// @phpstan-ignore-next-line
-			return new ConstantBooleanType($leftType->getValue() == $rightType->getValue()); // phpcs:ignore
-		}
-
-		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
-			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): BooleanType => $this->resolveEqualType($leftValueType, $rightValueType));
-		}
-
-		return new BooleanType();
+		return $leftType->looseCompare($rightType);
 	}
 
 	/**
 	 * @param callable(Type, Type): BooleanType $valueComparisonCallback
 	 */
-	private function resolveConstantArrayTypeComparison(ConstantArrayType $leftType, ConstantArrayType $rightType, callable $valueComparisonCallback): BooleanType
+	public static function resolveConstantArrayTypeComparison(ConstantArrayType $leftType, ConstantArrayType $rightType, callable $valueComparisonCallback): BooleanType
 	{
 		$leftKeyTypes = $leftType->getKeyTypes();
 		$rightKeyTypes = $rightType->getKeyTypes();

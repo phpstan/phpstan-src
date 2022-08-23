@@ -16,6 +16,7 @@ use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\NonLooseComparableTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
@@ -35,6 +36,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use NonLooseComparableTrait;
 
 	public function __construct(private ConstantStringType|ConstantIntegerType $offsetType, private Type $valueType)
 	{

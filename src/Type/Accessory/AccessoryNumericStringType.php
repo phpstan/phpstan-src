@@ -15,6 +15,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
+use PHPStan\Type\Traits\NonLooseComparableTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
@@ -33,6 +34,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
 	use NonRemoveableTypeTrait;
+	use NonLooseComparableTrait;
 
 	/** @api */
 	public function __construct()

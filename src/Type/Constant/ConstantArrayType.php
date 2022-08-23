@@ -4,6 +4,7 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\InaccessibleMethod;
+use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
@@ -13,6 +14,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
@@ -1189,6 +1191,20 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return $this;
+	}
+
+	public function looseCompare(Type $type): BooleanType
+	{
+		if ($this->isEmpty() && $type instanceof ConstantScalarType) {
+			// @phpstan-ignore-next-line
+			return new ConstantBooleanType($type->getValue() == []); // phpcs:ignore
+		}
+
+		if ($type instanceof ConstantArrayType) {
+			return InitializerExprTypeResolver::resolveConstantArrayTypeComparison($this, $type, static fn ($leftValueType, $rightValueType): BooleanType => $leftValueType->looseCompare($rightValueType));
+		}
+
+		return new BooleanType();
 	}
 
 	/**

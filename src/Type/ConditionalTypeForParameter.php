@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use PHPStan\Type\Traits\NonLooseComparableTrait;
 use function array_merge;
 use function sprintf;
 
@@ -15,6 +16,7 @@ final class ConditionalTypeForParameter implements CompoundType, LateResolvableT
 
 	use LateResolvableTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use NonLooseComparableTrait;
 
 	public function __construct(
 		private string $parameterName,

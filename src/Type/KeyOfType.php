@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use PHPStan\Type\Traits\NonLooseComparableTrait;
 use function sprintf;
 
 /** @api */
@@ -13,6 +14,7 @@ class KeyOfType implements CompoundType, LateResolvableType
 
 	use LateResolvableTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use NonLooseComparableTrait;
 
 	public function __construct(private Type $type)
 	{

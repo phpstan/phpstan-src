@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -145,6 +146,19 @@ class FloatType implements Type
 	public function traverse(callable $cb): Type
 	{
 		return $this;
+	}
+
+	public function looseCompare(Type $type): BooleanType
+	{
+		if (!$type->isSuperTypeOf($this)->yes()) {
+			return new BooleanType();
+		}
+
+		if ($this->isSuperTypeOf($type)->no()) {
+			return new ConstantBooleanType(false);
+		}
+
+		return new BooleanType();
 	}
 
 	/**

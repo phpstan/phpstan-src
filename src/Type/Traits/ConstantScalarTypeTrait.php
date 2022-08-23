@@ -3,7 +3,9 @@
 namespace PHPStan\Type\Traits;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
@@ -75,6 +77,16 @@ trait ConstantScalarTypeTrait
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new parent();
+	}
+
+	public function looseCompare(Type $type): BooleanType
+	{
+		if ($type instanceof ConstantScalarType) {
+			// @phpstan-ignore-next-line
+			return new ConstantBooleanType($this->getValue() == $type->getValue()); // phpcs:ignore
+		}
+
+		return $type->looseCompare($this);
 	}
 
 }

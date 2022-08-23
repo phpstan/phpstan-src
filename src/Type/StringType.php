@@ -7,6 +7,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
@@ -174,6 +175,19 @@ class StringType implements Type
 		}
 
 		return null;
+	}
+
+	public function looseCompare(Type $type): BooleanType
+	{
+		if (!$type->isSuperTypeOf($this)->yes()) {
+			return new BooleanType();
+		}
+
+		if ($this->isSuperTypeOf($type)->no()) {
+			return new ConstantBooleanType(false);
+		}
+
+		return new BooleanType();
 	}
 
 	/**

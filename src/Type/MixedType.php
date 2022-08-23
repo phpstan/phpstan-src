@@ -22,6 +22,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\NonLooseComparableTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use function sprintf;
 
@@ -32,6 +33,7 @@ class MixedType implements CompoundType, SubtractableType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use NonLooseComparableTrait;
 
 	private ?Type $subtractedType;
 

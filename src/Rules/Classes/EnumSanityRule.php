@@ -8,6 +8,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use function in_array;
 use function sprintf;
 
 /**
@@ -67,6 +68,15 @@ class EnumSanityRule implements Rule
 						$methodNode->name->name,
 					))->line($methodNode->getLine())->nonIgnorable()->build();
 				}
+			}
+
+			// serialize/unserialize is not considered a magic method by PhpParser
+			if (in_array($lowercasedMethodName, ['__serialize', '__unserialize'], true)) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Enum %s contains magic method %s().',
+					$node->namespacedName->toString(),
+					$methodNode->name->name,
+				))->line($methodNode->getLine())->nonIgnorable()->build();
 			}
 
 			if ($lowercasedMethodName === 'cases') {

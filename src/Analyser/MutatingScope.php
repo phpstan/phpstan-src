@@ -3593,17 +3593,10 @@ class MutatingScope implements Scope
 		$nodeFinder = new NodeFinder();
 		foreach (array_keys($moreSpecificTypeHolders) as $exprString) {
 			$exprString = (string) $exprString;
-
-			try {
-				$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
-			} catch (ParserErrorsException) {
+			$exprExpr = $this->exprStringToExpr($exprString);
+			if ($exprExpr === null) {
 				continue;
 			}
-			if (!$expr instanceof Node\Stmt\Expression) {
-				throw new ShouldNotHappenException();
-			}
-
-			$exprExpr = $expr->expr;
 			if ($exprExpr instanceof PropertyFetch) {
 				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($exprExpr, $this);
 				if ($propertyReflection !== null) {
@@ -3657,6 +3650,20 @@ class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 		);
+	}
+
+	private function exprStringToExpr(string $exprString): ?Expr
+	{
+		try {
+			$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
+		} catch (ParserErrorsException) {
+			return null;
+		}
+		if (!$expr instanceof Node\Stmt\Expression) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $expr->expr;
 	}
 
 	public function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self

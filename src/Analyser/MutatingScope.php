@@ -3511,6 +3511,37 @@ class MutatingScope implements Scope
 				$conditionalExpressions[$conditionalExprString] = $holders;
 			}
 
+			$moreSpecificTypeHolders = $this->moreSpecificTypes;
+			foreach ($moreSpecificTypeHolders as $specifiedExprString => $specificTypeHolder) {
+				if (!$specificTypeHolder->getCertainty()->yes()) {
+					continue;
+				}
+
+				$specifiedExprString = (string) $specifiedExprString;
+				$specifiedExpr = $this->exprStringToExpr($specifiedExprString);
+				if ($specifiedExpr === null) {
+					continue;
+				}
+				if (!$specifiedExpr instanceof Expr\ArrayDimFetch) {
+					continue;
+				}
+
+				if (!$specifiedExpr->dim instanceof Variable) {
+					continue;
+				}
+
+				if (!is_string($specifiedExpr->dim->name)) {
+					continue;
+				}
+
+				if ($specifiedExpr->dim->name !== $variableName) {
+					continue;
+				}
+
+				$moreSpecificTypeHolders[$specifiedExprString] = VariableTypeHolder::createYes($this->getType($specifiedExpr->var)->getOffsetValueType($type));
+				unset($nativeTypes[$specifiedExprString]);
+			}
+
 			return $this->scopeFactory->create(
 				$this->context,
 				$this->isDeclareStrictTypes(),
@@ -3518,7 +3549,7 @@ class MutatingScope implements Scope
 				$this->getFunction(),
 				$this->getNamespace(),
 				$variableTypes,
-				$this->moreSpecificTypes,
+				$moreSpecificTypeHolders,
 				$conditionalExpressions,
 				$this->inClosureBindScopeClass,
 				$this->anonymousFunctionReflection,

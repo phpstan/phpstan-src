@@ -1,6 +1,6 @@
 on: pull_request
 
-name: Pull Requests
+name: Block merge commits
 
 jobs:
   message-check:
@@ -10,6 +10,6 @@ jobs:
 
     steps:
       - name: Block Merge Commits
-        uses: Morishiri/block-merge-commits-action@v1
+        uses: Morishiri/block-merge-commits-action@v1.0.1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}

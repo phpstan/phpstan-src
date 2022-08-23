@@ -120,4 +120,24 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7044(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7044.php'], [
+			[
+				'Comparison operation "<" between 0 and 0 is always false.',
+				15,
+			],
+		]);
+	}
+
+	public function testBug3277(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-3277.php'], [
+			[
+				'Comparison operation "<" between 5 and 4 is always false.',
+				6,
+			],
+		]);
+	}
+
 }

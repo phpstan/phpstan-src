@@ -26,12 +26,14 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
+	private bool $checkImplicitMixed = false;
+
 	private int $phpVersion = PHP_VERSION_ID;
 
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed, false);
+		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed, $this->checkImplicitMixed);
 		return new CallMethodsRule(
 			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
 			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
@@ -1550,6 +1552,50 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = $checkExplicitMixed;
 		$this->analyse([__DIR__ . '/data/check-explicit-mixed.php'], $errors);
+	}
+
+	public function dataImplicitMixed(): array
+	{
+		return [
+			[
+				true,
+				[
+					[
+						'Cannot call method foo() on mixed.',
+						16,
+					],
+					[
+						'Parameter #1 $i of method CheckImplicitMixedMethodCall\Bar::doBar() expects int, mixed given.',
+						42,
+					],
+					[
+						'Parameter #1 $i of method CheckImplicitMixedMethodCall\Bar::doBar() expects int, T given.',
+						65,
+					],
+					[
+						'Parameter #1 $cb of method CheckImplicitMixedMethodCall\CallableMixed::doBar2() expects callable(): int, Closure(): mixed given.',
+						139,
+					],
+				],
+			],
+			[
+				false,
+				[],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataImplicitMixed
+	 * @param mixed[] $errors
+	 */
+	public function testImplicitMixed(bool $checkImplicitMixed, array $errors): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkImplicitMixed = $checkImplicitMixed;
+		$this->analyse([__DIR__ . '/data/check-implicit-mixed.php'], $errors);
 	}
 
 	public function testBug3409(): void

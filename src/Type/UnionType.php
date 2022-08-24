@@ -414,12 +414,12 @@ class UnionType implements CompoundType
 
 	public function isIterable(): TrinaryLogic
 	{
-		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isIterable());
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isIterable());
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
-		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce());
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce());
 	}
 
 	public function getIterableKeyType(): Type
@@ -503,7 +503,7 @@ class UnionType implements CompoundType
 
 	public function isCallable(): TrinaryLogic
 	{
-		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isCallable());
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isCallable());
 	}
 
 	/**
@@ -524,7 +524,7 @@ class UnionType implements CompoundType
 
 	public function isCloneable(): TrinaryLogic
 	{
-		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isCloneable());
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isCloneable());
 	}
 
 	public function isSmallerThan(Type $otherType): TrinaryLogic

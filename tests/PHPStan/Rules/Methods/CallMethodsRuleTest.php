@@ -398,10 +398,6 @@ class CallMethodsRuleTest extends RuleTestCase
 				921,
 			],
 			[
-				'Cannot call method count() on (SimpleXMLElement|null).',
-				941,
-			],
-			[
 				'Parameter #1 $namespaceOrPrefix of method SimpleXMLElement::children() expects string|null, int given.',
 				942,
 			],

@@ -355,12 +355,12 @@ class UnionType implements CompoundType
 
 	public function canCallMethods(): TrinaryLogic
 	{
-		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->canCallMethods());
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->canCallMethods());
 	}
 
 	public function hasMethod(string $methodName): TrinaryLogic
 	{
-		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->hasMethod($methodName));
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->hasMethod($methodName));
 	}
 
 	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
@@ -393,7 +393,7 @@ class UnionType implements CompoundType
 
 	public function canAccessConstants(): TrinaryLogic
 	{
-		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->canAccessConstants());
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->canAccessConstants());
 	}
 
 	public function hasConstant(string $constantName): TrinaryLogic

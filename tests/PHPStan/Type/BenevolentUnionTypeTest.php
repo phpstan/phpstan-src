@@ -403,10 +403,6 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 		);
 	}
 
-	/*
-	 * hasOffsetValueType
-	 */
-
 	public function dataIsOffsetAccesible(): Iterator
 	{
 		yield [

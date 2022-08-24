@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9c04ac70b41710ee724a908813ca3d46",
+    "content-hash": "887f51102f4704c086f78ee0157921db",
     "packages": [
         {
             "name": "clue/block-react",
@@ -2106,16 +2106,16 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "5.6.0.2",
+            "version": "5.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "68523bc26474329ef5cb121e343a4aa7410ee632"
+                "reference": "e5abe06d08bbdf2dd0c0600743e69e04990749d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/68523bc26474329ef5cb121e343a4aa7410ee632",
-                "reference": "68523bc26474329ef5cb121e343a4aa7410ee632",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/e5abe06d08bbdf2dd0c0600743e69e04990749d4",
+                "reference": "e5abe06d08bbdf2dd0c0600743e69e04990749d4",
                 "shasum": ""
             },
             "require": {
@@ -2129,9 +2129,9 @@
             },
             "require-dev": {
                 "doctrine/coding-standard": "^9.0.0",
-                "phpstan/phpstan": "^1.7.13",
+                "phpstan/phpstan": "^1.8.2",
                 "phpstan/phpstan-phpunit": "^1.1.1",
-                "phpunit/phpunit": "^9.5.20",
+                "phpunit/phpunit": "^9.5.23",
                 "rector/rector": "0.12.19"
             },
             "suggest": {
@@ -2171,9 +2171,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/5.6.0.2"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/5.8.0"
             },
-            "time": "2022-07-15T09:22:27+00:00"
+            "time": "2022-08-24T14:41:54+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",

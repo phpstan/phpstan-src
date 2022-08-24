@@ -267,7 +267,7 @@ class MethodParameterComparisonHelper
 				continue;
 			}
 
-			if ($this->isTypeCompatible($methodParameterType, $prototypeParameterType, $this->phpVersion->supportsParameterContravariance())) {
+			if ($this->isParameterTypeCompatible($methodParameterType, $prototypeParameterType, $this->phpVersion->supportsParameterContravariance())) {
 				continue;
 			}
 
@@ -369,10 +369,20 @@ class MethodParameterComparisonHelper
 		return $messages;
 	}
 
-	public function isTypeCompatible(Type $methodParameterType, Type $prototypeParameterType, bool $supportsContravariance): bool
+	public function isParameterTypeCompatible(Type $methodParameterType, Type $prototypeParameterType, bool $supportsContravariance): bool
+	{
+		return $this->isTypeCompatible($methodParameterType, $prototypeParameterType, $supportsContravariance, false);
+	}
+
+	public function isReturnTypeCompatible(Type $methodParameterType, Type $prototypeParameterType, bool $supportsCovariance): bool
+	{
+		return $this->isTypeCompatible($methodParameterType, $prototypeParameterType, $supportsCovariance, true);
+	}
+
+	private function isTypeCompatible(Type $methodParameterType, Type $prototypeParameterType, bool $supportsContravariance, bool $considerMixedExplicitness): bool
 	{
 		if ($methodParameterType instanceof MixedType) {
-			if ($prototypeParameterType instanceof MixedType) {
+			if ($considerMixedExplicitness && $prototypeParameterType instanceof MixedType) {
 				return !$methodParameterType->isExplicitMixed() || $prototypeParameterType->isExplicitMixed();
 			}
 

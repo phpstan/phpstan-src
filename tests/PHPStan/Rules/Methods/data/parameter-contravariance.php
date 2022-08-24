@@ -61,3 +61,23 @@ class Ipsum extends Foo
 	}
 
 }
+
+class MixedExplicitnessFoo
+{
+
+	public function setValue($value): void
+	{
+
+	}
+
+}
+
+class MixedExplicitnessBar extends MixedExplicitnessFoo
+{
+
+	public function setValue(mixed $value): void
+	{
+
+	}
+
+}

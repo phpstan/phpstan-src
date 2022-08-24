@@ -142,7 +142,7 @@ class OverridingMethodRule implements Rule
 			&& !$this->hasReturnTypeWillChangeAttribute($node->getOriginalNode())
 		) {
 
-			if (!$this->methodParameterComparisonHelper->isTypeCompatible($prototype->getTentativeReturnType(), $methodVariant->getNativeReturnType(), true)) {
+			if (!$this->methodParameterComparisonHelper->isReturnTypeCompatible($prototype->getTentativeReturnType(), $methodVariant->getNativeReturnType(), true)) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Return type %s of method %s::%s() is not covariant with tentative return type %s of method %s::%s().',
 					$methodReturnType->describe(VerbosityLevel::typeOnly()),
@@ -163,7 +163,7 @@ class OverridingMethodRule implements Rule
 
 		$prototypeReturnType = $prototypeVariant->getNativeReturnType();
 
-		if (!$this->methodParameterComparisonHelper->isTypeCompatible($prototypeReturnType, $methodReturnType, $this->phpVersion->supportsReturnCovariance())) {
+		if (!$this->methodParameterComparisonHelper->isReturnTypeCompatible($prototypeReturnType, $methodReturnType, $this->phpVersion->supportsReturnCovariance())) {
 			if ($this->phpVersion->supportsReturnCovariance()) {
 				$messages[] = RuleErrorBuilder::message(sprintf(
 					'Return type %s of method %s::%s() is not covariant with return type %s of method %s::%s().',

@@ -414,12 +414,12 @@ class UnionType implements CompoundType
 
 	public function isIterable(): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isIterable());
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isIterable());
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce());
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce());
 	}
 
 	public function getIterableKeyType(): Type

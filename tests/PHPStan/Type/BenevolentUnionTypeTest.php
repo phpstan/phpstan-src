@@ -194,7 +194,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 				new ArrayType(new MixedType(), new MixedType()),
 				new NullType(),
 			]),
-			TrinaryLogic::createYes(),
+			TrinaryLogic::createMaybe(),
 		];
 
 		yield [
@@ -229,7 +229,7 @@ class BenevolentUnionTypeTest extends PHPStanTestCase
 				new IntersectionType([new ArrayType(new MixedType(), new MixedType()), new NonEmptyArrayType()]),
 				new NullType(),
 			]),
-			TrinaryLogic::createYes(),
+			TrinaryLogic::createMaybe(),
 		];
 
 		yield [

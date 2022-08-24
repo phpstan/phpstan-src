@@ -907,11 +907,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testPrestashopInfiniteRunXmlLoaderBug(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/prestashop-xml-loader.php');
-		$this->assertCount(4, $errors);
+		$this->assertCount(5, $errors);
 		$this->assertSame('Property PrestaShopBundleInfiniteRunBug\XmlLoader::$data_path has no type specified.', $errors[0]->getMessage());
 		$this->assertSame('Method PrestaShopBundleInfiniteRunBug\XmlLoader::getEntityInfo() has no return type specified.', $errors[1]->getMessage());
 		$this->assertSame('Method PrestaShopBundleInfiniteRunBug\XmlLoader::getEntityInfo() has parameter $entity with no type specified.', $errors[2]->getMessage());
 		$this->assertSame('Method PrestaShopBundleInfiniteRunBug\XmlLoader::getEntityInfo() has parameter $exists with no type specified.', $errors[3]->getMessage());
+		$this->assertSame('Argument of an invalid type (SimpleXMLElement|null) supplied for foreach, only iterables are supported.', $errors[4]->getMessage());
 	}
 
 	/**

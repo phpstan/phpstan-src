@@ -11,7 +11,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -72,28 +71,22 @@ class InvalidBinaryOperationRule implements Rule
 				$callback = static fn (Type $type): bool => !$type->toNumber() instanceof ErrorType;
 			}
 
-			$leftType = $scope->getType($left);
-			if (!$leftType instanceof MixedType) {
-				$leftType = $this->ruleLevelHelper->findTypeToCheck(
-					$scope,
-					$left,
-					'',
-					$callback,
-				)->getType();
-			}
+			$leftType = $this->ruleLevelHelper->findTypeToCheck(
+				$scope,
+				$left,
+				'',
+				$callback,
+			)->getType();
 			if ($leftType instanceof ErrorType) {
 				return [];
 			}
 
-			$rightType = $scope->getType($right);
-			if (!$rightType instanceof MixedType) {
-				$rightType = $this->ruleLevelHelper->findTypeToCheck(
-					$scope,
-					$right,
-					'',
-					$callback,
-				)->getType();
-			}
+			$rightType = $this->ruleLevelHelper->findTypeToCheck(
+				$scope,
+				$right,
+				'',
+				$callback,
+			)->getType();
 			if ($rightType instanceof ErrorType) {
 				return [];
 			}

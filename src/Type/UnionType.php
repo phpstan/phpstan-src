@@ -434,32 +434,32 @@ class UnionType implements CompoundType
 
 	public function isArray(): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isArray());
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isArray());
 	}
 
 	public function isString(): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isString());
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isString());
 	}
 
 	public function isNumericString(): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isNumericString());
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isNumericString());
 	}
 
 	public function isNonEmptyString(): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isNonEmptyString());
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isNonEmptyString());
 	}
 
 	public function isNonFalsyString(): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isNonFalsyString());
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isNonFalsyString());
 	}
 
 	public function isLiteralString(): TrinaryLogic
 	{
-		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isLiteralString());
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isLiteralString());
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic

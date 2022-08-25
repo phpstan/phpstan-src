@@ -42,7 +42,7 @@ class Foo
 			}
 		}
 
-		assertType('array{}|array{a?: bool, b?: numeric-string, c?: int<-1, 1>, d?: int<0, 1>}', $breakdowns);
+		assertType('array{a?: bool, b?: numeric-string, c?: int<-1, 1>, d?: int<0, 1>}', $breakdowns);
 	}
 
 }

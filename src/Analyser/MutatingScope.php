@@ -4638,6 +4638,7 @@ class MutatingScope implements Scope
 								$constantArraysA->getOffsetValueType($keyType),
 								$constantArraysB->getOffsetValueType($keyType),
 							),
+							!$constantArraysA->hasOffsetValueType($keyType)->and($constantArraysB->hasOffsetValueType($keyType))->negate()->no(),
 						);
 					}
 

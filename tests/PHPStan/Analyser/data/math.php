@@ -143,6 +143,9 @@ class Foo
 	{
 		for ($i = 1; $i < count([]); $i++) {
 			assertType('*NEVER*', $i);
+			assertType('*NEVER*', $i--);
+			assertType('*NEVER*', $i++);
+
 			assertType('*NEVER*', $i + 2);
 			assertType('*NEVER*', 2 + $i);
 			assertType('*NEVER*', $i - 2);
@@ -153,13 +156,20 @@ class Foo
 			assertType('*NEVER*', 2 ** $i);
 			assertType('*NEVER*', $i / 2);
 			assertType('*NEVER*', 2 / $i);
+			assertType('*NEVER*', $i % 2);
 
 			assertType('*NEVER*', $i | 2);
+			assertType('*NEVER*', 2 | $i);
 			assertType('*NEVER*', $i & 2);
+			assertType('*NEVER*', 2 & $i);
 			assertType('*NEVER*', $i ^ 2);
+			assertType('*NEVER*', 2 ^ $i);
 			assertType('*NEVER*', $i << 2);
+			assertType('*NEVER*', 2 << $i);
 			assertType('*NEVER*', $i >> 2);
+			assertType('*NEVER*', 2 >> $i);
 			assertType('*NEVER*', $i <=> 2);
+			assertType('*NEVER*', 2 <=> $i);
 		}
 	}
 

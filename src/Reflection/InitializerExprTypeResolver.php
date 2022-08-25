@@ -764,6 +764,10 @@ class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
+			return new NeverType();
+		}
+
 		$leftTypes = TypeUtils::getConstantScalars($leftType);
 		$rightTypes = TypeUtils::getConstantScalars($rightType);
 		$leftTypesCount = count($leftTypes);

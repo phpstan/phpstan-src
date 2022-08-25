@@ -159,6 +159,7 @@ class Foo
 			assertType('*NEVER*', $i ^ 2);
 			assertType('*NEVER*', $i << 2);
 			assertType('*NEVER*', $i >> 2);
+			assertType('*NEVER*', $i <=> 2);
 		}
 	}
 

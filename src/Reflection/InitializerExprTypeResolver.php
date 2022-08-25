@@ -668,8 +668,16 @@ class InitializerExprTypeResolver
 	 */
 	public function getSpaceshipType(Expr $left, Expr $right, callable $getTypeCallback): Type
 	{
-		$leftTypes = TypeUtils::getConstantScalars($getTypeCallback($left));
-		$rightTypes = TypeUtils::getConstantScalars($getTypeCallback($right));
+		$callbackLeftType = $getTypeCallback($left);
+		$callbackRightType = $getTypeCallback($right);
+
+		if ($callbackLeftType instanceof NeverType || $callbackRightType instanceof NeverType) {
+			return new NeverType();
+		}
+
+		$leftTypes = TypeUtils::getConstantScalars($callbackLeftType);
+		$rightTypes = TypeUtils::getConstantScalars($callbackRightType);
+
 		$leftTypesCount = count($leftTypes);
 		$rightTypesCount = count($rightTypes);
 		if ($leftTypesCount > 0 && $rightTypesCount > 0) {

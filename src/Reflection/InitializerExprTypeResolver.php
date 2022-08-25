@@ -925,7 +925,9 @@ class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
-		if ($leftType->isArray()->yes() && $rightType->isArray()->yes()) {
+		$leftIsArray = $leftType->isArray();
+		$rightIsArray = $rightType->isArray();
+		if ($leftIsArray->yes() && $rightIsArray->yes()) {
 			if ($leftType->getIterableKeyType()->equals($rightType->getIterableKeyType())) {
 				// to preserve BenevolentUnionType
 				$keyType = $leftType->getIterableKeyType();
@@ -960,17 +962,17 @@ class InitializerExprTypeResolver
 		}
 
 		if (
-			($arrayType->isSuperTypeOf($leftType)->yes() && $arrayType->isSuperTypeOf($rightType)->no())
-			|| ($arrayType->isSuperTypeOf($rightType)->yes() && $arrayType->isSuperTypeOf($leftType)->no())
+			($leftIsArray->yes() && $rightIsArray->no())
+			|| ($rightIsArray->yes() && $leftIsArray->no())
 		) {
 			return new ErrorType();
 		}
 
 		if (
-			($arrayType->isSuperTypeOf($leftType)->yes() && $arrayType->isSuperTypeOf($rightType)->maybe())
-			|| ($arrayType->isSuperTypeOf($rightType)->yes() && $arrayType->isSuperTypeOf($leftType)->maybe())
-			|| ($arrayType->isSuperTypeOf($leftType)->maybe() && $arrayType->isSuperTypeOf($rightType)->maybe())
-			|| ($arrayType->isSuperTypeOf($rightType)->maybe() && $arrayType->isSuperTypeOf($leftType)->maybe())
+			($leftIsArray->yes() && $rightIsArray->maybe())
+			|| ($rightIsArray->yes() && $leftIsArray->maybe())
+			|| ($leftIsArray->maybe() && $rightIsArray->maybe())
+			|| ($rightIsArray->maybe() && $leftIsArray->maybe())
 		) {
 			if ($rightType->isArray()->yes() || $leftType->isArray()->yes()) {
 				$resultType = new ArrayType(new MixedType(), new MixedType());

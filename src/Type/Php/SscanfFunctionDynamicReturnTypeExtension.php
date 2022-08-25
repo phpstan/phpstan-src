@@ -45,7 +45,7 @@ class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnT
 			return null;
 		}
 
-		if (preg_match_all('/%(\d*)([cdeEfosux]{1})/', $formatType->getValue(), $matches) > 0) {
+		if (preg_match_all('/%(\d*)(\[[^\]]+\]|[cdeEfosux]{1})/', $formatType->getValue(), $matches) > 0) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 
 			for ($i = 0; $i < count($matches[0]); $i++) {

@@ -15,23 +15,3 @@ function doFoo() {
 
 	echo $words;
 }
-
-class HelloWorld
-{
-	public function sayHello(iterable $input): void
-	{
-		$expected = [
-			false,
-			1,
-			'x',
-			'y',
-		];
-
-		foreach ($input as $_) {
-			\assert(array_shift($expected) == $_);
-		}
-
-		\assert($expected === []);
-		\assert(\count($expected) === 0);
-	}
-}

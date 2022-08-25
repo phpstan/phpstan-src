@@ -974,7 +974,7 @@ class InitializerExprTypeResolver
 			|| ($leftIsArray->maybe() && $rightIsArray->maybe())
 			|| ($rightIsArray->maybe() && $leftIsArray->maybe())
 		) {
-			if ($rightType->isArray()->yes() || $leftType->isArray()->yes()) {
+			if ($rightIsArray->yes() || $leftIsArray->yes()) {
 				$resultType = new ArrayType(new MixedType(), new MixedType());
 
 				if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {

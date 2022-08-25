@@ -4663,11 +4663,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_merge($generalStringKeys, $generalDateTimeValues)',
 			],
 			[
-				'non-empty-array<1|string, int|stdClass>',
+				'non-empty-array<0|string, int|stdClass>',
 				'array_merge($generalStringKeys, $stringOrIntegerKeys)',
 			],
 			[
-				'non-empty-array<1|string, int|stdClass>',
+				'non-empty-array<0|string, int|stdClass>',
 				'array_merge($stringOrIntegerKeys, $generalStringKeys)',
 			],
 			[
@@ -4677,6 +4677,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				"array{foo: 'foo', 0: stdClass, bar: stdClass}",
 				'array_merge($stringOrIntegerKeys, $stringKeys)',
+			],
+			[
+				'array{foo: 1, bar: 2, 0: 2, 1: 3}',
+				"array_merge(['foo' => 4, 'bar' => 5], ...[['foo' => 1, 'bar' => 2], [2, 3]])",
+			],
+			[
+				'array{foo: 1, foo2: stdClass}',
+				'array_merge([\'foo\' => new stdClass()], ...[[\'foo2\' => new stdClass()], [\'foo\' => 1]])',
+			],
+
+			[
+				'array{foo: 1, foo2: stdClass}',
+				'array_merge([\'foo\' => new stdClass()], ...[[\'foo2\' => new stdClass()], [\'foo\' => 1]])',
 			],
 			[
 				"array{color: 'green', 0: 2, 1: 4, 2: 'a', 3: 'b', shape: 'trapezoid', 4: 4}",

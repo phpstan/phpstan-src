@@ -143,7 +143,9 @@ class Foo
 	{
 		for ($i = 1; $i < count([]); $i++) {
 			assertType('*NEVER*', $i);
+			assertType('*NEVER*', --$i);
 			assertType('*NEVER*', $i--);
+			assertType('*NEVER*', ++$i);
 			assertType('*NEVER*', $i++);
 
 			assertType('*NEVER*', $i + 2);

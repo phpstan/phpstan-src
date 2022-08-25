@@ -5,10 +5,14 @@ namespace PHPStan\Parser;
 use Exception;
 use PhpParser\Error;
 use function array_map;
+use function count;
 use function implode;
 
 class ParserErrorsException extends Exception
 {
+
+	/** @var mixed[] */
+	private array $attributes;
 
 	/**
 	 * @param Error[] $errors
@@ -19,6 +23,11 @@ class ParserErrorsException extends Exception
 	)
 	{
 		parent::__construct(implode(', ', array_map(static fn (Error $error): string => $error->getMessage(), $errors)));
+		if (count($errors) > 0) {
+			$this->attributes = $errors[0]->getAttributes();
+		} else {
+			$this->attributes = [];
+		}
 	}
 
 	/**
@@ -32,6 +41,14 @@ class ParserErrorsException extends Exception
 	public function getParsedFile(): ?string
 	{
 		return $this->parsedFile;
+	}
+
+	/**
+	 * @return mixed[]
+	 */
+	public function getAttributes(): array
+	{
+		return $this->attributes;
 	}
 
 }

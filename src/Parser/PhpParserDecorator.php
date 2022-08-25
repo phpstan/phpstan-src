@@ -27,7 +27,7 @@ class PhpParserDecorator implements Parser
 			if ($e->getParsedFile() !== null) {
 				$message .= sprintf(' in file %s', $e->getParsedFile());
 			}
-			throw new Error($message);
+			throw new Error($message, $e->getAttributes());
 		}
 	}
 

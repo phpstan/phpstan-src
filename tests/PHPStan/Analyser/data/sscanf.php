@@ -38,7 +38,7 @@ function fscanfFormatInference($r) {
 }
 
 function fooo() {
-	assertType('array{non-empty-string}|null', sscanf( "123456" , "%0s"));
-	assertType('array{non-empty-string}|null', sscanf( "123456" , "%3s"));
-	assertType('array{int, int, int}|null', sscanf('00ccff', '%2x%2x%2x'));
+	assertType('array{non-empty-string|null}|null', sscanf( "123456" , "%0s"));
+	assertType('array{non-empty-string|null}|null', sscanf( "123456" , "%3s"));
+	assertType('array{int|null, int|null, int|null}|null', sscanf('00ccff', '%2x%2x%2x'));
 }

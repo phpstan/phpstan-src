@@ -153,6 +153,12 @@ class Foo
 			assertType('*NEVER*', 2 ** $i);
 			assertType('*NEVER*', $i / 2);
 			assertType('*NEVER*', 2 / $i);
+
+			assertType('*NEVER*', $i | 2);
+			assertType('*NEVER*', $i & 2);
+			assertType('*NEVER*', $i ^ 2);
+			assertType('*NEVER*', $i << 2);
+			assertType('*NEVER*', $i >> 2);
 		}
 	}
 

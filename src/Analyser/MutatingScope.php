@@ -3428,14 +3428,31 @@ class MutatingScope implements Scope
 				$this->parentScope,
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			return $this->specifyExpressionType(
+			$exprVarType = $this->getType($expr->var);
+			$dimType = $this->getType($expr->dim);
+			$unset = $exprVarType->unsetOffset($dimType);
+			$scope = $this->specifyExpressionType(
 				$expr->var,
-				$this->getType($expr->var)->unsetOffset($this->getType($expr->dim)),
+				$unset,
 			)->invalidateExpression(
 				new FuncCall(new FullyQualified('count'), [new Arg($expr->var)]),
 			)->invalidateExpression(
 				new FuncCall(new FullyQualified('sizeof'), [new Arg($expr->var)]),
 			);
+
+			if ($expr->var instanceof Expr\ArrayDimFetch && $expr->var->dim !== null) {
+				$varVar = $this->getType($expr->var->var);
+				$varDim = $this->getType($expr->var->dim);
+				$scope = $scope->specifyExpressionType(
+					$expr->var->var,
+					TypeCombinator::union($varVar->setOffsetValueType(
+						$varDim,
+						TypeCombinator::union($varVar->getOffsetValueType($varDim), new ConstantArrayType([], [])),
+					), new ConstantArrayType([], [])),
+				);
+			}
+
+			return $scope;
 		}
 
 		return $this;
@@ -3697,7 +3714,7 @@ class MutatingScope implements Scope
 		return $expr->expr;
 	}
 
-	public function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self
+	private function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self
 	{
 		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;

@@ -24,5 +24,5 @@ function doFoo() {
 	unset($extensions['theme']['test_basetheme']);
 	unset($extensions['theme']['test_subsubtheme']);
 	unset($extensions['theme']['test_subtheme']);
-	assertType("hasOffsetValue('theme', mixed)&non-empty-array", $extensions);
+	assertType("array", $extensions);
 }

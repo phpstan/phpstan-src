@@ -29,7 +29,6 @@ class ArgumentBasedFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		'array_udiff_uassoc' => 0,
 		'array_udiff' => 0,
 		'array_intersect_assoc' => 0,
-		'array_intersect_key' => 0,
 		'array_intersect_uassoc' => 0,
 		'array_intersect_ukey' => 0,
 		'array_intersect' => 0,

@@ -4567,11 +4567,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_intersect_assoc($integers, [])',
 			],
 			[
-				'array<0|1|2, 1|2|3>',
+				'array{}',
 				'array_intersect_key($integers, [])',
 			],
 			[
-				'array<int, int>',
+				'array{1|4, 2|5, 3|6}',
 				'array_intersect_key(...[$integers, [4, 5, 6]])',
 			],
 			[

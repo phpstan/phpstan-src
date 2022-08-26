@@ -199,6 +199,11 @@ class Foo
 		if (!is_float($mixed)) {
 			$mixedNoFloat = $mixed;
 		}
+		if (!is_array($mixed)) {
+			if (!is_int($mixed)) {
+				$mixedNoArrayOrInt = $mixed;
+			}
+		}
 
 		/** @var int|array $intOrArray */
 		$intOrArray = doFoo();

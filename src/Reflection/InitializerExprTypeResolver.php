@@ -973,7 +973,7 @@ class InitializerExprTypeResolver
 			$leftIsArray->yes() && $rightIsArray->maybe()
 		) {
 			if ($rightType instanceof SubtractableType && $rightType->getSubtractedType() !== null) {
-				if ($rightType->getSubtractedType()->isArray()->yes()) {
+				if (count(TypeUtils::getAnyArrays($rightType->getSubtractedType())) > 0) {
 					return new ErrorType();
 				}
 			}
@@ -990,7 +990,7 @@ class InitializerExprTypeResolver
 			$leftIsArray->maybe() && $rightIsArray->yes()
 		) {
 			if ($leftType instanceof SubtractableType && $leftType->getSubtractedType() !== null) {
-				if ($leftType->getSubtractedType()->isArray()->yes()) {
+				if (count(TypeUtils::getAnyArrays($leftType->getSubtractedType())) > 0) {
 					return new ErrorType();
 				}
 			}

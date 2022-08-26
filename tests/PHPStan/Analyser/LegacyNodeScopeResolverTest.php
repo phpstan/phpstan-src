@@ -2733,6 +2733,10 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			],
 			[
 				'*ERROR*',
+				'$mixedNoArrayOrInt + []',
+			],
+			[
+				'*ERROR*',
 				'$integer + []',
 			],
 			[

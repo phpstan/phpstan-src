@@ -964,33 +964,23 @@ class InitializerExprTypeResolver
 
 		if (
 			($leftIsArray->yes() && $rightIsArray->no())
-			|| ($rightIsArray->yes() && $leftIsArray->no())
+			|| ($leftIsArray->no() && $rightIsArray->yes())
 		) {
 			return new ErrorType();
 		}
 
 		if (
-			$leftIsArray->yes() && $rightIsArray->maybe()
+			($leftIsArray->yes() && $rightIsArray->maybe())
+			|| ($leftIsArray->maybe() && $rightIsArray->yes())
 		) {
-			if ($rightType instanceof SubtractableType && $rightType->getSubtractedType() !== null) {
-				if (count(TypeUtils::getAnyArrays($rightType->getSubtractedType())) > 0) {
+			if ($leftType instanceof SubtractableType && $leftType->getSubtractedType() !== null) {
+				if (count(TypeUtils::getAnyArrays($leftType->getSubtractedType())) > 0) {
 					return new ErrorType();
 				}
 			}
 
-			$resultType = new ArrayType(new MixedType(), new MixedType());
-			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
-				return TypeCombinator::intersect($resultType, new NonEmptyArrayType());
-			}
-
-			return $resultType;
-		}
-
-		if (
-			$leftIsArray->maybe() && $rightIsArray->yes()
-		) {
-			if ($leftType instanceof SubtractableType && $leftType->getSubtractedType() !== null) {
-				if (count(TypeUtils::getAnyArrays($leftType->getSubtractedType())) > 0) {
+			if ($rightType instanceof SubtractableType && $rightType->getSubtractedType() !== null) {
+				if (count(TypeUtils::getAnyArrays($rightType->getSubtractedType())) > 0) {
 					return new ErrorType();
 				}
 			}

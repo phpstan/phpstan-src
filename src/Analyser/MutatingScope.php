@@ -3440,7 +3440,7 @@ class MutatingScope implements Scope
 				new FuncCall(new FullyQualified('sizeof'), [new Arg($expr->var)]),
 			);
 
-			if ($expr->var instanceof Expr\ArrayDimFetch && $expr->var->dim !== null) {
+			if ($expr->var instanceof Expr\ArrayDimFetch && $expr->var->dim !== null && !$exprVarType->isIterableAtLeastOnce()->yes()) {
 				$varVar = $this->getType($expr->var->var);
 				$varDim = $this->getType($expr->var->dim);
 				$scope = $scope->specifyExpressionType(

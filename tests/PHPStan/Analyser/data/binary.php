@@ -203,6 +203,15 @@ class Foo
 		/** @var int|array $intOrArray */
 		$intOrArray = doFoo();
 
+		/** @var array|float $floatOrArray */
+		$floatOrArray = doFoo();
+
+		/** @var int|float $intOrFloat */
+		$intOrFloat = doFoo();
+
+		/** @var array|float|int|string|bool $plusable */
+		$plusable = doFoo();
+
 		die;
 	}
 

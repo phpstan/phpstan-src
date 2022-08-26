@@ -53,6 +53,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
+use PHPStan\Type\SubtractableType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -969,22 +970,51 @@ class InitializerExprTypeResolver
 		}
 
 		if (
-			($leftIsArray->yes() && $rightIsArray->maybe())
-			|| ($rightIsArray->yes() && $leftIsArray->maybe())
-			|| ($leftIsArray->maybe() && $rightIsArray->maybe())
-			|| ($rightIsArray->maybe() && $leftIsArray->maybe())
+			$leftIsArray->yes() && $rightIsArray->maybe()
 		) {
-			if ($rightIsArray->yes() || $leftIsArray->yes()) {
-				$resultType = new ArrayType(new MixedType(), new MixedType());
-
-				if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
-					return TypeCombinator::intersect($resultType, new NonEmptyArrayType());
+			if ($rightType instanceof SubtractableType && $rightType->getSubtractedType() !== null) {
+				if ($rightType->getSubtractedType()->isArray()->yes()) {
+					return new ErrorType();
 				}
-
-				return $resultType;
 			}
 
-			return TypeCombinator::union($leftType, $rightType);
+			$resultType = new ArrayType(new MixedType(), new MixedType());
+			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
+				return TypeCombinator::intersect($resultType, new NonEmptyArrayType());
+			}
+
+			return $resultType;
+		}
+
+		if (
+			$leftIsArray->maybe() && $rightIsArray->yes()
+		) {
+			if ($leftType instanceof SubtractableType && $leftType->getSubtractedType() !== null) {
+				if ($leftType->getSubtractedType()->isArray()->yes()) {
+					return new ErrorType();
+				}
+			}
+
+			$resultType = new ArrayType(new MixedType(), new MixedType());
+			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
+				return TypeCombinator::intersect($resultType, new NonEmptyArrayType());
+			}
+
+			return $resultType;
+		}
+
+		if ($leftIsArray->maybe() && $rightIsArray->maybe()) {
+			$plusable = new UnionType([
+				new StringType(),
+				new FloatType(),
+				new IntegerType(),
+				new ArrayType(new MixedType(), new MixedType()),
+				new BooleanType(),
+			]);
+
+			if ($plusable->isSuperTypeOf($leftType)->yes() && $plusable->isSuperTypeOf($rightType)->yes()) {
+				return TypeCombinator::union($leftType, $rightType);
+			}
 		}
 
 		return $this->resolveCommonMath(new BinaryOp\Plus($left, $right), $leftType, $rightType);

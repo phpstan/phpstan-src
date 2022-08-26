@@ -166,9 +166,7 @@ class RuleLevelHelper
 			return new FoundTypeResult(new StrictMixedType(), [], [], null);
 		}
 
-		if (
-			$type instanceof MixedType || $type instanceof NeverType
-		) {
+		if ($type instanceof MixedType || $type instanceof NeverType) {
 			return new FoundTypeResult(new ErrorType(), [], [], null);
 		}
 		if ($type instanceof StaticType) {

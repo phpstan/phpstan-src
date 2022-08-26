@@ -167,8 +167,7 @@ class RuleLevelHelper
 		}
 
 		if (
-			($type instanceof MixedType && $type->getSubtractedType() === null)
-			|| $type instanceof NeverType
+			$type instanceof MixedType || $type instanceof NeverType
 		) {
 			return new FoundTypeResult(new ErrorType(), [], [], null);
 		}

@@ -246,10 +246,6 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 				'Binary operation "+" between int and array{} results in an error.',
 				259,
 			],
-			[
-				'Binary operation "+" between mixed and array results in an error.',
-				266,
-			],
 		]);
 	}
 

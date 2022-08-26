@@ -263,5 +263,6 @@ function ($mixed, array $arr) {
 	if (is_array($mixed)) {
 		return;
 	}
-	$mixed + $arr; // mixed~array + array
+	// mixed~array + array
+	$mixed + $arr; // should report: Binary operation "+" between mixed and array results in an error.
 };

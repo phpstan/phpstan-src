@@ -8,9 +8,11 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use function count;
 
 class ArrayFlipFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -29,6 +31,25 @@ class ArrayFlipFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 		$array = $functionCall->getArgs()[0]->value;
 		$argType = $scope->getType($array);
+
+		$constantArrays = TypeUtils::getOldConstantArrays($argType);
+		if (count($constantArrays) > 0) {
+			$flipped = [];
+			foreach ($constantArrays as $constantArray) {
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
+					$valueType = $constantArray->getValueTypes()[$i];
+					$builder->setOffsetValueType(
+						ArrayType::castToArrayKeyType($valueType),
+						$keyType,
+						$constantArray->isOptionalKey($i),
+					);
+				}
+				$flipped[] = $builder->getArray();
+			}
+
+			return TypeCombinator::union(...$flipped);
+		}
 
 		if ($argType->isArray()->yes()) {
 			$keyType = $argType->getIterableKeyType();

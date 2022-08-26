@@ -258,11 +258,3 @@ function benevolentPlus(array $a, int $i): void {
 function (int $int) {
 	$int + [];
 };
-
-function ($mixed, array $arr) {
-	if (is_array($mixed)) {
-		return;
-	}
-	// mixed~array + array
-	$mixed + $arr; // should report: Binary operation "+" between mixed and array results in an error.
-};

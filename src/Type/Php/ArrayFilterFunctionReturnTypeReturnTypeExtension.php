@@ -56,6 +56,10 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 		$keyType = $arrayArgType->getIterableKeyType();
 		$itemType = $arrayArgType->getIterableValueType();
 
+		if ($itemType instanceof NeverType || $keyType instanceof NeverType) {
+			return new ConstantArrayType([], []);
+		}
+
 		if ($arrayArgType instanceof MixedType) {
 			return new BenevolentUnionType([
 				new ArrayType(new MixedType(), new MixedType()),
@@ -73,14 +77,14 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
 				$statement = $callbackArg->stmts[0];
 				if ($statement instanceof Return_ && $statement->expr !== null) {
-					[$itemType, $keyType] = $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $itemType, null, $keyType, $statement->expr);
+					return $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $arrayArgType, null, $statement->expr);
 				}
 			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
-				[$itemType, $keyType] = $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $itemType, null, $keyType, $callbackArg->expr);
+				return $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $arrayArgType, null, $callbackArg->expr);
 			} elseif ($callbackArg instanceof String_) {
 				$itemVar = new Variable('item');
 				$expr = new FuncCall(new Name($callbackArg->value), [new Arg($itemVar)]);
-				[$itemType, $keyType] = $this->filterByTruthyValue($scope, $itemVar, $itemType, null, $keyType, $expr);
+				return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, null, $expr);
 			}
 		}
 
@@ -88,14 +92,14 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
 				$statement = $callbackArg->stmts[0];
 				if ($statement instanceof Return_ && $statement->expr !== null) {
-					[$itemType, $keyType] = $this->filterByTruthyValue($scope, null, $itemType, $callbackArg->params[0]->var, $keyType, $statement->expr);
+					return $this->filterByTruthyValue($scope, null, $arrayArgType, $callbackArg->params[0]->var, $statement->expr);
 				}
 			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
-				[$itemType, $keyType] = $this->filterByTruthyValue($scope, null, $itemType, $callbackArg->params[0]->var, $keyType, $callbackArg->expr);
+				return $this->filterByTruthyValue($scope, null, $arrayArgType, $callbackArg->params[0]->var, $callbackArg->expr);
 			} elseif ($callbackArg instanceof String_) {
 				$keyVar = new Variable('key');
 				$expr = new FuncCall(new Name($callbackArg->value), [new Arg($keyVar)]);
-				[$itemType, $keyType] = $this->filterByTruthyValue($scope, null, $itemType, $keyVar, $keyType, $expr);
+				return $this->filterByTruthyValue($scope, null, $arrayArgType, $keyVar, $expr);
 			}
 		}
 
@@ -103,20 +107,16 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			if ($callbackArg instanceof Closure && count($callbackArg->stmts) === 1 && count($callbackArg->params) > 0) {
 				$statement = $callbackArg->stmts[0];
 				if ($statement instanceof Return_ && $statement->expr !== null) {
-					[$itemType, $keyType] = $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $itemType, $callbackArg->params[1]->var ?? null, $keyType, $statement->expr);
+					return $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $arrayArgType, $callbackArg->params[1]->var ?? null, $statement->expr);
 				}
 			} elseif ($callbackArg instanceof ArrowFunction && count($callbackArg->params) > 0) {
-				[$itemType, $keyType] = $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $itemType, $callbackArg->params[1]->var ?? null, $keyType, $callbackArg->expr);
+				return $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $arrayArgType, $callbackArg->params[1]->var ?? null, $callbackArg->expr);
 			} elseif ($callbackArg instanceof String_) {
 				$itemVar = new Variable('item');
 				$keyVar = new Variable('key');
 				$expr = new FuncCall(new Name($callbackArg->value), [new Arg($itemVar), new Arg($keyVar)]);
-				[$itemType, $keyType] = $this->filterByTruthyValue($scope, $itemVar, $itemType, $keyVar, $keyType, $expr);
+				return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, $keyVar, $expr);
 			}
-		}
-
-		if ($itemType instanceof NeverType || $keyType instanceof NeverType) {
-			return new ConstantArrayType([], []);
 		}
 
 		return new ArrayType($keyType, $itemType);
@@ -157,15 +157,51 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 		return new ArrayType($keyType, $valueType);
 	}
 
-	/**
-	 * @return array{Type, Type}
-	 */
-	private function filterByTruthyValue(Scope $scope, Error|Variable|null $itemVar, Type $itemType, Error|Variable|null $keyVar, Type $keyType, Expr $expr): array
+	private function filterByTruthyValue(Scope $scope, Error|Variable|null $itemVar, Type $arrayType, Error|Variable|null $keyVar, Expr $expr): Type
 	{
 		if (!$scope instanceof MutatingScope) {
 			throw new ShouldNotHappenException();
 		}
 
+		$constantArrays = TypeUtils::getOldConstantArrays($arrayType);
+		if (count($constantArrays) > 0) {
+			$results = [];
+			foreach ($constantArrays as $constantArray) {
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
+					$itemType = $constantArray->getValueTypes()[$i];
+					[$newKeyType, $newItemType] = $this->processKeyAndItemType($scope, $keyType, $itemType, $itemVar, $keyVar, $expr);
+					if ($newKeyType instanceof NeverType || $newItemType instanceof NeverType) {
+						continue;
+					}
+					if ($itemType->equals($newItemType) && $keyType->equals($newKeyType)) {
+						$builder->setOffsetValueType($keyType, $itemType);
+						continue;
+					}
+
+					$builder->setOffsetValueType($newKeyType, $newItemType, true);
+				}
+
+				$results[] = $builder->getArray();
+			}
+
+			return TypeCombinator::union(...$results);
+		}
+
+		[$newKeyType, $newItemType] = $this->processKeyAndItemType($scope, $arrayType->getIterableKeyType(), $arrayType->getIterableValueType(), $itemVar, $keyVar, $expr);
+
+		if ($newItemType instanceof NeverType || $newKeyType instanceof NeverType) {
+			return new ConstantArrayType([], []);
+		}
+
+		return new ArrayType($newKeyType, $newItemType);
+	}
+
+	/**
+	 * @return array{Type, Type}
+	 */
+	private function processKeyAndItemType(MutatingScope $scope, Type $keyType, Type $itemType, Error|Variable|null $itemVar, Error|Variable|null $keyVar, Expr $expr): array
+	{
 		$itemVarName = null;
 		if ($itemVar !== null) {
 			if (!$itemVar instanceof Variable || !is_string($itemVar->name)) {
@@ -187,8 +223,8 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 		$scope = $scope->filterByTruthyValue($expr);
 
 		return [
-			$itemVarName !== null ? $scope->getVariableType($itemVarName) : $itemType,
 			$keyVarName !== null ? $scope->getVariableType($keyVarName) : $keyType,
+			$itemVarName !== null ? $scope->getVariableType($itemVarName) : $itemType,
 		];
 	}
 

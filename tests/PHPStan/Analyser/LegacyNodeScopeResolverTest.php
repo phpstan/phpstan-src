@@ -4455,8 +4455,12 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$filteredIntegers[0]',
 			],
 			[
-				'123',
+				'*ERROR*',
 				'$filteredMixed[0]',
+			],
+			[
+				'123',
+				'$filteredMixed[1]',
 			],
 			[
 				'non-empty-array<0|1|2, 1|2|3>',

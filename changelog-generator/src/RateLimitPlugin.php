@@ -9,7 +9,6 @@ use Http\Client\Common\Plugin;
 use Http\Promise\Promise;
 use Psr\Http\Message\RequestInterface;
 use function sleep;
-use function sprintf;
 use function time;
 
 class RateLimitPlugin implements Plugin
@@ -38,7 +37,6 @@ class RateLimitPlugin implements Plugin
 			$reset = $resource->getReset();
 			$sleepFor = $reset - time();
 			if ($sleepFor > 0) {
-				echo sprintf("Rate limit exceeded - sleeping for %d seconds\n", $sleepFor);
 				sleep($sleepFor);
 			}
 		}

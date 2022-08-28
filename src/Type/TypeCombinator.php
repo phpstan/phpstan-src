@@ -867,14 +867,27 @@ class TypeCombinator
 					}
 
 					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof HasOffsetValueType) {
-						$types[$i] = $types[$i]->setOffsetValueType($types[$j]->getOffsetType(), $types[$j]->getValueType());
+						$offsetType = $types[$j]->getOffsetType();
+						$valueType = $types[$j]->getValueType();
+						$newValueType = self::intersect($types[$i]->getOffsetValueType($offsetType), $valueType);
+						if ($newValueType instanceof NeverType) {
+							return new NeverType();
+						}
+						$types[$i] = $types[$i]->setOffsetValueType($offsetType, $newValueType);
 						array_splice($types, $j--, 1);
 						$typesCount--;
 						continue;
 					}
 
 					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof HasOffsetValueType) {
-						$types[$j] = $types[$j]->setOffsetValueType($types[$i]->getOffsetType(), $types[$i]->getValueType());
+						$offsetType = $types[$i]->getOffsetType();
+						$valueType = $types[$i]->getValueType();
+						$newValueType = self::intersect($types[$j]->getOffsetValueType($offsetType), $valueType);
+						if ($newValueType instanceof NeverType) {
+							return new NeverType();
+						}
+
+						$types[$j] = $types[$j]->setOffsetValueType($offsetType, $newValueType);
 						array_splice($types, $i--, 1);
 						$typesCount--;
 						continue 2;

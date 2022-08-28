@@ -123,7 +123,7 @@ class AssignVsNarrow
 	public function doFoo(array $a)
 	{
 		if (is_int($a['a'])) {
-			assertType('array{a: *NEVER*}', $a);
+			assertType('*NEVER*', $a);
 		}
 	}
 

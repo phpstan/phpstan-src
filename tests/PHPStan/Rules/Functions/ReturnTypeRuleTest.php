@@ -134,4 +134,19 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3931.php'], []);
 	}
 
+	public function testBug3801(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-3801.php'], [
+			[
+				'Function Bug3801\do_foo() should return array{bool, null}|array{null, bool} but returns array{false, true}.',
+				17,
+			],
+			[
+				'Function Bug3801\do_foo() should return array{bool, null}|array{null, bool} but returns array{false, false}.',
+				21,
+			],
+		]);
+	}
+
 }

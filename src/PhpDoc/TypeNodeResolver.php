@@ -651,6 +651,12 @@ class TypeNodeResolver
 			}
 
 			return new ErrorType();
+		} elseif ($mainTypeName === 'exclude') {
+			if (count($genericTypes) === 2) { // exclude<1|2|3, 1|2>
+				return TypeCombinator::remove($genericTypes[0], $genericTypes[1]);
+			}
+
+			return new ErrorType();
 		} elseif ($mainTypeName === '__benevolent') {
 			if (count($genericTypes) === 1) {
 				return TypeUtils::toBenevolentUnion($genericTypes[0]);

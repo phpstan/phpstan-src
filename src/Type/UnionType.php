@@ -139,7 +139,11 @@ class UnionType implements CompoundType
 
 		$results = [];
 		foreach ($this->getTypes() as $innerType) {
-			$results[] = $innerType->isSuperTypeOf($otherType);
+			$result = $innerType->isSuperTypeOf($otherType);
+			if ($result->yes()) {
+				return $result;
+			}
+			$results[] = $result;
 		}
 
 		if ($otherType instanceof TemplateUnionType) {

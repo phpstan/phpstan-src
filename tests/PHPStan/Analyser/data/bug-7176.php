@@ -17,13 +17,13 @@ function test(Suit $x): string {
 		assertType('Bug7176\Suit::Clubs', $x);
 		return 'WORKS';
 	}
-	assertType('Bug7176\Suit::Diamonds|Bug7176\Suit::Hearts|Bug7176\Suit::Spades', $x);
+	assertType('Bug7176\Suit~Bug7176\Suit::Clubs', $x);
 
 	if (in_array($x, [Suit::Spades], true)) {
 		assertType('Bug7176\Suit::Spades', $x);
 		return 'DOES NOT WORK';
 	}
-	assertType('Bug7176\Suit::Diamonds|Bug7176\Suit::Hearts', $x);
+	assertType('Bug7176\Suit~Bug7176\Suit::Clubs|Bug7176\Suit::Spades', $x);
 
 	return match ($x) {
 		Suit::Hearts => 'a',

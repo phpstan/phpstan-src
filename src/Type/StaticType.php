@@ -20,9 +20,6 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
-use function array_keys;
-use function array_values;
-use function count;
 use function get_class;
 use function sprintf;
 
@@ -432,35 +429,24 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	public function changeSubtractedType(?Type $subtractedType): Type
 	{
-		$classReflection = $this->getClassReflection();
-		if ($classReflection->isEnum() && $subtractedType !== null) {
-			$cases = [];
-			foreach (array_keys($classReflection->getEnumCases()) as $constantName) {
-				$cases[$constantName] = new EnumCaseObjectType($classReflection->getName(), $constantName);
-			}
-
-			foreach (TypeUtils::flattenTypes($subtractedType) as $subType) {
-				if (!$subType instanceof EnumCaseObjectType) {
-					return new self($this->classReflection, $subtractedType);
+		if ($subtractedType !== null) {
+			$classReflection = $this->getClassReflection();
+			if ($classReflection->isEnum()) {
+				$objectType = $this->getStaticObjectType()->changeSubtractedType($subtractedType);
+				if ($objectType instanceof NeverType) {
+					return $objectType;
 				}
 
-				if ($subType->getClassName() !== $this->getClassName()) {
-					return new self($this->classReflection, $subtractedType);
+				if ($objectType instanceof EnumCaseObjectType) {
+					return TypeCombinator::intersect($this, $objectType);
 				}
 
-				unset($cases[$subType->getEnumCaseName()]);
-			}
+				if ($objectType instanceof ObjectType) {
+					return new self($classReflection, $objectType->getSubtractedType());
+				}
 
-			$cases = array_values($cases);
-			if (count($cases) === 0) {
-				return new NeverType();
+				return $this;
 			}
-
-			if (count($cases) === 1) {
-				return TypeCombinator::intersect($this, $cases[0]);
-			}
-
-			return TypeCombinator::intersect($this, new UnionType(array_values($cases)));
 		}
 
 		return new self($this->classReflection, $subtractedType);

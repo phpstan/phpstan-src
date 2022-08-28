@@ -922,6 +922,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(13, $errors[0]->getLine());
 	}
 
+	public function testMatchPerformanceIssue(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$errors = $this->runAnalyse(__DIR__ . '/data/match-performance-issue.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

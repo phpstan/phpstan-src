@@ -40,6 +40,7 @@ use Traversable;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
+use function array_merge;
 use function array_values;
 use function count;
 use function implode;
@@ -1052,7 +1053,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 					$cases[$name] = new EnumCaseObjectType($classReflection->getName(), $name);
 				}
 
-				foreach (TypeUtils::flattenTypes($subtractedType) as $subType) {
+				$originalCases = $cases;
+
+				$subtractedTypes = TypeUtils::flattenTypes($subtractedType);
+				if ($this->subtractedType !== null) {
+					$subtractedTypes = array_merge($subtractedTypes, TypeUtils::flattenTypes($this->subtractedType));
+				}
+				$subtractedCases = [];
+				foreach ($subtractedTypes as $subType) {
 					if (!$subType instanceof EnumCaseObjectType) {
 						return new self($this->className, $subtractedType);
 					}
@@ -1061,19 +1069,33 @@ class ObjectType implements TypeWithClassName, SubtractableType
 						return new self($this->className, $subtractedType);
 					}
 
-					unset($cases[$subType->getEnumCaseName()]);
+					if (!array_key_exists($subType->getEnumCaseName(), $cases)) {
+						return new self($this->className, $subtractedType);
+					}
+
+					$subtractedCases[$subType->getEnumCaseName()] = $subType;
+					unset($originalCases[$subType->getEnumCaseName()]);
 				}
 
-				$cases = array_values($cases);
-				if (count($cases) === 0) {
+				if (count($originalCases) === 1) {
+					return array_values($originalCases)[0];
+				}
+
+				$subtractedCases = array_values($subtractedCases);
+				$subtractedCasesCount = count($subtractedCases);
+				if ($subtractedCasesCount === count($cases)) {
 					return new NeverType();
 				}
 
-				if (count($cases) === 1) {
-					return $cases[0];
+				if ($subtractedCasesCount === 0) {
+					return new self($this->className);
 				}
 
-				return new UnionType(array_values($cases));
+				if (count($subtractedCases) === 1) {
+					return new self($this->className, $subtractedCases[0]);
+				}
+
+				return new self($this->className, new UnionType($subtractedCases));
 			}
 		}
 

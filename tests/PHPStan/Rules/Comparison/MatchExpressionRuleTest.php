@@ -145,7 +145,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 				19,
 			],
 			[
-				'Match expression does not handle remaining values: ($this(MatchEnums\Foo)&MatchEnums\Foo::TWO)|($this(MatchEnums\Foo)&MatchEnums\Foo::THREE)',
+				'Match expression does not handle remaining values: MatchEnums\Foo::THREE|MatchEnums\Foo::TWO',
 				35,
 			],
 			[

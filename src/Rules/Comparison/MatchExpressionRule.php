@@ -8,13 +8,19 @@ use PHPStan\Node\MatchExpressionNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\SubtractableType;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
+use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use UnhandledMatchError;
+use function array_keys;
 use function array_map;
+use function array_values;
 use function count;
 use function sprintf;
 
@@ -85,6 +91,45 @@ class MatchExpressionRule implements Rule
 
 		if (!$hasDefault && !$nextArmIsDead) {
 			$remainingType = $node->getEndScope()->getType($matchCondition);
+			if ($remainingType instanceof TypeWithClassName && $remainingType instanceof SubtractableType) {
+				$subtractedType = $remainingType->getSubtractedType();
+				if ($subtractedType !== null && $remainingType->getClassReflection() !== null) {
+					$classReflection = $remainingType->getClassReflection();
+					if ($classReflection->isEnum()) {
+						$cases = [];
+						foreach (array_keys($classReflection->getEnumCases()) as $name) {
+							$cases[$name] = new EnumCaseObjectType($classReflection->getName(), $name);
+						}
+
+						$subtractedTypes = TypeUtils::flattenTypes($subtractedType);
+						$set = true;
+						foreach ($subtractedTypes as $subType) {
+							if (!$subType instanceof EnumCaseObjectType) {
+								$set = false;
+								break;
+							}
+
+							if ($subType->getClassName() !== $classReflection->getName()) {
+								$set = false;
+								break;
+							}
+
+							unset($cases[$subType->getEnumCaseName()]);
+						}
+
+						$cases = array_values($cases);
+						$casesCount = count($cases);
+						if ($set) {
+							if ($casesCount > 1) {
+								$remainingType = new UnionType($cases);
+							}
+							if ($casesCount === 1) {
+								$remainingType = $cases[0];
+							}
+						}
+					}
+				}
+			}
 			if (
 				!$remainingType instanceof NeverType
 				&& !$this->isUnhandledMatchErrorCaught($node)

@@ -146,7 +146,12 @@ class IntersectionType implements CompoundType
 
 		$results = [];
 		foreach ($this->getTypes() as $innerType) {
-			$results[] = $innerType->isSuperTypeOf($otherType);
+			$result = $innerType->isSuperTypeOf($otherType);
+			if ($result->no()) {
+				return $result;
+			}
+
+			$results[] = $result;
 		}
 
 		return TrinaryLogic::createYes()->and(...$results);
@@ -160,7 +165,11 @@ class IntersectionType implements CompoundType
 
 		$results = [];
 		foreach ($this->getTypes() as $innerType) {
-			$results[] = $otherType->isSuperTypeOf($innerType);
+			$result = $otherType->isSuperTypeOf($innerType);
+			if ($result->yes()) {
+				return $result;
+			}
+			$results[] = $result;
 		}
 
 		return TrinaryLogic::maxMin(...$results);
@@ -170,7 +179,12 @@ class IntersectionType implements CompoundType
 	{
 		$results = [];
 		foreach ($this->getTypes() as $innerType) {
-			$results[] = $acceptingType->accepts($innerType, $strictTypes);
+			$result = $acceptingType->accepts($innerType, $strictTypes);
+			if ($result->yes()) {
+				return $result;
+			}
+
+			$results[] = $result;
 		}
 
 		return TrinaryLogic::maxMin(...$results);

@@ -133,11 +133,10 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isCallable(): TrinaryLogic
 	{
-		if (
-			$this->subtractedType !== null
-			&& $this->subtractedType->isCallable()->yes()
-		) {
-			return TrinaryLogic::createNo();
+		if ($this->subtractedType !== null) {
+			if ($this->subtractedType->isSuperTypeOf(new CallableType())->yes()) {
+				return TrinaryLogic::createNo();
+			}
 		}
 
 		return TrinaryLogic::createMaybe();

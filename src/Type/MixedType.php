@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use ArrayAccess;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\Dummy\DummyConstantReflection;
@@ -16,6 +17,10 @@ use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateMixedType;
@@ -129,11 +134,10 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isCallable(): TrinaryLogic
 	{
-		if (
-			$this->subtractedType !== null
-			&& $this->subtractedType->isCallable()->yes()
-		) {
-			return TrinaryLogic::createNo();
+		if ($this->subtractedType !== null) {
+			if ($this->subtractedType->isSuperTypeOf(new CallableType())->yes()) {
+				return TrinaryLogic::createNo();
+			}
 		}
 
 		return TrinaryLogic::createMaybe();
@@ -336,12 +340,18 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isIterable(): TrinaryLogic
 	{
+		if ($this->subtractedType !== null) {
+			if ($this->subtractedType->isSuperTypeOf(new IterableType(new MixedType(), new MixedType()))->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return $this->isIterable();
 	}
 
 	public function getIterableKeyType(): Type
@@ -356,6 +366,17 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isOffsetAccessible(): TrinaryLogic
 	{
+		if ($this->subtractedType !== null) {
+			$offsetAccessibles = new UnionType([
+				new StringType(),
+				new ArrayType(new MixedType(), new MixedType()),
+				new ObjectType(ArrayAccess::class),
+			]);
+
+			if ($this->subtractedType->isSuperTypeOf($offsetAccessibles)->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
 		return TrinaryLogic::createMaybe();
 	}
 
@@ -408,31 +429,86 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isArray(): TrinaryLogic
 	{
+		if ($this->subtractedType !== null) {
+			if ($this->subtractedType->isSuperTypeOf(new ArrayType(new MixedType(), new MixedType()))->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 
 	public function isString(): TrinaryLogic
 	{
+		if ($this->subtractedType !== null) {
+			if ($this->subtractedType->isSuperTypeOf(new StringType())->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
 		return TrinaryLogic::createMaybe();
 	}
 
 	public function isNumericString(): TrinaryLogic
 	{
+		if ($this->subtractedType !== null) {
+			$numericString = TypeCombinator::intersect(
+				new StringType(),
+				new AccessoryNumericStringType(),
+			);
+
+			if ($this->subtractedType->isSuperTypeOf($numericString)->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 
 	public function isNonEmptyString(): TrinaryLogic
 	{
+		if ($this->subtractedType !== null) {
+			$nonEmptyString = TypeCombinator::intersect(
+				new StringType(),
+				new AccessoryNonEmptyStringType(),
+			);
+
+			if ($this->subtractedType->isSuperTypeOf($nonEmptyString)->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 
 	public function isNonFalsyString(): TrinaryLogic
 	{
+		if ($this->subtractedType !== null) {
+			$nonFalsyString = TypeCombinator::intersect(
+				new StringType(),
+				new AccessoryNonFalsyStringType(),
+			);
+
+			if ($this->subtractedType->isSuperTypeOf($nonFalsyString)->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 
 	public function isLiteralString(): TrinaryLogic
 	{
+		if ($this->subtractedType !== null) {
+			$literalString = TypeCombinator::intersect(
+				new StringType(),
+				new AccessoryLiteralStringType(),
+			);
+
+			if ($this->subtractedType->isSuperTypeOf($literalString)->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 

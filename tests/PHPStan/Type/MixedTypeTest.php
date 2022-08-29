@@ -2,9 +2,16 @@
 
 namespace PHPStan\Type;
 
+use ArrayAccess;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use function sprintf;
 
 class MixedTypeTest extends PHPStanTestCase
@@ -161,6 +168,476 @@ class MixedTypeTest extends PHPStanTestCase
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsArray(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new ArrayType(new IntegerType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new MixedType(), new MixedType()),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new ConstantArrayType(
+					[new ConstantIntegerType(1)],
+					[new ConstantStringType('hello')],
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new UnionType([new FloatType(), new ArrayType(new MixedType(), new MixedType())]),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new UnionType([new FloatType(), new ArrayType(new StringType(), new MixedType())]),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new UnionType([new FloatType(), new IntegerType()]),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new FloatType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(true),
+				new FloatType(),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsArray
+	 */
+	public function testSubstractedIsArray(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isArray();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isArray()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsString(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new StringType(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNumericStringType(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsString
+	 */
+	public function testSubstractedIsString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isString();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isString()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsNumericString(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new StringType(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNumericStringType(),
+				),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsNumericString
+	 */
+	public function testSubstractedIsNumericString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isNumericString();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isNumericString()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsNonEmptyString(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new StringType(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
+				),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNonFalsyStringType(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNumericStringType(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsNonEmptyString
+	 */
+	public function testSubstractedIsNonEmptyString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isNonEmptyString();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isNonEmptyString()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsNonFalsyString(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new StringType(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
+				),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNonFalsyStringType(),
+				),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNumericStringType(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsNonFalsyString
+	 */
+	public function testSubstractedIsNonFalsyString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isNonFalsyString();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isNonFalsyString()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsLiteralString(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new StringType(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryLiteralStringType(),
+				),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNonEmptyStringType(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNonFalsyStringType(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryNumericStringType(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsLiteralString
+	 */
+	public function testSubstractedIsLiteralString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isLiteralString();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isLiteralString()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsIterable(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new StringType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryLiteralStringType(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new IterableType(new MixedType(), new MixedType()),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new IterableType(new StringType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsIterable
+	 */
+	public function testSubstractedIsIterable(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isIterable();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isIterable()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsOffsetAccessible(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new ArrayType(new MixedType(), new MixedType()),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new StringType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ObjectType(ArrayAccess::class),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new UnionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new StringType(),
+					new ObjectType(ArrayAccess::class),
+				]),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new UnionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new StringType(),
+					new ObjectType(ArrayAccess::class),
+					new FloatType(),
+				]),
+				TrinaryLogic::createNo(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsOffsetAccessible
+	 */
+	public function testSubstractedIsOffsetAccessible(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isOffsetAccessible();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isOffsetAccessible()', $subtracted->describe(VerbosityLevel::precise())),
 		);
 	}
 

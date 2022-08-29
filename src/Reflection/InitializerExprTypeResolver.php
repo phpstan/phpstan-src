@@ -53,7 +53,6 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
-use PHPStan\Type\SubtractableType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -973,18 +972,6 @@ class InitializerExprTypeResolver
 			($leftIsArray->yes() && $rightIsArray->maybe())
 			|| ($leftIsArray->maybe() && $rightIsArray->yes())
 		) {
-			if ($leftType instanceof SubtractableType && $leftType->getSubtractedType() !== null) {
-				if (count(TypeUtils::getAnyArrays($leftType->getSubtractedType())) > 0) {
-					return new ErrorType();
-				}
-			}
-
-			if ($rightType instanceof SubtractableType && $rightType->getSubtractedType() !== null) {
-				if (count(TypeUtils::getAnyArrays($rightType->getSubtractedType())) > 0) {
-					return new ErrorType();
-				}
-			}
-
 			$resultType = new ArrayType(new MixedType(), new MixedType());
 			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
 				return TypeCombinator::intersect($resultType, new NonEmptyArrayType());

@@ -351,7 +351,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return $this->isIterable();
 	}
 
 	public function getIterableKeyType(): Type

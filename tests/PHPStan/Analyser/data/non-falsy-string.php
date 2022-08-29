@@ -20,7 +20,7 @@ class Foo {
 			return;
 		}
 
-		assertType('non-falsy-string', $s);
+		assertType('string', $s);
 	}
 
 	/**

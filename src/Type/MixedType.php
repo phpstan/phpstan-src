@@ -408,6 +408,22 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isArray(): TrinaryLogic
 	{
+		if ($this->subtractedType !== null) {
+			$arrayType = new ArrayType(new MixedType(), new MixedType());
+
+			if ($arrayType->isSuperTypeOf($this->subtractedType)->yes()) {
+				return TrinaryLogic::createNo();
+			}
+
+			if ($this->subtractedType instanceof UnionType) {
+				foreach ($this->subtractedType->getTypes() as $type) {
+					if ($arrayType->isSuperTypeOf($type)->yes()) {
+						return TrinaryLogic::createNo();
+					}
+				}
+			}
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 

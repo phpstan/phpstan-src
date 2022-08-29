@@ -4,7 +4,9 @@ namespace PHPStan\Type;
 
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use function sprintf;
 
 class MixedTypeTest extends PHPStanTestCase
@@ -161,6 +163,75 @@ class MixedTypeTest extends PHPStanTestCase
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsArray(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new ArrayType(new IntegerType(), new StringType()),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new MixedType(), new MixedType()),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new ConstantArrayType(
+					[new ConstantIntegerType(1)],
+					[new ConstantStringType('hello')],
+				),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new UnionType([new FloatType(), new ArrayType(new MixedType(), new MixedType())]),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new UnionType([new FloatType(), new ArrayType(new StringType(), new MixedType())]),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new UnionType([new FloatType(), new IntegerType()]),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new FloatType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(true),
+				new FloatType(),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsArray
+	 */
+	public function testSubstractedIsArray(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isArray();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isArray()', $subtracted->describe(VerbosityLevel::precise())),
 		);
 	}
 

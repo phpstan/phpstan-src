@@ -531,4 +531,58 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function dataSubstractedIsIterable(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new StringType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryLiteralStringType(),
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new IterableType(new MixedType(), new MixedType()),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new IterableType(new StringType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsIterable
+	 */
+	public function testSubstractedIsIterable(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isIterable();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isIterable()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
 }

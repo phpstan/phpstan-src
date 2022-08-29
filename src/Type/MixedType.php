@@ -340,6 +340,12 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isIterable(): TrinaryLogic
 	{
+		if ($this->subtractedType !== null) {
+			if ($this->subtractedType->isSuperTypeOf(new IterableType(new MixedType(), new MixedType()))->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 

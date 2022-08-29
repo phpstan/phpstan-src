@@ -190,6 +190,33 @@ class Foo
 		$severalSumWithStaticConst2 = 1 + static::INT_CONST + 1;
 		$severalSumWithStaticConst3 = 1 + 1 + static::INT_CONST;
 
+		if (!is_array($mixed)) {
+			$mixedNoArray = $mixed;
+		}
+		if (!is_int($mixed)) {
+			$mixedNoInt = $mixed;
+		}
+		if (!is_float($mixed)) {
+			$mixedNoFloat = $mixed;
+		}
+		if (!is_array($mixed)) {
+			if (!is_int($mixed)) {
+				$mixedNoArrayOrInt = $mixed;
+			}
+		}
+
+		/** @var int|array $intOrArray */
+		$intOrArray = doFoo();
+
+		/** @var array|float $floatOrArray */
+		$floatOrArray = doFoo();
+
+		/** @var int|float $intOrFloat */
+		$intOrFloat = doFoo();
+
+		/** @var array|float|int|string|bool $plusable */
+		$plusable = doFoo();
+
 		die;
 	}
 

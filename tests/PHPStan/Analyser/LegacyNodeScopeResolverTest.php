@@ -2696,8 +2696,48 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mixed - $mixed',
 			],
 			[
-				'*ERROR*',
+				'array',
 				'$mixed + []',
+			],
+			[
+				'array|int',
+				'$intOrArray + $intOrArray',
+			],
+			[
+				'float|int',
+				'$intOrFloat + $intOrFloat',
+			],
+			[
+				'array|float',
+				'$floatOrArray + $floatOrArray',
+			],
+			[
+				'array|bool|float|int|string',
+				'$plusable + $plusable',
+			],
+			[
+				'array',
+				'$mixedNoFloat + []',
+			],
+			[
+				'(float|int)',
+				'$mixedNoFloat + 5',
+			],
+			[
+				'(float|int)',
+				'$mixedNoInt + 5',
+			],
+			[
+				'*ERROR*',
+				'$mixedNoArray + []',
+			],
+			[
+				'*ERROR*',
+				'$mixedNoArrayOrInt + []',
+			],
+			[
+				'*ERROR*',
+				'$integer + []',
 			],
 			[
 				'124',

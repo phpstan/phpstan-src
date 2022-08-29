@@ -859,6 +859,10 @@ class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
+			return new NeverType();
+		}
+
 		$leftTypes = TypeUtils::getConstantScalars($leftType);
 		$rightTypes = TypeUtils::getConstantScalars($rightType);
 		$leftTypesCount = count($leftTypes);
@@ -921,7 +925,9 @@ class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
-		if ($leftType->isArray()->yes() && $rightType->isArray()->yes()) {
+		$leftIsArray = $leftType->isArray();
+		$rightIsArray = $rightType->isArray();
+		if ($leftIsArray->yes() && $rightIsArray->yes()) {
 			if ($leftType->getIterableKeyType()->equals($rightType->getIterableKeyType())) {
 				// to preserve BenevolentUnionType
 				$keyType = $leftType->getIterableKeyType();
@@ -953,6 +959,39 @@ class InitializerExprTypeResolver
 				new IntegerType(),
 				new ArrayType(new MixedType(), new MixedType()),
 			]);
+		}
+
+		if (
+			($leftIsArray->yes() && $rightIsArray->no())
+			|| ($leftIsArray->no() && $rightIsArray->yes())
+		) {
+			return new ErrorType();
+		}
+
+		if (
+			($leftIsArray->yes() && $rightIsArray->maybe())
+			|| ($leftIsArray->maybe() && $rightIsArray->yes())
+		) {
+			$resultType = new ArrayType(new MixedType(), new MixedType());
+			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
+				return TypeCombinator::intersect($resultType, new NonEmptyArrayType());
+			}
+
+			return $resultType;
+		}
+
+		if ($leftIsArray->maybe() && $rightIsArray->maybe()) {
+			$plusable = new UnionType([
+				new StringType(),
+				new FloatType(),
+				new IntegerType(),
+				new ArrayType(new MixedType(), new MixedType()),
+				new BooleanType(),
+			]);
+
+			if ($plusable->isSuperTypeOf($leftType)->yes() && $plusable->isSuperTypeOf($rightType)->yes()) {
+				return TypeCombinator::union($leftType, $rightType);
+			}
 		}
 
 		return $this->resolveCommonMath(new BinaryOp\Plus($left, $right), $leftType, $rightType);

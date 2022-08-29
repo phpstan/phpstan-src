@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use ArrayAccess;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -582,6 +583,61 @@ class MixedTypeTest extends PHPStanTestCase
 			$expectedResult->describe(),
 			$actualResult->describe(),
 			sprintf('%s -> isIterable()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsOffsetAccessible(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new ArrayType(new MixedType(), new MixedType()),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new StringType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ObjectType(ArrayAccess::class),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new UnionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new StringType(),
+					new ObjectType(ArrayAccess::class),
+				]),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new UnionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new StringType(),
+					new ObjectType(ArrayAccess::class),
+					new FloatType(),
+				]),
+				TrinaryLogic::createNo(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsOffsetAccessible
+	 */
+	public function testSubstractedIsOffsetAccessible(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isOffsetAccessible();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isOffsetAccessible()', $subtracted->describe(VerbosityLevel::precise())),
 		);
 	}
 

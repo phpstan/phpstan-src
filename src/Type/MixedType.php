@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use ArrayAccess;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\Dummy\DummyConstantReflection;
@@ -365,6 +366,17 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isOffsetAccessible(): TrinaryLogic
 	{
+		if ($this->subtractedType !== null) {
+			$offsetAccessibles = new UnionType([
+				new StringType(),
+				new ArrayType(new MixedType(), new MixedType()),
+				new ObjectType(ArrayAccess::class),
+			]);
+
+			if ($this->subtractedType->isSuperTypeOf($offsetAccessibles)->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
 		return TrinaryLogic::createMaybe();
 	}
 

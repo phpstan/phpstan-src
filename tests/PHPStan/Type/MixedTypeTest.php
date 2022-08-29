@@ -172,12 +172,12 @@ class MixedTypeTest extends PHPStanTestCase
 			[
 				new MixedType(),
 				new ArrayType(new IntegerType(), new StringType()),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
 			[
 				new MixedType(),
 				new ArrayType(new StringType(), new StringType()),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
 			[
 				new MixedType(),
@@ -190,7 +190,7 @@ class MixedTypeTest extends PHPStanTestCase
 					[new ConstantIntegerType(1)],
 					[new ConstantStringType('hello')],
 				),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
 			[
 				new MixedType(),
@@ -200,7 +200,7 @@ class MixedTypeTest extends PHPStanTestCase
 			[
 				new MixedType(),
 				new UnionType([new FloatType(), new ArrayType(new StringType(), new MixedType())]),
-				TrinaryLogic::createNo(),
+				TrinaryLogic::createMaybe(),
 			],
 			[
 				new MixedType(),

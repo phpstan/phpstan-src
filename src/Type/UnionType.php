@@ -113,16 +113,16 @@ class UnionType implements CompoundType
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		$results = [];
-		foreach ($this->getTypes() as $innerType) {
-			$results[] = $innerType->accepts($type, $strictTypes);
+		$result = TrinaryLogic::createNo()->lazyOr($this->getTypes(), static fn (Type $innerType) => $innerType->accepts($type, $strictTypes));
+		if ($result->yes()) {
+			return $result;
 		}
 
 		if ($type instanceof TemplateUnionType) {
-			$results[] = $type->isAcceptedBy($this, $strictTypes);
+			return $result->or($type->isAcceptedBy($this, $strictTypes));
 		}
 
-		return TrinaryLogic::createNo()->or(...$results);
+		return $result;
 	}
 
 	public function isSuperTypeOf(Type $otherType): TrinaryLogic
@@ -137,40 +137,26 @@ class UnionType implements CompoundType
 			return $otherType->isSubTypeOf($this);
 		}
 
-		$results = [];
-		foreach ($this->getTypes() as $innerType) {
-			$result = $innerType->isSuperTypeOf($otherType);
-			if ($result->yes()) {
-				return $result;
-			}
-			$results[] = $result;
+		$result = TrinaryLogic::createNo()->lazyOr($this->getTypes(), static fn (Type $innerType) => $innerType->isSuperTypeOf($otherType));
+		if ($result->yes()) {
+			return $result;
 		}
 
 		if ($otherType instanceof TemplateUnionType) {
-			$results[] = $otherType->isSubTypeOf($this);
+			return $result->or($otherType->isSubTypeOf($this));
 		}
 
-		return TrinaryLogic::createNo()->or(...$results);
+		return $result;
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
 	{
-		$results = [];
-		foreach ($this->getTypes() as $innerType) {
-			$results[] = $otherType->isSuperTypeOf($innerType);
-		}
-
-		return TrinaryLogic::extremeIdentity(...$results);
+		return TrinaryLogic::lazyExtremeIdentity($this->getTypes(), static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType));
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		$results = [];
-		foreach ($this->getTypes() as $innerType) {
-			$results[] = $acceptingType->accepts($innerType, $strictTypes);
-		}
-
-		return TrinaryLogic::extremeIdentity(...$results);
+		return TrinaryLogic::lazyExtremeIdentity($this->getTypes(), static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes));
 	}
 
 	public function equals(Type $type): bool
@@ -279,7 +265,13 @@ class UnionType implements CompoundType
 			$results[] = $hasCallback($type);
 		}
 
-		return TrinaryLogic::extremeIdentity(...$results);
+		return TrinaryLogic::lazyExtremeIdentity($this->types, static function (Type $type) use ($canCallback, $hasCallback): TrinaryLogic {
+			if ($canCallback($type)->no()) {
+				return TrinaryLogic::createNo();
+			}
+
+			return $hasCallback($type);
+		});
 	}
 
 	/**
@@ -720,7 +712,7 @@ class UnionType implements CompoundType
 	 */
 	protected function unionResults(callable $getResult): TrinaryLogic
 	{
-		return TrinaryLogic::extremeIdentity(...array_map($getResult, $this->types));
+		return TrinaryLogic::lazyExtremeIdentity($this->types, $getResult);
 	}
 
 	/**
@@ -728,7 +720,7 @@ class UnionType implements CompoundType
 	 */
 	private function notBenevolentUnionResults(callable $getResult): TrinaryLogic
 	{
-		return TrinaryLogic::extremeIdentity(...array_map($getResult, $this->types));
+		return TrinaryLogic::lazyExtremeIdentity($this->types, $getResult);
 	}
 
 	/**

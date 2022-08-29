@@ -4,7 +4,6 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
-use function array_map;
 use function count;
 
 /** @api */
@@ -46,17 +45,12 @@ class BenevolentUnionType extends UnionType
 
 	protected function unionResults(callable $getResult): TrinaryLogic
 	{
-		return TrinaryLogic::createNo()->or(...array_map($getResult, $this->getTypes()));
+		return TrinaryLogic::createNo()->lazyOr($this->getTypes(), $getResult);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		$results = [];
-		foreach ($this->getTypes() as $innerType) {
-			$results[] = $acceptingType->accepts($innerType, $strictTypes);
-		}
-
-		return TrinaryLogic::createNo()->or(...$results);
+		return TrinaryLogic::createNo()->lazyOr($this->getTypes(), static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes));
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

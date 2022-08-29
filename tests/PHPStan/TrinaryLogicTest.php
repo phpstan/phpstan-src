@@ -40,6 +40,18 @@ class TrinaryLogicTest extends PHPStanTestCase
 		$this->assertTrue($expectedResult->equals($value->and(...$operands)));
 	}
 
+	/**
+	 * @dataProvider dataAnd
+	 */
+	public function testLazyAnd(
+		TrinaryLogic $expectedResult,
+		TrinaryLogic $value,
+		TrinaryLogic ...$operands,
+	): void
+	{
+		$this->assertTrue($expectedResult->equals($value->lazyAnd($operands, static fn (TrinaryLogic $result) => $result)));
+	}
+
 	public function dataOr(): array
 	{
 		return [
@@ -71,6 +83,18 @@ class TrinaryLogicTest extends PHPStanTestCase
 	): void
 	{
 		$this->assertTrue($expectedResult->equals($value->or(...$operands)));
+	}
+
+	/**
+	 * @dataProvider dataOr
+	 */
+	public function testLazyOr(
+		TrinaryLogic $expectedResult,
+		TrinaryLogic $value,
+		TrinaryLogic ...$operands,
+	): void
+	{
+		$this->assertTrue($expectedResult->equals($value->lazyOr($operands, static fn (TrinaryLogic $result) => $result)));
 	}
 
 	public function dataNegate(): array

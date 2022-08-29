@@ -87,7 +87,7 @@ class IntersectionTypeMethodReflection implements MethodReflection
 
 	public function isDeprecated(): TrinaryLogic
 	{
-		return TrinaryLogic::maxMin(...array_map(static fn (MethodReflection $method): TrinaryLogic => $method->isDeprecated(), $this->methods));
+		return TrinaryLogic::lazyMaxMin($this->methods, static fn (MethodReflection $method): TrinaryLogic => $method->isDeprecated());
 	}
 
 	public function getDeprecatedDescription(): ?string
@@ -114,12 +114,12 @@ class IntersectionTypeMethodReflection implements MethodReflection
 
 	public function isFinal(): TrinaryLogic
 	{
-		return TrinaryLogic::maxMin(...array_map(static fn (MethodReflection $method): TrinaryLogic => $method->isFinal(), $this->methods));
+		return TrinaryLogic::lazyMaxMin($this->methods, static fn (MethodReflection $method): TrinaryLogic => $method->isFinal());
 	}
 
 	public function isInternal(): TrinaryLogic
 	{
-		return TrinaryLogic::maxMin(...array_map(static fn (MethodReflection $method): TrinaryLogic => $method->isInternal(), $this->methods));
+		return TrinaryLogic::lazyMaxMin($this->methods, static fn (MethodReflection $method): TrinaryLogic => $method->isInternal());
 	}
 
 	public function getThrowType(): ?Type
@@ -144,7 +144,7 @@ class IntersectionTypeMethodReflection implements MethodReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
-		return TrinaryLogic::maxMin(...array_map(static fn (MethodReflection $method): TrinaryLogic => $method->hasSideEffects(), $this->methods));
+		return TrinaryLogic::lazyMaxMin($this->methods, static fn (MethodReflection $method): TrinaryLogic => $method->hasSideEffects());
 	}
 
 	public function getDocComment(): ?string

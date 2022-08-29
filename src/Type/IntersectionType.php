@@ -144,17 +144,7 @@ class IntersectionType implements CompoundType
 			return TrinaryLogic::createYes();
 		}
 
-		$results = [];
-		foreach ($this->getTypes() as $innerType) {
-			$result = $innerType->isSuperTypeOf($otherType);
-			if ($result->no()) {
-				return $result;
-			}
-
-			$results[] = $result;
-		}
-
-		return TrinaryLogic::createYes()->and(...$results);
+		return TrinaryLogic::createYes()->lazyAnd($this->getTypes(), static fn (Type $innerType) => $innerType->isSuperTypeOf($otherType));
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
@@ -163,31 +153,12 @@ class IntersectionType implements CompoundType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		$results = [];
-		foreach ($this->getTypes() as $innerType) {
-			$result = $otherType->isSuperTypeOf($innerType);
-			if ($result->yes()) {
-				return $result;
-			}
-			$results[] = $result;
-		}
-
-		return TrinaryLogic::maxMin(...$results);
+		return TrinaryLogic::lazyMaxMin($this->getTypes(), static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType));
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		$results = [];
-		foreach ($this->getTypes() as $innerType) {
-			$result = $acceptingType->accepts($innerType, $strictTypes);
-			if ($result->yes()) {
-				return $result;
-			}
-
-			$results[] = $result;
-		}
-
-		return TrinaryLogic::maxMin(...$results);
+		return TrinaryLogic::lazyMaxMin($this->getTypes(), static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes));
 	}
 
 	public function equals(Type $type): bool
@@ -669,8 +640,7 @@ class IntersectionType implements CompoundType
 	 */
 	private function intersectResults(callable $getResult): TrinaryLogic
 	{
-		$operands = array_map($getResult, $this->types);
-		return TrinaryLogic::maxMin(...$operands);
+		return TrinaryLogic::lazyMaxMin($this->types, $getResult);
 	}
 
 	/**

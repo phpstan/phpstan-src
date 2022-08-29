@@ -61,7 +61,7 @@ class UnionTypePropertyReflection implements PropertyReflection
 
 	public function isDeprecated(): TrinaryLogic
 	{
-		return TrinaryLogic::extremeIdentity(...array_map(static fn (PropertyReflection $property): TrinaryLogic => $property->isDeprecated(), $this->properties));
+		return TrinaryLogic::lazyExtremeIdentity($this->properties, static fn (PropertyReflection $propertyReflection): TrinaryLogic => $propertyReflection->isDeprecated());
 	}
 
 	public function getDeprecatedDescription(): ?string
@@ -88,7 +88,7 @@ class UnionTypePropertyReflection implements PropertyReflection
 
 	public function isInternal(): TrinaryLogic
 	{
-		return TrinaryLogic::extremeIdentity(...array_map(static fn (PropertyReflection $property): TrinaryLogic => $property->isInternal(), $this->properties));
+		return TrinaryLogic::lazyExtremeIdentity($this->properties, static fn (PropertyReflection $propertyReflection): TrinaryLogic => $propertyReflection->isInternal());
 	}
 
 	public function getDocComment(): ?string

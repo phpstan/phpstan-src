@@ -84,11 +84,57 @@ class TrinaryLogic
 		return self::create(min($operandValues));
 	}
 
+	/**
+	 * @template T
+	 * @param T[] $objects
+	 * @param callable(T): self $callback
+	 */
+	public function lazyAnd(
+		array $objects,
+		callable $callback,
+	): self
+	{
+		$results = [];
+		foreach ($objects as $object) {
+			$result = $callback($object);
+			if ($result->no()) {
+				return $result;
+			}
+
+			$results[] = $result;
+		}
+
+		return $this->and(...$results);
+	}
+
 	public function or(self ...$operands): self
 	{
 		$operandValues = array_column($operands, 'value');
 		$operandValues[] = $this->value;
 		return self::create(max($operandValues));
+	}
+
+	/**
+	 * @template T
+	 * @param T[] $objects
+	 * @param callable(T): self $callback
+	 */
+	public function lazyOr(
+		array $objects,
+		callable $callback,
+	): self
+	{
+		$results = [];
+		foreach ($objects as $object) {
+			$result = $callback($object);
+			if ($result->yes()) {
+				return $result;
+			}
+
+			$results[] = $result;
+		}
+
+		return $this->or(...$results);
 	}
 
 	public static function extremeIdentity(self ...$operands): self
@@ -102,6 +148,36 @@ class TrinaryLogic
 		return self::create($min === $max ? $min : self::MAYBE);
 	}
 
+	/**
+	 * @template T
+	 * @param T[] $objects
+	 * @param callable(T): self $callback
+	 */
+	public static function lazyExtremeIdentity(
+		array $objects,
+		callable $callback,
+	): self
+	{
+		$lastResult = null;
+		$results = [];
+		foreach ($objects as $object) {
+			$result = $callback($object);
+			if ($lastResult === null) {
+				$lastResult = $result;
+				$results[] = $result;
+				continue;
+			}
+			if ($lastResult->equals($result)) {
+				$results[] = $result;
+				continue;
+			}
+
+			return self::createMaybe();
+		}
+
+		return self::extremeIdentity(...$results);
+	}
+
 	public static function maxMin(self ...$operands): self
 	{
 		if ($operands === []) {
@@ -109,6 +185,29 @@ class TrinaryLogic
 		}
 		$operandValues = array_column($operands, 'value');
 		return self::create(max($operandValues) > 0 ? 1 : min($operandValues));
+	}
+
+	/**
+	 * @template T
+	 * @param T[] $objects
+	 * @param callable(T): self $callback
+	 */
+	public static function lazyMaxMin(
+		array $objects,
+		callable $callback,
+	): self
+	{
+		$results = [];
+		foreach ($objects as $object) {
+			$result = $callback($object);
+			if ($result->yes()) {
+				return $result;
+			}
+
+			$results[] = $result;
+		}
+
+		return self::maxMin(...$results);
 	}
 
 	public function negate(): self

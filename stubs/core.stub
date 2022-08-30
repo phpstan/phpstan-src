@@ -47,3 +47,31 @@ function highlight_string($var, bool $return = false) {}
  * @return ($return is true ? string : true)
  */
 function print_r($var, bool $return = false) {}
+
+/**
+ * @template T as string
+ * @param T $string
+ * @return (T is non-empty-string ? non-empty-string : string)
+ */
+function sodium_bin2base64(string $string, int $id): string {}
+
+/**
+ * @template T as string
+ * @param T $string
+ * @return (T is non-empty-string ? non-empty-string : string)
+ */
+function sodium_bin2hex(string $string): string {}
+
+/**
+ * @template T as string
+ * @param T $string
+ * @return (T is non-empty-string ? non-empty-string : string)
+ */
+function base64_encode(string $string) : string {}
+
+/**
+ * @template T as string
+ * @param T $string
+ * @return (T is non-empty-string ? non-empty-string : string)
+ */
+function bin2hex(string $string): string {}

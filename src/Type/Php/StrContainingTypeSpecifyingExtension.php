@@ -16,6 +16,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
@@ -66,8 +67,13 @@ final class StrContainingTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			if ($needleType->isNonEmptyString()->yes() && $haystackType->isString()->yes()) {
 				$accessories = [
 					new StringType(),
-					new AccessoryNonEmptyStringType(),
 				];
+
+				if ($needleType->isNonFalsyString()->yes()) {
+					$accessories[] = new AccessoryNonFalsyStringType();
+				} else {
+					$accessories[] = new AccessoryNonEmptyStringType();
+				}
 
 				if ($haystackType->isLiteralString()->yes()) {
 					$accessories[] = new AccessoryLiteralStringType();

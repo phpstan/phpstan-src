@@ -207,6 +207,11 @@ class ArrayType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	public function isOversizedArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

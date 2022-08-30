@@ -42,7 +42,7 @@ class ApiClassImplementsRuleTest extends RuleTestCase
 			],
 			[
 				'Implementing PHPStan\Reflection\ReflectionProvider is not covered by backward compatibility promise. The interface might change in a minor PHPStan version.',
-				312,
+				317,
 				$tip,
 			],
 		]);

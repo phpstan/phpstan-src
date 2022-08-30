@@ -85,7 +85,7 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 			if (count($functionCall->getArgs()) > $replaceArgumentPosition) {
 				$replaceArgumentType = $scope->getType($functionCall->getArgs()[$replaceArgumentPosition]->value);
 
-				if ($replaceArgumentType->isNonFalsyString()->yes()) {
+				if ($subjectArgumentType->isNonFalsyString()->yes() && $replaceArgumentType->isNonFalsyString()->yes()) {
 					return new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
 				}
 				if ($replaceArgumentType->isNonEmptyString()->yes()) {

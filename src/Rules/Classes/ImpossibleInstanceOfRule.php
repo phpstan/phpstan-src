@@ -7,9 +7,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -79,7 +81,7 @@ class ImpossibleInstanceOfRule implements Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to false.',
 					$expressionType->describe(VerbosityLevel::typeOnly()),
-					$classType->describe(VerbosityLevel::typeOnly()),
+					$this->getClassTypeAsString($classType),
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueInstanceof) {
@@ -87,12 +89,20 @@ class ImpossibleInstanceOfRule implements Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to true.',
 					$expressionType->describe(VerbosityLevel::typeOnly()),
-					$classType->describe(VerbosityLevel::typeOnly()),
+					$this->getClassTypeAsString($classType),
 				)))->build(),
 			];
 		}
 
 		return [];
+	}
+
+	private function getClassTypeAsString(Type $classType): string
+	{
+		if ($classType instanceof ConstantStringType && $classType->isClassString()) {
+			return $classType->describe(VerbosityLevel::precise());
+		}
+		return $classType->describe(VerbosityLevel::typeOnly());
 	}
 
 }

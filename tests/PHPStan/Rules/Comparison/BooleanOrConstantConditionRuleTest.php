@@ -197,4 +197,11 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7881(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-7881.php'], []);
+	}
+
 }

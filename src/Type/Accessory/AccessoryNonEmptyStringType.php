@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
@@ -16,10 +17,10 @@ use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
@@ -31,7 +32,6 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 	use NonIterableTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
-	use NonRemoveableTypeTrait;
 	use UndecidedBooleanTypeTrait;
 
 	/** @api */
@@ -200,6 +200,15 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 	public static function __set_state(array $properties): Type
 	{
 		return new self();
+	}
+
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '0') {
+			return TypeCombinator::intersect($this, new AccessoryNonFalsyStringType());
+		}
+
+		return null;
 	}
 
 }

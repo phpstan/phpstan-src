@@ -5,7 +5,6 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
-use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -163,12 +162,10 @@ class StringType implements Type
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '0') {
-			return TypeCombinator::intersect($this, new AccessoryNonFalsyStringType());
-		}
 		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '') {
 			return TypeCombinator::intersect($this, new AccessoryNonEmptyStringType());
 		}
+
 		if ($typeToRemove instanceof AccessoryNonEmptyStringType) {
 			return new ConstantStringType('');
 		}

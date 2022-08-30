@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -54,10 +55,17 @@ class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnT
 
 				$type = new StringType();
 				if ($length !== '') {
-					$type = new IntersectionType([
-						$type,
-						new AccessoryNonEmptyStringType(),
-					]);
+					if (((int) $length) > 1) {
+						$type = new IntersectionType([
+							$type,
+							new AccessoryNonFalsyStringType(),
+						]);
+					} else {
+						$type = new IntersectionType([
+							$type,
+							new AccessoryNonEmptyStringType(),
+						]);
+					}
 				}
 
 				if (in_array($specifier, ['d', 'o', 'u', 'x'], true)) {

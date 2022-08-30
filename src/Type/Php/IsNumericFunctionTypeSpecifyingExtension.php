@@ -41,14 +41,11 @@ class IsNumericFunctionTypeSpecifyingExtension implements FunctionTypeSpecifying
 		$numericTypes = [
 			new IntegerType(),
 			new FloatType(),
-		];
-
-		if ($context->truthy()) {
-			$numericTypes[] = new IntersectionType([
+			new IntersectionType([
 				new StringType(),
 				new AccessoryNumericStringType(),
-			]);
-		}
+			]),
+		];
 
 		return $this->typeSpecifier->create($node->getArgs()[0]->value, new UnionType($numericTypes), $context, false, $scope);
 	}

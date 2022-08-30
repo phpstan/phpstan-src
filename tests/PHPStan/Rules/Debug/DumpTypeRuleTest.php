@@ -54,4 +54,22 @@ class DumpTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7803(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7803.php'], [
+			[
+				'Dumped type: int<4, max>',
+				11,
+			],
+			[
+				'Dumped type: non-empty-array<int, string>',
+				12,
+			],
+			[
+				'Dumped type: int<4, max>',
+				13,
+			],
+		]);
+	}
+
 }

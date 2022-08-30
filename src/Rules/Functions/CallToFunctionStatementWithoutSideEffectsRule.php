@@ -57,6 +57,7 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 			}
 
 			if (in_array($function->getName(), [
+				'PHPStan\\dumpType',
 				'PHPStan\\Testing\\assertType',
 				'PHPStan\\Testing\\assertNativeType',
 				'PHPStan\\Testing\\assertVariableCertainty',

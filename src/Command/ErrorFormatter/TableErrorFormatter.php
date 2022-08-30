@@ -85,7 +85,7 @@ class TableErrorFormatter implements ErrorFormatter
 						[$editorFile, $this->simpleRelativePathHelper->getRelativePath($editorFile), (string) $error->getLine()],
 						$this->editorUrl,
 					);
-					$message .= "\n✏️  <a href=" . OutputFormatter::escape($url) . '">' . $this->relativePathHelper->getRelativePath($editorFile) . '</a>';
+					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . ">" . OutputFormatter::escape($url) . "</>";
 				}
 				$rows[] = [
 					(string) $error->getLine(),

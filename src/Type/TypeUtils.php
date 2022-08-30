@@ -330,6 +330,7 @@ class TypeUtils
 		return self::map(AccessoryType::class, $type, true, false);
 	}
 
+	/** @deprecated Use PHPStan\Type\Type::isCallable() instead. */
 	public static function containsCallable(Type $type): bool
 	{
 		if ($type->isCallable()->yes()) {

@@ -130,4 +130,16 @@ class Foo {
 
 		assertType('non-falsy-string', substr($nonFalsey, 0, $positiveInt));
 	}
+
+	function numericIntoFalsy(string $s): void
+	{
+		if (is_numeric($s)) {
+			assertType('numeric-string', $s);
+
+			if ('0' !== $s) {
+				assertType('non-falsy-string&numeric-string', $s);
+			}
+		}
+	}
+
 }

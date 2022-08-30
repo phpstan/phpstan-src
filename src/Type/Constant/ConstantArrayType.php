@@ -645,14 +645,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function removeLast(): self
+	public function removeLast(?Type &$removedValueType = null): self
 	{
-		return $this->removeLastElements(1);
+		return $this->removeLastElements(1, $removedValueType);
 	}
 
 	/** @param positive-int $length */
-	private function removeLastElements(int $length): self
+	private function removeLastElements(int $length, ?Type &$removedValueType = null): self
 	{
+		$removedValueType = new NeverType();
+
 		$keyTypesCount = count($this->keyTypes);
 		if ($keyTypesCount === 0) {
 			return $this;
@@ -680,7 +682,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				}
 
 				$removedKeyType = array_pop($keyTypes);
-				array_pop($valueTypes);
+				$removedValueType = TypeCombinator::union($removedValueType, array_pop($valueTypes) ?? new NeverType());
 				$nextAutoindex = $removedKeyType instanceof ConstantIntegerType
 					? $removedKeyType->getValue()
 					: $this->getNextAutoIndex(); // @phpstan-ignore-line
@@ -693,6 +695,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 			$optionalKeys[] = $i;
 			$optionalKeysRemoved--;
+			$removedValueType = TypeCombinator::union($removedValueType, $valueTypes[$i]);
 		}
 
 		return new self(
@@ -703,14 +706,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		);
 	}
 
-	public function removeFirst(): self
+	public function removeFirst(?Type &$removedValueType = null): self
 	{
-		return $this->removeFirstElements(1);
+		return $this->removeFirstElements(1, true, $removedValueType);
 	}
 
 	/** @param positive-int $length */
-	private function removeFirstElements(int $length, bool $reindex = true): self
+	private function removeFirstElements(int $length, bool $reindex, ?Type &$removedValueType = null): self
 	{
+		$removedValueType = new NeverType();
+
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
 		$optionalKeysIgnored = 0;
@@ -720,11 +725,13 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				if ($isOptional) {
 					$optionalKeysIgnored++;
 				}
+				$removedValueType = TypeCombinator::union($removedValueType, $this->valueTypes[$i]);
 				continue;
 			}
 
 			if (!$isOptional && $optionalKeysIgnored > 0) {
 				$isOptional = true;
+				$removedValueType = TypeCombinator::union($removedValueType, $this->valueTypes[$i]);
 				$optionalKeysIgnored--;
 			}
 

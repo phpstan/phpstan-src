@@ -256,15 +256,6 @@ class UnionType implements CompoundType
 		callable $hasCallback,
 	): TrinaryLogic
 	{
-		$results = [];
-		foreach ($this->types as $type) {
-			if ($canCallback($type)->no()) {
-				$results[] = TrinaryLogic::createNo();
-				continue;
-			}
-			$results[] = $hasCallback($type);
-		}
-
 		return TrinaryLogic::lazyExtremeIdentity($this->types, static function (Type $type) use ($canCallback, $hasCallback): TrinaryLogic {
 			if ($canCallback($type)->no()) {
 				return TrinaryLogic::createNo();

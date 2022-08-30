@@ -3,8 +3,13 @@
 namespace PHPStan;
 
 /**
+ * @phpstan-pure
  * @param mixed $value
+ * @return mixed
+ *
+ * @throws void
  */
-function dumpType($value): void // phpcs:ignore Squiz.Functions.GlobalFunction.Found
+function dumpType($value) // phpcs:ignore Squiz.Functions.GlobalFunction.Found
 {
+	return null;
 }

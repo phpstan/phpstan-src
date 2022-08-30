@@ -395,6 +395,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return TrinaryLogic::createNo();
 	}
 
+	public function isOversizedArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

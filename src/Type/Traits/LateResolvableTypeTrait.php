@@ -130,6 +130,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isArray();
 	}
 
+	public function isOversizedArray(): TrinaryLogic
+	{
+		return $this->resolve()->isOversizedArray();
+	}
+
 	public function isOffsetAccessible(): TrinaryLogic
 	{
 		return $this->resolve()->isOffsetAccessible();

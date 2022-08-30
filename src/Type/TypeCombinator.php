@@ -7,6 +7,7 @@ use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -801,11 +802,29 @@ class TypeCombinator
 		// transform A & (B & C) to A & B & C
 		for ($i = 0; $i < $typesCount; $i++) {
 			$type = $types[$i];
+
 			if (!($type instanceof IntersectionType)) {
 				continue;
 			}
 
 			array_splice($types, $i--, 1, $type->getTypes());
+			$typesCount = count($types);
+		}
+
+		$hasOffsetValueTypeCount = 0;
+		$newTypes = [];
+		foreach ($types as $type) {
+			if (!$type instanceof HasOffsetValueType) {
+				$newTypes[] = $type;
+				continue;
+			}
+
+			$hasOffsetValueTypeCount++;
+		}
+
+		if ($hasOffsetValueTypeCount > 32) {
+			$newTypes[] = new OversizedArrayType();
+			$types = array_values($newTypes);
 			$typesCount = count($types);
 		}
 
@@ -935,6 +954,18 @@ class TypeCombinator
 						}
 
 						$types[$j] = $types[$j]->setOffsetValueType($offsetType, $newValueType);
+						array_splice($types, $i--, 1);
+						$typesCount--;
+						continue 2;
+					}
+
+					if ($types[$i] instanceof OversizedArrayType && $types[$j] instanceof HasOffsetValueType) {
+						array_splice($types, $j--, 1);
+						$typesCount--;
+						continue;
+					}
+
+					if ($types[$j] instanceof OversizedArrayType && $types[$i] instanceof HasOffsetValueType) {
 						array_splice($types, $i--, 1);
 						$typesCount--;
 						continue 2;

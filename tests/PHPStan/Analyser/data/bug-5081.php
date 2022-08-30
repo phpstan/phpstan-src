@@ -2,6 +2,8 @@
 
 namespace Bug5081;
 
+use function PHPStan\Testing\assertType;
+
 global $_LANGADM;
 
 $_LANGADM = [];
@@ -501,3 +503,4 @@ $_LANGADM['AdminCustomerPreferences9f7a304fd501ed0e4d06b899fed739d0'] = 'Only ac
 $_LANGADM['AdminCustomerPreferencesf2c822352f0e0a62e2de6d716475911b'] = 'Standard (account creation and address creation)';
 $_LANGADM['AdminCustomerPreferences0db377921f4ce762c62526131097968f'] = 'General';
 $_LANGADM['AdminCustomerPreferencesbcb9adf1d2347258b5c65483e34cf86f'] = 'Registration process type';
+assertType('non-empty-array<literal-string&non-falsy-string, literal-string&non-falsy-string>&oversized-array', $_LANGADM);

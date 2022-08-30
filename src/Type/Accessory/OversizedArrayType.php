@@ -3,38 +3,34 @@
 namespace PHPStan\Type\Accessory;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
-use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\FloatType;
-use PHPStan\Type\GeneralizePrecision;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
+use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
-use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
-class AccessoryLiteralStringType implements CompoundType, AccessoryType
+class OversizedArrayType implements CompoundType, AccessoryType
 {
 
 	use MaybeCallableTypeTrait;
 	use NonObjectTypeTrait;
-	use NonIterableTypeTrait;
-	use UndecidedComparisonCompoundTypeTrait;
+	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;
+	use UndecidedComparisonCompoundTypeTrait;
 	use NonRemoveableTypeTrait;
+	use NonGeneralizableTypeTrait;
 
-	/** @api */
 	public function __construct()
 	{
 	}
@@ -46,27 +42,26 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
-		if ($type instanceof MixedType) {
-			return TrinaryLogic::createNo();
-		}
 		if ($type instanceof CompoundType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return $type->isLiteralString();
+		return $type->isArray()
+			->and($type->isIterableAtLeastOnce());
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
-		if ($type instanceof CompoundType) {
-			return $type->isSubTypeOf($this);
-		}
-
 		if ($this->equals($type)) {
 			return TrinaryLogic::createYes();
 		}
 
-		return $type->isLiteralString();
+		if ($type instanceof CompoundType) {
+			return $type->isSubTypeOf($this);
+		}
+
+		return $type->isArray()
+			->and($type->isOversizedArray());
 	}
 
 	public function isSubTypeOf(Type $otherType): TrinaryLogic
@@ -75,7 +70,8 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return $otherType->isLiteralString()
+		return $otherType->isArray()
+			->and($otherType->isOversizedArray())
 			->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe());
 	}
 
@@ -91,7 +87,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return 'literal-string';
+		return 'oversized-array';
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic
@@ -101,16 +97,12 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		return (new IntegerType())->isSuperTypeOf($offsetType)->and(TrinaryLogic::createMaybe());
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		if ($this->hasOffsetValueType($offsetType)->no()) {
-			return new ErrorType();
-		}
-
-		return new StringType();
+		return new MixedType();
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
@@ -123,12 +115,57 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
+	public function isIterable(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
+	public function isIterableAtLeastOnce(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
+	public function getIterableKeyType(): Type
+	{
+		return new MixedType();
+	}
+
+	public function getIterableValueType(): Type
+	{
+		return new MixedType();
+	}
+
 	public function isArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
+	public function isOversizedArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
+	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}
 
-	public function isOversizedArray(): TrinaryLogic
+	public function isNumericString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isNonEmptyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isNonFalsyString(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
 	}
@@ -140,66 +177,27 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function toInteger(): Type
 	{
-		return new IntegerType();
+		return new ConstantIntegerType(1);
 	}
 
 	public function toFloat(): Type
 	{
-		return new FloatType();
+		return new ConstantFloatType(1.0);
 	}
 
 	public function toString(): Type
 	{
-		return $this;
-	}
-
-	public function toBoolean(): BooleanType
-	{
-		return new BooleanType();
+		return new ErrorType();
 	}
 
 	public function toArray(): Type
 	{
-		return new ConstantArrayType(
-			[new ConstantIntegerType(0)],
-			[$this],
-			[1],
-		);
-	}
-
-	public function isString(): TrinaryLogic
-	{
-		return TrinaryLogic::createYes();
-	}
-
-	public function isNumericString(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isNonEmptyString(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isNonFalsyString(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isLiteralString(): TrinaryLogic
-	{
-		return TrinaryLogic::createYes();
+		return new MixedType();
 	}
 
 	public function traverse(callable $cb): Type
 	{
 		return $this;
-	}
-
-	public function generalize(GeneralizePrecision $precision): Type
-	{
-		return new StringType();
 	}
 
 	public static function __set_state(array $properties): Type

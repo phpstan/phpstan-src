@@ -21,6 +21,7 @@ use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Generic\TemplateMixedType;
@@ -431,6 +432,22 @@ class MixedType implements CompoundType, SubtractableType
 	{
 		if ($this->subtractedType !== null) {
 			if ($this->subtractedType->isSuperTypeOf(new ArrayType(new MixedType(), new MixedType()))->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isOversizedArray(): TrinaryLogic
+	{
+		if ($this->subtractedType !== null) {
+			$oversizedArray = TypeCombinator::intersect(
+				new ArrayType(new MixedType(), new MixedType()),
+				new OversizedArrayType(),
+			);
+
+			if ($this->subtractedType->isSuperTypeOf($oversizedArray)->yes()) {
 				return TrinaryLogic::createNo();
 			}
 		}

@@ -2037,17 +2037,17 @@ class NodeScopeResolver
 						@$functionReflection->getName()($constantString->getValue(), $result);
 						$results[] = $arrayToTypeCallable($result);
 					}
-					$scope = $scope->specifyExpressionType($arrayResultArg, TypeCombinator::union(...$results));
+					$scope = $scope->assignExpression($arrayResultArg, TypeCombinator::union(...$results));
 				} elseif (
 					$scope->getType($stringToParse)->isNumericString()->yes()
 					&& count(
 						array_intersect(
-							str_split(ini_get('arg_separator.input')),
+							str_split(ini_get('arg_separator.input') ?: throw new ShouldNotHappenException()),
 							str_split(AccessoryNumericStringType::getPossibleChars()),
 						)
 					) === 0 // if numeric-string doesn't contain any chars used as separator
 				) {
-					$scope = $scope->specifyExpressionType(
+					$scope = $scope->assignExpression(
 						$arrayResultArg,
 						new IntersectionType([
 							new ArrayType(
@@ -2060,7 +2060,7 @@ class NodeScopeResolver
 						])
 					);
 				} elseif ($scope->getType($stringToParse)->isNonEmptyString()->no()) {
-					$scope = $scope->specifyExpressionType($arrayResultArg, ConstantArrayTypeBuilder::createEmpty()->getArray());
+					$scope = $scope->assignExpression($arrayResultArg, ConstantArrayTypeBuilder::createEmpty()->getArray());
 				} else {
 					// The default value is 64, it's too much for PHPStan.
 					// Analysis still works fast if this value is lowered to something around 16 or less.
@@ -2074,9 +2074,9 @@ class NodeScopeResolver
 								TypeCombinator::union($nestedArray, new StringType()),
 							);
 						}
-						$scope = $scope->specifyExpressionType($arrayResultArg, $nestedArray);
+						$scope = $scope->assignExpression($arrayResultArg, $nestedArray);
 					} else {
-						$scope = $scope->specifyExpressionType(
+						$scope = $scope->assignExpression(
 							$arrayResultArg,
 							new IntersectionType([
 								new ArrayType($possibleArrayKeysAfterParseStr, new MixedType()),

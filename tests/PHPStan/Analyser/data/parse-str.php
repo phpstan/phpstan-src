@@ -30,7 +30,7 @@ class Foo
 		assertType("non-empty-array<int|non-empty-string, ''>", $result);
 
 		parse_str($constantStrings, $result);
-		assertType("array{baz: array{'qux'}}|array{foo: 'bar'|'baz'}", $result);
+		assertType("array{baz: array{'qux'}}|array{foo: 'bar'}|array{foo: 'baz'}", $result);
 
 		parse_str('', $result);
 		assertType('array{}', $result);

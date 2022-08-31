@@ -53,6 +53,7 @@ jobs:
     name: "Deploy"
     needs:
       - apigen
+    if: github.repository_owner == 'phpstan'
     runs-on: "ubuntu-latest"
     steps:
       - name: "Install Node"

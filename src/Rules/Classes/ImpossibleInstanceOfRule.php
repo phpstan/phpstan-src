@@ -79,7 +79,7 @@ class ImpossibleInstanceOfRule implements Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to false.',
 					$expressionType->describe(VerbosityLevel::typeOnly()),
-					$classType->describe(VerbosityLevel::typeOnly()),
+					$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueInstanceof) {
@@ -87,7 +87,7 @@ class ImpossibleInstanceOfRule implements Rule
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to true.',
 					$expressionType->describe(VerbosityLevel::typeOnly()),
-					$classType->describe(VerbosityLevel::typeOnly()),
+					$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
 				)))->build(),
 			];
 		}

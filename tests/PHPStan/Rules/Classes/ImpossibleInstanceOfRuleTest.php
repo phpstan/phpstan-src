@@ -62,7 +62,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					94,
 				],
 				[
-					'Instanceof between string and string will always evaluate to false.',
+					'Instanceof between string and \'str\' will always evaluate to false.',
 					98,
 				],
 				[
@@ -169,12 +169,12 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					419,
 				],
 				[
-					'Instanceof between class-string<DateTimeInterface> and string will always evaluate to false.',
+					'Instanceof between class-string<DateTimeInterface> and \'DateTimeInterface\' will always evaluate to false.',
 					432,
 					$tipText,
 				],
 				[
-					'Instanceof between DateTimeInterface and string will always evaluate to true.',
+					'Instanceof between DateTimeInterface and \'DateTimeInterface\' will always evaluate to true.',
 					433,
 					$tipText,
 				],
@@ -200,7 +200,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					94,
 				],
 				[
-					'Instanceof between string and string will always evaluate to false.',
+					'Instanceof between string and \'str\' will always evaluate to false.',
 					98,
 				],
 				[
@@ -266,7 +266,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					419,
 				],
 				[
-					'Instanceof between class-string<DateTimeInterface> and string will always evaluate to false.',
+					'Instanceof between class-string<DateTimeInterface> and \'DateTimeInterface\' will always evaluate to false.',
 					432,
 					$tipText,
 				],

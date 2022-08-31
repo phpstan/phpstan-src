@@ -42,9 +42,7 @@ class ArrayPopFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 					$valueTypes[] = new NullType();
 					continue;
 				}
-
-				$constantArray->removeLast($removedValueType);
-				$valueTypes[] = $removedValueType;
+				$valueTypes[] = $constantArray->getLastValueType();
 			}
 
 			return TypeCombinator::union(...$valueTypes);

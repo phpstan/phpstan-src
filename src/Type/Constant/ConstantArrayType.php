@@ -220,6 +220,32 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->valueTypes;
 	}
 
+	public function getFirstValueType(): Type
+	{
+		$valueTypes = [];
+		for ($i = 0, $keyTypesCount = count($this->keyTypes); $i < $keyTypesCount; $i++) {
+			$valueTypes[] = $this->valueTypes[$i];
+			if (!$this->isOptionalKey($i)) {
+				break;
+			}
+		}
+
+		return TypeCombinator::union(...$valueTypes);
+	}
+
+	public function getLastValueType(): Type
+	{
+		$valueTypes = [];
+		for ($i = count($this->keyTypes) - 1; $i >= 0; $i--) {
+			$valueTypes[] = $this->valueTypes[$i];
+			if (!$this->isOptionalKey($i)) {
+				break;
+			}
+		}
+
+		return TypeCombinator::union(...$valueTypes);
+	}
+
 	public function isOptionalKey(int $i): bool
 	{
 		return in_array($i, $this->optionalKeys, true);
@@ -645,16 +671,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function removeLast(?Type &$removedValueType = null): self
+	public function removeLast(): self
 	{
-		return $this->removeLastElements(1, $removedValueType);
+		return $this->removeLastElements(1);
 	}
 
 	/** @param positive-int $length */
-	private function removeLastElements(int $length, ?Type &$removedValueType = null): self
+	private function removeLastElements(int $length): self
 	{
-		$removedValueType = new NeverType();
-
 		$keyTypesCount = count($this->keyTypes);
 		if ($keyTypesCount === 0) {
 			return $this;
@@ -682,7 +706,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				}
 
 				$removedKeyType = array_pop($keyTypes);
-				$removedValueType = TypeCombinator::union($removedValueType, array_pop($valueTypes) ?? new NeverType());
+				array_pop($valueTypes);
 				$nextAutoindex = $removedKeyType instanceof ConstantIntegerType
 					? $removedKeyType->getValue()
 					: $this->getNextAutoIndex(); // @phpstan-ignore-line
@@ -695,7 +719,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 			$optionalKeys[] = $i;
 			$optionalKeysRemoved--;
-			$removedValueType = TypeCombinator::union($removedValueType, $valueTypes[$i]);
 		}
 
 		return new self(
@@ -706,16 +729,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		);
 	}
 
-	public function removeFirst(?Type &$removedValueType = null): self
+	public function removeFirst(): self
 	{
-		return $this->removeFirstElements(1, true, $removedValueType);
+		return $this->removeFirstElements(1);
 	}
 
 	/** @param positive-int $length */
-	private function removeFirstElements(int $length, bool $reindex, ?Type &$removedValueType = null): self
+	private function removeFirstElements(int $length, bool $reindex = true): self
 	{
-		$removedValueType = new NeverType();
-
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
 		$optionalKeysIgnored = 0;
@@ -725,13 +746,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				if ($isOptional) {
 					$optionalKeysIgnored++;
 				}
-				$removedValueType = TypeCombinator::union($removedValueType, $this->valueTypes[$i]);
 				continue;
 			}
 
 			if (!$isOptional && $optionalKeysIgnored > 0) {
 				$isOptional = true;
-				$removedValueType = TypeCombinator::union($removedValueType, $this->valueTypes[$i]);
 				$optionalKeysIgnored--;
 			}
 

@@ -43,8 +43,7 @@ class ArrayShiftFunctionReturnTypeExtension implements DynamicFunctionReturnType
 					continue;
 				}
 
-				$constantArray->removeFirst($removedValueType);
-				$valueTypes[] = $removedValueType;
+				$valueTypes[] = $constantArray->getFirstValueType();
 			}
 
 			return TypeCombinator::union(...$valueTypes);

@@ -38,11 +38,11 @@ class Foo
 	public function constantArraysWithOptionalKeys(array $arr): void
 	{
 		/** @var array{a?: 0, b: 1, c: 2} $arr */
-		assertType('0|2', array_pop($arr)); // should be 2
+		assertType('2', array_pop($arr));
 		assertType('array{a?: 0, b: 1}', $arr);
 
 		/** @var array{a: 0, b?: 1, c: 2} $arr */
-		assertType('1|2', array_pop($arr)); // should be 2
+		assertType('2', array_pop($arr));
 		assertType('array{a: 0, b?: 1}', $arr);
 
 		/** @var array{a: 0, b: 1, c?: 2} $arr */

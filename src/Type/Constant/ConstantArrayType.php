@@ -220,6 +220,32 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->valueTypes;
 	}
 
+	public function getFirstValueType(): Type
+	{
+		$valueTypes = [];
+		for ($i = 0, $keyTypesCount = count($this->keyTypes); $i < $keyTypesCount; $i++) {
+			$valueTypes[] = $this->valueTypes[$i];
+			if (!$this->isOptionalKey($i)) {
+				break;
+			}
+		}
+
+		return TypeCombinator::union(...$valueTypes);
+	}
+
+	public function getLastValueType(): Type
+	{
+		$valueTypes = [];
+		for ($i = count($this->keyTypes) - 1; $i >= 0; $i--) {
+			$valueTypes[] = $this->valueTypes[$i];
+			if (!$this->isOptionalKey($i)) {
+				break;
+			}
+		}
+
+		return TypeCombinator::union(...$valueTypes);
+	}
+
 	public function isOptionalKey(int $i): bool
 	{
 		return in_array($i, $this->optionalKeys, true);

@@ -62,7 +62,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					94,
 				],
 				[
-					'Instanceof between string and string will always evaluate to false.',
+					'Instanceof between string and \'str\' will always evaluate to false.',
 					98,
 				],
 				[
@@ -200,7 +200,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					94,
 				],
 				[
-					'Instanceof between string and string will always evaluate to false.',
+					'Instanceof between string and \'str\' will always evaluate to false.',
 					98,
 				],
 				[

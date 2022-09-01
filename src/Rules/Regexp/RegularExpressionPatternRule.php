@@ -83,7 +83,7 @@ class RegularExpressionPatternRule implements Rule
 			$patternStrings[] = $constantStringType->getValue();
 		}
 
-		foreach (TypeUtils::getConstantArrays($patternType) as $constantArrayType) {
+		foreach (TypeUtils::getOldConstantArrays($patternType) as $constantArrayType) {
 			if (
 				in_array($functionName, [
 					'preg_replace',

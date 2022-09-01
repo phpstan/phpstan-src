@@ -23,4 +23,12 @@ class Foo {
         assertType('non-empty-string', substr_replace($subject, $replacement, 1));
         assertType('non-empty-string', substr_replace($subject, $replacement, -1));
     }
+
+	function foo(float $f) {
+		$s = (string) $f;
+		assertType('numeric-string', $s);
+
+		$price = str_replace(',', '.', $s);
+		assertType('non-empty-string', $price);
+	}
 }

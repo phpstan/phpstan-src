@@ -51,6 +51,28 @@ function withObjectKey() : array
 	assertType("*NEVER*", array_fill_keys([new Baz()], 'b'));
 }
 
+function withUnionKeys(): void
+{
+	$arr1 = ['foo', rand(0, 1) ? 'bar1' : 'bar2', 'baz'];
+	assertType("non-empty-array<'bar1'|'bar2'|'baz'|'foo', 'b'>", array_fill_keys($arr1, 'b'));
+
+	$arr2 = ['foo'];
+	if (rand(0, 1)) {
+		$arr2[] = 'bar';
+	}
+	$arr2[] = 'baz';
+	assertType("non-empty-array<'bar'|'baz'|'foo', 'b'>", array_fill_keys($arr2, 'b'));
+}
+
+function withOptionalKeys(): void
+{
+	$arr1 = ['foo', 'bar'];
+	if (rand(0, 1)) {
+		$arr1[] = 'baz';
+	}
+	assertType("array{foo: 'b', bar: 'b', baz?: 'b'}", array_fill_keys($arr1, 'b'));
+}
+
 /**
  * @param Bar[] $foo
  * @param int[] $bar

@@ -186,8 +186,12 @@ class IgnoredErrorHelperResult
 
 		$analysedFilesKeys = array_fill_keys($analysedFiles, true);
 
-		if ($this->reportUnmatchedIgnoredErrors && !$hasInternalErrors) {
+		if (!$hasInternalErrors) {
 			foreach ($unmatchedIgnoredErrors as $unmatchedIgnoredError) {
+				$reportUnmatched = $unmatchedIgnoredError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors;
+				if ($reportUnmatched === false) {
+					continue;
+				}
 				if (
 					isset($unmatchedIgnoredError['count'])
 					&& isset($unmatchedIgnoredError['realCount'])

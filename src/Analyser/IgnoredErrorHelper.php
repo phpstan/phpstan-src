@@ -28,7 +28,37 @@ class IgnoredErrorHelper
 		$otherIgnoreErrors = [];
 		$ignoreErrorsByFile = [];
 		$errors = [];
-		foreach ($this->ignoreErrors as $i => $ignoreError) {
+
+		$expandedIgnoreErrors = [];
+		foreach ($this->ignoreErrors as $ignoreError) {
+			if (is_array($ignoreError)) {
+				if (!isset($ignoreError['message']) && !isset($ignoreError['messages'])) {
+					$errors[] = sprintf(
+						'Ignored error %s is missing a message.',
+						Json::encode($ignoreError),
+					);
+					continue;
+				}
+				if (isset($ignoreError['messages'])) {
+					foreach ($ignoreError['messages'] as $message) {
+						$expandedIgnoreError = $ignoreError;
+						unset($expandedIgnoreError['messages']);
+						$expandedIgnoreError['message'] = $message;
+						$expandedIgnoreErrors[] = $expandedIgnoreError;
+					}
+				} else {
+					$expandedIgnoreErrors[] = $ignoreError;
+				}
+			} else {
+				$expandedIgnoreErrors[] = $ignoreError;
+			}
+		}
+
+		foreach ($expandedIgnoreErrors as $i => $ignoreError) {
+			$ignoreErrorEntry = [
+				'index' => $i,
+				'ignoreError' => $ignoreError,
+			];
 			try {
 				if (is_array($ignoreError)) {
 					if (!isset($ignoreError['message'])) {
@@ -39,44 +69,32 @@ class IgnoredErrorHelper
 						continue;
 					}
 					if (!isset($ignoreError['path'])) {
-						if (!isset($ignoreError['paths'])) {
+						if (!isset($ignoreError['paths']) && !isset($ignoreError['reportUnmatched'])) {
 							$errors[] = sprintf(
-								'Ignored error %s is missing a path.',
+								'Ignored error %s is missing a path, paths or reportUnmatched.',
 								Json::encode($ignoreError),
 							);
 						}
 
-						$otherIgnoreErrors[] = [
-							'index' => $i,
-							'ignoreError' => $ignoreError,
-						];
+						$otherIgnoreErrors[] = $ignoreErrorEntry;
 					} elseif (@is_file($ignoreError['path'])) {
 						$normalizedPath = $this->fileHelper->normalizePath($ignoreError['path']);
 						$ignoreError['path'] = $normalizedPath;
-						$ignoreErrorsByFile[$normalizedPath][] = [
-							'index' => $i,
-							'ignoreError' => $ignoreError,
-						];
+						$ignoreErrorsByFile[$normalizedPath][] = $ignoreErrorEntry;
 						$ignoreError['realPath'] = $normalizedPath;
-						$this->ignoreErrors[$i] = $ignoreError;
+						$expandedIgnoreErrors[$i] = $ignoreError;
 					} else {
-						$otherIgnoreErrors[] = [
-							'index' => $i,
-							'ignoreError' => $ignoreError,
-						];
+						$otherIgnoreErrors[] = $ignoreErrorEntry;
 					}
 				} else {
-					$otherIgnoreErrors[] = [
-						'index' => $i,
-						'ignoreError' => $ignoreError,
-					];
+					$otherIgnoreErrors[] = $ignoreErrorEntry;
 				}
 			} catch (JsonException $e) {
 				$errors[] = $e->getMessage();
 			}
 		}
 
-		return new IgnoredErrorHelperResult($this->fileHelper, $errors, $otherIgnoreErrors, $ignoreErrorsByFile, $this->ignoreErrors, $this->reportUnmatchedIgnoredErrors);
+		return new IgnoredErrorHelperResult($this->fileHelper, $errors, $otherIgnoreErrors, $ignoreErrorsByFile, $expandedIgnoreErrors, $this->reportUnmatchedIgnoredErrors);
 	}
 
 }

@@ -312,15 +312,28 @@ parametersSchema:
 			structure([
 				message: string()
 				path: string()
+				?reportUnmatched: bool()
+			]),
+			structure([
+				messages: listOf(string())
+				path: string()
+				?reportUnmatched: bool()
 			]),
 			structure([
 				message: string()
 				count: int()
 				path: string()
+				?reportUnmatched: bool()
 			]),
 			structure([
 				message: string()
 				paths: listOf(string())
+				?reportUnmatched: bool()
+			]),
+			structure([
+				messages: listOf(string())
+				paths: listOf(string())
+				?reportUnmatched: bool()
 			])
 		)
 	)

@@ -16,6 +16,7 @@ use PHPStan\ShouldNotHappenException;
 use function array_map;
 use function count;
 use function is_array;
+use function substr;
 
 class ParametersSchemaExtension extends CompilerExtension
 {
@@ -53,7 +54,7 @@ class ParametersSchemaExtension extends CompilerExtension
 	/**
 	 * @param Statement[] $statements
 	 */
-	private function processSchema(array $statements): Schema
+	private function processSchema(array $statements, bool $required = true): Schema
 	{
 		if (count($statements) === 0) {
 			throw new ShouldNotHappenException();
@@ -70,7 +71,9 @@ class ParametersSchemaExtension extends CompilerExtension
 			}
 		}
 
-		$parameterSchema->required();
+		if ($required) {
+			$parameterSchema->required();
+		}
 
 		return $parameterSchema;
 	}
@@ -79,7 +82,7 @@ class ParametersSchemaExtension extends CompilerExtension
 	 * @param mixed $argument
 	 * @return mixed
 	 */
-	private function processArgument($argument)
+	private function processArgument($argument, bool $required = true)
 	{
 		if ($argument instanceof Statement) {
 			if ($argument->entity === 'schema') {
@@ -96,14 +99,16 @@ class ParametersSchemaExtension extends CompilerExtension
 					throw new ShouldNotHappenException('schema() should have at least one argument.');
 				}
 
-				return $this->processSchema($arguments);
+				return $this->processSchema($arguments, $required);
 			}
 
-			return $this->processSchema([$argument]);
+			return $this->processSchema([$argument], $required);
 		} elseif (is_array($argument)) {
 			$processedArray = [];
 			foreach ($argument as $key => $val) {
-				$processedArray[$key] = $this->processArgument($val);
+				$required = $key[0] !== '?';
+				$key = $required ? $key : substr($key, 1);
+				$processedArray[$key] = $this->processArgument($val, $required);
 			}
 
 			return $processedArray;

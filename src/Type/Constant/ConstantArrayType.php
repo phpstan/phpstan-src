@@ -108,6 +108,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		);
 	}
 
+	public function getConstantArrays(): array
+	{
+		return [$this];
+	}
+
 	public function isEmpty(): bool
 	{
 		return count($this->keyTypes) === 0;

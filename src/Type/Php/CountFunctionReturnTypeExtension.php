@@ -11,7 +11,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 use function in_array;
 use const COUNT_RECURSIVE;
@@ -42,7 +41,7 @@ class CountFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
-		$constantArrays = TypeUtils::getOldConstantArrays($scope->getType($functionCall->getArgs()[0]->value));
+		$constantArrays = $scope->getType($functionCall->getArgs()[0]->value)->getConstantArrays();
 		if (count($constantArrays) === 0) {
 			if ($argType->isIterableAtLeastOnce()->yes()) {
 				return IntegerRangeType::fromInterval(1, null);

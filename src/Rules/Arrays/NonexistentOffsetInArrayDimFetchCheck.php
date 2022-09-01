@@ -48,7 +48,7 @@ class NonexistentOffsetInArrayDimFetchCheck
 		$hasOffsetValueType = $type->hasOffsetValueType($dimType);
 		$report = $hasOffsetValueType->no();
 		if ($hasOffsetValueType->maybe()) {
-			$constantArrays = TypeUtils::getOldConstantArrays($type);
+			$constantArrays = $type->getConstantArrays();
 			if (count($constantArrays) > 0) {
 				foreach ($constantArrays as $constantArray) {
 					if ($constantArray->hasOffsetValueType($dimType)->no()) {

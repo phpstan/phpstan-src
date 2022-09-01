@@ -14,7 +14,6 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 
 class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -33,7 +32,7 @@ class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 		$valueType = $scope->getType($functionCall->getArgs()[1]->value);
 		$keysType = $scope->getType($functionCall->getArgs()[0]->value);
-		$constantArrays = TypeUtils::getOldConstantArrays($keysType);
+		$constantArrays = $keysType->getConstantArrays();
 		if (count($constantArrays) === 0) {
 			if ($keysType->isArray()->yes()) {
 				$itemType = $keysType->getIterableValueType();

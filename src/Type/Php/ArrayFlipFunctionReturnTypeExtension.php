@@ -12,7 +12,6 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 
 class ArrayFlipFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -32,7 +31,7 @@ class ArrayFlipFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 		$array = $functionCall->getArgs()[0]->value;
 		$argType = $scope->getType($array);
 
-		$constantArrays = TypeUtils::getOldConstantArrays($argType);
+		$constantArrays = $argType->getConstantArrays();
 		if (count($constantArrays) > 0) {
 			$flipped = [];
 			foreach ($constantArrays as $constantArray) {

@@ -8,6 +8,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use function array_map;
 use function array_merge;
 use function count;
 use function strcasecmp;
@@ -23,12 +24,26 @@ class UnionTypeHelper
 	 */
 	public static function getReferencedClasses(array $types): array
 	{
-		$subTypeClasses = [];
-		foreach ($types as $type) {
-			$subTypeClasses[] = $type->getReferencedClasses();
-		}
+		return array_merge(
+			...array_map(
+				static fn (Type $type) => $type->getReferencedClasses(),
+				$types,
+			),
+		);
+	}
 
-		return array_merge(...$subTypeClasses);
+	/**
+	 * @param Type[] $types
+	 * @return list<ConstantArrayType>
+	 */
+	public static function getConstantArrays(array $types): array
+	{
+		return array_merge(
+			...array_map(
+				static fn (Type $type) => $type->getConstantArrays(),
+				$types,
+			),
+		);
 	}
 
 	/**

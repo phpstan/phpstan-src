@@ -10,7 +10,6 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 use function in_array;
 
@@ -44,7 +43,7 @@ class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFunction
 			return new ConstantBooleanType(false);
 		}
 
-		$constantArrays = TypeUtils::getOldConstantArrays($argType);
+		$constantArrays = $argType->getConstantArrays();
 		if (count($constantArrays) > 0) {
 			$keyTypes = [];
 			foreach ($constantArrays as $constantArray) {

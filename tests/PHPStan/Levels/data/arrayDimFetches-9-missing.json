@@ -1,10 +1,5 @@
 [
     {
-        "message": "Offset 'b' does not exist on array{a: 1}.",
-        "line": 21,
-        "ignorable": true
-    },
-    {
         "message": "Offset 'b' does not exist on array{a: 1}|stdClass.",
         "line": 28,
         "ignorable": true

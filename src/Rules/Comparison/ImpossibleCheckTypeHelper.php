@@ -87,7 +87,7 @@ class ImpossibleCheckTypeHelper
 						return null;
 					}
 
-					$constantArrays = TypeUtils::getOldConstantArrays($haystackType);
+					$constantArrays = $haystackType->getConstantArrays();
 					$needleType = $scope->getType($node->getArgs()[0]->value);
 					$valueType = $haystackType->getIterableValueType();
 					$constantNeedleTypesCount = count(TypeUtils::getConstantScalars($needleType));

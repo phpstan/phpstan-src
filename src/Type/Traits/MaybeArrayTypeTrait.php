@@ -7,6 +7,11 @@ use PHPStan\TrinaryLogic;
 trait MaybeArrayTypeTrait
 {
 
+	public function getConstantArrays(): array
+	{
+		return [];
+	}
+
 	public function isArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

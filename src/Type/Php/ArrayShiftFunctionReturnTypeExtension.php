@@ -10,7 +10,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 
 class ArrayShiftFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -33,7 +32,7 @@ class ArrayShiftFunctionReturnTypeExtension implements DynamicFunctionReturnType
 			return new NullType();
 		}
 
-		$constantArrays = TypeUtils::getOldConstantArrays($argType);
+		$constantArrays = $argType->getConstantArrays();
 		if (count($constantArrays) > 0) {
 			$valueTypes = [];
 			foreach ($constantArrays as $constantArray) {

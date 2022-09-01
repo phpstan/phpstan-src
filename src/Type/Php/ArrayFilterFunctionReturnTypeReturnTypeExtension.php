@@ -164,7 +164,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			throw new ShouldNotHappenException();
 		}
 
-		$constantArrays = TypeUtils::getOldConstantArrays($arrayType);
+		$constantArrays = $arrayType->getConstantArrays();
 		if (count($constantArrays) > 0) {
 			$results = [];
 			foreach ($constantArrays as $constantArray) {

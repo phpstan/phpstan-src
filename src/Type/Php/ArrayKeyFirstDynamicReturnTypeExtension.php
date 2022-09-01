@@ -11,7 +11,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 
 class ArrayKeyFirstDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -34,7 +33,7 @@ class ArrayKeyFirstDynamicReturnTypeExtension implements DynamicFunctionReturnTy
 			return new NullType();
 		}
 
-		$constantArrays = TypeUtils::getOldConstantArrays($argType);
+		$constantArrays = $argType->getConstantArrays();
 		if (count($constantArrays) > 0) {
 			$keyTypes = [];
 			foreach ($constantArrays as $constantArray) {

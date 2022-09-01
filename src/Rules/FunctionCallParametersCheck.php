@@ -100,7 +100,7 @@ class FunctionCallParametersCheck
 				$argumentName = $arg->name->toString();
 			}
 			if ($arg->unpack) {
-				$arrays = TypeUtils::getOldConstantArrays($type);
+				$arrays = $type->getConstantArrays();
 				if (count($arrays) > 0) {
 					$minKeys = null;
 					foreach ($arrays as $array) {

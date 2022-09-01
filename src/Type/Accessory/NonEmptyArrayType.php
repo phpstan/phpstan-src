@@ -41,6 +41,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return [];
 	}
 
+	public function getConstantArrays(): array
+	{
+		return [];
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof CompoundType) {

@@ -47,7 +47,7 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		$columnType = $scope->getType($functionCall->getArgs()[1]->value);
 		$indexType = $numArgs >= 3 ? $scope->getType($functionCall->getArgs()[2]->value) : null;
 
-		$constantArrayTypes = TypeUtils::getOldConstantArrays($arrayType);
+		$constantArrayTypes = $arrayType->getConstantArrays();
 		if (count($constantArrayTypes) === 1) {
 			$type = $this->handleConstantArray($constantArrayTypes[0], $columnType, $indexType, $scope);
 			if ($type !== null) {

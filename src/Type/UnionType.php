@@ -97,6 +97,11 @@ class UnionType implements CompoundType
 		return UnionTypeHelper::getReferencedClasses($this->getTypes());
 	}
 
+	public function getConstantArrays(): array
+	{
+		return UnionTypeHelper::getConstantArrays($this->getTypes());
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if (

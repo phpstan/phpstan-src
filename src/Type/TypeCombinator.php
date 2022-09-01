@@ -597,7 +597,7 @@ class TypeCombinator
 
 		$keyTypesForGeneralArray = [];
 		$valueTypesForGeneralArray = [];
-		$generalArrayOccurred = false;
+		$generalArrayOccurred = count($arrayTypes) > 64;
 		$constantKeyTypesNumbered = [];
 
 		/** @var int|float $nextConstantKeyTypeIndex */

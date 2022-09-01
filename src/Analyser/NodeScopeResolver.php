@@ -155,11 +155,13 @@ use function array_fill_keys;
 use function array_filter;
 use function array_intersect;
 use function array_key_exists;
+use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_pop;
 use function array_reverse;
 use function array_slice;
+use function array_values;
 use function base64_decode;
 use function count;
 use function in_array;
@@ -167,8 +169,6 @@ use function ini_get;
 use function is_array;
 use function is_int;
 use function is_string;
-use function mb_parse_str;
-use function parse_str;
 use function sprintf;
 use function str_split;
 use function str_starts_with;
@@ -2023,15 +2023,15 @@ class NodeScopeResolver
 				if (count($constantStrings) > 0) {
 					$results = [];
 
-					$arrayToTypeCallable = function (array $array) use (&$arrayToTypeCallable): ConstantArrayType {
+					$arrayToTypeCallable = static function (array $array) use (&$arrayToTypeCallable): ConstantArrayType {
 						return new ConstantArrayType(
 							array_map(
-								fn (int|string $key) => is_int($key) ? new ConstantIntegerType($key) : new ConstantStringType($key),
-								array_keys($array)
+								static fn (int|string $key) => is_int($key) ? new ConstantIntegerType($key) : new ConstantStringType($key),
+								array_keys($array),
 							),
 							array_map(
-								fn (string|array $value) => is_string($value) ? new ConstantStringType($value) : $arrayToTypeCallable($value),
-								array_values($array)
+								static fn (string|array $value) => is_string($value) ? new ConstantStringType($value) : $arrayToTypeCallable($value),
+								array_values($array),
 							),
 						);
 					};
@@ -2048,7 +2048,7 @@ class NodeScopeResolver
 						array_intersect(
 							str_split($parseStrSeparators),
 							str_split(AccessoryNumericStringType::getPossibleChars()),
-						)
+						),
 					) === 0 // if numeric-string doesn't contain any chars used as separator
 				) {
 					$scope = $scope->assignExpression(
@@ -2060,8 +2060,8 @@ class NodeScopeResolver
 								$possibleArrayKeysAfterParseStr,
 								new ConstantStringType(''),
 							),
-							new NonEmptyArrayType()
-						])
+							new NonEmptyArrayType(),
+						]),
 					);
 				} elseif ($scope->getType($stringToParse)->isNonEmptyString()->no()) {
 					$scope = $scope->assignExpression($arrayResultArg, ConstantArrayTypeBuilder::createEmpty()->getArray());
@@ -2084,8 +2084,8 @@ class NodeScopeResolver
 							$arrayResultArg,
 							new IntersectionType([
 								new ArrayType($possibleArrayKeysAfterParseStr, new MixedType()),
-								new NonEmptyArrayType()
-							])
+								new NonEmptyArrayType(),
+							]),
 						);
 					}
 				}

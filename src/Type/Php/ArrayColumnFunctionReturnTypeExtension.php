@@ -46,7 +46,7 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		$columnType = $scope->getType($functionCall->getArgs()[1]->value);
 		$indexType = $numArgs >= 3 ? $scope->getType($functionCall->getArgs()[2]->value) : null;
 
-		$constantArrayTypes = TypeUtils::getConstantArrays($arrayType);
+		$constantArrayTypes = TypeUtils::getOldConstantArrays($arrayType);
 		if (count($constantArrayTypes) === 1) {
 			$type = $this->handleConstantArray($constantArrayTypes[0], $columnType, $indexType, $scope);
 			if ($type !== null) {
@@ -108,7 +108,7 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 	{
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 
-		foreach ($arrayType->getValueTypes() as $iterableValueType) {
+		foreach ($arrayType->getValueTypes() as $i => $iterableValueType) {
 			$valueType = $this->getOffsetOrProperty($iterableValueType, $columnType, $scope, false);
 			if ($valueType === null) {
 				return null;
@@ -133,7 +133,7 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			if ($keyType !== null) {
 				$keyType = $this->castToArrayKeyType($keyType);
 			}
-			$builder->setOffsetValueType($keyType, $valueType);
+			$builder->setOffsetValueType($keyType, $valueType, $arrayType->isOptionalKey($i));
 		}
 
 		return $builder->getArray();

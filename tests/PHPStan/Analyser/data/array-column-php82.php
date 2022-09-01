@@ -138,6 +138,13 @@ class ArrayColumnTest
 		assertType('array<\'\', string>', array_column($array, 'column', 'key'));
 	}
 
+	/** @param array{0?: array{column: 'foo', key: 'bar'}} $array */
+	public function testConstantArray12(array $array): void
+	{
+		assertType("array{0?: 'foo'}", array_column($array, 'column'));
+		assertType("array{bar?: 'foo'}", array_column($array, 'column', 'key'));
+	}
+
 	// These cases aren't handled precisely and will return non-constant arrays.
 
 	/** @param array{array{column?: 'foo', key: 'bar'}} $array */
@@ -160,13 +167,6 @@ class ArrayColumnTest
 	{
 		assertType('array<int, string>', array_column($array, 'column'));
 		assertType('array<int|string, string>', array_column($array, 'column', 'key'));
-	}
-
-	/** @param array{0?: array{column: 'foo', key: 'bar'}} $array */
-	public function testImprecise4(array $array): void
-	{
-		assertType("array<int, 'foo'>", array_column($array, 'column'));
-		assertType("array<'bar', 'foo'>", array_column($array, 'column', 'key'));
 	}
 
 	/** @param array<int, DOMElement> $array */

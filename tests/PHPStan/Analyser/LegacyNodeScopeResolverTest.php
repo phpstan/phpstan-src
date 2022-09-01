@@ -7299,6 +7299,18 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'reset($conditionalArray)',
 			],
 			[
+				'0|1',
+				'reset($constantArrayOptionalKeys1)',
+			],
+			[
+				'0',
+				'reset($constantArrayOptionalKeys2)',
+			],
+			[
+				'0',
+				'reset($constantArrayOptionalKeys3)',
+			],
+			[
 				'mixed',
 				'end()',
 			],
@@ -7321,6 +7333,18 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			[
 				'\'bar\'|\'baz\'',
 				'end($secondConditionalArray)',
+			],
+			[
+				'2',
+				'end($constantArrayOptionalKeys1)',
+			],
+			[
+				'2',
+				'end($constantArrayOptionalKeys2)',
+			],
+			[
+				'1|2',
+				'end($constantArrayOptionalKeys3)',
 			],
 		];
 	}

@@ -34,6 +34,20 @@ class UnionTypeHelper
 
 	/**
 	 * @param Type[] $types
+	 * @return list<ArrayType>
+	 */
+	public static function getArrays(array $types): array
+	{
+		return array_merge(
+			...array_map(
+				static fn (Type $type) => $type->getArrays(),
+				$types,
+			),
+		);
+	}
+
+	/**
+	 * @param Type[] $types
 	 * @return list<ConstantArrayType>
 	 */
 	public static function getConstantArrays(array $types): array

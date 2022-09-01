@@ -4701,8 +4701,8 @@ class MutatingScope implements Scope
 
 				$aValueType = $generalArraysA->getIterableValueType();
 				$bValueType = $generalArraysB->getIterableValueType();
-				$aArrays = TypeUtils::getAnyArrays($aValueType);
-				$bArrays = TypeUtils::getAnyArrays($bValueType);
+				$aArrays = $aValueType->getArrays();
+				$bArrays = $bValueType->getArrays();
 				if (
 					count($aArrays) === 1
 					&& !$aArrays[0] instanceof ConstantArrayType
@@ -4883,7 +4883,7 @@ class MutatingScope implements Scope
 		$depth = 0;
 		while ($type instanceof ArrayType) {
 			$temp = $type->getIterableValueType();
-			$arrays = TypeUtils::getAnyArrays($temp);
+			$arrays = $temp->getArrays();
 			if (count($arrays) === 1) {
 				$type = $arrays[0];
 			} else {

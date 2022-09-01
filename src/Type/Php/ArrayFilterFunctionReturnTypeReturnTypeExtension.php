@@ -29,7 +29,6 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function array_map;
 use function count;
 use function is_string;
@@ -70,7 +69,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 
 		if ($callbackArg === null || ($callbackArg instanceof ConstFetch && strtolower($callbackArg->name->parts[0]) === 'null')) {
 			return TypeCombinator::union(
-				...array_map([$this, 'removeFalsey'], TypeUtils::getArrays($arrayArgType)),
+				...array_map([$this, 'removeFalsey'], $arrayArgType->getArrays()),
 			);
 		}
 
@@ -139,7 +138,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 				if ($isFalsey->maybe()) {
 					$builder->setOffsetValueType($keys[$offset], TypeCombinator::remove($value, $falseyTypes), true);
 				} elseif ($isFalsey->no()) {
-					$builder->setOffsetValueType($keys[$offset], $value);
+					$builder->setOffsetValueType($keys[$offset], $value, $type->isOptionalKey($offset));
 				}
 			}
 

@@ -21,6 +21,11 @@ trait LateResolvableTypeTrait
 
 	private ?Type $result = null;
 
+	public function getArrays(): array
+	{
+		return $this->resolve()->getArrays();
+	}
+
 	public function getConstantArrays(): array
 	{
 		return $this->resolve()->getConstantArrays();

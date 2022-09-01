@@ -14,7 +14,6 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 
 final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -57,7 +56,7 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 			$typesFromConstantArrays[] = new NullType();
 		}
 
-		$haystackArrays = TypeUtils::getAnyArrays($haystackArgType);
+		$haystackArrays = $haystackArgType->getArrays();
 		if (count($haystackArrays) === 0) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}

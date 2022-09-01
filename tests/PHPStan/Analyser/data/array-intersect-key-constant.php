@@ -34,4 +34,15 @@ class Foo
 		assertType('array{a: 1, b?: 2}', array_intersect_key(['a' => 1, 'b' => 2], $a));
 	}
 
+	public function doBaz(): void
+	{
+		$a = [];
+		if (rand(0, 1)) {
+			$a['a'] = 1;
+		}
+		$a['b'] = 2;
+
+		assertType('array{a?: 1, b: 2}', array_intersect_key($a, ['a' => 1, 'b' => 2]));
+	}
+
 }

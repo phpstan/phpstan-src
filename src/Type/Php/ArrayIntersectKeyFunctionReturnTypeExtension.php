@@ -47,7 +47,7 @@ class ArrayIntersectKeyFunctionReturnTypeExtension implements DynamicFunctionRet
 			return $firstArray;
 		}
 
-		$constantArrays = TypeUtils::getConstantArrays($firstArray);
+		$constantArrays = TypeUtils::getOldConstantArrays($firstArray);
 		if (count($constantArrays) === 0) {
 			return new ArrayType($firstArray->getIterableKeyType(), $firstArray->getIterableValueType());
 		}
@@ -62,7 +62,7 @@ class ArrayIntersectKeyFunctionReturnTypeExtension implements DynamicFunctionRet
 				if ($has->no()) {
 					continue;
 				}
-				$builder->setOffsetValueType($keyType, $valueType, !$has->yes());
+				$builder->setOffsetValueType($keyType, $valueType, $constantArray->isOptionalKey($i) || !$has->yes());
 			}
 			$results[] = $builder->getArray();
 		}

@@ -33,7 +33,7 @@ class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 		$valueType = $scope->getType($functionCall->getArgs()[1]->value);
 		$keysType = $scope->getType($functionCall->getArgs()[0]->value);
-		$constantArrays = TypeUtils::getConstantArrays($keysType);
+		$constantArrays = TypeUtils::getOldConstantArrays($keysType);
 		if (count($constantArrays) === 0) {
 			if ($keysType->isArray()->yes()) {
 				$itemType = $keysType->getIterableValueType();
@@ -53,15 +53,15 @@ class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		$arrayTypes = [];
 		foreach ($constantArrays as $constantArray) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-			foreach ($constantArray->getValueTypes() as $keyType) {
+			foreach ($constantArray->getValueTypes() as $i => $keyType) {
 				if ((new IntegerType())->isSuperTypeOf($keyType)->no()) {
 					if ($keyType->toString() instanceof ErrorType) {
 						return new NeverType();
 					}
 
-					$arrayBuilder->setOffsetValueType($keyType->toString(), $valueType);
+					$arrayBuilder->setOffsetValueType($keyType->toString(), $valueType, $constantArray->isOptionalKey($i));
 				} else {
-					$arrayBuilder->setOffsetValueType($keyType, $valueType);
+					$arrayBuilder->setOffsetValueType($keyType, $valueType, $constantArray->isOptionalKey($i));
 				}
 			}
 			$arrayTypes[] = $arrayBuilder->getArray();

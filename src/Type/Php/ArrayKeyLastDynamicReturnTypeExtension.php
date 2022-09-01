@@ -33,17 +33,16 @@ class ArrayKeyLastDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 			return new NullType();
 		}
 
-		$constantArrays = TypeUtils::getConstantArrays($argType);
+		$constantArrays = TypeUtils::getOldConstantArrays($argType);
 		if (count($constantArrays) > 0) {
 			$keyTypes = [];
 			foreach ($constantArrays as $constantArray) {
-				$arrayKeyTypes = $constantArray->getKeyTypes();
-				if (count($arrayKeyTypes) === 0) {
+				if ($constantArray->isEmpty()) {
 					$keyTypes[] = new NullType();
 					continue;
 				}
 
-				$keyTypes[] = $arrayKeyTypes[count($arrayKeyTypes) - 1];
+				$keyTypes[] = $constantArray->getLastKeyType();
 			}
 
 			return TypeCombinator::union(...$keyTypes);

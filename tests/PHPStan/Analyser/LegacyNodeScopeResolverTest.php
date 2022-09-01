@@ -8773,6 +8773,30 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_key_last($anotherLiteralArray)',
 			],
 			[
+				"'a'|'b'",
+				'array_key_first($constantArrayOptionalKeys1)',
+			],
+			[
+				"'c'",
+				'array_key_last($constantArrayOptionalKeys1)',
+			],
+			[
+				"'a'",
+				'array_key_first($constantArrayOptionalKeys2)',
+			],
+			[
+				"'c'",
+				'array_key_last($constantArrayOptionalKeys2)',
+			],
+			[
+				"'a'",
+				'array_key_first($constantArrayOptionalKeys3)',
+			],
+			[
+				"'b'|'c'",
+				'array_key_last($constantArrayOptionalKeys3)',
+			],
+			[
 				'array{int, int}',
 				'$hrtime1',
 			],

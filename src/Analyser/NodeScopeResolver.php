@@ -2013,6 +2013,10 @@ class NodeScopeResolver
 						new AccessoryNonEmptyStringType(),
 					]),
 				]);
+				$parseStrSeparators = ini_get('arg_separator.input');
+				if (!is_string($parseStrSeparators)) {
+					throw new ShouldNotHappenException();
+				}
 
 				$constantStrings = TypeUtils::getConstantStrings($scope->getType($stringToParse));
 
@@ -2042,7 +2046,7 @@ class NodeScopeResolver
 					$scope->getType($stringToParse)->isNumericString()->yes()
 					&& count(
 						array_intersect(
-							str_split(ini_get('arg_separator.input') ?: throw new ShouldNotHappenException()),
+							str_split($parseStrSeparators),
 							str_split(AccessoryNumericStringType::getPossibleChars()),
 						)
 					) === 0 // if numeric-string doesn't contain any chars used as separator
@@ -2051,8 +2055,8 @@ class NodeScopeResolver
 						$arrayResultArg,
 						new IntersectionType([
 							new ArrayType(
-								// numeric-string can become non-empty-string here,
-								// because some non-digit chars will be replaced by an underscore
+								// numeric-string can become a non-empty-string array key here,
+								// because some non-digit chars will be replaced by underscores
 								$possibleArrayKeysAfterParseStr,
 								new ConstantStringType(''),
 							),

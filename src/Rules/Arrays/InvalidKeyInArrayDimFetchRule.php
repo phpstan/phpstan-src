@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function sprintf;
@@ -34,7 +33,7 @@ class InvalidKeyInArrayDimFetchRule implements Rule
 		}
 
 		$varType = $scope->getType($node->var);
-		if (count(TypeUtils::getAnyArrays($varType)) === 0) {
+		if (count($varType->getArrays()) === 0) {
 			return [];
 		}
 

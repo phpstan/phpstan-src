@@ -41,6 +41,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return [];
 	}
 
+	public function getArrays(): array
+	{
+		return [];
+	}
+
 	public function getConstantArrays(): array
 	{
 		return [];

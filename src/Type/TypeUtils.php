@@ -19,6 +19,8 @@ class TypeUtils
 
 	/**
 	 * @return ArrayType[]
+	 *
+	 * @deprecated Use PHPStan\Type\Type::getArrays() instead and handle optional ConstantArrayType keys if necessary.
 	 */
 	public static function getArrays(Type $type): array
 	{
@@ -123,6 +125,8 @@ class TypeUtils
 
 	/**
 	 * @return ArrayType[]
+	 *
+	 * @deprecated Use PHPStan\Type\Type::getArrays() instead.
 	 */
 	public static function getAnyArrays(Type $type): array
 	{

@@ -73,6 +73,11 @@ class ArrayType implements Type
 		);
 	}
 
+	public function getArrays(): array
+	{
+		return [$this];
+	}
+
 	public function getConstantArrays(): array
 	{
 		return [];

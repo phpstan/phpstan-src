@@ -7,6 +7,11 @@ use PHPStan\TrinaryLogic;
 trait NonArrayTypeTrait
 {
 
+	public function getArrays(): array
+	{
+		return [];
+	}
+
 	public function getConstantArrays(): array
 	{
 		return [];

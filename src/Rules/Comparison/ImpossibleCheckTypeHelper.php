@@ -108,16 +108,30 @@ class ImpossibleCheckTypeHelper
 					}
 
 					if (!$haystackType instanceof ConstantArrayType || count($haystackType->getValueTypes()) > 0) {
-						$haystackArrayTypes = TypeUtils::getArrays($haystackType);
+						$haystackArrayTypes = $haystackType->getArrays();
 						if (count($haystackArrayTypes) === 1 && $haystackArrayTypes[0]->getIterableValueType() instanceof NeverType) {
 							return null;
 						}
 
 						if ($isNeedleSupertype->maybe() || $isNeedleSupertype->yes()) {
 							foreach ($haystackArrayTypes as $haystackArrayType) {
-								foreach (TypeUtils::getConstantScalars($haystackArrayType->getIterableValueType()) as $constantScalarType) {
-									if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
-										continue 2;
+								if ($haystackArrayType instanceof ConstantArrayType) {
+									foreach ($haystackArrayType->getValueTypes() as $i => $haystackArrayValueType) {
+										if ($haystackArrayType->isOptionalKey($i)) {
+											continue;
+										}
+
+										foreach (TypeUtils::getConstantScalars($haystackArrayValueType) as $constantScalarType) {
+											if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
+												continue 3;
+											}
+										}
+									}
+								} else {
+									foreach (TypeUtils::getConstantScalars($haystackArrayType->getIterableValueType()) as $constantScalarType) {
+										if ($constantScalarType->isSuperTypeOf($needleType)->yes()) {
+											continue 2;
+										}
 									}
 								}
 

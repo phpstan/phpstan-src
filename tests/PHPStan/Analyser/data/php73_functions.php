@@ -11,13 +11,19 @@ class Foo
 	 * @param array $mixedArray
 	 * @param array $nonEmptyArray
 	 * @param array<string, mixed> $arrayWithStringKeys
+	 * @param array{a?: 0, b: 1, c: 2} $constantArrayOptionalKeys1
+	 * @param array{a: 0, b?: 1, c: 2} $constantArrayOptionalKeys2
+	 * @param array{a: 0, b: 1, c?: 2} $constantArrayOptionalKeys3
 	 */
 	public function doFoo(
 		$mixed,
 		int $integer,
 		array $mixedArray,
 		array $nonEmptyArray,
-		array $arrayWithStringKeys
+		array $arrayWithStringKeys,
+		array $constantArrayOptionalKeys1,
+		array $constantArrayOptionalKeys2,
+		array $constantArrayOptionalKeys3
 	)
 	{
 		if (count($nonEmptyArray) === 0) {

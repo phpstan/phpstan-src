@@ -15,27 +15,26 @@ class Foo
 				if ($percentageInterval->isInInterval((float) $changeInPercents)) {
 					$key = $percentageInterval->getFormatted();
 					if (array_key_exists($key, $intervalResults)) {
-						assertType('aaa', $intervalResults);
-						assertType('aaa', $intervalResults[$key]);
+						assertType('array<int|string, array{itemsCount: mixed, interval: mixed}>', $intervalResults);
+						assertType('array{itemsCount: mixed, interval: mixed}', $intervalResults[$key]);
 						$intervalResults[$key]['itemsCount'] += $itemsCount;
-						assertType('aaa', $intervalResults);
-						assertType('aaa', $intervalResults[$key]);
+						assertType('non-empty-array<int|string, array{itemsCount: (array|float|int), interval: mixed}>', $intervalResults);
+						assertType('array{itemsCount: (array|float|int), interval: mixed}', $intervalResults[$key]);
 					} else {
-						assertType('aaa', $intervalResults);
-						assertType('aaa', $intervalResults[$key]);
+						assertType('array<int|string, array{itemsCount: mixed, interval: mixed}>', $intervalResults);
+						assertType('array{itemsCount: mixed, interval: mixed}', $intervalResults[$key]);
 						$intervalResults[$key] = [
 							'itemsCount' => $itemsCount,
 							'interval' => $percentageInterval,
 						];
-						assertType('aaa', $intervalResults);
-						assertType('aaa', $intervalResults[$key]);
+						assertType('non-empty-array<int|string, array{itemsCount: mixed, interval: mixed}>', $intervalResults);
+						assertType('array{itemsCount: mixed, interval: mixed}', $intervalResults[$key]);
 					}
 				}
 			}
 		}
 
-		assertType('aaa', $intervalResults);
-		assertType('aaa', $intervalResults);
+		assertType('array<int|string, array{itemsCount: mixed, interval: mixed}>', $intervalResults);
 		foreach ($intervalResults as $data) {
 			echo $data['interval'];
 		}

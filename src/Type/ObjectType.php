@@ -540,6 +540,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$arrayKeys = [];
 		$arrayValues = [];
 
+		$isFinal = $classReflection->isFinal();
+
 		do {
 			foreach ($classReflection->getNativeReflection()->getProperties() as $nativeProperty) {
 				if ($nativeProperty->isStatic()) {
@@ -569,6 +571,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 			$classReflection = $classReflection->getParentClass();
 		} while ($classReflection !== null);
+
+		if (!$isFinal && count($arrayKeys) === 0) {
+			return new ArrayType(new MixedType(), new MixedType());
+		}
 
 		return new ConstantArrayType($arrayKeys, $arrayValues);
 	}

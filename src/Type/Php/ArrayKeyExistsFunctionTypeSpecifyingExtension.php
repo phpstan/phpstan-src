@@ -55,13 +55,14 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		$key = $node->getArgs()[0]->value;
 		$array = $node->getArgs()[1]->value;
 		$keyType = $scope->getType($key);
-		if (!$keyType instanceof ConstantIntegerType && !$keyType instanceof ConstantStringType) {
+		$arrayType = $scope->getType($array);
+		if (!$keyType instanceof ConstantIntegerType && !$keyType instanceof ConstantStringType && !$arrayType->isIterableAtLeastOnce()->no()) {
 			if ($context->truthy()) {
 				$arrayDimFetch = new ArrayDimFetch(
 					$array,
 					$key,
 				);
-				return $this->typeSpecifier->create($arrayDimFetch, $scope->getType($array)->getIterableValueType(), $context, false, $scope, new Identical($arrayDimFetch, new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT'))));
+				return $this->typeSpecifier->create($arrayDimFetch, $arrayType->getIterableValueType(), $context, false, $scope, new Identical($arrayDimFetch, new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT'))));
 			}
 
 			return new SpecifiedTypes();

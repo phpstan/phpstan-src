@@ -60,3 +60,15 @@ function foo4(array $array): void {
 
 	assertType('non-empty-array<int, string>', $mapped);
 }
+
+/** @param array{foo?: 0, bar?: 1, baz?: 2} $array */
+function foo5(array $array): void {
+	$mapped = array_map(
+		static function(string $string): string {
+			return (string) $string;
+		},
+		$array
+	);
+
+	assertType('array{foo?: string, bar?: string, baz?: string}', $mapped);
+}

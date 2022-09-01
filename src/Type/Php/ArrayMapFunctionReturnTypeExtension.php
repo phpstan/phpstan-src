@@ -63,15 +63,16 @@ class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			if ($callableIsNull) {
 				return $arrayType;
 			}
-			$constantArrays = TypeUtils::getConstantArrays($arrayType);
+			$constantArrays = TypeUtils::getOldConstantArrays($arrayType);
 			if (count($constantArrays) > 0) {
 				$arrayTypes = [];
 				foreach ($constantArrays as $constantArray) {
 					$returnedArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-					foreach ($constantArray->getKeyTypes() as $keyType) {
+					foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 						$returnedArrayBuilder->setOffsetValueType(
 							$keyType,
 							$valueType,
+							$constantArray->isOptionalKey($i),
 						);
 					}
 					$arrayTypes[] = $returnedArrayBuilder->getArray();

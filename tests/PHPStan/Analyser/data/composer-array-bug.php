@@ -44,7 +44,7 @@ class Foo
 				}
 			}
 
-			assertType("array", $this->config);
+			assertType("array&hasOffsetValue('authors', mixed)", $this->config);
 			assertType("mixed", $this->config['authors']);
 
 			if (empty($this->config['authors'])) {

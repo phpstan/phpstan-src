@@ -3430,25 +3430,20 @@ class MutatingScope implements Scope
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
 			$exprVarType = $this->getType($expr->var);
 			$dimType = $this->getType($expr->dim);
-			$unset = $exprVarType->unsetOffset($dimType);
-			$scope = $this->specifyExpressionType(
-				$expr->var,
-				$unset,
-			)->invalidateExpression(
+			$unsetType = $exprVarType->unsetOffset($dimType);
+			$scope = $this->specifyExpressionType($expr->var, $unsetType)->invalidateExpression(
 				new FuncCall(new FullyQualified('count'), [new Arg($expr->var)]),
 			)->invalidateExpression(
 				new FuncCall(new FullyQualified('sizeof'), [new Arg($expr->var)]),
 			);
 
-			if ($expr->var instanceof Expr\ArrayDimFetch && $expr->var->dim !== null && !$exprVarType->isIterableAtLeastOnce()->yes()) {
-				$varVar = $this->getType($expr->var->var);
-				$varDim = $this->getType($expr->var->dim);
+			if ($expr->var instanceof Expr\ArrayDimFetch && $expr->var->dim !== null) {
 				$scope = $scope->specifyExpressionType(
 					$expr->var->var,
-					TypeCombinator::union($varVar->setOffsetValueType(
-						$varDim,
-						TypeCombinator::union($varVar->getOffsetValueType($varDim), new ConstantArrayType([], [])),
-					), new ConstantArrayType([], [])),
+					$scope->getType($expr->var->var)->setOffsetValueType(
+						$scope->getType($expr->var->dim),
+						$scope->getType($expr->var),
+					),
 				);
 			}
 

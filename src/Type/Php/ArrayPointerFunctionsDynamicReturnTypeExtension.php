@@ -44,21 +44,18 @@ class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFunction
 			return new ConstantBooleanType(false);
 		}
 
-		$constantArrays = TypeUtils::getConstantArrays($argType);
+		$constantArrays = TypeUtils::getOldConstantArrays($argType);
 		if (count($constantArrays) > 0) {
 			$keyTypes = [];
 			foreach ($constantArrays as $constantArray) {
-				$arrayKeyTypes = $constantArray->getKeyTypes();
-				if (count($arrayKeyTypes) === 0) {
+				if ($constantArray->isEmpty()) {
 					$keyTypes[] = new ConstantBooleanType(false);
 					continue;
 				}
 
-				$valueOffset = $functionReflection->getName() === 'reset'
-					? $arrayKeyTypes[0]
-					: $arrayKeyTypes[count($arrayKeyTypes) - 1];
-
-				$keyTypes[] = $constantArray->getOffsetValueType($valueOffset);
+				$keyTypes[] = $functionReflection->getName() === 'reset'
+					? $constantArray->getFirstValueType()
+					: $constantArray->getLastValueType();
 			}
 
 			return TypeCombinator::union(...$keyTypes);

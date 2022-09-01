@@ -2,6 +2,8 @@
 
 namespace ResetDynamicReturnTypeExtension;
 
+use function PHPStan\Testing\assertType;
+
 class Foo
 {
 
@@ -16,6 +18,12 @@ class Foo
 			'a' => 1,
 			'b' => 2,
 		];
+		/** @var array{a?: 0, b: 1, c: 2} $constantArrayOptionalKeys1 */
+		$constantArrayOptionalKeys1 = [];
+		/** @var array{a: 0, b?: 1, c: 2} $constantArrayOptionalKeys2 */
+		$constantArrayOptionalKeys2 = [];
+		/** @var array{a: 0, b: 1, c?: 2} $constantArrayOptionalKeys3 */
+		$constantArrayOptionalKeys3 = [];
 
 		$conditionalArray = ['foo', 'bar'];
 		if (doFoo()) {

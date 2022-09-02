@@ -2,4 +2,5 @@ includes:
 	- config.level8.neon
 
 parameters:
+	checkImplicitMixed: true
 	checkExplicitMixed: true

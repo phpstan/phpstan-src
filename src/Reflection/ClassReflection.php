@@ -1079,6 +1079,10 @@ class ClassReflection
 
 	public function isFinalByKeyword(): bool
 	{
+		if ($this->isAnonymous()) {
+			return true;
+		}
+
 		return $this->reflection->isFinal();
 	}
 

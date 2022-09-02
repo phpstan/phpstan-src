@@ -6,6 +6,7 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ReturnTypeRule>
@@ -733,6 +734,16 @@ class ReturnTypeRuleTest extends RuleTestCase
 				12,
 			],
 		]);
+	}
+
+	public function testBug7904(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-7904.php'], []);
 	}
 
 }

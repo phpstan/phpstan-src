@@ -96,8 +96,43 @@ class TypeCombinator
 		return $type instanceof NullType;
 	}
 
+	private static int $lastLength = 80;
+
+	private static function dumpTypes(array $types, int $depth = 0): void
+	{
+		foreach ($types as $type) {
+			echo str_repeat('-', $depth);
+			echo ' ' . get_class($type) . "\n";
+			echo ' ' . str_repeat(' ', $depth) . ':: ' . $type->describe(VerbosityLevel::precise()) . "\n";
+			if ($type instanceof UnionType || $type instanceof IntersectionType) {
+				self::dumpTypes($type->getTypes(), $depth + 1);
+			}
+			if ($type instanceof HasOffsetValueType) {
+				self::dumpTypes([$type->getValueType()], $depth + 1);
+			}
+			if ($type instanceof ConstantArrayType) {
+				self::dumpTypes($type->getValueTypes(), $depth + 1);
+			}
+			if ($type instanceof ArrayType) {
+				self::dumpTypes([$type->getItemType()], $depth + 1);
+			}
+		}
+
+		echo "\n";
+	}
+
 	public static function union(Type ...$types): Type
 	{
+		foreach ($types as $type) {
+			$d = $type->describe(VerbosityLevel::precise());
+			$length = strlen($d);
+			if ($length > self::$lastLength) {
+				self::dumpTypes($types);
+				var_dump("the end");
+				//var_dump($d);
+				self::$lastLength = $length;
+			}
+		}
 		$typesCount = count($types);
 		if ($typesCount === 0) {
 			return new NeverType();

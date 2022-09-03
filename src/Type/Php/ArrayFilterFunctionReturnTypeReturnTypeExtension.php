@@ -21,6 +21,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -170,12 +171,12 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 				$builder = ConstantArrayTypeBuilder::createEmpty();
 				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 					$itemType = $constantArray->getValueTypes()[$i];
-					[$newKeyType, $newItemType] = $this->processKeyAndItemType($scope, $keyType, $itemType, $itemVar, $keyVar, $expr);
+					[$newKeyType, $newItemType, $optional] = $this->processKeyAndItemType($scope, $keyType, $itemType, $itemVar, $keyVar, $expr);
 					if ($newKeyType instanceof NeverType || $newItemType instanceof NeverType) {
 						continue;
 					}
 					if ($itemType->equals($newItemType) && $keyType->equals($newKeyType)) {
-						$builder->setOffsetValueType($keyType, $itemType);
+						$builder->setOffsetValueType($keyType, $itemType, $optional);
 						continue;
 					}
 
@@ -198,7 +199,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 	}
 
 	/**
-	 * @return array{Type, Type}
+	 * @return array{Type, Type, bool}
 	 */
 	private function processKeyAndItemType(MutatingScope $scope, Type $keyType, Type $itemType, Error|Variable|null $itemVar, Error|Variable|null $keyVar, Expr $expr): array
 	{
@@ -220,11 +221,13 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			$scope = $scope->assignVariable($keyVarName, $keyType);
 		}
 
+		$booleanResult = $scope->getType($expr)->toBoolean();
 		$scope = $scope->filterByTruthyValue($expr);
 
 		return [
 			$keyVarName !== null ? $scope->getVariableType($keyVarName) : $keyType,
 			$itemVarName !== null ? $scope->getVariableType($itemVarName) : $itemType,
+			!$booleanResult instanceof ConstantBooleanType,
 		];
 	}
 

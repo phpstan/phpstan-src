@@ -20,6 +20,7 @@ use function sprintf;
 class EnumCaseObjectType extends ObjectType
 {
 
+	/** @api */
 	public function __construct(
 		string $className,
 		private string $enumCaseName,

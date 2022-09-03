@@ -597,7 +597,7 @@ class TypeCombinator
 
 		$keyTypesForGeneralArray = [];
 		$valueTypesForGeneralArray = [];
-		$generalArrayOccurred = false;
+		$generalArrayOccurred = self::shouldDegradeConstantArrays($arrayTypes);
 		$constantKeyTypesNumbered = [];
 
 		/** @var int|float $nextConstantKeyTypeIndex */
@@ -642,6 +642,34 @@ class TypeCombinator
 			static fn (Type $arrayType) => self::intersect($arrayType, ...$accessoryTypes),
 			self::reduceArrays($arrayTypes),
 		);
+	}
+
+	/**
+	 * @param ArrayType[] $arrayTypes
+	 */
+	private static function shouldDegradeConstantArrays(array $arrayTypes): bool
+	{
+		$constantArrayValuesCount = 0;
+		foreach ($arrayTypes as $arrayType) {
+			TypeTraverser::map($arrayType, static function (Type $type, callable $traverse) use (&$constantArrayValuesCount): Type {
+				if ($type instanceof ConstantArrayType) {
+					$constantArrayValuesCount += count($type->getValueTypes());
+					if ($constantArrayValuesCount > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+						return $type;
+					}
+
+					return $traverse($type);
+				}
+
+				if ($type instanceof UnionType || $type instanceof IntersectionType) {
+					return $traverse($type);
+				}
+
+				return $type;
+			});
+		}
+
+		return $constantArrayValuesCount > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT;
 	}
 
 	/**

@@ -661,15 +661,9 @@ class TypeCombinator
 						return $type->generalize(GeneralizePrecision::moreSpecific());
 					}
 					$constantArrayValuesCount += count($type->getValueTypes());
-
-					return $traverse($type);
 				}
 
-				if ($type instanceof UnionType || $type instanceof IntersectionType) {
-					return $traverse($type);
-				}
-
-				return $type;
+				return $traverse($type);
 			});
 		}
 

@@ -9,6 +9,7 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -952,7 +953,23 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$this->getItemType()->generalize($precision),
 		);
 
-		if (count($this->keyTypes) > count($this->optionalKeys)) {
+		$keyTypesCount = count($this->keyTypes);
+		$optionalKeysCount = count($this->optionalKeys);
+
+		if ($precision->isMoreSpecific() && ($keyTypesCount - $optionalKeysCount) < 32) {
+			$accessoryTypes = [];
+			foreach ($this->keyTypes as $i => $keyType) {
+				if ($this->isOptionalKey($i)) {
+					continue;
+				}
+
+				$accessoryTypes[] = new HasOffsetValueType($keyType, $this->valueTypes[$i]);
+			}
+
+			return TypeCombinator::intersect($arrayType, ...$accessoryTypes);
+		}
+
+		if ($keyTypesCount > $optionalKeysCount) {
 			return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 		}
 

@@ -597,7 +597,7 @@ class TypeCombinator
 
 		$keyTypesForGeneralArray = [];
 		$valueTypesForGeneralArray = [];
-		$generalArrayOccurred = self::shouldDegradeConstantArrays($arrayTypes);
+		$generalArrayOccurred = false;
 		$constantKeyTypesNumbered = [];
 
 		/** @var int|float $nextConstantKeyTypeIndex */
@@ -638,25 +638,29 @@ class TypeCombinator
 			];
 		}
 
+		$reducedArrayTypes = self::reduceArrays($arrayTypes);
+
 		return array_map(
 			static fn (Type $arrayType) => self::intersect($arrayType, ...$accessoryTypes),
-			self::reduceArrays($arrayTypes),
+			self::optimizeConstantArrays($reducedArrayTypes),
 		);
 	}
 
 	/**
-	 * @param ArrayType[] $arrayTypes
+	 * @param Type[] $types
+	 * @return Type[]
 	 */
-	private static function shouldDegradeConstantArrays(array $arrayTypes): bool
+	private static function optimizeConstantArrays(array $types): array
 	{
+		$results = [];
 		$constantArrayValuesCount = 0;
-		foreach ($arrayTypes as $arrayType) {
-			TypeTraverser::map($arrayType, static function (Type $type, callable $traverse) use (&$constantArrayValuesCount): Type {
+		foreach ($types as $type) {
+			$results[] = TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constantArrayValuesCount): Type {
 				if ($type instanceof ConstantArrayType) {
-					$constantArrayValuesCount += count($type->getValueTypes());
 					if ($constantArrayValuesCount > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-						return $type;
+						return $type->generalize(GeneralizePrecision::moreSpecific());
 					}
+					$constantArrayValuesCount += count($type->getValueTypes());
 
 					return $traverse($type);
 				}
@@ -669,7 +673,7 @@ class TypeCombinator
 			});
 		}
 
-		return $constantArrayValuesCount > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT;
+		return $results;
 	}
 
 	/**

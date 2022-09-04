@@ -35,6 +35,7 @@ use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Continue_;
@@ -129,6 +130,7 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -391,7 +393,7 @@ class NodeScopeResolver
 				$nodeCallback($declare->value, $scope);
 				if (
 					$declare->key->name !== 'strict_types'
-					|| !($declare->value instanceof Node\Scalar\LNumber)
+					|| !($declare->value instanceof LNumber)
 					|| $declare->value->value !== 1
 				) {
 					continue;
@@ -1817,6 +1819,10 @@ class NodeScopeResolver
 			) {
 				$arrayArg = $expr->getArgs()[0]->value;
 				$arrayArgType = $scope->getType($arrayArg);
+
+				$countExpr = new FuncCall(new Name('count'), [$expr->getArgs()[0]]);
+				$decrementedCountType = $scope->getType(new BinaryOp\Minus($countExpr, new LNumber(1)));
+
 				$scope = $scope->invalidateExpression($arrayArg);
 
 				$functionName = $functionReflection->getName();
@@ -1832,6 +1838,14 @@ class NodeScopeResolver
 					}
 					return $type;
 				});
+
+				$validCount = IntegerRangeType::fromInterval(0, null);
+				if ($validCount->isSuperTypeOf($decrementedCountType)->yes()) {
+					$scope = $scope->assignExpression(
+						$countExpr,
+						$decrementedCountType,
+					);
+				}
 
 				$scope = $scope->assignExpression(
 					$arrayArg,
@@ -3577,7 +3591,7 @@ class NodeScopeResolver
 				$throwPoints = array_merge($throwPoints, $itemResult->getThrowPoints());
 
 				if ($arrayItem->key === null) {
-					$dimExpr = new Node\Scalar\LNumber($i);
+					$dimExpr = new LNumber($i);
 				} else {
 					$dimExpr = $arrayItem->key;
 				}

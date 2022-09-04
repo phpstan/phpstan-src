@@ -10,6 +10,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -49,6 +50,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		if ($type instanceof MixedType) {
 			return TrinaryLogic::createNo();
 		}
+
+		if ($type instanceof GenericClassStringType) {
+			return TrinaryLogic::createYes();
+		}
+
 		if ($type instanceof CompoundType) {
 			return $type->isAcceptedBy($this, $strictTypes);
 		}

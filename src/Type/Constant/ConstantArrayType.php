@@ -1198,7 +1198,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 				$valueType = $this->valueTypes[$i];
 				$otherValueType = $otherArray->valueTypes[$j];
-				if ($valueType->isSuperTypeOf($otherValueType)->no()) {
+				if ($otherValueType->isSuperTypeOf($valueType)->no()) {
 					continue;
 				}
 

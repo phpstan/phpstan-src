@@ -2,11 +2,13 @@
 
 namespace NativeTrueType;
 
+use function PHPStan\Testing\assertType;
+
 class Truthy {
 	public true $truthy = true;
 
 	public function foo(true $v): true {
-
+		assertType('true', $v);
 	}
 
 	function trueUnion(true|null $trueUnion): void
@@ -16,4 +18,8 @@ class Truthy {
 	function trueUnionReturn(): true|null
 	{
 	}
+}
+
+function foo(Truthy $truthy) {
+	assertType('true', $truthy->foo(true));
 }

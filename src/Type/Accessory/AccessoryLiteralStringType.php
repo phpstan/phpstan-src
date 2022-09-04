@@ -4,13 +4,13 @@ namespace PHPStan\Type\Accessory;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
-use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -51,7 +51,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 			return TrinaryLogic::createNo();
 		}
 
-		if ($type instanceof GenericClassStringType) {
+		if ($type instanceof ClassStringType) {
 			return TrinaryLogic::createYes();
 		}
 

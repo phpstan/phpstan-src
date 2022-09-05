@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
@@ -47,18 +48,18 @@ class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		$arraysType = $scope->getType($functionCall->getArgs()[0]->value);
 		$constantArrays = TypeUtils::getOldConstantArrays($arraysType);
 		if (count($constantArrays) > 0) {
-			$onlyEmpty = true;
-			$onlyNonEmpty = true;
+			$onlyEmpty = TrinaryLogic::createYes();
+			$onlyNonEmpty = TrinaryLogic::createYes();
 			foreach ($constantArrays as $constantArray) {
-				$isEmpty = $constantArray->isEmpty();
-				$onlyEmpty = $onlyEmpty && $isEmpty;
-				$onlyNonEmpty = $onlyNonEmpty && !$isEmpty;
+				$iterableAtLeastOnce = $constantArray->isIterableAtLeastOnce();
+				$onlyEmpty = $onlyEmpty->and($iterableAtLeastOnce->negate());
+				$onlyNonEmpty = $onlyNonEmpty->and($iterableAtLeastOnce);
 			}
 
-			if ($onlyEmpty) {
+			if ($onlyEmpty->yes()) {
 				return $initialType;
 			}
-			if ($onlyNonEmpty) {
+			if ($onlyNonEmpty->yes()) {
 				return $callbackReturnType;
 			}
 		}

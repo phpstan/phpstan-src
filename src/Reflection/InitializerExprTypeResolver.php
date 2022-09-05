@@ -1732,7 +1732,7 @@ class InitializerExprTypeResolver
 						if ($reflection !== null && $reflection->isFinalByKeyword()) {
 							$stringType = new ConstantStringType($reflection->getName(), true);
 						}
-						
+
 						return TypeCombinator::intersect(
 							$stringType,
 							new AccessoryLiteralStringType(),

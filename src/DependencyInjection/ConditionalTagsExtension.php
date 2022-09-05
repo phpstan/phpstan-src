@@ -12,7 +12,9 @@ use PHPStan\Parser\RichParser;
 use PHPStan\PhpDoc\TypeNodeResolverExtension;
 use PHPStan\Rules\RegistryFactory as RuleRegistryFactory;
 use PHPStan\ShouldNotHappenException;
+use function array_reduce;
 use function count;
+use function is_array;
 use function sprintf;
 
 class ConditionalTagsExtension extends CompilerExtension
@@ -20,7 +22,7 @@ class ConditionalTagsExtension extends CompilerExtension
 
 	public function getConfigSchema(): Nette\Schema\Schema
 	{
-		$bool = Expect::bool();
+		$bool = Expect::anyOf(Expect::bool(), Expect::listOf(Expect::bool()));
 		return Expect::arrayOf(Expect::structure([
 			BrokerFactory::PROPERTIES_CLASS_REFLECTION_EXTENSION_TAG => $bool,
 			BrokerFactory::METHODS_CLASS_REFLECTION_EXTENSION_TAG => $bool,
@@ -51,6 +53,9 @@ class ConditionalTagsExtension extends CompilerExtension
 			}
 			foreach ($services as $service) {
 				foreach ($tags as $tag => $parameter) {
+					if (is_array($parameter)) {
+						$parameter = array_reduce($parameter, static fn ($carry, $item) => $carry && (bool) $item, true);
+					}
 					if ((bool) $parameter) {
 						$service->addTag($tag);
 						continue;

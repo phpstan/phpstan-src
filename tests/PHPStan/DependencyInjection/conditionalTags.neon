@@ -1,0 +1,29 @@
+parameters:
+	enabled: true
+	disabled: false
+
+parametersSchema:
+	enabled: bool()
+	disabled: bool()
+
+conditionalTags:
+	PHPStan\DependencyInjection\TestedConditionalServiceDisabled:
+		phpstan.rules.rule: %disabled%
+	PHPStan\DependencyInjection\TestedConditionalServiceEnabled:
+		phpstan.rules.rule: %enabled%
+	PHPStan\DependencyInjection\TestedConditionalServiceDisabledDisabled:
+		phpstan.rules.rule: [%disabled%, %disabled%]
+	PHPStan\DependencyInjection\TestedConditionalServiceDisabledEnabled:
+		phpstan.rules.rule: [%disabled%, %enabled%]
+	PHPStan\DependencyInjection\TestedConditionalServiceEnabledDisabled:
+		phpstan.rules.rule: [%enabled%, %disabled%]
+	PHPStan\DependencyInjection\TestedConditionalServiceEnabledEnabled:
+		phpstan.rules.rule: [%enabled%, %enabled%]
+
+services:
+	- PHPStan\DependencyInjection\TestedConditionalServiceDisabled
+	- PHPStan\DependencyInjection\TestedConditionalServiceEnabled
+	- PHPStan\DependencyInjection\TestedConditionalServiceDisabledDisabled
+	- PHPStan\DependencyInjection\TestedConditionalServiceDisabledEnabled
+	- PHPStan\DependencyInjection\TestedConditionalServiceEnabledDisabled
+	- PHPStan\DependencyInjection\TestedConditionalServiceEnabledEnabled

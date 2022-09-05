@@ -25,3 +25,11 @@ function x($t): void
 	assertType('class-string<T of Bug7823\A (function Bug7823\x(), argument)>&literal-string', $t::class);
 	sayHello($t::class);
 }
+
+/**
+ * @param class-string $t
+ */
+function y($t): void
+{
+	sayHello($t);
+}

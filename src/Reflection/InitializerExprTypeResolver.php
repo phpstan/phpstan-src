@@ -1726,6 +1726,10 @@ class InitializerExprTypeResolver
 					if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {
 						return new GenericClassStringType($type);
 					} elseif ($type instanceof TypeWithClassName) {
+						$reflection = $type->getClassReflection();
+						if ($reflection !== null && $reflection->isFinalByKeyword()) {
+							return new ConstantStringType($reflection->getName(), true);
+						}
 						return new GenericClassStringType($type);
 					} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
 						return new ClassStringType();

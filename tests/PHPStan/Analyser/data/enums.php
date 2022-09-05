@@ -171,7 +171,7 @@ class Lorem
 
 	public function doClass(Foo $foo): void
 	{
-		assertType('class-string<' . Foo::class . '>', $foo::class);
+		assertType("'EnumTypeAssertions\\\\Foo'", $foo::class);
 		assertType(Foo::class . '::ONE', Foo::ONE);
 		assertType('class-string<' . Foo::class . '>', Foo::ONE::class);
 		assertType(Bar::class . '::ONE', Bar::ONE);

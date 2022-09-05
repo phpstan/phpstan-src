@@ -25,13 +25,13 @@ function foo()
 {
 	$t = new Test(new A());
 	$class = $t->value::class;
-	assertType('class-string<Bug7698\A>|class-string<Bug7698\B>', $class);
+	assertType("'Bug7698\\\\A'|'Bug7698\\\\B'", $class);
 
 	if ($class === A::class) {
 		return;
 	}
 
-	assertType('class-string<Bug7698\B>', $class);
+	assertType("'Bug7698\\\\B'", $class);
 
 	if ($class === B::class) {
 		return;

@@ -18,7 +18,7 @@ class Foo
 	}
 
 	/**
-	 * @return\Generator<array{0: \DateTime, 1: \DateTime, 2: \stdClass, 4: \DateTimeImmutable}>
+	 * @return \Generator<array{0: \DateTime, 1: \DateTime, 2: \stdClass, 4: \DateTimeImmutable}>
 	 */
 	public function doArrayShape(): \Generator
 	{

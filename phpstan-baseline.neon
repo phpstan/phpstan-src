@@ -478,3 +478,19 @@ parameters:
 			count: 1
 			path: tests/PHPStan/Rules/Arrays/AppendedArrayKeyTypeRuleTest.php
 
+		-
+			message: """
+				#^Instantiation of deprecated class PHPStan\\\\Rules\\\\Arrays\\\\EmptyArrayItemRule\\:
+				Since PHP\\-Parser 5\\.0 this is a parse error\\.$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/EmptyArrayItemRuleTest.php
+
+		-
+			message: """
+				#^Return type of method PHPStan\\\\Rules\\\\Arrays\\\\EmptyArrayItemRuleTest\\:\\:getRule\\(\\) has typehint with deprecated class PHPStan\\\\Rules\\\\Arrays\\\\EmptyArrayItemRule\\:
+				Since PHP\\-Parser 5\\.0 this is a parse error\\.$#
+			"""
+			count: 1
+			path: tests/PHPStan/Rules/Arrays/EmptyArrayItemRuleTest.php
+

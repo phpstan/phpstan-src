@@ -20,7 +20,7 @@ class EmptyArrayItemRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/empty-array-item.php'], [
 			[
-				'Literal array contains empty item.',
+				'Cannot use empty array elements in arrays on line 5',
 				5,
 			],
 		]);

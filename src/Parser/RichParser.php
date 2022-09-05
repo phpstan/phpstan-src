@@ -3,6 +3,7 @@
 namespace PHPStan\Parser;
 
 use PhpParser\ErrorHandler\Collecting;
+use PhpParser\Internal\TokenPolyfill;
 use PhpParser\Lexer;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
@@ -10,7 +11,6 @@ use PhpParser\NodeVisitor\NameResolver;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
-use function is_string;
 use function strpos;
 use function substr_count;
 use const T_COMMENT;
@@ -75,31 +75,27 @@ class RichParser implements Parser
 	}
 
 	/**
-	 * @param mixed[] $tokens
+	 * @param TokenPolyfill[] $tokens
 	 * @return int[]
 	 */
 	private function getLinesToIgnore(array $tokens): array
 	{
 		$lines = [];
 		foreach ($tokens as $token) {
-			if (is_string($token)) {
-				continue;
-			}
-
-			$type = $token[0];
+			$type = $token->id;
 			if ($type !== T_COMMENT && $type !== T_DOC_COMMENT) {
 				continue;
 			}
 
-			$text = $token[1];
-			$line = $token[2];
+			$text = $token->text;
+			$line = $token->line;
 			if (strpos($text, '@phpstan-ignore-next-line') !== false) {
 				$line++;
 			} elseif (strpos($text, '@phpstan-ignore-line') === false) {
 				continue;
 			}
 
-			$line += substr_count($token[1], "\n");
+			$line += substr_count($text, "\n");
 
 			$lines[] = $line;
 		}

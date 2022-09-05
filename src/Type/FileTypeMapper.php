@@ -335,7 +335,6 @@ class FileTypeMapper
 					$node instanceof Node\Stmt
 					&& !$node instanceof Node\Stmt\Namespace_
 					&& !$node instanceof Node\Stmt\Declare_
-					&& !$node instanceof Node\Stmt\DeclareDeclare
 					&& !$node instanceof Node\Stmt\Use_
 					&& !$node instanceof Node\Stmt\UseUse
 					&& !$node instanceof Node\Stmt\GroupUse

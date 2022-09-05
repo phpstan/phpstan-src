@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b8efc0482d9713174974bcfd80497920",
+    "content-hash": "d3d3e962372ad1b2f5609b28f5d8fa99",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -1333,7 +1333,7 @@
             "support": {
                 "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
             },
-            "time": "2022-10-06T15:37:46+00:00"
+            "time": "2022-10-14T09:43:20+00:00"
         },
         {
             "name": "nette/bootstrap",
@@ -1910,21 +1910,23 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v4.15.1",
+            "version": "v5.0.0alpha1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "0ef6c55a3f47f89d7a374e6f835197a0b5fcf900"
+                "reference": "96037b3d336b8e1cd9da657562f633b1e55d9bca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/0ef6c55a3f47f89d7a374e6f835197a0b5fcf900",
-                "reference": "0ef6c55a3f47f89d7a374e6f835197a0b5fcf900",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/96037b3d336b8e1cd9da657562f633b1e55d9bca",
+                "reference": "96037b3d336b8e1cd9da657562f633b1e55d9bca",
                 "shasum": ""
             },
             "require": {
+                "ext-ctype": "*",
+                "ext-json": "*",
                 "ext-tokenizer": "*",
-                "php": ">=7.0"
+                "php": ">=7.1"
             },
             "require-dev": {
                 "ircmaxell/php-yacc": "^0.0.7",
@@ -1936,7 +1938,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "4.9-dev"
+                    "dev-master": "5.0-dev"
                 }
             },
             "autoload": {
@@ -1960,9 +1962,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v4.15.1"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v5.0.0alpha1"
             },
-            "time": "2022-09-04T07:30:47+00:00"
+            "time": "2022-09-04T16:58:01+00:00"
         },
         {
             "name": "ondram/ci-detector",
@@ -2038,33 +2040,33 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "6.1.0",
+            "version": "dev-php-parser-5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "d67d19e9d4a991f2a121e37b662ea67332798e04"
+                "reference": "9c81ecf90cad699bc2b0510f89feb9dd613e9133"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/d67d19e9d4a991f2a121e37b662ea67332798e04",
-                "reference": "d67d19e9d4a991f2a121e37b662ea67332798e04",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/9c81ecf90cad699bc2b0510f89feb9dd613e9133",
+                "reference": "9c81ecf90cad699bc2b0510f89feb9dd613e9133",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "jetbrains/phpstorm-stubs": "dev-master#9717ec39b211f2cef82a59c29c9eef0954647fac",
-                "nikic/php-parser": "^4.15.1",
+                "nikic/php-parser": "5.0.0-alpha1 as 4.14",
                 "php": "^7.2 || ^8.0"
             },
             "conflict": {
                 "thecodingmachine/safe": "<1.1.3"
             },
             "require-dev": {
-                "doctrine/coding-standard": "^10.0.0",
-                "phpstan/phpstan": "^1.8.6",
+                "doctrine/coding-standard": "^9.0.0",
+                "phpstan/phpstan": "^1.8.2",
                 "phpstan/phpstan-phpunit": "^1.1.1",
-                "phpunit/phpunit": "^9.5.25",
-                "rector/rector": "0.14.3"
+                "phpunit/phpunit": "^9.5.23",
+                "rector/rector": "0.12.19"
             },
             "suggest": {
                 "composer/composer": "Required to use the ComposerSourceLocator"
@@ -2103,9 +2105,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.1.0"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/php-parser-5"
             },
-            "time": "2022-10-05T07:40:11+00:00"
+            "time": "2022-09-05T08:18:26+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",
@@ -6939,10 +6941,18 @@
             "time": "2019-04-13T14:15:06+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "nikic/php-parser",
+            "version": "5.0.0.0-alpha1",
+            "alias": "4.15.0",
+            "alias_normalized": "4.15.0.0"
+        }
+    ],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20
+        "jetbrains/phpstorm-stubs": 20,
+        "ondrejmirtes/better-reflection": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

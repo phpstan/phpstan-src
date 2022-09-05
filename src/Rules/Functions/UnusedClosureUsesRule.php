@@ -34,7 +34,7 @@ class UnusedClosureUsesRule implements Rule
 
 		return $this->check->getUnusedParameters(
 			$scope,
-			array_map(static function (Node\Expr\ClosureUse $use): string {
+			array_map(static function (Node\ClosureUse $use): string {
 				if (!is_string($use->var->name)) {
 					throw new ShouldNotHappenException();
 				}

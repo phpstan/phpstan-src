@@ -3,7 +3,7 @@
 namespace PHPStan\Rules\Arrays;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\ArrayItem;
+use PhpParser\Node\ArrayItem;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
 use PHPStan\Php\PhpVersion;

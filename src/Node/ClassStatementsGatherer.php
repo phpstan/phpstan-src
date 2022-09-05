@@ -172,9 +172,6 @@ class ClassStatementsGatherer
 			$this->propertyUsages[] = new PropertyWrite($node->expr, $scope);
 			return;
 		}
-		if ($node instanceof Node\Scalar\EncapsedStringPart) {
-			return;
-		}
 		if ($node instanceof FunctionCallableNode) {
 			$node = $node->getOriginalNode();
 		} elseif ($node instanceof InstantiationCallableNode) {

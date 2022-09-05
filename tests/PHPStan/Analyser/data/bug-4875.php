@@ -30,7 +30,7 @@ class Foo
 		$mock = $this->mockIt(Blah::class);
 
 		assertType('Bug4875\Blah&Bug4875\Mock', $mock);
-		assertType('class-string<Bug4875\Blah>&class-string<Bug4875\Mock>', $mock::class);
+		assertType('class-string<Bug4875\Blah>&class-string<Bug4875\Mock>&literal-string', $mock::class);
 		assertType('class-string<Bug4875\Blah>&class-string<Bug4875\Mock>', get_class($mock));
 	}
 

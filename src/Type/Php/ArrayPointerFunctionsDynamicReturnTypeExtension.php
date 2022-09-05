@@ -48,8 +48,11 @@ class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFunction
 		if (count($constantArrays) > 0) {
 			$keyTypes = [];
 			foreach ($constantArrays as $constantArray) {
-				if ($constantArray->isEmpty()) {
+				$iterableAtLeastOnce = $argType->isIterableAtLeastOnce();
+				if (!$iterableAtLeastOnce->yes()) {
 					$keyTypes[] = new ConstantBooleanType(false);
+				}
+				if ($iterableAtLeastOnce->no()) {
 					continue;
 				}
 

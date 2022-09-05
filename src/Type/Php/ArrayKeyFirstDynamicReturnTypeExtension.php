@@ -37,8 +37,11 @@ class ArrayKeyFirstDynamicReturnTypeExtension implements DynamicFunctionReturnTy
 		if (count($constantArrays) > 0) {
 			$keyTypes = [];
 			foreach ($constantArrays as $constantArray) {
-				if ($constantArray->isEmpty()) {
+				$iterableAtLeastOnce = $constantArray->isIterableAtLeastOnce();
+				if (!$iterableAtLeastOnce->yes()) {
 					$keyTypes[] = new NullType();
+				}
+				if ($iterableAtLeastOnce->no()) {
 					continue;
 				}
 

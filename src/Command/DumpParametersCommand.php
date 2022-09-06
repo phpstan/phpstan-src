@@ -5,11 +5,9 @@ namespace PHPStan\Command;
 use Nette\Neon\Neon;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use function is_array;
 use function is_string;
 
 class DumpParametersCommand extends Command
@@ -32,7 +30,6 @@ class DumpParametersCommand extends Command
 		$this->setName(self::NAME)
 			->setDescription('Dumps all parameters')
 			->setDefinition([
-				new InputArgument('paths', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'Paths with source code to run analysis on'),
 				new InputOption('configuration', 'c', InputOption::VALUE_REQUIRED, 'Path to project configuration file'),
 				new InputOption(AnalyseCommand::OPTION_LEVEL, 'l', InputOption::VALUE_REQUIRED, 'Level of rule options - the higher the stricter'),
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
@@ -56,15 +53,13 @@ class DumpParametersCommand extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$paths = $input->getArgument('paths');
 		$memoryLimit = $input->getOption('memory-limit');
 		$autoloadFile = $input->getOption('autoload-file');
 		$configuration = $input->getOption('configuration');
 		$level = $input->getOption(AnalyseCommand::OPTION_LEVEL);
 
 		if (
-			!is_array($paths)
-			|| (!is_string($memoryLimit) && $memoryLimit !== null)
+			(!is_string($memoryLimit) && $memoryLimit !== null)
 			|| (!is_string($autoloadFile) && $autoloadFile !== null)
 			|| (!is_string($configuration) && $configuration !== null)
 			|| (!is_string($level) && $level !== null)
@@ -76,7 +71,7 @@ class DumpParametersCommand extends Command
 			$inceptionResult = CommandHelper::begin(
 				$input,
 				$output,
-				$paths,
+				['.'],
 				$memoryLimit,
 				$autoloadFile,
 				$this->composerAutoloaderProjectPaths,
@@ -89,9 +84,22 @@ class DumpParametersCommand extends Command
 			return 1;
 		}
 
-		$container = $inceptionResult->getContainer();
+		$parameters = $inceptionResult->getContainer()->getParameters();
 
-		$output->writeln(Neon::encode($container->getParameters(), true));
+		unset(
+			// always set to '.'
+			$parameters['analysedPaths'],
+			// irrelevant Nette parameters
+			$parameters['debugMode'],
+			$parameters['productionMode'],
+			$parameters['tempDir'],
+			$parameters['__validate'],
+			// internal - static reflection
+			$parameters['singleReflectionFile'],
+			$parameters['singleReflectionInsteadOfFile'],
+		);
+
+		$output->writeln(Neon::encode($parameters, true));
 
 		return 0;
 	}

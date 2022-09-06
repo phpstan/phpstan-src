@@ -35,8 +35,7 @@ class DumpParametersCommand extends Command
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('debug', null, InputOption::VALUE_NONE, 'Show debug information - which file is analysed, do not catch internal errors'),
 				new InputOption('memory-limit', null, InputOption::VALUE_REQUIRED, 'Memory limit for clearing result cache'),
-			])
-			->setHidden(true);
+			]);
 	}
 
 	protected function initialize(InputInterface $input, OutputInterface $output): void

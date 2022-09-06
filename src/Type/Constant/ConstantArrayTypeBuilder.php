@@ -5,7 +5,6 @@ namespace PHPStan\Type\Constant;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
@@ -267,16 +266,10 @@ class ConstantArrayTypeBuilder
 			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys);
 		}
 
-		$keyType = TypeCombinator::union(...$this->keyTypes);
-		if (count(TypeUtils::getConstantScalars($keyType)) > self::ARRAY_COUNT_LIMIT) {
-			$keyType = $keyType->generalize(GeneralizePrecision::moreSpecific());
-		}
-		$valueType = TypeCombinator::union(...$this->valueTypes);
-		if (count(TypeUtils::getConstantScalars($valueType)) > self::ARRAY_COUNT_LIMIT) {
-			$valueType = $valueType->generalize(GeneralizePrecision::moreSpecific());
-		}
-
-		$array = new ArrayType($keyType, $valueType);
+		$array = new ArrayType(
+			TypeCombinator::union(...$this->keyTypes),
+			TypeCombinator::union(...$this->valueTypes),
+		);
 
 		if (count($this->optionalKeys) < $keyTypesCount) {
 			return TypeCombinator::intersect($array, new NonEmptyArrayType());

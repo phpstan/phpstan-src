@@ -55,4 +55,9 @@ class DefaultValueTypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7933(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7933.php'], []);
+	}
+
 }

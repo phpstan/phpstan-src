@@ -3,47 +3,14 @@
 namespace PHPStan\Command;
 
 use Nette\Neon\Neon;
-use OndraM\CiDetector\CiDetector;
-use PHPStan\Analyser\ResultCache\ResultCacheClearer;
-use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
-use PHPStan\Command\ErrorFormatter\ErrorFormatter;
-use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
-use PHPStan\Command\Symfony\SymfonyOutput;
-use PHPStan\Command\Symfony\SymfonyStyle;
-use PHPStan\File\CouldNotWriteFileException;
-use PHPStan\File\FileReader;
-use PHPStan\File\FileWriter;
-use PHPStan\File\ParentDirectoryRelativePathHelper;
-use PHPStan\File\PathNotFoundException;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Output\StreamOutput;
-use Throwable;
-use function array_map;
-use function count;
-use function dirname;
-use function fopen;
-use function get_class;
-use function implode;
 use function is_array;
-use function is_bool;
-use function is_dir;
-use function is_file;
 use function is_string;
-use function mkdir;
-use function pathinfo;
-use function rewind;
-use function sprintf;
-use function stream_get_contents;
-use function strlen;
-use function substr;
-use const PATHINFO_BASENAME;
-use const PATHINFO_EXTENSION;
 
 class DumpConfigCommand extends Command
 {
@@ -102,7 +69,7 @@ class DumpConfigCommand extends Command
 				$level,
 				true,
 			);
-		} catch (InceptionNotSuccessfulException $e) {
+		} catch (InceptionNotSuccessfulException) {
 			return 1;
 		}
 

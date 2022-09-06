@@ -86,18 +86,16 @@ class DumpParametersCommand extends Command
 
 		$parameters = $inceptionResult->getContainer()->getParameters();
 
-		unset(
-			// always set to '.'
-			$parameters['analysedPaths'],
-			// irrelevant Nette parameters
-			$parameters['debugMode'],
-			$parameters['productionMode'],
-			$parameters['tempDir'],
-			$parameters['__validate'],
-			// internal - static reflection
-			$parameters['singleReflectionFile'],
-			$parameters['singleReflectionInsteadOfFile'],
-		);
+		// always set to '.'
+		unset($parameters['analysedPaths']);
+		// irrelevant Nette parameters
+		unset($parameters['debugMode']);
+		unset($parameters['productionMode']);
+		unset($parameters['tempDir']);
+		unset($parameters['__validate']);
+		// internal - static reflection
+		unset($parameters['singleReflectionFile']);
+		unset($parameters['singleReflectionInsteadOfFile']);
 
 		$output->writeln(Neon::encode($parameters, true));
 

@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use function count;
 
+/** @api */
 class DefaultExceptionTypeResolver implements ExceptionTypeResolver
 {
 

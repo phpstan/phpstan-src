@@ -24,4 +24,6 @@ interface TemplateType extends CompoundType
 
 	public function getVariance(): TemplateTypeVariance;
 
+	public function getStrategy(): TemplateTypeStrategy;
+
 }

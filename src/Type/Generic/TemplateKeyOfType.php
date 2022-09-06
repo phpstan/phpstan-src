@@ -30,38 +30,17 @@ final class TemplateKeyOfType extends KeyOfType implements TemplateType
 		$this->bound = $bound;
 	}
 
-	public function traverse(callable $cb): Type
-	{
-		$newBound = $cb($this->getBound());
-		if ($this->getBound() !== $newBound && $newBound instanceof KeyOfType) {
-			return new self(
-				$this->scope,
-				$this->strategy,
-				$this->variance,
-				$this->name,
-				$newBound,
-			);
-		}
-
-		return $this;
-	}
-
 	protected function getResult(): Type
 	{
 		$result = $this->getBound()->getResult();
 
-		$type = TemplateTypeFactory::create(
+		return TemplateTypeFactory::create(
 			$this->getScope(),
 			$this->getName(),
 			$result,
 			$this->getVariance(),
+			$this->getStrategy(),
 		);
-
-		if ($this->isArgument()) {
-			$type = TemplateTypeHelper::toArgument($type);
-		}
-
-		return $type;
 	}
 
 	protected function shouldGeneralizeInferredType(): bool

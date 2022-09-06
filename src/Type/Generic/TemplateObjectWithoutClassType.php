@@ -4,7 +4,6 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
-use PHPStan\Type\Type;
 
 /** @api */
 class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements TemplateType
@@ -29,22 +28,6 @@ class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements T
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
-	}
-
-	public function traverse(callable $cb): Type
-	{
-		$newBound = $cb($this->getBound());
-		if ($this->getBound() !== $newBound && $newBound instanceof ObjectWithoutClassType) {
-			return new self(
-				$this->scope,
-				$this->strategy,
-				$this->variance,
-				$this->name,
-				$newBound,
-			);
-		}
-
-		return $this;
 	}
 
 }

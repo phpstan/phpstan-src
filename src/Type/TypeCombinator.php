@@ -16,7 +16,6 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
-use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateUnionType;
 use function array_intersect_key;
 use function array_key_exists;
@@ -767,10 +766,8 @@ class TypeCombinator
 					$type->getName(),
 					$union,
 					$type->getVariance(),
+					$type->getStrategy(),
 				);
-				if ($type->isArgument()) {
-					return TemplateTypeHelper::toArgument($union);
-				}
 			}
 
 			return $union;

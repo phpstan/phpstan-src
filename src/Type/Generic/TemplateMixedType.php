@@ -45,22 +45,6 @@ final class TemplateMixedType extends MixedType implements TemplateType
 		return TrinaryLogic::createYes();
 	}
 
-	public function traverse(callable $cb): Type
-	{
-		$newBound = $cb($this->getBound());
-		if ($this->getBound() !== $newBound && $newBound instanceof MixedType) {
-			return new self(
-				$this->scope,
-				$this->strategy,
-				$this->variance,
-				$this->name,
-				$newBound,
-			);
-		}
-
-		return $this;
-	}
-
 	public function toStrictMixedType(): TemplateStrictMixedType
 	{
 		return new TemplateStrictMixedType(

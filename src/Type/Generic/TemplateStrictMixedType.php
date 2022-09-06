@@ -39,20 +39,4 @@ final class TemplateStrictMixedType extends StrictMixedType implements TemplateT
 		return $this->isSubTypeOf($acceptingType);
 	}
 
-	public function traverse(callable $cb): Type
-	{
-		$newBound = $cb($this->getBound());
-		if ($this->getBound() !== $newBound && $newBound instanceof StrictMixedType) {
-			return new self(
-				$this->scope,
-				$this->strategy,
-				$this->variance,
-				$this->name,
-				$newBound,
-			);
-		}
-
-		return $this;
-	}
-
 }

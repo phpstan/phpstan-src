@@ -4,7 +4,6 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
-use PHPStan\Type\Type;
 
 /** @api */
 final class TemplateArrayType extends ArrayType implements TemplateType
@@ -28,22 +27,6 @@ final class TemplateArrayType extends ArrayType implements TemplateType
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
-	}
-
-	public function traverse(callable $cb): Type
-	{
-		$newBound = $cb($this->getBound());
-		if ($this->getBound() !== $newBound && $newBound instanceof ArrayType) {
-			return new self(
-				$this->scope,
-				$this->strategy,
-				$this->variance,
-				$this->name,
-				$newBound,
-			);
-		}
-
-		return $this;
 	}
 
 	protected function shouldGeneralizeInferredType(): bool

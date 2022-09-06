@@ -51,7 +51,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl
           extensions: ds,mbstring
-          ini-values: memory_limit=1G
+          ini-values: memory_limit=2G
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
@@ -92,7 +92,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl
           extensions: ds,mbstring
-          ini-values: memory_limit=1G
+          ini-values: memory_limit=2G
 
       - name: "Tests"
         run: "make tests"
@@ -173,7 +173,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl
           extensions: ds,mbstring
-          ini-values: memory_limit=1G
+          ini-values: memory_limit=2G
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
@@ -209,7 +209,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl
           extensions: ds,mbstring
-          ini-values: memory_limit=1G
+          ini-values: memory_limit=2G
 
       - name: "Downgrade PHPUnit"
         run: "composer require --dev phpunit/phpunit:^7.5.20 brianium/paratest:^4.0 --update-with-dependencies --ignore-platform-reqs"

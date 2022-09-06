@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Properties;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<DefaultValueTypesAssignedToPropertiesRule>
@@ -57,6 +58,9 @@ class DefaultValueTypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	public function testBug7933(): void
 	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
 		$this->analyse([__DIR__ . '/data/bug-7933.php'], []);
 	}
 

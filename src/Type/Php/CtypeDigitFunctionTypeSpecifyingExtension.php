@@ -38,6 +38,10 @@ class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			throw new ShouldNotHappenException();
 		}
 
+		if ($context->true() && $scope->getType($node->getArgs()[0]->value)->isNumericString()->yes()) {
+			return new SpecifiedTypes();
+		}
+
 		$types = [
 			IntegerRangeType::fromInterval(48, 57), // ASCII-codes for 0-9
 			IntegerRangeType::createAllGreaterThanOrEqualTo(256), // Starting from 256 ints are interpreted as strings

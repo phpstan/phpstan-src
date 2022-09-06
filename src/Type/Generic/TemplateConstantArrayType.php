@@ -4,7 +4,6 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
-use PHPStan\Type\Type;
 
 /** @api */
 final class TemplateConstantArrayType extends ConstantArrayType implements TemplateType
@@ -28,22 +27,6 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
-	}
-
-	public function traverse(callable $cb): Type
-	{
-		$newBound = $cb($this->getBound());
-		if ($this->getBound() !== $newBound && $newBound instanceof ConstantArrayType) {
-			return new self(
-				$this->scope,
-				$this->strategy,
-				$this->variance,
-				$this->name,
-				$newBound,
-			);
-		}
-
-		return $this;
 	}
 
 	protected function shouldGeneralizeInferredType(): bool

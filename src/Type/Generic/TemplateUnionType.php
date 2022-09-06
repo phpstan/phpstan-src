@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
 /** @api */
@@ -27,22 +26,6 @@ final class TemplateUnionType extends UnionType implements TemplateType
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
-	}
-
-	public function traverse(callable $cb): Type
-	{
-		$newBound = $cb($this->getBound());
-		if ($this->getBound() !== $newBound && $newBound instanceof UnionType) {
-			return new self(
-				$this->scope,
-				$this->strategy,
-				$this->variance,
-				$this->name,
-				$newBound,
-			);
-		}
-
-		return $this;
 	}
 
 }

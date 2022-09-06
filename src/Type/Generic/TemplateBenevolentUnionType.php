@@ -41,20 +41,4 @@ final class TemplateBenevolentUnionType extends BenevolentUnionType implements T
 		);
 	}
 
-	public function traverse(callable $cb): Type
-	{
-		$newBound = $cb($this->getBound());
-		if ($this->getBound() !== $newBound && $newBound instanceof BenevolentUnionType) {
-			return new self(
-				$this->scope,
-				$this->strategy,
-				$this->variance,
-				$this->name,
-				$newBound,
-			);
-		}
-
-		return $this;
-	}
-
 }

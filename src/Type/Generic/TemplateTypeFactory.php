@@ -24,9 +24,9 @@ use function get_class;
 final class TemplateTypeFactory
 {
 
-	public static function create(TemplateTypeScope $scope, string $name, ?Type $bound, TemplateTypeVariance $variance): TemplateType
+	public static function create(TemplateTypeScope $scope, string $name, ?Type $bound, TemplateTypeVariance $variance, ?TemplateTypeStrategy $strategy = null): TemplateType
 	{
-		$strategy = new TemplateTypeParameterStrategy();
+		$strategy ??= new TemplateTypeParameterStrategy();
 
 		if ($bound === null) {
 			return new TemplateMixedType($scope, $strategy, $variance, $name, new MixedType(true));

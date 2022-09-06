@@ -30,22 +30,6 @@ final class TemplateGenericObjectType extends GenericObjectType implements Templ
 		$this->bound = $bound;
 	}
 
-	public function traverse(callable $cb): Type
-	{
-		$newBound = $cb($this->getBound());
-		if ($this->getBound() !== $newBound && $newBound instanceof GenericObjectType) {
-			return new self(
-				$this->scope,
-				$this->strategy,
-				$this->variance,
-				$this->name,
-				$newBound,
-			);
-		}
-
-		return $this;
-	}
-
 	protected function recreate(string $className, array $types, ?Type $subtractedType): GenericObjectType
 	{
 		return new self(

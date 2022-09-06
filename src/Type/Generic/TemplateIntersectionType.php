@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\Type;
 
 /** @api */
 final class TemplateIntersectionType extends IntersectionType implements TemplateType
@@ -27,22 +26,6 @@ final class TemplateIntersectionType extends IntersectionType implements Templat
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
-	}
-
-	public function traverse(callable $cb): Type
-	{
-		$newBound = $cb($this->getBound());
-		if ($this->getBound() !== $newBound && $newBound instanceof IntersectionType) {
-			return new self(
-				$this->scope,
-				$this->strategy,
-				$this->variance,
-				$this->name,
-				$newBound,
-			);
-		}
-
-		return $this;
 	}
 
 }

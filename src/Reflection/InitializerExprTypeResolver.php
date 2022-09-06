@@ -1726,15 +1726,13 @@ class InitializerExprTypeResolver
 					if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {
 						return new GenericClassStringType($type);
 					} elseif ($type instanceof TypeWithClassName) {
-						$stringType = new GenericClassStringType($type);
-
 						$reflection = $type->getClassReflection();
 						if ($reflection !== null && $reflection->isFinalByKeyword()) {
-							$stringType = new ConstantStringType($reflection->getName(), true);
+							return new ConstantStringType($reflection->getName(), true);
 						}
 
 						return TypeCombinator::intersect(
-							$stringType,
+							new GenericClassStringType($type),
 							new AccessoryLiteralStringType(),
 						);
 					} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {

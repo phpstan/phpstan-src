@@ -1280,6 +1280,15 @@ class TypeSpecifier
 		}
 
 		if (
+			$scope !== null
+			&& $context->true()
+			&& $expr instanceof Expr\BinaryOp\Coalesce
+			&& $type->isSuperTypeOf($scope->getType($expr->right))->no()
+		) {
+			$expr = $expr->left;
+		}
+
+		if (
 			$expr instanceof FuncCall
 			&& $expr->name instanceof Name
 		) {

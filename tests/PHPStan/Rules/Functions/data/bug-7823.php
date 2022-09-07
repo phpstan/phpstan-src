@@ -45,3 +45,11 @@ function z($t): void
 	sayHello($t::class);
 }
 
+/**
+ * @param object $o
+ */
+function a($o): void
+{
+	assertType('class-string&literal-string', $o::class);
+	sayHello($o::class);
+}

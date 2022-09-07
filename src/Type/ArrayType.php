@@ -285,15 +285,10 @@ class ArrayType implements Type
 			$keyType = $keyType->generalize(GeneralizePrecision::moreSpecific());
 		}
 
-		$itemType = $valueType;
-		if ($unionValues) {
-			$itemType = TypeCombinator::union($this->itemType, $valueType);
-			if (count(TypeUtils::getConstantScalars($itemType)) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-				$itemType = $itemType->generalize(GeneralizePrecision::moreSpecific());
-			}
-		}
-
-		$array = new self($keyType, $itemType);
+		$array = new self(
+			$keyType,
+			$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType,
+		);
 		if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
 			return TypeCombinator::intersect($array, new HasOffsetValueType($offsetType, $valueType), new NonEmptyArrayType());
 		}

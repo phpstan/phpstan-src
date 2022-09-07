@@ -1720,7 +1720,10 @@ class InitializerExprTypeResolver
 					}
 
 					if ($type instanceof EnumCaseObjectType) {
-						return new GenericClassStringType(new ObjectType($type->getClassName()));
+						return TypeCombinator::intersect(
+							new GenericClassStringType(new ObjectType($type->getClassName())),
+							new AccessoryLiteralStringType(),
+						);
 					}
 
 					if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {

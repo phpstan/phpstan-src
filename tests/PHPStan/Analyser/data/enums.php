@@ -173,9 +173,9 @@ class Lorem
 	{
 		assertType("'EnumTypeAssertions\\\\Foo'", $foo::class);
 		assertType(Foo::class . '::ONE', Foo::ONE);
-		assertType('class-string<' . Foo::class . '>', Foo::ONE::class);
+		assertType('class-string<' . Foo::class . '>&literal-string', Foo::ONE::class);
 		assertType(Bar::class . '::ONE', Bar::ONE);
-		assertType('class-string<' . Bar::class . '>', Bar::ONE::class);
+		assertType('class-string<' . Bar::class . '>&literal-string', Bar::ONE::class);
 	}
 
 }

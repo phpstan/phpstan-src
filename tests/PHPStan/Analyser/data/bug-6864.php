@@ -39,4 +39,4 @@ class ModelHelper {
 	}
 }
 
-assertType('class-string<Bug6864\Foo>', Foo::Value::class);
+assertType('class-string<Bug6864\Foo>&literal-string', Foo::Value::class);

@@ -651,20 +651,7 @@ class TypeCombinator
 	 */
 	private static function optimizeConstantArrays(array $types): array
 	{
-		$constantArrayValuesCount = 0;
-		foreach ($types as $type) {
-			if ($type instanceof ConstantArrayType) {
-				$constantArrayValuesCount += count($type->getValueTypes());
-			}
-
-			TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constantArrayValuesCount): Type {
-				if ($type instanceof ConstantArrayType) {
-					$constantArrayValuesCount += count($type->getValueTypes());
-				}
-
-				return $traverse($type);
-			});
-		}
+		$constantArrayValuesCount = self::countConstantArrayValueTypes($types);
 
 		if ($constantArrayValuesCount > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 			$results = [];
@@ -682,6 +669,28 @@ class TypeCombinator
 		}
 
 		return $types;
+	}
+
+	/**
+	 * @param Type[] $types
+	 */
+	private static function countConstantArrayValueTypes(array $types): int
+	{
+		$constantArrayValuesCount = 0;
+		foreach ($types as $type) {
+			if ($type instanceof ConstantArrayType) {
+				$constantArrayValuesCount += count($type->getValueTypes());
+			}
+
+			TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constantArrayValuesCount): Type {
+				if ($type instanceof ConstantArrayType) {
+					$constantArrayValuesCount += count($type->getValueTypes());
+				}
+
+				return $traverse($type);
+			});
+		}
+		return $constantArrayValuesCount;
 	}
 
 	/**

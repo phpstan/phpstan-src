@@ -395,4 +395,11 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7103(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-7103.php'], []);
+	}
+
 }

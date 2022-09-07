@@ -112,6 +112,34 @@ class ArrayType implements Type
 		return TrinaryLogic::createNo();
 	}
 
+	public function isSuperTypeOfMixed(Type $type): TrinaryLogic
+	{
+		return $type->isArray()
+			->and($this->isNestedTypeSuperTypeOf($this->getIterableValueType(), $type->getIterableValueType()))
+			->and($this->isNestedTypeSuperTypeOf($this->getIterableKeyType(), $type->getIterableKeyType()));
+	}
+
+	private function isNestedTypeSuperTypeOf(Type $a, Type $b): TrinaryLogic
+	{
+		if (!$a instanceof MixedType || !$b instanceof MixedType) {
+			return $a->isSuperTypeOf($b);
+		}
+
+		if ($a instanceof TemplateMixedType || $b instanceof TemplateMixedType) {
+			return $a->isSuperTypeOf($b);
+		}
+
+		if ($a->isExplicitMixed()) {
+			if ($b->isExplicitMixed()) {
+				return TrinaryLogic::createYes();
+			}
+
+			return TrinaryLogic::createMaybe();
+		}
+
+		return TrinaryLogic::createYes();
+	}
+
 	public function equals(Type $type): bool
 	{
 		return $type instanceof self

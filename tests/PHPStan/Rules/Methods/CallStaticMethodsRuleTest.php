@@ -531,4 +531,16 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7489.php'], []);
 	}
 
+	public function testBug7900(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-7900.php'], [
+			[
+				'Parameter #1 $requireInt of static method Bug7900\A::fromNumString() expects numeric-string, mixed given.',
+				21,
+			],
+		]);
+	}
+
 }

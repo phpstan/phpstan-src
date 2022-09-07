@@ -886,7 +886,7 @@ class TypeCombinator
 					}
 				}
 
-				if ($types[$j] instanceof IterableType) {
+				if ($types[$j] instanceof ArrayType || $types[$j] instanceof IterableType) {
 					$isSuperTypeA = $types[$j]->isSuperTypeOfMixed($types[$i]);
 				} else {
 					$isSuperTypeA = $types[$j]->isSuperTypeOf($types[$i]);
@@ -898,7 +898,7 @@ class TypeCombinator
 					continue;
 				}
 
-				if ($types[$i] instanceof IterableType) {
+				if ($types[$i] instanceof ArrayType || $types[$i] instanceof IterableType) {
 					$isSuperTypeB = $types[$i]->isSuperTypeOfMixed($types[$j]);
 				} else {
 					$isSuperTypeB = $types[$i]->isSuperTypeOf($types[$j]);

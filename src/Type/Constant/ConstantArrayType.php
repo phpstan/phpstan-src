@@ -366,6 +366,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isSuperTypeOfMixed(Type $type): TrinaryLogic
+	{
+		return $this->isSuperTypeOf($type);
+	}
+
 	public function equals(Type $type): bool
 	{
 		if (!$type instanceof self) {

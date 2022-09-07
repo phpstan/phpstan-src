@@ -302,7 +302,7 @@ class IterableType implements CompoundType
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		$arrayType = new ArrayType(new MixedType(), new MixedType());
+		$arrayType = new ArrayType(new MixedType(true), new MixedType(true));
 		if ($typeToRemove->isSuperTypeOf($arrayType)->yes()) {
 			return new GenericObjectType(Traversable::class, [
 				$this->getIterableKeyType(),

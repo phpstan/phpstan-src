@@ -33,3 +33,15 @@ function y($t): void
 {
 	sayHello($t);
 }
+
+/**
+ * @param Z $t
+ *
+ * @template Z
+ */
+function z($t): void
+{
+	assertType('class-string<Z (function Bug7823\z(), argument)>&literal-string', $t::class);
+	sayHello($t::class);
+}
+

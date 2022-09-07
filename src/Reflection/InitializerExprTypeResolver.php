@@ -1727,7 +1727,10 @@ class InitializerExprTypeResolver
 					}
 
 					if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {
-						return new GenericClassStringType($type);
+						return TypeCombinator::intersect(
+							new GenericClassStringType($type),
+							new AccessoryLiteralStringType(),
+						);
 					} elseif ($type instanceof TypeWithClassName) {
 						$reflection = $type->getClassReflection();
 						if ($reflection !== null && $reflection->isFinalByKeyword()) {

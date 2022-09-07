@@ -215,7 +215,12 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function traverse(callable $cb): Type
 	{
-		return $this;
+		$newValueType = $cb($this->valueType);
+		if ($newValueType === $this->valueType) {
+			return $this;
+		}
+
+		return new self($this->offsetType, $newValueType);
 	}
 
 	public static function __set_state(array $properties): Type

@@ -963,7 +963,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 					continue;
 				}
 
-				$accessoryTypes[] = new HasOffsetValueType($keyType, $this->valueTypes[$i]);
+				$accessoryTypes[] = new HasOffsetValueType($keyType, $this->valueTypes[$i]->generalize($precision));
 			}
 
 			return TypeCombinator::intersect($arrayType, ...$accessoryTypes);

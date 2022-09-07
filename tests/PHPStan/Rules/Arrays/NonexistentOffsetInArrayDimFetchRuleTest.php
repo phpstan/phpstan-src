@@ -528,4 +528,9 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/slevomat-foreach-array-key-exists-bug.php'], []);
 	}
 
+	public function testBug7954(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7954.php'], []);
+	}
+
 }

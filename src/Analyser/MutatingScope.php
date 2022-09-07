@@ -116,8 +116,11 @@ use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_pop;
+use function array_slice;
 use function count;
+use function explode;
 use function get_class;
+use function implode;
 use function in_array;
 use function is_string;
 use function ltrim;
@@ -2486,12 +2489,18 @@ class MutatingScope implements Scope
 
 	public function enterTrait(ClassReflection $traitReflection): self
 	{
+		$namespace = null;
+		$traitName = $traitReflection->getName();
+		$traitNameParts = explode('\\', $traitName);
+		if (count($traitNameParts) > 1) {
+			$namespace = implode('\\', array_slice($traitNameParts, 0, -1));
+		}
 		return $this->scopeFactory->create(
 			$this->context->enterTrait($traitReflection),
 			$this->isDeclareStrictTypes(),
 			$this->constantTypes,
 			$this->getFunction(),
-			$this->getNamespace(),
+			$namespace,
 			$this->getVariableTypes(),
 			$this->moreSpecificTypes,
 			[],

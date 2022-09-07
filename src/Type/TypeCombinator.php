@@ -590,7 +590,7 @@ class TypeCombinator
 		}
 		if (count($arrayTypes) === 1) {
 			return [
-				self::intersect($arrayTypes[0], ...$accessoryTypes),
+				self::intersect(...self::optimizeConstantArrays($arrayTypes), ...$accessoryTypes),
 			];
 		}
 
@@ -632,7 +632,7 @@ class TypeCombinator
 			return [
 				self::intersect(new ArrayType(
 					self::union(...$keyTypesForGeneralArray),
-					self::union(...$valueTypesForGeneralArray),
+					self::union(...self::optimizeConstantArrays($valueTypesForGeneralArray)),
 				), ...$accessoryTypes),
 			];
 		}

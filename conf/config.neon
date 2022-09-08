@@ -50,6 +50,7 @@ parameters:
 		notAnalysedTrait: false
 		curlSetOptTypes: false
 		listType: false
+		missingMagicSerializationRule: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -259,6 +260,7 @@ parametersSchema:
 		notAnalysedTrait: bool()
 		curlSetOptTypes: bool()
 		listType: bool()
+		missingMagicSerializationRule: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

@@ -20,3 +20,4 @@ parameters:
 		notAnalysedTrait: true
 		curlSetOptTypes: true
 		listType: true
+		missingMagicSerializationRule: true

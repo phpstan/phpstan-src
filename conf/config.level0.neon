@@ -20,6 +20,8 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
 	PHPStan\Rules\Api\RuntimeReflectionInstantiationRule:
 		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
+	PHPStan\Rules\Methods\MissingMagicSerializationMethodsRule:
+		phpstan.rules.rule: %featureToggles.missingMagicSerializationRule%
 
 rules:
 	- PHPStan\Rules\Api\ApiInstantiationRule
@@ -259,3 +261,6 @@ services:
 		class: PHPStan\Reflection\ConstructorsHelper
 		arguments:
 			additionalConstructors: %additionalConstructors%
+
+	-
+		class: PHPStan\Rules\Methods\MissingMagicSerializationMethodsRule

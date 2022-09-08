@@ -14,7 +14,7 @@ class EnumSanityRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new EnumSanityRule();
+		return new EnumSanityRule($this->createReflectionProvider());
 	}
 
 	public function testRule(): void
@@ -75,6 +75,10 @@ class EnumSanityRuleTest extends RuleTestCase
 			[
 				'Enum EnumSanity\EnumWithSerialize contains magic method __unserialize().',
 				81,
+			],
+			[
+				'Enum EnumSanity\EnumMayNotSerializable cannot implement the Serializable interface.',
+				86,
 			],
 		]);
 	}

@@ -4,9 +4,11 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use Serializable;
 use function array_key_exists;
 use function sprintf;
 
@@ -21,6 +23,12 @@ class EnumSanityRule implements Rule
 		'__callstatic' => true,
 		'__invoke' => true,
 	];
+
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+	)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -101,6 +109,17 @@ class EnumSanityRule implements Rule
 				'Backed enum %s can have only "int" or "string" type.',
 				$node->namespacedName->toString(),
 			))->line($node->scalarType->getLine())->nonIgnorable()->build();
+		}
+
+		if ($this->reflectionProvider->hasClass($node->namespacedName->toString())) {
+			$classReflection = $this->reflectionProvider->getClass($node->namespacedName->toString());
+
+			if ($classReflection->implementsInterface(Serializable::class)) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Enum %s cannot implement the Serializable interface.',
+					$node->namespacedName->toString(),
+				))->line($node->getLine())->nonIgnorable()->build();
+			}
 		}
 
 		return $errors;

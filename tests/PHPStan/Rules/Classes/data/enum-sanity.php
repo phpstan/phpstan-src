@@ -83,3 +83,10 @@ enum EnumWithSerialize {
 	}
 }
 
+enum EnumMayNotSerializable implements \Serializable {
+
+	public function serialize() {
+	}
+	public function unserialize($data) {
+	}
+}

@@ -311,6 +311,11 @@ parameters:
 			path: ../src/Rules/Methods/MissingMethodImplementationRule.php
 
 		-
+			message: "#^Call to method getMethods\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Rules/Methods/MissingMagicSerializationMethodsRule.php
+
+		-
 			message: "#^Call to method isFinal\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 2
 			path: ../src/Type/Constant/ConstantStringType.php

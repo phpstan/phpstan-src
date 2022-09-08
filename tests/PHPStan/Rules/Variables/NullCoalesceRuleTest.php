@@ -352,4 +352,12 @@ class NullCoalesceRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7968(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = true;
+
+		$this->analyse([__DIR__ . '/data/bug-7968.php'], []);
+	}
+
 }

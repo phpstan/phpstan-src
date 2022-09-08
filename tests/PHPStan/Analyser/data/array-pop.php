@@ -48,6 +48,10 @@ class Foo
 		/** @var array{a: 0, b: 1, c?: 2} $arr */
 		assertType('1|2', array_pop($arr));
 		assertType('array{a: 0, b?: 1}', $arr);
+
+		/** @var array{a?: 0, b?: 1, c?: 2} $arr */
+		assertType('0|1|2|null', array_pop($arr));
+		assertType('array{a?: 0, b?: 1}', $arr);
 	}
 
 }

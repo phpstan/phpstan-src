@@ -37,9 +37,11 @@ class ArrayPopFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		if (count($constantArrays) > 0) {
 			$valueTypes = [];
 			foreach ($constantArrays as $constantArray) {
-				$arrayKeyTypes = $constantArray->getKeyTypes();
-				if (count($arrayKeyTypes) === 0) {
+				$iterableAtLeastOnce = $constantArray->isIterableAtLeastOnce();
+				if (!$iterableAtLeastOnce->yes()) {
 					$valueTypes[] = new NullType();
+				}
+				if ($iterableAtLeastOnce->no()) {
 					continue;
 				}
 				$valueTypes[] = $constantArray->getLastValueType();

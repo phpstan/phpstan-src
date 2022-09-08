@@ -328,7 +328,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				19,
 			],
 			[
-				"Property Bug6286\HelloWorld::\$nestedDetails (array<array{name: string, age: int}>) does not accept non-empty-array<array{name: 'Bilbo Baggins', age: 'Eleventy-one'}|array{name: string, age: int}>.",
+				"Property Bug6286\HelloWorld::\$nestedDetails (array<array{name: string, age: int}>) does not accept non-empty-array<array{name: string, age: 'Eleventy-one'|int}>.",
 				22,
 			],
 		]);

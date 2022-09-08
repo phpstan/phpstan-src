@@ -19,8 +19,8 @@ class EnumSanityRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Test requires PHP 8.0');
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1');
 		}
 
 		$this->analyse([__DIR__ . '/data/enum-sanity.php'], [

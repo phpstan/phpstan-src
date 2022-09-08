@@ -20,10 +20,10 @@ class Foo
 			}
 		}
 
-		assertType("array<int, array{version: string, operator: string, side: 'end'}|array{version: string, operator: string, side: 'start'}>", $borders);
+		assertType("array<int, array{version: string, operator: string, side: 'end'|'start'}>", $borders);
 
 		foreach ($borders as $border) {
-			assertType("array{version: string, operator: string, side: 'end'}|array{version: string, operator: string, side: 'start'}", $border);
+			assertType("array{version: string, operator: string, side: 'end'|'start'}", $border);
 			assertType('\'end\'|\'start\'', $border['side']);
 		}
 	}

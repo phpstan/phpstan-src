@@ -1181,33 +1181,38 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isKeysSupersetOf(self $otherArray): bool
 	{
-		if (count($this->keyTypes) === 0) {
-			return count($otherArray->keyTypes) === 0;
-		}
+		$keyTypesCount = count($this->keyTypes);
+		$otherKeyTypesCount = count($otherArray->keyTypes);
 
-		if (count($otherArray->keyTypes) === 0) {
+		if ($keyTypesCount < $otherKeyTypesCount) {
 			return false;
 		}
 
-		$otherKeys = $otherArray->keyTypes;
-		foreach ($this->keyTypes as $i => $keyType) {
-			foreach ($otherArray->keyTypes as $j => $otherKeyType) {
-				if (!$keyType->equals($otherKeyType)) {
-					continue;
-				}
-
-				$valueType = $this->valueTypes[$i];
-				$otherValueType = $otherArray->valueTypes[$j];
-				if ($otherValueType->isSuperTypeOf($valueType)->no()) {
-					continue;
-				}
-
-				unset($otherKeys[$j]);
-				continue 2;
-			}
+		if ($otherKeyTypesCount === 0) {
+			return $keyTypesCount === 0;
 		}
 
-		return count($otherKeys) === 0;
+		$failOnDifferentValueType = $keyTypesCount !== $otherKeyTypesCount || $keyTypesCount < 2;
+
+		foreach ($otherArray->keyTypes as $j => $keyType) {
+			$i = $this->getKeyIndex($keyType);
+			if ($i === null) {
+				return false;
+			}
+
+			$valueType = $this->valueTypes[$i];
+			$otherValueType = $otherArray->valueTypes[$j];
+			if (!$otherValueType->isSuperTypeOf($valueType)->no()) {
+				continue;
+			}
+
+			if ($failOnDifferentValueType) {
+				return false;
+			}
+			$failOnDifferentValueType = true;
+		}
+
+		return true;
 	}
 
 	public function mergeWith(self $otherArray): self

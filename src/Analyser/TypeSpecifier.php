@@ -1281,11 +1281,13 @@ class TypeSpecifier
 
 		if (
 			$scope !== null
-			&& $context->true()
+			&& !$context->null()
 			&& $expr instanceof Expr\BinaryOp\Coalesce
-			&& $type->isSuperTypeOf($scope->getType($expr->right))->no()
 		) {
-			$expr = $expr->left;
+			$rightIsSuperType = $type->isSuperTypeOf($scope->getType($expr->right));
+			if (($context->true() && $rightIsSuperType->no()) || ($context->false() && $rightIsSuperType->yes())) {
+				$expr = $expr->left;
+			}
 		}
 
 		if (

@@ -41,6 +41,7 @@ use function dirname;
 use function error_get_last;
 use function get_class;
 use function getcwd;
+use function getenv;
 use function gettype;
 use function implode;
 use function ini_get;
@@ -185,6 +186,7 @@ class CommandHelper
 		$analysedPathsFromConfig = [];
 		$containerFactory = new ContainerFactory($currentWorkingDirectory);
 		$projectConfig = null;
+		$tmpDir = getenv('PHPSTAN_TMPDIR');
 		if ($projectConfigFile !== null) {
 			if (!is_file($projectConfigFile)) {
 				$errorOutput->writeLineFormatted(sprintf('Project config file at path %s does not exist.', $projectConfigFile));
@@ -209,7 +211,7 @@ class CommandHelper
 				'currentWorkingDirectory' => $containerFactory->getCurrentWorkingDirectory(),
 			];
 
-			if (isset($projectConfig['parameters']['tmpDir'])) {
+			if ($tmpDir === false && isset($projectConfig['parameters']['tmpDir'])) {
 				$tmpDir = Helpers::expand($projectConfig['parameters']['tmpDir'], $defaultParameters);
 			}
 			if ($level === null && isset($projectConfig['parameters']['level'])) {
@@ -289,7 +291,7 @@ class CommandHelper
 			}
 		};
 
-		if (!isset($tmpDir)) {
+		if (!isset($tmpDir) || $tmpDir === false) {
 			$tmpDir = sys_get_temp_dir() . '/phpstan';
 			$createDir($tmpDir);
 		}

@@ -9,6 +9,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
+use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
@@ -19,6 +20,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 class NullType implements ConstantScalarType
 {
 
+	use NonArrayTypeTrait;
 	use NonCallableTypeTrait;
 	use NonIterableTypeTrait;
 	use NonObjectTypeTrait;
@@ -168,21 +170,6 @@ class NullType implements ConstantScalarType
 	public function traverse(callable $cb): Type
 	{
 		return $this;
-	}
-
-	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isOversizedArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isList(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
 	}
 
 	public function isString(): TrinaryLogic

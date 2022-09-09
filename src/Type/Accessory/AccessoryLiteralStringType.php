@@ -15,6 +15,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
+use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
@@ -28,6 +29,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 {
 
 	use MaybeCallableTypeTrait;
+	use NonArrayTypeTrait;
 	use NonObjectTypeTrait;
 	use NonIterableTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
@@ -121,21 +123,6 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 	public function unsetOffset(Type $offsetType): Type
 	{
 		return new ErrorType();
-	}
-
-	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isOversizedArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isList(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
 	}
 
 	public function toNumber(): Type

@@ -33,6 +33,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
@@ -52,6 +53,7 @@ use function strtolower;
 class ObjectType implements TypeWithClassName, SubtractableType
 {
 
+	use NonArrayTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonGeneralizableTypeTrait;
@@ -790,21 +792,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		return new ErrorType();
-	}
-
-	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isOversizedArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isList(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
 	}
 
 	public function isString(): TrinaryLogic

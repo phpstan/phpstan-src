@@ -9,6 +9,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Traits\MaybeArrayTypeTrait;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
@@ -23,6 +24,7 @@ use function sprintf;
 class IterableType implements CompoundType
 {
 
+	use MaybeArrayTypeTrait;
 	use MaybeCallableTypeTrait;
 	use MaybeObjectTypeTrait;
 	use MaybeOffsetAccessibleTypeTrait;
@@ -227,21 +229,6 @@ class IterableType implements CompoundType
 	public function getIterableValueType(): Type
 	{
 		return $this->getItemType();
-	}
-
-	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isOversizedArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isList(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
 	}
 
 	public function isString(): TrinaryLogic

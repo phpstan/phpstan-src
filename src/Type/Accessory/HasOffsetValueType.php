@@ -11,6 +11,7 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Traits\MaybeArrayTypeTrait;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
@@ -27,6 +28,7 @@ use function sprintf;
 class HasOffsetValueType implements CompoundType, AccessoryType
 {
 
+	use MaybeArrayTypeTrait;
 	use MaybeCallableTypeTrait;
 	use MaybeIterableTypeTrait;
 	use MaybeObjectTypeTrait;
@@ -156,16 +158,6 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
-	}
-
-	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
-	public function isOversizedArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
 	}
 
 	public function isList(): TrinaryLogic

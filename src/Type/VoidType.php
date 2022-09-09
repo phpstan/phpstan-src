@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
+use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -17,6 +18,7 @@ use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 class VoidType implements Type
 {
 
+	use NonArrayTypeTrait;
 	use NonCallableTypeTrait;
 	use NonIterableTypeTrait;
 	use NonObjectTypeTrait;
@@ -95,21 +97,6 @@ class VoidType implements Type
 	public function toArray(): Type
 	{
 		return new ErrorType();
-	}
-
-	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isOversizedArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isList(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
 	}
 
 	public function isString(): TrinaryLogic

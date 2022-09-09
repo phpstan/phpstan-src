@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -21,6 +22,7 @@ use function get_class;
 class FloatType implements Type
 {
 
+	use NonArrayTypeTrait;
 	use NonCallableTypeTrait;
 	use NonIterableTypeTrait;
 	use NonObjectTypeTrait;
@@ -110,21 +112,6 @@ class FloatType implements Type
 			[$this],
 			[1],
 		);
-	}
-
-	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isOversizedArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isList(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
 	}
 
 	public function isString(): TrinaryLogic

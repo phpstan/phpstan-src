@@ -22,6 +22,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
@@ -36,6 +37,7 @@ use function sprintf;
 class ClosureType implements TypeWithClassName, ParametersAcceptor
 {
 
+	use NonArrayTypeTrait;
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonOffsetAccessibleTypeTrait;
@@ -388,21 +390,6 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			$this->templateTypeMap,
 			$this->resolvedTemplateTypeMap,
 		);
-	}
-
-	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isOversizedArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isList(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
 	}
 
 	public function isString(): TrinaryLogic

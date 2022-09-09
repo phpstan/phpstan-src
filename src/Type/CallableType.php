@@ -13,6 +13,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Traits\MaybeArrayTypeTrait;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
@@ -29,6 +30,7 @@ use function sprintf;
 class CallableType implements CompoundType, ParametersAcceptor
 {
 
+	use MaybeArrayTypeTrait;
 	use MaybeIterableTypeTrait;
 	use MaybeObjectTypeTrait;
 	use MaybeOffsetAccessibleTypeTrait;
@@ -310,19 +312,9 @@ class CallableType implements CompoundType, ParametersAcceptor
 		);
 	}
 
-	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
-	}
-
 	public function isOversizedArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
-	}
-
-	public function isList(): TrinaryLogic
-	{
-		return TrinaryLogic::createMaybe();
 	}
 
 	public function isString(): TrinaryLogic

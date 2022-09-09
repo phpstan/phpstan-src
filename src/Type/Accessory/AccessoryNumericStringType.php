@@ -13,6 +13,7 @@ use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
@@ -27,6 +28,7 @@ use PHPStan\Type\VerbosityLevel;
 class AccessoryNumericStringType implements CompoundType, AccessoryType
 {
 
+	use NonArrayTypeTrait;
 	use NonCallableTypeTrait;
 	use NonObjectTypeTrait;
 	use NonIterableTypeTrait;
@@ -126,21 +128,6 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	public function unsetOffset(Type $offsetType): Type
 	{
 		return new ErrorType();
-	}
-
-	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isOversizedArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isList(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
 	}
 
 	public function toNumber(): Type

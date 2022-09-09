@@ -26,6 +26,7 @@ trait ObjectTypeTrait
 	use MaybeCallableTypeTrait;
 	use MaybeIterableTypeTrait;
 	use MaybeOffsetAccessibleTypeTrait;
+	use NonArrayTypeTrait;
 	use TruthyBooleanTypeTrait;
 
 	public function canAccessProperties(): TrinaryLogic
@@ -98,21 +99,6 @@ trait ObjectTypeTrait
 	public function isCloneable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
-	}
-
-	public function isArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isOversizedArray(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
-	}
-
-	public function isList(): TrinaryLogic
-	{
-		return TrinaryLogic::createNo();
 	}
 
 	public function isString(): TrinaryLogic

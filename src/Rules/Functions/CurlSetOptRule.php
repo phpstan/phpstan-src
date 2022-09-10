@@ -88,7 +88,7 @@ class CurlSetOptRule implements Rule
 
 	private function getValueType(int $curlOpt): ?Type
 	{
-		if (defined('CURLOPT_SHARE') && $curlOpt === CURLOPT_SHARE) {
+		if (defined('CURLOPT_SHARE') && $curlOpt === CURLOPT_SHARE && $this->reflectionProvider->hasClass(CurlShareHandle::class)) {
 			return new ObjectType(CurlShareHandle::class);
 		}
 

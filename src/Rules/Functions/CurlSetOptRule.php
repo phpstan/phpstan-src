@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use CurlShareHandle;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
@@ -87,11 +88,11 @@ class CurlSetOptRule implements Rule
 
 	private function getValueType(int $curlOpt): ?Type
 	{
-		if ($curlOpt === CURLOPT_SHARE) {
+		if (defined('CURLOPT_SHARE') && $curlOpt === CURLOPT_SHARE) {
 			return new ObjectType(CurlShareHandle::class);
 		}
 
-		if ($curlOpt === CURLOPT_SSL_VERIFYHOST) {
+		if (defined('CURLOPT_SSL_VERIFYHOST') && $curlOpt === CURLOPT_SSL_VERIFYHOST) {
 			return new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(2)]);
 		}
 

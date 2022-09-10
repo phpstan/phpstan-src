@@ -66,6 +66,7 @@ use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
+use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClosureType;
@@ -500,6 +501,18 @@ class MutatingScope implements Scope
 	/** @api */
 	public function getVariableType(string $variableName): Type
 	{
+		if ($this->hasVariableType($variableName)->maybe()) {
+			if ($variableName === 'argc') {
+				return IntegerRangeType::fromInterval(1, null);
+			}
+			if ($variableName === 'argv') {
+				return TypeCombinator::intersect(
+					new ArrayType(new IntegerType(), new StringType()),
+					new NonEmptyArrayType(),
+				);
+			}
+		}
+
 		if ($this->isGlobalVariable($variableName)) {
 			return new ArrayType(new StringType(), new MixedType($this->explicitMixedForGlobalVariables));
 		}

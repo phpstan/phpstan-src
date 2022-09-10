@@ -18,3 +18,4 @@ parameters:
 		phpDocParserRequireWhitespaceBeforeDescription: true
 		runtimeReflectionRules: true
 		notAnalysedTrait: true
+		curlSetOptRule: true

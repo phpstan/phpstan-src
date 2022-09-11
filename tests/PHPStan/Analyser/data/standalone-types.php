@@ -12,6 +12,9 @@ function bar(): false {
 }
 
 class standalone {
+	public false $f = false;
+	public null $n = null;
+
 	function foo(): null {
 		return null;
 	}
@@ -19,6 +22,15 @@ class standalone {
 		return false;
 	}
 }
+
+function takesNull(null $n) {
+	assertType('null', $n);
+}
+
+function takesFalse(false $f) {
+	assertType('false', $f);
+}
+
 
 function doFoo() {
 	assertType('null', foo());
@@ -28,4 +40,7 @@ function doFoo() {
 
 	assertType('null', $s->foo());
 	assertType('false', $s->bar());
+
+	assertType('null', $s->n);
+	assertType('false', $s->f);
 }

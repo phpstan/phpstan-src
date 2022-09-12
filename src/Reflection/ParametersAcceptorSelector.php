@@ -622,7 +622,7 @@ class ParametersAcceptorSelector
 			}
 		}
 
-		$stringConstants = [
+		$nonEmptyStringConstants = [
 			'CURLOPT_ABSTRACT_UNIX_SOCKET',
 			'CURLOPT_CAINFO',
 			'CURLOPT_CAPATH',
@@ -636,7 +636,6 @@ class ParametersAcceptorSelector
 			'CURLOPT_DNS_LOCAL_IP4',
 			'CURLOPT_DNS_LOCAL_IP6',
 			'CURLOPT_EGDSOCKET',
-			'CURLOPT_ENCODING',
 			'CURLOPT_FTPPORT',
 			'CURLOPT_INTERFACE',
 			'CURLOPT_KEYPASSWD',
@@ -688,12 +687,21 @@ class ParametersAcceptorSelector
 			'CURLOPT_USERPWD',
 			'CURLOPT_XOAUTH2_BEARER',
 		];
-		foreach ($stringConstants as $constName) {
+		foreach ($nonEmptyStringConstants as $constName) {
 			if (defined($constName) && constant($constName) === $curlOpt) {
 				return TypeCombinator::intersect(
 					new StringType(),
 					new AccessoryNonEmptyStringType(),
 				);
+			}
+		}
+
+		$stringConstants = [
+			'CURLOPT_ENCODING',
+		];
+		foreach ($stringConstants as $constName) {
+			if (defined($constName) && constant($constName) === $curlOpt) {
+				return new StringType();
 			}
 		}
 

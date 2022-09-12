@@ -1174,7 +1174,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $s of function Bug7823\sayHello expects literal-string, class-string given.',
 				34,
-			]
+			],
 		]);
 	}
 

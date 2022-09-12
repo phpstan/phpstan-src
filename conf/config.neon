@@ -48,7 +48,7 @@ parameters:
 		phpDocParserRequireWhitespaceBeforeDescription: false
 		runtimeReflectionRules: false
 		notAnalysedTrait: false
-		curlSetOptRule: false
+		curlSetOptTypes: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -255,7 +255,7 @@ parametersSchema:
 		phpDocParserRequireWhitespaceBeforeDescription: bool()
 		runtimeReflectionRules: bool()
 		notAnalysedTrait: bool()
-		curlSetOptRule: bool()
+		curlSetOptTypes: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -405,6 +405,8 @@ conditionalTags:
 		phpstan.rules.rule: %exceptions.check.tooWideThrowType%
 	PhpParser\NodeVisitor\NodeConnectingVisitor:
 		phpstan.parser.richParserNodeVisitor: %featureToggles.nodeConnectingVisitorCompatibility%
+	PHPStan\Parser\CurlSetOptArgVisitor:
+		phpstan.parser.richParserNodeVisitor: %featureToggles.curlSetOptTypes%
 
 services:
 	-
@@ -438,6 +440,9 @@ services:
 		class: PHPStan\Parser\ClosureArgVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor
+
+	-
+		class: PHPStan\Parser\CurlSetOptArgVisitor
 
 	-
 		class: PHPStan\Parser\ArrowFunctionArgVisitor

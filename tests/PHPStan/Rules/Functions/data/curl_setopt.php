@@ -15,8 +15,8 @@ class HelloWorld
 		curl_setopt($curl, CURLOPT_HTTPHEADER, $i);
 		// expecting bool
 		curl_setopt($curl, CURLOPT_AUTOREFERER, $i);
-		// expecting int
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, $s);
+		// expecting int
 		curl_setopt($curl, CURLOPT_TIMEOUT, $s);
 		// expecting array
 		curl_setopt($curl, CURLOPT_CONNECT_TO, $s);

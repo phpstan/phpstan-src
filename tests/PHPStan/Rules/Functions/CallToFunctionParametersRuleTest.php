@@ -1174,6 +1174,44 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $s of function Bug7823\sayHello expects literal-string, class-string given.',
 				34,
+			]
+		]);
+	}
+
+	public function testCurlSetOpt(): void
+	{
+		$this->analyse([__DIR__ . '/data/curl_setopt.php'], [
+			[
+				'Parameter #3 $value of function curl_setopt expects 0|2, bool given.',
+				8,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects non-empty-string, int given.',
+				14,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects array, int given.',
+				15,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects bool, int given.',
+				17,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects bool, string given.',
+				18,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects int, string given.',
+				20,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects array, string given.',
+				22,
+			],
+			[
+				'Parameter #3 $value of function curl_setopt expects resource, string given.',
+				24,
 			],
 		]);
 	}

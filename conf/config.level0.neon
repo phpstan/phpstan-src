@@ -20,8 +20,6 @@ conditionalTags:
 		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
 	PHPStan\Rules\Api\RuntimeReflectionInstantiationRule:
 		phpstan.rules.rule: %featureToggles.runtimeReflectionRules%
-	PHPStan\Rules\Functions\CurlSetOptRule:
-		phpstan.rules.rule: %featureToggles.curlSetOptRule%
 
 rules:
 	- PHPStan\Rules\Api\ApiInstantiationRule
@@ -260,6 +258,3 @@ services:
 		class: PHPStan\Reflection\ConstructorsHelper
 		arguments:
 			additionalConstructors: %additionalConstructors%
-
-	-
-		class: PHPStan\Rules\Functions\CurlSetOptRule

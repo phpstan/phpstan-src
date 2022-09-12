@@ -29,7 +29,7 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			0,
 			'<?xml version="1.0" encoding="UTF-8"?>
-<testsuite failures="0" name="phpstan" tests="0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">
+<testsuite failures="0" name="phpstan" tests="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">
   <testcase name="phpstan"/>
 </testsuite>
 ',

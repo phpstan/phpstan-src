@@ -15,7 +15,7 @@ class ArrayFilterArgVisitor extends NodeVisitorAbstract
 			if ($functionName === 'array_filter') {
 				$args = $node->getArgs();
 				if (isset($args[0])) {
-					$args[0]->setAttribute('isArrayFilterArg', $args);
+					$args[0]->setAttribute('isArrayFilterArg', true);
 				}
 			}
 		}

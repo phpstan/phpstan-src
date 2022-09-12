@@ -22,11 +22,14 @@ class JunitErrorFormatter implements ErrorFormatter
 		Output $output,
 	): int
 	{
+		$totalFailuresCount = $analysisResult->getTotalErrorsCount();
+		$totalTestsCount = $analysisResult->hasErrors() ? $totalFailuresCount : 1;
+
 		$result = '<?xml version="1.0" encoding="UTF-8"?>';
 		$result .= sprintf(
 			'<testsuite failures="%d" name="phpstan" tests="%d" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">',
-			$analysisResult->getTotalErrorsCount(),
-			$analysisResult->getTotalErrorsCount(),
+			$totalFailuresCount,
+			$totalTestsCount,
 		);
 
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {

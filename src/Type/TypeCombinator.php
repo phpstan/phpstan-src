@@ -13,6 +13,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -973,6 +974,14 @@ class TypeCombinator
 						array_splice($types, $i--, 1);
 						$typesCount--;
 						continue 2;
+					}
+
+					if ($types[$i] instanceof GenericClassStringType && $types[$j] instanceof GenericClassStringType) {
+						$genericType = self::intersect($types[$i]->getGenericType(), $types[$j]->getGenericType());
+						$types[$i] = new GenericClassStringType($genericType);
+						array_splice($types, $j--, 1);
+						$typesCount--;
+						continue;
 					}
 
 					continue;

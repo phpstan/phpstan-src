@@ -90,6 +90,7 @@ use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\MatchExpressionArm;
+use PHPStan\Node\MatchExpressionArmBody;
 use PHPStan\Node\MatchExpressionArmCondition;
 use PHPStan\Node\MatchExpressionNode;
 use PHPStan\Node\MethodCallableNode;
@@ -2663,7 +2664,8 @@ class NodeScopeResolver
 					$filteringExpr = new BinaryOp\BooleanOr($filteringExpr, $armCondExpr);
 				}
 
-				$armNodes[] = new MatchExpressionArm($condNodes, $arm->getLine());
+				$matchArmBody = new MatchExpressionArmBody($armCondScope, $arm->body);
+				$armNodes[] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getLine());
 
 				$armResult = $this->processExprNode(
 					$arm->body,

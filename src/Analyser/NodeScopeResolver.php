@@ -2634,7 +2634,8 @@ class NodeScopeResolver
 					$hasYield = $hasYield || $armResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 					$scope = $scope->mergeWith($matchScope);
-					$armNodes[] = new MatchExpressionArm([], $arm->getLine());
+					$matchArmBody = new MatchExpressionArmBody($scope, $arm->body);
+					$armNodes[] = new MatchExpressionArm($matchArmBody, [], $arm->getLine());
 					continue;
 				}
 

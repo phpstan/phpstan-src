@@ -14,7 +14,7 @@ class HelloWorld
 	public function sayHello(array $array): void
 	{
 		if(in_array("thing", $array, true)){
-			assertType('non-empty-array<int, string>', $array);
+			assertType('non-empty-list<string>', $array);
 		}
 	}
 

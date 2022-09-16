@@ -24,6 +24,6 @@ shuffle( $indexed );
 shuffle( $associative );
 shuffle( $unordered );
 
-assertType( 'non-empty-array<int, 0|1|2>', array_keys( $indexed ) );
-assertType( 'non-empty-array<int, 0|1|2>', array_keys( $associative ) );
-assertType( 'non-empty-array<int, 0|1|2>', array_keys( $unordered ) );
+assertType( 'non-empty-list<0|1|2>', array_keys( $indexed ) );
+assertType( 'non-empty-list<0|1|2>', array_keys( $associative ) );
+assertType( 'non-empty-list<0|1|2>', array_keys( $unordered ) );

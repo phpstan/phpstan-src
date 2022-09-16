@@ -4687,7 +4687,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_keys($stringOrIntegerKeys)',
 			],
 			[
-				'array<int, string>',
+				'list<string>',
 				'array_keys($generalStringKeys)',
 			],
 			[
@@ -4695,7 +4695,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_values($integerKeys)',
 			],
 			[
-				'array<int, int>',
+				'list<int>',
 				'array_values($generalStringKeys)',
 			],
 			[
@@ -5409,7 +5409,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$strSplitConstantStringWithoutDefinedSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80200 ? 'non-empty-array<int, string>' : 'array<int, string>',
+				PHP_VERSION_ID < 80200 ? 'non-empty-list<string>' : 'list<string>',
 				'$strSplitStringWithoutDefinedSplitLength',
 			],
 			[
@@ -5652,19 +5652,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'range(2.1, 5)',
 			],
 			[
-				'array<int, int>',
+				'list<int>',
 				'range(2, 5, $integer)',
 			],
 			[
-				'array<int, float|int>',
+				'list<float|int>',
 				'range($float, 5, $integer)',
 			],
 			[
-				'array<int, (float|int|string)>',
+				'list<(float|int|string)>',
 				'range($float, $mixed, $integer)',
 			],
 			[
-				'array<int, (float|int|string)>',
+				'list<(float|int|string)>',
 				'range($integer, $mixed)',
 			],
 			[
@@ -5680,7 +5680,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'range(3, -1)',
 			],
 			[
-				'non-empty-array<int, int<0, 50>>',
+				'non-empty-list<int<0, 50>>',
 				'range(0, 50)',
 			],
 		];
@@ -6876,12 +6876,12 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				"'end'",
 			],
 			[
-				'non-empty-array<int, 1|2|3>',
+				'non-empty-list<1|2|3>',
 				'$integers',
 				"'end'",
 			],
 			[
-				'array<int, 1|2|3>',
+				'list<1|2|3>',
 				'$integers',
 				"'afterLoop'",
 			],
@@ -7234,7 +7234,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'non-empty-array<int, string>',
+				'non-empty-list<string>',
 				'$sureArray',
 			],
 			[
@@ -7242,15 +7242,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$sureFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$arrayOrFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'non-empty-array<int, string>|false' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$anotherArrayOrFalse',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? '(non-empty-array<int, string>|false)' : 'non-empty-array<int, string>',
+				PHP_VERSION_ID < 80000 ? '(list<string>|false)' : 'list<string>',
 				'$benevolentArrayOrFalse',
 			],
 		];
@@ -8041,7 +8041,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrayAppendedInIf',
 			],
 			[
-				'non-empty-array<int, \'bar\'|\'baz\'|\'foo\'>',
+				'non-empty-list<\'bar\'|\'baz\'|\'foo\'>',
 				'$arrayAppendedInForeach',
 			],
 			[
@@ -8845,7 +8845,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithoutDefinedSplitLength',
 			],
 			[
-				'array<int, string>',
+				'list<string>',
 				'$mbStrSplitStringWithoutDefinedSplitLength',
 			],
 			[
@@ -9344,11 +9344,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'non-empty-array<int, int>',
+				'non-empty-list<int>',
 				'$integersOne',
 			],
 			[
-				'non-empty-array<int, int>',
+				'non-empty-list<int>',
 				'$integersTwo',
 			],
 			[
@@ -9356,11 +9356,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$integersThree',
 			],
 			[
-				'non-empty-array<int, int>',
+				'non-empty-list<int>',
 				'$integersFour',
 			],
 			[
-				'non-empty-array<int, int>',
+				'non-empty-list<int>',
 				'$integersFive',
 			],
 			[

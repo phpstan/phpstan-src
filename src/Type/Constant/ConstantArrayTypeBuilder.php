@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Constant;
 
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Type;
@@ -37,13 +38,14 @@ class ConstantArrayTypeBuilder
 		private array $valueTypes,
 		private array $nextAutoIndexes,
 		private array $optionalKeys,
+		private bool $isList,
 	)
 	{
 	}
 
 	public static function createEmpty(): self
 	{
-		return new self([], [], [0], []);
+		return new self([], [], [0], [], true);
 	}
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
@@ -53,6 +55,7 @@ class ConstantArrayTypeBuilder
 			$startArrayType->getValueTypes(),
 			$startArrayType->getNextAutoIndexes(),
 			$startArrayType->getOptionalKeys(),
+			$startArrayType->isList()->yes(),
 		);
 
 		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
@@ -153,6 +156,9 @@ class ConstantArrayTypeBuilder
 
 				if ($offsetType instanceof ConstantIntegerType) {
 					$max = max($this->nextAutoIndexes);
+					if ($offsetType->getValue() !== $max) {
+						$this->isList = false;
+					}
 					if ($offsetType->getValue() >= $max) {
 						/** @var int|float $newAutoIndex */
 						$newAutoIndex = $offsetType->getValue() + 1;
@@ -165,6 +171,8 @@ class ConstantArrayTypeBuilder
 							$this->nextAutoIndexes[] = $newAutoIndex;
 						}
 					}
+				} else {
+					$this->isList = false;
 				}
 
 				if ($optional) {
@@ -177,6 +185,8 @@ class ConstantArrayTypeBuilder
 
 				return;
 			}
+
+			$this->isList = false;
 
 			$scalarTypes = TypeUtils::getConstantScalars($offsetType);
 			if (count($scalarTypes) === 0) {
@@ -238,6 +248,8 @@ class ConstantArrayTypeBuilder
 
 		if ($offsetType === null) {
 			$offsetType = TypeCombinator::union(...array_map(static fn (int $index) => new ConstantIntegerType($index), $this->nextAutoIndexes));
+		} else {
+			$this->isList = false;
 		}
 
 		$this->keyTypes[] = $offsetType;
@@ -263,7 +275,7 @@ class ConstantArrayTypeBuilder
 		if (!$this->degradeToGeneralArray) {
 			/** @var array<int, ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
-			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys);
+			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 		}
 
 		$array = new ArrayType(
@@ -271,11 +283,24 @@ class ConstantArrayTypeBuilder
 			TypeCombinator::union(...$this->valueTypes),
 		);
 
+		$accessoryTypes = [];
 		if (count($this->optionalKeys) < $keyTypesCount) {
-			return TypeCombinator::intersect($array, new NonEmptyArrayType());
+			$accessoryTypes[] = new NonEmptyArrayType();
+		}
+		if ($this->isList) {
+			$accessoryTypes[] = new AccessoryArrayListType();
+		}
+
+		if (count($accessoryTypes) > 0) {
+			return TypeCombinator::intersect($array, ...$accessoryTypes);
 		}
 
 		return $array;
+	}
+
+	public function isList(): bool
+	{
+		return $this->isList;
 	}
 
 }

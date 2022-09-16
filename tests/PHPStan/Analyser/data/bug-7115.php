@@ -28,8 +28,8 @@ class Foo
 		}
 
 		assertType('array<int, array{a: int, b: string}>', $b);
-		assertType('array<int, array{a: int, b: string}>', $c);
-		assertType('array<int, array{a: int, b: string}>', $d);
+		assertType('list<array{a: int, b: string}>', $c);
+		assertType('list<array{a: int, b: string}>', $d);
 	}
 
 }

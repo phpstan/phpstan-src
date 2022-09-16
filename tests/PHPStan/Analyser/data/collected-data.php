@@ -30,7 +30,7 @@ class Foo
 
 	public function doFoo(CollectedDataNode $node): void
 	{
-		assertType('array<string, array<int, int>>', $node->get(TestCollector::class));
+		assertType('array<string, list<int>>', $node->get(TestCollector::class));
 	}
 
 }

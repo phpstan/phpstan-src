@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
@@ -51,7 +52,12 @@ class ArrayKeyFirstDynamicReturnTypeExtension implements DynamicFunctionReturnTy
 			return TypeCombinator::union(...$keyTypes);
 		}
 
-		$keyType = $argType->getIterableKeyType();
+		if ($argType->isList()->yes()) {
+			$keyType = new ConstantIntegerType(0);
+		} else {
+			$keyType = $argType->getIterableKeyType();
+		}
+
 		if ($iterableAtLeastOnce->yes()) {
 			return $keyType;
 		}

@@ -127,7 +127,7 @@ class Foo
 	 */
 	public function doFoo4(string $s): void
 	{
-		assertType('non-empty-array<int, string>', explode($s, 'foo'));
+		assertType('non-empty-list<string>', explode($s, 'foo'));
 	}
 
 	/**

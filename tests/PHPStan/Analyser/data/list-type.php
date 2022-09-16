@@ -9,25 +9,25 @@ class Foo
 	/** @param list $list */
 	public function directAssertion($list): void
 	{
-		assertType('array<int, mixed>', $list);
+		assertType('list<mixed>', $list);
 	}
 
 	/** @param list $list */
 	public function directAssertionParamHint(array $list): void
 	{
-		assertType('array<int, mixed>', $list);
+		assertType('list<mixed>', $list);
 	}
 
 	/** @param list $list */
 	public function directAssertionNullableParamHint(array $list = null): void
 	{
-		assertType('array<int, mixed>|null', $list);
+		assertType('list<mixed>|null', $list);
 	}
 
 	/** @param list<\DateTime> $list */
 	public function directAssertionObjectParamHint($list): void
 	{
-		assertType('array<int, DateTime>', $list);
+		assertType('list<DateTime>', $list);
 	}
 
 	public function withoutGenerics(): void
@@ -37,7 +37,7 @@ class Foo
 		$list[] = '1';
 		$list[] = true;
 		$list[] = new \stdClass();
-		assertType('non-empty-array<int, mixed>', $list);
+		assertType('non-empty-list<mixed>', $list);
 	}
 
 
@@ -48,7 +48,7 @@ class Foo
 		$list[] = '1';
 		$list[] = true;
 		$list[] = new \stdClass();
-		assertType('non-empty-array<int, mixed>', $list);
+		assertType('non-empty-list<mixed>', $list);
 	}
 
 	public function withObjectType(): void
@@ -56,7 +56,7 @@ class Foo
 		/** @var list<\DateTime> $list */
 		$list = [];
 		$list[] = new \DateTime();
-		assertType('non-empty-array<int, DateTime>', $list);
+		assertType('non-empty-list<DateTime>', $list);
 	}
 
 	/** @return list<scalar> */
@@ -66,7 +66,7 @@ class Foo
 		$list = [];
 		$list[] = '1';
 		$list[] = true;
-		assertType('non-empty-array<int, bool|float|int|string>', $list);
+		assertType('non-empty-list<bool|float|int|string>', $list);
 	}
 
 	public function withNumericKey(): void
@@ -75,7 +75,7 @@ class Foo
 		$list = [];
 		$list[] = '1';
 		$list['1'] = true;
-		assertType('non-empty-array<int, mixed>&hasOffsetValue(1, true)', $list);
+		assertType('non-empty-array<int<0, max>, mixed>&hasOffsetValue(1, true)', $list);
 	}
 
 	public function withFullListFunctionality(): void
@@ -83,15 +83,19 @@ class Foo
 		// These won't output errors for now but should when list type will be fully implemented
 		/** @var list $list */
 		$list = [];
+		assertType('list<mixed>', $list);
 		$list[] = '1';
+		assertType('non-empty-list<mixed>', $list);
 		$list[] = '2';
+		assertType('non-empty-list<mixed>', $list);
 		unset($list[0]);//break list behaviour
-		assertType('array<int<min, -1>|int<1, max>, mixed>', $list);
+		assertType('array<int<1, max>, mixed>', $list);
 
 		/** @var list $list2 */
 		$list2 = [];
+		assertType('list<mixed>', $list2);
 		$list2[2] = '1';//Most likely to create a gap in indexes
-		assertType('non-empty-array<int, mixed>&hasOffsetValue(2, \'1\')', $list2);
+		assertType('non-empty-array<int<0, max>, mixed>&hasOffsetValue(2, \'1\')', $list2);
 	}
 
 }

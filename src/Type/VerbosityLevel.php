@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -85,6 +86,7 @@ class VerbosityLevel
 				|| $type instanceof AccessoryLiteralStringType
 				|| $type instanceof AccessoryNumericStringType
 				|| $type instanceof NonEmptyArrayType
+				|| $type instanceof AccessoryArrayListType
 			) {
 				$moreVerbose = true;
 				return $type;

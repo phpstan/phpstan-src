@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -197,12 +198,16 @@ class TypeCombinator
 
 			$arrayTypes[] = $types[$i];
 
+			$intermediateAccessoryTypes = [];
 			if ($types[$i]->isIterableAtLeastOnce()->yes()) {
 				$nonEmpty = new NonEmptyArrayType();
-				$arrayAccessoryTypes[] = [$nonEmpty->describe(VerbosityLevel::cache()) => [$nonEmpty]];
-			} else {
-				$arrayAccessoryTypes[] = [];
+				$intermediateAccessoryTypes[$nonEmpty->describe(VerbosityLevel::cache())] = [$nonEmpty];
 			}
+			if ($types[$i]->isList()->yes()) {
+				$list = new AccessoryArrayListType();
+				$intermediateAccessoryTypes[$list->describe(VerbosityLevel::cache())] = [$list];
+			}
+			$arrayAccessoryTypes[] = $intermediateAccessoryTypes;
 			unset($types[$i]);
 		}
 
@@ -722,6 +727,14 @@ class TypeCombinator
 	{
 		$types = array_values($types);
 
+		$typesCount = count($types);
+		if ($typesCount === 0) {
+			return new NeverType();
+		}
+		if ($typesCount === 1) {
+			return $types[0];
+		}
+
 		$sortTypes = static function (Type $a, Type $b): int {
 			if (!$a instanceof UnionType || !$b instanceof UnionType) {
 				return 0;
@@ -995,6 +1008,19 @@ class TypeCombinator
 						$types[$i] = new GenericClassStringType($genericType);
 						array_splice($types, $j--, 1);
 						$typesCount--;
+						continue;
+					}
+
+					if (
+						get_class($types[$i]) === ArrayType::class
+						&& $types[$j] instanceof AccessoryArrayListType
+						&& !$types[$j]->getIterableKeyType()->isSuperTypeOf($types[$i]->getIterableKeyType())->yes()
+					) {
+						$keyType = self::intersect($types[$i]->getIterableKeyType(), $types[$j]->getIterableKeyType());
+						if ($keyType instanceof NeverType) {
+							return new NeverType();
+						}
+						$types[$i] = new ArrayType($keyType, $types[$i]->getItemType());
 						continue;
 					}
 

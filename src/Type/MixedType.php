@@ -17,6 +17,7 @@ use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -448,6 +449,22 @@ class MixedType implements CompoundType, SubtractableType
 			);
 
 			if ($this->subtractedType->isSuperTypeOf($oversizedArray)->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isList(): TrinaryLogic
+	{
+		if ($this->subtractedType !== null) {
+			$list = TypeCombinator::intersect(
+				new ArrayType(new IntegerType(), new MixedType()),
+				new AccessoryArrayListType(),
+			);
+
+			if ($this->subtractedType->isSuperTypeOf($list)->yes()) {
 				return TrinaryLogic::createNo();
 			}
 		}

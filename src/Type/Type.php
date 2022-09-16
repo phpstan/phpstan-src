@@ -65,6 +65,8 @@ interface Type
 
 	public function isOversizedArray(): TrinaryLogic;
 
+	public function isList(): TrinaryLogic;
+
 	public function isOffsetAccessible(): TrinaryLogic;
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic;

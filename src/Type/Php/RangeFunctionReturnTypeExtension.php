@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
@@ -18,7 +19,6 @@ use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -75,16 +75,17 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 								$startConstant = $endConstant;
 								$endConstant = $tmp;
 							}
-							return new IntersectionType([
+							return TypeCombinator::intersect(
 								new ArrayType(
 									new IntegerType(),
 									IntegerRangeType::fromInterval($startConstant->getValue(), $endConstant->getValue()),
 								),
 								new NonEmptyArrayType(),
-							]);
+								new AccessoryArrayListType(),
+							);
 						}
 
-						return new IntersectionType([
+						return TypeCombinator::intersect(
 							new ArrayType(
 								new IntegerType(),
 								TypeCombinator::union(
@@ -93,7 +94,8 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 								),
 							),
 							new NonEmptyArrayType(),
-						]);
+							new AccessoryArrayListType(),
+						);
 					}
 					$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach ($rangeValues as $value) {
@@ -114,27 +116,30 @@ class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		$isStepInteger = (new IntegerType())->isSuperTypeOf($stepType)->yes();
 
 		if ($isInteger && $isStepInteger) {
-			return new ArrayType(new IntegerType(), new IntegerType());
+			return TypeCombinator::intersect(new ArrayType(new IntegerType(), new IntegerType()), new AccessoryArrayListType());
 		}
 
 		$isFloat = (new FloatType())->isSuperTypeOf($argType)->yes();
 		if ($isFloat) {
-			return new ArrayType(new IntegerType(), new FloatType());
+			return TypeCombinator::intersect(new ArrayType(new IntegerType(), new FloatType()), new AccessoryArrayListType());
 		}
 
 		$numberType = new UnionType([new IntegerType(), new FloatType()]);
 		$isNumber = $numberType->isSuperTypeOf($argType)->yes();
 		$isNumericString = $argType->isNumericString()->yes();
 		if ($isNumber || $isNumericString) {
-			return new ArrayType(new IntegerType(), $numberType);
+			return TypeCombinator::intersect(new ArrayType(new IntegerType(), $numberType), new AccessoryArrayListType());
 		}
 
 		$isString = $argType->isString()->yes();
 		if ($isString) {
-			return new ArrayType(new IntegerType(), new StringType());
+			return TypeCombinator::intersect(new ArrayType(new IntegerType(), new StringType()), new AccessoryArrayListType());
 		}
 
-		return new ArrayType(new IntegerType(), new BenevolentUnionType([new IntegerType(), new FloatType(), new StringType()]));
+		return TypeCombinator::intersect(
+			new ArrayType(new IntegerType(), new BenevolentUnionType([new IntegerType(), new FloatType(), new StringType()])),
+			new AccessoryArrayListType(),
+		);
 	}
 
 }

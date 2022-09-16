@@ -1544,8 +1544,8 @@ function (): void {
 	assertType('array{1: true}', arrayBound1([1 => true]));
 	assertType('array{\'a\', \'b\', \'c\'}', arrayBound2(range('a', 'c')));
 	assertType('array<string>', arrayBound2([1, 2, 3]));
-	assertType('array{true, false, true}', arrayBound3([true, false, true]));
-	assertType('array{array{a: \'a\'}, array{b: \'b\'}, array{c: \'c\'}}', arrayBound4([['a' => 'a'], ['b' => 'b'], ['c' => 'c']]));
+	assertType('array{bool, bool, bool}', arrayBound3([true, false, true]));
+	assertType('array{array{a: string}, array{b: string}, array{c: string}}', arrayBound4([['a' => 'a'], ['b' => 'b'], ['c' => 'c']]));
 	assertType('array<string>', arrayBound5(range('a', 'c')));
 };
 

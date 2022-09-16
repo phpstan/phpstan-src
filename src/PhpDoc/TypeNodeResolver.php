@@ -39,6 +39,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -112,6 +113,7 @@ class TypeNodeResolver
 		private TypeAliasResolverProvider $typeAliasResolverProvider,
 		private ConstantResolver $constantResolver,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
+		private bool $listType,
 	)
 	{
 	}
@@ -333,12 +335,22 @@ class TypeNodeResolver
 				return new NeverType(true);
 
 			case 'list':
-				return new ArrayType(new IntegerType(), new MixedType());
+				$type = new ArrayType(new IntegerType(), new MixedType());
+
+				if ($this->listType) {
+					return TypeCombinator::intersect($type, new AccessoryArrayListType());
+				}
+
+				return $type;
 			case 'non-empty-list':
-				return TypeCombinator::intersect(
-					new ArrayType(new IntegerType(), new MixedType()),
-					new NonEmptyArrayType(),
-				);
+				$type = new ArrayType(new IntegerType(), new MixedType());
+
+				$accessoryTypes = [new NonEmptyArrayType()];
+				if ($this->listType) {
+					$accessoryTypes[] = new AccessoryArrayListType();
+				}
+
+				return TypeCombinator::intersect($type, ...$accessoryTypes);
 		}
 
 		if ($nameScope->getClassName() !== null) {
@@ -552,11 +564,16 @@ class TypeNodeResolver
 		} elseif ($mainTypeName === 'list' || $mainTypeName === 'non-empty-list') {
 			if (count($genericTypes) === 1) { // list<ValueType>
 				$listType = new ArrayType(new IntegerType(), $genericTypes[0]);
+
+				$accessoryTypes = [];
 				if ($mainTypeName === 'non-empty-list') {
-					return TypeCombinator::intersect($listType, new NonEmptyArrayType());
+					$accessoryTypes[] = new NonEmptyArrayType();
+				}
+				if ($this->listType) {
+					$accessoryTypes[] = new AccessoryArrayListType();
 				}
 
-				return $listType;
+				return TypeCombinator::intersect($listType, ...$accessoryTypes);
 			}
 
 			return new ErrorType();

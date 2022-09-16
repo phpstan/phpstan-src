@@ -61,3 +61,11 @@ function array_udiff(
     array $two,
     callable $three
 ): int {}
+
+/**
+ * @template K of array-key
+ * @template V
+ * @param array<K, V> $array
+ * @return ($array is list<V> ? true : false)
+ */
+function array_is_list(array $array): bool {}

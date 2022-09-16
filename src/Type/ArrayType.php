@@ -7,6 +7,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -164,14 +165,14 @@ class ArrayType implements Type
 		return new self($this->keyType, $this->itemType->generalize(GeneralizePrecision::lessSpecific()));
 	}
 
-	public function getKeysArray(): self
+	public function getKeysArray(): Type
 	{
-		return new self(new IntegerType(), $this->keyType);
+		return TypeCombinator::intersect(new self(new IntegerType(), $this->keyType), new AccessoryArrayListType());
 	}
 
-	public function getValuesArray(): self
+	public function getValuesArray(): Type
 	{
-		return new self(new IntegerType(), $this->itemType);
+		return TypeCombinator::intersect(new self(new IntegerType(), $this->itemType), new AccessoryArrayListType());
 	}
 
 	public function isIterable(): TrinaryLogic
@@ -209,6 +210,15 @@ class ArrayType implements Type
 
 	public function isOversizedArray(): TrinaryLogic
 	{
+		return TrinaryLogic::createMaybe();
+	}
+
+	public function isList(): TrinaryLogic
+	{
+		if (IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($this->getKeyType())->no()) {
+			return TrinaryLogic::createNo();
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 

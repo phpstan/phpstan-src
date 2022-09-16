@@ -9,6 +9,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -80,6 +81,7 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		if ($indexType !== null) {
+			$isList = TrinaryLogic::createMaybe();
 			$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, false);
 			if ($type !== null) {
 				$returnKeyType = $type;
@@ -92,13 +94,22 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				}
 			}
 		} else {
+			$isList = $arrayType->isList();
 			$returnKeyType = new IntegerType();
 		}
 
 		$returnType = new ArrayType($this->castToArrayKeyType($returnKeyType), $returnValueType);
 
+		$accessoryTypes = [];
 		if ($iterableAtLeastOnce->yes()) {
-			$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
+			$accessoryTypes[] = new NonEmptyArrayType();
+		}
+		if ($isList->yes()) {
+			$accessoryTypes[] = new AccessoryArrayListType();
+		}
+
+		if (count($accessoryTypes) > 0) {
+			$returnType = TypeCombinator::intersect($returnType, ...$accessoryTypes);
 		}
 
 		return $returnType;

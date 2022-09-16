@@ -16,7 +16,7 @@ class Foo
 		string $b
 	): void
 	{
-		assertType('array<int, float|int>', range($a, $b));
+		assertType('list<float|int>', range($a, $b));
 	}
 
 }

@@ -20,6 +20,6 @@ function (): void {
 
 	foreach ($array as $name => $elements) {
 		assertType('bool', count($elements) > 0);
-		assertType('array<int, 1|2|3>', $elements);
+		assertType('list<1|2|3>', $elements);
 	}
 };

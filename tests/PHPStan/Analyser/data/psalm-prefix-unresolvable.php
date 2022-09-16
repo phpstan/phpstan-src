@@ -18,7 +18,7 @@ class Foo
 
 	public function doBar(): void
 	{
-		assertType('array<int, string>', $this->doFoo());
+		assertType('list<string>', $this->doFoo());
 	}
 
 	/**

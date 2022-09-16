@@ -164,7 +164,7 @@ class ArrayColumnTest
 	/** @param array{array{column?: 'foo', key: 'bar'}} $array */
 	public function testImprecise1(array $array): void
 	{
-		assertType("array<int, 'foo'>", array_column($array, 'column'));
+		assertType("list<'foo'>", array_column($array, 'column'));
 		assertType("array<'bar', 'foo'>", array_column($array, 'column', 'key'));
 		assertType("array{bar: array{column?: 'foo', key: 'bar'}}", array_column($array, null, 'key'));
 	}
@@ -213,7 +213,7 @@ class ArrayColumnTest
 		assertType('array{string}', array_column($array, 'nodeName'));
 		assertType('non-empty-array<string, string>', array_column($array, 'nodeName', 'tagName'));
 		assertType('non-empty-array<string, DOMElement>', array_column($array, null, 'tagName'));
-		assertType('array<int, mixed>', array_column($array, 'foo'));
+		assertType('list<mixed>', array_column($array, 'foo'));
 		assertType('array<string, mixed>', array_column($array, 'foo', 'tagName'));
 		assertType('non-empty-array<int|string, string>', array_column($array, 'nodeName', 'foo'));
 		assertType('non-empty-array<int|string, DOMElement>', array_column($array, null, 'foo'));

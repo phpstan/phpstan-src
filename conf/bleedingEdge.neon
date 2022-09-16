@@ -19,3 +19,4 @@ parameters:
 		runtimeReflectionRules: true
 		notAnalysedTrait: true
 		curlSetOptTypes: true
+		listType: true

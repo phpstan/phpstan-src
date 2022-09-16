@@ -7,12 +7,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -100,9 +102,15 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 		$keyTypes = [];
 		$valueTypes = [];
 		$nonEmpty = false;
+		$isList = true;
 		foreach ($argTypes as $key => $argType) {
-			$keyTypes[] = $argType->getIterableKeyType();
+			$keyType = $argType->getIterableKeyType();
+			$keyTypes[] = $keyType;
 			$valueTypes[] = $argType->getIterableValueType();
+
+			if (!(new IntegerType())->isSuperTypeOf($keyType)->yes()) {
+				$isList = false;
+			}
 
 			if (in_array($key, $optionalArgTypes, true) || !$argType->isIterableAtLeastOnce()->yes()) {
 				continue;
@@ -123,6 +131,10 @@ class ArrayMergeFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 
 		if ($nonEmpty) {
 			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+		}
+
+		if ($isList) {
+			$arrayType = TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
 		}
 
 		return $arrayType;

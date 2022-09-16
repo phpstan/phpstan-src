@@ -44,7 +44,7 @@ function foo3(array $array): void {
 		$array
 	);
 
-	assertType('array<int, string>', $mapped);
+	assertType('list<string>', $mapped);
 }
 
 /**
@@ -58,7 +58,7 @@ function foo4(array $array): void {
 		$array
 	);
 
-	assertType('non-empty-array<int, string>', $mapped);
+	assertType('non-empty-list<string>', $mapped);
 }
 
 /** @param array{foo?: 0, bar?: 1, baz?: 2} $array */

@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -33,7 +34,7 @@ class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionRe
 					return $valueType->getValuesArray();
 				}
 
-				$array = new ArrayType(new IntegerType(), $valueType->getIterableValueType());
+				$array = TypeCombinator::intersect(new ArrayType(new IntegerType(), $valueType->getIterableValueType()), new AccessoryArrayListType());
 				if ($valueType->isIterableAtLeastOnce()->yes()) {
 					$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
 				}
@@ -41,9 +42,9 @@ class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionRe
 			}
 		}
 
-		return new ArrayType(
-			new IntegerType(),
-			new MixedType(),
+		return TypeCombinator::intersect(
+			new ArrayType(new IntegerType(), new MixedType()),
+			new AccessoryArrayListType(),
 		);
 	}
 

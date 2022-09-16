@@ -1499,21 +1499,13 @@ class ClassReflection
 	 */
 	public function getAllowedSubTypes(): ?array
 	{
-		$subTypes = [];
-
 		foreach ($this->allowedSubTypesClassReflectionExtensions as $allowedSubTypesClassReflectionExtension) {
-			if (!$allowedSubTypesClassReflectionExtension->supports($this)) {
-				continue;
+			if ($allowedSubTypesClassReflectionExtension->supports($this)) {
+				return $allowedSubTypesClassReflectionExtension->getAllowedSubTypes($this);
 			}
-
-			$subTypes[] = $allowedSubTypesClassReflectionExtension->getAllowedSubTypes($this);
 		}
 
-		if (count($subTypes) === 0) {
-			return null;
-		}
-
-		return array_merge(...$subTypes);
+		return null;
 	}
 
 }

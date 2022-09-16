@@ -8,6 +8,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -96,7 +97,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 			}
 
 			if (!$type instanceof ConstantStringType) {
-				$returnType = new ArrayType(new IntegerType(), new StringType());
+				$returnType = TypeCombinator::intersect(new ArrayType(new IntegerType(), new StringType()), new AccessoryArrayListType());
 
 				return $encoding === null && !$this->phpVersion->strSplitReturnsEmptyArray()
 					? TypeCombinator::intersect($returnType, new NonEmptyArrayType())

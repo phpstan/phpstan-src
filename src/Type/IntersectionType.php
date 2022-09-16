@@ -14,6 +14,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -221,7 +222,7 @@ class IntersectionType implements CompoundType
 				$skipTypeNames[] = 'string';
 				continue;
 			}
-			if ($type instanceof NonEmptyArrayType) {
+			if ($type instanceof NonEmptyArrayType || $type instanceof AccessoryArrayListType) {
 				$typesToDescribe[] = $type;
 				$skipTypeNames[] = 'array';
 				continue;
@@ -248,15 +249,29 @@ class IntersectionType implements CompoundType
 				substr($typeDescription, 0, strlen('array<')) === 'array<'
 				&& in_array('array', $skipTypeNames, true)
 			) {
+				$nonEmpty = false;
+				$typeName = 'array';
 				foreach ($typesToDescribe as $j => $typeToDescribe) {
-					if (!$typeToDescribe instanceof NonEmptyArrayType) {
+					if (
+						$typeToDescribe instanceof AccessoryArrayListType
+						&& substr($typeDescription, 0, strlen('array<int<0, max>, ')) === 'array<int<0, max>, '
+					) {
+						$typeName = 'list';
+						$typeDescription = 'array<' . substr($typeDescription, strlen('array<int<0, max>, '));
+					} elseif ($typeToDescribe instanceof NonEmptyArrayType) {
+						$nonEmpty = true;
+					} else {
 						continue;
 					}
 
 					unset($typesToDescribe[$j]);
 				}
 
-				$describedTypes[] = 'non-empty-array<' . substr($typeDescription, strlen('array<'));
+				if ($nonEmpty) {
+					$typeName = 'non-empty-' . $typeName;
+				}
+
+				$describedTypes[] = $typeName . '<' . substr($typeDescription, strlen('array<'));
 				continue;
 			}
 
@@ -399,6 +414,11 @@ class IntersectionType implements CompoundType
 	public function isOversizedArray(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isOversizedArray());
+	}
+
+	public function isList(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isList());
 	}
 
 	public function isString(): TrinaryLogic

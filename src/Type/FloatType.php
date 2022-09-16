@@ -122,6 +122,11 @@ class FloatType implements Type
 		return TrinaryLogic::createNo();
 	}
 
+	public function isList(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

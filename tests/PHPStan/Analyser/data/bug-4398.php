@@ -13,6 +13,6 @@ function (array $meters): void {
 	assertType('non-empty-array', $meters);
 	assertType('array', array_reverse());
 	assertType('non-empty-array', array_reverse($meters));
-	assertType('non-empty-array<int, (int|string)>', array_keys($meters));
-	assertType('non-empty-array<int, mixed>', array_values($meters));
+	assertType('non-empty-list<(int|string)>', array_keys($meters));
+	assertType('non-empty-list<mixed>', array_values($meters));
 };

@@ -32,14 +32,14 @@ function doFoo() {
 	array_walk($data['languages'], static function (&$item) {
 		$item = strtolower(trim($item));
 	});
-	assertType("non-empty-array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>&hasOffsetValue('languages', non-empty-array<int, string>)", $data);
+	assertType("non-empty-array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>&hasOffsetValue('languages', non-empty-list<string>)", $data);
 
 	$data['videoOnline'] = normalizePrice($data['videoOnline']);
 	$data['videoTvc'] = normalizePrice($data['videoTvc']);
 	$data['radio'] = normalizePrice($data['radio']);
 
 	$data['invoicing'] = $data['invoicing'] === 'ANO';
-	assertType("non-empty-array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>&hasOffsetValue('invoicing', bool)&hasOffsetValue('languages', non-empty-array<int, string>)&hasOffsetValue('radio', mixed)&hasOffsetValue('videoOnline', mixed)&hasOffsetValue('videoTvc', mixed)", $data);
+	assertType("non-empty-array<'address'|'bankAccount'|'birthDate'|'email'|'firstName'|'ic'|'invoicing'|'invoicingAddress'|'languages'|'lastName'|'note'|'phone'|'radio'|'videoOnline'|'videoTvc'|'voiceExample', mixed>&hasOffsetValue('invoicing', bool)&hasOffsetValue('languages', non-empty-list<string>)&hasOffsetValue('radio', mixed)&hasOffsetValue('videoOnline', mixed)&hasOffsetValue('videoTvc', mixed)", $data);
 }
 
 function normalizePrice($value)

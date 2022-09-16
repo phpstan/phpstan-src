@@ -6,7 +6,7 @@ use function PHPStan\Testing\assertType;
 
 function foo(array $foo) {
 	if (array_is_list($foo)) {
-        assertType('array<int, mixed>', $foo);
+        assertType('list<mixed>', $foo);
     } else {
 		assertType('array', $foo);
 	}
@@ -23,7 +23,7 @@ if (array_is_list($bar)) {
 /** @var array<int|string, mixed> $foo */
 
 if (array_is_list($foo)) {
-    assertType('array<int, mixed>', $foo);
+    assertType('list<mixed>', $foo);
 } else {
 	assertType('array<int|string, mixed>', $foo);
 }

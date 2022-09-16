@@ -98,6 +98,7 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 						}
 
 					}),
+					true,
 				),
 			),
 		);

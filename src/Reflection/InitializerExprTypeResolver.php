@@ -20,6 +20,7 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -435,6 +436,7 @@ class InitializerExprTypeResolver
 		if (count($expr->items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 			$arrayBuilder->degradeToGeneralArray();
 		}
+		$isList = null;
 		foreach ($expr->items as $arrayItem) {
 			if ($arrayItem === null) {
 				continue;
@@ -461,9 +463,14 @@ class InitializerExprTypeResolver
 				} else {
 					$arrayBuilder->degradeToGeneralArray();
 
-					$offsetType = $this->phpVersion->supportsArrayUnpackingWithStringKeys() && !$valueType->getIterableKeyType()->isString()->no()
-						? $valueType->getIterableKeyType()
-						: new IntegerType();
+					if ($this->phpVersion->supportsArrayUnpackingWithStringKeys() && !$valueType->getIterableKeyType()->isString()->no()) {
+						$isList = false;
+						$offsetType = $valueType->getIterableKeyType();
+					} else {
+						$isList ??= $arrayBuilder->isList();
+						$offsetType = new IntegerType();
+					}
+
 					$arrayBuilder->setOffsetValueType($offsetType, $valueType->getIterableValueType(), !$valueType->isIterableAtLeastOnce()->yes());
 				}
 			} else {
@@ -473,7 +480,13 @@ class InitializerExprTypeResolver
 				);
 			}
 		}
-		return $arrayBuilder->getArray();
+
+		$arrayType = $arrayBuilder->getArray();
+		if ($isList === true) {
+			return TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+		}
+
+		return $arrayType;
 	}
 
 	/**
@@ -947,9 +960,18 @@ class InitializerExprTypeResolver
 				TypeCombinator::union($leftType->getIterableValueType(), $rightType->getIterableValueType()),
 			);
 
+			$accessoryTypes = [];
 			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
-				return TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
+				$accessoryTypes[] = new NonEmptyArrayType();
 			}
+			if ($leftType->isList()->yes() && $rightType->isList()->yes()) {
+				$accessoryTypes[] = new AccessoryArrayListType();
+			}
+
+			if (count($accessoryTypes) > 0) {
+				return TypeCombinator::intersect($arrayType, ...$accessoryTypes);
+			}
+
 			return $arrayType;
 		}
 

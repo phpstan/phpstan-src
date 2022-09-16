@@ -9,9 +9,9 @@ function (): void {
 	$data = [];
 
 	foreach ($data as $key => $value) {
-		assertType('array<int|string, array<string>|string>', $data[$key]);
+		assertType('array<int<0, max>|string, array<string>|string>', $data[$key]);
 		if ($key === 'classmap') {
-			assertType('array<int, string>', $data[$key]);
+			assertType('list<string>', $data[$key]);
 			echo implode(', ', $value); // not working :(
 			echo implode(', ', $data[$key]); // this works though?!
 		}

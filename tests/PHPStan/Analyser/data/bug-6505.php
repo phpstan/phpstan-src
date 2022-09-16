@@ -133,7 +133,7 @@ class Example
 
 	public function getFactories(): void
 	{
-		assertType('Bug6505\Collection<string, array<int, class-string>>', new Collection($this->factories));
+		assertType('Bug6505\Collection<string, list<class-string>>', new Collection($this->factories));
 	}
 }
 

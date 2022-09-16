@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -54,7 +55,7 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 			$chunkType = $preserveKeys ? $type : new ArrayType(new IntegerType(), $type->getIterableValueType());
 			$chunkType = TypeCombinator::intersect($chunkType, new NonEmptyArrayType());
 
-			$resultType = new ArrayType(new IntegerType(), $chunkType);
+			$resultType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $chunkType), new AccessoryArrayListType());
 			if ($type->isIterableAtLeastOnce()->yes()) {
 				$resultType = TypeCombinator::intersect($type, new NonEmptyArrayType());
 			}

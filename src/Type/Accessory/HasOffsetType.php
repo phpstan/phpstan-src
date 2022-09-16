@@ -149,6 +149,15 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isList(): TrinaryLogic
+	{
+		if ($this->offsetType->isString()->yes()) {
+			return TrinaryLogic::createNo();
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

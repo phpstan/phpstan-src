@@ -64,6 +64,7 @@ use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -510,6 +511,7 @@ class MutatingScope implements Scope
 			if ($variableName === 'argv') {
 				return TypeCombinator::intersect(
 					new ArrayType(new IntegerType(), new StringType()),
+					new AccessoryArrayListType(),
 					new NonEmptyArrayType(),
 				);
 			}
@@ -4687,6 +4689,9 @@ class MutatingScope implements Scope
 					if ($constantArraysA->isIterableAtLeastOnce()->yes() && $constantArraysB->isIterableAtLeastOnce()->yes()) {
 						$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
 					}
+					if ($constantArraysA->isList()->yes() && $constantArraysB->isList()->yes()) {
+						$resultType = TypeCombinator::intersect($resultType, new AccessoryArrayListType());
+					}
 					$resultTypes[] = $resultType;
 				}
 			}
@@ -4728,6 +4733,9 @@ class MutatingScope implements Scope
 				);
 				if ($generalArraysA->isIterableAtLeastOnce()->yes() && $generalArraysB->isIterableAtLeastOnce()->yes()) {
 					$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
+				}
+				if ($generalArraysA->isList()->yes() && $generalArraysB->isList()->yes()) {
+					$resultType = TypeCombinator::intersect($resultType, new AccessoryArrayListType());
 				}
 				$resultTypes[] = $resultType;
 			}

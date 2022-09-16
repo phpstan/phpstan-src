@@ -49,6 +49,7 @@ parameters:
 		runtimeReflectionRules: false
 		notAnalysedTrait: false
 		curlSetOptTypes: false
+		listType: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -256,6 +257,7 @@ parametersSchema:
 		runtimeReflectionRules: bool()
 		notAnalysedTrait: bool()
 		curlSetOptTypes: bool()
+		listType: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -520,6 +522,8 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\TypeNodeResolver
+		arguments:
+			listType: %featureToggles.listType%
 
 	-
 		class: PHPStan\PhpDoc\TypeNodeResolverExtensionRegistryProvider

@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -52,7 +53,7 @@ class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			}
 			return new ConstantBooleanType(false);
 		} elseif ($isSuperset->no()) {
-			$arrayType = new ArrayType(new IntegerType(), new StringType());
+			$arrayType = TypeCombinator::intersect(new ArrayType(new IntegerType(), new StringType()), new AccessoryArrayListType());
 			if (
 				!isset($functionCall->getArgs()[2])
 				|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($functionCall->getArgs()[2]->value))->yes()

@@ -9,6 +9,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
@@ -51,7 +52,11 @@ class ArrayIsListFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 
 		return $this->typeSpecifier->create(
 			$arrayArg,
-			TypeCombinator::intersect(new ArrayType(new IntegerType(), $valueType->getIterableValueType()), ...TypeUtils::getAccessoryTypes($valueType)),
+			TypeCombinator::intersect(
+				new ArrayType(new IntegerType(), $valueType->getIterableValueType()),
+				new AccessoryArrayListType(),
+				...TypeUtils::getAccessoryTypes($valueType),
+			),
 			$context,
 			false,
 			$scope,

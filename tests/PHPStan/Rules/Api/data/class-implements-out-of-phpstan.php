@@ -161,6 +161,11 @@ class Baz implements Type
 		// TODO: Implement isOversizedArray() method.
 	}
 
+	public function isList(): \PHPStan\TrinaryLogic
+	{
+		// TODO: Implement isList() method.
+	}
+
 	public function isOffsetAccessible(): \PHPStan\TrinaryLogic
 	{
 		// TODO: Implement isOffsetAccessible() method.

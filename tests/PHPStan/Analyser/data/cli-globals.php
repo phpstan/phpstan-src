@@ -5,7 +5,7 @@ namespace CliGlobals;
 use function PHPStan\Testing\assertType;
 
 assertType('int<1, max>', $argc);
-assertType('non-empty-array<int, string>', $argv);
+assertType('non-empty-list<string>', $argv);
 
 function f() {
 	assertType('*ERROR*', $argc);

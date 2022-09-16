@@ -20,7 +20,7 @@ class Foo
 			}
 		}
 
-		assertType("array<int, array{version: string, operator: string, side: 'end'|'start'}>", $borders);
+		assertType("list<array{version: string, operator: string, side: 'end'|'start'}>", $borders);
 
 		foreach ($borders as $border) {
 			assertType("array{version: string, operator: string, side: 'end'|'start'}", $border);

@@ -21,7 +21,7 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 		ConstantArrayType $bound,
 	)
 	{
-		parent::__construct($bound->getKeyTypes(), $bound->getValueTypes(), $bound->getNextAutoIndexes(), $bound->getOptionalKeys());
+		parent::__construct($bound->getKeyTypes(), $bound->getValueTypes(), $bound->getNextAutoIndexes(), $bound->getOptionalKeys(), $bound->isList()->yes());
 		$this->scope = $scope;
 		$this->strategy = $templateTypeStrategy;
 		$this->variance = $templateTypeVariance;

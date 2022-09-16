@@ -16,7 +16,7 @@ class HelloWorld
 			$nonEmptyArray[] = 1;
 		}
 
-		assertType('non-empty-array<int, int<0, max>>', $nonEmptyArray);
+		assertType('non-empty-list<int<0, max>>', $nonEmptyArray);
 
 		return $nonEmptyArray;
 	}

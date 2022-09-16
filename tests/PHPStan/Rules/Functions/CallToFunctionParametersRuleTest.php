@@ -811,7 +811,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 		$this->analyse([__DIR__ . '/data/proc_open.php'], [
 			[
-				'Parameter #1 $command of function proc_open expects array<int, string>|string, array<string, string> given.',
+				"Parameter #1 \$command of function proc_open expects list<string>|string, array{something: 'bogus', in: 'here'} given.",
 				6,
 			],
 		]);

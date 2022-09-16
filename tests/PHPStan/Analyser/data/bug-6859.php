@@ -11,14 +11,14 @@ class HelloWorld
 	public function keys($body)
 	{
 		if (array_key_exists("someParam", $body)) {
-			assertType('non-empty-array<int, (int|string)>', array_keys($body));
+			assertType('non-empty-list<(int|string)>', array_keys($body));
 
 			$someKeys = array_filter(
 				array_keys($body),
 				fn ($key) => preg_match("/^somePattern[0-9]+$/", $key)
 			);
 
-			assertType('array<int, (int|string)>', $someKeys);
+			assertType('array<int<0, max>, (int|string)>', $someKeys);
 
 			if (count($someKeys) > 0) {
 				return 1;
@@ -30,7 +30,7 @@ class HelloWorld
 	public function values($body)
 	{
 		if (array_key_exists("someParam", $body)) {
-			assertType('non-empty-array<int, mixed>', array_values($body));
+			assertType('non-empty-list<mixed>', array_values($body));
 		}
 	}
 }

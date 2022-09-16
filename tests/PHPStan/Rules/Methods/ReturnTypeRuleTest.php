@@ -752,4 +752,15 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-7996.php'], []);
 	}
 
+	public function testBug6358(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6358.php'], [
+			[
+				'Method Bug6358\HelloWorld::sayHello() should return list<stdClass> but returns array{1: stdClass}.',
+				14,
+			],
+		]);
+	}
+
 }

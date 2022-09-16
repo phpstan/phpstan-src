@@ -10,7 +10,7 @@ use function PHPStan\Testing\assertType;
 function foo(array $arr): void
 {
 	$arrSpread = [...$arr];
-	assertType('array<int, mixed>', $arrSpread);
+	assertType('list<mixed>', $arrSpread);
 }
 
 /**
@@ -19,7 +19,7 @@ function foo(array $arr): void
 function foo2(array $arr): void
 {
 	$arrSpread = [...$arr];
-	assertType('array<int, non-empty-array>', $arrSpread);
+	assertType('list<non-empty-array>', $arrSpread);
 }
 
 /**
@@ -28,7 +28,7 @@ function foo2(array $arr): void
 function foo3(array $arr): void
 {
 	$arrSpread = [...$arr];
-	assertType('non-empty-array<int, string>', $arrSpread);
+	assertType('non-empty-list<string>', $arrSpread);
 }
 
 /**

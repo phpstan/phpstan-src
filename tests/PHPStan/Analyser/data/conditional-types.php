@@ -27,13 +27,13 @@ abstract class Test
 	 */
 	public function testArrayKeys(array $array, array $nonEmptyArray, array $intArray, array $nonEmptyIntArray, array $emptyArray): void
 	{
-		assertType('array<int, (int|string)>', $this->arrayKeys($array));
-		assertType('array<int, int>', $this->arrayKeys($intArray));
+		assertType('list<(int|string)>', $this->arrayKeys($array));
+		assertType('list<int>', $this->arrayKeys($intArray));
 
-		assertType('non-empty-array<int, (int|string)>', $this->arrayKeys($nonEmptyArray));
-		assertType('non-empty-array<int, int>', $this->arrayKeys($nonEmptyIntArray));
+		assertType('non-empty-list<(int|string)>', $this->arrayKeys($nonEmptyArray));
+		assertType('non-empty-list<int>', $this->arrayKeys($nonEmptyIntArray));
 
-		assertType('array<int, *NEVER*>', $this->arrayKeys($emptyArray));
+		assertType('list<*NEVER*>', $this->arrayKeys($emptyArray));
 	}
 
 	/**

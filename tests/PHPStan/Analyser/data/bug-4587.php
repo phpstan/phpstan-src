@@ -16,7 +16,7 @@ class HelloWorld
 			return $result;
 		}, $results);
 
-		assertType('array<int, array{a: int}>', $type);
+		assertType('list<array{a: int}>', $type);
 	}
 
 	public function b(): void
@@ -32,6 +32,6 @@ class HelloWorld
 			return $result;
 		}, $results);
 
-		assertType('array<int, array{a: numeric-string}>', $type);
+		assertType('list<array{a: numeric-string}>', $type);
 	}
 }

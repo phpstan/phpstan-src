@@ -40,9 +40,9 @@ class Foo
 	 */
 	public function arrayMergeUnionType($array1, $array2): void
 	{
-		assertType("array<int, int|string>", array_merge($array1, $array1));
-		assertType("array<int, bool|float|int|string>", array_merge($array1, $array2));
-		assertType("array<int, bool|float|int|string>", array_merge($array2, $array1));
+		assertType("list<int|string>", array_merge($array1, $array1));
+		assertType("list<bool|float|int|string>", array_merge($array1, $array2));
+		assertType("list<bool|float|int|string>", array_merge($array2, $array1));
 	}
 
 	/**
@@ -51,8 +51,8 @@ class Foo
 	 */
 	public function arrayMergeUnionTypeArrayShapes($array1, $array2): void
 	{
-		assertType("array<int, array{bar: '2'}|array{foo: '1'}>", array_merge($array1, $array1));
-		assertType("array<int, array{bar: '2'}|array{bar: '3'}|array{foo: '1'}|array{foo: '2'}>", array_merge($array1, $array2));
-		assertType("array<int, array{bar: '2'}|array{bar: '3'}|array{foo: '1'}|array{foo: '2'}>", array_merge($array2, $array1));
+		assertType("list<array{bar: '2'}|array{foo: '1'}>", array_merge($array1, $array1));
+		assertType("list<array{bar: '2'}|array{bar: '3'}|array{foo: '1'}|array{foo: '2'}>", array_merge($array1, $array2));
+		assertType("list<array{bar: '2'}|array{bar: '3'}|array{foo: '1'}|array{foo: '2'}>", array_merge($array2, $array1));
 	}
 }

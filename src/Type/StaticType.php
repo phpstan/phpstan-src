@@ -14,7 +14,6 @@ use PHPStan\Reflection\Type\CallbackUnresolvedPropertyPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -487,21 +486,17 @@ class StaticType implements TypeWithClassName, SubtractableType
 	{
 		if ($subtractedType !== null) {
 			$classReflection = $this->getClassReflection();
-			if ($classReflection->isEnum()) {
+			if ($classReflection->getAllowedSubTypes() !== null) {
 				$objectType = $this->getStaticObjectType()->changeSubtractedType($subtractedType);
 				if ($objectType instanceof NeverType) {
 					return $objectType;
 				}
 
-				if ($objectType instanceof EnumCaseObjectType) {
-					return TypeCombinator::intersect($this, $objectType);
-				}
-
-				if ($objectType instanceof ObjectType) {
+				if ($objectType instanceof ObjectType && $objectType->getSubtractedType() !== null) {
 					return new self($classReflection, $objectType->getSubtractedType());
 				}
 
-				return $this;
+				return TypeCombinator::intersect($this, $objectType);
 			}
 		}
 

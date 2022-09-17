@@ -81,7 +81,7 @@ abstract class ErrorFormatterTestCase extends PHPStanTestCase
 		$fileErrors = array_slice([
 			new Error('Foo', self::DIRECTORY_PATH . '/folder with unicode 😃/file name with "spaces" and unicode 😃.php', 4),
 			new Error('Foo', self::DIRECTORY_PATH . '/foo.php', 1),
-			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/foo.php', 5),
+			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/foo.php', 5, true, null, null, 'a tip'),
 			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/folder with unicode 😃/file name with "spaces" and unicode 😃.php', 2),
 			new Error("Bar\nBar2", self::DIRECTORY_PATH . '/foo.php', null),
 		], 0, $numFileErrors);

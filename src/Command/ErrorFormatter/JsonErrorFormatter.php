@@ -36,11 +36,17 @@ class JsonErrorFormatter implements ErrorFormatter
 			}
 			$errorsArray['files'][$file]['errors']++;
 
-			$errorsArray['files'][$file]['messages'][] = [
+			$message = [
 				'message' => $fileSpecificError->getMessage(),
 				'line' => $fileSpecificError->getLine(),
 				'ignorable' => $fileSpecificError->canBeIgnored(),
 			];
+
+			if ($fileSpecificError->getTip() !== null) {
+				$message['tip'] = $fileSpecificError->getTip();
+			}
+
+			$errorsArray['files'][$file]['messages'][] = $message;
 		}
 
 		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {

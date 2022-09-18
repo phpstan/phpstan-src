@@ -118,6 +118,7 @@ use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
+use function array_merge;
 use function array_pop;
 use function array_slice;
 use function count;
@@ -4846,7 +4847,35 @@ class MutatingScope implements Scope
 			$resultTypes[] = TypeCombinator::union(...$integerRanges['b']);
 		}
 
-		return TypeCombinator::union(...$resultTypes, ...$otherTypes);
+		$accessoryTypes = [];
+		$aAccessoryTypes = TypeUtils::getAccessoryTypes($a);
+		$bAccessoryTypes = TypeUtils::getAccessoryTypes($b);
+		if (count($aAccessoryTypes) > 0) {
+			if (count($bAccessoryTypes) === 0) {
+				$accessoryTypes = $aAccessoryTypes;
+			} else {
+				$accessoryTypesToUnion = [];
+				foreach (array_merge($aAccessoryTypes, $bAccessoryTypes) as $accessoryType) {
+					if ($accessoryType instanceof HasOffsetValueType) {
+						$accessoryTypesToUnion[sprintf('hasOffsetValue(%s)', $accessoryType->getOffsetType()->describe(VerbosityLevel::cache()))][] = $accessoryType;
+						continue;
+					}
+
+					$accessoryTypesToUnion[$accessoryType->describe(VerbosityLevel::cache())][] = $accessoryType;
+				}
+
+				foreach ($accessoryTypesToUnion as $accessoryTypesToUnionEntry) {
+					$accessoryTypes[] = TypeCombinator::union(...$accessoryTypesToUnionEntry)->generalize(GeneralizePrecision::moreSpecific());
+				}
+			}
+		} elseif (count($bAccessoryTypes) > 0) {
+			$accessoryTypes = $bAccessoryTypes;
+		}
+
+		return TypeCombinator::intersect(
+			TypeCombinator::union(...$resultTypes, ...$otherTypes),
+			...$accessoryTypes,
+		);
 	}
 
 	private static function getArrayDepth(ArrayType $type): int

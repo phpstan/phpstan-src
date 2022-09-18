@@ -124,6 +124,41 @@ abstract class RuleTestCase extends PHPStanTestCase
 	 */
 	public function analyse(array $files, array $expectedErrors): void
 	{
+		$actualErrors = $this->gatherAnalyserErrors($files);
+		$strictlyTypedSprintf = static function (int $line, string $message, ?string $tip): string {
+			$message = sprintf('%02d: %s', $line, $message);
+			if ($tip !== null) {
+				$message .= "\n    💡 " . $tip;
+			}
+
+			return $message;
+		};
+
+		$expectedErrors = array_map(
+			static fn (array $error): string => $strictlyTypedSprintf($error[1], $error[0], $error[2] ?? null),
+			$expectedErrors,
+		);
+
+		$actualErrors = array_map(
+			static function (Error $error) use ($strictlyTypedSprintf): string {
+				$line = $error->getLine();
+				if ($line === null) {
+					return $strictlyTypedSprintf(-1, $error->getMessage(), $error->getTip());
+				}
+				return $strictlyTypedSprintf($line, $error->getMessage(), $error->getTip());
+			},
+			$actualErrors,
+		);
+
+		$this->assertSame(implode("\n", $expectedErrors) . "\n", implode("\n", $actualErrors) . "\n");
+	}
+
+	/**
+	 * @param string[] $files
+	 * @return list<Error>
+	 */
+	public function gatherAnalyserErrors(array $files): array
+	{
 		$files = array_map([$this->getFileHelper(), 'normalizePath'], $files);
 		$analyserResult = $this->getAnalyser()->analyse(
 			$files,
@@ -154,32 +189,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			}
 		}
 
-		$strictlyTypedSprintf = static function (int $line, string $message, ?string $tip): string {
-			$message = sprintf('%02d: %s', $line, $message);
-			if ($tip !== null) {
-				$message .= "\n    💡 " . $tip;
-			}
-
-			return $message;
-		};
-
-		$expectedErrors = array_map(
-			static fn (array $error): string => $strictlyTypedSprintf($error[1], $error[0], $error[2] ?? null),
-			$expectedErrors,
-		);
-
-		$actualErrors = array_map(
-			static function (Error $error) use ($strictlyTypedSprintf): string {
-				$line = $error->getLine();
-				if ($line === null) {
-					return $strictlyTypedSprintf(-1, $error->getMessage(), $error->getTip());
-				}
-				return $strictlyTypedSprintf($line, $error->getMessage(), $error->getTip());
-			},
-			$actualErrors,
-		);
-
-		$this->assertSame(implode("\n", $expectedErrors) . "\n", implode("\n", $actualErrors) . "\n");
+		return $actualErrors;
 	}
 
 	protected function shouldPolluteScopeWithLoopInitialAssignments(): bool

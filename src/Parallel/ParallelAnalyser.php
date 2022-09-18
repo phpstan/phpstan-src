@@ -185,7 +185,7 @@ class ParallelAnalyser
 					$this->processPool->quitAll();
 				}
 
-				if (count($jobs) === 0) {
+				if (count($jobs) === 0) { // @phpstan-ignore-line
 					$this->processPool->tryQuitProcess($processIdentifier);
 					return;
 				}

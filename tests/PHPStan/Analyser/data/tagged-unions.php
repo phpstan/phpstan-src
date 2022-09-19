@@ -168,7 +168,6 @@ class TipsFromArnaud
 	 */
 	public function doFoo4(array $a): void
 	{
-		// could be: array{a: int|string, b: string}
 		assertType('array{a: int|string, b: string}', $a);
 	}
 
@@ -177,7 +176,6 @@ class TipsFromArnaud
 	 */
 	public function doFoo5(array $a): void
 	{
-		// could be: array{a: int|string, b: string, c: string}
 		assertType('array{a: int|string, b: string, c: string}', $a);
 	}
 

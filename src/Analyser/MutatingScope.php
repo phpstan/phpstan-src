@@ -5090,7 +5090,7 @@ class MutatingScope implements Scope
 			}
 
 			if (count($classTemplateTypes) === count($originalClassTemplateTypes)) {
-				$propertyType = $this->getType($assignedToProperty);
+				$propertyType = TypeCombinator::removeNull($this->getType($assignedToProperty));
 				if ($objectType->isSuperTypeOf($propertyType)->yes()) {
 					return $propertyType;
 				}

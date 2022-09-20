@@ -34,9 +34,9 @@ class ModelHelper {
 	}
 
 	public function bug(): void {
-		assertType('class-string<TModel of Bug6864\Model (class Bug6864\ModelHelper, argument)>', $this->model::class);
-		assertType('class-string<TModel of Bug6864\Model (class Bug6864\ModelHelper, argument)>|null', $this->nullableModel::class);
+		assertType('class-string<TModel of Bug6864\Model (class Bug6864\ModelHelper, argument)>&literal-string', $this->model::class);
+		assertType('(class-string<TModel of Bug6864\Model (class Bug6864\ModelHelper, argument)>&literal-string)|null', $this->nullableModel::class);
 	}
 }
 
-assertType('class-string<Bug6864\Foo>', Foo::Value::class);
+assertType('class-string<Bug6864\Foo>&literal-string', Foo::Value::class);

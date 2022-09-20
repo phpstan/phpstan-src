@@ -1168,4 +1168,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7562.php'], []);
 	}
 
+	public function testBug7823(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7823.php'], [
+			[
+				'Parameter #1 $s of function Bug7823\sayHello expects literal-string, class-string given.',
+				34,
+			],
+		]);
+	}
+
 }

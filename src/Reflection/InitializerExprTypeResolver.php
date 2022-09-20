@@ -1720,19 +1720,32 @@ class InitializerExprTypeResolver
 					}
 
 					if ($type instanceof EnumCaseObjectType) {
-						return new GenericClassStringType(new ObjectType($type->getClassName()));
+						return TypeCombinator::intersect(
+							new GenericClassStringType(new ObjectType($type->getClassName())),
+							new AccessoryLiteralStringType(),
+						);
 					}
 
 					if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {
-						return new GenericClassStringType($type);
+						return TypeCombinator::intersect(
+							new GenericClassStringType($type),
+							new AccessoryLiteralStringType(),
+						);
 					} elseif ($type instanceof TypeWithClassName) {
 						$reflection = $type->getClassReflection();
 						if ($reflection !== null && $reflection->isFinalByKeyword()) {
 							return new ConstantStringType($reflection->getName(), true);
 						}
-						return new GenericClassStringType($type);
+
+						return TypeCombinator::intersect(
+							new GenericClassStringType($type),
+							new AccessoryLiteralStringType(),
+						);
 					} elseif ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
-						return new ClassStringType();
+						return TypeCombinator::intersect(
+							new ClassStringType(),
+							new AccessoryLiteralStringType(),
+						);
 					}
 
 					return new ErrorType();

@@ -9,7 +9,7 @@ class Foo
 
 	function doFoo(object $object): void
 	{
-		assertType('class-string', $object::class);
+		assertType('class-string&literal-string', $object::class);
 		switch ($object::class) {
 			case \DateTime::class:
 				assertType(\DateTime::class, $object);

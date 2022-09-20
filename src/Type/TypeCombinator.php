@@ -259,14 +259,26 @@ class TypeCombinator
 				unset($scalarTypes[$classType]);
 				continue;
 			}
-			if ($classType === ConstantBooleanType::class && count($scalarTypeItems) === 2) {
+			$scalarTypeItemsCount = count($scalarTypeItems);
+			if ($classType === ConstantBooleanType::class && $scalarTypeItemsCount === 2) {
 				$types[] = new BooleanType();
 				$typesCount++;
 				unset($scalarTypes[$classType]);
 				continue;
 			}
 
-			$scalarTypeItemsCount = count($scalarTypeItems);
+			if ($scalarTypeItemsCount > 512) {
+				$newTypes = [];
+				foreach ($scalarTypeItems as $scalarTypeItem) {
+					$newType = $scalarTypeItem->generalize(GeneralizePrecision::moreSpecific());
+					$newTypes[$newType->describe(VerbosityLevel::cache())] = $newType;
+				}
+				$types = array_merge($types, array_values($newTypes));
+				$typesCount += count($newTypes);
+				unset($scalarTypes[$classType]);
+				continue;
+			}
+
 			for ($i = 0; $i < $typesCount; $i++) {
 				for ($j = 0; $j < $scalarTypeItemsCount; $j++) {
 					$compareResult = self::compareTypesInUnion($types[$i], $scalarTypeItems[$j]);

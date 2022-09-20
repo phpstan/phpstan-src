@@ -14,7 +14,7 @@ class EnumSanityRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new EnumSanityRule();
+		return new EnumSanityRule($this->createReflectionProvider());
 	}
 
 	public function testRule(): void
@@ -23,7 +23,7 @@ class EnumSanityRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0');
 		}
 
-		$this->analyse([__DIR__ . '/data/enum-sanity.php'], [
+		$expected = [
 			[
 				'Enum EnumSanity\EnumWithAbstractMethod contains abstract method foo().',
 				7,
@@ -76,7 +76,16 @@ class EnumSanityRuleTest extends RuleTestCase
 				'Enum EnumSanity\EnumWithSerialize contains magic method __unserialize().',
 				81,
 			],
-		]);
+		];
+
+		if (PHP_VERSION_ID >= 80100) {
+			$expected[] = [
+				'Enum EnumSanity\EnumMayNotSerializable cannot implement the Serializable interface.',
+				86,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/enum-sanity.php'], $expected);
 	}
 
 }

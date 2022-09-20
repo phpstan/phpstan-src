@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.1
 
 namespace EnumSanity;
 
@@ -83,3 +83,10 @@ enum EnumWithSerialize {
 	}
 }
 
+enum EnumMayNotSerializable implements \Serializable {
+
+	public function serialize() {
+	}
+	public function unserialize($data) {
+	}
+}

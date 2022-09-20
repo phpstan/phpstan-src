@@ -3603,7 +3603,7 @@ return [
 'gnupg::encrypt' => ['string', 'plaintext'=>'string'],
 'gnupg::encryptsign' => ['string', 'plaintext'=>'string'],
 'gnupg::export' => ['string', 'fingerprint'=>'string'],
-'gnupg::geterror' => ['string'],
+'gnupg::geterror' => ['string|false'],
 'gnupg::getprotocol' => ['int'],
 'gnupg::import' => ['array', 'keydata'=>'string'],
 'gnupg::init' => ['resource'],

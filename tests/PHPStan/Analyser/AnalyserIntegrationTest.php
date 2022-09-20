@@ -931,7 +931,19 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug7903(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7903.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(6, $errors);
+		$this->assertSame('Comparison operation ">" between 0 and 0 is always false.', $errors[0]->getMessage());
+		$this->assertSame(212, $errors[0]->getLine());
+		$this->assertSame('Comparison operation ">" between 0 and 0 is always false.', $errors[1]->getMessage());
+		$this->assertSame(213, $errors[1]->getLine());
+		$this->assertSame('Comparison operation ">" between 0 and 0 is always false.', $errors[2]->getMessage());
+		$this->assertSame(214, $errors[2]->getLine());
+		$this->assertSame('Comparison operation ">" between 0 and 0 is always false.', $errors[3]->getMessage());
+		$this->assertSame(215, $errors[3]->getLine());
+		$this->assertSame('Comparison operation ">" between 0 and 0 is always false.', $errors[4]->getMessage());
+		$this->assertSame(229, $errors[4]->getLine());
+		$this->assertSame('Comparison operation ">" between 0 and 0 is always false.', $errors[5]->getMessage());
+		$this->assertSame(230, $errors[5]->getLine());
 	}
 
 	public function testBug7901(): void

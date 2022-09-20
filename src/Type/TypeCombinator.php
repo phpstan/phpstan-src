@@ -637,65 +637,15 @@ class TypeCombinator
 			return [
 				self::intersect(new ArrayType(
 					self::union(...$keyTypesForGeneralArray),
-					self::union(...self::optimizeConstantArrays($valueTypesForGeneralArray)),
+					self::union(...$valueTypesForGeneralArray),
 				), ...$accessoryTypes),
 			];
 		}
 
-		$reducedArrayTypes = self::reduceArrays($arrayTypes);
-
 		return array_map(
 			static fn (Type $arrayType) => self::intersect($arrayType, ...$accessoryTypes),
-			self::optimizeConstantArrays($reducedArrayTypes),
+			self::reduceArrays($arrayTypes),
 		);
-	}
-
-	/**
-	 * @param Type[] $types
-	 * @return Type[]
-	 */
-	private static function optimizeConstantArrays(array $types): array
-	{
-		$constantArrayValuesCount = self::countConstantArrayValueTypes($types);
-
-		if ($constantArrayValuesCount > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-			$results = [];
-			foreach ($types as $type) {
-				$results[] = TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
-					if ($type instanceof ConstantArrayType) {
-						return $type->generalize(GeneralizePrecision::moreSpecific());
-					}
-
-					return $traverse($type);
-				});
-			}
-
-			return $results;
-		}
-
-		return $types;
-	}
-
-	/**
-	 * @param Type[] $types
-	 */
-	private static function countConstantArrayValueTypes(array $types): int
-	{
-		$constantArrayValuesCount = 0;
-		foreach ($types as $type) {
-			if ($type instanceof ConstantArrayType) {
-				$constantArrayValuesCount += count($type->getValueTypes());
-			}
-
-			TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constantArrayValuesCount): Type {
-				if ($type instanceof ConstantArrayType) {
-					$constantArrayValuesCount += count($type->getValueTypes());
-				}
-
-				return $traverse($type);
-			});
-		}
-		return $constantArrayValuesCount;
 	}
 
 	/**
@@ -706,27 +656,60 @@ class TypeCombinator
 	{
 		$newArrays = [];
 		$arraysToProcess = [];
+		$emptyArray = null;
 		foreach ($constantArrays as $constantArray) {
 			if (!$constantArray instanceof ConstantArrayType) {
 				$newArrays[] = $constantArray;
 				continue;
 			}
 
+			if ($constantArray->isEmpty()) {
+				$emptyArray = $constantArray;
+				continue;
+			}
+
 			$arraysToProcess[] = $constantArray;
 		}
 
-		for ($i = 0, $arraysToProcessCount = count($arraysToProcess); $i < $arraysToProcessCount; $i++) {
-			for ($j = $i + 1; $j < $arraysToProcessCount; $j++) {
+		if ($emptyArray !== null) {
+			$newArrays[] = $emptyArray;
+		}
+
+		$arraysToProcessPerKey = [];
+		foreach ($arraysToProcess as $i => $arrayToProcess) {
+			foreach ($arrayToProcess->getKeyTypes() as $keyType) {
+				$arraysToProcessPerKey[$keyType->getValue()][] = $i;
+			}
+		}
+
+		$eligibleCombinations = [];
+
+		foreach ($arraysToProcessPerKey as $arrays) {
+			for ($i = 0, $arraysCount = count($arrays); $i < $arraysCount - 1; $i++) {
+				for ($j = $i + 1; $j < $arraysCount; $j++) {
+					$eligibleCombinations[$arrays[$i]][$arrays[$j]] = $arrays[$j];
+				}
+			}
+		}
+
+		foreach ($eligibleCombinations as $i => $other) {
+			if (!array_key_exists($i, $arraysToProcess)) {
+				continue;
+			}
+
+			foreach ($other as $j) {
+				if (!array_key_exists($j, $arraysToProcess)) {
+					continue;
+				}
+
 				if ($arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])) {
 					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
-					array_splice($arraysToProcess, $i--, 1);
-					$arraysToProcessCount--;
+					unset($arraysToProcess[$i]);
 					continue 2;
 
 				} elseif ($arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])) {
 					$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
-					array_splice($arraysToProcess, $j--, 1);
-					$arraysToProcessCount--;
+					unset($arraysToProcess[$j]);
 					continue 1;
 				}
 			}

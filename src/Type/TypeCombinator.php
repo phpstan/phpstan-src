@@ -213,28 +213,10 @@ class TypeCombinator
 		/** @var ArrayType[] $arrayTypes */
 		$arrayTypes = $arrayTypes;
 
-		$commonArrayAccessoryTypesKeys = [];
-		if (count($arrayAccessoryTypes) > 1) {
-			$commonArrayAccessoryTypesKeys = array_keys(array_intersect_key(...$arrayAccessoryTypes));
-		} elseif (count($arrayAccessoryTypes) > 0) {
-			$commonArrayAccessoryTypesKeys = array_keys($arrayAccessoryTypes[0]);
-		}
-
-		$arrayAccessoryTypesToProcess = [];
-		foreach ($commonArrayAccessoryTypesKeys as $commonKey) {
-			$typesToUnion = [];
-			foreach ($arrayAccessoryTypes as $array) {
-				foreach ($array[$commonKey] as $arrayAccessoryType) {
-					$typesToUnion[] = $arrayAccessoryType;
-				}
-			}
-			$arrayAccessoryTypesToProcess[] = self::union(...$typesToUnion);
-		}
-
 		$types = array_values(
 			array_merge(
 				$types,
-				self::processArrayTypes($arrayTypes, $arrayAccessoryTypesToProcess),
+				self::processArrayTypes($arrayTypes, self::unionCommonTypeMaps($arrayAccessoryTypes)),
 			),
 		);
 		$typesCount = count($types);
@@ -361,6 +343,34 @@ class TypeCombinator
 		}
 
 		return new UnionType($types);
+	}
+
+	/**
+	 * @internal
+	 * @param list<array<string, list<Type>>> $commonTypeMaps
+	 * @return list<Type>
+	 */
+	public static function unionCommonTypeMaps(array $commonTypeMaps): array
+	{
+		$commonTypesKeys = [];
+		if (count($commonTypeMaps) > 1) {
+			$commonTypesKeys = array_keys(array_intersect_key(...$commonTypeMaps));
+		} elseif (count($commonTypeMaps) > 0) {
+			$commonTypesKeys = array_keys($commonTypeMaps[0]);
+		}
+
+		$types = [];
+		foreach ($commonTypesKeys as $commonKey) {
+			$typesToUnion = [];
+			foreach ($commonTypeMaps as $commonTypeMap) {
+				foreach ($commonTypeMap[$commonKey] as $commonType) {
+					$typesToUnion[] = $commonType;
+				}
+			}
+			$types[] = self::union(...$typesToUnion);
+		}
+
+		return $types;
 	}
 
 	/**

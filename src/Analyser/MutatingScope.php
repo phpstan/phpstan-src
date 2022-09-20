@@ -118,7 +118,6 @@ use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
-use function array_merge;
 use function array_pop;
 use function array_slice;
 use function count;
@@ -4854,19 +4853,23 @@ class MutatingScope implements Scope
 			if (count($bAccessoryTypes) === 0) {
 				$accessoryTypes = $aAccessoryTypes;
 			} else {
-				$accessoryTypesToUnion = [];
-				foreach (array_merge($aAccessoryTypes, $bAccessoryTypes) as $accessoryType) {
-					if ($accessoryType instanceof HasOffsetValueType) {
-						$accessoryTypesToUnion[sprintf('hasOffsetValue(%s)', $accessoryType->getOffsetType()->describe(VerbosityLevel::cache()))][] = $accessoryType;
-						continue;
+				$commonTypeMaps = [];
+				foreach ([$aAccessoryTypes, $bAccessoryTypes] as $listKey => $accessoryTypeList) {
+					foreach ($accessoryTypeList as $accessoryType) {
+						if ($accessoryType instanceof HasOffsetValueType) {
+							$commonTypeMaps[$listKey][sprintf('hasOffsetValue(%s)', $accessoryType->getOffsetType()->describe(VerbosityLevel::cache()))][] = $accessoryType;
+							continue;
+						}
+
+						$commonTypeMaps[$listKey][$accessoryType->describe(VerbosityLevel::cache())][] = $accessoryType;
 					}
 
-					$accessoryTypesToUnion[$accessoryType->describe(VerbosityLevel::cache())][] = $accessoryType;
 				}
 
-				foreach ($accessoryTypesToUnion as $accessoryTypesToUnionEntry) {
-					$accessoryTypes[] = TypeCombinator::union(...$accessoryTypesToUnionEntry)->generalize(GeneralizePrecision::moreSpecific());
-				}
+				$accessoryTypes = array_map(
+					static fn (Type $type): Type => $type->generalize(GeneralizePrecision::moreSpecific()),
+					TypeCombinator::unionCommonTypeMaps($commonTypeMaps),
+				);
 			}
 		} elseif (count($bAccessoryTypes) > 0) {
 			$accessoryTypes = $bAccessoryTypes;

@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -32,9 +31,10 @@ class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctionRetur
 		if ($argsCount === 0) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		} elseif ($argsCount === 1) {
-			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$pathType = $scope->getType($functionCall->getArgs()[0]->value);
 
-			$builder->setOffsetValueType(new ConstantStringType('dirname'), new StringType(), true);
+			$builder = ConstantArrayTypeBuilder::createEmpty();
+			$builder->setOffsetValueType(new ConstantStringType('dirname'), new StringType(), !$pathType->isNonEmptyString()->yes());
 			$builder->setOffsetValueType(new ConstantStringType('basename'), new StringType());
 			$builder->setOffsetValueType(new ConstantStringType('extension'), new StringType(), true);
 			$builder->setOffsetValueType(new ConstantStringType('filename'), new StringType());

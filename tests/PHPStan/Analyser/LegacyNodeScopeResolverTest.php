@@ -2940,7 +2940,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$unshiftedConditionalArray',
 			],
 			[
-				'array{dirname: string, basename: string, filename: string, extension?: string}',
+				'array{dirname?: string, basename: string, extension?: string, filename: string}',
 				'pathinfo($string)',
 			],
 			[

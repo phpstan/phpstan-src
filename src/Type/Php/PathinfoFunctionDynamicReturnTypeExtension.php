@@ -32,15 +32,12 @@ class PathinfoFunctionDynamicReturnTypeExtension implements DynamicFunctionRetur
 		if ($argsCount === 0) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		} elseif ($argsCount === 1) {
-			$stringType = new StringType();
+			$builder = ConstantArrayTypeBuilder::createEmpty();
 
-			$builder = ConstantArrayTypeBuilder::createFromConstantArray(
-				new ConstantArrayType(
-					[new ConstantStringType('dirname'), new ConstantStringType('basename'), new ConstantStringType('filename')],
-					[$stringType, $stringType, $stringType],
-				),
-			);
-			$builder->setOffsetValueType(new ConstantStringType('extension'), $stringType, true);
+			$builder->setOffsetValueType(new ConstantStringType('dirname'), new StringType(), true);
+			$builder->setOffsetValueType(new ConstantStringType('basename'), new StringType());
+			$builder->setOffsetValueType(new ConstantStringType('extension'), new StringType(), true);
+			$builder->setOffsetValueType(new ConstantStringType('filename'), new StringType());
 
 			return $builder->getArray();
 		}

@@ -10,6 +10,8 @@ use function count;
 class ArrayMapArgVisitor extends NodeVisitorAbstract
 {
 
+	public const ATTRIBUTE_NAME = 'arrayMapArgs';
+
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name) {
@@ -19,7 +21,7 @@ class ArrayMapArgVisitor extends NodeVisitorAbstract
 				if (isset($args[0])) {
 					$slicedArgs = array_slice($args, 1);
 					if (count($slicedArgs) > 0) {
-						$args[0]->value->setAttribute('arrayMapArgs', $slicedArgs);
+						$args[0]->value->setAttribute(self::ATTRIBUTE_NAME, $slicedArgs);
 					}
 				}
 			}

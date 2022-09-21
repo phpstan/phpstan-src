@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Keywords;
 use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\Scope;
+use PHPStan\Parser\ParentStmtTypesVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_reverse;
@@ -33,7 +34,7 @@ class ContinueBreakInLoopRule implements Rule
 			$value = $node->num->value;
 		}
 
-		$parentStmtTypes = array_reverse($node->getAttribute('parentStmtTypes'));
+		$parentStmtTypes = array_reverse($node->getAttribute(ParentStmtTypesVisitor::ATTRIBUTE_NAME));
 		foreach ($parentStmtTypes as $parentStmtType) {
 			if ($parentStmtType === Stmt\Case_::class) {
 				continue;

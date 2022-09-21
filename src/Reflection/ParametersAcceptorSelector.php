@@ -4,6 +4,10 @@ namespace PHPStan\Reflection;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Parser\ArrayFilterArgVisitor;
+use PHPStan\Parser\ArrayMapArgVisitor;
+use PHPStan\Parser\ArrayWalkArgVisitor;
+use PHPStan\Parser\CurlSetOptArgVisitor;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\ShouldNotHappenException;
@@ -78,7 +82,7 @@ class ParametersAcceptorSelector
 			count($args) > 0
 			&& count($parametersAcceptors) > 0
 		) {
-			$arrayMapArgs = $args[0]->value->getAttribute('arrayMapArgs');
+			$arrayMapArgs = $args[0]->value->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
 			if ($arrayMapArgs !== null) {
 				$acceptor = $parametersAcceptors[0];
 				$parameters = $acceptor->getParameters();
@@ -108,7 +112,7 @@ class ParametersAcceptorSelector
 				];
 			}
 
-			if (count($args) >= 3 && (bool) $args[0]->getAttribute('isCurlSetOptArg')) {
+			if (count($args) >= 3 && (bool) $args[0]->getAttribute(CurlSetOptArgVisitor::ATTRIBUTE_NAME)) {
 				$optType = $scope->getType($args[1]->value);
 				if ($optType instanceof ConstantIntegerType) {
 					$optValueType = self::getCurlOptValueType($optType->getValue());
@@ -139,7 +143,7 @@ class ParametersAcceptorSelector
 				}
 			}
 
-			if (isset($args[0]) && (bool) $args[0]->getAttribute('isArrayFilterArg')) {
+			if (isset($args[0]) && (bool) $args[0]->getAttribute(ArrayFilterArgVisitor::ATTRIBUTE_NAME)) {
 				if (isset($args[2])) {
 					$mode = $scope->getType($args[2]->value);
 					if ($mode instanceof ConstantIntegerType) {
@@ -183,7 +187,7 @@ class ParametersAcceptorSelector
 				];
 			}
 
-			if (isset($args[0]) && (bool) $args[0]->getAttribute('isArrayWalkArg')) {
+			if (isset($args[0]) && (bool) $args[0]->getAttribute(ArrayWalkArgVisitor::ATTRIBUTE_NAME)) {
 				$arrayWalkParameters = [
 					new DummyParameter('item', self::getIterableValueType($scope->getType($args[0]->value)), false, PassedByReference::createReadsArgument(), false, null),
 					new DummyParameter('key', self::getIterableKeyType($scope->getType($args[0]->value)), false, PassedByReference::createNo(), false, null),

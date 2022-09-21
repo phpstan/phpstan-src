@@ -37,6 +37,8 @@ use PHPStan\Node\Expr\OriginalPropertyTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Parser\ArrayMapArgVisitor;
+use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Php\PhpVersion;
@@ -1257,7 +1259,7 @@ class MutatingScope implements Scope
 			}
 
 			$callableParameters = null;
-			$arrayMapArgs = $node->getAttribute('arrayMapArgs');
+			$arrayMapArgs = $node->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
 			if ($arrayMapArgs !== null) {
 				$callableParameters = [];
 				foreach ($arrayMapArgs as $funcCallArg) {
@@ -5083,7 +5085,7 @@ class MutatingScope implements Scope
 			return $objectType;
 		}
 
-		$assignedToProperty = $node->getAttribute('assignedToProperty');
+		$assignedToProperty = $node->getAttribute(NewAssignedToPropertyVisitor::ATTRIBUTE_NAME);
 		if ($assignedToProperty !== null) {
 			$constructorVariant = ParametersAcceptorSelector::selectSingle($constructorMethod->getVariants());
 			$classTemplateTypes = $classReflection->getTemplateTypeMap()->getTypes();

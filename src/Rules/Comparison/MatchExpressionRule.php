@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Comparison;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\MatchExpressionNode;
+use PHPStan\Parser\TryCatchTypeVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -148,7 +149,7 @@ class MatchExpressionRule implements Rule
 
 	private function isUnhandledMatchErrorCaught(Node $node): bool
 	{
-		$tryCatchTypes = $node->getAttribute('tryCatchTypes');
+		$tryCatchTypes = $node->getAttribute(TryCatchTypeVisitor::ATTRIBUTE_NAME);
 		if ($tryCatchTypes === null) {
 			return false;
 		}

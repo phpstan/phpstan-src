@@ -98,6 +98,8 @@ use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\UnreachableStatementNode;
+use PHPStan\Parser\ArrowFunctionArgVisitor;
+use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\Parser;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -2960,7 +2962,7 @@ class NodeScopeResolver
 		$byRefUses = [];
 
 		$callableParameters = null;
-		$closureCallArgs = $expr->getAttribute('closureCallArgs');
+		$closureCallArgs = $expr->getAttribute(ClosureArgVisitor::ATTRIBUTE_NAME);
 
 		if ($closureCallArgs !== null) {
 			$acceptors = $scope->getType($expr)->getCallableParametersAcceptors($scope);
@@ -3122,7 +3124,7 @@ class NodeScopeResolver
 		}
 
 		$callableParameters = null;
-		$arrowFunctionCallArgs = $expr->getAttribute('arrowFunctionCallArgs');
+		$arrowFunctionCallArgs = $expr->getAttribute(ArrowFunctionArgVisitor::ATTRIBUTE_NAME);
 
 		if ($arrowFunctionCallArgs !== null) {
 			$acceptors = $scope->getType($expr)->getCallableParametersAcceptors($scope);

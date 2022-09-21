@@ -8,6 +8,8 @@ use PhpParser\NodeVisitorAbstract;
 class ArrayWalkArgVisitor extends NodeVisitorAbstract
 {
 
+	public const ATTRIBUTE_NAME = 'isArrayWalkArg';
+
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name) {
@@ -15,7 +17,7 @@ class ArrayWalkArgVisitor extends NodeVisitorAbstract
 			if ($functionName === 'array_walk') {
 				$args = $node->getArgs();
 				if (isset($args[0])) {
-					$args[0]->setAttribute('isArrayWalkArg', true);
+					$args[0]->setAttribute(self::ATTRIBUTE_NAME, true);
 				}
 			}
 		}

@@ -11,6 +11,8 @@ use function count;
 final class TryCatchTypeVisitor extends NodeVisitorAbstract
 {
 
+	public const ATTRIBUTE_NAME = 'tryCatchTypes';
+
 	/** @var array<int, array<int, string>|null> */
 	private array $typeStack = [];
 
@@ -24,7 +26,7 @@ final class TryCatchTypeVisitor extends NodeVisitorAbstract
 	{
 		if ($node instanceof Node\Stmt || $node instanceof Node\Expr\Match_) {
 			if (count($this->typeStack) > 0) {
-				$node->setAttribute('tryCatchTypes', $this->typeStack[count($this->typeStack) - 1]);
+				$node->setAttribute(self::ATTRIBUTE_NAME, $this->typeStack[count($this->typeStack) - 1]);
 			}
 		}
 

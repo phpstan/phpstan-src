@@ -8,6 +8,8 @@ use PhpParser\NodeVisitorAbstract;
 class ArrayFilterArgVisitor extends NodeVisitorAbstract
 {
 
+	public const ATTRIBUTE_NAME = 'isArrayFilterArg';
+
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name) {
@@ -15,7 +17,7 @@ class ArrayFilterArgVisitor extends NodeVisitorAbstract
 			if ($functionName === 'array_filter') {
 				$args = $node->getArgs();
 				if (isset($args[0])) {
-					$args[0]->setAttribute('isArrayFilterArg', true);
+					$args[0]->setAttribute(self::ATTRIBUTE_NAME, true);
 				}
 			}
 		}

@@ -8,6 +8,8 @@ use PhpParser\NodeVisitorAbstract;
 class CurlSetOptArgVisitor extends NodeVisitorAbstract
 {
 
+	public const ATTRIBUTE_NAME = 'isCurlSetOptArg';
+
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name) {
@@ -15,7 +17,7 @@ class CurlSetOptArgVisitor extends NodeVisitorAbstract
 			if ($functionName === 'curl_setopt') {
 				$args = $node->getArgs();
 				if (isset($args[0])) {
-					$args[0]->setAttribute('isCurlSetOptArg', true);
+					$args[0]->setAttribute(self::ATTRIBUTE_NAME, true);
 				}
 			}
 		}

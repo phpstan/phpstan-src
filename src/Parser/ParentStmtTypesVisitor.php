@@ -11,6 +11,8 @@ use function get_class;
 final class ParentStmtTypesVisitor extends NodeVisitorAbstract
 {
 
+	public const ATTRIBUTE_NAME = 'parentStmtTypes';
+
 	/** @var array<int, class-string<Node\Stmt|Node\Expr\Closure>> */
 	private array $typeStack = [];
 
@@ -27,7 +29,7 @@ final class ParentStmtTypesVisitor extends NodeVisitorAbstract
 		}
 
 		if (count($this->typeStack) > 0) {
-			$node->setAttribute('parentStmtTypes', $this->typeStack);
+			$node->setAttribute(self::ATTRIBUTE_NAME, $this->typeStack);
 		}
 		$this->typeStack[] = get_class($node);
 

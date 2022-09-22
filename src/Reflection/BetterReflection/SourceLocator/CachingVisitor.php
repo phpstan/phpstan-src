@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-use PhpParser\BuilderHelpers;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeTraverser;
@@ -11,8 +10,6 @@ use PHPStan\BetterReflection\Reflection\Exception\InvalidConstantNode;
 use PHPStan\BetterReflection\SourceLocator\Located\LocatedSource;
 use PHPStan\BetterReflection\Util\ConstantNodeChecker;
 use PHPStan\Reflection\ConstantNameHelper;
-use function constant;
-use function defined;
 use function strtolower;
 
 class CachingVisitor extends NodeVisitorAbstract
@@ -97,11 +94,6 @@ class CachingVisitor extends NodeVisitorAbstract
 			/** @var Node\Scalar\String_ $nameNode */
 			$nameNode = $node->getArgs()[0]->value;
 			$constantName = $nameNode->value;
-
-			if (defined($constantName)) {
-				$constantValue = @constant($constantName);
-				$node->getArgs()[1]->value = BuilderHelpers::normalizeValue($constantValue);
-			}
 
 			$constantNode = new FetchedNode(
 				$node,

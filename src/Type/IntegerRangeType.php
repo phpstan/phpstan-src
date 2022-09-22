@@ -5,8 +5,10 @@ namespace PHPStan\Type;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use function array_filter;
 use function assert;
 use function ceil;
+use function count;
 use function floor;
 use function get_class;
 use function is_int;
@@ -244,11 +246,31 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		if ($otherType instanceof UnionType || $otherType instanceof IntersectionType) {
+		if ($otherType instanceof UnionType) {
+			return $this->isSubTypeOfUnion($otherType);
+		}
+
+		if ($otherType instanceof IntersectionType) {
 			return $otherType->isSuperTypeOf($this);
 		}
 
 		return TrinaryLogic::createNo();
+	}
+
+	private function isSubTypeOfUnion(UnionType $otherType): TrinaryLogic
+	{
+		if ($this->min !== null && $this->max !== null) {
+			$matchingConstantIntegers = array_filter(
+				$otherType->getTypes(),
+				fn (Type $type): bool => $type instanceof ConstantIntegerType && $type->getValue() >= $this->min && $type->getValue() <= $this->max,
+			);
+
+			if (count($matchingConstantIntegers) === ($this->max - $this->min + 1)) {
+				return TrinaryLogic::createYes();
+			}
+		}
+
+		return TrinaryLogic::createNo()->lazyOr($otherType->getTypes(), fn (Type $innerType) => $this->isSubTypeOf($innerType));
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic

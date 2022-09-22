@@ -41,6 +41,7 @@ use PHPStan\Type\TypeAlias;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VerbosityLevel;
 use ReflectionException;
+use stdClass;
 use function array_diff;
 use function array_filter;
 use function array_key_exists;
@@ -342,6 +343,14 @@ class ClassReflection
 	public function allowsDynamicProperties(): bool
 	{
 		if (!$this->phpVersion->deprecatesDynamicProperties()) {
+			return true;
+		}
+
+		if ($this->is(stdClass::class)) {
+			return true;
+		}
+
+		if ($this->hasNativeMethod('__get') || $this->hasNativeMethod('__set') || $this->hasNativeMethod('__isset')) {
 			return true;
 		}
 

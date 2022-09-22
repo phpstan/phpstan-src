@@ -365,7 +365,10 @@ class ClassReflection
 			return $this->hasNativeProperty($propertyName);
 		}
 
-		foreach ($this->propertiesClassReflectionExtensions as $extension) {
+		foreach ($this->propertiesClassReflectionExtensions as $i => $extension) {
+			if ($i > 0 && !$this->allowsDynamicProperties()) {
+				continue;
+			}
 			if ($extension->hasProperty($this, $propertyName)) {
 				return true;
 			}
@@ -514,7 +517,10 @@ class ClassReflection
 			$key = sprintf('%s-%s', $key, $scope->getClassReflection()->getCacheKey());
 		}
 		if (!isset($this->properties[$key])) {
-			foreach ($this->propertiesClassReflectionExtensions as $extension) {
+			foreach ($this->propertiesClassReflectionExtensions as $i => $extension) {
+				if ($i > 0 && !$this->allowsDynamicProperties()) {
+					continue;
+				}
 				if (!$extension->hasProperty($this, $propertyName)) {
 					continue;
 				}

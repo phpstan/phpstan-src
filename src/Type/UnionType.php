@@ -133,6 +133,7 @@ class UnionType implements CompoundType
 			|| $otherType instanceof NeverType
 			|| $otherType instanceof ConditionalType
 			|| $otherType instanceof ConditionalTypeForParameter
+			|| $otherType instanceof IntegerRangeType
 		) {
 			return $otherType->isSubTypeOf($this);
 		}

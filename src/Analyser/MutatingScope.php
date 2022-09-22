@@ -4674,7 +4674,7 @@ class MutatingScope implements Scope
 						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType())),
 						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType())),
 					);
-					if ($constantArraysA->isIterableAtLeastOnce()->yes() || $constantArraysB->isIterableAtLeastOnce()->yes()) {
+					if ($constantArraysA->isIterableAtLeastOnce()->yes() && $constantArraysB->isIterableAtLeastOnce()->yes()) {
 						$accessoryTypes[] = new NonEmptyArrayType();
 					}
 				}
@@ -4851,35 +4851,26 @@ class MutatingScope implements Scope
 			$resultTypes[] = TypeCombinator::union(...$integerRanges['b']);
 		}
 
-		$aAccessoryTypes = TypeUtils::getAccessoryTypes($a);
-		$bAccessoryTypes = TypeUtils::getAccessoryTypes($b);
-		if (count($aAccessoryTypes) > 0) {
-			if (count($bAccessoryTypes) === 0) {
-				$accessoryTypes = array_merge($accessoryTypes, $aAccessoryTypes);
-			} else {
-				$commonTypeMaps = [];
-				foreach ([$aAccessoryTypes, $bAccessoryTypes] as $listKey => $accessoryTypeList) {
-					foreach ($accessoryTypeList as $accessoryType) {
-						if ($accessoryType instanceof HasOffsetValueType) {
-							$commonTypeMaps[$listKey][sprintf('hasOffsetValue(%s)', $accessoryType->getOffsetType()->describe(VerbosityLevel::cache()))][] = $accessoryType;
-							continue;
-						}
-
-						$commonTypeMaps[$listKey][$accessoryType->describe(VerbosityLevel::cache())][] = $accessoryType;
-					}
-
+		$commonTypeMaps = [];
+		foreach ([TypeUtils::getAccessoryTypes($a), TypeUtils::getAccessoryTypes($b)] as $listKey => $accessoryTypeList) {
+			foreach ($accessoryTypeList as $accessoryType) {
+				if ($accessoryType instanceof HasOffsetValueType) {
+					$commonTypeMaps[$listKey][sprintf('hasOffsetValue(%s)', $accessoryType->getOffsetType()->describe(VerbosityLevel::cache()))][] = $accessoryType;
+					continue;
 				}
 
-				$accessoryTypes = array_merge(
-					$accessoryTypes,
-					array_map(
-						static fn (Type $type): Type => $type->generalize(GeneralizePrecision::moreSpecific()),
-						TypeCombinator::unionCommonTypeMaps($commonTypeMaps),
-					),
-				);
+				$commonTypeMaps[$listKey][$accessoryType->describe(VerbosityLevel::cache())][] = $accessoryType;
 			}
-		} elseif (count($bAccessoryTypes) > 0) {
-			$accessoryTypes = array_merge($accessoryTypes, $bAccessoryTypes);
+		}
+
+		if (count($commonTypeMaps) === 2) {
+			$accessoryTypes = array_merge(
+				$accessoryTypes,
+				array_map(
+					static fn (Type $type): Type => $type->generalize(GeneralizePrecision::moreSpecific()),
+					TypeCombinator::unionCommonTypeMaps($commonTypeMaps),
+				),
+			);
 		}
 
 		return TypeCombinator::intersect(

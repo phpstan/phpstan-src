@@ -56,11 +56,11 @@ class AutoloadFilesTest extends TestCase
 		sort($autoloadFiles);
 
 		$expectedFiles = [
-			'clue/block-react/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'hoa/consistency/Prelude.php', // Hoa isn't prefixed, no need to load this eagerly
 			'hoa/protocol/Wrapper.php', // Hoa isn't prefixed, no need to load this eagerly
 			'jetbrains/phpstorm-stubs/PhpStormStubsMap.php', // added to phpstan-dist/bootstrap.php
 			'myclabs/deep-copy/src/DeepCopy/deep_copy.php', // dev dependency of PHPUnit
+			'react/async/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'react/promise-stream/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'react/promise-timer/src/functions_include.php', // added to phpstan-dist/bootstrap.php
 			'react/promise/src/functions_include.php', // added to phpstan-dist/bootstrap.php

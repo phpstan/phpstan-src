@@ -1194,11 +1194,15 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$failOnDifferentValueType = $keyTypesCount !== $otherKeyTypesCount || $keyTypesCount < 2;
 
+		$keyTypes = $this->keyTypes;
+
 		foreach ($otherArray->keyTypes as $j => $keyType) {
-			$i = $this->getKeyIndex($keyType);
+			$i = self::findKeyIndex($keyType, $keyTypes);
 			if ($i === null) {
 				return false;
 			}
+
+			unset($keyTypes[$i]);
 
 			$valueType = $this->valueTypes[$i];
 			$otherValueType = $otherArray->valueTypes[$j];
@@ -1210,6 +1214,18 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				return false;
 			}
 			$failOnDifferentValueType = true;
+		}
+
+		$requiredKeyCount = 0;
+		foreach (array_keys($keyTypes) as $i) {
+			if ($this->isOptionalKey($i)) {
+				continue;
+			}
+
+			$requiredKeyCount++;
+			if ($requiredKeyCount > 1) {
+				return false;
+			}
 		}
 
 		return true;
@@ -1246,7 +1262,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 */
 	private function getKeyIndex($otherKeyType): ?int
 	{
-		foreach ($this->keyTypes as $i => $keyType) {
+		return self::findKeyIndex($otherKeyType, $this->keyTypes);
+	}
+
+	/**
+	 * @param ConstantIntegerType|ConstantStringType $otherKeyType
+	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
+	 */
+	private static function findKeyIndex($otherKeyType, array $keyTypes): ?int
+	{
+		foreach ($keyTypes as $i => $keyType) {
 			if ($keyType->equals($otherKeyType)) {
 				return $i;
 			}

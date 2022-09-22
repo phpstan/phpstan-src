@@ -32,6 +32,7 @@ use PHPStan\Process\Runnable\RunnableQueueLogger;
 use PHPStan\ShouldNotHappenException;
 use Psr\Http\Message\ResponseInterface;
 use React\ChildProcess\Process;
+use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
 use React\Http\Browser;
@@ -47,7 +48,6 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
-use function Clue\React\Block\await;
 use function count;
 use function defined;
 use function escapeshellarg;
@@ -63,6 +63,7 @@ use function is_string;
 use function min;
 use function mkdir;
 use function parse_url;
+use function React\Async\await;
 use function React\Promise\resolve;
 use function sprintf;
 use function strlen;
@@ -363,11 +364,8 @@ class FixerApplication
 			$output->writeln('<fg=green>Checking if there\'s a new PHPStan Pro release...</>');
 		}
 
-		$loop = new StreamSelectLoop();
 		$client = new Browser(
-			$loop,
 			new Connector(
-				$loop,
 				[
 					'timeout' => 5,
 					'tls' => [
@@ -380,9 +378,8 @@ class FixerApplication
 
 		/**
 		 * @var array{url: string, version: string} $latestInfo
-		 * @phpstan-ignore-next-line
 		 */
-		$latestInfo = Json::decode((string) await($client->get(sprintf('https://fixer-download-api.phpstan.com/latest?%s', http_build_query(['phpVersion' => PHP_VERSION_ID]))), $loop, 5.0)->getBody(), Json::FORCE_ARRAY);
+		$latestInfo = Json::decode((string) await($client->get(sprintf('https://fixer-download-api.phpstan.com/latest?%s', http_build_query(['phpVersion' => PHP_VERSION_ID]))))->getBody(), Json::FORCE_ARRAY);
 		if ($currentVersion !== null && $latestInfo['version'] === $currentVersion) {
 			$this->writeInfoFile($infoPath, $latestInfo['version']);
 			$output->writeln('<fg=green>You\'re running the latest PHPStan Pro!</>');
@@ -417,7 +414,7 @@ class FixerApplication
 			$output->writeln(sprintf('<fg=red>Could not download the PHPStan Pro executable:</> %s', $e->getMessage()));
 		});
 
-		$loop->run();
+		Loop::run();
 
 		fclose($pharPathResource);
 

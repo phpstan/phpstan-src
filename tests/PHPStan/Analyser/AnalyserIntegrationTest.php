@@ -952,6 +952,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testArrayUnion(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/array-union.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

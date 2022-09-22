@@ -98,17 +98,17 @@ class Baz
 			$conditionalArray[] = 3;
 		}
 
-		assertType('array{0: 1, 1: 1, 2: 1, 3?: 2, 4?: 3}', $conditionalArray);
+		assertType('array{1, 1, 1, 2, 3}|array{1, 1, 1}', $conditionalArray);
 
 		$unshiftedConditionalArray = $conditionalArray;
 		array_unshift($unshiftedConditionalArray, 'lorem', new \stdClass());
-		assertType('array{0: \'lorem\', 1: stdClass, 2: 1, 3: 1, 4: 1, 5?: 2|3, 6?: 3}', $unshiftedConditionalArray);
+		assertType("array{'lorem', stdClass, 1, 1, 1, 2, 3}|array{'lorem', stdClass, 1, 1, 1}", $unshiftedConditionalArray);
 
-		assertType('array{0: 1, 1: 1, 2: 1, 3: 1|2, 4: 1|3, 5?: 2|3, 6?: 3}', $conditionalArray + $unshiftedConditionalArray);
-		assertType('array{0: \'lorem\', 1: stdClass, 2: 1, 3: 1|2, 4: 1|3, 5?: 2|3, 6?: 3}', $unshiftedConditionalArray + $conditionalArray);
+		assertType('array{1, 1, 1, 1, 1, 2, 3}|array{1, 1, 1, 1, 1}|array{1, 1, 1, 2, 3, 2, 3}|array{1, 1, 1, 2, 3}', $conditionalArray + $unshiftedConditionalArray);
+		assertType("array{'lorem', stdClass, 1, 1, 1, 2, 3}|array{'lorem', stdClass, 1, 1, 1}", $unshiftedConditionalArray + $conditionalArray);
 
 		$conditionalArray[] = 4;
-		assertType('array{0: 1, 1: 1, 2: 1, 3: 2|4, 4?: 3, 5?: 4}', $conditionalArray);
+		assertType('array{1, 1, 1, 2, 3, 4}|array{1, 1, 1, 4}', $conditionalArray);
 	}
 
 }

@@ -2592,11 +2592,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrayOfIntegers += $arrayOfIntegers',
 			],
 			[
-				'array{0: 1, 1: 1, 2: 1, 3: 1|2, 4: 1|3, 5?: 2|3, 6?: 3}',
+				'array{1, 1, 1, 1, 1, 2, 3}|array{1, 1, 1, 1, 1}|array{1, 1, 1, 2, 3, 2, 3}|array{1, 1, 1, 2, 3}',
 				'$conditionalArray + $unshiftedConditionalArray',
 			],
 			[
-				'array{0: \'lorem\', 1: stdClass, 2: 1, 3: 1|2, 4: 1|3, 5?: 2|3, 6?: 3}',
+				'array{\'lorem\', stdClass, 1, 1, 1, 2, 3}|array{\'lorem\', stdClass, 1, 1, 1}',
 				'$unshiftedConditionalArray + $conditionalArray',
 			],
 			[
@@ -2672,7 +2672,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'count($appendingToArrayInBranches)',
 			],
 			[
-				'int<3, 5>',
+				'3|5',
 				'count($conditionalArray)',
 			],
 			[
@@ -2936,7 +2936,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arrToUnshift2',
 			],
 			[
-				'array{0: \'lorem\', 1: stdClass, 2: 1, 3: 1, 4: 1, 5?: 2|3, 6?: 3}',
+				'array{\'lorem\', stdClass, 1, 1, 1, 2, 3}|array{\'lorem\', stdClass, 1, 1, 1}',
 				'$unshiftedConditionalArray',
 			],
 			[
@@ -3008,7 +3008,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherConditionalString . $conditionalString',
 			],
 			[
-				'int<6, 8>',
+				'6|8',
 				'count($conditionalArray) + count($array)',
 			],
 			[
@@ -4792,11 +4792,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$unknownArray',
 			],
 			[
-				'array{foo: \'banana\', bar: \'banana\', baz?: \'banana\', lorem?: \'banana\'}',
+				'array{foo: \'banana\', bar: \'banana\', baz: \'banana\', lorem: \'banana\'}|array{foo: \'banana\', bar: \'banana\'}',
 				'array_fill_keys($conditionalArray, \'banana\')',
 			],
 			[
-				'array{foo: stdClass, bar: stdClass, baz?: stdClass, lorem?: stdClass}',
+				'array{foo: stdClass, bar: stdClass, baz: stdClass, lorem: stdClass}|array{foo: stdClass, bar: stdClass}',
 				'array_map(function (): \stdClass {}, $conditionalKeysArray)',
 			],
 			[

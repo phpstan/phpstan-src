@@ -41,15 +41,15 @@ class EmptyRuleTest extends RuleTestCase
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/empty-rule.php'], [
 			[
-				'Offset \'nonexistent\' on array{0?: bool, 1?: false, 2: bool, 3: false, 4: true} in empty() does not exist.',
+				'Offset \'nonexistent\' on array{2: bool, 3: false, 4: true}|array{bool, false, bool, false, true} in empty() does not exist.',
 				22,
 			],
 			[
-				'Offset 3 on array{0?: bool, 1?: false, 2: bool, 3: false, 4: true} in empty() always exists and is always falsy.',
+				'Offset 3 on array{2: bool, 3: false, 4: true}|array{bool, false, bool, false, true} in empty() always exists and is always falsy.',
 				24,
 			],
 			[
-				'Offset 4 on array{0?: bool, 1?: false, 2: bool, 3: false, 4: true} in empty() always exists and is not falsy.',
+				'Offset 4 on array{2: bool, 3: false, 4: true}|array{bool, false, bool, false, true} in empty() always exists and is not falsy.',
 				25,
 			],
 			[

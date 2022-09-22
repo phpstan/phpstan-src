@@ -10,7 +10,7 @@ class HelloWorld
 	/** @var \SplObjectStorage<self, null> */
 	private $collection2;
 
-	public function __construct(): void
+	public function __construct()
 	{
 		$this->collection1 = new \SplObjectStorage();
 		$this->collection2 = new \SplObjectStorage();

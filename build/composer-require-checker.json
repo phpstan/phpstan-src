@@ -9,7 +9,7 @@
     "FILTER_SANITIZE_NUMBER_INT", "FILTER_SANITIZE_SPECIAL_CHARS", "FILTER_SANITIZE_STRING", "FILTER_SANITIZE_URL", "FILTER_VALIDATE_BOOLEAN",
     "FILTER_VALIDATE_EMAIL", "FILTER_VALIDATE_FLOAT", "FILTER_VALIDATE_INT", "FILTER_VALIDATE_IP", "FILTER_VALIDATE_MAC", "FILTER_VALIDATE_REGEXP",
     "FILTER_VALIDATE_URL", "FILTER_NULL_ON_FAILURE", "FILTER_FORCE_ARRAY", "FILTER_SANITIZE_ADD_SLASHES", "FILTER_DEFAULT", "FILTER_UNSAFE_RAW", "opcache_invalidate", "ValueError", "ReflectionUnionType", "ReflectionIntersectionType", "Attribute", "ReflectionEnum", "ReflectionEnumBackedCase", "enum_exists",
-	  "Clue\\React\\Block\\await", "Hoa\\File\\Read"
+	  "React\\Async\\await", "Hoa\\File\\Read"
   ],
   "php-core-extensions" : [
     "json",

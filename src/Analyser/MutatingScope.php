@@ -118,6 +118,7 @@ use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
+use function array_merge;
 use function array_pop;
 use function array_slice;
 use function count;
@@ -4581,6 +4582,7 @@ class MutatingScope implements Scope
 		$constantArrays = ['a' => [], 'b' => []];
 		$generalArrays = ['a' => [], 'b' => []];
 		$integerRanges = ['a' => [], 'b' => []];
+		$accessoryTypes = [];
 		$otherTypes = [];
 
 		foreach ([
@@ -4672,6 +4674,9 @@ class MutatingScope implements Scope
 						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType())),
 						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType())),
 					);
+					if ($constantArraysA->isIterableAtLeastOnce()->yes() || $constantArraysB->isIterableAtLeastOnce()->yes()) {
+						$accessoryTypes[] = new NonEmptyArrayType();
+					}
 				}
 			}
 		} elseif (count($constantArrays['b']) > 0) {
@@ -4846,12 +4851,11 @@ class MutatingScope implements Scope
 			$resultTypes[] = TypeCombinator::union(...$integerRanges['b']);
 		}
 
-		$accessoryTypes = [];
 		$aAccessoryTypes = TypeUtils::getAccessoryTypes($a);
 		$bAccessoryTypes = TypeUtils::getAccessoryTypes($b);
 		if (count($aAccessoryTypes) > 0) {
 			if (count($bAccessoryTypes) === 0) {
-				$accessoryTypes = $aAccessoryTypes;
+				$accessoryTypes = array_merge($accessoryTypes, $aAccessoryTypes);
 			} else {
 				$commonTypeMaps = [];
 				foreach ([$aAccessoryTypes, $bAccessoryTypes] as $listKey => $accessoryTypeList) {
@@ -4866,13 +4870,16 @@ class MutatingScope implements Scope
 
 				}
 
-				$accessoryTypes = array_map(
-					static fn (Type $type): Type => $type->generalize(GeneralizePrecision::moreSpecific()),
-					TypeCombinator::unionCommonTypeMaps($commonTypeMaps),
+				$accessoryTypes = array_merge(
+					$accessoryTypes,
+					array_map(
+						static fn (Type $type): Type => $type->generalize(GeneralizePrecision::moreSpecific()),
+						TypeCombinator::unionCommonTypeMaps($commonTypeMaps),
+					),
 				);
 			}
 		} elseif (count($bAccessoryTypes) > 0) {
-			$accessoryTypes = $bAccessoryTypes;
+			$accessoryTypes = array_merge($accessoryTypes, $bAccessoryTypes);
 		}
 
 		return TypeCombinator::intersect(

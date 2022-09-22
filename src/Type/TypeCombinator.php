@@ -594,7 +594,7 @@ class TypeCombinator
 		}
 		if (count($arrayTypes) === 1) {
 			return [
-				self::intersect(...self::optimizeConstantArrays($arrayTypes), ...$accessoryTypes),
+				self::intersect(...$arrayTypes, ...$accessoryTypes),
 			];
 		}
 

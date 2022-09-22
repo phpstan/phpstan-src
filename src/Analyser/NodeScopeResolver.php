@@ -1882,38 +1882,46 @@ class NodeScopeResolver
 					}
 				};
 
-				if ($arrayType instanceof ConstantArrayType) {
+				$constantArrays = TypeUtils::getOldConstantArrays($arrayType);
+				if (count($constantArrays) > 0) {
+					$newArrayTypes = [];
 					$prepend = $functionReflection->getName() === 'array_unshift';
-					$arrayTypeBuilder = $prepend ? ConstantArrayTypeBuilder::createEmpty() : ConstantArrayTypeBuilder::createFromConstantArray($arrayType);
+					foreach ($constantArrays as $constantArray) {
+						$arrayTypeBuilder = $prepend ? ConstantArrayTypeBuilder::createEmpty() : ConstantArrayTypeBuilder::createFromConstantArray($constantArray);
 
-					$setOffsetValueTypes(
-						$scope,
-						$callArgs,
-						static function (?Type $offsetType, Type $valueType, bool $optional) use (&$arrayTypeBuilder): void {
-							$arrayTypeBuilder->setOffsetValueType($offsetType, $valueType, $optional);
-						},
-						$nonConstantArrayWasUnpacked,
-					);
+						$setOffsetValueTypes(
+							$scope,
+							$callArgs,
+							static function (?Type $offsetType, Type $valueType, bool $optional) use (&$arrayTypeBuilder): void {
+								$arrayTypeBuilder->setOffsetValueType($offsetType, $valueType, $optional);
+							},
+							$nonConstantArrayWasUnpacked,
+						);
 
-					if ($prepend) {
-						$keyTypes = $arrayType->getKeyTypes();
-						$valueTypes = $arrayType->getValueTypes();
-						foreach ($keyTypes as $k => $keyType) {
-							$arrayTypeBuilder->setOffsetValueType(
-								$keyType instanceof ConstantStringType ? $keyType : null,
-								$valueTypes[$k],
-								$arrayType->isOptionalKey($k),
-							);
+						if ($prepend) {
+							$keyTypes = $constantArray->getKeyTypes();
+							$valueTypes = $constantArray->getValueTypes();
+							foreach ($keyTypes as $k => $keyType) {
+								$arrayTypeBuilder->setOffsetValueType(
+									$keyType instanceof ConstantStringType ? $keyType : null,
+									$valueTypes[$k],
+									$constantArray->isOptionalKey($k),
+								);
+							}
 						}
+
+						$constantArray = $arrayTypeBuilder->getArray();
+
+						if ($constantArray instanceof ConstantArrayType && $nonConstantArrayWasUnpacked) {
+							$constantArray = $constantArray->isIterableAtLeastOnce()->yes()
+								? TypeCombinator::intersect($constantArray->generalizeKeys(), new NonEmptyArrayType())
+								: $constantArray->generalizeKeys();
+						}
+
+						$newArrayTypes[] = $constantArray;
 					}
 
-					$arrayType = $arrayTypeBuilder->getArray();
-
-					if ($arrayType instanceof ConstantArrayType && $nonConstantArrayWasUnpacked) {
-						$arrayType = $arrayType->isIterableAtLeastOnce()->yes()
-							? TypeCombinator::intersect($arrayType->generalizeKeys(), new NonEmptyArrayType())
-							: $arrayType->generalizeKeys();
-					}
+					$arrayType = TypeCombinator::union(...$newArrayTypes);
 				} else {
 					$setOffsetValueTypes(
 						$scope,

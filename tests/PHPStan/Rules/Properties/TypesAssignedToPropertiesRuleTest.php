@@ -451,4 +451,29 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3383.php'], []);
 	}
 
+	public function testBug6356(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6356.php'], []);
+	}
+
+	public function testBug6356b(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-6356b.php'], [
+			[
+				'Property Bug6356b\HelloWorld2::$details (array{name: string, age: int}) does not accept array{name: string, age: \'Forty-two\'}.',
+				19,
+			],
+			[
+				'Property Bug6356b\HelloWorld2::$nestedDetails (array<array{name: string, age: int}>) does not accept non-empty-array<array{name: string, age: \'Eleventy-one\'|int}>.',
+				21,
+			],
+			[
+				'Property Bug6356b\HelloWorld2::$nestedDetails (array<array{name: string, age: int}>) does not accept non-empty-array<array{name: string, age: \'Twelve\'|int}>.',
+				26,
+			],
+		]);
+	}
+
 }

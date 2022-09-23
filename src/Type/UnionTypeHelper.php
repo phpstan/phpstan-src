@@ -50,7 +50,7 @@ class UnionTypeHelper
 
 			if ($a instanceof AccessoryType) {
 				if ($b instanceof AccessoryType) {
-					return strcasecmp($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
+					return self::compareStrings($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
 				}
 
 				return 1;
@@ -108,7 +108,7 @@ class UnionTypeHelper
 			}
 
 			if ($a instanceof ConstantStringType && $b instanceof ConstantStringType) {
-				return strcasecmp($a->getValue(), $b->getValue());
+				return self::compareStrings($a->getValue(), $b->getValue());
 			}
 
 			if ($a instanceof ConstantArrayType && $b instanceof ConstantArrayType) {
@@ -122,12 +122,22 @@ class UnionTypeHelper
 					return 1;
 				}
 
-				return strcasecmp($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
+				return self::compareStrings($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
 			}
 
-			return strcasecmp($a->describe(VerbosityLevel::typeOnly()), $b->describe(VerbosityLevel::typeOnly()));
+			return self::compareStrings($a->describe(VerbosityLevel::typeOnly()), $b->describe(VerbosityLevel::typeOnly()));
 		});
 		return $types;
+	}
+
+	private static function compareStrings(string $a, string $b): int
+	{
+		$cmp = strcasecmp($a, $b);
+		if ($cmp !== 0) {
+			return $cmp;
+		}
+
+		return $a <=> $b;
 	}
 
 }

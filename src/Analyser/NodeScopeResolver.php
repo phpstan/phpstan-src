@@ -1423,7 +1423,11 @@ class NodeScopeResolver
 				} else {
 					$constName = $const->name->toString();
 				}
-				$scope = $scope->specifyExpressionType(new ConstFetch(new Name\FullyQualified($constName)), $scope->getType($const->value));
+				$scope = $scope->specifyExpressionType(
+					new ConstFetch(new Name\FullyQualified($constName)),
+					$scope->getType($const->value),
+					$scope->getNativeType($const->value),
+				);
 			}
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
@@ -1834,7 +1838,7 @@ class NodeScopeResolver
 				$scope = $scope->specifyExpressionType(
 					$arrayArg,
 					$arrayArgType,
-					$arrayArgType,
+					$scope->getNativeType($arrayArg),
 				);
 			}
 
@@ -1926,7 +1930,7 @@ class NodeScopeResolver
 					);
 				}
 
-				$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType, $arrayType);
+				$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType($arrayArg, $arrayType);
 			}
 
 			if (
@@ -1948,7 +1952,11 @@ class NodeScopeResolver
 					$arrayArgType = $arrayArgType->getValuesArray()->generalizeToArray();
 				}
 
-				$scope = $scope->specifyExpressionType($arrayArg, $arrayArgType, $arrayArgType);
+				$scope = $scope->specifyExpressionType(
+					$arrayArg,
+					$arrayArgType,
+					$scope->getNativeType($arrayArg)
+				);
 			}
 
 			if (
@@ -1965,7 +1973,10 @@ class NodeScopeResolver
 				$scope = $scope->invalidateExpression($arrayArg)->specifyExpressionType(
 					$arrayArg,
 					new ArrayType($arrayArgType->getIterableKeyType(), $valueType),
-					new ArrayType($arrayArgType->getIterableKeyType(), $valueType),
+					new ArrayType(
+						$scope->getNativeType($arrayArg)->getIterableKeyType(),
+						$scope->getNativeType($arrayArg)->getIterableValueType(),
+					),
 				);
 			}
 

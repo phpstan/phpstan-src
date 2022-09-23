@@ -3337,6 +3337,7 @@ class MutatingScope implements Scope
 			return $this->specifyExpressionType(
 				$expr->var,
 				$this->getType($expr->var)->unsetOffset($this->getType($expr->dim)),
+				$this->getNativeType($expr->var)->unsetOffset($this->getNativeType($expr->dim)),
 			)->invalidateExpression(
 				new FuncCall(new FullyQualified('count'), [new Arg($expr->var)]),
 			)->invalidateExpression(

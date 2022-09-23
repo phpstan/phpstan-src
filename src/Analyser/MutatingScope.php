@@ -4680,10 +4680,14 @@ class MutatingScope implements Scope
 
 					$resultTypes[] = $resultArrayBuilder->getArray();
 				} else {
-					$resultTypes[] = new ArrayType(
+					$resultType = new ArrayType(
 						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType())),
 						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType())),
 					);
+					if ($constantArraysA->isIterableAtLeastOnce()->yes() && $constantArraysB->isIterableAtLeastOnce()->yes()) {
+						$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
+					}
+					$resultTypes[] = $resultType;
 				}
 			}
 		} elseif (count($constantArrays['b']) > 0) {
@@ -4718,10 +4722,14 @@ class MutatingScope implements Scope
 					}
 				}
 
-				$resultTypes[] = new ArrayType(
+				$resultType = new ArrayType(
 					TypeCombinator::union(self::generalizeType($generalArraysA->getIterableKeyType(), $generalArraysB->getIterableKeyType())),
 					TypeCombinator::union(self::generalizeType($aValueType, $bValueType)),
 				);
+				if ($generalArraysA->isIterableAtLeastOnce()->yes() && $generalArraysB->isIterableAtLeastOnce()->yes()) {
+					$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
+				}
+				$resultTypes[] = $resultType;
 			}
 		} elseif (count($generalArrays['b']) > 0) {
 			$resultTypes[] = TypeCombinator::union(...$generalArrays['b']);

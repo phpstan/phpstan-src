@@ -25,6 +25,13 @@ class AllowedSubTypesRuleTest extends RuleTestCase
 				11,
 			],
 		]);
+
+		$this->analyse([__DIR__ . '/data/allowed-sub-types-datetime.php'], [
+			[
+				'Type AllowedSubTypesDateTime\\MyDateTime is not allowed to be a subtype of DateTimeInterface.',
+				12,
+			],
+		]);
 	}
 
 	public static function getAdditionalConfigFiles(): array

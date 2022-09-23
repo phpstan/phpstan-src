@@ -25,11 +25,11 @@ class ReadingWriteOnlyPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/writing-to-read-only-properties.php'], [
 			[
 				'Property WritingToReadOnlyProperties\Foo::$writeOnlyProperty is not readable.',
-				22,
+				25,
 			],
 			[
 				'Property WritingToReadOnlyProperties\Foo::$writeOnlyProperty is not readable.',
-				32,
+				35,
 			],
 		]);
 	}
@@ -40,7 +40,7 @@ class ReadingWriteOnlyPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/writing-to-read-only-properties.php'], [
 			[
 				'Property WritingToReadOnlyProperties\Foo::$writeOnlyProperty is not readable.',
-				22,
+				25,
 			],
 		]);
 	}
@@ -51,11 +51,11 @@ class ReadingWriteOnlyPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/reading-write-only-properties.php'], [
 			[
 				'Property ReadingWriteOnlyProperties\Foo::$writeOnlyProperty is not readable.',
-				17,
+				20,
 			],
 			[
 				'Property ReadingWriteOnlyProperties\Foo::$writeOnlyProperty is not readable.',
-				22,
+				25,
 			],
 		]);
 	}
@@ -66,7 +66,7 @@ class ReadingWriteOnlyPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/reading-write-only-properties.php'], [
 			[
 				'Property ReadingWriteOnlyProperties\Foo::$writeOnlyProperty is not readable.',
-				17,
+				20,
 			],
 		]);
 	}

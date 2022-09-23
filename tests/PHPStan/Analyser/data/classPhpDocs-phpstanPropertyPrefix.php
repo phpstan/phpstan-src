@@ -2,6 +2,7 @@
 
 namespace ClassPhpDocsNamespace;
 
+use AllowDynamicProperties;
 use function PHPStan\Testing\assertType;
 
 /**
@@ -16,6 +17,7 @@ use function PHPStan\Testing\assertType;
  * @property-write string $baz
  * @phpstan-property-write int $baz
  */
+#[AllowDynamicProperties]
 class PhpstanProperties
 {
 	public function doFoo()

@@ -2,11 +2,14 @@
 
 namespace WritingToReadOnlyProperties;
 
+use AllowDynamicProperties;
+
 /**
  * @property-read int $readOnlyProperty
  * @property int $usualProperty
  * @property-write int $writeOnlyProperty
  */
+#[AllowDynamicProperties]
 class Foo
 {
 

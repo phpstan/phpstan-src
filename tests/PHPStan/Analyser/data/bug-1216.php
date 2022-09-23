@@ -2,6 +2,7 @@
 
 namespace Bug1216;
 
+use AllowDynamicProperties;
 use function PHPStan\Testing\assertType;
 
 abstract class Foo
@@ -27,6 +28,7 @@ trait Bar
  * @property string $bar
  * @property string $untypedBar
  */
+#[AllowDynamicProperties]
 class Baz extends Foo
 {
 

@@ -2,6 +2,7 @@
 
 namespace AnnotationsProperties;
 
+use AllowDynamicProperties;
 use OtherNamespace\Test as OtherTest;
 use OtherNamespace\Ipsum;
 
@@ -12,6 +13,7 @@ use OtherNamespace\Ipsum;
  * @property Ipsum $conflictingProperty
  * @property Foo $overridenProperty
  */
+#[AllowDynamicProperties]
 class Foo implements FooInterface
 {
 

@@ -2,6 +2,8 @@
 
 namespace Bug1216PropertyTest;
 
+use AllowDynamicProperties;
+
 abstract class Foo
 {
 	/**
@@ -25,6 +27,7 @@ trait Bar
  * @property string $bar
  * @property string $untypedBar
  */
+#[AllowDynamicProperties]
 class Baz extends Foo
 {
 

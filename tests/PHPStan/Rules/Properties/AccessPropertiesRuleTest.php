@@ -395,7 +395,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/mixin.php'], [
 			[
 				'Access to an undefined property MixinProperties\GenericFoo<ReflectionClass>::$namee.',
-				51,
+				55,
 			],
 		]);
 	}
@@ -654,6 +654,59 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = true;
 		$this->analyse([__DIR__ . '/data/bug-3171.php'], []);
+	}
+
+	public function dataTrueAndFalse(): array
+	{
+		return [
+			[true],
+			[false],
+		];
+	}
+
+	/**
+	 * @dataProvider dataTrueAndFalse
+	 */
+	public function testPhp82AndDynamicProperties(bool $b): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID >= 80200) {
+			$errors[] = [
+				'Access to an undefined property Php82DynamicProperties\ClassA::$properties.',
+				34,
+			];
+			$errors[] = [
+				'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
+				71,
+			];
+		} elseif ($b) {
+			$errors[] = [
+				'Access to an undefined property Php82DynamicProperties\HelloWorld::$world.',
+				71,
+			];
+		}
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = $b;
+		$this->analyse([__DIR__ . '/data/php-82-dynamic-properties.php'], $errors);
+	}
+
+	/**
+	 * @dataProvider dataTrueAndFalse
+	 */
+	public function testPhp82AndDynamicPropertiesAllow(bool $b): void
+	{
+		$errors = [];
+		if ($b) {
+			$errors[] = [
+				'Access to an undefined property Php82DynamicPropertiesAllow\HelloWorld::$world.',
+				75,
+			];
+		}
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = $b;
+		$this->analyse([__DIR__ . '/data/php-82-dynamic-properties-allow.php'], $errors);
 	}
 
 }

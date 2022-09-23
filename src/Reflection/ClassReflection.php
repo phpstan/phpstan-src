@@ -350,13 +350,23 @@ class ClassReflection
 			return true;
 		}
 
-		if ($this->hasNativeMethod('__get') || $this->hasNativeMethod('__set') || $this->hasNativeMethod('__isset')) {
+		$class = $this;
+		$attributes = $class->reflection->getAttributes('AllowDynamicProperties');
+		while (count($attributes) === 0 && $class->getParentClass() !== null) {
+			$attributes = $class->getParentClass()->reflection->getAttributes('AllowDynamicProperties');
+			$class = $class->getParentClass();
+		}
+
+		return count($attributes) > 0;
+	}
+
+	private function allowsDynamicPropertiesExtensions(): bool
+	{
+		if ($this->allowsDynamicProperties()) {
 			return true;
 		}
 
-		$attributes = $this->reflection->getAttributes('AllowDynamicProperties');
-
-		return count($attributes) > 0;
+		return $this->hasNativeMethod('__get') || $this->hasNativeMethod('__set') || $this->hasNativeMethod('__isset');
 	}
 
 	public function hasProperty(string $propertyName): bool
@@ -366,7 +376,7 @@ class ClassReflection
 		}
 
 		foreach ($this->propertiesClassReflectionExtensions as $i => $extension) {
-			if ($i > 0 && !$this->allowsDynamicProperties()) {
+			if ($i > 0 && !$this->allowsDynamicPropertiesExtensions()) {
 				continue;
 			}
 			if ($extension->hasProperty($this, $propertyName)) {
@@ -518,7 +528,7 @@ class ClassReflection
 		}
 		if (!isset($this->properties[$key])) {
 			foreach ($this->propertiesClassReflectionExtensions as $i => $extension) {
-				if ($i > 0 && !$this->allowsDynamicProperties()) {
+				if ($i > 0 && !$this->allowsDynamicPropertiesExtensions()) {
 					continue;
 				}
 				if (!$extension->hasProperty($this, $propertyName)) {

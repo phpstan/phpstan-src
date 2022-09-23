@@ -2,6 +2,8 @@
 
 namespace MixinProperties;
 
+use AllowDynamicProperties;
+
 class Foo
 {
 
@@ -12,6 +14,7 @@ class Foo
 /**
  * @mixin Foo
  */
+#[AllowDynamicProperties]
 class Bar
 {
 
@@ -34,6 +37,7 @@ function (Baz $baz): void {
  * @template T
  * @mixin T
  */
+#[AllowDynamicProperties]
 class GenericFoo
 {
 

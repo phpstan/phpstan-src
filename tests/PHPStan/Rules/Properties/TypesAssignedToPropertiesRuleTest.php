@@ -115,11 +115,11 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-1216.php'], [
 			[
 				'Property Bug1216PropertyTest\Baz::$untypedBar (string) does not accept int.',
-				35,
+				38,
 			],
 			[
 				'Property Bug1216PropertyTest\Dummy::$foo (Exception) does not accept stdClass.',
-				59,
+				62,
 			],
 		]);
 	}

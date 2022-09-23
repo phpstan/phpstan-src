@@ -34,6 +34,7 @@ rules:
 	- PHPStan\Rules\Arrays\EmptyArrayItemRule
 	- PHPStan\Rules\Arrays\OffsetAccessWithoutDimForReadingRule
 	- PHPStan\Rules\Cast\UnsetCastRule
+	- PHPStan\Rules\Classes\AllowedSubTypesRule
 	- PHPStan\Rules\Classes\ClassAttributesRule
 	- PHPStan\Rules\Classes\ClassConstantAttributesRule
 	- PHPStan\Rules\Classes\ClassConstantRule

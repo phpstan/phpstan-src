@@ -4432,7 +4432,6 @@ class MutatingScope implements Scope
 				$prevVariableType = $prevScope->getVariableType($variableName);
 				if (!$variableType->equals($prevVariableType)) {
 					$variableType = TypeCombinator::union($variableType, $prevVariableType);
-					$variableType = self::generalizeType($variableType, $prevVariableType);
 				}
 			}
 

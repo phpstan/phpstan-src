@@ -48,6 +48,10 @@ class InvalidComparisonOperationRule implements Rule
 			return [];
 		}
 
+		if ($this->isNumberType($scope, $node->left) && $this->isNumberType($scope, $node->right)) {
+			return [];
+		}
+
 		if (
 			($this->isNumberType($scope, $node->left) && (
 				$this->isPossiblyNullableObjectType($scope, $node->right) || $this->isPossiblyNullableArrayType($scope, $node->right)
@@ -83,7 +87,8 @@ class InvalidComparisonOperationRule implements Rule
 			return false;
 		}
 
-		return !$acceptedType->isSuperTypeOf($type)->no();
+		// SimpleXMLElement can be cast to number union type
+		return !$acceptedType->isSuperTypeOf($type)->no() || $acceptedType->equals($type->toNumber());
 	}
 
 	private function isPossiblyNullableObjectType(Scope $scope, Node\Expr $expr): bool

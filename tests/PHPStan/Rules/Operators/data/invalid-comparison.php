@@ -106,3 +106,7 @@ function (array $a, array $b) {
 	$a == $b;
 	$a < $b;
 };
+
+$xml = new SimpleXMLElement('<data><a><b>1</b></a><c></c></data>');
+$xml->a->b == 1;
+$xml->a->b > 1;

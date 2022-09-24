@@ -25,20 +25,6 @@ class AllowedSubTypesRuleTest extends RuleTestCase
 				11,
 			],
 		]);
-
-		$this->analyse([__DIR__ . '/data/allowed-sub-types-datetime.php'], [
-			[
-				'Type AllowedSubTypesDateTime\\MyDateTime is not allowed to be a subtype of DateTimeInterface.',
-				12,
-			],
-		]);
-
-		$this->analyse([__DIR__ . '/data/allowed-sub-types-throwable.php'], [
-			[
-				'Type AllowedSubTypesThrowable\\MyError is not allowed to be a subtype of Throwable.',
-				10,
-			],
-		]);
 	}
 
 	public static function getAdditionalConfigFiles(): array

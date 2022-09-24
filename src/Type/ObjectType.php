@@ -4,6 +4,9 @@ namespace PHPStan\Type;
 
 use ArrayAccess;
 use Closure;
+use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Iterator;
 use IteratorAggregate;
 use PHPStan\Analyser\OutOfClassScope;
@@ -1272,6 +1275,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
+		if ($this->getClassName() === DateTimeInterface::class) {
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === DateTimeImmutable::class) {
+				return new ObjectType(DateTime::class);
+			}
+
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === DateTime::class) {
+				return new ObjectType(DateTimeImmutable::class);
+			}
+		}
+
 		if ($this->isSuperTypeOf($typeToRemove)->yes()) {
 			return $this->subtract($typeToRemove);
 		}

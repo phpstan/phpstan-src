@@ -7,6 +7,8 @@ use Closure;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Error;
+use Exception;
 use Iterator;
 use IteratorAggregate;
 use PHPStan\Analyser\OutOfClassScope;
@@ -38,6 +40,7 @@ use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use Throwable;
 use Traversable;
 use function array_key_exists;
 use function array_map;
@@ -1282,6 +1285,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === DateTime::class) {
 				return new ObjectType(DateTimeImmutable::class);
+			}
+		}
+
+		if ($this->getClassName() === Throwable::class) {
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === Error::class) {
+				return new ObjectType(Exception::class); // phpcs:ignore SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly.ReferencedGeneralException
+			}
+
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === Exception::class) { // phpcs:ignore SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly.ReferencedGeneralException
+				return new ObjectType(Error::class);
 			}
 		}
 

@@ -8,6 +8,7 @@ use PHPStan\Reflection\ClassReflection;
 interface TypeWithClassName extends Type
 {
 
+	/** @return class-string */
 	public function getClassName(): string;
 
 	public function getAncestorWithClassName(string $className): ?self;

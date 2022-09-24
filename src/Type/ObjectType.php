@@ -116,6 +116,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getClassName(): string
 	{
+		// @phpstan-ignore-next-line
 		return $this->className;
 	}
 

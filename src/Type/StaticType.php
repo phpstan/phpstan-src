@@ -35,6 +35,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	private ?ObjectType $staticObjectType = null;
 
+	/** @var class-string */
 	private string $baseClass;
 
 	/**

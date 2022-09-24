@@ -118,7 +118,6 @@ use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
-use function array_merge;
 use function array_pop;
 use function array_slice;
 use function count;
@@ -4582,7 +4581,6 @@ class MutatingScope implements Scope
 		$constantArrays = ['a' => [], 'b' => []];
 		$generalArrays = ['a' => [], 'b' => []];
 		$integerRanges = ['a' => [], 'b' => []];
-		$accessoryTypes = [];
 		$otherTypes = [];
 
 		foreach ([
@@ -4674,9 +4672,6 @@ class MutatingScope implements Scope
 						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType())),
 						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType())),
 					);
-					if ($constantArraysA->isIterableAtLeastOnce()->yes() && $constantArraysB->isIterableAtLeastOnce()->yes()) {
-						$accessoryTypes[] = new NonEmptyArrayType();
-					}
 				}
 			}
 		} elseif (count($constantArrays['b']) > 0) {
@@ -4851,27 +4846,10 @@ class MutatingScope implements Scope
 			$resultTypes[] = TypeCombinator::union(...$integerRanges['b']);
 		}
 
-		$commonTypeMaps = [];
-		foreach ([TypeUtils::getAccessoryTypes($a), TypeUtils::getAccessoryTypes($b)] as $listKey => $accessoryTypeList) {
-			foreach ($accessoryTypeList as $accessoryType) {
-				if ($accessoryType instanceof HasOffsetValueType) {
-					$commonTypeMaps[$listKey][sprintf('hasOffsetValue(%s)', $accessoryType->getOffsetType()->describe(VerbosityLevel::cache()))][] = $accessoryType;
-					continue;
-				}
-
-				$commonTypeMaps[$listKey][$accessoryType->describe(VerbosityLevel::cache())][] = $accessoryType;
-			}
-		}
-
-		if (count($commonTypeMaps) === 2) {
-			$accessoryTypes = array_merge(
-				$accessoryTypes,
-				array_map(
-					static fn (Type $type): Type => $type->generalize(GeneralizePrecision::moreSpecific()),
-					TypeCombinator::unionCommonTypeMaps($commonTypeMaps),
-				),
-			);
-		}
+		$accessoryTypes = array_map(
+			static fn (Type $type): Type => $type->generalize(GeneralizePrecision::moreSpecific()),
+			TypeUtils::getAccessoryTypes($a),
+		);
 
 		return TypeCombinator::intersect(
 			TypeCombinator::union(...$resultTypes, ...$otherTypes),

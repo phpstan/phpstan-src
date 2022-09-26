@@ -334,7 +334,8 @@ class TypeSpecifier
 					&& strtolower((string) $exprNode->name) === 'get_parent_class'
 					&& isset($exprNode->getArgs()[0])
 					&& $constantType instanceof ConstantStringType
-					&& $constantType->getValue() !== ''
+					// the is_string() check should not be necessary, since ConstantStringType->getValue() returns 'string'
+					&& is_string($constantType->getValue())
 				) {
 					$argType = $scope->getType($exprNode->getArgs()[0]->value);
 					$objectType = new ObjectType($constantType->getValue());

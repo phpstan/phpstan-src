@@ -26,7 +26,7 @@ class HelloWorld
 
 		unset($data['id']);
 
-		assertType("array&hasOffsetValue('bar', 'b')&hasOffsetValue('foo', 'a')", $data);
+		assertType("array<mixed~'id', mixed>&hasOffsetValue('bar', 'b')&hasOffsetValue('foo', 'a')", $data);
 		return $data;
 	}
 }

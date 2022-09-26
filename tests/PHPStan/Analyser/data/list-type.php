@@ -86,7 +86,7 @@ class Foo
 		$list[] = '1';
 		$list[] = '2';
 		unset($list[0]);//break list behaviour
-		assertType('array<int, mixed>', $list);
+		assertType('array<int<min, -1>|int<1, max>, mixed>', $list);
 
 		/** @var list $list2 */
 		$list2 = [];

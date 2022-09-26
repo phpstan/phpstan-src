@@ -15,7 +15,7 @@ class Foo
 		if (count($list) > 1) {
 			assertType('int<2, max>', count($list));
 			unset($list['fooo']);
-			assertType('array<bool>', $list);
+			assertType("array<mixed~'fooo', bool>", $list);
 			assertType('int<0, max>', count($list));
 		}
 	}

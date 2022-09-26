@@ -54,7 +54,7 @@ class AsyncTask{
 	{
 		assertType('non-empty-array', $a);
 		unset($a[1]);
-		assertType('array', $a);
+		assertType('array<mixed~1, mixed>', $a);
 	}
 
 }

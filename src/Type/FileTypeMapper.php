@@ -367,7 +367,7 @@ class FileTypeMapper
 				}
 
 				if ($node instanceof Node\Stmt\Namespace_) {
-					$namespace = (string) $node->name;
+					$namespace = $node->name !== null ? (string) $node->name : null;
 				} elseif ($node instanceof Node\Stmt\Use_) {
 					if ($node->type === Node\Stmt\Use_::TYPE_NORMAL) {
 						foreach ($node->uses as $use) {

@@ -17,7 +17,7 @@ class Foo
 		assertType('non-empty-array<int, int>', $a);
 
 		unset($a[0]);
-		assertType('array<int, int>', $a);
+		assertType('array<int<min, -1>|int<1, max>, int>', $a);
 	}
 
 	/**
@@ -30,7 +30,7 @@ class Foo
 		assertType('non-empty-array<int, int>&hasOffsetValue(1, 2)', $a);
 
 		unset($a[1]);
-		assertType('array<int, int>', $a);
+		assertType('array<int<min, 0>|int<2, max>, int>', $a);
 	}
 
 }

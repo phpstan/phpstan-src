@@ -297,6 +297,20 @@ class ArrayType implements Type
 
 	public function unsetOffset(Type $offsetType): Type
 	{
+		$offsetType = self::castToArrayKeyType($offsetType);
+
+		if (
+			($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType)
+			&& !$this->keyType->isSuperTypeOf($offsetType)->no()
+		) {
+			$keyType = TypeCombinator::remove($this->keyType, $offsetType);
+			if ($keyType instanceof NeverType) {
+				return new ConstantArrayType([], []);
+			}
+
+			return new self($keyType, $this->itemType);
+		}
+
 		return $this;
 	}
 

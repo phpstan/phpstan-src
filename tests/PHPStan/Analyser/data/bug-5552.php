@@ -10,21 +10,29 @@ class HelloWorld
 	{
 		if (get_parent_class($mixed) === A::class) {
 			assertType('Bug5552\A|class-string<Bug5552\A>', $mixed);
+		} else {
+			assertType('mixed', $mixed);
 		}
 		assertType('mixed', $mixed);
 
 		if (A::class === get_parent_class($mixed)) {
 			assertType('Bug5552\A|class-string<Bug5552\A>', $mixed);
+		} else {
+			assertType('mixed', $mixed);
 		}
 		assertType('mixed', $mixed);
 
 		if (get_parent_class($mixed) === 'Bug5552\A') {
 			assertType('Bug5552\A|class-string<Bug5552\A>', $mixed);
+		} else {
+			assertType('mixed', $mixed);
 		}
 		assertType('mixed', $mixed);
 
 		if ('Bug5552\A' === get_parent_class($mixed)) {
 			assertType('Bug5552\A|class-string<Bug5552\A>', $mixed);
+		} else {
+			assertType('mixed', $mixed);
 		}
 		assertType('mixed', $mixed);
 

@@ -328,7 +328,7 @@ class TypeSpecifier
 				}
 
 				if (
-					!$context->null()
+					$context->true()
 					&& $exprNode instanceof FuncCall
 					&& $exprNode->name instanceof Name
 					&& strtolower((string) $exprNode->name) === 'get_parent_class'

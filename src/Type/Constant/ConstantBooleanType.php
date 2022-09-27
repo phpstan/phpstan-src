@@ -4,6 +4,7 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\StaticTypeFactory;
@@ -88,6 +89,11 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 	public function toFloat(): Type
 	{
 		return new ConstantFloatType((float) $this->value);
+	}
+
+	public function generalize(GeneralizePrecision $precision): Type
+	{
+		return new BooleanType();
 	}
 
 	/**

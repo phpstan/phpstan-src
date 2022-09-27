@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FloatType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
@@ -80,6 +81,11 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	public function toInteger(): Type
 	{
 		return new ConstantIntegerType((int) $this->value);
+	}
+
+	public function generalize(GeneralizePrecision $precision): Type
+	{
+		return new FloatType();
 	}
 
 	/**

@@ -285,7 +285,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	public function generalize(GeneralizePrecision $precision): Type
 	{
-		return new parent();
+		return new IntegerType();
 	}
 
 	public function isSmallerThan(Type $otherType): TrinaryLogic

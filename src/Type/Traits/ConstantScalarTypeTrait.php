@@ -5,7 +5,6 @@ namespace PHPStan\Type\Traits;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Type;
 
 trait ConstantScalarTypeTrait
@@ -70,11 +69,6 @@ trait ConstantScalarTypeTrait
 		}
 
 		return TrinaryLogic::createMaybe();
-	}
-
-	public function generalize(GeneralizePrecision $precision): Type
-	{
-		return new parent();
 	}
 
 }

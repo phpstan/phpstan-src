@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="PHPStan">
-	<config name="php_version" value="70100"/>
+	<config name="php_version" value="70400"/>
 	<arg name="colors"/>
 	<arg name="extensions" value="php"/>
 	<arg name="encoding" value="utf-8"/>
@@ -40,9 +40,6 @@
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint">
 		<exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingTraversableTypeHintSpecification"/>
-		<properties>
-			<property name="enableObjectTypeHint" value="true"/>
-		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint.UselessAnnotation">
 		<severity>10</severity>
@@ -50,7 +47,6 @@
 	<rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint">
 		<exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingTraversableTypeHintSpecification"/>
 		<properties>
-			<property name="enableNativeTypeHint" value="true"/>
 			<property name="enableUnionTypeHint" value="true"/>
 		</properties>
 	</rule>
@@ -60,9 +56,6 @@
 	<rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint">
 		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingTraversableTypeHintSpecification"/>
 		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingAnyTypeHint"/>
-		<properties>
-			<property name="enableObjectTypeHint" value="true"/>
-		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.UselessAnnotation">
 		<severity>10</severity>

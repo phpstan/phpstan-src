@@ -12,6 +12,7 @@ use Rector\DowngradePhp80\Rector\ClassMethod\DowngradeTrailingCommasInParamUseRe
 use Rector\DowngradePhp80\Rector\FunctionLike\DowngradeMixedTypeDeclarationRector;
 use Rector\DowngradePhp80\Rector\FunctionLike\DowngradeUnionTypeDeclarationRector;
 use Rector\DowngradePhp80\Rector\Property\DowngradeUnionTypeTypedPropertyRector;
+use Rector\DowngradePhp81\Rector\Property\DowngradeReadonlyPropertyRector;
 
 return static function (RectorConfig $config): void {
 	$parsePhpVersion = static function (string $version, int $defaultPatch = 0): int {
@@ -26,6 +27,10 @@ return static function (RectorConfig $config): void {
 	$config->paths($cache->restore());
 	$config->phpVersion($targetPhpVersionId);
 	$config->skip(RectorCache::SKIP_PATHS);
+
+	if ($targetPhpVersionId < 80100) {
+		$config->rule(DowngradeReadonlyPropertyRector::class);
+	}
 
 	if ($targetPhpVersionId < 80000) {
 		$config->rule(DowngradeTrailingCommasInParamUseRector::class);

@@ -61,7 +61,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: 8.0
+          php-version: 8.1
           extensions: mbstring, intl
 
       - name: "Rector downgrade cache key"
@@ -182,7 +182,7 @@ jobs:
         uses: "shivammathur/setup-php@v2"
         with:
           coverage: "none"
-          php-version: "8.0"
+          php-version: "8.1"
           extensions: mbstring, intl
 
       - name: "Rector downgrade cache key"

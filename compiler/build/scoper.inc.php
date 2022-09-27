@@ -272,7 +272,7 @@ return [
 			return str_replace(sprintf('\'%s\\\\JetBrains\\\\', $prefix), '\'JetBrains\\\\', $content);
 		}
 	],
-	'expose-namespaces' => [
+	'exclude-namespaces' => [
 		'PHPStan',
 		'PhpParser',
 		'Hoa',

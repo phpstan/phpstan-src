@@ -14,6 +14,7 @@ class SomeIterator implements \IteratorAggregate {
     /**
      * @return \Traversable<int, Bar>
      */
+	#[\ReturnTypeWillChange]
     public function getIterator() {
          yield new Bar;
     }

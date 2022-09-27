@@ -93,22 +93,6 @@ return [
 			return $content;
 		},
 		function (string $filePath, string $prefix, string $content): string {
-			if ($filePath !== 'src/Testing/PHPStanTestCase.php') {
-				return $content;
-			}
-			return str_replace(sprintf('\\%s\\PHPUnit\\Framework\\TestCase', $prefix), '\\PHPUnit\\Framework\\TestCase', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
-			if ($filePath !== 'src/Testing/LevelsTestCase.php') {
-				return $content;
-			}
-			return str_replace(
-				[sprintf('\\%s\\PHPUnit\\Framework\\AssertionFailedError', $prefix), sprintf('\\%s\\PHPUnit\\Framework\\TestCase', $prefix)],
-				['\\PHPUnit\\Framework\\AssertionFailedError', '\\PHPUnit\\Framework\\TestCase'],
-				$content
-			);
-		},
-		function (string $filePath, string $prefix, string $content): string {
 			if (strpos($filePath, 'src/') !== 0) {
 				return $content;
 			}
@@ -281,6 +265,7 @@ return [
 	],
 	'exclude-namespaces' => [
 		'PHPStan',
+		'PHPUnit',
 		'PhpParser',
 		'Hoa',
 		'Symfony\Polyfill\Php80',

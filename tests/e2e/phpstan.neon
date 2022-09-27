@@ -2,4 +2,5 @@ includes:
 	- baseline.neon
 
 parameters:
+	phpVersion: 80000
 	tmpDir: tmp

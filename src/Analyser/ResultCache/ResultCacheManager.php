@@ -562,8 +562,7 @@ class ResultCacheManager
 			$invertedDependencies[$file]['dependentFiles'] = $dependentFiles;
 		}
 
-		$template = <<<'php'
-<?php declare(strict_types = 1);
+		$template = "<?php declare(strict_types = 1);
 
 return [
 	'lastFullAnalysisTime' => %s,
@@ -574,7 +573,7 @@ return [
 	'dependencies' => %s,
 	'exportedNodesCallback' => static function (): array { return %s; },
 ];
-php;
+";
 
 		ksort($exportedNodes);
 

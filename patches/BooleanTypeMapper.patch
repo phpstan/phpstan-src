@@ -1,13 +1,13 @@
 @package rector/rector
 
---- packages/PHPStanStaticTypeMapper/TypeMapper/BooleanTypeMapper.php	2021-12-31 13:57:22.000000000 +0100
-+++ packages/PHPStanStaticTypeMapper/TypeMapper/BooleanTypeMapper.php	2022-01-05 00:05:20.000000000 +0100
-@@ -45,7 +45,7 @@
+--- packages/PHPStanStaticTypeMapper/TypeMapper/BooleanTypeMapper.php	2022-09-23 11:46:53.000000000 +0200
++++ packages/PHPStanStaticTypeMapper/TypeMapper/BooleanTypeMapper.php	2022-09-27 11:04:44.000000000 +0200
+@@ -44,7 +44,7 @@
          }
-         if ($type instanceof \PHPStan\Type\Constant\ConstantBooleanType) {
+         if ($type instanceof ConstantBooleanType) {
              // cannot be parent of union
--            return new \PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode('true');
-+            return new \PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode('false');
+-            return new IdentifierTypeNode('true');
++            return new IdentifierTypeNode('false');
          }
-         return new \PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode('bool');
+         return new IdentifierTypeNode('bool');
      }

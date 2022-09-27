@@ -60,9 +60,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./tmp/rectorCache.php
-          key: "rector-v1-phar-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ steps.rector-cache-key.outputs.sha }}"
+          key: "rector-v2-phar-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ steps.rector-cache-key.outputs.sha }}"
           restore-keys: |
-            rector-v1-phar-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-
+            rector-v2-phar-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-
 
       - name: "Prepare for PHAR compilation"
         working-directory: "compiler"

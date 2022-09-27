@@ -14,6 +14,7 @@ class MyArray implements \IteratorAggregate {
 		$this->values = [];
 	}
 
+	#[\ReturnTypeWillChange]
 	public function getIterator() {
 		return new \ArrayObject($this->values);
 	}

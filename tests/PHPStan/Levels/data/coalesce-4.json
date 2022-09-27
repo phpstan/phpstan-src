@@ -1,7 +1,0 @@
-[
-    {
-        "message": "Property ReflectionClass<object>::$name (class-string<object>) on left side of ?? is not nullable.",
-        "line": 10,
-        "ignorable": true
-    }
-]

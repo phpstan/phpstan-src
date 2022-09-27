@@ -192,56 +192,6 @@ return [
 			return $content;
 		},
 		function (string $filePath, string $prefix, string $content): string {
-			if (!in_array($filePath, [
-				'src/Type/TypehintHelper.php',
-				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionUnionType.php',
-			], true)) {
-				return $content;
-			}
-
-			return str_replace(sprintf('%s\\ReflectionUnionType', $prefix), 'ReflectionUnionType', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
-			if (!in_array($filePath, [
-				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionClass.php',
-				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionClassConstant.php',
-				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionFunction.php',
-				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionMethod.php',
-				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionObject.php',
-				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionParameter.php',
-				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionProperty.php',
-			], true)) {
-				return $content;
-			}
-
-			return str_replace(sprintf('%s\\ReturnTypeWillChange', $prefix), 'ReturnTypeWillChange', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
-			if (!in_array($filePath, [
-				'src/Type/TypehintHelper.php',
-				'vendor/ondrejmirtes/better-reflection/src/Reflection/Adapter/ReflectionIntersectionType.php',
-				'vendor/ondrejmirtes/better-reflection/src/SourceLocator/SourceStubber/ReflectionSourceStubber.php',
-			], true)) {
-				return $content;
-			}
-
-			return str_replace(sprintf('%s\\ReflectionIntersectionType', $prefix), 'ReflectionIntersectionType', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
-			if (strpos($filePath, 'src/') !== 0) {
-				return $content;
-			}
-
-			return str_replace(sprintf('%s\\Attribute', $prefix), 'Attribute', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
-			if (strpos($filePath, 'src/') !== 0) {
-				return $content;
-			}
-
-			return str_replace(sprintf('%s\\ReturnTypeWillChange', $prefix), 'ReturnTypeWillChange', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
 			if ($filePath !== 'vendor/ondrejmirtes/better-reflection/src/SourceLocator/SourceStubber/PhpStormStubsSourceStubber.php') {
 				return $content;
 			}

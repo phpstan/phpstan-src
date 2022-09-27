@@ -1,6 +1,4 @@
-# [Choice] PHP version: 7, 7.4, 7.3
-ARG VARIANT=8.1
-FROM mcr.microsoft.com/vscode/devcontainers/php:${VARIANT}
+FROM mcr.microsoft.com/vscode/devcontainers/php:8.1
 
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \

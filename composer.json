@@ -13,7 +13,7 @@
 		"hoa/compiler": "3.17.08.08",
 		"hoa/exception": "^1.0",
 		"hoa/regex": "1.17.01.13",
-		"jetbrains/phpstorm-stubs": "dev-master#301f8e2614c72000a87a0747bfc7c02a2ce6bc9f",
+		"jetbrains/phpstorm-stubs": "dev-master#b30cf9fea18875fc6dad3f065ebd648c439b58fa",
 		"nette/bootstrap": "^3.0",
 		"nette/di": "^3.0.11",
 		"nette/finder": "^2.5",

@@ -12,6 +12,7 @@ use Rector\DowngradePhp80\Rector\ClassMethod\DowngradeTrailingCommasInParamUseRe
 use Rector\DowngradePhp80\Rector\FunctionLike\DowngradeMixedTypeDeclarationRector;
 use Rector\DowngradePhp80\Rector\FunctionLike\DowngradeUnionTypeDeclarationRector;
 use Rector\DowngradePhp80\Rector\Property\DowngradeUnionTypeTypedPropertyRector;
+use Rector\DowngradePhp81\Rector\FunctionLike\DowngradePureIntersectionTypeRector;
 use Rector\DowngradePhp81\Rector\Property\DowngradeReadonlyPropertyRector;
 
 return static function (RectorConfig $config): void {
@@ -30,6 +31,7 @@ return static function (RectorConfig $config): void {
 
 	if ($targetPhpVersionId < 80100) {
 		$config->rule(DowngradeReadonlyPropertyRector::class);
+		$config->rule(DowngradePureIntersectionTypeRector::class);
 	}
 
 	if ($targetPhpVersionId < 80000) {

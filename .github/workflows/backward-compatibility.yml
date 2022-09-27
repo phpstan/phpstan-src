@@ -44,7 +44,7 @@ jobs:
         run: |
           composer global config minimum-stability dev
           composer global config prefer-stable true
-          composer global require --dev ondrejmirtes/backward-compatibility-check:^5.0.9
+          composer global require --dev ondrejmirtes/backward-compatibility-check:^7.1.0
 
       - name: "Check"
         run: "$(composer global config bin-dir --absolute)/roave-backward-compatibility-check"

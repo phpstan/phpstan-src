@@ -35,6 +35,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "8.0"
+          extensions: mbstring, intl
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"

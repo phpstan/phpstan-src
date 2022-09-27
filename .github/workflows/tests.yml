@@ -62,7 +62,7 @@ jobs:
         with:
           coverage: "none"
           php-version: 8.0
-          extensions: mbstring
+          extensions: mbstring, intl
 
       - name: "Rector downgrade cache key"
         id: rector-cache-key
@@ -183,6 +183,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "8.0"
+          extensions: mbstring, intl
 
       - name: "Rector downgrade cache key"
         id: rector-cache-key

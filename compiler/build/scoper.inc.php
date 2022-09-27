@@ -270,7 +270,14 @@ return [
 			}
 
 			return str_replace(sprintf('\'%s\\\\JetBrains\\\\', $prefix), '\'JetBrains\\\\', $content);
-		}
+		},
+		function (string $filePath, string $prefix, string $content): string {
+			if (!str_starts_with($filePath, 'vendor/nikic/php-parser/lib')) {
+				return $content;
+			}
+
+			return str_replace(sprintf('use %s\\PhpParser;', $prefix), 'use PhpParser;', $content);
+		},
 	],
 	'exclude-namespaces' => [
 		'PHPStan',

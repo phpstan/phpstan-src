@@ -40,6 +40,9 @@
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint">
 		<exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingTraversableTypeHintSpecification"/>
+		<properties>
+			<property name="enableIntersectionTypeHint" value="true"/>
+		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint.UselessAnnotation">
 		<severity>10</severity>
@@ -48,6 +51,7 @@
 		<exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingTraversableTypeHintSpecification"/>
 		<properties>
 			<property name="enableUnionTypeHint" value="true"/>
+			<property name="enableIntersectionTypeHint" value="true"/>
 		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint.UselessAnnotation">
@@ -56,6 +60,9 @@
 	<rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint">
 		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingTraversableTypeHintSpecification"/>
 		<exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingAnyTypeHint"/>
+		<properties>
+			<property name="enableIntersectionTypeHint" value="true"/>
+		</properties>
 	</rule>
 	<rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint.UselessAnnotation">
 		<severity>10</severity>

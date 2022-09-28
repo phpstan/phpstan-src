@@ -69,13 +69,6 @@ class IgnoredErrorHelper
 						continue;
 					}
 					if (!isset($ignoreError['path'])) {
-						if (!isset($ignoreError['paths']) && !isset($ignoreError['reportUnmatched'])) {
-							$errors[] = sprintf(
-								'Ignored error %s is missing a path, paths or reportUnmatched.',
-								Json::encode($ignoreError),
-							);
-						}
-
 						$otherIgnoreErrors[] = $ignoreErrorEntry;
 					} elseif (@is_file($ignoreError['path'])) {
 						$normalizedPath = $this->fileHelper->normalizePath($ignoreError['path']);

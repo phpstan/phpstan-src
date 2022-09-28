@@ -3,6 +3,8 @@ parameters:
 		- "#error#"
 		-
 			message: '#error#'
+		-
+			message: '#error#'
 			reportUnmatched: false
 		-
 			message: '#error#'
@@ -11,6 +13,9 @@ parameters:
 			message: '#error#'
 			path: '/dir/*'
 			reportUnmatched: false
+		-
+			messages:
+				- '#error#'
 		-
 			messages:
 				- '#error#'

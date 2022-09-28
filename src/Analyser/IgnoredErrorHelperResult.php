@@ -104,7 +104,10 @@ class IgnoredErrorHelperResult
 						break;
 					}
 				} else {
-					throw new ShouldNotHappenException();
+					$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, $ignore['message'], null);
+					if ($shouldBeIgnored) {
+						unset($unmatchedIgnoredErrors[$i]);
+					}
 				}
 			}
 

@@ -61,6 +61,18 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertEmpty($result);
 	}
 
+	public function testFileWithAnIgnoredErrorMessage(): void
+	{
+		$result = $this->runAnalyser([['message' => '#Fail\.#']], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertEmpty($result);
+	}
+
+	public function testFileWithAnIgnoredErrorMessages(): void
+	{
+		$result = $this->runAnalyser([['messages' => ['#Fail\.#']]], true, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertEquals([], $result);
+	}
+
 	public function testIgnoringBrokenConfigurationDoesNotWork(): void
 	{
 		$this->markTestIncomplete();
@@ -260,6 +272,22 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertStringContainsString('was not matched in reported errors', $result[0]);
 	}
 
+	public function testIgnoreErrorByPathsUnmatchedExplicitReportUnmatched(): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => '#Fail\.#',
+				'paths' => [__DIR__ . '/data/bootstrap-error.php', __DIR__ . '/data/another-path.php'],
+				'reportUnmatched' => true,
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, false, __DIR__ . '/data/bootstrap-error.php', false);
+		$this->assertCount(1, $result);
+		$this->assertIsString($result[0]);
+		$this->assertStringContainsString('Ignored error pattern #Fail\.# in path ', $result[0]);
+		$this->assertStringContainsString('was not matched in reported errors', $result[0]);
+	}
+
 	public function testIgnoreErrorNotFoundInPath(): void
 	{
 		$ignoreErrors = [
@@ -269,6 +297,20 @@ class AnalyserTest extends PHPStanTestCase
 			],
 		];
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', false);
+		$this->assertCount(1, $result);
+		$this->assertSame('Ignored error pattern #Fail\.# in path ' . __DIR__ . '/data/not-existent-path.php was not matched in reported errors.', $result[0]);
+	}
+
+	public function testIgnoreErrorNotFoundInPathExplicitReportUnmatched(): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => '#Fail\.#',
+				'path' => __DIR__ . '/data/not-existent-path.php',
+				'reportUnmatched' => true,
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, false, __DIR__ . '/data/empty/empty.php', false);
 		$this->assertCount(1, $result);
 		$this->assertSame('Ignored error pattern #Fail\.# in path ' . __DIR__ . '/data/not-existent-path.php was not matched in reported errors.', $result[0]);
 	}
@@ -320,18 +362,6 @@ class AnalyserTest extends PHPStanTestCase
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', false);
 		$this->assertCount(1, $result);
 		$this->assertSame('Ignored error {"path":"' . $expectedPath . '/data/empty/empty.php"} is missing a message.', $result[0]);
-	}
-
-	public function testIgnoredErrorMissingPath(): void
-	{
-		$ignoreErrors = [
-			[
-				'message' => '#Fail\.#',
-			],
-		];
-		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', false);
-		$this->assertCount(1, $result);
-		$this->assertSame('Ignored error {"message":"#Fail\\\\.#"} is missing a path, paths or reportUnmatched.', $result[0]);
 	}
 
 	public function testReportMultipleParserErrorsAtOnce(): void
@@ -458,11 +488,36 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertNoErrors($result);
 	}
 
+	public function testIgnoreErrorExplicitReportUnmatchedDisableMulti(): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => ['#Fail#'],
+				'reportUnmatched' => false,
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/bootstrap.php', false);
+		$this->assertNoErrors($result);
+	}
+
 	public function testIgnoreErrorExplicitReportUnmatchedEnable(): void
 	{
 		$ignoreErrors = [
 			[
 				'message' => '#Fail#',
+				'reportUnmatched' => true,
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, false, __DIR__ . '/data/bootstrap.php', false);
+		$this->assertCount(1, $result);
+		$this->assertSame('Ignored error pattern #Fail# was not matched in reported errors.', $result[0]);
+	}
+
+	public function testIgnoreErrorExplicitReportUnmatchedEnableMulti(): void
+	{
+		$ignoreErrors = [
+			[
+				'messages' => ['#Fail#'],
 				'reportUnmatched' => true,
 			],
 		];

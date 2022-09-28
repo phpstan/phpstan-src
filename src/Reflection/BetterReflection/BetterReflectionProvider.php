@@ -4,7 +4,6 @@ namespace PHPStan\Reflection\BetterReflection;
 
 use Closure;
 use PhpParser\Node;
-use PhpParser\PrettyPrinter\Standard;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
@@ -24,6 +23,7 @@ use PHPStan\Broker\ConstantNotFoundException;
 use PHPStan\Broker\FunctionNotFoundException;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\File\FileHelper;
+use PHPStan\File\FileReader;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
@@ -80,7 +80,6 @@ class BetterReflectionProvider implements ReflectionProvider
 		private FunctionReflectionFactory $functionReflectionFactory,
 		private RelativePathHelper $relativePathHelper,
 		private AnonymousClassNameHelper $anonymousClassNameHelper,
-		private Standard $printer,
 		private FileHelper $fileHelper,
 		private PhpStormStubsSourceStubber $phpstormStubsSourceStubber,
 	)
@@ -198,7 +197,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		$reflectionClass = \PHPStan\BetterReflection\Reflection\ReflectionClass::createFromNode(
 			$this->reflector,
 			$classNode,
-			new LocatedSource($this->printer->prettyPrint([$classNode]), $className, $scopeFile),
+			new LocatedSource(FileReader::read($scopeFile), $className, $scopeFile),
 			null,
 		);
 
@@ -332,7 +331,7 @@ class BetterReflectionProvider implements ReflectionProvider
 
 		$constantReflection = $this->reflector->reflectConstant($constantName);
 		$fileName = $constantReflection->getFileName();
-		$constantValueType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpr(), InitializerExprContext::fromGlobalConstant($constantReflection));
+		$constantValueType = $this->initializerExprTypeResolver->getType($constantReflection->getValueExpression(), InitializerExprContext::fromGlobalConstant($constantReflection));
 
 		return $this->cachedConstants[$constantName] = new RuntimeConstantReflection(
 			$constantName,

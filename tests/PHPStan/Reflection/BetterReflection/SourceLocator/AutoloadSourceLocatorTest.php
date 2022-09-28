@@ -37,7 +37,7 @@ class AutoloadSourceLocatorTest extends PHPStanTestCase
 
 		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
 		$someConstantValue = $initializerExprTypeResolver->getType(
-			$someConstant->getValueExpr(),
+			$someConstant->getValueExpression(),
 			InitializerExprContext::fromGlobalConstant($someConstant),
 		);
 		$this->assertInstanceOf(ConstantIntegerType::class, $someConstantValue);
@@ -47,7 +47,7 @@ class AutoloadSourceLocatorTest extends PHPStanTestCase
 		$this->assertNotNull($anotherConstant->getFileName());
 		$this->assertSame('a.php', basename($anotherConstant->getFileName()));
 		$anotherConstantValue = $initializerExprTypeResolver->getType(
-			$anotherConstant->getValueExpr(),
+			$anotherConstant->getValueExpression(),
 			InitializerExprContext::fromGlobalConstant($anotherConstant),
 		);
 		$this->assertInstanceOf(ConstantIntegerType::class, $anotherConstantValue);

@@ -303,7 +303,7 @@ class FileTypeMapper
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 					$phpDocString = GetLastDocComment::forNode($node);
-					if ($phpDocString !== '') {
+					if ($phpDocString !== null) {
 						$typeMapStack[] = function () use ($namespace, $uses, $className, $functionName, $phpDocString, $typeMapStack, $constUses): TemplateTypeMap {
 							$phpDocNode = $this->resolvePhpDocStringToDocNode($phpDocString);
 							$typeMapCb = $typeMapStack[count($typeMapStack) - 1] ?? null;
@@ -359,7 +359,7 @@ class FileTypeMapper
 
 				if ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
 					$phpDocString = GetLastDocComment::forNode($node);
-					if ($phpDocString !== '') {
+					if ($phpDocString !== null) {
 						return self::POP_TYPE_MAP_STACK;
 					}
 

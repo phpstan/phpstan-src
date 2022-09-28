@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "95e06fb3db5986d6adad21d50fd3d0fa",
+    "content-hash": "95c224a3c1c808268d6ece694a2381d2",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2038,33 +2038,33 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "5.8.0.1",
+            "version": "dev-test-6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "8855194c3a64fdfaa801666d9d2dd68a0a876b67"
+                "reference": "ecd9f6b23d7b12535ad4d646bcacf9cc998360c5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/8855194c3a64fdfaa801666d9d2dd68a0a876b67",
-                "reference": "8855194c3a64fdfaa801666d9d2dd68a0a876b67",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/ecd9f6b23d7b12535ad4d646bcacf9cc998360c5",
+                "reference": "ecd9f6b23d7b12535ad4d646bcacf9cc998360c5",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "jetbrains/phpstorm-stubs": "dev-master#9717ec39b211f2cef82a59c29c9eef0954647fac",
-                "nikic/php-parser": "^4.14.0",
+                "nikic/php-parser": "^4.15.1",
                 "php": "^7.2 || ^8.0"
             },
             "conflict": {
                 "thecodingmachine/safe": "<1.1.3"
             },
             "require-dev": {
-                "doctrine/coding-standard": "^9.0.0",
-                "phpstan/phpstan": "^1.8.2",
+                "doctrine/coding-standard": "^10.0.0",
+                "phpstan/phpstan": "^1.8.6",
                 "phpstan/phpstan-phpunit": "^1.1.1",
-                "phpunit/phpunit": "^9.5.23",
-                "rector/rector": "0.12.19"
+                "phpunit/phpunit": "^9.5.25",
+                "rector/rector": "0.14.3"
             },
             "suggest": {
                 "composer/composer": "Required to use the ComposerSourceLocator"
@@ -2103,9 +2103,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/5.8.0.1"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/test-6"
             },
-            "time": "2022-08-25T07:27:31+00:00"
+            "time": "2022-09-28T15:04:57+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",
@@ -7226,7 +7226,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20
+        "jetbrains/phpstorm-stubs": 20,
+        "ondrejmirtes/better-reflection": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

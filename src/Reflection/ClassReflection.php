@@ -637,7 +637,7 @@ class ClassReflection
 		foreach ($this->reflection->getCases() as $case) {
 			$valueType = null;
 			if ($case instanceof ReflectionEnumBackedCase) {
-				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpr(), InitializerExprContext::fromClassReflection($this));
+				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), InitializerExprContext::fromClassReflection($this));
 			}
 			/** @var string $caseName */
 			$caseName = $case->getName();
@@ -660,7 +660,7 @@ class ClassReflection
 		$case = $this->reflection->getCase($name);
 		$valueType = null;
 		if ($case instanceof ReflectionEnumBackedCase) {
-			$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpr(), InitializerExprContext::fromClassReflection($this));
+			$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), InitializerExprContext::fromClassReflection($this));
 		}
 
 		return new EnumCaseReflection($this, $name, $valueType);

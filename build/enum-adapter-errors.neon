@@ -51,7 +51,7 @@ parameters:
 			path: ../src/Reflection/ClassReflection.php
 
 		-
-			message: "#^Call to method getValueExpr\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnumBackedCase\\.$#"
+			message: "#^Call to method getValueExpression\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnumBackedCase\\.$#"
 			count: 2
 			path: ../src/Reflection/ClassReflection.php
 

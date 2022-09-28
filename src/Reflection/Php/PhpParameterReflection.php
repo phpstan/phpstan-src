@@ -48,7 +48,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 				&& $this->reflection->isDefaultValueAvailable()
 			) {
 				$defaultValueType = $this->initializerExprTypeResolver->getType(
-					$this->reflection->getDefaultValueExpr(),
+					$this->reflection->getDefaultValueExpression(),
 					InitializerExprContext::fromReflectionParameter($this->reflection),
 				);
 				if ($defaultValueType instanceof NullType) {
@@ -106,7 +106,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 	{
 		if ($this->reflection->isDefaultValueAvailable()) {
 			return $this->initializerExprTypeResolver->getType(
-				$this->reflection->getDefaultValueExpr(),
+				$this->reflection->getDefaultValueExpression(),
 				InitializerExprContext::fromReflectionParameter($this->reflection),
 			);
 		}

@@ -1990,6 +1990,7 @@ services:
 
 	php8Lexer:
 		class: PhpParser\Lexer\Emulative
+		factory: @PHPStan\Parser\LexerFactory::createEmulative()
 		autowired: false
 
 	php8PhpParser:

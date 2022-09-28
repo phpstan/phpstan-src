@@ -97,7 +97,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 				$parameter->passedByReference(),
 				$parameter->isVariadic(),
 				$nativeParameters[$i]->isDefaultValueAvailable() ? $this->initializerExprTypeResolver->getType(
-					$nativeParameters[$i]->getDefaultValueExpr(),
+					$nativeParameters[$i]->getDefaultValueExpression(),
 					InitializerExprContext::fromReflectionParameter($nativeParameters[$i]),
 				) : null,
 			);

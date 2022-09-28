@@ -13,6 +13,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Parser\ParserException;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -491,11 +492,18 @@ class SignatureMapParserTest extends PHPStanTestCase
 				continue;
 			}
 
+			if ($realFunctionName === '') {
+				throw new ShouldNotHappenException();
+			}
+
 			$reflectionFunction = null;
 
 			try {
 				if ($className !== null) {
-					$reflectionFunction = new ReflectionMethod($reflector->reflectClass($className)->getMethod($realFunctionName));
+					$method = $reflector->reflectClass($className)->getMethod($realFunctionName);
+					if ($method !== null) {
+						$reflectionFunction = new ReflectionMethod($method);
+					}
 				} else {
 					$reflectionFunction = new ReflectionFunction($reflector->reflectFunction($realFunctionName));
 				}

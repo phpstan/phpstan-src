@@ -108,8 +108,13 @@ class AutoloadSourceLocator implements SourceLocator
 				new FuncCall(new Name('define'), [
 					new Arg(new String_($constantName)),
 					new Arg(new TypeExpr(ConstantTypeHelper::getTypeFromValue($constantValue))),
+				], [
+					'startLine' => 1,
+					'endLine' => 1,
+					'startFilePos' => 1,
+					'endFilePos' => 4,
 				]),
-				new LocatedSource('', $constantName, null),
+				new LocatedSource('<?php', $constantName, null),
 				null,
 				null,
 			);

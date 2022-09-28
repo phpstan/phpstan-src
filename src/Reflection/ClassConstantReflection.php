@@ -51,7 +51,7 @@ class ClassConstantReflection implements ConstantReflection
 
 	public function getValueExpr(): Expr
 	{
-		return $this->reflection->getValueExpr();
+		return $this->reflection->getValueExpression();
 	}
 
 	public function hasPhpDocType(): bool

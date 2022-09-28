@@ -41,6 +41,7 @@ return [
 		'date_timezone_set' => ['DateTime', 'object'=>'DateTime', 'timezone'=>'DateTimeZone'],
 		'explode' => ['non-empty-array<int,string>', 'separator'=>'non-empty-string', 'str'=>'string', 'limit='=>'int'],
 		'fdiv' => ['float', 'dividend'=>'float', 'divisor'=>'float'],
+		'get_class' => ['class-string', 'object'=>'object'],
 		'get_debug_type' => ['string', 'var'=>'mixed'],
 		'get_resource_id' => ['int', 'res'=>'resource'],
 		'gmdate' => ['string', 'format'=>'string', 'timestamp='=>'int'],

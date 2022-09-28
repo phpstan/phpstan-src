@@ -101,35 +101,28 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 				),
 			),
 		);
+
 		$errors = [];
-
 		foreach ($ignoreErrors as $ignoreError) {
-			try {
-				if (is_array($ignoreError)) {
-					if (isset($ignoreError['count'])) {
-						continue; // ignoreError coming from baseline will be correct
-					}
-					$ignoreMessage = $ignoreError['message'];
+			if (is_array($ignoreError)) {
+				if (isset($ignoreError['count'])) {
+					continue; // ignoreError coming from baseline will be correct
+				}
+				if (isset($ignoreError['messages'])) {
+					$ignoreMessages = $ignoreError['messages'];
 				} else {
-					$ignoreMessage = $ignoreError;
+					$ignoreMessages = [$ignoreError['message']];
 				}
+			} else {
+				$ignoreMessages = [$ignoreError];
+			}
 
-				Strings::match('', $ignoreMessage);
-				$validationResult = $ignoredRegexValidator->validate($ignoreMessage);
-				$ignoredTypes = $validationResult->getIgnoredTypes();
-				if (count($ignoredTypes) > 0) {
-					$errors[] = $this->createIgnoredTypesError($ignoreMessage, $ignoredTypes);
+			foreach ($ignoreMessages as $ignoreMessage) {
+				$error = $this->validateMessage($ignoredRegexValidator, $ignoreMessage);
+				if ($error === null) {
+					continue;
 				}
-
-				if ($validationResult->hasAnchorsInTheMiddle()) {
-					$errors[] = $this->createAnchorInTheMiddleError($ignoreMessage);
-				}
-
-				if ($validationResult->areAllErrorsIgnored()) {
-					$errors[] = sprintf("Ignored error %s has an unescaped '%s' which leads to ignoring all errors. Use '%s' instead.", $ignoreMessage, $validationResult->getWrongSequence(), $validationResult->getEscapedWrongSequence());
-				}
-			} catch (RegexpException $e) {
-				$errors[] = $e->getMessage();
+				$errors[] = $error;
 			}
 		}
 
@@ -138,6 +131,29 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 		}
 
 		throw new InvalidIgnoredErrorPatternsException($errors);
+	}
+
+	private function validateMessage(IgnoredRegexValidator $ignoredRegexValidator, string $ignoreMessage): ?string
+	{
+		try {
+			Strings::match('', $ignoreMessage);
+			$validationResult = $ignoredRegexValidator->validate($ignoreMessage);
+			$ignoredTypes = $validationResult->getIgnoredTypes();
+			if (count($ignoredTypes) > 0) {
+				return $this->createIgnoredTypesError($ignoreMessage, $ignoredTypes);
+			}
+
+			if ($validationResult->hasAnchorsInTheMiddle()) {
+				return $this->createAnchorInTheMiddleError($ignoreMessage);
+			}
+
+			if ($validationResult->areAllErrorsIgnored()) {
+				return sprintf("Ignored error %s has an unescaped '%s' which leads to ignoring all errors. Use '%s' instead.", $ignoreMessage, $validationResult->getWrongSequence(), $validationResult->getEscapedWrongSequence());
+			}
+		} catch (RegexpException $e) {
+			return $e->getMessage();
+		}
+		return null;
 	}
 
 	/**

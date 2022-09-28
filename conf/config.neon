@@ -314,13 +314,13 @@ parametersSchema:
 		anyOf(
 			string(),
 			structure([
-				message: string()
-				path: string()
+				messages: listOf(string())
+				?path: string()
 				?reportUnmatched: bool()
 			]),
 			structure([
-				messages: listOf(string())
-				path: string()
+				message: string()
+				?path: string()
 				?reportUnmatched: bool()
 			]),
 			structure([

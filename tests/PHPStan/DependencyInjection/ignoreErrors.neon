@@ -1,0 +1,42 @@
+parameters:
+	ignoreErrors:
+		- "#error#"
+		-
+			message: '#error#'
+			reportUnmatched: false
+		-
+			message: '#error#'
+			path: '/dir/*'
+		-
+			message: '#error#'
+			path: '/dir/*'
+			reportUnmatched: false
+		-
+			messages:
+				- '#error#'
+			path: '/dir/*'
+		-
+			messages:
+				- '#error#'
+			path: '/dir/*'
+			reportUnmatched: false
+		-
+			message: '#error#'
+			paths:
+				- '/dir/*'
+		-
+			message: '#error#'
+			paths:
+				- '/dir/*'
+			reportUnmatched: false
+		-
+			messages:
+				- '#error#'
+			paths:
+				- '/dir/*'
+		-
+			messages:
+				- '#error#'
+			paths:
+				- '/dir/*'
+			reportUnmatched: false

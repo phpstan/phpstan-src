@@ -1060,7 +1060,7 @@ return [
 'componere\cast_by_ref' => ['Type', 'arg1'=>'', 'object'=>''],
 'confirm_pdo_ibm_compiled' => [''],
 'connection_aborted' => ['0|1'],
-'connection_status' => ['int'],
+'connection_status' => ['int-mask<CONNECTION_NORMAL|CONNECTION_ABORTED|CONNECTION_TIMEOUT>'],
 'connection_timeout' => ['int'],
 'constant' => ['mixed', 'const_name'=>'string'],
 'convert_cyr_string' => ['string', 'str'=>'string', 'from'=>'string', 'to'=>'string'],

@@ -19,10 +19,7 @@ services:
 
 	currentPhpVersionLexer:
 		class: PhpParser\Lexer
-		factory: PhpParser\Lexer\Emulative
-		arguments:
-			options:
-				usedAttributes: [comments, startLine, endLine, startTokenPos, endTokenPos]
+		factory: @PHPStan\Parser\LexerFactory::createEmulative()
 
 	betterReflectionSourceLocator:
 		class: PHPStan\BetterReflection\SourceLocator\Type\SourceLocator

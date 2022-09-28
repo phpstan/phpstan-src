@@ -376,7 +376,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$nativeProperty = $class->getNativeReflection()->getProperty('test');
 		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
 		$defaultValueType = $initializerExprTypeResolver->getType(
-			$nativeProperty->getDefaultValueExpr(),
+			$nativeProperty->getDefaultValueExpression(),
 			InitializerExprContext::fromClassReflection($class->getNativeProperty('test')->getDeclaringClass()),
 		);
 		$this->assertInstanceOf(ConstantIntegerType::class, $defaultValueType);

@@ -874,7 +874,7 @@ class TypeNodeResolver
 					}
 
 					$constantTypes[] = $this->initializerExprTypeResolver->getType(
-						$reflectionConstant->getValueExpr(),
+						$reflectionConstant->getValueExpression(),
 						InitializerExprContext::fromClassReflection(
 							$this->getReflectionProvider()->getClass($declaringClassName),
 						),

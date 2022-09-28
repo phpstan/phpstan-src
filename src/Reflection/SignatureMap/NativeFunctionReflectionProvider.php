@@ -57,12 +57,14 @@ class NativeFunctionReflectionProvider
 			if ($reflectionFunction->getFileName() !== null) {
 				$fileName = $reflectionFunction->getFileName();
 				$docComment = $reflectionFunction->getDocComment();
-				$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, $reflectionFunction->getName(), $docComment);
-				$throwsTag = $resolvedPhpDoc->getThrowsTag();
-				if ($throwsTag !== null) {
-					$throwType = $throwsTag->getType();
+				if ($docComment !== null) {
+					$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, $reflectionFunction->getName(), $docComment);
+					$throwsTag = $resolvedPhpDoc->getThrowsTag();
+					if ($throwsTag !== null) {
+						$throwType = $throwsTag->getType();
+					}
+					$isDeprecated = $reflectionFunction->isDeprecated();
 				}
-				$isDeprecated = $reflectionFunction->isDeprecated();
 			}
 		} catch (IdentifierNotFound | InvalidIdentifierName) {
 			// pass

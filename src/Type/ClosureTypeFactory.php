@@ -101,7 +101,12 @@ class ClosureTypeFactory
 						return null;
 					}
 
-					return $this->initializerExprTypeResolver->getType($this->reflection->getDefaultValueExpr(), InitializerExprContext::fromReflectionParameter(new ReflectionParameter($this->reflection)));
+					$defaultExpr = $this->reflection->getDefaultValueExpression();
+					if ($defaultExpr === null) {
+						return null;
+					}
+
+					return $this->initializerExprTypeResolver->getType($defaultExpr, InitializerExprContext::fromReflectionParameter(new ReflectionParameter($this->reflection)));
 				}
 
 		}, $betterReflectionFunction->getParameters());

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "95c224a3c1c808268d6ece694a2381d2",
+    "content-hash": "7656c5da07878f73ed391c56a98226b5",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2038,7 +2038,7 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "dev-test-6",
+            "version": "6.0.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
@@ -2069,6 +2069,7 @@
             "suggest": {
                 "composer/composer": "Required to use the ComposerSourceLocator"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -2103,7 +2104,7 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/test-6"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.0.x"
             },
             "time": "2022-09-28T15:04:57+00:00"
         },
@@ -7226,8 +7227,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20,
-        "ondrejmirtes/better-reflection": 20
+        "jetbrains/phpstorm-stubs": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

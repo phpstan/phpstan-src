@@ -10,15 +10,15 @@ class Foo
 	public function generalArrays(array $arr): void
 	{
 		/** @var mixed[] $arr */
-		assertType('list<non-empty-array<int, mixed>>', array_chunk($arr, 2));
+		assertType('list<non-empty-list<mixed>>', array_chunk($arr, 2));
 		assertType('list<non-empty-array>', array_chunk($arr, 2, true));
 
 		/** @var array<string, int> $arr */
-		assertType('list<non-empty-array<int, int>>', array_chunk($arr, 2));
+		assertType('list<non-empty-list<int>>', array_chunk($arr, 2));
 		assertType('list<non-empty-array<string, int>>', array_chunk($arr, 2, true));
 
 		/** @var non-empty-array<int|string, bool> $arr */
-		assertType('non-empty-list<non-empty-array<int, bool>>', array_chunk($arr, 1));
+		assertType('non-empty-list<non-empty-list<bool>>', array_chunk($arr, 1));
 		assertType('non-empty-list<non-empty-array<int|string, bool>>', array_chunk($arr, 1, true));
 	}
 

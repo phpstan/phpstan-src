@@ -4,6 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -14,6 +15,8 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
@@ -22,6 +25,10 @@ use function count;
 
 final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -36,10 +43,18 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 
 		$arrayType = $scope->getType($functionCall->getArgs()[0]->value);
 		$lengthType = $scope->getType($functionCall->getArgs()[1]->value);
-		$preserveKeysType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
-		$preserveKeys = $preserveKeysType instanceof ConstantBooleanType ? $preserveKeysType->getValue() : false;
+		if (isset($functionCall->getArgs()[2])) {
+			$preserveKeysType = $scope->getType($functionCall->getArgs()[2]->value);
+			$preserveKeys = $preserveKeysType instanceof ConstantBooleanType ? $preserveKeysType->getValue() : null;
+		} else {
+			$preserveKeys = false;
+		}
 
-		if (!$arrayType->isArray()->yes() || !$lengthType instanceof ConstantIntegerType || $lengthType->getValue() < 1) {
+		if ($lengthType instanceof ConstantIntegerType && $lengthType->getValue() < 1) {
+			return $this->phpVersion->throwsValueErrorForInternalFunctions() ? new NeverType() : new NullType();
+		}
+
+		if (!$arrayType->isArray()->yes()) {
 			return null;
 		}
 
@@ -48,19 +63,39 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 				return $traverse($type);
 			}
 
-			if ($type instanceof ConstantArrayType) {
+			if (
+				$type instanceof ConstantArrayType
+				&& $lengthType instanceof ConstantIntegerType
+				&& $lengthType->getValue() >= 1
+				&& $preserveKeys !== null
+			) {
 				return $type->chunk($lengthType->getValue(), $preserveKeys);
 			}
 
-			$chunkType = $preserveKeys ? $type : new ArrayType(new IntegerType(), $type->getIterableValueType());
-			$chunkType = TypeCombinator::intersect($chunkType, new NonEmptyArrayType());
+			$chunkType = self::getChunkType($type, $preserveKeys);
 
-			$resultType = TypeCombinator::intersect(new ArrayType(new IntegerType(), $chunkType), new AccessoryArrayListType());
+			$accessoryTypes = [new AccessoryArrayListType()];
 			if ($type->isIterableAtLeastOnce()->yes()) {
-				$resultType = TypeCombinator::intersect($type, new NonEmptyArrayType());
+				$accessoryTypes[] = new NonEmptyArrayType();
 			}
-			return $resultType;
+
+			return TypeCombinator::intersect(new ArrayType(new IntegerType(), $chunkType), ...$accessoryTypes);
 		});
+	}
+
+	private static function getChunkType(Type $type, ?bool $preserveKeys): Type
+	{
+		$accessoryTypes = [new NonEmptyArrayType()];
+		if ($preserveKeys === null) {
+			$chunkType = new ArrayType(TypeCombinator::union($type->getIterableKeyType(), new IntegerType()), $type->getIterableValueType());
+		} elseif ($preserveKeys) {
+			$chunkType = $type;
+		} else {
+			$chunkType = new ArrayType(new IntegerType(), $type->getIterableValueType());
+			$accessoryTypes[] = new AccessoryArrayListType();
+		}
+
+		return TypeCombinator::intersect($chunkType, ...$accessoryTypes);
 	}
 
 }

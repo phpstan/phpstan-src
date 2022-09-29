@@ -17,3 +17,8 @@ final class ErrorResponse
 	{
 	}
 }
+
+class StaticReadonlyProperty
+{
+	private readonly static int $foo;
+}

@@ -43,6 +43,10 @@ class ReadOnlyPropertyRule implements Rule
 			 $errors[] = RuleErrorBuilder::message('Readonly property cannot have a default value.')->nonIgnorable()->build();
 		}
 
+		if ($node->isStatic()) {
+			$errors[] = RuleErrorBuilder::message('Readonly property cannot be static.')->nonIgnorable()->build();
+		}
+
 		return $errors;
 	}
 

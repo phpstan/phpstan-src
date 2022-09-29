@@ -1035,7 +1035,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $arrayType;
 	}
 
-	public function getKeysArray(): self
+	/**
+	 * @return self
+	 */
+	public function getKeysArray(): Type
 	{
 		$keyTypes = [];
 		$valueTypes = [];
@@ -1057,7 +1060,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new self($keyTypes, $valueTypes, $autoIndex, $optionalKeys, true);
 	}
 
-	public function getValuesArray(): self
+	/**
+	 * @return self
+	 */
+	public function getValuesArray(): Type
 	{
 		$keyTypes = [];
 		$valueTypes = [];

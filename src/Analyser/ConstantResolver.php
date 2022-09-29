@@ -14,10 +14,12 @@ use PHPStan\Type\ConstantType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use function array_key_exists;
 use function in_array;
 use const INF;
 use const NAN;
@@ -25,6 +27,9 @@ use const PHP_INT_SIZE;
 
 class ConstantResolver
 {
+
+	/** @var array<string, true> */
+	private array $currentlyResolving = [];
 
 	/**
 	 * @param string[] $dynamicConstantNames
@@ -47,10 +52,19 @@ class ConstantResolver
 			return $constantType;
 		}
 
+		if (array_key_exists($resolvedConstantName, $this->currentlyResolving)) {
+			return new MixedType();
+		}
+
+		$this->currentlyResolving[$resolvedConstantName] = true;
+
 		$constantReflection = $this->getReflectionProvider()->getConstant($name, $scope);
 		$constantType = $constantReflection->getValueType();
 
-		return $this->resolveConstantType($resolvedConstantName, $constantType);
+		$type = $this->resolveConstantType($resolvedConstantName, $constantType);
+		unset($this->currentlyResolving[$resolvedConstantName]);
+
+		return $type;
 	}
 
 	public function resolvePredefinedConstant(string $resolvedConstantName): ?Type

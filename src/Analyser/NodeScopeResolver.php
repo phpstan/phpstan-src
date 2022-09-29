@@ -503,6 +503,9 @@ class NodeScopeResolver
 					if ($param->getDocComment() !== null) {
 						$phpDoc = $param->getDocComment()->getText();
 					}
+					if (!$scope->isInClass()) {
+						throw new ShouldNotHappenException();
+					}
 					$nodeCallback(new ClassPropertyNode(
 						$param->var->name,
 						$param->flags,
@@ -513,6 +516,7 @@ class NodeScopeResolver
 						$param,
 						false,
 						$scope->isInTrait(),
+						$scope->getClassReflection()->isReadOnly(),
 					), $methodScope);
 				}
 			}
@@ -657,6 +661,9 @@ class NodeScopeResolver
 			foreach ($stmt->props as $prop) {
 				$this->processStmtNode($prop, $scope, $nodeCallback);
 				[,,,,,,,,,,$isReadOnly, $docComment] = $this->getPhpDocs($scope, $stmt);
+				if (!$scope->isInClass()) {
+					throw new ShouldNotHappenException();
+				}
 				$nodeCallback(
 					new ClassPropertyNode(
 						$prop->name->toString(),
@@ -668,6 +675,7 @@ class NodeScopeResolver
 						$prop,
 						$isReadOnly,
 						$scope->isInTrait(),
+						$scope->getClassReflection()->isReadOnly(),
 					),
 					$scope,
 				);

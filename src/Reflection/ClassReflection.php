@@ -584,6 +584,11 @@ class ClassReflection
 		return $this->reflection->isEnum();
 	}
 
+	public function isReadOnly(): bool
+	{
+		return $this->reflection->isReadOnly();
+	}
+
 	public function isBackedEnum(): bool
 	{
 		if (!$this->reflection instanceof ReflectionEnum) {

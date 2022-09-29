@@ -89,4 +89,14 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/read-only-property.php'], $errors);
 	}
 
+	/**
+	 * @dataProvider dataRule
+	 * @param mixed[] $errors
+	 */
+	public function testRuleReadonlyClass(int $phpVersionId, array $errors): void
+	{
+		$this->phpVersionId = $phpVersionId;
+		$this->analyse([__DIR__ . '/data/read-only-property-readonly-class.php'], $errors);
+	}
+
 }

@@ -9,7 +9,7 @@ use function explode;
 final class ConstructorsHelper
 {
 
-	/** @var array<string, string[]> */
+	/** @var array<string, list<string>> */
 	private array $additionalConstructorsCache = [];
 
 	/**

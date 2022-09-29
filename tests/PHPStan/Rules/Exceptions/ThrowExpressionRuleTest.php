@@ -40,7 +40,7 @@ class ThrowExpressionRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRule
-	 * @param mixed[] $expectedErrors
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
 	public function testRule(int $phpVersion, array $expectedErrors): void
 	{

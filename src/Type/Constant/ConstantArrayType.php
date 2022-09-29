@@ -1277,7 +1277,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$optionalKeys = array_values(array_unique($optionalKeys));
 
-		$nextAutoIndexes = array_unique(array_merge($this->nextAutoIndexes, $otherArray->nextAutoIndexes));
+		$nextAutoIndexes = array_values(array_unique(array_merge($this->nextAutoIndexes, $otherArray->nextAutoIndexes)));
 		sort($nextAutoIndexes);
 
 		return new self($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $this->isList && $otherArray->isList);

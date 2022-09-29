@@ -195,7 +195,7 @@ class CallCallablesRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataBug3566
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testBug3566(bool $checkExplicitMixed, array $errors): void
 	{

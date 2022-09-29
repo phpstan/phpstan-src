@@ -1009,6 +1009,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Reflection error: Circular reference to class "Bug7787\TestClass"', $errors[0]->getMessage());
 	}
 
+	public function testBug3865(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-3865.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('The @extends tag of class Bug3865\RecursiveClass describes Bug3865\RecursiveClass but the class extends Bug3865\EntityRepository.', $errors[0]->getMessage());
+		$this->assertSame(14, $errors[0]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

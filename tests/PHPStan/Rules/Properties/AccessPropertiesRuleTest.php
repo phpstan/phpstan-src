@@ -621,7 +621,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataDynamicProperties
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testDynamicProperties(bool $checkDynamicProperties, array $errors): void
 	{

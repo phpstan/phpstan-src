@@ -1543,7 +1543,7 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataExplicitMixed
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testExplicitMixed(bool $checkExplicitMixed, array $errors): void
 	{
@@ -1587,7 +1587,7 @@ class CallMethodsRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataImplicitMixed
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testImplicitMixed(bool $checkImplicitMixed, array $errors): void
 	{

@@ -40,7 +40,7 @@ class FinalConstantRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRule
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testRule(int $phpVersionId, array $errors): void
 	{

@@ -112,7 +112,7 @@ class ConstantArrayTypeBuilder
 				}
 
 				$newAutoIndexes[] = $newAutoIndex;
-				$this->nextAutoIndexes = array_unique($newAutoIndexes);
+				$this->nextAutoIndexes = array_values(array_unique($newAutoIndexes));
 
 				if ($optional || $hasOptional) {
 					$this->optionalKeys[] = count($this->keyTypes) - 1;

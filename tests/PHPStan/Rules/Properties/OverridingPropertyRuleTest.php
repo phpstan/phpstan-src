@@ -151,7 +151,7 @@ class OverridingPropertyRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRulePHPDocTypes
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testRulePHPDocTypes(bool $reportMaybes, array $errors): void
 	{

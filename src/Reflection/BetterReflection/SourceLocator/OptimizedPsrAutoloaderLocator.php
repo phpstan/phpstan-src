@@ -54,7 +54,7 @@ class OptimizedPsrAutoloaderLocator implements SourceLocator
 	}
 
 	/**
-	 * @return array<int, Reflection>
+	 * @return list<Reflection>
 	 */
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{

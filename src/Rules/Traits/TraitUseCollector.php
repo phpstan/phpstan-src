@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use function array_map;
+use function array_values;
 
 /**
  * @implements Collector<Node\Stmt\TraitUse, list<string>>
@@ -20,7 +21,7 @@ class TraitUseCollector implements Collector
 
 	public function processNode(Node $node, Scope $scope)
 	{
-		return array_map(static fn (Node\Name $traitName) => $traitName->toString(), $node->traits);
+		return array_values(array_map(static fn (Node\Name $traitName) => $traitName->toString(), $node->traits));
 	}
 
 }

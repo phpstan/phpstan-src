@@ -189,7 +189,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataNativeUnionTypes
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testNativeUnionTypes(int $phpVersionId, array $errors): void
 	{
@@ -226,7 +226,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataRequiredParameterAfterOptional
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
 	{
@@ -264,7 +264,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataIntersectionTypes
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testIntersectionTypes(int $phpVersion, array $errors): void
 	{
@@ -285,7 +285,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataTrueTypes
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testTrueTypehint(int $phpVersion, array $errors): void
 	{

@@ -217,7 +217,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataParameterContravariance
-	 * @param mixed[] $expectedErrors
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
 	public function testParameterContravariance(
 		string $file,
@@ -275,7 +275,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataReturnTypeCovariance
-	 * @param mixed[] $expectedErrors
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
 	 */
 	public function testReturnTypeCovariance(
 		int $phpVersion,
@@ -420,7 +420,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataLessOverridenParametersWithVariadic
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testLessOverridenParametersWithVariadic(int $phpVersionId, array $errors): void
 	{
@@ -449,7 +449,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataParameterTypeWidening
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testParameterTypeWidening(int $phpVersionId, array $errors): void
 	{
@@ -513,7 +513,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 	/**
 	 * @dataProvider dataTentativeReturnTypes
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testTentativeReturnTypes(int $phpVersionId, array $errors): void
 	{

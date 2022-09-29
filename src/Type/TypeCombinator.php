@@ -1012,7 +1012,8 @@ class TypeCombinator
 					}
 
 					if (
-						get_class($types[$i]) === ArrayType::class
+						$types[$i] instanceof ArrayType
+						&& get_class($types[$i]) === ArrayType::class
 						&& $types[$j] instanceof AccessoryArrayListType
 						&& !$types[$j]->getIterableKeyType()->isSuperTypeOf($types[$i]->getIterableKeyType())->yes()
 					) {

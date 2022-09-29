@@ -568,7 +568,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 	/**
 	 * @dataProvider dataForeachPolluteScopeWithAlwaysIterableForeach
 	 *
-	 * @param mixed[] $errors
+	 * @param list<array{0: string, 1: int, 2?: string}> $errors
 	 */
 	public function testForeachPolluteScopeWithAlwaysIterableForeach(bool $polluteScopeWithAlwaysIterableForeach, array $errors): void
 	{

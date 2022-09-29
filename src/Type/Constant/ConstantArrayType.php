@@ -166,6 +166,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$arrays = [];
 		foreach ($optionalKeysCombinations as $combination) {
 			$keys = array_merge($requiredKeys, $combination);
+			sort($keys);
+
+			if ($this->isList && array_keys($keys) !== array_values($keys)) {
+				continue;
+			}
+
 			$builder = ConstantArrayTypeBuilder::createEmpty();
 			foreach ($keys as $i) {
 				$builder->setOffsetValueType($this->keyTypes[$i], $this->valueTypes[$i]);

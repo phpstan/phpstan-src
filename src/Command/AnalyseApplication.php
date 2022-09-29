@@ -11,6 +11,7 @@ use PHPStan\Analyser\RuleErrorTransformer;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
+use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflection\Exception\NotAClassReflection;
 use PHPStan\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
@@ -158,7 +159,7 @@ class AnalyseApplication
 			} catch (IdentifierNotFound $e) {
 				$errors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
 				continue;
-			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection $e) {
+			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection | CircularReference $e) {
 				$errors[] = new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e);
 				continue;
 			}

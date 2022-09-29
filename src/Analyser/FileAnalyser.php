@@ -6,6 +6,7 @@ use PhpParser\Comment;
 use PhpParser\Node;
 use PHPStan\AnalysedCodeException;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
+use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflection\Exception\NotAClassReflection;
 use PHPStan\BetterReflection\Reflection\Exception\NotAnInterfaceReflection;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
@@ -103,7 +104,7 @@ class FileAnalyser
 						} catch (IdentifierNotFound $e) {
 							$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
 							continue;
-						} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection $e) {
+						} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection | CircularReference $e) {
 							$fileErrors[] = new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e);
 							continue;
 						}
@@ -139,7 +140,7 @@ class FileAnalyser
 						} catch (IdentifierNotFound $e) {
 							$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getLine(), $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
 							continue;
-						} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection $e) {
+						} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection | CircularReference $e) {
 							$fileErrors[] = new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getLine(), $e);
 							continue;
 						}
@@ -227,7 +228,7 @@ class FileAnalyser
 				$fileErrors[] = new Error($e->getMessage(), $file, null, $e, null, null, $e->getTip());
 			} catch (IdentifierNotFound $e) {
 				$fileErrors[] = new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, null, $e, null, null, 'Learn more at https://phpstan.org/user-guide/discovering-symbols');
-			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection $e) {
+			} catch (UnableToCompileNode | NotAClassReflection | NotAnInterfaceReflection | CircularReference $e) {
 				$fileErrors[] = new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, null, $e);
 			}
 		} elseif (is_dir($file)) {

@@ -1002,6 +1002,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug7787(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7787.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Reflection error: Circular reference to class "Bug7787\TestClass"', $errors[0]->getMessage());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

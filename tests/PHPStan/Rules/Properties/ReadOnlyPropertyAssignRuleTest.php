@@ -125,4 +125,18 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testReadOnlyClasses(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/readonly-class-assign.php'], [
+			[
+				'Readonly property ReadonlyClassPropertyAssign\Foo::$foo is assigned outside of the constructor.',
+				21,
+			],
+		]);
+	}
+
 }

@@ -346,6 +346,10 @@ class ClassReflection
 			return true;
 		}
 
+		if ($this->isReadOnly()) {
+			return false;
+		}
+
 		if ($this->is(stdClass::class)) {
 			return true;
 		}

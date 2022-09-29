@@ -10,4 +10,11 @@ function say(\Closure $bar): string
 function (): void {
 	echo say(fn (string $name = null) => 'Hi');
 	echo say((fn (string $name = null) => 'Hi')(...));
+
+	echo say(function (string $name = null) {
+		return 'Hi';
+	});
+	echo say((function (string $name = null) {
+		return 'Hi';
+	})(...));
 };

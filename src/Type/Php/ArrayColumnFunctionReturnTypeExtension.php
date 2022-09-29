@@ -81,7 +81,6 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		if ($indexType !== null) {
-			$isList = TrinaryLogic::createMaybe();
 			$type = $this->getOffsetOrProperty($iterableValueType, $indexType, $scope, false);
 			if ($type !== null) {
 				$returnKeyType = $type;
@@ -94,7 +93,6 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				}
 			}
 		} else {
-			$isList = $arrayType->isList();
 			$returnKeyType = new IntegerType();
 		}
 
@@ -104,7 +102,7 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		if ($iterableAtLeastOnce->yes()) {
 			$accessoryTypes[] = new NonEmptyArrayType();
 		}
-		if ($isList->yes()) {
+		if ($indexType === null) {
 			$accessoryTypes[] = new AccessoryArrayListType();
 		}
 

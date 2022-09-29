@@ -39,6 +39,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Keywords/data/continue-break.php \
 		--exclude tests/PHPStan/Rules/Properties/data/read-only-property.php \
 		--exclude tests/PHPStan/Rules/Properties/data/read-only-property-phpdoc-and-native.php   \
+		--exclude tests/PHPStan/Rules/Properties/data/read-only-property-readonly-class.php \
 		--exclude tests/PHPStan/Rules/Properties/data/overriding-property.php \
 		--exclude tests/PHPStan/Rules/Constants/data/overriding-final-constant.php \
 		--exclude tests/PHPStan/Rules/Properties/data/intersection-types.php \

@@ -515,6 +515,10 @@ class ParametersAcceptorSelector
 			return new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(2)]);
 		}
 
+		if (defined('CURLOPT_POSTFIELDS') && $curlOpt === CURLOPT_SSL_VERIFYHOST) {
+			return new UnionType([new StringType(), new ArrayType(new MixedType(), new MixedType())]);
+		}
+
 		$boolConstants = [
 			'CURLOPT_AUTOREFERER',
 			'CURLOPT_COOKIESESSION',
@@ -646,7 +650,6 @@ class ParametersAcceptorSelector
 			'CURLOPT_KRB4LEVEL',
 			'CURLOPT_LOGIN_OPTIONS',
 			'CURLOPT_PINNEDPUBLICKEY',
-			'CURLOPT_POSTFIELDS',
 			'CURLOPT_PRIVATE',
 			'CURLOPT_PRE_PROXY',
 			'CURLOPT_PROXY',

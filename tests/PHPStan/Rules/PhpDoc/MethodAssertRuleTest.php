@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
-use PHPStan\Node\Printer\Printer;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -16,7 +15,7 @@ class MethodAssertRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
-		return new MethodAssertRule(new AssertRuleHelper($initializerExprTypeResolver, new Printer()));
+		return new MethodAssertRule(new AssertRuleHelper($initializerExprTypeResolver));
 	}
 
 	public function testRule(): void

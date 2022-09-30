@@ -3,13 +3,16 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorWithAsserts;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function sprintf;
@@ -25,7 +28,7 @@ class AssertRuleHelper
 	/**
 	 * @return RuleError[]
 	 */
-	public function check(ParametersAcceptor $acceptor): array
+	public function check(MethodReflection|FunctionReflection $reflection, ParametersAcceptor $acceptor): array
 	{
 		if (!$acceptor instanceof ParametersAcceptorWithAsserts) {
 			return [];
@@ -34,6 +37,11 @@ class AssertRuleHelper
 		$parametersByName = [];
 		foreach ($acceptor->getParameters() as $parameter) {
 			$parametersByName[$parameter->getName()] = $parameter->getType();
+		}
+
+		if ($reflection instanceof MethodReflection) {
+			$class = $reflection->getDeclaringClass();
+			$parametersByName['this'] = new ObjectType($class->getName(), null, $class);
 		}
 
 		$context = InitializerExprContext::createEmpty();

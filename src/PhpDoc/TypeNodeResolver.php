@@ -118,6 +118,22 @@ class TypeNodeResolver
 	{
 	}
 
+	public function withListTypeEnabled(): self
+	{
+		if ($this->listType) {
+			return $this;
+		}
+
+		return new self(
+			$this->extensionRegistryProvider,
+			$this->reflectionProviderProvider,
+			$this->typeAliasResolverProvider,
+			$this->constantResolver,
+			$this->initializerExprTypeResolver,
+			true,
+		);
+	}
+
 	/** @api */
 	public function resolve(TypeNode $typeNode, NameScope $nameScope): Type
 	{

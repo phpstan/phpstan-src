@@ -22,7 +22,7 @@ class SignatureMapParser
 		TypeStringResolver $typeNodeResolver,
 	)
 	{
-		$this->typeStringResolver = $typeNodeResolver;
+		$this->typeStringResolver = $typeNodeResolver->withListTypeEnabled();
 	}
 
 	/**

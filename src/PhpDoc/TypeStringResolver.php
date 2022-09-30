@@ -15,6 +15,15 @@ class TypeStringResolver
 	{
 	}
 
+	public function withListTypeEnabled(): self
+	{
+		return new self(
+			$this->typeLexer,
+			$this->typeParser,
+			$this->typeNodeResolver->withListTypeEnabled(),
+		);
+	}
+
 	/** @api */
 	public function resolve(string $typeString, ?NameScope $nameScope = null): Type
 	{

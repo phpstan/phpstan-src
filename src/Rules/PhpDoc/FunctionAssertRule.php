@@ -26,17 +26,17 @@ class FunctionAssertRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$method = $scope->getFunction();
-		if ($method === null) {
+		$function = $scope->getFunction();
+		if ($function === null) {
 			throw new ShouldNotHappenException();
 		}
 
-		$variants = $method->getVariants();
+		$variants = $function->getVariants();
 		if (count($variants) !== 1) {
 			return [];
 		}
 
-		return $this->helper->check($variants[0]);
+		return $this->helper->check($function, $variants[0]);
 	}
 
 }

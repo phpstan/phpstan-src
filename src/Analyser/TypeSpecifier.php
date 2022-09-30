@@ -19,7 +19,6 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Node\Printer\ExprPrinter;
-use PHPStan\Internal\AssertVariableResolver;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
@@ -75,6 +74,7 @@ use function count;
 use function in_array;
 use function is_string;
 use function strtolower;
+use function substr;
 
 class TypeSpecifier
 {
@@ -1218,19 +1218,12 @@ class TypeSpecifier
 		$types = null;
 
 		foreach ($asserts as $i => $assert) {
-			$missing = false;
-			$assertExpr = AssertVariableResolver::map($assert->getParameter(), static function (string $variable) use ($argsMap, &$missing): ?Expr {
-				if (array_key_exists($variable, $argsMap)) {
-					return $argsMap[$variable];
-				}
-
-				$missing = true;
-				return null;
-			});
-
-			if ($missing) {
+			$parameterExpr = $argsMap[substr($assert->getParameter()->getParameterName(), 1)] ?? null;
+			if ($parameterExpr === null) {
 				continue;
 			}
+
+			$assertExpr = $assert->getParameter()->getExpr($parameterExpr);
 
 			$containsUnresolvedTemplate = false;
 			if (isset($originalAsserts[$i])) {
@@ -1247,7 +1240,7 @@ class TypeSpecifier
 						}
 
 						return $traverse($type);
-					}
+					},
 				);
 			}
 

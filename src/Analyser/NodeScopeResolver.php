@@ -406,7 +406,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $asserts] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , , $asserts] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);

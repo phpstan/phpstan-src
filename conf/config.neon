@@ -513,8 +513,6 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\PhpDocNodeResolver
-		arguments:
-			parser: @currentPhpVersionSimpleDirectParser
 
 	-
 		class: PHPStan\PhpDoc\PhpDocStringResolver

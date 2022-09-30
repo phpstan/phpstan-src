@@ -2,12 +2,9 @@
 
 namespace PHPStan\PhpDoc;
 
-use PhpParser\Node\Expr;
-use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\NameScope;
-use PHPStan\Parser\Parser;
-use PHPStan\Parser\ParserErrorsException;
 use PHPStan\PhpDoc\Tag\AssertTag;
+use PHPStan\PhpDoc\Tag\AssertTagParameter;
 use PHPStan\PhpDoc\Tag\DeprecatedTag;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
@@ -36,7 +33,6 @@ use PHPStan\Type\TypeCombinator;
 use function array_map;
 use function array_merge;
 use function array_reverse;
-use function assert;
 use function count;
 use function in_array;
 use function strpos;
@@ -49,7 +45,6 @@ class PhpDocNodeResolver
 		private TypeNodeResolver $typeNodeResolver,
 		private ConstExprNodeResolver $constExprNodeResolver,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
-		private Parser $parser,
 	)
 	{
 	}
@@ -437,11 +432,19 @@ class PhpDocNodeResolver
 
 		foreach ($phpDocNode->getAssertTagValues($tagName) as $assertTagValue) {
 			$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
-			$parameter = $this->parseAssertExpr($assertTagValue->parameter);
-			if ($parameter === null) {
-				continue;
-			}
+			$parameter = new AssertTagParameter($assertTagValue->parameter, null, null);
+			$resolved[] = new AssertTag($if, $type, $parameter, $assertTagValue->isNegated);
+		}
 
+		foreach ($phpDocNode->getAssertPropertyTagValues($tagName) as $assertTagValue) {
+			$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
+			$parameter = new AssertTagParameter($assertTagValue->parameter, $assertTagValue->property, null);
+			$resolved[] = new AssertTag($if, $type, $parameter, $assertTagValue->isNegated);
+		}
+
+		foreach ($phpDocNode->getAssertMethodTagValues($tagName) as $assertTagValue) {
+			$type = $this->typeNodeResolver->resolve($assertTagValue->type, $nameScope);
+			$parameter = new AssertTagParameter($assertTagValue->parameter, null, $assertTagValue->method);
 			$resolved[] = new AssertTag($if, $type, $parameter, $assertTagValue->isNegated);
 		}
 
@@ -565,22 +568,6 @@ class PhpDocNodeResolver
 		}
 
 		return false;
-	}
-
-	private function parseAssertExpr(string $parameter): ?Expr
-	{
-		try {
-			$tree = $this->parser->parseString('<?php return ' . $parameter . ';');
-		} catch (ParserErrorsException) {
-			return null;
-		}
-
-		if (count($tree) === 1) {
-			assert($tree[0] instanceof Return_);
-			return $tree[0]->expr;
-		}
-
-		return null;
 	}
 
 }

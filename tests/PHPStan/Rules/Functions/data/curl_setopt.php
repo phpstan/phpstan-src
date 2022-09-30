@@ -22,6 +22,8 @@ class HelloWorld
 		curl_setopt($curl, CURLOPT_CONNECT_TO, $s);
 		// expecting resource
 		curl_setopt($curl, CURLOPT_FILE, $s);
+		// expecting string or array
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $i);
 	}
 
 	/**

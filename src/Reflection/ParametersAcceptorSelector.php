@@ -515,7 +515,7 @@ class ParametersAcceptorSelector
 			return new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(2)]);
 		}
 
-		if (defined('CURLOPT_POSTFIELDS') && $curlOpt === CURLOPT_SSL_VERIFYHOST) {
+		if (defined('CURLOPT_POSTFIELDS') && $curlOpt === CURLOPT_POSTFIELDS) {
 			return new UnionType([new StringType(), new ArrayType(new MixedType(), new MixedType())]);
 		}
 

@@ -2,7 +2,6 @@
 
 namespace PHPStan\PhpDoc\Tag;
 
-use PhpParser\Node\Expr;
 use PHPStan\Type\Type;
 
 /** @api */
@@ -16,7 +15,7 @@ final class AssertTag implements TypedTag
 	/**
 	 * @param self::NULL|self::IF_TRUE|self::IF_FALSE $if
 	 */
-	public function __construct(private string $if, private Type $type, private Expr $parameter, private bool $negated)
+	public function __construct(private string $if, private Type $type, private AssertTagParameter $parameter, private bool $negated)
 	{
 	}
 
@@ -33,7 +32,7 @@ final class AssertTag implements TypedTag
 		return $this->type;
 	}
 
-	public function getParameter(): Expr
+	public function getParameter(): AssertTagParameter
 	{
 		return $this->parameter;
 	}
@@ -51,7 +50,7 @@ final class AssertTag implements TypedTag
 		return new self($this->if, $type, $this->parameter, $this->negated);
 	}
 
-	public function withParameter(Expr $parameter): self
+	public function withParameter(AssertTagParameter $parameter): self
 	{
 		return new self($this->if, $this->type, $parameter, $this->negated);
 	}

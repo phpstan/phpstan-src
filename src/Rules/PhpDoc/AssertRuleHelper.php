@@ -2,9 +2,7 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
-use PHPStan\Internal\AssertVariableResolver;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Node\Printer\Printer;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -15,11 +13,12 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function sprintf;
+use function substr;
 
 class AssertRuleHelper
 {
 
-	public function __construct(private InitializerExprTypeResolver $initializerExprTypeResolver, private Printer $printer)
+	public function __construct(private InitializerExprTypeResolver $initializerExprTypeResolver)
 	{
 	}
 
@@ -41,17 +40,13 @@ class AssertRuleHelper
 
 		$errors = [];
 		foreach ($acceptor->getAsserts()->getAll() as $assert) {
-			$assertedExpr = AssertVariableResolver::map($assert->getParameter(), static function ($parameterName) use ($parametersByName, &$errors) {
-				if (!array_key_exists($parameterName, $parametersByName)) {
-					$errors[] = RuleErrorBuilder::message(sprintf('Assert references unknown parameter $%s.', $parameterName))->build();
-					$type = new ErrorType();
-				} else {
-					$type = $parametersByName[$parameterName];
-				}
+			$parameterName = substr($assert->getParameter()->getParameterName(), 1);
+			if (!array_key_exists($parameterName, $parametersByName)) {
+				$errors[] = RuleErrorBuilder::message(sprintf('Assert references unknown parameter $%s.', $parameterName))->build();
+				continue;
+			}
 
-				return new TypeExpr($type);
-			});
-
+			$assertedExpr = $assert->getParameter()->getExpr(new TypeExpr($parametersByName[$parameterName]));
 			$assertedExprType = $this->initializerExprTypeResolver->getType($assertedExpr, $context);
 			if ($assertedExprType instanceof ErrorType) {
 				continue;
@@ -64,7 +59,7 @@ class AssertRuleHelper
 				continue;
 			}
 
-			$assertedExprString = $this->printer->prettyPrintExpr($assert->getParameter());
+			$assertedExprString = $assert->getParameter()->describe();
 
 			if ($assert->isNegated() ? $isSuperType->yes() : $isSuperType->no()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(

@@ -2,9 +2,7 @@
 
 namespace PHPStan\PhpDoc;
 
-use PhpParser\Node;
 use PHPStan\Analyser\NameScope;
-use PHPStan\Internal\AssertVariableResolver;
 use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\PhpDoc\Tag\DeprecatedTag;
 use PHPStan\PhpDoc\Tag\ExtendsTag;
@@ -268,14 +266,13 @@ class ResolvedPhpDocBlock
 
 		$assertTags = $this->getAssertTags();
 		if (count($assertTags) > 0) {
-			$assertTags = array_map(static fn (AssertTag $tag): AssertTag => $tag->withParameter(
-				AssertVariableResolver::map(
-					$tag->getParameter(),
-					static fn (string $variable): ?Node\Expr => array_key_exists($variable, $parameterNameMapping)
-						? new Node\Expr\Variable($parameterNameMapping[$variable])
-						: null,
-				),
-			), $assertTags);
+			$assertTags = array_map(static function (AssertTag $tag) use ($parameterNameMapping): AssertTag {
+				$parameterName = substr($tag->getParameter()->getParameterName(), 1);
+				if (array_key_exists($parameterName, $parameterNameMapping)) {
+					$tag = $tag->withParameter($tag->getParameter()->changeParameterName('$' . $parameterNameMapping[$parameterName]));
+				}
+				return $tag;
+			}, $assertTags);
 		}
 
 		$self = new self();

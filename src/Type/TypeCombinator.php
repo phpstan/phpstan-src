@@ -203,7 +203,7 @@ class TypeCombinator
 				$nonEmpty = new NonEmptyArrayType();
 				$intermediateAccessoryTypes[$nonEmpty->describe(VerbosityLevel::cache())] = [$nonEmpty];
 			}
-			if ($types[$i]->isList()->yes()) {
+			if ($types[$i]->isList()->yes() && AccessoryArrayListType::isListTypeEnabled()) {
 				$list = new AccessoryArrayListType();
 				$intermediateAccessoryTypes[$list->describe(VerbosityLevel::cache())] = [$list];
 			}

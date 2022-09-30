@@ -16,6 +16,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use Symfony\Component\Finder\Finder;
 use function dirname;
 use function extension_loaded;
@@ -132,6 +133,7 @@ class ContainerFactory
 		$container->getService('typeSpecifier');
 
 		BleedingEdgeToggle::setBleedingEdge($container->parameters['featureToggles']['bleedingEdge']);
+		AccessoryArrayListType::setListTypeEnabled($container->parameters['featureToggles']['listType']);
 
 		return $container->getByType(Container::class);
 	}

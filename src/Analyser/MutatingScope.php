@@ -509,11 +509,10 @@ class MutatingScope implements Scope
 				return IntegerRangeType::fromInterval(1, null);
 			}
 			if ($variableName === 'argv') {
-				return TypeCombinator::intersect(
+				return AccessoryArrayListType::intersectWith(TypeCombinator::intersect(
 					new ArrayType(new IntegerType(), new StringType()),
-					new AccessoryArrayListType(),
 					new NonEmptyArrayType(),
-				);
+				));
 			}
 		}
 
@@ -4690,7 +4689,7 @@ class MutatingScope implements Scope
 						$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
 					}
 					if ($constantArraysA->isList()->yes() && $constantArraysB->isList()->yes()) {
-						$resultType = TypeCombinator::intersect($resultType, new AccessoryArrayListType());
+						$resultType = AccessoryArrayListType::intersectWith($resultType);
 					}
 					$resultTypes[] = $resultType;
 				}
@@ -4735,7 +4734,7 @@ class MutatingScope implements Scope
 					$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
 				}
 				if ($generalArraysA->isList()->yes() && $generalArraysB->isList()->yes()) {
-					$resultType = TypeCombinator::intersect($resultType, new AccessoryArrayListType());
+					$resultType = AccessoryArrayListType::intersectWith($resultType);
 				}
 				$resultTypes[] = $resultType;
 			}

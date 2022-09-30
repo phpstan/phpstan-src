@@ -74,28 +74,27 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 
 			$chunkType = self::getChunkType($type, $preserveKeys);
 
-			$accessoryTypes = [new AccessoryArrayListType()];
+			$resultType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $chunkType));
 			if ($type->isIterableAtLeastOnce()->yes()) {
-				$accessoryTypes[] = new NonEmptyArrayType();
+				 $resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
 			}
 
-			return TypeCombinator::intersect(new ArrayType(new IntegerType(), $chunkType), ...$accessoryTypes);
+			return $resultType;
 		});
 	}
 
 	private static function getChunkType(Type $type, ?bool $preserveKeys): Type
 	{
-		$accessoryTypes = [new NonEmptyArrayType()];
 		if ($preserveKeys === null) {
 			$chunkType = new ArrayType(TypeCombinator::union($type->getIterableKeyType(), new IntegerType()), $type->getIterableValueType());
 		} elseif ($preserveKeys) {
 			$chunkType = $type;
 		} else {
 			$chunkType = new ArrayType(new IntegerType(), $type->getIterableValueType());
-			$accessoryTypes[] = new AccessoryArrayListType();
+			$chunkType = AccessoryArrayListType::intersectWith($chunkType);
 		}
 
-		return TypeCombinator::intersect($chunkType, ...$accessoryTypes);
+		return TypeCombinator::intersect($chunkType, new NonEmptyArrayType());
 	}
 
 }

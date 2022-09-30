@@ -36,7 +36,7 @@ class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 				}
 
 				$keyType = $valueType->getIterableKeyType();
-				$array = TypeCombinator::intersect(new ArrayType(new IntegerType(), $keyType), new AccessoryArrayListType());
+				$array = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $keyType));
 				if ($valueType->isIterableAtLeastOnce()->yes()) {
 					$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
 				}
@@ -44,13 +44,10 @@ class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 			}
 		}
 
-		return TypeCombinator::intersect(
-			new ArrayType(
-				new IntegerType(),
-				new UnionType([new StringType(), new IntegerType()]),
-			),
-			new AccessoryArrayListType(),
-		);
+		return AccessoryArrayListType::intersectWith(new ArrayType(
+			new IntegerType(),
+			new UnionType([new StringType(), new IntegerType()]),
+		));
 	}
 
 }

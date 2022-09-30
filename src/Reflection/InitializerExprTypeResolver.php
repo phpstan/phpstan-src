@@ -483,7 +483,7 @@ class InitializerExprTypeResolver
 
 		$arrayType = $arrayBuilder->getArray();
 		if ($isList === true) {
-			return TypeCombinator::intersect($arrayType, new AccessoryArrayListType());
+			return AccessoryArrayListType::intersectWith($arrayType);
 		}
 
 		return $arrayType;
@@ -960,16 +960,11 @@ class InitializerExprTypeResolver
 				TypeCombinator::union($leftType->getIterableValueType(), $rightType->getIterableValueType()),
 			);
 
-			$accessoryTypes = [];
 			if ($leftType->isIterableAtLeastOnce()->yes() || $rightType->isIterableAtLeastOnce()->yes()) {
-				$accessoryTypes[] = new NonEmptyArrayType();
+				$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 			}
 			if ($leftType->isList()->yes() && $rightType->isList()->yes()) {
-				$accessoryTypes[] = new AccessoryArrayListType();
-			}
-
-			if (count($accessoryTypes) > 0) {
-				return TypeCombinator::intersect($arrayType, ...$accessoryTypes);
+				$arrayType = AccessoryArrayListType::intersectWith($arrayType);
 			}
 
 			return $arrayType;

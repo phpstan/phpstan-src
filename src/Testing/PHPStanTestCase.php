@@ -29,6 +29,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\UsefulTypeAliasResolver;
 use PHPUnit\Framework\ExpectationFailedException;
@@ -54,6 +55,13 @@ abstract class PHPStanTestCase extends TestCase
 
 	/** @var array<string, Container> */
 	private static array $containers = [];
+
+	public static function setUpBeforeClass(): void
+	{
+		parent::setUpBeforeClass();
+
+		AccessoryArrayListType::setListTypeEnabled(static::getContainer()->getParameter('featureToggles')['listType']);
+	}
 
 	/** @api */
 	public static function getContainer(): Container

@@ -283,16 +283,11 @@ class ConstantArrayTypeBuilder
 			TypeCombinator::union(...$this->valueTypes),
 		);
 
-		$accessoryTypes = [];
 		if (count($this->optionalKeys) < $keyTypesCount) {
-			$accessoryTypes[] = new NonEmptyArrayType();
+			$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
 		}
 		if ($this->isList) {
-			$accessoryTypes[] = new AccessoryArrayListType();
-		}
-
-		if (count($accessoryTypes) > 0) {
-			return TypeCombinator::intersect($array, ...$accessoryTypes);
+			$array = AccessoryArrayListType::intersectWith($array);
 		}
 
 		return $array;

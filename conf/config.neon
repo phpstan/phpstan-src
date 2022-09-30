@@ -522,8 +522,6 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\TypeNodeResolver
-		arguments:
-			listType: %featureToggles.listType%
 
 	-
 		class: PHPStan\PhpDoc\TypeNodeResolverExtensionRegistryProvider

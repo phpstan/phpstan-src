@@ -68,10 +68,10 @@ class TestController
 
 
 			$arr3[] = $result;
-			assertType('non-empty-list<array{val1: bool, val2: bool, val3: bool, val4: bool, val5: bool, val6: bool, val7: false}>', $arr3);
+			assertType('non-empty-array<int, array{val1: bool, val2: bool, val3: bool, val4: bool, val5: bool, val6: bool, val7: false}>', $arr3);
 		}
 
-		assertType('list<array{val1: bool, val2: bool, val3: bool, val4: bool, val5: bool, val6: bool, val7: false}>', $arr3);
+		assertType('array<int, array{val1: bool, val2: bool, val3: bool, val4: bool, val5: bool, val6: bool, val7: false}>', $arr3);
 
 		return $arr3;
 	}

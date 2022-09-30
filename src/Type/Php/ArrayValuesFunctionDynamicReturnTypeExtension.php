@@ -34,7 +34,7 @@ class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionRe
 					return $valueType->getValuesArray();
 				}
 
-				$array = TypeCombinator::intersect(new ArrayType(new IntegerType(), $valueType->getIterableValueType()), new AccessoryArrayListType());
+				$array = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $valueType->getIterableValueType()));
 				if ($valueType->isIterableAtLeastOnce()->yes()) {
 					$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
 				}
@@ -42,10 +42,7 @@ class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionRe
 			}
 		}
 
-		return TypeCombinator::intersect(
-			new ArrayType(new IntegerType(), new MixedType()),
-			new AccessoryArrayListType(),
-		);
+		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType()));
 	}
 
 }

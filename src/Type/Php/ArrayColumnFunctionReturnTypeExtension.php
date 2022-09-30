@@ -98,16 +98,11 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		$returnType = new ArrayType($this->castToArrayKeyType($returnKeyType), $returnValueType);
 
-		$accessoryTypes = [];
 		if ($iterableAtLeastOnce->yes()) {
-			$accessoryTypes[] = new NonEmptyArrayType();
+			$returnType = TypeCombinator::intersect($returnType, new NonEmptyArrayType());
 		}
 		if ($indexType === null) {
-			$accessoryTypes[] = new AccessoryArrayListType();
-		}
-
-		if (count($accessoryTypes) > 0) {
-			$returnType = TypeCombinator::intersect($returnType, ...$accessoryTypes);
+			$returnType = AccessoryArrayListType::intersectWith($returnType);
 		}
 
 		return $returnType;

@@ -53,7 +53,7 @@ class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturn
 			}
 			return new ConstantBooleanType(false);
 		} elseif ($isSuperset->no()) {
-			$arrayType = TypeCombinator::intersect(new ArrayType(new IntegerType(), new StringType()), new AccessoryArrayListType());
+			$arrayType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType()));
 			if (
 				!isset($functionCall->getArgs()[2])
 				|| IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($scope->getType($functionCall->getArgs()[2]->value))->yes()

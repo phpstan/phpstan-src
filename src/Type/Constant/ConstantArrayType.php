@@ -989,7 +989,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		if ($this->isList()->yes()) {
-			$accessoryTypes[] = new AccessoryArrayListType();
+			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
 		}
 
 		if (count($accessoryTypes) > 0) {
@@ -1020,16 +1020,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$arrayType = new ArrayType($this->getKeyType(), $this->getItemType());
 
-		$accessoryTypes = [];
 		if ($this->isIterableAtLeastOnce()->yes()) {
-			$accessoryTypes[] = new NonEmptyArrayType();
+			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 		}
 		if ($this->isList) {
-			$accessoryTypes[] = new AccessoryArrayListType();
-		}
-
-		if (count($accessoryTypes) > 0) {
-			return TypeCombinator::intersect($arrayType, ...$accessoryTypes);
+			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
 		}
 
 		return $arrayType;

@@ -113,25 +113,8 @@ class TypeNodeResolver
 		private TypeAliasResolverProvider $typeAliasResolverProvider,
 		private ConstantResolver $constantResolver,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
-		private bool $listType,
 	)
 	{
-	}
-
-	public function withListTypeEnabled(): self
-	{
-		if ($this->listType) {
-			return $this;
-		}
-
-		return new self(
-			$this->extensionRegistryProvider,
-			$this->reflectionProviderProvider,
-			$this->typeAliasResolverProvider,
-			$this->constantResolver,
-			$this->initializerExprTypeResolver,
-			true,
-		);
 	}
 
 	/** @api */
@@ -351,22 +334,12 @@ class TypeNodeResolver
 				return new NeverType(true);
 
 			case 'list':
-				$type = new ArrayType(new IntegerType(), new MixedType());
-
-				if ($this->listType) {
-					return TypeCombinator::intersect($type, new AccessoryArrayListType());
-				}
-
-				return $type;
+				return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType()));
 			case 'non-empty-list':
-				$type = new ArrayType(new IntegerType(), new MixedType());
-
-				$accessoryTypes = [new NonEmptyArrayType()];
-				if ($this->listType) {
-					$accessoryTypes[] = new AccessoryArrayListType();
-				}
-
-				return TypeCombinator::intersect($type, ...$accessoryTypes);
+				return AccessoryArrayListType::intersectWith(TypeCombinator::intersect(
+					new ArrayType(new IntegerType(), new MixedType()),
+					new NonEmptyArrayType(),
+				));
 		}
 
 		if ($nameScope->getClassName() !== null) {
@@ -579,17 +552,12 @@ class TypeNodeResolver
 			return $arrayType;
 		} elseif ($mainTypeName === 'list' || $mainTypeName === 'non-empty-list') {
 			if (count($genericTypes) === 1) { // list<ValueType>
-				$listType = new ArrayType(new IntegerType(), $genericTypes[0]);
-
-				$accessoryTypes = [];
+				$listType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $genericTypes[0]));
 				if ($mainTypeName === 'non-empty-list') {
-					$accessoryTypes[] = new NonEmptyArrayType();
-				}
-				if ($this->listType) {
-					$accessoryTypes[] = new AccessoryArrayListType();
+					return TypeCombinator::intersect($listType, new NonEmptyArrayType());
 				}
 
-				return TypeCombinator::intersect($listType, ...$accessoryTypes);
+				return $listType;
 			}
 
 			return new ErrorType();

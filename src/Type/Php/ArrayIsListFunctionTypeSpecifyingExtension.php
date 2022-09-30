@@ -52,11 +52,10 @@ class ArrayIsListFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 
 		return $this->typeSpecifier->create(
 			$arrayArg,
-			TypeCombinator::intersect(
+			AccessoryArrayListType::intersectWith(TypeCombinator::intersect(
 				new ArrayType(new IntegerType(), $valueType->getIterableValueType()),
-				new AccessoryArrayListType(),
 				...TypeUtils::getAccessoryTypes($valueType),
-			),
+			)),
 			$context,
 			false,
 			$scope,

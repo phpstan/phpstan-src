@@ -64,8 +64,10 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
+use function array_filter;
 use function array_key_exists;
 use function array_merge;
+use function array_reduce;
 use function array_reverse;
 use function count;
 use function in_array;
@@ -880,8 +882,23 @@ class TypeSpecifier
 		} elseif (
 			$expr instanceof Expr\Isset_
 			&& count($expr->vars) > 0
-			&& $context->true()
+			&& !$context->null()
 		) {
+			if (!$context->true()) {
+				if (!$scope instanceof MutatingScope) {
+					throw new ShouldNotHappenException();
+				}
+
+				return array_reduce(
+					array_filter(
+						$expr->vars,
+						static fn (Expr $var) => $scope->issetCheck($var, static fn () => true),
+					),
+					fn (SpecifiedTypes $types, Expr $var) => $types->unionWith($this->specifyTypesInCondition($scope, $var, $context, $rootExpr)),
+					new SpecifiedTypes(),
+				);
+			}
+
 			$vars = [];
 			foreach ($expr->vars as $var) {
 				$tmpVars = [$var];

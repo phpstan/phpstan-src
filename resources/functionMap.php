@@ -9431,7 +9431,7 @@ return [
 'Redis::xrevrange' => ['', 'str_key'=>'string', 'str_start'=>'', 'str_end'=>'', 'i_count='=>''],
 'Redis::xtrim' => ['', 'str_key'=>'string', 'i_maxlen'=>'', 'boo_approximate='=>''],
 'Redis::zAdd' => ['int', 'key'=>'string', 'score1'=>'float', 'value1'=>'string', 'score2='=>'float', 'value2='=>'string', 'scoreN='=>'float', 'valueN='=>'string'],
-'Redis::zAdd\'1' => ['int', 'options'=>'array', 'key'=>'string', 'score1'=>'float', 'value1'=>'string', 'score2='=>'float', 'value2='=>'string', 'scoreN='=>'float', 'valueN='=>'string'],
+'Redis::zAdd\'1' => ['int', 'key'=>'string', 'options'=>'array', 'score1'=>'float', 'value1'=>'string', 'score2='=>'float', 'value2='=>'string', 'scoreN='=>'float', 'valueN='=>'string'],
 'Redis::zCard' => ['int', 'key'=>'string'],
 'Redis::zCount' => ['int', 'key'=>'string', 'start'=>'string', 'end'=>'string'],
 'Redis::zDelete' => ['int', 'key'=>'string', 'member'=>'string', '...other_members='=>'string'],

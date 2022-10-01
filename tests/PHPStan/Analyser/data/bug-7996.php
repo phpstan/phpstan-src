@@ -18,14 +18,14 @@ class HelloWorld
 
 		while ($nextItem = next($inputArray)) {
 			if (rand(1, 2) === 1) {
-				assertType('non-empty-array<int, stdclass>', $outputArray);
+				assertType('non-empty-list<stdclass>', $outputArray);
 				// The fact that this is into an if, reverts type of $outputArray to array
 				$outputArray[] = $nextItem;
 			}
-			assertType('non-empty-array<int, stdclass>', $outputArray);
+			assertType('non-empty-list<stdclass>', $outputArray);
 		}
 
-		assertType('non-empty-array<int, stdclass>', $outputArray);
+		assertType('non-empty-list<stdclass>', $outputArray);
 		return $outputArray;
 	}
 }

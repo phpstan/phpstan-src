@@ -646,7 +646,6 @@ class ParametersAcceptorSelector
 			'CURLOPT_KRB4LEVEL',
 			'CURLOPT_LOGIN_OPTIONS',
 			'CURLOPT_PINNEDPUBLICKEY',
-			'CURLOPT_POSTFIELDS',
 			'CURLOPT_PRIVATE',
 			'CURLOPT_PRE_PROXY',
 			'CURLOPT_PROXY',
@@ -721,6 +720,18 @@ class ParametersAcceptorSelector
 		foreach ($arrayConstants as $constName) {
 			if (defined($constName) && constant($constName) === $curlOpt) {
 				return new ArrayType(new MixedType(), new MixedType());
+			}
+		}
+
+		$arrayOrStringConstants = [
+			'CURLOPT_POSTFIELDS',
+		];
+		foreach ($arrayOrStringConstants as $constName) {
+			if (defined($constName) && constant($constName) === $curlOpt) {
+				return TypeCombinator::union(
+					new StringType(),
+					new ArrayType(new MixedType(), new MixedType()),
+				);
 			}
 		}
 

@@ -68,10 +68,6 @@ class IssetCheck
 			}
 
 			if ($hasOffsetValue->no()) {
-				if ($error !== null) {
-					return $error;
-				}
-
 				if (!$this->checkAdvancedIsset) {
 					return null;
 				}

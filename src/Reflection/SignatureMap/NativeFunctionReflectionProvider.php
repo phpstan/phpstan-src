@@ -31,7 +31,7 @@ class NativeFunctionReflectionProvider
 {
 
 	/** @var NativeFunctionReflection[] */
-	private static array $functionMap = [];
+	private array $functionMap = [];
 
 	public function __construct(private SignatureMapProvider $signatureMapProvider, private Reflector $reflector, private FileTypeMapper $fileTypeMapper, private StubPhpDocProvider $stubPhpDocProvider)
 	{
@@ -40,8 +40,8 @@ class NativeFunctionReflectionProvider
 	public function findFunctionReflection(string $functionName): ?NativeFunctionReflection
 	{
 		$lowerCasedFunctionName = strtolower($functionName);
-		if (isset(self::$functionMap[$lowerCasedFunctionName])) {
-			return self::$functionMap[$lowerCasedFunctionName];
+		if (isset($this->functionMap[$lowerCasedFunctionName])) {
+			return $this->functionMap[$lowerCasedFunctionName];
 		}
 
 		if (!$this->signatureMapProvider->hasFunctionSignature($lowerCasedFunctionName)) {
@@ -155,7 +155,7 @@ class NativeFunctionReflectionProvider
 			$hasSideEffects,
 			$isDeprecated,
 		);
-		self::$functionMap[$lowerCasedFunctionName] = $functionReflection;
+		$this->functionMap[$lowerCasedFunctionName] = $functionReflection;
 
 		return $functionReflection;
 	}

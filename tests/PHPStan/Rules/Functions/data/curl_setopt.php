@@ -22,6 +22,8 @@ class HelloWorld
 		curl_setopt($curl, CURLOPT_CONNECT_TO, $s);
 		// expecting resource
 		curl_setopt($curl, CURLOPT_FILE, $s);
+		// expecting string or array
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $i);
 	}
 
 	/**
@@ -45,5 +47,8 @@ class HelloWorld
 		curl_setopt($curl, CURLOPT_FILE, $fp);
 		curl_setopt($curl, CURLOPT_HEADER, false);
 		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-type: text/plain', 'Content-length: 100'));
+		curl_setopt($curl, CURLOPT_POSTFIELDS, array('foo' => 'bar'));
+		curl_setopt($curl, CURLOPT_POSTFIELDS, '');
+		curl_setopt($curl, CURLOPT_POSTFIELDS, 'para1=val1&para2=val2');
 	}
 }

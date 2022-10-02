@@ -728,10 +728,10 @@ class ParametersAcceptorSelector
 		];
 		foreach ($arrayOrStringConstants as $constName) {
 			if (defined($constName) && constant($constName) === $curlOpt) {
-				return TypeCombinator::union(
+				return new UnionType([
 					new StringType(),
 					new ArrayType(new MixedType(), new MixedType()),
-				);
+				]);
 			}
 		}
 

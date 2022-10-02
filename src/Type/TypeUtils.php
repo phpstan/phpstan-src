@@ -136,7 +136,7 @@ class TypeUtils
 	}
 
 	/**
-	 * @return string[]
+	 * @return list<string>
 	 */
 	public static function getDirectClassNames(Type $type): array
 	{

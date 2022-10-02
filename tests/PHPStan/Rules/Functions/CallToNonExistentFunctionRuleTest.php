@@ -162,4 +162,28 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7952.php'], []);
 	}
 
+	public function testBug8058(): void
+	{
+		if (PHP_VERSION_ID < 80200) {
+			$this->markTestSkipped('Test requires PHP 8.2');
+		}
+
+		$this->analyse([__DIR__ . '/../Methods/data/bug-8058.php'], []);
+	}
+
+	public function testBug8058b(): void
+	{
+		if (PHP_VERSION_ID >= 80200) {
+			$this->markTestSkipped('Test requires PHP before 8.2');
+		}
+
+		$this->analyse([__DIR__ . '/../Methods/data/bug-8058.php'], [
+			[
+				'Function mysqli_execute_query not found.',
+				13,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 }

@@ -40,6 +40,7 @@ class DirectScopeFactory implements ScopeFactory
 		private bool $explicitMixedInUnknownGenericNew,
 		private bool $explicitMixedForGlobalVariables,
 		private ConstantResolver $constantResolver,
+		private IssetHelper $issetHelper,
 	)
 	{
 	}
@@ -91,6 +92,7 @@ class DirectScopeFactory implements ScopeFactory
 			$this->parser,
 			$this->nodeScopeResolver,
 			$this->constantResolver,
+			$this->issetHelper,
 			$context,
 			$this->phpVersion,
 			$declareStrictTypes,

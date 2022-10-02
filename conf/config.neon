@@ -567,6 +567,11 @@ services:
 			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
+		class: PHPStan\Analyser\IssetHelper
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+
+	-
 		class: PHPStan\Analyser\LazyScopeFactory
 		arguments:
 			scopeClass: %scopeClass%

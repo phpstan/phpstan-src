@@ -5,6 +5,7 @@ namespace PHPStan\Testing;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\DirectScopeFactory;
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\IssetHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\ScopeFactory;
@@ -177,6 +178,7 @@ abstract class PHPStanTestCase extends TestCase
 			$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
 			$container->getParameter('featureToggles')['explicitMixedForGlobalVariables'],
 			$constantResolver,
+			$container->getByType(IssetHelper::class),
 		);
 	}
 

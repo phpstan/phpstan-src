@@ -6,12 +6,10 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicMethodThrowTypeExtension;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\Type;
-use function PHPStan\Testing\assertVariableCertainty;
 
 class MethodThrowTypeExtension implements DynamicMethodThrowTypeExtension
 {
@@ -57,67 +55,6 @@ class StaticMethodThrowTypeExtension implements DynamicStaticMethodThrowTypeExte
 		}
 
 		return null;
-	}
-
-}
-
-class Foo
-{
-
-	/** @throws \Exception */
-	public function throwOrNot(bool $need): int
-	{
-		if ($need) {
-			throw new \Exception();
-		}
-
-		return 1;
-	}
-
-	/** @throws \Exception */
-	public static function staticThrowOrNot(bool $need): int
-	{
-		if ($need) {
-			throw new \Exception();
-		}
-
-		return 1;
-	}
-
-	public function doFoo1()
-	{
-		try {
-			$result = $this->throwOrNot(need: true);
-		} finally {
-			assertVariableCertainty(TrinaryLogic::createMaybe(), $result);
-		}
-	}
-
-	public function doFoo2()
-	{
-		try {
-			$result = $this->throwOrNot(need: false);
-		} finally {
-			assertVariableCertainty(TrinaryLogic::createYes(), $result);
-		}
-	}
-
-	public function doFoo3()
-	{
-		try {
-			$result = self::staticThrowOrNot(need: true);
-		} finally {
-			assertVariableCertainty(TrinaryLogic::createMaybe(), $result);
-		}
-	}
-
-	public function doFoo4()
-	{
-		try {
-			$result = self::staticThrowOrNot(need: false);
-		} finally {
-			assertVariableCertainty(TrinaryLogic::createYes(), $result);
-		}
 	}
 
 }

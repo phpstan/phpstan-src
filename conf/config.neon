@@ -137,6 +137,7 @@ parameters:
 		- ../stubs/Exception.stub
 		- ../stubs/arrayFunctions.stub
 		- ../stubs/core.stub
+		- ../stubs/typeCheckingFunctions.stub
 	earlyTerminatingMethodCalls: []
 	earlyTerminatingFunctionCalls: []
 	memoryLimitFile: %tmpDir%/.memory_limit
@@ -1650,11 +1651,6 @@ services:
 
 	-
 		class: PHPStan\Type\Php\IsIterableFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\IsStringFunctionTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 

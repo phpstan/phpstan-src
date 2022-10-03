@@ -1,0 +1,10 @@
+<?php
+
+/**
+ * @phpstan-assert-if-true string $value
+ * @phpstan-assert-if-false !string $value
+ */
+function is_string(mixed $value): bool
+{
+
+}

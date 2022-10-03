@@ -30,16 +30,6 @@ class AssertTagParameter
 		);
 	}
 
-	public function getProperty(): ?string
-	{
-		return $this->property;
-	}
-
-	public function getMethod(): ?string
-	{
-		return $this->method;
-	}
-
 	public function describe(): string
 	{
 		if ($this->property !== null) {

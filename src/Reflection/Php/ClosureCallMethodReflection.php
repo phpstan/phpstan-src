@@ -7,7 +7,6 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariant;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PassedByReference;
@@ -21,7 +20,7 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(
-		private MethodReflection $nativeMethodReflection,
+		private ExtendedMethodReflection $nativeMethodReflection,
 		private ClosureType $closureType,
 	)
 	{
@@ -86,7 +85,6 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 				$parameters,
 				$this->closureType->isVariadic(),
 				$this->closureType->getReturnType(),
-				Assertions::fromParametersAcceptor($this->closureType),
 			),
 		];
 	}
@@ -119,6 +117,11 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 	public function hasSideEffects(): TrinaryLogic
 	{
 		return $this->nativeMethodReflection->hasSideEffects();
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return $this->nativeMethodReflection->getAsserts();
 	}
 
 }

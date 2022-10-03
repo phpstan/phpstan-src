@@ -52,6 +52,7 @@ class NativeFunctionReflectionProvider
 		$throwType = null;
 		$reflectionFunctionAdapter = null;
 		$isDeprecated = false;
+		$asserts = Assertions::createEmpty();
 		try {
 			$reflectionFunction = $this->reflector->reflectFunction($functionName);
 			$reflectionFunctionAdapter = new ReflectionFunction($reflectionFunction);
@@ -74,8 +75,11 @@ class NativeFunctionReflectionProvider
 		$functionSignatures = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
 
 		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignatures[0]->getParameters()));
-		if ($phpDoc !== null && $phpDoc->getThrowsTag() !== null) {
-			$throwType = $phpDoc->getThrowsTag()->getType();
+		if ($phpDoc !== null) {
+			if ($phpDoc->getThrowsTag() !== null) {
+				$throwType = $phpDoc->getThrowsTag()->getType();
+			}
+			$asserts = Assertions::createFromResolvedPhpDocBlock($phpDoc);
 		}
 
 		$variants = [];
@@ -140,7 +144,6 @@ class NativeFunctionReflectionProvider
 				}, $functionSignature->getParameters()),
 				$functionSignature->isVariadic(),
 				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDoc !== null ? $this->getReturnTypeFromPhpDoc($phpDoc) : null),
-				$phpDoc !== null ? Assertions::createFromResolvedPhpDocBlock($phpDoc) : Assertions::createEmpty(),
 			);
 		}
 
@@ -156,6 +159,7 @@ class NativeFunctionReflectionProvider
 			$throwType,
 			$hasSideEffects,
 			$isDeprecated,
+			$asserts,
 		);
 		$this->functionMap[$lowerCasedFunctionName] = $functionReflection;
 

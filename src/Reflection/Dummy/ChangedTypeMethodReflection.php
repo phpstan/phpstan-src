@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Dummy;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -87,6 +88,11 @@ class ChangedTypeMethodReflection implements ExtendedMethodReflection
 	public function hasSideEffects(): TrinaryLogic
 	{
 		return $this->reflection->hasSideEffects();
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return $this->reflection->getAsserts();
 	}
 
 }

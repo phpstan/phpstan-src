@@ -16,4 +16,6 @@ namespace PHPStan\Reflection;
 interface ExtendedMethodReflection extends MethodReflection
 {
 
+	public function getAsserts(): Assertions;
+
 }

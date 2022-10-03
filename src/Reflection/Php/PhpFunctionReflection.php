@@ -56,10 +56,9 @@ class PhpFunctionReflection implements FunctionReflection
 		private bool $isFinal,
 		private ?string $filename,
 		private ?bool $isPure,
-		private ?Assertions $asserts = null,
+		private Assertions $asserts,
 	)
 	{
-		$this->asserts ??= Assertions::createEmpty();
 	}
 
 	public function getName(): string
@@ -95,7 +94,6 @@ class PhpFunctionReflection implements FunctionReflection
 					$this->getReturnType(),
 					$this->getPhpDocReturnType(),
 					$this->getNativeReturnType(),
-					$this->asserts,
 				),
 			];
 		}
@@ -251,6 +249,11 @@ class PhpFunctionReflection implements FunctionReflection
 	public function isBuiltin(): bool
 	{
 		return $this->reflection->isInternal();
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return $this->asserts;
 	}
 
 }

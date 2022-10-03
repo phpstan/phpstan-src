@@ -55,7 +55,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		private bool $isFinal,
 		private ?bool $isPure,
 		private bool $acceptsNamedArguments,
-		private Assertions $asserts,
+		private Assertions $assertions,
 	)
 	{
 		$this->functionLike = $functionLike;
@@ -99,7 +99,6 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 					$this->getReturnType(),
 					$this->phpDocReturnType ?? new MixedType(),
 					$this->realReturnType,
-					$this->asserts,
 				),
 			];
 		}
@@ -245,6 +244,11 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		}
 
 		return false;
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return $this->assertions;
 	}
 
 }

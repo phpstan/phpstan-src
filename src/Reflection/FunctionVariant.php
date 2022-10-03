@@ -6,10 +6,8 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 
 /** @api */
-class FunctionVariant implements ParametersAcceptor, ParametersAcceptorWithAsserts
+class FunctionVariant implements ParametersAcceptor
 {
-
-	private Assertions $asserts;
 
 	/**
 	 * @api
@@ -21,10 +19,8 @@ class FunctionVariant implements ParametersAcceptor, ParametersAcceptorWithAsser
 		private array $parameters,
 		private bool $isVariadic,
 		private Type $returnType,
-		?Assertions $asserts = null,
 	)
 	{
-		$this->asserts = $asserts ?? Assertions::createEmpty();
 	}
 
 	public function getTemplateTypeMap(): TemplateTypeMap
@@ -53,11 +49,6 @@ class FunctionVariant implements ParametersAcceptor, ParametersAcceptorWithAsser
 	public function getReturnType(): Type
 	{
 		return $this->returnType;
-	}
-
-	public function getAsserts(): Assertions
-	{
-		return $this->asserts;
 	}
 
 }

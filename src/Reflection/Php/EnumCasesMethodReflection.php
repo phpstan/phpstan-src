@@ -72,7 +72,6 @@ class EnumCasesMethodReflection implements ExtendedMethodReflection
 				[],
 				false,
 				$this->returnType,
-				Assertions::createEmpty(),
 			),
 		];
 	}
@@ -105,6 +104,11 @@ class EnumCasesMethodReflection implements ExtendedMethodReflection
 	public function hasSideEffects(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return Assertions::createEmpty();
 	}
 
 }

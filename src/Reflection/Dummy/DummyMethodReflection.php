@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Dummy;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -94,6 +95,11 @@ class DummyMethodReflection implements ExtendedMethodReflection
 	public function getDocComment(): ?string
 	{
 		return null;
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return Assertions::createEmpty();
 	}
 
 }

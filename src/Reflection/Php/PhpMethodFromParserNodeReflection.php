@@ -7,7 +7,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -20,7 +20,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VoidType;
 use function strtolower;
 
-class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements MethodReflection
+class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements ExtendedMethodReflection
 {
 
 	/**
@@ -45,7 +45,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		bool $isFinal,
 		?bool $isPure,
 		bool $acceptsNamedArguments,
-		Assertions $asserts,
+		Assertions $assertions,
 	)
 	{
 		$name = strtolower($classMethod->name->name);
@@ -87,7 +87,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$isFinal || $classMethod->isFinal(),
 			$isPure,
 			$acceptsNamedArguments,
-			$asserts,
+			$assertions,
 		);
 	}
 

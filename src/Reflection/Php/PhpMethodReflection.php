@@ -79,10 +79,9 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		private bool $isInternal,
 		private bool $isFinal,
 		private ?bool $isPure,
-		private ?Assertions $asserts = null,
+		private Assertions $asserts,
 	)
 	{
-		$this->asserts ??= Assertions::createEmpty();
 	}
 
 	public function getDeclaringClass(): ClassReflection
@@ -190,7 +189,6 @@ class PhpMethodReflection implements ExtendedMethodReflection
 					$this->getReturnType(),
 					$this->getPhpDocReturnType(),
 					$this->getNativeReturnType(),
-					$this->asserts,
 				),
 			];
 		}
@@ -421,6 +419,11 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		}
 
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return $this->asserts;
 	}
 
 }

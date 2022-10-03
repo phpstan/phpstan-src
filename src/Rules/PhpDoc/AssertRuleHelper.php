@@ -3,12 +3,11 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\ParametersAcceptorWithAsserts;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ErrorType;
@@ -28,18 +27,14 @@ class AssertRuleHelper
 	/**
 	 * @return RuleError[]
 	 */
-	public function check(MethodReflection|FunctionReflection $reflection, ParametersAcceptor $acceptor): array
+	public function check(ExtendedMethodReflection|FunctionReflection $reflection, ParametersAcceptor $acceptor): array
 	{
-		if (!$acceptor instanceof ParametersAcceptorWithAsserts) {
-			return [];
-		}
-
 		$parametersByName = [];
 		foreach ($acceptor->getParameters() as $parameter) {
 			$parametersByName[$parameter->getName()] = $parameter->getType();
 		}
 
-		if ($reflection instanceof MethodReflection) {
+		if ($reflection instanceof ExtendedMethodReflection) {
 			$class = $reflection->getDeclaringClass();
 			$parametersByName['this'] = new ObjectType($class->getName(), null, $class);
 		}
@@ -47,7 +42,7 @@ class AssertRuleHelper
 		$context = InitializerExprContext::createEmpty();
 
 		$errors = [];
-		foreach ($acceptor->getAsserts()->getAll() as $assert) {
+		foreach ($reflection->getAsserts()->getAll() as $assert) {
 			$parameterName = substr($assert->getParameter()->getParameterName(), 1);
 			if (!array_key_exists($parameterName, $parametersByName)) {
 				$errors[] = RuleErrorBuilder::message(sprintf('Assert references unknown parameter $%s.', $parameterName))->build();

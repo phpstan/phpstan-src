@@ -7,7 +7,6 @@ use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\Type\Type;
 use function array_filter;
 use function array_map;
-use function array_merge;
 
 class Assertions
 {
@@ -63,11 +62,6 @@ class Assertions
 		return new self(array_map($assertTagsCallback, $this->asserts));
 	}
 
-	public function mergeWith(self $other): self
-	{
-		return new self(array_merge($this->asserts, $other->asserts));
-	}
-
 	public static function createEmpty(): self
 	{
 		$empty = self::$empty;
@@ -85,15 +79,6 @@ class Assertions
 	public static function createFromResolvedPhpDocBlock(ResolvedPhpDocBlock $phpDocBlock): self
 	{
 		return new self($phpDocBlock->getAssertTags());
-	}
-
-	public static function fromParametersAcceptor(ParametersAcceptor $parametersAcceptor): self
-	{
-		if ($parametersAcceptor instanceof ParametersAcceptorWithAsserts) {
-			return $parametersAcceptor->getAsserts();
-		}
-
-		return self::createEmpty();
 	}
 
 }

@@ -32,4 +32,6 @@ interface FunctionReflection
 
 	public function isBuiltin(): bool;
 
+	public function getAsserts(): Assertions;
+
 }

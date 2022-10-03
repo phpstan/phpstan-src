@@ -501,6 +501,7 @@ class PhpClassReflectionExtension
 			$variants = [];
 			$reflectionMethod = null;
 			$throwType = null;
+			$asserts = Assertions::createEmpty();
 			if ($classReflection->getNativeReflection()->hasMethod($methodReflection->getName())) {
 				$reflectionMethod = $classReflection->getNativeReflection()->getMethod($methodReflection->getName());
 			}
@@ -516,7 +517,6 @@ class PhpClassReflectionExtension
 				$phpDocParameterTypes = [];
 				$phpDocReturnType = null;
 				$stubPhpDocPair = null;
-				$asserts = Assertions::createEmpty();
 				if (count($methodSignatures) === 1) {
 					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
 					if ($stubPhpDocPair !== null) {
@@ -579,7 +579,7 @@ class PhpClassReflectionExtension
 						}
 					}
 				}
-				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $asserts);
+				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping);
 			}
 
 			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
@@ -594,6 +594,7 @@ class PhpClassReflectionExtension
 				$variants,
 				$hasSideEffects,
 				$throwType,
+				$asserts,
 			);
 		}
 
@@ -746,7 +747,6 @@ class PhpClassReflectionExtension
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
 		array $phpDocParameterNameMapping,
-		Assertions $asserts,
 	): FunctionVariantWithPhpDocs
 	{
 		$parameters = [];
@@ -789,7 +789,6 @@ class PhpClassReflectionExtension
 			$returnType ?? $methodSignature->getReturnType(),
 			$phpDocReturnType ?? new MixedType(),
 			$methodSignature->getNativeReturnType(),
-			$asserts,
 		);
 	}
 

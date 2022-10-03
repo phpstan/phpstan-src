@@ -1,0 +1,22 @@
+<?php
+
+namespace Bug8101;
+
+class A {
+	public function __construct(public readonly int $myProp) {}
+}
+
+class B extends A
+{
+	// This should be reported as an error, as a readonly prop cannot be redeclared.
+	public function __construct(public readonly int $myProp) {
+		parent::__construct($myProp);
+	}
+}
+
+class C extends A
+{
+	public function __construct(public readonly int $anotherProp) {
+		parent::__construct($anotherProp);
+	}
+}

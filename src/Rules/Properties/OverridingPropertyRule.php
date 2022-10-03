@@ -76,6 +76,14 @@ class OverridingPropertyRule implements Rule
 					$prototype->getDeclaringClass()->getDisplayName(),
 					$node->getName(),
 				))->nonIgnorable()->build();
+			} else {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Readonly property %s::$%s overrides readonly property %s::$%s.',
+					$classReflection->getDisplayName(),
+					$node->getName(),
+					$prototype->getDeclaringClass()->getDisplayName(),
+					$node->getName(),
+				))->nonIgnorable()->build();
 			}
 		} elseif ($node->isReadOnly()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(

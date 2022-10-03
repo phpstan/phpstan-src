@@ -48,12 +48,20 @@ class OverridingPropertyRuleTest extends RuleTestCase
 				46,
 			],
 			[
+				'Readonly property OverridingProperty\ReadonlyChild::$readonly2 overrides readonly property OverridingProperty\ReadonlyParent::$readonly2.',
+				47,
+			],
+			[
 				'Readonly property OverridingProperty\ReadonlyChild2::$readWrite overrides readwrite property OverridingProperty\ReadonlyParent::$readWrite.',
 				55,
 			],
 			[
 				'Readwrite property OverridingProperty\ReadonlyChild2::$readOnly overrides readonly property OverridingProperty\ReadonlyParent::$readOnly.',
 				56,
+			],
+			[
+				'Readonly property OverridingProperty\ReadonlyChild2::$readonly2 overrides readonly property OverridingProperty\ReadonlyParent::$readonly2.',
+				57,
 			],
 			[
 				'Private property OverridingProperty\PrivateDolor::$protectedFoo overriding protected property OverridingProperty\Dolor::$protectedFoo should be protected or public.',
@@ -157,6 +165,21 @@ class OverridingPropertyRuleTest extends RuleTestCase
 	{
 		$this->reportMaybes = $reportMaybes;
 		$this->analyse([__DIR__ . '/data/overriding-property-phpdoc.php'], $errors);
+	}
+
+	/**
+	 * @dataProvider dataRulePHPDocTypes
+	 * @param mixed[] $errors
+	 */
+	public function testBug8101(): void
+	{
+		$this->reportMaybes = false;
+		$this->analyse([__DIR__ . '/data/bug-8101.php'], [
+			[
+				'Readonly property Bug8101\B::$myProp overrides readonly property Bug8101\A::$myProp.',
+				12,
+			],
+		]);
 	}
 
 }

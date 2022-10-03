@@ -27,6 +27,9 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function isDeclareStrictTypes(): bool;
 
+	/**
+	 * @phpstan-assert-if-true !null $this->getTraitReflection()
+	 */
 	public function isInTrait(): bool;
 
 	public function getTraitReflection(): ?ClassReflection;

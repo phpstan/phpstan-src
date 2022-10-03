@@ -323,3 +323,13 @@ abstract class Dolor implements ReflectionProvider
 {
 
 }
+
+abstract class MyScope implements Scope
+{
+
+}
+
+abstract class MyFunctionReflection implements FunctionReflection
+{
+
+}

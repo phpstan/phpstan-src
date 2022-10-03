@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Api;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PHPStan\Analyser\Scope;
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
@@ -69,6 +70,8 @@ class ApiClassImplementsRule implements Rule
 		if (in_array($implementedClassReflection->getName(), [
 			Type::class,
 			ReflectionProvider::class,
+			Scope::class,
+			FunctionReflection::class,
 		], true)) {
 			return [$ruleError];
 		}

@@ -4,7 +4,6 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 
@@ -118,7 +117,7 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 
 	public function getAsserts(): Assertions
 	{
-		return $this->reflection->getAsserts()->mapTypes(fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes($type, $this->resolvedTemplateTypeMap));
+		return $this->reflection->getAsserts();
 	}
 
 }

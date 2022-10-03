@@ -2,7 +2,7 @@
 
 namespace AssertEmpty;
 
-use function PHPStan\assertType;
+use function PHPStan\Testing\assertType;
 
 /**
  * @phpstan-assert empty $var

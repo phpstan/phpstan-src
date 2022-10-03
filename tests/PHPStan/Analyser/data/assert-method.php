@@ -2,7 +2,6 @@
 
 namespace AssertMethod;
 
-use function PHPStan\dumpType;
 use function PHPStan\Testing\assertType;
 
 interface Identity

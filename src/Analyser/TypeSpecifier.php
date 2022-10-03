@@ -796,7 +796,8 @@ class TypeSpecifier
 					}
 				}
 
-				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $methodReflection->getAsserts(), $parametersAcceptor, $scope);
+				$asserts = $methodReflection->getAsserts()->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes($type, $parametersAcceptor->getResolvedTemplateTypeMap()));
+				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;
 				}
@@ -835,7 +836,8 @@ class TypeSpecifier
 					}
 				}
 
-				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $staticMethodReflection->getAsserts(), $parametersAcceptor, $scope);
+				$asserts = $staticMethodReflection->getAsserts()->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes($type, $parametersAcceptor->getResolvedTemplateTypeMap()));
+				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;
 				}

@@ -98,6 +98,12 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testAssertUnresolvedGeneric(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/assert-unresolved-generic.php'], []);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

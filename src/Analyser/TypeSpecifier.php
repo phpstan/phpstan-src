@@ -19,8 +19,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Node\Printer\ExprPrinter;
-use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -45,6 +44,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -760,7 +760,8 @@ class TypeSpecifier
 					}
 				}
 
-				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $functionReflection, $parametersAcceptor, $scope);
+				$asserts = $functionReflection->getAsserts()->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes($type, $parametersAcceptor->getResolvedTemplateTypeMap()));
+				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;
 				}
@@ -794,7 +795,7 @@ class TypeSpecifier
 					}
 				}
 
-				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $methodReflection, $parametersAcceptor, $scope);
+				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $methodReflection->getAsserts(), $parametersAcceptor, $scope);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;
 				}
@@ -833,7 +834,7 @@ class TypeSpecifier
 					}
 				}
 
-				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $staticMethodReflection, $parametersAcceptor, $scope);
+				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $staticMethodReflection->getAsserts(), $parametersAcceptor, $scope);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;
 				}
@@ -1165,14 +1166,14 @@ class TypeSpecifier
 		return $specifiedTypes;
 	}
 
-	private function specifyTypesFromAsserts(TypeSpecifierContext $context, Expr\CallLike $call, ExtendedMethodReflection|FunctionReflection $reflection, ParametersAcceptor $parametersAcceptor, Scope $scope): ?SpecifiedTypes
+	private function specifyTypesFromAsserts(TypeSpecifierContext $context, Expr\CallLike $call, Assertions $assertions, ParametersAcceptor $parametersAcceptor, Scope $scope): ?SpecifiedTypes
 	{
 		if ($context->null()) {
-			$asserts = $reflection->getAsserts()->getAsserts();
+			$asserts = $assertions->getAsserts();
 		} elseif ($context->truthy()) {
-			$asserts = $reflection->getAsserts()->getAssertsIfTrue();
+			$asserts = $assertions->getAssertsIfTrue();
 		} elseif ($context->falsey()) {
-			$asserts = $reflection->getAsserts()->getAssertsIfFalse();
+			$asserts = $assertions->getAssertsIfFalse();
 		} else {
 			throw new ShouldNotHappenException();
 		}

@@ -12,6 +12,8 @@ use PHPStan\Type\VoidType;
 class NativeFunctionReflection implements FunctionReflection
 {
 
+	private Assertions $assertions;
+
 	/**
 	 * @param ParametersAcceptor[] $variants
 	 */
@@ -21,10 +23,10 @@ class NativeFunctionReflection implements FunctionReflection
 		private ?Type $throwType,
 		private TrinaryLogic $hasSideEffects,
 		private bool $isDeprecated,
-		private ?Assertions $assertions = null,
+		?Assertions $assertions = null,
 	)
 	{
-		$this->assertions ??= Assertions::createEmpty();
+		$this->assertions = $assertions ?? Assertions::createEmpty();
 	}
 
 	public function getName(): string

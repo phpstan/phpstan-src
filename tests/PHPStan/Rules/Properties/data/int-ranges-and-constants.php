@@ -44,4 +44,13 @@ class HelloWorld
 		$this->x = $l;
 		$this->x = $m;
 	}
+
+	const I_1=1;
+	const I_2=2;
+
+	/** @param int-mask<self::I_*> $flag */
+	public function sayHello($flag): void
+	{
+		$this->x = $flag;
+	}
 }

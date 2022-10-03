@@ -475,7 +475,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			],
 		]);
 	}
-	
+
 	public function testIntegerRangesAndConstants(): void
 	{
 		$this->checkExplicitMixed = true;

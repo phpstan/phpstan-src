@@ -104,10 +104,13 @@ class AnalyseApplication
 			$analyserResult = $resultCacheResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = $analyserResult->getErrors();
-			foreach ($this->getCollectedDataErrors($analyserResult->getCollectedData()) as $error) {
-				$errors[] = $error;
+			$hasInternalErrors = count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
+			if (!$hasInternalErrors) {
+				foreach ($this->getCollectedDataErrors($analyserResult->getCollectedData()) as $error) {
+					$errors[] = $error;
+				}
 			}
-			$errors = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit());
+			$errors = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors);
 			$collectedData = $analyserResult->getCollectedData();
 			$savedResultCache = $resultCacheResult->isSaved();
 			if ($analyserResult->hasReachedInternalErrorsCountLimit()) {

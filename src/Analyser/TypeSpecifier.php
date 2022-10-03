@@ -761,14 +761,14 @@ class TypeSpecifier
 			return $this->handleDefaultTruthyOrFalseyContext($context, $rootExpr, $expr, $scope);
 		} elseif ($expr instanceof MethodCall && $expr->name instanceof Node\Identifier) {
 			$methodCalledOnType = $scope->getType($expr->var);
-			$referencedClasses = TypeUtils::getDirectClassNames($methodCalledOnType);
-			if (
-				count($referencedClasses) === 1
-				&& $this->reflectionProvider->hasClass($referencedClasses[0])
-			) {
-				$methodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
-				if ($methodClassReflection->hasMethod($expr->name->name)) {
-					$methodReflection = $methodClassReflection->getMethod($expr->name->name, $scope);
+			$methodReflection = $scope->getMethodReflection($methodCalledOnType, $expr->name->name);
+			if ($methodReflection !== null) {
+				$referencedClasses = TypeUtils::getDirectClassNames($methodCalledOnType);
+				if (
+					count($referencedClasses) === 1
+					&& $this->reflectionProvider->hasClass($referencedClasses[0])
+				) {
+					$methodClassReflection = $this->reflectionProvider->getClass($referencedClasses[0]);
 					foreach ($this->getMethodTypeSpecifyingExtensionsForClass($methodClassReflection->getName()) as $extension) {
 						if (!$extension->isMethodSupported($methodReflection, $expr, $context)) {
 							continue;
@@ -776,13 +776,13 @@ class TypeSpecifier
 
 						return $extension->specifyTypes($methodReflection, $expr, $scope, $context);
 					}
+				}
 
-					if (count($expr->getArgs()) > 0) {
-						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants());
-						$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
-						if ($specifiedTypes !== null) {
-							return $specifiedTypes;
-						}
+				if (count($expr->getArgs()) > 0) {
+					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants());
+					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
+					if ($specifiedTypes !== null) {
+						return $specifiedTypes;
 					}
 				}
 			}

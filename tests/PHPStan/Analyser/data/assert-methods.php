@@ -31,6 +31,26 @@ class Foo
 	}
 
 	/**
+	 * @param array<object> $objects
+	 * @return void
+	 */
+	public function doBar2(array $objects)
+	{
+		self::doFoo($objects, stdClass::class);
+		assertType('array<stdClass>', $objects);
+	}
+
+	/**
+	 * @param array<string> $strings
+	 * @return void
+	 */
+	public function doBar3(array $strings)
+	{
+		self::doFoo($strings, stdClass::class);
+		assertType('array<class-string<stdClass>>', $strings);
+	}
+
+	/**
 	 * @template ExpectedType of object
 	 * @param class-string<ExpectedType> $class
 	 * @phpstan-assert iterable<ExpectedType|class-string<ExpectedType>> $value

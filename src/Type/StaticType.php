@@ -5,7 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
@@ -208,7 +208,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->hasMethod($methodName);
 	}
 
-	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
+	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection
 	{
 		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
 	}

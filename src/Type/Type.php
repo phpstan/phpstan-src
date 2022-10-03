@@ -4,7 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -43,7 +43,7 @@ interface Type
 
 	public function hasMethod(string $methodName): TrinaryLogic;
 
-	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection;
+	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection;
 
 	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection;
 

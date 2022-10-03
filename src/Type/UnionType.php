@@ -7,7 +7,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnionTypeUnresolvedMethodPrototypeReflection;
@@ -351,7 +351,7 @@ class UnionType implements CompoundType
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->hasMethod($methodName));
 	}
 
-	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
+	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection
 	{
 		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
 	}

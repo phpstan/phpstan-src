@@ -4,7 +4,7 @@ namespace PHPStan\Type;
 
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
@@ -103,7 +103,7 @@ class StrictMixedType implements CompoundType
 		return TrinaryLogic::createNo();
 	}
 
-	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
+	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection
 	{
 		throw new ShouldNotHappenException();
 	}

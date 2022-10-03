@@ -4,7 +4,7 @@ namespace PHPStan\Type\Accessory;
 
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\Dummy\DummyMethodReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
@@ -100,7 +100,7 @@ class HasMethodType implements AccessoryType, CompoundType
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
+	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection
 	{
 		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
 	}

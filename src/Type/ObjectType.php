@@ -15,7 +15,7 @@ use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
@@ -620,7 +620,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): MethodReflection
+	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): ExtendedMethodReflection
 	{
 		return $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod();
 	}

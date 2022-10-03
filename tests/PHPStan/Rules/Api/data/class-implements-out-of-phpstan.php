@@ -106,7 +106,7 @@ class Baz implements Type
 		// TODO: Implement hasMethod() method.
 	}
 
-	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): \PHPStan\Reflection\MethodReflection
+	public function getMethod(string $methodName, ClassMemberAccessAnswerer $scope): \PHPStan\Reflection\ExtendedMethodReflection
 	{
 		// TODO: Implement getMethod() method.
 	}

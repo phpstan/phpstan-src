@@ -5202,7 +5202,7 @@ class MutatingScope implements Scope
 	}
 
 	/** @api */
-	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?MethodReflection
+	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?ExtendedMethodReflection
 	{
 		if ($typeWithMethod instanceof UnionType) {
 			$newTypes = [];

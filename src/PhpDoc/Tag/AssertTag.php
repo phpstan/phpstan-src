@@ -12,6 +12,8 @@ final class AssertTag implements TypedTag
 	public const IF_TRUE = 'true';
 	public const IF_FALSE = 'false';
 
+	private ?Type $originalType = null;
+
 	/**
 	 * @param self::NULL|self::IF_TRUE|self::IF_FALSE $if
 	 */
@@ -32,6 +34,11 @@ final class AssertTag implements TypedTag
 		return $this->type;
 	}
 
+	public function getOriginalType(): Type
+	{
+		return $this->originalType ??= $this->type;
+	}
+
 	public function getParameter(): AssertTagParameter
 	{
 		return $this->parameter;
@@ -47,12 +54,16 @@ final class AssertTag implements TypedTag
 	 */
 	public function withType(Type $type): TypedTag
 	{
-		return new self($this->if, $type, $this->parameter, $this->negated);
+		$tag = new self($this->if, $type, $this->parameter, $this->negated);
+		$tag->originalType = $this->getOriginalType();
+		return $tag;
 	}
 
 	public function withParameter(AssertTagParameter $parameter): self
 	{
-		return new self($this->if, $this->type, $parameter, $this->negated);
+		$tag = new self($this->if, $this->type, $parameter, $this->negated);
+		$tag->originalType = $this->getOriginalType();
+		return $tag;
 	}
 
 }

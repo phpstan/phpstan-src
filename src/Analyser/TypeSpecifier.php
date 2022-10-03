@@ -44,6 +44,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
@@ -1215,12 +1216,30 @@ class TypeSpecifier
 
 			$assertExpr = $assert->getParameter()->getExpr($parameterExpr);
 
+			$templateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
+			$containsUnresolvedTemplate = false;
+			TypeTraverser::map(
+				$assert->getOriginalType(),
+				static function (Type $type, callable $traverse) use ($templateTypeMap, &$containsUnresolvedTemplate) {
+					if ($type instanceof TemplateType && $type->getScope()->getClassName() !== null) {
+						$resolvedType = $templateTypeMap->getType($type->getName());
+						if ($resolvedType === null || $type->getBound()->equals($resolvedType)) {
+							$containsUnresolvedTemplate = true;
+							return $type;
+						}
+					}
+
+					return $traverse($type);
+				},
+			);
+
 			$newTypes = $this->create(
 				$assertExpr,
 				$assert->getType(),
 				$assert->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
 				false,
 				$scope,
+				$containsUnresolvedTemplate ? $call : null,
 			);
 			$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
 		}

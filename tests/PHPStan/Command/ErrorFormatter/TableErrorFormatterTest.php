@@ -85,13 +85,14 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
   4      Foo
  ------ -------------------------------------------------------------------
 
- ------ ---------
+ ------ ----------
   Line   foo.php
- ------ ---------
+ ------ ----------
   1      Foo
   5      Bar
          Bar2
- ------ ---------
+         💡 a tip
+ ------ ----------
 
  [ERROR] Found 4 errors
 
@@ -129,13 +130,14 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
   4      Foo
  ------ -------------------------------------------------------------------
 
- ------ ---------
+ ------ ----------
   Line   foo.php
- ------ ---------
+ ------ ----------
   1      Foo
   5      Bar
          Bar2
- ------ ---------
+         💡 a tip
+ ------ ----------
 
  -- ----------------------
      Error

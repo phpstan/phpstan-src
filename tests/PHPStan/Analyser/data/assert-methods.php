@@ -53,3 +53,27 @@ class Foo
 	}
 
 }
+
+/** @template T */
+class Bar
+{
+
+	/**
+	 * @phpstan-assert T $arg
+	 */
+	public function doFoo($arg): void
+	{
+
+	}
+
+	/**
+	 * @param Bar<stdClass> $bar
+	 */
+	public function doBar(Bar $bar, object $object): void
+	{
+		assertType('object', $object);
+		$bar->doFoo($object);
+		assertType(stdClass::class, $object);
+	}
+
+}

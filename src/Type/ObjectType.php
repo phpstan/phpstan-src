@@ -160,7 +160,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			throw new ClassNotFoundException($this->className);
 		}
 
-		if (!$nakedClassReflection->hasProperty($propertyName)) {
+		if (!$nakedClassReflection->hasNativeProperty($propertyName)) {
 			$nakedClassReflection = $this->getClassReflection();
 		}
 
@@ -642,7 +642,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			throw new ClassNotFoundException($this->className);
 		}
 
-		if (!$nakedClassReflection->hasMethod($methodName)) {
+		if (!$nakedClassReflection->hasNativeMethod($methodName)) {
 			$nakedClassReflection = $this->getClassReflection();
 		}
 

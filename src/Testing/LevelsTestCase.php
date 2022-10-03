@@ -110,6 +110,8 @@ abstract class LevelsTestCase extends TestCase
 					}
 				}
 
+				unset($message['tip']);
+
 				$messages[] = $message;
 			}
 
@@ -123,6 +125,8 @@ abstract class LevelsTestCase extends TestCase
 						continue 2;
 					}
 				}
+
+				unset($previousMessage['tip']);
 
 				$missingMessages[] = $previousMessage;
 			}

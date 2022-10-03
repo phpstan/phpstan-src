@@ -84,7 +84,6 @@ class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 			$acceptor->getParameters(),
 			$acceptor->isVariadic(),
 			$returnType,
-			Assertions::fromParametersAcceptor($acceptor),
 		), $this->methods[0]->getVariants());
 	}
 
@@ -153,6 +152,11 @@ class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 	public function getDocComment(): ?string
 	{
 		return null;
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return Assertions::createEmpty();
 	}
 
 }

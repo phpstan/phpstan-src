@@ -82,4 +82,9 @@ class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 		return $this->method->hasSideEffects();
 	}
 
+	public function getAsserts(): Assertions
+	{
+		return Assertions::createEmpty();
+	}
+
 }

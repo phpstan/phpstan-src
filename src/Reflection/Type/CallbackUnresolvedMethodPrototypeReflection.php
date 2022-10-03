@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection\Type;
 
-use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -94,7 +93,6 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 			), $acceptor->getParameters()),
 			$acceptor->isVariadic(),
 			$this->transformStaticType($acceptor->getReturnType()),
-			Assertions::fromParametersAcceptor($acceptor)->mapTypes(fn (Type $type): Type => $this->transformStaticType($type)),
 		), $method->getVariants());
 
 		return new ChangedTypeMethodReflection($declaringClass, $method, $variants);

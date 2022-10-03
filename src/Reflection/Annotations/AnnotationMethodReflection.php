@@ -75,7 +75,6 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 					$this->parameters,
 					$this->isVariadic,
 					$this->returnType,
-					Assertions::createEmpty(),
 				),
 			];
 		}
@@ -115,6 +114,11 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 	public function getDocComment(): ?string
 	{
 		return null;
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return Assertions::createEmpty();
 	}
 
 }

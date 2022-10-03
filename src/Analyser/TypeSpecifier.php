@@ -19,10 +19,10 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PHPStan\Node\Printer\ExprPrinter;
-use PHPStan\Reflection\Assertions;
+use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\ParametersAcceptorWithAsserts;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\ShouldNotHappenException;
@@ -45,7 +45,6 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
-use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -753,15 +752,15 @@ class TypeSpecifier
 					return $extension->specifyTypes($functionReflection, $expr, $scope, $context);
 				}
 
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $functionReflection->getVariants());
 				if (count($expr->getArgs()) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $functionReflection->getVariants());
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
 					}
 				}
 
-				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $functionReflection->getVariants(), $scope);
+				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $functionReflection, $parametersAcceptor, $scope);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;
 				}
@@ -787,17 +786,17 @@ class TypeSpecifier
 					}
 				}
 
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants());
 				if (count($expr->getArgs()) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $methodReflection->getVariants());
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
 					}
+				}
 
-					$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $methodReflection->getVariants(), $scope);
-					if ($specifiedTypes !== null) {
-						return $specifiedTypes;
-					}
+				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $methodReflection, $parametersAcceptor, $scope);
+				if ($specifiedTypes !== null) {
+					return $specifiedTypes;
 				}
 			}
 
@@ -826,15 +825,15 @@ class TypeSpecifier
 					}
 				}
 
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $staticMethodReflection->getVariants());
 				if (count($expr->getArgs()) > 0) {
-					$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $expr->getArgs(), $staticMethodReflection->getVariants());
 					$specifiedTypes = $this->specifyTypesFromConditionalReturnType($context, $expr, $parametersAcceptor, $scope);
 					if ($specifiedTypes !== null) {
 						return $specifiedTypes;
 					}
 				}
 
-				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $staticMethodReflection->getVariants(), $scope);
+				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $staticMethodReflection, $parametersAcceptor, $scope);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;
 				}
@@ -1166,34 +1165,20 @@ class TypeSpecifier
 		return $specifiedTypes;
 	}
 
-	/**
-	 * @param array<ParametersAcceptor> $variants
-	 */
-	private function specifyTypesFromAsserts(TypeSpecifierContext $context, Expr\CallLike $call, array $variants, Scope $scope): ?SpecifiedTypes
+	private function specifyTypesFromAsserts(TypeSpecifierContext $context, Expr\CallLike $call, ExtendedMethodReflection|FunctionReflection $reflection, ParametersAcceptor $parametersAcceptor, Scope $scope): ?SpecifiedTypes
 	{
-		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $call->getArgs(), $variants);
-
-		if (!$parametersAcceptor instanceof ParametersAcceptorWithAsserts) {
-			return null;
-		}
-
 		if ($context->null()) {
-			$asserts = $parametersAcceptor->getAsserts()->getAsserts();
+			$asserts = $reflection->getAsserts()->getAsserts();
 		} elseif ($context->truthy()) {
-			$asserts = $parametersAcceptor->getAsserts()->getAssertsIfTrue();
+			$asserts = $reflection->getAsserts()->getAssertsIfTrue();
 		} elseif ($context->falsey()) {
-			$asserts = $parametersAcceptor->getAsserts()->getAssertsIfFalse();
+			$asserts = $reflection->getAsserts()->getAssertsIfFalse();
 		} else {
 			throw new ShouldNotHappenException();
 		}
 
 		if (count($asserts) === 0) {
 			return null;
-		}
-
-		$originalAsserts = null;
-		if ($parametersAcceptor instanceof ResolvedFunctionVariant) {
-			$originalAsserts = Assertions::fromParametersAcceptor($parametersAcceptor->getOriginalParametersAcceptor())->getAll();
 		}
 
 		$argsMap = [];
@@ -1221,7 +1206,7 @@ class TypeSpecifier
 		/** @var SpecifiedTypes|null $types */
 		$types = null;
 
-		foreach ($asserts as $i => $assert) {
+		foreach ($asserts as $assert) {
 			$parameterExpr = $argsMap[substr($assert->getParameter()->getParameterName(), 1)] ?? null;
 			if ($parameterExpr === null) {
 				continue;
@@ -1229,32 +1214,12 @@ class TypeSpecifier
 
 			$assertExpr = $assert->getParameter()->getExpr($parameterExpr);
 
-			$containsUnresolvedTemplate = false;
-			if (isset($originalAsserts[$i])) {
-				$templateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
-				TypeTraverser::map(
-					$originalAsserts[$i]->getType(),
-					static function (Type $type, callable $traverse) use ($templateTypeMap, &$containsUnresolvedTemplate): Type {
-						if ($type instanceof TemplateType && $type->getScope()->getClassName() !== null) {
-							$resolvedType = $templateTypeMap->getType($type->getName());
-							if ($resolvedType === null || $type->getBound()->equals($resolvedType)) {
-								$containsUnresolvedTemplate = true;
-								return $type;
-							}
-						}
-
-						return $traverse($type);
-					},
-				);
-			}
-
 			$newTypes = $this->create(
 				$assertExpr,
 				$assert->getType(),
 				$assert->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
 				false,
 				$scope,
-				$containsUnresolvedTemplate ? $call : null,
 			);
 			$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
 		}

@@ -14,7 +14,7 @@ use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function array_map;
 
-class ResolvedFunctionVariant implements ParametersAcceptor, ParametersAcceptorWithAsserts
+class ResolvedFunctionVariant implements ParametersAcceptor
 {
 
 	/** @var ParameterReflection[]|null */
@@ -23,8 +23,6 @@ class ResolvedFunctionVariant implements ParametersAcceptor, ParametersAcceptorW
 	private ?Type $returnTypeWithUnresolvableTemplateTypes = null;
 
 	private ?Type $returnType = null;
-
-	private ?Assertions $asserts = null;
 
 	/**
 	 * @param array<string, Type> $passedArgs
@@ -108,20 +106,6 @@ class ResolvedFunctionVariant implements ParametersAcceptor, ParametersAcceptorW
 		}
 
 		return $type;
-	}
-
-	public function getAsserts(): Assertions
-	{
-		$asserts = $this->asserts;
-
-		if ($asserts === null) {
-			$asserts = Assertions::fromParametersAcceptor($this->parametersAcceptor)
-				->mapTypes(fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes($type, $this->resolvedTemplateTypeMap));
-
-			$this->asserts = $asserts;
-		}
-
-		return $asserts;
 	}
 
 	private function resolveResolvableTemplateTypes(Type $type): Type

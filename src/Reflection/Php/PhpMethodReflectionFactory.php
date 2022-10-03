@@ -12,7 +12,6 @@ interface PhpMethodReflectionFactory
 
 	/**
 	 * @param Type[] $phpDocParameterTypes
-	 *
 	 */
 	public function create(
 		ClassReflection $declaringClass,
@@ -26,8 +25,8 @@ interface PhpMethodReflectionFactory
 		bool $isDeprecated,
 		bool $isInternal,
 		bool $isFinal,
-		?bool $isPure = null,
-		?Assertions $asserts = null,
+		?bool $isPure,
+		Assertions $asserts,
 	): PhpMethodReflection;
 
 }

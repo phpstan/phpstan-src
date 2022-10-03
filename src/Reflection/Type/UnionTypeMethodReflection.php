@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Type;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -19,7 +20,7 @@ class UnionTypeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**
-	 * @param MethodReflection[] $methods
+	 * @param ExtendedMethodReflection[] $methods
 	 */
 	public function __construct(private string $methodName, private array $methods)
 	{
@@ -145,6 +146,11 @@ class UnionTypeMethodReflection implements ExtendedMethodReflection
 	public function getDocComment(): ?string
 	{
 		return null;
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return Assertions::createEmpty();
 	}
 
 }

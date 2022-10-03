@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Native;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -29,6 +30,7 @@ class NativeMethodReflection implements ExtendedMethodReflection
 		private array $variants,
 		private TrinaryLogic $hasSideEffects,
 		private ?Type $throwType,
+		private Assertions $assertions,
 	)
 	{
 	}
@@ -151,6 +153,11 @@ class NativeMethodReflection implements ExtendedMethodReflection
 	public function getDocComment(): ?string
 	{
 		return $this->reflection->getDocComment();
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return $this->assertions;
 	}
 
 }

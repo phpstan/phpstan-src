@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Native;
 
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
@@ -20,6 +21,7 @@ class NativeFunctionReflection implements FunctionReflection
 		private ?Type $throwType,
 		private TrinaryLogic $hasSideEffects,
 		private bool $isDeprecated,
+		private Assertions $assertions,
 	)
 	{
 	}
@@ -90,6 +92,11 @@ class NativeFunctionReflection implements FunctionReflection
 	public function isBuiltin(): bool
 	{
 		return true;
+	}
+
+	public function getAsserts(): Assertions
+	{
+		return $this->assertions;
 	}
 
 }

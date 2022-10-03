@@ -1985,24 +1985,12 @@ class MutatingScope implements Scope
 			}
 
 			if ($hasOffsetValue->no()) {
-				if ($result !== null) {
-					return $result;
-				}
-
 				return false;
-			}
-
-			if ($hasOffsetValue->maybe()) {
-				return null;
 			}
 
 			// If offset is cannot be null, store this error message and see if one of the earlier offsets is.
 			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
-			if ($hasOffsetValue->yes()) {
-				if ($result !== null) {
-					return $result;
-				}
-
+			if ($hasOffsetValue->yes() || $this->isSpecified($expr)) {
 				$result = $typeCallback($type->getOffsetValueType($dimType));
 
 				if ($result !== null) {

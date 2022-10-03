@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
@@ -16,7 +17,11 @@ class UniversalObjectCratesClassReflectionExtension
 	/**
 	 * @param string[] $classes
 	 */
-	public function __construct(private ReflectionProvider $reflectionProvider, private array $classes)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private array $classes,
+		private AnnotationsPropertiesClassReflectionExtension $annotationClassReflection,
+	)
 	{
 	}
 
@@ -56,6 +61,10 @@ class UniversalObjectCratesClassReflectionExtension
 
 	public function getProperty(ClassReflection $classReflection, string $propertyName): PropertyReflection
 	{
+		if ($this->annotationClassReflection->hasProperty($classReflection, $propertyName)) {
+			return $this->annotationClassReflection->getProperty($classReflection, $propertyName);
+		}
+
 		if ($classReflection->hasNativeMethod('__get')) {
 			$readableType = ParametersAcceptorSelector::selectSingle($classReflection->getNativeMethod('__get')->getVariants())->getReturnType();
 		} else {

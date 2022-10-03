@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
+use PHPStan\Reflection\Annotations\AnnotationsPropertiesClassReflectionExtension;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
@@ -13,10 +14,11 @@ class UniversalObjectCratesClassReflectionExtensionTest extends PHPStanTestCase
 	public function testNonexistentClass(): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$extension = new UniversalObjectCratesClassReflectionExtension($reflectionProvider, [
-			'NonexistentClass',
-			'stdClass',
-		]);
+		$extension = new UniversalObjectCratesClassReflectionExtension(
+			$reflectionProvider,
+			['NonexistentClass', 'stdClass'],
+			new AnnotationsPropertiesClassReflectionExtension(),
+		);
 		$this->assertTrue($extension->hasProperty($reflectionProvider->getClass(stdClass::class), 'foo'));
 	}
 
@@ -25,9 +27,11 @@ class UniversalObjectCratesClassReflectionExtensionTest extends PHPStanTestCase
 		require_once __DIR__ . '/data/universal-object-crates.php';
 
 		$reflectionProvider = $this->createReflectionProvider();
-		$extension = new UniversalObjectCratesClassReflectionExtension($reflectionProvider, [
-			'UniversalObjectCreates\DifferentGetSetTypes',
-		]);
+		$extension = new UniversalObjectCratesClassReflectionExtension(
+			$reflectionProvider,
+			['UniversalObjectCreates\DifferentGetSetTypes'],
+			new AnnotationsPropertiesClassReflectionExtension(),
+		);
 
 		$this->assertEquals(
 			new ObjectType('UniversalObjectCreates\DifferentGetSetTypesValue'),
@@ -39,6 +43,32 @@ class UniversalObjectCratesClassReflectionExtensionTest extends PHPStanTestCase
 			new StringType(),
 			$extension
 				->getProperty($reflectionProvider->getClass('UniversalObjectCreates\DifferentGetSetTypes'), 'foo')
+				->getWritableType(),
+		);
+	}
+
+	public function testAnnotationOverrides(): void
+	{
+		require_once __DIR__ . '/data/universal-object-crates-annotations.php';
+		$className = 'UniversalObjectCratesAnnotations\Model';
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$extension = new UniversalObjectCratesClassReflectionExtension(
+			$reflectionProvider,
+			[$className],
+			new AnnotationsPropertiesClassReflectionExtension(),
+		);
+
+		$this->assertEquals(
+			new StringType(),
+			$extension
+				->getProperty($reflectionProvider->getClass($className), 'foo')
+				->getReadableType(),
+		);
+		$this->assertEquals(
+			new StringType(),
+			$extension
+				->getProperty($reflectionProvider->getClass($className), 'foo')
 				->getWritableType(),
 		);
 	}

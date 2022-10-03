@@ -7,6 +7,7 @@ use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\Type\Type;
 use function array_filter;
 use function array_map;
+use function count;
 
 class Assertions
 {
@@ -78,7 +79,12 @@ class Assertions
 
 	public static function createFromResolvedPhpDocBlock(ResolvedPhpDocBlock $phpDocBlock): self
 	{
-		return new self($phpDocBlock->getAssertTags());
+		$tags = $phpDocBlock->getAssertTags();
+		if (count($tags) === 0) {
+			return self::createEmpty();
+		}
+
+		return new self($tags);
 	}
 
 }

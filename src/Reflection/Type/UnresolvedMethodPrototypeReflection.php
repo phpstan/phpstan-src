@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection\Type;
 
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Type\Type;
 
 interface UnresolvedMethodPrototypeReflection
@@ -10,9 +10,9 @@ interface UnresolvedMethodPrototypeReflection
 
 	public function doNotResolveTemplateTypeMapToBounds(): self;
 
-	public function getNakedMethod(): MethodReflection;
+	public function getNakedMethod(): ExtendedMethodReflection;
 
-	public function getTransformedMethod(): MethodReflection;
+	public function getTransformedMethod(): ExtendedMethodReflection;
 
 	public function withCalledOnType(Type $type): self;
 

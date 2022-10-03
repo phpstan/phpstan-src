@@ -7,13 +7,13 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 
-class ResolvedMethodReflection implements MethodReflection
+class ResolvedMethodReflection implements ExtendedMethodReflection
 {
 
 	/** @var ParametersAcceptor[]|null */
 	private ?array $variants = null;
 
-	public function __construct(private MethodReflection $reflection, private TemplateTypeMap $resolvedTemplateTypeMap)
+	public function __construct(private ExtendedMethodReflection $reflection, private TemplateTypeMap $resolvedTemplateTypeMap)
 	{
 	}
 

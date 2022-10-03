@@ -4,7 +4,7 @@ namespace PHPStan\Reflection\Dummy;
 
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
@@ -12,7 +12,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use stdClass;
 
-class DummyMethodReflection implements MethodReflection
+class DummyMethodReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(private string $name)

@@ -8,6 +8,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\NamespaceAnswerer;
@@ -32,7 +33,7 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	public function getTraitReflection(): ?ClassReflection;
 
 	/**
-	 * @return FunctionReflection|MethodReflection|null
+	 * @return FunctionReflection|ExtendedMethodReflection|null
 	 */
 	public function getFunction();
 

@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Type;
 
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -14,11 +15,11 @@ use function array_map;
 use function count;
 use function implode;
 
-class IntersectionTypeMethodReflection implements MethodReflection
+class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**
-	 * @param MethodReflection[] $methods
+	 * @param ExtendedMethodReflection[] $methods
 	 */
 	public function __construct(private string $methodName, private array $methods)
 	{

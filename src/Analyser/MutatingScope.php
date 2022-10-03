@@ -46,6 +46,7 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -178,7 +179,7 @@ class MutatingScope implements Scope
 		private PhpVersion $phpVersion,
 		private bool $declareStrictTypes = false,
 		private array $constantTypes = [],
-		private FunctionReflection|MethodReflection|null $function = null,
+		private FunctionReflection|ExtendedMethodReflection|null $function = null,
 		?string $namespace = null,
 		private array $variableTypes = [],
 		private array $moreSpecificTypes = [],
@@ -281,7 +282,7 @@ class MutatingScope implements Scope
 
 	/**
 	 * @api
-	 * @return FunctionReflection|MethodReflection|null
+	 * @return FunctionReflection|ExtendedMethodReflection|null
 	 */
 	public function getFunction()
 	{

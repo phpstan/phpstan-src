@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\Type;
 
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Type;
 use function array_map;
@@ -9,7 +10,7 @@ use function array_map;
 class IntersectionTypeUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 
-	private ?MethodReflection $transformedMethod = null;
+	private ?ExtendedMethodReflection $transformedMethod = null;
 
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
 
@@ -32,12 +33,12 @@ class IntersectionTypeUnresolvedMethodPrototypeReflection implements UnresolvedM
 		return $this->cachedDoNotResolveTemplateTypeMapToBounds = new self($this->methodName, array_map(static fn (UnresolvedMethodPrototypeReflection $prototype): UnresolvedMethodPrototypeReflection => $prototype->doNotResolveTemplateTypeMapToBounds(), $this->methodPrototypes));
 	}
 
-	public function getNakedMethod(): MethodReflection
+	public function getNakedMethod(): ExtendedMethodReflection
 	{
 		return $this->getTransformedMethod();
 	}
 
-	public function getTransformedMethod(): MethodReflection
+	public function getTransformedMethod(): ExtendedMethodReflection
 	{
 		if ($this->transformedMethod !== null) {
 			return $this->transformedMethod;

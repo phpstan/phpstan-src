@@ -4,18 +4,18 @@ namespace PHPStan\Reflection\Dummy;
 
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
-class ChangedTypeMethodReflection implements MethodReflection
+class ChangedTypeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**
 	 * @param ParametersAcceptor[] $variants
 	 */
-	public function __construct(private ClassReflection $declaringClass, private MethodReflection $reflection, private array $variants)
+	public function __construct(private ClassReflection $declaringClass, private ExtendedMethodReflection $reflection, private array $variants)
 	{
 	}
 

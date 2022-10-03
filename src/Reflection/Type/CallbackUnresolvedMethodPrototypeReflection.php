@@ -4,8 +4,8 @@ namespace PHPStan\Reflection\Type;
 
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariant;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\Php\DummyParameter;
@@ -19,7 +19,7 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 	/** @var callable(Type): Type */
 	private $transformStaticTypeCallback;
 
-	private ?MethodReflection $transformedMethod = null;
+	private ?ExtendedMethodReflection $transformedMethod = null;
 
 	private ?self $cachedDoNotResolveTemplateTypeMapToBounds = null;
 
@@ -27,7 +27,7 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 	 * @param callable(Type): Type $transformStaticTypeCallback
 	 */
 	public function __construct(
-		private MethodReflection $methodReflection,
+		private ExtendedMethodReflection $methodReflection,
 		private ClassReflection $resolvedDeclaringClass,
 		private bool $resolveTemplateTypeMapToBounds,
 		callable $transformStaticTypeCallback,
@@ -50,12 +50,12 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 		);
 	}
 
-	public function getNakedMethod(): MethodReflection
+	public function getNakedMethod(): ExtendedMethodReflection
 	{
 		return $this->methodReflection;
 	}
 
-	public function getTransformedMethod(): MethodReflection
+	public function getTransformedMethod(): ExtendedMethodReflection
 	{
 		if ($this->transformedMethod !== null) {
 			return $this->transformedMethod;
@@ -78,7 +78,7 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 		);
 	}
 
-	private function transformMethodWithStaticType(ClassReflection $declaringClass, MethodReflection $method): MethodReflection
+	private function transformMethodWithStaticType(ClassReflection $declaringClass, ExtendedMethodReflection $method): ExtendedMethodReflection
 	{
 		$variants = array_map(fn (ParametersAcceptor $acceptor): ParametersAcceptor => new FunctionVariant(
 			$acceptor->getTemplateTypeMap(),

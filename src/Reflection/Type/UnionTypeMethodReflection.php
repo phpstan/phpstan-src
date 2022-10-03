@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Type;
 
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\TrinaryLogic;
@@ -14,7 +15,7 @@ use function array_merge;
 use function count;
 use function implode;
 
-class UnionTypeMethodReflection implements MethodReflection
+class UnionTypeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**

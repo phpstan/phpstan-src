@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection\Php;
 
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Type;
@@ -19,12 +19,12 @@ class ClosureCallUnresolvedMethodPrototypeReflection implements UnresolvedMethod
 		return new self($this->prototype->doNotResolveTemplateTypeMapToBounds(), $this->closure);
 	}
 
-	public function getNakedMethod(): MethodReflection
+	public function getNakedMethod(): ExtendedMethodReflection
 	{
 		return $this->getTransformedMethod();
 	}
 
-	public function getTransformedMethod(): MethodReflection
+	public function getTransformedMethod(): ExtendedMethodReflection
 	{
 		return new ClosureCallMethodReflection($this->prototype->getTransformedMethod(), $this->closure);
 	}

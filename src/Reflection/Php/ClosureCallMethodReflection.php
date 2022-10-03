@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -15,7 +16,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use function array_unshift;
 
-final class ClosureCallMethodReflection implements MethodReflection
+final class ClosureCallMethodReflection implements ExtendedMethodReflection
 {
 
 	public function __construct(

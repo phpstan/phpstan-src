@@ -10,6 +10,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
@@ -88,10 +89,12 @@ class ApiInstanceofRule implements Rule
 			return [];
 		}
 
+		$classType = new ObjectType($classReflection->getName(), null, $classReflection);
+
 		$exprType = $scope->getType($node->expr);
 		if ($exprType instanceof UnionType) {
 			foreach ($exprType->getTypes() as $innerType) {
-				if ($innerType instanceof TypeWithClassName && $innerType->getClassName() === $classReflection->getName()) {
+				if ($innerType instanceof TypeWithClassName && $classType->isSuperTypeOf($innerType)->yes()) {
 					return [];
 				}
 			}

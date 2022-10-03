@@ -24,6 +24,7 @@ class NativeFunctionReflection implements FunctionReflection
 		private ?Assertions $assertions = null,
 	)
 	{
+		$this->assertions ??= Assertions::createEmpty();
 	}
 
 	public function getName(): string

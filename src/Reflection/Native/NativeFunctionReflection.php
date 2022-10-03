@@ -21,7 +21,7 @@ class NativeFunctionReflection implements FunctionReflection
 		private ?Type $throwType,
 		private TrinaryLogic $hasSideEffects,
 		private bool $isDeprecated,
-		private Assertions $assertions,
+		private ?Assertions $assertions = null,
 	)
 	{
 	}

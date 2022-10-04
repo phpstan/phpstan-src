@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1c59086e39a5d4130a43334f7b28d74e",
+    "content-hash": "13d44b517cc55e8805fdd6ae1e869f46",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2038,16 +2038,16 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "6.0.x-dev",
+            "version": "dev-6.1.x-opti",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "c6fe6af332f0b2231af46cada386edaa5b70af33"
+                "reference": "1884b903900511c19fe1b08048f20a5cf89a89b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/c6fe6af332f0b2231af46cada386edaa5b70af33",
-                "reference": "c6fe6af332f0b2231af46cada386edaa5b70af33",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/1884b903900511c19fe1b08048f20a5cf89a89b5",
+                "reference": "1884b903900511c19fe1b08048f20a5cf89a89b5",
                 "shasum": ""
             },
             "require": {
@@ -2069,7 +2069,6 @@
             "suggest": {
                 "composer/composer": "Required to use the ComposerSourceLocator"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -2104,9 +2103,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.0.x"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.1.x-opti"
             },
-            "time": "2022-09-30T11:59:26+00:00"
+            "time": "2022-10-04T13:20:44+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",
@@ -6943,7 +6942,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20
+        "jetbrains/phpstorm-stubs": 20,
+        "ondrejmirtes/better-reflection": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

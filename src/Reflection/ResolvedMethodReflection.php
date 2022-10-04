@@ -16,6 +16,8 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 
 	private ?Assertions $asserts = null;
 
+	private Type|false|null $selfOutType = false;
+
 	public function __construct(private ExtendedMethodReflection $reflection, private TemplateTypeMap $resolvedTemplateTypeMap)
 	{
 	}
@@ -121,6 +123,20 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 	public function getAsserts(): Assertions
 	{
 		return $this->asserts ??= $this->reflection->getAsserts()->mapTypes(fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes($type, $this->resolvedTemplateTypeMap));
+	}
+
+	public function getSelfOutType(): ?Type
+	{
+		if ($this->selfOutType === false) {
+			$selfOutType = $this->reflection->getSelfOutType();
+			if ($selfOutType !== null) {
+				$selfOutType = TemplateTypeHelper::resolveTemplateTypes($selfOutType, $this->resolvedTemplateTypeMap);
+			}
+
+			$this->selfOutType = $selfOutType;
+		}
+
+		return $this->selfOutType;
 	}
 
 }

@@ -12,6 +12,7 @@ use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
+use PHPStan\PhpDoc\Tag\SelfOutTypeTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
 use PHPStan\PhpDoc\Tag\TypeAliasImportTag;
@@ -90,6 +91,8 @@ class ResolvedPhpDocBlock
 	/** @var array<AssertTag>|false */
 	private array|false $assertTags = false;
 
+	private SelfOutTypeTag|false|null $selfOutTypeTag = false;
+
 	private DeprecatedTag|false|null $deprecatedTag = false;
 
 	private ?bool $isDeprecated = null;
@@ -164,6 +167,7 @@ class ResolvedPhpDocBlock
 		$self->typeAliasTags = [];
 		$self->typeAliasImportTags = [];
 		$self->assertTags = [];
+		$self->selfOutTypeTag = null;
 		$self->deprecatedTag = null;
 		$self->isDeprecated = false;
 		$self->isInternal = false;
@@ -216,6 +220,7 @@ class ResolvedPhpDocBlock
 		$result->typeAliasTags = $this->getTypeAliasTags();
 		$result->typeAliasImportTags = $this->getTypeAliasImportTags();
 		$result->assertTags = self::mergeAssertTags($this->getAssertTags(), $parents, $parentPhpDocBlocks);
+		$result->selfOutTypeTag = $this->getThisOutTag();
 		$result->deprecatedTag = self::mergeDeprecatedTags($this->getDeprecatedTag(), $parents);
 		$result->isDeprecated = $result->deprecatedTag !== null;
 		$result->isInternal = $this->isInternal();
@@ -297,6 +302,7 @@ class ResolvedPhpDocBlock
 		$self->typeAliasTags = $this->typeAliasTags;
 		$self->typeAliasImportTags = $this->typeAliasImportTags;
 		$self->assertTags = $assertTags;
+		$self->selfOutTypeTag = $this->getThisOutTag();
 		$self->deprecatedTag = $this->deprecatedTag;
 		$self->isDeprecated = $this->isDeprecated;
 		$self->isInternal = $this->isInternal;
@@ -520,6 +526,18 @@ class ResolvedPhpDocBlock
 		}
 
 		return $this->assertTags;
+	}
+
+	public function getThisOutTag(): ?SelfOutTypeTag
+	{
+		if ($this->selfOutTypeTag === false) {
+			$this->selfOutTypeTag = $this->phpDocNodeResolver->resolveSelfOutTypeTag(
+				$this->phpDocNode,
+				$this->getNameScope(),
+			);
+		}
+
+		return $this->selfOutTypeTag;
 	}
 
 	public function getDeprecatedTag(): ?DeprecatedTag

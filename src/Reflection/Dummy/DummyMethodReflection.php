@@ -102,4 +102,9 @@ class DummyMethodReflection implements ExtendedMethodReflection
 		return Assertions::createEmpty();
 	}
 
+	public function getSelfOutType(): ?Type
+	{
+		return null;
+	}
+
 }

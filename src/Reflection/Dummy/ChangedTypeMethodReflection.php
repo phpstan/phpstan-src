@@ -95,4 +95,9 @@ class ChangedTypeMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->getAsserts();
 	}
 
+	public function getSelfOutType(): ?Type
+	{
+		return $this->reflection->getSelfOutType();
+	}
+
 }

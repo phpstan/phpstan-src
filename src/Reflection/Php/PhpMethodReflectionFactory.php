@@ -27,6 +27,7 @@ interface PhpMethodReflectionFactory
 		bool $isFinal,
 		?bool $isPure,
 		Assertions $asserts,
+		?Type $selfOutType,
 	): PhpMethodReflection;
 
 }

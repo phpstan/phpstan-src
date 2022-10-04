@@ -31,6 +31,7 @@ class NativeMethodReflection implements ExtendedMethodReflection
 		private TrinaryLogic $hasSideEffects,
 		private ?Type $throwType,
 		private Assertions $assertions,
+		private ?Type $selfOutType,
 	)
 	{
 	}
@@ -158,6 +159,11 @@ class NativeMethodReflection implements ExtendedMethodReflection
 	public function getAsserts(): Assertions
 	{
 		return $this->assertions;
+	}
+
+	public function getSelfOutType(): ?Type
+	{
+		return $this->selfOutType;
 	}
 
 }

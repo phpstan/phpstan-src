@@ -80,6 +80,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		private bool $isFinal,
 		private ?bool $isPure,
 		private Assertions $asserts,
+		private ?Type $selfOutType,
 	)
 	{
 	}
@@ -424,6 +425,11 @@ class PhpMethodReflection implements ExtendedMethodReflection
 	public function getAsserts(): Assertions
 	{
 		return $this->asserts;
+	}
+
+	public function getSelfOutType(): ?Type
+	{
+		return $this->selfOutType;
 	}
 
 }

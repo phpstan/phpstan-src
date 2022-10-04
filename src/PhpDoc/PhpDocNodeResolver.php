@@ -14,6 +14,7 @@ use PHPStan\PhpDoc\Tag\MixinTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
+use PHPStan\PhpDoc\Tag\SelfOutTypeTag;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDoc\Tag\ThrowsTag;
 use PHPStan\PhpDoc\Tag\TypeAliasImportTag;
@@ -449,6 +450,18 @@ class PhpDocNodeResolver
 		}
 
 		return $resolved;
+	}
+
+	public function resolveSelfOutTypeTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?SelfOutTypeTag
+	{
+		foreach (['@phpstan-this-out', '@phpstan-self-out', '@psalm-this-out', '@psalm-self-out'] as $tagName) {
+			foreach ($phpDocNode->getSelfOutTypeTagValues($tagName) as $selfOutTypeTagValue) {
+				$type = $this->typeNodeResolver->resolve($selfOutTypeTagValue->type, $nameScope);
+				return new SelfOutTypeTag($type);
+			}
+		}
+
+		return null;
 	}
 
 	public function resolveDeprecatedTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?DeprecatedTag

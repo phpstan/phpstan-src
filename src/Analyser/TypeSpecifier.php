@@ -1363,8 +1363,16 @@ class TypeSpecifier
 		$exprString = $this->exprPrinter->printExpr($expr);
 		if ($context->false()) {
 			$sureNotTypes[$exprString] = [$expr, $type];
+			if ($expr !== $originalExpr) {
+				$originalExprString = $this->exprPrinter->printExpr($originalExpr);
+				$sureNotTypes[$originalExprString] = [$originalExpr, $type];
+			}
 		} elseif ($context->true()) {
 			$sureTypes[$exprString] = [$expr, $type];
+			if ($expr !== $originalExpr) {
+				$originalExprString = $this->exprPrinter->printExpr($originalExpr);
+				$sureTypes[$originalExprString] = [$originalExpr, $type];
+			}
 		}
 
 		$types = new SpecifiedTypes($sureTypes, $sureNotTypes, $overwrite, [], $rootExpr);

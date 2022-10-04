@@ -539,7 +539,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8068.php'], [
 			[
 				"Cannot access offset 'path' on Closure.",
-				14,
+				18,
 			],
 		]);
 	}

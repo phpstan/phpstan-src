@@ -51,7 +51,7 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 				if (!$isIterable->yes()) {
 					$argumentTypes[] = new ConstantBooleanType(false);
 				}
-				if ($iterableValueType instanceof UnionType) {
+				if ($iterableValueType instanceof UnionType && $argType instanceof ConstantArrayType) {
 					foreach ($iterableValueType->getTypes() as $innerType) {
 						$argumentTypes[] = $innerType;
 					}

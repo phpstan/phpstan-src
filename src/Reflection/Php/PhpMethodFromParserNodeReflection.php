@@ -46,6 +46,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		?bool $isPure,
 		bool $acceptsNamedArguments,
 		Assertions $assertions,
+		private ?Type $selfOutType,
 	)
 	{
 		$name = strtolower($classMethod->name->name);
@@ -135,6 +136,11 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 	public function isBuiltin(): bool
 	{
 		return false;
+	}
+
+	public function getSelfOutType(): ?Type
+	{
+		return $this->selfOutType;
 	}
 
 }

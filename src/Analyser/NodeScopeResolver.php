@@ -468,7 +468,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , , $asserts] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , , $asserts, $selfOutType] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);
@@ -491,6 +491,7 @@ class NodeScopeResolver
 				$isPure,
 				$acceptsNamedArguments,
 				$asserts,
+				$selfOutType,
 			);
 
 			if ($stmt->name->toLowerString() === '__construct') {
@@ -2055,6 +2056,13 @@ class NodeScopeResolver
 					$scope = $scope->invalidateExpression($expr->var, true);
 					foreach ($expr->getArgs() as $arg) {
 						$scope = $scope->invalidateExpression($arg->value, true);
+					}
+				}
+
+				if ($parametersAcceptor !== null) {
+					$selfOutType = $methodReflection->getSelfOutType();
+					if ($selfOutType !== null) {
+						$scope = $scope->assignExpression($expr->var, TemplateTypeHelper::resolveTemplateTypes($selfOutType, $parametersAcceptor->getResolvedTemplateTypeMap()));
 					}
 				}
 			} else {
@@ -3968,7 +3976,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions}
+	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type}
 	 */
 	public function getPhpDocs(Scope $scope, Node\FunctionLike|Node\Stmt\Property $node): array
 	{
@@ -3984,6 +3992,7 @@ class NodeScopeResolver
 		$acceptsNamedArguments = true;
 		$isReadOnly = $scope->isInClass() && $scope->getClassReflection()->isImmutable();
 		$asserts = Assertions::createEmpty();
+		$selfOutType = null;
 		$docComment = $node->getDocComment() !== null
 			? $node->getDocComment()->getText()
 			: null;
@@ -4093,9 +4102,10 @@ class NodeScopeResolver
 			$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
 			$isReadOnly = $isReadOnly || $resolvedPhpDoc->isReadOnly();
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
+			$selfOutType = $resolvedPhpDoc->getThisOutTag() !== null ? $resolvedPhpDoc->getThisOutTag()->getType() : null;
 		}
 
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType];
 	}
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Type\Type;
+
 /**
  * The purpose of this interface is to be able to
  * answer more questions about methods
@@ -17,5 +19,7 @@ interface ExtendedMethodReflection extends MethodReflection
 {
 
 	public function getAsserts(): Assertions;
+
+	public function getSelfOutType(): ?Type;
 
 }

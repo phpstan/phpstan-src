@@ -502,6 +502,7 @@ class PhpClassReflectionExtension
 			$reflectionMethod = null;
 			$throwType = null;
 			$asserts = Assertions::createEmpty();
+			$selfOutType = null;
 			if ($classReflection->getNativeReflection()->hasMethod($methodReflection->getName())) {
 				$reflectionMethod = $classReflection->getNativeReflection()->getMethod($methodReflection->getName());
 			}
@@ -544,6 +545,11 @@ class PhpClassReflectionExtension
 						}
 
 						$asserts = Assertions::createFromResolvedPhpDocBlock($stubPhpDoc);
+
+						$selfOutTypeTag = $stubPhpDoc->getThisOutTag();
+						if ($selfOutTypeTag !== null) {
+							$selfOutType = $selfOutTypeTag->getType();
+						}
 					}
 				}
 				if ($stubPhpDocPair === null && $reflectionMethod !== null && $reflectionMethod->getDocComment() !== false) {
@@ -568,6 +574,11 @@ class PhpClassReflectionExtension
 							$phpDocParameterTypes[$name] = $paramTag->getType();
 						}
 						$asserts = Assertions::createFromResolvedPhpDocBlock($phpDocBlock);
+
+						$selfOutTypeTag = $phpDocBlock->getThisOutTag();
+						if ($selfOutTypeTag !== null) {
+							$selfOutType = $selfOutTypeTag->getType();
+						}
 
 						$signatureParameters = $methodSignature->getParameters();
 						foreach ($reflectionMethod->getParameters() as $paramI => $reflectionParameter) {
@@ -595,6 +606,7 @@ class PhpClassReflectionExtension
 				$hasSideEffects,
 				$throwType,
 				$asserts,
+				$selfOutType,
 			);
 		}
 
@@ -715,6 +727,7 @@ class PhpClassReflectionExtension
 		$isFinal = $resolvedPhpDoc->isFinal();
 		$isPure = $resolvedPhpDoc->isPure();
 		$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
+		$selfOutType = $resolvedPhpDoc->getThisOutTag() !== null ? $resolvedPhpDoc->getThisOutTag()->getType() : null;
 
 		return $this->methodReflectionFactory->create(
 			$declaringClass,
@@ -730,6 +743,7 @@ class PhpClassReflectionExtension
 			$isFinal,
 			$isPure,
 			$asserts,
+			$selfOutType,
 		);
 	}
 
@@ -885,7 +899,7 @@ class PhpClassReflectionExtension
 			$constructor,
 			$namespace,
 		)->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , , $asserts] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , , $asserts, $selfOutType] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,
@@ -899,6 +913,7 @@ class PhpClassReflectionExtension
 			$isPure,
 			$acceptsNamedArguments,
 			$asserts,
+			$selfOutType,
 		);
 
 		$propertyTypes = [];

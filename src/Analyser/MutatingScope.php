@@ -2532,6 +2532,7 @@ class MutatingScope implements Scope
 		?bool $isPure = null,
 		bool $acceptsNamedArguments = true,
 		?Assertions $asserts = null,
+		?Type $selfOutType = null,
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -2557,6 +2558,7 @@ class MutatingScope implements Scope
 				$isPure,
 				$acceptsNamedArguments,
 				$asserts ?? Assertions::createEmpty(),
+				$selfOutType,
 			),
 			!$classMethod->isStatic(),
 		);

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "98c2e17e3bd7dd38b9314b7a321f55be",
+    "content-hash": "e295cec35ef56e1a31a42ce8a341a1a7",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2141,16 +2141,16 @@
         },
         {
             "name": "phpstan/phpdoc-parser",
-            "version": "1.8.0",
+            "version": "dev-self-out",
             "source": {
                 "type": "git",
-                "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "8dd908dd6156e974b9a0f8bb4cd5ad0707830f04"
+                "url": "https://github.com/rvanvelzen/phpdoc-parser.git",
+                "reference": "b6199e47c69b64f4308bd19af6993e5f0e5ea637"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/8dd908dd6156e974b9a0f8bb4cd5ad0707830f04",
-                "reference": "8dd908dd6156e974b9a0f8bb4cd5ad0707830f04",
+                "url": "https://api.github.com/repos/rvanvelzen/phpdoc-parser/zipball/b6199e47c69b64f4308bd19af6993e5f0e5ea637",
+                "reference": "b6199e47c69b64f4308bd19af6993e5f0e5ea637",
                 "shasum": ""
             },
             "require": {
@@ -2173,16 +2173,21 @@
                     ]
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "PHPStan\\PhpDocParser\\": [
+                        "tests/PHPStan"
+                    ]
+                }
+            },
             "license": [
                 "MIT"
             ],
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
             "support": {
-                "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/1.8.0"
+                "source": "https://github.com/rvanvelzen/phpdoc-parser/tree/self-out"
             },
-            "time": "2022-09-04T18:59:06+00:00"
+            "time": "2022-10-06T07:23:59+00:00"
         },
         {
             "name": "psr/container",
@@ -6942,7 +6947,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20
+        "jetbrains/phpstorm-stubs": 20,
+        "phpstan/phpdoc-parser": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

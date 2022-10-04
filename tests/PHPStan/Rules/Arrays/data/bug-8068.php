@@ -1,5 +1,9 @@
 <?php
 
+namespace Bug8097;
+
+use Closure;
+
 class HelloWorld
 {
 	public function test(string $url): bool
@@ -9,7 +13,7 @@ class HelloWorld
 		return isset($urlParsed['path']);
 	}
 
-	public function test2(closure $closure): bool
+	public function test2(Closure $closure): bool
 	{
 		return isset($closure['path']);
 	}

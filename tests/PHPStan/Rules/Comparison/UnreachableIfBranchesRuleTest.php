@@ -115,4 +115,10 @@ class UnreachableIfBranchesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8076(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-8076.php'], []);
+	}
+
 }

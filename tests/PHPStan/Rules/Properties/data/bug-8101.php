@@ -20,3 +20,14 @@ class C extends A
 		parent::__construct($anotherProp);
 	}
 }
+
+class ANonReadonly {
+	public function __construct(public int $myProp) {}
+}
+
+class BNonReadonly extends ANonReadonly
+{
+	public function __construct(public int $myProp) {
+		parent::__construct($myProp);
+	}
+}

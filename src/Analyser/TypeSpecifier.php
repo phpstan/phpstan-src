@@ -46,7 +46,6 @@ use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
-use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -797,11 +796,7 @@ class TypeSpecifier
 					}
 				}
 
-				$templateTypeMap = new TemplateTypeMap(array_merge(
-					$methodReflection->getDeclaringClass()->getActiveTemplateTypeMap()->getTypes(),
-					$parametersAcceptor->getResolvedTemplateTypeMap()->getTypes(),
-				));
-				$asserts = $methodReflection->getAsserts()->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes($type, $templateTypeMap));
+				$asserts = $methodReflection->getAsserts()->mapTypes(static fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes($type, $parametersAcceptor->getResolvedTemplateTypeMap()));
 				$specifiedTypes = $this->specifyTypesFromAsserts($context, $expr, $asserts, $parametersAcceptor, $scope);
 				if ($specifiedTypes !== null) {
 					return $specifiedTypes;

@@ -185,148 +185,10 @@ class TypeSpecifier
 				$exprNode = $expressions[0];
 				/** @var ConstantScalarType $constantType */
 				$constantType = $expressions[1];
-				if (!$context->null() && $constantType->getValue() === false) {
-					$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-					return $types->unionWith($this->specifyTypesInCondition(
-						$scope,
-						$exprNode,
-						$context->true() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createFalse()->negate(),
-						$rootExpr,
-					));
-				}
 
-				if (!$context->null() && $constantType->getValue() === true) {
-					$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-					return $types->unionWith($this->specifyTypesInCondition(
-						$scope,
-						$exprNode,
-						$context->true() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createTrue()->negate(),
-						$rootExpr,
-					));
-				}
-
-				if ($constantType->getValue() === null) {
-					return $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-				}
-
-				if (
-					!$context->null()
-					&& $exprNode instanceof FuncCall
-					&& count($exprNode->getArgs()) === 1
-					&& $exprNode->name instanceof Name
-					&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
-					&& $constantType instanceof ConstantIntegerType
-				) {
-					if ($context->truthy() || $constantType->getValue() === 0) {
-						$newContext = $context;
-						if ($constantType->getValue() === 0) {
-							$newContext = $newContext->negate();
-						}
-						$argType = $scope->getType($exprNode->getArgs()[0]->value);
-						if ($argType->isArray()->yes()) {
-							$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-							$valueTypes = $this->create($exprNode->getArgs()[0]->value, new NonEmptyArrayType(), $newContext, false, $scope, $rootExpr);
-							return $funcTypes->unionWith($valueTypes);
-						}
-					}
-				}
-
-				if (
-					!$context->null()
-					&& $exprNode instanceof FuncCall
-					&& count($exprNode->getArgs()) === 1
-					&& $exprNode->name instanceof Name
-					&& strtolower((string) $exprNode->name) === 'strlen'
-					&& $constantType instanceof ConstantIntegerType
-				) {
-					if ($context->truthy() || $constantType->getValue() === 0) {
-						$newContext = $context;
-						if ($constantType->getValue() === 0) {
-							$newContext = $newContext->negate();
-						}
-						$argType = $scope->getType($exprNode->getArgs()[0]->value);
-						if ($argType->isString()->yes()) {
-							$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-
-							$accessory = new AccessoryNonEmptyStringType();
-							if ($constantType->getValue() >= 2) {
-								$accessory = new AccessoryNonFalsyStringType();
-							}
-							$valueTypes = $this->create($exprNode->getArgs()[0]->value, $accessory, $newContext, false, $scope, $rootExpr);
-
-							return $funcTypes->unionWith($valueTypes);
-						}
-					}
-				}
-
-				if (
-					$context->truthy()
-					&& $exprNode instanceof FuncCall
-					&& $exprNode->name instanceof Name
-					&& in_array(strtolower($exprNode->name->toString()), ['substr', 'strstr', 'stristr', 'strchr', 'strrchr', 'strtolower', 'strtoupper', 'mb_strtolower', 'mb_strtoupper', 'ucfirst', 'lcfirst', 'ucwords'], true)
-					&& isset($exprNode->getArgs()[0])
-					&& $constantType instanceof ConstantStringType
-					&& $constantType->getValue() !== ''
-				) {
-					$argType = $scope->getType($exprNode->getArgs()[0]->value);
-
-					if ($argType->isString()->yes()) {
-						if ($constantType->getValue() !== '0') {
-							return $this->create(
-								$exprNode->getArgs()[0]->value,
-								TypeCombinator::intersect($argType, new AccessoryNonFalsyStringType()),
-								$context,
-								false,
-								$scope,
-							);
-						}
-
-						return $this->create(
-							$exprNode->getArgs()[0]->value,
-							TypeCombinator::intersect($argType, new AccessoryNonEmptyStringType()),
-							$context,
-							false,
-							$scope,
-						);
-					}
-				}
-
-				if (
-					$exprNode instanceof FuncCall
-					&& $exprNode->name instanceof Name
-					&& strtolower($exprNode->name->toString()) === 'gettype'
-					&& isset($exprNode->getArgs()[0])
-					&& $constantType instanceof ConstantStringType
-				) {
-					$type = null;
-					if ($constantType->getValue() === 'string') {
-						$type = new StringType();
-					}
-					if ($constantType->getValue() === 'array') {
-						$type = new ArrayType(new MixedType(), new MixedType());
-					}
-					if ($constantType->getValue() === 'boolean') {
-						$type = new BooleanType();
-					}
-					if ($constantType->getValue() === 'resource' || $constantType->getValue() === 'resource (closed)') {
-						$type = new ResourceType();
-					}
-					if ($constantType->getValue() === 'integer') {
-						$type = new IntegerType();
-					}
-					if ($constantType->getValue() === 'double') {
-						$type = new FloatType();
-					}
-					if ($constantType->getValue() === 'NULL') {
-						$type = new NullType();
-					}
-					if ($constantType->getValue() === 'object') {
-						$type = new ObjectWithoutClassType();
-					}
-
-					if ($type !== null) {
-						return $this->create($exprNode->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
-					}
+				$specifiedType = $this->specifyTypesForConstantBinaryExpression($exprNode, $constantType, $context, $scope, $rootExpr);
+				if ($specifiedType !== null) {
+					return $specifiedType;
 				}
 			}
 
@@ -1049,6 +911,215 @@ class TypeSpecifier
 		}
 
 		return new SpecifiedTypes([], [], false, [], $rootExpr);
+	}
+
+	private function specifyTypesForConstantBinaryExpression(
+		Expr $exprNode,
+		ConstantScalarType $constantType,
+		TypeSpecifierContext $context,
+		Scope $scope,
+		?Expr $rootExpr,
+	): ?SpecifiedTypes
+	{
+		if (!$context->null() && $constantType->getValue() === false) {
+			$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
+			return $types->unionWith($this->specifyTypesInCondition(
+				$scope,
+				$exprNode,
+				$context->true() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createFalse()->negate(),
+				$rootExpr,
+			));
+		}
+
+		if (!$context->null() && $constantType->getValue() === true) {
+			$types = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
+			return $types->unionWith($this->specifyTypesInCondition(
+				$scope,
+				$exprNode,
+				$context->true() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createTrue()->negate(),
+				$rootExpr,
+			));
+		}
+
+		if ($constantType->getValue() === null) {
+			return $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
+		}
+
+		if (
+			!$context->null()
+			&& $exprNode instanceof FuncCall
+			&& count($exprNode->getArgs()) === 1
+			&& $exprNode->name instanceof Name
+			&& in_array(strtolower((string) $exprNode->name), ['count', 'sizeof'], true)
+			&& $constantType instanceof ConstantIntegerType
+		) {
+			if ($context->truthy() || $constantType->getValue() === 0) {
+				$newContext = $context;
+				if ($constantType->getValue() === 0) {
+					$newContext = $newContext->negate();
+				}
+				$argType = $scope->getType($exprNode->getArgs()[0]->value);
+				if ($argType->isArray()->yes()) {
+					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
+					$valueTypes = $this->create($exprNode->getArgs()[0]->value, new NonEmptyArrayType(), $newContext, false, $scope, $rootExpr);
+					return $funcTypes->unionWith($valueTypes);
+				}
+			}
+		}
+
+		if (
+			!$context->null()
+			&& $exprNode instanceof FuncCall
+			&& count($exprNode->getArgs()) === 1
+			&& $exprNode->name instanceof Name
+			&& strtolower((string) $exprNode->name) === 'strlen'
+			&& $constantType instanceof ConstantIntegerType
+		) {
+			if ($context->truthy() || $constantType->getValue() === 0) {
+				$newContext = $context;
+				if ($constantType->getValue() === 0) {
+					$newContext = $newContext->negate();
+				}
+				$argType = $scope->getType($exprNode->getArgs()[0]->value);
+				if ($argType->isString()->yes()) {
+					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
+
+					$accessory = new AccessoryNonEmptyStringType();
+					if ($constantType->getValue() >= 2) {
+						$accessory = new AccessoryNonFalsyStringType();
+					}
+					$valueTypes = $this->create($exprNode->getArgs()[0]->value, $accessory, $newContext, false, $scope, $rootExpr);
+
+					return $funcTypes->unionWith($valueTypes);
+				}
+			}
+
+		}
+
+		if ($constantType instanceof ConstantStringType) {
+			return $this->specifyTypesForConstantStringBinaryExpression($exprNode, $constantType, $context, $scope, $rootExpr);
+		}
+
+		return null;
+	}
+
+	private function specifyTypesForConstantStringBinaryExpression(
+		Expr $exprNode,
+		ConstantStringType $constantType,
+		TypeSpecifierContext $context,
+		Scope $scope,
+		?Expr $rootExpr,
+	): ?SpecifiedTypes
+	{
+		if (
+			$context->truthy()
+			&& $exprNode instanceof FuncCall
+			&& $exprNode->name instanceof Name
+			&& in_array(strtolower($exprNode->name->toString()), ['substr', 'strstr', 'stristr', 'strchr', 'strrchr', 'strtolower', 'strtoupper', 'mb_strtolower', 'mb_strtoupper', 'ucfirst', 'lcfirst', 'ucwords'], true)
+			&& isset($exprNode->getArgs()[0])
+			&& $constantType->getValue() !== ''
+		) {
+			$argType = $scope->getType($exprNode->getArgs()[0]->value);
+
+			if ($argType->isString()->yes()) {
+				if ($constantType->getValue() !== '0') {
+					return $this->create(
+						$exprNode->getArgs()[0]->value,
+						TypeCombinator::intersect($argType, new AccessoryNonFalsyStringType()),
+						$context,
+						false,
+						$scope,
+					);
+				}
+
+				return $this->create(
+					$exprNode->getArgs()[0]->value,
+					TypeCombinator::intersect($argType, new AccessoryNonEmptyStringType()),
+					$context,
+					false,
+					$scope,
+				);
+			}
+		}
+
+		if (
+			$exprNode instanceof FuncCall
+			&& $exprNode->name instanceof Name
+			&& strtolower($exprNode->name->toString()) === 'gettype'
+			&& isset($exprNode->getArgs()[0])
+		) {
+			$type = null;
+			if ($constantType->getValue() === 'string') {
+				$type = new StringType();
+			}
+			if ($constantType->getValue() === 'array') {
+				$type = new ArrayType(new MixedType(), new MixedType());
+			}
+			if ($constantType->getValue() === 'boolean') {
+				$type = new BooleanType();
+			}
+			if ($constantType->getValue() === 'resource' || $constantType->getValue() === 'resource (closed)') {
+				$type = new ResourceType();
+			}
+			if ($constantType->getValue() === 'integer') {
+				$type = new IntegerType();
+			}
+			if ($constantType->getValue() === 'double') {
+				$type = new FloatType();
+			}
+			if ($constantType->getValue() === 'NULL') {
+				$type = new NullType();
+			}
+			if ($constantType->getValue() === 'object') {
+				$type = new ObjectWithoutClassType();
+			}
+
+			if ($type !== null) {
+				return $this->create($exprNode->getArgs()[0]->value, $type, $context, false, $scope, $rootExpr);
+			}
+		}
+
+		if (
+			$context->true()
+			&& $exprNode instanceof FuncCall
+			&& $exprNode->name instanceof Name
+			&& strtolower((string) $exprNode->name) === 'get_parent_class'
+			&& isset($exprNode->getArgs()[0])
+		) {
+			$argType = $scope->getType($exprNode->getArgs()[0]->value);
+			$objectType = new ObjectType($constantType->getValue());
+			$classStringType = new GenericClassStringType($objectType);
+
+			if ($argType->isString()->yes()) {
+				return $this->create(
+					$exprNode->getArgs()[0]->value,
+					$classStringType,
+					$context,
+					false,
+					$scope,
+				);
+			}
+
+			if ((new ObjectWithoutClassType())->isSuperTypeOf($argType)->yes()) {
+				return $this->create(
+					$exprNode->getArgs()[0]->value,
+					$objectType,
+					$context,
+					false,
+					$scope,
+				);
+			}
+
+			return $this->create(
+				$exprNode->getArgs()[0]->value,
+				TypeCombinator::union($objectType, $classStringType),
+				$context,
+				false,
+				$scope,
+			);
+		}
+
+		return null;
 	}
 
 	private function handleDefaultTruthyOrFalseyContext(TypeSpecifierContext $context, ?Expr $rootExpr, Expr $expr, Scope $scope): SpecifiedTypes

@@ -4867,7 +4867,15 @@ class MutatingScope implements Scope
 			$resultTypes[] = TypeCombinator::union(...$integerRanges['b']);
 		}
 
-		return TypeCombinator::union(...$resultTypes, ...$otherTypes);
+		$accessoryTypes = array_map(
+			static fn (Type $type): Type => $type->generalize(GeneralizePrecision::moreSpecific()),
+			TypeUtils::getAccessoryTypes($a),
+		);
+
+		return TypeCombinator::intersect(
+			TypeCombinator::union(...$resultTypes, ...$otherTypes),
+			...$accessoryTypes,
+		);
 	}
 
 	private static function getArrayDepth(ArrayType $type): int

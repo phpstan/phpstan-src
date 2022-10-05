@@ -6,7 +6,6 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BenevolentUnionType;
-use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\MixedType;
@@ -98,7 +97,7 @@ class RuleLevelHelper
 		}
 
 		$accepts = $acceptingType->accepts($acceptedType, $strictTypes);
-		if (!$accepts->yes() && $acceptingType instanceof UnionType && !$acceptedType instanceof CompoundType) {
+		if (!$accepts->yes() && $acceptingType instanceof UnionType) {
 			foreach ($acceptingType->getTypes() as $innerType) {
 				if (self::accepts($innerType, $acceptedType, $strictTypes)) {
 					return true;

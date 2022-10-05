@@ -9,8 +9,8 @@ class FooPHP7
 {
 
 	function foo(int ...$foo): void {
-		assertType('array<int, int>', $foo);
-		assertNativeType('array<int, int>', $foo);
+		assertType('list<int>', $foo);
+		assertNativeType('list<int>', $foo);
 	}
 
 }

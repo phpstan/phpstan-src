@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "13d44b517cc55e8805fdd6ae1e869f46",
+    "content-hash": "3d3082c5ffdbcf9f81708ce44baa59e7",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2038,16 +2038,16 @@
         },
         {
             "name": "ondrejmirtes/better-reflection",
-            "version": "dev-6.1.x-opti",
+            "version": "6.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-                "reference": "1884b903900511c19fe1b08048f20a5cf89a89b5"
+                "reference": "d67d19e9d4a991f2a121e37b662ea67332798e04"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/1884b903900511c19fe1b08048f20a5cf89a89b5",
-                "reference": "1884b903900511c19fe1b08048f20a5cf89a89b5",
+                "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/d67d19e9d4a991f2a121e37b662ea67332798e04",
+                "reference": "d67d19e9d4a991f2a121e37b662ea67332798e04",
                 "shasum": ""
             },
             "require": {
@@ -2103,9 +2103,9 @@
             ],
             "description": "Better Reflection - an improved code reflection API",
             "support": {
-                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.1.x-opti"
+                "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.1.0"
             },
-            "time": "2022-10-04T13:20:44+00:00"
+            "time": "2022-10-05T07:40:11+00:00"
         },
         {
             "name": "phpstan/php-8-stubs",
@@ -6942,8 +6942,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "jetbrains/phpstorm-stubs": 20,
-        "ondrejmirtes/better-reflection": 20
+        "jetbrains/phpstorm-stubs": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

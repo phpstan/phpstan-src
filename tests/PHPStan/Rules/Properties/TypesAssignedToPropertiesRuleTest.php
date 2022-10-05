@@ -476,4 +476,31 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testIntegerRangesAndConstants(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/int-ranges-and-constants.php'], [
+			[
+				'Property IntegerRangesAndConstants\HelloWorld::$i (0|1|3) does not accept int<0, 3>.',
+				17,
+			],
+			[
+				'Property IntegerRangesAndConstants\HelloWorld::$x (int<0, 3>) does not accept 0|1|2|3|string.',
+				42,
+			],
+			[
+				'Property IntegerRangesAndConstants\HelloWorld::$x (int<0, 3>) does not accept 0|1|2|3|bool.',
+				43,
+			],
+			[
+				'Property IntegerRangesAndConstants\HelloWorld::$x (int<0, 3>) does not accept 0|1|3|bool.',
+				44,
+			],
+			[
+				'Property IntegerRangesAndConstants\HelloWorld::$x (int<0, 3>) does not accept 0|1|3|4.',
+				45,
+			],
+		]);
+	}
+
 }

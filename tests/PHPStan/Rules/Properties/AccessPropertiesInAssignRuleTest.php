@@ -80,4 +80,9 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug4492(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4492.php'], []);
+	}
+
 }

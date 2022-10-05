@@ -16,6 +16,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
 
@@ -102,10 +103,31 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 	private function processArrayType(string $functionName, Type $argType): Type
 	{
-		if ($argType instanceof UnionType) {
+		$constArrayTypes = TypeUtils::getOldConstantArrays($argType);
+		if (count($constArrayTypes) > 0) {
 			$resultTypes = [];
-			foreach ($argType->getTypes() as $innerType) {
-				$resultTypes[] = $this->processArrayType($functionName, $innerType);
+			foreach ($constArrayTypes as $constArrayType) {
+				$isIterable = $constArrayType->isIterableAtLeastOnce();
+				if ($isIterable->no()) {
+					$resultTypes[] = new ConstantBooleanType(false);
+					continue;
+				}
+				$iterableValueType = $constArrayType->getIterableValueType();
+				$argumentTypes = [];
+				if (!$isIterable->yes()) {
+					$argumentTypes[] = new ConstantBooleanType(false);
+				}
+
+				if ($iterableValueType instanceof UnionType) {
+					$argumentTypes = [];
+					foreach ($iterableValueType->getTypes() as $innerType) {
+						$argumentTypes[] = $innerType;
+					}
+				} else {
+					$argumentTypes[] = $iterableValueType;
+				}
+
+				$resultTypes[] = $this->processType($functionName, $argumentTypes);
 			}
 
 			return TypeCombinator::union(...$resultTypes);
@@ -120,13 +142,8 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		if (!$isIterable->yes()) {
 			$argumentTypes[] = new ConstantBooleanType(false);
 		}
-		if ($argType instanceof ConstantArrayType && $iterableValueType instanceof UnionType) {
-			foreach ($iterableValueType->getTypes() as $innerType) {
-				$argumentTypes[] = $innerType;
-			}
-		} else {
-			$argumentTypes[] = $iterableValueType;
-		}
+
+		$argumentTypes[] = $iterableValueType;
 
 		return $this->processType($functionName, $argumentTypes);
 	}

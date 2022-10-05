@@ -2,6 +2,7 @@
 
 namespace NoNamedArguments;
 
+use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 
 /**
@@ -9,7 +10,8 @@ use function PHPStan\Testing\assertType;
  */
 function noNamedArgumentsInFunction(float ...$args)
 {
-	assertType('array<int, float>', $args);
+	assertType('list<float>', $args);
+	assertNativeType('list<float>', $args);
 }
 
 class Baz extends Foo implements Bar
@@ -19,17 +21,20 @@ class Baz extends Foo implements Bar
 	 */
 	public function noNamedArgumentsInMethod(float ...$args)
 	{
-		assertType('array<int, float>', $args);
+		assertType('list<float>', $args);
+		assertNativeType('list<float>', $args);
 	}
 
 	public function noNamedArgumentsInParent(float ...$args)
 	{
-		assertType('array<int, float>', $args);
+		assertType('list<float>', $args);
+		assertNativeType('list<float>', $args);
 	}
 
 	public function noNamedArgumentsInInterface(float ...$args)
 	{
-		assertType('array<int, float>', $args);
+		assertType('list<float>', $args);
+		assertNativeType('list<float>', $args);
 	}
 }
 

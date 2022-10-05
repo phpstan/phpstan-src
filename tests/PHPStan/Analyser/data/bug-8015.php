@@ -16,15 +16,15 @@ function extractParameters(array $items): array
 			$config['things'] = [];
 			assertType('array{}', $config['things']);
 			foreach ($item as $thing) {
-				assertType('array<int, string>', $config['things']);
+				assertType('list<string>', $config['things']);
 				$config['things'][] = (string) $thing;
 			}
-			assertType('array<int, string>', $config['things']);
+			assertType('list<string>', $config['things']);
 		} else {
 			$config[$itemName] = (string) $item;
 		}
 	}
-	assertType('array<int, string>|string', $config['things']);
+	assertType('list<string>|string', $config['things']);
 
 	return $config;
 }

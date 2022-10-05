@@ -2675,7 +2675,7 @@ class MutatingScope implements Scope
 				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()) {
 					$parameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $parameterType);
 				} else {
-					$parameterType = new ArrayType(new IntegerType(), $parameterType);
+					$parameterType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $parameterType));
 				}
 			}
 			$variableTypes[$parameter->getName()] = VariableTypeHolder::createYes($parameterType);
@@ -2685,7 +2685,7 @@ class MutatingScope implements Scope
 				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()) {
 					$nativeParameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $nativeParameterType);
 				} else {
-					$nativeParameterType = new ArrayType(new IntegerType(), $nativeParameterType);
+					$nativeParameterType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $nativeParameterType));
 				}
 			}
 			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $nativeParameterType;

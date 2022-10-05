@@ -538,7 +538,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$barOrNull' => '~null',
 				],
 				[
-					'isset($stringOrNull, $barOrNull)' => self::SURE_NOT_TRUTHY,
+					'$stringOrNull' => self::SURE_NOT_TRUTHY,
+					'$barOrNull' => self::SURE_NOT_TRUTHY,
 				],
 			],
 			[
@@ -546,7 +547,9 @@ class TypeSpecifierTest extends PHPStanTestCase
 				[
 					'$stringOrNull' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
-				[],
+				[
+					'$stringOrNull' => '\'\'|\'0\'|null',
+				],
 			],
 			[
 				new Expr\BinaryOp\Identical(
@@ -560,7 +563,9 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Expr\Empty_(new Variable('array')),
-				[],
+				[
+					'$array' => 'array{}',
+				],
 				[
 					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
@@ -570,7 +575,9 @@ class TypeSpecifierTest extends PHPStanTestCase
 				[
 					'$array' => '~0|0.0|\'\'|\'0\'|array{}|false|null',
 				],
-				[],
+				[
+					'$array' => 'array{}',
+				],
 			],
 			[
 				new FuncCall(new Name('count'), [
@@ -668,9 +675,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$foo' => 'object&hasProperty(bar) & ~null',
 					'$foo->bar' => '~null',
 				],
-				[
-					'isset($foo->bar)' => self::SURE_NOT_TRUTHY,
-				],
+				[],
 			],
 			[
 				new Expr\Isset_(
@@ -681,9 +686,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 				[
 					'Foo::$bar' => '~null',
 				],
-				[
-					'isset(Foo::$bar)' => self::SURE_NOT_TRUTHY,
-				],
+				[],
 			],
 			[
 				new Identical(

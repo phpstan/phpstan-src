@@ -1951,7 +1951,7 @@ class MutatingScope implements Scope
 	/**
 	 * @param callable(Type): ?bool $typeCallback
 	 */
-	private function issetCheck(Expr $expr, callable $typeCallback, ?bool $result = null): ?bool
+	public function issetCheck(Expr $expr, callable $typeCallback, ?bool $result = null): ?bool
 	{
 		// mirrored in PHPStan\Rules\IssetCheck
 		if ($expr instanceof Node\Expr\Variable && is_string($expr->name)) {
@@ -1991,7 +1991,7 @@ class MutatingScope implements Scope
 
 			// If offset is cannot be null, store this error message and see if one of the earlier offsets is.
 			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
-			if ($hasOffsetValue->yes() || $this->isSpecified($expr)) {
+			if ($hasOffsetValue->yes()) {
 				$result = $typeCallback($type->getOffsetValueType($dimType));
 
 				if ($result !== null) {

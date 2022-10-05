@@ -42,26 +42,9 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		if (count($functionCall->getArgs()) === 1) {
 			$argType = $scope->getType($functionCall->getArgs()[0]->value);
 			if ($argType->isArray()->yes()) {
-				$isIterable = $argType->isIterableAtLeastOnce();
-				if ($isIterable->no()) {
-					return new ConstantBooleanType(false);
-				}
-				$iterableValueType = $argType->getIterableValueType();
-				$argumentTypes = [];
-				if (!$isIterable->yes()) {
-					$argumentTypes[] = new ConstantBooleanType(false);
-				}
-				if ($iterableValueType instanceof UnionType && $argType instanceof ConstantArrayType) {
-					foreach ($iterableValueType->getTypes() as $innerType) {
-						$argumentTypes[] = $innerType;
-					}
-				} else {
-					$argumentTypes[] = $iterableValueType;
-				}
-
-				return $this->processType(
+				return $this->processArrayType(
 					$functionReflection->getName(),
-					$argumentTypes,
+					$argType,
 				);
 			}
 
@@ -115,6 +98,37 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 			$functionName,
 			$argumentTypes,
 		);
+	}
+
+	private function processArrayType(string $functionName, Type $argType): Type
+	{
+		if ($argType instanceof UnionType) {
+			$resultTypes = [];
+			foreach ($argType->getTypes() as $innerType) {
+				$resultTypes[] = $this->processArrayType($functionName, $innerType);
+			}
+
+			return TypeCombinator::union(...$resultTypes);
+		}
+
+		$isIterable = $argType->isIterableAtLeastOnce();
+		if ($isIterable->no()) {
+			return new ConstantBooleanType(false);
+		}
+		$iterableValueType = $argType->getIterableValueType();
+		$argumentTypes = [];
+		if (!$isIterable->yes()) {
+			$argumentTypes[] = new ConstantBooleanType(false);
+		}
+		if ($argType instanceof ConstantArrayType && $iterableValueType instanceof UnionType) {
+			foreach ($iterableValueType->getTypes() as $innerType) {
+				$argumentTypes[] = $innerType;
+			}
+		} else {
+			$argumentTypes[] = $iterableValueType;
+		}
+
+		return $this->processType($functionName, $argumentTypes);
 	}
 
 	/**

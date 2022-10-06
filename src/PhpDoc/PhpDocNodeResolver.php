@@ -36,6 +36,7 @@ use function array_merge;
 use function array_reverse;
 use function count;
 use function in_array;
+use function method_exists;
 use function strpos;
 use function substr;
 
@@ -454,6 +455,10 @@ class PhpDocNodeResolver
 
 	public function resolveSelfOutTypeTag(PhpDocNode $phpDocNode, NameScope $nameScope): ?SelfOutTypeTag
 	{
+		if (!method_exists($phpDocNode, 'getSelfOutTypeTagValues')) {
+			return null;
+		}
+
 		foreach (['@phpstan-this-out', '@phpstan-self-out', '@psalm-this-out', '@psalm-self-out'] as $tagName) {
 			foreach ($phpDocNode->getSelfOutTypeTagValues($tagName) as $selfOutTypeTagValue) {
 				$type = $this->typeNodeResolver->resolve($selfOutTypeTagValue->type, $nameScope);

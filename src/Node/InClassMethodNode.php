@@ -3,21 +3,21 @@
 namespace PHPStan\Node;
 
 use PhpParser\Node;
-use PHPStan\Reflection\MethodReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 
 /** @api */
 class InClassMethodNode extends Node\Stmt implements VirtualNode
 {
 
 	public function __construct(
-		private MethodReflection $methodReflection,
+		private ExtendedMethodReflection $methodReflection,
 		private Node\Stmt\ClassMethod $originalNode,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());
 	}
 
-	public function getMethodReflection(): MethodReflection
+	public function getMethodReflection(): ExtendedMethodReflection
 	{
 		return $this->methodReflection;
 	}

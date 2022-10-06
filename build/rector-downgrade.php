@@ -28,6 +28,7 @@ return static function (RectorConfig $config): void {
 	$config->paths($cache->restore());
 	$config->phpVersion($targetPhpVersionId);
 	$config->skip(RectorCache::SKIP_PATHS);
+	$config->disableParallel();
 
 	if ($targetPhpVersionId < 80100) {
 		$config->rule(DowngradeReadonlyPropertyRector::class);

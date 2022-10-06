@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -25,11 +24,7 @@ class IncompatibleSelfOutTypeRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$method = $scope->getFunction();
-		if ($method === null) {
-			throw new ShouldNotHappenException();
-		}
-
+		$method = $node->getMethodReflection();
 		$selfOutType = $method->getSelfOutType();
 		if ($selfOutType === null) {
 			return [];

@@ -2,7 +2,6 @@
 
 namespace PHPStan\Internal;
 
-use Composer\InstalledVersions;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use PHPStan\File\CouldNotReadFileException;
@@ -17,6 +16,8 @@ use function trim;
 
 final class ComposerHelper
 {
+
+	private static ?string $phpstanVersion = null;
 
 	/** @return array<string, mixed> */
 	public static function getComposerConfig(string $root): ?array
@@ -57,14 +58,22 @@ final class ComposerHelper
 
 	public static function getPhpStanVersion(): string
 	{
-		$rootPackage = InstalledVersions::getRootPackage();
+		if (self::$phpstanVersion !== null) {
+			return self::$phpstanVersion;
+		}
+
+		$installed = require __DIR__ . '/../../vendor/composer/installed.php';
+		$rootPackage = $installed['root'] ?? null;
+		if ($rootPackage === null) {
+			return self::$phpstanVersion = 'Unknown version';
+		}
 
 		if (preg_match('/[^v\d.]/', $rootPackage['pretty_version']) === 0) {
 			// Handles tagged versions, see https://github.com/Jean85/pretty-package-versions/blob/2.0.5/src/Version.php#L31
-			return $rootPackage['pretty_version'];
+			return self::$phpstanVersion = $rootPackage['pretty_version'];
 		}
 
-		return $rootPackage['pretty_version'] . '@' . substr((string) $rootPackage['reference'], 0, 7);
+		return self::$phpstanVersion = $rootPackage['pretty_version'] . '@' . substr((string) $rootPackage['reference'], 0, 7);
 	}
 
 }

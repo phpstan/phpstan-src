@@ -107,6 +107,7 @@ use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
@@ -527,7 +528,7 @@ class NodeScopeResolver
 
 			if ($stmt->getAttribute('virtual', false) === false) {
 				$methodReflection = $methodScope->getFunction();
-				if (!$methodReflection instanceof MethodReflection) {
+				if (!$methodReflection instanceof ExtendedMethodReflection) {
 					throw new ShouldNotHappenException();
 				}
 				$nodeCallback(new InClassMethodNode($methodReflection, $stmt), $methodScope);

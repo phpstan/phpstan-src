@@ -35,6 +35,7 @@ rules:
 	- PHPStan\Rules\PhpDoc\MethodConditionalReturnTypeRule
 	- PHPStan\Rules\PhpDoc\FunctionAssertRule
 	- PHPStan\Rules\PhpDoc\MethodAssertRule
+	- PHPStan\Rules\PhpDoc\IncompatibleSelfOutTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatibleClassConstantPhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatiblePhpDocTypeRule
 	- PHPStan\Rules\PhpDoc\IncompatiblePropertyPhpDocTypeRule

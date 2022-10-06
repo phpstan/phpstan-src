@@ -144,6 +144,11 @@ parameters:
 			path: src/PhpDoc/PhpDocBlock.php
 
 		-
+			message: "#^Call to function method_exists\\(\\) with PHPStan\\\\PhpDocParser\\\\Ast\\\\PhpDoc\\\\PhpDocNode and 'getSelfOutTypeTagVa…' will always evaluate to true\\.$#"
+			count: 1
+			path: src/PhpDoc/PhpDocNodeResolver.php
+
+		-
 			message: "#^Method PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock\\:\\:getNameScope\\(\\) should return PHPStan\\\\Analyser\\\\NameScope but returns PHPStan\\\\Analyser\\\\NameScope\\|null\\.$#"
 			count: 1
 			path: src/PhpDoc/ResolvedPhpDocBlock.php

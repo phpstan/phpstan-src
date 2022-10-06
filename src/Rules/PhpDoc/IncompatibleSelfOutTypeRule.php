@@ -10,6 +10,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /**
  * @implements Rule<InClassMethodNode>

@@ -3933,7 +3933,7 @@ return [
 'header' => ['void', 'header'=>'string', 'replace='=>'bool', 'http_response_code='=>'int'],
 'header_register_callback' => ['bool', 'callback'=>'callable'],
 'header_remove' => ['void', 'name='=>'string'],
-'headers_list' => ['list<string>'],
+'headers_list' => ['list<non-empty-string>'],
 'headers_sent' => ['bool', '&w_file='=>'string', '&w_line='=>'int'],
 'hebrev' => ['string', 'str'=>'string', 'max_chars_per_line='=>'int'],
 'hebrevc' => ['string', 'str'=>'string', 'max_chars_per_line='=>'int'],

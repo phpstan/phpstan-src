@@ -955,6 +955,54 @@ class TypeSpecifierTest extends PHPStanTestCase
 				],
 			],
 			[
+				new Expr\BinaryOp\BooleanOr(
+					new FuncCall(new Name('key_exists'), [
+						new Arg(new String_('foo')),
+						new Arg(new Variable('array')),
+					]),
+					new FuncCall(new Name('key_exists'), [
+						new Arg(new String_('bar')),
+						new Arg(new Variable('array')),
+					]),
+				),
+				[
+					'$array' => 'array',
+				],
+				[
+					'$array' => '~hasOffset(\'bar\')|hasOffset(\'foo\')',
+				],
+			],
+			[
+				new BooleanNot(new Expr\BinaryOp\BooleanOr(
+					new FuncCall(new Name('key_exists'), [
+						new Arg(new String_('foo')),
+						new Arg(new Variable('array')),
+					]),
+					new FuncCall(new Name('key_exists'), [
+						new Arg(new String_('bar')),
+						new Arg(new Variable('array')),
+					]),
+				)),
+				[
+					'$array' => '~hasOffset(\'bar\')|hasOffset(\'foo\')',
+				],
+				[
+					'$array' => 'array',
+				],
+			],
+			[
+				new FuncCall(new Name('key_exists'), [
+					new Arg(new String_('foo')),
+					new Arg(new Variable('array')),
+				]),
+				[
+					'$array' => 'array&hasOffset(\'foo\')',
+				],
+				[
+					'$array' => '~hasOffset(\'foo\')',
+				],
+			],
+			[
 				new FuncCall(new Name('is_subclass_of'), [
 					new Arg(new Variable('string')),
 					new Arg(new Variable('stringOrNull')),

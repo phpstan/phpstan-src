@@ -21,6 +21,7 @@ use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeCombinator;
 use function count;
+use function in_array;
 
 class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -38,7 +39,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		TypeSpecifierContext $context,
 	): bool
 	{
-		return $functionReflection->getName() === 'array_key_exists'
+		return in_array($functionReflection->getName(), ['array_key_exists', 'key_exists'], true)
 			&& !$context->null();
 	}
 

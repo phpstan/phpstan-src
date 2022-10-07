@@ -39,6 +39,7 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 	{
 		return in_array($functionReflection->getName(), [
 			'array_key_exists',
+			'key_exists',
 			'in_array',
 			'is_numeric',
 			'is_int',

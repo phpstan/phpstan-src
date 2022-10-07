@@ -329,15 +329,7 @@ class TypeSpecifier
 					&& isset($exprNode->getArgs()[0])
 					&& $constantType instanceof ConstantStringType
 				) {
-					return $this->specifyTypesInCondition(
-						$scope,
-						new Instanceof_(
-							$exprNode->getArgs()[0]->value,
-							new Name($constantType->getValue()),
-						),
-						$context,
-						$rootExpr,
-					);
+					return $this->specifyTypesInCondition($scope, new Expr\BinaryOp\Identical($expr->left, $expr->right), $context, $rootExpr);
 				}
 			}
 
@@ -1040,6 +1032,23 @@ class TypeSpecifier
 					$scope,
 				);
 			}
+		}
+
+		if (
+			$exprNode instanceof FuncCall
+			&& $exprNode->name instanceof Name
+			&& strtolower($exprNode->name->toString()) === 'get_class'
+			&& isset($exprNode->getArgs()[0])
+		) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				new Instanceof_(
+					$exprNode->getArgs()[0]->value,
+					new Name($constantType->getValue()),
+				),
+				$context,
+				$rootExpr,
+			);
 		}
 
 		if (

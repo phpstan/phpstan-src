@@ -211,11 +211,7 @@ class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			if ($this->treatPhpDocTypesAsCertain) {
-				$argumentType = $scope->getType($sureType[0]);
-			} else {
-				$argumentType = $scope->getNativeType($sureType[0]);
-			}
+			$argumentType = $scope->getType($sureType[0]);
 
 			/** @var Type $resultType */
 			$resultType = $sureType[1];
@@ -229,11 +225,7 @@ class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			if ($this->treatPhpDocTypesAsCertain) {
-				$argumentType = $scope->getType($sureNotType[0]);
-			} else {
-				$argumentType = $scope->getNativeType($sureNotType[0]);
-			}
+			$argumentType = $scope->getType($sureNotType[0]);
 
 			/** @var Type $resultType */
 			$resultType = $sureNotType[1];

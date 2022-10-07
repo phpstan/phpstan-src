@@ -14,7 +14,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
-use function count;
 use function sprintf;
 
 class NonexistentOffsetInArrayDimFetchCheck
@@ -45,19 +44,7 @@ class NonexistentOffsetInArrayDimFetchCheck
 			return $typeResult->getUnknownClassErrors();
 		}
 
-		$hasOffsetValueType = $type->hasOffsetValueType($dimType);
-		$report = $hasOffsetValueType->no();
-		if ($hasOffsetValueType->maybe()) {
-			$constantArrays = $type->getConstantArrays();
-			if (count($constantArrays) > 0) {
-				foreach ($constantArrays as $constantArray) {
-					if ($constantArray->hasOffsetValueType($dimType)->no()) {
-						$report = true;
-						break;
-					}
-				}
-			}
-		}
+		$report = $type->hasOffsetValueType($dimType)->no();
 
 		if (!$report && $this->reportMaybes) {
 			if ($type instanceof BenevolentUnionType) {
@@ -76,7 +63,7 @@ class NonexistentOffsetInArrayDimFetchCheck
 				foreach (TypeUtils::flattenTypes($dimType) as $innerDimType) {
 					if ($innerType->hasOffsetValueType($innerDimType)->no()) {
 						$report = true;
-						break;
+						break 2;
 					}
 				}
 			}

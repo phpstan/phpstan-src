@@ -20,8 +20,12 @@ class IncompatibleSelfOutTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/incompatible-self-out-type.php'], [
 			[
-				'Out type int is not compatible with IncompatibleSelfOutType\A.',
+				'Self-out type int of method IncompatibleSelfOutType\A::three is not subtype of IncompatibleSelfOutType\A.',
 				23,
+			],
+			[
+				'Self-out type IncompatibleSelfOutType\A|null of method IncompatibleSelfOutType\A::four is not subtype of IncompatibleSelfOutType\A.',
+				28,
 			],
 		]);
 	}

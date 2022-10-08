@@ -44,6 +44,8 @@ class InvalidPHPStanDocTagRule implements Rule
 		'@phpstan-assert',
 		'@phpstan-assert-if-true',
 		'@phpstan-assert-if-false',
+		'@phpstan-self-out',
+		'@phpstan-this-out',
 	];
 
 	public function __construct(private Lexer $phpDocLexer, private PhpDocParser $phpDocParser)

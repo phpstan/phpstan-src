@@ -21,4 +21,9 @@ interface A
 	 * @phpstan-self-out int
 	 */
 	public function three();
+
+	/**
+	 * @phpstan-self-out self|null
+	 */
+	public function four();
 }

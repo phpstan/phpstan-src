@@ -52,6 +52,19 @@ class a {
     }
 }
 
+/**
+ * @template T
+ * @extends a<T>
+ */
+class b extends a {
+	/**
+	 * @param T $data
+	 */
+	public function __construct($data) {
+		parent::__construct($data);
+	}
+}
+
 function () {
 	$i = new a(123);
 	// OK - $i is a<123>
@@ -67,4 +80,12 @@ function () {
 	// IfThisIsMismatch - Class is not a<int> as required
 	assertType('SelfOut\\a<string>', $i);
 	assertType('*NEVER*', $i->test());
+};
+
+function () {
+	$i = new b(123);
+	assertType('SelfOut\\b<int>', $i);
+
+	$i->addData(321);
+	assertType('SelfOut\\a<int>', $i);
 };

@@ -86,25 +86,6 @@ class EmptyRuleTest extends RuleTestCase
 				12,
 			],
 			[
-				'Variable $a in empty() always exists and is always falsy.',
-				21,
-			],
-			[
-				'Variable $a in empty() always exists and is always falsy.',
-				30,
-			],
-		]);
-	}
-
-	public function testBug6974PhpDocTypeAsCertain(): void
-	{
-		$this->strictUnnecessaryNullsafePropertyFetch = false;
-		$this->analyse([__DIR__ . '/data/bug-6974.php'], [
-			[
-				'Variable $a in empty() always exists and is always falsy.',
-				12,
-			],
-			[
 				'Variable $a in empty() always exists and is not falsy.',
 				30,
 			],

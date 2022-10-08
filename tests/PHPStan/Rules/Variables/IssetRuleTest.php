@@ -23,7 +23,6 @@ class IssetRuleTest extends RuleTestCase
 			new PropertyDescriptor(),
 			new PropertyReflectionFinder(),
 			true,
-			in,
 			$this->strictUnnecessaryNullsafePropertyFetch,
 		));
 	}

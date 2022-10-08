@@ -19,8 +19,6 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeHelper(
 				$this->createReflectionProvider(),
 				$this->getTypeSpecifier(),
-				[],
-				$this->treatPhpDocTypesAsCertain,
 			),
 			true,
 			$this->treatPhpDocTypesAsCertain,

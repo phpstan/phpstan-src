@@ -33,10 +33,6 @@ use function strtolower;
 
 class ImpossibleCheckTypeHelper
 {
-
-	/**
-	 * @param string[] $universalObjectCratesClasses
-	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private TypeSpecifier $typeSpecifier,

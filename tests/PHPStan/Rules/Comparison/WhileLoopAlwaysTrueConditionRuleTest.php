@@ -20,10 +20,7 @@ class WhileLoopAlwaysTrueConditionRuleTest extends RuleTestCase
 				new ImpossibleCheckTypeHelper(
 					$this->createReflectionProvider(),
 					$this->getTypeSpecifier(),
-					[],
-					$this->treatPhpDocTypesAsCertain,
 				),
-				$this->treatPhpDocTypesAsCertain,
 			),
 			$this->treatPhpDocTypesAsCertain,
 		);

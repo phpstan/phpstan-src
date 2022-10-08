@@ -221,7 +221,12 @@ class MatchExpressionRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-7622.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-7622.php'], [
+			[
+				'Match expression does not handle remaining value: string',
+				21
+			]
+		]);
 	}
 
 	public function testBug7698(): void

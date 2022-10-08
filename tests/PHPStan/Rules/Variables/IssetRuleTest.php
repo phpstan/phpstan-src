@@ -129,10 +129,6 @@ class IssetRuleTest extends RuleTestCase
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/isset.php'], [
 			[
-				'Property IssetRule\FooCoalesce::$string (string) in isset() is not nullable.',
-				32,
-			],
-			[
 				'Variable $scalar in isset() always exists and is not nullable.',
 				41,
 			],

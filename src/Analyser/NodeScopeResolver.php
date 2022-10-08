@@ -3415,12 +3415,15 @@ class NodeScopeResolver
 
 			// 2. eval dimensions
 			$offsetTypes = [];
+			$offsetNativeTypes = [];
 			foreach (array_reverse($dimExprStack) as $dimExpr) {
 				if ($dimExpr === null) {
 					$offsetTypes[] = null;
+					$offsetNativeTypes[] = null;
 
 				} else {
 					$offsetTypes[] = $scope->getType($dimExpr);
+					$offsetNativeTypes[] = $scope->getNativeType($dimExpr);
 
 					if ($enterExpressionAssign) {
 						$scope->enterExpressionAssign($dimExpr);
@@ -3437,7 +3440,9 @@ class NodeScopeResolver
 			}
 
 			$valueToWrite = $scope->getType($assignedExpr);
+			$nativeValueToWrite = $scope->getNativeType($assignedExpr);
 			$originalValueToWrite = $valueToWrite;
+			$originalNativeValueToWrite = $valueToWrite;
 
 			// 3. eval assigned expr
 			$result = $processExprCallback($scope);
@@ -3446,13 +3451,19 @@ class NodeScopeResolver
 			$scope = $result->getScope();
 
 			$varType = $scope->getType($var);
+			$varNativeType = $scope->getNativeType($var);
 
 			// 4. compose types
 			if ($varType instanceof ErrorType) {
 				$varType = new ConstantArrayType([], []);
 			}
+			if ($varNativeType instanceof ErrorType) {
+				$varNativeType = new ConstantArrayType([], []);
+			}
 			$offsetValueType = $varType;
+			$offsetNativeValueType = $varNativeType;
 			$offsetValueTypeStack = [$offsetValueType];
+			$offsetValueNativeTypeStack = [$offsetNativeValueType];
 			foreach (array_slice($offsetTypes, 0, -1) as $offsetType) {
 				if ($offsetType === null) {
 					$offsetValueType = new ConstantArrayType([], []);
@@ -3465,6 +3476,19 @@ class NodeScopeResolver
 				}
 
 				$offsetValueTypeStack[] = $offsetValueType;
+			}
+			foreach (array_slice($offsetNativeTypes, 0, -1) as $offsetNativeType) {
+				if ($offsetNativeType === null) {
+					$offsetNativeValueType = new ConstantArrayType([], []);
+
+				} else {
+					$offsetNativeValueType = $offsetNativeValueType->getOffsetValueType($offsetNativeType);
+					if ($offsetNativeValueType instanceof ErrorType) {
+						$offsetNativeValueType = new ConstantArrayType([], []);
+					}
+				}
+
+				$offsetValueNativeTypeStack[] = $offsetNativeValueType;
 			}
 
 			foreach (array_reverse($offsetTypes) as $i => $offsetType) {
@@ -3483,11 +3507,26 @@ class NodeScopeResolver
 				}
 				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $i === 0);
 			}
+			foreach (array_reverse($offsetNativeTypes) as $i => $offsetNativeType) {
+				/** @var Type $offsetNativeValueType */
+				$offsetNativeValueType = array_pop($offsetValueNativeTypeStack);
+				if (!$offsetNativeValueType instanceof MixedType) {
+					$types = [
+						new ArrayType(new MixedType(), new MixedType()),
+						new ObjectType(ArrayAccess::class),
+						new NullType(),
+					];
+					if ($offsetNativeType !== null && (new IntegerType())->isSuperTypeOf($offsetNativeType)->yes()) {
+						$types[] = new StringType();
+					}
+					$offsetNativeValueType = TypeCombinator::intersect($offsetNativeValueType, TypeCombinator::union(...$types));
+				}
+				$nativeValueToWrite = $offsetNativeValueType->setOffsetValueType($offsetNativeType, $nativeValueToWrite, $i === 0);
+			}
 
 			if ($varType->isArray()->yes() || !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
 				if ($var instanceof Variable && is_string($var->name)) {
-					// TODO logic of valueToWrite should be duplicated for native type
-					$scope = $scope->assignVariable($var->name, $valueToWrite, new MixedType());
+					$scope = $scope->assignVariable($var->name, $valueToWrite, $nativeValueToWrite);
 				} else {
 					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
 						$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
@@ -3495,7 +3534,7 @@ class NodeScopeResolver
 					$scope = $scope->assignExpression(
 						$var,
 						$valueToWrite,
-						new MixedType(),
+						$nativeValueToWrite,
 					);
 				}
 
@@ -3505,7 +3544,7 @@ class NodeScopeResolver
 						$scope = $scope->assignExpression(
 							$originalVar,
 							$originalValueToWrite,
-							new MixedType(),
+							$originalNativeValueToWrite,
 						);
 					}
 				}

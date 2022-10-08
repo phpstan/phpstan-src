@@ -894,14 +894,9 @@ services:
 
 	-
 		class: PHPStan\Rules\Comparison\ConstantConditionRuleHelper
-		arguments:
-			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 
 	-
 		class: PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper
-		arguments:
-			universalObjectCratesClasses: %universalObjectCratesClasses%
-			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 
 	-
 		class: PHPStan\Rules\Exceptions\DefaultExceptionTypeResolver
@@ -975,7 +970,6 @@ services:
 		class: PHPStan\Rules\IssetCheck
 		arguments:
 			checkAdvancedIsset: %checkAdvancedIsset%
-			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			strictUnnecessaryNullsafePropertyFetch: %featureToggles.strictUnnecessaryNullsafePropertyFetch%
 
 	-

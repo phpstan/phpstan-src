@@ -39,22 +39,20 @@ class ImpossibleCheckTypeHelper
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
-		private TypeSpecifier      $typeSpecifier,
-		private array              $universalObjectCratesClasses,
-		private bool               $treatPhpDocTypesAsCertain,
+		private TypeSpecifier $typeSpecifier,
 	)
 	{
 	}
 
 	public function findSpecifiedType(
 		Scope $scope,
-		Expr  $node,
+		Expr $node,
 	): ?bool
 	{
 		if ($node instanceof FuncCall) {
 			$argsCount = count($node->getArgs());
 			if ($node->name instanceof Node\Name) {
-				$functionName = strtolower((string)$node->name);
+				$functionName = strtolower((string) $node->name);
 				if ($functionName === 'assert' && $argsCount >= 1) {
 					$assertValue = $scope->getType($node->getArgs()[0]->value)->toBoolean();
 					if (!$assertValue instanceof ConstantBooleanType) {
@@ -278,7 +276,7 @@ class ImpossibleCheckTypeHelper
 			return '';
 		}
 
-		$descriptions = array_map(static fn(Arg $arg): string => $scope->getType($arg->value)->describe(VerbosityLevel::value()), $args);
+		$descriptions = array_map(static fn (Arg $arg): string => $scope->getType($arg->value)->describe(VerbosityLevel::value()), $args);
 
 		if (count($descriptions) < 3) {
 			return sprintf(' with %s', implode(' and ', $descriptions));
@@ -292,4 +290,5 @@ class ImpossibleCheckTypeHelper
 			$lastDescription,
 		);
 	}
+
 }

@@ -13,7 +13,6 @@ class ConstantConditionRuleHelper
 
 	public function __construct(
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
-		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
 	}

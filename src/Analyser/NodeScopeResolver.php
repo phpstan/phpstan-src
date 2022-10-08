@@ -1388,7 +1388,7 @@ class NodeScopeResolver
 					continue;
 				}
 
-				$scope = $scope->assignVariable($var->name, new MixedType());
+				$scope = $scope->assignVariable($var->name, new MixedType(), new MixedType());
 				$vars[] = $var->name;
 			}
 			$scope = $this->processVarAnnotation($scope, $vars, $stmt);
@@ -1419,7 +1419,7 @@ class NodeScopeResolver
 			$scope = $scope->enterExpressionAssign($stmt->var);
 			$this->processExprNode($stmt->var, $scope, $nodeCallback, ExpressionContext::createDeep());
 			$scope = $scope->exitExpressionAssign($stmt->var);
-			$scope = $scope->assignVariable($stmt->var->name, new MixedType());
+			$scope = $scope->assignVariable($stmt->var->name, new MixedType(), new MixedType());
 		} elseif ($stmt instanceof Node\Stmt\Const_ || $stmt instanceof Node\Stmt\ClassConst) {
 			$hasYield = false;
 			$throwPoints = [];
@@ -1729,6 +1729,7 @@ class NodeScopeResolver
 						$context = $context->enterRightSideAssign(
 							$expr->var->name,
 							$scope->getType($expr->expr),
+							$scope->getNativeType($expr->expr),
 						);
 					}
 
@@ -1961,7 +1962,7 @@ class NodeScopeResolver
 				isset($functionReflection)
 				&& in_array($functionReflection->getName(), ['fopen', 'file_get_contents'], true)
 			) {
-				$scope = $scope->assignVariable('http_response_header', new ArrayType(new IntegerType(), new StringType()));
+				$scope = $scope->assignVariable('http_response_header', new ArrayType(new IntegerType(), new StringType()), new ArrayType(new IntegerType(), new StringType()));
 			}
 
 			if (isset($functionReflection) && $functionReflection->getName() === 'shuffle') {
@@ -3047,6 +3048,7 @@ class NodeScopeResolver
 
 				$inAssignRightSideVariableName = $context->getInAssignRightSideVariableName();
 				$inAssignRightSideType = $context->getInAssignRightSideType();
+				$inAssignRightSideNativeType = $context->getInAssignRightSideNativeType();
 				if (
 					$inAssignRightSideVariableName === $use->var->name
 					&& $inAssignRightSideType !== null
@@ -3061,7 +3063,17 @@ class NodeScopeResolver
 							$variableType = TypeCombinator::union($scope->getVariableType($inAssignRightSideVariableName), $inAssignRightSideType);
 						}
 					}
-					$scope = $scope->assignVariable($inAssignRightSideVariableName, $variableType);
+					if ($inAssignRightSideNativeType instanceof ClosureType) {
+						$variableNativeType = $inAssignRightSideNativeType;
+					} else {
+						$alreadyHasVariableType = $scope->hasVariableType($inAssignRightSideVariableName);
+						if ($alreadyHasVariableType->no()) {
+							$variableNativeType = TypeCombinator::union(new NullType(), $inAssignRightSideNativeType);
+						} else {
+							$variableNativeType = TypeCombinator::union($scope->getVariableType($inAssignRightSideVariableName), $inAssignRightSideNativeType);
+						}
+					}
+					$scope = $scope->assignVariable($inAssignRightSideVariableName, $variableType, $variableNativeType);
 				}
 			}
 			$this->processExprNode($use, $useScope, $nodeCallback, $context);
@@ -3292,7 +3304,7 @@ class NodeScopeResolver
 				if ($assignByReference) {
 					$argValue = $arg->value;
 					if ($argValue instanceof Variable && is_string($argValue->name)) {
-						$scope = $scope->assignVariable($argValue->name, new MixedType());
+						$scope = $scope->assignVariable($argValue->name, new MixedType(), new MixedType());
 					}
 				}
 			}
@@ -3366,7 +3378,8 @@ class NodeScopeResolver
 			$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 
-			$scope = $result->getScope()->assignVariable($var->name, $type);
+			// TODO conditional expressions for native type should be handled too
+			$scope = $result->getScope()->assignVariable($var->name, $type,  $scope->getNativeType($assignedExpr));
 			foreach ($conditionalExpressions as $exprString => $holders) {
 				$scope = $scope->addConditionalExpressions($exprString, $holders);
 			}
@@ -3473,7 +3486,8 @@ class NodeScopeResolver
 
 			if ($varType->isArray()->yes() || !(new ObjectType(ArrayAccess::class))->isSuperTypeOf($varType)->yes()) {
 				if ($var instanceof Variable && is_string($var->name)) {
-					$scope = $scope->assignVariable($var->name, $valueToWrite);
+					// TODO logic of valueToWrite should be duplicated for native type
+					$scope = $scope->assignVariable($var->name, $valueToWrite, new MixedType());
 				} else {
 					if ($var instanceof PropertyFetch || $var instanceof StaticPropertyFetch) {
 						$nodeCallback(new PropertyAssignNode($var, $assignedPropertyExpr, $isAssignOp), $scope);
@@ -3759,7 +3773,7 @@ class NodeScopeResolver
 					$certainty = TrinaryLogic::createYes();
 				}
 
-				$scope = $scope->assignVariable($name, $varTag->getType(), $certainty);
+				$scope = $scope->assignVariable($name, $varTag->getType(), new MixedType(), $certainty);
 			}
 		}
 
@@ -3805,13 +3819,13 @@ class NodeScopeResolver
 
 			$variableType = $varTags[$variableName]->getType();
 			$changed = true;
-			$scope = $scope->assignVariable($variableName, $variableType);
+			$scope = $scope->assignVariable($variableName, $variableType, new MixedType());
 		}
 
 		if (count($variableNames) === 1 && count($varTags) === 1 && isset($varTags[0])) {
 			$variableType = $varTags[0]->getType();
 			$changed = true;
-			$scope = $scope->assignVariable($variableNames[0], $variableType);
+			$scope = $scope->assignVariable($variableNames[0], $variableType, new MixedType());
 		}
 
 		return $scope;

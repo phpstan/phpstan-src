@@ -23,9 +23,6 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 
 	private ?ImpossibleCheckTypeHelper $helper = null;
 
-	/**
-	 * @param string[] $universalObjectCratesClasses
-	 */
 	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
 	}

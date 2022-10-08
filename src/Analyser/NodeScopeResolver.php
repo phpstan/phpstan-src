@@ -3052,6 +3052,7 @@ class NodeScopeResolver
 				if (
 					$inAssignRightSideVariableName === $use->var->name
 					&& $inAssignRightSideType !== null
+					&& $inAssignRightSideNativeType !== null
 				) {
 					if ($inAssignRightSideType instanceof ClosureType) {
 						$variableType = $inAssignRightSideType;

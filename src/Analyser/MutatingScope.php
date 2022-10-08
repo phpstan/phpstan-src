@@ -3574,7 +3574,7 @@ class MutatingScope implements Scope
 		]);
 	}
 
-	public function assignExpression(Expr $expr, Type $type, ?Type $nativeType): self
+	public function assignExpression(Expr $expr, Type $type, Type $nativeType): self
 	{
 		$scope = $this;
 		if ($expr instanceof PropertyFetch) {

@@ -395,10 +395,10 @@ class StatementResultTest extends PHPStanTestCase
 		/** @var ScopeFactory $scopeFactory */
 		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
 		$scope = $scopeFactory->create(ScopeContext::create('test.php'))
-			->assignVariable('string', new StringType())
-			->assignVariable('x', new IntegerType())
-			->assignVariable('cond', new MixedType())
-			->assignVariable('arr', new ArrayType(new MixedType(), new MixedType()));
+			->assignVariable('string', new StringType(), new StringType())
+			->assignVariable('x', new IntegerType(), new IntegerType())
+			->assignVariable('cond', new MixedType(), new MixedType())
+			->assignVariable('arr', new ArrayType(new MixedType(), new MixedType()), new ArrayType(new MixedType(), new MixedType()));
 		$result = $nodeScopeResolver->processStmtNodes(
 			new Stmt\Namespace_(null, $stmts),
 			$stmts,

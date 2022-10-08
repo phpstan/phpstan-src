@@ -208,7 +208,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 				throw new ShouldNotHappenException();
 			}
 			$itemVarName = $itemVar->name;
-			$scope = $scope->assignVariable($itemVarName, $itemType);
+			$scope = $scope->assignVariable($itemVarName, $itemType, new MixedType());
 		}
 
 		$keyVarName = null;
@@ -217,7 +217,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 				throw new ShouldNotHappenException();
 			}
 			$keyVarName = $keyVar->name;
-			$scope = $scope->assignVariable($keyVarName, $keyType);
+			$scope = $scope->assignVariable($keyVarName, $keyType, new MixedType());
 		}
 
 		$booleanResult = $scope->getType($expr)->toBoolean();

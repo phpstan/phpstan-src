@@ -3147,9 +3147,7 @@ class MutatingScope implements Scope
 	{
 		$iterateeType = $this->getType($iteratee);
 		$nativeIterateeType = $this->getNativeType($iteratee);
-		$scope = $this->assignVariable($valueName, $iterateeType->getIterableValueType());
-		$scope->nativeExpressionTypes[sprintf('$%s', $valueName)] = $nativeIterateeType->getIterableValueType();
-
+		$scope = $this->assignVariable($valueName, $iterateeType->getIterableValueType(), $nativeIterateeType->getIterableValueType());
 		if ($keyName !== null) {
 			$scope = $scope->enterForeachKey($iteratee, $keyName);
 		}
@@ -3161,8 +3159,7 @@ class MutatingScope implements Scope
 	{
 		$iterateeType = $this->getType($iteratee);
 		$nativeIterateeType = $this->getNativeType($iteratee);
-		$scope = $this->assignVariable($keyName, $iterateeType->getIterableKeyType());
-		$scope->nativeExpressionTypes[sprintf('$%s', $keyName)] = $nativeIterateeType->getIterableKeyType();
+		$scope = $this->assignVariable($keyName, $iterateeType->getIterableKeyType(), $nativeIterateeType->getIterableKeyType());
 
 		if ($iterateeType->isArray()->yes()) {
 			$scope = $scope->specifyExpressionType(
@@ -3193,6 +3190,7 @@ class MutatingScope implements Scope
 
 		return $this->assignVariable(
 			$variableName,
+			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
 			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
 		);
 	}
@@ -3343,7 +3341,7 @@ class MutatingScope implements Scope
 		return array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions);
 	}
 
-	public function assignVariable(string $variableName, Type $type, ?TrinaryLogic $certainty = null): self
+	public function assignVariable(string $variableName, Type $type, Type $nativeType, ?TrinaryLogic $certainty = null): self
 	{
 		if ($certainty === null) {
 			$certainty = TrinaryLogic::createYes();
@@ -3354,7 +3352,7 @@ class MutatingScope implements Scope
 		$variableTypes[$variableName] = new VariableTypeHolder($type, $certainty);
 
 		$nativeTypes = $this->nativeExpressionTypes;
-		$nativeTypes[sprintf('$%s', $variableName)] = $type;
+		$nativeTypes[sprintf('$%s', $variableName)] = $nativeType;
 
 		$variableString = $this->exprPrinter->printExpr(new Variable($variableName));
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;

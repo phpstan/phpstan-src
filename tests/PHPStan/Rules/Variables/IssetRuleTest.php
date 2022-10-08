@@ -299,7 +299,6 @@ class IssetRuleTest extends RuleTestCase
 
 	public function testIssetInGlobalScope(): void
 	{
-		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/isset-global-scope.php'], [
 			[
@@ -402,7 +401,6 @@ class IssetRuleTest extends RuleTestCase
 
 	public function testBug6008(): void
 	{
-		true;
 		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-6008.php'], []);

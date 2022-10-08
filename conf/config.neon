@@ -1698,9 +1698,6 @@ services:
 
 	-
 		class: PHPStan\Type\Php\TypeSpecifyingFunctionsDynamicReturnTypeExtension
-		arguments:
-			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
-			universalObjectCratesClasses: %universalObjectCratesClasses%
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 

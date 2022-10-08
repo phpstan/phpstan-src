@@ -21,6 +21,7 @@ class InvalidPHPStanDocTagRule implements Rule
 
 	private const POSSIBLE_PHPSTAN_TAGS = [
 		'@phpstan-param',
+		'@phpstan-param-out',
 		'@phpstan-var',
 		'@phpstan-template',
 		'@phpstan-extends',

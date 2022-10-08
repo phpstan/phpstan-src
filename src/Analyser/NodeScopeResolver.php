@@ -1806,6 +1806,7 @@ class NodeScopeResolver
 					$functionReflection->getVariants(),
 				);
 			}
+
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
 			}
@@ -2043,11 +2044,13 @@ class NodeScopeResolver
 					}
 				}
 			}
+
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
 			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
+
 			if ($methodReflection !== null) {
 				$hasSideEffects = $methodReflection->hasSideEffects();
 				if ($hasSideEffects->yes() || $methodReflection->getName() === '__construct') {
@@ -2174,12 +2177,14 @@ class NodeScopeResolver
 					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
 			}
+
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context, $closureBindScope ?? null);
 			$scope = $result->getScope();
 			$scopeFunction = $scope->getFunction();
+
 			if (
 				$methodReflection !== null
 				&& !$methodReflection->isStatic()
@@ -2529,6 +2534,7 @@ class NodeScopeResolver
 					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
 			}
+
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
 			}
@@ -3276,7 +3282,10 @@ class NodeScopeResolver
 			$parameters = $parametersAcceptor->getParameters();
 		}
 
+		$paramOutTypes = [];
 		if ($calleeReflection !== null) {
+			$paramOutTypes = $this->getParameterOutTypes($calleeReflection, $scope);
+
 			$scope = $scope->pushInFunctionCall($calleeReflection);
 		}
 
@@ -3299,7 +3308,11 @@ class NodeScopeResolver
 				if ($assignByReference) {
 					$argValue = $arg->value;
 					if ($argValue instanceof Variable && is_string($argValue->name)) {
-						$scope = $scope->assignVariable($argValue->name, new MixedType(), new MixedType());
+						$byRefType = new MixedType();
+						if (isset($parameters[$i]) && isset($paramOutTypes[$parameters[$i]->getName()])) {
+							$byRefType = $paramOutTypes[$parameters[$i]->getName()];
+						}
+						$scope = $scope->assignVariable($argValue->name, $byRefType, new MixedType());
 					}
 				}
 			}
@@ -4169,6 +4182,49 @@ class NodeScopeResolver
 		}
 
 		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType];
+	}
+
+	/**
+	 * @return array<string, Type>
+	 */
+	private function getParameterOutTypes(FunctionReflection|MethodReflection $reflection, Scope $scope): array
+	{
+		$class = null;
+		$trait = null;
+		if ($reflection instanceof MethodReflection) {
+			$class = $reflection->getDeclaringClass()->getName();
+			$file = $reflection->getDeclaringClass()->getFileName();
+		} else {
+			$file = $reflection->getFileName();
+		}
+
+		$resolvedPhpDoc = null;
+		$functionName = $reflection->getName();
+		$docComment = $reflection->getDocComment();
+
+		if ($docComment !== null) {
+			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
+				$file,
+				$class,
+				$trait,
+				$functionName,
+				$docComment,
+			);
+		}
+
+		if ($resolvedPhpDoc === null) {
+			return [];
+		}
+
+		$phpDocParameterOutTypes = [];
+		foreach ($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
+			$paramOutType = $paramOutTag->getType();
+			if ($scope->isInClass()) {
+				$paramOutType = $this->transformStaticType($scope->getClassReflection(), $paramOutType);
+			}
+			$phpDocParameterOutTypes[$paramName] = $paramOutType;
+		}
+		return $phpDocParameterOutTypes;
 	}
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type

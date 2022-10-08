@@ -510,10 +510,7 @@ class MutatingScope implements Scope
 			if ($variableName === 'this' && $this->hasVariableType('this')->yes()) {
 				return $this->variableTypes['this']->getType();
 			}
-			if (!array_key_exists(sprintf('$%s', $variableName), $this->nativeExpressionTypes)) {
-				return new MixedType();
-			}
-			return $this->nativeExpressionTypes[sprintf('$%s', $variableName)];
+			return $this->nativeExpressionTypes[sprintf('$%s', $variableName)] ?? new MixedType();
 		}
 
 		if ($this->hasVariableType($variableName)->maybe()) {

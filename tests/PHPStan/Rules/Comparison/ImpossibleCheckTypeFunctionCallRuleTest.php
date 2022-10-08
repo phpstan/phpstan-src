@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use stdClass;
 use const PHP_VERSION_ID;
 
 /**

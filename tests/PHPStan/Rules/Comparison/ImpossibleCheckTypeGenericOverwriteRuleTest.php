@@ -17,8 +17,6 @@ class ImpossibleCheckTypeGenericOverwriteRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeHelper(
 				$this->createReflectionProvider(),
 				$this->getTypeSpecifier(),
-				[],
-				true,
 			),
 			true,
 			true,

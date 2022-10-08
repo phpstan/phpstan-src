@@ -507,6 +507,9 @@ class MutatingScope implements Scope
 	public function getVariableType(string $variableName): Type
 	{
 		if (!$this->treatPhpDocTypesAsCertain) {
+			if ($variableName === 'this' && $this->hasVariableType('this')->yes()) {
+				return $this->variableTypes['this']->getType();
+			}
 			if (!array_key_exists(sprintf('$%s', $variableName), $this->nativeExpressionTypes)) {
 				return new MixedType();
 			}

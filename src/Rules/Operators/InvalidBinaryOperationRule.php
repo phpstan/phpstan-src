@@ -96,8 +96,8 @@ class InvalidBinaryOperationRule implements Rule
 			}
 
 			$scope = $scope
-				->assignVariable($leftName, $leftType)
-				->assignVariable($rightName, $rightType);
+				->assignVariable($leftName, $leftType, $leftType)
+				->assignVariable($rightName, $rightType, $rightType);
 
 			if (!$scope->getType($newNode) instanceof ErrorType) {
 				return [];

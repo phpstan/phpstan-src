@@ -232,8 +232,8 @@ class ScopeTest extends PHPStanTestCase
 	{
 		/** @var ScopeFactory $scopeFactory */
 		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
-		$scopeA = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $a);
-		$scopeB = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $b);
+		$scopeA = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $a, $a);
+		$scopeB = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $b, $b);
 		$resultScope = $scopeA->generalizeWith($scopeB);
 		$this->assertSame($expectedTypeDescription, $resultScope->getVariableType('a')->describe(VerbosityLevel::precise()));
 	}

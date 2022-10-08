@@ -546,7 +546,7 @@ class PhpClassReflectionExtension
 
 						$asserts = Assertions::createFromResolvedPhpDocBlock($stubPhpDoc);
 
-						$selfOutTypeTag = $stubPhpDoc->getThisOutTag();
+						$selfOutTypeTag = $stubPhpDoc->getSelfOutTag();
 						if ($selfOutTypeTag !== null) {
 							$selfOutType = $selfOutTypeTag->getType();
 						}
@@ -575,7 +575,7 @@ class PhpClassReflectionExtension
 						}
 						$asserts = Assertions::createFromResolvedPhpDocBlock($phpDocBlock);
 
-						$selfOutTypeTag = $phpDocBlock->getThisOutTag();
+						$selfOutTypeTag = $phpDocBlock->getSelfOutTag();
 						if ($selfOutTypeTag !== null) {
 							$selfOutType = $selfOutTypeTag->getType();
 						}
@@ -727,7 +727,7 @@ class PhpClassReflectionExtension
 		$isFinal = $resolvedPhpDoc->isFinal();
 		$isPure = $resolvedPhpDoc->isPure();
 		$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
-		$selfOutType = $resolvedPhpDoc->getThisOutTag() !== null ? $resolvedPhpDoc->getThisOutTag()->getType() : null;
+		$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
 
 		return $this->methodReflectionFactory->create(
 			$declaringClass,

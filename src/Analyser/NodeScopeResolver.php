@@ -4115,7 +4115,7 @@ class NodeScopeResolver
 			$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
 			$isReadOnly = $isReadOnly || $resolvedPhpDoc->isReadOnly();
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
-			$selfOutType = $resolvedPhpDoc->getThisOutTag() !== null ? $resolvedPhpDoc->getThisOutTag()->getType() : null;
+			$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
 		}
 
 		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType];

@@ -26,6 +26,7 @@ class IncompatibleSelfOutTypeRule implements Rule
 	{
 		$method = $node->getMethodReflection();
 		$selfOutType = $method->getSelfOutType();
+
 		if ($selfOutType === null) {
 			return [];
 		}
@@ -33,14 +34,16 @@ class IncompatibleSelfOutTypeRule implements Rule
 		$classReflection = $method->getDeclaringClass();
 		$classType = new ObjectType($classReflection->getName(), null, $classReflection);
 
-		if (!$classType->isSuperTypeOf($selfOutType)->no()) {
+		if ($classType->isSuperTypeOf($selfOutType)->yes()) {
 			return [];
 		}
 
 		return [
 			RuleErrorBuilder::message(sprintf(
-				'Out type %s is not compatible with %s.',
+				'Self-out type %s of method %s::%s is not subtype of %s.',
 				$selfOutType->describe(VerbosityLevel::precise()),
+				$classReflection->getName(),
+				$method->getName(),
 				$classType->describe(VerbosityLevel::precise()),
 			))->build(),
 		];

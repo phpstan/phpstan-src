@@ -220,7 +220,7 @@ class ResolvedPhpDocBlock
 		$result->typeAliasTags = $this->getTypeAliasTags();
 		$result->typeAliasImportTags = $this->getTypeAliasImportTags();
 		$result->assertTags = self::mergeAssertTags($this->getAssertTags(), $parents, $parentPhpDocBlocks);
-		$result->selfOutTypeTag = $this->getThisOutTag();
+		$result->selfOutTypeTag = self::mergeSelfOutTypeTags($this->getSelfOutTag(), $parents);
 		$result->deprecatedTag = self::mergeDeprecatedTags($this->getDeprecatedTag(), $parents);
 		$result->isDeprecated = $result->deprecatedTag !== null;
 		$result->isInternal = $this->isInternal();
@@ -302,7 +302,7 @@ class ResolvedPhpDocBlock
 		$self->typeAliasTags = $this->typeAliasTags;
 		$self->typeAliasImportTags = $this->typeAliasImportTags;
 		$self->assertTags = $assertTags;
-		$self->selfOutTypeTag = $this->getThisOutTag();
+		$self->selfOutTypeTag = $this->selfOutTypeTag;
 		$self->deprecatedTag = $this->deprecatedTag;
 		$self->isDeprecated = $this->isDeprecated;
 		$self->isInternal = $this->isInternal;
@@ -528,7 +528,7 @@ class ResolvedPhpDocBlock
 		return $this->assertTags;
 	}
 
-	public function getThisOutTag(): ?SelfOutTypeTag
+	public function getSelfOutTag(): ?SelfOutTypeTag
 	{
 		if ($this->selfOutTypeTag === false) {
 			$this->selfOutTypeTag = $this->phpDocNodeResolver->resolveSelfOutTypeTag(
@@ -809,6 +809,25 @@ class ResolvedPhpDocBlock
 		}
 
 		return $assertTags;
+	}
+
+	/**
+	 * @param array<int, self> $parents
+	 */
+	private static function mergeSelfOutTypeTags(?SelfOutTypeTag $selfOutTypeTag, array $parents): ?SelfOutTypeTag
+	{
+		if ($selfOutTypeTag !== null) {
+			return $selfOutTypeTag;
+		}
+		foreach ($parents as $parent) {
+			$result = $parent->getSelfOutTag();
+			if ($result === null) {
+				continue;
+			}
+			return $result;
+		}
+
+		return null;
 	}
 
 	/**

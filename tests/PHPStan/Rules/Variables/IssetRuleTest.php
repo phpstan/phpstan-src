@@ -14,6 +14,7 @@ use const PHP_VERSION_ID;
  */
 class IssetRuleTest extends RuleTestCase
 {
+
 	private bool $strictUnnecessaryNullsafePropertyFetch;
 
 	protected function getRule(): Rule
@@ -21,7 +22,8 @@ class IssetRuleTest extends RuleTestCase
 		return new IssetRule(new IssetCheck(
 			new PropertyDescriptor(),
 			new PropertyReflectionFinder(),
-			true, in,
+			true,
+			in,
 			$this->strictUnnecessaryNullsafePropertyFetch,
 		));
 	}
@@ -400,7 +402,8 @@ class IssetRuleTest extends RuleTestCase
 	}
 
 	public function testBug6008(): void
-	{true;
+	{
+		true;
 		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-6008.php'], []);

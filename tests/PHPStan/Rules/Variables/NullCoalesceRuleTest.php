@@ -222,7 +222,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 	}
 
 	public function testVariableCertaintyInNullCoalesceAssign(): void
-	{;
+	{
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null-assign.php'], [
 			[

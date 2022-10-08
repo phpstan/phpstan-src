@@ -3097,6 +3097,7 @@ class MutatingScope implements Scope
 			$scope = $scope->specifyExpressionType(
 				new Expr\ArrayDimFetch($iteratee, new Variable($keyName)),
 				$iterateeType->getIterableValueType(),
+				$nativeIterateeType->getIterableKeyType()
 			);
 		}
 
@@ -3382,7 +3383,10 @@ class MutatingScope implements Scope
 			$exprVarType = $this->getType($expr->var);
 			$dimType = $this->getType($expr->dim);
 			$unsetType = $exprVarType->unsetOffset($dimType);
-			$scope = $this->specifyExpressionType($expr->var, $unsetType)->invalidateExpression(
+			$exprVarNativeType = $this->getType($expr->var);
+			$dimNativeType = $this->getType($expr->dim);
+			$unsetNativeType = $exprVarNativeType->unsetOffset($dimNativeType);
+			$scope = $this->specifyExpressionType($expr->var, $unsetType, $unsetNativeType)->invalidateExpression(
 				new FuncCall(new FullyQualified('count'), [new Arg($expr->var)]),
 			)->invalidateExpression(
 				new FuncCall(new FullyQualified('sizeof'), [new Arg($expr->var)]),
@@ -3395,6 +3399,10 @@ class MutatingScope implements Scope
 						$scope->getType($expr->var->dim),
 						$scope->getType($expr->var),
 					),
+					$scope->getNativeType($expr->var->var)->setOffsetValueType(
+						$scope->getNativeType($expr->var->dim),
+						$scope->getNativeType($expr->var),
+					),
 				);
 			}
 
@@ -3404,7 +3412,7 @@ class MutatingScope implements Scope
 		return $this;
 	}
 
-	private function specifyExpressionType(Expr $expr, Type $type, ?Type $nativeType = null): self
+	private function specifyExpressionType(Expr $expr, Type $type, Type $nativeType): self
 	{
 		if ($expr instanceof Node\Scalar || $expr instanceof Array_) {
 			return $this;
@@ -3453,9 +3461,7 @@ class MutatingScope implements Scope
 
 			$nativeTypes = $this->nativeExpressionTypes;
 			$exprString = sprintf('$%s', $variableName);
-			if ($nativeType !== null) {
-				$nativeTypes[$exprString] = $nativeType;
-			}
+			$nativeTypes[$exprString] = $nativeType;
 
 			$conditionalExpressions = [];
 			foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
@@ -3543,6 +3549,7 @@ class MutatingScope implements Scope
 							TypeCombinator::intersect($exprVarType, TypeCombinator::union(...$types)),
 							new HasOffsetValueType($dimType, $type),
 						),
+						$this->getNativeType($expr->var)
 					);
 				}
 			}
@@ -3564,7 +3571,7 @@ class MutatingScope implements Scope
 		]);
 	}
 
-	public function assignExpression(Expr $expr, Type $type, ?Type $nativeType = null): self
+	public function assignExpression(Expr $expr, Type $type, ?Type $nativeType): self
 	{
 		$scope = $this;
 		if ($expr instanceof PropertyFetch) {

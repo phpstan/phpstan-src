@@ -1434,7 +1434,7 @@ class NodeScopeResolver
 				} else {
 					$constName = $const->name->toString();
 				}
-				$scope = $scope->assignExpression(new ConstFetch(new Name\FullyQualified($constName)), $scope->getType($const->value));
+				$scope = $scope->assignExpression(new ConstFetch(new Name\FullyQualified($constName)), $scope->getType($const->value), $scope->getNativeType($const->value));
 			}
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
@@ -1855,7 +1855,7 @@ class NodeScopeResolver
 				$scope = $scope->assignExpression(
 					$arrayArg,
 					$arrayArgType,
-					$arrayArgType,
+					$scope->getNativeType($arrayArg),
 				);
 			}
 
@@ -1955,7 +1955,7 @@ class NodeScopeResolver
 					);
 				}
 
-				$scope = $scope->invalidateExpression($arrayArg)->assignExpression($arrayArg, $arrayType, $arrayType);
+				$scope = $scope->invalidateExpression($arrayArg)->assignExpression($arrayArg, $arrayType, $scope->getNativeType($arrayArg));
 			}
 
 			if (
@@ -3495,6 +3495,7 @@ class NodeScopeResolver
 					$scope = $scope->assignExpression(
 						$var,
 						$valueToWrite,
+						new MixedType()
 					);
 				}
 
@@ -3504,6 +3505,7 @@ class NodeScopeResolver
 						$scope = $scope->assignExpression(
 							$originalVar,
 							$originalValueToWrite,
+							new MixedType()
 						);
 					}
 				}
@@ -3549,7 +3551,7 @@ class NodeScopeResolver
 				$assignedExprType = $scope->getType($assignedExpr);
 				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
 				if ($propertyReflection->canChangeTypeAfterAssignment()) {
-					$scope = $scope->assignExpression($var, $assignedExprType);
+					$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
 				}
 				$declaringClass = $propertyReflection->getDeclaringClass();
 				if (
@@ -3562,7 +3564,7 @@ class NodeScopeResolver
 				// fallback
 				$assignedExprType = $scope->getType($assignedExpr);
 				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
-				$scope = $scope->assignExpression($var, $assignedExprType);
+				$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
 				// simulate dynamic property assign by __set to get throw points
 				if (!$propertyHolderType->hasMethod('__set')->no()) {
 					$throwPoints = array_merge($throwPoints, $this->processExprNode(
@@ -3605,13 +3607,13 @@ class NodeScopeResolver
 				$assignedExprType = $scope->getType($assignedExpr);
 				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
 				if ($propertyReflection !== null && $propertyReflection->canChangeTypeAfterAssignment()) {
-					$scope = $scope->assignExpression($var, $assignedExprType);
+					$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
 				}
 			} else {
 				// fallback
 				$assignedExprType = $scope->getType($assignedExpr);
 				$nodeCallback(new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scope);
-				$scope = $scope->assignExpression($var, $assignedExprType);
+				$scope = $scope->assignExpression($var, $assignedExprType, $scope->getNativeType($assignedExpr));
 			}
 		} elseif ($var instanceof List_ || $var instanceof Array_) {
 			$result = $processExprCallback($scope);
@@ -3778,7 +3780,7 @@ class NodeScopeResolver
 		}
 
 		if (count($variableLessTags) === 1 && $defaultExpr !== null) {
-			$scope = $scope->assignExpression($defaultExpr, $variableLessTags[0]->getType());
+			$scope = $scope->assignExpression($defaultExpr, $variableLessTags[0]->getType(), new MixedType());
 		}
 
 		return $scope;

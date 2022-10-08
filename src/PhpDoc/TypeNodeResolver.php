@@ -182,6 +182,12 @@ class TypeNodeResolver
 			case 'negative-int':
 				return IntegerRangeType::fromInterval(null, -1);
 
+			case 'non-positive-int':
+				return IntegerRangeType::fromInterval(null, 0);
+
+			case 'non-negative-int':
+				return IntegerRangeType::fromInterval(0, null);
+
 			case 'string':
 				return new StringType();
 

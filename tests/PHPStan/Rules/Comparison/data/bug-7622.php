@@ -24,4 +24,16 @@ class HelloWorld
             AnalyticsKpiType::SESSION_GAP => 14,
         };
     }
+
+	/**
+	 * @param AnalyticsKpiType::* $currentKpi
+	 * @param int[]               $filteredMemberIds
+	 */
+	public function test2(string $currentKpi, array $filteredMemberIds): int
+	{
+		return match ($currentKpi) {
+			AnalyticsKpiType::SESSION_COUNT => 12,
+			AnalyticsKpiType::MISSION_COUNT => 5,
+		};
+	}
 }

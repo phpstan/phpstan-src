@@ -56,7 +56,12 @@ class ImpossibleCheckTypeHelper
 			if ($node->name instanceof Node\Name) {
 				$functionName = strtolower((string) $node->name);
 				if ($functionName === 'assert' && $argsCount >= 1) {
-					$assertValue = $scope->getType($node->getArgs()[0]->value)->toBoolean();
+					if ($this->treatPhpDocTypesAsCertain) {
+						$assertValue = $scope->getType($node->getArgs()[0]->value)->toBoolean();
+					} else {
+						$assertValue = $scope->getNativeType($node->getArgs()[0]->value)->toBoolean();
+					}
+
 					if (!$assertValue instanceof ConstantBooleanType) {
 						return null;
 					}
@@ -78,7 +83,12 @@ class ImpossibleCheckTypeHelper
 				} elseif ($functionName === 'array_search') {
 					return null;
 				} elseif ($functionName === 'in_array' && $argsCount >= 3) {
-					$haystackType = $scope->getType($node->getArgs()[1]->value);
+					if ($this->treatPhpDocTypesAsCertain) {
+						$haystackType = $scope->getType($node->getArgs()[1]->value);
+					} else {
+						$haystackType = $scope->getNativeType($node->getArgs()[1]->value);
+					}
+
 					if ($haystackType instanceof MixedType) {
 						return null;
 					}
@@ -88,7 +98,12 @@ class ImpossibleCheckTypeHelper
 					}
 
 					$constantArrays = $haystackType->getConstantArrays();
-					$needleType = $scope->getType($node->getArgs()[0]->value);
+					if ($this->treatPhpDocTypesAsCertain) {
+						$needleType = $scope->getType($node->getArgs()[0]->value);
+					} else {
+						$needleType = $scope->getNativeType($node->getArgs()[0]->value);
+					}
+
 					$valueType = $haystackType->getIterableValueType();
 					$constantNeedleTypesCount = count(TypeUtils::getConstantScalars($needleType));
 					$constantHaystackTypesCount = count(TypeUtils::getConstantScalars($valueType));
@@ -151,8 +166,15 @@ class ImpossibleCheckTypeHelper
 						}
 					}
 				} elseif ($functionName === 'method_exists' && $argsCount >= 2) {
-					$objectType = $scope->getType($node->getArgs()[0]->value);
-					$methodType = $scope->getType($node->getArgs()[1]->value);
+					if ($this->treatPhpDocTypesAsCertain) {
+						$objectType = $scope->getType($node->getArgs()[0]->value);
+						$methodType = $scope->getType($node->getArgs()[1]->value);
+
+					} else {
+						$objectType = $scope->getNativeType($node->getArgs()[0]->value);
+						$methodType = $scope->getNativeType($node->getArgs()[1]->value);
+
+					}
 
 					if ($objectType instanceof ConstantStringType
 						&& !$this->reflectionProvider->hasClass($objectType->getValue())

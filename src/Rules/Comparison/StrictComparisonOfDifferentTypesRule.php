@@ -16,7 +16,7 @@ use function sprintf;
 class StrictComparisonOfDifferentTypesRule implements Rule
 {
 
-	public function __construct(private bool $checkAlwaysTrueStrictComparison)
+	public function __construct(private bool $checkAlwaysTrueStrictComparison, private bool $treatPhpDocTypesAsCertain)
 	{
 	}
 
@@ -27,6 +27,9 @@ class StrictComparisonOfDifferentTypesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
 		if (!$node instanceof Node\Expr\BinaryOp\Identical && !$node instanceof Node\Expr\BinaryOp\NotIdentical) {
 			return [];
 		}

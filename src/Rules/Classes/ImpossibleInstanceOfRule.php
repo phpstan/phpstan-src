@@ -34,6 +34,9 @@ class ImpossibleInstanceOfRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
 		$instanceofType = $scope->getType($node);
 		$expressionType = $scope->getType($node->expr);
 

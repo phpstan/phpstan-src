@@ -51,6 +51,9 @@ class ImpossibleCheckTypeHelper
 		Expr $node,
 	): ?bool
 	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
 		if ($node instanceof FuncCall) {
 			$argsCount = count($node->getArgs());
 			if ($node->name instanceof Node\Name) {

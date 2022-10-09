@@ -30,6 +30,9 @@ class ImpossibleCheckTypeFunctionCallRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
 		if (!$node->name instanceof Node\Name) {
 			return [];
 		}

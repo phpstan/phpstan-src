@@ -28,6 +28,10 @@ class UnreachableIfBranchesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
+
 		$errors = [];
 		$condition = $node->cond;
 		$conditionType = $scope->getType($condition)->toBoolean();

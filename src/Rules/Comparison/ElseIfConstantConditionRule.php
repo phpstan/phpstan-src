@@ -32,6 +32,9 @@ class ElseIfConstantConditionRule implements Rule
 		Scope $scope,
 	): array
 	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
 		$exprType = $this->helper->getBooleanType($scope, $node->cond);
 		if ($exprType instanceof ConstantBooleanType) {
 			$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {

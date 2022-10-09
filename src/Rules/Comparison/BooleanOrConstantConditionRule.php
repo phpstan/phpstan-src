@@ -34,6 +34,9 @@ class BooleanOrConstantConditionRule implements Rule
 		Scope $scope,
 	): array
 	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
 		$originalNode = $node->getOriginalNode();
 		$messages = [];
 		$leftType = $this->helper->getBooleanType($scope, $originalNode->left);

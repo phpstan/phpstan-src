@@ -32,6 +32,9 @@ class WhileLoopAlwaysFalseConditionRule implements Rule
 		Scope $scope,
 	): array
 	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
 		$exprType = $this->helper->getBooleanType($scope, $node->cond);
 		if ($exprType instanceof ConstantBooleanType && !$exprType->getValue()) {
 			$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {

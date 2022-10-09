@@ -35,6 +35,9 @@ class WhileLoopAlwaysTrueConditionRule implements Rule
 		Scope $scope,
 	): array
 	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
 		foreach ($node->getExitPoints() as $exitPoint) {
 			$statement = $exitPoint->getStatement();
 			if ($statement instanceof Break_) {

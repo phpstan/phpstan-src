@@ -28,6 +28,9 @@ class UnreachableTernaryElseBranchRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
 		$conditionType = $scope->getType($node->cond)->toBoolean();
 		if (
 			$conditionType instanceof ConstantBooleanType

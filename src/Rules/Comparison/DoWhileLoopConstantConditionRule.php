@@ -33,6 +33,9 @@ class DoWhileLoopConstantConditionRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
 		$exprType = $this->helper->getBooleanType($scope, $node->getCond());
 		if ($exprType instanceof ConstantBooleanType) {
 			if ($exprType->getValue()) {

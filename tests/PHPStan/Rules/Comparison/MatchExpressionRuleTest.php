@@ -16,12 +16,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MatchExpressionRule(true);
-	}
-
-	protected function shouldTreatPhpDocTypesAsCertain(): bool
-	{
-		return $this->treatPhpDocTypesAsCertain;
+		return new MatchExpressionRule(true, $this->treatPhpDocTypesAsCertain);
 	}
 
 	public function testRule(): void

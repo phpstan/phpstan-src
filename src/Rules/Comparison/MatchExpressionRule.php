@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\MatchExpressionNode;
 use PHPStan\Parser\TryCatchTypeVisitor;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
@@ -31,7 +32,7 @@ use function sprintf;
 class MatchExpressionRule implements Rule
 {
 
-	public function __construct(private bool $checkAlwaysTrueStrictComparison)
+	public function __construct(private bool $checkAlwaysTrueStrictComparison, private bool $treatPhpDocTypesAsCertain)
 	{
 	}
 
@@ -42,6 +43,24 @@ class MatchExpressionRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		$errors = $this->processMatchErrors($node, $scope, true);
+		if ($errors === []) {
+			return $errors;
+		}
+		if (!$this->treatPhpDocTypesAsCertain) {
+			return $this->processMatchErrors($node, $scope, false);
+		}
+		return $errors;
+	}
+
+	/**
+	 * @return (string|RuleError)[] errors
+	 */
+	public function processMatchErrors(MatchExpressionNode $node, Scope $scope, bool $treatPhpDocTypesAsCertain): array
+	{
+		if ($treatPhpDocTypesAsCertain) {
+			$scope = $scope->doNotTreatPhpDocTypesAsCertain();
+		}
 		$matchCondition = $node->getCondition();
 		$nextArmIsDead = false;
 		$errors = [];
@@ -57,7 +76,7 @@ class MatchExpressionRule implements Rule
 				$hasDefault = true;
 			}
 			foreach ($armConditions as $armCondition) {
-				$armConditionScope = $armCondition->getScope();
+				$armConditionScope = $treatPhpDocTypesAsCertain ? $armCondition->getScope() : $armCondition->getScope()->doNotTreatPhpDocTypesAsCertain();
 				$armConditionExpr = new Node\Expr\BinaryOp\Identical(
 					$matchCondition,
 					$armCondition->getCondition(),
@@ -91,7 +110,7 @@ class MatchExpressionRule implements Rule
 		}
 
 		if (!$hasDefault && !$nextArmIsDead) {
-			$remainingType = $node->getEndScope()->getType($matchCondition);
+			$remainingType = $treatPhpDocTypesAsCertain ? $node->getEndScope()->getType($matchCondition) : $node->getEndScope()->doNotTreatPhpDocTypesAsCertain()->getType($matchCondition);
 			if ($remainingType instanceof TypeWithClassName && $remainingType instanceof SubtractableType) {
 				$subtractedType = $remainingType->getSubtractedType();
 				if ($subtractedType !== null && $remainingType->getClassReflection() !== null) {

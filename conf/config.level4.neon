@@ -120,6 +120,7 @@ services:
 		class: PHPStan\Rules\Comparison\MatchExpressionRule
 		arguments:
 			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule
 

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use stdClass;
 use const PHP_VERSION_ID;
 
 /**
@@ -22,6 +23,8 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			new ImpossibleCheckTypeHelper(
 				$this->createReflectionProvider(),
 				$this->getTypeSpecifier(),
+				[stdClass::class],
+				$this->treatPhpDocTypesAsCertain,
 			),
 			$this->checkAlwaysTrueCheckTypeFunctionCall,
 			$this->treatPhpDocTypesAsCertain,

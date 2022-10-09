@@ -192,7 +192,6 @@ class MutatingScope implements Scope
 		private array $currentlyAllowedUndefinedExpressions = [],
 		private array $nativeExpressionTypes = [],
 		private array $inFunctionCallsStack = [],
-		private bool $treatPhpDocTypesAsCertain = true,
 		private bool $afterExtractCall = false,
 		private ?Scope $parentScope = null,
 		private bool $explicitMixedInUnknownGenericNew = false,
@@ -506,13 +505,6 @@ class MutatingScope implements Scope
 	/** @api */
 	public function getVariableType(string $variableName): Type
 	{
-		if (!$this->treatPhpDocTypesAsCertain) {
-			if ($variableName === 'this' && $this->hasVariableType('this')->yes()) {
-				return $this->variableTypes['this']->getType();
-			}
-			return $this->nativeExpressionTypes[sprintf('$%s', $variableName)] ?? new MixedType();
-		}
-
 		if ($this->hasVariableType($variableName)->maybe()) {
 			if ($variableName === 'argc') {
 				return IntegerRangeType::fromInterval(1, null);
@@ -2113,48 +2105,17 @@ class MutatingScope implements Scope
 			);
 		}
 
-		return $this->doNotTreatPhpDocTypesAsCertain()->getType($expr);
+		return new MixedType();
 	}
 
-	/** @api */
+	/**
+	 * @api
+	 * @deprecated Scope doesn't handle treatPhpDocTypesAsCertain anymore.
+	 * 			   Call getNativeType explicitly if you don't want to treat PHPDoc types as certain.
+	 */
 	public function doNotTreatPhpDocTypesAsCertain(): Scope
 	{
-		if (!$this->treatPhpDocTypesAsCertain) {
-			return $this;
-		}
-
-		return new self(
-			$this->scopeFactory,
-			$this->reflectionProvider,
-			$this->initializerExprTypeResolver,
-			$this->dynamicReturnTypeExtensionRegistry,
-			$this->exprPrinter,
-			$this->typeSpecifier,
-			$this->propertyReflectionFinder,
-			$this->parser,
-			$this->nodeScopeResolver,
-			$this->constantResolver,
-			$this->context,
-			$this->phpVersion,
-			$this->declareStrictTypes,
-			$this->constantTypes,
-			$this->function,
-			$this->namespace,
-			$this->variableTypes,
-			$this->moreSpecificTypes,
-			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
-			$this->currentlyAssignedExpressions,
-			$this->currentlyAllowedUndefinedExpressions,
-			$this->nativeExpressionTypes,
-			$this->inFunctionCallsStack,
-			false,
-			$this->afterExtractCall,
-			$this->parentScope,
-			$this->explicitMixedInUnknownGenericNew,
-		);
+		return $this;
 	}
 
 	/**

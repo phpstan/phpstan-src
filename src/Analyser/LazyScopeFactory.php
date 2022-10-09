@@ -19,8 +19,6 @@ use function is_a;
 class LazyScopeFactory implements ScopeFactory
 {
 
-	private bool $treatPhpDocTypesAsCertain;
-
 	private bool $explicitMixedInUnknownGenericNew;
 
 	private bool $explicitMixedForGlobalVariables;
@@ -33,7 +31,6 @@ class LazyScopeFactory implements ScopeFactory
 		private Container $container,
 	)
 	{
-		$this->treatPhpDocTypesAsCertain = $container->getParameter('treatPhpDocTypesAsCertain');
 		$this->explicitMixedInUnknownGenericNew = $this->container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'];
 		$this->explicitMixedForGlobalVariables = $this->container->getParameter('featureToggles')['explicitMixedForGlobalVariables'];
 	}
@@ -101,7 +98,6 @@ class LazyScopeFactory implements ScopeFactory
 			$currentlyAllowedUndefinedExpressions,
 			$nativeExpressionTypes,
 			$inFunctionCallsStack,
-			$this->treatPhpDocTypesAsCertain,
 			$afterExtractCall,
 			$parentScope,
 			$this->explicitMixedInUnknownGenericNew,

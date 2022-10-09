@@ -66,7 +66,7 @@ class ImpossibleInstanceOfRule implements Rule
 				return $ruleErrorBuilder;
 			}
 
-			$instanceofTypeWithoutPhpDocs = $scope->doNotTreatPhpDocTypesAsCertain()->getType($node);
+			$instanceofTypeWithoutPhpDocs = $scope->getNativeType($node);
 			if ($instanceofTypeWithoutPhpDocs instanceof ConstantBooleanType) {
 				return $ruleErrorBuilder;
 			}

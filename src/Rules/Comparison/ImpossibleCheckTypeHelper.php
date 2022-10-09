@@ -34,9 +34,14 @@ use function strtolower;
 class ImpossibleCheckTypeHelper
 {
 
+	/**
+	 * @param string[] $universalObjectCratesClasses
+	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private TypeSpecifier $typeSpecifier,
+		private array $universalObjectCratesClasses,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
 	}
@@ -206,7 +211,11 @@ class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			$argumentType = $scope->getType($sureType[0]);
+			if ($this->treatPhpDocTypesAsCertain) {
+				$argumentType = $scope->getType($sureType[0]);
+			} else {
+				$argumentType = $scope->getNativeType($sureType[0]);
+			}
 
 			/** @var Type $resultType */
 			$resultType = $sureType[1];
@@ -220,7 +229,11 @@ class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			$argumentType = $scope->getType($sureNotType[0]);
+			if ($this->treatPhpDocTypesAsCertain) {
+				$argumentType = $scope->getType($sureNotType[0]);
+			} else {
+				$argumentType = $scope->getNativeType($sureNotType[0]);
+			}
 
 			/** @var Type $resultType */
 			$resultType = $sureNotType[1];
@@ -255,10 +268,10 @@ class ImpossibleCheckTypeHelper
 		}
 
 		return (
-				$node instanceof FuncCall
-				|| $node instanceof MethodCall
-				|| $node instanceof Expr\StaticCall
-			) && $scope->isSpecified($expr);
+			$node instanceof FuncCall
+			|| $node instanceof MethodCall
+			|| $node instanceof Expr\StaticCall
+		) && $scope->isSpecified($expr);
 	}
 
 	/**
@@ -285,6 +298,20 @@ class ImpossibleCheckTypeHelper
 			' with arguments %s and %s',
 			implode(', ', $descriptions),
 			$lastDescription,
+		);
+	}
+
+	public function doNotTreatPhpDocTypesAsCertain(): self
+	{
+		if (!$this->treatPhpDocTypesAsCertain) {
+			return $this;
+		}
+
+		return new self(
+			$this->reflectionProvider,
+			$this->typeSpecifier,
+			$this->universalObjectCratesClasses,
+			false,
 		);
 	}
 

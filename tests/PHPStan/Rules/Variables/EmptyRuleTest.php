@@ -15,6 +15,8 @@ use const PHP_VERSION_ID;
 class EmptyRuleTest extends RuleTestCase
 {
 
+	private bool $treatPhpDocTypesAsCertain;
+
 	private bool $strictUnnecessaryNullsafePropertyFetch;
 
 	protected function getRule(): Rule
@@ -23,12 +25,19 @@ class EmptyRuleTest extends RuleTestCase
 			new PropertyDescriptor(),
 			new PropertyReflectionFinder(),
 			true,
+			$this->treatPhpDocTypesAsCertain,
 			$this->strictUnnecessaryNullsafePropertyFetch,
 		));
 	}
 
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
+	}
+
 	public function testRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/empty-rule.php'], [
 			[
@@ -68,6 +77,7 @@ class EmptyRuleTest extends RuleTestCase
 
 	public function testBug970(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/bug-970.php'], [
 			[
@@ -79,6 +89,7 @@ class EmptyRuleTest extends RuleTestCase
 
 	public function testBug6974(): void
 	{
+		$this->treatPhpDocTypesAsCertain = false;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/bug-6974.php'], [
 			[
@@ -98,6 +109,7 @@ class EmptyRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
@@ -114,6 +126,7 @@ class EmptyRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
@@ -150,6 +163,7 @@ class EmptyRuleTest extends RuleTestCase
 
 	public function testBug7318(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7318.php'], []);
@@ -157,6 +171,7 @@ class EmptyRuleTest extends RuleTestCase
 
 	public function testBug7424(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 
 		$this->analyse([__DIR__ . '/data/bug-7424.php'], []);
@@ -164,6 +179,7 @@ class EmptyRuleTest extends RuleTestCase
 
 	public function testBug7724(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 
 		$this->analyse([__DIR__ . '/data/bug-7724.php'], []);
@@ -171,6 +187,7 @@ class EmptyRuleTest extends RuleTestCase
 
 	public function testBug7199(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 
 		$this->analyse([__DIR__ . '/data/bug-7199.php'], []);

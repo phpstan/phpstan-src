@@ -15,6 +15,8 @@ use const PHP_VERSION_ID;
 class NullCoalesceRuleTest extends RuleTestCase
 {
 
+	private bool $treatPhpDocTypesAsCertain;
+
 	private bool $strictUnnecessaryNullsafePropertyFetch;
 
 	protected function getRule(): Rule
@@ -23,12 +25,19 @@ class NullCoalesceRuleTest extends RuleTestCase
 			new PropertyDescriptor(),
 			new PropertyReflectionFinder(),
 			true,
+			$this->treatPhpDocTypesAsCertain,
 			$this->strictUnnecessaryNullsafePropertyFetch,
 		));
 	}
 
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
+	}
+
 	public function testCoalesceRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$errors = [
 			[
@@ -135,6 +144,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testCoalesceAssignRule(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign.php'], [
 			[
@@ -198,12 +208,14 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testNullsafe(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/null-coalesce-nullsafe.php'], []);
 	}
 
 	public function testVariableCertaintyInNullCoalesce(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null.php'], [
 			[
@@ -223,6 +235,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testVariableCertaintyInNullCoalesceAssign(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/variable-certainty-null-assign.php'], [
 			[
@@ -242,6 +255,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testNullCoalesceInGlobalScope(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/null-coalesce-global-scope.php'], [
 			[
@@ -253,6 +267,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testBug5933(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 		$this->analyse([__DIR__ . '/data/bug-5933.php'], []);
 	}
@@ -263,6 +278,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
@@ -279,6 +295,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.0.');
 		}
 
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7109.php'], [
@@ -311,6 +328,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 7.4.');
 		}
 
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = false;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7190.php'], [
@@ -323,6 +341,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testBug7318(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/../Properties/data/bug-7318.php'], [
@@ -335,6 +354,7 @@ class NullCoalesceRuleTest extends RuleTestCase
 
 	public function testBug7968(): void
 	{
+		$this->treatPhpDocTypesAsCertain = true;
 		$this->strictUnnecessaryNullsafePropertyFetch = true;
 
 		$this->analyse([__DIR__ . '/data/bug-7968.php'], []);

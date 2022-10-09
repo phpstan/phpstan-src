@@ -20,6 +20,7 @@ class IssetCheck
 		private PropertyDescriptor $propertyDescriptor,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private bool $checkAdvancedIsset,
+		private bool $treatPhpDocTypesAsCertain,
 		private bool $strictUnnecessaryNullsafePropertyFetch,
 	)
 	{
@@ -55,8 +56,12 @@ class IssetCheck
 
 			return $error;
 		} elseif ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
-			$type = $scope->getType($expr->var);
-			$dimType = $scope->getType($expr->dim);
+			$type = $this->treatPhpDocTypesAsCertain
+				? $scope->getType($expr->var)
+				: $scope->getNativeType($expr->var);
+			$dimType = $this->treatPhpDocTypesAsCertain
+				? $scope->getType($expr->dim)
+				: $scope->getNativeType($expr->dim);
 			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 			if (!$type->isOffsetAccessible()->yes()) {
 				return $error ?? $this->checkUndefined($expr->var, $scope, $operatorDescription);

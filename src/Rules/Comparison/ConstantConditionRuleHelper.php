@@ -13,6 +13,7 @@ class ConstantConditionRuleHelper
 
 	public function __construct(
 		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
 	}
@@ -68,7 +69,11 @@ class ConstantConditionRuleHelper
 			return new BooleanType();
 		}
 
-		return $scope->getType($expr)->toBoolean();
+		if ($this->treatPhpDocTypesAsCertain) {
+			return $scope->getType($expr)->toBoolean();
+		}
+
+		return $scope->getNativeType($expr)->toBoolean();
 	}
 
 	public function getNativeBooleanType(Scope $scope, Expr $expr): BooleanType

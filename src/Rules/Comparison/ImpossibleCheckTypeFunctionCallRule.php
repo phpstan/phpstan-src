@@ -48,7 +48,7 @@ class ImpossibleCheckTypeFunctionCallRule implements Rule
 				return $ruleErrorBuilder;
 			}
 
-			$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($scope->doNotTreatPhpDocTypesAsCertain(), $node);
+			$isAlways = $this->impossibleCheckTypeHelper->doNotTreatPhpDocTypesAsCertain()->findSpecifiedType($scope, $node);
 			if ($isAlways !== null) {
 				return $ruleErrorBuilder;
 			}

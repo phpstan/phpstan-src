@@ -2096,23 +2096,6 @@ class MutatingScope implements Scope
 	/** @api */
 	public function getNativeType(Expr $expr): Type
 	{
-		$key = $this->getNodeKey($expr);
-
-		if (array_key_exists($key, $this->nativeExpressionTypes)) {
-			return $this->nativeExpressionTypes[$key];
-		}
-
-		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			return $this->getNullsafeShortCircuitingType(
-				$expr->var,
-				$this->getTypeFromArrayDimFetch(
-					$expr,
-					$this->getNativeType($expr->dim),
-					$this->getNativeType($expr->var),
-				),
-			);
-		}
-
 		return $this->doNotTreatPhpDocTypesAsCertain()->getType($expr);
 	}
 

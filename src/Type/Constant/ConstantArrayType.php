@@ -261,17 +261,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->valueTypes;
 	}
 
+	/** @deprecated Use getFirstIterableValueType() instead */
 	public function getFirstValueType(): Type
 	{
-		$valueTypes = [];
-		foreach ($this->valueTypes as $i => $valueType) {
-			$valueTypes[] = $valueType;
-			if (!$this->isOptionalKey($i)) {
-				break;
-			}
-		}
-
-		return TypeCombinator::union(...$valueTypes);
+		return $this->getFirstIterableValueType();
 	}
 
 	/** @deprecated Use getLastIterableValueType() instead */
@@ -703,6 +696,19 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getFirstIterableValueType(): Type
+	{
+		$valueTypes = [];
+		foreach ($this->valueTypes as $i => $valueType) {
+			$valueTypes[] = $valueType;
+			if (!$this->isOptionalKey($i)) {
+				break;
+			}
+		}
+
+		return TypeCombinator::union(...$valueTypes);
 	}
 
 	public function getLastIterableValueType(): Type

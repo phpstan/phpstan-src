@@ -19,6 +19,11 @@ trait NonArrayTypeTrait
 		return [];
 	}
 
+	public function getFirstIterableValueType(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function getLastIterableValueType(): Type
 	{
 		return new ErrorType();

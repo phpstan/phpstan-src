@@ -19,6 +19,11 @@ trait MaybeArrayTypeTrait
 		return [];
 	}
 
+	public function getFirstIterableValueType(): Type
+	{
+		return new MixedType();
+	}
+
 	public function getLastIterableValueType(): Type
 	{
 		return new MixedType();

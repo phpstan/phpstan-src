@@ -68,6 +68,8 @@ interface Type
 
 	public function getIterableValueType(): Type;
 
+	public function getFirstIterableValueType(): Type;
+
 	public function getLastIterableValueType(): Type;
 
 	public function isArray(): TrinaryLogic;

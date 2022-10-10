@@ -430,6 +430,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->getIterableValueType());
 	}
 
+	public function getFirstIterableValueType(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->getFirstIterableValueType());
+	}
+
 	public function getLastIterableValueType(): Type
 	{
 		return $this->unionTypes(static fn (Type $type): Type => $type->getLastIterableValueType());

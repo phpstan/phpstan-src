@@ -33,6 +33,10 @@ class Foo
 		/** @var array{a: 0, b: 1, c: 2} $arr */
 		assertType('0', array_shift($arr));
 		assertType('array{b: 1, c: 2}', $arr);
+
+		/** @var array{} $arr */
+		assertType('null', array_shift($arr));
+		assertType('array{}', $arr);
 	}
 
 	public function constantArraysWithOptionalKeys(array $arr): void

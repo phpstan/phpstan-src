@@ -21,7 +21,7 @@
  */
 return [
 	'new' => [
-		'str_split' => ['array<int,string>', 'str'=>'string', 'split_length='=>'positive-int'],
+		'str_split' => ['list<string>', 'str'=>'string', 'split_length='=>'positive-int'],
 	],
 	'old' => [
 

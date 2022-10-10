@@ -135,6 +135,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->getIterableValueType();
 	}
 
+	public function getLastIterableValueType(): Type
+	{
+		return $this->resolve()->getLastIterableValueType();
+	}
+
 	public function isArray(): TrinaryLogic
 	{
 		return $this->resolve()->isArray();

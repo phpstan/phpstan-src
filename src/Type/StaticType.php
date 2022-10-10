@@ -307,6 +307,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->getIterableValueType();
 	}
 
+	public function getLastIterableValueType(): Type
+	{
+		return $this->getStaticObjectType()->getLastIterableValueType();
+	}
+
 	public function isOffsetAccessible(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isOffsetAccessible();

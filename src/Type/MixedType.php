@@ -371,6 +371,16 @@ class MixedType implements CompoundType, SubtractableType
 		return new self($this->isExplicitMixed);
 	}
 
+	public function getFirstIterableKeyType(): Type
+	{
+		return new self($this->isExplicitMixed);
+	}
+
+	public function getLastIterableKeyType(): Type
+	{
+		return new self($this->isExplicitMixed);
+	}
+
 	public function getIterableValueType(): Type
 	{
 		return new self($this->isExplicitMixed);

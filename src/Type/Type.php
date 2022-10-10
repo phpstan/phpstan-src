@@ -66,6 +66,10 @@ interface Type
 
 	public function getIterableKeyType(): Type;
 
+	public function getFirstIterableKeyType(): Type;
+
+	public function getLastIterableKeyType(): Type;
+
 	public function getIterableValueType(): Type;
 
 	public function getFirstIterableValueType(): Type;

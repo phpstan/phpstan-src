@@ -140,6 +140,16 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function getFirstIterableKeyType(): Type
+	{
+		return new MixedType();
+	}
+
+	public function getLastIterableKeyType(): Type
+	{
+		return new MixedType();
+	}
+
 	public function getIterableValueType(): Type
 	{
 		return new MixedType();

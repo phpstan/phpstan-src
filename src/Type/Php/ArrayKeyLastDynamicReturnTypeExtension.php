@@ -5,12 +5,10 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function count;
 
 class ArrayKeyLastDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -20,10 +18,10 @@ class ArrayKeyLastDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 		return $functionReflection->getName() === 'array_key_last';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		if (!isset($functionCall->getArgs()[0])) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
@@ -32,25 +30,7 @@ class ArrayKeyLastDynamicReturnTypeExtension implements DynamicFunctionReturnTyp
 			return new NullType();
 		}
 
-		$constantArrays = $argType->getConstantArrays();
-		if (count($constantArrays) > 0) {
-			$keyTypes = [];
-			foreach ($constantArrays as $constantArray) {
-				$iterableAtLeastOnce = $constantArray->isIterableAtLeastOnce();
-				if (!$iterableAtLeastOnce->yes()) {
-					$keyTypes[] = new NullType();
-				}
-				if ($iterableAtLeastOnce->no()) {
-					continue;
-				}
-
-				$keyTypes[] = $constantArray->getLastKeyType();
-			}
-
-			return TypeCombinator::union(...$keyTypes);
-		}
-
-		$keyType = $argType->getIterableKeyType();
+		$keyType = $argType->getLastIterableKeyType();
 		if ($iterableAtLeastOnce->yes()) {
 			return $keyType;
 		}

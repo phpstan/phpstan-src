@@ -227,30 +227,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->keyTypes;
 	}
 
+	/** @deprecated Use getFirstIterableKeyType() instead */
 	public function getFirstKeyType(): Type
 	{
-		$keyTypes = [];
-		foreach ($this->keyTypes as $i => $keyType) {
-			$keyTypes[] = $keyType;
-			if (!$this->isOptionalKey($i)) {
-				break;
-			}
-		}
-
-		return TypeCombinator::union(...$keyTypes);
+		return $this->getFirstIterableKeyType();
 	}
 
+	/** @deprecated Use getLastIterableKeyType() instead */
 	public function getLastKeyType(): Type
 	{
-		$keyTypes = [];
-		for ($i = count($this->keyTypes) - 1; $i >= 0; $i--) {
-			$keyTypes[] = $this->keyTypes[$i];
-			if (!$this->isOptionalKey($i)) {
-				break;
-			}
-		}
-
-		return TypeCombinator::union(...$keyTypes);
+		return $this->getLastIterableKeyType();
 	}
 
 	/**
@@ -696,6 +682,32 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getFirstIterableKeyType(): Type
+	{
+		$keyTypes = [];
+		foreach ($this->keyTypes as $i => $keyType) {
+			$keyTypes[] = $keyType;
+			if (!$this->isOptionalKey($i)) {
+				break;
+			}
+		}
+
+		return TypeCombinator::union(...$keyTypes);
+	}
+
+	public function getLastIterableKeyType(): Type
+	{
+		$keyTypes = [];
+		for ($i = count($this->keyTypes) - 1; $i >= 0; $i--) {
+			$keyTypes[] = $this->keyTypes[$i];
+			if (!$this->isOptionalKey($i)) {
+				break;
+			}
+		}
+
+		return TypeCombinator::union(...$keyTypes);
 	}
 
 	public function getFirstIterableValueType(): Type

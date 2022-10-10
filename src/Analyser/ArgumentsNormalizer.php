@@ -6,6 +6,7 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -73,6 +74,24 @@ final class ArgumentsNormalizer
 			$staticCall->name,
 			$reorderedArgs,
 			$staticCall->getAttributes(),
+		);
+	}
+
+	public static function reorderNewArguments(
+		ParametersAcceptor $parametersAcceptor,
+		New_ $new,
+	): ?New_
+	{
+		$reorderedArgs = self::reorderArgs($parametersAcceptor, $new);
+
+		if ($reorderedArgs === null) {
+			return null;
+		}
+
+		return new New_(
+			$new->class,
+			$reorderedArgs,
+			$new->getAttributes(),
 		);
 	}
 

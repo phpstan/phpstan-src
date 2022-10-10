@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Variables;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<DefinedVariableRule>
@@ -870,6 +871,19 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->checkMaybeUndefinedVariables = true;
 		$this->polluteScopeWithAlwaysIterableForeach = true;
 		$this->analyse([__DIR__ . '/data/bug-1016b.php'], []);
+	}
+
+	public function testBug8142(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->polluteScopeWithLoopInitialAssignments = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->polluteScopeWithAlwaysIterableForeach = true;
+		$this->analyse([__DIR__ . '/data/bug-8142.php'], []);
 	}
 
 }

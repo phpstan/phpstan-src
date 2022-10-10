@@ -3119,11 +3119,11 @@ class MutatingScope implements Scope
 				));
 			}
 
-			return new ArrayType(new IntegerType(), $this->getFunctionType(
+			return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $this->getFunctionType(
 				$type,
 				false,
 				false,
-			));
+			)));
 		}
 
 		if ($type instanceof Name) {

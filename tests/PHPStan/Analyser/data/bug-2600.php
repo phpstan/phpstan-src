@@ -84,5 +84,5 @@ function foo($x, string ...$y): void
 
 function ($x, string ...$y): void {
 	assertType('mixed', $x);
-	assertType('array<int, string>', $y);
+	assertType('list<string>', $y);
 };

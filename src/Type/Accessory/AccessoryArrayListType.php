@@ -157,6 +157,11 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function getFirstIterableValueType(): Type
+	{
+		return new MixedType();
+	}
+
 	public function getLastIterableValueType(): Type
 	{
 		return new MixedType();

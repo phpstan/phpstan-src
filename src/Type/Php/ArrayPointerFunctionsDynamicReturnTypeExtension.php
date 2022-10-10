@@ -56,7 +56,7 @@ class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFunction
 				}
 
 				$keyTypes[] = $functionReflection->getName() === 'reset'
-					? $constantArray->getFirstValueType()
+					? $constantArray->getFirstIterableValueType()
 					: $constantArray->getLastIterableValueType();
 			}
 

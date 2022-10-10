@@ -213,6 +213,11 @@ class ArrayType implements Type
 		return $this->getItemType();
 	}
 
+	public function getFirstIterableValueType(): Type
+	{
+		return $this->getItemType();
+	}
+
 	public function getLastIterableValueType(): Type
 	{
 		return $this->getItemType();

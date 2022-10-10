@@ -307,6 +307,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->getIterableValueType();
 	}
 
+	public function getFirstIterableValueType(): Type
+	{
+		return $this->getStaticObjectType()->getFirstIterableValueType();
+	}
+
 	public function getLastIterableValueType(): Type
 	{
 		return $this->getStaticObjectType()->getLastIterableValueType();

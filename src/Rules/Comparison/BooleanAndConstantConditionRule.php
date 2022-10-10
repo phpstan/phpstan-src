@@ -88,7 +88,7 @@ class BooleanAndConstantConditionRule implements Rule
 		}
 
 		if (count($errors) === 0) {
-			$nodeType = $scope->getType($originalNode);
+			$nodeType = $this->treatPhpDocTypesAsCertain ? $scope->getType($originalNode) : $scope->getNativeType($originalNode);
 			if ($nodeType instanceof ConstantBooleanType) {
 				$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode, $tipText): RuleErrorBuilder {
 					if (!$this->treatPhpDocTypesAsCertain) {

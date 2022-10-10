@@ -5,7 +5,6 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
@@ -31,10 +30,10 @@ class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFunction
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		if (count($functionCall->getArgs()) === 0) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
@@ -43,27 +42,9 @@ class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFunction
 			return new ConstantBooleanType(false);
 		}
 
-		$constantArrays = $argType->getConstantArrays();
-		if (count($constantArrays) > 0) {
-			$keyTypes = [];
-			foreach ($constantArrays as $constantArray) {
-				$iterableAtLeastOnce = $argType->isIterableAtLeastOnce();
-				if (!$iterableAtLeastOnce->yes()) {
-					$keyTypes[] = new ConstantBooleanType(false);
-				}
-				if ($iterableAtLeastOnce->no()) {
-					continue;
-				}
-
-				$keyTypes[] = $functionReflection->getName() === 'reset'
-					? $constantArray->getFirstIterableValueType()
-					: $constantArray->getLastIterableValueType();
-			}
-
-			return TypeCombinator::union(...$keyTypes);
-		}
-
-		$itemType = $argType->getIterableValueType();
+		$itemType = $functionReflection->getName() === 'reset'
+			? $argType->getFirstIterableValueType()
+			: $argType->getLastIterableValueType();
 		if ($iterableAtLeastOnce->yes()) {
 			return $itemType;
 		}

@@ -145,6 +145,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function getLastIterableValueType(): Type
+	{
+		return new MixedType();
+	}
+
 	public function isArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

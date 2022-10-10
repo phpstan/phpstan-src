@@ -274,17 +274,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return TypeCombinator::union(...$valueTypes);
 	}
 
+	/** @deprecated Use getLastIterableValueType() instead */
 	public function getLastValueType(): Type
 	{
-		$valueTypes = [];
-		for ($i = count($this->keyTypes) - 1; $i >= 0; $i--) {
-			$valueTypes[] = $this->valueTypes[$i];
-			if (!$this->isOptionalKey($i)) {
-				break;
-			}
-		}
-
-		return TypeCombinator::union(...$valueTypes);
+		return $this->getLastIterableValueType();
 	}
 
 	public function isOptionalKey(int $i): bool
@@ -710,6 +703,19 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getLastIterableValueType(): Type
+	{
+		$valueTypes = [];
+		for ($i = count($this->keyTypes) - 1; $i >= 0; $i--) {
+			$valueTypes[] = $this->valueTypes[$i];
+			if (!$this->isOptionalKey($i)) {
+				break;
+			}
+		}
+
+		return TypeCombinator::union(...$valueTypes);
 	}
 
 	public function isList(): TrinaryLogic

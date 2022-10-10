@@ -5,12 +5,10 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function count;
 
 class ArrayPopFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -20,10 +18,10 @@ class ArrayPopFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return $functionReflection->getName() === 'array_pop';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		if (!isset($functionCall->getArgs()[0])) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
@@ -32,24 +30,7 @@ class ArrayPopFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			return new NullType();
 		}
 
-		$constantArrays = $argType->getConstantArrays();
-		if (count($constantArrays) > 0) {
-			$valueTypes = [];
-			foreach ($constantArrays as $constantArray) {
-				$iterableAtLeastOnce = $constantArray->isIterableAtLeastOnce();
-				if (!$iterableAtLeastOnce->yes()) {
-					$valueTypes[] = new NullType();
-				}
-				if ($iterableAtLeastOnce->no()) {
-					continue;
-				}
-				$valueTypes[] = $constantArray->getLastValueType();
-			}
-
-			return TypeCombinator::union(...$valueTypes);
-		}
-
-		$itemType = $argType->getIterableValueType();
+		$itemType = $argType->getLastIterableValueType();
 		if ($iterableAtLeastOnce->yes()) {
 			return $itemType;
 		}

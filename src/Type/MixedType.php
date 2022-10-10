@@ -376,6 +376,11 @@ class MixedType implements CompoundType, SubtractableType
 		return new self($this->isExplicitMixed);
 	}
 
+	public function getLastIterableValueType(): Type
+	{
+		return new self($this->isExplicitMixed);
+	}
+
 	public function isOffsetAccessible(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {

@@ -3,6 +3,8 @@
 namespace PHPStan\Type\Traits;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\Type;
 
 trait NonArrayTypeTrait
 {
@@ -15,6 +17,11 @@ trait NonArrayTypeTrait
 	public function getConstantArrays(): array
 	{
 		return [];
+	}
+
+	public function getLastIterableValueType(): Type
+	{
+		return new ErrorType();
 	}
 
 	public function isArray(): TrinaryLogic

@@ -5,13 +5,10 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function count;
 
 class ArrayKeyFirstDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -21,10 +18,10 @@ class ArrayKeyFirstDynamicReturnTypeExtension implements DynamicFunctionReturnTy
 		return $functionReflection->getName() === 'array_key_first';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		if (!isset($functionCall->getArgs()[0])) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
@@ -33,30 +30,7 @@ class ArrayKeyFirstDynamicReturnTypeExtension implements DynamicFunctionReturnTy
 			return new NullType();
 		}
 
-		$constantArrays = $argType->getConstantArrays();
-		if (count($constantArrays) > 0) {
-			$keyTypes = [];
-			foreach ($constantArrays as $constantArray) {
-				$iterableAtLeastOnce = $constantArray->isIterableAtLeastOnce();
-				if (!$iterableAtLeastOnce->yes()) {
-					$keyTypes[] = new NullType();
-				}
-				if ($iterableAtLeastOnce->no()) {
-					continue;
-				}
-
-				$keyTypes[] = $constantArray->getFirstKeyType();
-			}
-
-			return TypeCombinator::union(...$keyTypes);
-		}
-
-		if ($argType->isList()->yes()) {
-			$keyType = new ConstantIntegerType(0);
-		} else {
-			$keyType = $argType->getIterableKeyType();
-		}
-
+		$keyType = $argType->getFirstIterableKeyType();
 		if ($iterableAtLeastOnce->yes()) {
 			return $keyType;
 		}

@@ -130,6 +130,16 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->getIterableKeyType();
 	}
 
+	public function getFirstIterableKeyType(): Type
+	{
+		return $this->resolve()->getFirstIterableKeyType();
+	}
+
+	public function getLastIterableKeyType(): Type
+	{
+		return $this->resolve()->getLastIterableKeyType();
+	}
+
 	public function getIterableValueType(): Type
 	{
 		return $this->resolve()->getIterableValueType();

@@ -152,6 +152,16 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return IntegerRangeType::fromInterval(0, null);
 	}
 
+	public function getFirstIterableKeyType(): Type
+	{
+		return new ConstantIntegerType(0);
+	}
+
+	public function getLastIterableKeyType(): Type
+	{
+		return $this->getIterableKeyType();
+	}
+
 	public function getIterableValueType(): Type
 	{
 		return new MixedType();

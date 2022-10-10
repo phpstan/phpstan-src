@@ -208,6 +208,16 @@ class ArrayType implements Type
 		return $keyType;
 	}
 
+	public function getFirstIterableKeyType(): Type
+	{
+		return $this->getIterableKeyType();
+	}
+
+	public function getLastIterableKeyType(): Type
+	{
+		return $this->getIterableKeyType();
+	}
+
 	public function getIterableValueType(): Type
 	{
 		return $this->getItemType();

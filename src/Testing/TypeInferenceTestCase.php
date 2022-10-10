@@ -16,6 +16,7 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
@@ -85,6 +86,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	{
 		if ($assertType === 'type') {
 			$expectedType = $args[0];
+			$this->assertInstanceOf(ConstantScalarType::class, $expectedType);
 			$expected = $expectedType->getValue();
 			$actualType = $args[1];
 			$actual = $actualType->describe(VerbosityLevel::precise());

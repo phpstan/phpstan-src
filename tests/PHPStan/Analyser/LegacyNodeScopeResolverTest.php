@@ -5203,12 +5203,12 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	public function dataFunctions(): array
 	{
-		$strSplitDefaultReturnType = 'non-empty-array<int, string>|false';
+		$strSplitDefaultReturnType = 'non-empty-list<string>|false';
 		if (PHP_VERSION_ID >= 80000) {
-			$strSplitDefaultReturnType = 'non-empty-array<int, string>';
+			$strSplitDefaultReturnType = 'non-empty-list<string>';
 		}
 		if (PHP_VERSION_ID >= 80200) {
-			$strSplitDefaultReturnType = 'array<int, string>';
+			$strSplitDefaultReturnType = 'list<string>';
 		}
 
 		return [
@@ -5325,7 +5325,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbInternalEncodingWithUnknownEncoding',
 			],
 			[
-				'array',
+				'list<string>',
 				'$mbEncodingAliasesWithValidEncoding',
 			],
 			[
@@ -5333,11 +5333,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbEncodingAliasesWithInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array|false' : 'array',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$mbEncodingAliasesWithValidAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array|false' : 'array',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$mbEncodingAliasesWithUnknownEncoding',
 			],
 			[
@@ -8837,7 +8837,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$mbStrSplitConstantStringWithoutDefinedParameters',
 			],
 			[
@@ -8861,7 +8861,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithFailureSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$mbStrSplitConstantStringWithInvalidSplitLengthType',
 			],
 			[
@@ -8869,7 +8869,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLength',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLength',
 			],
 			[
@@ -8881,7 +8881,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithOneSplitLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$mbStrSplitConstantStringWithOneSplitLengthAndVariableEncoding',
 			],
 			[
@@ -8893,7 +8893,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$mbStrSplitConstantStringWithGreaterSplitLengthThanStringLengthAndVariableEncoding',
 			],
 			[
@@ -8909,7 +8909,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithFailureSplitLengthAndVariableEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndValidEncoding',
 			],
 			[
@@ -8917,7 +8917,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$mbStrSplitConstantStringWithInvalidSplitLengthTypeAndVariableEncoding',
 			],
 			[
@@ -8929,11 +8929,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$mbStrSplitConstantStringWithVariableStringAndConstantSplitLengthAndVariableEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndValidEncoding',
 			],
 			[
@@ -8941,7 +8941,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndInvalidEncoding',
 			],
 			[
-				PHP_VERSION_ID < 80000 ? 'array<int, string>|false' : 'array<int, string>',
+				PHP_VERSION_ID < 80000 ? 'list<string>|false' : 'list<string>',
 				'$mbStrSplitConstantStringWithVariableStringAndVariableSplitLengthAndVariableEncoding',
 			],
 		];
@@ -9421,7 +9421,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array<int, string>',
+				'list<string>',
 				'password_algos()',
 			],
 		];

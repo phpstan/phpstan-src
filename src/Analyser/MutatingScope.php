@@ -3649,6 +3649,8 @@ class MutatingScope implements Scope
 	/** @api */
 	public function enterClass(ClassReflection $classReflection): self
 	{
+		$thisType = new ThisType($classReflection);
+
 		return $this->scopeFactory->create(
 			$this->context->enterClass($classReflection),
 			$this->isDeclareStrictTypes(),
@@ -3656,7 +3658,7 @@ class MutatingScope implements Scope
 			null,
 			$this->getNamespace(),
 			[
-				'this' => VariableTypeHolder::createYes(new ThisType($classReflection)),
+				'this' => VariableTypeHolder::createYes($thisType),
 			],
 			[],
 			[],
@@ -3665,7 +3667,9 @@ class MutatingScope implements Scope
 			true,
 			[],
 			[],
-			[],
+			[
+				'$this' => $thisType,
+			],
 			[],
 			false,
 			$classReflection->isAnonymous() ? $this : null,
@@ -3874,6 +3878,7 @@ class MutatingScope implements Scope
 
 		if ($preserveThis && array_key_exists('this', $this->variableTypes)) {
 			$variableTypes['this'] = $this->variableTypes['this'];
+			$nativeExpressionTypes['$this'] = $this->variableTypes['this']->getType();
 		}
 
 		return $this->scopeFactory->create(

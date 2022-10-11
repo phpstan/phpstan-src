@@ -145,6 +145,9 @@ class MutatingScope implements Scope
 	/** @var Type[] */
 	private array $resolvedTypes = [];
 
+	/** @var Type[] */
+	private array $resolvedNativeTypes = [];
+
 	/** @var array<string, self> */
 	private array $truthyScopes = [];
 
@@ -532,6 +535,36 @@ class MutatingScope implements Scope
 		return $this->variableTypes[$variableName]->getType();
 	}
 
+	private function getVariableNativeType(string $variableName): Type
+	{
+		if ($this->hasVariableType($variableName)->maybe()) {
+			if ($variableName === 'argc') {
+				return IntegerRangeType::fromInterval(1, null);
+			}
+			if ($variableName === 'argv') {
+				return AccessoryArrayListType::intersectWith(TypeCombinator::intersect(
+					new ArrayType(new IntegerType(), new StringType()),
+					new NonEmptyArrayType(),
+				));
+			}
+		}
+
+		if ($this->isGlobalVariable($variableName)) {
+			return new ArrayType(new StringType(), new MixedType($this->explicitMixedForGlobalVariables));
+		}
+
+		if ($this->hasVariableType($variableName)->no()) {
+			throw new UndefinedVariableException($this, $variableName);
+		}
+
+		$key = '$' . $variableName;
+		if (array_key_exists($key, $this->nativeExpressionTypes)) {
+			return $this->nativeExpressionTypes[$key];
+		}
+
+		return new MixedType();
+	}
+
 	/**
 	 * @api
 	 * @return array<int, string>
@@ -667,26 +700,42 @@ class MutatingScope implements Scope
 	}
 
 	/** @api */
-	public function getNativeType(Expr $expr): Type
+	public function getNativeType(Expr $node): Type
 	{
-		$key = $this->getNodeKey($expr);
-
-		if (array_key_exists($key, $this->nativeExpressionTypes)) {
-			return $this->nativeExpressionTypes[$key];
+		if ($node instanceof GetIterableKeyTypeExpr) {
+			return $this->getNativeType($node->getExpr())->getIterableKeyType();
 		}
-
-		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			return $this->getNullsafeShortCircuitingType(
-				$expr->var,
-				$this->getTypeFromArrayDimFetch(
-					$expr,
-					$this->getNativeType($expr->dim),
-					$this->getNativeType($expr->var),
-				),
+		if ($node instanceof GetIterableValueTypeExpr) {
+			return $this->getNativeType($node->getExpr())->getIterableValueType();
+		}
+		if ($node instanceof GetOffsetValueTypeExpr) {
+			return $this->getNativeType($node->getVar())->getOffsetValueType($this->getNativeType($node->getDim()));
+		}
+		if ($node instanceof SetOffsetValueTypeExpr) {
+			return $this->getNativeType($node->getVar())->setOffsetValueType(
+				$node->getDim() !== null ? $this->getNativeType($node->getDim()) : null,
+				$this->getNativeType($node->getValue()),
 			);
 		}
+		if ($node instanceof TypeExpr) {
+			return $node->getExprType();
+		}
 
-		return new MixedType();
+		if ($node instanceof OriginalPropertyTypeExpr) {
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node->getPropertyFetch(), $this);
+			if ($propertyReflection === null) {
+				return new ErrorType();
+			}
+
+			return $propertyReflection->getReadableType();
+		}
+
+		$key = $this->getNodeKey($node);
+
+		if (!array_key_exists($key, $this->resolvedNativeTypes)) {
+			$this->resolvedNativeTypes[$key] = $this->resolveNativeType($node);
+		}
+		return $this->resolvedNativeTypes[$key];
 	}
 
 	private function getNodeKey(Expr $node): string
@@ -1854,6 +1903,1244 @@ class MutatingScope implements Scope
 		if ($node instanceof FuncCall) {
 			if ($node->name instanceof Expr) {
 				$calledOnType = $this->getType($node->name);
+				if ($calledOnType->isCallable()->no()) {
+					return new ErrorType();
+				}
+
+				return ParametersAcceptorSelector::selectFromArgs(
+					$this,
+					$node->getArgs(),
+					$calledOnType->getCallableParametersAcceptors($this),
+				)->getReturnType();
+			}
+
+			if (!$this->reflectionProvider->hasFunction($node->name, $this)) {
+				return new ErrorType();
+			}
+
+			$functionReflection = $this->reflectionProvider->getFunction($node->name, $this);
+			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+				$this,
+				$node->getArgs(),
+				$functionReflection->getVariants(),
+			);
+			$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
+			if ($normalizedNode !== null) {
+				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicFunctionReturnTypeExtensions() as $dynamicFunctionReturnTypeExtension) {
+					if (!$dynamicFunctionReturnTypeExtension->isFunctionSupported($functionReflection)) {
+						continue;
+					}
+
+					$resolvedType = $dynamicFunctionReturnTypeExtension->getTypeFromFunctionCall(
+						$functionReflection,
+						$normalizedNode,
+						$this,
+					);
+					if ($resolvedType !== null) {
+						return $resolvedType;
+					}
+				}
+			}
+
+			return $parametersAcceptor->getReturnType();
+		}
+
+		return new MixedType();
+	}
+
+	private function resolveNativeType(Expr $node): Type
+	{
+		if ($node instanceof Expr\Exit_ || $node instanceof Expr\Throw_) {
+			return new NeverType(true);
+		}
+
+		$exprString = $this->getNodeKey($node);
+
+		// todo
+		if (isset($this->moreSpecificTypes[$exprString]) && $this->moreSpecificTypes[$exprString]->getCertainty()->yes()) {
+			return $this->moreSpecificTypes[$exprString]->getType();
+		}
+
+		if ($node instanceof Expr\BinaryOp\Smaller) {
+			return $this->getNativeType($node->left)->isSmallerThan($this->getNativeType($node->right))->toBooleanType();
+		}
+
+		if ($node instanceof Expr\BinaryOp\SmallerOrEqual) {
+			return $this->getNativeType($node->left)->isSmallerThanOrEqual($this->getNativeType($node->right))->toBooleanType();
+		}
+
+		if ($node instanceof Expr\BinaryOp\Greater) {
+			return $this->getNativeType($node->right)->isSmallerThan($this->getNativeType($node->left))->toBooleanType();
+		}
+
+		if ($node instanceof Expr\BinaryOp\GreaterOrEqual) {
+			return $this->getNativeType($node->right)->isSmallerThanOrEqual($this->getNativeType($node->left))->toBooleanType();
+		}
+
+		if ($node instanceof Expr\BinaryOp\Equal) {
+			if (
+				$node->left instanceof Variable
+				&& is_string($node->left->name)
+				&& $node->right instanceof Variable
+				&& is_string($node->right->name)
+				&& $node->left->name === $node->right->name
+			) {
+				return new ConstantBooleanType(true);
+			}
+
+			$leftType = $this->getNativeType($node->left);
+			$rightType = $this->getNativeType($node->right);
+
+			return $this->initializerExprTypeResolver->resolveEqualType($leftType, $rightType);
+		}
+
+		if ($node instanceof Expr\BinaryOp\NotEqual) {
+			return $this->getNativeType(new Expr\BooleanNot(new BinaryOp\Equal($node->left, $node->right)));
+		}
+
+		if ($node instanceof Expr\Empty_) {
+			// todo
+			$result = $this->issetCheck($node->expr, static function (Type $type): ?bool {
+				$isNull = (new NullType())->isSuperTypeOf($type);
+				$isFalsey = (new ConstantBooleanType(false))->isSuperTypeOf($type->toBoolean());
+				if ($isNull->maybe()) {
+					return null;
+				}
+				if ($isFalsey->maybe()) {
+					return null;
+				}
+
+				if ($isNull->yes()) {
+					if ($isFalsey->yes()) {
+						return false;
+					}
+					if ($isFalsey->no()) {
+						return true;
+					}
+
+					return false;
+				}
+
+				return !$isFalsey->yes();
+			});
+			if ($result === null) {
+				return new BooleanType();
+			}
+
+			return new ConstantBooleanType(!$result);
+		}
+
+		if ($node instanceof Node\Expr\BooleanNot) {
+			$exprBooleanType = $this->getNativeType($node->expr)->toBoolean();
+			if ($exprBooleanType instanceof ConstantBooleanType) {
+				return new ConstantBooleanType(!$exprBooleanType->getValue());
+			}
+
+			return new BooleanType();
+		}
+
+		if ($node instanceof Node\Expr\BitwiseNot) {
+			return $this->initializerExprTypeResolver->getBitwiseNotType($node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if (
+			$node instanceof Node\Expr\BinaryOp\BooleanAnd
+			|| $node instanceof Node\Expr\BinaryOp\LogicalAnd
+		) {
+			$leftBooleanType = $this->getNativeType($node->left)->toBoolean();
+
+			if (
+				$leftBooleanType instanceof ConstantBooleanType
+				&& !$leftBooleanType->getValue()
+			) {
+				return new ConstantBooleanType(false);
+			}
+
+			// todo TypeSpecifier uses non-native types now
+			$rightBooleanType = $this->filterByTruthyValue($node->left)->getNativeType($node->right)->toBoolean();
+			if (
+				$rightBooleanType instanceof ConstantBooleanType
+				&& !$rightBooleanType->getValue()
+			) {
+				return new ConstantBooleanType(false);
+			}
+
+			if (
+				$leftBooleanType instanceof ConstantBooleanType
+				&& $leftBooleanType->getValue()
+				&& $rightBooleanType instanceof ConstantBooleanType
+				&& $rightBooleanType->getValue()
+			) {
+				return new ConstantBooleanType(true);
+			}
+
+			return new BooleanType();
+		}
+
+		if (
+			$node instanceof Node\Expr\BinaryOp\BooleanOr
+			|| $node instanceof Node\Expr\BinaryOp\LogicalOr
+		) {
+			$leftBooleanType = $this->getNativeType($node->left)->toBoolean();
+			if (
+				$leftBooleanType instanceof ConstantBooleanType
+				&& $leftBooleanType->getValue()
+			) {
+				return new ConstantBooleanType(true);
+			}
+
+			$rightBooleanType = $this->filterByFalseyValue($node->left)->getNativeType($node->right)->toBoolean();
+			if (
+				$rightBooleanType instanceof ConstantBooleanType
+				&& $rightBooleanType->getValue()
+			) {
+				return new ConstantBooleanType(true);
+			}
+
+			if (
+				$leftBooleanType instanceof ConstantBooleanType
+				&& !$leftBooleanType->getValue()
+				&& $rightBooleanType instanceof ConstantBooleanType
+				&& !$rightBooleanType->getValue()
+			) {
+				return new ConstantBooleanType(false);
+			}
+
+			return new BooleanType();
+		}
+
+		if ($node instanceof Node\Expr\BinaryOp\LogicalXor) {
+			$leftBooleanType = $this->getNativeType($node->left)->toBoolean();
+			$rightBooleanType = $this->getNativeType($node->right)->toBoolean();
+			if (
+				$leftBooleanType instanceof ConstantBooleanType
+				&& $rightBooleanType instanceof ConstantBooleanType
+			) {
+				return new ConstantBooleanType(
+					$leftBooleanType->getValue() xor $rightBooleanType->getValue(),
+				);
+			}
+
+			return new BooleanType();
+		}
+
+		if ($node instanceof Expr\BinaryOp\Identical) {
+			if (
+				$node->left instanceof Variable
+				&& is_string($node->left->name)
+				&& $node->right instanceof Variable
+				&& is_string($node->right->name)
+				&& $node->left->name === $node->right->name
+			) {
+				return new ConstantBooleanType(true);
+			}
+
+			$leftType = $this->getNativeType($node->left);
+			$rightType = $this->getNativeType($node->right);
+
+			if (
+				(
+					$node->left instanceof Node\Expr\PropertyFetch
+					|| $node->left instanceof Node\Expr\StaticPropertyFetch
+				)
+				&& $rightType instanceof NullType
+				&& !$this->hasPropertyNativeType($node->left)
+			) {
+				return new BooleanType();
+			}
+
+			if (
+				(
+					$node->right instanceof Node\Expr\PropertyFetch
+					|| $node->right instanceof Node\Expr\StaticPropertyFetch
+				)
+				&& $leftType instanceof NullType
+				&& !$this->hasPropertyNativeType($node->right)
+			) {
+				return new BooleanType();
+			}
+
+			return $this->initializerExprTypeResolver->resolveIdenticalType($leftType, $rightType);
+		}
+
+		if ($node instanceof Expr\BinaryOp\NotIdentical) {
+			return $this->getNativeType(new Expr\BooleanNot(new BinaryOp\Identical($node->left, $node->right)));
+		}
+
+		if ($node instanceof Expr\Instanceof_) {
+			$expressionType = $this->getNativeType($node->expr);
+			if (
+				$this->isInTrait()
+				&& TypeUtils::findThisType($expressionType) !== null
+			) {
+				return new BooleanType();
+			}
+			if ($expressionType instanceof NeverType) {
+				return new ConstantBooleanType(false);
+			}
+
+			$uncertainty = false;
+
+			if ($node->class instanceof Node\Name) {
+				$unresolvedClassName = $node->class->toString();
+				if (
+					strtolower($unresolvedClassName) === 'static'
+					&& $this->isInClass()
+				) {
+					$classType = new StaticType($this->getClassReflection());
+				} else {
+					$className = $this->resolveName($node->class);
+					$classType = new ObjectType($className);
+				}
+			} else {
+				$classType = $this->getNativeType($node->class);
+				$classType = TypeTraverser::map($classType, static function (Type $type, callable $traverse) use (&$uncertainty): Type {
+					if ($type instanceof UnionType || $type instanceof IntersectionType) {
+						return $traverse($type);
+					}
+					if ($type instanceof TypeWithClassName) {
+						$uncertainty = true;
+						return $type;
+					}
+					if ($type instanceof GenericClassStringType) {
+						$uncertainty = true;
+						return $type->getGenericType();
+					}
+					if ($type instanceof ConstantStringType) {
+						return new ObjectType($type->getValue());
+					}
+					return new MixedType();
+				});
+			}
+
+			if ($classType->isSuperTypeOf(new MixedType())->yes()) {
+				return new BooleanType();
+			}
+
+			$isSuperType = $classType->isSuperTypeOf($expressionType);
+
+			if ($isSuperType->no()) {
+				return new ConstantBooleanType(false);
+			} elseif ($isSuperType->yes() && !$uncertainty) {
+				return new ConstantBooleanType(true);
+			}
+
+			return new BooleanType();
+		}
+
+		if ($node instanceof Node\Expr\UnaryPlus) {
+			return $this->getNativeType($node->expr)->toNumber();
+		}
+
+		if ($node instanceof Expr\ErrorSuppress
+			|| $node instanceof Expr\Assign
+		) {
+			return $this->getNativeType($node->expr);
+		}
+
+		if ($node instanceof Node\Expr\UnaryMinus) {
+			return $this->initializerExprTypeResolver->getUnaryMinusType($node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\BinaryOp\Concat) {
+			return $this->initializerExprTypeResolver->getConcatType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Concat) {
+			return $this->initializerExprTypeResolver->getConcatType($node->var, $node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof BinaryOp\BitwiseAnd) {
+			return $this->initializerExprTypeResolver->getBitwiseAndType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\BitwiseAnd) {
+			return $this->initializerExprTypeResolver->getBitwiseAndType($node->var, $node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof BinaryOp\BitwiseOr) {
+			return $this->initializerExprTypeResolver->getBitwiseOrType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\BitwiseOr) {
+			return $this->initializerExprTypeResolver->getBitwiseOrType($node->var, $node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof BinaryOp\BitwiseXor) {
+			return $this->initializerExprTypeResolver->getBitwiseXorType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\BitwiseXor) {
+			return $this->initializerExprTypeResolver->getBitwiseXorType($node->var, $node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\BinaryOp\Spaceship) {
+			return $this->initializerExprTypeResolver->getSpaceshipType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof BinaryOp\Div) {
+			return $this->initializerExprTypeResolver->getDivType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Div) {
+			return $this->initializerExprTypeResolver->getDivType($node->var, $node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof BinaryOp\Mod) {
+			return $this->initializerExprTypeResolver->getModType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Mod) {
+			return $this->initializerExprTypeResolver->getModType($node->var, $node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof BinaryOp\Plus) {
+			return $this->initializerExprTypeResolver->getPlusType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Plus) {
+			return $this->initializerExprTypeResolver->getPlusType($node->var, $node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof BinaryOp\Minus) {
+			return $this->initializerExprTypeResolver->getMinusType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Minus) {
+			return $this->initializerExprTypeResolver->getMinusType($node->var, $node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof BinaryOp\Mul) {
+			return $this->initializerExprTypeResolver->getMulType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Mul) {
+			return $this->initializerExprTypeResolver->getMulType($node->var, $node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof BinaryOp\Pow) {
+			return $this->initializerExprTypeResolver->getPowType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\Pow) {
+			return $this->initializerExprTypeResolver->getPowType($node->var, $node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof BinaryOp\ShiftLeft) {
+			return $this->initializerExprTypeResolver->getShiftLeftType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\ShiftLeft) {
+			return $this->initializerExprTypeResolver->getShiftLeftType($node->var, $node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof BinaryOp\ShiftRight) {
+			return $this->initializerExprTypeResolver->getShiftRightType($node->left, $node->right, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\AssignOp\ShiftRight) {
+			return $this->initializerExprTypeResolver->getShiftRightType($node->var, $node->expr, fn (Expr $expr): Type => $this->getNativeType($expr));
+		}
+
+		if ($node instanceof Expr\Clone_) {
+			return $this->getNativeType($node->expr);
+		}
+
+		if ($node instanceof LNumber) {
+			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
+		} elseif ($node instanceof String_) {
+			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
+		} elseif ($node instanceof Node\Scalar\Encapsed) {
+			$parts = [];
+			foreach ($node->parts as $part) {
+				if ($part instanceof EncapsedStringPart) {
+					$parts[] = new ConstantStringType($part->value);
+					continue;
+				}
+
+				$partStringType = $this->getNativeType($part)->toString();
+				if ($partStringType instanceof ErrorType) {
+					return new ErrorType();
+				}
+
+				$parts[] = $partStringType;
+			}
+
+			$constantString = new ConstantStringType('');
+			foreach ($parts as $part) {
+				if ($part instanceof ConstantStringType) {
+					$constantString = $constantString->append($part);
+					continue;
+				}
+
+				$isNonEmpty = false;
+				$isNonFalsy = false;
+				$isLiteralString = true;
+				foreach ($parts as $partType) {
+					if ($partType->isNonFalsyString()->yes()) {
+						$isNonFalsy = true;
+					}
+					if ($partType->isNonEmptyString()->yes()) {
+						$isNonEmpty = true;
+					}
+					if ($partType->isLiteralString()->yes()) {
+						continue;
+					}
+					$isLiteralString = false;
+				}
+
+				$accessoryTypes = [];
+				if ($isNonFalsy === true) {
+					$accessoryTypes[] = new AccessoryNonFalsyStringType();
+				} elseif ($isNonEmpty === true) {
+					$accessoryTypes[] = new AccessoryNonEmptyStringType();
+				}
+
+				if ($isLiteralString === true) {
+					$accessoryTypes[] = new AccessoryLiteralStringType();
+				}
+				if (count($accessoryTypes) > 0) {
+					$accessoryTypes[] = new StringType();
+					return new IntersectionType($accessoryTypes);
+				}
+
+				return new StringType();
+			}
+
+			return $constantString;
+		} elseif ($node instanceof DNumber) {
+			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
+		} elseif ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
+			if ($node instanceof FuncCall) {
+				if ($node->name instanceof Name) {
+					if ($this->reflectionProvider->hasFunction($node->name, $this)) {
+						return $this->createFirstClassCallable(
+							$this->reflectionProvider->getFunction($node->name, $this)->getVariants(),
+						);
+					}
+
+					return new ObjectType(Closure::class);
+				}
+
+				$callableType = $this->getNativeType($node->name);
+				if (!$callableType->isCallable()->yes()) {
+					return new ObjectType(Closure::class);
+				}
+
+				return $this->createFirstClassCallable(
+					$callableType->getCallableParametersAcceptors($this),
+				);
+			}
+
+			if ($node instanceof MethodCall) {
+				if (!$node->name instanceof Node\Identifier) {
+					return new ObjectType(Closure::class);
+				}
+
+				$varType = $this->getNativeType($node->var);
+
+				// todo only native method
+				$method = $this->getMethodReflection($varType, $node->name->toString());
+				if ($method === null) {
+					return new ObjectType(Closure::class);
+				}
+
+				return $this->createFirstClassCallable($method->getVariants());
+			}
+
+			if ($node instanceof Expr\StaticCall) {
+				if (!$node->class instanceof Name) {
+					return new ObjectType(Closure::class);
+				}
+
+				// todo only native method
+
+				$classType = $this->resolveTypeByName($node->class);
+				if (!$node->name instanceof Node\Identifier) {
+					return new ObjectType(Closure::class);
+				}
+
+				$methodName = $node->name->toString();
+				if (!$classType->hasMethod($methodName)->yes()) {
+					return new ObjectType(Closure::class);
+				}
+
+				return $this->createFirstClassCallable($classType->getMethod($methodName, $this)->getVariants());
+			}
+
+			if ($node instanceof New_) {
+				return new ErrorType();
+			}
+
+			throw new ShouldNotHappenException();
+		} elseif ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
+			$parameters = [];
+			$isVariadic = false;
+			$firstOptionalParameterIndex = null;
+			foreach ($node->params as $i => $param) {
+				$isOptionalCandidate = $param->default !== null || $param->variadic;
+
+				if ($isOptionalCandidate) {
+					if ($firstOptionalParameterIndex === null) {
+						$firstOptionalParameterIndex = $i;
+					}
+				} else {
+					$firstOptionalParameterIndex = null;
+				}
+			}
+
+			foreach ($node->params as $i => $param) {
+				if ($param->variadic) {
+					$isVariadic = true;
+				}
+				if (!$param->var instanceof Variable || !is_string($param->var->name)) {
+					throw new ShouldNotHappenException();
+				}
+				$parameters[] = new NativeParameterReflection(
+					$param->var->name,
+					$firstOptionalParameterIndex !== null && $i >= $firstOptionalParameterIndex,
+					$this->getFunctionType($param->type, $this->isParameterValueNullable($param), false),
+					$param->byRef
+						? PassedByReference::createCreatesNewVariable()
+						: PassedByReference::createNo(),
+					$param->variadic,
+					$param->default !== null ? $this->getNativeType($param->default) : null,
+				);
+			}
+
+			$callableParameters = null;
+			$arrayMapArgs = $node->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
+			if ($arrayMapArgs !== null) {
+				$callableParameters = [];
+				foreach ($arrayMapArgs as $funcCallArg) {
+					$callableParameters[] = new DummyParameter('item', $this->getNativeType($funcCallArg->value)->getIterableValueType(), false, PassedByReference::createNo(), false, null);
+				}
+			}
+
+			if ($node instanceof Expr\ArrowFunction) {
+				$arrowScope = $this->enterArrowFunctionWithoutReflection($node, $callableParameters);
+
+				if ($node->expr instanceof Expr\Yield_ || $node->expr instanceof Expr\YieldFrom) {
+					$yieldNode = $node->expr;
+
+					if ($yieldNode instanceof Expr\Yield_) {
+						if ($yieldNode->key === null) {
+							$keyType = new IntegerType();
+						} else {
+							$keyType = $arrowScope->getNativeType($yieldNode->key);
+						}
+
+						if ($yieldNode->value === null) {
+							$valueType = new NullType();
+						} else {
+							$valueType = $arrowScope->getNativeType($yieldNode->value);
+						}
+					} else {
+						$yieldFromType = $arrowScope->getNativeType($yieldNode->expr);
+						$keyType = $yieldFromType->getIterableKeyType();
+						$valueType = $yieldFromType->getIterableValueType();
+					}
+
+					$returnType = new GenericObjectType(Generator::class, [
+						$keyType,
+						$valueType,
+						new MixedType(),
+						new VoidType(),
+					]);
+				} else {
+					$returnType = $arrowScope->getNativeType($node->expr);
+					if ($node->returnType !== null) {
+						$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
+					}
+				}
+			} else {
+				$closureScope = $this->enterAnonymousFunctionWithoutReflection($node, $callableParameters);
+				$closureReturnStatements = [];
+				$closureYieldStatements = [];
+				$closureExecutionEnds = [];
+				$this->nodeScopeResolver->processStmtNodes($node, $node->stmts, $closureScope, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds): void {
+					if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {
+						return;
+					}
+
+					if ($node instanceof ExecutionEndNode) {
+						if ($node->getStatementResult()->isAlwaysTerminating()) {
+							foreach ($node->getStatementResult()->getExitPoints() as $exitPoint) {
+								if ($exitPoint->getStatement() instanceof Node\Stmt\Return_) {
+									continue;
+								}
+
+								$closureExecutionEnds[] = $node;
+								break;
+							}
+
+							if (count($node->getStatementResult()->getExitPoints()) === 0) {
+								$closureExecutionEnds[] = $node;
+							}
+						}
+
+						return;
+					}
+
+					if ($node instanceof Node\Stmt\Return_) {
+						$closureReturnStatements[] = [$node, $scope];
+					}
+
+					if (!$node instanceof Expr\Yield_ && !$node instanceof Expr\YieldFrom) {
+						return;
+					}
+
+					$closureYieldStatements[] = [$node, $scope];
+				});
+
+				$returnTypes = [];
+				$hasNull = false;
+				foreach ($closureReturnStatements as [$returnNode, $returnScope]) {
+					if ($returnNode->expr === null) {
+						$hasNull = true;
+						continue;
+					}
+
+					$returnTypes[] = $returnScope->getNativeType($returnNode->expr);
+				}
+
+				if (count($returnTypes) === 0) {
+					if (count($closureExecutionEnds) > 0 && !$hasNull) {
+						$returnType = new NeverType(true);
+					} else {
+						$returnType = new VoidType();
+					}
+				} else {
+					if (count($closureExecutionEnds) > 0) {
+						$returnTypes[] = new NeverType(true);
+					}
+					if ($hasNull) {
+						$returnTypes[] = new NullType();
+					}
+					$returnType = TypeCombinator::union(...$returnTypes);
+				}
+
+				if (count($closureYieldStatements) > 0) {
+					$keyTypes = [];
+					$valueTypes = [];
+					foreach ($closureYieldStatements as [$yieldNode, $yieldScope]) {
+						if ($yieldNode instanceof Expr\Yield_) {
+							if ($yieldNode->key === null) {
+								$keyTypes[] = new IntegerType();
+							} else {
+								$keyTypes[] = $yieldScope->getNativeType($yieldNode->key);
+							}
+
+							if ($yieldNode->value === null) {
+								$valueTypes[] = new NullType();
+							} else {
+								$valueTypes[] = $yieldScope->getNativeType($yieldNode->value);
+							}
+
+							continue;
+						}
+
+						$yieldFromType = $yieldScope->getNativeType($yieldNode->expr);
+						$keyTypes[] = $yieldFromType->getIterableKeyType();
+						$valueTypes[] = $yieldFromType->getIterableValueType();
+					}
+
+					$returnType = new GenericObjectType(Generator::class, [
+						TypeCombinator::union(...$keyTypes),
+						TypeCombinator::union(...$valueTypes),
+						new MixedType(),
+						$returnType,
+					]);
+				} else {
+					$returnType = TypehintHelper::decideType($this->getFunctionType($node->returnType, false, false), $returnType);
+				}
+			}
+
+			return new ClosureType(
+				$parameters,
+				$returnType,
+				$isVariadic,
+			);
+		} elseif ($node instanceof New_) {
+			// todo
+			if ($node->class instanceof Name) {
+				$type = $this->exactInstantiation($node, $node->class->toString());
+				if ($type !== null) {
+					return $type;
+				}
+
+				$lowercasedClassName = strtolower($node->class->toString());
+				if ($lowercasedClassName === 'static') {
+					if (!$this->isInClass()) {
+						return new ErrorType();
+					}
+
+					return new StaticType($this->getClassReflection());
+				}
+				if ($lowercasedClassName === 'parent') {
+					return new NonexistentParentClassType();
+				}
+
+				return new ObjectType($node->class->toString());
+			}
+			if ($node->class instanceof Node\Stmt\Class_) {
+				$anonymousClassReflection = $this->reflectionProvider->getAnonymousClassReflection($node->class, $this);
+
+				return new ObjectType($anonymousClassReflection->getName());
+			}
+
+			$exprType = $this->getNativeType($node->class);
+
+			return $this->getTypeToInstantiateForNew($exprType);
+
+		} elseif ($node instanceof Array_) {
+			return $this->initializerExprTypeResolver->getArrayType($node, fn (Expr $expr): Type => $this->getNativeType($expr));
+		} elseif ($node instanceof Int_) {
+			return $this->getNativeType($node->expr)->toInteger();
+		} elseif ($node instanceof Bool_) {
+			return $this->getNativeType($node->expr)->toBoolean();
+		} elseif ($node instanceof Double) {
+			return $this->getNativeType($node->expr)->toFloat();
+		} elseif ($node instanceof Node\Expr\Cast\String_) {
+			return $this->getNativeType($node->expr)->toString();
+		} elseif ($node instanceof Node\Expr\Cast\Array_) {
+			return $this->getNativeType($node->expr)->toArray();
+		} elseif ($node instanceof Node\Scalar\MagicConst) {
+			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
+		} elseif ($node instanceof Object_) {
+			$castToObject = static function (Type $type): Type {
+				if ((new ObjectWithoutClassType())->isSuperTypeOf($type)->yes()) {
+					return $type;
+				}
+
+				return new ObjectType('stdClass');
+			};
+
+			$exprType = $this->getNativeType($node->expr);
+			if ($exprType instanceof UnionType) {
+				return TypeCombinator::union(...array_map($castToObject, $exprType->getTypes()));
+			}
+
+			return $castToObject($exprType);
+		} elseif ($node instanceof Unset_) {
+			return new NullType();
+		} elseif ($node instanceof Expr\PostInc || $node instanceof Expr\PostDec) {
+			return $this->getNativeType($node->var);
+		} elseif ($node instanceof Expr\PreInc || $node instanceof Expr\PreDec) {
+			$varType = $this->getNativeType($node->var);
+			$varScalars = TypeUtils::getConstantScalars($varType);
+			$stringType = new StringType();
+			if (count($varScalars) > 0) {
+				$newTypes = [];
+
+				foreach ($varScalars as $scalar) {
+					$varValue = $scalar->getValue();
+					if ($node instanceof Expr\PreInc) {
+						++$varValue;
+					} else {
+						--$varValue;
+					}
+
+					$newTypes[] = $this->getTypeFromValue($varValue);
+				}
+				return TypeCombinator::union(...$newTypes);
+			} elseif ($varType->isString()->yes()) {
+				if ($varType->isLiteralString()->yes()) {
+					return new IntersectionType([$stringType, new AccessoryLiteralStringType()]);
+				}
+				return $stringType;
+			}
+
+			if ($node instanceof Expr\PreInc) {
+				return $this->getNativeType(new BinaryOp\Plus($node->var, new LNumber(1)));
+			}
+
+			return $this->getNativeType(new BinaryOp\Minus($node->var, new LNumber(1)));
+		} elseif ($node instanceof Expr\Yield_) {
+			$functionReflection = $this->getFunction();
+			if ($functionReflection === null) {
+				return new MixedType();
+			}
+
+			$returnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			if (!$returnType instanceof TypeWithClassName) {
+				return new MixedType();
+			}
+
+			$generatorSendType = GenericTypeVariableResolver::getType($returnType, Generator::class, 'TSend');
+			if ($generatorSendType === null) {
+				return new MixedType();
+			}
+
+			return $generatorSendType;
+		} elseif ($node instanceof Expr\YieldFrom) {
+			$yieldFromType = $this->getNativeType($node->expr);
+
+			if (!$yieldFromType instanceof TypeWithClassName) {
+				return new MixedType();
+			}
+
+			$generatorReturnType = GenericTypeVariableResolver::getType($yieldFromType, Generator::class, 'TReturn');
+			if ($generatorReturnType === null) {
+				return new MixedType();
+			}
+
+			return $generatorReturnType;
+		} elseif ($node instanceof Expr\Match_) {
+			$cond = $node->cond;
+			$types = [];
+
+			$matchScope = $this;
+			foreach ($node->arms as $arm) {
+				if ($arm->conds === null) {
+					$types[] = $matchScope->getNativeType($arm->body);
+					continue;
+				}
+
+				if (count($arm->conds) === 0) {
+					throw new ShouldNotHappenException();
+				}
+
+				$filteringExpr = null;
+				foreach ($arm->conds as $armCond) {
+					$armCondExpr = new BinaryOp\Identical($cond, $armCond);
+
+					if ($filteringExpr === null) {
+						$filteringExpr = $armCondExpr;
+						continue;
+					}
+
+					$filteringExpr = new BinaryOp\BooleanOr($filteringExpr, $armCondExpr);
+				}
+
+				$filteringExprType = $matchScope->getNativeType($filteringExpr);
+
+				if (!(new ConstantBooleanType(false))->isSuperTypeOf($filteringExprType)->yes()) {
+					// todo TypeSpecifier will use non-native types
+					$truthyScope = $matchScope->filterByTruthyValue($filteringExpr);
+					$types[] = $truthyScope->getNativeType($arm->body);
+				}
+
+				$matchScope = $matchScope->filterByFalseyValue($filteringExpr);
+			}
+
+			return TypeCombinator::union(...$types);
+		}
+
+		if ($node instanceof Expr\Isset_) {
+			$issetResult = true;
+			foreach ($node->vars as $var) {
+				// todo issetCheck uses non-native types
+				$result = $this->issetCheck($var, static function (Type $type): ?bool {
+					$isNull = (new NullType())->isSuperTypeOf($type);
+					if ($isNull->maybe()) {
+						return null;
+					}
+
+					return !$isNull->yes();
+				});
+				if ($result !== null) {
+					if (!$result) {
+						return new ConstantBooleanType($result);
+					}
+
+					continue;
+				}
+
+				$issetResult = $result;
+			}
+
+			if ($issetResult === null) {
+				return new BooleanType();
+			}
+
+			return new ConstantBooleanType($issetResult);
+		}
+
+		if ($node instanceof Expr\AssignOp\Coalesce) {
+			return $this->getNativeType(new BinaryOp\Coalesce($node->var, $node->expr, $node->getAttributes()));
+		}
+
+		if ($node instanceof Expr\BinaryOp\Coalesce) {
+			$leftType = $this->getNativeType($node->left);
+			// todo TypeSpecifier uses non-native types
+			$rightType = $this->filterByFalseyValue(
+				new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null'))),
+			)->getNativeType($node->right);
+
+			// todo issetCheck uses non-native types
+			$result = $this->issetCheck($node->left, static function (Type $type): ?bool {
+				$isNull = (new NullType())->isSuperTypeOf($type);
+				if ($isNull->maybe()) {
+					return null;
+				}
+
+				return !$isNull->yes();
+			});
+
+			if ($result === null) {
+				return TypeCombinator::union(
+					TypeCombinator::removeNull($leftType),
+					$rightType,
+				);
+			}
+
+			if ($result) {
+				return TypeCombinator::removeNull($leftType);
+			}
+
+			return $rightType;
+		}
+
+		if ($node instanceof ConstFetch) {
+			$constName = (string) $node->name;
+			$loweredConstName = strtolower($constName);
+			if ($loweredConstName === 'true') {
+				return new ConstantBooleanType(true);
+			} elseif ($loweredConstName === 'false') {
+				return new ConstantBooleanType(false);
+			} elseif ($loweredConstName === 'null') {
+				return new NullType();
+			}
+
+			if ($node->name->isFullyQualified()) {
+				if (array_key_exists($node->name->toCodeString(), $this->constantTypes)) {
+					return $this->constantResolver->resolveConstantType($node->name->toString(), $this->constantTypes[$node->name->toCodeString()]);
+				}
+			}
+
+			if ($this->getNamespace() !== null) {
+				$constantName = new FullyQualified([$this->getNamespace(), $constName]);
+				if (array_key_exists($constantName->toCodeString(), $this->constantTypes)) {
+					return $this->constantResolver->resolveConstantType($constantName->toString(), $this->constantTypes[$constantName->toCodeString()]);
+				}
+			}
+
+			$constantName = new FullyQualified($constName);
+			if (array_key_exists($constantName->toCodeString(), $this->constantTypes)) {
+				return $this->constantResolver->resolveConstantType($constantName->toString(), $this->constantTypes[$constantName->toCodeString()]);
+			}
+
+			$constantType = $this->constantResolver->resolveConstant($node->name, $this);
+			if ($constantType !== null) {
+				return $constantType;
+			}
+
+			return new ErrorType();
+		} elseif ($node instanceof Node\Expr\ClassConstFetch && $node->name instanceof Node\Identifier) {
+			// todo do not read PHPDocs
+			return $this->initializerExprTypeResolver->getClassConstFetchTypeByReflection(
+				$node->class,
+				$node->name->name,
+				$this->isInClass() ? $this->getClassReflection() : null,
+				fn (Expr $expr): Type => $this->getNativeType($expr),
+			);
+		}
+
+		if ($node instanceof Expr\Ternary) {
+			if ($node->if === null) {
+				$conditionType = $this->getNativeType($node->cond);
+				$booleanConditionType = $conditionType->toBoolean();
+				if ($booleanConditionType instanceof ConstantBooleanType) {
+					if ($booleanConditionType->getValue()) {
+						// todo TypeSpecifier will use non-native types
+						return $this->filterByTruthyValue($node->cond)->getNativeType($node->cond);
+					}
+
+					return $this->filterByFalseyValue($node->cond)->getNativeType($node->else);
+				}
+
+				// todo TypeSpecifier will use non-native types
+				return TypeCombinator::union(
+					TypeCombinator::remove($this->filterByTruthyValue($node->cond)->getNativeType($node->cond), StaticTypeFactory::falsey()),
+					$this->filterByFalseyValue($node->cond)->getNativeType($node->else),
+				);
+			}
+
+			// todo TypeSpecifier will use non-native types
+			$booleanConditionType = $this->getNativeType($node->cond)->toBoolean();
+			if ($booleanConditionType instanceof ConstantBooleanType) {
+				if ($booleanConditionType->getValue()) {
+					return $this->filterByTruthyValue($node->cond)->getNativeType($node->if);
+				}
+
+				return $this->filterByFalseyValue($node->cond)->getNativeType($node->else);
+			}
+
+			// todo TypeSpecifier will use non-native types
+			return TypeCombinator::union(
+				$this->filterByTruthyValue($node->cond)->getNativeType($node->if),
+				$this->filterByFalseyValue($node->cond)->getNativeType($node->else),
+			);
+		}
+
+		if ($node instanceof Variable && is_string($node->name)) {
+			if ($this->hasVariableType($node->name)->no()) {
+				return new ErrorType();
+			}
+
+			return $this->getVariableNativeType($node->name);
+		}
+
+		if ($node instanceof Expr\ArrayDimFetch && $node->dim !== null) {
+			// todo needs to use native type inside
+			return $this->getNullsafeShortCircuitingType(
+				$node->var,
+				$this->getTypeFromArrayDimFetch(
+					$node,
+					$this->getNativeType($node->dim),
+					$this->getNativeType($node->var),
+				),
+			);
+		}
+
+		if ($node instanceof MethodCall && $node->name instanceof Node\Identifier) {
+			// todo
+			$typeCallback = function () use ($node): Type {
+				$returnType = $this->methodCallReturnType(
+					$this->getNativeType($node->var),
+					$node->name->name,
+					$node,
+				);
+				if ($returnType === null) {
+					return new ErrorType();
+				}
+				return $returnType;
+			};
+
+			// todo needs to use native type inside
+			return $this->getNullsafeShortCircuitingType($node->var, $typeCallback());
+		}
+
+		if ($node instanceof Expr\NullsafeMethodCall) {
+			$varType = $this->getNativeType($node->var);
+			if (!TypeCombinator::containsNull($varType)) {
+				return $this->getNativeType(new MethodCall($node->var, $node->name, $node->args));
+			}
+
+			// todo TypeSpecifier will use non-native type
+			return TypeCombinator::union(
+				$this->filterByTruthyValue(new BinaryOp\NotIdentical($node->var, new ConstFetch(new Name('null'))))
+					->getNativeType(new MethodCall($node->var, $node->name, $node->args)),
+				new NullType(),
+			);
+		}
+
+		if ($node instanceof Expr\StaticCall && $node->name instanceof Node\Identifier) {
+			// todo
+			$typeCallback = function () use ($node): Type {
+				if ($node->class instanceof Name) {
+					$staticMethodCalledOnType = $this->resolveTypeByName($node->class);
+				} else {
+					$staticMethodCalledOnType = TypeTraverser::map($this->getNativeType($node->class), static function (Type $type, callable $traverse): Type {
+						if ($type instanceof UnionType) {
+							return $traverse($type);
+						}
+
+						if ($type instanceof GenericClassStringType) {
+							return $type->getGenericType();
+						}
+
+						if ($type instanceof ConstantStringType && $type->isClassString()) {
+							return new ObjectType($type->getValue());
+						}
+
+						return $type;
+					});
+				}
+
+				$returnType = $this->methodCallReturnType(
+					$staticMethodCalledOnType,
+					$node->name->toString(),
+					$node,
+				);
+				if ($returnType === null) {
+					return new ErrorType();
+				}
+				return $returnType;
+			};
+
+			$callType = $typeCallback();
+			if ($node->class instanceof Expr) {
+				// todo needs to use native type inside
+				return $this->getNullsafeShortCircuitingType($node->class, $callType);
+			}
+
+			return $callType;
+		}
+
+		if ($node instanceof PropertyFetch && $node->name instanceof Node\Identifier) {
+			// todo
+			$typeCallback = function () use ($node): Type {
+				$returnType = $this->propertyFetchType(
+					$this->getNativeType($node->var),
+					$node->name->name,
+					$node,
+				);
+				if ($returnType === null) {
+					return new ErrorType();
+				}
+				return $returnType;
+			};
+
+			// todo needs to use native type inside
+			return $this->getNullsafeShortCircuitingType($node->var, $typeCallback());
+		}
+
+		if ($node instanceof Expr\NullsafePropertyFetch) {
+			// todo
+			$varType = $this->getNativeType($node->var);
+			if (!TypeCombinator::containsNull($varType)) {
+				return $this->getNativeType(new PropertyFetch($node->var, $node->name));
+			}
+
+			// todo TypeSpecifier will use non-native type
+			return TypeCombinator::union(
+				$this->filterByTruthyValue(new BinaryOp\NotIdentical($node->var, new ConstFetch(new Name('null'))))
+					->getNativeType(new PropertyFetch($node->var, $node->name)),
+				new NullType(),
+			);
+		}
+
+		if (
+			$node instanceof Expr\StaticPropertyFetch
+			&& $node->name instanceof Node\VarLikeIdentifier
+		) {
+			// todo
+			$typeCallback = function () use ($node): Type {
+				if ($node->class instanceof Name) {
+					$staticPropertyFetchedOnType = $this->resolveTypeByName($node->class);
+				} else {
+					$staticPropertyFetchedOnType = $this->getNativeType($node->class);
+					if ($staticPropertyFetchedOnType instanceof GenericClassStringType) {
+						$staticPropertyFetchedOnType = $staticPropertyFetchedOnType->getGenericType();
+					}
+				}
+
+				$returnType = $this->propertyFetchType(
+					$staticPropertyFetchedOnType,
+					$node->name->toString(),
+					$node,
+				);
+				if ($returnType === null) {
+					return new ErrorType();
+				}
+				return $returnType;
+			};
+
+			$fetchType = $typeCallback();
+			if ($node->class instanceof Expr) {
+				// todo needs to use native type inside
+				return $this->getNullsafeShortCircuitingType($node->class, $fetchType);
+			}
+
+			return $fetchType;
+		}
+
+		if ($node instanceof FuncCall) {
+			// todo
+			if ($node->name instanceof Expr) {
+				$calledOnType = $this->getNativeType($node->name);
 				if ($calledOnType->isCallable()->no()) {
 					return new ErrorType();
 				}

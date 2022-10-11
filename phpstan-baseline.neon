@@ -25,12 +25,12 @@ parameters:
 
 		-
 			message: "#^Only numeric types are allowed in pre\\-decrement, bool\\|float\\|int\\|string\\|null given\\.$#"
-			count: 1
+			count: 2
 			path: src/Analyser/MutatingScope.php
 
 		-
 			message: "#^Only numeric types are allowed in pre\\-increment, bool\\|float\\|int\\|string\\|null given\\.$#"
-			count: 1
+			count: 2
 			path: src/Analyser/MutatingScope.php
 
 		-

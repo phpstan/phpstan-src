@@ -45,7 +45,7 @@ class ArraySearchFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 
 		return $this->typeSpecifier->create(
 			$arrayArg,
-			TypeCombinator::intersect(TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), $scope->getType($arrayArg)), new NonEmptyArrayType()),
+			TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new NonEmptyArrayType()),
 			$context,
 			false,
 			$scope,

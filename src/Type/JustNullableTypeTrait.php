@@ -3,15 +3,10 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Traits\NonArrayTypeTrait;
-use PHPStan\Type\Traits\NonIterableTypeTrait;
 use function get_class;
 
 trait JustNullableTypeTrait
 {
-
-	use NonArrayTypeTrait;
-	use NonIterableTypeTrait;
 
 	/**
 	 * @return string[]

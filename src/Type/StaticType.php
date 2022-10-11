@@ -362,6 +362,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->isArray();
 	}
 
+	public function isConstantArray(): TrinaryLogic
+	{
+		return $this->getStaticObjectType()->isConstantArray();
+	}
+
 	public function isOversizedArray(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isOversizedArray();

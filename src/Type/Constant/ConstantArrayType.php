@@ -736,6 +736,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return TypeCombinator::union(...$valueTypes);
 	}
 
+	public function isConstantArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function isList(): TrinaryLogic
 	{
 		if ($this->isList) {

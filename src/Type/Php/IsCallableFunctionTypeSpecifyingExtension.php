@@ -14,7 +14,6 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\CallableType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use function count;
 use function strtolower;
@@ -49,7 +48,7 @@ class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		if (
 			$value instanceof Array_
 			&& count($value->items) === 2
-			&& $valueType instanceof ConstantArrayType
+			&& $valueType->isConstantArray()->yes()
 			&& !$valueType->isCallable()->no()
 		) {
 			if ($value->items[0] === null || $value->items[1] === null) {

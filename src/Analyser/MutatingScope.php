@@ -75,7 +75,6 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClosureType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -4619,7 +4618,7 @@ class MutatingScope implements Scope
 					$constantStrings[$key][] = $type;
 					continue;
 				}
-				if ($type instanceof ConstantArrayType) {
+				if ($type->isConstantArray()->yes()) {
 					$constantArrays[$key][] = $type;
 					continue;
 				}
@@ -4713,9 +4712,9 @@ class MutatingScope implements Scope
 				$bArrays = $bValueType->getArrays();
 				if (
 					count($aArrays) === 1
-					&& !$aArrays[0] instanceof ConstantArrayType
+					&& $aArrays[0]->isConstantArray()->no()
 					&& count($bArrays) === 1
-					&& !$bArrays[0] instanceof ConstantArrayType
+					&& $bArrays[0]->isConstantArray()->no()
 				) {
 					$aDepth = self::getArrayDepth($aArrays[0]);
 					$bDepth = self::getArrayDepth($bArrays[0]);

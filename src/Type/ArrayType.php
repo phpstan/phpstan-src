@@ -126,8 +126,8 @@ class ArrayType implements Type
 	public function equals(Type $type): bool
 	{
 		return $type instanceof self
-			&& !$type instanceof ConstantArrayType
-			&& $this->getItemType()->equals($type->getItemType())
+			&& $type->isConstantArray()->no()
+			&& $this->getItemType()->equals($type->getIterableValueType())
 			&& $this->keyType->equals($type->keyType);
 	}
 
@@ -236,6 +236,11 @@ class ArrayType implements Type
 	public function isArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function isConstantArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
 	}
 
 	public function isOversizedArray(): TrinaryLogic
@@ -509,7 +514,7 @@ class ArrayType implements Type
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		if ($typeToRemove instanceof ConstantArrayType && $typeToRemove->isIterableAtLeastOnce()->no()) {
+		if ($typeToRemove->isConstantArray()->yes() && $typeToRemove->isIterableAtLeastOnce()->no()) {
 			return TypeCombinator::intersect($this, new NonEmptyArrayType());
 		}
 
@@ -517,11 +522,11 @@ class ArrayType implements Type
 			return new ConstantArrayType([], []);
 		}
 
-		if ($this instanceof ConstantArrayType && $typeToRemove instanceof HasOffsetType) {
+		if ($this->isConstantArray()->yes() && $typeToRemove instanceof HasOffsetType) {
 			return $this->unsetOffset($typeToRemove->getOffsetType());
 		}
 
-		if ($this instanceof ConstantArrayType && $typeToRemove instanceof HasOffsetValueType) {
+		if ($this->isConstantArray()->yes() && $typeToRemove instanceof HasOffsetValueType) {
 			return $this->unsetOffset($typeToRemove->getOffsetType());
 		}
 

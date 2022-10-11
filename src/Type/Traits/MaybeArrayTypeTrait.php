@@ -22,6 +22,11 @@ trait MaybeArrayTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isConstantArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isOversizedArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

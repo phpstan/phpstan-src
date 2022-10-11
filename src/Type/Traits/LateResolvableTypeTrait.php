@@ -160,6 +160,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isArray();
 	}
 
+	public function isConstantArray(): TrinaryLogic
+	{
+		return $this->resolve()->isConstantArray();
+	}
+
 	public function isOversizedArray(): TrinaryLogic
 	{
 		return $this->resolve()->isOversizedArray();

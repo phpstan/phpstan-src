@@ -22,6 +22,11 @@ trait NonArrayTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
+	public function isConstantArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isOversizedArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

@@ -25,6 +25,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
@@ -39,6 +40,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	use NonArrayTypeTrait;
 	use NonGenericTypeTrait;
+	use NonIterableTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonOffsetAccessibleTypeTrait;
 	use NonRemoveableTypeTrait;
@@ -236,16 +238,6 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
-	}
-
-	public function getIterableKeyType(): Type
-	{
-		return new ErrorType();
-	}
-
-	public function getIterableValueType(): Type
-	{
-		return new ErrorType();
 	}
 
 	public function isCallable(): TrinaryLogic

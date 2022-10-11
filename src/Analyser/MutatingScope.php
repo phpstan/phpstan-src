@@ -686,7 +686,7 @@ class MutatingScope implements Scope
 		}
 
 		$exprString = $this->getNodeKey($node);
-		if (isset($this->moreSpecificTypes[$exprString]) && $this->moreSpecificTypes[$exprString]->getCertainty()->yes()) {
+		if ($this->treatPhpDocTypesAsCertain && isset($this->moreSpecificTypes[$exprString]) && $this->moreSpecificTypes[$exprString]->getCertainty()->yes()) {
 			return $this->moreSpecificTypes[$exprString]->getType();
 		}
 

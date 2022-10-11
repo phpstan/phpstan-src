@@ -35,6 +35,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -983,7 +984,16 @@ class TypeSpecifier
 				$argType = $scope->getType($exprNode->getArgs()[0]->value);
 				if ($argType->isArray()->yes()) {
 					$funcTypes = $this->create($exprNode, $constantType, $context, false, $scope, $rootExpr);
-					$valueTypes = $this->create($exprNode->getArgs()[0]->value, new NonEmptyArrayType(), $newContext, false, $scope, $rootExpr);
+					if ($argType->isList()->yes() && $context->truthy() && $constantType->getValue() < ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+						$valueTypesBuilder = ConstantArrayTypeBuilder::createEmpty();
+						$itemType = $argType->getIterableValueType();
+						for ($i = 0; $i < $constantType->getValue(); $i++) {
+							$valueTypesBuilder->setOffsetValueType(new ConstantIntegerType($i), $itemType);
+						}
+						$valueTypes = $this->create($exprNode->getArgs()[0]->value, $valueTypesBuilder->getArray(), $context, false, $scope, $rootExpr);
+					} else {
+						$valueTypes = $this->create($exprNode->getArgs()[0]->value, new NonEmptyArrayType(), $newContext, false, $scope, $rootExpr);
+					}
 					return $funcTypes->unionWith($valueTypes);
 				}
 			}

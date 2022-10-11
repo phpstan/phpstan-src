@@ -769,4 +769,10 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8071.php'], []);
 	}
 
+	public function testBug3499(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-3499.php'], []);
+	}
+
 }

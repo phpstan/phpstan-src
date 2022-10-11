@@ -3,8 +3,6 @@
 namespace PHPStan\Type\Traits;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\MixedType;
-use PHPStan\Type\Type;
 
 trait MaybeArrayTypeTrait
 {
@@ -17,26 +15,6 @@ trait MaybeArrayTypeTrait
 	public function getConstantArrays(): array
 	{
 		return [];
-	}
-
-	public function getFirstIterableKeyType(): Type
-	{
-		return new MixedType();
-	}
-
-	public function getLastIterableKeyType(): Type
-	{
-		return new MixedType();
-	}
-
-	public function getFirstIterableValueType(): Type
-	{
-		return new MixedType();
-	}
-
-	public function getLastIterableValueType(): Type
-	{
-		return new MixedType();
 	}
 
 	public function isArray(): TrinaryLogic

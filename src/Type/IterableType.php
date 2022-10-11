@@ -226,7 +226,27 @@ class IterableType implements CompoundType
 		return $this->keyType;
 	}
 
+	public function getFirstIterableKeyType(): Type
+	{
+		return $this->keyType;
+	}
+
+	public function getLastIterableKeyType(): Type
+	{
+		return $this->keyType;
+	}
+
 	public function getIterableValueType(): Type
+	{
+		return $this->getItemType();
+	}
+
+	public function getFirstIterableValueType(): Type
+	{
+		return $this->getItemType();
+	}
+
+	public function getLastIterableValueType(): Type
 	{
 		return $this->getItemType();
 	}

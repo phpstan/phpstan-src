@@ -8,7 +8,6 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
-use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
@@ -20,7 +19,6 @@ class IntegerType implements Type
 
 	use JustNullableTypeTrait;
 	use NonCallableTypeTrait;
-	use NonIterableTypeTrait;
 	use NonObjectTypeTrait;
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonTypeTrait;

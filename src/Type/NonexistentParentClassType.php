@@ -13,7 +13,6 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
-use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
@@ -24,7 +23,6 @@ class NonexistentParentClassType implements Type
 
 	use JustNullableTypeTrait;
 	use NonCallableTypeTrait;
-	use NonIterableTypeTrait;
 	use NonOffsetAccessibleTypeTrait;
 	use TruthyBooleanTypeTrait;
 	use NonGenericTypeTrait;

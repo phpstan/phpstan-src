@@ -68,12 +68,6 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function getType(Expr $node): Type;
 
-	/**
-	 * Gets type of an expression with no regards to phpDocs.
-	 * Works for function/method parameters only.
-	 *
-	 * @internal
-	 */
 	public function getNativeType(Expr $expr): Type;
 
 	public function doNotTreatPhpDocTypesAsCertain(): self;

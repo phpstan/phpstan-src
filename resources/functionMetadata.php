@@ -514,6 +514,7 @@ return [
 	'ReflectionFunction::getClosure' => ['hasSideEffects' => false],
 	'ReflectionFunction::isDisabled' => ['hasSideEffects' => false],
 	'ReflectionFunctionAbstract::getAttributes' => ['hasSideEffects' => false],
+	'ReflectionFunctionAbstract::getClosureCalledClass' => ['hasSideEffects' => false],
 	'ReflectionFunctionAbstract::getClosureScopeClass' => ['hasSideEffects' => false],
 	'ReflectionFunctionAbstract::getClosureThis' => ['hasSideEffects' => false],
 	'ReflectionFunctionAbstract::getClosureUsedVariables' => ['hasSideEffects' => false],

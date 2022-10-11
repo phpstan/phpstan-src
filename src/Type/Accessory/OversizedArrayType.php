@@ -170,6 +170,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isConstantArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isOversizedArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

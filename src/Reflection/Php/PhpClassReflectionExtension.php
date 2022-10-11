@@ -35,7 +35,6 @@ use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
@@ -946,7 +945,7 @@ class PhpClassReflectionExtension
 			}
 
 			$propertyType = $propertyType->generalize(GeneralizePrecision::lessSpecific());
-			if ($propertyType instanceof ConstantArrayType) {
+			if ($propertyType->isConstantArray()->yes()) {
 				$propertyType = new ArrayType(new MixedType(true), new MixedType(true));
 			}
 

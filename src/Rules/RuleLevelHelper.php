@@ -111,8 +111,8 @@ class RuleLevelHelper
 			$acceptedType->isArray()->yes()
 			&& $acceptingType->isArray()->yes()
 			&& !$acceptingType->isIterableAtLeastOnce()->yes()
-			&& count($acceptedType->getConstantArrays()) === 0
-			&& count($acceptingType->getConstantArrays()) === 0
+			&& $acceptedType->isConstantArray()->no()
+			&& $acceptingType->isConstantArray()->no()
 		) {
 			return self::accepts(
 				$acceptingType->getIterableKeyType(),

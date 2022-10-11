@@ -78,6 +78,8 @@ interface Type
 
 	public function isArray(): TrinaryLogic;
 
+	public function isConstantArray(): TrinaryLogic;
+
 	public function isOversizedArray(): TrinaryLogic;
 
 	public function isList(): TrinaryLogic;

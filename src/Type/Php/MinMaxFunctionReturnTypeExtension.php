@@ -161,7 +161,7 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 	): ?Type
 	{
 		if (
-			$firstType instanceof ConstantArrayType
+			$firstType->isConstantArray()->yes()
 			&& $secondType instanceof ConstantScalarType
 		) {
 			return $secondType;
@@ -169,7 +169,7 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 		if (
 			$firstType instanceof ConstantScalarType
-			&& $secondType instanceof ConstantArrayType
+			&& $secondType->isConstantArray()->yes()
 		) {
 			return $firstType;
 		}

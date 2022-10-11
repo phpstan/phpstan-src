@@ -340,6 +340,8 @@ class PhpDocBlock
 				return null;
 			}
 
+			$classReflection = $parentReflection->getDeclaringClass();
+
 			if ($parentReflection instanceof PhpPropertyReflection || $parentReflection instanceof ResolvedPropertyReflection) {
 				$traitReflection = $parentReflection->getDeclaringTrait();
 				$positionalMethodParameterNames = [];

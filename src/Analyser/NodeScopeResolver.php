@@ -1799,6 +1799,9 @@ class NodeScopeResolver
 					$functionReflection->getVariants(),
 				);
 			}
+			if ($parametersAcceptor !== null) {
+				$expr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
+			}
 			$result = $this->processArgs($functionReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			$hasYield = $result->hasYield();
@@ -2047,6 +2050,9 @@ class NodeScopeResolver
 					}
 				}
 			}
+			if ($parametersAcceptor !== null) {
+				$expr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
+			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
 			if ($methodReflection !== null) {
@@ -2167,6 +2173,9 @@ class NodeScopeResolver
 				} else {
 					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
+			}
+			if ($parametersAcceptor !== null) {
+				$expr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context, $closureBindScope ?? null);
 			$scope = $result->getScope();
@@ -2519,6 +2528,9 @@ class NodeScopeResolver
 				} else {
 					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
+			}
+			if ($parametersAcceptor !== null) {
+				$expr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
 			}
 			$result = $this->processArgs($constructorReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
 			$scope = $result->getScope();

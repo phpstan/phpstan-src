@@ -165,4 +165,10 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7839.php'], []);
 	}
 
+	public function testBug7692(): void
+	{
+		$this->reportMaybes = true;
+		$this->analyse([__DIR__ . '/data/bug-7692.php'], []);
+	}
+
 }

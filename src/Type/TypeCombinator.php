@@ -687,7 +687,8 @@ class TypeCombinator
 		foreach ($arraysToProcessPerKey as $arrays) {
 			for ($i = 0, $arraysCount = count($arrays); $i < $arraysCount - 1; $i++) {
 				for ($j = $i + 1; $j < $arraysCount; $j++) {
-					$eligibleCombinations[$arrays[$i]][$arrays[$j]] = $arrays[$j];
+					$eligibleCombinations[$arrays[$i]][$arrays[$j]] ??= 0;
+					$eligibleCombinations[$arrays[$i]][$arrays[$j]]++;
 				}
 			}
 		}
@@ -697,17 +698,24 @@ class TypeCombinator
 				continue;
 			}
 
-			foreach ($other as $j) {
+			foreach ($other as $j => $overlappingKeysCount) {
 				if (!array_key_exists($j, $arraysToProcess)) {
 					continue;
 				}
 
-				if ($arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])) {
+				if (
+					$overlappingKeysCount === count($arraysToProcess[$i]->getKeyTypes())
+					&& $arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])
+				) {
 					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
 					unset($arraysToProcess[$i]);
 					continue 2;
+				}
 
-				} elseif ($arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])) {
+				if (
+					$overlappingKeysCount === count($arraysToProcess[$j]->getKeyTypes())
+					&& $arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])
+				) {
 					$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
 					unset($arraysToProcess[$j]);
 					continue 1;

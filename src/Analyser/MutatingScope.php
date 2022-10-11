@@ -666,6 +666,29 @@ class MutatingScope implements Scope
 		return $this->resolvedTypes[$key];
 	}
 
+	/** @api */
+	public function getNativeType(Expr $expr): Type
+	{
+		$key = $this->getNodeKey($expr);
+
+		if (array_key_exists($key, $this->nativeExpressionTypes)) {
+			return $this->nativeExpressionTypes[$key];
+		}
+
+		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
+			return $this->getNullsafeShortCircuitingType(
+				$expr->var,
+				$this->getTypeFromArrayDimFetch(
+					$expr,
+					$this->getNativeType($expr->dim),
+					$this->getNativeType($expr->var),
+				),
+			);
+		}
+
+		return new MixedType();
+	}
+
 	private function getNodeKey(Expr $node): string
 	{
 		return $this->exprPrinter->printExpr($node);
@@ -2083,29 +2106,6 @@ class MutatingScope implements Scope
 		}
 
 		return TypeCombinator::union(...$closureTypes);
-	}
-
-	/** @api */
-	public function getNativeType(Expr $expr): Type
-	{
-		$key = $this->getNodeKey($expr);
-
-		if (array_key_exists($key, $this->nativeExpressionTypes)) {
-			return $this->nativeExpressionTypes[$key];
-		}
-
-		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			return $this->getNullsafeShortCircuitingType(
-				$expr->var,
-				$this->getTypeFromArrayDimFetch(
-					$expr,
-					$this->getNativeType($expr->dim),
-					$this->getNativeType($expr->var),
-				),
-			);
-		}
-
-		return new MixedType();
 	}
 
 	/**

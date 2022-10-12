@@ -10301,7 +10301,7 @@ return [
 'SoapClient::__setSoapHeaders' => ['bool', 'soapheaders='=>''],
 'SoapClient::__soapCall' => ['mixed', 'function_name'=>'string', 'arguments'=>'array', 'options='=>'array', 'input_headers='=>'SoapHeader|array', '&w_output_headers='=>'array'],
 'SoapClient::SoapClient' => ['object', 'wsdl'=>'mixed', 'options='=>'array|null'],
-'SoapFault::__construct' => ['void', 'faultcode'=>'string', 'string'=>'string', 'faultactor='=>'string', 'detail='=>'string', 'faultname='=>'string', 'headerfault='=>'string'],
+'SoapFault::__construct' => ['void', 'faultcode'=>'string', 'string'=>'string', 'faultactor='=>'string', 'detail='=>'mixed', 'faultname='=>'string', 'headerfault='=>'mixed'],
 'SoapFault::__toString' => ['string'],
 'SoapFault::SoapFault' => ['object', 'faultcode'=>'string', 'string'=>'string', 'faultactor='=>'string', 'detail='=>'string', 'faultname='=>'string', 'headerfault='=>'string'],
 'SoapHeader::__construct' => ['void', 'namespace'=>'string', 'name'=>'string', 'data='=>'mixed', 'mustunderstand='=>'bool', 'actor='=>'string'],

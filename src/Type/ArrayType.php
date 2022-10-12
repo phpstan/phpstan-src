@@ -195,6 +195,11 @@ class ArrayType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getIterableCount(): Type
+	{
+		return IntegerRangeType::fromInterval(0, null);
+	}
+
 	public function getIterableKeyType(): Type
 	{
 		$keyType = $this->keyType;
@@ -407,9 +412,10 @@ class ArrayType implements Type
 		return $this;
 	}
 
+	/** @deprecated Use getIterableCount() instead */
 	public function count(): Type
 	{
-		return IntegerRangeType::fromInterval(0, null);
+		return $this->getIterableCount();
 	}
 
 	public static function castToArrayKeyType(Type $offsetType): Type

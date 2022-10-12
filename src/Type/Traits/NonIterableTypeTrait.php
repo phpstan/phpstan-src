@@ -19,6 +19,11 @@ trait NonIterableTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
+	public function getIterableCount(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function getIterableKeyType(): Type
 	{
 		return new ErrorType();

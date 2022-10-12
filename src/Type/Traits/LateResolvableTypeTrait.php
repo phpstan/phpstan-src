@@ -125,6 +125,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isIterableAtLeastOnce();
 	}
 
+	public function getIterableCount(): Type
+	{
+		return $this->resolve()->getIterableCount();
+	}
+
 	public function getIterableKeyType(): Type
 	{
 		return $this->resolve()->getIterableKeyType();

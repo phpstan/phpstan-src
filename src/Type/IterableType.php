@@ -220,6 +220,11 @@ class IterableType implements CompoundType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getIterableCount(): Type
+	{
+		return IntegerRangeType::fromInterval(0, null);
+	}
+
 	public function getIterableKeyType(): Type
 	{
 		return $this->keyType;

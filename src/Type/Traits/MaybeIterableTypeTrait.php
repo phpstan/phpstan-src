@@ -3,6 +3,8 @@
 namespace PHPStan\Type\Traits;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
@@ -17,6 +19,19 @@ trait MaybeIterableTypeTrait
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getIterableCount(): Type
+	{
+		if ($this->isIterable()->no()) {
+			return new ErrorType();
+		}
+
+		if ($this->isIterableAtLeastOnce()->yes()) {
+			return IntegerRangeType::fromInterval(1, null);
+		}
+
+		return IntegerRangeType::fromInterval(0, null);
 	}
 
 	public function getIterableKeyType(): Type

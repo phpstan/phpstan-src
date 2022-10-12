@@ -3,7 +3,6 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
@@ -63,7 +62,7 @@ class IterableType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
-		if ($type instanceof ConstantArrayType && $type->isEmpty()) {
+		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
 			return TrinaryLogic::createYes();
 		}
 		if ($type->isIterable()->yes()) {
@@ -135,7 +134,7 @@ class IterableType implements CompoundType
 			$limit = TrinaryLogic::createMaybe();
 		}
 
-		if ($otherType instanceof ConstantArrayType && $otherType->isEmpty()) {
+		if ($otherType->isConstantArray()->yes() && $otherType->isIterableAtLeastOnce()->no()) {
 			return TrinaryLogic::createMaybe();
 		}
 

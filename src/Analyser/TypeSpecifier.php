@@ -34,7 +34,6 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConditionalTypeForParameter;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -378,7 +377,7 @@ class TypeSpecifier
 			if (
 				!$context->null()
 				&& $rightType->isArray()->yes()
-				&& $leftType instanceof ConstantArrayType && $leftType->isEmpty()
+				&& $leftType->isConstantArray()->yes() && $leftType->isIterableAtLeastOnce()->no()
 			) {
 				return $this->create($expr->right, new NonEmptyArrayType(), $context->negate(), false, $scope, $rootExpr);
 			}
@@ -386,7 +385,7 @@ class TypeSpecifier
 			if (
 				!$context->null()
 				&& $leftType->isArray()->yes()
-				&& $rightType instanceof ConstantArrayType && $rightType->isEmpty()
+				&& $rightType->isConstantArray()->yes() && $rightType->isIterableAtLeastOnce()->no()
 			) {
 				return $this->create($expr->left, new NonEmptyArrayType(), $context->negate(), false, $scope, $rootExpr);
 			}

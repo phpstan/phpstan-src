@@ -19,6 +19,7 @@ use PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule;
 use PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule;
 use PHPStan\Rules\Classes\ExistingClassInClassExtendsRule;
 use PHPStan\Rules\Classes\ExistingClassInTraitUseRule;
+use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule;
 use PHPStan\Rules\Functions\MissingFunctionReturnTypehintRule;
@@ -185,7 +186,7 @@ class StubValidator
 			new MissingPropertyTypehintRule($missingTypehintCheck),
 		];
 
-		return new RuleRegistry($rules);
+		return new DirectRuleRegistry($rules);
 	}
 
 	private function getCollectorRegistry(Container $container): CollectorRegistry

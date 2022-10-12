@@ -10,7 +10,7 @@ use PHPStan\Broker\BrokerFactory;
 use PHPStan\Collectors\RegistryFactory as CollectorRegistryFactory;
 use PHPStan\Parser\RichParser;
 use PHPStan\PhpDoc\TypeNodeResolverExtension;
-use PHPStan\Rules\RegistryFactory as RuleRegistryFactory;
+use PHPStan\Rules\LazyRegistry;
 use PHPStan\ShouldNotHappenException;
 use function array_reduce;
 use function count;
@@ -30,7 +30,7 @@ class ConditionalTagsExtension extends CompilerExtension
 			BrokerFactory::DYNAMIC_STATIC_METHOD_RETURN_TYPE_EXTENSION_TAG => $bool,
 			BrokerFactory::DYNAMIC_FUNCTION_RETURN_TYPE_EXTENSION_TAG => $bool,
 			BrokerFactory::OPERATOR_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
-			RuleRegistryFactory::RULE_TAG => $bool,
+			LazyRegistry::RULE_TAG => $bool,
 			TypeNodeResolverExtension::EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::FUNCTION_TYPE_SPECIFYING_EXTENSION_TAG => $bool,
 			TypeSpecifierFactory::METHOD_TYPE_SPECIFYING_EXTENSION_TAG => $bool,

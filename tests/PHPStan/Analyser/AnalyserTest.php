@@ -17,8 +17,8 @@ use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\AlwaysFailRule;
+use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
-use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FileTypeMapper;
 use function array_map;
@@ -571,7 +571,7 @@ class AnalyserTest extends PHPStanTestCase
 
 	private function createAnalyser(bool $reportUnmatchedIgnoredErrors): Analyser
 	{
-		$ruleRegistry = new RuleRegistry([
+		$ruleRegistry = new DirectRuleRegistry([
 			new AlwaysFailRule(),
 		]);
 		$collectorRegistry = new CollectorRegistry([]);

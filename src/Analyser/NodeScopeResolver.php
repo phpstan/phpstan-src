@@ -3379,7 +3379,7 @@ class NodeScopeResolver
 			$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType);
 
 			// TODO conditional expressions for native type should be handled too
-			$scope = $result->getScope()->assignVariable($var->name, $type,  $scope->getNativeType($assignedExpr));
+			$scope = $result->getScope()->assignVariable($var->name, $type, $scope->getNativeType($assignedExpr));
 			foreach ($conditionalExpressions as $exprString => $holders) {
 				$scope = $scope->addConditionalExpressions($exprString, $holders);
 			}

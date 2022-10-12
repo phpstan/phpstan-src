@@ -3166,7 +3166,7 @@ class MutatingScope implements Scope
 			$scope = $scope->specifyExpressionType(
 				new Expr\ArrayDimFetch($iteratee, new Variable($keyName)),
 				$iterateeType->getIterableValueType(),
-				$nativeIterateeType->getIterableKeyType()
+				$nativeIterateeType->getIterableKeyType(),
 			);
 		}
 
@@ -3618,7 +3618,7 @@ class MutatingScope implements Scope
 							TypeCombinator::intersect($exprVarType, TypeCombinator::union(...$types)),
 							new HasOffsetValueType($dimType, $type),
 						),
-						$this->getNativeType($expr->var)
+						$this->getNativeType($expr->var),
 					);
 				}
 			}

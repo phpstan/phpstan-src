@@ -2070,7 +2070,7 @@ class NodeScopeResolver
 				if ($parametersAcceptor !== null) {
 					$selfOutType = $methodReflection->getSelfOutType();
 					if ($selfOutType !== null) {
-						$scope = $scope->assignExpression($expr->var, TemplateTypeHelper::resolveTemplateTypes($selfOutType, $parametersAcceptor->getResolvedTemplateTypeMap()));
+						$scope = $scope->assignExpression($expr->var, TemplateTypeHelper::resolveTemplateTypes($selfOutType, $parametersAcceptor->getResolvedTemplateTypeMap()), $scope->getNativeType($expr->var));
 					}
 				}
 			} else {

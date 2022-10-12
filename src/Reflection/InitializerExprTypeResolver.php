@@ -1300,11 +1300,11 @@ class InitializerExprTypeResolver
 			return $this->resolveIdenticalType($leftType, $rightType);
 		}
 
-		if ($leftType instanceof ConstantArrayType && $leftType->isEmpty() && $rightType instanceof ConstantScalarType) {
+		if ($leftType->isConstantArray()->yes() && $leftType->isIterableAtLeastOnce()->no() && $rightType instanceof ConstantScalarType) {
 			// @phpstan-ignore-next-line
 			return new ConstantBooleanType($rightType->getValue() == []); // phpcs:ignore
 		}
-		if ($rightType instanceof ConstantArrayType && $rightType->isEmpty() && $leftType instanceof ConstantScalarType) {
+		if ($rightType->isConstantArray()->yes() && $rightType->isIterableAtLeastOnce()->no() && $leftType instanceof ConstantScalarType) {
 			// @phpstan-ignore-next-line
 			return new ConstantBooleanType($leftType->getValue() == []); // phpcs:ignore
 		}

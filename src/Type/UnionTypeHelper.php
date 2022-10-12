@@ -140,14 +140,14 @@ class UnionTypeHelper
 				return self::compareStrings($a->getValue(), $b->getValue());
 			}
 
-			if ($a instanceof ConstantArrayType && $b instanceof ConstantArrayType) {
-				if ($a->isEmpty()) {
-					if ($b->isEmpty()) {
+			if ($a->isConstantArray()->yes() && $b->isConstantArray()->yes()) {
+				if ($a->isIterableAtLeastOnce()->no()) {
+					if ($b->isIterableAtLeastOnce()->no()) {
 						return 0;
 					}
 
 					return -1;
-				} elseif ($b->isEmpty()) {
+				} elseif ($b->isIterableAtLeastOnce()->no()) {
 					return 1;
 				}
 

@@ -113,6 +113,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return [$this];
 	}
 
+	/** @deprecated Use isIterableAtLeastOnce()->no() instead */
 	public function isEmpty(): bool
 	{
 		return count($this->keyTypes) === 0;
@@ -1048,13 +1049,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function generalizeToArray(): Type
 	{
-		if ($this->isEmpty()) {
+		$isIterableAtLeastOnce = $this->isIterableAtLeastOnce();
+		if ($isIterableAtLeastOnce->no()) {
 			return $this;
 		}
 
 		$arrayType = new ArrayType($this->getKeyType(), $this->getItemType());
 
-		if ($this->isIterableAtLeastOnce()->yes()) {
+		if ($isIterableAtLeastOnce->yes()) {
 			$arrayType = TypeCombinator::intersect($arrayType, new NonEmptyArrayType());
 		}
 		if ($this->isList) {

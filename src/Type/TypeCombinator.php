@@ -674,7 +674,7 @@ class TypeCombinator
 				continue;
 			}
 
-			if ($constantArray->isEmpty()) {
+			if ($constantArray->isIterableAtLeastOnce()->no()) {
 				$emptyArray = $constantArray;
 				continue;
 			}

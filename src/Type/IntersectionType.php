@@ -406,6 +406,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce());
 	}
 
+	public function getIterableCount(): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->getIterableCount());
+	}
+
 	public function getIterableKeyType(): Type
 	{
 		return $this->intersectTypes(static fn (Type $type): Type => $type->getIterableKeyType());

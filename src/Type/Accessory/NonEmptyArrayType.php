@@ -7,6 +7,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
@@ -134,6 +135,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function getIterableCount(): Type
+	{
+		return IntegerRangeType::fromInterval(1, null);
 	}
 
 	public function getIterableKeyType(): Type

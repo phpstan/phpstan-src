@@ -64,6 +64,8 @@ interface Type
 
 	public function isIterableAtLeastOnce(): TrinaryLogic;
 
+	public function getIterableCount(): Type;
+
 	public function getIterableKeyType(): Type;
 
 	public function getFirstIterableKeyType(): Type;

@@ -5,12 +5,9 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 use const COUNT_RECURSIVE;
@@ -27,34 +24,20 @@ class CountFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		FunctionReflection $functionReflection,
 		FuncCall $functionCall,
 		Scope $scope,
-	): Type
+	): ?Type
 	{
 		if (count($functionCall->getArgs()) < 1) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return null;
 		}
 
 		if (count($functionCall->getArgs()) > 1) {
 			$mode = $scope->getType($functionCall->getArgs()[1]->value);
 			if ($mode->isSuperTypeOf(new ConstantIntegerType(COUNT_RECURSIVE))->yes()) {
-				return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+				return null;
 			}
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
-		$constantArrays = $scope->getType($functionCall->getArgs()[0]->value)->getConstantArrays();
-		if (count($constantArrays) === 0) {
-			if ($argType->isIterableAtLeastOnce()->yes()) {
-				return IntegerRangeType::fromInterval(1, null);
-			}
-
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-		}
-		$countTypes = [];
-		foreach ($constantArrays as $array) {
-			$countTypes[] = $array->count();
-		}
-
-		return TypeCombinator::union(...$countTypes);
+		return $scope->getType($functionCall->getArgs()[0]->value)->getIterableCount();
 	}
 
 }

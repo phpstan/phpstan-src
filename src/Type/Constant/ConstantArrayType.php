@@ -685,6 +685,17 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getIterableCount(): Type
+	{
+		$optionalKeysCount = count($this->optionalKeys);
+		$totalKeysCount = count($this->getKeyTypes());
+		if ($optionalKeysCount === 0) {
+			return new ConstantIntegerType($totalKeysCount);
+		}
+
+		return IntegerRangeType::fromInterval($totalKeysCount - $optionalKeysCount, $totalKeysCount);
+	}
+
 	public function getFirstIterableKeyType(): Type
 	{
 		$keyTypes = [];
@@ -979,7 +990,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function toBoolean(): BooleanType
 	{
-		return $this->count()->toBoolean();
+		return $this->getIterableCount()->toBoolean();
 	}
 
 	public function toInteger(): Type
@@ -1116,15 +1127,10 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new self($keyTypes, $valueTypes, $autoIndex, $optionalKeys, true);
 	}
 
+	/** @deprecated Use getIterableCount() instead */
 	public function count(): Type
 	{
-		$optionalKeysCount = count($this->optionalKeys);
-		$totalKeysCount = count($this->getKeyTypes());
-		if ($optionalKeysCount === 0) {
-			return new ConstantIntegerType($totalKeysCount);
-		}
-
-		return IntegerRangeType::fromInterval($totalKeysCount - $optionalKeysCount, $totalKeysCount);
+		return $this->getIterableCount();
 	}
 
 	public function describe(VerbosityLevel $level): string

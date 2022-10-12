@@ -10,10 +10,8 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\StringType;
-use PHPStan\Type\TypeCombinator;
 use function strtolower;
 
 class IsStringFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
@@ -37,15 +35,7 @@ class IsStringFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingE
 			return new SpecifiedTypes();
 		}
 
-		$value = $node->getArgs()[0]->value;
-		$valueType = $scope->getType($value);
-
-		$resultType = new StringType();
-		if ($valueType->isCallable()->yes()) {
-			$resultType = TypeCombinator::intersect($resultType, new AccessoryNonEmptyStringType());
-		}
-
-		return $this->typeSpecifier->create($value, $resultType, $context, false, $scope);
+		return $this->typeSpecifier->create($node->getArgs()[0]->value, new StringType(), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

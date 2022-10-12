@@ -4210,6 +4210,15 @@ class TypeCombinatorTest extends PHPStanTestCase
 				TemplateMixedType::class, // should be TemplateConstantBooleanType
 				'T (class Foo, parameter)', // should be T of true
 			],
+			[
+				new IntersectionType([
+					new CallableType(),
+					new StringType(),
+				]),
+				new ConstantStringType(''),
+				IntersectionType::class,
+				'callable(): mixed&non-empty-string',
+			],
 		];
 	}
 

@@ -16,6 +16,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\CallableType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
@@ -140,7 +141,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			return $this->value === $type->value ? TrinaryLogic::createYes() : TrinaryLogic::createNo();
 		}
 
-		if ($type instanceof parent) {
+		if ($type instanceof parent || $type instanceof CallableType) {
 			return TrinaryLogic::createMaybe();
 		}
 

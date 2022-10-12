@@ -303,19 +303,54 @@ parameters:
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
 
 		-
-			message: "#^Method PHPStan\\\\Rules\\\\Registry\\:\\:__construct\\(\\) has parameter \\$rules with generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
+			message: "#^Function class_implements\\(\\) is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
 			count: 1
-			path: src/Rules/Registry.php
+			path: src/Rules/DirectRegistry.php
 
 		-
-			message: "#^Property PHPStan\\\\Rules\\\\Registry\\:\\:\\$cache with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			message: "#^Function class_parents\\(\\) is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
 			count: 1
-			path: src/Rules/Registry.php
+			path: src/Rules/DirectRegistry.php
 
 		-
-			message: "#^Property PHPStan\\\\Rules\\\\Registry\\:\\:\\$rules with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			message: "#^Method PHPStan\\\\Rules\\\\DirectRegistry\\:\\:__construct\\(\\) has parameter \\$rules with generic interface PHPStan\\\\Rules\\\\Rule but does not specify its types\\: TNodeType$#"
 			count: 1
-			path: src/Rules/Registry.php
+			path: src/Rules/DirectRegistry.php
+
+		-
+			message: "#^Property PHPStan\\\\Rules\\\\DirectRegistry\\:\\:\\$cache with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/DirectRegistry.php
+
+		-
+			message: "#^Property PHPStan\\\\Rules\\\\DirectRegistry\\:\\:\\$rules with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/DirectRegistry.php
+
+		-
+			message: "#^Function class_implements\\(\\) is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
+			count: 1
+			path: src/Rules/LazyRegistry.php
+
+		-
+			message: "#^Function class_parents\\(\\) is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
+			count: 1
+			path: src/Rules/LazyRegistry.php
+
+		-
+			message: "#^Method PHPStan\\\\Rules\\\\LazyRegistry\\:\\:getRulesFromContainer\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/LazyRegistry.php
+
+		-
+			message: "#^Property PHPStan\\\\Rules\\\\LazyRegistry\\:\\:\\$cache with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/LazyRegistry.php
+
+		-
+			message: "#^Property PHPStan\\\\Rules\\\\LazyRegistry\\:\\:\\$rules with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
+			count: 1
+			path: src/Rules/LazyRegistry.php
 
 		-
 			message: "#^Anonymous function has an unused use \\$container\\.$#"

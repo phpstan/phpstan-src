@@ -6,14 +6,14 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
 
-class RegistryTest extends PHPStanTestCase
+class DirectRegistryTest extends PHPStanTestCase
 {
 
 	public function testGetRules(): void
 	{
 		$rule = new DummyRule();
 
-		$registry = new Registry([
+		$registry = new DirectRegistry([
 			$rule,
 		]);
 
@@ -29,7 +29,7 @@ class RegistryTest extends PHPStanTestCase
 		$fooRule = new UniversalRule(Node\Expr\FuncCall::class, static fn (Node\Expr\FuncCall $node, Scope $scope): array => ['Foo error']);
 		$barRule = new UniversalRule(Node\Expr\FuncCall::class, static fn (Node\Expr\FuncCall $node, Scope $scope): array => ['Bar error']);
 
-		$registry = new Registry([
+		$registry = new DirectRegistry([
 			$fooRule,
 			$barRule,
 		]);

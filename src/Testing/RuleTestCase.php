@@ -20,10 +20,10 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\Properties\DirectReadWritePropertiesExtensionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
-use PHPStan\Rules\Registry as RuleRegistry;
 use PHPStan\Rules\Rule;
 use PHPStan\Type\FileTypeMapper;
 use function array_map;
@@ -69,7 +69,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 	private function getAnalyser(): Analyser
 	{
 		if ($this->analyser === null) {
-			$ruleRegistry = new RuleRegistry([
+			$ruleRegistry = new DirectRuleRegistry([
 				$this->getRule(),
 			]);
 			$collectorRegistry = new CollectorRegistry($this->getCollectors());
@@ -138,7 +138,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 		$actualErrors = $analyserResult->getUnorderedErrors();
 		$ruleErrorTransformer = new RuleErrorTransformer();
 		if (count($analyserResult->getCollectedData()) > 0) {
-			$ruleRegistry = new RuleRegistry([
+			$ruleRegistry = new DirectRuleRegistry([
 				$this->getRule(),
 			]);
 

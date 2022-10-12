@@ -1028,9 +1028,6 @@ services:
 		class: PHPStan\Rules\Properties\PropertyReflectionFinder
 
 	-
-		class: PHPStan\Rules\RegistryFactory
-
-	-
 		class: PHPStan\Rules\RuleLevelHelper
 		arguments:
 			checkNullables: %checkNullables%
@@ -1891,8 +1888,9 @@ services:
 		autowired: false
 
 	registry:
-		class: PHPStan\Rules\Registry
-		factory: @PHPStan\Rules\RegistryFactory::create
+		class: PHPStan\Rules\LazyRegistry
+		autowired:
+			- PHPStan\Rules\Registry
 
 	stubPhpDocProvider:
 		class: PHPStan\PhpDoc\StubPhpDocProvider

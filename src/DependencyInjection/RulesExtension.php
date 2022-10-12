@@ -5,7 +5,7 @@ namespace PHPStan\DependencyInjection;
 use Nette\DI\CompilerExtension;
 use Nette\Schema\Expect;
 use Nette\Schema\Schema;
-use PHPStan\Rules\RegistryFactory;
+use PHPStan\Rules\LazyRegistry;
 
 class RulesExtension extends CompilerExtension
 {
@@ -25,7 +25,7 @@ class RulesExtension extends CompilerExtension
 			$builder->addDefinition($this->prefix((string) $key))
 				->setFactory($rule)
 				->setAutowired($rule)
-				->addTag(RegistryFactory::RULE_TAG);
+				->addTag(LazyRegistry::RULE_TAG);
 		}
 	}
 

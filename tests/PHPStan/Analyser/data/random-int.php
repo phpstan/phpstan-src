@@ -13,7 +13,7 @@ function (int $min) {
 };
 
 function (int $max) {
-	\assert($min >= 0);
+	\assert($max >= 0);
 	assertType('int<0, max>', random_int(0, $max));
 };
 

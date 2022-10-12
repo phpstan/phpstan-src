@@ -87,13 +87,12 @@ class ImpossibleCheckTypeHelper
 						return null;
 					}
 
-					$constantArrays = $haystackType->getConstantArrays();
 					$needleType = $scope->getType($node->getArgs()[0]->value);
 					$valueType = $haystackType->getIterableValueType();
 					$constantNeedleTypesCount = count(TypeUtils::getConstantScalars($needleType));
 					$constantHaystackTypesCount = count(TypeUtils::getConstantScalars($valueType));
 					$isNeedleSupertype = $needleType->isSuperTypeOf($valueType);
-					if (count($constantArrays) === 0) {
+					if ($haystackType->isConstantArray()->no()) {
 						if ($haystackType->isIterableAtLeastOnce()->yes()) {
 							if ($constantNeedleTypesCount === 1 && $constantHaystackTypesCount === 1) {
 								if ($isNeedleSupertype->yes()) {

@@ -199,16 +199,13 @@ class AnalyseApplication
 		}
 
 		if (!$debug) {
-			$progressStarted = false;
 			$preFileCallback = null;
-			$postFileCallback = static function (int $step) use ($errorOutput, &$progressStarted, $allAnalysedFilesCount, $filesCount): void {
-				if (!$progressStarted) {
-					$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
-					$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount - $filesCount);
-					$progressStarted = true;
-				}
+			$postFileCallback = static function (int $step) use ($errorOutput): void {
 				$errorOutput->getStyle()->progressAdvance($step);
 			};
+
+			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
+			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount - $filesCount);
 		} else {
 			$startTime = null;
 			$preFileCallback = static function (string $file) use ($stdOutput, &$startTime): void {
@@ -232,7 +229,7 @@ class AnalyseApplication
 
 		$analyserResult = $this->analyserRunner->runAnalyser($files, $allAnalysedFiles, $preFileCallback, $postFileCallback, $debug, true, $projectConfigFile, null, null, $input);
 
-		if (isset($progressStarted) && $progressStarted) {
+		if (!$debug) {
 			$errorOutput->getStyle()->progressFinish();
 		}
 

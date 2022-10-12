@@ -601,4 +601,15 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-2851b.php'], []);
 	}
 
+	public function testBug8153(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8153.php'], [
+			[
+				'Strict comparison using !== between \'\' and callable(): mixed&non-empty-string will always evaluate to true.',
+				16,
+			],
+		]);
+	}
+
 }

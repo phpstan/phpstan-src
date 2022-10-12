@@ -240,6 +240,80 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function dataSubstractedIsConstantArray(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new ArrayType(new IntegerType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new StringType(), new StringType()),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ArrayType(new MixedType(), new MixedType()),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new ConstantArrayType(
+					[new ConstantIntegerType(1)],
+					[new ConstantStringType('hello')],
+				),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ConstantArrayType([], []),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new UnionType([new FloatType(), new ArrayType(new MixedType(), new MixedType())]),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new UnionType([new FloatType(), new ArrayType(new StringType(), new MixedType())]),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new UnionType([new FloatType(), new IntegerType()]),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new FloatType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(true),
+				new FloatType(),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsConstantArray
+	 */
+	public function testSubstractedIsConstantArray(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isConstantArray();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isConstantArray()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
 	public function dataSubstractedIsString(): array
 	{
 		return [

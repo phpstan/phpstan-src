@@ -472,7 +472,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isConstantArray(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return $this->isArray();
 	}
 
 	public function isOversizedArray(): TrinaryLogic

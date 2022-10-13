@@ -7,12 +7,12 @@
  */
 
 /**
- * This contains the information needed to convert the function signatures for php 8.0 to php 7.4 (and vice versa)
+ * This contains the information needed to convert the function signatures for php 8.2 to php 8.1 (and vice versa)
  *
  * This has two sections.
- * The 'new' section contains function/method names from FunctionSignatureMap (And alternates, if applicable) that do not exist in php7.4 or have different signatures in php 8.0.
+ * The 'new' section contains function/method names from FunctionSignatureMap (And alternates, if applicable) that do not exist in php 8.1 or have different signatures in php 8.2.
  *   If they were just updated, the function/method will be present in the 'added' signatures.
- * The 'old' signatures contains the signatures that are different in php 7.4.
+ * The 'old' signatures contains the signatures that are different in php 8.1.
  *   Functions are expected to be removed only in major releases of php.
  *
  * @see FunctionSignatureMap.php
@@ -22,6 +22,7 @@
 return [
 	'new' => [
 		'str_split' => ['list<string>', 'str'=>'string', 'split_length='=>'positive-int'],
+        'iterator_to_array' => ['array', 'iterator'=>'iterable', 'use_keys='=>'bool'],
 	],
 	'old' => [
 

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\PhpDoc;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPStan\Type\FileTypeMapper;
 
 /**
  * @extends RuleTestCase<IncompatiblePropertyPhpDocTypeRule>
@@ -14,7 +15,11 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new IncompatiblePropertyPhpDocTypeRule(new GenericObjectTypeCheck(), new UnresolvableTypeHelper());
+		return new IncompatiblePropertyPhpDocTypeRule(
+			new GenericObjectTypeCheck(),
+			new UnresolvableTypeHelper(),
+			self::getContainer()->getByType(FileTypeMapper::class),
+		);
 	}
 
 	public function testRule(): void

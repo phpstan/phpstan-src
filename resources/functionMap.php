@@ -9484,7 +9484,7 @@ return [
 'RedisCluster::dbSize' => ['int', 'nodeParams'=>'string'],
 'RedisCluster::decr' => ['int', 'key'=>'string'],
 'RedisCluster::decrBy' => ['int', 'key'=>'string', 'value'=>'int'],
-'RedisCluster::del' => ['int', 'key1'=>'int', 'key2='=>'string', 'key3='=>'string'],
+'RedisCluster::del' => ['int', 'key1'=>'int|string', 'key2='=>'int|string', 'key3='=>'int|string'],
 'RedisCluster::discard' => [''],
 'RedisCluster::dump' => ['string', 'key'=>'string'],
 'RedisCluster::echo' => ['mixed', 'nodeParams'=>'string', 'msg'=>'string'],

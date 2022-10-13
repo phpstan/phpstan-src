@@ -50,3 +50,12 @@ function foo6($array)
 	$flip = array_flip($array);
 	assertType('non-empty-array<4|5|6, 1|2|3>', $flip);
 }
+
+/**
+ * @param list<1|2|3> $array
+ */
+function foo7($array)
+{
+	$flip = array_flip($array);
+	assertType('array<1|2|3, int<0, max>>', $flip);
+}

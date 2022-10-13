@@ -112,10 +112,6 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 			return new ErrorType();
 		}
 
-		if ((new ConstantIntegerType(0))->isSuperTypeOf($offsetType)->yes()) {
-			return new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
-		}
-
 		return new StringType();
 	}
 

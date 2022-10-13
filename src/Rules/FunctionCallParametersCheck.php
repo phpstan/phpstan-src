@@ -104,7 +104,7 @@ class FunctionCallParametersCheck
 				if (count($arrays) > 0) {
 					$minKeys = null;
 					foreach ($arrays as $array) {
-						$countType = $array->getIterableCount();
+						$countType = $array->getArraySize();
 						if ($countType instanceof ConstantIntegerType) {
 							$keysCount = $countType->getValue();
 						} elseif ($countType instanceof IntegerRangeType) {

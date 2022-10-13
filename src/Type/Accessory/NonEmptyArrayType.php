@@ -137,7 +137,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
-	public function getIterableCount(): Type
+	public function getArraySize(): Type
 	{
 		return IntegerRangeType::fromInterval(1, null);
 	}

@@ -139,7 +139,7 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 
 	public function flipArray(): Type
 	{
-		return $this;
+		return new MixedType();
 	}
 
 	public function isIterable(): TrinaryLogic

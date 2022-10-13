@@ -41,3 +41,12 @@ function foo5($array)
 	$flip = array_flip($array);
 	assertType('array<string, 1|2|3>', $flip);
 }
+
+/**
+ * @param non-empty-array<1|2|3, 4|5|6> $array
+ */
+function foo6($array)
+{
+	$flip = array_flip($array);
+	assertType('non-empty-array<4|5|6, 1|2|3>', $flip);
+}

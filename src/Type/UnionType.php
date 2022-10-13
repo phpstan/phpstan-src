@@ -539,6 +539,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->unsetOffset($offsetType));
 	}
 
+	public function flipArray(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->flipArray());
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isCallable());

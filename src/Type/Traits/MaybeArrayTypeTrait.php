@@ -3,6 +3,8 @@
 namespace PHPStan\Type\Traits;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ErrorType;
+use PHPStan\Type\Type;
 
 trait MaybeArrayTypeTrait
 {
@@ -35,6 +37,11 @@ trait MaybeArrayTypeTrait
 	public function isList(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function flipArray(): Type
+	{
+		return new ErrorType();
 	}
 
 }

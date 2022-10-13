@@ -205,6 +205,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->unsetOffset($offsetType);
 	}
 
+	public function flipArray(): Type
+	{
+		return $this->resolve()->flipArray();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->resolve()->isCallable();

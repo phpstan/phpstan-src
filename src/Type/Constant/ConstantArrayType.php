@@ -670,6 +670,22 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new ArrayType($this->getKeyType(), $this->getItemType());
 	}
 
+	public function flipArray(): Type
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		foreach ($this->keyTypes as $i => $keyType) {
+			$valueType = $this->valueTypes[$i];
+			$builder->setOffsetValueType(
+				ArrayType::castToArrayKeyType($valueType),
+				$keyType,
+				$this->isOptionalKey($i),
+			);
+		}
+
+		return $builder->getArray();
+	}
+
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		$keysCount = count($this->keyTypes);

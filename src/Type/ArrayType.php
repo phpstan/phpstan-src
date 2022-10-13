@@ -364,6 +364,11 @@ class ArrayType implements Type
 		return $this;
 	}
 
+	public function flipArray(): Type
+	{
+		return new self(self::castToArrayKeyType($this->getIterableValueType()), $this->getIterableKeyType());
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe()->and($this->itemType->isString());

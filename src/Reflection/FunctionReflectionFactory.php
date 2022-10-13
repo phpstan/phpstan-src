@@ -26,6 +26,7 @@ interface FunctionReflectionFactory
 		?string $filename,
 		?bool $isPure,
 		Assertions $asserts,
+		?string $phpDocComment,
 	): PhpFunctionReflection;
 
 }

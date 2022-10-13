@@ -251,4 +251,13 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		return $this->assertions;
 	}
 
+	public function getDocComment(): ?string
+	{
+		$phpDoc = $this->getFunctionLike()->getDocComment();
+		if ($phpDoc === null) {
+			return null;
+		}
+		return $phpDoc->getText();
+	}
+
 }

@@ -1,0 +1,16 @@
+<?php
+
+namespace FunctionReflectionDocTest;
+
+class ClassWithPhpdoc {
+    /** method doc via stub */
+	public function docViaStub() {
+
+	}
+}
+
+
+/** fn doc via stub */
+function docViaStub()
+{
+}

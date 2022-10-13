@@ -57,6 +57,7 @@ class PhpFunctionReflection implements FunctionReflection
 		private ?string $filename,
 		private ?bool $isPure,
 		private Assertions $asserts,
+		private ?string $phpDocComment,
 	)
 	{
 	}
@@ -254,6 +255,11 @@ class PhpFunctionReflection implements FunctionReflection
 	public function getAsserts(): Assertions
 	{
 		return $this->asserts;
+	}
+
+	public function getDocComment(): ?string
+	{
+		return $this->phpDocComment;
 	}
 
 }

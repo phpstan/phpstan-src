@@ -265,6 +265,8 @@ class BetterReflectionProvider implements ReflectionProvider
 		$isFinal = false;
 		$isPure = null;
 		$asserts = Assertions::createEmpty();
+		$phpDocComment = null;
+
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $reflectionFunction->getParameters()));
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
 			$docComment = $reflectionFunction->getDocComment();
@@ -282,6 +284,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$isFinal = $resolvedPhpDoc->isFinal();
 			$isPure = $resolvedPhpDoc->isPure();
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
+			$phpDocComment = $resolvedPhpDoc->getPhpDocString();
 		}
 
 		return $this->functionReflectionFactory->create(
@@ -297,6 +300,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null,
 			$isPure,
 			$asserts,
+			$phpDocComment,
 		);
 	}
 

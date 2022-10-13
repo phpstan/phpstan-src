@@ -53,6 +53,7 @@ class NativeFunctionReflectionProvider
 		$reflectionFunctionAdapter = null;
 		$isDeprecated = false;
 		$asserts = Assertions::createEmpty();
+		$docComment = null;
 		try {
 			$reflectionFunction = $this->reflector->reflectFunction($functionName);
 			$reflectionFunctionAdapter = new ReflectionFunction($reflectionFunction);
@@ -76,6 +77,7 @@ class NativeFunctionReflectionProvider
 
 		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignatures[0]->getParameters()));
 		if ($phpDoc !== null) {
+			$docComment = $phpDoc->getPhpDocString();
 			if ($phpDoc->getThrowsTag() !== null) {
 				$throwType = $phpDoc->getThrowsTag()->getType();
 			}
@@ -160,6 +162,7 @@ class NativeFunctionReflectionProvider
 			$hasSideEffects,
 			$isDeprecated,
 			$asserts,
+			$docComment,
 		);
 		$this->functionMap[$lowerCasedFunctionName] = $functionReflection;
 

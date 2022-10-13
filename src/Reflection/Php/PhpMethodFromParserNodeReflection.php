@@ -128,11 +128,6 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		return $this->getClassMethod()->isPublic();
 	}
 
-	public function getDocComment(): ?string
-	{
-		return null;
-	}
-
 	public function isBuiltin(): bool
 	{
 		return false;

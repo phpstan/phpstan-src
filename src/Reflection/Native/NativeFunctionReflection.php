@@ -24,6 +24,7 @@ class NativeFunctionReflection implements FunctionReflection
 		private TrinaryLogic $hasSideEffects,
 		private bool $isDeprecated,
 		?Assertions $assertions = null,
+		private ?string $phpDocComment = null,
 	)
 	{
 		$this->assertions = $assertions ?? Assertions::createEmpty();
@@ -100,6 +101,11 @@ class NativeFunctionReflection implements FunctionReflection
 	public function getAsserts(): Assertions
 	{
 		return $this->assertions;
+	}
+
+	public function getDocComment(): ?string
+	{
+		return $this->phpDocComment;
 	}
 
 }

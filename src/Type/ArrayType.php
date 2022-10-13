@@ -44,10 +44,16 @@ class ArrayType implements Type
 	/** @api */
 	public function __construct(Type $keyType, private Type $itemType)
 	{
+		$this->keyType = $this->normalizeKeyType($keyType);
+	}
+
+	protected function normalizeKeyType(Type $keyType): Type
+	{
 		if ($keyType->describe(VerbosityLevel::value()) === '(int|string)') {
-			$keyType = new MixedType();
+			return new MixedType();
 		}
-		$this->keyType = $keyType;
+
+		return $keyType;
 	}
 
 	public function getKeyType(): Type

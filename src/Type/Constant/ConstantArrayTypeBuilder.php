@@ -14,7 +14,6 @@ use function array_map;
 use function array_unique;
 use function array_values;
 use function count;
-use function in_array;
 use function is_float;
 use function max;
 use function range;
@@ -32,6 +31,7 @@ class ConstantArrayTypeBuilder
 	 * @param array<int, Type> $valueTypes
 	 * @param non-empty-list<int> $nextAutoIndexes
 	 * @param array<int> $optionalKeys
+	 * @param array<int|string, int> $keyTypesMap
 	 */
 	private function __construct(
 		private array $keyTypes,
@@ -39,13 +39,14 @@ class ConstantArrayTypeBuilder
 		private array $nextAutoIndexes,
 		private array $optionalKeys,
 		private bool $isList,
+		private array $keyTypesMap,
 	)
 	{
 	}
 
 	public static function createEmpty(): self
 	{
-		return new self([], [], [0], [], true);
+		return new self([], [], [0], [], true, []);
 	}
 
 	public static function createFromConstantArray(ConstantArrayType $startArrayType): self
@@ -56,6 +57,7 @@ class ConstantArrayTypeBuilder
 			$startArrayType->getNextAutoIndexes(),
 			$startArrayType->getOptionalKeys(),
 			$startArrayType->isList()->yes(),
+			$startArrayType->getKeyTypesMap(),
 		);
 
 		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
@@ -75,12 +77,14 @@ class ConstantArrayTypeBuilder
 			if ($offsetType === null) {
 				$newAutoIndexes = $optional ? $this->nextAutoIndexes : [];
 				$hasOptional = false;
-				foreach ($this->keyTypes as $i => $keyType) {
-					if (!$keyType instanceof ConstantIntegerType) {
+				foreach ($this->nextAutoIndexes as $nextAutoIndex) {
+					$i = $this->keyTypesMap[$nextAutoIndex] ?? null;
+					if ($i === null) {
 						continue;
 					}
 
-					if (!in_array($keyType->getValue(), $this->nextAutoIndexes, true)) {
+					$keyType = $this->keyTypes[$i];
+					if (!$keyType instanceof ConstantIntegerType) {
 						continue;
 					}
 
@@ -103,6 +107,7 @@ class ConstantArrayTypeBuilder
 				$max = max($this->nextAutoIndexes);
 
 				$this->keyTypes[] = new ConstantIntegerType($max);
+				$this->keyTypesMap[$max] = count($this->keyTypes) - 1;
 				$this->valueTypes[] = $valueType;
 
 				/** @var int|float $newAutoIndex */
@@ -126,11 +131,10 @@ class ConstantArrayTypeBuilder
 			}
 
 			if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
-				/** @var ConstantIntegerType|ConstantStringType $keyType */
-				foreach ($this->keyTypes as $i => $keyType) {
-					if ($keyType->getValue() !== $offsetType->getValue()) {
-						continue;
-					}
+				$i = $this->keyTypesMap[$offsetType->getValue()] ?? null;
+				if ($i !== null) {
+					/** @var ConstantIntegerType|ConstantStringType $keyType */
+					$keyType = $this->keyTypes[$i];
 
 					if ($optional) {
 						$valueType = TypeCombinator::union($valueType, $this->valueTypes[$i]);
@@ -152,6 +156,7 @@ class ConstantArrayTypeBuilder
 				}
 
 				$this->keyTypes[] = $offsetType;
+				$this->keyTypesMap[$offsetType->getValue()] = count($this->keyTypes) - 1;
 				$this->valueTypes[] = $valueType;
 
 				if ($offsetType instanceof ConstantIntegerType) {
@@ -253,6 +258,9 @@ class ConstantArrayTypeBuilder
 		}
 
 		$this->keyTypes[] = $offsetType;
+		if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
+			$this->keyTypesMap[$offsetType->getValue()] = count($this->keyTypes) - 1;
+		}
 		$this->valueTypes[] = $valueType;
 		if ($optional) {
 			$this->optionalKeys[] = count($this->keyTypes) - 1;
@@ -275,7 +283,9 @@ class ConstantArrayTypeBuilder
 		if (!$this->degradeToGeneralArray) {
 			/** @var array<int, ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
-			return new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+			$array = new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
+			$array->setKeyTypesMap($this->keyTypesMap);
+			return $array;
 		}
 
 		$array = new ArrayType(

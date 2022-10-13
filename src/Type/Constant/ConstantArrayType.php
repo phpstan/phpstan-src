@@ -26,6 +26,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\LazyUnionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -71,6 +72,9 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	/** @var non-empty-list<int> */
 	private array $nextAutoIndexes;
 
+	/** @var array<int|string, int>|null */
+	private ?array $keyTypesMap = null;
+
 	/**
 	 * @api
 	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
@@ -106,13 +110,28 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		parent::__construct(
 			$keyType,
-			count($valueTypes) > 0 ? TypeCombinator::union(...$valueTypes) : new NeverType(true),
+			count($valueTypes) > 0 ? new LazyUnionType($valueTypes) : new NeverType(true),
 		);
 	}
 
 	public function getConstantArrays(): array
 	{
 		return [$this];
+	}
+
+	protected function normalizeKeyType(Type $keyType): Type
+	{
+		return $keyType;
+	}
+
+	public function getItemType(): Type
+	{
+		$itemType = parent::getItemType();
+		if ($itemType instanceof LazyUnionType) {
+			$itemType = $itemType->resolve();
+		}
+
+		return $itemType;
 	}
 
 	/** @deprecated Use isIterableAtLeastOnce()->no() instead */
@@ -228,6 +247,31 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function getKeyTypes(): array
 	{
 		return $this->keyTypes;
+	}
+
+	/**
+	 * @return array<int|string, int>
+	 * @internal
+	 */
+	public function getKeyTypesMap(): array
+	{
+		if ($this->keyTypesMap === null) {
+			$this->keyTypesMap = [];
+			foreach ($this->keyTypes as $i => $keyType) {
+				$this->keyTypesMap[$keyType->getValue()] = $i;
+			}
+		}
+
+		return $this->keyTypesMap;
+	}
+
+	/**
+	 * @param array<int|string, int> $keyTypesMap
+	 * @internal
+	 */
+	public function setKeyTypesMap(array $keyTypesMap): void
+	{
+		$this->keyTypesMap = $keyTypesMap;
 	}
 
 	/** @deprecated Use getFirstIterableKeyType() instead */
@@ -1401,15 +1445,15 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		$failOnDifferentValueType = $keyTypesCount !== $otherKeyTypesCount || $keyTypesCount < 2;
 
-		$keyTypes = $this->keyTypes;
+		$keyTypesMap = $this->getKeyTypesMap();
 
 		foreach ($otherArray->keyTypes as $j => $keyType) {
-			$i = self::findKeyIndex($keyType, $keyTypes);
+			$i = $keyTypesMap[$keyType->getValue()] ?? null;
 			if ($i === null) {
 				return false;
 			}
 
-			unset($keyTypes[$i]);
+			unset($keyTypesMap[$keyType->getValue()]);
 
 			$valueType = $this->valueTypes[$i];
 			$otherValueType = $otherArray->valueTypes[$j];
@@ -1424,7 +1468,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		$requiredKeyCount = 0;
-		foreach (array_keys($keyTypes) as $i) {
+		foreach ($keyTypesMap as $i) {
 			if ($this->isOptionalKey($i)) {
 				continue;
 			}
@@ -1469,22 +1513,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	 */
 	private function getKeyIndex($otherKeyType): ?int
 	{
-		return self::findKeyIndex($otherKeyType, $this->keyTypes);
-	}
-
-	/**
-	 * @param ConstantIntegerType|ConstantStringType $otherKeyType
-	 * @param array<int, ConstantIntegerType|ConstantStringType> $keyTypes
-	 */
-	private static function findKeyIndex($otherKeyType, array $keyTypes): ?int
-	{
-		foreach ($keyTypes as $i => $keyType) {
-			if ($keyType->equals($otherKeyType)) {
-				return $i;
-			}
-		}
-
-		return null;
+		return $this->getKeyTypesMap()[$otherKeyType->getValue()] ?? null;
 	}
 
 	public function makeOffsetRequired(Type $offsetType): self

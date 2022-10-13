@@ -21,7 +21,7 @@ trait MaybeIterableTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function getIterableCount(): Type
+	public function getArraySize(): Type
 	{
 		if ($this->isIterable()->no()) {
 			return new ErrorType();

@@ -178,9 +178,9 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 			$firstType instanceof ConstantArrayType
 			&& $secondType instanceof ConstantArrayType
 		) {
-			if ($secondType->getIterableCount() < $firstType->getIterableCount()) {
+			if ($secondType->getArraySize() < $firstType->getArraySize()) {
 				return $secondType;
-			} elseif ($firstType->getIterableCount() < $secondType->getIterableCount()) {
+			} elseif ($firstType->getArraySize() < $secondType->getArraySize()) {
 				return $firstType;
 			}
 

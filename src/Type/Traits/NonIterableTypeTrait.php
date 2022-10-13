@@ -19,7 +19,7 @@ trait NonIterableTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
-	public function getIterableCount(): Type
+	public function getArraySize(): Type
 	{
 		return new ErrorType();
 	}

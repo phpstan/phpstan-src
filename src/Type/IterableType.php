@@ -220,7 +220,7 @@ class IterableType implements CompoundType
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function getIterableCount(): Type
+	public function getArraySize(): Type
 	{
 		return IntegerRangeType::fromInterval(0, null);
 	}

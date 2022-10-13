@@ -37,7 +37,7 @@ class CountFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 			}
 		}
 
-		return $scope->getType($functionCall->getArgs()[0]->value)->getIterableCount();
+		return $scope->getType($functionCall->getArgs()[0]->value)->getArraySize();
 	}
 
 }

@@ -136,7 +136,7 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
-	public function getIterableCount(): Type
+	public function getArraySize(): Type
 	{
 		return IntegerRangeType::fromInterval(0, null);
 	}

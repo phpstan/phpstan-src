@@ -420,9 +420,9 @@ class UnionType implements CompoundType
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce());
 	}
 
-	public function getIterableCount(): Type
+	public function getArraySize(): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->getIterableCount());
+		return $this->unionTypes(static fn (Type $type): Type => $type->getArraySize());
 	}
 
 	public function getIterableKeyType(): Type

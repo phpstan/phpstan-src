@@ -297,9 +297,9 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->isIterableAtLeastOnce();
 	}
 
-	public function getIterableCount(): Type
+	public function getArraySize(): Type
 	{
-		return $this->getStaticObjectType()->getIterableCount();
+		return $this->getStaticObjectType()->getArraySize();
 	}
 
 	public function getIterableKeyType(): Type

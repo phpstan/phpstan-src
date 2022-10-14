@@ -68,7 +68,7 @@ class ConstantArrayTypeBuilder
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $optional = false): void
 	{
 		if ($offsetType !== null) {
-			$offsetType = ArrayType::castToArrayKeyType($offsetType);
+			$offsetType = $offsetType->toArrayKey();
 		}
 
 		if (!$this->degradeToGeneralArray) {
@@ -216,7 +216,7 @@ class ConstantArrayTypeBuilder
 				$match = true;
 				$valueTypes = $this->valueTypes;
 				foreach ($scalarTypes as $scalarType) {
-					$scalarOffsetType = ArrayType::castToArrayKeyType($scalarType);
+					$scalarOffsetType = $scalarType->toArrayKey();
 					if (!$scalarOffsetType instanceof ConstantIntegerType && !$scalarOffsetType instanceof ConstantStringType) {
 						throw new ShouldNotHappenException();
 					}

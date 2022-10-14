@@ -585,6 +585,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return new ConstantArrayType($arrayKeys, $arrayValues);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return $this->toString();
+	}
+
 	public function toBoolean(): BooleanType
 	{
 		if ($this->isInstanceOf('SimpleXMLElement')->yes()) {

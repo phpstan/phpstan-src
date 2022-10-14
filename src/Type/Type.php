@@ -129,6 +129,8 @@ interface Type
 
 	public function toArray(): Type;
 
+	public function toArrayKey(): Type;
+
 	public function isSmallerThan(Type $otherType): TrinaryLogic;
 
 	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic;

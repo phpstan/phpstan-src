@@ -80,6 +80,11 @@ class IntegerType implements Type
 		);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return $this;
+	}
+
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		if ($typeToRemove instanceof IntegerRangeType || $typeToRemove instanceof ConstantIntegerType) {

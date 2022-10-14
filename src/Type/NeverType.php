@@ -227,6 +227,11 @@ class NeverType implements CompoundType
 		return $this;
 	}
 
+	public function toArrayKey(): Type
+	{
+		return $this;
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

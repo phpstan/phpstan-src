@@ -215,6 +215,11 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

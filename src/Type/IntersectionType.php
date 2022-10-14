@@ -649,6 +649,19 @@ class IntersectionType implements CompoundType
 		return $type;
 	}
 
+	public function toArrayKey(): Type
+	{
+		if ($this->isNumericString()->yes()) {
+			return new IntegerType();
+		}
+
+		if ($this->isString()->yes()) {
+			return $this;
+		}
+
+		return $this->intersectTypes(static fn (Type $type): Type => $type->toArrayKey());
+	}
+
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		$types = TemplateTypeMap::createEmpty();

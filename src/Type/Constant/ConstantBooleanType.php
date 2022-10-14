@@ -91,6 +91,11 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 		return new ConstantFloatType((float) $this->value);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new ConstantIntegerType((int) $this->value);
+	}
+
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new BooleanType();

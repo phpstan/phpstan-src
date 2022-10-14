@@ -26,9 +26,6 @@ use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_merge;
-use function is_float;
-use function is_int;
-use function key;
 use function sprintf;
 
 /** @api */
@@ -294,7 +291,7 @@ class ArrayType implements Type
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		$offsetType = self::castToArrayKeyType($offsetType);
+		$offsetType = $offsetType->toArrayKey();
 		if ($this->getKeyType()->isSuperTypeOf($offsetType)->no()) {
 			return TrinaryLogic::createNo();
 		}
@@ -304,7 +301,7 @@ class ArrayType implements Type
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		$offsetType = self::castToArrayKeyType($offsetType);
+		$offsetType = $offsetType->toArrayKey();
 		if ($this->getKeyType()->isSuperTypeOf($offsetType)->no()) {
 			return new ErrorType();
 		}
@@ -322,7 +319,7 @@ class ArrayType implements Type
 		if ($offsetType === null) {
 			$offsetType = new IntegerType();
 		} else {
-			$offsetType = self::castToArrayKeyType($offsetType);
+			$offsetType = $offsetType->toArrayKey();
 		}
 
 		if (
@@ -347,7 +344,7 @@ class ArrayType implements Type
 
 	public function unsetOffset(Type $offsetType): Type
 	{
-		$offsetType = self::castToArrayKeyType($offsetType);
+		$offsetType = $offsetType->toArrayKey();
 
 		if (
 			($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType)
@@ -366,7 +363,7 @@ class ArrayType implements Type
 
 	public function flipArray(): Type
 	{
-		return new self(self::castToArrayKeyType($this->getIterableValueType()), $this->getIterableKeyType());
+		return new self($this->getIterableValueType()->toArrayKey(), $this->getIterableKeyType());
 	}
 
 	public function popArray(): Type
@@ -432,55 +429,21 @@ class ArrayType implements Type
 		return $this;
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new ErrorType();
+	}
+
 	/** @deprecated Use getArraySize() instead */
 	public function count(): Type
 	{
 		return $this->getArraySize();
 	}
 
+	/** @deprecated Use $offsetType->toArrayKey() instead */
 	public static function castToArrayKeyType(Type $offsetType): Type
 	{
-		return TypeTraverser::map($offsetType, static function (Type $offsetType, callable $traverse): Type {
-			if ($offsetType instanceof TemplateType) {
-				return $offsetType;
-			}
-
-			if ($offsetType instanceof ConstantScalarType) {
-				$keyValue = $offsetType->getValue();
-				if (is_float($keyValue)) {
-					$keyValue = (int) $keyValue;
-				}
-				/** @var int|string $offsetValue */
-				$offsetValue = key([$keyValue => null]);
-				return is_int($offsetValue) ? new ConstantIntegerType($offsetValue) : new ConstantStringType($offsetValue);
-			}
-
-			if ($offsetType instanceof IntegerType) {
-				return $offsetType;
-			}
-
-			if ($offsetType instanceof BooleanType) {
-				return new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
-			}
-
-			if ($offsetType instanceof UnionType) {
-				return $traverse($offsetType);
-			}
-
-			if ($offsetType instanceof FloatType || $offsetType->isNumericString()->yes()) {
-				return new IntegerType();
-			}
-
-			if ($offsetType->isString()->yes()) {
-				return $offsetType;
-			}
-
-			if ($offsetType instanceof IntersectionType) {
-				return $traverse($offsetType);
-			}
-
-			return new UnionType([new IntegerType(), new StringType()]);
-		});
+		return $offsetType->toArrayKey();
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

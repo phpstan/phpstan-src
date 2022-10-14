@@ -124,6 +124,11 @@ class NonexistentParentClassType implements Type
 		return new ErrorType();
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new ErrorType();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

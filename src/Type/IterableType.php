@@ -210,6 +210,11 @@ class IterableType implements CompoundType
 		return new ArrayType($this->keyType, $this->getItemType());
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

@@ -151,4 +151,9 @@ trait ObjectTypeTrait
 		return new ArrayType(new MixedType(), new MixedType());
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new StringType();
+	}
+
 }

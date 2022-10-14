@@ -474,6 +474,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->toArray();
 	}
 
+	public function toArrayKey(): Type
+	{
+		return $this->getStaticObjectType()->toArrayKey();
+	}
+
 	public function toBoolean(): BooleanType
 	{
 		return $this->getStaticObjectType()->toBoolean();

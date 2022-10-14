@@ -78,6 +78,11 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 		return new ConstantStringType((string) $this->value);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return $this;
+	}
+
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new IntegerType();

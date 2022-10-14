@@ -3603,7 +3603,7 @@ class MutatingScope implements Scope
 				$this->parentScope,
 			);
 		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			$dimType = ArrayType::castToArrayKeyType($this->getType($expr->dim));
+			$dimType = $this->getType($expr->dim)->toArrayKey();
 			if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
 				$exprVarType = $this->getType($expr->var);
 				if (!$exprVarType instanceof MixedType && !$exprVarType->isArray()->no()) {

@@ -404,6 +404,11 @@ class MixedType implements CompoundType, SubtractableType
 		return new ArrayType($mixed, $mixed);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new UnionType([new IntegerType(), new StringType()]);
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {

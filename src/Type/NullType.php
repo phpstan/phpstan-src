@@ -141,6 +141,11 @@ class NullType implements ConstantScalarType
 		return new ConstantArrayType([], []);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new ConstantStringType('');
+	}
+
 	public function isOffsetAccessible(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

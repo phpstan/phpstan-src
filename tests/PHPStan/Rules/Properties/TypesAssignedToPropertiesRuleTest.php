@@ -215,10 +215,6 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Arrays/data/appended-array-key.php'], [
 			[
 				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<int|string, mixed>.',
-				27,
-			],
-			[
-				'Property AppendedArrayKey\Foo::$intArray (array<int, mixed>) does not accept array<int|string, mixed>.',
 				28,
 			],
 			[

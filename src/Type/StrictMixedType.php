@@ -247,6 +247,11 @@ class StrictMixedType implements CompoundType
 		return new ErrorType();
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		return TemplateTypeMap::createEmpty();

@@ -292,6 +292,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
 		return $this->templateTypeMap;

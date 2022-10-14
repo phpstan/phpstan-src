@@ -159,6 +159,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return $this;
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

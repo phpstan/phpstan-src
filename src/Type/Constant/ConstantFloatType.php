@@ -83,6 +83,11 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 		return new ConstantIntegerType((int) $this->value);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new ConstantIntegerType((int) $this->value);
+	}
+
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new FloatType();

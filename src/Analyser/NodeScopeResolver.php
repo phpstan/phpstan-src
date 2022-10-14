@@ -879,7 +879,7 @@ class NodeScopeResolver
 				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 				}
-				if ($bodyScope->equals($prevScope)) {
+				if ($bodyScope->equals($prevScope) || $bodyScope->getType($stmt->cond) instanceof NeverType) {
 					break;
 				}
 
@@ -958,7 +958,7 @@ class NodeScopeResolver
 				}
 				$bodyScope = $this->processExprNode($stmt->cond, $bodyScope, static function (): void {
 				}, ExpressionContext::createDeep())->getTruthyScope();
-				if ($bodyScope->equals($prevScope)) {
+				if ($bodyScope->equals($prevScope) || $bodyScope->getType($stmt->cond) instanceof NeverType) {
 					break;
 				}
 
@@ -1062,6 +1062,12 @@ class NodeScopeResolver
 
 				if ($bodyScope->equals($prevScope)) {
 					break;
+				}
+
+				foreach ($stmt->cond as $condExpr) {
+					if ($bodyScope->getType($condExpr) instanceof NeverType) {
+						break 2;
+					}
 				}
 
 				if ($count >= self::GENERALIZE_AFTER_ITERATION) {

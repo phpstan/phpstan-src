@@ -98,6 +98,10 @@ interface Type
 
 	public function flipArray(): Type;
 
+	public function popArray(): Type;
+
+	public function shiftArray(): Type;
+
 	public function isCallable(): TrinaryLogic;
 
 	/**

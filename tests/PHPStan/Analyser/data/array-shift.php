@@ -58,4 +58,11 @@ class Foo
 		assertType('array{b?: 1, c?: 2}', $arr);
 	}
 
+	public function list(array $arr): void
+	{
+		/** @var list<string> $arr */
+		assertType('string|null', array_shift($arr));
+		assertType('list<string>', $arr);
+	}
+
 }

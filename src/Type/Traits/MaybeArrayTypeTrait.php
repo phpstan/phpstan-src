@@ -44,4 +44,14 @@ trait MaybeArrayTypeTrait
 		return new ErrorType();
 	}
 
+	public function popArray(): Type
+	{
+		return new ErrorType();
+	}
+
+	public function shiftArray(): Type
+	{
+		return new ErrorType();
+	}
+
 }

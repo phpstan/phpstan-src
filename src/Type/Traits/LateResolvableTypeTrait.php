@@ -210,6 +210,16 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->flipArray();
 	}
 
+	public function popArray(): Type
+	{
+		return $this->resolve()->popArray();
+	}
+
+	public function shiftArray(): Type
+	{
+		return $this->resolve()->shiftArray();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->resolve()->isCallable();

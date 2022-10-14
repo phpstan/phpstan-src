@@ -134,7 +134,6 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -950,6 +949,7 @@ class NodeScopeResolver
 
 			do {
 				$prevScope = $bodyScope;
+				$bodyScope = $bodyScope->mergeWith($scope);
 				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
 				})->filterOutLoopExitPoints();
 				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
@@ -1836,25 +1836,10 @@ class NodeScopeResolver
 			) {
 				$arrayArg = $expr->getArgs()[0]->value;
 				$arrayArgType = $scope->getType($arrayArg);
-				$scope = $scope->invalidateExpression($arrayArg);
 
-				$functionName = $functionReflection->getName();
-				$arrayArgType = TypeTraverser::map($arrayArgType, static function (Type $type, callable $traverse) use ($functionName): Type {
-					if ($type instanceof UnionType || $type instanceof IntersectionType) {
-						return $traverse($type);
-					}
-					if ($type instanceof ConstantArrayType) {
-						return $functionName === 'array_pop' ? $type->removeLast() : $type->removeFirst();
-					}
-					if ($type->isIterableAtLeastOnce()->yes()) {
-						return $type->toArray();
-					}
-					return $type;
-				});
-
-				$scope = $scope->assignExpression(
+				$scope = $scope->invalidateExpression($arrayArg)->assignExpression(
 					$arrayArg,
-					$arrayArgType,
+					$functionReflection->getName() === 'array_pop' ? $arrayArgType->popArray() : $arrayArgType->shiftArray(),
 					$scope->getNativeType($arrayArg),
 				);
 			}

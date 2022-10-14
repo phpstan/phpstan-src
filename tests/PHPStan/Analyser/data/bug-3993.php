@@ -17,7 +17,7 @@ class Foo
 
 		array_shift($arguments);
 
-		assertType('mixed~null', $arguments);
+		assertType('array', $arguments);
 		assertType('int<0, max>', count($arguments));
 	}
 

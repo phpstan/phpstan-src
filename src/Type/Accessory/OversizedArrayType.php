@@ -131,6 +131,16 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function popArray(): Type
+	{
+		return $this;
+	}
+
+	public function shiftArray(): Type
+	{
+		return $this;
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

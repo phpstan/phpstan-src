@@ -727,6 +727,10 @@ class PhpClassReflectionExtension
 		$isPure = $resolvedPhpDoc->isPure();
 		$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
 		$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
+		$phpDocComment = null;
+		if ($resolvedPhpDoc->hasPhpDocString()) {
+			$phpDocComment = $resolvedPhpDoc->getPhpDocString();
+		}
 
 		return $this->methodReflectionFactory->create(
 			$declaringClass,
@@ -743,6 +747,7 @@ class PhpClassReflectionExtension
 			$isPure,
 			$asserts,
 			$selfOutType,
+			$phpDocComment,
 		);
 	}
 

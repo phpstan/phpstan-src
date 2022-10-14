@@ -77,7 +77,9 @@ class NativeFunctionReflectionProvider
 
 		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignatures[0]->getParameters()));
 		if ($phpDoc !== null) {
-			$docComment = $phpDoc->getPhpDocString();
+			if ($phpDoc->hasPhpDocString()) {
+				$docComment = $phpDoc->getPhpDocString();
+			}
 			if ($phpDoc->getThrowsTag() !== null) {
 				$throwType = $phpDoc->getThrowsTag()->getType();
 			}

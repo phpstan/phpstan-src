@@ -284,7 +284,9 @@ class BetterReflectionProvider implements ReflectionProvider
 			$isFinal = $resolvedPhpDoc->isFinal();
 			$isPure = $resolvedPhpDoc->isPure();
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
-			$phpDocComment = $resolvedPhpDoc->getPhpDocString();
+			if ($resolvedPhpDoc->hasPhpDocString()) {
+				$phpDocComment = $resolvedPhpDoc->getPhpDocString();
+			}
 		}
 
 		return $this->functionReflectionFactory->create(

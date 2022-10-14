@@ -7,10 +7,20 @@ class ClassWithPhpdoc {
 	public function docViaStub() {
 
 	}
+
+	/** stub overridden phpdoc */
+	public function existingDocButStubOverridden() {
+
+	}
 }
 
 
 /** fn doc via stub */
 function docViaStub()
 {
+}
+
+/** fn stub overridden phpdoc */
+function existingDocButStubOverridden() {
+
 }

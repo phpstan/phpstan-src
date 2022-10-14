@@ -37,6 +37,10 @@ class FunctionReflectionTest extends PHPStanTestCase
 			'FunctionReflectionDocTest\\docViaStub',
 			'/** fn doc via stub */',
 		];
+		yield [
+			'FunctionReflectionDocTest\\existingDocButStubOverridden',
+			'/** fn stub overridden phpdoc */',
+		];
 	}
 
 	/**
@@ -71,6 +75,10 @@ class FunctionReflectionTest extends PHPStanTestCase
 		yield [
 			'docViaStub',
 			'/** method doc via stub */',
+		];
+		yield [
+			'existingDocButStubOverridden',
+			'/** stub overridden phpdoc */',
 		];
 	}
 

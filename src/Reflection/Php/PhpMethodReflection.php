@@ -81,6 +81,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		private ?bool $isPure,
 		private Assertions $asserts,
 		private ?Type $selfOutType,
+		private ?string $phpDocComment,
 	)
 	{
 	}
@@ -97,7 +98,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 
 	public function getDocComment(): ?string
 	{
-		return $this->reflection->getDocComment();
+		return $this->phpDocComment;
 	}
 
 	/**

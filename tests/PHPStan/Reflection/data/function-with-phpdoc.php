@@ -21,3 +21,9 @@ if (!function_exists('docViaStub')) {
 	{
 	}
 }
+
+if (!function_exists('existingDocButStubOverridden')) {
+	function existingDocButStubOverridden()
+	{
+	}
+}

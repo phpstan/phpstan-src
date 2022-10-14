@@ -7,6 +7,10 @@ class ClassWithPhpdoc {
 	public function aMethod() {
 
 	}
+	/** existing method phpdoc */
+	public function existingDocButStubOverridden() {
+
+	}
 	public function noDocMethod() {
 
 	}

@@ -36,6 +36,8 @@ use function substr;
 class ResolvedPhpDocBlock
 {
 
+	private const EMPTY_DOC_STRING = '/** */';
+
 	private PhpDocNode $phpDocNode;
 
 	/** @var PhpDocNode[] */
@@ -149,7 +151,7 @@ class ResolvedPhpDocBlock
 	{
 		// new property also needs to be added to merge()
 		$self = new self();
-		$self->phpDocString = '/** */';
+		$self->phpDocString = self::EMPTY_DOC_STRING;
 		$self->phpDocNodes = [];
 		$self->filename = null;
 		$self->templateTypeMap = TemplateTypeMap::createEmpty();
@@ -206,6 +208,7 @@ class ResolvedPhpDocBlock
 			}
 		}
 		$result->phpDocNodes = $phpDocNodes;
+		$result->phpDocString = $this->phpDocString;
 		$result->filename = $this->filename;
 		// skip $result->nameScope
 		$result->templateTypeMap = $this->templateTypeMap;
@@ -314,6 +317,11 @@ class ResolvedPhpDocBlock
 		$self->isPure = $this->isPure;
 
 		return $self;
+	}
+
+	public function hasPhpDocString(): bool
+	{
+		return $this->phpDocString !== self::EMPTY_DOC_STRING;
 	}
 
 	public function getPhpDocString(): string

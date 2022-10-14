@@ -48,7 +48,6 @@ parameters:
 			- 'PHPStan\Analyser\UndefinedVariableException'
 			- 'RuntimeException'
 			- 'Nette\Neon\Exception'
-			- 'Nette\MemberAccessException'
 			- 'Nette\Utils\JsonException'
 			- 'PHPStan\File\CouldNotReadFileException'
 			- 'PHPStan\File\CouldNotWriteFileException'

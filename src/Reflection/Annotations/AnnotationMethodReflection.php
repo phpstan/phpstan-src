@@ -28,7 +28,7 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 		private array $parameters,
 		private bool $isStatic,
 		private bool $isVariadic,
-		private ?Type $throwType = null,
+		private ?Type $throwType,
 	)
 	{
 	}

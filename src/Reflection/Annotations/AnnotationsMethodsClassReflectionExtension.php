@@ -66,6 +66,9 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 				$parameters,
 				$methodTags[$methodName]->isStatic(),
 				$this->detectMethodVariadic($parameters),
+				$classReflection->hasNativeMethod('__call')
+					? $classReflection->getNativeMethod('__call')->getThrowType()
+					: null,
 			);
 		}
 

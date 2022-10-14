@@ -421,4 +421,14 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testMagicMethods(): void
+	{
+		$this->analyse([__DIR__ . '/data/dead-catch-magic-methods.php'], [
+			[
+				'Dead catch - Exception is never thrown in the try block.',
+				21,
+			],
+		]);
+	}
+
 }

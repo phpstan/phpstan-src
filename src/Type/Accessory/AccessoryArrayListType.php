@@ -152,6 +152,16 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function popArray(): Type
+	{
+		return $this;
+	}
+
+	public function shiftArray(): Type
+	{
+		return $this;
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

@@ -686,6 +686,16 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $builder->getArray();
 	}
 
+	public function popArray(): Type
+	{
+		return $this->removeLastElements(1);
+	}
+
+	public function shiftArray(): Type
+	{
+		return $this->removeFirstElements(1);
+	}
+
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		$keysCount = count($this->keyTypes);
@@ -778,6 +788,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return parent::isList();
 	}
 
+	/** @deprecated Use popArray() instead */
 	public function removeLast(): self
 	{
 		return $this->removeLastElements(1);
@@ -837,6 +848,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		);
 	}
 
+	/** @deprecated Use shiftArray() instead */
 	public function removeFirst(): self
 	{
 		return $this->removeFirstElements(1);

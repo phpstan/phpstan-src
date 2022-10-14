@@ -526,6 +526,16 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->flipArray());
 	}
 
+	public function popArray(): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->popArray());
+	}
+
+	public function shiftArray(): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->shiftArray());
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isCallable());

@@ -142,6 +142,16 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function popArray(): Type
+	{
+		return new MixedType();
+	}
+
+	public function shiftArray(): Type
+	{
+		return new MixedType();
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

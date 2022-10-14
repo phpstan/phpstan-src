@@ -369,6 +369,16 @@ class ArrayType implements Type
 		return new self(self::castToArrayKeyType($this->getIterableValueType()), $this->getIterableKeyType());
 	}
 
+	public function popArray(): Type
+	{
+		return $this;
+	}
+
+	public function shiftArray(): Type
+	{
+		return $this;
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe()->and($this->itemType->isString());

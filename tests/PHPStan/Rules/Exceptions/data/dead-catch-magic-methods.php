@@ -4,6 +4,7 @@ namespace DeadCatchMagicMethods;
 
 /**
  * @method void magicMethod1();
+ * @method static void staticMagicMethod1();
  */
 class ClassWithMagicMethod
 {
@@ -21,11 +22,18 @@ class ClassWithMagicMethod
 		} catch (\Exception $e) {
 
 		}
+
+		try {
+			ClassWithMagicMethod::staticMagicMethod1();
+		} catch (\Exception $e) {
+			// No error since `implicitThrows: true` is used by default
+		}
 	}
 }
 
 /**
  * @method void magicMethod2();
+ * @method static void staticMagicMethod2();
  */
 class ClassWithMagicMethod2
 {
@@ -37,6 +45,13 @@ class ClassWithMagicMethod2
 		throw new \Exception();
 	}
 
+	/**
+	 * @throws void
+	 */
+	public static function __callStatic($name, $arguments)
+	{
+	}
+
 	public function test()
 	{
 		try {
@@ -44,20 +59,11 @@ class ClassWithMagicMethod2
 		} catch (\Exception $e) {
 
 		}
-	}
-}
 
-/**
- * @method void magicMethod3();
- */
-class ClassWithMagicMethod3
-{
-	public function test()
-	{
 		try {
-			(new ClassWithMagicMethod())->magicMethod3();
+			ClassWithMagicMethod2::staticMagicMethod2();
 		} catch (\Exception $e) {
-			// No error since `implicitThrows: true` is used by default
+
 		}
 	}
 }

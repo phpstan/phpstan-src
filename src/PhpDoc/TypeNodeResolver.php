@@ -63,6 +63,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -92,6 +93,7 @@ use PHPStan\Type\VoidType;
 use Traversable;
 use function array_key_exists;
 use function array_map;
+use function array_values;
 use function count;
 use function explode;
 use function get_class;
@@ -683,6 +685,15 @@ class TypeNodeResolver
 
 			$classReflection = $this->getReflectionProvider()->getClass($mainType->getClassName());
 			if ($classReflection->isGeneric()) {
+				$templateTypes = array_values($classReflection->getTemplateTypeMap()->getTypes());
+				for ($i = count($genericTypes), $templateTypesCount = count($templateTypes); $i < $templateTypesCount; $i++) {
+					$templateType = $templateTypes[$i];
+					if (!$templateType instanceof TemplateType || $templateType->getDefault() === null) {
+						continue;
+					}
+					$genericTypes[] = $templateType->getDefault();
+				}
+
 				if (in_array($mainType->getClassName(), [
 					Traversable::class,
 					IteratorAggregate::class,

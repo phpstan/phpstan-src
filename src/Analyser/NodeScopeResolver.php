@@ -945,6 +945,7 @@ class NodeScopeResolver
 
 			do {
 				$prevScope = $bodyScope;
+				$bodyScope = $bodyScope->mergeWith($scope);
 				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
 				})->filterOutLoopExitPoints();
 				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();

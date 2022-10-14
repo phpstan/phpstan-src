@@ -162,6 +162,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new IntegerType();
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

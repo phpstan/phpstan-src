@@ -4,7 +4,6 @@ namespace PHPStan\Type\Accessory;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -168,7 +167,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function flipArray(): Type
 	{
-		$valueType = ArrayType::castToArrayKeyType($this->valueType);
+		$valueType = $this->valueType->toArrayKey();
 		if ($valueType instanceof ConstantIntegerType || $valueType instanceof ConstantStringType) {
 			return new self($valueType, $this->offsetType);
 		}
@@ -243,6 +242,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	public function toArray(): Type
 	{
 		return new MixedType();
+	}
+
+	public function toArrayKey(): Type
+	{
+		return new ErrorType();
 	}
 
 	public function traverse(callable $cb): Type

@@ -70,6 +70,11 @@ class ResourceType implements Type
 		);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new ErrorType();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

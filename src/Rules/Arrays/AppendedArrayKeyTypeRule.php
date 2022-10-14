@@ -65,7 +65,7 @@ class AppendedArrayKeyTypeRule implements Rule
 				return [];
 			}
 
-			$keyType = ArrayType::castToArrayKeyType($dimensionType);
+			$keyType = $dimensionType->toArrayKey();
 			if (!$this->checkUnionTypes && $keyType instanceof UnionType) {
 				return [];
 			}

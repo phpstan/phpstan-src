@@ -114,6 +114,11 @@ class FloatType implements Type
 		);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new IntegerType();
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

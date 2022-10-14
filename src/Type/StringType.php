@@ -137,6 +137,11 @@ class StringType implements Type
 		);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return $this;
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

@@ -236,6 +236,11 @@ class Baz implements Type
 		// TODO: Implement toArray() method.
 	}
 
+	public function toArrayKey(): \PHPStan\Type\Type
+	{
+		// TODO: Implement toArrayKey() method.
+	}
+
 	public function isSmallerThan(Type $otherType): \PHPStan\TrinaryLogic
 	{
 		// TODO: Implement isSmallerThan() method.

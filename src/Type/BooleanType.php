@@ -80,6 +80,11 @@ class BooleanType implements Type
 		);
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
+	}
+
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		if ($typeToRemove instanceof ConstantBooleanType) {

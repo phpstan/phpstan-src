@@ -223,6 +223,11 @@ trait TemplateTypeTrait
 			->and(TrinaryLogic::createMaybe());
 	}
 
+	public function toArrayKey(): Type
+	{
+		return $this;
+	}
+
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		if (

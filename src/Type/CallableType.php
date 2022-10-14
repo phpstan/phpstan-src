@@ -199,6 +199,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return new ArrayType(new MixedType(), new MixedType());
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function getTemplateTypeMap(): TemplateTypeMap
 	{
 		return TemplateTypeMap::createEmpty();

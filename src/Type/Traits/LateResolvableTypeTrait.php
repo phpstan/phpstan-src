@@ -280,6 +280,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->toArray();
 	}
 
+	public function toArrayKey(): Type
+	{
+		return $this->resolve()->toArrayKey();
+	}
+
 	public function isSmallerThan(Type $otherType): TrinaryLogic
 	{
 		return $this->resolve()->isSmallerThan($otherType);

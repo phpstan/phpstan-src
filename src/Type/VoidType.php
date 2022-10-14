@@ -99,6 +99,11 @@ class VoidType implements Type
 		return new ErrorType();
 	}
 
+	public function toArrayKey(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

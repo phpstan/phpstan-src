@@ -199,10 +199,10 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			return $this->phpVersion->throwsTypeErrorForInternalFunctions() ? new NeverType() : new IntegerType();
 		}
 		if ($isArray->no()) {
-			return ArrayType::castToArrayKeyType($type);
+			return $type->toArrayKey();
 		}
 		$withoutArrayType = TypeCombinator::remove($type, new ArrayType(new MixedType(), new MixedType()));
-		$keyType = ArrayType::castToArrayKeyType($withoutArrayType);
+		$keyType = $withoutArrayType->toArrayKey();
 		if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {
 			return $keyType;
 		}

@@ -533,7 +533,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
-		$offsetType = ArrayType::castToArrayKeyType($offsetType);
+		$offsetType = $offsetType->toArrayKey();
 		if ($offsetType instanceof UnionType) {
 			return TrinaryLogic::lazyExtremeIdentity($offsetType->getTypes(), fn (Type $innerType) => $this->hasOffsetValueType($innerType));
 		}
@@ -567,7 +567,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		$offsetType = ArrayType::castToArrayKeyType($offsetType);
+		$offsetType = $offsetType->toArrayKey();
 		$matchingValueTypes = [];
 		$all = true;
 		foreach ($this->keyTypes as $i => $keyType) {
@@ -609,7 +609,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function unsetOffset(Type $offsetType): Type
 	{
-		$offsetType = ArrayType::castToArrayKeyType($offsetType);
+		$offsetType = $offsetType->toArrayKey();
 		if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
 			foreach ($this->keyTypes as $i => $keyType) {
 				if ($keyType->getValue() !== $offsetType->getValue()) {
@@ -646,7 +646,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$optionalKeys = $this->optionalKeys;
 
 			foreach ($constantScalars as $constantScalar) {
-				$constantScalar = ArrayType::castToArrayKeyType($constantScalar);
+				$constantScalar = $constantScalar->toArrayKey();
 				if (!$constantScalar instanceof ConstantIntegerType && !$constantScalar instanceof ConstantStringType) {
 					continue;
 				}
@@ -677,7 +677,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		foreach ($this->keyTypes as $i => $keyType) {
 			$valueType = $this->valueTypes[$i];
 			$builder->setOffsetValueType(
-				ArrayType::castToArrayKeyType($valueType),
+				$valueType->toArrayKey(),
 				$keyType,
 				$this->isOptionalKey($i),
 			);
@@ -1401,7 +1401,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function makeOffsetRequired(Type $offsetType): self
 	{
-		$offsetType = ArrayType::castToArrayKeyType($offsetType);
+		$offsetType = $offsetType->toArrayKey();
 		$optionalKeys = $this->optionalKeys;
 		foreach ($this->keyTypes as $i => $keyType) {
 			if (!$keyType->equals($offsetType)) {

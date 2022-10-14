@@ -555,7 +555,7 @@ class TypeNodeResolver
 					new IntegerType(),
 					new StringType(),
 				]));
-				$arrayType = new ArrayType(!$keyType instanceof NeverType ? ArrayType::castToArrayKeyType($keyType) : $keyType, $genericTypes[1]);
+				$arrayType = new ArrayType($keyType->toArrayKey(), $genericTypes[1]);
 			} else {
 				return new ErrorType();
 			}

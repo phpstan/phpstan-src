@@ -678,6 +678,11 @@ class UnionType implements CompoundType
 		return $type;
 	}
 
+	public function toArrayKey(): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->toArrayKey());
+	}
+
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap
 	{
 		$types = TemplateTypeMap::createEmpty();

@@ -36,7 +36,9 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function addcslashes;
 use function is_float;
+use function is_int;
 use function is_numeric;
+use function key;
 use function strlen;
 use function substr;
 
@@ -248,6 +250,13 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	public function toFloat(): Type
 	{
 		return new ConstantFloatType((float) $this->value);
+	}
+
+	public function toArrayKey(): Type
+	{
+		/** @var int|string $offsetValue */
+		$offsetValue = key([$this->value => null]);
+		return is_int($offsetValue) ? new ConstantIntegerType($offsetValue) : new ConstantStringType($offsetValue);
 	}
 
 	public function isString(): TrinaryLogic

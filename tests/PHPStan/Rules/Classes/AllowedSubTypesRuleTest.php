@@ -18,7 +18,6 @@ class AllowedSubTypesRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		require __DIR__ . '/data/allowed-sub-types.php';
 		$this->analyse([__DIR__ . '/data/allowed-sub-types.php'], [
 			[
 				'Type AllowedSubTypes\\Baz is not allowed to be a subtype of AllowedSubTypes\\Foo.',

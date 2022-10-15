@@ -65,4 +65,10 @@ class Foo
 		assertType('list<string>', $arr);
 	}
 
+	public function mixed($mixed): void
+	{
+		assertType('mixed', array_pop($mixed));
+		assertType('array', $mixed);
+	}
+
 }

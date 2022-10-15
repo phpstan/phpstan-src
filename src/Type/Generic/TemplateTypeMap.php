@@ -5,6 +5,7 @@ namespace PHPStan\Type\Generic;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function count;
@@ -208,7 +209,10 @@ class TemplateTypeMap
 		if ($this->resolvedToBounds !== null) {
 			return $this->resolvedToBounds;
 		}
-		return $this->resolvedToBounds = $this->map(static fn (string $name, Type $type): Type => TemplateTypeHelper::resolveToBounds($type));
+		return $this->resolvedToBounds = $this->map(static fn (string $name, Type $type): Type => TypeTraverser::map(
+			$type,
+			static fn (Type $type, callable $traverse): Type => $type instanceof TemplateType ? $traverse($type->getDefault() ?? $type->getBound()) : $traverse($type),
+		));
 	}
 
 	/**

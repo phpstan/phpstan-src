@@ -20,6 +20,7 @@ final class TemplateStrictMixedType extends StrictMixedType implements TemplateT
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
 		StrictMixedType $bound,
+		?Type $default,
 	)
 	{
 		$this->scope = $scope;
@@ -27,6 +28,7 @@ final class TemplateStrictMixedType extends StrictMixedType implements TemplateT
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
+		$this->default = $default;
 	}
 
 	public function isSuperTypeOfMixed(MixedType $type): TrinaryLogic

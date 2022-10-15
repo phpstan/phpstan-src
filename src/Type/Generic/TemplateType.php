@@ -16,6 +16,8 @@ interface TemplateType extends CompoundType
 
 	public function getBound(): Type;
 
+	public function getDefault(): ?Type;
+
 	public function toArgument(): TemplateType;
 
 	public function isArgument(): bool;

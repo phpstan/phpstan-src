@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 
 /** @api */
@@ -17,6 +18,7 @@ final class TemplateUnionType extends UnionType implements TemplateType
 		TemplateTypeVariance $templateTypeVariance,
 		string $name,
 		UnionType $bound,
+		?Type $default,
 	)
 	{
 		parent::__construct($bound->getTypes());
@@ -26,6 +28,7 @@ final class TemplateUnionType extends UnionType implements TemplateType
 		$this->variance = $templateTypeVariance;
 		$this->name = $name;
 		$this->bound = $bound;
+		$this->default = $default;
 	}
 
 }

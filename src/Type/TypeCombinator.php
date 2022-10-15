@@ -806,6 +806,7 @@ class TypeCombinator
 					$union,
 					$type->getVariance(),
 					$type->getStrategy(),
+					$type->getDefault(),
 				);
 			}
 

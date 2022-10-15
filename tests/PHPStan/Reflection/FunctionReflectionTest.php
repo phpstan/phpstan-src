@@ -92,6 +92,26 @@ class FunctionReflectionTest extends PHPStanTestCase
 			'/** stub overridden phpdoc */',
 		];
 		yield [
+			'FunctionReflectionDocTest\\ClassWithInheritedPhpdoc',
+			'aMethod',
+			'/** some method phpdoc */',
+		];
+		yield [
+			'FunctionReflectionDocTest\\ClassWithInheritedPhpdoc',
+			'noDocMethod',
+			null,
+		];
+		yield [
+			'FunctionReflectionDocTest\\ClassWithInheritedPhpdoc',
+			'docViaStub',
+			'/** method doc via stub */',
+		];
+		yield [
+			'FunctionReflectionDocTest\\ClassWithInheritedPhpdoc',
+			'existingDocButStubOverridden',
+			'/** stub overridden phpdoc */',
+		];
+		yield [
 			'\\DateTime',
 			'__construct',
 			'/** php-src native construct stub overridden phpdoc */',

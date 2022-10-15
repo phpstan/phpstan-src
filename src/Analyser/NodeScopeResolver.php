@@ -494,7 +494,7 @@ class NodeScopeResolver
 				$acceptsNamedArguments,
 				$asserts,
 				$selfOutType,
-				$phpDocComment
+				$phpDocComment,
 			);
 
 			if ($stmt->name->toLowerString() === '__construct') {

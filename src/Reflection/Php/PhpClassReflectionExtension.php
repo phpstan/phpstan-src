@@ -926,7 +926,7 @@ class PhpClassReflectionExtension
 			$acceptsNamedArguments,
 			$asserts,
 			$selfOutType,
-			$phpDocComment
+			$phpDocComment,
 		);
 
 		$propertyTypes = [];

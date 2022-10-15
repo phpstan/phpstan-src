@@ -2640,7 +2640,7 @@ class MutatingScope implements Scope
 		?bool $isPure = null,
 		bool $acceptsNamedArguments = true,
 		?Assertions $asserts = null,
-		?string $phpDocComment = null
+		?string $phpDocComment = null,
 	): self
 	{
 		return $this->enterFunctionLike(
@@ -2661,7 +2661,7 @@ class MutatingScope implements Scope
 				$isPure,
 				$acceptsNamedArguments,
 				$asserts ?? Assertions::createEmpty(),
-				$phpDocComment
+				$phpDocComment,
 			),
 			false,
 		);

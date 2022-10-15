@@ -23,6 +23,7 @@ if (!function_exists('docViaStub')) {
 }
 
 if (!function_exists('existingDocButStubOverridden')) {
+	/** existing fn phpdoc */
 	function existingDocButStubOverridden()
 	{
 	}

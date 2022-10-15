@@ -90,7 +90,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$isPure,
 			$acceptsNamedArguments,
 			$assertions,
-			$phpDocComment
+			$phpDocComment,
 		);
 	}
 

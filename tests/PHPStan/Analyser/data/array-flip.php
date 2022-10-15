@@ -59,3 +59,10 @@ function foo7($array)
 	$flip = array_flip($array);
 	assertType('array<1|2|3, int<0, max>>', $flip);
 }
+
+function foo8($mixed)
+{
+	assertType('mixed', $mixed);
+	$mixed = array_flip($mixed);
+	assertType('array', $mixed);
+}

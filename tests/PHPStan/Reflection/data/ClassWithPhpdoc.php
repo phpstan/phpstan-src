@@ -21,4 +21,9 @@ class ClassWithPhpdoc {
 	public function docViaStub() {
 
 	}
+	/** some method phpdoc */
+	public function aMethodInheritanceOverridden() {
+
+	}
+
 }

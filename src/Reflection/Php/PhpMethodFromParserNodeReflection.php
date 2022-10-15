@@ -47,6 +47,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		bool $acceptsNamedArguments,
 		Assertions $assertions,
 		private ?Type $selfOutType,
+		?string $phpDocComment,
 	)
 	{
 		$name = strtolower($classMethod->name->name);
@@ -89,6 +90,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$isPure,
 			$acceptsNamedArguments,
 			$assertions,
+			$phpDocComment
 		);
 	}
 

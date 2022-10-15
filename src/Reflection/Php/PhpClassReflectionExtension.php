@@ -502,6 +502,7 @@ class PhpClassReflectionExtension
 			$throwType = null;
 			$asserts = Assertions::createEmpty();
 			$selfOutType = null;
+			$phpDocComment = null;
 			if ($classReflection->getNativeReflection()->hasMethod($methodReflection->getName())) {
 				$reflectionMethod = $classReflection->getNativeReflection()->getMethod($methodReflection->getName());
 			}
@@ -549,6 +550,8 @@ class PhpClassReflectionExtension
 						if ($selfOutTypeTag !== null) {
 							$selfOutType = $selfOutTypeTag->getType();
 						}
+
+						$phpDocComment = $stubPhpDoc->getPhpDocString();
 					}
 				}
 				if ($stubPhpDocPair === null && $reflectionMethod !== null && $reflectionMethod->getDocComment() !== false) {
@@ -579,6 +582,10 @@ class PhpClassReflectionExtension
 							$selfOutType = $selfOutTypeTag->getType();
 						}
 
+						if ($phpDocBlock->hasPhpDocString()) {
+							$phpDocComment = $phpDocBlock->getPhpDocString();
+						}
+
 						$signatureParameters = $methodSignature->getParameters();
 						foreach ($reflectionMethod->getParameters() as $paramI => $reflectionParameter) {
 							if (!array_key_exists($paramI, $signatureParameters)) {
@@ -606,6 +613,7 @@ class PhpClassReflectionExtension
 				$throwType,
 				$asserts,
 				$selfOutType,
+				$phpDocComment,
 			);
 		}
 
@@ -903,7 +911,7 @@ class PhpClassReflectionExtension
 			$constructor,
 			$namespace,
 		)->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , , $asserts, $selfOutType] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,
@@ -918,6 +926,7 @@ class PhpClassReflectionExtension
 			$acceptsNamedArguments,
 			$asserts,
 			$selfOutType,
+			$phpDocComment
 		);
 
 		$propertyTypes = [];

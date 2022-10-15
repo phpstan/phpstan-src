@@ -41,15 +41,17 @@ class FunctionReflectionTest extends PHPStanTestCase
 			'FunctionReflectionDocTest\\existingDocButStubOverridden',
 			'/** fn stub overridden phpdoc */',
 		];
+		yield [
+			'\\implode',
+			'/** php-src native fn stub overridden phpdoc */',
+		];
 	}
 
 	/**
 	 * @dataProvider providePhpdocMethods
 	 */
-	public function testMethodHasPhpdoc(string $methodName, ?string $expectedDocComment): void
+	public function testMethodHasPhpdoc(string $className, string $methodName, ?string $expectedDocComment): void
 	{
-		$className = 'FunctionReflectionDocTest\\ClassWithPhpdoc';
-
 		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);
 		$scope = $this->createMock(Scope::class);
@@ -65,20 +67,39 @@ class FunctionReflectionTest extends PHPStanTestCase
 	public function providePhpdocMethods(): Iterator
 	{
 		yield [
+			'FunctionReflectionDocTest\\ClassWithPhpdoc',
+			'__construct',
+			'/** construct doc via stub */',
+		];
+		yield [
+			'FunctionReflectionDocTest\\ClassWithPhpdoc',
 			'aMethod',
 			'/** some method phpdoc */',
 		];
 		yield [
+			'FunctionReflectionDocTest\\ClassWithPhpdoc',
 			'noDocMethod',
 			null,
 		];
 		yield [
+			'FunctionReflectionDocTest\\ClassWithPhpdoc',
 			'docViaStub',
 			'/** method doc via stub */',
 		];
 		yield [
+			'FunctionReflectionDocTest\\ClassWithPhpdoc',
 			'existingDocButStubOverridden',
 			'/** stub overridden phpdoc */',
+		];
+		yield [
+			'\\DateTime',
+			'__construct',
+			'/** php-src native construct stub overridden phpdoc */',
+		];
+		yield [
+			'\\DateTime',
+			'modify',
+			'/** php-src native method stub overridden phpdoc */',
 		];
 	}
 

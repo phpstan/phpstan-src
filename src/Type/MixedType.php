@@ -146,7 +146,7 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function flipArray(): Type
 	{
-		return new self($this->isExplicitMixed, $this->subtractedType);
+		return new ArrayType(new MixedType(), new MixedType());
 	}
 
 	public function isCallable(): TrinaryLogic

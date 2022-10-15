@@ -62,11 +62,7 @@ function foo7($array)
 
 function foo8($mixed)
 {
-	if ($mixed === null) {
-		return;
-	}
-
-	assertType('mixed~null', $mixed);
+	assertType('mixed', $mixed);
 	$mixed = array_flip($mixed);
-	assertType('mixed~null', $mixed);
+	assertType('array', $mixed);
 }

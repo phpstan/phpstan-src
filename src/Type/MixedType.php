@@ -144,6 +144,16 @@ class MixedType implements CompoundType, SubtractableType
 		return $this;
 	}
 
+	public function getKeysArray(): Type
+	{
+		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new UnionType([new IntegerType(), new StringType()])));
+	}
+
+	public function getValuesArray(): Type
+	{
+		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)));
+	}
+
 	public function flipArray(): Type
 	{
 		return new ArrayType(new MixedType($this->isExplicitMixed), new MixedType($this->isExplicitMixed));

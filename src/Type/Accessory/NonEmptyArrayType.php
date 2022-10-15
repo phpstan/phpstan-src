@@ -127,6 +127,16 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
+	public function getKeysArray(): Type
+	{
+		return $this;
+	}
+
+	public function getValuesArray(): Type
+	{
+		return $this;
+	}
+
 	public function flipArray(): Type
 	{
 		return $this;

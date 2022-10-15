@@ -357,6 +357,16 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->unsetOffset($offsetType);
 	}
 
+	public function getKeysArray(): Type
+	{
+		return $this->getStaticObjectType()->getKeysArray();
+	}
+
+	public function getValuesArray(): Type
+	{
+		return $this->getStaticObjectType()->getValuesArray();
+	}
+
 	public function flipArray(): Type
 	{
 		return $this->getStaticObjectType()->flipArray();

@@ -59,3 +59,14 @@ function foo7($array)
 	$flip = array_flip($array);
 	assertType('array<1|2|3, int<0, max>>', $flip);
 }
+
+function foo8($mixed)
+{
+	if ($mixed === null) {
+		return;
+	}
+
+	assertType('mixed~null', $mixed);
+	$mixed = array_flip($mixed);
+	assertType('mixed~null', $mixed);
+}

@@ -9,13 +9,7 @@ use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Accessory\AccessoryArrayListType;
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\IntegerType;
-use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function strtolower;
 
 class ArrayIsListFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
@@ -45,21 +39,7 @@ class ArrayIsListFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 			return new SpecifiedTypes();
 		}
 
-		$valueType = $scope->getType($arrayArg);
-		if ($valueType instanceof ConstantArrayType) {
-			return $this->typeSpecifier->create($arrayArg, $valueType->getValuesArray(), $context, false, $scope);
-		}
-
-		return $this->typeSpecifier->create(
-			$arrayArg,
-			AccessoryArrayListType::intersectWith(TypeCombinator::intersect(
-				new ArrayType(new IntegerType(), $valueType->getIterableValueType()),
-				...TypeUtils::getAccessoryTypes($valueType),
-			)),
-			$context,
-			false,
-			$scope,
-		);
+		return $this->typeSpecifier->create($arrayArg, $scope->getType($arrayArg)->getValuesArray(), $context, false, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

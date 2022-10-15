@@ -8,7 +8,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
@@ -30,11 +29,7 @@ class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionRe
 		if ($arrayArg !== null) {
 			$valueType = $scope->getType($arrayArg);
 			if ($valueType->isArray()->yes()) {
-				if ($valueType instanceof ConstantArrayType) {
-					return $valueType->getValuesArray();
-				}
-
-				$array = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $valueType->getIterableValueType()));
+				$array = $valueType->getValuesArray();
 				if ($valueType->isIterableAtLeastOnce()->yes()) {
 					$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
 				}

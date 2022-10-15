@@ -177,7 +177,7 @@ class ArrayType implements Type
 
 	public function getKeysArray(): Type
 	{
-		return AccessoryArrayListType::intersectWith(new self(new IntegerType(), $this->keyType));
+		return AccessoryArrayListType::intersectWith(new self(new IntegerType(), $this->getIterableKeyType()));
 	}
 
 	public function getValuesArray(): Type

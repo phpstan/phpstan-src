@@ -39,6 +39,16 @@ trait MaybeArrayTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getKeysArray(): Type
+	{
+		return new ErrorType();
+	}
+
+	public function getValuesArray(): Type
+	{
+		return new ErrorType();
+	}
+
 	public function flipArray(): Type
 	{
 		return new ErrorType();

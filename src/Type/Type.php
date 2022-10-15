@@ -96,6 +96,10 @@ interface Type
 
 	public function unsetOffset(Type $offsetType): Type;
 
+	public function getKeysArray(): Type;
+
+	public function getValuesArray(): Type;
+
 	public function flipArray(): Type;
 
 	public function isCallable(): TrinaryLogic;

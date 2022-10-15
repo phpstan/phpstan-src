@@ -205,6 +205,16 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->unsetOffset($offsetType);
 	}
 
+	public function getKeysArray(): Type
+	{
+		return $this->resolve()->getKeysArray();
+	}
+
+	public function getValuesArray(): Type
+	{
+		return $this->resolve()->getValuesArray();
+	}
+
 	public function flipArray(): Type
 	{
 		return $this->resolve()->flipArray();

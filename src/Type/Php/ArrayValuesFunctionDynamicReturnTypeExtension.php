@@ -5,14 +5,9 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Accessory\AccessoryArrayListType;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntegerType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
+use function count;
 use function strtolower;
 
 class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension

@@ -73,6 +73,6 @@ function foo9($mixed)
 		assertType('array<int|string, (int|string)>', array_flip($mixed));
 	} else {
 		assertType('mixed~array', $mixed);
-		assertType('*NEVER*', array_flip($mixed));
+		assertType('*ERROR*', array_flip($mixed));
 	}
 }

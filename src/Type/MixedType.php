@@ -147,7 +147,7 @@ class MixedType implements CompoundType, SubtractableType
 	public function getKeysArray(): Type
 	{
 		if ($this->isArray()->no()) {
-			return new NeverType();
+			return new ErrorType();
 		}
 
 		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new UnionType([new IntegerType(), new StringType()])));
@@ -156,7 +156,7 @@ class MixedType implements CompoundType, SubtractableType
 	public function getValuesArray(): Type
 	{
 		if ($this->isArray()->no()) {
-			return new NeverType();
+			return new ErrorType();
 		}
 
 		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)));
@@ -165,7 +165,7 @@ class MixedType implements CompoundType, SubtractableType
 	public function flipArray(): Type
 	{
 		if ($this->isArray()->no()) {
-			return new NeverType();
+			return new ErrorType();
 		}
 
 		return new ArrayType(new MixedType($this->isExplicitMixed), new MixedType($this->isExplicitMixed));

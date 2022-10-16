@@ -1,0 +1,3 @@
+services:
+	- factory: AllowedSubTypes\Extension
+	  tags: [phpstan.broker.allowedSubTypesClassReflectionExtension]

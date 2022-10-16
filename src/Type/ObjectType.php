@@ -7,6 +7,8 @@ use Closure;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Error;
+use Exception;
 use Iterator;
 use IteratorAggregate;
 use PHPStan\Analyser\OutOfClassScope;
@@ -38,9 +40,9 @@ use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use Throwable;
 use Traversable;
 use function array_key_exists;
-use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_values;
@@ -1072,55 +1074,57 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	{
 		if ($subtractedType !== null) {
 			$classReflection = $this->getClassReflection();
-			if ($classReflection !== null && $classReflection->isEnum()) {
-				$cases = [];
-				foreach (array_keys($classReflection->getEnumCases()) as $name) {
-					$cases[$name] = new EnumCaseObjectType($classReflection->getName(), $name);
+			$allowedSubTypesList = $classReflection !== null ? $classReflection->getAllowedSubTypes() : null;
+			if ($allowedSubTypesList !== null) {
+				$allowedSubTypes = [];
+				foreach ($allowedSubTypesList as $allowedSubType) {
+					$allowedSubTypes[$allowedSubType->describe(VerbosityLevel::precise())] = $allowedSubType;
 				}
 
-				$originalCases = $cases;
+				$originalAllowedSubTypes = $allowedSubTypes;
+				$subtractedSubTypes = [];
 
-				$subtractedTypes = TypeUtils::flattenTypes($subtractedType);
+				$subtractedTypesList = TypeUtils::flattenTypes($subtractedType);
 				if ($this->subtractedType !== null) {
-					$subtractedTypes = array_merge($subtractedTypes, TypeUtils::flattenTypes($this->subtractedType));
+					$subtractedTypesList = array_merge($subtractedTypesList, TypeUtils::flattenTypes($this->subtractedType));
 				}
-				$subtractedCases = [];
+
+				$subtractedTypes = [];
+				foreach ($subtractedTypesList as $type) {
+					$subtractedTypes[$type->describe(VerbosityLevel::precise())] = $type;
+				}
+
 				foreach ($subtractedTypes as $subType) {
-					if (!$subType instanceof EnumCaseObjectType) {
-						return new self($this->className, $subtractedType);
+					foreach ($allowedSubTypes as $description => $allowedSubType) {
+						if ($subType->equals($allowedSubType)) {
+							$subtractedSubTypes[$description] = $subType;
+							unset($allowedSubTypes[$description]);
+							continue 2;
+						}
 					}
 
-					if ($subType->getClassName() !== $this->getClassName()) {
-						return new self($this->className, $subtractedType);
-					}
-
-					if (!array_key_exists($subType->getEnumCaseName(), $cases)) {
-						return new self($this->className, $subtractedType);
-					}
-
-					$subtractedCases[$subType->getEnumCaseName()] = $subType;
-					unset($originalCases[$subType->getEnumCaseName()]);
+					return new self($this->className, $subtractedType);
 				}
 
-				if (count($originalCases) === 1) {
-					return array_values($originalCases)[0];
+				if (count($allowedSubTypes) === 1) {
+					return array_values($allowedSubTypes)[0];
 				}
 
-				$subtractedCases = array_values($subtractedCases);
-				$subtractedCasesCount = count($subtractedCases);
-				if ($subtractedCasesCount === count($cases)) {
+				$subtractedSubTypes = array_values($subtractedSubTypes);
+				$subtractedSubTypesCount = count($subtractedSubTypes);
+				if ($subtractedSubTypesCount === count($originalAllowedSubTypes)) {
 					return new NeverType();
 				}
 
-				if ($subtractedCasesCount === 0) {
+				if ($subtractedSubTypesCount === 0) {
 					return new self($this->className);
 				}
 
-				if (count($subtractedCases) === 1) {
-					return new self($this->className, $subtractedCases[0]);
+				if ($subtractedSubTypesCount === 1) {
+					return new self($this->className, $subtractedSubTypes[0]);
 				}
 
-				return new self($this->className, new UnionType($subtractedCases));
+				return new self($this->className, new UnionType($subtractedSubTypes));
 			}
 		}
 
@@ -1281,6 +1285,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === DateTime::class) {
 				return new ObjectType(DateTimeImmutable::class);
+			}
+		}
+
+		if ($this->getClassName() === Throwable::class) {
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === Error::class) {
+				return new ObjectType(Exception::class); // phpcs:ignore SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly.ReferencedGeneralException
+			}
+
+			if ($typeToRemove instanceof ObjectType && $typeToRemove->getClassName() === Exception::class) { // phpcs:ignore SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly.ReferencedGeneralException
+				return new ObjectType(Error::class);
 			}
 		}
 

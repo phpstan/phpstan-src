@@ -160,6 +160,11 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					$tipText,
 				],
 				[
+					'Instanceof between T of Exception and Error will always evaluate to false.',
+					404,
+					$tipText,
+				],
+				[
 					'Instanceof between class-string<DateTimeInterface> and DateTimeInterface will always evaluate to false.',
 					418,
 					$tipText,
@@ -255,6 +260,11 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				[
 					'Instanceof between mixed and ImpossibleInstanceOf\InvalidTypeTest|int results in an error.',
 					362,
+				],
+				[
+					'Instanceof between T of Exception and Error will always evaluate to false.',
+					404,
+					$tipText,
 				],
 				[
 					'Instanceof between class-string<DateTimeInterface> and DateTimeInterface will always evaluate to false.',

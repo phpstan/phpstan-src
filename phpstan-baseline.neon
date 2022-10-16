@@ -34,7 +34,7 @@ parameters:
 			path: src/Analyser/MutatingScope.php
 
 		-
-			message: "#^Parameter \\#10 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum, object given\\.$#"
+			message: "#^Parameter \\#11 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum, object given\\.$#"
 			count: 1
 			path: src/Analyser/NodeScopeResolver.php
 
@@ -192,7 +192,7 @@ parameters:
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 
 		-
-			message: "#^Parameter \\#10 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum, object given\\.$#"
+			message: "#^Parameter \\#11 \\$reflection of class PHPStan\\\\Reflection\\\\ClassReflection constructor expects PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionClass\\|PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum, object given\\.$#"
 			count: 1
 			path: src/Reflection/BetterReflection/BetterReflectionProvider.php
 

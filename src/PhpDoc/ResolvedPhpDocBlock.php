@@ -198,7 +198,6 @@ class ResolvedPhpDocBlock
 		$result = new self();
 		// we will resolve everything on $this here so these properties don't have to be populated
 		// skip $result->phpDocNode
-		// skip $result->phpDocString - just for stubs
 		$phpDocNodes = $this->phpDocNodes;
 		$acceptsNamedArguments = $this->acceptsNamedArguments();
 		foreach ($parents as $parent) {

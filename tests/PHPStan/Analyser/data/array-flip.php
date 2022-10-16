@@ -66,3 +66,13 @@ function foo8($mixed)
 	$mixed = array_flip($mixed);
 	assertType('array', $mixed);
 }
+
+function foo9($mixed)
+{
+	if(is_array($mixed)) {
+		assertType('array<int|string, (int|string)>', array_flip($mixed));
+	} else {
+		assertType('mixed~array', $mixed);
+		assertType('*NEVER*', array_flip($mixed));
+	}
+}

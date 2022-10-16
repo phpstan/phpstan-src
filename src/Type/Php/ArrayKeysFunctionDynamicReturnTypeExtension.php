@@ -29,13 +29,12 @@ class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 		$arrayArg = $functionCall->getArgs()[0]->value ?? null;
 		if ($arrayArg !== null) {
 			$valueType = $scope->getType($arrayArg);
-			if ($valueType->isArray()->yes()) {
-				$array = $valueType->getKeysArray();
-				if ($valueType->isIterableAtLeastOnce()->yes()) {
-					$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
-				}
-				return $array;
+
+			$array = $valueType->getKeysArray();
+			if ($valueType->isArray()->yes() && $valueType->isIterableAtLeastOnce()->yes()) {
+				$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
 			}
+			return $array;
 		}
 
 		return AccessoryArrayListType::intersectWith(new ArrayType(

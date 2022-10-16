@@ -50,5 +50,9 @@ class HelloWorld
 		curl_setopt($curl, CURLOPT_POSTFIELDS, array('foo' => 'bar'));
 		curl_setopt($curl, CURLOPT_POSTFIELDS, '');
 		curl_setopt($curl, CURLOPT_POSTFIELDS, 'para1=val1&para2=val2');
+		curl_setopt($curl, CURLOPT_COOKIEFILE, '');
+		curl_setopt($curl, CURLOPT_PRE_PROXY, '');
+		curl_setopt($curl, CURLOPT_PROXY, '');
+		curl_setopt($curl, CURLOPT_PRIVATE, '');
 	}
 }

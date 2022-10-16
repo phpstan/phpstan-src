@@ -631,7 +631,6 @@ class ParametersAcceptorSelector
 			'CURLOPT_CAINFO',
 			'CURLOPT_CAPATH',
 			'CURLOPT_COOKIE',
-			'CURLOPT_COOKIEFILE',
 			'CURLOPT_COOKIEJAR',
 			'CURLOPT_COOKIELIST',
 			'CURLOPT_CUSTOMREQUEST',
@@ -646,9 +645,6 @@ class ParametersAcceptorSelector
 			'CURLOPT_KRB4LEVEL',
 			'CURLOPT_LOGIN_OPTIONS',
 			'CURLOPT_PINNEDPUBLICKEY',
-			'CURLOPT_PRIVATE',
-			'CURLOPT_PRE_PROXY',
-			'CURLOPT_PROXY',
 			'CURLOPT_PROXY_SERVICE_NAME',
 			'CURLOPT_PROXY_CAINFO',
 			'CURLOPT_PROXY_CAPATH',
@@ -700,7 +696,11 @@ class ParametersAcceptorSelector
 		}
 
 		$stringConstants = [
+			'CURLOPT_COOKIEFILE',
 			'CURLOPT_ENCODING',
+			'CURLOPT_PRE_PROXY',
+			'CURLOPT_PRIVATE',
+			'CURLOPT_PROXY',
 		];
 		foreach ($stringConstants as $constName) {
 			if (defined($constName) && constant($constName) === $curlOpt) {

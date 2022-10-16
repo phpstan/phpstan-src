@@ -71,4 +71,14 @@ class Foo
 		assertType('array', $mixed);
 	}
 
+	public function foo1($mixed): void
+	{
+		if(is_array($mixed)) {
+			assertType('mixed', array_shift($mixed));
+		} else {
+			assertType('mixed~array', $mixed);
+			assertType('mixed', array_shift($mixed));
+			assertType('*ERROR*', $mixed);
+		}
+	}
 }

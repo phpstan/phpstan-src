@@ -232,7 +232,7 @@ class PhpDocBlock
 		);
 
 		return new self(
-			$docComment ?? '/** */',
+			$docComment ?? ResolvedPhpDocBlock::EMPTY_DOC_STRING,
 			$file,
 			$classReflection,
 			$trait,
@@ -375,7 +375,7 @@ class PhpDocBlock
 				: null;
 
 			return self::$resolveMethodName(
-				$parentReflection->getDocComment() ?? '/** */',
+				$parentReflection->getDocComment() ?? ResolvedPhpDocBlock::EMPTY_DOC_STRING,
 				$classReflection,
 				$trait,
 				$name,

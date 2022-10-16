@@ -36,7 +36,7 @@ use function substr;
 class ResolvedPhpDocBlock
 {
 
-	private const EMPTY_DOC_STRING = '/** */';
+	public const EMPTY_DOC_STRING = '/** */';
 
 	private PhpDocNode $phpDocNode;
 

@@ -5,14 +5,9 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Accessory\AccessoryArrayListType;
-use PHPStan\Type\Accessory\NonEmptyArrayType;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntegerType;
-use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
+use function count;
 use function strtolower;
 
 class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -23,21 +18,13 @@ class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionRe
 		return strtolower($functionReflection->getName()) === 'array_values';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		$arrayArg = $functionCall->getArgs()[0]->value ?? null;
-		if ($arrayArg !== null) {
-			$valueType = $scope->getType($arrayArg);
-			if ($valueType->isArray()->yes()) {
-				$array = $valueType->getValuesArray();
-				if ($valueType->isIterableAtLeastOnce()->yes()) {
-					$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
-				}
-				return $array;
-			}
+		if (count($functionCall->getArgs()) !== 1) {
+			return null;
 		}
 
-		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType()));
+		return $scope->getType($functionCall->getArgs()[0]->value)->getValuesArray();
 	}
 
 }

@@ -211,6 +211,19 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		);
 	}
 
+	public function getValuesArray(): Type
+	{
+		return AccessoryArrayListType::intersectWith(
+			TypeCombinator::intersect(
+				new ArrayType(
+					new IntegerType(),
+					new MixedType(),
+				),
+				new NonEmptyArrayType(),
+			),
+		);
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();

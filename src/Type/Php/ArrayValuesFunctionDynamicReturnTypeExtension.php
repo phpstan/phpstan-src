@@ -23,20 +23,13 @@ class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionRe
 		return strtolower($functionReflection->getName()) === 'array_values';
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		$arrayArg = $functionCall->getArgs()[0]->value ?? null;
-		if ($arrayArg !== null) {
-			$valueType = $scope->getType($arrayArg);
-
-			$array = $valueType->getValuesArray();
-			if ($valueType->isArray()->yes() && $valueType->isIterableAtLeastOnce()->yes()) {
-				$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
-			}
-			return $array;
+		if (count($functionCall->getArgs()) !== 1) {
+			return null;
 		}
 
-		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType()));
+		return $scope->getType($functionCall->getArgs()[0]->value)->getValuesArray();
 	}
 
 }

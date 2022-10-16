@@ -29,34 +29,45 @@ use PHPStan\ShouldNotHappenException;
 
 		public function enterNode(Node $node)
 		{
-			if ($node instanceof Node\Stmt\Function_) {
-				foreach ($node->attrGroups as $attrGroup) {
-					foreach ($attrGroup->attrs as $attr) {
-						if ($attr->name->toString() === Pure::class) {
-							$this->functions[] = $node->namespacedName->toLowerString();
-							break 2;
-						}
-					}
-				}
+			if ($node instanceof Node\Stmt\Function_ && $this->hasNoSideEffectsAttribute($node)) {
+				$this->functions[] = $node->namespacedName->toLowerString();
 			}
 
-			if ($node instanceof Node\Stmt\ClassMethod) {
+			if ($node instanceof Node\Stmt\ClassMethod && $this->hasNoSideEffectsAttribute($node)) {
 				$class = $node->getAttribute('parent');
 				if (!$class instanceof Node\Stmt\ClassLike) {
 					throw new ShouldNotHappenException($node->name->toString());
 				}
 				$className = $class->namespacedName->toString();
-				foreach ($node->attrGroups as $attrGroup) {
-					foreach ($attrGroup->attrs as $attr) {
-						if ($attr->name->toString() === Pure::class) {
-							$this->methods[] = sprintf('%s::%s', $className, $node->name->toString());
-							break 2;
-						}
+				$this->methods[] = sprintf('%s::%s', $className, $node->name->toString());
+			}
+
+			return null;
+		}
+
+		private function hasNoSideEffectsAttribute(Node\Stmt\Function_|Node\Stmt\ClassMethod $node): bool
+		{
+			foreach ($node->attrGroups as $attrGroup) {
+				foreach ($attrGroup->attrs as $attr) {
+					if ($attr->name->toString() !== Pure::class) {
+						continue;
+					}
+
+					if (count($attr->args) === 0) {
+						return true;
+					}
+
+					$mayDependOnGlobalScope = $attr->args[0]->value;
+					if (
+						$mayDependOnGlobalScope instanceof Node\Expr\ConstFetch
+						&& $mayDependOnGlobalScope->name->toString() === 'false'
+					) {
+						return true;
 					}
 				}
 			}
 
-			return null;
+			return false;
 		}
 
 	};

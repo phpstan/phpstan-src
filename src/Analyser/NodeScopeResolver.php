@@ -1958,7 +1958,7 @@ class NodeScopeResolver
 				$scope = $scope->assignExpression(
 					$arrayArg,
 					$scope->getType($arrayArg)->shuffleArray(),
-					$scope->getNativeType($arrayArg)->shuffleArray()
+					$scope->getNativeType($arrayArg)->shuffleArray(),
 				);
 			}
 

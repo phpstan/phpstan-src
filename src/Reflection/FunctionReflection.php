@@ -34,4 +34,6 @@ interface FunctionReflection
 
 	public function getAsserts(): Assertions;
 
+	public function getDocComment(): ?string;
+
 }

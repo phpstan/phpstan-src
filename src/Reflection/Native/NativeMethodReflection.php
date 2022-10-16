@@ -32,6 +32,7 @@ class NativeMethodReflection implements ExtendedMethodReflection
 		private ?Type $throwType,
 		private Assertions $assertions,
 		private ?Type $selfOutType,
+		private ?string $phpDocComment,
 	)
 	{
 	}
@@ -153,7 +154,7 @@ class NativeMethodReflection implements ExtendedMethodReflection
 
 	public function getDocComment(): ?string
 	{
-		return $this->reflection->getDocComment();
+		return $this->phpDocComment;
 	}
 
 	public function getAsserts(): Assertions

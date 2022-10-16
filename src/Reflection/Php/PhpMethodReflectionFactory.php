@@ -28,6 +28,7 @@ interface PhpMethodReflectionFactory
 		?bool $isPure,
 		Assertions $asserts,
 		?Type $selfOutType,
+		?string $phpDocComment,
 	): PhpMethodReflection;
 
 }

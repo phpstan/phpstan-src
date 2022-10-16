@@ -1,0 +1,48 @@
+<?php
+
+// global namespace
+namespace {
+	/** php-src native fn stub overridden phpdoc */
+	function implode(string $separator, array $array): string {}
+
+	class DateTime {
+		/** php-src native construct stub overridden phpdoc */
+		public function __construct() {}
+		/** php-src native method stub overridden phpdoc */
+		public function modify(string $modifier): DateTime|false {}
+	}
+}
+
+namespace FunctionReflectionDocTest {
+
+	class ClassWithPhpdoc {
+		/** construct doc via stub */
+		public function __construct() {
+
+		}
+
+		/** method doc via stub */
+		public function docViaStub() {
+
+		}
+
+		/** stub overridden phpdoc */
+		public function existingDocButStubOverridden() {
+
+		}
+	}
+
+
+	/** fn doc via stub */
+	function docViaStub()
+	{
+	}
+
+	/** fn stub overridden phpdoc */
+	function existingDocButStubOverridden() {
+
+	}
+
+	class ClassWithInheritedPhpdoc extends ClassWithPhpdoc {
+	}
+}

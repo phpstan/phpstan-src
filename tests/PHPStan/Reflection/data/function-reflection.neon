@@ -1,0 +1,3 @@
+parameters:
+	stubFiles:
+		- function-reflection.stub

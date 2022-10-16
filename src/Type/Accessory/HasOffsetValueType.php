@@ -4,13 +4,16 @@ namespace PHPStan\Type\Accessory;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeArrayTypeTrait;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
@@ -21,6 +24,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -192,6 +196,19 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getKeysArray(): Type
+	{
+		return AccessoryArrayListType::intersectWith(
+			TypeCombinator::intersect(
+				new ArrayType(
+					new IntegerType(),
+					new UnionType([new StringType(), new IntegerType()]),
+				),
+				new NonEmptyArrayType(),
+			),
+		);
 	}
 
 	public function toNumber(): Type

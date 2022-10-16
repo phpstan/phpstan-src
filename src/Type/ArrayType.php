@@ -379,6 +379,11 @@ class ArrayType implements Type
 		return $this;
 	}
 
+	public function shuffleArray(): Type
+	{
+		return $this;
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe()->and($this->itemType->isString());

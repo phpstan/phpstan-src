@@ -195,7 +195,7 @@ class MixedType implements CompoundType, SubtractableType
 			return new ErrorType();
 		}
 
-		return new ArrayType(new MixedType($this->isExplicitMixed), new MixedType($this->isExplicitMixed));
+		return AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new MixedType($this->isExplicitMixed)));
 	}
 
 	public function isCallable(): TrinaryLogic

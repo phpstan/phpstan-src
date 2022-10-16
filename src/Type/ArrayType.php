@@ -381,7 +381,7 @@ class ArrayType implements Type
 
 	public function shuffleArray(): Type
 	{
-		return $this;
+		return AccessoryArrayListType::intersectWith(new self(new IntegerType(), $this->itemType));
 	}
 
 	public function isCallable(): TrinaryLogic

@@ -56,6 +56,9 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 				);
 			}
 
+			$isStatic = $methodTags[$methodName]->isStatic();
+			$nativeCallMethodName = $isStatic ? '__callStatic' : '__call';
+
 			return new AnnotationMethodReflection(
 				$methodName,
 				$declaringClass,
@@ -64,8 +67,11 @@ class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflecti
 					$classReflection->getActiveTemplateTypeMap(),
 				),
 				$parameters,
-				$methodTags[$methodName]->isStatic(),
+				$isStatic,
 				$this->detectMethodVariadic($parameters),
+				$classReflection->hasNativeMethod($nativeCallMethodName)
+					? $classReflection->getNativeMethod($nativeCallMethodName)->getThrowType()
+					: null,
 			);
 		}
 

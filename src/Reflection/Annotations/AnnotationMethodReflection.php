@@ -28,6 +28,7 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 		private array $parameters,
 		private bool $isStatic,
 		private bool $isVariadic,
+		private ?Type $throwType,
 	)
 	{
 	}
@@ -103,7 +104,7 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 
 	public function getThrowType(): ?Type
 	{
-		return null;
+		return $this->throwType;
 	}
 
 	public function hasSideEffects(): TrinaryLogic

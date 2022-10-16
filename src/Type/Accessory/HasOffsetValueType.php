@@ -155,6 +155,16 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function getKeysArray(): Type
+	{
+		return new NonEmptyArrayType();
+	}
+
+	public function getValuesArray(): Type
+	{
+		return new NonEmptyArrayType();
+	}
+
 	public function shuffleArray(): Type
 	{
 		return new NonEmptyArrayType();
@@ -197,16 +207,6 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
-	}
-
-	public function getKeysArray(): Type
-	{
-		return new NonEmptyArrayType();
-	}
-
-	public function getValuesArray(): Type
-	{
-		return new NonEmptyArrayType();
 	}
 
 	public function toNumber(): Type

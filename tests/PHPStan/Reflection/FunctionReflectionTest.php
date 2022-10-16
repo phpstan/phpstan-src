@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection;
 
-use Iterator;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
@@ -10,20 +9,7 @@ use PHPStan\Testing\PHPStanTestCase;
 class FunctionReflectionTest extends PHPStanTestCase
 {
 
-	/**
-	 * @dataProvider providePhpdocFunctions
-	 */
-	public function testFunctionHasPhpdoc(string $functionName, ?string $expectedDoc): void
-	{
-		require_once __DIR__ . '/data/function-with-phpdoc.php';
-
-		$reflectionProvider = $this->createReflectionProvider();
-
-		$functionReflection = $reflectionProvider->getFunction(new Node\Name($functionName), null);
-		$this->assertSame($expectedDoc, $functionReflection->getDocComment());
-	}
-
-	public function providePhpdocFunctions(): Iterator
+	public function dataPhpdocFunctions(): iterable
 	{
 		yield [
 			'FunctionReflectionDocTest\\myFunction',
@@ -48,23 +34,19 @@ class FunctionReflectionTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @dataProvider providePhpdocMethods
+	 * @dataProvider dataPhpdocFunctions
 	 */
-	public function testMethodHasPhpdoc(string $className, string $methodName, ?string $expectedDocComment): void
+	public function testFunctionHasPhpdoc(string $functionName, ?string $expectedDoc): void
 	{
-		$reflectionProvider = $this->createReflectionProvider();
-		$class = $reflectionProvider->getClass($className);
-		$scope = $this->createMock(Scope::class);
-		$scope->method('isInClass')->willReturn(true);
-		$scope->method('getClassReflection')->willReturn($class);
-		$scope->method('canAccessProperty')->willReturn(true);
-		$classReflection = $reflectionProvider->getClass($className);
+		require_once __DIR__ . '/data/function-with-phpdoc.php';
 
-		$methodReflection = $classReflection->getMethod($methodName, $scope);
-		$this->assertSame($expectedDocComment, $methodReflection->getDocComment());
+		$reflectionProvider = $this->createReflectionProvider();
+
+		$functionReflection = $reflectionProvider->getFunction(new Node\Name($functionName), null);
+		$this->assertSame($expectedDoc, $functionReflection->getDocComment());
 	}
 
-	public function providePhpdocMethods(): Iterator
+	public function dataPhpdocMethods(): iterable
 	{
 		yield [
 			'FunctionReflectionDocTest\\ClassWithPhpdoc',
@@ -126,6 +108,23 @@ class FunctionReflectionTest extends PHPStanTestCase
 			'modify',
 			'/** php-src native method stub overridden phpdoc */',
 		];
+	}
+
+	/**
+	 * @dataProvider dataPhpdocMethods
+	 */
+	public function testMethodHasPhpdoc(string $className, string $methodName, ?string $expectedDocComment): void
+	{
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass($className);
+		$scope = $this->createMock(Scope::class);
+		$scope->method('isInClass')->willReturn(true);
+		$scope->method('getClassReflection')->willReturn($class);
+		$scope->method('canAccessProperty')->willReturn(true);
+		$classReflection = $reflectionProvider->getClass($className);
+
+		$methodReflection = $classReflection->getMethod($methodName, $scope);
+		$this->assertSame($expectedDocComment, $methodReflection->getDocComment());
 	}
 
 	/**

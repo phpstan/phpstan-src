@@ -76,3 +76,30 @@ function foo9($mixed)
 		assertType('*ERROR*', array_flip($mixed));
 	}
 }
+
+/** @param array<string, int> $array */
+function foo10(array $array)
+{
+	if (array_key_exists('foo', $array)) {
+		assertType('array<string, int>&hasOffset(\'foo\')', $array);
+		assertType('array<int, string>', array_flip($array));
+	}
+
+	if (array_key_exists('foo', $array) && is_int($array['foo'])) {
+		assertType("array<string, int>&hasOffsetValue('foo', int)", $array);
+		assertType('array<int, string>', array_flip($array));
+	}
+
+	if (array_key_exists('foo', $array) && $array['foo'] === 17) {
+		assertType("array<string, int>&hasOffsetValue('foo', 17)", $array);
+		assertType("array<int, string>&hasOffsetValue(17, 'foo')", array_flip($array));
+	}
+
+	if (
+		array_key_exists('foo', $array) && $array['foo'] === 17
+		&& array_key_exists('bar', $array) && $array['bar'] === 17
+	) {
+		assertType("array<string, int>&hasOffsetValue('bar', 17)&hasOffsetValue('foo', 17)", $array);
+		assertType("*NEVER*", array_flip($array)); // this could be array<string, int>&hasOffsetValue(17, 'bar') according to https://3v4l.org/1TAFk
+	}
+}

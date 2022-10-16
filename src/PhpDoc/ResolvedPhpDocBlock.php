@@ -188,6 +188,10 @@ class ResolvedPhpDocBlock
 	 */
 	public function merge(array $parents, array $parentPhpDocBlocks): self
 	{
+		if (count($parents) === 0) {
+			return $this;
+		}
+
 		// new property also needs to be added to createEmpty()
 		$result = new self();
 		// we will resolve everything on $this here so these properties don't have to be populated

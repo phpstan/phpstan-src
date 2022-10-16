@@ -1955,8 +1955,11 @@ class NodeScopeResolver
 
 			if (isset($functionReflection) && $functionReflection->getName() === 'shuffle') {
 				$arrayArg = $expr->getArgs()[0]->value;
-				$arrayArgType = $scope->getType($arrayArg)->shuffleArray();
-				$scope = $scope->assignExpression($arrayArg, $arrayArgType, $arrayArgType);
+				$scope = $scope->assignExpression(
+					$arrayArg,
+					$scope->getType($arrayArg)->shuffleArray(),
+					$scope->getNativeType($arrayArg)->shuffleArray()
+				);
 			}
 
 			if (

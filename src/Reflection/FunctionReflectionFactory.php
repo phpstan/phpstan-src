@@ -12,6 +12,7 @@ interface FunctionReflectionFactory
 
 	/**
 	 * @param Type[] $phpDocParameterTypes
+	 * @param Type[] $phpDocParameterOutTypes
 	 */
 	public function create(
 		ReflectionFunction $reflection,
@@ -27,6 +28,7 @@ interface FunctionReflectionFactory
 		?bool $isPure,
 		Assertions $asserts,
 		?string $phpDocComment,
+		array $phpDocParameterOutTypes,
 	): PhpFunctionReflection;
 
 }

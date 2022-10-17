@@ -28,6 +28,7 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassNameHelper;
@@ -266,6 +267,7 @@ class BetterReflectionProvider implements ReflectionProvider
 		$isPure = null;
 		$asserts = Assertions::createEmpty();
 		$phpDocComment = null;
+		$phpDocParameterOutTags = [];
 
 		$resolvedPhpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($reflectionFunction->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $reflectionFunction->getParameters()));
 		if ($resolvedPhpDoc === null && $reflectionFunction->getFileName() !== false && $reflectionFunction->getDocComment() !== false) {
@@ -287,6 +289,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			if ($resolvedPhpDoc->hasPhpDocString()) {
 				$phpDocComment = $resolvedPhpDoc->getPhpDocString();
 			}
+			$phpDocParameterOutTags = $resolvedPhpDoc->getParamOutTags();
 		}
 
 		return $this->functionReflectionFactory->create(
@@ -303,6 +306,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$isPure,
 			$asserts,
 			$phpDocComment,
+			array_map(static fn (ParamOutTag $paramOutTag): Type => $paramOutTag->getType(), $phpDocParameterOutTags),
 		);
 	}
 

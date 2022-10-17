@@ -92,7 +92,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$acceptsNamedArguments,
 			$assertions,
 			$phpDocComment,
-			$parameterOutTypes
+			$parameterOutTypes,
 		);
 	}
 

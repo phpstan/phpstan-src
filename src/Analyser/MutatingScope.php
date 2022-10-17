@@ -2517,6 +2517,7 @@ class MutatingScope implements Scope
 	/**
 	 * @api
 	 * @param Type[] $phpDocParameterTypes
+	 * @param Type[] $parameterOutTypes
 	 */
 	public function enterClassMethod(
 		Node\Stmt\ClassMethod $classMethod,
@@ -2628,6 +2629,7 @@ class MutatingScope implements Scope
 	/**
 	 * @api
 	 * @param Type[] $phpDocParameterTypes
+	 * @param Type[] $parameterOutTypes
 	 */
 	public function enterFunction(
 		Node\Stmt\Function_ $function,
@@ -2665,7 +2667,7 @@ class MutatingScope implements Scope
 				$acceptsNamedArguments,
 				$asserts ?? Assertions::createEmpty(),
 				$phpDocComment,
-				$parameterOutTypes
+				$parameterOutTypes,
 			),
 			false,
 		);

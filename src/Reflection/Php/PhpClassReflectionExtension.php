@@ -711,6 +711,7 @@ class PhpClassReflectionExtension
 		}
 
 		$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
+
 		foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
 			if (array_key_exists($paramName, $phpDocParameterTypes)) {
 				continue;
@@ -723,6 +724,15 @@ class PhpClassReflectionExtension
 				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
 			);
 		}
+
+		$phpDocParameterOutTypes = [];
+		foreach ($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
+			$phpDocParameterOutTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
+				$paramOutTag->getType(),
+				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
+			);
+		}
+
 		$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 			$methodReflection->getReturnType(),
 			null,
@@ -758,6 +768,7 @@ class PhpClassReflectionExtension
 			$asserts,
 			$selfOutType,
 			$phpDocComment,
+			$phpDocParameterOutTypes,
 		);
 	}
 

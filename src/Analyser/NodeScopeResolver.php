@@ -116,6 +116,7 @@ use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
@@ -3284,7 +3285,12 @@ class NodeScopeResolver
 
 		$paramOutTypes = [];
 		if ($calleeReflection !== null) {
-			$paramOutTypes = $this->getParameterOutTypes($calleeReflection, $scope);
+			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $calleeReflection->getVariants());
+			if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
+				foreach($parametersAcceptor->getParameters() as $parameter) {
+					$paramOutTypes[$parameter->getName()] = $parameter->getOutType();
+				}
+			}
 
 			$scope = $scope->pushInFunctionCall($calleeReflection);
 		}
@@ -4182,49 +4188,6 @@ class NodeScopeResolver
 		}
 
 		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType];
-	}
-
-	/**
-	 * @return array<string, Type>
-	 */
-	private function getParameterOutTypes(FunctionReflection|MethodReflection $reflection, Scope $scope): array
-	{
-		$class = null;
-		$trait = null;
-		if ($reflection instanceof MethodReflection) {
-			$class = $reflection->getDeclaringClass()->getName();
-			$file = $reflection->getDeclaringClass()->getFileName();
-		} else {
-			$file = $reflection->getFileName();
-		}
-
-		$resolvedPhpDoc = null;
-		$functionName = $reflection->getName();
-		$docComment = $reflection->getDocComment();
-
-		if ($docComment !== null) {
-			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-				$file,
-				$class,
-				$trait,
-				$functionName,
-				$docComment,
-			);
-		}
-
-		if ($resolvedPhpDoc === null) {
-			return [];
-		}
-
-		$phpDocParameterOutTypes = [];
-		foreach ($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
-			$paramOutType = $paramOutTag->getType();
-			if ($scope->isInClass()) {
-				$paramOutType = $this->transformStaticType($scope->getClassReflection(), $paramOutType);
-			}
-			$phpDocParameterOutTypes[$paramName] = $paramOutType;
-		}
-		return $phpDocParameterOutTypes;
 	}
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type

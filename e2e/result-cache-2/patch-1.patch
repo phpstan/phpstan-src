@@ -1,0 +1,11 @@
+--- src/Bar.php	2022-10-17 21:44:38.000000000 +0200
++++ src/Bar.php	2022-10-17 21:45:31.000000000 +0200
+@@ -2,7 +2,7 @@
+
+ namespace TestResultCache2;
+
+-class Bar
++class Barr
+ {
+
+ }

@@ -41,6 +41,9 @@ class DependencyResolver
 		$dependenciesReflections = [];
 
 		if ($node instanceof Node\Stmt\Class_) {
+			if ($node->namespacedName !== null) {
+				$this->addClassToDependencies($node->namespacedName->toString(), $dependenciesReflections);
+			}
 			if ($node->extends !== null) {
 				$this->addClassToDependencies($node->extends->toString(), $dependenciesReflections);
 			}
@@ -48,10 +51,16 @@ class DependencyResolver
 				$this->addClassToDependencies($className->toString(), $dependenciesReflections);
 			}
 		} elseif ($node instanceof Node\Stmt\Interface_) {
+			if ($node->namespacedName !== null) {
+				$this->addClassToDependencies($node->namespacedName->toString(), $dependenciesReflections);
+			}
 			foreach ($node->extends as $className) {
 				$this->addClassToDependencies($className->toString(), $dependenciesReflections);
 			}
 		} elseif ($node instanceof Node\Stmt\Enum_) {
+			if ($node->namespacedName !== null) {
+				$this->addClassToDependencies($node->namespacedName->toString(), $dependenciesReflections);
+			}
 			foreach ($node->implements as $className) {
 				$this->addClassToDependencies($className->toString(), $dependenciesReflections);
 			}
@@ -236,6 +245,15 @@ class DependencyResolver
 
 			foreach ($classReflection->getResolvedMixinTypes() as $mixinType) {
 				foreach ($mixinType->getReferencedClasses() as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+				}
+			}
+
+			foreach ($classReflection->getTemplateTags() as $templateTag) {
+				foreach ($templateTag->getBound()->getReferencedClasses() as $referencedClass) {
 					if (!$this->reflectionProvider->hasClass($referencedClass)) {
 						continue;
 					}

@@ -319,4 +319,11 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7519(): void
+	{
+		$this->checkExplicitMixed = false;
+		$this->checkNullables = false;
+		$this->analyse([__DIR__ . '/data/bug-7519.php'], []);
+	}
+
 }

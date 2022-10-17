@@ -22,7 +22,6 @@ use function count;
 use function in_array;
 use function is_callable;
 use function mb_check_encoding;
-use function mb_convert_case;
 
 class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -82,25 +81,19 @@ class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		if (count($constantStrings) > 0 && mb_check_encoding($constantStrings, 'UTF-8')) {
 			$strings = [];
 
+			$parameters = [];
 			if (in_array($fnName, ['ucwords', 'mb_convert_case', 'mb_convert_kana'], true)) {
 				foreach ($modes as $mode) {
-					if ($fnName === 'mb_convert_case') {
-						/** @var int $mode */
-						$function = fn ($str) => mb_convert_case($str, $mode);
-					} else {
-						/** @var string $mode */
-						$function = fn ($str) => $fnName($str, $mode);
-					}
-
 					foreach ($constantStrings as $constantString) {
-						$strings[] = $function($constantString);
+						$parameters[] = [$constantString, $mode];
 					}
 				}
 			} else {
-				foreach ($constantStrings as $constantString) {
-					$strings[] = $fnName($constantString);
-				}
+				$parameters = array_map(static fn ($s) => [$s], $constantStrings);
+			}
 
+			foreach ($parameters as $parameter) {
+				$strings[] = $fnName(...$parameter);
 			}
 
 			if (count($strings) !== 0 && mb_check_encoding($strings, 'UTF-8')) {

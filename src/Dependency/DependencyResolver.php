@@ -234,6 +234,15 @@ class DependencyResolver
 				$dependenciesReflections[] = $trait;
 			}
 
+			foreach ($classReflection->getResolvedMixinTypes() as $mixinType) {
+				foreach ($mixinType->getReferencedClasses() as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+				}
+			}
+
 			$classReflection = $classReflection->getParentClass();
 		} while ($classReflection !== null);
 	}

@@ -431,4 +431,18 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7594.php'], []);
 	}
 
+	public function testBug3311a(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-3311a.php'], [
+			[
+				'Parameter #1 $bar of class Bug3311a\Foo constructor expects list<string>, array{1: \'baz\'} given.',
+				24,
+			],
+		]);
+	}
+
 }

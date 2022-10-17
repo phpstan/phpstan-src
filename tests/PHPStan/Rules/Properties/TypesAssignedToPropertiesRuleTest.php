@@ -503,4 +503,19 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug3311b(): void
+	{
+		if (PHP_VERSION_ID < 70400) {
+			$this->markTestSkipped('Test requires PHP 7.4.');
+		}
+
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-3311b.php'], [
+			[
+				'Property Bug3311b\Foo::$bar (list<string>) does not accept non-empty-array<int<0, max>, string>.',
+				16,
+			],
+		]);
+	}
+
 }

@@ -10,15 +10,29 @@ class Foo {
 	 * @param non-empty-string $nonE
 	 * @param literal-string $literal
 	 * @param 'foo'|'Foo' $edgeUnion
+	 * @param MB_CASE_UPPER|MB_CASE_LOWER|MB_CASE_TITLE|MB_CASE_FOLD|MB_CASE_UPPER_SIMPLE|MB_CASE_LOWER_SIMPLE|MB_CASE_TITLE_SIMPLE|MB_CASE_FOLD_SIMPLE $caseMode
+	 * @param 'aKV'|'hA'|'AH'|'K'|'KV'|'RNKV' $kanaMode
 	 */
-	public function bar($numericS, $nonE, $literal, $edgeUnion) {
+	public function bar($numericS, $nonE, $literal, $edgeUnion, $caseMode, $kanaMode) {
 		assertType("'abc'", strtolower('ABC'));
 		assertType("'ABC'", strtoupper('abc'));
 		assertType("'abc'", mb_strtolower('ABC'));
 		assertType("'ABC'", mb_strtoupper('abc'));
+		assertType("'abc'", mb_strtolower('ABC', 'UTF-8'));
+		assertType("'ABC'", mb_strtoupper('abc', 'UTF-8'));
+		assertType("'ａｂｃ'", mb_strtolower('Ａｂｃ'));
+		assertType("'ＡＢＣ'", mb_strtoupper('Ａｂｃ'));
 		assertType("'aBC'", lcfirst('ABC'));
 		assertType("'Abc'", ucfirst('abc'));
 		assertType("'Hello World'", ucwords('hello world'));
+		assertType("'Hello|World'", ucwords('hello|world', "|"));
+		assertType("'ČESKÁ REPUBLIKA'", mb_convert_case('Česká republika', MB_CASE_UPPER));
+		assertType("'česká republika'", mb_convert_case('Česká republika', MB_CASE_LOWER));
+		assertType("'ČESKÁ REPUBLIKA'|'Česká Republika'|'česká republika'", mb_convert_case('Česká republika', $caseMode));
+		assertType("'Ａｂｃ１２３アイウガギグばびぶ漢字'", mb_convert_kana('Ａｂｃ１２３ｱｲｳｶﾞｷﾞｸﾞばびぶ漢字'));
+		assertType("'Abc123アイウガギグばびぶ漢字'", mb_convert_kana('Ａｂｃ１２３ｱｲｳｶﾞｷﾞｸﾞばびぶ漢字', 'aKV'));
+		assertType("'Ａｂｃ１２３ｱｲｳｶﾞｷﾞｸﾞﾊﾞﾋﾞﾌﾞ漢字'", mb_convert_kana('Ａｂｃ１２３ｱｲｳｶﾞｷﾞｸﾞばびぶ漢字', 'hA'));
+		assertType("'Abc123アガば漢'|'Ａｂｃ１２３あか゛ば漢'|'Ａｂｃ１２３アカ゛ば漢'|'Ａｂｃ１２３アガば漢'|'Ａｂｃ１２３ｱｶﾞﾊﾞ漢'", mb_convert_kana('Ａｂｃ１２３ｱｶﾞば漢', $kanaMode));
 
 		assertType("numeric-string", strtolower($numericS));
 		assertType("numeric-string", strtoupper($numericS));
@@ -27,6 +41,9 @@ class Foo {
 		assertType("numeric-string", lcfirst($numericS));
 		assertType("numeric-string", ucfirst($numericS));
 		assertType("numeric-string", ucwords($numericS));
+		assertType("numeric-string", mb_convert_case($numericS, MB_CASE_UPPER));
+		assertType("numeric-string", mb_convert_case($numericS, MB_CASE_LOWER));
+		assertType("numeric-string", mb_convert_kana($numericS));
 
 		assertType("non-empty-string", strtolower($nonE));
 		assertType("non-empty-string", strtoupper($nonE));
@@ -35,6 +52,9 @@ class Foo {
 		assertType("non-empty-string", lcfirst($nonE));
 		assertType("non-empty-string", ucfirst($nonE));
 		assertType("non-empty-string", ucwords($nonE));
+		assertType("non-empty-string", mb_convert_case($nonE, MB_CASE_UPPER));
+		assertType("non-empty-string", mb_convert_case($nonE, MB_CASE_LOWER));
+		assertType("non-empty-string", mb_convert_kana($nonE));
 
 		assertType("string", strtolower($literal));
 		assertType("string", strtoupper($literal));
@@ -43,18 +63,18 @@ class Foo {
 		assertType("string", lcfirst($literal));
 		assertType("string", ucfirst($literal));
 		assertType("string", ucwords($literal));
+		assertType("string", mb_convert_case($literal, MB_CASE_UPPER));
+		assertType("string", mb_convert_case($literal, MB_CASE_LOWER));
+		assertType("string", mb_convert_kana($literal));
 
 		assertType("'foo'", lcfirst($edgeUnion));
 	}
 
 	public function foo() {
-		// calls with a 2nd arg could be more precise, but there was no use-case yet to support it
-		assertType("non-falsy-string", mb_strtolower('ABC', 'UTF-8'));
-		assertType("non-falsy-string", mb_strtoupper('abc', 'UTF-8'));
-		assertType("non-falsy-string", ucwords('hello|world!', "|"));
-
 		// invalid char conversions still lead to non-falsy-string
 		assertType("non-falsy-string", mb_strtolower("\xfe\xff\x65\xe5\x67\x2c\x8a\x9e", 'CP1252'));
+		// valid char sequence, but not support non ASCII / UTF-8 encodings
+		assertType("non-falsy-string", mb_convert_kana("\x95\x5c\x8c\xbb", 'SJIS-win'));
 
 	}
 }

@@ -17,24 +17,34 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_map;
 use function count;
 use function in_array;
 use function is_callable;
+use function mb_check_encoding;
+use function mb_convert_case;
 
 class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 
+	/**
+	 * [funtion name => minimun arity]
+	 */
+	private const FUNCTIONS = [
+		'strtoupper' => 1,
+		'strtolower' => 1,
+		'mb_strtoupper' => 1,
+		'mb_strtolower' => 1,
+		'lcfirst' => 1,
+		'ucfirst' => 1,
+		'ucwords' => 1,
+		'mb_convert_case' => 2,
+		'mb_convert_kana' => 1,
+	];
+
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return in_array($functionReflection->getName(), [
-			'strtoupper',
-			'strtolower',
-			'mb_strtoupper',
-			'mb_strtolower',
-			'lcfirst',
-			'ucfirst',
-			'ucwords',
-		], true);
+		return isset(self::FUNCTIONS[$functionReflection->getName()]);
 	}
 
 	public function getTypeFromFunctionCall(
@@ -43,27 +53,58 @@ class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		Scope $scope,
 	): Type
 	{
+		$fnName = $functionReflection->getName();
 		$args = $functionCall->getArgs();
-		if (count($args) < 1) {
+
+		if (count($args) < self::FUNCTIONS[$fnName]) {
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
 		$argType = $scope->getType($args[0]->value);
-		$fnName = $functionReflection->getName();
 		if (!is_callable($fnName)) {
 			throw new ShouldNotHappenException();
 		}
 
-		if (count($args) === 1) {
-			$constantStrings = TypeUtils::getConstantStrings($argType);
-			if (count($constantStrings) > 0) {
-				$strings = [];
+		$modes = [];
+		if ($fnName === 'mb_convert_case') {
+			$modeType = $scope->getType($args[1]->value);
+			$modes = array_map(static fn ($mode) => $mode->getValue(), TypeUtils::getConstantIntegers($modeType));
+		} elseif (in_array($fnName, ['ucwords', 'mb_convert_kana'], true)) {
+			if (count($args) >= 2) {
+				$modeType = $scope->getType($args[1]->value);
+				$modes = array_map(static fn ($mode) => $mode->getValue(), TypeUtils::getConstantStrings($modeType));
+			} else {
+				$modes = $fnName === 'mb_convert_kana' ? ['KV'] : [" \t\r\n\f\v"];
+			}
+		}
 
+		$constantStrings = array_map(static fn ($type) => $type->getValue(), TypeUtils::getConstantStrings($argType));
+		if (count($constantStrings) > 0 && mb_check_encoding($constantStrings, 'UTF-8')) {
+			$strings = [];
+
+			if (in_array($fnName, ['ucwords', 'mb_convert_case', 'mb_convert_kana'], true)) {
+				foreach ($modes as $mode) {
+					if ($fnName === 'mb_convert_case') {
+						/** @var int $mode */
+						$function = fn ($str) => mb_convert_case($str, $mode);
+					} else {
+						/** @var string $mode */
+						$function = fn ($str) => $fnName($str, $mode);
+					}
+
+					foreach ($constantStrings as $constantString) {
+						$strings[] = $function($constantString);
+					}
+				}
+			} else {
 				foreach ($constantStrings as $constantString) {
-					$strings[] = new ConstantStringType($fnName($constantString->getValue()));
+					$strings[] = $fnName($constantString);
 				}
 
-				return TypeCombinator::union(...$strings);
+			}
+
+			if (count($strings) !== 0 && mb_check_encoding($strings, 'UTF-8')) {
+				return TypeCombinator::union(...array_map(static fn ($s) => new ConstantStringType($s), $strings));
 			}
 		}
 

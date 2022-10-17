@@ -1,0 +1,11 @@
+--- src/Bar.php	2022-10-17 20:57:35.000000000 +0200
++++ src/Bar2.php	2022-10-17 20:57:47.000000000 +0200
+@@ -5,7 +5,7 @@
+ class Bar
+ {
+ 
+-	public function doFoo(): void
++	public function doFooo(): void
+ 	{
+ 
+ 	}

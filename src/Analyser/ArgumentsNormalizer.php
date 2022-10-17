@@ -21,6 +21,8 @@ use function max;
 final class ArgumentsNormalizer
 {
 
+	public const ORIGINAL_ARG_ATTRIBUTE = 'originalArg';
+
 	public static function reorderFuncArguments(
 		ParametersAcceptor $parametersAcceptor,
 		FuncCall $functionCall,
@@ -131,11 +133,13 @@ final class ArgumentsNormalizer
 			} elseif (array_key_exists($arg->name->toString(), $argumentPositions)) {
 				$argName = $arg->name->toString();
 				// order named args into the position the signature expects them
+				$attributes = $arg->getAttributes();
+				$attributes[self::ORIGINAL_ARG_ATTRIBUTE] = $arg;
 				$reorderedArgs[$argumentPositions[$argName]] = new Arg(
 					$arg->value,
 					$arg->byRef,
 					$arg->unpack,
-					$arg->getAttributes(),
+					$attributes,
 					null,
 				);
 			}

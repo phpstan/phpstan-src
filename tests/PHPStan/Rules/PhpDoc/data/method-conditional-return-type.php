@@ -159,3 +159,19 @@ class MoreVerboseDescription
 	}
 
 }
+
+/**
+ * @template T
+ */
+class ConditionalThis
+{
+
+	/**
+	 * @return ($this is self<T> ? true : false)
+	 */
+	public function foo(): bool
+	{
+
+	}
+
+}

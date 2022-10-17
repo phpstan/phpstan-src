@@ -2,7 +2,6 @@
 
 namespace Bug7519;
 
-use function PHPStan\Testing\assertType;
 use FilterIterator;
 
 /**
@@ -12,26 +11,20 @@ use FilterIterator;
  *
  * @extends FilterIterator<TKey, T, TIterator>
  */
-class A extends FilterIterator
-{
-	public function accept(): bool
-	{
+class A extends FilterIterator {
+	public function accept(): bool {
 		return true;
 	}
 
-	public function key()
-	{
+	public function key() {
 		$key = parent::key();
 
 		return $key;
 	}
 
-	public function current()
-	{
+	public function current() {
 		$current = parent::current();
 
 		return $current;
 	}
 }
-
-// Counter exemple: https://3v4l.org/MXHWf#v8.1.7

@@ -8,6 +8,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
@@ -42,6 +43,9 @@ class ConditionalReturnTypeRuleHelper
 		foreach ($conditionalTypes as $conditionalType) {
 			if ($conditionalType instanceof ConditionalType) {
 				$subjectType = $conditionalType->getSubject();
+				if ($subjectType instanceof StaticType) {
+					continue;
+				}
 				if (!$subjectType instanceof TemplateType || $templateTypeMap->getType($subjectType->getName()) === null) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Conditional return type uses subject type %s which is not part of PHPDoc @template tags.', $subjectType->describe(VerbosityLevel::typeOnly())))->build();
 					continue;

@@ -9,13 +9,13 @@ use function usort;
 class AnalyserResult
 {
 
-	/** @var Error[] */
+	/** @var list<Error> */
 	private array $unorderedErrors;
 
 	/**
-	 * @param Error[] $errors
-	 * @param CollectedData[] $collectedData
-	 * @param string[] $internalErrors
+	 * @param list<Error> $errors
+	 * @param list<CollectedData> $collectedData
+	 * @param list<string> $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
 	 * @param array<string, array<ExportedNode>> $exportedNodes
 	 */
@@ -45,7 +45,7 @@ class AnalyserResult
 	}
 
 	/**
-	 * @return Error[]
+	 * @return list<Error>
 	 */
 	public function getUnorderedErrors(): array
 	{
@@ -53,7 +53,7 @@ class AnalyserResult
 	}
 
 	/**
-	 * @return Error[]
+	 * @return list<Error>
 	 */
 	public function getErrors(): array
 	{
@@ -61,7 +61,7 @@ class AnalyserResult
 	}
 
 	/**
-	 * @return string[]
+	 * @return list<string>
 	 */
 	public function getInternalErrors(): array
 	{
@@ -69,7 +69,7 @@ class AnalyserResult
 	}
 
 	/**
-	 * @return CollectedData[]
+	 * @return list<CollectedData>
 	 */
 	public function getCollectedData(): array
 	{

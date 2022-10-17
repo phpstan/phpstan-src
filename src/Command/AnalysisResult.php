@@ -11,15 +11,15 @@ use function usort;
 class AnalysisResult
 {
 
-	/** @var Error[] sorted by their file name, line number and message */
+	/** @var list<Error> sorted by their file name, line number and message */
 	private array $fileSpecificErrors;
 
 	/**
-	 * @param Error[] $fileSpecificErrors
-	 * @param string[] $notFileSpecificErrors
-	 * @param string[] $internalErrors
-	 * @param string[] $warnings
-	 * @param CollectedData[] $collectedData
+	 * @param list<Error> $fileSpecificErrors
+	 * @param list<string> $notFileSpecificErrors
+	 * @param list<string> $internalErrors
+	 * @param list<string> $warnings
+	 * @param list<CollectedData> $collectedData
 	 */
 	public function __construct(
 		array $fileSpecificErrors,
@@ -59,7 +59,7 @@ class AnalysisResult
 	}
 
 	/**
-	 * @return Error[] sorted by their file name, line number and message
+	 * @return list<Error> sorted by their file name, line number and message
 	 */
 	public function getFileSpecificErrors(): array
 	{
@@ -67,7 +67,7 @@ class AnalysisResult
 	}
 
 	/**
-	 * @return string[]
+	 * @return list<string>
 	 */
 	public function getNotFileSpecificErrors(): array
 	{
@@ -75,7 +75,7 @@ class AnalysisResult
 	}
 
 	/**
-	 * @return string[]
+	 * @return list<string>
 	 */
 	public function getInternalErrors(): array
 	{
@@ -83,7 +83,7 @@ class AnalysisResult
 	}
 
 	/**
-	 * @return string[]
+	 * @return list<string>
 	 */
 	public function getWarnings(): array
 	{
@@ -96,7 +96,7 @@ class AnalysisResult
 	}
 
 	/**
-	 * @return CollectedData[]
+	 * @return list<CollectedData>
 	 */
 	public function getCollectedData(): array
 	{

@@ -46,10 +46,10 @@ class Analyser
 		$this->nodeScopeResolver->setAnalysedFiles($allAnalysedFiles);
 		$allAnalysedFiles = array_fill_keys($allAnalysedFiles, true);
 
-		/** @var Error[] $errors */
+		/** @var list<Error> $errors */
 		$errors = [];
 
-		/** @var CollectedData[] $collectedData */
+		/** @var list<CollectedData> $collectedData */
 		$collectedData = [];
 
 		$internalErrorsCount = 0;

@@ -9,10 +9,10 @@ class FileAnalyserResult
 {
 
 	/**
-	 * @param Error[] $errors
-	 * @param CollectedData[] $collectedData
-	 * @param array<int, string> $dependencies
-	 * @param array<int, ExportedNode> $exportedNodes
+	 * @param list<Error> $errors
+	 * @param list<CollectedData> $collectedData
+	 * @param list<string> $dependencies
+	 * @param list<ExportedNode> $exportedNodes
 	 */
 	public function __construct(
 		private array $errors,
@@ -24,7 +24,7 @@ class FileAnalyserResult
 	}
 
 	/**
-	 * @return Error[]
+	 * @return list<Error>
 	 */
 	public function getErrors(): array
 	{
@@ -32,7 +32,7 @@ class FileAnalyserResult
 	}
 
 	/**
-	 * @return CollectedData[]
+	 * @return list<CollectedData>
 	 */
 	public function getCollectedData(): array
 	{
@@ -40,7 +40,7 @@ class FileAnalyserResult
 	}
 
 	/**
-	 * @return array<int, string>
+	 * @return list<string>
 	 */
 	public function getDependencies(): array
 	{
@@ -48,7 +48,7 @@ class FileAnalyserResult
 	}
 
 	/**
-	 * @return array<int, ExportedNode>
+	 * @return list<ExportedNode>
 	 */
 	public function getExportedNodes(): array
 	{

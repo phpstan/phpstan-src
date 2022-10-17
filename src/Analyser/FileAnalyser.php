@@ -35,7 +35,7 @@ use const E_DEPRECATED;
 class FileAnalyser
 {
 
-	/** @var Error[] */
+	/** @var list<Error> */
 	private array $collectedErrors = [];
 
 	public function __construct(
@@ -61,10 +61,10 @@ class FileAnalyser
 		?callable $outerNodeCallback,
 	): FileAnalyserResult
 	{
-		/** @var Error[] $fileErrors */
+		/** @var list<Error> $fileErrors */
 		$fileErrors = [];
 
-		/** @var CollectedData[] $fileCollectedData */
+		/** @var list<CollectedData> $fileCollectedData */
 		$fileCollectedData = [];
 
 		$fileDependencies = [];

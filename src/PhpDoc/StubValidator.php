@@ -70,7 +70,7 @@ class StubValidator
 
 	/**
 	 * @param string[] $stubFiles
-	 * @return Error[]
+	 * @return list<Error>
 	 */
 	public function validate(array $stubFiles, bool $debug): array
 	{

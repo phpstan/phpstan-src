@@ -25,6 +25,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				$this->getTypeSpecifier(),
 				[stdClass::class],
 				$this->treatPhpDocTypesAsCertain,
+				true,
 			),
 			$this->checkAlwaysTrueCheckTypeFunctionCall,
 			$this->treatPhpDocTypesAsCertain,
@@ -580,6 +581,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			[
 				'Call to function testIsNotInt() with int will always evaluate to false.',
 				72,
+			],
+			[
+				'Call to function assertIsInt() with int will always evaluate to true.',
+				78,
 			],
 		]);
 	}

@@ -21,3 +21,4 @@ parameters:
 		curlSetOptTypes: true
 		listType: true
 		missingMagicSerializationRule: true
+		nullContextForVoidReturningFunctions: true

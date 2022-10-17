@@ -21,6 +21,7 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 				$this->getTypeSpecifier(),
 				[],
 				$this->treatPhpDocTypesAsCertain,
+				true,
 			),
 			true,
 			$this->treatPhpDocTypesAsCertain,
@@ -182,6 +183,25 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 			[
 				'Call to method PHPStan\Tests\AssertionClass::assertString() with string will always evaluate to true.',
 				19,
+			],
+		]);
+	}
+
+	public function testBug8169(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-8169.php'], [
+			[
+				'Call to method Bug8169\HelloWorld::assertString() with string will always evaluate to true.',
+				19,
+			],
+			[
+				'Call to method Bug8169\HelloWorld::assertString() with string will always evaluate to true.',
+				26,
+			],
+			[
+				'Call to method Bug8169\HelloWorld::assertString() with int will always evaluate to false.',
+				33,
 			],
 		]);
 	}

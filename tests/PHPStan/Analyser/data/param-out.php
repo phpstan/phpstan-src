@@ -58,6 +58,26 @@ function takesNullableBool(?bool &$s) : void {
 	$s = true;
 }
 
+/**
+ * @param-out int $var
+ */
+function variadicFoo(&...$var)
+{
+	$var[0] = 2;
+	$var[1] = 2;
+}
+
+/**
+ * @param-out string $s
+ * @param-out int $var
+ */
+function variadicFoo2(?string &$s, &...$var)
+{
+	$s = '';
+	$var[0] = 2;
+	$var[1] = 2;
+}
+
 function foo1(?string $s) {
 	assertType('string|null', $s);
 	addFoo($s);
@@ -98,3 +118,13 @@ function foo6() {
 	assertType('bool', $b);
 }
 
+function foo7() {
+	variadicFoo( $a, $b);
+	assertType('int', $a);
+	assertType('int', $b);
+
+	variadicFoo2($s, $a, $b);
+	assertType('string', $s);
+	assertType('int', $a);
+	assertType('int', $b);
+}

@@ -3279,19 +3279,18 @@ class NodeScopeResolver
 		?MutatingScope $closureBindScope = null,
 	): ExpressionResult
 	{
+		$paramOutTypes = [];
 		if ($parametersAcceptor !== null) {
 			$parameters = $parametersAcceptor->getParameters();
-		}
 
-		$paramOutTypes = [];
-		if ($calleeReflection !== null) {
-			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $args, $calleeReflection->getVariants());
 			if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
-				foreach($parametersAcceptor->getParameters() as $parameter) {
+				foreach ($parametersAcceptor->getParameters() as $parameter) {
 					$paramOutTypes[$parameter->getName()] = $parameter->getOutType();
 				}
 			}
+		}
 
+		if ($calleeReflection !== null) {
 			$scope = $scope->pushInFunctionCall($calleeReflection);
 		}
 
@@ -3301,23 +3300,28 @@ class NodeScopeResolver
 			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 			$nodeCallback($originalArg, $scope);
 			if (isset($parameters) && $parametersAcceptor !== null) {
+				$byRefType = new MixedType();
 				$assignByReference = false;
 				if (isset($parameters[$i])) {
 					$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
 					$parameterType = $parameters[$i]->getType();
+
+					if (isset($paramOutTypes[$parameters[$i]->getName()])) {
+						$byRefType = $paramOutTypes[$parameters[$i]->getName()];
+					}
 				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
 					$lastParameter = $parameters[count($parameters) - 1];
 					$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
 					$parameterType = $lastParameter->getType();
+
+					if (isset($paramOutTypes[$lastParameter->getName()])) {
+						$byRefType = $paramOutTypes[$lastParameter->getName()];
+					}
 				}
 
 				if ($assignByReference) {
 					$argValue = $arg->value;
 					if ($argValue instanceof Variable && is_string($argValue->name)) {
-						$byRefType = new MixedType();
-						if (isset($parameters[$i]) && isset($paramOutTypes[$parameters[$i]->getName()])) {
-							$byRefType = $paramOutTypes[$parameters[$i]->getName()];
-						}
 						$scope = $scope->assignVariable($argValue->name, $byRefType, new MixedType());
 					}
 				}

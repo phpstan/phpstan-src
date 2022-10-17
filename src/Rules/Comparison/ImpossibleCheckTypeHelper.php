@@ -7,9 +7,11 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -22,6 +24,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
+use PHPStan\Type\VoidType;
 use function array_map;
 use function array_pop;
 use function count;
@@ -178,7 +181,7 @@ class ImpossibleCheckTypeHelper
 			}
 		}
 
-		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $node, TypeSpecifierContext::createTruthy());
+		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $node, $this->determineContext($scope, $node));
 
 		// don't validate types on overwrite
 		if ($specifiedTypes->shouldOverwrite()) {
@@ -312,6 +315,44 @@ class ImpossibleCheckTypeHelper
 			$this->universalObjectCratesClasses,
 			false,
 		);
+	}
+
+	private function determineContext(Scope $scope, Expr $node): TypeSpecifierContext
+	{
+		if ($node instanceof FuncCall && $node->name instanceof Node\Name) {
+			if ($this->reflectionProvider->hasFunction($node->name, $scope)) {
+				$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $functionReflection->getVariants());
+				$returnType = TypeUtils::resolveLateResolvableTypes($parametersAcceptor->getReturnType());
+
+				return $returnType instanceof VoidType ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
+			}
+		} elseif ($node instanceof MethodCall && $node->name instanceof Node\Identifier) {
+			$methodCalledOnType = $scope->getType($node->var);
+			$methodReflection = $scope->getMethodReflection($methodCalledOnType, $node->name->name);
+			if ($methodReflection !== null) {
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $methodReflection->getVariants());
+				$returnType = TypeUtils::resolveLateResolvableTypes($parametersAcceptor->getReturnType());
+
+				return $returnType instanceof VoidType ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
+			}
+		} elseif ($node instanceof StaticCall && $node->name instanceof Node\Identifier) {
+			if ($node->class instanceof Node\Name) {
+				$calleeType = $scope->resolveTypeByName($node->class);
+			} else {
+				$calleeType = $scope->getType($node->class);
+			}
+
+			$staticMethodReflection = $scope->getMethodReflection($calleeType, $node->name->name);
+			if ($staticMethodReflection !== null) {
+				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $staticMethodReflection->getVariants());
+				$returnType = TypeUtils::resolveLateResolvableTypes($parametersAcceptor->getReturnType());
+
+				return $returnType instanceof VoidType ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
+			}
+		}
+
+		return TypeSpecifierContext::createTruthy();
 	}
 
 }

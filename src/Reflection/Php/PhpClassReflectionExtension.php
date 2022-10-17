@@ -551,7 +551,9 @@ class PhpClassReflectionExtension
 							$selfOutType = $selfOutTypeTag->getType();
 						}
 
-						$phpDocComment = $stubPhpDoc->getPhpDocString();
+						if ($declaringClassName === $stubDeclaringClass->getName() && $stubPhpDoc->hasPhpDocString()) {
+							$phpDocComment = $stubPhpDoc->getPhpDocString();
+						}
 					}
 				}
 				if ($stubPhpDocPair === null && $reflectionMethod !== null && $reflectionMethod->getDocComment() !== false) {

@@ -1838,12 +1838,15 @@ class NodeScopeResolver
 				&& count($expr->getArgs()) >= 1
 			) {
 				$arrayArg = $expr->getArgs()[0]->value;
-				$arrayArgType = $scope->getType($arrayArg);
 
+				$arrayArgType = $scope->getType($arrayArg);
+				$arrayArgNativeType = $scope->getNativeType($arrayArg);
+
+				$isArrayPop = $functionReflection->getName() === 'array_pop';
 				$scope = $scope->invalidateExpression($arrayArg)->assignExpression(
 					$arrayArg,
-					$functionReflection->getName() === 'array_pop' ? $arrayArgType->popArray() : $arrayArgType->shiftArray(),
-					$scope->getNativeType($arrayArg),
+					$isArrayPop ? $arrayArgType->popArray() : $arrayArgType->shiftArray(),
+					$isArrayPop ? $arrayArgNativeType->popArray() : $arrayArgNativeType->shiftArray(),
 				);
 			}
 

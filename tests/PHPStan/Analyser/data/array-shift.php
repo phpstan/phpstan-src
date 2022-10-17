@@ -2,6 +2,7 @@
 
 namespace ArrayShift;
 
+use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 
 class Foo
@@ -80,5 +81,15 @@ class Foo
 			assertType('mixed', array_shift($mixed));
 			assertType('*ERROR*', $mixed);
 		}
+	}
+
+	/** @param non-empty-array<string> $arr1 */
+	public function nativeTypes(array $arr1, array $arr2): void
+	{
+		assertType('string', array_shift($arr1));
+		assertType('array<string>', $arr1);
+
+		assertNativeType('mixed', array_shift($arr2));
+		assertNativeType('array', $arr2);
 	}
 }

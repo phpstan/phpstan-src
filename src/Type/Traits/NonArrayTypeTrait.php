@@ -64,4 +64,9 @@ trait NonArrayTypeTrait
 		return new ErrorType();
 	}
 
+	public function shuffleArray(): Type
+	{
+		return new ErrorType();
+	}
+
 }

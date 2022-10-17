@@ -230,6 +230,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->shiftArray();
 	}
 
+	public function shuffleArray(): Type
+	{
+		return $this->resolve()->shuffleArray();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->resolve()->isCallable();

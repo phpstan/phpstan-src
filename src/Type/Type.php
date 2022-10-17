@@ -106,6 +106,8 @@ interface Type
 
 	public function shiftArray(): Type;
 
+	public function shuffleArray(): Type;
+
 	public function isCallable(): TrinaryLogic;
 
 	/**

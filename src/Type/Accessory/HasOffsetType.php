@@ -136,6 +136,11 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function shuffleArray(): Type
+	{
+		return new NonEmptyArrayType();
+	}
+
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

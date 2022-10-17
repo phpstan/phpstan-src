@@ -696,6 +696,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->removeFirstElements(1);
 	}
 
+	public function shuffleArray(): Type
+	{
+		return $this->getValuesArray()->generalizeToArray();
+	}
+
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
 		$keysCount = count($this->keyTypes);

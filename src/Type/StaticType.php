@@ -381,6 +381,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->shiftArray();
 	}
 
+	public function shuffleArray(): Type
+	{
+		return $this->getStaticObjectType()->shuffleArray();
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isCallable();

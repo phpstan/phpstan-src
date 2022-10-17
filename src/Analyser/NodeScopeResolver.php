@@ -3279,7 +3279,8 @@ class NodeScopeResolver
 		$hasYield = false;
 		$throwPoints = [];
 		foreach ($args as $i => $arg) {
-			$nodeCallback($arg, $scope);
+			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
+			$nodeCallback($originalArg, $scope);
 			if (isset($parameters) && $parametersAcceptor !== null) {
 				$assignByReference = false;
 				if (isset($parameters[$i])) {

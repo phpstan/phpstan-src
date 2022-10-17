@@ -775,4 +775,15 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3499.php'], []);
 	}
 
+	public function testBug8174(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-8174.php'], [
+			[
+				"Method Bug8174\HelloWorld::filterList() should return list<string> but returns array<int<0, max>, '23423'>.",
+				21,
+			],
+		]);
+	}
+
 }

@@ -105,7 +105,7 @@ class Error implements JsonSerializable
 
 	public function canBeIgnored(): bool
 	{
-		return $this->canBeIgnored === true;
+		return !$this->canBeIgnored instanceof Throwable;
 	}
 
 	public function hasNonIgnorableException(): bool

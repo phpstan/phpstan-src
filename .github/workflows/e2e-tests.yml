@@ -24,8 +24,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  result-cache-e2e-tests:
-    name: "Result cache E2E tests"
+  result-cache-php-parser-e2e:
+    name: "Result cache PHP-Parser E2E test"
 
     runs-on: ${{ matrix.operating-system }}
     timeout-minutes: 60
@@ -53,6 +53,40 @@ jobs:
       - name: "Tests"
         run: |
           git clone https://github.com/nikic/PHP-Parser.git tests/e2e/PHP-Parser && git -C tests/e2e/PHP-Parser checkout v3.1.5 && composer install --working-dir tests/e2e/PHP-Parser && vendor/bin/phpunit tests/e2e/ResultCacheEndToEndTest.php
+
+  result-cache-e2e-tests:
+    name: "Result cache E2E tests"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
+          extensions: mbstring
+          ini-values: memory_limit=256M
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Patch PHPStan"
+        run: "patch src/Analyser/Error.php < e2e/PHPStanErrorPatch.patch"
+
+      - name: "Test"
+        run: |
+          cd e2e/result-cache-1
+          echo -n > phpstan-baseline.neon
+          ../../bin/phpstan -vvv
+          patch -b src/Bar.php < patch-1.patch
+          cat baseline-1.neon > phpstan-baseline.neon
+          ../../bin/phpstan -vvv
+          mv src/Bar.php.orig src/Bar.php
+          echo -n > phpstan-baseline.neon
+          ../../bin/phpstan -vvv
 
   e2e-tests:
     name: "E2E tests"

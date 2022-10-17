@@ -2,6 +2,7 @@
 
 namespace ArrayPop;
 
+use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 
 class Foo
@@ -80,6 +81,16 @@ class Foo
 			assertType('mixed', array_pop($mixed));
 			assertType('*ERROR*', $mixed);
 		}
+	}
+
+	/** @param non-empty-array<string> $arr1 */
+	public function nativeTypes(array $arr1, array $arr2): void
+	{
+		assertType('string', array_pop($arr1));
+		assertType('array<string>', $arr1);
+
+		assertNativeType('mixed', array_pop($arr2));
+		assertNativeType('array', $arr2);
 	}
 
 }

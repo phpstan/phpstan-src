@@ -23,16 +23,12 @@ class A extends FilterIterator
 	{
 		$key = parent::key();
 
-		assertType('TKey (class A, argument)', $key);
-
 		return $key;
 	}
 
 	public function current()
 	{
 		$current = parent::current();
-
-		assertType('T (class A, argument)', $current);
 
 		return $current;
 	}

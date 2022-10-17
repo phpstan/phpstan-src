@@ -22,6 +22,7 @@ class DoWhileLoopConstantConditionRuleTest extends RuleTestCase
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,
+					true,
 				),
 				$this->treatPhpDocTypesAsCertain,
 			),

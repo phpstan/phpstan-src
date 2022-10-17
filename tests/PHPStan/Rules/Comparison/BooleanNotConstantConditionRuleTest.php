@@ -23,6 +23,7 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 					$this->getTypeSpecifier(),
 					[],
 					$this->treatPhpDocTypesAsCertain,
+					true,
 				),
 				$this->treatPhpDocTypesAsCertain,
 			),

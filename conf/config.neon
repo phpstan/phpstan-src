@@ -51,6 +51,7 @@ parameters:
 		curlSetOptTypes: false
 		listType: false
 		missingMagicSerializationRule: false
+		nullContextForVoidReturningFunctions: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -261,6 +262,7 @@ parametersSchema:
 		curlSetOptTypes: bool()
 		listType: bool()
 		missingMagicSerializationRule: bool()
+		nullContextForVoidReturningFunctions: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -909,6 +911,7 @@ services:
 		arguments:
 			universalObjectCratesClasses: %universalObjectCratesClasses%
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			nullContextForVoidReturningFunctions: %featureToggles.nullContextForVoidReturningFunctions%
 
 	-
 		class: PHPStan\Rules\Exceptions\DefaultExceptionTypeResolver
@@ -1711,6 +1714,7 @@ services:
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 			universalObjectCratesClasses: %universalObjectCratesClasses%
+			nullContextForVoidReturningFunctions: %featureToggles.nullContextForVoidReturningFunctions%
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 

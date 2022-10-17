@@ -45,6 +45,7 @@ class ImpossibleCheckTypeHelper
 		private TypeSpecifier $typeSpecifier,
 		private array $universalObjectCratesClasses,
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $nullContextForVoidReturningFunctions,
 	)
 	{
 	}
@@ -314,11 +315,16 @@ class ImpossibleCheckTypeHelper
 			$this->typeSpecifier,
 			$this->universalObjectCratesClasses,
 			false,
+			$this->nullContextForVoidReturningFunctions,
 		);
 	}
 
 	private function determineContext(Scope $scope, Expr $node): TypeSpecifierContext
 	{
+		if (!$this->nullContextForVoidReturningFunctions) {
+			return TypeSpecifierContext::createTruthy();
+		}
+
 		if ($node instanceof FuncCall && $node->name instanceof Node\Name) {
 			if ($this->reflectionProvider->hasFunction($node->name, $scope)) {
 				$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);

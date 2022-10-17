@@ -25,6 +25,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 				$this->getTypeSpecifier(),
 				[stdClass::class],
 				$this->treatPhpDocTypesAsCertain,
+				true,
 			),
 			$this->checkAlwaysTrueCheckTypeFunctionCall,
 			$this->treatPhpDocTypesAsCertain,

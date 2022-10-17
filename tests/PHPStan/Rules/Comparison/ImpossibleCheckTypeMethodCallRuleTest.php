@@ -21,6 +21,7 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 				$this->getTypeSpecifier(),
 				[],
 				$this->treatPhpDocTypesAsCertain,
+				true,
 			),
 			true,
 			$this->treatPhpDocTypesAsCertain,

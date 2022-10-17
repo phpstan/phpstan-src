@@ -19,6 +19,7 @@ class ImpossibleCheckTypeMethodCallRuleEqualsTest extends RuleTestCase
 				$this->getTypeSpecifier(),
 				[],
 				true,
+				true,
 			),
 			true,
 			true,

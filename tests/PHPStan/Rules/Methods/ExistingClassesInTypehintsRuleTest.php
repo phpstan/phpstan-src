@@ -319,4 +319,9 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7519(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7519.php'], []);
+	}
+
 }

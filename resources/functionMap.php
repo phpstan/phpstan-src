@@ -6310,7 +6310,7 @@ return [
 'maxdb_thread_safe' => ['bool'],
 'maxdb_use_result' => ['resource', 'link'=>''],
 'maxdb_warning_count' => ['int', 'link'=>'resource'],
-'mb_check_encoding' => ['bool', 'var='=>'string', 'encoding='=>'string'],
+'mb_check_encoding' => ['bool', 'var='=>'string|array<string>', 'encoding='=>'string'],
 'mb_chr' => ['string|false', 'cp'=>'int', 'encoding='=>'string'],
 'mb_convert_case' => ['string', 'sourcestring'=>'string', 'mode'=>'int', 'encoding='=>'string'],
 'mb_convert_encoding' => ['string|array<int, string>|false', 'val'=>'string|array<int, string>', 'to_encoding'=>'string', 'from_encoding='=>'mixed'],

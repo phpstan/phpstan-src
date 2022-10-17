@@ -60,6 +60,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 
 	/**
 	 * @param Type[] $phpDocParameterTypes
+	 * @param Type[] $parameterOutTypes
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -82,6 +83,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		private Assertions $asserts,
 		private ?Type $selfOutType,
 		private ?string $phpDocComment,
+		private array $parameterOutTypes,
 	)
 	{
 	}
@@ -204,6 +206,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 				$reflection,
 				$this->phpDocParameterTypes[$reflection->getName()] ?? null,
 				$this->getDeclaringClass()->getName(),
+				$this->parameterOutTypes[$reflection->getName()] ?? null,
 			), $this->reflection->getParameters());
 		}
 

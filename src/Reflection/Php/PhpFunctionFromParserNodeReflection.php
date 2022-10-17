@@ -38,6 +38,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 	 * @param Type[] $realParameterTypes
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $realParameterDefaultValues
+	 * @param Type[] $parameterOutTypes
 	 */
 	public function __construct(
 		FunctionLike $functionLike,
@@ -57,6 +58,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		private bool $acceptsNamedArguments,
 		private Assertions $assertions,
 		private ?string $phpDocComment,
+		private array $parameterOutTypes,
 	)
 	{
 		$this->functionLike = $functionLike;
@@ -134,6 +136,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 					: PassedByReference::createNo(),
 				$this->realParameterDefaultValues[$parameter->var->name] ?? null,
 				$parameter->variadic,
+				$this->parameterOutTypes[$parameter->var->name] ?? null,
 			);
 		}
 

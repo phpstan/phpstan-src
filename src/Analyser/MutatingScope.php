@@ -2533,6 +2533,7 @@ class MutatingScope implements Scope
 		?Assertions $asserts = null,
 		?Type $selfOutType = null,
 		?string $phpDocComment = null,
+		array $parameterOutTypes = [],
 	): self
 	{
 		if (!$this->isInClass()) {
@@ -2560,6 +2561,7 @@ class MutatingScope implements Scope
 				$asserts ?? Assertions::createEmpty(),
 				$selfOutType,
 				$phpDocComment,
+				$parameterOutTypes,
 			),
 			!$classMethod->isStatic(),
 		);
@@ -2641,6 +2643,7 @@ class MutatingScope implements Scope
 		bool $acceptsNamedArguments = true,
 		?Assertions $asserts = null,
 		?string $phpDocComment = null,
+		array $parameterOutTypes = [],
 	): self
 	{
 		return $this->enterFunctionLike(
@@ -2662,6 +2665,7 @@ class MutatingScope implements Scope
 				$acceptsNamedArguments,
 				$asserts ?? Assertions::createEmpty(),
 				$phpDocComment,
+				$parameterOutTypes
 			),
 			false,
 		);

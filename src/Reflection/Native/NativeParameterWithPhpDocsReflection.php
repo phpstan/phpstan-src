@@ -18,6 +18,7 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 		private PassedByReference $passedByReference,
 		private bool $variadic,
 		private ?Type $defaultValue,
+		private ?Type $outType,
 	)
 	{
 	}
@@ -62,6 +63,11 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 		return $this->defaultValue;
 	}
 
+	public function getOutType(): ?Type
+	{
+		return $this->outType;
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */
@@ -76,6 +82,7 @@ class NativeParameterWithPhpDocsReflection implements ParameterReflectionWithPhp
 			$properties['passedByReference'],
 			$properties['variadic'],
 			$properties['defaultValue'],
+			$properties['outType'],
 		);
 	}
 

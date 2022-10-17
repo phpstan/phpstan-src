@@ -800,6 +800,7 @@ class PhpClassReflectionExtension
 				$parameterSignature->passedByReference(),
 				$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
 				$parameterSignature->getDefaultValue(),
+				$parameterSignature->getOutType(),
 			);
 		}
 

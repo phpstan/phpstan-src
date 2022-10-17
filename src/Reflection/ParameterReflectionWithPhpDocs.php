@@ -11,4 +11,6 @@ interface ParameterReflectionWithPhpDocs extends ParameterReflection
 
 	public function getNativeType(): Type;
 
+	public function getOutType(): ?Type;
+
 }

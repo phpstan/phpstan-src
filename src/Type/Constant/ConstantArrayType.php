@@ -698,7 +698,23 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function shuffleArray(): Type
 	{
-		return $this->getValuesArray()->generalizeToArray();
+		$valuesArray = $this->getValuesArray();
+
+		$isIterableAtLeastOnce = $valuesArray->isIterableAtLeastOnce();
+		if ($isIterableAtLeastOnce->no()) {
+			return $valuesArray;
+		}
+
+		$generalizedArray = new ArrayType($valuesArray->getKeyType(), $valuesArray->getItemType());
+
+		if ($isIterableAtLeastOnce->yes()) {
+			$generalizedArray = TypeCombinator::intersect($generalizedArray, new NonEmptyArrayType());
+		}
+		if ($valuesArray->isList) {
+			$generalizedArray = AccessoryArrayListType::intersectWith($generalizedArray);
+		}
+
+		return $generalizedArray;
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
@@ -1091,6 +1107,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return new self($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList);
 	}
 
+	/** @deprecated */
 	public function generalizeToArray(): Type
 	{
 		$isIterableAtLeastOnce = $this->isIterableAtLeastOnce();

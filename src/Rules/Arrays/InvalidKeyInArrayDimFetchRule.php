@@ -8,7 +8,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
-use function count;
 use function sprintf;
 
 /**
@@ -33,7 +32,7 @@ class InvalidKeyInArrayDimFetchRule implements Rule
 		}
 
 		$varType = $scope->getType($node->var);
-		if (count($varType->getArrays()) === 0) {
+		if ($varType->isArray()->no() || ($varType instanceof MixedType && $varType->isArray()->maybe())) {
 			return [];
 		}
 

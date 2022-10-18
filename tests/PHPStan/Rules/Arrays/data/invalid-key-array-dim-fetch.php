@@ -35,3 +35,14 @@ $array = doFoo();
 foreach ($array as $i => $val) {
 	echo $array[$i];
 }
+
+/** @var int|object $maybeInt */
+$maybeInt = null;
+
+/** @var string|array $maybeString */
+$maybeString = [];
+echo $maybeString[$maybeInt];
+
+/** @var mixed $mixed */
+$mixed = null;
+echo $mixed[$maybeInt];

@@ -3,9 +3,9 @@
 namespace ParamOutTemplate;
 
 /**
- * @template S of self
+ * @template S
  * @param-out S $s
  */
-function genericSelf(mixed &$s): void
+function uselessGeneric(mixed &$s): void
 {
 }

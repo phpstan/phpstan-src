@@ -3,13 +3,23 @@
 namespace ParamOutTemplate;
 
 
+/**
+ * @template S
+ */
 class FooBar
 {
 	/**
-	 * @template S of self
 	 * @param-out S $s
 	 */
-	function genericSelf(mixed &$s): void
+	function usingClassTemplate(mixed &$s): void
+	{
+	}
+
+	/**
+	 * @template T
+	 * @param-out T $s
+	 */
+	function uselessLocalTemplate(mixed &$s): void
 	{
 	}
 }

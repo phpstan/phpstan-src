@@ -4179,7 +4179,7 @@ class NodeScopeResolver
 				}
 				$phpDocParameterTypes[$paramName] = $paramType;
 			}
-			foreach($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
+			foreach ($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
 				$phpDocParameterOutTypes[$paramName] = $paramOutTag->getType();
 			}
 			if ($node instanceof Node\FunctionLike) {

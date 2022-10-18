@@ -553,7 +553,7 @@ class PhpClassReflectionExtension
 							$selfOutType = $selfOutTypeTag->getType();
 						}
 
-						foreach($stubPhpDoc->getParamOutTags() as $name => $paramOutTag) {
+						foreach ($stubPhpDoc->getParamOutTags() as $name => $paramOutTag) {
 							$stubPhpParameterOutTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
 								$paramOutTag->getType(),
 								$templateTypeMap,
@@ -597,7 +597,7 @@ class PhpClassReflectionExtension
 							$phpDocComment = $phpDocBlock->getPhpDocString();
 						}
 
-						foreach($phpDocBlock->getParamOutTags() as $name => $paramOutTag) {
+						foreach ($phpDocBlock->getParamOutTags() as $name => $paramOutTag) {
 							$phpDocParameterOutTypes[$name] = $paramOutTag->getType();
 						}
 

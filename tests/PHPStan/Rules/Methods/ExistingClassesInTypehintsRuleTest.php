@@ -324,8 +324,14 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7519.php'], []);
 	}
 
-	public function testTemplateInParamOut() {
-		$this->analyse([__DIR__ . '/data/param-out.php'], []);
+	public function testTemplateInParamOut(): void
+	{
+		$this->analyse([__DIR__ . '/data/param-out.php'], [
+			[
+				'Template type T of method ParamOutTemplate\FooBar::uselessLocalTemplate() is not referenced in a parameter.',
+				22,
+			],
+		]);
 	}
 
 }

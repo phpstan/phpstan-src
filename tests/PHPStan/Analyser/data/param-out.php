@@ -18,36 +18,12 @@ function addFoo(?string &$s): void
 
 /**
  * @template T of int
- * @param-out T $s
- */
-function genericFoo(mixed &$s): void
-{
-}
-
-/**
- * @template T of int
  */
 class FooBar {
 	/**
 	 * @param-out T $s
 	 */
 	function genericClassFoo(mixed &$s): void
-	{
-	}
-
-	/**
-	 * @template S of self
-	 * @param-out S $s
-	 */
-	function genericSelf(mixed &$s): void
-	{
-	}
-
-	/**
-	 * @template S
-	 * @param-out S $s
-	 */
-	function genericStatic(mixed &$s): void
 	{
 	}
 
@@ -71,7 +47,7 @@ class FooBar {
 }
 
 /**
- * @extends FooBar<int>
+ * @extends FooBar<int, ExtendsFooBar>
  */
 class ExtendsFooBar extends FooBar {
 	/**
@@ -109,7 +85,7 @@ function takesNullableBool(?bool &$s) : void {
 /**
  * @param-out int $var
  */
-function variadicFoo(&...$var)
+function variadicFoo(&...$var): void
 {
 	$var[0] = 2;
 	$var[1] = 2;
@@ -119,54 +95,43 @@ function variadicFoo(&...$var)
  * @param-out string $s
  * @param-out int $var
  */
-function variadicFoo2(?string &$s, &...$var)
+function variadicFoo2(?string &$s, &...$var): void
 {
 	$s = '';
 	$var[0] = 2;
 	$var[1] = 2;
 }
 
-function foo1(?string $s) {
+function foo1(?string $s): void {
 	assertType('string|null', $s);
 	addFoo($s);
 	assertType('string', $s);
 }
 
-function foo2($mixed) {
+function foo2($mixed): void {
 	assertType('mixed', $mixed);
 	addFoo($mixed);
 	assertType('string', $mixed);
 }
 
-function foo3($mixed) {
+/**
+ * @param FooBar<int> $fooBar
+ * @return void
+ */
+function foo3($mixed, $fooBar): void {
 	assertType('mixed', $mixed);
-	$fooBar = new FooBar();
 	$fooBar->genericClassFoo($mixed);
 	assertType('T of int (class ParamOut\FooBar, parameter)', $mixed);
 }
 
-function foo4($mixed) {
-	assertType('mixed', $mixed);
-	$fooBar = new FooBar();
-	$fooBar->genericSelf($mixed);
-	assertType('S of ParamOut\FooBar (method ParamOut\FooBar::genericSelf(), parameter)', $mixed);
-}
-
-function foo5($mixed) {
-	assertType('mixed', $mixed);
-	$fooBar = new FooBar();
-	$fooBar->genericStatic($mixed);
-	assertType('S (method ParamOut\FooBar::genericStatic(), parameter)', $mixed);
-}
-
-function foo6() {
+function foo6(): void {
 	$b = false;
 	takesNullableBool($b);
 
 	assertType('bool', $b);
 }
 
-function foo7() {
+function foo7(): void {
 	variadicFoo( $a, $b);
 	assertType('int', $a);
 	assertType('int', $b);
@@ -177,36 +142,36 @@ function foo7() {
 	assertType('int', $b);
 }
 
-function foo8(string $s) {
+function foo8(string $s): void {
 	sodium_memzero($s);
 	assertType('null', $s);
 }
 
-function foo9(?string $s) {
+function foo9(?string $s): void {
 	$c = new OutFromStub();
 	$c->stringOut($s);
 	assertType('string', $s);
 }
 
-function foo10(?string $s) {
+function foo10(?string $s): void {
 	$c = new ExtendsFooBar();
 	$c->baseMethod($s);
 	assertType('string', $s);
 }
 
-function foo11(?string $s) {
+function foo11(?string $s): void {
 	$c = new ExtendsFooBar();
 	$c->subMethod($s);
 	assertType('string', $s);
 }
 
-function foo12(?string $s) {
+function foo12(?string $s): void {
 	$c = new ExtendsFooBar();
 	$c->overriddenMethod($s);
 	assertType('string', $s);
 }
 
-function foo13(?string $s) {
+function foo13(?string $s): void {
 	$c = new ExtendsFooBar();
 	$c->overriddenButinheritedPhpDocMethod($s);
 	assertType('string', $s);
@@ -216,7 +181,7 @@ function foo13(?string $s) {
  * @param array<string> $a
  * @param non-empty-array<string> $nonEmptyArray
  */
-function foo14(array $a, $nonEmptyArray) {
+function foo14(array $a, $nonEmptyArray): void {
 	// php-src native function, overridden from stub
 
 	\shuffle($a);

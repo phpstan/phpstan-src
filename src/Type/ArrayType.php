@@ -285,7 +285,7 @@ class ArrayType implements Type
 			return TypeCombinator::intersect(
 				new self(
 					TypeCombinator::union($this->keyType, $offsetType),
-					$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType,
+					TypeCombinator::union($this->itemType, $valueType),
 				),
 				new HasOffsetValueType($offsetType, $valueType),
 				new NonEmptyArrayType()

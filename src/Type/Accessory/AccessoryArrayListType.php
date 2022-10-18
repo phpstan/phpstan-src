@@ -147,6 +147,11 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function fillKeysArray(Type $valueType): Type
+	{
+		return new MixedType();
+	}
+
 	public function flipArray(): Type
 	{
 		return new MixedType();

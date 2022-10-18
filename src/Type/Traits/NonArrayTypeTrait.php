@@ -49,6 +49,11 @@ trait NonArrayTypeTrait
 		return new ErrorType();
 	}
 
+	public function fillKeysArray(Type $valueType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function flipArray(): Type
 	{
 		return new ErrorType();

@@ -100,6 +100,8 @@ interface Type
 
 	public function getValuesArray(): Type;
 
+	public function fillKeysArray(Type $valueType): Type;
+
 	public function flipArray(): Type;
 
 	public function popArray(): Type;

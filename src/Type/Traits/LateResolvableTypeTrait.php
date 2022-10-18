@@ -215,6 +215,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->getValuesArray();
 	}
 
+	public function fillKeysArray(Type $valueType): Type
+	{
+		return $this->resolve()->fillKeysArray($valueType);
+	}
+
 	public function flipArray(): Type
 	{
 		return $this->resolve()->flipArray();

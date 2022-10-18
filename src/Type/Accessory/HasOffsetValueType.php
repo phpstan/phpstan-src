@@ -165,6 +165,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new NonEmptyArrayType();
 	}
 
+	public function fillKeysArray(Type $valueType): Type
+	{
+		return new NonEmptyArrayType();
+	}
+
 	public function flipArray(): Type
 	{
 		$valueType = $this->valueType->toArrayKey();

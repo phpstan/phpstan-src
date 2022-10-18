@@ -71,6 +71,10 @@ function withOptionalKeys(): void
 		$arr1[] = 'baz';
 	}
 	assertType("array{foo: 'b', bar: 'b', baz?: 'b'}", array_fill_keys($arr1, 'b'));
+
+	/** @var array{0?: 'foo', 1: 'bar', }|array{0: 'baz', 1?: 'foobar'} $arr2 */
+	$arr2 = [];
+	assertType("array{baz: 'b', foobar?: 'b'}|array{foo?: 'b', bar: 'b'}", array_fill_keys($arr2, 'b'));
 }
 
 /**
@@ -79,12 +83,33 @@ function withOptionalKeys(): void
  * @param Foo[] $baz
  * @param float[] $floats
  * @param array<int, int|string|bool> $mixed
+ * @param list<string> $list
+ * @param Baz[] $objectsWithoutToString
  */
-function withNotConstantArray(array $foo, array $bar, array $baz, array $floats, array $mixed): void
+function withNotConstantArray(array $foo, array $bar, array $baz, array $floats, array $mixed, array $list, array $objectsWithoutToString): void
 {
 	assertType("array<string, null>", array_fill_keys($foo, null));
 	assertType("array<int, null>", array_fill_keys($bar, null));
 	assertType("array<'foo', null>", array_fill_keys($baz, null));
 	assertType("array<numeric-string, null>", array_fill_keys($floats, null));
 	assertType("array<bool|int|string, null>", array_fill_keys($mixed, null));
+	assertType('array<string, null>', array_fill_keys($list, null));
+	assertType('array<ArrayFillKeys\Baz, null>', array_fill_keys($objectsWithoutToString, null)); // should be *NEVER* or *ERROR* according to https://3v4l.org/gGpic?
+
+	if (array_key_exists(17, $mixed)) {
+		assertType('non-empty-array<bool|int|string, null>', array_fill_keys($mixed, null));
+	}
+
+	if (array_key_exists(17, $mixed) && $mixed[17] === 'foo') {
+		assertType('non-empty-array<bool|int|string, null>', array_fill_keys($mixed, null));
+	}
+}
+
+function mixedAndSubtractedArray($mixed): void
+{
+	if (is_array($mixed)) {
+		assertType("array<'b'>", array_fill_keys($mixed, 'b'));
+	} else {
+		assertType("*ERROR*", array_fill_keys($mixed, 'b'));
+	}
 }

@@ -136,6 +136,11 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function fillKeysArray(Type $valueType): Type
+	{
+		return new NonEmptyArrayType();
+	}
+
 	public function shuffleArray(): Type
 	{
 		return new NonEmptyArrayType();

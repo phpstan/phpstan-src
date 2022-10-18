@@ -367,6 +367,17 @@ class ArrayType implements Type
 		return $this;
 	}
 
+	public function fillKeysArray(Type $valueType): Type
+	{
+		$itemType = $this->getIterableValueType();
+
+		if ((new IntegerType())->isSuperTypeOf($itemType)->no() && !$itemType->toString() instanceof ErrorType) {
+			return new ArrayType($itemType->toString(), $valueType);
+		}
+
+		return new ArrayType($itemType, $valueType);
+	}
+
 	public function flipArray(): Type
 	{
 		return new self($this->getIterableValueType()->toArrayKey(), $this->getIterableKeyType());

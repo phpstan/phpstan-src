@@ -23,6 +23,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -668,6 +669,25 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		return new ArrayType($this->getKeyType(), $this->getItemType());
+	}
+
+	public function fillKeysArray(Type $valueType): Type
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		foreach ($this->valueTypes as $i => $keyType) {
+			if ((new IntegerType())->isSuperTypeOf($keyType)->no()) {
+				if ($keyType->toString() instanceof ErrorType) {
+					return new NeverType();
+				}
+
+				$builder->setOffsetValueType($keyType->toString(), $valueType, $this->isOptionalKey($i));
+			} else {
+				$builder->setOffsetValueType($keyType, $valueType, $this->isOptionalKey($i));
+			}
+		}
+
+		return $builder->getArray();
 	}
 
 	public function flipArray(): Type

@@ -518,7 +518,7 @@ class PhpClassReflectionExtension
 				$phpDocParameterTypes = [];
 				$phpDocReturnType = null;
 				$stubPhpDocPair = null;
-				$phpDocParameterOutTypes = [];
+				$stubPhpParameterOutTypes = [];
 				$phpDocParameterOutTypes = [];
 				if (count($methodSignatures) === 1) {
 					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
@@ -554,7 +554,7 @@ class PhpClassReflectionExtension
 						}
 
 						foreach($stubPhpDoc->getParamOutTags() as $name => $paramOutTag) {
-							$phpDocParameterOutTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
+							$stubPhpParameterOutTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
 								$paramOutTag->getType(),
 								$templateTypeMap,
 							);
@@ -611,7 +611,7 @@ class PhpClassReflectionExtension
 						}
 					}
 				}
-				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $phpDocParameterOutTypes, $phpDocParameterOutTypes);
+				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $stubPhpParameterOutTypes, $phpDocParameterOutTypes);
 			}
 
 			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
@@ -801,8 +801,8 @@ class PhpClassReflectionExtension
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
 		array $phpDocParameterNameMapping,
-		array $phpDocParameterOutTypes,
 		array $stubPhpDocParameterOutTypes,
+		array $phpDocParameterOutTypes,
 	): FunctionVariantWithPhpDocs
 	{
 		$parameters = [];

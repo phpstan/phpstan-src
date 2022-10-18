@@ -304,4 +304,8 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTemplateInParamOut() {
+		$this->analyse([__DIR__ . '/data/param-out.php'], []);
+	}
+
 }

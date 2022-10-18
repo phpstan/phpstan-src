@@ -44,7 +44,7 @@ class FooBar {
 	}
 
 	/**
-	 * @template S of static
+	 * @template S
 	 * @param-out S $s
 	 */
 	function genericStatic(mixed &$s): void
@@ -70,6 +70,9 @@ class FooBar {
 	}
 }
 
+/**
+ * @extends FooBar<int>
+ */
 class ExtendsFooBar extends FooBar {
 	/**
 	 * @param-out string $s

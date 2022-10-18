@@ -334,6 +334,17 @@ class FunctionDefinitionCheck
 
 					return $traverse($type);
 				});
+
+				if ($parameter instanceof ParameterReflectionWithPhpDocs && $parameter->getOutType() !== null) {
+					TypeTraverser::map($parameter->getOutType(), static function (Type $type, callable $traverse) use (&$templateTypes): Type {
+						if ($type instanceof TemplateType) {
+							unset($templateTypes[$type->getName()]);
+							return $traverse($type);
+						}
+
+						return $traverse($type);
+					});
+				}
 			}
 
 			$returnType = $parametersAcceptor->getReturnType();

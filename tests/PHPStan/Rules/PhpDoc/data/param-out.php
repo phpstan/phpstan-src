@@ -96,7 +96,7 @@ class FooBar {
 }
 
 class C {
-	/**+
+	/**
 	 * @var \Closure|null
 	 */
 	private $onCancel;

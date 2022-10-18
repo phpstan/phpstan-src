@@ -322,24 +322,30 @@ class ArrayType implements Type
 			$offsetType = $offsetType->toArrayKey();
 		}
 
-		if (
-			($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType)
-			&& $offsetType->isSuperTypeOf($this->keyType)->yes()
-		) {
-			$builder = ConstantArrayTypeBuilder::createEmpty();
-			$builder->setOffsetValueType($offsetType, $valueType);
-			return $builder->getArray();
+		if ($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType) {
+			if ($offsetType->isSuperTypeOf($this->keyType)->yes()) {
+				$builder = ConstantArrayTypeBuilder::createEmpty();
+				$builder->setOffsetValueType($offsetType, $valueType);
+				return $builder->getArray();
+			}
+
+			return TypeCombinator::intersect(
+				new self(
+					TypeCombinator::union($this->keyType, $offsetType),
+					TypeCombinator::union($this->itemType, $valueType),
+				),
+				new HasOffsetValueType($offsetType, $valueType),
+				new NonEmptyArrayType(),
+			);
 		}
 
-		$array = new self(
-			TypeCombinator::union($this->keyType, $offsetType),
-			$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType,
+		return TypeCombinator::intersect(
+			new self(
+				TypeCombinator::union($this->keyType, $offsetType),
+				$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType,
+			),
+			new NonEmptyArrayType(),
 		);
-		if ($offsetType instanceof ConstantIntegerType || $offsetType instanceof ConstantStringType) {
-			return TypeCombinator::intersect($array, new HasOffsetValueType($offsetType, $valueType), new NonEmptyArrayType());
-		}
-
-		return TypeCombinator::intersect($array, new NonEmptyArrayType());
 	}
 
 	public function unsetOffset(Type $offsetType): Type

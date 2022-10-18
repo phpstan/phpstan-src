@@ -182,10 +182,72 @@ function foo13(?string $s): void {
  * @param non-empty-array<string> $nonEmptyArray
  */
 function foo14(array $a, $nonEmptyArray): void {
-	// php-src native function, overridden from stub
-
 	\shuffle($a);
 	assertType('list<string>', $a);
 	\shuffle($nonEmptyArray);
 	assertType('non-empty-list<string>', $nonEmptyArray);
+}
+
+function fooCompare (int $a, int $b): int {
+	return $a > $b ? 1 : -1;
+}
+
+function foo15() {
+	$manifest = [1, 2, 3];
+	uasort(
+		$manifest,
+		"fooCompare"
+	);
+	assertType('array{1, 2, 3}', $manifest);
+}
+
+function fooSpaceship (string $a, string $b): int {
+	return $a <=> $b;
+}
+
+function foo16() {
+	$array = [1, 2];
+	uksort(
+		$array,
+		"fooSpaceship"
+	);
+	assertType('array{1, 2}', $array);
+}
+
+function fooShuffle() {
+	$array = ["foo" => 123, "bar" => 456];
+	shuffle($array);
+	assertType('non-empty-array<0|1, 123|456>&list', $array);
+
+	$emptyArray = [];
+	shuffle($emptyArray);
+	assertType('array{}', $emptyArray);
+}
+
+function fooSort() {
+	$array = ["foo" => 123, "bar" => 456];
+	sort($array);
+	assertType('array{foo: 123, bar: 456}', $array);
+
+	$emptyArray = [];
+	sort($emptyArray);
+	assertType('array{}', $emptyArray);
+}
+
+function fooScanf(): void
+{
+	sscanf("10:05:03", "%d:%d:%d", $hours, $minutes, $seconds);
+	assertType('float|int|null|string', $hours);
+	assertType('float|int|null|string', $minutes);
+	assertType('float|int|null|string', $seconds);
+
+	$n = sscanf("42 psalm road", "%s %s", $p1, $p2);
+	assertType('int|null', $n); // could be 'int'
+	assertType('float|int|null|string', $p1);
+	assertType('float|int|null|string', $p2);
+}
+
+function fooMatch(string $input): void {
+	preg_match_all('/@[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}(?!\w)/', $input, $matches);
+	assertType('array<list<string>>', $matches);
 }

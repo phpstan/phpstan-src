@@ -119,7 +119,6 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 				}
 
 				if ($iterableValueType instanceof UnionType) {
-					$argumentTypes = [];
 					foreach ($iterableValueType->getTypes() as $innerType) {
 						$argumentTypes[] = $innerType;
 					}

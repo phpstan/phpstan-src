@@ -288,7 +288,7 @@ class ArrayType implements Type
 					TypeCombinator::union($this->itemType, $valueType),
 				),
 				new HasOffsetValueType($offsetType, $valueType),
-				new NonEmptyArrayType()
+				new NonEmptyArrayType(),
 			);
 		}
 
@@ -297,7 +297,7 @@ class ArrayType implements Type
 				TypeCombinator::union($this->keyType, $offsetType),
 				$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType,
 			),
-			new NonEmptyArrayType()
+			new NonEmptyArrayType(),
 		);
 	}
 

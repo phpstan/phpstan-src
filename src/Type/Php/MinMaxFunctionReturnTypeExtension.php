@@ -103,7 +103,7 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 	private function processArrayType(string $functionName, Type $argType): Type
 	{
-		$constArrayTypes = TypeUtils::getOldConstantArrays($argType);
+		$constArrayTypes = $argType->getConstantArrays();
 		if (count($constArrayTypes) > 0) {
 			$resultTypes = [];
 			foreach ($constArrayTypes as $constArrayType) {

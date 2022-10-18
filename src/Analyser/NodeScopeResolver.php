@@ -408,7 +408,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);
@@ -432,6 +432,7 @@ class NodeScopeResolver
 				$acceptsNamedArguments,
 				$asserts,
 				$phpDocComment,
+				$phpDocParameterOutTypes,
 			);
 			$functionReflection = $functionScope->getFunction();
 			if (!$functionReflection instanceof FunctionReflection) {
@@ -471,7 +472,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);
@@ -496,6 +497,7 @@ class NodeScopeResolver
 				$asserts,
 				$selfOutType,
 				$phpDocComment,
+				$phpDocParameterOutTypes,
 			);
 
 			if ($stmt->name->toLowerString() === '__construct') {
@@ -3285,7 +3287,11 @@ class NodeScopeResolver
 
 			if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
 				foreach ($parametersAcceptor->getParameters() as $parameter) {
-					$paramOutTypes[$parameter->getName()] = $parameter->getOutType();
+					if ($parameter->getOutType() === null) {
+						continue;
+					}
+
+					$paramOutTypes[$parameter->getName()] = TemplateTypeHelper::resolveTemplateTypes($parameter->getOutType(), $parametersAcceptor->getResolvedTemplateTypeMap());
 				}
 			}
 		}
@@ -4062,7 +4068,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type}
+	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, Type[]}
 	 */
 	public function getPhpDocs(Scope $scope, Node\FunctionLike|Node\Stmt\Property $node): array
 	{
@@ -4088,6 +4094,7 @@ class NodeScopeResolver
 		$trait = $scope->isInTrait() ? $scope->getTraitReflection()->getName() : null;
 		$resolvedPhpDoc = null;
 		$functionName = null;
+		$phpDocParameterOutTypes = [];
 
 		if ($node instanceof Node\Stmt\ClassMethod) {
 			if (!$scope->isInClass()) {
@@ -4172,6 +4179,9 @@ class NodeScopeResolver
 				}
 				$phpDocParameterTypes[$paramName] = $paramType;
 			}
+			foreach($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
+				$phpDocParameterOutTypes[$paramName] = $paramOutTag->getType();
+			}
 			if ($node instanceof Node\FunctionLike) {
 				$nativeReturnType = $scope->getFunctionType($node->getReturnType(), false, false);
 				$phpDocReturnType = $this->getPhpDocReturnType($resolvedPhpDoc, $nativeReturnType);
@@ -4191,7 +4201,7 @@ class NodeScopeResolver
 			$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
 		}
 
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes];
 	}
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type

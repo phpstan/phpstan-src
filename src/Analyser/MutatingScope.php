@@ -2562,7 +2562,7 @@ class MutatingScope implements Scope
 				$asserts ?? Assertions::createEmpty(),
 				$selfOutType,
 				$phpDocComment,
-				$parameterOutTypes,
+				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $parameterOutTypes),
 			),
 			!$classMethod->isStatic(),
 		);
@@ -2667,7 +2667,7 @@ class MutatingScope implements Scope
 				$acceptsNamedArguments,
 				$asserts ?? Assertions::createEmpty(),
 				$phpDocComment,
-				$parameterOutTypes,
+				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $parameterOutTypes),
 			),
 			false,
 		);

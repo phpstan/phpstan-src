@@ -3,6 +3,7 @@
 namespace ParamOut;
 
 use function PHPStan\Testing\assertType;
+use sodium_memzero;
 
 /**
  * @param-out string $s
@@ -47,6 +48,50 @@ class FooBar {
 	 * @param-out S $s
 	 */
 	function genericStatic(mixed &$s): void
+	{
+	}
+
+	/**
+	 * @param-out string $s
+	 */
+	function baseMethod(?string &$s): void
+	{
+	}
+
+	function overriddenMethod(?string &$s): void
+	{
+	}
+
+	/**
+	 * @param-out string $s
+	 */
+	function overriddenButinheritedPhpDocMethod(?string &$s): void
+	{
+	}
+}
+
+class ExtendsFooBar extends FooBar {
+	/**
+	 * @param-out string $s
+	 */
+	function subMethod(?string &$s): void
+	{
+	}
+
+	/**
+	 * @param-out string $s
+	 */
+	function overriddenMethod(?string &$s): void
+	{
+	}
+
+	function overriddenButinheritedPhpDocMethod(?string &$s): void
+	{
+	}
+}
+
+class OutFromStub {
+	function stringOut(string &$string): void
 	{
 	}
 }
@@ -127,4 +172,52 @@ function foo7() {
 	assertType('string', $s);
 	assertType('int', $a);
 	assertType('int', $b);
+}
+
+function foo8(string $s) {
+	sodium_memzero($s);
+	assertType('null', $s);
+}
+
+function foo9(?string $s) {
+	$c = new OutFromStub();
+	$c->stringOut($s);
+	assertType('string', $s);
+}
+
+function foo10(?string $s) {
+	$c = new ExtendsFooBar();
+	$c->baseMethod($s);
+	assertType('string', $s);
+}
+
+function foo11(?string $s) {
+	$c = new ExtendsFooBar();
+	$c->subMethod($s);
+	assertType('string', $s);
+}
+
+function foo12(?string $s) {
+	$c = new ExtendsFooBar();
+	$c->overriddenMethod($s);
+	assertType('string', $s);
+}
+
+function foo13(?string $s) {
+	$c = new ExtendsFooBar();
+	$c->overriddenButinheritedPhpDocMethod($s);
+	assertType('string', $s);
+}
+
+/**
+ * @param array<string> $a
+ * @param non-empty-array<string> $nonEmptyArray
+ */
+function foo14(array $a, $nonEmptyArray) {
+	// php-src native function, overridden from stub
+
+	\shuffle($a);
+	assertType('list<string>', $a);
+	\shuffle($nonEmptyArray);
+	assertType('non-empty-list<string>', $nonEmptyArray);
 }

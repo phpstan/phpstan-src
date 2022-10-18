@@ -48,7 +48,7 @@ function withObjectKey() : array
 {
 	assertType("array{foo: 'b'}", array_fill_keys([new Foo()], 'b'));
 	assertType("non-empty-array<string, 'b'>", array_fill_keys([new Bar()], 'b'));
-	assertType("*NEVER*", array_fill_keys([new Baz()], 'b'));
+	assertType("*ERROR*", array_fill_keys([new Baz()], 'b'));
 }
 
 function withUnionKeys(): void
@@ -94,7 +94,7 @@ function withNotConstantArray(array $foo, array $bar, array $baz, array $floats,
 	assertType("array<numeric-string, null>", array_fill_keys($floats, null));
 	assertType("array<bool|int|string, null>", array_fill_keys($mixed, null));
 	assertType('array<string, null>', array_fill_keys($list, null));
-	assertType('array<ArrayFillKeys\Baz, null>', array_fill_keys($objectsWithoutToString, null)); // should be *NEVER* or *ERROR* according to https://3v4l.org/gGpic?
+	assertType('*ERROR*', array_fill_keys($objectsWithoutToString, null));
 
 	if (array_key_exists(17, $mixed)) {
 		assertType('non-empty-array<bool|int|string, null>', array_fill_keys($mixed, null));

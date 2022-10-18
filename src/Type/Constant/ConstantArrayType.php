@@ -677,11 +677,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 		foreach ($this->valueTypes as $i => $keyType) {
 			if ((new IntegerType())->isSuperTypeOf($keyType)->no()) {
-				if ($keyType->toString() instanceof ErrorType) {
-					return new NeverType();
+				$stringKeyType = $keyType->toString();
+				if ($stringKeyType instanceof ErrorType) {
+					return $stringKeyType;
 				}
 
-				$builder->setOffsetValueType($keyType->toString(), $valueType, $this->isOptionalKey($i));
+				$builder->setOffsetValueType($stringKeyType, $valueType, $this->isOptionalKey($i));
 			} else {
 				$builder->setOffsetValueType($keyType, $valueType, $this->isOptionalKey($i));
 			}

@@ -16,7 +16,6 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
 

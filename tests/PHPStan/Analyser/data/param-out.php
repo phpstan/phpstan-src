@@ -326,3 +326,10 @@ function fooSimilar() {
 	assertType('int', $similar);
 	assertType('float', $percent);
 }
+
+function fooExec() {
+	exec("my cmd", $output, $exitCode);
+
+	assertType('list<string>', $output);
+	assertType('int', $exitCode);
+}

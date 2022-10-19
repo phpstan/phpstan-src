@@ -302,3 +302,8 @@ function fooDateTime(\SplFileObject $splFileObject, ?string $wouldBlock) {
 
 	assertType('string', $wouldBlock);
 }
+
+function testMtch() {
+	preg_match('#.*#', 'foo', $matches);
+	assertType('array<string>', $matches);
+}

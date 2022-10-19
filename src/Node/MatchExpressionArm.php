@@ -9,8 +9,13 @@ class MatchExpressionArm
 	/**
 	 * @param MatchExpressionArmCondition[] $conditions
 	 */
-	public function __construct(private array $conditions, private int $line)
+	public function __construct(private MatchExpressionArmBody $body, private array $conditions, private int $line)
 	{
+	}
+
+	public function getBody(): MatchExpressionArmBody
+	{
+		return $this->body;
 	}
 
 	/**

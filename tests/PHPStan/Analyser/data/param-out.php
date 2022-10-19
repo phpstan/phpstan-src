@@ -295,3 +295,10 @@ function fooParams2(ExtendsFooBar $subX, float $x1, float $y1) {
 	assertType('float', $x1);
 	assertType('array', $y1); // overridden phpdoc-param-out-type in subclass
 }
+
+function fooDateTime(\SplFileObject $splFileObject, ?string $wouldBlock) {
+	// php-src native method overridden via stub
+	$splFileObject->flock(1, $wouldBlock);
+
+	assertType('string', $wouldBlock);
+}

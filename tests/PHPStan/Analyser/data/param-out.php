@@ -320,3 +320,9 @@ function testParseStr() {
 
 	\PHPStan\Testing\assertType('array<int|string, list<string>|string>', $output);
 }
+
+function fooSimilar() {
+	$similar = similar_text('foo', 'bar', $percent);
+	assertType('int', $similar);
+	assertType('float', $percent);
+}

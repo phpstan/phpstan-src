@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
@@ -31,19 +32,27 @@ final class IteratorToArrayFunctionReturnTypeExtension implements DynamicFunctio
 
 		$traversableType = $scope->getType($arguments[0]->value);
 		$arrayKeyType = $traversableType->getIterableKeyType();
+		$isList = false;
 
 		if (isset($arguments[1])) {
 			$preserveKeysType = $scope->getType($arguments[1]->value);
 
 			if ($preserveKeysType instanceof ConstantBooleanType && !$preserveKeysType->getValue()) {
 				$arrayKeyType = new IntegerType();
+				$isList = true;
 			}
 		}
 
-		return new ArrayType(
+		$arrayType = new ArrayType(
 			$arrayKeyType,
 			$traversableType->getIterableValueType(),
 		);
+
+		if ($isList) {
+			$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+		}
+
+		return $arrayType;
 	}
 
 }

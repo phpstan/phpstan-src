@@ -44,6 +44,18 @@ class FooBar {
 	function overriddenButinheritedPhpDocMethod(?string &$s): void
 	{
 	}
+
+	/**
+	 * @param-out string $b
+	 */
+	public function renamedParams(int $a, int &$b) {
+	}
+
+	/**
+	 * @param-out string $b
+	 */
+	public function paramOutOverridden(int $a, int &$b) {
+	}
 }
 
 /**
@@ -67,6 +79,17 @@ class ExtendsFooBar extends FooBar {
 	function overriddenButinheritedPhpDocMethod(?string &$s): void
 	{
 	}
+
+	public function renamedParams(int $x, int &$y) {
+		parent::renamedParams($x, $y);
+	}
+
+	/**
+	 * @param-out array $b
+	 */
+	public function paramOutOverridden(int $a, int &$b) {
+	}
+
 }
 
 class OutFromStub {
@@ -121,7 +144,7 @@ function foo2($mixed): void {
 function foo3($mixed, $fooBar): void {
 	assertType('mixed', $mixed);
 	$fooBar->genericClassFoo($mixed);
-	assertType('T of int (class ParamOut\FooBar, parameter)', $mixed);
+	assertType('int', $mixed);
 }
 
 function foo6(): void {
@@ -237,17 +260,38 @@ function fooSort() {
 function fooScanf(): void
 {
 	sscanf("10:05:03", "%d:%d:%d", $hours, $minutes, $seconds);
-	assertType('float|int|null|string', $hours);
-	assertType('float|int|null|string', $minutes);
-	assertType('float|int|null|string', $seconds);
+	assertType('float|int|string|null', $hours);
+	assertType('float|int|string|null', $minutes);
+	assertType('float|int|string|null', $seconds);
 
 	$n = sscanf("42 psalm road", "%s %s", $p1, $p2);
 	assertType('int|null', $n); // could be 'int'
-	assertType('float|int|null|string', $p1);
-	assertType('float|int|null|string', $p2);
+	assertType('float|int|string|null', $p1);
+	assertType('float|int|string|null', $p2);
 }
 
 function fooMatch(string $input): void {
-	preg_match_all('/@[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}(?!\w)/', $input, $matches);
+	preg_match_all('/@[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}(?!\w)/', $input, $matches, PREG_PATTERN_ORDER);
 	assertType('array<list<string>>', $matches);
+
+	preg_match_all('/@[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}(?!\w)/', $input, $matches, PREG_SET_ORDER);
+	assertType('list<array<string>>', $matches);
+
+	preg_match('/@[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}(?!\w)/', $input, $matches, PREG_UNMATCHED_AS_NULL);
+	assertType("array<string|null>", $matches);
+}
+
+function fooParams(ExtendsFooBar $subX, float $x1, float $y1)
+{
+	$subX->renamedParams($x1, $y1);
+
+	assertType('float', $x1);
+	assertType('string', $y1); // overridden via reference of base-class, by param order (renamed params)
+}
+
+function fooParams2(ExtendsFooBar $subX, float $x1, float $y1) {
+	$subX->paramOutOverridden($x1, $y1);
+
+	assertType('float', $x1);
+	assertType('array', $y1); // overridden phpdoc-param-out-type in subclass
 }

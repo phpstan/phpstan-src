@@ -4,7 +4,7 @@ namespace PHPStan\Reflection\Native;
 
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
@@ -15,7 +15,7 @@ class NativeFunctionReflection implements FunctionReflection
 	private Assertions $assertions;
 
 	/**
-	 * @param ParametersAcceptor[] $variants
+	 * @param ParametersAcceptorWithPhpDocs[] $variants
 	 */
 	public function __construct(
 		private string $name,
@@ -41,7 +41,7 @@ class NativeFunctionReflection implements FunctionReflection
 	}
 
 	/**
-	 * @return ParametersAcceptor[]
+	 * @return ParametersAcceptorWithPhpDocs[]
 	 */
 	public function getVariants(): array
 	{

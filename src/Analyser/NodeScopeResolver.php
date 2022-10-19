@@ -114,9 +114,9 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
@@ -3285,14 +3285,16 @@ class NodeScopeResolver
 		if ($parametersAcceptor !== null) {
 			$parameters = $parametersAcceptor->getParameters();
 
-			if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
-				foreach ($parametersAcceptor->getParameters() as $parameter) {
-					if ($parameter->getOutType() === null) {
-						continue;
-					}
-
-					$paramOutTypes[$parameter->getName()] = TemplateTypeHelper::resolveTemplateTypes($parameter->getOutType(), $parametersAcceptor->getResolvedTemplateTypeMap());
+			foreach ($parameters as $parameter) {
+				if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
+					continue;
 				}
+
+				if ($parameter->getOutType() === null) {
+					continue;
+				}
+
+				$paramOutTypes[$parameter->getName()] = TemplateTypeHelper::resolveTemplateTypes($parameter->getOutType(), $parametersAcceptor->getResolvedTemplateTypeMap());
 			}
 		}
 

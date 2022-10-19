@@ -7951,7 +7951,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arr',
 			],
 			[
-				'mixed',
+				'array<string>',
 				'$matches',
 			],
 			[

@@ -29,6 +29,6 @@ class Foo
 	 */
 	public function testNotPreservingKeys(Traversable $foo)
 	{
-		assertType('array<int, string>', iterator_to_array($foo, false));
+		assertType('list<string>', iterator_to_array($foo, false));
 	}
 }

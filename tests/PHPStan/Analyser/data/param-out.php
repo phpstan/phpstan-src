@@ -339,3 +339,9 @@ function fooSystem() {
 
 	assertType('int', $exitCode);
 }
+
+function fooPassthru() {
+	passthru("my cmd", $exitCode);
+
+	assertType('int', $exitCode);
+}

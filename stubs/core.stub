@@ -78,16 +78,30 @@ function parse_str(string $string, array &$result): void {}
 function similar_text(string $string1, string $string2, float &$percent = null) : int {}
 
 /**
- * @param array<mixed> $output
- * @param int $result_code
-
+ * @param mixed $output
+ * @param mixed $result_code
+ *
  * @param-out list<string> $output
  * @param-out int $result_code
+ *
+ * @return string|false
  */
-function exec(string $command, &$output, &$result_code): string|false {}
+function exec(string $command, &$output, &$result_code) {}
 
-/** @param-out int $result_code */
-function system(string $command, &$result_code): string|false {}
+/**
+ * @param mixed $result_code
+ * @param-out int $result_code
+ *
+ * @return string|false
+ */
+function system(string $command, &$result_code) {}
+
+/**
+ * @param mixed $result_code
+ * @param-out int $result_code
+ */
+function passthru(string $command, &$result_code): ?bool {}
+
 
 /**
  * @template T

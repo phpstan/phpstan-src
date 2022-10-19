@@ -2629,13 +2629,13 @@ class NodeScopeResolver
 			foreach ($expr->arms as $arm) {
 				if ($arm->conds === null) {
 					$hasDefaultCond = true;
+					$matchArmBody = new MatchExpressionArmBody($matchScope, $arm->body);
+					$armNodes[] = new MatchExpressionArm($matchArmBody, [], $arm->getLine());
 					$armResult = $this->processExprNode($arm->body, $matchScope, $nodeCallback, ExpressionContext::createTopLevel());
 					$matchScope = $armResult->getScope();
 					$hasYield = $hasYield || $armResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $armResult->getThrowPoints());
 					$scope = $scope->mergeWith($matchScope);
-					$matchArmBody = new MatchExpressionArmBody($scope, $arm->body);
-					$armNodes[] = new MatchExpressionArm($matchArmBody, [], $arm->getLine());
 					continue;
 				}
 
@@ -2665,12 +2665,13 @@ class NodeScopeResolver
 					$filteringExpr = new BinaryOp\BooleanOr($filteringExpr, $armCondExpr);
 				}
 
-				$matchArmBody = new MatchExpressionArmBody($armCondScope, $arm->body);
+				$bodyScope = $matchScope->filterByTruthyValue($filteringExpr);
+				$matchArmBody = new MatchExpressionArmBody($bodyScope, $arm->body);
 				$armNodes[] = new MatchExpressionArm($matchArmBody, $condNodes, $arm->getLine());
 
 				$armResult = $this->processExprNode(
 					$arm->body,
-					$matchScope->filterByTruthyValue($filteringExpr),
+					$bodyScope,
 					$nodeCallback,
 					ExpressionContext::createTopLevel(),
 				);

@@ -151,6 +151,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function searchArray(Type $needleType): Type
+	{
+		return new MixedType();
+	}
+
 	public function shiftArray(): Type
 	{
 		return $this;

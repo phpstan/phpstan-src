@@ -64,6 +64,11 @@ trait NonArrayTypeTrait
 		return new ErrorType();
 	}
 
+	public function searchArray(Type $needleType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function shiftArray(): Type
 	{
 		return new ErrorType();

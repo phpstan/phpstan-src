@@ -4892,7 +4892,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_search(9, $generalStringKeys)',
 			],
 			[
-				'null',
+				'*ERROR*',
 				'array_search(999, $integer, true)',
 			],
 			[
@@ -4940,19 +4940,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_search(\'id\', $generalIntegerOrStringKeysMixedValues, true)',
 			],
 			[
-				'int|string|false|null',
+				'*ERROR*',
 				'array_search(\'id\', doFoo() ? $generalIntegerOrStringKeys : false, true)',
 			],
 			[
-				'false|null',
+				'*ERROR*',
 				'array_search(\'id\', doFoo() ? [] : false, true)',
 			],
 			[
-				'null',
+				'*ERROR*',
 				'array_search(\'id\', false, true)',
 			],
 			[
-				'null',
+				'*ERROR*',
 				'array_search(\'id\', false)',
 			],
 			[

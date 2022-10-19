@@ -149,4 +149,26 @@ class HelloWorld
 		assertType('int<1, 4>', min($range, 4));
 		assertType('int<4, 6>', max(4, $range));
 	}
+
+	public function unionType(): void
+	{
+		/**
+		 * @var array<0|1|2|3|4|5|6|7|8|9>
+		 */
+		$numbers = getFoo();
+
+		assertType('0|1|2|3|4|5|6|7|8|9|false', min($numbers));
+		assertType('0', min([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]));
+
+		assertType('0|1|2|3|4|5|6|7|8|9|false', max($numbers));
+		assertType('9', max([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]));
+
+		/**
+		 * @var array{0, 1, 2}|array{4, 5, 6} $numbers2
+		 */
+		$numbers2 = getFoo();
+
+		assertType('0|4', min($numbers2));
+		assertType('2|6', max($numbers2));
+	}
 }

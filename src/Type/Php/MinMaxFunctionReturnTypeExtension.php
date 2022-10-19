@@ -42,26 +42,9 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		if (count($functionCall->getArgs()) === 1) {
 			$argType = $scope->getType($functionCall->getArgs()[0]->value);
 			if ($argType->isArray()->yes()) {
-				$isIterable = $argType->isIterableAtLeastOnce();
-				if ($isIterable->no()) {
-					return new ConstantBooleanType(false);
-				}
-				$iterableValueType = $argType->getIterableValueType();
-				$argumentTypes = [];
-				if (!$isIterable->yes()) {
-					$argumentTypes[] = new ConstantBooleanType(false);
-				}
-				if ($iterableValueType instanceof UnionType) {
-					foreach ($iterableValueType->getTypes() as $innerType) {
-						$argumentTypes[] = $innerType;
-					}
-				} else {
-					$argumentTypes[] = $iterableValueType;
-				}
-
-				return $this->processType(
+				return $this->processArrayType(
 					$functionReflection->getName(),
-					$argumentTypes,
+					$argType,
 				);
 			}
 
@@ -115,6 +98,47 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 			$functionName,
 			$argumentTypes,
 		);
+	}
+
+	private function processArrayType(string $functionName, Type $argType): Type
+	{
+		$constArrayTypes = $argType->getConstantArrays();
+		if (count($constArrayTypes) > 0) {
+			$resultTypes = [];
+			foreach ($constArrayTypes as $constArrayType) {
+				$isIterable = $constArrayType->isIterableAtLeastOnce();
+				if ($isIterable->no()) {
+					$resultTypes[] = new ConstantBooleanType(false);
+					continue;
+				}
+				$argumentTypes = [];
+				if (!$isIterable->yes()) {
+					$argumentTypes[] = new ConstantBooleanType(false);
+				}
+
+				foreach ($constArrayType->getValueTypes() as $innerType) {
+					$argumentTypes[] = $innerType;
+				}
+
+				$resultTypes[] = $this->processType($functionName, $argumentTypes);
+			}
+
+			return TypeCombinator::union(...$resultTypes);
+		}
+
+		$isIterable = $argType->isIterableAtLeastOnce();
+		if ($isIterable->no()) {
+			return new ConstantBooleanType(false);
+		}
+		$iterableValueType = $argType->getIterableValueType();
+		$argumentTypes = [];
+		if (!$isIterable->yes()) {
+			$argumentTypes[] = new ConstantBooleanType(false);
+		}
+
+		$argumentTypes[] = $iterableValueType;
+
+		return $this->processType($functionName, $argumentTypes);
 	}
 
 	/**

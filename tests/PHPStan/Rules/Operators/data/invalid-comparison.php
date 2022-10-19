@@ -114,3 +114,7 @@ $xml->a->b > 1;
 function (): void {
 	[1] > PHP_INT_MAX;
 };
+
+function (\DateTimeImmutable $d, \DateTimeImmutable $e): void {
+	$d->format('U') < $e;
+};

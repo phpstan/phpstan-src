@@ -147,6 +147,10 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 				'Comparison operation ">" between array{1} and 2147483647|9223372036854775807 results in an error.',
 				115,
 			],
+			[
+				'Comparison operation "<" between numeric-string and DateTimeImmutable results in an error.',
+				119,
+			],
 		]);
 	}
 

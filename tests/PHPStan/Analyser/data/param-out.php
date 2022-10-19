@@ -333,3 +333,9 @@ function fooExec() {
 	assertType('list<string>', $output);
 	assertType('int', $exitCode);
 }
+
+function fooSystem() {
+	system("my cmd", $exitCode);
+
+	assertType('int', $exitCode);
+}

@@ -86,6 +86,8 @@ function similar_text(string $string1, string $string2, float &$percent = null) 
  */
 function exec(string $command, &$output, &$result_code): string|false {}
 
+/** @param-out int $result_code */
+function system(string $command, &$result_code): string|false {}
 
 /**
  * @template T

@@ -6,7 +6,10 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -16,7 +19,10 @@ use function sprintf;
 class InvalidKeyInArrayDimFetchRule implements Rule
 {
 
-	public function __construct(private bool $reportMaybes)
+	public function __construct(
+		private RuleLevelHelper $ruleLevelHelper,
+		private bool $reportMaybes,
+	)
 	{
 	}
 
@@ -31,12 +37,18 @@ class InvalidKeyInArrayDimFetchRule implements Rule
 			return [];
 		}
 
-		$varType = $scope->getType($node->var);
-		if ($varType->isArray()->no() || $varType instanceof MixedType) {
+		$dimensionType = $scope->getType($node->dim);
+		$varType = $this->ruleLevelHelper->findTypeToCheck(
+			$scope,
+			$node->var,
+			'',
+			static fn (Type $varType): bool => $varType->isArray()->no() || AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimensionType)->yes(),
+		)->getType();
+
+		if ($varType instanceof ErrorType || $varType->isArray()->no()) {
 			return [];
 		}
 
-		$dimensionType = $scope->getType($node->dim);
 		$isSuperType = AllowedArrayKeysTypes::getType()->isSuperTypeOf($dimensionType);
 		if ($isSuperType->no()) {
 			return [

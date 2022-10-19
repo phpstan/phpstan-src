@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 
 /**
@@ -13,7 +14,8 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new InvalidKeyInArrayDimFetchRule(true);
+		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false);
+		return new InvalidKeyInArrayDimFetchRule($ruleLevelHelper, true);
 	}
 
 	public function testInvalidKey(): void
@@ -34,10 +36,6 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Invalid array key type DateTimeImmutable.',
 				31,
-			],
-			[
-				'Possibly invalid array key type int|object.',
-				44,
 			],
 		]);
 	}

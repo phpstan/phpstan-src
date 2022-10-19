@@ -13,5 +13,10 @@
         "message": "Possibly invalid array key type int|object.",
         "line": 35,
         "ignorable": true
+    },
+    {
+        "message": "Possibly invalid array key type int|object.",
+        "line": 55,
+        "ignorable": true
     }
 ]

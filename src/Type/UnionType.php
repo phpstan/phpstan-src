@@ -564,6 +564,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->popArray());
 	}
 
+	public function searchArray(Type $needleType): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->searchArray($needleType));
+	}
+
 	public function shiftArray(): Type
 	{
 		return $this->unionTypes(static fn (Type $type): Type => $type->shiftArray());

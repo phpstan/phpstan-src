@@ -230,6 +230,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->popArray();
 	}
 
+	public function searchArray(Type $needleType): Type
+	{
+		return $this->resolve()->searchArray($needleType);
+	}
+
 	public function shiftArray(): Type
 	{
 		return $this->resolve()->shiftArray();

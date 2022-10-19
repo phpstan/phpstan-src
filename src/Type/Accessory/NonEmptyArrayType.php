@@ -152,6 +152,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function searchArray(Type $needleType): Type
+	{
+		return new MixedType();
+	}
+
 	public function shiftArray(): Type
 	{
 		return new MixedType();

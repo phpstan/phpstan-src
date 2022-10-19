@@ -381,6 +381,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->popArray();
 	}
 
+	public function searchArray(Type $needleType): Type
+	{
+		return $this->getStaticObjectType()->searchArray($needleType);
+	}
+
 	public function shiftArray(): Type
 	{
 		return $this->getStaticObjectType()->shiftArray();

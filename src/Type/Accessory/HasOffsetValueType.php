@@ -180,6 +180,18 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function searchArray(Type $needleType): Type
+	{
+		if (
+			$needleType instanceof ConstantScalarType && $this->valueType instanceof ConstantScalarType
+			&& $needleType->getValue() === $this->valueType->getValue()
+		) {
+			return $this->offsetType;
+		}
+
+		return new MixedType();
+	}
+
 	public function shuffleArray(): Type
 	{
 		return new NonEmptyArrayType();

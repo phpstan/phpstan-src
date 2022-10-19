@@ -13,6 +13,7 @@ use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -390,6 +391,11 @@ class ArrayType implements Type
 	public function popArray(): Type
 	{
 		return $this;
+	}
+
+	public function searchArray(Type $needleType): Type
+	{
+		return TypeCombinator::union($this->getIterableKeyType(), new ConstantBooleanType(false));
 	}
 
 	public function shiftArray(): Type

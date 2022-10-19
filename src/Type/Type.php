@@ -106,6 +106,8 @@ interface Type
 
 	public function popArray(): Type;
 
+	public function searchArray(Type $needleType): Type;
+
 	public function shiftArray(): Type;
 
 	public function shuffleArray(): Type;

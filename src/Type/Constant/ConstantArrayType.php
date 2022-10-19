@@ -15,6 +15,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
@@ -710,6 +711,49 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function popArray(): Type
 	{
 		return $this->removeLastElements(1);
+	}
+
+	public function searchArray(Type $needleType): Type
+	{
+		$matches = [];
+		$optionalDirectMatches = [];
+
+		foreach ($this->valueTypes as $index => $valueType) {
+			$isNeedleSuperType = $valueType->isSuperTypeOf($needleType);
+			if ($isNeedleSuperType->no()) {
+				$matches[] = new ConstantBooleanType(false);
+				continue;
+			}
+
+			if ($needleType instanceof ConstantScalarType && $valueType instanceof ConstantScalarType
+				&& $needleType->getValue() === $valueType->getValue()
+			) {
+				if (!$this->isOptionalKey($index)) {
+					return TypeCombinator::union($this->keyTypes[$index], ...$optionalDirectMatches);
+				}
+				$optionalDirectMatches[] = $this->keyTypes[$index];
+			}
+
+			$matches[] = $this->keyTypes[$index];
+			if (!$isNeedleSuperType->maybe()) {
+				continue;
+			}
+
+			$matches[] = new ConstantBooleanType(false);
+		}
+
+		if (count($matches) > 0) {
+			if (
+				$this->getIterableValueType()->accepts($needleType, true)->yes()
+				&& $needleType->isSuperTypeOf(new ObjectWithoutClassType())->no()
+			) {
+				return TypeCombinator::union(...$matches);
+			}
+
+			return TypeCombinator::union(new ConstantBooleanType(false), ...$matches);
+		}
+
+		return new ConstantBooleanType(false);
 	}
 
 	public function shiftArray(): Type

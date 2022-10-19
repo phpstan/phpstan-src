@@ -143,6 +143,10 @@ class InvalidComparisonOperationRuleTest extends RuleTestCase
 				'Comparison operation "<" between array and array|int results in an error.',
 				98,
 			],
+			[
+				'Comparison operation ">" between array{1} and 2147483647|9223372036854775807 results in an error.',
+				115,
+			],
 		]);
 	}
 

@@ -110,3 +110,7 @@ function (array $a, array $b) {
 $xml = new SimpleXMLElement('<data><a><b>1</b></a><c></c></data>');
 $xml->a->b == 1;
 $xml->a->b > 1;
+
+function (): void {
+	[1] > PHP_INT_MAX;
+};

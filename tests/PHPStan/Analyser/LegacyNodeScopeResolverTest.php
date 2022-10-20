@@ -302,7 +302,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'matches',
 				TrinaryLogic::createYes(),
-				'(0 is 256 ? array<array{string, int<-1, max>}> : (0 is 512 ? array<string|null> : (0 is 768 ? array<array{null, -1}|array{string, int<0, max>}> : array<string>)))',
+				'array<string>',
 			],
 			[
 				$testScope,
@@ -343,7 +343,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'matches2',
 				TrinaryLogic::createMaybe(),
-				'(0 is 256 ? array<array{string, int<-1, max>}> : (0 is 512 ? array<string|null> : (0 is 768 ? array<array{null, -1}|array{string, int<0, max>}> : array<string>)))',
+				'array<string>',
 			],
 			[
 				$testScope,
@@ -355,13 +355,13 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'matches3',
 				TrinaryLogic::createYes(),
-				'(0 is 256 ? array<array{string, int<-1, max>}> : (0 is 512 ? array<string|null> : (0 is 768 ? array<array{null, -1}|array{string, int<0, max>}> : array<string>)))',
+				'array<string>',
 			],
 			[
 				$testScope,
 				'matches4',
 				TrinaryLogic::createMaybe(),
-				'(0 is 256 ? array<array{string, int<-1, max>}> : (0 is 512 ? array<string|null> : (0 is 768 ? array<array{null, -1}|array{string, int<0, max>}> : array<string>)))',
+				'array<string>',
 			],
 			[
 				$testScope,
@@ -415,7 +415,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'ternaryMatches',
 				TrinaryLogic::createYes(),
-				'(0 is 256 ? array<array{string, int<-1, max>}> : (0 is 512 ? array<string|null> : (0 is 768 ? array<array{null, -1}|array{string, int<0, max>}> : array<string>)))',
+				'array<string>',
 			],
 			[
 				$testScope,

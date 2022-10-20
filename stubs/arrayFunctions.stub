@@ -17,37 +17,40 @@ function array_reduce(
 ) {}
 
 /**
- * @template T of mixed
+ * @template TKey as (int|string)
+ * @template T
+ * @template TArray as array<TKey,T>
  *
- * @param array<T> $one
- * @param callable(T, T): int $two
+ * @param TArray $array
+ * @param callable(T,T):int $callback
+ * @param-out (TArray is non-empty-array ? non-empty-array<TKey,T> : array<TKey,T>) $array
  */
-function uasort(
-    array &$one,
-    callable $two
-): bool {}
+function uasort(array &$array, callable $callback): bool
+{}
 
 /**
- * @template T of mixed
+ * @template T
+ * @template TArray as array<T>
  *
- * @param array<T> $one
- * @param callable(T, T): int $two
+ * @param TArray $array
+ * @param callable(T,T):int $callback
+ * @param-out (TArray is non-empty-array ? non-empty-list<T> : list<T>) $array
  */
-function usort(
-    array &$one,
-    callable $two
-): bool {}
+function usort(array &$array, callable $callback): bool
+{}
 
 /**
- * @template T of array-key
+ * @template TKey as (int|string)
+ * @template T
+ * @template TArray as array<TKey,T>
  *
- * @param array<T, mixed> $one
- * @param callable(T, T): int $two
+ * @param TArray $array
+ * @param callable(TKey,TKey):int $callback
+ * @param-out (TArray is non-empty-array ? non-empty-array<TKey,T> : array<TKey,T>) $array
  */
-function uksort(
-    array &$one,
-    callable $two
-): bool {}
+function uksort(array &$array, callable $callback): bool
+{
+}
 
 /**
  * @template T of mixed

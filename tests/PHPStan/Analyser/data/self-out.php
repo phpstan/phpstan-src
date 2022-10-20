@@ -6,7 +6,7 @@ use function PHPStan\dumpType;
 use function PHPStan\Testing\assertType;
 
 /**
- * @template-covariant T
+ * @template T
  */
 class a {
     /**

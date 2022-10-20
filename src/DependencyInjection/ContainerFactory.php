@@ -2,8 +2,12 @@
 
 namespace PHPStan\DependencyInjection;
 
+use Nette\DI\Config\Adapters\PhpAdapter;
 use Nette\DI\Extensions\ExtensionsExtension;
 use Nette\DI\Extensions\PhpExtension;
+use Nette\DI\Helpers;
+use Nette\Utils\Strings;
+use Nette\Utils\Validators;
 use Phar;
 use PhpParser\Parser;
 use PHPStan\BetterReflection\BetterReflection;
@@ -18,10 +22,19 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use Symfony\Component\Finder\Finder;
+use function array_diff_key;
+use function array_map;
+use function array_merge;
+use function array_unique;
+use function count;
 use function dirname;
 use function extension_loaded;
 use function ini_get;
 use function is_dir;
+use function is_file;
+use function is_readable;
+use function sprintf;
+use function str_ends_with;
 use function sys_get_temp_dir;
 use function time;
 use function unlink;
@@ -72,6 +85,14 @@ class ContainerFactory
 		?string $singleReflectionInsteadOfFile = null,
 	): Container
 	{
+		$this->detectDuplicateIncludedFiles(
+			$additionalConfigFiles,
+			[
+				'rootDir' => $this->rootDirectory,
+				'currentWorkingDirectory' => $this->currentWorkingDirectory,
+			],
+		);
+
 		$configurator = new Configurator(new LoaderFactory(
 			$this->fileHelper,
 			$this->rootDirectory,
@@ -187,6 +208,80 @@ class ContainerFactory
 	public function getConfigDirectory(): string
 	{
 		return $this->configDirectory;
+	}
+
+	/**
+	 * @param string[] $configFiles
+	 * @param array<string, string> $loaderParameters
+	 * @throws DuplicateIncludedFilesException
+	 */
+	private function detectDuplicateIncludedFiles(
+		array $configFiles,
+		array $loaderParameters,
+	): void
+	{
+		$neonAdapter = new NeonAdapter();
+		$phpAdapter = new PhpAdapter();
+		$allConfigFiles = [];
+		foreach ($configFiles as $configFile) {
+			$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($this->fileHelper, $neonAdapter, $phpAdapter, $configFile, $loaderParameters, null));
+		}
+
+		$normalized = array_map(fn (string $file): string => $this->fileHelper->normalizePath($file), $allConfigFiles);
+
+		$deduplicated = array_unique($normalized);
+		if (count($normalized) <= count($deduplicated)) {
+			return;
+		}
+
+		$duplicateFiles = array_unique(array_diff_key($normalized, $deduplicated));
+
+		throw new DuplicateIncludedFilesException($duplicateFiles);
+	}
+
+	/**
+	 * @param array<string, string> $loaderParameters
+	 * @return string[]
+	 */
+	private static function getConfigFiles(
+		FileHelper $fileHelper,
+		NeonAdapter $neonAdapter,
+		PhpAdapter $phpAdapter,
+		string $configFile,
+		array $loaderParameters,
+		?string $generateBaselineFile,
+	): array
+	{
+		if ($generateBaselineFile === $fileHelper->normalizePath($configFile)) {
+			return [];
+		}
+		if (!is_file($configFile) || !is_readable($configFile)) {
+			return [];
+		}
+
+		if (str_ends_with($configFile, '.php')) {
+			$data = $phpAdapter->load($configFile);
+		} else {
+			$data = $neonAdapter->load($configFile);
+		}
+		$allConfigFiles = [$configFile];
+		if (isset($data['includes'])) {
+			Validators::assert($data['includes'], 'list', sprintf("section 'includes' in file '%s'", $configFile));
+			$includes = Helpers::expand($data['includes'], $loaderParameters);
+			foreach ($includes as $include) {
+				$include = self::expandIncludedFile($include, $configFile);
+				$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $include, $loaderParameters, $generateBaselineFile));
+			}
+		}
+
+		return $allConfigFiles;
+	}
+
+	private static function expandIncludedFile(string $includedFile, string $mainFile): string
+	{
+		return Strings::match($includedFile, '#([a-z]+:)?[/\\\\]#Ai') !== null // is absolute
+			? $includedFile
+			: dirname($mainFile) . '/' . $includedFile;
 	}
 
 }

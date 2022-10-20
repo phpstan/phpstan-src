@@ -4,7 +4,6 @@ namespace PHPStan\Command;
 
 use Closure;
 use Composer\XdebugHandler\XdebugHandler;
-use Nette\DI\Config\Adapters\PhpAdapter;
 use Nette\DI\Helpers;
 use Nette\DI\InvalidConfigurationException;
 use Nette\DI\ServiceCreationException;
@@ -13,14 +12,13 @@ use Nette\InvalidStateException;
 use Nette\Schema\ValidationException;
 use Nette\Utils\AssertionException;
 use Nette\Utils\Strings;
-use Nette\Utils\Validators;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
+use PHPStan\DependencyInjection\DuplicateIncludedFilesException;
 use PHPStan\DependencyInjection\InvalidIgnoredErrorPatternsException;
 use PHPStan\DependencyInjection\LoaderFactory;
-use PHPStan\DependencyInjection\NeonAdapter;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
@@ -30,11 +28,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
-use function array_diff_key;
 use function array_key_exists;
 use function array_map;
-use function array_merge;
-use function array_unique;
 use function class_exists;
 use function count;
 use function dirname;
@@ -53,7 +48,6 @@ use function mkdir;
 use function register_shutdown_function;
 use function spl_autoload_functions;
 use function sprintf;
-use function str_ends_with;
 use function str_repeat;
 use function strpos;
 use function sys_get_temp_dir;
@@ -270,18 +264,6 @@ class CommandHelper
 			$additionalConfigFiles[] = $projectConfigFile;
 		}
 
-		$loaderParameters = [
-			'rootDir' => $containerFactory->getRootDirectory(),
-			'currentWorkingDirectory' => $containerFactory->getCurrentWorkingDirectory(),
-		];
-
-		self::detectDuplicateIncludedFiles(
-			$errorOutput,
-			$currentWorkingDirectoryFileHelper,
-			$additionalConfigFiles,
-			$loaderParameters,
-		);
-
 		$createDir = static function (string $path) use ($errorOutput): void {
 			if (!is_dir($path) && !@mkdir($path, 0777) && !is_dir($path)) {
 				$errorOutput->writeLineFormatted(sprintf('Cannot create a temp directory %s', $path));
@@ -342,6 +324,19 @@ class CommandHelper
 			$errorOutput->writeLineFormatted(sprintf("\targuments:"));
 			$errorOutput->writeLineFormatted(sprintf("\t\t%s: @defaultAnalysisParser", $matches['parameterName']));
 			$errorOutput->writeLineFormatted('');
+
+			throw new InceptionNotSuccessfulException();
+		} catch (DuplicateIncludedFilesException $e) {
+			$format = "<error>These files are included multiple times:</error>\n- %s";
+			if (count($e->getFiles()) === 1) {
+				$format = "<error>This file is included multiple times:</error>\n- %s";
+			}
+			$errorOutput->writeLineFormatted(sprintf($format, implode("\n- ", $e->getFiles())));
+
+			if (class_exists('PHPStan\ExtensionInstaller\GeneratedConfig')) {
+				$errorOutput->writeLineFormatted('');
+				$errorOutput->writeLineFormatted('It can lead to unexpected results. If you\'re using phpstan/extension-installer, make sure you have removed corresponding neon files from your project config file.');
+			}
 
 			throw new InceptionNotSuccessfulException();
 		}
@@ -514,92 +509,6 @@ class CommandHelper
 
 			throw new InceptionNotSuccessfulException();
 		}
-	}
-
-	/**
-	 * @param string[] $configFiles
-	 * @param array<string, string> $loaderParameters
-	 * @throws InceptionNotSuccessfulException
-	 */
-	private static function detectDuplicateIncludedFiles(
-		Output $output,
-		FileHelper $fileHelper,
-		array $configFiles,
-		array $loaderParameters,
-	): void
-	{
-		$neonAdapter = new NeonAdapter();
-		$phpAdapter = new PhpAdapter();
-		$allConfigFiles = [];
-		foreach ($configFiles as $configFile) {
-			$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $configFile, $loaderParameters, null));
-		}
-
-		$normalized = array_map(static fn (string $file): string => $fileHelper->normalizePath($file), $allConfigFiles);
-
-		$deduplicated = array_unique($normalized);
-		if (count($normalized) <= count($deduplicated)) {
-			return;
-		}
-
-		$duplicateFiles = array_unique(array_diff_key($normalized, $deduplicated));
-
-		$format = "<error>These files are included multiple times:</error>\n- %s";
-		if (count($duplicateFiles) === 1) {
-			$format = "<error>This file is included multiple times:</error>\n- %s";
-		}
-		$output->writeLineFormatted(sprintf($format, implode("\n- ", $duplicateFiles)));
-
-		if (class_exists('PHPStan\ExtensionInstaller\GeneratedConfig')) {
-			$output->writeLineFormatted('');
-			$output->writeLineFormatted('It can lead to unexpected results. If you\'re using phpstan/extension-installer, make sure you have removed corresponding neon files from your project config file.');
-		}
-		throw new InceptionNotSuccessfulException();
-	}
-
-	/**
-	 * @param array<string, string> $loaderParameters
-	 * @return string[]
-	 */
-	private static function getConfigFiles(
-		FileHelper $fileHelper,
-		NeonAdapter $neonAdapter,
-		PhpAdapter $phpAdapter,
-		string $configFile,
-		array $loaderParameters,
-		?string $generateBaselineFile,
-	): array
-	{
-		if ($generateBaselineFile === $fileHelper->normalizePath($configFile)) {
-			return [];
-		}
-		if (!is_file($configFile) || !is_readable($configFile)) {
-			return [];
-		}
-
-		if (str_ends_with($configFile, '.php')) {
-			$data = $phpAdapter->load($configFile);
-		} else {
-			$data = $neonAdapter->load($configFile);
-		}
-		$allConfigFiles = [$configFile];
-		if (isset($data['includes'])) {
-			Validators::assert($data['includes'], 'list', sprintf("section 'includes' in file '%s'", $configFile));
-			$includes = Helpers::expand($data['includes'], $loaderParameters);
-			foreach ($includes as $include) {
-				$include = self::expandIncludedFile($include, $configFile);
-				$allConfigFiles = array_merge($allConfigFiles, self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $include, $loaderParameters, $generateBaselineFile));
-			}
-		}
-
-		return $allConfigFiles;
-	}
-
-	private static function expandIncludedFile(string $includedFile, string $mainFile): string
-	{
-		return Strings::match($includedFile, '#([a-z]+:)?[/\\\\]#Ai') !== null // is absolute
-			? $includedFile
-			: dirname($mainFile) . '/' . $includedFile;
 	}
 
 }

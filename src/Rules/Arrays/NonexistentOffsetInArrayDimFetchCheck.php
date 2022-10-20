@@ -44,9 +44,19 @@ class NonexistentOffsetInArrayDimFetchCheck
 			return $typeResult->getUnknownClassErrors();
 		}
 
-		$report = $type->hasOffsetValueType($dimType)->no();
+		if ($scope->isInExpressionAssign($var) || $scope->isUndefinedExpressionAllowed($var)) {
+			return [];
+		}
 
-		if (!$report && $this->reportMaybes) {
+		if ($type->hasOffsetValueType($dimType)->no()) {
+			return [
+				RuleErrorBuilder::message(sprintf('Offset %s does not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))->build(),
+			];
+		}
+
+		if ($this->reportMaybes) {
+			$report = false;
+
 			if ($type instanceof BenevolentUnionType) {
 				$flattenedTypes = [$type];
 			} else {
@@ -67,16 +77,12 @@ class NonexistentOffsetInArrayDimFetchCheck
 					}
 				}
 			}
-		}
 
-		if ($report) {
-			if ($scope->isInExpressionAssign($var) || $scope->isUndefinedExpressionAllowed($var)) {
-				return [];
+			if ($report) {
+				return [
+					RuleErrorBuilder::message(sprintf('Offset %s might not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))->build(),
+				];
 			}
-
-			return [
-				RuleErrorBuilder::message(sprintf('Offset %s does not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))->build(),
-			];
 		}
 
 		return [];

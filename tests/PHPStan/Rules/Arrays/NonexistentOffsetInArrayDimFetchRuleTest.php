@@ -84,15 +84,15 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				145,
 			],
 			[
-				'Offset \'c\' does not exist on array{c: false}|array{c: true}|array{e: true}.',
+				'Offset \'c\' might not exist on array{c: false}|array{c: true}|array{e: true}.',
 				171,
 			],
 			[
-				'Offset int does not exist on array{}|array{1: 1, 2: 2}|array{3: 3, 4: 4}.',
+				'Offset int might not exist on array{}|array{1: 1, 2: 2}|array{3: 3, 4: 4}.',
 				190,
 			],
 			[
-				'Offset int does not exist on array{}|array{1: 1, 2: 2}|array{3: 3, 4: 4}.',
+				'Offset int might not exist on array{}|array{1: 1, 2: 2}|array{3: 3, 4: 4}.',
 				193,
 			],
 			[
@@ -124,7 +124,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				312,
 			],
 			[
-				'Offset \'baz\' does not exist on array{bar: 1, baz?: 2}.',
+				'Offset \'baz\' might not exist on array{bar: 1, baz?: 2}.',
 				344,
 			],
 			[
@@ -160,7 +160,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				443,
 			],
 			[
-				'Offset \'feature_pretty…\' does not exist on array{version: non-falsy-string, commit: string|null, pretty_version: string|null, feature_version: non-falsy-string, feature_pretty_version?: string|null}.',
+				'Offset \'feature_pretty…\' might not exist on array{version: non-falsy-string, commit: string|null, pretty_version: string|null, feature_version: non-falsy-string, feature_pretty_version?: string|null}.',
 				504,
 			],
 			[
@@ -182,11 +182,11 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Offset \'foo\' does not exist on array|string.',
+				'Offset \'foo\' might not exist on array|string.',
 				24,
 			],
 			[
-				'Offset 12.34 does not exist on array|string.',
+				'Offset 12.34 might not exist on array|string.',
 				28,
 			],
 		]);
@@ -386,7 +386,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-7000.php'], [
 			[
-				"Offset 'require'|'require-dev' does not exist on array{require?: array<string, string>, require-dev?: array<string, string>}.",
+				"Offset 'require'|'require-dev' might not exist on array{require?: array<string, string>, require-dev?: array<string, string>}.",
 				16,
 			],
 		]);

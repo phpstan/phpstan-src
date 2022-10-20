@@ -3,7 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Collectors\CollectedData;
-use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\RootExportedNode;
 use function usort;
 
 class AnalyserResult
@@ -17,7 +17,7 @@ class AnalyserResult
 	 * @param CollectedData[] $collectedData
 	 * @param string[] $internalErrors
 	 * @param array<string, array<string>>|null $dependencies
-	 * @param array<string, array<ExportedNode>> $exportedNodes
+	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 */
 	public function __construct(
 		private array $errors,
@@ -85,7 +85,7 @@ class AnalyserResult
 	}
 
 	/**
-	 * @return array<string, array<ExportedNode>>
+	 * @return array<string, array<RootExportedNode>>
 	 */
 	public function getExportedNodes(): array
 	{

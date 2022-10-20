@@ -12,7 +12,7 @@ class ExportedNodeVisitor extends NodeVisitorAbstract
 
 	private ?string $fileName = null;
 
-	/** @var ExportedNode[] */
+	/** @var RootExportedNode[] */
 	private array $currentNodes = [];
 
 	/**
@@ -30,7 +30,7 @@ class ExportedNodeVisitor extends NodeVisitorAbstract
 	}
 
 	/**
-	 * @return ExportedNode[]
+	 * @return RootExportedNode[]
 	 */
 	public function getExportedNodes(): array
 	{

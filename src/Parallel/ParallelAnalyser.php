@@ -9,7 +9,7 @@ use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Collectors\CollectedData;
-use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\RootExportedNode;
 use PHPStan\Process\ProcessHelper;
 use React\EventLoop\StreamSelectLoop;
 use React\Socket\ConnectionInterface;
@@ -168,7 +168,7 @@ class ParallelAnalyser
 					if (count($fileExportedNodes) === 0) {
 						continue;
 					}
-					$exportedNodes[$file] = array_map(static function (array $node): ExportedNode {
+					$exportedNodes[$file] = array_map(static function (array $node): RootExportedNode {
 						$class = $node['type'];
 
 						return $class::decode($node['data']);

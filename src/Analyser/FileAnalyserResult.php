@@ -3,7 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Collectors\CollectedData;
-use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\RootExportedNode;
 
 class FileAnalyserResult
 {
@@ -12,7 +12,7 @@ class FileAnalyserResult
 	 * @param Error[] $errors
 	 * @param CollectedData[] $collectedData
 	 * @param array<int, string> $dependencies
-	 * @param array<int, ExportedNode> $exportedNodes
+	 * @param array<int, RootExportedNode> $exportedNodes
 	 */
 	public function __construct(
 		private array $errors,
@@ -48,7 +48,7 @@ class FileAnalyserResult
 	}
 
 	/**
-	 * @return array<int, ExportedNode>
+	 * @return array<int, RootExportedNode>
 	 */
 	public function getExportedNodes(): array
 	{

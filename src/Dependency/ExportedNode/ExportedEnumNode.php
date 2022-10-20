@@ -4,12 +4,13 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\RootExportedNode;
 use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
 use function array_map;
 use function count;
 
-class ExportedEnumNode implements ExportedNode, JsonSerializable
+class ExportedEnumNode implements RootExportedNode, JsonSerializable
 {
 
 	/**
@@ -131,6 +132,16 @@ class ExportedEnumNode implements ExportedNode, JsonSerializable
 				return ExportedAttributeNode::decode($attributeData['data']);
 			}, $data['attributes']),
 		);
+	}
+
+	public function getType(): string
+	{
+		return self::TYPE_ENUM;
+	}
+
+	public function getName(): string
+	{
+		return $this->name;
 	}
 
 }

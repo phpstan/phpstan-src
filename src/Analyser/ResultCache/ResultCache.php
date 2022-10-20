@@ -4,7 +4,7 @@ namespace PHPStan\Analyser\ResultCache;
 
 use PHPStan\Analyser\Error;
 use PHPStan\Collectors\CollectedData;
-use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\RootExportedNode;
 
 class ResultCache
 {
@@ -15,7 +15,7 @@ class ResultCache
 	 * @param array<string, array<Error>> $errors
 	 * @param array<string, array<CollectedData>> $collectedData
 	 * @param array<string, array<string>> $dependencies
-	 * @param array<string, array<ExportedNode>> $exportedNodes
+	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 */
 	public function __construct(
 		private array $filesToAnalyse,
@@ -81,7 +81,7 @@ class ResultCache
 	}
 
 	/**
-	 * @return array<string, array<ExportedNode>>
+	 * @return array<string, array<RootExportedNode>>
 	 */
 	public function getExportedNodes(): array
 	{

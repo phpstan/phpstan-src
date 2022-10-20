@@ -509,13 +509,17 @@ services:
 
 	-
 		class: PHPStan\PhpDocParser\Parser\ConstExprParser
-		arguments:
-			unescapeStrings: %featureToggles.unescapeStrings%
+		factory: @PHPStan\PhpDoc\ConstExprParserFactory::create()
 
 	-
 		class: PHPStan\PhpDocParser\Parser\PhpDocParser
 		arguments:
 			requireWhitespaceBeforeDescription: %featureToggles.phpDocParserRequireWhitespaceBeforeDescription%
+
+	-
+		class: PHPStan\PhpDoc\ConstExprParserFactory
+		arguments:
+			unescapeStrings: %featureToggles.unescapeStrings%
 
 	-
 		class: PHPStan\PhpDoc\PhpDocInheritanceResolver

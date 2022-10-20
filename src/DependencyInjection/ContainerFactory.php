@@ -49,7 +49,7 @@ class ContainerFactory
 	private string $configDirectory;
 
 	/** @api */
-	public function __construct(private string $currentWorkingDirectory)
+	public function __construct(private string $currentWorkingDirectory, private bool $checkDuplicateFiles = false)
 	{
 		$this->fileHelper = new FileHelper($currentWorkingDirectory);
 
@@ -232,6 +232,10 @@ class ContainerFactory
 
 		$deduplicated = array_unique($normalized);
 		if (count($normalized) <= count($deduplicated)) {
+			return $normalized;
+		}
+
+		if (!$this->checkDuplicateFiles) {
 			return $normalized;
 		}
 

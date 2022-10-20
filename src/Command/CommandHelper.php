@@ -85,13 +85,6 @@ class CommandHelper
 		bool $cleanupContainerCache = true,
 	): InceptionResult
 	{
-		if (!$allowXdebug) {
-			$xdebug = new XdebugHandler('phpstan');
-			$xdebug->setPersistent();
-			$xdebug->check();
-			unset($xdebug);
-		}
-
 		$stdOutput = new SymfonyOutput($output, new SymfonyStyle(new ErrorsConsoleStyle($input, $output)));
 
 		/** @var Output $errorOutput */
@@ -99,6 +92,20 @@ class CommandHelper
 			$symfonyErrorOutput = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
 			return new SymfonyOutput($symfonyErrorOutput, new SymfonyStyle(new ErrorsConsoleStyle($input, $symfonyErrorOutput)));
 		})();
+
+		if ($allowXdebug && !XdebugHandler::isXdebugActive()) {
+			$errorOutput->getStyle()->note('You are running with "--xdebug" enabled, but the Xdebug PHP extension is not active. The process will not halt at breakpoints.');
+		} elseif (!$allowXdebug && XdebugHandler::isXdebugActive()) {
+			$errorOutput->getStyle()->note('The Xdebug PHP extension is active, but "--xdebug" is not used. This may slow down performance and the process will not halt at breakpoints.');
+		}
+
+		if (!$allowXdebug) {
+			$xdebug = new XdebugHandler('phpstan');
+			$xdebug->setPersistent();
+			$xdebug->check();
+			unset($xdebug);
+		}
+
 		if ($memoryLimit !== null) {
 			if (Strings::match($memoryLimit, '#^-?\d+[kMG]?$#i') === null) {
 				$errorOutput->writeLineFormatted(sprintf('Invalid memory limit format "%s".', $memoryLimit));

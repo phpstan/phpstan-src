@@ -8,3 +8,31 @@ function is_string(mixed $value): bool
 {
 
 }
+
+/**
+ * @phpstan-assert-if-true float $value
+ * @phpstan-assert-if-false !float $value
+ */
+function is_float(mixed $value): bool
+{
+
+}
+
+/**
+ * @phpstan-assert-if-true float $value
+ * @phpstan-assert-if-false !float $value
+ */
+function is_double(mixed $value): bool
+{
+
+}
+
+/**
+ * @phpstan-assert-if-true float $value
+ * @phpstan-assert-if-false !float $value
+ */
+function is_real(mixed $value): bool
+{
+
+}
+

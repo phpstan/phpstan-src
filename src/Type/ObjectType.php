@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use ArrayAccess;
 use Closure;
+use Countable;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -719,6 +720,15 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	{
 		return $this->isInstanceOf(Traversable::class)
 			->and(TrinaryLogic::createMaybe());
+	}
+
+	public function getArraySize(): Type
+	{
+		if ($this->isInstanceOf(Countable::class)->no()) {
+			return new ErrorType();
+		}
+
+		return IntegerRangeType::fromInterval(0, null);
 	}
 
 	public function getIterableKeyType(): Type

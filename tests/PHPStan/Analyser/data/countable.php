@@ -15,3 +15,9 @@ class Foo implements \Countable {
 	}
 }
 
+class NonCountable {}
+
+function doFoo() {
+	assertType('int<0, max>', count(new Foo()));
+	assertType('*ERROR*', count(new NonCountable()));
+}

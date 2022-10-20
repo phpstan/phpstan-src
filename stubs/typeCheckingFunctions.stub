@@ -45,3 +45,29 @@ function is_numeric(mixed $value): bool
 
 }
 
+/**
+ * @phpstan-assert-if-true null $value
+ * @phpstan-assert-if-false !null $value
+ */
+function is_null(mixed $value): bool
+{
+
+}
+
+/**
+ * @phpstan-assert-if-true bool $value
+ * @phpstan-assert-if-false !bool $value
+ */
+function is_bool(mixed $value): bool
+{
+
+}
+
+/**
+ * @phpstan-assert-if-true array<array-key, mixed>|\Countable $value
+ * @phpstan-assert-if-false !(array<array-key, mixed>|\Countable) $value
+ */
+function is_countable(mixed $value): bool
+{
+
+}

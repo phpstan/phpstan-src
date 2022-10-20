@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -15,7 +16,6 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -45,17 +45,10 @@ class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 		$numberType = $scope->getType($functionCall->getArgs()[1]->value);
 		$valueType = $scope->getType($functionCall->getArgs()[2]->value);
 
-		if ($numberType instanceof IntegerRangeType) {
-			if ($numberType->getMin() < 0) {
-				return TypeCombinator::union(
-					new ArrayType(new IntegerType(), $valueType),
-					new ConstantBooleanType(false),
-				);
-			}
-		}
+		$isValidNumberType = IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($numberType);
 
 		// check against negative-int, which is not allowed
-		if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($numberType)->yes()) {
+		if ($isValidNumberType->no()) {
 			if ($this->phpVersion->throwsValueErrorForInternalFunctions()) {
 				return new NeverType();
 			}
@@ -84,14 +77,19 @@ class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			return $arrayBuilder->getArray();
 		}
 
+		$resultType = new ArrayType(new IntegerType(), $valueType);
+		if ((new ConstantIntegerType(0))->isSuperTypeOf($startIndexType)->yes()) {
+			$resultType = AccessoryArrayListType::intersectWith($resultType);
+		}
 		if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($numberType)->yes()) {
-			return new IntersectionType([
-				new ArrayType(new IntegerType(), $valueType),
-				new NonEmptyArrayType(),
-			]);
+			$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
 		}
 
-		return new ArrayType(new IntegerType(), $valueType);
+		if (!$isValidNumberType->yes() && !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
+			$resultType = TypeCombinator::union($resultType, new ConstantBooleanType(false));
+		}
+
+		return $resultType;
 	}
 
 }

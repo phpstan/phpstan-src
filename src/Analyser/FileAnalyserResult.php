@@ -9,17 +9,10 @@ class FileAnalyserResult
 {
 
 	/**
-<<<<<<< HEAD
 	 * @param list<Error> $errors
 	 * @param list<CollectedData> $collectedData
 	 * @param list<string> $dependencies
-	 * @param list<ExportedNode> $exportedNodes
-=======
-	 * @param Error[] $errors
-	 * @param CollectedData[] $collectedData
-	 * @param array<int, string> $dependencies
-	 * @param array<int, RootExportedNode> $exportedNodes
->>>>>>> 1.8.x
+	 * @param list<RootExportedNode> $exportedNodes
 	 */
 	public function __construct(
 		private array $errors,

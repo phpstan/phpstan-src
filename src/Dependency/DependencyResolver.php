@@ -122,8 +122,9 @@ class DependencyResolver
 			foreach ($returnType->getReferencedClasses() as $referencedClass) {
 				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 			}
-		} elseif ($node instanceof Node\Expr\MethodCall || $node instanceof Node\Expr\PropertyFetch) {
-			$classNames = $scope->getType($node->var)->getReferencedClasses();
+		} elseif ($node instanceof Node\Expr\MethodCall) {
+			$calledOnType = $scope->getType($node->var);
+			$classNames = $calledOnType->getReferencedClasses();
 			foreach ($classNames as $className) {
 				$this->addClassToDependencies($className, $dependenciesReflections);
 			}
@@ -131,6 +132,31 @@ class DependencyResolver
 			$returnType = $scope->getType($node);
 			foreach ($returnType->getReferencedClasses() as $referencedClass) {
 				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+			}
+
+			if ($node->name instanceof Node\Identifier) {
+				$methodReflection = $scope->getMethodReflection($calledOnType, $node->name->toString());
+				if ($methodReflection !== null) {
+					$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
+				}
+			}
+		} elseif ($node instanceof Node\Expr\PropertyFetch) {
+			$fetchedOnType = $scope->getType($node->var);
+			$classNames = $fetchedOnType->getReferencedClasses();
+			foreach ($classNames as $className) {
+				$this->addClassToDependencies($className, $dependenciesReflections);
+			}
+
+			$propertyType = $scope->getType($node);
+			foreach ($propertyType->getReferencedClasses() as $referencedClass) {
+				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+			}
+
+			if ($node->name instanceof Node\Identifier) {
+				$propertyReflection = $scope->getPropertyReflection($fetchedOnType, $node->name->toString());
+				if ($propertyReflection !== null) {
+					$this->addClassToDependencies($propertyReflection->getDeclaringClass()->getName(), $dependenciesReflections);
+				}
 			}
 		} elseif (
 			$node instanceof Node\Expr\StaticCall

@@ -363,6 +363,59 @@ class DependencyResolver
 				}
 			}
 
+			foreach ($classReflection->getPropertyTags() as $propertyTag) {
+				foreach ($propertyTag->getType()->getReferencedClasses() as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+				}
+			}
+
+			foreach ($classReflection->getMethodTags() as $methodTag) {
+				foreach ($methodTag->getReturnType()->getReferencedClasses() as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+				}
+				foreach ($methodTag->getParameters() as $parameter) {
+					foreach ($parameter->getType()->getReferencedClasses() as $referencedClass) {
+						if (!$this->reflectionProvider->hasClass($referencedClass)) {
+							continue;
+						}
+						$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+					}
+					if ($parameter->getDefaultValue() === null) {
+						continue;
+					}
+					foreach ($parameter->getDefaultValue()->getReferencedClasses() as $referencedClass) {
+						if (!$this->reflectionProvider->hasClass($referencedClass)) {
+							continue;
+						}
+						$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+					}
+				}
+			}
+
+			foreach ($classReflection->getExtendsTags() as $extendsTag) {
+				foreach ($extendsTag->getType()->getReferencedClasses() as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+				}
+			}
+
+			foreach ($classReflection->getImplementsTags() as $implementsTag) {
+				foreach ($implementsTag->getType()->getReferencedClasses() as $referencedClass) {
+					if (!$this->reflectionProvider->hasClass($referencedClass)) {
+						continue;
+					}
+					$dependenciesReflections[] = $this->reflectionProvider->getClass($referencedClass);
+				}
+			}
+
 			$classReflection = $classReflection->getParentClass();
 		} while ($classReflection !== null);
 	}

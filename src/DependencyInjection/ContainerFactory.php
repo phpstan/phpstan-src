@@ -84,7 +84,7 @@ class ContainerFactory
 		?string $singleReflectionInsteadOfFile = null,
 	): Container
 	{
-		$this->detectDuplicateIncludedFiles(
+		$allConfigFiles = $this->detectDuplicateIncludedFiles(
 			$additionalConfigFiles,
 			[
 				'rootDir' => $this->rootDirectory,
@@ -126,6 +126,8 @@ class ContainerFactory
 		foreach ($additionalConfigFiles as $additionalConfigFile) {
 			$configurator->addConfig($additionalConfigFile);
 		}
+
+		$configurator->setAllConfigFiles($allConfigFiles);
 
 		$container = $configurator->createContainer();
 
@@ -211,12 +213,13 @@ class ContainerFactory
 	/**
 	 * @param string[] $configFiles
 	 * @param array<string, string> $loaderParameters
+	 * @return string[]
 	 * @throws DuplicateIncludedFilesException
 	 */
 	private function detectDuplicateIncludedFiles(
 		array $configFiles,
 		array $loaderParameters,
-	): void
+	): array
 	{
 		$neonAdapter = new NeonAdapter();
 		$phpAdapter = new PhpAdapter();
@@ -229,7 +232,7 @@ class ContainerFactory
 
 		$deduplicated = array_unique($normalized);
 		if (count($normalized) <= count($deduplicated)) {
-			return;
+			return $normalized;
 		}
 
 		$duplicateFiles = array_unique(array_diff_key($normalized, $deduplicated));

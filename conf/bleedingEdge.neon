@@ -22,3 +22,4 @@ parameters:
 		listType: true
 		missingMagicSerializationRule: true
 		nullContextForVoidReturningFunctions: true
+		unescapeStrings: true

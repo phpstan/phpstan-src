@@ -52,6 +52,7 @@ parameters:
 		listType: false
 		missingMagicSerializationRule: false
 		nullContextForVoidReturningFunctions: false
+		unescapeStrings: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -263,6 +264,7 @@ parametersSchema:
 		listType: bool()
 		missingMagicSerializationRule: bool()
 		nullContextForVoidReturningFunctions: bool()
+		unescapeStrings: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -507,6 +509,8 @@ services:
 
 	-
 		class: PHPStan\PhpDocParser\Parser\ConstExprParser
+		arguments:
+			unescapeStrings: %featureToggles.unescapeStrings%
 
 	-
 		class: PHPStan\PhpDocParser\Parser\PhpDocParser

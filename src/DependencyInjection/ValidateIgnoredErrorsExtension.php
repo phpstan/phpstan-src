@@ -63,7 +63,7 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 			$parser,
 			new TypeStringResolver(
 				new Lexer(),
-				new TypeParser(new ConstExprParser()),
+				new TypeParser(new ConstExprParser($builder->parameters['featureToggles']['unescapeStrings'])),
 				new TypeNodeResolver(
 					new DirectTypeNodeResolverExtensionRegistryProvider(
 						new class implements TypeNodeResolverExtensionRegistry {

@@ -4,11 +4,12 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\RootExportedNode;
 use ReturnTypeWillChange;
 use function array_map;
 use function count;
 
-class ExportedInterfaceNode implements ExportedNode, JsonSerializable
+class ExportedInterfaceNode implements RootExportedNode, JsonSerializable
 {
 
 	/**
@@ -100,6 +101,16 @@ class ExportedInterfaceNode implements ExportedNode, JsonSerializable
 				return $nodeType::decode($node['data']);
 			}, $data['statements']),
 		);
+	}
+
+	public function getType(): string
+	{
+		return self::TYPE_INTERFACE;
+	}
+
+	public function getName(): string
+	{
+		return $this->name;
 	}
 
 }

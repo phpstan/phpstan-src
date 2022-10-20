@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^PHPDoc tag @template T for class TestResultCache2\\\\Foo has invalid bound type TestResultCache2\\\\Bar\\.$#"
+			count: 1
+			path: src/Foo.php

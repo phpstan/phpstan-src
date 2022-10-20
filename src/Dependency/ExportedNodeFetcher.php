@@ -18,7 +18,7 @@ class ExportedNodeFetcher
 	}
 
 	/**
-	 * @return ExportedNode[]
+	 * @return RootExportedNode[]
 	 */
 	public function fetchNodes(string $fileName): array
 	{

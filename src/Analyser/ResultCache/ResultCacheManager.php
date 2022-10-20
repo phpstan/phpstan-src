@@ -8,8 +8,8 @@ use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Command\Output;
-use PHPStan\Dependency\ExportedNode;
 use PHPStan\Dependency\ExportedNodeFetcher;
+use PHPStan\Dependency\RootExportedNode;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
@@ -225,11 +225,13 @@ class ResultCacheManager
 			}
 
 			$cachedFileExportedNodes = $filteredExportedNodes[$analysedFile];
-			if (count($dependentFiles) === 0) {
+			$exportedNodesChanged = $this->exportedNodesChanged($analysedFile, $cachedFileExportedNodes);
+			if ($exportedNodesChanged === null) {
 				continue;
 			}
-			if (!$this->exportedNodesChanged($analysedFile, $cachedFileExportedNodes)) {
-				continue;
+
+			if ($exportedNodesChanged) {
+				$newFileAppeared = true;
 			}
 
 			foreach ($dependentFiles as $dependentFile) {
@@ -279,14 +281,30 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param array<int, ExportedNode> $cachedFileExportedNodes
+	 * @param array<int, RootExportedNode> $cachedFileExportedNodes
+	 * @return bool|null null means nothing changed, true means new root symbol appeared, false means nested node changed
 	 */
-	private function exportedNodesChanged(string $analysedFile, array $cachedFileExportedNodes): bool
+	private function exportedNodesChanged(string $analysedFile, array $cachedFileExportedNodes): ?bool
 	{
 		if (array_key_exists($analysedFile, $this->fileReplacements)) {
 			$analysedFile = $this->fileReplacements[$analysedFile];
 		}
 		$fileExportedNodes = $this->exportedNodeFetcher->fetchNodes($analysedFile);
+
+		$cachedSymbols = [];
+		foreach ($cachedFileExportedNodes as $cachedFileExportedNode) {
+			$cachedSymbols[$cachedFileExportedNode->getType()][] = $cachedFileExportedNode->getName();
+		}
+
+		$fileSymbols = [];
+		foreach ($fileExportedNodes as $fileExportedNode) {
+			$fileSymbols[$fileExportedNode->getType()][] = $fileExportedNode->getName();
+		}
+
+		if ($cachedSymbols !== $fileSymbols) {
+			return true;
+		}
+
 		if (count($fileExportedNodes) !== count($cachedFileExportedNodes)) {
 			return true;
 		}
@@ -294,11 +312,11 @@ class ResultCacheManager
 		foreach ($fileExportedNodes as $i => $fileExportedNode) {
 			$cachedExportedNode = $cachedFileExportedNodes[$i];
 			if (!$cachedExportedNode->equals($fileExportedNode)) {
-				return true;
+				return false;
 			}
 		}
 
-		return false;
+		return null;
 	}
 
 	/**
@@ -487,8 +505,8 @@ class ResultCacheManager
 	}
 
 	/**
-	 * @param array<string, array<ExportedNode>> $freshExportedNodes
-	 * @return array<string, array<ExportedNode>>
+	 * @param array<string, array<RootExportedNode>> $freshExportedNodes
+	 * @return array<string, array<RootExportedNode>>
 	 */
 	private function mergeExportedNodes(ResultCache $resultCache, array $freshExportedNodes): array
 	{
@@ -509,7 +527,7 @@ class ResultCacheManager
 	 * @param array<string, array<Error>> $errors
 	 * @param array<string, array<CollectedData>> $collectedData
 	 * @param array<string, array<string>> $dependencies
-	 * @param array<string, array<ExportedNode>> $exportedNodes
+	 * @param array<string, array<RootExportedNode>> $exportedNodes
 	 * @param mixed[] $meta
 	 */
 	private function save(

@@ -4,12 +4,13 @@ namespace PHPStan\Dependency\ExportedNode;
 
 use JsonSerializable;
 use PHPStan\Dependency\ExportedNode;
+use PHPStan\Dependency\RootExportedNode;
 use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
 use function array_map;
 use function count;
 
-class ExportedClassNode implements ExportedNode, JsonSerializable
+class ExportedClassNode implements RootExportedNode, JsonSerializable
 {
 
 	/**
@@ -168,6 +169,16 @@ class ExportedClassNode implements ExportedNode, JsonSerializable
 				return ExportedAttributeNode::decode($attributeData['data']);
 			}, $data['attributes']),
 		);
+	}
+
+	public function getType(): string
+	{
+		return self::TYPE_CLASS;
+	}
+
+	public function getName(): string
+	{
+		return $this->name;
 	}
 
 }

@@ -16,7 +16,7 @@ class NodeDependencies
 	public function __construct(
 		private FileHelper $fileHelper,
 		private array $reflections,
-		private ?ExportedNode $exportedNode,
+		private ?RootExportedNode $exportedNode,
 	)
 	{
 	}
@@ -50,7 +50,7 @@ class NodeDependencies
 		return array_values($dependencies);
 	}
 
-	public function getExportedNode(): ?ExportedNode
+	public function getExportedNode(): ?RootExportedNode
 	{
 		return $this->exportedNode;
 	}

@@ -35,7 +35,7 @@ class ExportedNodeResolver
 	{
 	}
 
-	public function resolve(string $fileName, Node $node): ?ExportedNode
+	public function resolve(string $fileName, Node $node): ?RootExportedNode
 	{
 		if ($node instanceof Class_ && isset($node->namespacedName)) {
 			$docComment = $node->getDocComment();

@@ -529,7 +529,7 @@ class MutatingScope implements Scope
 			return new MixedType();
 		}
 
-		return $this->variableTypes[$variableName]->getType();
+		return TypeUtils::resolveLateResolvableTypes($this->variableTypes[$variableName]->getType());
 	}
 
 	/**

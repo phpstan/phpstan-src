@@ -8,6 +8,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\NamespaceAnswerer;
@@ -56,6 +57,8 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	public function getPropertyReflection(Type $typeWithProperty, string $propertyName): ?PropertyReflection;
 
 	public function getMethodReflection(Type $typeWithMethod, string $methodName): ?MethodReflection;
+
+	public function getConstantReflection(Type $typeWithConstant, string $constantName): ?ConstantReflection;
 
 	public function isInAnonymousFunction(): bool;
 

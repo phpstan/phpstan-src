@@ -45,6 +45,7 @@ parameters:
 			- 'Symfony\Component\Finder\Exception\DirectoryNotFoundException'
 			- 'InvalidArgumentException'
 			- 'PHPStan\DependencyInjection\ParameterNotFoundException'
+			- 'PHPStan\DependencyInjection\DuplicateIncludedFilesException'
 			- 'PHPStan\Analyser\UndefinedVariableException'
 			- 'RuntimeException'
 			- 'Nette\Neon\Exception'

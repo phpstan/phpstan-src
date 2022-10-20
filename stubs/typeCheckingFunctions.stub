@@ -36,3 +36,12 @@ function is_real(mixed $value): bool
 
 }
 
+/**
+ * @phpstan-assert-if-true float|int|numeric-string $value
+ * @phpstan-assert-if-false !(float|int|numeric-string) $value
+ */
+function is_numeric(mixed $value): bool
+{
+
+}
+

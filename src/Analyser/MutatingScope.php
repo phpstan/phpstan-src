@@ -5348,4 +5348,27 @@ class MutatingScope implements Scope
 		return $propertyReflection->getReadableType();
 	}
 
+	public function getConstantReflection(Type $typeWithConstant, string $constantName): ?ConstantReflection
+	{
+		if ($typeWithConstant instanceof UnionType) {
+			$newTypes = [];
+			foreach ($typeWithConstant->getTypes() as $innerType) {
+				if (!$innerType->hasConstant($constantName)->yes()) {
+					continue;
+				}
+
+				$newTypes[] = $innerType;
+			}
+			if (count($newTypes) === 0) {
+				return null;
+			}
+			$typeWithConstant = TypeCombinator::union(...$newTypes);
+		}
+		if (!$typeWithConstant->hasConstant($constantName)->yes()) {
+			return null;
+		}
+
+		return $typeWithConstant->getConstant($constantName);
+	}
+
 }

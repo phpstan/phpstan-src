@@ -158,11 +158,7 @@ class DependencyResolver
 					$this->addClassToDependencies($propertyReflection->getDeclaringClass()->getName(), $dependenciesReflections);
 				}
 			}
-		} elseif (
-			$node instanceof Node\Expr\StaticCall
-			|| $node instanceof Node\Expr\ClassConstFetch
-			|| $node instanceof Node\Expr\StaticPropertyFetch
-		) {
+		} elseif ($node instanceof Node\Expr\StaticCall) {
 			if ($node->class instanceof Node\Name) {
 				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
 			} else {
@@ -174,6 +170,86 @@ class DependencyResolver
 			$returnType = $scope->getType($node);
 			foreach ($returnType->getReferencedClasses() as $referencedClass) {
 				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+			}
+
+			if ($node->name instanceof Node\Identifier) {
+				if ($node->class instanceof Node\Name) {
+					$className = $scope->resolveName($node->class);
+					if ($this->reflectionProvider->hasClass($className)) {
+						$methodClassReflection = $this->reflectionProvider->getClass($className);
+						if ($methodClassReflection->hasMethod($node->name->toString())) {
+							$methodReflection = $methodClassReflection->getMethod($node->name->toString(), $scope);
+							$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
+						}
+					}
+				} else {
+					$methodReflection = $scope->getMethodReflection($scope->getType($node->class), $node->name->toString());
+					if ($methodReflection !== null) {
+						$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
+					}
+				}
+			}
+		} elseif ($node instanceof Node\Expr\ClassConstFetch) {
+			if ($node->class instanceof Node\Name) {
+				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
+			} else {
+				foreach ($scope->getType($node->class)->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+			}
+
+			$returnType = $scope->getType($node);
+			foreach ($returnType->getReferencedClasses() as $referencedClass) {
+				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+			}
+
+			if ($node->name instanceof Node\Identifier && $node->name->toLowerString() !== 'class') {
+				if ($node->class instanceof Node\Name) {
+					$className = $scope->resolveName($node->class);
+					if ($this->reflectionProvider->hasClass($className)) {
+						$constantClassReflection = $this->reflectionProvider->getClass($className);
+						if ($constantClassReflection->hasConstant($node->name->toString())) {
+							$constantReflection = $constantClassReflection->getConstant($node->name->toString());
+							$this->addClassToDependencies($constantReflection->getDeclaringClass()->getName(), $dependenciesReflections);
+						}
+					}
+				} else {
+					$constantReflection = $scope->getConstantReflection($scope->getType($node->class), $node->name->toString());
+					if ($constantReflection !== null) {
+						$this->addClassToDependencies($constantReflection->getDeclaringClass()->getName(), $dependenciesReflections);
+					}
+				}
+			}
+		} elseif ($node instanceof Node\Expr\StaticPropertyFetch) {
+			if ($node->class instanceof Node\Name) {
+				$this->addClassToDependencies($scope->resolveName($node->class), $dependenciesReflections);
+			} else {
+				foreach ($scope->getType($node->class)->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+			}
+
+			$returnType = $scope->getType($node);
+			foreach ($returnType->getReferencedClasses() as $referencedClass) {
+				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+			}
+
+			if ($node->name instanceof Node\Identifier) {
+				if ($node->class instanceof Node\Name) {
+					$className = $scope->resolveName($node->class);
+					if ($this->reflectionProvider->hasClass($className)) {
+						$propertyClassReflection = $this->reflectionProvider->getClass($className);
+						if ($propertyClassReflection->hasProperty($node->name->toString())) {
+							$propertyReflection = $propertyClassReflection->getProperty($node->name->toString(), $scope);
+							$this->addClassToDependencies($propertyReflection->getDeclaringClass()->getName(), $dependenciesReflections);
+						}
+					}
+				} else {
+					$propertyReflection = $scope->getPropertyReflection($scope->getType($node->class), $node->name->toString());
+					if ($propertyReflection !== null) {
+						$this->addClassToDependencies($propertyReflection->getDeclaringClass()->getName(), $dependenciesReflections);
+					}
+				}
 			}
 		} elseif (
 			$node instanceof Node\Expr\New_

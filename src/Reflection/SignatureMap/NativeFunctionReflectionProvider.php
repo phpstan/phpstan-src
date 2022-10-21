@@ -26,6 +26,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\UnionType;
+use function array_key_exists;
 use function array_map;
 use function strtolower;
 
@@ -153,7 +154,7 @@ class NativeFunctionReflectionProvider
 					);
 				}, $functionSignature->getParameters()),
 				$functionSignature->isVariadic(),
-				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDoc !== null ? $this->getReturnTypeFromPhpDoc($phpDoc) : null),
+				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDocReturnType),
 				$phpDocReturnType ?? new MixedType(),
 				$functionSignature->getReturnType(),
 			);
@@ -191,11 +192,12 @@ class NativeFunctionReflectionProvider
 
 	private static function getParamOutTypeFromPhpDoc(string $paramName, ResolvedPhpDocBlock $stubPhpDoc): ?Type
 	{
-		foreach ($stubPhpDoc->getParamOutTags() as $name => $paramOutTag) {
-			if ($paramName === $name) {
-				return $paramOutTag->getType();
-			}
+		$paramOutTags = $stubPhpDoc->getParamOutTags();
+
+		if (array_key_exists($paramName, $paramOutTags)) {
+			return $paramOutTags[$paramName]->getType();
 		}
+
 		return null;
 	}
 

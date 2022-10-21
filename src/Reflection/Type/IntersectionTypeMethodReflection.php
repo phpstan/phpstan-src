@@ -156,7 +156,13 @@ class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function getAsserts(): Assertions
 	{
-		return Assertions::createEmpty();
+		$assertions = Assertions::createEmpty();
+
+		foreach ($this->methods as $method) {
+			$assertions = $assertions->intersectWith($method->getAsserts());
+		}
+
+		return $assertions;
 	}
 
 	public function getSelfOutType(): ?Type

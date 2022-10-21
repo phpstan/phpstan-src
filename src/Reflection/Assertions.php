@@ -7,6 +7,7 @@ use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\Type\Type;
 use function array_filter;
 use function array_map;
+use function array_merge;
 use function count;
 
 class Assertions
@@ -61,6 +62,11 @@ class Assertions
 		$assertTagsCallback = static fn (AssertTag $tag): AssertTag => $tag->withType($callable($tag->getType()));
 
 		return new self(array_map($assertTagsCallback, $this->asserts));
+	}
+
+	public function intersectWith(Assertions $other): self
+	{
+		return new self(array_merge($this->getAll(), $other->getAll()));
 	}
 
 	public static function createEmpty(): self

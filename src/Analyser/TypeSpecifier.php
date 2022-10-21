@@ -1338,7 +1338,7 @@ class TypeSpecifier
 				$assert->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
 				false,
 				$scope,
-				$containsUnresolvedTemplate ? $call : null,
+				$containsUnresolvedTemplate || $assert->isEquality() ? $call : null,
 			);
 			$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
 		}

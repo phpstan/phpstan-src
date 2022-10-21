@@ -154,6 +154,21 @@ parameters:
 			path: src/PhpDoc/PhpDocNodeResolver.php
 
 		-
+			message: "#^Property PHPStan\\\\PhpDocParser\\\\Ast\\\\PhpDoc\\\\AssertTagMethodValueNode\\:\\:\\$isEquality \\(bool\\) on left side of \\?\\? is not nullable\\.$#"
+			count: 1
+			path: src/PhpDoc/PhpDocNodeResolver.php
+
+		-
+			message: "#^Property PHPStan\\\\PhpDocParser\\\\Ast\\\\PhpDoc\\\\AssertTagPropertyValueNode\\:\\:\\$isEquality \\(bool\\) on left side of \\?\\? is not nullable\\.$#"
+			count: 1
+			path: src/PhpDoc/PhpDocNodeResolver.php
+
+		-
+			message: "#^Property PHPStan\\\\PhpDocParser\\\\Ast\\\\PhpDoc\\\\AssertTagValueNode\\:\\:\\$isEquality \\(bool\\) on left side of \\?\\? is not nullable\\.$#"
+			count: 1
+			path: src/PhpDoc/PhpDocNodeResolver.php
+
+		-
 			message: "#^Method PHPStan\\\\PhpDoc\\\\ResolvedPhpDocBlock\\:\\:getNameScope\\(\\) should return PHPStan\\\\Analyser\\\\NameScope but returns PHPStan\\\\Analyser\\\\NameScope\\|null\\.$#"
 			count: 1
 			path: src/PhpDoc/ResolvedPhpDocBlock.php

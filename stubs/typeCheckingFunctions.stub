@@ -111,3 +111,12 @@ function is_resource(mixed $value): bool
 {
 
 }
+
+/**
+ * @param array<array-key, mixed> $value
+ * @phpstan-assert-if-true list<mixed> $value
+ */
+function array_is_list(array $value): bool
+{
+
+}

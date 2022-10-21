@@ -823,11 +823,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function isList(): TrinaryLogic
 	{
-		if ($this->isList) {
-			return TrinaryLogic::createYes();
-		}
-
-		return parent::isList();
+		return TrinaryLogic::createFromBoolean($this->isList);
 	}
 
 	/** @deprecated Use popArray() instead */

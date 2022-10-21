@@ -17,7 +17,7 @@ final class AssertTag implements TypedTag
 	/**
 	 * @param self::NULL|self::IF_TRUE|self::IF_FALSE $if
 	 */
-	public function __construct(private string $if, private Type $type, private AssertTagParameter $parameter, private bool $negated)
+	public function __construct(private string $if, private Type $type, private AssertTagParameter $parameter, private bool $negated, private bool $equality)
 	{
 	}
 
@@ -49,19 +49,24 @@ final class AssertTag implements TypedTag
 		return $this->negated;
 	}
 
+	public function isEquality(): bool
+	{
+		return $this->equality;
+	}
+
 	/**
 	 * @return static
 	 */
 	public function withType(Type $type): TypedTag
 	{
-		$tag = new self($this->if, $type, $this->parameter, $this->negated);
+		$tag = new self($this->if, $type, $this->parameter, $this->negated, $this->equality);
 		$tag->originalType = $this->getOriginalType();
 		return $tag;
 	}
 
 	public function withParameter(AssertTagParameter $parameter): self
 	{
-		$tag = new self($this->if, $this->type, $parameter, $this->negated);
+		$tag = new self($this->if, $this->type, $parameter, $this->negated, $this->equality);
 		$tag->originalType = $this->getOriginalType();
 		return $tag;
 	}

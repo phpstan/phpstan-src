@@ -645,4 +645,16 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7914.php'], []);
 	}
 
+	public function testDocblockAssertEquality(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/docblock-assert-equality.php'], [
+			[
+				'Call to function isAnInteger() with int will always evaluate to true.',
+				42,
+			],
+		]);
+	}
+
 }

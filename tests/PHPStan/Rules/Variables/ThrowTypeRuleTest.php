@@ -15,7 +15,7 @@ class ThrowTypeRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ThrowTypeRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false));
+		return new ThrowTypeRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, true));
 	}
 
 	public function testRule(): void

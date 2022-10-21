@@ -19,7 +19,7 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 	{
 		return new InvalidBinaryOperationRule(
 			new ExprPrinter(new Printer()),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, true),
 		);
 	}
 

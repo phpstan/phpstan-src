@@ -24,7 +24,7 @@ class InstantiationRuleTest extends RuleTestCase
 		$broker = $this->createReflectionProvider();
 		return new InstantiationRule(
 			$broker,
-			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false, false), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
+			new FunctionCallParametersCheck(new RuleLevelHelper($broker, true, false, true, false, false, true), new NullsafeCheck(), new PhpVersion(80000), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
 			new ClassCaseSensitivityCheck($broker, true),
 		);
 	}

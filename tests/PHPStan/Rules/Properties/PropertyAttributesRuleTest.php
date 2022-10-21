@@ -25,7 +25,7 @@ class PropertyAttributesRuleTest extends RuleTestCase
 			new AttributesCheck(
 				$reflectionProvider,
 				new FunctionCallParametersCheck(
-					new RuleLevelHelper($reflectionProvider, true, false, true, false, false),
+					new RuleLevelHelper($reflectionProvider, true, false, true, false, false, true),
 					new NullsafeCheck(),
 					new PhpVersion(80000),
 					new UnresolvableTypeHelper(),

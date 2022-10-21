@@ -34,6 +34,7 @@ class RuleLevelHelper
 		private bool $checkUnionTypes,
 		private bool $checkExplicitMixed,
 		private bool $checkImplicitMixed,
+		private bool $checkListType,
 	)
 	{
 	}
@@ -110,12 +111,17 @@ class RuleLevelHelper
 		if (
 			$acceptedType->isArray()->yes()
 			&& $acceptingType->isArray()->yes()
-			&& !$acceptingType->isIterableAtLeastOnce()->yes()
-			&& !$acceptingType->isList()->yes()
 			&& $acceptedType->isConstantArray()->no()
 			&& $acceptingType->isConstantArray()->no()
 		) {
-			return self::accepts(
+			return (
+				!$acceptingType->isIterableAtLeastOnce()->yes()
+				|| $acceptedType->isIterableAtLeastOnce()->yes()
+			) && (
+				!$this->checkListType
+				|| !$acceptingType->isList()->yes()
+				|| $acceptedType->isList()->yes()
+			) && self::accepts(
 				$acceptingType->getIterableKeyType(),
 				$acceptedType->getIterableKeyType(),
 				$strictTypes,

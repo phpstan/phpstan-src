@@ -75,6 +75,7 @@ parameters:
 	checkNullables: false
 	checkThisOnly: true
 	checkUnionTypes: false
+	checkListType: false
 	checkExplicitMixedMissingReturn: false
 	checkPhpDocMissingReturn: false
 	checkPhpDocMethodSignatures: false
@@ -287,6 +288,7 @@ parametersSchema:
 	checkNullables: bool()
 	checkThisOnly: bool()
 	checkUnionTypes: bool()
+	checkListType: bool()
 	checkExplicitMixedMissingReturn: bool()
 	checkPhpDocMissingReturn: bool()
 	checkPhpDocMethodSignatures: bool()
@@ -1059,6 +1061,7 @@ services:
 			checkUnionTypes: %checkUnionTypes%
 			checkExplicitMixed: %checkExplicitMixed%
 			checkImplicitMixed: %checkImplicitMixed%
+			checkListType: %checkListType%
 
 	-
 		class: PHPStan\Rules\UnusedFunctionParametersCheck

@@ -77,9 +77,9 @@ class Foo
 			assertType('int|string|false', array_search($string, $mixed, true));
 		} else {
 			assertType('mixed~array', $mixed);
-			assertType('*ERROR*', array_search('foo', $mixed, true));
-			assertType('*ERROR*', array_search('foo', $mixed));
-			assertType('*ERROR*', array_search($string, $mixed, true));
+			assertType('*NEVER*', array_search('foo', $mixed, true));
+			assertType('*NEVER*', array_search('foo', $mixed));
+			assertType('*NEVER*', array_search($string, $mixed, true));
 		}
 	}
 }

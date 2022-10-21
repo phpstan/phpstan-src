@@ -4,16 +4,22 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\ErrorType;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 
 final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -29,7 +35,7 @@ final class ArraySearchFunctionDynamicReturnTypeExtension implements DynamicFunc
 
 		$haystackArgType = $scope->getType($functionCall->getArgs()[1]->value);
 		if ($haystackArgType->isArray()->no()) {
-			return new ErrorType();
+			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
 		if ($argsCount < 3) {

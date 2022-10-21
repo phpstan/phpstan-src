@@ -4,3 +4,4 @@ includes:
 parameters:
 	checkUnionTypes: true
 	reportMaybes: true
+	checkListType: true

@@ -1,0 +1,7 @@
+[
+    {
+        "message": "Property Levels\\ListType\\Foo::$list (list<string>) does not accept list<string|null>.",
+        "line": 26,
+        "ignorable": true
+    }
+]

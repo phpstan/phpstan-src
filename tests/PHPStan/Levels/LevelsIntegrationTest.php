@@ -39,6 +39,7 @@ class LevelsIntegrationTest extends LevelsTestCase
 			['typehints'],
 			['coalesce'],
 			['arrayDestructuring'],
+			['listType'],
 		];
 	}
 

@@ -16,7 +16,7 @@ class TypesAssignedToPropertiesRuleNoBleedingEdgeTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new TypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, false), new PropertyDescriptor(), new PropertyReflectionFinder());
+		return new TypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, false, true), new PropertyDescriptor(), new PropertyReflectionFinder());
 	}
 
 	public function testGenericObjectWithUnspecifiedTemplateTypes(): void

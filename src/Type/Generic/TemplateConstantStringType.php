@@ -29,9 +29,4 @@ final class TemplateConstantStringType extends ConstantStringType implements Tem
 		$this->bound = $bound;
 	}
 
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return false;
-	}
-
 }

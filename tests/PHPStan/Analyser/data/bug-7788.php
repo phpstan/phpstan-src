@@ -30,5 +30,5 @@ final class Props
 }
 
 function () {
-	assertType('int', (new Props(['title' => 'test', 'value' => 30]))->getProp('value', 0));
+	assertType('0|30', (new Props(['title' => 'test', 'value' => 30]))->getProp('value', 0));
 };

@@ -105,7 +105,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->checkNullables = true;
 		$this->analyse([__DIR__ . '/data/bug-2723.php'], [
 			[
-				'Function Bug2723\baz() should return Bug2723\Bar<Bug2723\Foo<T4>> but returns Bug2723\BarOfFoo<string>.',
+				"Function Bug2723\baz() should return Bug2723\Bar<Bug2723\Foo<T4>> but returns Bug2723\BarOfFoo<'hello'>.",
 				55,
 			],
 		]);

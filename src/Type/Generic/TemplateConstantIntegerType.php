@@ -29,9 +29,4 @@ final class TemplateConstantIntegerType extends ConstantIntegerType implements T
 		$this->bound = $bound;
 	}
 
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return false;
-	}
-
 }

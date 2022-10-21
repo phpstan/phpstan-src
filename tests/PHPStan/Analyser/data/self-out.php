@@ -68,24 +68,24 @@ class b extends a {
 function () {
 	$i = new a(123);
 	// OK - $i is a<123>
-	assertType('SelfOut\\a<int>', $i);
+	assertType('SelfOut\\a<123>', $i);
 	assertType('void', $i->test());
 
 	$i->addData(321);
 	// OK - $i is a<123|321>
-	assertType('SelfOut\\a<int>', $i);
+	assertType('SelfOut\\a<123|321>', $i);
 	assertType('void', $i->test());
 
 	$i->setData("test");
 	// IfThisIsMismatch - Class is not a<int> as required
-	assertType('SelfOut\\a<string>', $i);
+	assertType("SelfOut\\a<'test'>", $i);
 	assertType('*NEVER*', $i->test());
 };
 
 function () {
 	$i = new b(123);
-	assertType('SelfOut\\b<int>', $i);
+	assertType('SelfOut\\b<123>', $i);
 
 	$i->addData(321);
-	assertType('SelfOut\\a<int>', $i);
+	assertType('SelfOut\\a<123|321>', $i);
 };

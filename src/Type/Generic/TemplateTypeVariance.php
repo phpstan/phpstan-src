@@ -123,7 +123,7 @@ class TemplateTypeVariance
 		}
 
 		if ($this->invariant()) {
-			return TrinaryLogic::createFromBoolean($a->equals($b));
+			return $a->isSuperTypeOf($b)->and($b->isSuperTypeOf($a));
 		}
 
 		if ($this->covariant()) {

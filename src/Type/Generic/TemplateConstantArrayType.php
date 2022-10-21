@@ -29,9 +29,4 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 		$this->bound = $bound;
 	}
 
-	protected function shouldGeneralizeInferredType(): bool
-	{
-		return false;
-	}
-
 }

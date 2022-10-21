@@ -2149,15 +2149,23 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/bug-5372.php'], [
 			[
-				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
+				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<0|1, non-falsy-string> given.',
+				64,
+			],
+			[
+				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<0|1, class-string> given.',
 				68,
 			],
 			[
-				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
+				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<0|1, class-string> given.',
 				72,
 			],
 			[
-				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, literal-string> given.',
+				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<0|1, literal-string> given.',
+				81,
+			],
+			[
+				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<0|1, literal-string> given.',
 				85,
 			],
 		]);
@@ -2480,7 +2488,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/generics-infer-collection.php'], [
 			[
-				'Parameter #1 $c of method GenericsInferCollection\Foo::doBar() expects GenericsInferCollection\ArrayCollection<int, int>, GenericsInferCollection\ArrayCollection<int, string> given.',
+				"Parameter #1 \$c of method GenericsInferCollection\Foo::doBar() expects GenericsInferCollection\ArrayCollection<int, int>, GenericsInferCollection\ArrayCollection<0|1, 'bar'|'foo'> given.",
 				43,
 			],
 			[
@@ -2506,7 +2514,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/generics-infer-collection.php'], [
 			[
-				'Parameter #1 $c of method GenericsInferCollection\Foo::doBar() expects GenericsInferCollection\ArrayCollection<int, int>, GenericsInferCollection\ArrayCollection<int, string> given.',
+				"Parameter #1 \$c of method GenericsInferCollection\Foo::doBar() expects GenericsInferCollection\ArrayCollection<int, int>, GenericsInferCollection\ArrayCollection<0|1, 'bar'|'foo'> given.",
 				43,
 			],
 		]);
@@ -2557,6 +2565,10 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $v of method UnresolvableParameter\HelloWorld::foo() contains unresolvable type.',
 				19,
+			],
+			[
+				'Parameter #2 $v of method UnresolvableParameter\HelloWorld::foo() expects 1, 0 given.',
+				21,
 			],
 		]);
 	}

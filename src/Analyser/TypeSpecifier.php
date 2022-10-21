@@ -1270,9 +1270,9 @@ class TypeSpecifier
 	{
 		if ($context->null()) {
 			$asserts = $assertions->getAsserts();
-		} elseif ($context->truthy()) {
+		} elseif ($context->true()) {
 			$asserts = $assertions->getAssertsIfTrue();
-		} elseif ($context->falsey()) {
+		} elseif ($context->false()) {
 			$asserts = $assertions->getAssertsIfFalse();
 		} else {
 			throw new ShouldNotHappenException();

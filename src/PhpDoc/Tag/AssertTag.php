@@ -2,6 +2,7 @@
 
 namespace PHPStan\PhpDoc\Tag;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
 
 /** @api */
@@ -67,6 +68,17 @@ final class AssertTag implements TypedTag
 	public function withParameter(AssertTagParameter $parameter): self
 	{
 		$tag = new self($this->if, $this->type, $parameter, $this->negated, $this->equality);
+		$tag->originalType = $this->getOriginalType();
+		return $tag;
+	}
+
+	public function negate(): self
+	{
+		if ($this->isEquality()) {
+			throw new ShouldNotHappenException();
+		}
+
+		$tag = new self($this->if, $this->type, $this->parameter, !$this->negated, $this->equality);
 		$tag->originalType = $this->getOriginalType();
 		return $tag;
 	}

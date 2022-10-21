@@ -2,7 +2,6 @@
 
 /**
  * @phpstan-assert-if-true string $value
- * @phpstan-assert-if-false !string $value
  */
 function is_string(mixed $value): bool
 {
@@ -11,7 +10,6 @@ function is_string(mixed $value): bool
 
 /**
  * @phpstan-assert-if-true float $value
- * @phpstan-assert-if-false !float $value
  */
 function is_float(mixed $value): bool
 {
@@ -20,7 +18,6 @@ function is_float(mixed $value): bool
 
 /**
  * @phpstan-assert-if-true float $value
- * @phpstan-assert-if-false !float $value
  */
 function is_double(mixed $value): bool
 {
@@ -29,7 +26,6 @@ function is_double(mixed $value): bool
 
 /**
  * @phpstan-assert-if-true float $value
- * @phpstan-assert-if-false !float $value
  */
 function is_real(mixed $value): bool
 {
@@ -38,7 +34,6 @@ function is_real(mixed $value): bool
 
 /**
  * @phpstan-assert-if-true float|int|numeric-string $value
- * @phpstan-assert-if-false !(float|int|numeric-string) $value
  */
 function is_numeric(mixed $value): bool
 {
@@ -47,7 +42,6 @@ function is_numeric(mixed $value): bool
 
 /**
  * @phpstan-assert-if-true null $value
- * @phpstan-assert-if-false !null $value
  */
 function is_null(mixed $value): bool
 {
@@ -56,7 +50,6 @@ function is_null(mixed $value): bool
 
 /**
  * @phpstan-assert-if-true bool $value
- * @phpstan-assert-if-false !bool $value
  */
 function is_bool(mixed $value): bool
 {
@@ -65,7 +58,6 @@ function is_bool(mixed $value): bool
 
 /**
  * @phpstan-assert-if-true array<array-key, mixed>|\Countable $value
- * @phpstan-assert-if-false !(array<array-key, mixed>|\Countable) $value
  */
 function is_countable(mixed $value): bool
 {

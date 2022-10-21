@@ -27,7 +27,7 @@ function foo($x): void
 	if (isAnInteger($x)) {
 		assertType('int', $x);
 	} else {
-		assertType('mixed', $x);
+		assertType('mixed~int', $x);
 	}
 }
 
@@ -42,6 +42,6 @@ function bar(int $x): void
 	if (isAnInteger($x)) {
 		assertType('int', $x);
 	} else {
-		assertType('int', $x);
+		assertType('*NEVER*', $x);
 	}
 }

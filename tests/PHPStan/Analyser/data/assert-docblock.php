@@ -37,9 +37,9 @@ function validateStringOrIntArray(array $arr) : bool {
 
 /**
  * @param mixed[] $arr
- * @phpstan-assert-if-true string[] $arr
- * @phpstan-assert-if-false int[] $arr
- * @phpstan-assert-if-false non-empty-array $arr
+ * @phpstan-assert-if-true =string[] $arr
+ * @phpstan-assert-if-false =int[] $arr
+ * @phpstan-assert-if-false =non-empty-array $arr
  */
 function validateStringOrNonEmptyIntArray(array $arr) : bool {
 	return false;
@@ -196,13 +196,13 @@ function (A $a, $i) {
 	if ($a->testInt($i)) {
 		assertType('int', $i);
 	} else {
-		assertType('mixed', $i);
+		assertType('mixed~int', $i);
 	}
 
 	if ($a->testNotInt($i)) {
 		assertType('mixed~int', $i);
 	} else {
-		assertType('mixed', $i);
+		assertType('int', $i);
 	}
 };
 
@@ -210,7 +210,7 @@ function (B $b, $i) {
 	if ($b->testInt($i)) {
 		assertType('int', $i);
 	} else {
-		assertType('mixed', $i);
+		assertType('mixed~int', $i);
 	}
 };
 
@@ -224,7 +224,7 @@ function (A $a, string $i) {
 	if ($a->testNotInt($i)) {
 		assertType('string', $i);
 	} else {
-		assertType('string', $i);
+		assertType('*NEVER*', $i);
 	}
 };
 
@@ -232,7 +232,7 @@ function (A $a, int $i) {
 	if ($a->testInt($i)) {
 		assertType('int', $i);
 	} else {
-		assertType('int', $i);
+		assertType('*NEVER*', $i);
 	}
 
 	if ($a->testNotInt($i)) {

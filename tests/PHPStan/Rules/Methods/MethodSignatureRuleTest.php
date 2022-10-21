@@ -402,4 +402,16 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7103.php'], []);
 	}
 
+	public function testListReturnTypeCovariance(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/list-return-type-covariance.php'], [
+			[
+				'Return type (array<int, string>) of method ListReturnTypeCovariance\ListChild::returnsList() should be covariant with return type (list<string>) of method ListReturnTypeCovariance\ListParent::returnsList()',
+				17,
+			],
+		]);
+	}
+
 }

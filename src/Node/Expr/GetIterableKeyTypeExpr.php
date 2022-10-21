@@ -10,7 +10,7 @@ class GetIterableKeyTypeExpr extends Expr implements VirtualNode
 
 	public function __construct(private Expr $expr)
 	{
-		parent::__construct($expr->getAttributes());
+		parent::__construct([]);
 	}
 
 	public function getExpr(): Expr

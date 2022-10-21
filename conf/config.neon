@@ -1623,11 +1623,6 @@ services:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
-		class: PHPStan\Type\Php\IsIntFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
 		class: PHPStan\Type\Php\IsArrayFunctionTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
@@ -1636,11 +1631,6 @@ services:
 
 	-
 		class: PHPStan\Type\Php\IsCallableFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\IsResourceFunctionTypeSpecifyingExtension
 		tags:
 			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
@@ -1658,16 +1648,6 @@ services:
 		class: PHPStan\Type\Php\IteratorToArrayFunctionReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
-
-	-
-		class: PHPStan\Type\Php\IsObjectFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
-
-	-
-		class: PHPStan\Type\Php\IsScalarFunctionTypeSpecifyingExtension
-		tags:
-			- phpstan.typeSpecifier.functionTypeSpecifyingExtension
 
 	-
 		class: PHPStan\Type\Php\IsAFunctionTypeSpecifyingExtension

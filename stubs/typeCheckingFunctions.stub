@@ -63,3 +63,57 @@ function is_countable(mixed $value): bool
 {
 
 }
+
+/**
+ * @phpstan-assert-if-true object $value
+ * @phpstan-assert-if-false !object $value
+ */
+function is_object(mixed $value): bool
+{
+
+}
+
+/**
+ * @phpstan-assert-if-true scalar $value
+ * @phpstan-assert-if-false !scalar $value
+ */
+function is_scalar(mixed $value): bool
+{
+
+}
+
+/**
+ * @phpstan-assert-if-true int $value
+ * @phpstan-assert-if-false !int $value
+ */
+function is_int(mixed $value): bool
+{
+
+}
+
+/**
+ * @phpstan-assert-if-true int $value
+ * @phpstan-assert-if-false !int $value
+ */
+function is_integer(mixed $value): bool
+{
+
+}
+
+/**
+ * @phpstan-assert-if-true int $value
+ * @phpstan-assert-if-false !int $value
+ */
+function is_long(mixed $value): bool
+{
+
+}
+
+/**
+ * @phpstan-assert-if-true resource $value
+ * @phpstan-assert-if-false !resource $value
+ */
+function is_resource(mixed $value): bool
+{
+
+}

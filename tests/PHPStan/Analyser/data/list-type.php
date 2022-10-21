@@ -98,4 +98,12 @@ class Foo
 		assertType('non-empty-array<int<0, max>, mixed>&hasOffsetValue(2, \'1\')', $list2);
 	}
 
+	/** @param list<int> $list */
+	public function testUnset(array $list): void
+	{
+		assertType('list<int>', $list);
+		unset($list[2]);
+		assertType('array<int<0, 1>|int<3, max>, int>', $list);
+	}
+
 }

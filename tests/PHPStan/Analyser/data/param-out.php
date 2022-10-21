@@ -345,3 +345,31 @@ function fooPassthru() {
 
 	assertType('int', $exitCode);
 }
+
+class X {
+	/**
+	 * @param-out array $ref
+	 */
+	public function __construct(string &$ref) {
+		$ref = [];
+	}
+}
+
+class SubX extends X {
+	/**
+	 * @param-out float $ref
+	 */
+	public function __construct(string $a, string &$ref) {
+		parent::__construct($ref);
+	}
+}
+
+function fooConstruct(string $s) {
+	$x = new X($s);
+	assertType('array', $s);
+}
+
+function fooSubConstruct(string $s) {
+	$x = new SubX('', $s);
+	assertType('float', $s);
+}

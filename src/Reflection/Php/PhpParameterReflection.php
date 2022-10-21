@@ -25,6 +25,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 		private ReflectionParameter $reflection,
 		private ?Type $phpDocType,
 		private ?string $declaringClassName,
+		private ?Type $outType,
 	)
 	{
 	}
@@ -112,6 +113,11 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 		}
 
 		return null;
+	}
+
+	public function getOutType(): ?Type
+	{
+		return $this->outType;
 	}
 
 }

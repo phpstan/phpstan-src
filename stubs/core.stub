@@ -67,3 +67,159 @@ function base64_encode(string $string) : string {}
  * @return ($string is non-empty-string ? non-empty-string : string)
  */
 function bin2hex(string $string): string {}
+
+/**
+ * @param array<mixed> $result
+ * @param-out array<int|string, string|list<string>> $result
+ */
+function parse_str(string $string, array &$result): void {}
+
+/** @param-out float $percent */
+function similar_text(string $string1, string $string2, float &$percent = null) : int {}
+
+/**
+ * @param mixed $output
+ * @param mixed $result_code
+ *
+ * @param-out list<string> $output
+ * @param-out int $result_code
+ *
+ * @return string|false
+ */
+function exec(string $command, &$output, &$result_code) {}
+
+/**
+ * @param mixed $result_code
+ * @param-out int $result_code
+ *
+ * @return string|false
+ */
+function system(string $command, &$result_code) {}
+
+/**
+ * @param mixed $result_code
+ * @param-out int $result_code
+ */
+function passthru(string $command, &$result_code): ?bool {}
+
+
+/**
+ * @template T
+ * @template TArray as array<T>
+ *
+ * @param TArray $array
+ * @param-out (TArray is non-empty-array ? non-empty-list<T> : list<T>) $array
+ */
+function shuffle(array &$array): bool
+{
+}
+
+/**
+ * @template T
+ * @template TArray as array<T>
+ *
+ * @param TArray $array
+ * @param-out (TArray is non-empty-array ? non-empty-list<T> : list<T>) $array
+ */
+function sort(array &$array, int $flags = SORT_REGULAR): bool
+{
+}
+
+/**
+ * @template T
+ * @template TArray as array<T>
+ *
+ * @param TArray $array
+ * @param-out (TArray is non-empty-array ? non-empty-list<T> : list<T>) $array
+ */
+function rsort(array &$array, int $flags = SORT_REGULAR): bool
+{
+}
+
+/**
+ * @param string $string
+ * @param-out null $string
+ */
+function sodium_memzero(string &$string): void
+{
+}
+
+/**
+ * @param mixed $war
+ * @param mixed $vars
+ * @param-out string|int|float|null $war
+ * @param-out string|int|float|null $vars
+ *
+ * @return int|array<mixed>|null
+ */
+function sscanf(string $string, string $format, &$war, &...$vars) {}
+
+/**
+ * @template TFlags as int
+ *
+ * @param string $pattern
+ * @param string $subject
+ * @param mixed $matches
+ * @param TFlags $flags
+ * @param-out (
+ *          TFlags is 1
+ *          ? array<list<string>>
+ *          : (TFlags is 2
+ *              ? list<array<string>>
+ *              : (TFlags is 256|257
+ *                  ? array<list<array{string, int}>>
+ *                  : (TFlags is 258
+ *                      ? list<array<array{string, int}>>
+ *                      : (TFlags is 512|513
+ *                          ? array<list<?string>>
+ *                          : (TFlags is 514
+ *                              ? list<array<?string>>
+ *                              : (TFlags is 770
+ *                                  ? list<array<array{?string, int}>>
+ *                                  : array
+ *                              )
+ *                          )
+ *                      )
+ *                  )
+ *              )
+ *          )
+ *        ) $matches
+ * @return int|false
+ */
+function preg_match_all($pattern, $subject, &$matches = [], int $flags = 1, int $offset = 0) {}
+
+/**
+ * @template TFlags as int-mask<0, 256, 512>
+ *
+ * @param string $pattern
+ * @param string $subject
+ * @param mixed $matches
+ * @param TFlags $flags
+ * @param-out (
+ *             TFlags is 256
+ *             ? array<array-key, array{string, 0|positive-int}|array{'', -1}>
+ *             : (TFlags is 512
+ *                 ? array<array-key, string|null>
+ *                 : (TFlags is 768
+ *                     ? array<array-key, array{string, 0|positive-int}|array{null, -1}>
+ *                     : array<array-key, string>
+ *                     )
+ *                 )
+ *             ) $matches
+ * @return 1|0|false
+ */
+function preg_match($pattern, $subject, &$matches = [], int $flags = 0, int $offset = 0) {}
+
+/**
+ * @template TRead of null|array<array-key, resource>
+ * @template TWrite of null|array<array-key, resource>
+ * @template TExcept of null|array<array-key, resource>
+ * @param TRead $read
+ * @param TWrite $write
+ * @param TExcept $except
+ * @return false|0|positive-int
+ * @param-out (TRead is null ? null : array<array-key, resource>) $read
+ * @param-out (TWrite is null ? null : array<array-key, resource>) $write
+ * @param-out (TExcept is null ? null : array<array-key, resource>) $except
+ */
+function stream_select(?array &$read, ?array &$write, ?array &$except, ?int $seconds, ?int $microseconds = null) {}

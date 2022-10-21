@@ -9,6 +9,7 @@ use PHPStan\PhpDoc\Tag\ExtendsTag;
 use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\PhpDoc\Tag\MethodTag;
 use PHPStan\PhpDoc\Tag\MixinTag;
+use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
@@ -76,6 +77,9 @@ class ResolvedPhpDocBlock
 
 	/** @var array<string, ParamTag>|false */
 	private array|false $paramTags = false;
+
+	/** @var array<string, ParamOutTag>|false */
+	private array|false $paramOutTags = false;
 
 	private ReturnTag|false|null $returnTag = false;
 
@@ -163,6 +167,7 @@ class ResolvedPhpDocBlock
 		$self->implementsTags = [];
 		$self->usesTags = [];
 		$self->paramTags = [];
+		$self->paramOutTags = [];
 		$self->returnTag = null;
 		$self->throwsTag = null;
 		$self->mixinTags = [];
@@ -216,6 +221,7 @@ class ResolvedPhpDocBlock
 		$result->implementsTags = $this->getImplementsTags();
 		$result->usesTags = $this->getUsesTags();
 		$result->paramTags = self::mergeParamTags($this->getParamTags(), $parents, $parentPhpDocBlocks);
+		$result->paramOutTags = self::mergeParamOutTags($this->getParamOutTags(), $parents, $parentPhpDocBlocks);
 		$result->returnTag = self::mergeReturnTags($this->getReturnTag(), $parents, $parentPhpDocBlocks);
 		$result->throwsTag = self::mergeThrowsTags($this->getThrowsTag(), $parents);
 		$result->mixinTags = $this->getMixinTags();
@@ -254,6 +260,16 @@ class ResolvedPhpDocBlock
 				continue;
 			}
 			$newParamTags[$parameterNameMapping[$key]] = $paramTag;
+		}
+
+		$paramOutTags = $this->getParamOutTags();
+
+		$newParamOutTags = [];
+		foreach ($paramOutTags as $key => $paramOutTag) {
+			if (!array_key_exists($key, $parameterNameMapping)) {
+				continue;
+			}
+			$newParamOutTags[$parameterNameMapping[$key]] = $paramOutTag;
 		}
 
 		$returnTag = $this->getReturnTag();
@@ -298,6 +314,7 @@ class ResolvedPhpDocBlock
 		$self->implementsTags = $this->implementsTags;
 		$self->usesTags = $this->usesTags;
 		$self->paramTags = $newParamTags;
+		$self->paramOutTags = $newParamOutTags;
 		$self->returnTag = $returnTag;
 		$self->throwsTag = $this->throwsTag;
 		$self->mixinTags = $this->mixinTags;
@@ -451,6 +468,20 @@ class ResolvedPhpDocBlock
 			);
 		}
 		return $this->paramTags;
+	}
+
+	/**
+	 * @return array<string, ParamOutTag>
+	 */
+	public function getParamOutTags(): array
+	{
+		if ($this->paramOutTags === false) {
+			$this->paramOutTags = $this->phpDocNodeResolver->resolveParamOutTags(
+				$this->phpDocNode,
+				$this->getNameScope(),
+			);
+		}
+		return $this->paramOutTags;
 	}
 
 	public function getReturnTag(): ?ReturnTag
@@ -874,6 +905,41 @@ class ResolvedPhpDocBlock
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param array<string, ParamOutTag> $paramOutTags
+	 * @param array<int, self> $parents
+	 * @param array<int, PhpDocBlock> $parentPhpDocBlocks
+	 * @return array<string, ParamOutTag>
+	 */
+	private static function mergeParamOutTags(array $paramOutTags, array $parents, array $parentPhpDocBlocks): array
+	{
+		foreach ($parents as $i => $parent) {
+			$paramOutTags = self::mergeOneParentParamOutTags($paramOutTags, $parent, $parentPhpDocBlocks[$i]);
+		}
+
+		return $paramOutTags;
+	}
+
+	/**
+	 * @param array<string, ParamOutTag> $paramOutTags
+	 * @param ResolvedPhpDocBlock $parent
+	 * @return array<string, ParamOutTag>
+	 */
+	private static function mergeOneParentParamOutTags(array $paramOutTags, self $parent, PhpDocBlock $phpDocBlock): array
+	{
+		$parentParamOutTags = $phpDocBlock->transformArrayKeysWithParameterNameMapping($parent->getParamOutTags());
+
+		foreach ($parentParamOutTags as $name => $parentParamTag) {
+			if (array_key_exists($name, $paramOutTags)) {
+				continue;
+			}
+
+			$paramOutTags[$name] = self::resolveTemplateTypeInTag($parentParamTag, $phpDocBlock);
+		}
+
+		return $paramOutTags;
 	}
 
 	/**

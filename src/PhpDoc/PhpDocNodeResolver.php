@@ -11,6 +11,7 @@ use PHPStan\PhpDoc\Tag\ImplementsTag;
 use PHPStan\PhpDoc\Tag\MethodTag;
 use PHPStan\PhpDoc\Tag\MethodTagParameter;
 use PHPStan\PhpDoc\Tag\MixinTag;
+use PHPStan\PhpDoc\Tag\ParamOutTag;
 use PHPStan\PhpDoc\Tag\ParamTag;
 use PHPStan\PhpDoc\Tag\PropertyTag;
 use PHPStan\PhpDoc\Tag\ReturnTag;
@@ -311,6 +312,34 @@ class PhpDocNodeResolver
 				$resolved[$parameterName] = new ParamTag(
 					$parameterType,
 					$tagValue->isVariadic,
+				);
+			}
+		}
+
+		return $resolved;
+	}
+
+	/**
+	 * @return array<string, ParamOutTag>
+	 */
+	public function resolveParamOutTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
+	{
+		if (!method_exists($phpDocNode, 'getParamOutTypeTagValues')) {
+			return [];
+		}
+
+		$resolved = [];
+
+		foreach (['@param-out', '@psalm-param-out', '@phpstan-param-out'] as $tagName) {
+			foreach ($phpDocNode->getParamOutTypeTagValues($tagName) as $tagValue) {
+				$parameterName = substr($tagValue->parameterName, 1);
+				$parameterType = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);
+				if ($this->shouldSkipType($tagName, $parameterType)) {
+					continue;
+				}
+
+				$resolved[$parameterName] = new ParamOutTag(
+					$parameterType,
 				);
 			}
 		}

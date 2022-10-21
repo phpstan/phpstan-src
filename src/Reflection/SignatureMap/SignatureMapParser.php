@@ -72,6 +72,7 @@ class SignatureMapParser
 				$passedByReference,
 				$isVariadic,
 				null,
+				null,
 			);
 		}
 

@@ -518,6 +518,8 @@ class PhpClassReflectionExtension
 				$phpDocParameterTypes = [];
 				$phpDocReturnType = null;
 				$stubPhpDocPair = null;
+				$stubPhpParameterOutTypes = [];
+				$phpDocParameterOutTypes = [];
 				if (count($methodSignatures) === 1) {
 					$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($declaringClass, $methodReflection->getName(), array_map(static fn (ParameterSignature $parameterSignature): string => $parameterSignature->getName(), $methodSignature->getParameters()));
 					if ($stubPhpDocPair !== null) {
@@ -549,6 +551,13 @@ class PhpClassReflectionExtension
 						$selfOutTypeTag = $stubPhpDoc->getSelfOutTag();
 						if ($selfOutTypeTag !== null) {
 							$selfOutType = $selfOutTypeTag->getType();
+						}
+
+						foreach ($stubPhpDoc->getParamOutTags() as $name => $paramOutTag) {
+							$stubPhpParameterOutTypes[$name] = TemplateTypeHelper::resolveTemplateTypes(
+								$paramOutTag->getType(),
+								$templateTypeMap,
+							);
 						}
 
 						if ($declaringClassName === $stubDeclaringClass->getName() && $stubPhpDoc->hasPhpDocString()) {
@@ -588,6 +597,10 @@ class PhpClassReflectionExtension
 							$phpDocComment = $phpDocBlock->getPhpDocString();
 						}
 
+						foreach ($phpDocBlock->getParamOutTags() as $name => $paramOutTag) {
+							$phpDocParameterOutTypes[$name] = $paramOutTag->getType();
+						}
+
 						$signatureParameters = $methodSignature->getParameters();
 						foreach ($reflectionMethod->getParameters() as $paramI => $reflectionParameter) {
 							if (!array_key_exists($paramI, $signatureParameters)) {
@@ -598,7 +611,7 @@ class PhpClassReflectionExtension
 						}
 					}
 				}
-				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping);
+				$variants[] = $this->createNativeMethodVariant($methodSignature, $stubPhpDocParameterTypes, $stubPhpDocParameterVariadicity, $stubPhpDocReturnType, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $stubPhpParameterOutTypes, $phpDocParameterOutTypes);
 			}
 
 			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
@@ -711,6 +724,7 @@ class PhpClassReflectionExtension
 		}
 
 		$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
+
 		foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
 			if (array_key_exists($paramName, $phpDocParameterTypes)) {
 				continue;
@@ -723,6 +737,15 @@ class PhpClassReflectionExtension
 				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
 			);
 		}
+
+		$phpDocParameterOutTypes = [];
+		foreach ($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
+			$phpDocParameterOutTypes[$paramName] = TemplateTypeHelper::resolveTemplateTypes(
+				$paramOutTag->getType(),
+				$phpDocBlockClassReflection->getActiveTemplateTypeMap(),
+			);
+		}
+
 		$nativeReturnType = TypehintHelper::decideTypeFromReflection(
 			$methodReflection->getReturnType(),
 			null,
@@ -758,6 +781,7 @@ class PhpClassReflectionExtension
 			$asserts,
 			$selfOutType,
 			$phpDocComment,
+			$phpDocParameterOutTypes,
 		);
 	}
 
@@ -766,6 +790,8 @@ class PhpClassReflectionExtension
 	 * @param array<string, bool> $stubPhpDocParameterVariadicity
 	 * @param array<string, Type> $phpDocParameterTypes
 	 * @param array<string, string> $phpDocParameterNameMapping
+	 * @param array<string, Type> $stubPhpDocParameterOutTypes
+	 * @param array<string, Type> $phpDocParameterOutTypes
 	 */
 	private function createNativeMethodVariant(
 		FunctionSignature $methodSignature,
@@ -775,12 +801,15 @@ class PhpClassReflectionExtension
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
 		array $phpDocParameterNameMapping,
+		array $stubPhpDocParameterOutTypes,
+		array $phpDocParameterOutTypes,
 	): FunctionVariantWithPhpDocs
 	{
 		$parameters = [];
 		foreach ($methodSignature->getParameters() as $parameterSignature) {
 			$type = null;
 			$phpDocType = null;
+			$parameterOutType = null;
 
 			$phpDocParameterName = $phpDocParameterNameMapping[$parameterSignature->getName()] ?? $parameterSignature->getName();
 
@@ -789,6 +818,12 @@ class PhpClassReflectionExtension
 				$phpDocType = $stubPhpDocParameterTypes[$parameterSignature->getName()];
 			} elseif (isset($phpDocParameterTypes[$phpDocParameterName])) {
 				$phpDocType = $phpDocParameterTypes[$phpDocParameterName];
+			}
+
+			if (isset($stubPhpDocParameterOutTypes[$parameterSignature->getName()])) {
+				$parameterOutType = $stubPhpDocParameterOutTypes[$parameterSignature->getName()];
+			} elseif (isset($phpDocParameterOutTypes[$phpDocParameterName])) {
+				$parameterOutType = $phpDocParameterOutTypes[$phpDocParameterName];
 			}
 
 			$parameters[] = new NativeParameterWithPhpDocsReflection(
@@ -800,6 +835,7 @@ class PhpClassReflectionExtension
 				$parameterSignature->passedByReference(),
 				$stubPhpDocParameterVariadicity[$parameterSignature->getName()] ?? $parameterSignature->isVariadic(),
 				$parameterSignature->getDefaultValue(),
+				$parameterOutType ?? $parameterSignature->getOutType(),
 			);
 		}
 
@@ -913,7 +949,7 @@ class PhpClassReflectionExtension
 			$constructor,
 			$namespace,
 		)->enterClass($declaringClass);
-		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
+		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,
 			$templateTypeMap,
@@ -929,6 +965,7 @@ class PhpClassReflectionExtension
 			$asserts,
 			$selfOutType,
 			$phpDocComment,
+			$phpDocParameterOutTypes,
 		);
 
 		$propertyTypes = [];

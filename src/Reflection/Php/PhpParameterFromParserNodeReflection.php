@@ -23,6 +23,7 @@ class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhp
 		private PassedByReference $passedByReference,
 		private ?Type $defaultValue,
 		private bool $variadic,
+		private ?Type $outType,
 	)
 	{
 	}
@@ -78,6 +79,11 @@ class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhp
 	public function getDefaultValue(): ?Type
 	{
 		return $this->defaultValue;
+	}
+
+	public function getOutType(): ?Type
+	{
+		return $this->outType;
 	}
 
 }

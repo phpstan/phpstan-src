@@ -16,6 +16,7 @@ class ParameterSignature
 		private PassedByReference $passedByReference,
 		private bool $variadic,
 		private ?Type $defaultValue,
+		private ?Type $outType,
 	)
 	{
 	}
@@ -53,6 +54,11 @@ class ParameterSignature
 	public function getDefaultValue(): ?Type
 	{
 		return $this->defaultValue;
+	}
+
+	public function getOutType(): ?Type
+	{
+		return $this->outType;
 	}
 
 }

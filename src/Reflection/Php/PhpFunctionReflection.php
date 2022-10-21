@@ -39,6 +39,7 @@ class PhpFunctionReflection implements FunctionReflection
 
 	/**
 	 * @param Type[] $phpDocParameterTypes
+	 * @param Type[] $phpDocParameterOutTypes
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -58,6 +59,7 @@ class PhpFunctionReflection implements FunctionReflection
 		private ?bool $isPure,
 		private Assertions $asserts,
 		private ?string $phpDocComment,
+		private array $phpDocParameterOutTypes,
 	)
 	{
 	}
@@ -112,6 +114,7 @@ class PhpFunctionReflection implements FunctionReflection
 			$reflection,
 			$this->phpDocParameterTypes[$reflection->getName()] ?? null,
 			null,
+			$this->phpDocParameterOutTypes[$reflection->getName()] ?? null,
 		), $this->reflection->getParameters());
 	}
 

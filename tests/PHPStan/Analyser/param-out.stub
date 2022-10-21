@@ -1,0 +1,21 @@
+<?php
+
+namespace {
+	class SplFileObject extends \SplFileInfo implements \RecursiveIterator, \SeekableIterator
+	{
+	  	/** @param-out string $wouldBlock */
+		public function flock(int $operation, &$wouldBlock = null)
+		{}
+	}
+}
+
+namespace ParamOut {
+	class OutFromStub {
+		/**
+		 * @param-out string $string
+		 */
+		function stringOut(?string &$string): void
+		{
+		}
+	}
+}

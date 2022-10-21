@@ -245,6 +245,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 				$nativeParameter->passedByReference()->yes() ? $functionMapParameter->passedByReference() : $nativeParameter->passedByReference(),
 				$nativeParameter->isVariadic(),
 				$nativeParameter->getDefaultValue(),
+				$nativeParameter->getOutType(),
 			);
 		}
 
@@ -342,6 +343,7 @@ class Php8SignatureMapProvider implements SignatureMapProvider
 					$param->default,
 					InitializerExprContext::fromStubParameter($className, $stubFile, $function),
 				) : null,
+				null,
 			);
 
 			$variadic = $variadic || $param->variadic;

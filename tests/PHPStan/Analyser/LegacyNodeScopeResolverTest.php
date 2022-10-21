@@ -302,7 +302,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'matches',
 				TrinaryLogic::createYes(),
-				'mixed',
+				'array<string>',
 			],
 			[
 				$testScope,
@@ -343,7 +343,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'matches2',
 				TrinaryLogic::createMaybe(),
-				'mixed',
+				'array<string>',
 			],
 			[
 				$testScope,
@@ -355,13 +355,13 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'matches3',
 				TrinaryLogic::createYes(),
-				'mixed',
+				'array<string>',
 			],
 			[
 				$testScope,
 				'matches4',
 				TrinaryLogic::createMaybe(),
-				'mixed',
+				'array<string>',
 			],
 			[
 				$testScope,
@@ -415,7 +415,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				$testScope,
 				'ternaryMatches',
 				TrinaryLogic::createYes(),
-				'mixed',
+				'array<string>',
 			],
 			[
 				$testScope,
@@ -7951,7 +7951,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$arr',
 			],
 			[
-				'mixed',
+				'array<string>',
 				'$matches',
 			],
 			[

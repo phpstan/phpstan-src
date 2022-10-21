@@ -144,6 +144,11 @@ parameters:
 			path: src/PhpDoc/PhpDocBlock.php
 
 		-
+			message: "#^Call to function method_exists\\(\\) with PHPStan\\\\PhpDocParser\\\\Ast\\\\PhpDoc\\\\PhpDocNode and 'getParamOutTypeTagV…' will always evaluate to true\\.$#"
+			count: 1
+			path: src/PhpDoc/PhpDocNodeResolver.php
+
+		-
 			message: "#^Call to function method_exists\\(\\) with PHPStan\\\\PhpDocParser\\\\Ast\\\\PhpDoc\\\\PhpDocNode and 'getSelfOutTypeTagVa…' will always evaluate to true\\.$#"
 			count: 1
 			path: src/PhpDoc/PhpDocNodeResolver.php
@@ -160,6 +165,11 @@ parameters:
 			"""
 			count: 1
 			path: src/PhpDoc/StubValidator.php
+
+		-
+			message: "#^Return type \\(PHPStan\\\\PhpDoc\\\\Tag\\\\ParamOutTag\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\ParamOutTag\\:\\:withType\\(\\) should be covariant with return type \\(static\\(PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\)\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\:\\:withType\\(\\)$#"
+			count: 1
+			path: src/PhpDoc/Tag/ParamOutTag.php
 
 		-
 			message: "#^Return type \\(PHPStan\\\\PhpDoc\\\\Tag\\\\ParamTag\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\ParamTag\\:\\:withType\\(\\) should be covariant with return type \\(static\\(PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\)\\) of method PHPStan\\\\PhpDoc\\\\Tag\\\\TypedTag\\:\\:withType\\(\\)$#"

@@ -304,4 +304,14 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTemplateInParamOut(): void
+	{
+		$this->analyse([__DIR__ . '/data/param-out.php'], [
+			[
+				'Template type S of function ParamOutTemplate\uselessGeneric() is not referenced in a parameter.',
+				9,
+			],
+		]);
+	}
+
 }

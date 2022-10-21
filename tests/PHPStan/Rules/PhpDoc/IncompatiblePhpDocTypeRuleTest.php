@@ -233,4 +233,39 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testParamOut(): void
+	{
+		$this->analyse([__DIR__ . '/data/param-out.php'], [
+			[
+				'PHPDoc tag @param-out references unknown parameter: $z',
+				23,
+			],
+			[
+				'Parameter $i for PHPDoc tag @param-out is not passed by reference.',
+				37,
+			],
+			[
+				'PHPDoc tag @param-out for parameter $i contains unresolvable type.',
+				44,
+			],
+			[
+				'PHPDoc tag @param-out for parameter $i contains generic type Exception<int, float> but class Exception is not generic.',
+				51,
+			],
+			[
+				'Generic type ParamOutPhpDocRule\FooBar<mixed> in PHPDoc tag @param-out for parameter $i does not specify all template types of class ParamOutPhpDocRule\FooBar: T, TT',
+				58,
+			],
+			[
+				'Type mixed in generic type ParamOutPhpDocRule\FooBar<mixed> in PHPDoc tag @param-out for parameter $i is not subtype of template type T of int of class ParamOutPhpDocRule\FooBar.',
+				58,
+			],
+			[
+				'Generic type ParamOutPhpDocRule\FooBar<int> in PHPDoc tag @param-out for parameter $i does not specify all template types of class ParamOutPhpDocRule\FooBar: T, TT',
+				65,
+			],
+
+		]);
+	}
+
 }

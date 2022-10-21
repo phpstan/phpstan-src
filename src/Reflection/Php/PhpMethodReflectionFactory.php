@@ -12,6 +12,7 @@ interface PhpMethodReflectionFactory
 
 	/**
 	 * @param Type[] $phpDocParameterTypes
+	 * @param Type[] $phpDocParameterOutTypes
 	 */
 	public function create(
 		ClassReflection $declaringClass,
@@ -29,6 +30,7 @@ interface PhpMethodReflectionFactory
 		Assertions $asserts,
 		?Type $selfOutType,
 		?string $phpDocComment,
+		array $phpDocParameterOutTypes,
 	): PhpMethodReflection;
 
 }

@@ -100,6 +100,7 @@ class FunctionSignatureMapProvider implements SignatureMapProvider
 					$nativeParameters[$i]->getDefaultValueExpression(),
 					InitializerExprContext::fromReflectionParameter($nativeParameters[$i]),
 				) : null,
+				$parameter->getOutType(),
 			);
 		}
 

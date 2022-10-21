@@ -9,9 +9,9 @@ use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\Assertions;
-use PHPStan\Reflection\FunctionVariant;
+use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\Native\NativeFunctionReflection;
-use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\Native\NativeParameterWithPhpDocsReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -19,12 +19,14 @@ use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\UnionType;
+use function array_key_exists;
 use function array_map;
 use function strtolower;
 
@@ -52,6 +54,7 @@ class NativeFunctionReflectionProvider
 		$throwType = null;
 		$reflectionFunctionAdapter = null;
 		$isDeprecated = false;
+		$phpDocReturnType = null;
 		$asserts = Assertions::createEmpty();
 		$docComment = null;
 		try {
@@ -84,15 +87,16 @@ class NativeFunctionReflectionProvider
 				$throwType = $phpDoc->getThrowsTag()->getType();
 			}
 			$asserts = Assertions::createFromResolvedPhpDocBlock($phpDoc);
+			$phpDocReturnType = $this->getReturnTypeFromPhpDoc($phpDoc);
 		}
 
 		$variants = [];
 		$functionSignatures = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
 		foreach ($functionSignatures as $functionSignature) {
-			$variants[] = new FunctionVariant(
+			$variants[] = new FunctionVariantWithPhpDocs(
 				TemplateTypeMap::createEmpty(),
 				null,
-				array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName, $phpDoc): NativeParameterReflection {
+				array_map(static function (ParameterSignature $parameterSignature) use ($lowerCasedFunctionName, $phpDoc): NativeParameterWithPhpDocsReflection {
 					$type = $parameterSignature->getType();
 
 					$phpDocType = null;
@@ -137,17 +141,22 @@ class NativeFunctionReflectionProvider
 						);
 					}
 
-					return new NativeParameterReflection(
+					return new NativeParameterWithPhpDocsReflection(
 						$parameterSignature->getName(),
 						$parameterSignature->isOptional(),
 						TypehintHelper::decideType($type, $phpDocType),
+						$phpDocType ?? new MixedType(),
+						$type,
 						$parameterSignature->passedByReference(),
 						$parameterSignature->isVariadic(),
 						$parameterSignature->getDefaultValue(),
+						$phpDoc !== null ? NativeFunctionReflectionProvider::getParamOutTypeFromPhpDoc($parameterSignature->getName(), $phpDoc) : null,
 					);
 				}, $functionSignature->getParameters()),
 				$functionSignature->isVariadic(),
-				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDoc !== null ? $this->getReturnTypeFromPhpDoc($phpDoc) : null),
+				TypehintHelper::decideType($functionSignature->getReturnType(), $phpDocReturnType),
+				$phpDocReturnType ?? new MixedType(),
+				$functionSignature->getReturnType(),
 			);
 		}
 
@@ -179,6 +188,17 @@ class NativeFunctionReflectionProvider
 		}
 
 		return $returnTag->getType();
+	}
+
+	private static function getParamOutTypeFromPhpDoc(string $paramName, ResolvedPhpDocBlock $stubPhpDoc): ?Type
+	{
+		$paramOutTags = $stubPhpDoc->getParamOutTags();
+
+		if (array_key_exists($paramName, $paramOutTags)) {
+			return $paramOutTags[$paramName]->getType();
+		}
+
+		return null;
 	}
 
 }

@@ -114,6 +114,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpMethodReflection;
@@ -407,7 +408,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts,, $phpDocParameterOutTypes] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);
@@ -431,6 +432,7 @@ class NodeScopeResolver
 				$acceptsNamedArguments,
 				$asserts,
 				$phpDocComment,
+				$phpDocParameterOutTypes,
 			);
 			$functionReflection = $functionScope->getFunction();
 			if (!$functionReflection instanceof FunctionReflection) {
@@ -470,7 +472,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
-			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType] = $this->getPhpDocs($scope, $stmt);
+			[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes] = $this->getPhpDocs($scope, $stmt);
 
 			foreach ($stmt->params as $param) {
 				$this->processParamNode($param, $scope, $nodeCallback);
@@ -495,6 +497,7 @@ class NodeScopeResolver
 				$asserts,
 				$selfOutType,
 				$phpDocComment,
+				$phpDocParameterOutTypes,
 			);
 
 			if ($stmt->name->toLowerString() === '__construct') {
@@ -1806,6 +1809,7 @@ class NodeScopeResolver
 					$functionReflection->getVariants(),
 				);
 			}
+
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr) ?? $expr;
 			}
@@ -2043,11 +2047,13 @@ class NodeScopeResolver
 					}
 				}
 			}
+
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $expr) ?? $expr;
 			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context);
 			$scope = $result->getScope();
+
 			if ($methodReflection !== null) {
 				$hasSideEffects = $methodReflection->hasSideEffects();
 				if ($hasSideEffects->yes() || $methodReflection->getName() === '__construct') {
@@ -2174,12 +2180,14 @@ class NodeScopeResolver
 					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
 			}
+
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $expr) ?? $expr;
 			}
 			$result = $this->processArgs($methodReflection, $parametersAcceptor, $expr->getArgs(), $scope, $nodeCallback, $context, $closureBindScope ?? null);
 			$scope = $result->getScope();
 			$scopeFunction = $scope->getFunction();
+
 			if (
 				$methodReflection !== null
 				&& !$methodReflection->isStatic()
@@ -2529,6 +2537,7 @@ class NodeScopeResolver
 					$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);
 				}
 			}
+
 			if ($parametersAcceptor !== null) {
 				$expr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
 			}
@@ -3272,8 +3281,21 @@ class NodeScopeResolver
 		?MutatingScope $closureBindScope = null,
 	): ExpressionResult
 	{
+		$paramOutTypes = [];
 		if ($parametersAcceptor !== null) {
 			$parameters = $parametersAcceptor->getParameters();
+
+			foreach ($parameters as $parameter) {
+				if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
+					continue;
+				}
+
+				if ($parameter->getOutType() === null) {
+					continue;
+				}
+
+				$paramOutTypes[$parameter->getName()] = TemplateTypeHelper::resolveTemplateTypes($parameter->getOutType(), $parametersAcceptor->getResolvedTemplateTypeMap());
+			}
 		}
 
 		if ($calleeReflection !== null) {
@@ -3286,20 +3308,29 @@ class NodeScopeResolver
 			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 			$nodeCallback($originalArg, $scope);
 			if (isset($parameters) && $parametersAcceptor !== null) {
+				$byRefType = new MixedType();
 				$assignByReference = false;
 				if (isset($parameters[$i])) {
 					$assignByReference = $parameters[$i]->passedByReference()->createsNewVariable();
 					$parameterType = $parameters[$i]->getType();
+
+					if (isset($paramOutTypes[$parameters[$i]->getName()])) {
+						$byRefType = $paramOutTypes[$parameters[$i]->getName()];
+					}
 				} elseif (count($parameters) > 0 && $parametersAcceptor->isVariadic()) {
 					$lastParameter = $parameters[count($parameters) - 1];
 					$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
 					$parameterType = $lastParameter->getType();
+
+					if (isset($paramOutTypes[$lastParameter->getName()])) {
+						$byRefType = $paramOutTypes[$lastParameter->getName()];
+					}
 				}
 
 				if ($assignByReference) {
 					$argValue = $arg->value;
 					if ($argValue instanceof Variable && is_string($argValue->name)) {
-						$scope = $scope->assignVariable($argValue->name, new MixedType(), new MixedType());
+						$scope = $scope->assignVariable($argValue->name, $byRefType, new MixedType());
 					}
 				}
 			}
@@ -4039,7 +4070,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @return array{TemplateTypeMap, Type[], ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type}
+	 * @return array{TemplateTypeMap, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>}
 	 */
 	public function getPhpDocs(Scope $scope, Node\FunctionLike|Node\Stmt\Property $node): array
 	{
@@ -4065,6 +4096,7 @@ class NodeScopeResolver
 		$trait = $scope->isInTrait() ? $scope->getTraitReflection()->getName() : null;
 		$resolvedPhpDoc = null;
 		$functionName = null;
+		$phpDocParameterOutTypes = [];
 
 		if ($node instanceof Node\Stmt\ClassMethod) {
 			if (!$scope->isInClass()) {
@@ -4149,6 +4181,9 @@ class NodeScopeResolver
 				}
 				$phpDocParameterTypes[$paramName] = $paramType;
 			}
+			foreach ($resolvedPhpDoc->getParamOutTags() as $paramName => $paramOutTag) {
+				$phpDocParameterOutTypes[$paramName] = $paramOutTag->getType();
+			}
 			if ($node instanceof Node\FunctionLike) {
 				$nativeReturnType = $scope->getFunctionType($node->getReturnType(), false, false);
 				$phpDocReturnType = $this->getPhpDocReturnType($resolvedPhpDoc, $nativeReturnType);
@@ -4168,7 +4203,7 @@ class NodeScopeResolver
 			$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
 		}
 
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes];
 	}
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type

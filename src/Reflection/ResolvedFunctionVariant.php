@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
@@ -55,20 +56,41 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 		$parameters = $this->parameters;
 
 		if ($parameters === null) {
-			$parameters = array_map(fn (ParameterReflection $param): ParameterReflection => new DummyParameter(
-				$param->getName(),
-				TypeUtils::resolveLateResolvableTypes(
-					TemplateTypeHelper::resolveTemplateTypes(
-						$this->resolveConditionalTypesForParameter($param->getType()),
-						$this->resolvedTemplateTypeMap,
-					),
-					false,
-				),
-				$param->isOptional(),
-				$param->passedByReference(),
-				$param->isVariadic(),
-				$param->getDefaultValue(),
-			), $this->parametersAcceptor->getParameters());
+			$parameters = array_map(
+				function (ParameterReflection $param): ParameterReflection {
+					$paramType = TypeUtils::resolveLateResolvableTypes(
+						TemplateTypeHelper::resolveTemplateTypes(
+							$this->resolveConditionalTypesForParameter($param->getType()),
+							$this->resolvedTemplateTypeMap,
+						),
+						false,
+					);
+
+					if ($param instanceof ParameterReflectionWithPhpDocs) {
+						return new DummyParameterWithPhpDocs(
+							$param->getName(),
+							$paramType,
+							$param->isOptional(),
+							$param->passedByReference(),
+							$param->isVariadic(),
+							$param->getDefaultValue(),
+							$param->getNativeType(),
+							$param->getPhpDocType(),
+							$param->getOutType(),
+						);
+					}
+
+					return new DummyParameter(
+						$param->getName(),
+						$paramType,
+						$param->isOptional(),
+						$param->passedByReference(),
+						$param->isVariadic(),
+						$param->getDefaultValue(),
+					);
+				},
+				$this->parametersAcceptor->getParameters(),
+			);
 
 			$this->parameters = $parameters;
 		}

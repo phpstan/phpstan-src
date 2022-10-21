@@ -38,6 +38,7 @@ class TypeSpecifyingFunctionsDynamicReturnTypeExtension implements DynamicFuncti
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
 		return in_array($functionReflection->getName(), [
+			'array_is_list',
 			'array_key_exists',
 			'key_exists',
 			'in_array',

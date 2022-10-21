@@ -4892,7 +4892,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_search(9, $generalStringKeys)',
 			],
 			[
-				'*ERROR*',
+				PHP_VERSION_ID < 80000 ? 'null' : '*NEVER*',
 				'array_search(999, $integer, true)',
 			],
 			[
@@ -4948,11 +4948,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_search(\'id\', doFoo() ? [] : false, true)',
 			],
 			[
-				'*ERROR*',
+				PHP_VERSION_ID < 80000 ? 'null' : '*NEVER*',
 				'array_search(\'id\', false, true)',
 			],
 			[
-				'*ERROR*',
+				PHP_VERSION_ID < 80000 ? 'null' : '*NEVER*',
 				'array_search(\'id\', false)',
 			],
 			[

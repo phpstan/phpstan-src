@@ -379,6 +379,14 @@ class TypeSpecifierTest extends PHPStanTestCase
 			],
 			[
 				new Identical(
+					$this->createFunctionCall('is_string'),
+					new Expr\ConstFetch(new Name('true')),
+				),
+				['is_string($foo)' => 'true', '$foo' => 'string'],
+				['is_string($foo)' => '~true', '$foo' => '~string'],
+			],
+			[
+				new Identical(
 					$this->createFunctionCall('is_int'),
 					new Expr\ConstFetch(new Name('false')),
 				),

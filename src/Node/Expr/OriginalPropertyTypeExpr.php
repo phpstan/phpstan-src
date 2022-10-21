@@ -10,7 +10,7 @@ class OriginalPropertyTypeExpr extends Expr implements VirtualNode
 
 	public function __construct(private Expr\PropertyFetch|Expr\StaticPropertyFetch $propertyFetch)
 	{
-		parent::__construct($propertyFetch->getAttributes());
+		parent::__construct([]);
 	}
 
 	public function getPropertyFetch(): Expr\PropertyFetch|Expr\StaticPropertyFetch

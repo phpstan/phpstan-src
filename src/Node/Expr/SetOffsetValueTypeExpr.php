@@ -10,7 +10,7 @@ class SetOffsetValueTypeExpr extends Expr implements VirtualNode
 
 	public function __construct(private Expr $var, private ?Expr $dim, private Expr $value)
 	{
-		parent::__construct($var->getAttributes());
+		parent::__construct([]);
 	}
 
 	public function getVar(): Expr

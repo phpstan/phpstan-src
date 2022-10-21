@@ -43,7 +43,13 @@ class Assertions
 	 */
 	public function getAssertsIfTrue(): array
 	{
-		return array_filter($this->asserts, static fn (AssertTag $assert) => $assert->getIf() === AssertTag::IF_TRUE);
+		return array_merge(
+			array_filter($this->asserts, static fn (AssertTag $assert) => $assert->getIf() === AssertTag::IF_TRUE),
+			array_map(
+				static fn (AssertTag $assert) => $assert->negate(),
+				array_filter($this->asserts, static fn (AssertTag $assert) => $assert->getIf() === AssertTag::IF_FALSE && !$assert->isEquality()),
+			),
+		);
 	}
 
 	/**
@@ -51,7 +57,13 @@ class Assertions
 	 */
 	public function getAssertsIfFalse(): array
 	{
-		return array_filter($this->asserts, static fn (AssertTag $assert) => $assert->getIf() === AssertTag::IF_FALSE);
+		return array_merge(
+			array_filter($this->asserts, static fn (AssertTag $assert) => $assert->getIf() === AssertTag::IF_FALSE),
+			array_map(
+				static fn (AssertTag $assert) => $assert->negate(),
+				array_filter($this->asserts, static fn (AssertTag $assert) => $assert->getIf() === AssertTag::IF_TRUE && !$assert->isEquality()),
+			),
+		);
 	}
 
 	/**

@@ -8,6 +8,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -37,6 +38,10 @@ class InvalidKeyInArrayDimFetchRule implements Rule
 		}
 
 		$dimensionType = $scope->getType($node->dim);
+		if ($dimensionType instanceof MixedType) {
+			return [];
+		}
+
 		$varType = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->var,

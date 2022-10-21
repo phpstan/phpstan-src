@@ -35,3 +35,7 @@ $array = doFoo();
 foreach ($array as $i => $val) {
 	echo $array[$i];
 }
+
+/** @var mixed $mixed */
+$mixed = null;
+$a[$mixed];

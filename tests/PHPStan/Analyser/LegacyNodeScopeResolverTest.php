@@ -7400,11 +7400,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$expectedBenevolentArrayOrString',
 			],
 			[
-				'array|string|null',
+				'array<string>|string|null',
 				'$expectedArrayOrString2',
 			],
 			[
-				'array|string|null',
+				'array<string>|string|null',
 				'$anotherExpectedArrayOrString',
 			],
 			[

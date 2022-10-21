@@ -24,16 +24,16 @@ class Foo {
 
 	function doFoo2() {
 		$subject = 123;
-		assertType('array|string|null', preg_filter('/\d/', '$0', $subject));
+		assertType('array<string>|string|null', preg_filter('/\d/', '$0', $subject));
 
 		$subject = 123.123;
-		assertType('array|string|null', preg_filter('/\d/', '$0', $subject));
+		assertType('array<string>|string|null', preg_filter('/\d/', '$0', $subject));
 	}
 
 	public function dooFoo3(string $pattern, string $replace) {
-		assertType('array|string|null', preg_filter($pattern, $replace));
-		assertType('array|string|null', preg_filter($pattern));
-		assertType('array|string|null', preg_filter());
+		assertType('array<string>|string|null', preg_filter($pattern, $replace));
+		assertType('array<string>|string|null', preg_filter($pattern));
+		assertType('array<string>|string|null', preg_filter());
 	}
 
 	function bug664() {

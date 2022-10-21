@@ -392,3 +392,28 @@ function fooHeadersSent() {
 	assertType('int', $linenum);
 	assertType('string', $filename);
 }
+
+function fooMbParseStr() {
+	mb_parse_str("foo=bar", $output);
+	assertType('array<string, array<string>|string>', $output);
+
+	mb_parse_str('email=mail@example.org&city=town&x=1&y[g]=3&f=1.23', $output);
+	assertType('array<string, array<string>|string>', $output);
+}
+
+function fooPreg()
+{
+	$string = 'April 15, 2003';
+	$pattern = '/(\w+) (\d+), (\d+)/i';
+	$replacement = '${1}1,$3';
+	preg_replace($pattern, $replacement, $string, -1, $c);
+	assertType('int<0, max>', $c);
+
+	preg_replace_callback($pattern, function ($matches) {
+		return strtolower($matches[0]);
+	}, $string, -1, $c);
+	assertType('int<0, max>', $c);
+
+	preg_filter($pattern, $replacement, $string, -1, $c);
+	assertType('int<0, max>', $c);
+}

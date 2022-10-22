@@ -93,7 +93,6 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 			unlink($memoryLimitFile);
 		}
 		$statusCode = $errorFormatter->formatErrors($analysisResult, $symfonyOutput);
-		$this->assertSame($expectedStatusCode, $statusCode);
 
 		rewind($output->getStream());
 
@@ -101,6 +100,8 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 		if ($contents === false) {
 			throw new ShouldNotHappenException();
 		}
+
+		$this->assertSame($expectedStatusCode, $statusCode, $contents);
 
 		return $contents;
 	}

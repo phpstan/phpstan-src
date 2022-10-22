@@ -431,5 +431,5 @@ function fooReplace() {
 function fooIsCallable($x, bool $b)
 {
 	is_callable($x, $b, $name);
-	assertType('(callable(): mixed)|false', $name);
+	assertType('(callable(): mixed&string)|false', $name);
 }

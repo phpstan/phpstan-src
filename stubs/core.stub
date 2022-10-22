@@ -298,6 +298,6 @@ function headers_sent(string &$filename = null, int &$line = null): bool {}
 function mb_parse_str(string $string, &$result = []): bool {}
 
 /**
- * @param-out callable|false $callable_name
+ * @param-out callable-string|false $callable_name
  */
 function is_callable(mixed $value, bool $syntax_only = false, string &$callable_name = null): bool {}

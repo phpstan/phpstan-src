@@ -139,4 +139,9 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 		return $this->selfOutType;
 	}
 
+	public function returnsByReference(): ?bool
+	{
+		return $this->reflection->returnsByReference();
+	}
+
 }

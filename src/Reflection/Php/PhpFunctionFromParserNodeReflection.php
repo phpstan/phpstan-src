@@ -59,6 +59,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		private Assertions $assertions,
 		private ?string $phpDocComment,
 		private array $parameterOutTypes,
+		private ?bool $returnsByReference,
 	)
 	{
 		$this->functionLike = $functionLike;
@@ -258,6 +259,11 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 	public function getDocComment(): ?string
 	{
 		return $this->phpDocComment;
+	}
+
+	public function returnsByReference(): ?bool
+	{
+		return $this->returnsByReference;
 	}
 
 }

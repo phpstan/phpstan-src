@@ -31,6 +31,7 @@ interface PhpMethodReflectionFactory
 		?Type $selfOutType,
 		?string $phpDocComment,
 		array $phpDocParameterOutTypes,
+		?bool $returnsByReference,
 	): PhpMethodReflection;
 
 }

@@ -25,4 +25,6 @@ interface ExtendedMethodReflection extends MethodReflection
 
 	public function getSelfOutType(): ?Type;
 
+	public function returnsByReference(): ?bool;
+
 }

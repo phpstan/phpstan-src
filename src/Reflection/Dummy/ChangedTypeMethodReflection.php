@@ -100,4 +100,9 @@ class ChangedTypeMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->getSelfOutType();
 	}
 
+	public function returnsByReference(): ?bool
+	{
+		return $this->reflection->returnsByReference();
+	}
+
 }

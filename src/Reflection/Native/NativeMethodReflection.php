@@ -33,6 +33,7 @@ class NativeMethodReflection implements ExtendedMethodReflection
 		private Assertions $assertions,
 		private ?Type $selfOutType,
 		private ?string $phpDocComment,
+		private ?bool $returnsByReference,
 	)
 	{
 	}
@@ -165,6 +166,11 @@ class NativeMethodReflection implements ExtendedMethodReflection
 	public function getSelfOutType(): ?Type
 	{
 		return $this->selfOutType;
+	}
+
+	public function returnsByReference(): ?bool
+	{
+		return $this->returnsByReference;
 	}
 
 }

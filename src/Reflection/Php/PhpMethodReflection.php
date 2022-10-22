@@ -84,6 +84,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		private ?Type $selfOutType,
 		private ?string $phpDocComment,
 		private array $phpDocParameterOutTypes,
+		private ?bool $returnsByReference,
 	)
 	{
 	}
@@ -434,6 +435,11 @@ class PhpMethodReflection implements ExtendedMethodReflection
 	public function getDocComment(): ?string
 	{
 		return $this->phpDocComment;
+	}
+
+	public function returnsByReference(): ?bool
+	{
+		return $this->returnsByReference;
 	}
 
 }

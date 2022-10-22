@@ -29,6 +29,7 @@ interface FunctionReflectionFactory
 		Assertions $asserts,
 		?string $phpDocComment,
 		array $phpDocParameterOutTypes,
+		?bool $returnsByReference,
 	): PhpFunctionReflection;
 
 }

@@ -127,6 +127,52 @@ class FunctionReflectionTest extends PHPStanTestCase
 		$this->assertSame($expectedDocComment, $methodReflection->getDocComment());
 	}
 
+	public function dataFunctionReturnsByReference(): iterable
+	{
+		yield ['ReturnsByReference\\foo', false];
+		yield ['ReturnsByReference\\refFoo', true];
+	}
+
+	/**
+	 * @dataProvider dataFunctionReturnsByReference
+	 */
+	public function testFunctionReturnsByReference(string $functionName, bool $expectedReturnsByRef): void
+	{
+		require_once __DIR__ . '/data/returns-by-reference.php';
+
+		$reflectionProvider = $this->createReflectionProvider();
+
+		$functionReflection = $reflectionProvider->getFunction(new Node\Name($functionName), null);
+		$this->assertSame($expectedReturnsByRef, $functionReflection->returnsByReference());
+	}
+
+	public function dataMethodReturnsByReference(): iterable
+	{
+		yield ['ReturnsByReference\\X', 'foo', false];
+		yield ['ReturnsByReference\\X', 'refFoo', true];
+
+		yield ['ReturnsByReference\\SubX', 'foo', false];
+		yield ['ReturnsByReference\\SubX', 'refFoo', true];
+		yield ['ReturnsByReference\\SubX', 'subRefFoo', true];
+	}
+
+	/**
+	 * @dataProvider dataMethodReturnsByReference
+	 */
+	public function testMethodReturnsByReference(string $className, string $methodName, bool $expectedReturnsByRef): void
+	{
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass($className);
+		$scope = $this->createMock(Scope::class);
+		$scope->method('isInClass')->willReturn(true);
+		$scope->method('getClassReflection')->willReturn($class);
+		$scope->method('canAccessProperty')->willReturn(true);
+		$classReflection = $reflectionProvider->getClass($className);
+
+		$methodReflection = $classReflection->getMethod($methodName, $scope);
+		$this->assertSame($expectedReturnsByRef, $methodReflection->returnsByReference());
+	}
+
 	/**
 	 * @return string[]
 	 */

@@ -36,4 +36,6 @@ interface FunctionReflection
 
 	public function getDocComment(): ?string;
 
+	public function returnsByReference(): ?bool;
+
 }

@@ -25,6 +25,7 @@ class NativeFunctionReflection implements FunctionReflection
 		private bool $isDeprecated,
 		?Assertions $assertions = null,
 		private ?string $phpDocComment = null,
+		private ?bool $returnsByReference = null,
 	)
 	{
 		$this->assertions = $assertions ?? Assertions::createEmpty();
@@ -106,6 +107,11 @@ class NativeFunctionReflection implements FunctionReflection
 	public function getDocComment(): ?string
 	{
 		return $this->phpDocComment;
+	}
+
+	public function returnsByReference(): ?bool
+	{
+		return $this->returnsByReference;
 	}
 
 }

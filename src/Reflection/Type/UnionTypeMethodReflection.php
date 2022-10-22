@@ -158,4 +158,9 @@ class UnionTypeMethodReflection implements ExtendedMethodReflection
 		return null;
 	}
 
+	public function returnsByReference(): ?bool
+	{
+		return null;
+	}
+
 }

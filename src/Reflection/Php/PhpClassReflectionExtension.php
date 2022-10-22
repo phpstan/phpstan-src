@@ -496,6 +496,11 @@ class PhpClassReflectionExtension
 			return new EnumCasesMethodReflection($declaringClass, $arrayBuilder->getArray());
 		}
 
+		$returnsByReference = null;
+		if ($methodReflection->getReflection() !== null) {
+			$returnsByReference = $methodReflection->getReflection()->returnsReference();
+		}
+
 		if ($this->signatureMapProvider->hasMethodSignature($declaringClassName, $methodReflection->getName())) {
 			$variants = [];
 			$reflectionMethod = null;
@@ -629,6 +634,7 @@ class PhpClassReflectionExtension
 				$asserts,
 				$selfOutType,
 				$phpDocComment,
+				$returnsByReference,
 			);
 		}
 
@@ -782,6 +788,7 @@ class PhpClassReflectionExtension
 			$selfOutType,
 			$phpDocComment,
 			$phpDocParameterOutTypes,
+			$returnsByReference,
 		);
 	}
 

@@ -129,4 +129,9 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 		return $this->nativeMethodReflection->getSelfOutType();
 	}
 
+	public function returnsByReference(): ?bool
+	{
+		return $this->nativeMethodReflection->returnsByReference();
+	}
+
 }

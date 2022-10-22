@@ -57,9 +57,11 @@ class NativeFunctionReflectionProvider
 		$phpDocReturnType = null;
 		$asserts = Assertions::createEmpty();
 		$docComment = null;
+		$returnsByReference = null;
 		try {
 			$reflectionFunction = $this->reflector->reflectFunction($functionName);
 			$reflectionFunctionAdapter = new ReflectionFunction($reflectionFunction);
+			$returnsByReference = $reflectionFunctionAdapter->returnsReference();
 			if ($reflectionFunction->getFileName() !== null) {
 				$fileName = $reflectionFunction->getFileName();
 				$docComment = $reflectionFunction->getDocComment();
@@ -174,6 +176,7 @@ class NativeFunctionReflectionProvider
 			$isDeprecated,
 			$asserts,
 			$docComment,
+			$returnsByReference,
 		);
 		$this->functionMap[$lowerCasedFunctionName] = $functionReflection;
 

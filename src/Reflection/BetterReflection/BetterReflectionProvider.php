@@ -307,6 +307,7 @@ class BetterReflectionProvider implements ReflectionProvider
 			$asserts,
 			$phpDocComment,
 			array_map(static fn (ParamOutTag $paramOutTag): Type => $paramOutTag->getType(), $phpDocParameterOutTags),
+			$reflectionFunction->returnsReference(),
 		);
 	}
 

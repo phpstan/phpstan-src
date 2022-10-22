@@ -60,6 +60,7 @@ class PhpFunctionReflection implements FunctionReflection
 		private Assertions $asserts,
 		private ?string $phpDocComment,
 		private array $phpDocParameterOutTypes,
+		private ?bool $returnsByReference,
 	)
 	{
 	}
@@ -263,6 +264,11 @@ class PhpFunctionReflection implements FunctionReflection
 	public function getDocComment(): ?string
 	{
 		return $this->phpDocComment;
+	}
+
+	public function returnsByReference(): ?bool
+	{
+		return $this->returnsByReference;
 	}
 
 }

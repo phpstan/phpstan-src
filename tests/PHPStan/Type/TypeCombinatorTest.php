@@ -4248,4 +4248,22 @@ class TypeCombinatorTest extends PHPStanTestCase
 		$this->assertSame('array{0: string, 1?: string, 2?: string, 3?: string, 4?: string, test?: string}', $resultType->describe(VerbosityLevel::precise()));
 	}
 
+	/**
+	 * @dataProvider dataContainsNull
+	 */
+	public function testContainsNull(
+		Type $type,
+		bool $expectedResult,
+	): void
+	{
+		$this->assertSame($expectedResult, TypeCombinator::containsNull($type));
+	}
+
+	public function dataContainsNull(): iterable
+	{
+		yield [new NullType(), true];
+		yield [new UnionType([new IntegerType(), new NullType()]), true];
+		yield [new MixedType(), false];
+	}
+
 }

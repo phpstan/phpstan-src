@@ -129,6 +129,8 @@ class FunctionReflectionTest extends PHPStanTestCase
 
 	public function dataFunctionReturnsByReference(): iterable
 	{
+		yield ['\\implode', false];
+
 		yield ['ReturnsByReference\\foo', false];
 		yield ['ReturnsByReference\\refFoo', true];
 	}

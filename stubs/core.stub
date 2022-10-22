@@ -211,9 +211,9 @@ function preg_match_all($pattern, $subject, &$matches = [], int $flags = 1, int 
 function preg_match($pattern, $subject, &$matches = [], int $flags = 0, int $offset = 0) {}
 
 /**
- * @param string|string[] $pattern
- * @param callable(string[]):string $callback
- * @param string|array<string|int|float> $subject
+ * @param string|array<mixed> $pattern
+ * @param callable(array<int|string, string>):string $callback
+ * @param string|array<mixed> $subject
  * @param int $count
  * @param-out 0|positive-int $count
  * @return ($subject is array ? list<string>|null : string|null)
@@ -221,9 +221,9 @@ function preg_match($pattern, $subject, &$matches = [], int $flags = 0, int $off
 function preg_replace_callback($pattern, $callback, $subject, int $limit = -1, &$count = null, int $flags = 0) {}
 
 /**
- * @param string|string[] $pattern
- * @param string|array<string|int|float> $replacement
- * @param string|array<string|int|float> $subject
+ * @param string|array<mixed> $pattern
+ * @param string|array<mixed> $replacement
+ * @param string|array<mixed> $subject
  * @param int $count
  * @param-out 0|positive-int $count
  * @return ($subject is array ? list<string>|null : string|null)
@@ -231,9 +231,9 @@ function preg_replace_callback($pattern, $callback, $subject, int $limit = -1, &
 function preg_replace($pattern, $replacement, $subject, int $limit = -1, &$count = null) {}
 
 /**
- * @param string|string[] $pattern
- * @param string|array<string|int|float> $replacement
- * @param string|array<string|int|float> $subject
+ * @param string|array<mixed> $pattern
+ * @param string|array<mixed> $replacement
+ * @param string|array<mixed> $subject
  * @param int $count
  * @param-out 0|positive-int $count
  * @return ($subject is array ? list<string> : string|null)
@@ -241,18 +241,18 @@ function preg_replace($pattern, $replacement, $subject, int $limit = -1, &$count
 function preg_filter($pattern, $replacement, $subject, int $limit = -1, &$count = null) {}
 
 /**
- * @param array<string>|string $search
- * @param array<string>|string $replace
- * @param array<string>|string $subject
+ * @param array<mixed>|string $search
+ * @param array<mixed>|string $replace
+ * @param array<mixed>|string $subject
  * @param-out int $count
  * @return list<string>|string
  */
 function str_replace($search, $replace, $subject, int &$count = null) {}
 
 /**
- * @param array<string>|string $search
- * @param array<string>|string $replace
- * @param array<string>|string $subject
+ * @param array<mixed>|string $search
+ * @param array<mixed>|string $replace
+ * @param array<mixed>|string $subject
  * @param-out int $count
  * @return list<string>|string
  */

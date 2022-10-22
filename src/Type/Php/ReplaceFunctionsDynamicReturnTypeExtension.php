@@ -54,6 +54,8 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 		$type = $this->getPreliminarilyResolvedTypeFromFunctionCall($functionReflection, $functionCall, $scope);
 
 		$possibleTypes = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		// resolve conditional return types
+		$possibleTypes = TypeUtils::resolveLateResolvableTypes($possibleTypes);
 
 		if (TypeCombinator::containsNull($possibleTypes)) {
 			$type = TypeCombinator::addNull($type);

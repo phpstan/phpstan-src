@@ -241,6 +241,24 @@ function preg_replace($pattern, $replacement, $subject, int $limit = -1, &$count
 function preg_filter($pattern, $replacement, $subject, int $limit = -1, &$count = null) {}
 
 /**
+ * @param array<string>|string $search
+ * @param array<string>|string $replace
+ * @param array<string>|string $subject
+ * @param-out int $count
+ * @return array<string>|string
+ */
+function str_replace($search, $replace, $subject, int &$count = null) {}
+
+/**
+ * @param array<string>|string $search
+ * @param array<string>|string $replace
+ * @param array<string>|string $subject
+ * @param-out int $count
+ * @return array<string>|string
+ */
+function str_ireplace($search, $replace, $subject, int &$count = null) {}
+
+/**
  * @template TRead of null|array<array-key, resource>
  * @template TWrite of null|array<array-key, resource>
  * @template TExcept of null|array<array-key, resource>

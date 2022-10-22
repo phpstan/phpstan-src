@@ -417,3 +417,13 @@ function fooPreg()
 	preg_filter($pattern, $replacement, $string, -1, $c);
 	assertType('int<0, max>', $c);
 }
+
+function fooReplace() {
+	$vowels = array("a", "e", "i", "o", "u", "A", "E", "I", "O", "U");
+	str_replace($vowels, "", "World", $count);
+	assertType('int', $count);
+
+	$vowels = array("a", "e", "i", "o", "u", "A", "E", "I", "O", "U");
+	str_ireplace($vowels, "", "World", $count);
+	assertType('int', $count);
+}

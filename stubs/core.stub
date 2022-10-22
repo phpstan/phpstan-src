@@ -211,6 +211,54 @@ function preg_match_all($pattern, $subject, &$matches = [], int $flags = 1, int 
 function preg_match($pattern, $subject, &$matches = [], int $flags = 0, int $offset = 0) {}
 
 /**
+ * @param string|string[] $pattern
+ * @param callable(string[]):string $callback
+ * @param string|array<string|int|float> $subject
+ * @param int $count
+ * @param-out 0|positive-int $count
+ * @return ($subject is array ? list<string>|null : string|null)
+ */
+function preg_replace_callback($pattern, $callback, $subject, int $limit = -1, &$count = null, int $flags = 0) {}
+
+/**
+ * @param string|string[] $pattern
+ * @param string|array<string|int|float> $replacement
+ * @param string|array<string|int|float> $subject
+ * @param int $count
+ * @param-out 0|positive-int $count
+ * @return ($subject is array ? list<string>|null : string|null)
+ */
+function preg_replace($pattern, $replacement, $subject, int $limit = -1, &$count = null) {}
+
+/**
+ * @param string|string[] $pattern
+ * @param string|array<string|int|float> $replacement
+ * @param string|array<string|int|float> $subject
+ * @param int $count
+ * @param-out 0|positive-int $count
+ * @return ($subject is array ? list<string> : string|null)
+ */
+function preg_filter($pattern, $replacement, $subject, int $limit = -1, &$count = null) {}
+
+/**
+ * @param array<string>|string $search
+ * @param array<string>|string $replace
+ * @param array<string>|string $subject
+ * @param-out int $count
+ * @return list<string>|string
+ */
+function str_replace($search, $replace, $subject, int &$count = null) {}
+
+/**
+ * @param array<string>|string $search
+ * @param array<string>|string $replace
+ * @param array<string>|string $subject
+ * @param-out int $count
+ * @return list<string>|string
+ */
+function str_ireplace($search, $replace, $subject, int &$count = null) {}
+
+/**
  * @template TRead of null|array<array-key, resource>
  * @template TWrite of null|array<array-key, resource>
  * @template TExcept of null|array<array-key, resource>
@@ -242,3 +290,9 @@ function fsockopen(string $hostname, int $port = -1, int &$error_code = null, st
  * @param-out int $line
  */
 function headers_sent(string &$filename = null, int &$line = null): bool {}
+
+/**
+ * @param mixed $result
+ * @param-out array<string, string|array<string>> $result
+ */
+function mb_parse_str(string $string, &$result = []): bool {}

@@ -16,3 +16,13 @@ class SubX extends X {
 	function &subRefFoo() {}
 
 }
+
+class TraitX {
+	use T;
+}
+
+trait T {
+	function traitFoo() {}
+
+	function &refTraitFoo() {}
+}

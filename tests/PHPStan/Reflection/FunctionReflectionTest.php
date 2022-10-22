@@ -5,6 +5,7 @@ namespace PHPStan\Reflection;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
+use const PHP_VERSION_ID;
 
 class FunctionReflectionTest extends PHPStanTestCase
 {
@@ -156,6 +157,16 @@ class FunctionReflectionTest extends PHPStanTestCase
 		yield ['ReturnsByReference\\SubX', 'foo', false];
 		yield ['ReturnsByReference\\SubX', 'refFoo', true];
 		yield ['ReturnsByReference\\SubX', 'subRefFoo', true];
+
+		yield ['ReturnsByReference\\TraitX', 'traitFoo', false];
+		yield ['ReturnsByReference\\TraitX', 'refTraitFoo', true];
+
+		if (PHP_VERSION_ID < 80100) {
+			return;
+		}
+
+		yield ['ReturnsByReference\\E', 'enumFoo', false];
+		yield ['ReturnsByReference\\E', 'refEnumFoo', true];
 	}
 
 	/**

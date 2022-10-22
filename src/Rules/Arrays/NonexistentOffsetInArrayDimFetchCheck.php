@@ -19,7 +19,11 @@ use function sprintf;
 class NonexistentOffsetInArrayDimFetchCheck
 {
 
-	public function __construct(private RuleLevelHelper $ruleLevelHelper, private bool $reportMaybes)
+	public function __construct(
+		private RuleLevelHelper $ruleLevelHelper,
+		private bool $reportMaybes,
+		private bool $bleedingEdge,
+	)
 	{
 	}
 
@@ -79,8 +83,13 @@ class NonexistentOffsetInArrayDimFetchCheck
 			}
 
 			if ($report) {
+				if ($this->bleedingEdge) {
+					return [
+						RuleErrorBuilder::message(sprintf('Offset %s might not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))->build(),
+					];
+				}
 				return [
-					RuleErrorBuilder::message(sprintf('Offset %s might not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))->build(),
+					RuleErrorBuilder::message(sprintf('Offset %s does not exist on %s.', $dimType->describe(VerbosityLevel::value()), $type->describe(VerbosityLevel::value())))->build(),
 				];
 			}
 		}

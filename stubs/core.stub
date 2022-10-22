@@ -223,3 +223,22 @@ function preg_match($pattern, $subject, &$matches = [], int $flags = 0, int $off
  * @param-out (TExcept is null ? null : array<array-key, resource>) $except
  */
 function stream_select(?array &$read, ?array &$write, ?array &$except, ?int $seconds, ?int $microseconds = null) {}
+
+/**
+ * @param resource $stream
+ * @param-out 0|1 $would_block
+ */
+function flock($stream, int $operation, mixed &$would_block = null): bool {}
+
+/**
+ * @param-out int $error_code
+ * @param-out string $error_message
+ * @return resource|false
+ */
+function fsockopen(string $hostname, int $port = -1, int &$error_code = null, string &$error_message = null, ?float $timeout = null) {}
+
+/**
+ * @param-out string $filename
+ * @param-out int $line
+ */
+function headers_sent(string &$filename = null, int &$line = null): bool {}

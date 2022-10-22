@@ -373,3 +373,22 @@ function fooSubConstruct(string $s) {
 	$x = new SubX('', $s);
 	assertType('float', $s);
 }
+
+function fooFlock(int $f): void
+{
+	$fp=fopen('/tmp/lock.txt', 'r+');
+	flock($fp, $f, $wouldBlock);
+	assertType('0|1', $wouldBlock);
+}
+
+function fooFsockopen() {
+	$fp=fsockopen("udp://127.0.0.1",13, $errno, $errstr);
+	assertType('int', $errno);
+	assertType('string', $errstr);
+}
+
+function fooHeadersSent() {
+	headers_sent($filename, $linenum);
+	assertType('int', $linenum);
+	assertType('string', $filename);
+}

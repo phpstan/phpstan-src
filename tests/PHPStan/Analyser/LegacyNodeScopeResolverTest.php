@@ -7392,19 +7392,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$anotherExpectedArray',
 			],
 			[
-				'array<string>|string',
+				'list<string>|string',
 				'$expectedArrayOrString',
 			],
 			[
-				'(array<string>|string)',
+				'(list<string>|string)',
 				'$expectedBenevolentArrayOrString',
 			],
 			[
-				'array<string>|string|null',
+				'list<string>|string|null',
 				'$expectedArrayOrString2',
 			],
 			[
-				'array<string>|string|null',
+				'list<string>|string|null',
 				'$anotherExpectedArrayOrString',
 			],
 			[

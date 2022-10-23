@@ -6,9 +6,6 @@ parameters:
 	reportMaybes: true
 	checkListType: true
 
-rules:
-	- PHPStan\Rules\Operators\PossiblyDivisionByZeroRule
-
 services:
 	-
 		class: PHPStan\Rules\Operators\PossiblyDivisionByZeroRule

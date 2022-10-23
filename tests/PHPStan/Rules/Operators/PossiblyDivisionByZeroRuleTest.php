@@ -66,27 +66,27 @@ class PossiblyDivisionByZeroRuleTest extends RuleTestCase
 				35,
 			],
 			[
-				'Division by "int<-3, 3>" might result in a division by zero.',
+				'Modulo division by "int<-3, 3>" might result in a division by zero.',
 				43,
 			],
 			[
-				'Division by "int<-3, -2>|int<0, 2>" might result in a division by zero.',
+				'Modulo division by "int<-3, -2>|int<0, 2>" might result in a division by zero.',
 				44,
 			],
 			[
-				'Division by "int" might result in a division by zero.',
+				'Modulo division by "int" might result in a division by zero.',
 				45,
 			],
 			[
-				'Division by "int|null" might result in a division by zero.',
+				'Modulo division by "int|null" might result in a division by zero.',
 				46,
 			],
 			[
-				'Division by "mixed" might result in a division by zero.',
+				'Modulo division by "mixed" might result in a division by zero.',
 				48,
 			],
 			[
-				'Division by "int<min, -1>|int<1, max>|null" might result in a division by zero.',
+				'Modulo division by "int<min, -1>|int<1, max>|null" might result in a division by zero.',
 				55,
 			],
 		]);
@@ -120,23 +120,23 @@ class PossiblyDivisionByZeroRuleTest extends RuleTestCase
 				35,
 			],
 			[
-				'Division by "int<-3, 3>" might result in a division by zero.',
+				'Modulo division by "int<-3, 3>" might result in a division by zero.',
 				43,
 			],
 			[
-				'Division by "int<-3, -2>|int<0, 2>" might result in a division by zero.',
+				'Modulo division by "int<-3, -2>|int<0, 2>" might result in a division by zero.',
 				44,
 			],
 			[
-				'Division by "int" might result in a division by zero.',
+				'Modulo division by "int" might result in a division by zero.',
 				45,
 			],
 			[
-				'Division by "int|null" might result in a division by zero.',
+				'Modulo division by "int|null" might result in a division by zero.',
 				46,
 			],
 			[
-				'Division by "int<min, -1>|int<1, max>|null" might result in a division by zero.',
+				'Modulo division by "int<min, -1>|int<1, max>|null" might result in a division by zero.',
 				55,
 			],
 		]);
@@ -166,19 +166,19 @@ class PossiblyDivisionByZeroRuleTest extends RuleTestCase
 				26,
 			],
 			[
-				'Division by "int<-3, 3>" might result in a division by zero.',
+				'Modulo division by "int<-3, 3>" might result in a division by zero.',
 				43,
 			],
 			[
-				'Division by "int<-3, -2>|int<0, 2>" might result in a division by zero.',
+				'Modulo division by "int<-3, -2>|int<0, 2>" might result in a division by zero.',
 				44,
 			],
 			[
-				'Division by "int" might result in a division by zero.',
+				'Modulo division by "int" might result in a division by zero.',
 				45,
 			],
 			[
-				'Division by "int|null" might result in a division by zero.',
+				'Modulo division by "int|null" might result in a division by zero.',
 				46,
 			],
 		]);
@@ -204,15 +204,15 @@ class PossiblyDivisionByZeroRuleTest extends RuleTestCase
 				26,
 			],
 			[
-				'Division by "int<-3, 3>" might result in a division by zero.',
+				'Modulo division by "int<-3, 3>" might result in a division by zero.',
 				43,
 			],
 			[
-				'Division by "int" might result in a division by zero.',
+				'Modulo division by "int" might result in a division by zero.',
 				45,
 			],
 			[
-				'Division by "int|null" might result in a division by zero.',
+				'Modulo division by "int|null" might result in a division by zero.',
 				46,
 			],
 		]);

@@ -59,7 +59,8 @@ class PossiblyDivisionByZeroRule implements Rule
 		) {
 			return [
 				RuleErrorBuilder::message(sprintf(
-					'Division by "%s" might result in a division by zero.',
+					'%s by "%s" might result in a division by zero.',
+					$node instanceof Node\Expr\BinaryOp\Mod ? 'Modulo division' : 'Division',
 					$scope->getType($right)->describe(VerbosityLevel::value()),
 				))->line($left->getLine())->build(),
 			];

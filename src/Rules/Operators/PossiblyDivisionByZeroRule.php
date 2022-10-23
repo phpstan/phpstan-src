@@ -15,7 +15,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 /**
- * @implements Rule<Node\Expr>
+ * @implements Rule<Node\Expr\BinaryOp>
  */
 class PossiblyDivisionByZeroRule implements Rule
 {
@@ -29,12 +29,15 @@ class PossiblyDivisionByZeroRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Expr\BinaryOp\Div::class;
+		return Node\Expr\BinaryOp::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node instanceof Node\Expr\BinaryOp\Div) {
+		if (
+			!$node instanceof Node\Expr\BinaryOp\Div
+			&& !$node instanceof Node\Expr\BinaryOp\Mod
+		) {
 			return [];
 		}
 

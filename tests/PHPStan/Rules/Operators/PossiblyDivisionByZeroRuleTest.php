@@ -27,6 +27,8 @@ class PossiblyDivisionByZeroRuleTest extends RuleTestCase
 				false,
 				$this->checkUnionTypes,
 				$this->checkExplicitelyMixed,
+				false,
+				false,
 			),
 			$this->checkNullable,
 		);

@@ -28,22 +28,24 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	public function dataFormatterOutputProvider(): iterable
 	{
 		yield [
-			'No errors',
-			0,
-			0,
-			0,
-			'
+			'message' => 'No errors',
+			'exitCode' => 0,
+			'numFileErrors' => 0,
+			'numGenericErrors' => 0,
+			'extraEnvVars' => [],
+			'expected' => '
  [OK] No errors
 
 ',
 		];
 
 		yield [
-			'One file error',
-			1,
-			1,
-			0,
-			' ------ -------------------------------------------------------------------
+			'message' => 'One file error',
+			'exitCode' => 1,
+			'numFileErrors' => 1,
+			'numGenericErrors' => 0,
+			'extraEnvVars' => [],
+			'expected' => ' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
  ------ -------------------------------------------------------------------
   4      Foo
@@ -56,11 +58,12 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		];
 
 		yield [
-			'One generic error',
-			1,
-			0,
-			1,
-			' -- ---------------------
+			'message' => 'One generic error',
+			'exitCode' => 1,
+			'numFileErrors' => 0,
+			'numGenericErrors' => 1,
+			'extraEnvVars' => [],
+			'expected' => ' -- ---------------------
      Error
  -- ---------------------
      first generic error
@@ -73,11 +76,12 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		];
 
 		yield [
-			'Multiple file errors',
-			1,
-			4,
-			0,
-			' ------ -------------------------------------------------------------------
+			'message' => 'Multiple file errors',
+			'exitCode' => 1,
+			'numFileErrors' => 4,
+			'numGenericErrors' => 0,
+			'extraEnvVars' => [],
+			'expected' => ' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
  ------ -------------------------------------------------------------------
   2      Bar
@@ -100,11 +104,12 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		];
 
 		yield [
-			'Multiple generic errors',
-			1,
-			0,
-			2,
-			' -- ----------------------
+			'message' => 'Multiple generic errors',
+			'exitCode' => 1,
+			'numFileErrors' => 0,
+			'numGenericErrors' => 2,
+			'extraEnvVars' => [],
+			'expected' => ' -- ----------------------
      Error
  -- ----------------------
      first generic error
@@ -118,11 +123,12 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		];
 
 		yield [
-			'Multiple file, multiple generic errors',
-			1,
-			4,
-			2,
-			' ------ -------------------------------------------------------------------
+			'message' => 'Multiple file, multiple generic errors',
+			'exitCode' => 1,
+			'numFileErrors' => 4,
+			'numGenericErrors' => 2,
+			'extraEnvVars' => [],
+			'expected' => ' ------ -------------------------------------------------------------------
   Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
  ------ -------------------------------------------------------------------
   2      Bar
@@ -150,6 +156,24 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 ',
 		];
+
+		yield [
+			'message' => 'One file error, called via Visual Studio Code',
+			'exitCode' => 1,
+			'numFileErrors' => 1,
+			'numGenericErrors' => 0,
+			'extraEnvVars' => ['TERM_PROGRAM=vscode'],
+			'expected' => ' ------ -------------------------------------------------------------------
+  Line   folder with unicode 😃/file name with "spaces" and unicode 😃.php
+ ------ -------------------------------------------------------------------
+  :4     Foo
+ ------ -------------------------------------------------------------------
+
+
+ [ERROR] Found 1 error
+
+',
+		];
 	}
 
 	/**
@@ -161,6 +185,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		int $exitCode,
 		int $numFileErrors,
 		int $numGenericErrors,
+		array $extraEnvVars,
 		string $expected,
 	): void
 	{
@@ -168,6 +193,10 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			self::markTestSkipped('Skipped on PHP 8.1 because of different result');
 		}
 		$formatter = $this->createErrorFormatter(null);
+
+		foreach ($extraEnvVars as $envVar) {
+			putenv($envVar);
+		}
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),

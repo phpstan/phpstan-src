@@ -178,7 +178,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 	/**
 	 * @dataProvider dataFormatterOutputProvider
-	 *
+	 * @param array<string> $extraEnvVars
 	 */
 	public function testFormatErrors(
 		string $message,

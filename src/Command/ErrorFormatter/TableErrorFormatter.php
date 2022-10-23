@@ -11,6 +11,7 @@ use PHPStan\File\SimpleRelativePathHelper;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use function array_map;
 use function count;
+use function getenv;
 use function is_string;
 use function sprintf;
 use function str_replace;
@@ -88,7 +89,7 @@ class TableErrorFormatter implements ErrorFormatter
 					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $this->relativePathHelper->getRelativePath($editorFile) . '</>';
 				}
 				$rows[] = [
-					(string) $error->getLine(),
+					$this->formatLineNumber($error->getLine()),
 					$message,
 				];
 			}
@@ -117,6 +118,20 @@ class TableErrorFormatter implements ErrorFormatter
 		}
 
 		return $analysisResult->getTotalErrorsCount() > 0 ? 1 : 0;
+	}
+
+	private function formatLineNumber(?int $lineNumber): string
+	{
+		if ($lineNumber === null) {
+			return '';
+		}
+
+		$isRunningInVSCodeTerminal = getenv('TERM_PROGRAM') === 'vscode';
+		if ($isRunningInVSCodeTerminal) {
+			return ':' . $lineNumber;
+		}
+
+		return (string) $lineNumber;
 	}
 
 }

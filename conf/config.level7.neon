@@ -5,3 +5,14 @@ parameters:
 	checkUnionTypes: true
 	reportMaybes: true
 	checkListType: true
+
+rules:
+	- PHPStan\Rules\Operators\PossiblyDivisionByZeroRule
+
+services:
+	-
+		class: PHPStan\Rules\Operators\PossiblyDivisionByZeroRule
+		arguments:
+			checkNullables: %checkNullables%
+		tags:
+			- phpstan.rules.rule

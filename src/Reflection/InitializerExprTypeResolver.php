@@ -1122,6 +1122,25 @@ class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
+		if ($leftType instanceof MixedType || $rightType instanceof MixedType) {
+			return new BenevolentUnionType([
+				new FloatType(),
+				new IntegerType(),
+			]);
+		}
+
+		$object = new ObjectWithoutClassType();
+		if (
+			!$leftType instanceof NeverType &&
+			!$rightType instanceof NeverType &&
+			(
+				!$object->isSuperTypeOf($leftType)->no()
+				|| !$object->isSuperTypeOf($rightType)->no()
+			)
+		) {
+			return TypeCombinator::union($leftType, $rightType);
+		}
+
 		$leftTypes = TypeUtils::getConstantScalars($leftType);
 		$rightTypes = TypeUtils::getConstantScalars($rightType);
 		$leftTypesCount = count($leftTypes);

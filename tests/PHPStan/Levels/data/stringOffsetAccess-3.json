@@ -8,5 +8,10 @@
         "message": "Offset 12.34 does not exist on 'foo'.",
         "line": 16,
         "ignorable": true
+    },
+    {
+        "message": "Invalid array key type stdClass.",
+        "line": 59,
+        "ignorable": true
     }
 ]

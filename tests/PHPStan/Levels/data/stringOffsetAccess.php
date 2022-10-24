@@ -49,4 +49,12 @@ function () {
 	/** @var mixed $mixed */
 	$mixed = null;
 	echo $mixed[$maybeInt];
+
+	/** @var array{foo: 17, bar: 19}|array{baz: 21} $arrayUnion */
+	$arrayUnion = [];
+	echo $arrayUnion[$maybeInt];
+
+	/** @var array{foo: 17, bar: 19}|array{baz: 21} $arrayUnion */
+	$arrayUnion = [];
+	echo $arrayUnion[new \stdClass()];
 };

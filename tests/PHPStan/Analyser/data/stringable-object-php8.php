@@ -11,3 +11,14 @@ function foo($object)
 {
 	assertType('Stringable', $object);
 }
+
+/**
+ * @param object $object
+ */
+function bar($object)
+{
+	assertType('object', $object);
+	if (method_exists($object, '__toString')) {
+		assertType('Stringable', $object);
+	}
+}

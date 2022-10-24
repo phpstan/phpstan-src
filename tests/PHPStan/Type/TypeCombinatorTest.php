@@ -2646,7 +2646,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new HasMethodType('__toString'),
 				],
 				IntersectionType::class,
-				'object&hasMethod(__toString)',
+				'stringable-object',
 			],
 			[
 				[
@@ -2665,7 +2665,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new HasMethodType('__toString'),
 				],
 				IntersectionType::class,
-				'object&hasMethod(__toString)',
+				'stringable-object',
 			],
 			[
 				[

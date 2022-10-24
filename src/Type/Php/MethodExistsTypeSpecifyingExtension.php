@@ -16,8 +16,10 @@ use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function count;
+use function strtolower;
 
 class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -62,16 +64,29 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 		return $this->typeSpecifier->create(
 			$node->getArgs()[0]->value,
 			new UnionType([
-				new IntersectionType([
-					new ObjectWithoutClassType(),
-					new HasMethodType($methodNameType->getValue()),
-				]),
+				$this->resolveObjectMethodType($methodNameType->getValue()),
 				new ClassStringType(),
 			]),
 			$context,
 			false,
 			$scope,
 		);
+	}
+
+	private function resolveObjectMethodType(string $methodName): Type
+	{
+		if (strtolower($methodName) === '__tostring') {
+			$stringableType = new ObjectType('Stringable');
+			$classReflection = $stringableType->getClassReflection();
+			if ($classReflection !== null && $classReflection->isBuiltin()) {
+				return $stringableType;
+			}
+		}
+
+		return new IntersectionType([
+			new ObjectWithoutClassType(),
+			new HasMethodType($methodName),
+		]);
 	}
 
 }

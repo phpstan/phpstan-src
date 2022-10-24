@@ -51,7 +51,7 @@ class FooWithProperty
 
 }
 
-class Bar
+class BazWithProperty
 {
 
 	/**

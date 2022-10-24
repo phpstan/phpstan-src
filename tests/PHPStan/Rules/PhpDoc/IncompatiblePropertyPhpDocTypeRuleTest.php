@@ -125,7 +125,7 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 				49,
 			],
 			[
-				'PHPDoc type for property InvalidPhpDocPromotedProperties\Bar::$bar with type string is incompatible with native type int.',
+				'PHPDoc type for property InvalidPhpDocPromotedProperties\BazWithProperty::$bar with type string is incompatible with native type int.',
 				61,
 			],
 		]);

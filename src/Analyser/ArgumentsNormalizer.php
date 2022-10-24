@@ -120,12 +120,20 @@ final class ArgumentsNormalizer
 			return $callArgs;
 		}
 
+		$hasVariadic = false;
 		$argumentPositions = [];
 		foreach ($signatureParameters as $i => $parameter) {
+			if ($hasVariadic) {
+				// variadic parameter must be last
+				return null;
+			}
+
+			$hasVariadic = $parameter->isVariadic();
 			$argumentPositions[$parameter->getName()] = $i;
 		}
 
 		$reorderedArgs = [];
+		$additionalNamedArgs = [];
 		foreach ($callArgs as $i => $arg) {
 			if ($arg->name === null) {
 				// add regular args as is
@@ -142,7 +150,31 @@ final class ArgumentsNormalizer
 					$attributes,
 					null,
 				);
+			} else {
+				if (!$hasVariadic) {
+					return null;
+				}
+
+				$attributes = $arg->getAttributes();
+				$attributes[self::ORIGINAL_ARG_ATTRIBUTE] = $arg;
+				$additionalNamedArgs[] = new Arg(
+					$arg->value,
+					$arg->byRef,
+					$arg->unpack,
+					$attributes,
+					null,
+				);
 			}
+		}
+
+		// replace variadic parameter with additional named args, except if it is already set
+		$additionalNamedArgsOffset = count($argumentPositions) - 1;
+		if (array_key_exists($additionalNamedArgsOffset, $reorderedArgs)) {
+			$additionalNamedArgsOffset++;
+		}
+
+		foreach ($additionalNamedArgs as $i => $additionalNamedArg) {
+			$reorderedArgs[$additionalNamedArgsOffset + $i] = $additionalNamedArg;
 		}
 
 		if (count($reorderedArgs) === 0) {

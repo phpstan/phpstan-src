@@ -26,9 +26,9 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 	{
 		yield [
 			[
-				['one', false, null],
-				['two', false, null],
-				['three', false, null],
+				['one', false, false, null],
+				['two', false, false, null],
+				['three', false, false, null],
 			],
 			[
 				[new IntegerType(), null],
@@ -44,9 +44,9 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 
 		yield [
 			[
-				['one', false, null],
-				['two', false, null],
-				['three', false, null],
+				['one', false, false, null],
+				['two', false, false, null],
+				['three', false, false, null],
 			],
 			[
 				[new IntegerType(), 'one'],
@@ -62,9 +62,9 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 
 		yield [
 			[
-				['one', false, null],
-				['two', false, null],
-				['three', false, null],
+				['one', false, false, null],
+				['two', false, false, null],
+				['three', false, false, null],
 			],
 			[
 				[new StringType(), 'two'],
@@ -81,9 +81,9 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 		// could be invalid
 		yield [
 			[
-				['one', false, null],
-				['two', false, null],
-				['three', false, null],
+				['one', false, false, null],
+				['two', false, false, null],
+				['three', false, false, null],
 			],
 			[
 				[new StringType(), 'two'],
@@ -97,9 +97,9 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 
 		yield [
 			[
-				['one', false, null],
-				['two', false, null],
-				['three', false, null],
+				['one', false, false, null],
+				['two', false, false, null],
+				['three', false, false, null],
 			],
 			[
 				[new IntegerType(), null],
@@ -113,9 +113,9 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 
 		yield [
 			[
-				['one', true, new IntegerType()],
-				['two', true, new StringType()],
-				['three', true, new FloatType()],
+				['one', true, false, new IntegerType()],
+				['two', true, false, new StringType()],
+				['three', true, false, new FloatType()],
 			],
 			[],
 			[],
@@ -123,9 +123,9 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 
 		yield [
 			[
-				['one', true, new IntegerType()],
-				['two', true, new StringType()],
-				['three', true, new FloatType()],
+				['one', true, false, new IntegerType()],
+				['two', true, false, new StringType()],
+				['three', true, false, new FloatType()],
 			],
 			[
 				[new StringType(), 'two'],
@@ -138,9 +138,9 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 
 		yield [
 			[
-				['one', true, new IntegerType()],
-				['two', true, new StringType()],
-				['three', true, new FloatType()],
+				['one', true, false, new IntegerType()],
+				['two', true, false, new StringType()],
+				['three', true, false, new FloatType()],
 			],
 			[
 				[new StringType(), 'one'],
@@ -152,21 +152,28 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 
 		yield [
 			[
-				['one', true, new IntegerType()],
-				['two', true, new StringType()],
-				['three', true, new FloatType()],
+				['one', true, false, new IntegerType()],
+				['two', true, false, new StringType()],
+				['three', true, false, new FloatType()],
+				['rest', true, true, new StringType()],
 			],
 			[
 				[new StringType(), 'onee'],
 			],
-			[],
+			[
+				new IntegerType(),
+				new StringType(),
+				new FloatType(),
+				new StringType(),
+			],
 		];
 
 		yield [
 			[
-				['one', true, new IntegerType()],
-				['two', true, new StringType()],
-				['three', true, new FloatType()],
+				['one', true, false, new IntegerType()],
+				['two', true, false, new StringType()],
+				['three', true, false, new FloatType()],
+				['rest', true, true, new StringType()],
 			],
 			[
 				[new IntegerType(), null],
@@ -174,13 +181,32 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 			],
 			[
 				new IntegerType(),
+				new StringType(),
+				new FloatType(),
+				new StringType(),
+			],
+		];
+
+		yield [
+			[
+				['one', true, false, new IntegerType()],
+				['rest', true, true, new StringType()],
+			],
+			[
+				[new StringType(), 'rest'],
+				[new StringType(), 'another'],
+			],
+			[
+				new IntegerType(),
+				new StringType(),
+				new StringType(),
 			],
 		];
 	}
 
 	/**
 	 * @dataProvider dataReorderValid
-	 * @param array<int, array{string, bool, ?Type}> $parameterSettings
+	 * @param array<int, array{string, bool, bool, ?Type}> $parameterSettings
 	 * @param array<int, array{Type, ?string}> $argumentSettings
 	 * @param array<int, Type> $expectedArgumentTypes
 	 */
@@ -191,13 +217,13 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 	): void
 	{
 		$parameters = [];
-		foreach ($parameterSettings as [$name, $optional, $defaultValue]) {
+		foreach ($parameterSettings as [$name, $optional, $variadic, $defaultValue]) {
 			$parameters[] = new DummyParameter(
 				$name,
 				new MixedType(),
 				$optional,
 				null,
-				false,
+				$variadic,
 				$defaultValue,
 			);
 		}
@@ -236,9 +262,9 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 	{
 		yield [
 			[
-				['one', false, null],
-				['two', false, null],
-				['three', false, null],
+				['one', false, false, null],
+				['two', false, false, null],
+				['three', false, false, null],
 			],
 			[
 				[new StringType(), 'two'],
@@ -247,20 +273,43 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 
 		yield [
 			[
-				['one', false, null],
-				['two', false, null],
-				['three', false, null],
+				['one', false, false, null],
+				['two', false, false, null],
+				['three', false, false, null],
 			],
 			[
 				[new IntegerType(), null],
 				[new StringType(), 'three'],
 			],
 		];
+
+		yield [
+			[
+				['one', true, false, new IntegerType()],
+				['two', true, false, new StringType()],
+				['three', true, false, new FloatType()],
+			],
+			[
+				[new StringType(), 'onee'],
+			],
+		];
+
+		yield [
+			[
+				['one', true, false, new IntegerType()],
+				['two', true, false, new StringType()],
+				['three', true, false, new FloatType()],
+			],
+			[
+				[new IntegerType(), null],
+				[new StringType(), 'onee'],
+			],
+		];
 	}
 
 	/**
 	 * @dataProvider dataReorderInvalid
-	 * @param array<int, array{string, bool, ?Type}> $parameterSettings
+	 * @param array<int, array{string, bool, bool, ?Type}> $parameterSettings
 	 * @param array<int, array{Type, ?string}> $argumentSettings
 	 */
 	public function testReorderInvalid(
@@ -269,13 +318,13 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 	): void
 	{
 		$parameters = [];
-		foreach ($parameterSettings as [$name, $optional, $defaultValue]) {
+		foreach ($parameterSettings as [$name, $optional, $variadic, $defaultValue]) {
 			$parameters[] = new DummyParameter(
 				$name,
 				new MixedType(),
 				$optional,
 				null,
-				false,
+				$variadic,
 				$defaultValue,
 			);
 		}

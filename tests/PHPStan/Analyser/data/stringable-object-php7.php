@@ -14,5 +14,5 @@ interface Stringable
  */
 function foo($object)
 {
-	assertType('object&hasMethod(__toString)', $object);
+	assertType('stringable-object', $object);
 }

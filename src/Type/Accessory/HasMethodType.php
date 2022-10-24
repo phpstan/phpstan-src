@@ -41,7 +41,7 @@ class HasMethodType implements AccessoryType, CompoundType
 		return [];
 	}
 
-	private function getCanonicalMethodName(): string
+	public function getCanonicalMethodName(): string
 	{
 		return strtolower($this->methodName);
 	}

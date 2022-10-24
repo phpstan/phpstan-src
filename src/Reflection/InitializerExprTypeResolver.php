@@ -1220,6 +1220,66 @@ class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
+		if ($leftType instanceof IntegerRangeType && $rightType instanceof IntegerRangeType) {
+			$min = null;
+			$max = null;
+			if ($leftType->getMin() !== null && $rightType->getMin() !== null) {
+				$min = $leftType->getMin() ** $rightType->getMin();
+			}
+			if ($leftType->getMax() !== null && $rightType->getMax() !== null) {
+				$max = $leftType->getMax() ** $rightType->getMax();
+			}
+
+			if (!is_float($min) && !is_float($max)) {
+				return IntegerRangeType::fromInterval($min, $max);
+			}
+		}
+
+		if (
+			($leftType instanceof IntegerRangeType && $rightTypesCount > 0)
+			|| ($rightType instanceof IntegerRangeType && $leftTypesCount > 0)
+		) {
+			if ($leftType instanceof IntegerRangeType) {
+				$min = $leftType->getMin();
+				$max = $leftType->getMax();
+
+				$minType = $min === null ? new NullType() : $this->getPowType(new LNumber($min), $right, $getTypeCallback);
+				$maxType = $max === null ? new NullType() : $this->getPowType(new LNumber($max), $right, $getTypeCallback);
+			} elseif ($rightType instanceof IntegerRangeType) {
+				$min = $rightType->getMin();
+				$max = $rightType->getMax();
+
+				$minType = $min === null ? new NullType() : $this->getPowType($left, new LNumber($min), $getTypeCallback);
+				$maxType = $max === null ? new NullType() : $this->getPowType($left, new LNumber($max), $getTypeCallback);
+			} else {
+				throw new ShouldNotHappenException();
+			}
+
+			$minTypes = TypeUtils::getConstantIntegers($minType);
+			$maxTypes = TypeUtils::getConstantIntegers($maxType);
+
+			$resultTypes = [];
+			if (count($minTypes) === count($maxTypes)) {
+				foreach (array_keys($minTypes) as $i) {
+					$resultTypes[] = IntegerRangeType::fromInterval($minTypes[$i]->getValue(), $maxTypes[$i]->getValue());
+				}
+			} elseif (count($minTypes) === 1) {
+				$minType = $minTypes[0];
+				foreach ($maxTypes as $constantMaxType) {
+					$resultTypes[] = IntegerRangeType::fromInterval($minType->getValue(), $constantMaxType->getValue());
+				}
+			} elseif (count($maxTypes) === 1) {
+				$maxType = $maxTypes[0];
+				foreach ($minTypes as $constantMinType) {
+					$resultTypes[] = IntegerRangeType::fromInterval($constantMinType->getValue(), $maxType->getValue());
+				}
+			}
+
+			if (count($resultTypes) > 0) {
+				return TypeCombinator::union(...$resultTypes);
+			}
+		}
+
 		return $this->resolveCommonMath(new BinaryOp\Pow($left, $right), $leftType, $rightType);
 	}
 

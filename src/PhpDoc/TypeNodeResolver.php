@@ -44,6 +44,7 @@ use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
@@ -324,6 +325,16 @@ class TypeNodeResolver
 
 			case 'object':
 				return new ObjectWithoutClassType();
+
+			case 'stringable-object':
+				if ($this->getReflectionProvider()->hasClass('Stringable')) {
+					$classReflection = $this->getReflectionProvider()->getClass('Stringable');
+					if ($classReflection->isBuiltin() && $classReflection->hasNativeMethod('__toString')) {
+						return new ObjectType('Stringable', null, $classReflection);
+					}
+				}
+
+				return new IntersectionType([new ObjectWithoutClassType(), new HasMethodType('__toString')]);
 
 			case 'never':
 				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);

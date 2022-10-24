@@ -50,3 +50,17 @@ class FooWithProperty
 	) { }
 
 }
+
+class Bar
+{
+
+	/**
+	 * @param int $foo
+	 * @param string $bar
+	 */
+	public function __construct(private int $foo, private int $bar)
+	{
+
+	}
+
+}

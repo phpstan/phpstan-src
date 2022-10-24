@@ -8,6 +8,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeAbstract;
+use PHPStan\Type\Type;
 
 /** @api */
 class ClassPropertyNode extends NodeAbstract implements VirtualNode
@@ -19,6 +20,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		private Identifier|Name|Node\ComplexType|null $type,
 		private ?Expr $default,
 		private ?string $phpDoc,
+		private ?Type $phpDocType,
 		private bool $isPromoted,
 		Node $originalNode,
 		private bool $isReadonlyByPhpDoc,
@@ -52,6 +54,11 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 	public function getPhpDoc(): ?string
 	{
 		return $this->phpDoc;
+	}
+
+	public function getPhpDocType(): ?Type
+	{
+		return $this->phpDocType;
 	}
 
 	public function isPublic(): bool

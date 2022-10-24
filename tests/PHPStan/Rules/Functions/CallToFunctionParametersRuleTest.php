@@ -392,19 +392,19 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/unpack-operator.php'], [
 			[
-				'Parameter #2 ...$values of function sprintf expects bool|float|int|string|null, array<string> given.',
+				'Parameter #2 ...$values of function sprintf expects bool|float|int|object|string|null, array<string> given.',
 				18,
 			],
 			[
-				'Parameter #2 ...$values of function sprintf expects bool|float|int|string|null, array<int, string> given.',
+				'Parameter #2 ...$values of function sprintf expects bool|float|int|object|string|null, array<int, string> given.',
 				19,
 			],
 			[
-				'Parameter #2 ...$values of function sprintf expects bool|float|int|string|null, UnpackOperator\Foo given.',
+				'Parameter #2 ...$values of function sprintf expects bool|float|int|object|string|null, UnpackOperator\Foo given.',
 				22,
 			],
 			[
-				'Parameter #2 ...$values of function printf expects bool|float|int|string|null, UnpackOperator\Foo given.',
+				'Parameter #2 ...$values of function printf expects bool|float|int|object|string|null, UnpackOperator\Foo given.',
 				24,
 			],
 		]);
@@ -414,7 +414,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/fputcsv-fields-parameter.php'], [
 			[
-				'Parameter #2 $fields of function fputcsv expects array<int|string, bool|float|int|string|null>, array<int, Fputcsv\Person> given.',
+				'Parameter #2 $fields of function fputcsv expects array<int|string, bool|float|int|object|string|null>, array<int, Fputcsv\Person> given.',
 				35,
 			],
 		]);

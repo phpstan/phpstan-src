@@ -133,7 +133,6 @@ class UnionTypeTest extends PHPStanTestCase
 		yield [new ResourceType()];
 		yield [new StaticType($reflectionProvider->getClass('Foo'))];
 		yield [new StrictMixedType()];
-		yield [new StringAlwaysAcceptingObjectWithToStringType()];
 		yield [$stringType];
 		yield [TemplateTypeFactory::create($templateTypeScope, 'T', null, TemplateTypeVariance::createInvariant())];
 		yield [TemplateTypeFactory::create($templateTypeScope, 'T', new ObjectType('Foo'), TemplateTypeVariance::createInvariant())];

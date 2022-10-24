@@ -34,17 +34,12 @@ class ApiInstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/new-out-of-phpstan.php'], [
 			[
 				'Creating new PHPStan\Type\FileTypeMapper is not covered by backward compatibility promise. The class might change in a minor PHPStan version.',
-				18,
+				17,
 				$tip,
 			],
 			[
 				'Creating new PHPStan\DependencyInjection\NeonAdapter is not covered by backward compatibility promise. The class might change in a minor PHPStan version.',
-				19,
-				$tip,
-			],
-			[
-				'Creating new PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType is not covered by backward compatibility promise. The class might change in a minor PHPStan version.',
-				20,
+				18,
 				$tip,
 			],
 		]);

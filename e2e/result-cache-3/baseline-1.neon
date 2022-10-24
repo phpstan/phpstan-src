@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Type TestResultCache3\\\\Baz in generic type TestResultCache3\\\\BarTrait\\<TestResultCache3\\\\Baz\\> in PHPDoc tag @use is not subtype of template type T of Exception of trait TestResultCache3\\\\BarTrait\\.$#"
+			count: 1
+			path: src/Foo.php

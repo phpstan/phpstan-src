@@ -1,0 +1,11 @@
+--- src/Baz.php	2022-10-24 14:28:45.000000000 +0200
++++ src/Baz.php	2022-10-24 14:30:02.000000000 +0200
+@@ -2,7 +2,7 @@
+
+ namespace TestResultCache3;
+
+-class Baz extends \Exception
++class Baz extends \stdClass
+ {
+
+ }

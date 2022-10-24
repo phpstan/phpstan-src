@@ -21,6 +21,7 @@ use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use function array_merge;
 use function count;
@@ -32,6 +33,7 @@ class DependencyResolver
 		private FileHelper $fileHelper,
 		private ReflectionProvider $reflectionProvider,
 		private ExportedNodeResolver $exportedNodeResolver,
+		private FileTypeMapper $fileTypeMapper,
 	)
 	{
 	}
@@ -259,6 +261,22 @@ class DependencyResolver
 		} elseif ($node instanceof Node\Stmt\TraitUse) {
 			foreach ($node->traits as $traitName) {
 				$this->addClassToDependencies($traitName->toString(), $dependenciesReflections);
+			}
+
+			$docComment = $node->getDocComment();
+			if ($docComment !== null) {
+				$usesTags = $this->fileTypeMapper->getResolvedPhpDoc(
+					$scope->getFile(),
+					$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
+					$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
+					null,
+					$docComment->getText(),
+				)->getUsesTags();
+				foreach ($usesTags as $usesTag) {
+					foreach ($usesTag->getType()->getReferencedClasses() as $referencedClass) {
+						$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+					}
+				}
 			}
 		} elseif ($node instanceof Node\Expr\Instanceof_) {
 			if ($node->class instanceof Name) {

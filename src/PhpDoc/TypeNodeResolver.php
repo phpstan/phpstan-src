@@ -325,6 +325,9 @@ class TypeNodeResolver
 			case 'object':
 				return new ObjectWithoutClassType();
 
+			case 'callable-object':
+				return new IntersectionType([new ObjectWithoutClassType(), new CallableType()]);
+
 			case 'never':
 				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
 

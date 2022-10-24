@@ -1,0 +1,11 @@
+--- src/Bar.php	2022-10-24 14:28:45.000000000 +0200
++++ src/Bar.php	2022-10-24 14:30:02.000000000 +0200
+@@ -2,7 +2,7 @@
+
+ namespace TestResultCache3;
+
+-class Bar extends \Exception
++class Bar extends \stdClass
+ {
+
+ }

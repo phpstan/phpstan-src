@@ -1,0 +1,6 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^PHPDoc tag @var for property TestResultCache4\\\\Foo\\:\\:\\$foo with type TestResultCache4\\\\Bar is incompatible with native type Exception\\.$#"
+			count: 1
+			path: src/Foo.php

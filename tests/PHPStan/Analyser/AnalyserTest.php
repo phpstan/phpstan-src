@@ -613,7 +613,7 @@ class AnalyserTest extends PHPStanTestCase
 				new NameResolver(),
 				self::getContainer(),
 			),
-			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, new ExprPrinter(new Printer()))),
+			new DependencyResolver($fileHelper, $reflectionProvider, new ExportedNodeResolver($fileTypeMapper, new ExprPrinter(new Printer())), $fileTypeMapper),
 			new RuleErrorTransformer(),
 			$reportUnmatchedIgnoredErrors,
 		);

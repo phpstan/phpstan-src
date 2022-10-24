@@ -12,6 +12,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Broker\FunctionNotFoundException;
 use PHPStan\File\FileHelper;
+use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ClassReflection;
@@ -22,6 +23,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
 use function array_merge;
 use function count;
@@ -73,6 +75,20 @@ class DependencyResolver
 				$this->extractThrowType($nativeMethod->getThrowType(), $dependenciesReflections);
 				if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
 					$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
+				}
+			}
+		} elseif ($node instanceof ClassPropertyNode) {
+			$nativeTypeNode = $node->getNativeType();
+			if ($nativeTypeNode !== null && $scope->isInClass()) {
+				$nativeType = ParserNodeTypeToPHPStanType::resolve($nativeTypeNode, $scope->getClassReflection());
+				foreach ($nativeType->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+			}
+			$phpDocType = $node->getPhpDocType();
+			if ($phpDocType !== null) {
+				foreach ($phpDocType->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 				}
 			}
 		} elseif ($node instanceof InFunctionNode) {

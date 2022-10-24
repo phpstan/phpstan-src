@@ -5,7 +5,6 @@ namespace PHPStan\Rules\PhpDoc;
 use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use PHPStan\Type\FileTypeMapper;
 
 /**
  * @extends RuleTestCase<IncompatiblePropertyPhpDocTypeRule>
@@ -18,7 +17,6 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 		return new IncompatiblePropertyPhpDocTypeRule(
 			new GenericObjectTypeCheck(),
 			new UnresolvableTypeHelper(),
-			self::getContainer()->getByType(FileTypeMapper::class),
 		);
 	}
 
@@ -125,6 +123,10 @@ class IncompatiblePropertyPhpDocTypeRuleTest extends RuleTestCase
 			[
 				'PHPDoc type for property InvalidPhpDocPromotedProperties\FooWithProperty::$unknownClassConstant2 contains unresolvable type.',
 				49,
+			],
+			[
+				'PHPDoc type for property InvalidPhpDocPromotedProperties\BazWithProperty::$bar with type string is incompatible with native type int.',
+				61,
 			],
 		]);
 	}

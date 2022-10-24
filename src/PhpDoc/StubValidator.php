@@ -171,7 +171,7 @@ class StubValidator
 				$genericObjectTypeCheck,
 				$unresolvableTypeHelper,
 			),
-			new IncompatiblePropertyPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper, $fileTypeMapper),
+			new IncompatiblePropertyPhpDocTypeRule($genericObjectTypeCheck, $unresolvableTypeHelper),
 			new InvalidPhpDocTagValueRule(
 				$container->getByType(Lexer::class),
 				$container->getByType(PhpDocParser::class),

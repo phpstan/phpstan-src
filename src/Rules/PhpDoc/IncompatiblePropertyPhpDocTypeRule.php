@@ -10,12 +10,10 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
-use function count;
 use function sprintf;
 
 /**
@@ -27,7 +25,6 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 	public function __construct(
 		private GenericObjectTypeCheck $genericObjectTypeCheck,
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
-		private FileTypeMapper $fileTypeMapper,
 	)
 	{
 	}
@@ -44,27 +41,7 @@ class IncompatiblePropertyPhpDocTypeRule implements Rule
 		}
 
 		$propertyName = $node->getName();
-		$phpDoc = $node->getPhpDoc();
-		if ($phpDoc === null) {
-			return [];
-		}
-
-		$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc(
-			$scope->getFile(),
-			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
-			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-			null,
-			$phpDoc,
-		);
-
-		$varTags = $resolvedPhpDoc->getVarTags();
-		$phpDocType = null;
-		if (isset($varTags[0]) && count($varTags) === 1) {
-			$phpDocType = $varTags[0]->getType();
-		} elseif (isset($varTags[$propertyName])) {
-			$phpDocType = $varTags[$propertyName]->getType();
-		}
-
+		$phpDocType = $node->getPhpDocType();
 		if ($phpDocType === null) {
 			return [];
 		}

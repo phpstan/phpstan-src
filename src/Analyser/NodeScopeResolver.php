@@ -106,6 +106,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\PhpDocInheritanceResolver;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\StubPhpDocProvider;
+use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -522,6 +523,7 @@ class NodeScopeResolver
 						$param->type,
 						null,
 						$phpDoc,
+						$phpDocParameterTypes[$param->var->name] ?? null,
 						true,
 						$param,
 						false,
@@ -670,17 +672,25 @@ class NodeScopeResolver
 
 			foreach ($stmt->props as $prop) {
 				$this->processStmtNode($prop, $scope, $nodeCallback);
-				[,,,,,,,,,,$isReadOnly, $docComment] = $this->getPhpDocs($scope, $stmt);
+				[,,,,,,,,,,$isReadOnly, $docComment, ,,,$varTags] = $this->getPhpDocs($scope, $stmt);
 				if (!$scope->isInClass()) {
 					throw new ShouldNotHappenException();
 				}
+				$propertyName = $prop->name->toString();
+				$phpDocType = null;
+				if (isset($varTags[0]) && count($varTags) === 1) {
+					$phpDocType = $varTags[0]->getType();
+				} elseif (isset($varTags[$propertyName])) {
+					$phpDocType = $varTags[$propertyName]->getType();
+				}
 				$nodeCallback(
 					new ClassPropertyNode(
-						$prop->name->toString(),
+						$propertyName,
 						$stmt->flags,
 						$stmt->type,
 						$prop->default,
 						$docComment,
+						$phpDocType,
 						false,
 						$prop,
 						$isReadOnly,
@@ -4070,7 +4080,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @return array{TemplateTypeMap, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>}
+	 * @return array{TemplateTypeMap, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>, array<(string|int), VarTag>}
 	 */
 	public function getPhpDocs(Scope $scope, Node\FunctionLike|Node\Stmt\Property $node): array
 	{
@@ -4169,6 +4179,7 @@ class NodeScopeResolver
 			);
 		}
 
+		$varTags = [];
 		if ($resolvedPhpDoc !== null) {
 			$templateTypeMap = $resolvedPhpDoc->getTemplateTypeMap();
 			foreach ($resolvedPhpDoc->getParamTags() as $paramName => $paramTag) {
@@ -4201,9 +4212,10 @@ class NodeScopeResolver
 			$isReadOnly = $isReadOnly || $resolvedPhpDoc->isReadOnly();
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
 			$selfOutType = $resolvedPhpDoc->getSelfOutTag() !== null ? $resolvedPhpDoc->getSelfOutTag()->getType() : null;
+			$varTags = $resolvedPhpDoc->getVarTags();
 		}
 
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $varTags];
 	}
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type

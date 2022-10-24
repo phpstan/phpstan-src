@@ -12,7 +12,7 @@ class HelloWorld
 			assertType('list<mixed>', array_values($mixed));
 		} else {
 			assertType('mixed~array', $mixed);
-			assertType('*ERROR*', array_values($mixed));
+			assertType('*NEVER*', array_values($mixed));
 		}
 	}
 
@@ -25,7 +25,7 @@ class HelloWorld
 			assertType('list<string>', array_values($list));
 		} else {
 			assertType('*NEVER*', $list);
-			assertType('*ERROR*', array_values($list));
+			assertType('*NEVER*', array_values($list));
 		}
 	}
 }

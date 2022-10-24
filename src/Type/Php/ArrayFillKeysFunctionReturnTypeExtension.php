@@ -4,13 +4,20 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use function count;
 
 class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -23,7 +30,12 @@ class ArrayFillKeysFunctionReturnTypeExtension implements DynamicFunctionReturnT
 			return null;
 		}
 
-		return $scope->getType($functionCall->getArgs()[0]->value)->fillKeysArray($scope->getType($functionCall->getArgs()[1]->value));
+		$keysType = $scope->getType($functionCall->getArgs()[0]->value);
+		if ($keysType->isArray()->no()) {
+			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
+		}
+
+		return $keysType->fillKeysArray($scope->getType($functionCall->getArgs()[1]->value));
 	}
 
 }

@@ -12,7 +12,7 @@ class HelloWorld
 			assertType('list<(int|string)>', array_keys($mixed));
 		} else {
 			assertType('mixed~array', $mixed);
-			assertType('*ERROR*', array_keys($mixed));
+			assertType('*NEVER*', array_keys($mixed));
 		}
 	}
 }

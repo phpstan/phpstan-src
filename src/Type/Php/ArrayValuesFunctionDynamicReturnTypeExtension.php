@@ -4,14 +4,21 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use function count;
 use function strtolower;
 
 class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -24,7 +31,12 @@ class ArrayValuesFunctionDynamicReturnTypeExtension implements DynamicFunctionRe
 			return null;
 		}
 
-		return $scope->getType($functionCall->getArgs()[0]->value)->getValuesArray();
+		$arrayType = $scope->getType($functionCall->getArgs()[0]->value);
+		if ($arrayType->isArray()->no()) {
+			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
+		}
+
+		return $arrayType->getValuesArray();
 	}
 
 }

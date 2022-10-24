@@ -287,7 +287,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-filter-arrow-functions.php');
 		}
 
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-flip.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-map.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-map-closure.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-merge.php');
@@ -811,9 +810,15 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/weird-strlen-cases.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6439.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6748.php');
+
 		if (PHP_VERSION_ID >= 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-fill-keys.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-flip.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-search.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array_keys.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array_values.php');
 		}
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-search-type-specifying.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-pop.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-push.php');
@@ -833,8 +838,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		} else {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-combine-php7.php');
 		}
-
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-fill-keys.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6917.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6936-limit.php');
@@ -1088,8 +1091,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/allowed-subtypes-datetime.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/allowed-subtypes-throwable.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/array_values.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/array_keys.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Methods/data/bug-8174.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Rules/Comparison/data/bug-8169.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7519.php');

@@ -110,6 +110,6 @@ function mixedAndSubtractedArray($mixed): void
 	if (is_array($mixed)) {
 		assertType("array<'b'>", array_fill_keys($mixed, 'b'));
 	} else {
-		assertType("*ERROR*", array_fill_keys($mixed, 'b'));
+		assertType("*NEVER*", array_fill_keys($mixed, 'b'));
 	}
 }

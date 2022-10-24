@@ -200,6 +200,7 @@ class IntersectionType implements CompoundType
 
 	private function describeItself(VerbosityLevel $level, bool $skipAccessoryTypes): string
 	{
+		$baseTypes = [];
 		$typesToDescribe = [];
 		$skipTypeNames = [];
 
@@ -238,11 +239,19 @@ class IntersectionType implements CompoundType
 				continue;
 			}
 
-			if ($skipAccessoryTypes) {
+			if ($type instanceof CallableType && $type->isCommonCallable()) {
+				$typesToDescribe[] = $type;
+				$skipTypeNames[] = 'object';
+				$skipTypeNames[] = 'string';
 				continue;
 			}
 
 			if (!$type instanceof AccessoryType) {
+				$baseTypes[] = $type;
+				continue;
+			}
+
+			if ($skipAccessoryTypes) {
 				continue;
 			}
 
@@ -250,11 +259,19 @@ class IntersectionType implements CompoundType
 		}
 
 		$describedTypes = [];
-		foreach ($this->getSortedTypes() as $type) {
-			if ($type instanceof AccessoryType) {
-				continue;
-			}
+		foreach ($baseTypes as $type) {
 			$typeDescription = $type->describe($level);
+
+			if (in_array($typeDescription, ['object', 'string'], true) && in_array($typeDescription, $skipTypeNames, true)) {
+				foreach ($typesToDescribe as $j => $typeToDescribe) {
+					if ($typeToDescribe instanceof CallableType && $typeToDescribe->isCommonCallable()) {
+						$describedTypes[] = 'callable-' . $typeDescription;
+						unset($typesToDescribe[$j]);
+						continue 2;
+					}
+				}
+			}
+
 			if (
 				substr($typeDescription, 0, strlen('array<')) === 'array<'
 				&& in_array('array', $skipTypeNames, true)

@@ -1522,7 +1522,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ConstantStringType('test_function'),
 				],
 				UnionType::class,
-				'\'test_function\'|(callable(): mixed&string)',
+				'\'test_function\'|callable-string',
 			],
 			[
 				[
@@ -1530,7 +1530,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new IntegerType(),
 				],
 				UnionType::class,
-				'(callable(): mixed&string)|int',
+				'callable-string|int',
 			],
 			[
 				[

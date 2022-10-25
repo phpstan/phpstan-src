@@ -2893,11 +2893,13 @@ class MutatingScope implements Scope
 			if (!is_string($use->var->name)) {
 				throw new ShouldNotHappenException();
 			}
-			if ($use->byRef) {
-				continue;
-			}
 			$variableName = $use->var->name;
 			$paramExprString = '$' . $use->var->name;
+			if ($use->byRef) {
+				$variableTypes[$paramExprString] = VariableTypeHolder::createYes(new MixedType());
+				$nativeTypes[$paramExprString] = new MixedType();
+				continue;
+			}
 			if ($this->hasVariableType($variableName)->no()) {
 				$variableType = new ErrorType();
 			} else {

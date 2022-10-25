@@ -30,6 +30,7 @@ use function array_map;
 use function count;
 use function implode;
 use function in_array;
+use function ksort;
 use function sprintf;
 use function strlen;
 use function substr;
@@ -206,7 +207,7 @@ class IntersectionType implements CompoundType
 
 		$nonEmptyStr = false;
 		$nonFalsyStr = false;
-		foreach ($this->getSortedTypes() as $type) {
+		foreach ($this->getSortedTypes() as $i => $type) {
 			if ($type instanceof AccessoryNonEmptyStringType
 				|| $type instanceof AccessoryLiteralStringType
 				|| $type instanceof AccessoryNumericStringType
@@ -229,25 +230,25 @@ class IntersectionType implements CompoundType
 					}
 				}
 
-				$typesToDescribe[] = $type;
+				$typesToDescribe[$i] = $type;
 				$skipTypeNames[] = 'string';
 				continue;
 			}
 			if ($type instanceof NonEmptyArrayType || $type instanceof AccessoryArrayListType) {
-				$typesToDescribe[] = $type;
+				$typesToDescribe[$i] = $type;
 				$skipTypeNames[] = 'array';
 				continue;
 			}
 
 			if ($type instanceof CallableType && $type->isCommonCallable()) {
-				$typesToDescribe[] = $type;
+				$typesToDescribe[$i] = $type;
 				$skipTypeNames[] = 'object';
 				$skipTypeNames[] = 'string';
 				continue;
 			}
 
 			if (!$type instanceof AccessoryType) {
-				$baseTypes[] = $type;
+				$baseTypes[$i] = $type;
 				continue;
 			}
 
@@ -255,17 +256,17 @@ class IntersectionType implements CompoundType
 				continue;
 			}
 
-			$typesToDescribe[] = $type;
+			$typesToDescribe[$i] = $type;
 		}
 
 		$describedTypes = [];
-		foreach ($baseTypes as $type) {
+		foreach ($baseTypes as $i => $type) {
 			$typeDescription = $type->describe($level);
 
 			if (in_array($typeDescription, ['object', 'string'], true) && in_array($typeDescription, $skipTypeNames, true)) {
 				foreach ($typesToDescribe as $j => $typeToDescribe) {
 					if ($typeToDescribe instanceof CallableType && $typeToDescribe->isCommonCallable()) {
-						$describedTypes[] = 'callable-' . $typeDescription;
+						$describedTypes[$i] = 'callable-' . $typeDescription;
 						unset($typesToDescribe[$j]);
 						continue 2;
 					}
@@ -298,7 +299,7 @@ class IntersectionType implements CompoundType
 					$typeName = 'non-empty-' . $typeName;
 				}
 
-				$describedTypes[] = $typeName . '<' . substr($typeDescription, strlen('array<'));
+				$describedTypes[$i] = $typeName . '<' . substr($typeDescription, strlen('array<'));
 				continue;
 			}
 
@@ -306,12 +307,14 @@ class IntersectionType implements CompoundType
 				continue;
 			}
 
-			$describedTypes[] = $type->describe($level);
+			$describedTypes[$i] = $type->describe($level);
 		}
 
-		foreach ($typesToDescribe as $typeToDescribe) {
-			$describedTypes[] = $typeToDescribe->describe($level);
+		foreach ($typesToDescribe as $i => $typeToDescribe) {
+			$describedTypes[$i] = $typeToDescribe->describe($level);
 		}
+
+		ksort($describedTypes);
 
 		return implode('&', $describedTypes);
 	}

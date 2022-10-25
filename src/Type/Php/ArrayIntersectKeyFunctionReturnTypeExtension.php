@@ -4,11 +4,12 @@ namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_slice;
@@ -16,6 +17,10 @@ use function count;
 
 class ArrayIntersectKeyFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -40,33 +45,19 @@ class ArrayIntersectKeyFunctionReturnTypeExtension implements DynamicFunctionRet
 			$argTypes[] = $argType;
 		}
 
-		$firstArray = $argTypes[0];
-		$otherArrays = array_slice($argTypes, 1);
-		if (count($otherArrays) === 0) {
-			return $firstArray;
+		$firstArrayType = $argTypes[0];
+		$otherArraysType = TypeCombinator::union(...array_slice($argTypes, 1));
+		$onlyOneArrayGiven = count($argTypes) === 1;
+
+		if ($firstArrayType->isArray()->no() || (!$onlyOneArrayGiven && $otherArraysType->isArray()->no())) {
+			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
-		$constantArrays = $firstArray->getConstantArrays();
-		if (count($constantArrays) === 0) {
-			return new ArrayType($firstArray->getIterableKeyType(), $firstArray->getIterableValueType());
+		if ($onlyOneArrayGiven) {
+			return $firstArrayType;
 		}
 
-		$otherArraysType = TypeCombinator::union(...$otherArrays);
-		$results = [];
-		foreach ($constantArrays as $constantArray) {
-			$builder = ConstantArrayTypeBuilder::createEmpty();
-			foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-				$valueType = $constantArray->getValueTypes()[$i];
-				$has = $otherArraysType->hasOffsetValueType($keyType);
-				if ($has->no()) {
-					continue;
-				}
-				$builder->setOffsetValueType($keyType, $valueType, $constantArray->isOptionalKey($i) || !$has->yes());
-			}
-			$results[] = $builder->getArray();
-		}
-
-		return TypeCombinator::union(...$results);
+		return $firstArrayType->intersectKeyArray($otherArraysType);
 	}
 
 }

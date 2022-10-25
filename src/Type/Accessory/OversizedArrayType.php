@@ -146,6 +146,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function intersectKeyArray(Type $otherArraysType): Type
+	{
+		return $this;
+	}
+
 	public function popArray(): Type
 	{
 		return $this;

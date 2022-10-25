@@ -157,6 +157,15 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function intersectKeyArray(Type $otherArraysType): Type
+	{
+		if ($otherArraysType->isList()->yes()) {
+			return $this;
+		}
+
+		return new MixedType();
+	}
+
 	public function popArray(): Type
 	{
 		return $this;

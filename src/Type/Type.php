@@ -104,6 +104,8 @@ interface Type
 
 	public function flipArray(): Type;
 
+	public function intersectKeyArray(Type $otherArraysType): Type;
+
 	public function popArray(): Type;
 
 	public function searchArray(Type $needleType): Type;

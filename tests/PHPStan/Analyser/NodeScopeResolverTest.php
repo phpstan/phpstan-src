@@ -813,16 +813,20 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-fill-keys.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-flip.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-intersect-key.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-intersect-key-constant.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-search.php');
 		if (PHP_VERSION_ID >= 80000) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-fill-keys-php8.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-flip-php8.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-intersect-key-php8.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-search-php8.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array_keys.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array_values.php');
 		} else {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-fill-keys-php7.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-flip-php7.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-intersect-key-php7.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-search-php7.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array_keys-php7.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array_values-php7.php');
@@ -1020,7 +1024,6 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5845.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-flip-constant.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-filter-constant.php');
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-intersect-key-constant.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/composer-array-bug.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/tagged-unions.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7492.php');

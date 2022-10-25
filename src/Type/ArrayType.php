@@ -388,6 +388,22 @@ class ArrayType implements Type
 		return new self($this->getIterableValueType()->toArrayKey(), $this->getIterableKeyType());
 	}
 
+	public function intersectKeyArray(Type $otherArraysType): Type
+	{
+		$isKeySuperType = $otherArraysType->getIterableKeyType()->isSuperTypeOf($this->getIterableKeyType());
+		if ($isKeySuperType->no()) {
+			return ConstantArrayTypeBuilder::createEmpty()->getArray();
+		}
+
+		if ($isKeySuperType->yes()) {
+			return $otherArraysType->isIterableAtLeastOnce()->yes()
+				? TypeCombinator::intersect($this, new NonEmptyArrayType())
+				: $this;
+		}
+
+		return new self($otherArraysType->getIterableKeyType(), $this->getIterableValueType());
+	}
+
 	public function popArray(): Type
 	{
 		return $this;

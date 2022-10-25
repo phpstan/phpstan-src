@@ -41,14 +41,18 @@ class HasMethodType implements AccessoryType, CompoundType
 		return [];
 	}
 
-	private function getCanonicalMethodName(): string
+	public function getCanonicalMethodName(): string
 	{
 		return strtolower($this->methodName);
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->equals($type));
+		if ($type instanceof CompoundType) {
+			return $type->isAcceptedBy($this, $strictTypes);
+		}
+
+		return $type->hasMethod($this->methodName);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

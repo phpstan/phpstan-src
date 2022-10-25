@@ -20,6 +20,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryType;
+use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -238,6 +239,12 @@ class IntersectionType implements CompoundType
 				continue;
 			}
 
+			if ($type instanceof HasMethodType && $type->getCanonicalMethodName() === '__tostring') {
+				$typesToDescribe[] = $type;
+				$skipTypeNames[] = 'object';
+				continue;
+			}
+
 			if ($skipAccessoryTypes) {
 				continue;
 			}
@@ -255,6 +262,17 @@ class IntersectionType implements CompoundType
 				continue;
 			}
 			$typeDescription = $type->describe($level);
+
+			if ($typeDescription === 'object' && in_array('object', $skipTypeNames, true)) {
+				foreach ($typesToDescribe as $j => $typeToDescribe) {
+					if ($typeToDescribe instanceof HasMethodType && $typeToDescribe->getCanonicalMethodName() === '__tostring') {
+						$describedTypes[] = 'stringable-object';
+						unset($typesToDescribe[$j]);
+						continue 2;
+					}
+				}
+			}
+
 			if (
 				substr($typeDescription, 0, strlen('array<')) === 'array<'
 				&& in_array('array', $skipTypeNames, true)

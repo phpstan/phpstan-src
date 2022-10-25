@@ -376,6 +376,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->flipArray();
 	}
 
+	public function intersectKeyArray(Type $otherArraysType): Type
+	{
+		return $this->getStaticObjectType()->intersectKeyArray($otherArraysType);
+	}
+
 	public function popArray(): Type
 	{
 		return $this->getStaticObjectType()->popArray();

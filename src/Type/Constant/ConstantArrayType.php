@@ -708,6 +708,22 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $builder->getArray();
 	}
 
+	public function intersectKeyArray(Type $otherArraysType): Type
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+
+		foreach ($this->keyTypes as $i => $keyType) {
+			$valueType = $this->valueTypes[$i];
+			$has = $otherArraysType->hasOffsetValueType($keyType);
+			if ($has->no()) {
+				continue;
+			}
+			$builder->setOffsetValueType($keyType, $valueType, $this->isOptionalKey($i) || !$has->yes());
+		}
+
+		return $builder->getArray();
+	}
+
 	public function popArray(): Type
 	{
 		return $this->removeLastElements(1);

@@ -225,6 +225,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->flipArray();
 	}
 
+	public function intersectKeyArray(Type $otherArraysType): Type
+	{
+		return $this->resolve()->intersectKeyArray($otherArraysType);
+	}
+
 	public function popArray(): Type
 	{
 		return $this->resolve()->popArray();

@@ -147,6 +147,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function intersectKeyArray(Type $otherArraysType): Type
+	{
+		return new MixedType();
+	}
+
 	public function popArray(): Type
 	{
 		return new MixedType();

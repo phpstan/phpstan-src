@@ -180,6 +180,15 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new MixedType();
 	}
 
+	public function intersectKeyArray(Type $otherArraysType): Type
+	{
+		if ($otherArraysType->hasOffsetValueType($this->offsetType)->yes()) {
+			return $this;
+		}
+
+		return new MixedType();
+	}
+
 	public function searchArray(Type $needleType): Type
 	{
 		if (

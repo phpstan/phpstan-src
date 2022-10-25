@@ -59,6 +59,11 @@ trait MaybeArrayTypeTrait
 		return new ErrorType();
 	}
 
+	public function intersectKeyArray(Type $otherArraysType): Type
+	{
+		return new ErrorType();
+	}
+
 	public function popArray(): Type
 	{
 		return new ErrorType();

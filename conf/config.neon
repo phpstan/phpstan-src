@@ -905,6 +905,7 @@ services:
 		class: PHPStan\Rules\Arrays\NonexistentOffsetInArrayDimFetchCheck
 		arguments:
 			reportMaybes: %reportMaybes%
+			bleedingEdge: %featureToggles.bleedingEdge%
 
 	-
 		class: PHPStan\Rules\ClassCaseSensitivityCheck

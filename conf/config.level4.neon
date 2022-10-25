@@ -45,6 +45,7 @@ services:
 		class: PHPStan\Rules\Comparison\BooleanAndConstantConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			bleedingEdge: %featureToggles.bleedingEdge%
 		tags:
 			- phpstan.rules.rule
 
@@ -52,6 +53,7 @@ services:
 		class: PHPStan\Rules\Comparison\BooleanOrConstantConditionRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			bleedingEdge: %featureToggles.bleedingEdge%
 		tags:
 			- phpstan.rules.rule
 

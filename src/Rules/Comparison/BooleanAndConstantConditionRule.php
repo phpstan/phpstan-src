@@ -20,6 +20,7 @@ class BooleanAndConstantConditionRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $bleedingEdge,
 	)
 	{
 	}
@@ -36,6 +37,7 @@ class BooleanAndConstantConditionRule implements Rule
 	{
 		$errors = [];
 		$originalNode = $node->getOriginalNode();
+		$nodeText = $this->bleedingEdge ? $originalNode->getOperatorSigil() : '&&';
 		$leftType = $this->helper->getBooleanType($scope, $originalNode->left);
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		if ($leftType instanceof ConstantBooleanType) {
@@ -52,7 +54,8 @@ class BooleanAndConstantConditionRule implements Rule
 				return $ruleErrorBuilder->tip($tipText);
 			};
 			$errors[] = $addTipLeft(RuleErrorBuilder::message(sprintf(
-				'Left side of && is always %s.',
+				'Left side of %s is always %s.',
+				$nodeText,
 				$leftType->getValue() ? 'true' : 'false',
 			)))->line($originalNode->left->getLine())->build();
 		}
@@ -81,7 +84,8 @@ class BooleanAndConstantConditionRule implements Rule
 
 			if (!$scope->isInFirstLevelStatement()) {
 				$errors[] = $addTipRight(RuleErrorBuilder::message(sprintf(
-					'Right side of && is always %s.',
+					'Right side of %s is always %s.',
+					$nodeText,
 					$rightType->getValue() ? 'true' : 'false',
 				)))->line($originalNode->right->getLine())->build();
 			}
@@ -105,7 +109,8 @@ class BooleanAndConstantConditionRule implements Rule
 
 				if (!$scope->isInFirstLevelStatement()) {
 					$errors[] = $addTip(RuleErrorBuilder::message(sprintf(
-						'Result of && is always %s.',
+						'Result of %s is always %s.',
+						$nodeText,
 						$nodeType->getValue() ? 'true' : 'false',
 					)))->build();
 				}

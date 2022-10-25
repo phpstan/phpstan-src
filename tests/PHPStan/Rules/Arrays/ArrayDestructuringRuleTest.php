@@ -13,13 +13,15 @@ use const PHP_VERSION_ID;
 class ArrayDestructuringRuleTest extends RuleTestCase
 {
 
+	private bool $bleedingEdge = false;
+
 	protected function getRule(): Rule
 	{
 		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, true);
 
 		return new ArrayDestructuringRule(
 			$ruleLevelHelper,
-			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true),
+			new NonexistentOffsetInArrayDimFetchCheck($ruleLevelHelper, true, $this->bleedingEdge),
 		);
 	}
 

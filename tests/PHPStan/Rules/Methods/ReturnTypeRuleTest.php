@@ -16,11 +16,13 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	private bool $checkExplicitMixed = false;
 
+	private bool $checkNullable = true;
+
 	private bool $checkUnionTypes = true;
 
 	protected function getRule(): Rule
 	{
-		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnionTypes, $this->checkExplicitMixed, false, true)));
+		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), $this->checkNullable, false, $this->checkUnionTypes, $this->checkExplicitMixed, false, true)));
 	}
 
 	public function testReturnTypeRule(): void
@@ -790,6 +792,12 @@ class ReturnTypeRuleTest extends RuleTestCase
 	{
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-7519.php'], []);
+	}
+
+	public function testBug8209(): void
+	{
+		$this->checkNullable = false;
+		$this->analyse([__DIR__ . '/data/bug-8209.php'], []);
 	}
 
 }

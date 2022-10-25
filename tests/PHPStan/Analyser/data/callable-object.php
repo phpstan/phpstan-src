@@ -2,6 +2,7 @@
 
 namespace CallableObject;
 
+use Iterator;
 use function PHPStan\Testing\assertType;
 
 /**
@@ -26,4 +27,12 @@ function foo(callable $callable, $object, $callableObject)
 		assertType('callable-object', $callable);
 		assertType('callable-object', $object);
 	}
+}
+
+/**
+ * @param Iterator&callable $object
+ */
+function bar($object)
+{
+	assertType('callable(): mixed&Iterator', $object);
 }

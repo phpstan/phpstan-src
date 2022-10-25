@@ -54,7 +54,7 @@ jobs:
       - name: "Rector downgrade cache key"
         id: rector-cache-key
         run: |
-          echo "sha=$(php build/rector-cache-files-hash.php)" >> $GITHUB_OUTPUT
+          echo "::set-output name=sha::$(php build/rector-cache-files-hash.php)"
 
       - name: "Rector downgrade cache"
         uses: actions/cache@v3
@@ -107,7 +107,7 @@ jobs:
 
       - name: "Save checksum"
         id: "checksum"
-        run: echo "md5=$(md5sum tmp/phpstan.phar | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+        run: echo "::set-output name=md5::$(md5sum tmp/phpstan.phar | cut -d' ' -f1)"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -164,7 +164,7 @@ jobs:
       - name: "Get previous pushed dist commit"
         id: previous-commit
         working-directory: phpstan-dist
-        run: echo "sha=$(sed -n '2p' .phar-checksum)" >> $GITHUB_OUTPUT
+        run: echo ::set-output name=sha::$(sed -n '2p' .phar-checksum)
 
       - name: "Checkout phpstan-src"
         uses: actions/checkout@v3
@@ -175,7 +175,7 @@ jobs:
       - name: "Get Git log"
         id: git-log
         working-directory: phpstan-src
-        run: echo "log=$(git log ${{ steps.previous-commit.outputs.sha }}..${{ github.event.after }} --reverse --pretty='%H %s' | sed -e 's/^/https:\/\/github.com\/phpstan\/phpstan-src\/commit\//')" >> $GITHUB_OUTPUT
+        run: echo ::set-output name=log::$(git log ${{ steps.previous-commit.outputs.sha }}..${{ github.event.after }} --reverse --pretty='%H %s' | sed -e 's/^/https:\/\/github.com\/phpstan\/phpstan-src\/commit\//')
 
       - name: "Check PHAR checksum"
         id: checksum-difference
@@ -183,9 +183,9 @@ jobs:
         run: |
           checksum=${{needs.compiler-tests.outputs.checksum}}
           if [[ $(head -n 1 .phar-checksum) != "$checksum" ]]; then
-            echo "result=different" >> $GITHUB_OUTPUT
+            echo "::set-output name=result::different
           else
-            echo "result=same" >> $GITHUB_OUTPUT
+            echo "::set-output name=result::same
           fi
 
       - name: "Download phpstan.phar"

@@ -15,6 +15,16 @@
         "ignorable": true
     },
     {
+        "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Foo::doBarArray() expects array<int>, array<int, int|null> given.",
+        "line": 119,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Foo::doBarArray() expects array<int>, array<int, int|null> given.",
+        "line": 131,
+        "ignorable": true
+    },
+    {
         "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Baz::doBar() expects int, int|null given.",
         "line": 414,
         "ignorable": true
@@ -27,6 +37,16 @@
     {
         "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Baz::doBarArray() expects array<int>, array<int|null> given.",
         "line": 495,
+        "ignorable": true
+    },
+    {
+        "message": "Method Levels\\AcceptTypes\\Discussion8209::test1() should return int but returns int|null.",
+        "line": 771,
+        "ignorable": true
+    },
+    {
+        "message": "Method Levels\\AcceptTypes\\Discussion8209::test2() should return array<int> but returns array<int, int|null>.",
+        "line": 779,
         "ignorable": true
     }
 ]

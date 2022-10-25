@@ -763,3 +763,19 @@ class Implode {
 		$imploded = implode('abc', $invalid);
 	}
 }
+
+class Discussion8209
+{
+	public function test1(?int $id): int
+	{
+		return $id;
+	}
+
+	/**
+	 * @return array<int>
+	 */
+	public function test2(?int $id): array
+	{
+		return [$id];
+	}
+}

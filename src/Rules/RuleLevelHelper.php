@@ -111,7 +111,10 @@ class RuleLevelHelper
 		if (
 			$acceptedType->isArray()->yes()
 			&& $acceptingType->isArray()->yes()
-			&& $acceptedType->isConstantArray()->no()
+			&& (
+				$acceptedType->isConstantArray()->no()
+				|| !$acceptedType->isIterableAtLeastOnce()->no()
+			)
 			&& $acceptingType->isConstantArray()->no()
 		) {
 			return (

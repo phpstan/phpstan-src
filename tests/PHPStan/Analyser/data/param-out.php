@@ -257,7 +257,7 @@ function fooSort() {
 	assertType('array{}', $emptyArray);
 }
 
-function fooFcanf($r): void
+function fooFscanf($r): void
 {
 	fscanf($r, "%d:%d:%d", $hours, $minutes, $seconds);
 	assertType('float|int|string|null', $hours);

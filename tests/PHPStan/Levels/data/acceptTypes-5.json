@@ -45,16 +45,6 @@
         "ignorable": true
     },
     {
-        "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Foo::doBarArray() expects array<int>, array<int, int|null> given.",
-        "line": 119,
-        "ignorable": true
-    },
-    {
-        "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Foo::doBarArray() expects array<int>, array<int, float|int> given.",
-        "line": 120,
-        "ignorable": true
-    },
-    {
         "message": "Parameter #1 $callable of method Levels\\AcceptTypes\\Foo::expectCallable() expects callable(): mixed, 'nonexistentFunction' given.",
         "line": 144,
         "ignorable": true

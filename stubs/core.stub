@@ -145,6 +145,15 @@ function sodium_memzero(string &$string): void
 }
 
 /**
+ * @param resource $stream
+ * @param mixed $vars
+ * @param-out string|int|float|null $vars
+ *
+ * @return list<mixed>|int|false
+ */
+function fscanf($stream, string $format, &...$vars) {}
+
+/**
  * @param mixed $war
  * @param mixed $vars
  * @param-out string|int|float|null $war

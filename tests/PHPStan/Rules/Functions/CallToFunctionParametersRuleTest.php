@@ -390,21 +390,23 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testUnpackOperator(): void
 	{
+		$expectedType = PHP_VERSION_ID >= 80000 ? 'bool|float|int|string|Stringable|null' : 'bool|float|int|object|string|null';
+
 		$this->analyse([__DIR__ . '/data/unpack-operator.php'], [
 			[
-				'Parameter #2 ...$values of function sprintf expects bool|float|int|object|string|null, array<string> given.',
+				sprintf('Parameter #2 ...$values of function sprintf expects %s, array<string> given.', $expectedType),
 				18,
 			],
 			[
-				'Parameter #2 ...$values of function sprintf expects bool|float|int|object|string|null, array<int, string> given.',
+				sprintf('Parameter #2 ...$values of function sprintf expects %s, array<int, string> given.', $expectedType),
 				19,
 			],
 			[
-				'Parameter #2 ...$values of function sprintf expects bool|float|int|object|string|null, UnpackOperator\Foo given.',
+				sprintf('Parameter #2 ...$values of function sprintf expects %s, UnpackOperator\Foo given.', $expectedType),
 				22,
 			],
 			[
-				'Parameter #2 ...$values of function printf expects bool|float|int|object|string|null, UnpackOperator\Foo given.',
+				sprintf('Parameter #2 ...$values of function printf expects %s, UnpackOperator\Foo given.', $expectedType),
 				24,
 			],
 		]);
@@ -412,9 +414,11 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testFputCsv(): void
 	{
+		$expectedType = PHP_VERSION_ID >= 80000 ? 'bool|float|int|string|Stringable|null' : 'bool|float|int|object|string|null';
+
 		$this->analyse([__DIR__ . '/data/fputcsv-fields-parameter.php'], [
 			[
-				'Parameter #2 $fields of function fputcsv expects array<int|string, bool|float|int|object|string|null>, array<int, Fputcsv\Person> given.',
+				sprintf('Parameter #2 $fields of function fputcsv expects array<int|string, %s>, array<int, Fputcsv\Person> given.', $expectedType),
 				35,
 			],
 		]);

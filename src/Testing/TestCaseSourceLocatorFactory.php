@@ -36,9 +36,18 @@ class TestCaseSourceLocatorFactory
 
 	public function create(): SourceLocator
 	{
+		$locators = [];
+
+		$astLocator = new Locator($this->phpParser);
+		$astPhp8Locator = new Locator($this->php8Parser);
+
+		$locators[] = new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber);
+		$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
+		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
+		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
+
 		$classLoaders = ClassLoader::getRegisteredLoaders();
 		$classLoaderReflection = new ReflectionClass(ClassLoader::class);
-		$locators = [];
 		if ($classLoaderReflection->hasProperty('vendorDir')) {
 			$vendorDirProperty = $classLoaderReflection->getProperty('vendorDir');
 			$vendorDirProperty->setAccessible(true);
@@ -55,14 +64,6 @@ class TestCaseSourceLocatorFactory
 				$locators[] = $composerSourceLocator;
 			}
 		}
-
-		$astLocator = new Locator($this->phpParser);
-		$astPhp8Locator = new Locator($this->php8Parser);
-
-		$locators[] = new PhpInternalSourceLocator($astPhp8Locator, $this->phpstormStubsSourceStubber);
-		$locators[] = new AutoloadSourceLocator($this->fileNodesFetcher, true);
-		$locators[] = new PhpVersionBlacklistSourceLocator(new PhpInternalSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
-		$locators[] = new PhpVersionBlacklistSourceLocator(new EvaledCodeSourceLocator($astLocator, $this->reflectionSourceStubber), $this->phpstormStubsSourceStubber);
 
 		return new MemoizingSourceLocator(new AggregateSourceLocator($locators));
 	}

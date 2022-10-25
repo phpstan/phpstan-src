@@ -666,7 +666,17 @@ class MutatingScope implements Scope
 
 	private function getNodeKey(Expr $node): string
 	{
-		return $this->exprPrinter->printExpr($node);
+		$key = $this->exprPrinter->printExpr($node);
+
+		if (
+			$node instanceof Node\FunctionLike
+			&& $node->hasAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME)
+			&& $node->hasAttribute('startFilePos')
+		) {
+			$key .= '/*' . $node->getAttribute('startFilePos') . '*/';
+		}
+
+		return $key;
 	}
 
 	private function resolveType(Expr $node): Type

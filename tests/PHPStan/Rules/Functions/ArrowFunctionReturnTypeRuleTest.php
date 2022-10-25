@@ -6,6 +6,7 @@ use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ArrowFunctionReturnTypeRule>
@@ -42,6 +43,15 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 	public function testBug3261(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3261.php'], []);
+	}
+
+	public function testBug8179(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/bug-8179.php'], []);
 	}
 
 }

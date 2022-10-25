@@ -186,4 +186,9 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8205(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8205.php'], []);
+	}
+
 }

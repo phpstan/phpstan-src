@@ -10,6 +10,9 @@ use function array_map;
 use function array_merge;
 use function count;
 
+/**
+ * @api
+ */
 class Assertions
 {
 

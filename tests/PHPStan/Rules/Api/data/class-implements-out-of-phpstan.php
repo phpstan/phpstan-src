@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Type\DynamicThrowTypeExtensionProvider;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
+use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
@@ -335,6 +336,8 @@ abstract class MyScope implements Scope
 }
 
 abstract class MyFunctionReflection implements FunctionReflection
-{
+{}
 
-}
+
+abstract class MyMethodReflection implements ExtendedMethodReflection
+{}

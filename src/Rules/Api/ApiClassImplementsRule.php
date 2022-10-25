@@ -5,12 +5,10 @@ namespace PHPStan\Rules\Api;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Type;
 use function array_merge;
 use function count;
 use function in_array;
@@ -67,12 +65,7 @@ class ApiClassImplementsRule implements Rule
 			'https://github.com/phpstan/phpstan/discussions',
 		))->build();
 
-		if (in_array($implementedClassReflection->getName(), [
-			Type::class,
-			ReflectionProvider::class,
-			Scope::class,
-			FunctionReflection::class,
-		], true)) {
+		if (in_array($implementedClassReflection->getName(), BcUncoveredInterface::CLASSES, true)) {
 			return [$ruleError];
 		}
 

@@ -9,7 +9,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\Type;
 use function array_merge;
 use function count;
 use function in_array;
@@ -66,10 +65,7 @@ class ApiInterfaceExtendsRule implements Rule
 			'https://github.com/phpstan/phpstan/discussions',
 		))->build();
 
-		if (in_array($extendedInterfaceReflection->getName(), [
-			Type::class,
-			ReflectionProvider::class,
-		], true)) {
+		if (in_array($extendedInterfaceReflection->getName(), BcUncoveredInterface::CLASSES, true)) {
 			return [$ruleError];
 		}
 

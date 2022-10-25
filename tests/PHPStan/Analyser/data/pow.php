@@ -57,8 +57,10 @@ function (): void {
 /**
  * @param positive-int $positiveInt
  * @param int<min, 3> $range2
+ * @param int<-6, -4>|int<-2, -1> $unionRange1
+ * @param int<4, 6>|int<1, 2> $unionRange2
  */
-function foo($positiveInt, $range2): void {
+function foo($positiveInt, $range2, $unionRange1, $unionRange2): void {
 	$range = rand(2, 3);
 
 	assertType('int<2, max>', pow($range, $positiveInt));
@@ -69,4 +71,13 @@ function foo($positiveInt, $range2): void {
 
 	assertType('(float|int)', pow($range, PHP_INT_MAX));
 	assertType('(float|int)', $range ** PHP_INT_MAX);
+
+	assertType('(float|int)', pow($range2, $positiveInt));
+	assertType('(float|int)', $range2 ** $positiveInt);
+
+	assertType('(float|int)', pow($positiveInt, $range2));
+	assertType('(float|int)', $positiveInt ** $range2);
+
+	assertType('int<-6, 16>|int<1296, 4096>|int<1, 16>|int<-2, 1>', pow($unionRange1, $unionRange2));
+	assertType('int<-6, 16>|int<1296, 4096>|int<1, 16>|int<-2, 1>', $unionRange1 ** $unionRange2);
 }

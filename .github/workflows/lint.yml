@@ -60,7 +60,7 @@ jobs:
         id: rector-cache-key
         if: matrix.php-version != '8.1' && matrix.php-version != '8.2'
         run: |
-          echo "::set-output name=sha::$(php build/rector-cache-files-hash.php)"
+          echo "sha=$(php build/rector-cache-files-hash.php)" >> $GITHUB_OUTPUT
 
       - name: "Rector downgrade cache"
         if: matrix.php-version != '8.1' && matrix.php-version != '8.2'

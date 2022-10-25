@@ -14,6 +14,8 @@ use PHPStan\Type\Type;
  * and its methods in their code.
  *
  * Methods on ExtendedMethodReflection are subject to change.
+ *
+ * @api
  */
 interface ExtendedMethodReflection extends MethodReflection
 {

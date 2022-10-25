@@ -2912,7 +2912,7 @@ class MutatingScope implements Scope
 				continue;
 			}
 			$variables = (new NodeFinder())->findInstanceOf([$expr], Variable::class);
-			if ($variables === []) {
+			if ($variables === [] && !$this->expressionTypeIsUnchangeable($typeHolder)) {
 				continue;
 			}
 			foreach ($variables as $variable) {
@@ -2953,6 +2953,20 @@ class MutatingScope implements Scope
 			false,
 			$this,
 		);
+	}
+
+	private function expressionTypeIsUnchangeable(ExpressionTypeHolder $typeHolder): bool
+	{
+		$expr = $typeHolder->getExpr();
+		$type = $typeHolder->getType();
+
+		return $expr instanceof FuncCall
+			&& !$expr->isFirstClassCallable()
+			&& $expr->name instanceof FullyQualified
+			&& $expr->name->toLowerString() === 'function_exists'
+			&& isset($expr->getArgs()[0])
+			&& count(TypeUtils::getConstantStrings($this->getType($expr->getArgs()[0]->value))) === 1
+			&& (new ConstantBooleanType(true))->isSuperTypeOf($type)->yes();
 	}
 
 	/**

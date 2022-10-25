@@ -491,7 +491,8 @@ class MutatingScope implements Scope
 			return TrinaryLogic::createYes();
 		}
 
-		if (!isset($this->variableTypes[$variableName])) {
+		$varExprString = '$' . $variableName;
+		if (!isset($this->variableTypes[$varExprString])) {
 			if ($this->canAnyVariableExist()) {
 				return TrinaryLogic::createMaybe();
 			}
@@ -499,7 +500,7 @@ class MutatingScope implements Scope
 			return TrinaryLogic::createNo();
 		}
 
-		return $this->variableTypes[$variableName]->getCertainty();
+		return $this->variableTypes[$varExprString]->getCertainty();
 	}
 
 	/** @api */
@@ -525,11 +526,12 @@ class MutatingScope implements Scope
 			throw new UndefinedVariableException($this, $variableName);
 		}
 
-		if (!array_key_exists($variableName, $this->variableTypes)) {
+		$varExprString = '$' . $variableName;
+		if (!array_key_exists($varExprString, $this->variableTypes)) {
 			return new MixedType();
 		}
 
-		return TypeUtils::resolveLateResolvableTypes($this->variableTypes[$variableName]->getType());
+		return TypeUtils::resolveLateResolvableTypes($this->variableTypes[$varExprString]->getType());
 	}
 
 	/**
@@ -539,12 +541,15 @@ class MutatingScope implements Scope
 	public function getDefinedVariables(): array
 	{
 		$variables = [];
-		foreach ($this->variableTypes as $variableName => $holder) {
+		foreach ($this->variableTypes as $exprString => $holder) {
+			if (!$this->exprStringToExpr($exprString) instanceof Variable) {
+				continue;
+			}
 			if (!$holder->getCertainty()->yes()) {
 				continue;
 			}
 
-			$variables[] = $variableName;
+			$variables[] = substr($exprString, 1);
 		}
 
 		return $variables;
@@ -2198,13 +2203,12 @@ class MutatingScope implements Scope
 				throw new ShouldNotHappenException();
 			}
 
-			$variableName = substr($expressionType, 1);
-			$has = $this->hasVariableType($variableName);
+			$has = $this->hasVariableType(substr($expressionType, 1));
 			if ($has->no()) {
 				throw new ShouldNotHappenException();
 			}
 
-			$variableTypes[$variableName] = new VariableTypeHolder($type, $has);
+			$variableTypes[$expressionType] = new VariableTypeHolder($type, $has);
 		}
 
 		return $this->scopeFactory->create(
@@ -2476,7 +2480,7 @@ class MutatingScope implements Scope
 			null,
 			$this->getNamespace(),
 			[
-				'this' => VariableTypeHolder::createYes(new ThisType($classReflection)),
+				'$this' => VariableTypeHolder::createYes(new ThisType($classReflection)),
 			],
 			[],
 			[],
@@ -2682,6 +2686,7 @@ class MutatingScope implements Scope
 		$nativeExpressionTypes = [];
 		foreach (ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters() as $parameter) {
 			$parameterType = $parameter->getType();
+			$paramExprString = '$' . $parameter->getName();
 			if ($parameter->isVariadic()) {
 				if ($this->phpVersion->supportsNamedArguments() && $functionReflection->acceptsNamedArguments()) {
 					$parameterType = new ArrayType(new UnionType([new IntegerType(), new StringType()]), $parameterType);
@@ -2689,7 +2694,7 @@ class MutatingScope implements Scope
 					$parameterType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $parameterType));
 				}
 			}
-			$variableTypes[$parameter->getName()] = VariableTypeHolder::createYes($parameterType);
+			$variableTypes[$paramExprString] = VariableTypeHolder::createYes($parameterType);
 
 			$nativeParameterType = $parameter->getNativeType();
 			if ($parameter->isVariadic()) {
@@ -2699,11 +2704,11 @@ class MutatingScope implements Scope
 					$nativeParameterType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $nativeParameterType));
 				}
 			}
-			$nativeExpressionTypes[sprintf('$%s', $parameter->getName())] = $nativeParameterType;
+			$nativeExpressionTypes[$paramExprString] = $nativeParameterType;
 		}
 
-		if ($preserveThis && array_key_exists('this', $this->variableTypes)) {
-			$variableTypes['this'] = $this->variableTypes['this'];
+		if ($preserveThis && array_key_exists('$this', $this->variableTypes)) {
+			$variableTypes['$this'] = $this->variableTypes['$this'];
 		}
 
 		return $this->scopeFactory->create(
@@ -2740,9 +2745,9 @@ class MutatingScope implements Scope
 		$variableTypes = $this->getVariableTypes();
 
 		if ($thisType !== null) {
-			$variableTypes['this'] = VariableTypeHolder::createYes($thisType);
+			$variableTypes['$this'] = VariableTypeHolder::createYes($thisType);
 		} else {
-			unset($variableTypes['this']);
+			unset($variableTypes['$this']);
 		}
 
 		if ($scopeClass === 'static' && $this->isInClass()) {
@@ -2766,10 +2771,10 @@ class MutatingScope implements Scope
 	public function restoreOriginalScopeAfterClosureBind(self $originalScope): self
 	{
 		$variableTypes = $this->getVariableTypes();
-		if (isset($originalScope->variableTypes['this'])) {
-			$variableTypes['this'] = $originalScope->variableTypes['this'];
+		if (isset($originalScope->variableTypes['$this'])) {
+			$variableTypes['$this'] = $originalScope->variableTypes['$this'];
 		} else {
-			unset($variableTypes['this']);
+			unset($variableTypes['$this']);
 		}
 
 		return $this->scopeFactory->create(
@@ -2789,7 +2794,7 @@ class MutatingScope implements Scope
 	public function enterClosureCall(Type $thisType): self
 	{
 		$variableTypes = $this->getVariableTypes();
-		$variableTypes['this'] = VariableTypeHolder::createYes($thisType);
+		$variableTypes['$this'] = VariableTypeHolder::createYes($thisType);
 
 		return $this->scopeFactory->create(
 			$this->context,
@@ -2859,6 +2864,10 @@ class MutatingScope implements Scope
 		$variableTypes = [];
 		$nativeTypes = [];
 		foreach ($closure->params as $i => $parameter) {
+			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
+				throw new ShouldNotHappenException();
+			}
+			$paramExprString = sprintf('$%s', $parameter->var->name);
 			$isNullable = $this->isParameterValueNullable($parameter);
 			$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
 			if ($callableParameters !== null) {
@@ -2875,14 +2884,8 @@ class MutatingScope implements Scope
 					$parameterType = TypehintHelper::decideType($parameterType, new MixedType());
 				}
 			}
-
-			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
-				throw new ShouldNotHappenException();
-			}
-			$variableTypes[$parameter->var->name] = VariableTypeHolder::createYes(
-				$parameterType,
-			);
-			$nativeTypes[sprintf('$%s', $parameter->var->name)] = $parameterType;
+			$variableTypes[$paramExprString] = VariableTypeHolder::createYes($parameterType);
+			$nativeTypes[$paramExprString] = $parameterType;
 		}
 
 		$moreSpecificTypes = [];
@@ -2894,13 +2897,14 @@ class MutatingScope implements Scope
 				continue;
 			}
 			$variableName = $use->var->name;
+			$paramExprString = '$' . $use->var->name;
 			if ($this->hasVariableType($variableName)->no()) {
 				$variableType = new ErrorType();
 			} else {
 				$variableType = $this->getVariableType($variableName);
-				$nativeTypes[sprintf('$%s', $variableName)] = $this->getNativeType($use->var);
+				$nativeTypes[$paramExprString] = $this->getNativeType($use->var);
 			}
-			$variableTypes[$variableName] = VariableTypeHolder::createYes($variableType);
+			$variableTypes[$paramExprString] = VariableTypeHolder::createYes($variableType);
 			foreach ($this->moreSpecificTypes as $exprString => $moreSpecificType) {
 				$matches = Strings::matchAll((string) $exprString, '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
 				if ($matches === []) {
@@ -2917,7 +2921,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($this->hasVariableType('this')->yes() && !$closure->static) {
-			$variableTypes['this'] = VariableTypeHolder::createYes($this->getVariableType('this'));
+			$variableTypes['$this'] = VariableTypeHolder::createYes($this->getVariableType('this'));
 		}
 
 		return $this->scopeFactory->create(
@@ -2982,7 +2986,7 @@ class MutatingScope implements Scope
 	{
 		$variableTypes = $this->variableTypes;
 		$mixed = new MixedType();
-		$parameterVariables = [];
+		$parameterExprStrings = [];
 		$parameterVariableExpressions = [];
 		foreach ($arrowFunction->params as $i => $parameter) {
 			if ($parameter->type === null) {
@@ -3011,28 +3015,27 @@ class MutatingScope implements Scope
 				throw new ShouldNotHappenException();
 			}
 
-			$variableTypes[$parameter->var->name] = VariableTypeHolder::createYes($parameterType);
-			$parameterVariables[] = $parameter->var->name;
+			$exprString = '$' . $parameter->var->name;
+			$variableTypes[$exprString] = VariableTypeHolder::createYes($parameterType);
+			$parameterExprStrings[] = $exprString;
 			$parameterVariableExpressions[] = $parameter->var;
 		}
 
 		if ($arrowFunction->static) {
-			unset($variableTypes['this']);
+			unset($variableTypes['$this']);
 		}
 
 		$conditionalExpressions = [];
 		foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
 			$newHolders = [];
-			foreach ($parameterVariables as $parameterVariable) {
-				$exprString = '$' . $parameterVariable;
+			foreach ($parameterExprStrings as $exprString) {
 				if ($exprString === $conditionalExprString) {
 					continue 2;
 				}
 			}
 
 			foreach ($holders as $holder) {
-				foreach ($parameterVariables as $parameterVariable) {
-					$exprString = '$' . $parameterVariable;
+				foreach ($parameterExprStrings as $exprString) {
 					foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionalExprString2) {
 						if ($exprString === $conditionalExprString2) {
 							continue 3;
@@ -3049,8 +3052,7 @@ class MutatingScope implements Scope
 
 			$conditionalExpressions[$conditionalExprString] = $newHolders;
 		}
-		foreach ($parameterVariables as $parameterVariable) {
-			$exprString = '$' . $parameterVariable;
+		foreach ($parameterExprStrings as $exprString) {
 			foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
 				if ($exprString === $conditionalExprString) {
 					continue;
@@ -3359,11 +3361,12 @@ class MutatingScope implements Scope
 		} elseif ($certainty->no()) {
 			throw new ShouldNotHappenException();
 		}
+		$varExprString = '$' . $variableName;
 		$variableTypes = $this->getVariableTypes();
-		$variableTypes[$variableName] = new VariableTypeHolder($type, $certainty);
+		$variableTypes[$varExprString] = new VariableTypeHolder($type, $certainty);
 
 		$nativeTypes = $this->nativeExpressionTypes;
-		$nativeTypes[sprintf('$%s', $variableName)] = $nativeType;
+		$nativeTypes[$varExprString] = $nativeType;
 
 		$variableString = $this->exprPrinter->printExpr(new Variable($variableName));
 		$moreSpecificTypeHolders = $this->moreSpecificTypes;
@@ -3385,14 +3388,13 @@ class MutatingScope implements Scope
 
 		$conditionalExpressions = [];
 		foreach ($this->conditionalExpressions as $exprString => $holders) {
-			$exprVariableName = '$' . $variableName;
-			if ($exprString === $exprVariableName) {
+			if ($exprString === $varExprString) {
 				continue;
 			}
 
 			foreach ($holders as $holder) {
 				foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionExprString) {
-					if ($conditionExprString === $exprVariableName) {
+					if ($conditionExprString === $varExprString) {
 						continue 3;
 					}
 				}
@@ -3428,11 +3430,10 @@ class MutatingScope implements Scope
 			if ($this->hasVariableType($expr->name)->no()) {
 				return $this;
 			}
+			$exprString = '$' . $expr->name;
 			$variableTypes = $this->getVariableTypes();
-			unset($variableTypes[$expr->name]);
+			unset($variableTypes[$exprString]);
 			$nativeTypes = $this->nativeExpressionTypes;
-
-			$exprString = sprintf('$%s', $expr->name);
 			unset($nativeTypes[$exprString]);
 
 			$conditionalExpressions = $this->conditionalExpressions;
@@ -3533,12 +3534,12 @@ class MutatingScope implements Scope
 
 		if ($expr instanceof Variable && is_string($expr->name)) {
 			$variableName = $expr->name;
+			$exprString = '$' . $variableName;
 
 			$variableTypes = $this->getVariableTypes();
-			$variableTypes[$variableName] = VariableTypeHolder::createYes($type);
+			$variableTypes[$exprString] = VariableTypeHolder::createYes($type);
 
 			$nativeTypes = $this->nativeExpressionTypes;
-			$exprString = sprintf('$%s', $variableName);
 			$nativeTypes[$exprString] = $nativeType;
 
 			$conditionalExpressions = [];
@@ -3929,7 +3930,7 @@ class MutatingScope implements Scope
 				|| $specifiedTypes->shouldOverwrite()
 			) {
 				// @phpstan-ignore-next-line
-				$match = Strings::match((string) $typeSpecification['exprString'], '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
+				$match = Strings::match((string) $typeSpecification['exprString'], '#^(\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
 				if ($match !== null) {
 					$skipVariables[$match[1]] = true;
 				}
@@ -3940,15 +3941,15 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$saveConditionalVariables[$expr->name] = $scope->getVariableType($expr->name);
+			$saveConditionalVariables['$' . $expr->name] = $scope->getVariableType($expr->name);
 		}
 
-		foreach ($saveConditionalVariables as $variableName => $typeGuard) {
-			if (array_key_exists($variableName, $skipVariables)) {
+		foreach ($saveConditionalVariables as $variableExprString => $typeGuard) {
+			if (array_key_exists($variableExprString, $skipVariables)) {
 				continue;
 			}
 
-			$typeGuards['$' . $variableName] = $typeGuard;
+			$typeGuards[$variableExprString] = $typeGuard;
 		}
 
 		$newConditionalExpressions = $specifiedTypes->getNewConditionalExpressionHolders();
@@ -3959,7 +3960,6 @@ class MutatingScope implements Scope
 
 			$typeHolder = null;
 
-			$variableName = substr($variableExprString, 1);
 			foreach ($conditionalExpressions as $conditionalExpression) {
 				$matchingConditions = [];
 				foreach ($conditionalExpression->getConditionExpressionTypes() as $conditionExprString => $conditionalType) {
@@ -3999,9 +3999,9 @@ class MutatingScope implements Scope
 			}
 
 			if ($typeHolder->getCertainty()->no()) {
-				unset($scope->variableTypes[$variableName]);
+				unset($scope->variableTypes[$variableExprString]);
 			} else {
-				$scope->variableTypes[$variableName] = $typeHolder;
+				$scope->variableTypes[$variableExprString] = $typeHolder;
 			}
 		}
 
@@ -4151,20 +4151,20 @@ class MutatingScope implements Scope
 		$ourVariableTypes = $this->getVariableTypes();
 		$theirVariableTypes = $otherScope->getVariableTypes();
 		if ($this->canAnyVariableExist()) {
-			foreach (array_keys($theirVariableTypes) as $name) {
-				if (array_key_exists($name, $ourVariableTypes)) {
+			foreach (array_keys($theirVariableTypes) as $exprString) {
+				if (array_key_exists($exprString, $ourVariableTypes)) {
 					continue;
 				}
 
-				$ourVariableTypes[$name] = VariableTypeHolder::createMaybe(new MixedType());
+				$ourVariableTypes[$exprString] = VariableTypeHolder::createMaybe(new MixedType());
 			}
 
-			foreach (array_keys($ourVariableTypes) as $name) {
-				if (array_key_exists($name, $theirVariableTypes)) {
+			foreach (array_keys($ourVariableTypes) as $exprString) {
+				if (array_key_exists($exprString, $theirVariableTypes)) {
 					continue;
 				}
 
-				$theirVariableTypes[$name] = VariableTypeHolder::createMaybe(new MixedType());
+				$theirVariableTypes[$exprString] = VariableTypeHolder::createMaybe(new MixedType());
 			}
 		}
 
@@ -4249,46 +4249,45 @@ class MutatingScope implements Scope
 	): array
 	{
 		$newVariableTypes = $variableTypes;
-		foreach ($theirVariableTypes as $name => $holder) {
-			if (!array_key_exists($name, $mergedVariableHolders)) {
+		foreach ($theirVariableTypes as $exprString => $holder) {
+			if (!array_key_exists($exprString, $mergedVariableHolders)) {
 				continue;
 			}
 
-			if (!$mergedVariableHolders[$name]->getType()->equals($holder->getType())) {
+			if (!$mergedVariableHolders[$exprString]->getType()->equals($holder->getType())) {
 				continue;
 			}
 
-			unset($newVariableTypes[$name]);
+			unset($newVariableTypes[$exprString]);
 		}
 
 		$typeGuards = [];
-		foreach ($newVariableTypes as $name => $holder) {
+		foreach ($newVariableTypes as $exprString => $holder) {
 			if (!$holder->getCertainty()->yes()) {
 				continue;
 			}
-			if (!array_key_exists($name, $mergedVariableHolders)) {
+			if (!array_key_exists($exprString, $mergedVariableHolders)) {
 				continue;
 			}
-			if ($mergedVariableHolders[$name]->getType()->equals($holder->getType())) {
+			if ($mergedVariableHolders[$exprString]->getType()->equals($holder->getType())) {
 				continue;
 			}
 
-			$typeGuards['$' . $name] = $holder->getType();
+			$typeGuards[$exprString] = $holder->getType();
 		}
 
 		if (count($typeGuards) === 0) {
 			return $conditionalExpressions;
 		}
 
-		foreach ($newVariableTypes as $name => $holder) {
+		foreach ($newVariableTypes as $exprString => $holder) {
 			if (
-				array_key_exists($name, $mergedVariableHolders)
-				&& $mergedVariableHolders[$name]->equals($holder)
+				array_key_exists($exprString, $mergedVariableHolders)
+				&& $mergedVariableHolders[$exprString]->equals($holder)
 			) {
 				continue;
 			}
 
-			$exprString = '$' . $name;
 			$variableTypeGuards = $typeGuards;
 			unset($variableTypeGuards[$exprString]);
 
@@ -4300,13 +4299,13 @@ class MutatingScope implements Scope
 			$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 		}
 
-		foreach (array_keys($mergedVariableHolders) as $name) {
-			if (array_key_exists($name, $variableTypes)) {
+		foreach (array_keys($mergedVariableHolders) as $exprString) {
+			if (array_key_exists($exprString, $variableTypes)) {
 				continue;
 			}
 
 			$conditionalExpression = new ConditionalExpressionHolder($typeGuards, new VariableTypeHolder(new ErrorType(), TrinaryLogic::createNo()));
-			$conditionalExpressions['$' . $name][$conditionalExpression->getKey()] = $conditionalExpression;
+			$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 		}
 
 		return $conditionalExpressions;
@@ -4320,20 +4319,20 @@ class MutatingScope implements Scope
 	private function mergeVariableHolders(array $ourVariableTypeHolders, array $theirVariableTypeHolders): array
 	{
 		$intersectedVariableTypeHolders = [];
-		foreach ($ourVariableTypeHolders as $name => $variableTypeHolder) {
-			if (isset($theirVariableTypeHolders[$name])) {
-				$intersectedVariableTypeHolders[$name] = $variableTypeHolder->and($theirVariableTypeHolders[$name]);
+		foreach ($ourVariableTypeHolders as $exprString => $variableTypeHolder) {
+			if (isset($theirVariableTypeHolders[$exprString])) {
+				$intersectedVariableTypeHolders[$exprString] = $variableTypeHolder->and($theirVariableTypeHolders[$exprString]);
 			} else {
-				$intersectedVariableTypeHolders[$name] = VariableTypeHolder::createMaybe($variableTypeHolder->getType());
+				$intersectedVariableTypeHolders[$exprString] = VariableTypeHolder::createMaybe($variableTypeHolder->getType());
 			}
 		}
 
-		foreach ($theirVariableTypeHolders as $name => $variableTypeHolder) {
-			if (isset($intersectedVariableTypeHolders[$name])) {
+		foreach ($theirVariableTypeHolders as $exprString => $variableTypeHolder) {
+			if (isset($intersectedVariableTypeHolders[$exprString])) {
 				continue;
 			}
 
-			$intersectedVariableTypeHolders[$name] = VariableTypeHolder::createMaybe($variableTypeHolder->getType());
+			$intersectedVariableTypeHolders[$exprString] = VariableTypeHolder::createMaybe($variableTypeHolder->getType());
 		}
 
 		return $intersectedVariableTypeHolders;
@@ -4394,20 +4393,20 @@ class MutatingScope implements Scope
 		array $originalVariableTypeHolders,
 	): array
 	{
-		foreach ($finallyVariableTypeHolders as $name => $variableTypeHolder) {
+		foreach ($finallyVariableTypeHolders as $exprString => $variableTypeHolder) {
 			if (
-				isset($originalVariableTypeHolders[$name])
-				&& !$originalVariableTypeHolders[$name]->getType()->equals($variableTypeHolder->getType())
+				isset($originalVariableTypeHolders[$exprString])
+				&& !$originalVariableTypeHolders[$exprString]->getType()->equals($variableTypeHolder->getType())
 			) {
-				$ourVariableTypeHolders[$name] = $variableTypeHolder;
+				$ourVariableTypeHolders[$exprString] = $variableTypeHolder;
 				continue;
 			}
 
-			if (isset($originalVariableTypeHolders[$name])) {
+			if (isset($originalVariableTypeHolders[$exprString])) {
 				continue;
 			}
 
-			$ourVariableTypeHolders[$name] = $variableTypeHolder;
+			$ourVariableTypeHolders[$exprString] = $variableTypeHolder;
 		}
 
 		return $ourVariableTypeHolders;
@@ -4434,10 +4433,11 @@ class MutatingScope implements Scope
 			}
 
 			$variableName = $use->var->name;
+			$variableExprString = '$' . $variableName;
 
 			if (!$closureScope->hasVariableType($variableName)->yes()) {
-				$variableTypes[$variableName] = VariableTypeHolder::createYes(new NullType());
-				$nativeExpressionTypes[sprintf('$%s', $variableName)] = new NullType();
+				$variableTypes[$variableExprString] = VariableTypeHolder::createYes(new NullType());
+				$nativeExpressionTypes[$variableExprString] = new NullType();
 				continue;
 			}
 
@@ -4451,8 +4451,8 @@ class MutatingScope implements Scope
 				}
 			}
 
-			$variableTypes[$variableName] = VariableTypeHolder::createYes($variableType);
-			$nativeExpressionTypes[sprintf('$%s', $variableName)] = $variableType;
+			$variableTypes[$variableExprString] = VariableTypeHolder::createYes($variableType);
+			$nativeExpressionTypes[$variableExprString] = $variableType;
 		}
 
 		return $this->scopeFactory->create(
@@ -4480,16 +4480,16 @@ class MutatingScope implements Scope
 	{
 		$variableTypeHolders = $this->variableTypes;
 		$nativeTypes = $this->nativeExpressionTypes;
-		foreach ($finalScope->variableTypes as $name => $variableTypeHolder) {
-			$nativeTypes[sprintf('$%s', $name)] = $variableTypeHolder->getType();
-			if (!isset($variableTypeHolders[$name])) {
-				$variableTypeHolders[$name] = VariableTypeHolder::createMaybe($variableTypeHolder->getType());
+		foreach ($finalScope->variableTypes as $variableExprString => $variableTypeHolder) {
+			$nativeTypes[$variableExprString] = $variableTypeHolder->getType();
+			if (!isset($variableTypeHolders[$variableExprString])) {
+				$variableTypeHolders[$variableExprString] = VariableTypeHolder::createMaybe($variableTypeHolder->getType());
 				continue;
 			}
 
-			$variableTypeHolders[$name] = new VariableTypeHolder(
+			$variableTypeHolders[$variableExprString] = new VariableTypeHolder(
 				$variableTypeHolder->getType(),
-				$variableTypeHolder->getCertainty()->and($variableTypeHolders[$name]->getCertainty()),
+				$variableTypeHolder->getCertainty()->and($variableTypeHolders[$variableExprString]->getCertainty()),
 			);
 		}
 
@@ -4581,13 +4581,13 @@ class MutatingScope implements Scope
 		array $otherVariableTypeHolders,
 	): array
 	{
-		foreach ($variableTypeHolders as $name => $variableTypeHolder) {
-			if (!isset($otherVariableTypeHolders[$name])) {
+		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
+			if (!isset($otherVariableTypeHolders[$variableExprString])) {
 				continue;
 			}
 
-			$variableTypeHolders[$name] = new VariableTypeHolder(
-				self::generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$name]->getType()),
+			$variableTypeHolders[$variableExprString] = new VariableTypeHolder(
+				self::generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType()),
 				$variableTypeHolder->getCertainty(),
 			);
 		}
@@ -4955,20 +4955,20 @@ class MutatingScope implements Scope
 		if (count($variableTypeHolders) !== count($otherVariableTypeHolders)) {
 			return false;
 		}
-		foreach ($variableTypeHolders as $name => $variableTypeHolder) {
-			if (!isset($otherVariableTypeHolders[$name])) {
+		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
+			if (!isset($otherVariableTypeHolders[$variableExprString])) {
 				return false;
 			}
 
-			if (!$variableTypeHolder->getCertainty()->equals($otherVariableTypeHolders[$name]->getCertainty())) {
+			if (!$variableTypeHolder->getCertainty()->equals($otherVariableTypeHolders[$variableExprString]->getCertainty())) {
 				return false;
 			}
 
-			if (!$variableTypeHolder->getType()->equals($otherVariableTypeHolders[$name]->getType())) {
+			if (!$variableTypeHolder->getType()->equals($otherVariableTypeHolders[$variableExprString]->getType())) {
 				return false;
 			}
 
-			unset($otherVariableTypeHolders[$name]);
+			unset($otherVariableTypeHolders[$variableExprString]);
 		}
 
 		return true;

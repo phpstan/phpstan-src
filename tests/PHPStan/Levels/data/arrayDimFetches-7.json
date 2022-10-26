@@ -15,7 +15,7 @@
         "ignorable": true
     },
     {
-        "message": "Offset 'b' does not exist on array{a: 1, b?: 1}.",
+        "message": "Offset 'b' might not exist on array{a: 1, b?: 1}.",
         "line": 40,
         "ignorable": true
     },

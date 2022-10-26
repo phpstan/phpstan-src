@@ -1,11 +1,11 @@
 [
     {
-        "message": "Offset 0 does not exist on array|null.",
+        "message": "Offset 0 might not exist on array|null.",
         "line": 15,
         "ignorable": true
     },
     {
-        "message": "Offset 0 does not exist on array<int, string>|null.",
+        "message": "Offset 0 might not exist on array<int, string>|null.",
         "line": 50,
         "ignorable": true
     }

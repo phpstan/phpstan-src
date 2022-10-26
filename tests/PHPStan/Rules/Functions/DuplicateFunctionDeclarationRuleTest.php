@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Functions;
 
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
+use PHPStan\File\FileHelper;
 use PHPStan\File\SimpleRelativePathHelper;
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocator;
@@ -19,12 +20,14 @@ class DuplicateFunctionDeclarationRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$fileHelper = new FileHelper(__DIR__ . '/data');
+
 		return new DuplicateFunctionDeclarationRule(
 			new DefaultReflector(new OptimizedSingleFileSourceLocator(
 				self::getContainer()->getByType(FileNodesFetcher::class),
 				self::FILENAME,
 			)),
-			new SimpleRelativePathHelper(__DIR__ . '/data'),
+			new SimpleRelativePathHelper($fileHelper->getWorkingDirectory()),
 		);
 	}
 

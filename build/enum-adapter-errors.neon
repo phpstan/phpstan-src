@@ -12,7 +12,7 @@ parameters:
 
 		-
 			message: "#^Call to method getStartLine\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 2
+			count: 1
 			path: ../src/Rules/Classes/DuplicateClassDeclarationRule.php
 
 		-

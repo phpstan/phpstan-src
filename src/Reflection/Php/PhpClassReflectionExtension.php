@@ -496,9 +496,9 @@ class PhpClassReflectionExtension
 			return new EnumCasesMethodReflection($declaringClass, $arrayBuilder->getArray());
 		}
 
-		$returnsByReference = null;
+		$returnsByReference = TrinaryLogic::createMaybe();
 		if ($methodReflection->getReflection() !== null) {
-			$returnsByReference = $methodReflection->getReflection()->returnsReference();
+			$returnsByReference = TrinaryLogic::createFromBoolean($methodReflection->getReflection()->returnsReference());
 		}
 
 		if ($this->signatureMapProvider->hasMethodSignature($declaringClassName, $methodReflection->getName())) {

@@ -170,9 +170,9 @@ class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 		return null;
 	}
 
-	public function returnsByReference(): ?bool
+	public function returnsByReference(): TrinaryLogic
 	{
-		return null;
+		return TrinaryLogic::createMaybe();
 	}
 
 }

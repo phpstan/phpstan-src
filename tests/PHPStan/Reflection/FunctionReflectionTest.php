@@ -5,6 +5,7 @@ namespace PHPStan\Reflection;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\TrinaryLogic;
 use const PHP_VERSION_ID;
 
 class FunctionReflectionTest extends PHPStanTestCase
@@ -130,16 +131,16 @@ class FunctionReflectionTest extends PHPStanTestCase
 
 	public function dataFunctionReturnsByReference(): iterable
 	{
-		yield ['\\implode', false];
+		yield ['\\implode', TrinaryLogic::createNo()];
 
-		yield ['ReturnsByReference\\foo', false];
-		yield ['ReturnsByReference\\refFoo', true];
+		yield ['ReturnsByReference\\foo', TrinaryLogic::createNo()];
+		yield ['ReturnsByReference\\refFoo', TrinaryLogic::createYes()];
 	}
 
 	/**
 	 * @dataProvider dataFunctionReturnsByReference
 	 */
-	public function testFunctionReturnsByReference(string $functionName, bool $expectedReturnsByRef): void
+	public function testFunctionReturnsByReference(string $functionName, TrinaryLogic $expectedReturnsByRef): void
 	{
 		require_once __DIR__ . '/data/returns-by-reference.php';
 
@@ -151,28 +152,28 @@ class FunctionReflectionTest extends PHPStanTestCase
 
 	public function dataMethodReturnsByReference(): iterable
 	{
-		yield ['ReturnsByReference\\X', 'foo', false];
-		yield ['ReturnsByReference\\X', 'refFoo', true];
+		yield ['ReturnsByReference\\X', 'foo', TrinaryLogic::createNo()];
+		yield ['ReturnsByReference\\X', 'refFoo', TrinaryLogic::createYes()];
 
-		yield ['ReturnsByReference\\SubX', 'foo', false];
-		yield ['ReturnsByReference\\SubX', 'refFoo', true];
-		yield ['ReturnsByReference\\SubX', 'subRefFoo', true];
+		yield ['ReturnsByReference\\SubX', 'foo', TrinaryLogic::createNo()];
+		yield ['ReturnsByReference\\SubX', 'refFoo', TrinaryLogic::createYes()];
+		yield ['ReturnsByReference\\SubX', 'subRefFoo', TrinaryLogic::createYes()];
 
-		yield ['ReturnsByReference\\TraitX', 'traitFoo', false];
-		yield ['ReturnsByReference\\TraitX', 'refTraitFoo', true];
+		yield ['ReturnsByReference\\TraitX', 'traitFoo', TrinaryLogic::createNo()];
+		yield ['ReturnsByReference\\TraitX', 'refTraitFoo', TrinaryLogic::createYes()];
 
 		if (PHP_VERSION_ID < 80100) {
 			return;
 		}
 
-		yield ['ReturnsByReference\\E', 'enumFoo', false];
-		yield ['ReturnsByReference\\E', 'refEnumFoo', true];
+		yield ['ReturnsByReference\\E', 'enumFoo', TrinaryLogic::createNo()];
+		yield ['ReturnsByReference\\E', 'refEnumFoo', TrinaryLogic::createYes()];
 	}
 
 	/**
 	 * @dataProvider dataMethodReturnsByReference
 	 */
-	public function testMethodReturnsByReference(string $className, string $methodName, bool $expectedReturnsByRef): void
+	public function testMethodReturnsByReference(string $className, string $methodName, TrinaryLogic $expectedReturnsByRef): void
 	{
 		$reflectionProvider = $this->createReflectionProvider();
 		$class = $reflectionProvider->getClass($className);

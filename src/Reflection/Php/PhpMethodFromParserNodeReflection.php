@@ -9,6 +9,7 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -49,7 +50,7 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		private ?Type $selfOutType,
 		?string $phpDocComment,
 		array $parameterOutTypes,
-		?bool $returnsByReference,
+		TrinaryLogic $returnsByReference,
 	)
 	{
 		$name = strtolower($classMethod->name->name);

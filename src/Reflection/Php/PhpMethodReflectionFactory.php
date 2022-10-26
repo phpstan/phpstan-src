@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Php;
 
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 
@@ -31,7 +32,7 @@ interface PhpMethodReflectionFactory
 		?Type $selfOutType,
 		?string $phpDocComment,
 		array $phpDocParameterOutTypes,
-		?bool $returnsByReference,
+		TrinaryLogic $returnsByReference,
 	): PhpMethodReflection;
 
 }

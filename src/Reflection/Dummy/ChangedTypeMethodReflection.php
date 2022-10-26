@@ -100,7 +100,7 @@ class ChangedTypeMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->getSelfOutType();
 	}
 
-	public function returnsByReference(): ?bool
+	public function returnsByReference(): TrinaryLogic
 	{
 		return $this->reflection->returnsByReference();
 	}

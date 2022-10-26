@@ -36,6 +36,6 @@ interface FunctionReflection
 
 	public function getDocComment(): ?string;
 
-	public function returnsByReference(): ?bool;
+	public function returnsByReference(): TrinaryLogic;
 
 }

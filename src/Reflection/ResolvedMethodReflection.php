@@ -139,7 +139,7 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 		return $this->selfOutType;
 	}
 
-	public function returnsByReference(): ?bool
+	public function returnsByReference(): TrinaryLogic
 	{
 		return $this->reflection->returnsByReference();
 	}

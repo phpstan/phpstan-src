@@ -33,7 +33,7 @@ class NativeMethodReflection implements ExtendedMethodReflection
 		private Assertions $assertions,
 		private ?Type $selfOutType,
 		private ?string $phpDocComment,
-		private ?bool $returnsByReference,
+		private TrinaryLogic $returnsByReference,
 	)
 	{
 	}
@@ -168,7 +168,7 @@ class NativeMethodReflection implements ExtendedMethodReflection
 		return $this->selfOutType;
 	}
 
-	public function returnsByReference(): ?bool
+	public function returnsByReference(): TrinaryLogic
 	{
 		return $this->returnsByReference;
 	}

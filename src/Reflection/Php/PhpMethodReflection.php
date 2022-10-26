@@ -84,7 +84,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		private ?Type $selfOutType,
 		private ?string $phpDocComment,
 		private array $phpDocParameterOutTypes,
-		private ?bool $returnsByReference,
+		private TrinaryLogic $returnsByReference,
 	)
 	{
 	}
@@ -437,7 +437,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		return $this->phpDocComment;
 	}
 
-	public function returnsByReference(): ?bool
+	public function returnsByReference(): TrinaryLogic
 	{
 		return $this->returnsByReference;
 	}

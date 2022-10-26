@@ -54,7 +54,7 @@ class DuplicateClassDeclarationRule implements Rule
 		return [
 			RuleErrorBuilder::message(sprintf(
 				"Class %s declared multiple times:\n%s",
-				$scope->getClassReflection()->getDisplayName(),
+				$thisClass->getDisplayName(),
 				implode("\n", array_map(fn (ReflectionClass $class) => sprintf('- %s:%d', $this->relativePathHelper->getRelativePath($class->getFileName() ?? 'unknown'), $class->getStartLine()), $filteredClasses)),
 			))->build(),
 		];

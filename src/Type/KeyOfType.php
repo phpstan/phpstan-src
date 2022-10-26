@@ -28,6 +28,11 @@ class KeyOfType implements CompoundType, LateResolvableType
 		return $this->type->getReferencedClasses();
 	}
 
+	public function getUnionedTypes(): array
+	{
+		return $this->type->getUnionedTypes();
+	}
+
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array
 	{
 		return $this->type->getReferencedTemplateTypes($positionVariance);

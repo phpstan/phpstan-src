@@ -491,8 +491,8 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		}
 
 		[$classOrObjects, $methods] = $this->valueTypes;
-		$classOrObjects = TypeUtils::flattenTypes($classOrObjects);
-		$methods = TypeUtils::flattenTypes($methods);
+		$classOrObjects = $classOrObjects->getUnionedTypes();
+		$methods = $methods->getUnionedTypes();
 
 		$typeAndMethods = [];
 		foreach ($classOrObjects as $classOrObject) {

@@ -41,6 +41,11 @@ class NullType implements ConstantScalarType
 		return [];
 	}
 
+	public function getUnionedTypes(): array
+	{
+		return [$this];
+	}
+
 	/**
 	 * @return null
 	 */

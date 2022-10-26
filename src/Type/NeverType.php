@@ -50,6 +50,11 @@ class NeverType implements CompoundType
 		return [];
 	}
 
+	public function getUnionedTypes(): array
+	{
+		return [$this];
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

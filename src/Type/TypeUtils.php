@@ -265,6 +265,8 @@ class TypeUtils
 
 	/**
 	 * @return Type[]
+	 *
+	 * @deprecated Use PHPStan\Type\Type::getUnionedTypes() instead and handle optional ConstantArrayType keys if necessary.
 	 */
 	public static function flattenTypes(Type $type): array
 	{

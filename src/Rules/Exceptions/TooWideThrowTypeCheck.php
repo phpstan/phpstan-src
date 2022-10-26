@@ -6,7 +6,6 @@ use PHPStan\Analyser\ThrowPoint;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use function array_map;
@@ -33,7 +32,7 @@ class TooWideThrowTypeCheck
 		}, $throwPoints));
 
 		$throwClasses = [];
-		foreach (TypeUtils::flattenTypes($throwType) as $type) {
+		foreach ($throwType->getUnionedTypes() as $type) {
 			if (!$throwPointType instanceof NeverType && !$type->isSuperTypeOf($throwPointType)->no()) {
 				continue;
 			}

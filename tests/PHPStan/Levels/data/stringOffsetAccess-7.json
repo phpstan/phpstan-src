@@ -15,6 +15,11 @@
         "ignorable": true
     },
     {
+        "message": "Offset int|object might not exist on array{baz: 21}|array{foo: 17, bar: 19}.",
+        "line": 55,
+        "ignorable": true
+    },
+    {
         "message": "Possibly invalid array key type int|object.",
         "line": 55,
         "ignorable": true

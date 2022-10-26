@@ -30,6 +30,9 @@ interface Type
 	/** @return list<ConstantArrayType> */
 	public function getConstantArrays(): array;
 
+	/** @return list<Type> */
+	public function getUnionedTypes(): array;
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic;
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic;

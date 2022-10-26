@@ -9,7 +9,6 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
@@ -51,7 +50,7 @@ class ThrowsVoidMethodWithExplicitThrowPointRule implements Rule
 				continue;
 			}
 
-			foreach (TypeUtils::flattenTypes($throwPoint->getType()) as $throwPointType) {
+			foreach ($throwPoint->getType()->getUnionedTypes() as $throwPointType) {
 				if (
 					$throwPointType instanceof TypeWithClassName
 					&& $this->exceptionTypeResolver->isCheckedException($throwPointType->getClassName(), $throwPoint->getScope())

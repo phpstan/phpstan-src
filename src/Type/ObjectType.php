@@ -223,6 +223,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return [$this->className];
 	}
 
+	public function getUnionedTypes(): array
+	{
+		return [$this];
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof StaticType) {
@@ -1099,9 +1104,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 				$originalAllowedSubTypes = $allowedSubTypes;
 				$subtractedSubTypes = [];
 
-				$subtractedTypesList = TypeUtils::flattenTypes($subtractedType);
+				$subtractedTypesList = $subtractedType->getUnionedTypes();
 				if ($this->subtractedType !== null) {
-					$subtractedTypesList = array_merge($subtractedTypesList, TypeUtils::flattenTypes($this->subtractedType));
+					$subtractedTypesList = array_merge($subtractedTypesList, $this->subtractedType->getUnionedTypes());
 				}
 
 				$subtractedTypes = [];

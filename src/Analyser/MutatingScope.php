@@ -4613,8 +4613,8 @@ class MutatingScope implements Scope
 		$otherTypes = [];
 
 		foreach ([
-			'a' => TypeUtils::flattenTypes($a),
-			'b' => TypeUtils::flattenTypes($b),
+			'a' => $a->getUnionedTypes(),
+			'b' => $b->getUnionedTypes(),
 		] as $key => $types) {
 			foreach ($types as $type) {
 				if ($type instanceof ConstantIntegerType) {
@@ -4684,7 +4684,7 @@ class MutatingScope implements Scope
 				$constantArraysB = TypeCombinator::union(...$constantArrays['b']);
 				if ($constantArraysA->getIterableKeyType()->equals($constantArraysB->getIterableKeyType())) {
 					$resultArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
-					foreach (TypeUtils::flattenTypes($constantArraysA->getIterableKeyType()) as $keyType) {
+					foreach ($constantArraysA->getIterableKeyType()->getUnionedTypes() as $keyType) {
 						$resultArrayBuilder->setOffsetValueType(
 							$keyType,
 							self::generalizeType(

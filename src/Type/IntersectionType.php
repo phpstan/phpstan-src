@@ -101,6 +101,11 @@ class IntersectionType implements CompoundType
 		return UnionTypeHelper::getReferencedClasses($this->types);
 	}
 
+	public function getUnionedTypes(): array
+	{
+		return [$this];
+	}
+
 	public function getArrays(): array
 	{
 		return UnionTypeHelper::getArrays($this->getTypes());

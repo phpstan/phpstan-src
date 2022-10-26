@@ -74,6 +74,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return array_merge($classes, $this->returnType->getReferencedClasses());
 	}
 
+	public function getUnionedTypes(): array
+	{
+		return [$this];
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof CompoundType && !$type instanceof self) {

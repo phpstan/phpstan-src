@@ -39,6 +39,11 @@ class HasPropertyType implements AccessoryType, CompoundType
 		return [];
 	}
 
+	public function getUnionedTypes(): array
+	{
+		return [$this];
+	}
+
 	public function getPropertyName(): string
 	{
 		return $this->propertyName;

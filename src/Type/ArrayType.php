@@ -81,6 +81,11 @@ class ArrayType implements Type
 		return [];
 	}
 
+	public function getUnionedTypes(): array
+	{
+		return [$this];
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof CompoundType) {

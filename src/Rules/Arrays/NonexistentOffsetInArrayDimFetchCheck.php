@@ -9,9 +9,10 @@ use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -64,17 +65,35 @@ class NonexistentOffsetInArrayDimFetchCheck
 			if ($type instanceof BenevolentUnionType) {
 				$flattenedTypes = [$type];
 			} else {
-				$flattenedTypes = TypeUtils::flattenTypes($type);
+				$flattenedTypes = $type->getUnionedTypes();
 			}
 			foreach ($flattenedTypes as $innerType) {
-				if ($dimType instanceof UnionType) {
+				if ($dimType instanceof UnionType && !$innerType->isConstantArray()->yes()) {
 					if ($innerType->hasOffsetValueType($dimType)->no()) {
 						$report = true;
 						break;
 					}
 					continue;
 				}
-				foreach (TypeUtils::flattenTypes($dimType) as $innerDimType) {
+				foreach ($dimType->getUnionedTypes() as $innerDimType) {
+					if ($innerType->isConstantArray()->yes()) {
+						if ($innerType->getIterableKeyType()->isSuperTypeOf($innerDimType->toArrayKey())->no()) {
+							$report = true;
+							break 2;
+						}
+
+						if (!$innerDimType instanceof ConstantIntegerType && !$innerDimType instanceof ConstantStringType) {
+							break;
+						}
+
+						if (!$innerType->hasOffsetValueType($innerDimType)->yes()) {
+							$report = true;
+							break 2;
+						}
+
+						break;
+					}
+
 					if ($innerType->hasOffsetValueType($innerDimType)->no()) {
 						$report = true;
 						break 2;

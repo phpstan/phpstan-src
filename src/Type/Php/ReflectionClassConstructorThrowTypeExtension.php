@@ -12,7 +12,6 @@ use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 use ReflectionClass;
 use function count;
 
@@ -35,7 +34,7 @@ class ReflectionClassConstructorThrowTypeExtension implements DynamicStaticMetho
 		}
 
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
-		foreach (TypeUtils::flattenTypes($valueType) as $type) {
+		foreach ($valueType->getUnionedTypes() as $type) {
 			if ($type instanceof ClassStringType || $type instanceof ObjectWithoutClassType || $type instanceof ObjectType) {
 				continue;
 			}

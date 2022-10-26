@@ -14,7 +14,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\SubtractableType;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -102,9 +101,8 @@ class MatchExpressionRule implements Rule
 							$cases[$name] = new EnumCaseObjectType($classReflection->getName(), $name);
 						}
 
-						$subtractedTypes = TypeUtils::flattenTypes($subtractedType);
 						$set = true;
-						foreach ($subtractedTypes as $subType) {
+						foreach ($subtractedType->getUnionedTypes() as $subType) {
 							if (!$subType instanceof EnumCaseObjectType) {
 								$set = false;
 								break;

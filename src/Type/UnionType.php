@@ -25,6 +25,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_map;
+use function array_values;
 use function count;
 use function implode;
 use function sprintf;
@@ -105,6 +106,11 @@ class UnionType implements CompoundType
 	public function getConstantArrays(): array
 	{
 		return UnionTypeHelper::getConstantArrays($this->getTypes());
+	}
+
+	public function getUnionedTypes(): array
+	{
+		return array_values($this->types);
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic

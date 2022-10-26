@@ -7,7 +7,6 @@ use PHPStan\Analyser\ThrowPoint;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use Throwable;
@@ -35,7 +34,7 @@ class MissingCheckedExceptionInThrowsCheck
 				continue;
 			}
 
-			foreach (TypeUtils::flattenTypes($throwPoint->getType()) as $throwPointType) {
+			foreach ($throwPoint->getType()->getUnionedTypes() as $throwPointType) {
 				if ($throwPointType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
 					continue;
 				}

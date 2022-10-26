@@ -2183,18 +2183,14 @@ class MutatingScope implements Scope
 
 	private function promoteNativeTypes(): self
 	{
-		$expressionTypes = $this->expressionTypes;
-		foreach ($this->nativeExpressionTypes as $expressionType => $type) {
-			if (substr($expressionType, 0, 1) !== '$') {
-				throw new ShouldNotHappenException();
-			}
-
-			$has = $this->hasVariableType(substr($expressionType, 1));
+		$expressionTypes = [];
+		foreach ($this->nativeExpressionTypes as $exprString => $type) {
+			$has = $this->hasVariableType(substr($exprString, 1));
 			if ($has->no()) {
-				throw new ShouldNotHappenException();
+				continue;
 			}
 
-			$expressionTypes[$expressionType] = new VariableTypeHolder($type, $has);
+			$expressionTypes[$exprString] = new VariableTypeHolder($type, $has);
 		}
 
 		return $this->scopeFactory->create(
@@ -2210,6 +2206,10 @@ class MutatingScope implements Scope
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
 			$this->currentlyAllowedUndefinedExpressions,
+			[],
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
 		);
 	}
 

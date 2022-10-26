@@ -172,7 +172,7 @@ class IntersectionTypeMethodReflection implements ExtendedMethodReflection
 
 	public function returnsByReference(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return TrinaryLogic::lazyMaxMin($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->returnsByReference());
 	}
 
 }

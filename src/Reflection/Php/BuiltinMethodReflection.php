@@ -55,4 +55,6 @@ interface BuiltinMethodReflection
 
 	public function isAbstract(): bool;
 
+	public function returnsByReference(): TrinaryLogic;
+
 }

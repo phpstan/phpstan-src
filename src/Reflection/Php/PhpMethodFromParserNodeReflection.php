@@ -50,7 +50,6 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 		private ?Type $selfOutType,
 		?string $phpDocComment,
 		array $parameterOutTypes,
-		TrinaryLogic $returnsByReference,
 	)
 	{
 		$name = strtolower($classMethod->name->name);
@@ -95,7 +94,6 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 			$assertions,
 			$phpDocComment,
 			$parameterOutTypes,
-			$returnsByReference,
 		);
 	}
 
@@ -143,6 +141,11 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 	public function getSelfOutType(): ?Type
 	{
 		return $this->selfOutType;
+	}
+
+	public function returnsByReference(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->getClassMethod()->returnsByRef());
 	}
 
 }

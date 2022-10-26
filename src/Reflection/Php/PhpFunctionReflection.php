@@ -60,7 +60,6 @@ class PhpFunctionReflection implements FunctionReflection
 		private Assertions $asserts,
 		private ?string $phpDocComment,
 		private array $phpDocParameterOutTypes,
-		private TrinaryLogic $returnsByReference,
 	)
 	{
 	}
@@ -268,7 +267,7 @@ class PhpFunctionReflection implements FunctionReflection
 
 	public function returnsByReference(): TrinaryLogic
 	{
-		return $this->returnsByReference;
+		return TrinaryLogic::createFromBoolean($this->reflection->returnsReference());
 	}
 
 }

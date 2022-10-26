@@ -59,7 +59,6 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 		private Assertions $assertions,
 		private ?string $phpDocComment,
 		private array $parameterOutTypes,
-		private TrinaryLogic $returnsByReference,
 	)
 	{
 		$this->functionLike = $functionLike;
@@ -263,7 +262,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection
 
 	public function returnsByReference(): TrinaryLogic
 	{
-		return $this->returnsByReference;
+		return TrinaryLogic::createFromBoolean($this->functionLike->returnsByRef());
 	}
 
 }

@@ -496,11 +496,6 @@ class PhpClassReflectionExtension
 			return new EnumCasesMethodReflection($declaringClass, $arrayBuilder->getArray());
 		}
 
-		$returnsByReference = TrinaryLogic::createMaybe();
-		if ($methodReflection->getReflection() !== null) {
-			$returnsByReference = TrinaryLogic::createFromBoolean($methodReflection->getReflection()->returnsReference());
-		}
-
 		if ($this->signatureMapProvider->hasMethodSignature($declaringClassName, $methodReflection->getName())) {
 			$variants = [];
 			$reflectionMethod = null;
@@ -634,7 +629,6 @@ class PhpClassReflectionExtension
 				$asserts,
 				$selfOutType,
 				$phpDocComment,
-				$returnsByReference,
 			);
 		}
 
@@ -757,6 +751,7 @@ class PhpClassReflectionExtension
 			null,
 			$declaringClass->getName(),
 		);
+		$returnsByReference = $methodReflection->returnsByReference();
 		$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
 		$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
 		$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;

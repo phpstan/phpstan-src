@@ -120,4 +120,9 @@ class FakeBuiltinMethodReflection implements BuiltinMethodReflection
 		return [];
 	}
 
+	public function returnsByReference(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 }

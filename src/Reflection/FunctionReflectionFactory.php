@@ -4,7 +4,6 @@ namespace PHPStan\Reflection;
 
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\Reflection\Php\PhpFunctionReflection;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 
@@ -30,7 +29,6 @@ interface FunctionReflectionFactory
 		Assertions $asserts,
 		?string $phpDocComment,
 		array $phpDocParameterOutTypes,
-		TrinaryLogic $returnsByReference,
 	): PhpFunctionReflection;
 
 }

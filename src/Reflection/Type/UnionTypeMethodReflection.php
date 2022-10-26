@@ -158,4 +158,9 @@ class UnionTypeMethodReflection implements ExtendedMethodReflection
 		return null;
 	}
 
+	public function returnsByReference(): TrinaryLogic
+	{
+		return TrinaryLogic::lazyExtremeIdentity($this->methods, static fn (ExtendedMethodReflection $method): TrinaryLogic => $method->returnsByReference());
+	}
+
 }

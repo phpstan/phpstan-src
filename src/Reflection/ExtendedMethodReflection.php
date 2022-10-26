@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
 /**
@@ -24,5 +25,7 @@ interface ExtendedMethodReflection extends MethodReflection
 	public function getAsserts(): Assertions;
 
 	public function getSelfOutType(): ?Type;
+
+	public function returnsByReference(): TrinaryLogic;
 
 }

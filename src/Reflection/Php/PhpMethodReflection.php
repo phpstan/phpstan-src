@@ -436,4 +436,9 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		return $this->phpDocComment;
 	}
 
+	public function returnsByReference(): TrinaryLogic
+	{
+		return $this->reflection->returnsByReference();
+	}
+
 }

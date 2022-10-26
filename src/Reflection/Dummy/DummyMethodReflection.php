@@ -107,4 +107,9 @@ class DummyMethodReflection implements ExtendedMethodReflection
 		return null;
 	}
 
+	public function returnsByReference(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 }

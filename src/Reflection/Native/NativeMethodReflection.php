@@ -167,4 +167,9 @@ class NativeMethodReflection implements ExtendedMethodReflection
 		return $this->selfOutType;
 	}
 
+	public function returnsByReference(): TrinaryLogic
+	{
+		return $this->reflection->returnsByReference();
+	}
+
 }

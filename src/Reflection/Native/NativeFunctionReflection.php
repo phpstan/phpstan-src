@@ -14,6 +14,8 @@ class NativeFunctionReflection implements FunctionReflection
 
 	private Assertions $assertions;
 
+	private TrinaryLogic $returnsByReference;
+
 	/**
 	 * @param ParametersAcceptorWithPhpDocs[] $variants
 	 */
@@ -25,9 +27,11 @@ class NativeFunctionReflection implements FunctionReflection
 		private bool $isDeprecated,
 		?Assertions $assertions = null,
 		private ?string $phpDocComment = null,
+		?TrinaryLogic $returnsByReference = null,
 	)
 	{
 		$this->assertions = $assertions ?? Assertions::createEmpty();
+		$this->returnsByReference = $returnsByReference ?? TrinaryLogic::createMaybe();
 	}
 
 	public function getName(): string
@@ -106,6 +110,11 @@ class NativeFunctionReflection implements FunctionReflection
 	public function getDocComment(): ?string
 	{
 		return $this->phpDocComment;
+	}
+
+	public function returnsByReference(): TrinaryLogic
+	{
+		return $this->returnsByReference;
 	}
 
 }

@@ -141,4 +141,9 @@ class NativeBuiltinMethodReflection implements BuiltinMethodReflection
 		return $this->reflection->getParameters();
 	}
 
+	public function returnsByReference(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->reflection->returnsReference());
+	}
+
 }

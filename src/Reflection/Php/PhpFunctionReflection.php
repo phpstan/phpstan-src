@@ -265,4 +265,9 @@ class PhpFunctionReflection implements FunctionReflection
 		return $this->phpDocComment;
 	}
 
+	public function returnsByReference(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->reflection->returnsReference());
+	}
+
 }

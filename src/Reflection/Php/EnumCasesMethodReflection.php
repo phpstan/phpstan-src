@@ -116,4 +116,9 @@ class EnumCasesMethodReflection implements ExtendedMethodReflection
 		return null;
 	}
 
+	public function returnsByReference(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

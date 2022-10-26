@@ -9,6 +9,7 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -140,6 +141,11 @@ class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflect
 	public function getSelfOutType(): ?Type
 	{
 		return $this->selfOutType;
+	}
+
+	public function returnsByReference(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->getClassMethod()->returnsByRef());
 	}
 
 }

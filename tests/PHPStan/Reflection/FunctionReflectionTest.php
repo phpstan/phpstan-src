@@ -5,6 +5,8 @@ namespace PHPStan\Reflection;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\TrinaryLogic;
+use const PHP_VERSION_ID;
 
 class FunctionReflectionTest extends PHPStanTestCase
 {
@@ -125,6 +127,66 @@ class FunctionReflectionTest extends PHPStanTestCase
 
 		$methodReflection = $classReflection->getMethod($methodName, $scope);
 		$this->assertSame($expectedDocComment, $methodReflection->getDocComment());
+	}
+
+	public function dataFunctionReturnsByReference(): iterable
+	{
+		yield ['\\implode', TrinaryLogic::createNo()];
+
+		yield ['ReturnsByReference\\foo', TrinaryLogic::createNo()];
+		yield ['ReturnsByReference\\refFoo', TrinaryLogic::createYes()];
+	}
+
+	/**
+	 * @dataProvider dataFunctionReturnsByReference
+	 */
+	public function testFunctionReturnsByReference(string $functionName, TrinaryLogic $expectedReturnsByRef): void
+	{
+		require_once __DIR__ . '/data/returns-by-reference.php';
+
+		$reflectionProvider = $this->createReflectionProvider();
+
+		$functionReflection = $reflectionProvider->getFunction(new Node\Name($functionName), null);
+		$this->assertSame($expectedReturnsByRef, $functionReflection->returnsByReference());
+	}
+
+	public function dataMethodReturnsByReference(): iterable
+	{
+		yield ['ReturnsByReference\\X', 'foo', TrinaryLogic::createNo()];
+		yield ['ReturnsByReference\\X', 'refFoo', TrinaryLogic::createYes()];
+
+		yield ['ReturnsByReference\\SubX', 'foo', TrinaryLogic::createNo()];
+		yield ['ReturnsByReference\\SubX', 'refFoo', TrinaryLogic::createYes()];
+		yield ['ReturnsByReference\\SubX', 'subRefFoo', TrinaryLogic::createYes()];
+
+		yield ['ReturnsByReference\\TraitX', 'traitFoo', TrinaryLogic::createNo()];
+		yield ['ReturnsByReference\\TraitX', 'refTraitFoo', TrinaryLogic::createYes()];
+
+		if (PHP_VERSION_ID < 80100) {
+			return;
+		}
+
+		yield ['ReturnsByReference\\E', 'enumFoo', TrinaryLogic::createNo()];
+		yield ['ReturnsByReference\\E', 'refEnumFoo', TrinaryLogic::createYes()];
+		// cases() method cannot be overridden; https://3v4l.org/ebm83
+		yield ['ReturnsByReference\\E', 'cases', TrinaryLogic::createNo()];
+	}
+
+	/**
+	 * @dataProvider dataMethodReturnsByReference
+	 */
+	public function testMethodReturnsByReference(string $className, string $methodName, TrinaryLogic $expectedReturnsByRef): void
+	{
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass($className);
+		$scope = $this->createMock(Scope::class);
+		$scope->method('isInClass')->willReturn(true);
+		$scope->method('getClassReflection')->willReturn($class);
+		$scope->method('canAccessProperty')->willReturn(true);
+		$classReflection = $reflectionProvider->getClass($className);
+
+		$methodReflection = $classReflection->getMethod($methodName, $scope);
+		$this->assertSame($expectedReturnsByRef, $methodReflection->returnsByReference());
 	}
 
 	/**

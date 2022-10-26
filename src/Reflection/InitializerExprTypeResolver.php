@@ -907,8 +907,8 @@ class InitializerExprTypeResolver
 			return TypeCombinator::union(...$resultTypes);
 		}
 
-		$leftConstantArrays = $leftType->getConstantArrays();
-		$rightConstantArrays = $rightType->getConstantArrays();
+		$leftConstantArrays = TypeUtils::getOldConstantArrays($leftType);
+		$rightConstantArrays = TypeUtils::getOldConstantArrays($rightType);
 
 		$leftCount = count($leftConstantArrays);
 		$rightCount = count($rightConstantArrays);

@@ -110,11 +110,6 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		);
 	}
 
-	public function getConstantArrays(): array
-	{
-		return [$this];
-	}
-
 	/** @deprecated Use isIterableAtLeastOnce()->no() instead */
 	public function isEmpty(): bool
 	{

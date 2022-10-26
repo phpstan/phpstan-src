@@ -10,7 +10,6 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeReference;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -26,9 +25,6 @@ interface Type
 
 	/** @return list<ArrayType> */
 	public function getArrays(): array;
-
-	/** @return list<ConstantArrayType> */
-	public function getConstantArrays(): array;
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic;
 

@@ -11,6 +11,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use function count;
 
 class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -45,7 +46,7 @@ class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		$arraysType = $scope->getType($functionCall->getArgs()[0]->value);
-		$constantArrays = $arraysType->getConstantArrays();
+		$constantArrays = TypeUtils::getOldConstantArrays($arraysType);
 		if (count($constantArrays) > 0) {
 			$onlyEmpty = TrinaryLogic::createYes();
 			$onlyNonEmpty = TrinaryLogic::createYes();

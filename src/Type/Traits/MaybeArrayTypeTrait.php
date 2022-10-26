@@ -14,11 +14,6 @@ trait MaybeArrayTypeTrait
 		return [];
 	}
 
-	public function getConstantArrays(): array
-	{
-		return [];
-	}
-
 	public function isArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

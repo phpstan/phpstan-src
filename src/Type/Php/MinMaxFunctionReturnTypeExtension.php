@@ -16,6 +16,7 @@ use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
 
@@ -102,7 +103,7 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 
 	private function processArrayType(string $functionName, Type $argType): Type
 	{
-		$constArrayTypes = $argType->getConstantArrays();
+		$constArrayTypes = TypeUtils::getOldConstantArrays($argType);
 		if (count($constArrayTypes) > 0) {
 			$resultTypes = [];
 			foreach ($constArrayTypes as $constArrayType) {

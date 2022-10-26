@@ -106,11 +106,6 @@ class IntersectionType implements CompoundType
 		return UnionTypeHelper::getArrays($this->getTypes());
 	}
 
-	public function getConstantArrays(): array
-	{
-		return UnionTypeHelper::getConstantArrays($this->getTypes());
-	}
-
 	public function accepts(Type $otherType, bool $strictTypes): TrinaryLogic
 	{
 		foreach ($this->types as $type) {

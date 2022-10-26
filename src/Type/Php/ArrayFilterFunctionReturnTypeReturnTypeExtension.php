@@ -29,6 +29,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use function array_map;
 use function count;
 use function is_string;
@@ -163,7 +164,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			throw new ShouldNotHappenException();
 		}
 
-		$constantArrays = $arrayType->getConstantArrays();
+		$constantArrays = TypeUtils::getOldConstantArrays($arrayType);
 		if (count($constantArrays) > 0) {
 			$results = [];
 			foreach ($constantArrays as $constantArray) {

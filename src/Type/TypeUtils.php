@@ -65,8 +65,6 @@ class TypeUtils
 
 	/**
 	 * @return ConstantArrayType[]
-	 *
-	 * @deprecated Use PHPStan\Type\Type::getConstantArrays() instead and handle optional keys if necessary.
 	 */
 	public static function getConstantArrays(Type $type): array
 	{
@@ -191,8 +189,6 @@ class TypeUtils
 	/**
 	 * @internal
 	 * @return ConstantArrayType[]
-	 *
-	 * @deprecated Use PHPStan\Type\Type::getConstantArrays().
 	 */
 	public static function getOldConstantArrays(Type $type): array
 	{

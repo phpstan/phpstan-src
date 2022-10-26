@@ -11,6 +11,7 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use function array_slice;
 use function count;
 
@@ -46,7 +47,7 @@ class ArrayIntersectKeyFunctionReturnTypeExtension implements DynamicFunctionRet
 			return $firstArray;
 		}
 
-		$constantArrays = $firstArray->getConstantArrays();
+		$constantArrays = TypeUtils::getOldConstantArrays($firstArray);
 		if (count($constantArrays) === 0) {
 			return new ArrayType($firstArray->getIterableKeyType(), $firstArray->getIterableValueType());
 		}

@@ -1905,7 +1905,7 @@ class NodeScopeResolver
 					}
 				};
 
-				$constantArrays = $arrayType->getConstantArrays();
+				$constantArrays = TypeUtils::getOldConstantArrays($arrayType);
 				if (count($constantArrays) > 0) {
 					$newArrayTypes = [];
 					$prepend = $functionReflection->getName() === 'array_unshift';

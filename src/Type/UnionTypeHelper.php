@@ -3,7 +3,6 @@
 namespace PHPStan\Type;
 
 use PHPStan\Type\Accessory\AccessoryType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -41,20 +40,6 @@ class UnionTypeHelper
 		return array_merge(
 			...array_map(
 				static fn (Type $type) => $type->getArrays(),
-				$types,
-			),
-		);
-	}
-
-	/**
-	 * @param Type[] $types
-	 * @return list<ConstantArrayType>
-	 */
-	public static function getConstantArrays(array $types): array
-	{
-		return array_merge(
-			...array_map(
-				static fn (Type $type) => $type->getConstantArrays(),
 				$types,
 			),
 		);

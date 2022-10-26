@@ -34,11 +34,6 @@ class SplObjectStorage implements Countable, Iterator, Serializable, ArrayAccess
     /**
      * @param TObject $object
      */
-    public function detach(object $object): void { }
-
-    /**
-     * @param TObject $object
-     */
     public function getHash(object $object): string { }
 
     /**

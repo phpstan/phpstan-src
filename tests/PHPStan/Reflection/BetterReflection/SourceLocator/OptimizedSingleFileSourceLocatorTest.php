@@ -101,7 +101,13 @@ class OptimizedSingleFileSourceLocatorTest extends PHPStanTestCase
 			],
 			'constants' => [
 				new IdentifierType(IdentifierType::IDENTIFIER_CONSTANT),
-				[],
+				[
+					'ANOTHER_NAME',
+					'ConstFile\ANOTHER_NAME',
+					'ConstFile\TABLE_NAME',
+					'OPTIMIZED_SFSL_OBJECT_CONSTANT',
+					'const_with_dir_const',
+				],
 				__DIR__ . '/data/const.php',
 			],
 		];

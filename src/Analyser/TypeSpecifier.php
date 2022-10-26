@@ -63,7 +63,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use function array_filter;
@@ -637,7 +636,7 @@ class TypeSpecifier
 			$methodCalledOnType = $scope->getType($expr->var);
 			$methodReflection = $scope->getMethodReflection($methodCalledOnType, $expr->name->name);
 			if ($methodReflection !== null) {
-				$referencedClasses = TypeUtils::getDirectClassNames($methodCalledOnType);
+				$referencedClasses = $methodCalledOnType->getObjectClassNames();
 				if (
 					count($referencedClasses) === 1
 					&& $this->reflectionProvider->hasClass($referencedClasses[0])
@@ -677,7 +676,7 @@ class TypeSpecifier
 
 			$staticMethodReflection = $scope->getMethodReflection($calleeType, $expr->name->name);
 			if ($staticMethodReflection !== null) {
-				$referencedClasses = TypeUtils::getDirectClassNames($calleeType);
+				$referencedClasses = $calleeType->getObjectClassNames();
 				if (
 					count($referencedClasses) === 1
 					&& $this->reflectionProvider->hasClass($referencedClasses[0])

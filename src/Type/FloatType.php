@@ -46,6 +46,11 @@ class FloatType implements Type
 		return [];
 	}
 
+	public function getObjectClassNames(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

@@ -41,6 +41,11 @@ class NullType implements ConstantScalarType
 		return [];
 	}
 
+	public function getObjectClassNames(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

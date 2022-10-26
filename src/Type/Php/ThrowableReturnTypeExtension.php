@@ -13,7 +13,6 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use Throwable;
 use function count;
 use function in_array;
@@ -37,7 +36,7 @@ final class ThrowableReturnTypeExtension implements DynamicMethodReturnTypeExten
 		$type = $scope->getType($methodCall->var);
 		$types = [];
 		$pdoException = new ObjectType('PDOException');
-		foreach (TypeUtils::getDirectClassNames($type) as $class) {
+		foreach ($type->getObjectClassNames() as $class) {
 			$classType = new ObjectType($class);
 			if ($classType->getClassReflection() !== null) {
 				$classReflection = $classType->getClassReflection();

@@ -225,6 +225,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return [$this->className];
 	}
 
+	public function getObjectClassNames(): array
+	{
+		return [$this->className];
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof StaticType) {

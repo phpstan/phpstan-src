@@ -29,4 +29,8 @@ $f = function () {
 	/** @var object $object */
 	$object = doFoo();
 	clone $object;
+
+	/** @var Bar $unknownObject */
+	$unknownObject = doBaz();
+	clone $unknownObject;
 };

@@ -16,7 +16,6 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
@@ -99,7 +98,7 @@ class AccessPropertiesRule implements Rule
 				return [];
 			}
 
-			$classNames = TypeUtils::getDirectClassNames($type);
+			$classNames = $type->getObjectClassNames();
 			if (!$this->reportMagicProperties) {
 				foreach ($classNames as $className) {
 					if (!$this->reflectionProvider->hasClass($className)) {

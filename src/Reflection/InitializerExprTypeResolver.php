@@ -1856,9 +1856,8 @@ class InitializerExprTypeResolver
 			);
 		}
 
-		$referencedClasses = TypeUtils::getDirectClassNames($constantClassType);
 		$types = [];
-		foreach ($referencedClasses as $referencedClass) {
+		foreach ($constantClassType->getObjectClassNames() as $referencedClass) {
 			if (!$this->getReflectionProvider()->hasClass($referencedClass)) {
 				continue;
 			}

@@ -25,7 +25,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
@@ -187,8 +186,7 @@ class StaticMethodCallCheck
 
 		if (!$classType->hasMethod($methodName)->yes()) {
 			if (!$this->reportMagicMethods) {
-				$directClassNames = TypeUtils::getDirectClassNames($classType);
-				foreach ($directClassNames as $className) {
+				foreach ($classType->getObjectClassNames() as $className) {
 					if (!$this->reflectionProvider->hasClass($className)) {
 						continue;
 					}

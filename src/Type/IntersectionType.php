@@ -28,6 +28,7 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use function array_intersect_key;
 use function array_map;
+use function array_unique;
 use function array_values;
 use function count;
 use function implode;
@@ -105,6 +106,19 @@ class IntersectionType implements CompoundType
 		}
 
 		return $classes;
+	}
+
+	public function getObjectClassNames(): array
+	{
+		$objectClassNames = [];
+		foreach ($this->types as $type) {
+			$innerObjectClassNames = $type->getObjectClassNames();
+			foreach ($innerObjectClassNames as $innerObjectClassName) {
+				$objectClassNames[] = $innerObjectClassName;
+			}
+		}
+
+		return array_values(array_unique($objectClassNames));
 	}
 
 	public function getArrays(): array

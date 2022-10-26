@@ -4802,7 +4802,7 @@ class MutatingScope implements Scope
 		}
 
 		$resolvedTypes = [];
-		foreach (TypeUtils::getDirectClassNames($typeWithMethod) as $className) {
+		foreach ($typeWithMethod->getObjectClassNames() as $className) {
 			if ($normalizedMethodCall instanceof MethodCall) {
 				foreach ($this->dynamicReturnTypeExtensionRegistry->getDynamicMethodReturnTypeExtensionsForClass($className) as $dynamicMethodReturnTypeExtension) {
 					if (!$dynamicMethodReturnTypeExtension->isMethodSupported($methodReflection)) {

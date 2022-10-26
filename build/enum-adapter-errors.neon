@@ -359,3 +359,8 @@ parameters:
 			message: "#^Call to method getName\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
 			count: 1
 			path: ../tests/PHPStan/Reflection/ClassReflectionTest.php
+
+		-
+			message: "#^Call to method getProperties\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
+			count: 1
+			path: ../src/Node/ClassStatementsGatherer.php

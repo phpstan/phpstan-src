@@ -192,6 +192,7 @@ class MutatingScope implements Scope
 		private bool $treatPhpDocTypesAsCertain = true,
 		private bool $afterExtractCall = false,
 		private ?Scope $parentScope = null,
+		private bool $nativeTypesPromoted = false,
 		private bool $explicitMixedInUnknownGenericNew = false,
 		private bool $explicitMixedForGlobalVariables = false,
 	)
@@ -2177,12 +2178,18 @@ class MutatingScope implements Scope
 			false,
 			$this->afterExtractCall,
 			$this->parentScope,
+			false,
 			$this->explicitMixedInUnknownGenericNew,
+			$this->explicitMixedForGlobalVariables,
 		);
 	}
 
 	private function promoteNativeTypes(): self
 	{
+		if ($this->nativeTypesPromoted) {
+			return $this;
+		}
+
 		$expressionTypes = $this->expressionTypes;
 		foreach ($this->nativeExpressionTypes as $exprString => $type) {
 			$has = $this->hasVariableType(substr($exprString, 1));
@@ -2210,6 +2217,7 @@ class MutatingScope implements Scope
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
 			$this->parentScope,
+			true,
 		);
 	}
 

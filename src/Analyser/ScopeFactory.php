@@ -38,6 +38,7 @@ interface ScopeFactory
 		array $inFunctionCallsStack = [],
 		bool $afterExtractCall = false,
 		?Scope $parentScope = null,
+		bool $nativeTypesPromoted = false,
 	): MutatingScope;
 
 }

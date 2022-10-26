@@ -71,6 +71,7 @@ class DirectScopeFactory implements ScopeFactory
 		array $inFunctionCallsStack = [],
 		bool $afterExtractCall = false,
 		?Scope $parentScope = null,
+		bool $nativeTypesPromoted = false,
 	): MutatingScope
 	{
 		$scopeClass = $this->scopeClass;
@@ -107,6 +108,7 @@ class DirectScopeFactory implements ScopeFactory
 			$this->treatPhpDocTypesAsCertain,
 			$afterExtractCall,
 			$parentScope,
+			$nativeTypesPromoted,
 			$this->explicitMixedInUnknownGenericNew,
 			$this->explicitMixedForGlobalVariables,
 		);

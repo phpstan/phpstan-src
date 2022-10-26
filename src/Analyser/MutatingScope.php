@@ -4186,9 +4186,9 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param array<int|string, VariableTypeHolder> $variableTypes
-	 * @param array<int|string, VariableTypeHolder> $theirVariableTypes
-	 * @param array<int|string, VariableTypeHolder> $mergedVariableHolders
+	 * @param array<string, VariableTypeHolder> $variableTypes
+	 * @param array<string, VariableTypeHolder> $theirVariableTypes
+	 * @param array<string, VariableTypeHolder> $mergedVariableHolders
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
 	private function createConditionalExpressions(

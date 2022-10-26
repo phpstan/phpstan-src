@@ -10,7 +10,6 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use function array_filter;
 use function array_map;
 use function count;
@@ -34,11 +33,7 @@ class DuplicateClassDeclarationRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-
-		$thisClass = $scope->getClassReflection();
+		$thisClass = $node->getClassReflection();
 		$className = $thisClass->getName();
 		$allClasses = $this->reflector->reflectAllClasses();
 		$filteredClasses = [];

@@ -168,6 +168,8 @@ class FunctionReflectionTest extends PHPStanTestCase
 
 		yield ['ReturnsByReference\\E', 'enumFoo', TrinaryLogic::createNo()];
 		yield ['ReturnsByReference\\E', 'refEnumFoo', TrinaryLogic::createYes()];
+		// cases() method cannot be overridden; https://3v4l.org/ebm83
+		yield ['ReturnsByReference\\E', 'cases', TrinaryLogic::createNo()];
 	}
 
 	/**

@@ -751,7 +751,6 @@ class PhpClassReflectionExtension
 			null,
 			$declaringClass->getName(),
 		);
-		$returnsByReference = $methodReflection->returnsByReference();
 		$phpDocReturnType = $this->getPhpDocReturnType($phpDocBlockClassReflection, $resolvedPhpDoc, $nativeReturnType);
 		$phpDocThrowType = $resolvedPhpDoc->getThrowsTag() !== null ? $resolvedPhpDoc->getThrowsTag()->getType() : null;
 		$deprecatedDescription = $resolvedPhpDoc->getDeprecatedTag() !== null ? $resolvedPhpDoc->getDeprecatedTag()->getMessage() : null;
@@ -783,7 +782,6 @@ class PhpClassReflectionExtension
 			$selfOutType,
 			$phpDocComment,
 			$phpDocParameterOutTypes,
-			$returnsByReference,
 		);
 	}
 

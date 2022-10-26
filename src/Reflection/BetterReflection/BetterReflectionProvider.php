@@ -44,7 +44,6 @@ use PHPStan\Reflection\Php\PhpFunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
@@ -308,7 +307,6 @@ class BetterReflectionProvider implements ReflectionProvider
 			$asserts,
 			$phpDocComment,
 			array_map(static fn (ParamOutTag $paramOutTag): Type => $paramOutTag->getType(), $phpDocParameterOutTags),
-			TrinaryLogic::createFromBoolean($reflectionFunction->returnsReference()),
 		);
 	}
 

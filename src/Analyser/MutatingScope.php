@@ -2567,7 +2567,6 @@ class MutatingScope implements Scope
 				$selfOutType,
 				$phpDocComment,
 				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $parameterOutTypes),
-				TrinaryLogic::createMaybe(),
 			),
 			!$classMethod->isStatic(),
 		);
@@ -2673,7 +2672,6 @@ class MutatingScope implements Scope
 				$asserts ?? Assertions::createEmpty(),
 				$phpDocComment,
 				array_map(static fn (Type $type): Type => TemplateTypeHelper::toArgument($type), $parameterOutTypes),
-				TrinaryLogic::createMaybe(),
 			),
 			false,
 		);

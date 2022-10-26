@@ -66,9 +66,7 @@ function array_udiff(
 ): int {}
 
 /**
- * @template K of array-key
- * @template V
- * @param array<K, V> $array
- * @return ($array is list<V> ? true : false)
+ *@param array<array-key, mixed> $value
+ * @phpstan-assert-if-true list<mixed> $value
  */
-function array_is_list(array $array): bool {}
+function array_is_list(array $value): bool {}

@@ -23,6 +23,7 @@ use PHPStan\Rules\Classes\ExistingClassInClassExtendsRule;
 use PHPStan\Rules\Classes\ExistingClassInTraitUseRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\FunctionDefinitionCheck;
+use PHPStan\Rules\Functions\DuplicateFunctionDeclarationRule;
 use PHPStan\Rules\Functions\MissingFunctionParameterTypehintRule;
 use PHPStan\Rules\Functions\MissingFunctionReturnTypehintRule;
 use PHPStan\Rules\Generics\ClassAncestorsRule;
@@ -191,10 +192,10 @@ class StubValidator
 		];
 
 		if ($this->duplicateStubs) {
-			$rules[] = new DuplicateClassDeclarationRule(
-				$container->getService('stubReflector'),
-				$container->getService('simpleRelativePathHelper'),
-			);
+			$reflector = $container->getService('stubReflector');
+			$relativePathHelper = $container->getService('simpleRelativePathHelper');
+			$rules[] = new DuplicateClassDeclarationRule($reflector, $relativePathHelper);
+			$rules[] = new DuplicateFunctionDeclarationRule($reflector, $relativePathHelper);
 		}
 
 		return new DirectRuleRegistry($rules);

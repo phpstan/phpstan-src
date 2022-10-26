@@ -14,7 +14,6 @@ interface ScopeFactory
 	 * @api
 	 * @param array<string, Type> $constantTypes
 	 * @param VariableTypeHolder[] $variablesTypes
-	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
@@ -29,7 +28,6 @@ interface ScopeFactory
 		FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
 		array $variablesTypes = [],
-		array $moreSpecificTypes = [],
 		array $conditionalExpressions = [],
 		?string $inClosureBindScopeClass = null,
 		?ParametersAcceptor $anonymousFunctionReflection = null,

@@ -41,7 +41,6 @@ class LazyScopeFactory implements ScopeFactory
 	/**
 	 * @param array<string, Type> $constantTypes
 	 * @param VariableTypeHolder[] $variablesTypes
-	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
@@ -56,7 +55,6 @@ class LazyScopeFactory implements ScopeFactory
 		FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
 		array $variablesTypes = [],
-		array $moreSpecificTypes = [],
 		array $conditionalExpressions = [],
 		?string $inClosureBindScopeClass = null,
 		?ParametersAcceptor $anonymousFunctionReflection = null,
@@ -92,7 +90,6 @@ class LazyScopeFactory implements ScopeFactory
 			$function,
 			$namespace,
 			$variablesTypes,
-			$moreSpecificTypes,
 			$conditionalExpressions,
 			$inClosureBindScopeClass,
 			$anonymousFunctionReflection,

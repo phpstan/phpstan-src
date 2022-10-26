@@ -1379,7 +1379,7 @@ class TypeSpecifier
 
 				$holder = new ConditionalExpressionHolder(
 					$conditionExpressionTypes,
-					new VariableTypeHolder(TypeCombinator::remove($scope->getType($expr), $type), TrinaryLogic::createYes()),
+					new ExpressionTypeHolder(TypeCombinator::remove($scope->getType($expr), $type), TrinaryLogic::createYes()),
 				);
 				$holders[$exprString][$holder->getKey()] = $holder;
 			}

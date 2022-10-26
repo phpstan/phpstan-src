@@ -17,7 +17,7 @@ class ConditionalExpressionHolder
 	 */
 	public function __construct(
 		private array $conditionExpressionTypes,
-		private VariableTypeHolder $typeHolder,
+		private ExpressionTypeHolder $typeHolder,
 	)
 	{
 		if (count($conditionExpressionTypes) === 0) {
@@ -33,7 +33,7 @@ class ConditionalExpressionHolder
 		return $this->conditionExpressionTypes;
 	}
 
-	public function getTypeHolder(): VariableTypeHolder
+	public function getTypeHolder(): ExpressionTypeHolder
 	{
 		return $this->typeHolder;
 	}

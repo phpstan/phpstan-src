@@ -156,7 +156,7 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param array<string, Type> $constantTypes
-	 * @param VariableTypeHolder[] $expressionTypes
+	 * @param ExpressionTypeHolder[] $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
@@ -2190,7 +2190,7 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$expressionTypes[$exprString] = new VariableTypeHolder($type, $has);
+			$expressionTypes[$exprString] = new ExpressionTypeHolder($type, $has);
 		}
 
 		return $this->scopeFactory->create(
@@ -2469,7 +2469,7 @@ class MutatingScope implements Scope
 			null,
 			$this->getNamespace(),
 			[
-				'$this' => VariableTypeHolder::createYes(new ThisType($classReflection)),
+				'$this' => ExpressionTypeHolder::createYes(new ThisType($classReflection)),
 			],
 			[],
 			null,
@@ -2681,7 +2681,7 @@ class MutatingScope implements Scope
 					$parameterType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $parameterType));
 				}
 			}
-			$expressionTypes[$paramExprString] = VariableTypeHolder::createYes($parameterType);
+			$expressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($parameterType);
 
 			$nativeParameterType = $parameter->getNativeType();
 			if ($parameter->isVariadic()) {
@@ -2730,7 +2730,7 @@ class MutatingScope implements Scope
 	{
 		$expressionTypes = $this->expressionTypes;
 		if ($thisType !== null) {
-			$expressionTypes['$this'] = VariableTypeHolder::createYes($thisType);
+			$expressionTypes['$this'] = ExpressionTypeHolder::createYes($thisType);
 		} else {
 			unset($expressionTypes['$this']);
 		}
@@ -2777,7 +2777,7 @@ class MutatingScope implements Scope
 	public function enterClosureCall(Type $thisType): self
 	{
 		$expressionTypes = $this->expressionTypes;
-		$expressionTypes['$this'] = VariableTypeHolder::createYes($thisType);
+		$expressionTypes['$this'] = ExpressionTypeHolder::createYes($thisType);
 
 		return $this->scopeFactory->create(
 			$this->context,
@@ -2865,7 +2865,7 @@ class MutatingScope implements Scope
 					$parameterType = TypehintHelper::decideType($parameterType, new MixedType());
 				}
 			}
-			$expressionTypes[$paramExprString] = VariableTypeHolder::createYes($parameterType);
+			$expressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($parameterType);
 			$nativeTypes[$paramExprString] = $parameterType;
 		}
 
@@ -2876,7 +2876,7 @@ class MutatingScope implements Scope
 			$variableName = $use->var->name;
 			$paramExprString = '$' . $use->var->name;
 			if ($use->byRef) {
-				$expressionTypes[$paramExprString] = VariableTypeHolder::createYes(new MixedType());
+				$expressionTypes[$paramExprString] = ExpressionTypeHolder::createYes(new MixedType());
 				$nativeTypes[$paramExprString] = new MixedType();
 				continue;
 			}
@@ -2886,7 +2886,7 @@ class MutatingScope implements Scope
 				$variableType = $this->getVariableType($variableName);
 				$nativeTypes[$paramExprString] = $this->getNativeType($use->var);
 			}
-			$expressionTypes[$paramExprString] = VariableTypeHolder::createYes($variableType);
+			$expressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($variableType);
 
 			foreach ($this->expressionTypes as $exprString => $typeHolder) {
 				$expr = $this->exprStringToExpr((string) $exprString);
@@ -2911,7 +2911,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($this->hasVariableType('this')->yes() && !$closure->static) {
-			$expressionTypes['$this'] = VariableTypeHolder::createYes($this->getVariableType('this'));
+			$expressionTypes['$this'] = ExpressionTypeHolder::createYes($this->getVariableType('this'));
 		}
 
 		return $this->scopeFactory->create(
@@ -3004,7 +3004,7 @@ class MutatingScope implements Scope
 			}
 
 			$exprString = '$' . $parameter->var->name;
-			$expressionTypes[$exprString] = VariableTypeHolder::createYes($parameterType);
+			$expressionTypes[$exprString] = ExpressionTypeHolder::createYes($parameterType);
 			$parameterExprStrings[] = $exprString;
 			$parameterVariableExpressions[] = $parameter->var;
 		}
@@ -3346,7 +3346,7 @@ class MutatingScope implements Scope
 		}
 		$varExprString = '$' . $variableName;
 		$expressionTypes = $this->expressionTypes;
-		$expressionTypes[$varExprString] = new VariableTypeHolder($type, $certainty);
+		$expressionTypes[$varExprString] = new ExpressionTypeHolder($type, $certainty);
 
 		$nativeTypes = $this->nativeExpressionTypes;
 		$nativeTypes[$varExprString] = $nativeType;
@@ -3519,7 +3519,7 @@ class MutatingScope implements Scope
 			}
 
 			$expressionTypes = $this->expressionTypes;
-			$expressionTypes[$exprString] = VariableTypeHolder::createYes($type);
+			$expressionTypes[$exprString] = ExpressionTypeHolder::createYes($type);
 			foreach ($expressionTypes as $specifiedExprString => $specificTypeHolder) {
 				if (!$specificTypeHolder->getCertainty()->yes()) {
 					continue;
@@ -3546,7 +3546,7 @@ class MutatingScope implements Scope
 					continue;
 				}
 
-				$expressionTypes[$specifiedExprString] = VariableTypeHolder::createYes($this->getType($specifiedExpr->var)->getOffsetValueType($type));
+				$expressionTypes[$specifiedExprString] = ExpressionTypeHolder::createYes($this->getType($specifiedExpr->var)->getOffsetValueType($type));
 				unset($nativeTypes[$specifiedExprString]);
 			}
 
@@ -4062,7 +4062,7 @@ class MutatingScope implements Scope
 	{
 		$expressionTypes = $this->expressionTypes;
 		foreach ($types as $exprString => $type) {
-			$expressionTypes[$exprString] = VariableTypeHolder::createYes($type);
+			$expressionTypes[$exprString] = ExpressionTypeHolder::createYes($type);
 		}
 
 		return $this->scopeFactory->create(
@@ -4091,10 +4091,10 @@ class MutatingScope implements Scope
 			return $this;
 		}
 
-		$variableHolderToType = static fn (VariableTypeHolder $holder): Type => $holder->getType();
-		$typeToVariableHolder = static fn (Type $type): VariableTypeHolder => new VariableTypeHolder($type, TrinaryLogic::createYes());
+		$variableHolderToType = static fn (ExpressionTypeHolder $holder): Type => $holder->getType();
+		$typeToVariableHolder = static fn (Type $type): ExpressionTypeHolder => new ExpressionTypeHolder($type, TrinaryLogic::createYes());
 
-		$filterVariableHolders = static fn (VariableTypeHolder $holder): bool => $holder->getCertainty()->yes();
+		$filterVariableHolders = static fn (ExpressionTypeHolder $holder): bool => $holder->getCertainty()->yes();
 
 		$ourExpressionTypes = $this->expressionTypes;
 		$ourVariableTypes = array_filter($ourExpressionTypes, fn ($exprString) => $this->exprStringToExpr((string) $exprString) instanceof Variable, ARRAY_FILTER_USE_KEY);
@@ -4106,8 +4106,8 @@ class MutatingScope implements Scope
 					continue;
 				}
 
-				$ourExpressionTypes[$exprString] = VariableTypeHolder::createMaybe(new MixedType());
-				$ourVariableTypes[$exprString] = VariableTypeHolder::createMaybe(new MixedType());
+				$ourExpressionTypes[$exprString] = ExpressionTypeHolder::createMaybe(new MixedType());
+				$ourVariableTypes[$exprString] = ExpressionTypeHolder::createMaybe(new MixedType());
 			}
 
 			foreach (array_keys($ourVariableTypes) as $exprString) {
@@ -4115,8 +4115,8 @@ class MutatingScope implements Scope
 					continue;
 				}
 
-				$theirExpressionTypes[$exprString] = VariableTypeHolder::createMaybe(new MixedType());
-				$theirVariableTypes[$exprString] = VariableTypeHolder::createMaybe(new MixedType());
+				$theirExpressionTypes[$exprString] = ExpressionTypeHolder::createMaybe(new MixedType());
+				$theirVariableTypes[$exprString] = ExpressionTypeHolder::createMaybe(new MixedType());
 			}
 		}
 
@@ -4188,9 +4188,9 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param array<string, VariableTypeHolder> $variableTypes
-	 * @param array<string, VariableTypeHolder> $theirVariableTypes
-	 * @param array<string, VariableTypeHolder> $mergedVariableTypes
+	 * @param array<string, ExpressionTypeHolder> $variableTypes
+	 * @param array<string, ExpressionTypeHolder> $theirVariableTypes
+	 * @param array<string, ExpressionTypeHolder> $mergedVariableTypes
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
 	private function createConditionalExpressions(
@@ -4256,7 +4256,7 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$conditionalExpression = new ConditionalExpressionHolder($typeGuards, new VariableTypeHolder(new ErrorType(), TrinaryLogic::createNo()));
+			$conditionalExpression = new ConditionalExpressionHolder($typeGuards, new ExpressionTypeHolder(new ErrorType(), TrinaryLogic::createNo()));
 			$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 		}
 
@@ -4264,9 +4264,9 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param VariableTypeHolder[] $ourVariableTypeHolders
-	 * @param VariableTypeHolder[] $theirVariableTypeHolders
-	 * @return VariableTypeHolder[]
+	 * @param ExpressionTypeHolder[] $ourVariableTypeHolders
+	 * @param ExpressionTypeHolder[] $theirVariableTypeHolders
+	 * @return ExpressionTypeHolder[]
 	 */
 	private function mergeVariableHolders(array $ourVariableTypeHolders, array $theirVariableTypeHolders): array
 	{
@@ -4275,7 +4275,7 @@ class MutatingScope implements Scope
 			if (isset($theirVariableTypeHolders[$exprString])) {
 				$intersectedVariableTypeHolders[$exprString] = $variableTypeHolder->and($theirVariableTypeHolders[$exprString]);
 			} else {
-				$intersectedVariableTypeHolders[$exprString] = VariableTypeHolder::createMaybe($variableTypeHolder->getType());
+				$intersectedVariableTypeHolders[$exprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getType());
 			}
 		}
 
@@ -4284,7 +4284,7 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$intersectedVariableTypeHolders[$exprString] = VariableTypeHolder::createMaybe($variableTypeHolder->getType());
+			$intersectedVariableTypeHolders[$exprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getType());
 		}
 
 		return $intersectedVariableTypeHolders;
@@ -4292,9 +4292,9 @@ class MutatingScope implements Scope
 
 	public function processFinallyScope(self $finallyScope, self $originalFinallyScope): self
 	{
-		$variableHolderToType = static fn (VariableTypeHolder $holder): Type => $holder->getType();
-		$typeToVariableHolder = static fn (Type $type): VariableTypeHolder => new VariableTypeHolder($type, TrinaryLogic::createYes());
-		$filterVariableHolders = static fn (VariableTypeHolder $holder): bool => $holder->getCertainty()->yes();
+		$variableHolderToType = static fn (ExpressionTypeHolder $holder): Type => $holder->getType();
+		$typeToVariableHolder = static fn (Type $type): ExpressionTypeHolder => new ExpressionTypeHolder($type, TrinaryLogic::createYes());
+		$filterVariableHolders = static fn (ExpressionTypeHolder $holder): bool => $holder->getCertainty()->yes();
 
 		return $this->scopeFactory->create(
 			$this->context,
@@ -4329,10 +4329,10 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param VariableTypeHolder[] $ourVariableTypeHolders
-	 * @param VariableTypeHolder[] $finallyVariableTypeHolders
-	 * @param VariableTypeHolder[] $originalVariableTypeHolders
-	 * @return VariableTypeHolder[]
+	 * @param ExpressionTypeHolder[] $ourVariableTypeHolders
+	 * @param ExpressionTypeHolder[] $finallyVariableTypeHolders
+	 * @param ExpressionTypeHolder[] $originalVariableTypeHolders
+	 * @return ExpressionTypeHolder[]
 	 */
 	private function processFinallyScopeVariableTypeHolders(
 		array $ourVariableTypeHolders,
@@ -4383,7 +4383,7 @@ class MutatingScope implements Scope
 			$variableExprString = '$' . $variableName;
 
 			if (!$closureScope->hasVariableType($variableName)->yes()) {
-				$expressionTypes[$variableExprString] = VariableTypeHolder::createYes(new NullType());
+				$expressionTypes[$variableExprString] = ExpressionTypeHolder::createYes(new NullType());
 				$nativeExpressionTypes[$variableExprString] = new NullType();
 				continue;
 			}
@@ -4398,7 +4398,7 @@ class MutatingScope implements Scope
 				}
 			}
 
-			$expressionTypes[$variableExprString] = VariableTypeHolder::createYes($variableType);
+			$expressionTypes[$variableExprString] = ExpressionTypeHolder::createYes($variableType);
 			$nativeExpressionTypes[$variableExprString] = $variableType;
 		}
 
@@ -4429,11 +4429,11 @@ class MutatingScope implements Scope
 		foreach ($finalScope->expressionTypes as $variableExprString => $variableTypeHolder) {
 			$nativeTypes[$variableExprString] = $variableTypeHolder->getType();
 			if (!isset($expressionTypes[$variableExprString])) {
-				$expressionTypes[$variableExprString] = VariableTypeHolder::createMaybe($variableTypeHolder->getType());
+				$expressionTypes[$variableExprString] = ExpressionTypeHolder::createMaybe($variableTypeHolder->getType());
 				continue;
 			}
 
-			$expressionTypes[$variableExprString] = new VariableTypeHolder(
+			$expressionTypes[$variableExprString] = new ExpressionTypeHolder(
 				$variableTypeHolder->getType(),
 				$variableTypeHolder->getCertainty()->and($expressionTypes[$variableExprString]->getCertainty()),
 			);
@@ -4466,9 +4466,9 @@ class MutatingScope implements Scope
 			$otherScope->expressionTypes,
 		);
 
-		$variableHolderToType = static fn (VariableTypeHolder $holder): Type => $holder->getType();
-		$typeToVariableHolder = static fn (Type $type): VariableTypeHolder => new VariableTypeHolder($type, TrinaryLogic::createYes());
-		$filterVariableHolders = static fn (VariableTypeHolder $holder): bool => $holder->getCertainty()->yes();
+		$variableHolderToType = static fn (ExpressionTypeHolder $holder): Type => $holder->getType();
+		$typeToVariableHolder = static fn (Type $type): ExpressionTypeHolder => new ExpressionTypeHolder($type, TrinaryLogic::createYes());
+		$filterVariableHolders = static fn (ExpressionTypeHolder $holder): bool => $holder->getCertainty()->yes();
 		$nativeTypes = array_map($variableHolderToType, array_filter($this->generalizeVariableTypeHolders(
 			array_map($typeToVariableHolder, $this->nativeExpressionTypes),
 			array_map($typeToVariableHolder, $otherScope->nativeExpressionTypes),
@@ -4498,9 +4498,9 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param VariableTypeHolder[] $variableTypeHolders
-	 * @param VariableTypeHolder[] $otherVariableTypeHolders
-	 * @return VariableTypeHolder[]
+	 * @param ExpressionTypeHolder[] $variableTypeHolders
+	 * @param ExpressionTypeHolder[] $otherVariableTypeHolders
+	 * @return ExpressionTypeHolder[]
 	 */
 	private function generalizeVariableTypeHolders(
 		array $variableTypeHolders,
@@ -4512,7 +4512,7 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$variableTypeHolders[$variableExprString] = new VariableTypeHolder(
+			$variableTypeHolders[$variableExprString] = new ExpressionTypeHolder(
 				self::generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType()),
 				$variableTypeHolder->getCertainty(),
 			);
@@ -4851,7 +4851,7 @@ class MutatingScope implements Scope
 			return false;
 		}
 
-		$typeToVariableHolder = static fn (Type $type): VariableTypeHolder => new VariableTypeHolder($type, TrinaryLogic::createYes());
+		$typeToVariableHolder = static fn (Type $type): ExpressionTypeHolder => new ExpressionTypeHolder($type, TrinaryLogic::createYes());
 
 		$nativeExpressionTypesResult = $this->compareVariableTypeHolders(
 			array_map($typeToVariableHolder, $this->nativeExpressionTypes),
@@ -4869,8 +4869,8 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param VariableTypeHolder[] $variableTypeHolders
-	 * @param VariableTypeHolder[] $otherVariableTypeHolders
+	 * @param ExpressionTypeHolder[] $variableTypeHolders
+	 * @param ExpressionTypeHolder[] $otherVariableTypeHolders
 	 */
 	private function compareVariableTypeHolders(array $variableTypeHolders, array $otherVariableTypeHolders): bool
 	{

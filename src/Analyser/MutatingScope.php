@@ -4959,7 +4959,7 @@ class MutatingScope implements Scope
 	{
 		$descriptions = [];
 		foreach ($this->expressionTypes as $name => $variableTypeHolder) {
-			$key = sprintf('$%s (%s)', $name, $variableTypeHolder->getCertainty()->describe());
+			$key = sprintf('%s (%s)', $name, $variableTypeHolder->getCertainty()->describe());
 			$descriptions[$key] = $variableTypeHolder->getType()->describe(VerbosityLevel::precise());
 		}
 		foreach ($this->constantTypes as $name => $type) {

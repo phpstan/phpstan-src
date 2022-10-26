@@ -115,7 +115,6 @@ use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use Throwable;
 use function abs;
-use function array_column;
 use function array_filter;
 use function array_key_exists;
 use function array_keys;
@@ -3067,7 +3066,7 @@ class MutatingScope implements Scope
 		);
 
 		foreach ($parameterVariableExpressions as $expr) {
-			$scope = $scope->invalidateExpression($expr);
+			$scope = $scope->invalidateExpression($expr, true);
 		}
 
 		return $scope;
@@ -3367,7 +3366,7 @@ class MutatingScope implements Scope
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
 			$this->parentScope,
-		);
+		)->invalidateExpression(new Variable($variableName), true);
 	}
 
 	public function unsetExpression(Expr $expr): self
@@ -3621,10 +3620,6 @@ class MutatingScope implements Scope
 			if ($exprExpr === null) {
 				continue;
 			}
-			// TODO
-			if ($exprExpr instanceof Variable) {
-				continue;
-			}
 			if ($exprExpr instanceof PropertyFetch) {
 				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($exprExpr, $this);
 				if ($propertyReflection !== null) {
@@ -3704,10 +3699,6 @@ class MutatingScope implements Scope
 			$exprString = (string) $exprString;
 			$expr = $this->exprStringToExpr($exprString);
 			if ($expr === null) {
-				continue;
-			}
-			// TODO
-			if ($expr instanceof Variable) {
 				continue;
 			}
 			$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($exprStringToInvalidate): bool {

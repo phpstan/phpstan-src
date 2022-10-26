@@ -13,7 +13,7 @@ interface ScopeFactory
 	/**
 	 * @api
 	 * @param array<string, Type> $constantTypes
-	 * @param array<string, VariableTypeHolder> $expressionTypes
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions

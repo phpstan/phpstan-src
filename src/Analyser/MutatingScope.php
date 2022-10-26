@@ -157,7 +157,6 @@ class MutatingScope implements Scope
 	/**
 	 * @param array<string, Type> $constantTypes
 	 * @param VariableTypeHolder[] $variableTypes
-	 * @param VariableTypeHolder[] $moreSpecificTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
@@ -182,7 +181,6 @@ class MutatingScope implements Scope
 		private FunctionReflection|ExtendedMethodReflection|null $function = null,
 		?string $namespace = null,
 		private array $variableTypes = [],
-		private array $moreSpecificTypes = [],
 		private array $conditionalExpressions = [],
 		private ?string $inClosureBindScopeClass = null,
 		private ?ParametersAcceptor $anonymousFunctionReflection = null,
@@ -330,7 +328,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
-			$this->moreSpecificTypes,
 			[],
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -346,8 +343,8 @@ class MutatingScope implements Scope
 
 	public function afterClearstatcacheCall(): self
 	{
-		$moreSpecificTypes = $this->moreSpecificTypes;
-		foreach (array_keys($moreSpecificTypes) as $exprString) {
+		$expressionTypes = $this->variableTypes;
+		foreach (array_keys($expressionTypes) as $exprString) {
 			// list from https://www.php.net/manual/en/function.clearstatcache.php
 
 			// stat(), lstat(), file_exists(), is_writable(), is_readable(), is_executable(), is_file(), is_dir(), is_link(), filectime(), fileatime(), filemtime(), fileinode(), filegroup(), fileowner(), filesize(), filetype(), and fileperms().
@@ -376,7 +373,7 @@ class MutatingScope implements Scope
 					continue;
 				}
 
-				unset($moreSpecificTypes[$exprString]);
+				unset($expressionTypes[$exprString]);
 				continue 2;
 			}
 		}
@@ -386,8 +383,7 @@ class MutatingScope implements Scope
 			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
-			$this->getVariableTypes(),
-			$moreSpecificTypes,
+			$expressionTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -403,7 +399,7 @@ class MutatingScope implements Scope
 
 	public function afterOpenSslCall(string $openSslFunctionName): self
 	{
-		$moreSpecificTypes = $this->moreSpecificTypes;
+		$expressionTypes = $this->variableTypes;
 
 		if (in_array($openSslFunctionName, [
 			'openssl_cipher_iv_length',
@@ -460,7 +456,7 @@ class MutatingScope implements Scope
 			'openssl_x509_read',
 			'openssl_x509_verify',
 		], true)) {
-			unset($moreSpecificTypes['\openssl_error_string()']);
+			unset($expressionTypes['\openssl_error_string()']);
 		}
 
 		return $this->scopeFactory->create(
@@ -469,8 +465,7 @@ class MutatingScope implements Scope
 			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
-			$this->getVariableTypes(),
-			$moreSpecificTypes,
+			$expressionTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -683,8 +678,9 @@ class MutatingScope implements Scope
 		}
 
 		$exprString = $this->getNodeKey($node);
-		if (isset($this->moreSpecificTypes[$exprString]) && $this->moreSpecificTypes[$exprString]->getCertainty()->yes()) {
-			return $this->moreSpecificTypes[$exprString]->getType();
+		// TODO create hasExpressionType
+		if (!$node instanceof Variable && isset($this->variableTypes[$exprString]) && $this->variableTypes[$exprString]->getCertainty()->yes()) {
+			return $this->variableTypes[$exprString]->getType();
 		}
 
 		if ($node instanceof Expr\BinaryOp\Smaller) {
@@ -2179,7 +2175,6 @@ class MutatingScope implements Scope
 			$this->function,
 			$this->namespace,
 			$this->variableTypes,
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -2218,14 +2213,12 @@ class MutatingScope implements Scope
 			$this->function,
 			$this->namespace,
 			$variableTypes,
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
 			$this->currentlyAllowedUndefinedExpressions,
-			[],
 		);
 	}
 
@@ -2368,8 +2361,8 @@ class MutatingScope implements Scope
 	{
 		$exprString = $this->getNodeKey($node);
 
-		return isset($this->moreSpecificTypes[$exprString])
-			&& $this->moreSpecificTypes[$exprString]->getCertainty()->yes();
+		return !$node instanceof Variable && isset($this->variableTypes[$exprString])
+			&& $this->variableTypes[$exprString]->getCertainty()->yes();
 	}
 
 	/**
@@ -2387,7 +2380,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -2418,7 +2410,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -2483,7 +2474,6 @@ class MutatingScope implements Scope
 				'$this' => VariableTypeHolder::createYes(new ThisType($classReflection)),
 			],
 			[],
-			[],
 			null,
 			null,
 			true,
@@ -2511,7 +2501,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$namespace,
 			$this->getVariableTypes(),
-			$this->moreSpecificTypes,
 			[],
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -2719,7 +2708,6 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$variableTypes,
 			[],
-			[],
 			null,
 			null,
 			true,
@@ -2761,7 +2749,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$scopeClass,
 			$this->anonymousFunctionReflection,
@@ -2784,7 +2771,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$originalScope->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -2803,7 +2789,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$thisType instanceof TypeWithClassName ? $thisType->getClassName() : null,
 			$this->anonymousFunctionReflection,
@@ -2839,7 +2824,6 @@ class MutatingScope implements Scope
 			$scope->getFunction(),
 			$scope->getNamespace(),
 			$scope->variableTypes,
-			$scope->moreSpecificTypes,
 			[],
 			$scope->inClosureBindScopeClass,
 			$anonymousFunctionReflection,
@@ -2888,7 +2872,6 @@ class MutatingScope implements Scope
 			$nativeTypes[$paramExprString] = $parameterType;
 		}
 
-		$moreSpecificTypes = [];
 		foreach ($closure->uses as $use) {
 			if (!is_string($use->var->name)) {
 				throw new ShouldNotHappenException();
@@ -2907,19 +2890,6 @@ class MutatingScope implements Scope
 				$nativeTypes[$paramExprString] = $this->getNativeType($use->var);
 			}
 			$variableTypes[$paramExprString] = VariableTypeHolder::createYes($variableType);
-			foreach ($this->moreSpecificTypes as $exprString => $moreSpecificType) {
-				$matches = Strings::matchAll((string) $exprString, '#^\$([a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
-				if ($matches === []) {
-					continue;
-				}
-
-				$matches = array_column($matches, 1);
-				if (!in_array($variableName, $matches, true)) {
-					continue;
-				}
-
-				$moreSpecificTypes[$exprString] = $moreSpecificType;
-			}
 		}
 
 		if ($this->hasVariableType('this')->yes() && !$closure->static) {
@@ -2933,7 +2903,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
-			$moreSpecificTypes,
 			[],
 			$this->inClosureBindScopeClass,
 			new TrivialParametersAcceptor(),
@@ -2967,7 +2936,6 @@ class MutatingScope implements Scope
 			$scope->getFunction(),
 			$scope->getNamespace(),
 			$scope->variableTypes,
-			$scope->moreSpecificTypes,
 			$scope->conditionalExpressions,
 			$scope->inClosureBindScopeClass,
 			$anonymousFunctionReflection,
@@ -3086,7 +3054,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
-			$this->moreSpecificTypes,
 			$conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			null,
@@ -3223,7 +3190,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3255,7 +3221,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3298,7 +3263,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3330,7 +3294,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3370,24 +3333,6 @@ class MutatingScope implements Scope
 		$nativeTypes = $this->nativeExpressionTypes;
 		$nativeTypes[$varExprString] = $nativeType;
 
-		$variableString = $this->exprPrinter->printExpr(new Variable($variableName));
-		$moreSpecificTypeHolders = $this->moreSpecificTypes;
-		foreach (array_keys($moreSpecificTypeHolders) as $key) {
-			$matches = Strings::matchAll((string) $key, '#\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*#');
-
-			if ($matches === []) {
-				continue;
-			}
-
-			$matches = array_column($matches, 0);
-
-			if (!in_array($variableString, $matches, true)) {
-				continue;
-			}
-
-			unset($moreSpecificTypeHolders[$key]);
-		}
-
 		$conditionalExpressions = [];
 		foreach ($this->conditionalExpressions as $exprString => $holders) {
 			if ($exprString === $varExprString) {
@@ -3412,7 +3357,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
-			$moreSpecificTypeHolders,
 			$conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3448,7 +3392,6 @@ class MutatingScope implements Scope
 				$this->getFunction(),
 				$this->getNamespace(),
 				$variableTypes,
-				$this->moreSpecificTypes,
 				$conditionalExpressions,
 				$this->inClosureBindScopeClass,
 				$this->anonymousFunctionReflection,
@@ -3516,7 +3459,6 @@ class MutatingScope implements Scope
 				$this->getFunction(),
 				$this->getNamespace(),
 				$this->getVariableTypes(),
-				$this->moreSpecificTypes,
 				$this->conditionalExpressions,
 				$this->inClosureBindScopeClass,
 				$this->anonymousFunctionReflection,
@@ -3538,9 +3480,6 @@ class MutatingScope implements Scope
 			$variableName = $expr->name;
 			$exprString = '$' . $variableName;
 
-			$variableTypes = $this->getVariableTypes();
-			$variableTypes[$exprString] = VariableTypeHolder::createYes($type);
-
 			$nativeTypes = $this->nativeExpressionTypes;
 			$nativeTypes[$exprString] = $nativeType;
 
@@ -3561,8 +3500,9 @@ class MutatingScope implements Scope
 				$conditionalExpressions[$conditionalExprString] = $holders;
 			}
 
-			$moreSpecificTypeHolders = $this->moreSpecificTypes;
-			foreach ($moreSpecificTypeHolders as $specifiedExprString => $specificTypeHolder) {
+			$expressionTypes = $this->variableTypes;
+			$expressionTypes[$exprString] = VariableTypeHolder::createYes($type);
+			foreach ($expressionTypes as $specifiedExprString => $specificTypeHolder) {
 				if (!$specificTypeHolder->getCertainty()->yes()) {
 					continue;
 				}
@@ -3588,7 +3528,7 @@ class MutatingScope implements Scope
 					continue;
 				}
 
-				$moreSpecificTypeHolders[$specifiedExprString] = VariableTypeHolder::createYes($this->getType($specifiedExpr->var)->getOffsetValueType($type));
+				$expressionTypes[$specifiedExprString] = VariableTypeHolder::createYes($this->getType($specifiedExpr->var)->getOffsetValueType($type));
 				unset($nativeTypes[$specifiedExprString]);
 			}
 
@@ -3598,8 +3538,7 @@ class MutatingScope implements Scope
 				$this->constantTypes,
 				$this->getFunction(),
 				$this->getNamespace(),
-				$variableTypes,
-				$moreSpecificTypeHolders,
+				$expressionTypes,
 				$conditionalExpressions,
 				$this->inClosureBindScopeClass,
 				$this->anonymousFunctionReflection,
@@ -3672,14 +3611,18 @@ class MutatingScope implements Scope
 	{
 		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
 		$expressionToInvalidateClass = get_class($expressionToInvalidate);
-		$moreSpecificTypeHolders = $this->moreSpecificTypes;
+		$expressionTypes = $this->variableTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		$invalidated = false;
 		$nodeFinder = new NodeFinder();
-		foreach (array_keys($moreSpecificTypeHolders) as $exprString) {
+		foreach (array_keys($expressionTypes) as $exprString) {
 			$exprString = (string) $exprString;
 			$exprExpr = $this->exprStringToExpr($exprString);
 			if ($exprExpr === null) {
+				continue;
+			}
+			// TODO
+			if ($exprExpr instanceof Variable) {
 				continue;
 			}
 			if ($exprExpr instanceof PropertyFetch) {
@@ -3707,7 +3650,7 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			unset($moreSpecificTypeHolders[$exprString]);
+			unset($expressionTypes[$exprString]);
 			unset($nativeExpressionTypes[$exprString]);
 			$invalidated = true;
 		}
@@ -3722,8 +3665,7 @@ class MutatingScope implements Scope
 			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
-			$this->getVariableTypes(),
-			$moreSpecificTypeHolders,
+			$expressionTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -3754,22 +3696,21 @@ class MutatingScope implements Scope
 	private function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self
 	{
 		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
-		$moreSpecificTypeHolders = $this->moreSpecificTypes;
+		$expressionTypes = $this->variableTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		$invalidated = false;
 		$nodeFinder = new NodeFinder();
-		foreach (array_keys($moreSpecificTypeHolders) as $exprString) {
+		foreach (array_keys($expressionTypes) as $exprString) {
 			$exprString = (string) $exprString;
-
-			try {
-				$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
-			} catch (ParserErrorsException) {
+			$expr = $this->exprStringToExpr($exprString);
+			if ($expr === null) {
 				continue;
 			}
-			if (!$expr instanceof Node\Stmt\Expression) {
-				throw new ShouldNotHappenException();
+			// TODO
+			if ($expr instanceof Variable) {
+				continue;
 			}
-			$found = $nodeFinder->findFirst([$expr->expr], function (Node $node) use ($exprStringToInvalidate): bool {
+			$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($exprStringToInvalidate): bool {
 				if (!$node instanceof MethodCall) {
 					return false;
 				}
@@ -3780,7 +3721,7 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			unset($moreSpecificTypeHolders[$exprString]);
+			unset($expressionTypes[$exprString]);
 			unset($nativeExpressionTypes[$exprString]);
 			$invalidated = true;
 		}
@@ -3795,8 +3736,7 @@ class MutatingScope implements Scope
 			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
-			$this->getVariableTypes(),
-			$moreSpecificTypeHolders,
+			$expressionTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -4022,7 +3962,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->variableTypes,
-			$this->moreSpecificTypes,
 			$newConditionalExpressionHolders,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -4050,7 +3989,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->variableTypes,
-			$this->moreSpecificTypes,
 			$conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -4081,7 +4019,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$this->getVariableTypes(),
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -4113,9 +4050,9 @@ class MutatingScope implements Scope
 	 */
 	private function addMoreSpecificTypes(array $types): self
 	{
-		$moreSpecificTypeHolders = $this->moreSpecificTypes;
+		$expressionTypes = $this->variableTypes;
 		foreach ($types as $exprString => $type) {
-			$moreSpecificTypeHolders[$exprString] = VariableTypeHolder::createYes($type);
+			$expressionTypes[$exprString] = VariableTypeHolder::createYes($type);
 		}
 
 		return $this->scopeFactory->create(
@@ -4124,8 +4061,7 @@ class MutatingScope implements Scope
 			$this->constantTypes,
 			$this->getFunction(),
 			$this->getNamespace(),
-			$this->getVariableTypes(),
-			$moreSpecificTypeHolders,
+			$expressionTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -4194,7 +4130,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$mergedVariableHolders,
-			$this->mergeVariableHolders($this->moreSpecificTypes, $otherScope->moreSpecificTypes),
 			$conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -4361,11 +4296,6 @@ class MutatingScope implements Scope
 				$finallyScope->getVariableTypes(),
 				$originalFinallyScope->getVariableTypes(),
 			),
-			$this->processFinallyScopeVariableTypeHolders(
-				$this->moreSpecificTypes,
-				$finallyScope->moreSpecificTypes,
-				$originalFinallyScope->moreSpecificTypes,
-			),
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -4464,7 +4394,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypes,
-			$this->moreSpecificTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -4495,19 +4424,6 @@ class MutatingScope implements Scope
 			);
 		}
 
-		$moreSpecificTypes = $this->moreSpecificTypes;
-		foreach ($finalScope->moreSpecificTypes as $exprString => $variableTypeHolder) {
-			if (!isset($moreSpecificTypes[$exprString])) {
-				$moreSpecificTypes[$exprString] = VariableTypeHolder::createMaybe($variableTypeHolder->getType());
-				continue;
-			}
-
-			$moreSpecificTypes[$exprString] = new VariableTypeHolder(
-				$variableTypeHolder->getType(),
-				$variableTypeHolder->getCertainty()->and($moreSpecificTypes[$exprString]->getCertainty()),
-			);
-		}
-
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -4515,7 +4431,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypeHolders,
-			$moreSpecificTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -4536,11 +4451,6 @@ class MutatingScope implements Scope
 			$otherScope->getVariableTypes(),
 		);
 
-		$moreSpecificTypes = $this->generalizeVariableTypeHolders(
-			$this->moreSpecificTypes,
-			$otherScope->moreSpecificTypes,
-		);
-
 		$variableHolderToType = static fn (VariableTypeHolder $holder): Type => $holder->getType();
 		$typeToVariableHolder = static fn (Type $type): VariableTypeHolder => new VariableTypeHolder($type, TrinaryLogic::createYes());
 		$filterVariableHolders = static fn (VariableTypeHolder $holder): bool => $holder->getCertainty()->yes();
@@ -4559,7 +4469,6 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$variableTypeHolders,
-			$moreSpecificTypes,
 			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
@@ -4927,10 +4836,6 @@ class MutatingScope implements Scope
 			return false;
 		}
 
-		if (!$this->compareVariableTypeHolders($this->moreSpecificTypes, $otherScope->moreSpecificTypes)) {
-			return false;
-		}
-
 		$typeToVariableHolder = static fn (Type $type): VariableTypeHolder => new VariableTypeHolder($type, TrinaryLogic::createYes());
 
 		$nativeExpressionTypesResult = $this->compareVariableTypeHolders(
@@ -5035,17 +4940,9 @@ class MutatingScope implements Scope
 	public function debug(): array
 	{
 		$descriptions = [];
-		foreach ($this->getVariableTypes() as $name => $variableTypeHolder) {
+		foreach ($this->variableTypes as $name => $variableTypeHolder) {
 			$key = sprintf('$%s (%s)', $name, $variableTypeHolder->getCertainty()->describe());
 			$descriptions[$key] = $variableTypeHolder->getType()->describe(VerbosityLevel::precise());
-		}
-		foreach ($this->moreSpecificTypes as $exprString => $typeHolder) {
-			$key = sprintf(
-				'%s-specified (%s)',
-				$exprString,
-				$typeHolder->getCertainty()->describe(),
-			);
-			$descriptions[$key] = $typeHolder->getType()->describe(VerbosityLevel::precise());
 		}
 		foreach ($this->constantTypes as $name => $type) {
 			$key = sprintf('const %s', $name);

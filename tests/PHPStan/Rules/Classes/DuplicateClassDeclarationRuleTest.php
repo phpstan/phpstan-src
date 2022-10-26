@@ -27,7 +27,7 @@ class DuplicateClassDeclarationRuleTest extends RuleTestCase
 				self::getContainer()->getByType(FileNodesFetcher::class),
 				self::FILENAME,
 			)),
-			new SimpleRelativePathHelper($fileHelper->getWorkingDirectory()),
+			new SimpleRelativePathHelper($fileHelper->normalizePath($fileHelper->getWorkingDirectory(), '/')),
 		);
 	}
 

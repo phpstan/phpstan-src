@@ -15,6 +15,7 @@ use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\Classes\DuplicateClassDeclarationRule;
 use PHPStan\Rules\Classes\DuplicateDeclarationRule;
 use PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule;
 use PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule;
@@ -65,6 +66,7 @@ class StubValidator
 
 	public function __construct(
 		private DerivativeContainerFactory $derivativeContainerFactory,
+		private bool $duplicateStubs,
 	)
 	{
 	}
@@ -187,6 +189,13 @@ class StubValidator
 			new MissingMethodReturnTypehintRule($missingTypehintCheck),
 			new MissingPropertyTypehintRule($missingTypehintCheck),
 		];
+
+		if ($this->duplicateStubs) {
+			$rules[] = new DuplicateClassDeclarationRule(
+				$container->getService('stubReflector'),
+				$container->getService('simpleRelativePathHelper'),
+			);
+		}
 
 		return new DirectRuleRegistry($rules);
 	}

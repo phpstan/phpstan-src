@@ -98,14 +98,6 @@ class DOMCharacterData
 
 }
 
-class DOMCharacterData
-{
-
-	/** @var DOMDocument */
-	public $ownerDocument;
-
-}
-
 class DOMDocumentType
 {
 

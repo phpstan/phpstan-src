@@ -23,3 +23,4 @@ parameters:
 		missingMagicSerializationRule: true
 		nullContextForVoidReturningFunctions: true
 		unescapeStrings: true
+		duplicateStubs: true

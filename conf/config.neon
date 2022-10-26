@@ -53,6 +53,7 @@ parameters:
 		missingMagicSerializationRule: false
 		nullContextForVoidReturningFunctions: false
 		unescapeStrings: false
+		duplicateStubs: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -266,6 +267,7 @@ parametersSchema:
 		missingMagicSerializationRule: bool()
 		nullContextForVoidReturningFunctions: bool()
 		unescapeStrings: bool()
+		duplicateStubs: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -547,6 +549,8 @@ services:
 
 	-
 		class: PHPStan\PhpDoc\StubValidator
+		arguments:
+			duplicateStubs: %featureToggles.duplicateStubs%
 
 	-
 		class: PHPStan\PhpDoc\CountableStubFilesExtension

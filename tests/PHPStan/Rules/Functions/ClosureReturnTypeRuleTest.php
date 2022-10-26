@@ -98,4 +98,34 @@ class ClosureReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6806.php'], []);
 	}
 
+	public function testBug4739(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4739.php'], []);
+	}
+
+	public function testBug4739b(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4739b.php'], []);
+	}
+
+	public function testBug5753(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-5753.php'], []);
+	}
+
+	public function testBug6559(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6559.php'], []);
+	}
+
+	public function testBug6902(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6902.php'], []);
+	}
+
+	public function testBug7220(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7220.php'], []);
+	}
+
 }

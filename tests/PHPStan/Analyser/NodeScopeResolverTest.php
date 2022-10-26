@@ -811,12 +811,21 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6439.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-6748.php');
 
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-fill-keys.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-flip.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-search.php');
 		if (PHP_VERSION_ID >= 80000) {
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-fill-keys.php');
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-flip.php');
-			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-search.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-fill-keys-php8.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-flip-php8.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-search-php8.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array_keys.php');
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/array_values.php');
+		} else {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-fill-keys-php7.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-flip-php7.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array-search-php7.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array_keys-php7.php');
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/array_values-php7.php');
 		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/array-search-type-specifying.php');

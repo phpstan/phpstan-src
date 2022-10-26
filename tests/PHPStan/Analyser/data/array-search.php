@@ -69,17 +69,4 @@ class Foo
 		assertType('int<0, max>|false', array_search($string, $arr, true));
 	}
 
-	public function mixedAndSubtractedArray($mixed, string $string): void
-	{
-		if (is_array($mixed)) {
-			assertType('int|string|false', array_search('foo', $mixed, true));
-			assertType('int|string|false', array_search('foo', $mixed));
-			assertType('int|string|false', array_search($string, $mixed, true));
-		} else {
-			assertType('mixed~array', $mixed);
-			assertType('*NEVER*', array_search('foo', $mixed, true));
-			assertType('*NEVER*', array_search('foo', $mixed));
-			assertType('*NEVER*', array_search($string, $mixed, true));
-		}
-	}
 }

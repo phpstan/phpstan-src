@@ -15,6 +15,7 @@ use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
+use PHPStan\Rules\Classes\DuplicateDeclarationRule;
 use PHPStan\Rules\Classes\ExistingClassesInClassImplementsRule;
 use PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule;
 use PHPStan\Rules\Classes\ExistingClassInClassExtendsRule;
@@ -155,6 +156,7 @@ class StubValidator
 			new \PHPStan\Rules\Functions\ExistingClassesInTypehintsRule($functionDefinitionCheck),
 			new ExistingClassesInPropertiesRule($reflectionProvider, $classCaseSensitivityCheck, $unresolvableTypeHelper, $phpVersion, true, false),
 			new OverridingMethodRule($phpVersion, new MethodSignatureRule(true, true), true, new MethodParameterComparisonHelper($phpVersion)),
+			new DuplicateDeclarationRule(),
 
 			// level 2
 			new ClassAncestorsRule($genericAncestorsCheck, $crossCheckInterfacesHelper),

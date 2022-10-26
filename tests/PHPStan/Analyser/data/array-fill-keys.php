@@ -104,12 +104,3 @@ function withNotConstantArray(array $foo, array $bar, array $baz, array $floats,
 		assertType('non-empty-array<bool|int|string, null>', array_fill_keys($mixed, null));
 	}
 }
-
-function mixedAndSubtractedArray($mixed): void
-{
-	if (is_array($mixed)) {
-		assertType("array<'b'>", array_fill_keys($mixed, 'b'));
-	} else {
-		assertType("*NEVER*", array_fill_keys($mixed, 'b'));
-	}
-}

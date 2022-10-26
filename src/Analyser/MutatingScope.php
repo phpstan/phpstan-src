@@ -2183,7 +2183,7 @@ class MutatingScope implements Scope
 
 	private function promoteNativeTypes(): self
 	{
-		$expressionTypes = [];
+		$expressionTypes = $this->expressionTypes;
 		foreach ($this->nativeExpressionTypes as $exprString => $type) {
 			$has = $this->hasVariableType(substr($exprString, 1));
 			if ($has->no()) {
@@ -2206,7 +2206,7 @@ class MutatingScope implements Scope
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
 			$this->currentlyAllowedUndefinedExpressions,
-			[],
+			$this->nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
 			$this->parentScope,

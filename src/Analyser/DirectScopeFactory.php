@@ -46,7 +46,7 @@ class DirectScopeFactory implements ScopeFactory
 
 	/**
 	 * @param array<string, Type> $constantTypes
-	 * @param VariableTypeHolder[] $variablesTypes
+	 * @param array<string, VariableTypeHolder> $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
@@ -60,7 +60,7 @@ class DirectScopeFactory implements ScopeFactory
 		array $constantTypes = [],
 		FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
-		array $variablesTypes = [],
+		array $expressionTypes = [],
 		array $conditionalExpressions = [],
 		?string $inClosureBindScopeClass = null,
 		?ParametersAcceptor $anonymousFunctionReflection = null,
@@ -95,7 +95,7 @@ class DirectScopeFactory implements ScopeFactory
 			$constantTypes,
 			$function,
 			$namespace,
-			$variablesTypes,
+			$expressionTypes,
 			$conditionalExpressions,
 			$inClosureBindScopeClass,
 			$anonymousFunctionReflection,

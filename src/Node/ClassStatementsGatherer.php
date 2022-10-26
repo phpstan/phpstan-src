@@ -219,10 +219,7 @@ class ClassStatementsGatherer
 		}
 
 		$firstArgValue = $args[0]->value;
-		if (
-			!$firstArgValue instanceof Expr\Variable
-			|| !$scope->getType($firstArgValue) instanceof ThisType
-		) {
+		if (!$scope->getType($firstArgValue) instanceof ThisType) {
 			return;
 		}
 

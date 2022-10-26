@@ -529,7 +529,7 @@ class MutatingScope implements Scope
 	{
 		$variables = [];
 		foreach ($this->expressionTypes as $exprString => $holder) {
-			if (!$this->exprStringToExpr($exprString) instanceof Variable) {
+			if (!$this->exprStringToExpr((string) $exprString) instanceof Variable) {
 				continue;
 			}
 			if (!$holder->getCertainty()->yes()) {

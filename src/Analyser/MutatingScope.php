@@ -2360,6 +2360,7 @@ class MutatingScope implements Scope
 	{
 		$exprString = $this->getNodeKey($node);
 
+		// TODO
 		return !$node instanceof Variable && isset($this->variableTypes[$exprString])
 			&& $this->variableTypes[$exprString]->getCertainty()->yes();
 	}
@@ -2889,6 +2890,27 @@ class MutatingScope implements Scope
 				$nativeTypes[$paramExprString] = $this->getNativeType($use->var);
 			}
 			$variableTypes[$paramExprString] = VariableTypeHolder::createYes($variableType);
+
+			foreach ($this->variableTypes as $exprString => $typeHolder) {
+				$expr = $this->exprStringToExpr((string) $exprString);
+				if ($expr === null) {
+					continue;
+				}
+				if ($expr instanceof Variable) {
+					continue;
+				}
+				$variable = (new NodeFinder())->findFirst([$expr], static fn (Node $node): bool => $node instanceof Variable);
+				if (!$variable instanceof Variable) {
+					continue;
+				}
+				if (!is_string($variable->name)) {
+					continue;
+				}
+				if ($variable->name !== $variableName) {
+					continue;
+				}
+				$variableTypes[$exprString] = $typeHolder;
+			}
 		}
 
 		if ($this->hasVariableType('this')->yes() && !$closure->static) {

@@ -134,6 +134,7 @@ use function strlen;
 use function strtolower;
 use function substr;
 use function usort;
+use const ARRAY_FILTER_USE_KEY;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
@@ -4096,38 +4097,43 @@ class MutatingScope implements Scope
 		$filterVariableHolders = static fn (VariableTypeHolder $holder): bool => $holder->getCertainty()->yes();
 
 		$ourExpressionTypes = $this->expressionTypes;
+		$ourVariableTypes = array_filter($ourExpressionTypes, fn ($exprString) => $this->exprStringToExpr((string) $exprString) instanceof Variable, ARRAY_FILTER_USE_KEY);
 		$theirExpressionTypes = $otherScope->expressionTypes;
+		$theirVariableTypes = array_filter($theirExpressionTypes, fn ($exprString) => $this->exprStringToExpr((string) $exprString) instanceof Variable, ARRAY_FILTER_USE_KEY);
 		if ($this->canAnyVariableExist()) {
-			foreach (array_keys($theirExpressionTypes) as $exprString) {
-				if (array_key_exists($exprString, $ourExpressionTypes)) {
+			foreach (array_keys($theirVariableTypes) as $exprString) {
+				if (array_key_exists($exprString, $ourVariableTypes)) {
 					continue;
 				}
 
 				$ourExpressionTypes[$exprString] = VariableTypeHolder::createMaybe(new MixedType());
+				$ourVariableTypes[$exprString] = VariableTypeHolder::createMaybe(new MixedType());
 			}
 
-			foreach (array_keys($ourExpressionTypes) as $exprString) {
-				if (array_key_exists($exprString, $theirExpressionTypes)) {
+			foreach (array_keys($ourVariableTypes) as $exprString) {
+				if (array_key_exists($exprString, $theirVariableTypes)) {
 					continue;
 				}
 
 				$theirExpressionTypes[$exprString] = VariableTypeHolder::createMaybe(new MixedType());
+				$theirVariableTypes[$exprString] = VariableTypeHolder::createMaybe(new MixedType());
 			}
 		}
 
+		$mergedVariableTypes = $this->mergeVariableHolders($ourVariableTypes, $theirVariableTypes);
 		$mergedExpressionTypes = $this->mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes);
 		$conditionalExpressions = $this->intersectConditionalExpressions($otherScope->conditionalExpressions);
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
-			$ourExpressionTypes,
-			$theirExpressionTypes,
-			$mergedExpressionTypes,
+			$ourVariableTypes,
+			$theirVariableTypes,
+			$mergedVariableTypes,
 		);
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
-			$theirExpressionTypes,
-			$ourExpressionTypes,
-			$mergedExpressionTypes,
+			$theirVariableTypes,
+			$ourVariableTypes,
+			$mergedVariableTypes,
 		);
 		return $this->scopeFactory->create(
 			$this->context,
@@ -4182,25 +4188,25 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param array<string, VariableTypeHolder> $expressionTypes
-	 * @param array<string, VariableTypeHolder> $theirExpressionTypes
-	 * @param array<string, VariableTypeHolder> $mergedExpressionTypes
+	 * @param array<string, VariableTypeHolder> $variableTypes
+	 * @param array<string, VariableTypeHolder> $theirVariableTypes
+	 * @param array<string, VariableTypeHolder> $mergedVariableTypes
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
 	private function createConditionalExpressions(
 		array $conditionalExpressions,
-		array $expressionTypes,
-		array $theirExpressionTypes,
-		array $mergedExpressionTypes,
+		array $variableTypes,
+		array $theirVariableTypes,
+		array $mergedVariableTypes,
 	): array
 	{
-		$newVariableTypes = $expressionTypes;
-		foreach ($theirExpressionTypes as $exprString => $holder) {
-			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
+		$newVariableTypes = $variableTypes;
+		foreach ($theirVariableTypes as $exprString => $holder) {
+			if (!array_key_exists($exprString, $mergedVariableTypes)) {
 				continue;
 			}
 
-			if (!$mergedExpressionTypes[$exprString]->getType()->equals($holder->getType())) {
+			if (!$mergedVariableTypes[$exprString]->getType()->equals($holder->getType())) {
 				continue;
 			}
 
@@ -4212,13 +4218,10 @@ class MutatingScope implements Scope
 			if (!$holder->getCertainty()->yes()) {
 				continue;
 			}
-			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
+			if (!array_key_exists($exprString, $mergedVariableTypes)) {
 				continue;
 			}
-			if ($mergedExpressionTypes[$exprString]->getType()->equals($holder->getType())) {
-				continue;
-			}
-			if (!$this->exprStringToExpr((string) $exprString) instanceof Variable) {
+			if ($mergedVariableTypes[$exprString]->getType()->equals($holder->getType())) {
 				continue;
 			}
 
@@ -4231,8 +4234,8 @@ class MutatingScope implements Scope
 
 		foreach ($newVariableTypes as $exprString => $holder) {
 			if (
-				array_key_exists($exprString, $mergedExpressionTypes)
-				&& $mergedExpressionTypes[$exprString]->equals($holder)
+				array_key_exists($exprString, $mergedVariableTypes)
+				&& $mergedVariableTypes[$exprString]->equals($holder)
 			) {
 				continue;
 			}
@@ -4243,19 +4246,13 @@ class MutatingScope implements Scope
 			if (count($variableTypeGuards) === 0) {
 				continue;
 			}
-			if (!$this->exprStringToExpr((string) $exprString) instanceof Variable) {
-				continue;
-			}
 
 			$conditionalExpression = new ConditionalExpressionHolder($variableTypeGuards, $holder);
 			$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 		}
 
-		foreach (array_keys($mergedExpressionTypes) as $exprString) {
-			if (array_key_exists($exprString, $expressionTypes)) {
-				continue;
-			}
-			if (!$this->exprStringToExpr((string) $exprString) instanceof Variable) {
+		foreach (array_keys($mergedVariableTypes) as $exprString) {
+			if (array_key_exists($exprString, $variableTypes)) {
 				continue;
 			}
 

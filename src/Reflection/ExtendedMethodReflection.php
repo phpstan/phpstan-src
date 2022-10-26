@@ -10,10 +10,11 @@ use PHPStan\Type\Type;
  * without breaking backward compatibility
  * with existing MethodsClassReflectionExtension.
  *
- * Developers are meant to only use the MethodReflection
+ * Developers are meant to only implement MethodReflection
  * and its methods in their code.
  *
- * Methods on ExtendedMethodReflection are subject to change.
+ * New methods on ExtendedMethodReflection will be added
+ * in minor versions.
  *
  * @api
  */

@@ -270,11 +270,15 @@ class ImpossibleCheckTypeHelper
 			return self::isSpecified($scope, $node, $expr->left) || self::isSpecified($scope, $node, $expr->right);
 		}
 
+		if ($expr instanceof Expr\Variable) {
+			return false;
+		}
+
 		return (
 			$node instanceof FuncCall
 			|| $node instanceof MethodCall
 			|| $node instanceof Expr\StaticCall
-		) && $scope->isSpecified($expr);
+		) && $scope->hasExpressionType($expr);
 	}
 
 	/**

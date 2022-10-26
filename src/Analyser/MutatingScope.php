@@ -669,8 +669,7 @@ class MutatingScope implements Scope
 		}
 
 		$exprString = $this->getNodeKey($node);
-		// TODO create hasExpressionType
-		if (!$node instanceof Variable && isset($this->expressionTypes[$exprString]) && $this->expressionTypes[$exprString]->getCertainty()->yes()) {
+		if (!$node instanceof Variable && $this->hasExpressionType($node)) {
 			return $this->expressionTypes[$exprString]->getType();
 		}
 
@@ -2023,7 +2022,7 @@ class MutatingScope implements Scope
 
 			$nativeType = $propertyReflection->getNativeType();
 			if (!$nativeType instanceof MixedType) {
-				if (!$this->isSpecified($expr)) {
+				if (!$this->hasExpressionType($expr)) {
 					if ($expr instanceof Node\Expr\PropertyFetch) {
 						return $this->issetCheckUndefined($expr->var);
 					}
@@ -2347,14 +2346,20 @@ class MutatingScope implements Scope
 		return ConstantTypeHelper::getTypeFromValue($value);
 	}
 
-	/** @api */
+	/**
+	 * @api
+	 * @deprecated use hasExpressionType instead
+	 */
 	public function isSpecified(Expr $node): bool
 	{
-		$exprString = $this->getNodeKey($node);
+		return !$node instanceof Variable && $this->hasExpressionType($node);
+	}
 
-		// TODO
-		return !$node instanceof Variable && isset($this->expressionTypes[$exprString])
-			&& $this->expressionTypes[$exprString]->getCertainty()->yes();
+	/** @api */
+	public function hasExpressionType(Expr $node): bool
+	{
+		$exprString = $this->getNodeKey($node);
+		return isset($this->expressionTypes[$exprString]) && $this->expressionTypes[$exprString]->getCertainty()->yes();
 	}
 
 	/**

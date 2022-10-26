@@ -210,6 +210,50 @@ class OptimizedSingleFileSourceLocator implements SourceLocator
 			}
 		}
 
+		if ($identifierType->isConstant()) {
+			$constantNodes = $fetchedNodesResult->getConstantNodes();
+			foreach ($constantNodes as $constantNodesArray) {
+				foreach ($constantNodesArray as $fetchedConstantNode) {
+					$constantNode = $fetchedConstantNode->getNode();
+
+					if ($constantNode instanceof Const_) {
+						foreach ($constantNode->consts as $constPosition => $const) {
+							if ($const->namespacedName === null) {
+								throw new ShouldNotHappenException();
+							}
+
+							$constantReflection = $nodeToReflection->__invoke(
+								$reflector,
+								$constantNode,
+								$fetchedConstantNode->getLocatedSource(),
+								$fetchedConstantNode->getNamespace(),
+								$constPosition,
+							);
+							if (!$constantReflection instanceof ReflectionConstant) {
+								throw new ShouldNotHappenException();
+							}
+
+							$reflections[] = $constantReflection;
+						}
+
+						continue;
+					}
+
+					$constantReflection = $nodeToReflection->__invoke(
+						$reflector,
+						$constantNode,
+						$fetchedConstantNode->getLocatedSource(),
+						$fetchedConstantNode->getNamespace(),
+					);
+					if (!$constantReflection instanceof ReflectionConstant) {
+						throw new ShouldNotHappenException();
+					}
+
+					$reflections[] = $constantReflection;
+				}
+			}
+		}
+
 		return $reflections;
 	}
 

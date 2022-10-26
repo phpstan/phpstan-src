@@ -17,10 +17,17 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ThisType;
 use function count;
+use function in_array;
 
 class ClassStatementsGatherer
 {
+
+	private const PROPERTY_ENUMERATING_FUNCTIONS = [
+		'get_object_vars',
+		'array_walk',
+	];
 
 	/** @var callable(Node $node, Scope $scope): void */
 	private $nodeCallback;
@@ -143,6 +150,14 @@ class ClassStatementsGatherer
 			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node->getOriginalNode(), $scope);
 			return;
 		}
+		if (
+			$node instanceof Expr\FuncCall
+			&& $node->name instanceof Node\Name
+			&& in_array($node->name->toLowerString(), self::PROPERTY_ENUMERATING_FUNCTIONS, true)
+		) {
+			$this->tryToApplyPropertyReads($node, $scope);
+			return;
+		}
 		if ($node instanceof Array_ && count($node->items) === 2) {
 			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
 			return;
@@ -194,6 +209,33 @@ class ClassStatementsGatherer
 		}
 
 		$this->propertyUsages[] = new PropertyRead($node, $scope);
+	}
+
+	private function tryToApplyPropertyReads(Expr\FuncCall $node, Scope $scope): void
+	{
+		$args = $node->getArgs();
+		if (count($args) === 0) {
+			return;
+		}
+
+		$firstArgValue = $args[0]->value;
+		if (
+			!$firstArgValue instanceof Expr\Variable
+			|| !$scope->getType($firstArgValue) instanceof ThisType
+		) {
+			return;
+		}
+
+		$classProperties = $this->classReflection->getNativeReflection()->getProperties();
+		foreach ($classProperties as $property) {
+			if ($property->isStatic()) {
+				continue;
+			}
+			$this->propertyUsages[] = new PropertyRead(
+				new PropertyFetch(new Expr\Variable('this'), new Identifier($property->getName())),
+				$scope,
+			);
+		}
 	}
 
 }

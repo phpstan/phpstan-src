@@ -3100,11 +3100,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$coalesceArray',
 			],
 			[
-				'array<0|1|2, 1|2|3>',
+				'array{0?: 1, 1?: 2, 2?: 3}',
 				'$arrayToBeUnset',
 			],
 			[
-				'array<0|1|2, 1|2|3>',
+				'array{0?: 1, 1?: 2, 2?: 3}',
 				'$arrayToBeUnset2',
 			],
 			[

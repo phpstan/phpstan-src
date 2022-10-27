@@ -671,7 +671,7 @@ class MutatingScope implements Scope
 		}
 
 		$exprString = $this->getNodeKey($node);
-		if (!$node instanceof Variable && $this->hasExpressionType($node)) {
+		if (!$node instanceof Variable && $this->hasExpressionType($node)->yes()) {
 			return $this->expressionTypes[$exprString]->getType();
 		}
 
@@ -2024,7 +2024,7 @@ class MutatingScope implements Scope
 
 			$nativeType = $propertyReflection->getNativeType();
 			if (!$nativeType instanceof MixedType) {
-				if (!$this->hasExpressionType($expr)) {
+				if (!$this->hasExpressionType($expr)->yes()) {
 					if ($expr instanceof Node\Expr\PropertyFetch) {
 						return $this->issetCheckUndefined($expr->var);
 					}
@@ -2361,14 +2361,17 @@ class MutatingScope implements Scope
 	 */
 	public function isSpecified(Expr $node): bool
 	{
-		return !$node instanceof Variable && $this->hasExpressionType($node);
+		return !$node instanceof Variable && $this->hasExpressionType($node)->yes();
 	}
 
 	/** @api */
-	public function hasExpressionType(Expr $node): bool
+	public function hasExpressionType(Expr $node): TrinaryLogic
 	{
 		$exprString = $this->getNodeKey($node);
-		return isset($this->expressionTypes[$exprString]) && $this->expressionTypes[$exprString]->getCertainty()->yes();
+		if (!isset($this->expressionTypes[$exprString])) {
+			return TrinaryLogic::createNo();
+		}
+		return $this->expressionTypes[$exprString]->getCertainty();
 	}
 
 	/**

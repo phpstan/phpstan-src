@@ -87,7 +87,7 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	/** @deprecated use hasExpressionType instead */
 	public function isSpecified(Expr $node): bool;
 
-	public function hasExpressionType(Expr $node): bool;
+	public function hasExpressionType(Expr $node): TrinaryLogic;
 
 	public function isInClassExists(string $className): bool;
 

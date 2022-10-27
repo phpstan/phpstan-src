@@ -258,8 +258,8 @@ class ImpossibleCheckTypeHelper
 			return true;
 		}
 
-		if ($expr instanceof Expr\Variable && is_string($expr->name) && !$scope->hasVariableType($expr->name)->yes()) {
-			return true;
+		if ($expr instanceof Expr\Variable) {
+			return is_string($expr->name) && !$scope->hasVariableType($expr->name)->yes();
 		}
 
 		if ($expr instanceof Expr\BooleanNot) {
@@ -270,15 +270,11 @@ class ImpossibleCheckTypeHelper
 			return self::isSpecified($scope, $node, $expr->left) || self::isSpecified($scope, $node, $expr->right);
 		}
 
-		if ($expr instanceof Expr\Variable) {
-			return false;
-		}
-
 		return (
 			$node instanceof FuncCall
 			|| $node instanceof MethodCall
 			|| $node instanceof Expr\StaticCall
-		) && $scope->hasExpressionType($expr);
+		) && $scope->hasExpressionType($expr)->yes();
 	}
 
 	/**

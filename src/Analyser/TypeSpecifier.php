@@ -198,6 +198,7 @@ class TypeSpecifier
 
 			$rightType = $scope->getType($expr->right);
 			if (
+				$context->true() &&
 				$expr->left instanceof ClassConstFetch &&
 				$expr->left->class instanceof Expr &&
 				$expr->left->name instanceof Node\Identifier &&
@@ -212,6 +213,41 @@ class TypeSpecifier
 						new Name($rightType->getValue()),
 					),
 					$context,
+					$rootExpr,
+				);
+			}
+			if (
+				$context->true()
+				&& $expr->left instanceof ClassConstFetch
+				&& $expr->left->class instanceof Expr
+				&& $expr->left->name instanceof Node\Identifier
+				&& $expr->right instanceof ClassConstFetch
+				&& $rightType instanceof GenericClassStringType
+				&& strtolower($expr->left->name->toString()) === 'class'
+			) {
+				return $this->create(
+					$expr->left->class,
+					$rightType->getGenericType(),
+					$context,
+					false,
+					$scope,
+					$rootExpr,
+				);
+			}
+			if (
+				$context->true()
+				&& $expr->left instanceof FuncCall
+				&& $expr->left->name instanceof Name
+				&& strtolower($expr->left->name->toString()) === 'get_class'
+				&& isset($expr->left->getArgs()[0])
+				&& $rightType instanceof GenericClassStringType
+			) {
+				return $this->create(
+					$expr->left->getArgs()[0]->value,
+					$rightType->getGenericType(),
+					$context,
+					false,
+					$scope,
 					$rootExpr,
 				);
 			}
@@ -1150,6 +1186,24 @@ class TypeSpecifier
 			);
 		}
 
+		if (
+			$context->true()
+			&& $exprNode instanceof FuncCall
+			&& $exprNode->name instanceof Name
+			&& strtolower($exprNode->name->toString()) === 'get_class'
+			&& isset($exprNode->getArgs()[0])
+		) {
+			return $this->specifyTypesInCondition(
+				$scope,
+				new Instanceof_(
+					$exprNode->getArgs()[0]->value,
+					new Name($constantType->getValue()),
+				),
+				$context,
+				$rootExpr,
+			);
+		}
+
 		return null;
 	}
 
@@ -1391,7 +1445,7 @@ class TypeSpecifier
 	}
 
 	/**
-	 * @return (Expr|ConstantScalarType)[]|null
+	 * @return array{Expr, ConstantScalarType}|null
 	 */
 	private function findTypeExpressionsFromBinaryOperation(Scope $scope, Node\Expr\BinaryOp $binaryOperation): ?array
 	{

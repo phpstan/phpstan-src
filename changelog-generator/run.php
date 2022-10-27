@@ -14,6 +14,7 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use function array_map;
 use function array_merge;
@@ -34,6 +35,7 @@ use function sprintf;
 			$this->setName('run');
 			$this->addArgument('fromCommit', InputArgument::REQUIRED);
 			$this->addArgument('toCommit', InputArgument::REQUIRED);
+			$this->addOption('exclude-branch', null, InputOption::VALUE_REQUIRED);
 		}
 
 		protected function execute(InputInterface $input, OutputInterface $output)
@@ -51,7 +53,17 @@ use function sprintf;
 			/** @var Search $searchApi */
 			$searchApi = $gitHubClient->api('search');
 
-			$commitLines = $this->exec(['git', 'log', sprintf('%s..%s', $input->getArgument('fromCommit'), $input->getArgument('toCommit')), '--reverse', '--pretty=%H %s']);
+			$command = ['git', 'log', sprintf('%s..%s', $input->getArgument('fromCommit'), $input->getArgument('toCommit'))];
+			$excludeBranch = $input->getOption('exclude-branch');
+			if ($excludeBranch !== null) {
+				$command[] = '--not';
+				$command[] = $excludeBranch;
+				$command[] = '--no-merges';
+			}
+			$command[] = '--reverse';
+			$command[] = '--pretty=%H %s';
+
+			$commitLines = $this->exec($command);
 			$commits = array_map(static function (string $line): array {
 				[$hash, $message] = explode(' ', $line, 2);
 

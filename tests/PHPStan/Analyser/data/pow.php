@@ -9,9 +9,31 @@ function ($a, $b): void {
 	assertType('(float|int)', $a ** $b);
 };
 
-function (int $a, int $b): void {
+/**
+ * @param numeric-string $numericS
+ */
+function doFoo(int $a, int $b, string $s, bool $c, $numericS): void {
+	$constString = "hallo";
+	$constNumericString = "123";
+	$constBool = true;
+
 	assertType('(float|int)', pow($a, $b));
 	assertType('(float|int)', $a ** $b);
+
+	assertType('(float|int)', pow($a, $numericS));
+	assertType('(float|int)', $a ** $numericS);
+	assertType('(float|int)', pow($a, $constNumericString));
+	assertType('(float|int)', $a ** $constNumericString);
+
+	assertType('*ERROR*', pow($a, $s));
+	assertType('*ERROR*', $a ** $s);
+	assertType('*ERROR*', pow($a, $constString));
+	assertType('*ERROR*', $a ** $constString);
+
+	assertType('(float|int)', pow($a, $c));
+	assertType('(float|int)', $a ** $c);
+	assertType('(float|int)', pow($a, $constBool));
+	assertType('(float|int)', $a ** $constBool);
 };
 
 function (\GMP $a, \GMP $b): void {
@@ -22,6 +44,9 @@ function (\GMP $a, \GMP $b): void {
 function (\stdClass $a, \GMP $b): void {
 	assertType('GMP|stdClass', pow($a, $b));
 	assertType('GMP|stdClass', $a ** $b);
+
+	assertType('GMP|stdClass', pow($b, $a));
+	assertType('GMP|stdClass', $b ** $a);
 };
 
 function (): void {
@@ -78,6 +103,6 @@ function foo($positiveInt, $range2, $unionRange1, $unionRange2): void {
 	assertType('(float|int)', pow($positiveInt, $range2));
 	assertType('(float|int)', $positiveInt ** $range2);
 
-	assertType('int<-6, 16>|int<1296, 4096>|int<1, 16>|int<-2, 1>', pow($unionRange1, $unionRange2));
-	assertType('int<-6, 16>|int<1296, 4096>|int<1, 16>|int<-2, 1>', $unionRange1 ** $unionRange2);
+	assertType('int<-6, 16>|int<1296, 4096>', pow($unionRange1, $unionRange2));
+	assertType('int<-6, 16>|int<1296, 4096>', $unionRange1 ** $unionRange2);
 }

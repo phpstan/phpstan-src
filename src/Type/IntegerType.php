@@ -149,4 +149,28 @@ class IntegerType implements Type
 		return null;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		$numberType = new UnionType([
+			new IntegerType(),
+			new FloatType(),
+			TypeCombinator::intersect(
+				new StringType(),
+				new AccessoryNumericStringType(),
+			),
+		]);
+
+		if ($exponent instanceof NeverType) {
+			return new NeverType();
+		}
+		if (!$numberType->isSuperTypeOf($exponent)->yes()) {
+			return new ErrorType();
+		}
+
+		return new BenevolentUnionType([
+			new FloatType(),
+			new IntegerType(),
+		]);
+	}
+
 }

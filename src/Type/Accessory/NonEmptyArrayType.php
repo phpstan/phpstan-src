@@ -347,6 +347,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return new ErrorType();
+	}
+
 	public static function __set_state(array $properties): Type
 	{
 		return new self();

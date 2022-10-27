@@ -12,6 +12,9 @@ use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function is_float;
+use function is_int;
+use function is_numeric;
 use function sprintf;
 
 /** @api */
@@ -86,6 +89,40 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new IntegerType();
+	}
+
+	public function exponentiate(Type $exponent): Type
+	{
+		if ($exponent instanceof IntegerRangeType) {
+			$min = null;
+			$max = null;
+			if ($exponent->getMin() !== null) {
+				$min = $this->getValue() ** $exponent->getMin();
+			}
+			if ($exponent->getMax() !== null) {
+				$max = $this->getValue() ** $exponent->getMax();
+			}
+
+			if (!is_float($min) && !is_float($max)) {
+				return IntegerRangeType::fromInterval($min, $max);
+			}
+		} elseif ($exponent instanceof ConstantScalarType) {
+			$exponentValue = $exponent->getValue();
+			if (is_int($exponentValue)) {
+				$min = $this->getValue() ** $exponentValue;
+				$max = $this->getValue() ** $exponentValue;
+
+				if (!is_float($min) && !is_float($max)) {
+					return IntegerRangeType::fromInterval($min, $max);
+				}
+			}
+
+			if (is_numeric($exponentValue)) {
+				return new ConstantFloatType($this->getValue() ** $exponentValue);
+			}
+		}
+
+		return parent::exponentiate($exponent);
 	}
 
 	/**

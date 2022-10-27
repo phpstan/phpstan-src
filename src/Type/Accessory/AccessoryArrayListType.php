@@ -392,4 +392,9 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return $type;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return new ErrorType();
+	}
+
 }

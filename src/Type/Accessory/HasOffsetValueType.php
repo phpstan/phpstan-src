@@ -340,6 +340,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new self($this->offsetType, $newValueType);
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return new ErrorType();
+	}
+
 	public static function __set_state(array $properties): Type
 	{
 		return new self($properties['offsetType'], $properties['valueType']);

@@ -256,4 +256,9 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 		return new self();
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return new ErrorType();
+	}
+
 }

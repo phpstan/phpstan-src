@@ -288,6 +288,11 @@ class NullType implements ConstantScalarType
 		return new MixedType();
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return new ErrorType();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

@@ -143,6 +143,11 @@ class NonexistentParentClassType implements Type
 	{
 		return [];
 	}
+	
+	public function exponentiate(Type $exponent): Type
+	{
+		return new ErrorType();
+	}
 
 	/**
 	 * @param mixed[] $properties

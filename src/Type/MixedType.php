@@ -801,6 +801,14 @@ class MixedType implements CompoundType, SubtractableType
 		return null;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return new BenevolentUnionType([
+			new FloatType(),
+			new IntegerType(),
+		]);
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

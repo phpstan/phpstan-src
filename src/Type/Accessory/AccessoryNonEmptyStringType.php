@@ -265,4 +265,9 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 		return null;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return new ErrorType();
+	}
+
 }

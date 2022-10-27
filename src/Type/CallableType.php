@@ -407,6 +407,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return $this->isCommonCallable;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return new ErrorType();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

@@ -201,6 +201,26 @@ class FloatType implements Type
 		return $this;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		$numberType = new UnionType([
+			new IntegerType(),
+			new FloatType(),
+			TypeCombinator::intersect(
+				new StringType(),
+				new AccessoryNumericStringType(),
+			),
+		]);
+
+		if ($exponent instanceof NeverType) {
+			return new NeverType();
+		}
+		if (!$numberType->isSuperTypeOf($exponent)->yes()) {
+			return new ErrorType();
+		}
+		return new FloatType();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

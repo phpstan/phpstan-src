@@ -669,7 +669,7 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, $optionalKeys, false);
 		}
 
-		return new ArrayType($this->getKeyType(), $this->getItemType());
+		return new self($this->keyTypes, $this->valueTypes, $this->nextAutoIndexes, array_keys($this->keyTypes), false);
 	}
 
 	public function fillKeysArray(Type $valueType): Type

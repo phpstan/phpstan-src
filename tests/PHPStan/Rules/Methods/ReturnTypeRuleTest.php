@@ -18,9 +18,11 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	private bool $checkUnionTypes = true;
 
+	private bool $checkBenevolentUnionTypes = false;
+
 	protected function getRule(): Rule
 	{
-		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnionTypes, $this->checkExplicitMixed, false, true)));
+		return new ReturnTypeRule(new FunctionReturnTypeCheck(new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnionTypes, $this->checkExplicitMixed, false, true, $this->checkBenevolentUnionTypes)));
 	}
 
 	public function testReturnTypeRule(): void
@@ -790,6 +792,18 @@ class ReturnTypeRuleTest extends RuleTestCase
 	{
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-7519.php'], []);
+	}
+
+	public function testBug8223(): void
+	{
+		$this->checkUnionTypes = false;
+		$this->checkBenevolentUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-8223.php'], [
+			[
+				'Method Bug8223\HelloWorld::sayHello() should return DateTimeImmutable but returns (DateTimeImmutable|false).',
+				11,
+			],
+		]);
 	}
 
 }

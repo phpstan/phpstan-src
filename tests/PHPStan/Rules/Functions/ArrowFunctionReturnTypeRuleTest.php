@@ -23,6 +23,7 @@ class ArrowFunctionReturnTypeRuleTest extends RuleTestCase
 			false,
 			false,
 			true,
+			false,
 		)));
 	}
 

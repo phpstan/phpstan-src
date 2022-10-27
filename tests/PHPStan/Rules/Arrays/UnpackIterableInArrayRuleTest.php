@@ -15,7 +15,7 @@ class UnpackIterableInArrayRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new UnpackIterableInArrayRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, true));
+		return new UnpackIterableInArrayRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, true, false));
 	}
 
 	public function testRule(): void

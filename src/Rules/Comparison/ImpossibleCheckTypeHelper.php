@@ -55,10 +55,6 @@ class ImpossibleCheckTypeHelper
 		Expr $node,
 	): ?bool
 	{
-		if (!$this->treatPhpDocTypesAsCertain) {
-			$scope = $scope->promoteNativeTypes();
-		}
-
 		if ($node instanceof FuncCall) {
 			$argsCount = count($node->getArgs());
 			if ($node->name instanceof Node\Name) {
@@ -235,7 +231,12 @@ class ImpossibleCheckTypeHelper
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
 			}
-			$argumentType = $scope->getType($sureNotType[0]);
+
+			if ($this->treatPhpDocTypesAsCertain) {
+				$argumentType = $scope->getType($sureNotType[0]);
+			} else {
+				$argumentType = $scope->getNativeType($sureNotType[0]);
+			}
 
 			/** @var Type $resultType */
 			$resultType = $sureNotType[1];

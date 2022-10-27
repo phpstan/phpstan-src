@@ -672,10 +672,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$optionalKeys = $this->optionalKeys;
 		$isList = $this->isList;
 		foreach ($this->keyTypes as $i => $keyType) {
-			if ($offsetType->isSuperTypeOf($keyType)->yes()) {
-				$optionalKeys[] = $i;
-				$isList = false;
+			if (!$offsetType->isSuperTypeOf($keyType)->yes()) {
+				continue;
 			}
+			$optionalKeys[] = $i;
+			$isList = false;
 		}
 		$optionalKeys = array_values(array_unique($optionalKeys));
 

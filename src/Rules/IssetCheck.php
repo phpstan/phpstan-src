@@ -84,7 +84,7 @@ class IssetCheck
 
 			// If offset is cannot be null, store this error message and see if one of the earlier offsets is.
 			// E.g. $array['a']['b']['c'] ?? null; is a valid coalesce if a OR b or C might be null.
-			if ($hasOffsetValue->yes() || $scope->hasExpressionType($expr)) {
+			if ($hasOffsetValue->yes() || $scope->hasExpressionType($expr)->yes()) {
 				if (!$this->checkAdvancedIsset) {
 					return null;
 				}
@@ -134,7 +134,7 @@ class IssetCheck
 
 			$nativeType = $propertyReflection->getNativeType();
 			if (!$nativeType instanceof MixedType) {
-				if (!$scope->hasExpressionType($expr)) {
+				if (!$scope->hasExpressionType($expr)->yes()) {
 					if ($expr instanceof Node\Expr\PropertyFetch) {
 						return $this->checkUndefined($expr->var, $scope, $operatorDescription);
 					}

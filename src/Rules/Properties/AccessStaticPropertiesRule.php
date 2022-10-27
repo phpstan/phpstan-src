@@ -180,7 +180,7 @@ class AccessStaticPropertiesRule implements Rule
 		}
 
 		if (!$has->yes()) {
-			if ($scope->hasExpressionType($node)) {
+			if ($scope->hasExpressionType($node)->yes()) {
 				return $messages;
 			}
 

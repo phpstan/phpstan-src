@@ -278,7 +278,7 @@ class ImpossibleCheckTypeHelper
 			$node instanceof FuncCall
 			|| $node instanceof MethodCall
 			|| $node instanceof Expr\StaticCall
-		) && $scope->hasExpressionType($expr);
+		) && $scope->hasExpressionType($expr)->yes();
 	}
 
 	/**

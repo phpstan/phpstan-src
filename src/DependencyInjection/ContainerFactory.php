@@ -33,6 +33,7 @@ use function ini_get;
 use function is_dir;
 use function is_file;
 use function is_readable;
+use function spl_object_hash;
 use function sprintf;
 use function str_ends_with;
 use function sys_get_temp_dir;
@@ -48,6 +49,8 @@ class ContainerFactory
 	private string $rootDirectory;
 
 	private string $configDirectory;
+
+	private static ?string $lastInitializedContainerId = null;
 
 	/** @api */
 	public function __construct(private string $currentWorkingDirectory, private bool $checkDuplicateFiles = false)
@@ -130,7 +133,21 @@ class ContainerFactory
 
 		$configurator->setAllConfigFiles($allConfigFiles);
 
-		$container = $configurator->createContainer();
+		$container = $configurator->createContainer()->getByType(Container::class);
+		self::postInitializeContainer($container);
+
+		return $container;
+	}
+
+	/** @internal */
+	public static function postInitializeContainer(Container $container): void
+	{
+		$containerId = spl_object_hash($container);
+		if ($containerId === self::$lastInitializedContainerId) {
+			return;
+		}
+
+		self::$lastInitializedContainerId = $containerId;
 
 		/** @var SourceLocator $sourceLocator */
 		$sourceLocator = $container->getService('betterReflectionSourceLocator');
@@ -155,10 +172,8 @@ class ContainerFactory
 		ReflectionProviderStaticAccessor::registerInstance($container->getByType(ReflectionProvider::class));
 		$container->getService('typeSpecifier');
 
-		BleedingEdgeToggle::setBleedingEdge($container->parameters['featureToggles']['bleedingEdge']);
-		AccessoryArrayListType::setListTypeEnabled($container->parameters['featureToggles']['listType']);
-
-		return $container->getByType(Container::class);
+		BleedingEdgeToggle::setBleedingEdge($container->getParameter('featureToggles')['bleedingEdge']);
+		AccessoryArrayListType::setListTypeEnabled($container->getParameter('featureToggles')['listType']);
 	}
 
 	public function clearOldContainers(string $tempDirectory): void

@@ -2184,7 +2184,7 @@ class MutatingScope implements Scope
 		);
 	}
 
-	private function promoteNativeTypes(): self
+	public function promoteNativeTypes(): self
 	{
 		if ($this->nativeTypesPromoted) {
 			return $this;

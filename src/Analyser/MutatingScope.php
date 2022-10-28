@@ -2124,7 +2124,7 @@ class MutatingScope implements Scope
 	{
 		$key = $this->getNodeKey($expr);
 
-		if (array_key_exists($key, $this->nativeExpressionTypes)) {
+		if (array_key_exists($key, $this->nativeExpressionTypes) && $this->hasExpressionType($expr)->yes()) {
 			return $this->nativeExpressionTypes[$key];
 		}
 

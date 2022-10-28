@@ -20,7 +20,7 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 	{
 		return new ArrayUnpackingRule(
 			self::getContainer()->getByType(PhpVersion::class),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnions, false, false, true),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnions, false, false, true, false),
 		);
 	}
 

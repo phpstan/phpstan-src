@@ -35,6 +35,7 @@ class RuleLevelHelper
 		private bool $checkExplicitMixed,
 		private bool $checkImplicitMixed,
 		private bool $checkListType,
+		private bool $checkBenevolentUnionTypes,
 	)
 	{
 	}
@@ -48,6 +49,21 @@ class RuleLevelHelper
 	/** @api */
 	public function accepts(Type $acceptingType, Type $acceptedType, bool $strictTypes): bool
 	{
+		$checkForUnion = $this->checkUnionTypes;
+
+		if ($this->checkBenevolentUnionTypes) {
+			$traverse = static function (Type $type, callable $traverse) use (&$checkForUnion): Type {
+				if ($type instanceof BenevolentUnionType) {
+					$checkForUnion = true;
+					return new UnionType($type->getTypes());
+				}
+
+				return $traverse($type);
+			};
+
+			$acceptedType = TypeTraverser::map($acceptedType, $traverse);
+		}
+
 		if (
 			$this->checkExplicitMixed
 		) {
@@ -135,7 +151,7 @@ class RuleLevelHelper
 			);
 		}
 
-		return $this->checkUnionTypes ? $accepts->yes() : !$accepts->no();
+		return $checkForUnion ? $accepts->yes() : !$accepts->no();
 	}
 
 	/**

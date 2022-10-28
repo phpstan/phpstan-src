@@ -2880,6 +2880,7 @@ class MutatingScope implements Scope
 			$nativeTypes[$paramExprString] = $parameterType;
 		}
 
+		$nonRefVariableNames = [];
 		foreach ($closure->uses as $use) {
 			if (!is_string($use->var->name)) {
 				throw new ShouldNotHappenException();
@@ -2891,6 +2892,7 @@ class MutatingScope implements Scope
 				$nativeTypes[$paramExprString] = new MixedType();
 				continue;
 			}
+			$nonRefVariableNames[$variableName] = true;
 			if ($this->hasVariableType($variableName)->no()) {
 				$variableType = new ErrorType();
 			} else {
@@ -2898,27 +2900,33 @@ class MutatingScope implements Scope
 				$nativeTypes[$paramExprString] = $this->getNativeType($use->var);
 			}
 			$expressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($variableType);
+		}
 
-			foreach ($this->expressionTypes as $exprString => $typeHolder) {
-				$expr = $this->exprStringToExpr((string) $exprString);
-				if ($expr === null) {
-					continue;
-				}
-				if ($expr instanceof Variable) {
-					continue;
-				}
-				$variable = (new NodeFinder())->findFirst([$expr], static fn (Node $node): bool => $node instanceof Variable);
+		foreach ($this->expressionTypes as $exprString => $typeHolder) {
+			$expr = $this->exprStringToExpr((string) $exprString);
+			if ($expr === null) {
+				continue;
+			}
+			if ($expr instanceof Variable) {
+				continue;
+			}
+			$variables = (new NodeFinder())->findInstanceOf([$expr], Variable::class);
+			if ($variables === []) {
+				continue;
+			}
+			foreach ($variables as $variable) {
 				if (!$variable instanceof Variable) {
-					continue;
+					continue 2;
 				}
 				if (!is_string($variable->name)) {
-					continue;
+					continue 2;
 				}
-				if ($variable->name !== $variableName) {
-					continue;
+				if (!array_key_exists($variable->name, $nonRefVariableNames)) {
+					continue 2;
 				}
-				$expressionTypes[$exprString] = $typeHolder;
 			}
+
+			$expressionTypes[$exprString] = $typeHolder;
 		}
 
 		if ($this->hasVariableType('this')->yes() && !$closure->static) {

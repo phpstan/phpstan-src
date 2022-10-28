@@ -18,4 +18,11 @@ class HelloWorld
 		unset($array[$string]);
 		assertType('array{notImportant?: bool, attributesRequiredLogistic?: array<int>}', $array);
 	}
+
+	public function edgeCase(): void
+	{
+		$arr = [1,2,3];
+		unset($arr['1']);
+		assertType('array{0: 1, 2: 3}', $arr);
+	}
 }

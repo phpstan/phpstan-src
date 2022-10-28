@@ -10,7 +10,7 @@ final class TestDecimalOperatorTypeSpecifyingExtension implements OperatorTypeSp
 
 	public function isOperatorSupported(string $operatorSigil, Type $leftSide, Type $rightSide): bool
 	{
-		return in_array($operatorSigil, ['-', '+', '*', '/'], true)
+		return in_array($operatorSigil, ['-', '+', '*', '/', '^'], true)
 			&& $leftSide->isSuperTypeOf(new ObjectType(TestDecimal::class))->yes()
 			&& $rightSide->isSuperTypeOf(new ObjectType(TestDecimal::class))->yes();
 	}

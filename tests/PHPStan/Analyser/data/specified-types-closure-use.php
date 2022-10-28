@@ -34,4 +34,39 @@ class Foo
 		}
 	}
 
+	public function doBaz(array $arr, string $key): void
+	{
+		$arr[$key] = 'test';
+		assertType('non-empty-array', $arr);
+		assertType("'test'", $arr[$key]);
+		function ($arr) use ($key): void {
+			assertType('string', $key);
+			assertType('mixed', $arr);
+			assertType('mixed', $arr[$key]);
+		};
+	}
+	public function doBuzz(array $arr, string $key): void
+	{
+		if (isset($arr[$key])) {
+			assertType('array', $arr);
+			assertType("mixed~null", $arr[$key]);
+			function () use ($arr, $key): void {
+				assertType('array', $arr);
+				assertType("mixed~null", $arr[$key]);
+			};
+		}
+	}
+
+	public function doBuzz(array $arr, string $key): void
+	{
+		if (isset($arr[$key])) {
+			assertType('array', $arr);
+			assertType("mixed~null", $arr[$key]);
+			function ($key) use ($arr): void {
+				assertType('array', $arr);
+				assertType("mixed", $arr[$key]);
+			};
+		}
+	}
+
 }

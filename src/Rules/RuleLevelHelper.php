@@ -51,12 +51,17 @@ class RuleLevelHelper
 	{
 		$checkForUnion = $this->checkUnionTypes;
 
-		if (
-			$this->checkBenevolentUnionTypes
-			&& $acceptedType instanceof BenevolentUnionType
-		) {
-			$acceptedType = new UnionType($acceptedType->getTypes());
-			$checkForUnion = true;
+		if ($this->checkBenevolentUnionTypes) {
+			$traverse = static function (Type $type, callable $traverse) use (&$checkForUnion): Type {
+				if ($type instanceof BenevolentUnionType) {
+					$checkForUnion = true;
+					return new UnionType($type->getTypes());
+				}
+
+				return $traverse($type);
+			};
+
+			$acceptedType = TypeTraverser::map($acceptedType, $traverse);
 		}
 
 		if (

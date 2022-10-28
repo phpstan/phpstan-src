@@ -11,6 +11,16 @@ class HelloWorld
 		return $date->modify($modify);
 	}
 
+	/**
+	 * @return array<\DateTimeImmutable>
+	 */
+	public function sayHello2(string $modify): array
+	{
+		$date = new \DateTimeImmutable();
+
+		return [$date->modify($modify)];
+	}
+
 	public function test()
 	{
 		$r = new HelloWorld();

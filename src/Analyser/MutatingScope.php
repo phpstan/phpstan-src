@@ -2193,7 +2193,7 @@ class MutatingScope implements Scope
 		$expressionTypes = $this->expressionTypes;
 		foreach ($this->nativeExpressionTypes as $exprString => $type) {
 			$has = $this->hasVariableType(substr($exprString, 1));
-			if ($has->no()) {
+			if (!$has->yes()) {
 				continue;
 			}
 

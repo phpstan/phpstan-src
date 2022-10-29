@@ -21,7 +21,8 @@ class UnreachableStatementRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($node->getOriginalStatement() instanceof Node\Stmt\Nop) {
+		$originalStatement = $node->getOriginalStatement();
+		if ($originalStatement instanceof Node\Stmt\Nop || $originalStatement instanceof Node\Stmt\InlineHTML) {
 			return [];
 		}
 

@@ -4281,7 +4281,7 @@ class MutatingScope implements Scope
 			[],
 			$this->processFinallyScopeVariableTypeHolders(
 				$this->nativeExpressionTypes,
-				 $finallyScope->nativeExpressionTypes,
+				$finallyScope->nativeExpressionTypes,
 				$originalFinallyScope->nativeExpressionTypes,
 			),
 			[],
@@ -4346,7 +4346,7 @@ class MutatingScope implements Scope
 
 			if (!$closureScope->hasVariableType($variableName)->yes()) {
 				$expressionTypes[$variableExprString] = ExpressionTypeHolder::createYes(new NullType());
-				$nativeExpressionTypes[$variableExprString] =  ExpressionTypeHolder::createYes(new NullType());
+				$nativeExpressionTypes[$variableExprString] = ExpressionTypeHolder::createYes(new NullType());
 				continue;
 			}
 
@@ -4825,8 +4825,7 @@ class MutatingScope implements Scope
 
 		$typeToVariableHolder = static fn (Type $type): ExpressionTypeHolder => new ExpressionTypeHolder($type, TrinaryLogic::createYes());
 
-		$nativeExpressionTypesResult = $this->compareVariableTypeHolders($this->nativeExpressionTypes,$otherScope->nativeExpressionTypes);
-
+		$nativeExpressionTypesResult = $this->compareVariableTypeHolders($this->nativeExpressionTypes, $otherScope->nativeExpressionTypes);
 		if (!$nativeExpressionTypesResult) {
 			return false;
 		}

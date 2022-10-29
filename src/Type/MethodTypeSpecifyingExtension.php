@@ -12,6 +12,7 @@ use PHPStan\Reflection\MethodReflection;
 interface MethodTypeSpecifyingExtension
 {
 
+	/** @return class-string */
 	public function getClass(): string;
 
 	public function isMethodSupported(MethodReflection $methodReflection, MethodCall $node, TypeSpecifierContext $context): bool;

@@ -10,9 +10,11 @@ use PHPStan\File\SimpleRelativePathHelper;
 use PHPUnit\Framework\TestCase;
 use function array_map;
 use function chdir;
+use function count;
 use function escapeshellarg;
 use function exec;
 use function file_put_contents;
+use function glob;
 use function implode;
 use function ksort;
 use function sort;
@@ -134,6 +136,15 @@ class ResultCacheEndToEndTest extends TestCase
 
 		$this->assertFileExists(sys_get_temp_dir() . '/phpstan/myResultCacheFile.php');
 		$this->assertResultCache(__DIR__ . '/resultCache_1.php', sys_get_temp_dir() . '/phpstan/myResultCacheFile.php');
+	}
+
+	public function testSeparateResultCachePath(): void
+	{
+		$this->runPhpstan(0, __DIR__ . '/phpstan_separate_cache.neon');
+
+		$resultCacheFiles = glob(sys_get_temp_dir() . '/phpstan/resultCache-*.php');
+		$this->assertNotFalse($resultCacheFiles);
+		$this->assertTrue(count($resultCacheFiles) > 0);
 	}
 
 	/**

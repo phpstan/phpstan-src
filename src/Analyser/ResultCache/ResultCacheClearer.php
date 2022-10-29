@@ -4,7 +4,6 @@ namespace PHPStan\Analyser\ResultCache;
 
 use Symfony\Component\Finder\Finder;
 use function dirname;
-use function is_file;
 use function unlink;
 
 class ResultCacheClearer
@@ -17,11 +16,11 @@ class ResultCacheClearer
 	public function clear(): string
 	{
 		$dir = dirname($this->cacheFilePath);
-		if (!is_file($this->cacheFilePath)) {
-			return $dir;
-		}
 
-		@unlink($this->cacheFilePath);
+		$finder = new Finder();
+		foreach ($finder->files()->depth(0)->name('resultCache*.php')->in($dir) as $resultCacheFile) {
+			@unlink($resultCacheFile->getPathname());
+		}
 
 		return $dir;
 	}

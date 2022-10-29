@@ -27,11 +27,13 @@ use function array_merge;
 use function array_unique;
 use function array_values;
 use function count;
+use function dirname;
 use function get_loaded_extensions;
 use function is_array;
 use function is_file;
 use function is_string;
 use function ksort;
+use function md5;
 use function sha1;
 use function sort;
 use function sprintf;
@@ -99,11 +101,10 @@ class ResultCacheManager
 			return new ResultCache($allAnalysedFiles, true, time(), $this->getMeta($allAnalysedFiles, $projectConfigArray), [], [], [], []);
 		}
 
-		$cacheFilePath = $this->cacheFilePath;
+		$cacheFilePath = $this->getCacheFilePath($resultCacheName, $projectConfigArray);
 		if ($resultCacheName !== null) {
-			$tmpCacheFile = $this->tempResultCachePath . '/' . $resultCacheName . '.php';
-			if (is_file($tmpCacheFile)) {
-				$cacheFilePath = $tmpCacheFile;
+			if (!is_file($cacheFilePath)) {
+				$cacheFilePath = $this->cacheFilePath;
 			}
 		}
 
@@ -595,15 +596,12 @@ return [
 
 		ksort($exportedNodes);
 
-		$file = $this->cacheFilePath;
-		if ($resultCacheName !== null) {
-			$file = $this->tempResultCachePath . '/' . $resultCacheName . '.php';
-		}
-
 		$projectConfigArray = $meta['projectConfig'];
 		if ($projectConfigArray !== null) {
 			$meta['projectConfig'] = Neon::encode($projectConfigArray);
 		}
+
+		$file = $this->getCacheFilePath($resultCacheName, $projectConfigArray);
 
 		FileWriter::write(
 			$file,
@@ -618,6 +616,27 @@ return [
 				var_export($exportedNodes, true),
 			),
 		);
+	}
+
+	/**
+	 * @param mixed[]|null $projectConfig
+	 */
+	private function getCacheFilePath(?string $resultCacheName, ?array $projectConfig): string
+	{
+		if ($resultCacheName !== null) {
+			return $this->tempResultCachePath . '/' . $resultCacheName . '.php';
+		}
+
+		if ($projectConfig !== null &&
+			array_key_exists('parameters', $projectConfig) &&
+			!array_key_exists('resultCachePath', $projectConfig['parameters']) &&
+			(!array_key_exists('tmpDir', $projectConfig['parameters']) || $projectConfig['parameters']['tmpDir'] === null)
+		) {
+
+			return dirname($this->cacheFilePath) . '/resultCache-' . md5(Neon::encode([$this->analysedPaths, ComposerHelper::getPhpStanVersion()])) . '.php';
+		}
+
+		return $this->cacheFilePath;
 	}
 
 	/**

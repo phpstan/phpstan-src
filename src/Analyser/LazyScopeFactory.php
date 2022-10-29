@@ -40,11 +40,11 @@ class LazyScopeFactory implements ScopeFactory
 
 	/**
 	 * @param array<string, Type> $constantTypes
-	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @param ExpressionTypeHolder[] $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param array<string, Type> $nativeExpressionTypes
+	 * @param ExpressionTypeHolder[] $nativeExpressionTypes
 	 * @param array<(FunctionReflection|MethodReflection)> $inFunctionCallsStack
 	 *
 	 */

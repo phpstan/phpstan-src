@@ -17,6 +17,7 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
@@ -119,7 +120,22 @@ class DependencyResolver
 			$functionName = $node->name;
 			if ($functionName instanceof Node\Name) {
 				try {
-					$dependenciesReflections[] = $this->getFunctionReflection($functionName, $scope);
+					$functionReflection = $this->getFunctionReflection($functionName, $scope);
+					$dependenciesReflections[] = $functionReflection;
+
+					foreach ($functionReflection->getVariants() as $functionVariant) {
+						foreach ($functionVariant->getParameters() as $parameter) {
+							if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
+								continue;
+							}
+							if ($parameter->getOutType() === null) {
+								continue;
+							}
+							foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+							}
+						}
+					}
 				} catch (FunctionNotFoundException) {
 					// pass
 				}
@@ -131,6 +147,18 @@ class DependencyResolver
 						$referencedClasses = $variant->getReturnType()->getReferencedClasses();
 						foreach ($referencedClasses as $referencedClass) {
 							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+						}
+
+						foreach ($variant->getParameters() as $parameter) {
+							if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
+								continue;
+							}
+							if ($parameter->getOutType() === null) {
+								continue;
+							}
+							foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+							}
 						}
 					}
 				}
@@ -156,6 +184,19 @@ class DependencyResolver
 				$methodReflection = $scope->getMethodReflection($calledOnType, $node->name->toString());
 				if ($methodReflection !== null) {
 					$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
+					foreach ($methodReflection->getVariants() as $methodVariant) {
+						foreach ($methodVariant->getParameters() as $parameter) {
+							if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
+								continue;
+							}
+							if ($parameter->getOutType() === null) {
+								continue;
+							}
+							foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+							}
+						}
+					}
 				}
 			}
 		} elseif ($node instanceof Node\Expr\PropertyFetch) {
@@ -198,12 +239,38 @@ class DependencyResolver
 						if ($methodClassReflection->hasMethod($node->name->toString())) {
 							$methodReflection = $methodClassReflection->getMethod($node->name->toString(), $scope);
 							$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
+							foreach ($methodReflection->getVariants() as $methodVariant) {
+								foreach ($methodVariant->getParameters() as $parameter) {
+									if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
+										continue;
+									}
+									if ($parameter->getOutType() === null) {
+										continue;
+									}
+									foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+										$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+									}
+								}
+							}
 						}
 					}
 				} else {
 					$methodReflection = $scope->getMethodReflection($scope->getType($node->class), $node->name->toString());
 					if ($methodReflection !== null) {
 						$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
+						foreach ($methodReflection->getVariants() as $methodVariant) {
+							foreach ($methodVariant->getParameters() as $parameter) {
+								if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
+									continue;
+								}
+								if ($parameter->getOutType() === null) {
+									continue;
+								}
+								foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
+									$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+								}
+							}
+						}
 					}
 				}
 			}
@@ -474,6 +541,14 @@ class DependencyResolver
 			);
 
 			foreach ($referencedClasses as $referencedClass) {
+				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+			}
+
+			if ($parameter->getOutType() === null) {
+				continue;
+			}
+
+			foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
 				$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 			}
 		}

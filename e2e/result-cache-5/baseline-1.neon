@@ -1,0 +1,11 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Expected type true, actual\\: false$#"
+			count: 1
+			path: src/Foo.php
+
+		-
+			message: "#^Instanceof between TestResultCache5\\\\Baz and Exception will always evaluate to false\\.$#"
+			count: 1
+			path: src/Foo.php

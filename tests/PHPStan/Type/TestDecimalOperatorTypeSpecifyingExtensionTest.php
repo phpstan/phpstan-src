@@ -52,6 +52,12 @@ class TestDecimalOperatorTypeSpecifyingExtensionTest extends TestCase
 			new ObjectType(TestDecimal::class),
 			new ObjectType(TestDecimal::class),
 		];
+
+		yield '**' => [
+			'**',
+			new ObjectType(TestDecimal::class),
+			new ObjectType(TestDecimal::class),
+		];
 	}
 
 	/**

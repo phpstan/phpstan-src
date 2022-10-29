@@ -2983,13 +2983,10 @@ class MutatingScope implements Scope
 	 */
 	private function enterArrowFunctionWithoutReflection(Expr\ArrowFunction $arrowFunction, ?array $callableParameters): self
 	{
-		$expressionTypes = $this->expressionTypes;
-		$mixed = new MixedType();
-		$parameterExprStrings = [];
-		$parameterVariableExpressions = [];
+		$arrowFunctionScope = $this;
 		foreach ($arrowFunction->params as $i => $parameter) {
 			if ($parameter->type === null) {
-				$parameterType = $mixed;
+				$parameterType = new MixedType();
 			} else {
 				$isNullable = $this->isParameterValueNullable($parameter);
 				$parameterType = $this->getFunctionType($parameter->type, $isNullable, $parameter->variadic);
@@ -3013,93 +3010,31 @@ class MutatingScope implements Scope
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
 				throw new ShouldNotHappenException();
 			}
-
-			$exprString = '$' . $parameter->var->name;
-			$expressionTypes[$exprString] = ExpressionTypeHolder::createYes($parameterType);
-			$parameterExprStrings[] = $exprString;
-			$parameterVariableExpressions[] = $parameter->var;
+			$arrowFunctionScope = $arrowFunctionScope->assignVariable($parameter->var->name, $parameterType, $parameterType);
 		}
 
 		if ($arrowFunction->static) {
-			unset($expressionTypes['$this']);
+			$arrowFunctionScope = $arrowFunctionScope->invalidateExpression(new Variable('this'));
 		}
 
-		$conditionalExpressions = [];
-		foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
-			$newHolders = [];
-			foreach ($parameterExprStrings as $exprString) {
-				if ($exprString === $conditionalExprString) {
-					continue 2;
-				}
-			}
-
-			foreach ($holders as $holder) {
-				foreach ($parameterExprStrings as $exprString) {
-					foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionalExprString2) {
-						if ($exprString === $conditionalExprString2) {
-							continue 3;
-						}
-					}
-				}
-
-				$newHolders[] = $holder;
-			}
-
-			if (count($newHolders) === 0) {
-				continue;
-			}
-
-			$conditionalExpressions[$conditionalExprString] = $newHolders;
-		}
-		foreach ($parameterExprStrings as $exprString) {
-			foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
-				if ($exprString === $conditionalExprString) {
-					continue;
-				}
-
-				$newHolders = [];
-				foreach ($holders as $holder) {
-					foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionalExprString2) {
-						if ($exprString === $conditionalExprString2) {
-							continue 2;
-						}
-					}
-
-					$newHolders[] = $holder;
-				}
-
-				if (count($newHolders) === 0) {
-					continue;
-				}
-
-				$conditionalExpressions[$conditionalExprString] = $newHolders;
-			}
-		}
-
-		$scope = $this->scopeFactory->create(
-			$this->context,
+		return $this->scopeFactory->create(
+			$arrowFunctionScope->context,
 			$this->isDeclareStrictTypes(),
-			$this->constantTypes,
-			$this->getFunction(),
-			$this->getNamespace(),
-			$expressionTypes,
-			$conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$arrowFunctionScope->constantTypes,
+			$arrowFunctionScope->getFunction(),
+			$arrowFunctionScope->getNamespace(),
+			$arrowFunctionScope->expressionTypes,
+			$arrowFunctionScope->conditionalExpressions,
+			$arrowFunctionScope->inClosureBindScopeClass,
 			null,
 			true,
 			[],
 			[],
+			$arrowFunctionScope->nativeExpressionTypes,
 			[],
-			[],
-			$this->afterExtractCall,
-			$this->parentScope,
+			$arrowFunctionScope->afterExtractCall,
+			$arrowFunctionScope->parentScope,
 		);
-
-		foreach ($parameterVariableExpressions as $expr) {
-			$scope = $scope->invalidateExpression($expr, true);
-		}
-
-		return $scope;
 	}
 
 	public function isParameterValueNullable(Node\Param $parameter): bool

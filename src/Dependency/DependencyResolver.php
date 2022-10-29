@@ -102,7 +102,7 @@ class DependencyResolver
 					$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
 				}
 			}
-		} elseif ($node instanceof Closure) {
+		} elseif ($node instanceof Closure || $node instanceof Node\Expr\ArrowFunction) {
 			/** @var ClosureType $closureType */
 			$closureType = $scope->getType($node);
 			foreach ($closureType->getParameters() as $parameter) {

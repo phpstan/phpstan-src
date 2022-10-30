@@ -1439,13 +1439,14 @@ class InitializerExprTypeResolver
 						$resultType = $this->resolveCommonMath($expr, $type, $rightType);
 					}
 
-					if ($resultType instanceof ErrorType) {
-						return new ErrorType();
-					}
 					$unionParts[] = $resultType;
 				}
 
 				$union = TypeCombinator::union(...$unionParts);
+				if ($union instanceof ErrorType) {
+					return new ErrorType();
+				}
+
 				if ($leftType instanceof BenevolentUnionType) {
 					return TypeUtils::toBenevolentUnion($union)->toNumber();
 				}

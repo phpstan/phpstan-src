@@ -3402,9 +3402,15 @@ class MutatingScope implements Scope
 		}
 
 		$exprString = $this->getNodeKey($expr);
-		if ($expr instanceof ConstFetch && $type instanceof NeverType) {
-			unset($this->expressionTypes[$exprString]);
-			return $this;
+		if ($expr instanceof ConstFetch) {
+			$loweredConstName = strtolower($expr->name->toString());
+			if (in_array($loweredConstName, ['true', 'false', 'null'], true)) {
+				return $this;
+			}
+			if ($type instanceof NeverType) {
+				unset($this->expressionTypes[$exprString]);
+				return $this;
+			}
 		}
 
 		$scope = $this;

@@ -13,8 +13,8 @@ class HelloWorld
 			assertType('int<5, max>', PHP_MAJOR_VERSION);
 			assertType('int<5, max>', \PHP_MAJOR_VERSION);
 			if (PHP_MAJOR_VERSION === 7) {
-				assertType('int', PHP_MAJOR_VERSION);
-				assertType('int', \PHP_MAJOR_VERSION);
+				assertType('7', PHP_MAJOR_VERSION);
+				assertType('7', \PHP_MAJOR_VERSION);
 			} else {
 				assertType('int<5, 6>|int<8, max>', PHP_MAJOR_VERSION);
 				assertType('int<5, 6>|int<8, max>', \PHP_MAJOR_VERSION);
@@ -31,8 +31,8 @@ class HelloWorld2
 			assertType('int<5, max>', PHP_MAJOR_VERSION);
 			assertType('int<5, max>', \PHP_MAJOR_VERSION);
 			if (PHP_MAJOR_VERSION === 100) {
-				assertType('int', PHP_MAJOR_VERSION);
-				assertType('int', \PHP_MAJOR_VERSION);
+				assertType('100', PHP_MAJOR_VERSION);
+				assertType('100', \PHP_MAJOR_VERSION);
 			} else {
 				assertType('int<5, 99>|int<101, max>', PHP_MAJOR_VERSION);
 				assertType('int<5, 99>|int<101, max>', \PHP_MAJOR_VERSION);

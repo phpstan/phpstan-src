@@ -13,7 +13,6 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Type;
 use function is_a;
 
 class LazyScopeFactory implements ScopeFactory
@@ -39,7 +38,6 @@ class LazyScopeFactory implements ScopeFactory
 	}
 
 	/**
-	 * @param array<string, Type> $constantTypes
 	 * @param ExpressionTypeHolder[] $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
@@ -51,7 +49,6 @@ class LazyScopeFactory implements ScopeFactory
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
-		array $constantTypes = [],
 		FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
 		array $expressionTypes = [],
@@ -87,7 +84,6 @@ class LazyScopeFactory implements ScopeFactory
 			$context,
 			$this->container->getByType(PhpVersion::class),
 			$declareStrictTypes,
-			$constantTypes,
 			$function,
 			$namespace,
 			$expressionTypes,

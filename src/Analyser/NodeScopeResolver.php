@@ -1445,12 +1445,12 @@ class NodeScopeResolver
 			foreach ($stmt->consts as $const) {
 				$nodeCallback($const, $scope);
 				$this->processExprNode($const->value, $scope, $nodeCallback, ExpressionContext::createDeep());
-				if ($scope->getNamespace() !== null) {
-					$constName = [$scope->getNamespace(), $const->name->toString()];
+				if ($const->namespacedName !== null) {
+					$constantName = new Name\FullyQualified($const->namespacedName->toString());
 				} else {
-					$constName = $const->name->toString();
+					$constantName = new Name\FullyQualified($const->name->toString());
 				}
-				$scope = $scope->assignExpression(new ConstFetch(new Name\FullyQualified($constName)), $scope->getType($const->value), $scope->getNativeType($const->value));
+				$scope = $scope->assignExpression(new ConstFetch($constantName), $scope->getType($const->value), $scope->getNativeType($const->value));
 			}
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);

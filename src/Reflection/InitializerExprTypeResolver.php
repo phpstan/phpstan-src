@@ -1434,10 +1434,15 @@ class InitializerExprTypeResolver
 
 				foreach ($leftType->getTypes() as $type) {
 					if ($type instanceof IntegerRangeType || $type instanceof ConstantIntegerType) {
-						$unionParts[] = $this->integerRangeMath($type, $expr, $rightType);
+						$resultType = $this->integerRangeMath($type, $expr, $rightType);
 					} else {
-						$unionParts[] = $type;
+						$resultType = $this->resolveCommonMath($expr, $type, $rightType);
 					}
+
+					if ($resultType instanceof ErrorType) {
+						return new ErrorType();
+					}
+					$unionParts[] = $resultType;
 				}
 
 				$union = TypeCombinator::union(...$unionParts);

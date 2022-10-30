@@ -100,9 +100,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	{
 		if ($exponent instanceof ConstantScalarType) {
 			$result = $this->getValue() ** $exponent->getValue();
-			if (is_int($result)) {
-				return new ConstantIntegerType($result);
-			}
+			// exponentiation of a float always results in a float
 			return new ConstantFloatType($result);
 		}
 

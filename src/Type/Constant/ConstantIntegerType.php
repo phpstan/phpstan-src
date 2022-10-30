@@ -116,20 +116,6 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 			if (!is_float($min) && !is_float($max)) {
 				return IntegerRangeType::fromInterval($min, $max);
 			}
-		} elseif ($exponent instanceof ConstantScalarType) {
-			$exponentValue = $exponent->getValue();
-			if (is_int($exponentValue)) {
-				$min = $this->getValue() ** $exponentValue;
-				$max = $this->getValue() ** $exponentValue;
-
-				if (!is_float($min) && !is_float($max)) {
-					return IntegerRangeType::fromInterval($min, $max);
-				}
-			}
-
-			if (is_numeric($exponentValue)) {
-				return new ConstantFloatType($this->getValue() ** $exponentValue);
-			}
 		}
 
 		if ($exponent instanceof ConstantScalarType) {

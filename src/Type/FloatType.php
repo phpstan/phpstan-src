@@ -204,19 +204,18 @@ class FloatType implements Type
 
 	public function exponentiate(Type $exponent): Type
 	{
-		$numberType = new UnionType([
+		$allowedExponentTypes = new UnionType([
 			new IntegerType(),
 			new FloatType(),
-			TypeCombinator::intersect(
-				new StringType(),
-				new AccessoryNumericStringType(),
-			),
+			new StringType(),
+			new BooleanType(),
+			new NullType(),
 		]);
 
 		if ($exponent instanceof NeverType) {
 			return new NeverType();
 		}
-		if (!$numberType->isSuperTypeOf($exponent)->yes()) {
+		if (!$allowedExponentTypes->isSuperTypeOf($exponent)->yes()) {
 			return new ErrorType();
 		}
 

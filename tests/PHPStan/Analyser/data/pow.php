@@ -12,54 +12,75 @@ function ($a, $b): void {
 /**
  * @param numeric-string $numericS
  */
-function doFoo(int $a, int $b, string $s, bool $c, $numericS, float $f): void {
-	$constString = "hallo";
-	$constNumericString = "123";
-	$true = true;
-	$null = null;
-	$one = 1;
+function doFoo(int $intA, int $intB, string $s, bool $bool, $numericS, float $float, array $arr): void {
+	assertType('(float|int)', pow($intA, $intB));
+	assertType('(float|int)', $intA ** $intB);
 
-	assertType('(float|int)', pow($a, $b));
-	assertType('(float|int)', $a ** $b);
-
-	assertType('(float|int)', pow($a, $numericS));
-	assertType('(float|int)', $a ** $numericS);
+	assertType('(float|int)', pow($intA, $numericS));
+	assertType('(float|int)', $intA ** $numericS);
 	assertType('(float|int)', $numericS ** $numericS);
-	assertType('(float|int)', pow($a, $constNumericString));
-	assertType('(float|int)', $a ** $constNumericString);
+	assertType('(float|int)', pow($intA, "123"));
+	assertType('(float|int)', $intA ** "123");
 
-	assertType('(float|int)', pow($a, $s));
-	assertType('(float|int)', $a ** $s);
-	assertType('(float|int)', pow($a, $constString));
-	assertType('(float|int)', $a ** $constString);
+	assertType('(float|int)', pow($intA, $s));
+	assertType('(float|int)', $intA ** $s);
+	assertType('(float|int)', pow($intA, "hallo"));
+	assertType('(float|int)', $intA ** "hallo");
 
-	assertType('(float|int)', pow($a, $c));
-	assertType('(float|int)', $a ** $c);
-	assertType('int', pow($a, $true));
-	assertType('int', $a ** $true);
+	assertType('(float|int)', pow($intA, $bool)); // could be int
+	assertType('(float|int)', $intA ** $bool); // could be int
+	assertType('int', pow($intA, true));
+	assertType('int', $intA ** true);
 
-	assertType('0', pow($null, $constNumericString));
-	assertType('1', pow($null, $null));
-	assertType('0|1', pow($null, $a));
-	assertType('1', $constNumericString ** $null);
-	assertType('1', $a ** $null);
-	assertType('float', $f ** $null); // could be 1.0
+	assertType('*ERROR*', pow($bool, $arr));
+	assertType('*ERROR*', pow($bool, []));
+
+	assertType('0', pow(null, "123"));
+	assertType('1', pow(null, null));
+	assertType('0|1', pow(null, $intA));
+	assertType('1', "123" ** null);
+	assertType('1', $intA ** null);
+	assertType('1.0', $float ** null);
+
+	assertType('*ERROR*', "123" ** $arr);
+	assertType('*ERROR*', "123" ** []);
 
 	assertType('625', pow('5', '4'));
 	assertType('625', '5' ** '4');
 
-	assertType('int', pow($a, $one));
-	assertType('int', $a ** '1');
-	assertType('float', pow($f, $one));
-	assertType('float', $f ** '1');
+	assertType('int', pow($intA, 1));
+	assertType('int', $intA ** '1');
+	assertType('float', pow($float, 1));
+	assertType('float', $float ** '1');
+	assertType('(float|int)', pow($intA, $bool)); // could be float
+	assertType('(float|int)', $intA ** $bool); // could be float
+	assertType('*ERROR*', $intA ** $arr);
+	assertType('*ERROR*', $intA ** []);
 
-	assertType('1', pow($a, 0));
-	assertType('1', $a ** '0');
-	assertType('1.0', pow($f, 0));
-	assertType('1.0', $f ** '0');
-	assertType('float', $f ** false); // could be 1.0
+	assertType('1', pow($intA, 0));
+	assertType('1', $intA ** '0');
+	assertType('1', $intA ** false);
+	assertType('int', $intA ** true);
+
+	assertType('1.0', pow($float, 0));
+	assertType('1.0', $float ** '0');
+	assertType('1.0', $float ** false);
+	assertType('*ERROR*', $float ** $arr);
+	assertType('*ERROR*', $float ** []);
+
+	assertType('1.0', pow(1.1, 0));
+	assertType('1.0', 1.1 ** '0');
+	assertType('1.0', 1.1 ** false);
+	assertType('*ERROR*', 1.1 ** $arr);
+	assertType('*ERROR*', 1.1 ** []);
 
 	assertType('NAN', pow(-1,5.5));
+
+	assertType('(float|int)', pow($s, 0));
+	assertType('(float|int)', $s ** '0');
+	assertType('(float|int)', $s ** false);
+	assertType('*ERROR*', $s ** $arr);
+	assertType('*ERROR*', $s ** []);
 };
 
 function (\GMP $a, \GMP $b): void {

@@ -13,7 +13,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function abs;
 use function is_finite;
-use function is_numeric;
+use function is_int;
 use function strpos;
 use const PHP_FLOAT_EPSILON;
 

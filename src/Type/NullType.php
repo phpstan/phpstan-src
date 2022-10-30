@@ -15,6 +15,7 @@ use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use function is_int;
 
 /** @api */
 class NullType implements ConstantScalarType
@@ -301,7 +302,7 @@ class NullType implements ConstantScalarType
 			[
 				new ConstantIntegerType(0),
 				new ConstantIntegerType(1),
-			]
+			],
 		);
 	}
 

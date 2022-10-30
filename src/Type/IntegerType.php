@@ -5,7 +5,6 @@ namespace PHPStan\Type;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -155,10 +154,7 @@ class IntegerType implements Type
 		$numberType = new UnionType([
 			new IntegerType(),
 			new FloatType(),
-			TypeCombinator::intersect(
-				new StringType(),
-				new AccessoryNumericStringType(),
-			),
+			new StringType(),
 		]);
 
 		if ($exponent instanceof NeverType) {

@@ -1416,6 +1416,25 @@ class InitializerExprTypeResolver
 		return $resultType->toBoolean();
 	}
 
+	private function callOperatorTypeSpecifyingExtensions(Expr\BinaryOp $expr, Type $leftType, Type $rightType): ?Type
+	{
+		$operatorSigil = $expr->getOperatorSigil();
+		$operatorTypeSpecifyingExtensions = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()->getOperatorTypeSpecifyingExtensions($operatorSigil, $leftType, $rightType);
+
+		/** @var Type[] $extensionTypes */
+		$extensionTypes = [];
+
+		foreach ($operatorTypeSpecifyingExtensions as $extension) {
+			$extensionTypes[] = $extension->specifyType($operatorSigil, $leftType, $rightType);
+		}
+
+		if (count($extensionTypes) > 0) {
+			return TypeCombinator::union(...$extensionTypes);
+		}
+
+		return null;
+	}
+
 	/**
 	 * @param BinaryOp\Plus|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Pow|BinaryOp\Div $expr
 	 */
@@ -1454,18 +1473,9 @@ class InitializerExprTypeResolver
 			return $this->integerRangeMath($leftType, $expr, $rightType);
 		}
 
-		$operatorSigil = $expr->getOperatorSigil();
-		$operatorTypeSpecifyingExtensions = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()->getOperatorTypeSpecifyingExtensions($operatorSigil, $leftType, $rightType);
-
-		/** @var Type[] $extensionTypes */
-		$extensionTypes = [];
-
-		foreach ($operatorTypeSpecifyingExtensions as $extension) {
-			$extensionTypes[] = $extension->specifyType($operatorSigil, $leftType, $rightType);
-		}
-
-		if (count($extensionTypes) > 0) {
-			return TypeCombinator::union(...$extensionTypes);
+		$specifiedTypes = $this->callOperatorTypeSpecifyingExtensions($expr, $leftType, $rightType);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
 		}
 
 		$types = TypeCombinator::union($leftType, $rightType);

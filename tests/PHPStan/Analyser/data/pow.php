@@ -28,10 +28,10 @@ function doFoo(int $a, int $b, string $s, bool $c, $numericS, float $f): void {
 	assertType('(float|int)', pow($a, $constNumericString));
 	assertType('(float|int)', $a ** $constNumericString);
 
-	assertType('*ERROR*', pow($a, $s));
-	assertType('*ERROR*', $a ** $s);
-	assertType('*ERROR*', pow($a, $constString));
-	assertType('*ERROR*', $a ** $constString);
+	assertType('(float|int)', pow($a, $s));
+	assertType('(float|int)', $a ** $s);
+	assertType('(float|int)', pow($a, $constString));
+	assertType('(float|int)', $a ** $constString);
 
 	assertType('(float|int)', pow($a, $c));
 	assertType('(float|int)', $a ** $c);

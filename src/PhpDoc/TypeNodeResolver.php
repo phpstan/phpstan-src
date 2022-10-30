@@ -329,6 +329,7 @@ class TypeNodeResolver
 				return new IntersectionType([new ObjectWithoutClassType(), new CallableType()]);
 
 			case 'never':
+			case 'noreturn':
 				$type = $this->tryResolvePseudoTypeClassType($typeNode, $nameScope);
 
 				if ($type !== null) {
@@ -340,7 +341,6 @@ class TypeNodeResolver
 			case 'never-return':
 			case 'never-returns':
 			case 'no-return':
-			case 'noreturn':
 				return new NeverType(true);
 
 			case 'list':

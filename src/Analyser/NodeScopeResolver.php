@@ -3762,6 +3762,7 @@ class NodeScopeResolver
 			$holder = new ConditionalExpressionHolder([
 				'$' . $variableName => $variableType,
 			], ExpressionTypeHolder::createYes(
+				$expr,
 				TypeCombinator::intersect($scope->getType($expr), $exprType),
 			));
 			$conditionalExpressions[$exprString][$holder->getKey()] = $holder;
@@ -3791,6 +3792,7 @@ class NodeScopeResolver
 			$holder = new ConditionalExpressionHolder([
 				'$' . $variableName => $variableType,
 			], ExpressionTypeHolder::createYes(
+				$expr,
 				TypeCombinator::remove($scope->getType($expr), $exprType),
 			));
 			$conditionalExpressions[$exprString][$holder->getKey()] = $holder;
@@ -3974,7 +3976,7 @@ class NodeScopeResolver
 				$valueType = $iterateeType->getValueTypes()[$i];
 				$holder = new ConditionalExpressionHolder([
 					'$' . $stmt->keyVar->name => $keyType,
-				], new ExpressionTypeHolder($valueType, TrinaryLogic::createYes()));
+				], new ExpressionTypeHolder($stmt->valueVar, $valueType, TrinaryLogic::createYes()));
 				$conditionalHolders[$holder->getKey()] = $holder;
 			}
 

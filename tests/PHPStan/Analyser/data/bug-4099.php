@@ -30,7 +30,7 @@ class Foo
 			assertType('*NEVER*', $arr);
 			assertNativeType('array&hasOffset(\'key\')', $arr);
 			assertType('*NEVER*', $arr['key']);
-			assertNativeType('mixed', $arr['key']);
+			assertNativeType("mixed~hasOffset('inner')", $arr['key']);
 			throw new \Exception('need key.inner');
 		}
 

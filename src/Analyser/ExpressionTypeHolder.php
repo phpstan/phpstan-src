@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node\Expr;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -9,18 +10,18 @@ use PHPStan\Type\TypeCombinator;
 class ExpressionTypeHolder
 {
 
-	public function __construct(private Type $type, private TrinaryLogic $certainty)
+	public function __construct(private Expr $expr, private Type $type, private TrinaryLogic $certainty)
 	{
 	}
 
-	public static function createYes(Type $type): self
+	public static function createYes(Expr $expr, Type $type): self
 	{
-		return new self($type, TrinaryLogic::createYes());
+		return new self($expr, $type, TrinaryLogic::createYes());
 	}
 
-	public static function createMaybe(Type $type): self
+	public static function createMaybe(Expr $expr, Type $type): self
 	{
-		return new self($type, TrinaryLogic::createMaybe());
+		return new self($expr, $type, TrinaryLogic::createMaybe());
 	}
 
 	public function equals(self $other): bool
@@ -40,9 +41,15 @@ class ExpressionTypeHolder
 			$type = TypeCombinator::union($this->getType(), $other->getType());
 		}
 		return new self(
+			$this->expr,
 			$type,
 			$this->getCertainty()->and($other->getCertainty()),
 		);
+	}
+
+	public function getExpr(): Expr
+	{
+		return $this->expr;
 	}
 
 	public function getType(): Type

@@ -1418,42 +1418,42 @@ class InitializerExprTypeResolver
 	 */
 	private function resolveCommonMath(Expr\BinaryOp $expr, Type $leftType, Type $rightType): Type
 	{
-		if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType || $leftType instanceof UnionType) &&
-			($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType || $rightType instanceof UnionType) &&
-			!$expr instanceof BinaryOp\Pow) {
-
-			if ($leftType instanceof ConstantIntegerType) {
-				return $this->integerRangeMath(
-					$leftType,
-					$expr,
-					$rightType,
-				);
-			} elseif ($leftType instanceof UnionType) {
-
-				$unionParts = [];
-
-				foreach ($leftType->getTypes() as $type) {
-					if ($type instanceof IntegerRangeType || $type instanceof ConstantIntegerType) {
-						$resultType = $this->integerRangeMath($type, $expr, $rightType);
-					} else {
-						$resultType = $this->resolveCommonMath($expr, $type, $rightType);
-					}
-
-					$unionParts[] = $resultType;
-				}
-
-				$union = TypeCombinator::union(...$unionParts);
-				if ($union instanceof ErrorType) {
-					return new ErrorType();
-				}
-
-				if ($leftType instanceof BenevolentUnionType) {
-					return TypeUtils::toBenevolentUnion($union)->toNumber();
-				}
-
-				return $union->toNumber();
+		if ($leftType instanceof UnionType) {
+			$unionParts = [];
+			foreach ($leftType->getTypes() as $type) {
+				$unionParts[] = $this->resolveCommonMath($expr, $type, $rightType);
 			}
 
+			$union = TypeCombinator::union(...$unionParts);
+			if ($union instanceof ErrorType) {
+				return new ErrorType();
+			}
+			if ($leftType instanceof BenevolentUnionType) {
+				return TypeUtils::toBenevolentUnion($union)->toNumber();
+			}
+
+			return $union->toNumber();
+		}
+		if ($rightType instanceof UnionType) {
+			$unionParts = [];
+			foreach ($rightType->getTypes() as $type) {
+				$unionParts[] = $this->resolveCommonMath($expr, $leftType, $type);
+			}
+
+			$union = TypeCombinator::union(...$unionParts);
+			if ($union instanceof ErrorType) {
+				return new ErrorType();
+			}
+			if ($rightType instanceof BenevolentUnionType) {
+				return TypeUtils::toBenevolentUnion($union)->toNumber();
+			}
+
+			return $union->toNumber();
+		}
+
+		if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType) &&
+			($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType) &&
+			!$expr instanceof BinaryOp\Pow) {
 			return $this->integerRangeMath($leftType, $expr, $rightType);
 		}
 
@@ -1512,10 +1512,7 @@ class InitializerExprTypeResolver
 			return new UnionType([new IntegerType(), new FloatType()]);
 		}
 
-		if ($types instanceof MixedType
-			|| $leftType instanceof BenevolentUnionType
-			|| $rightType instanceof BenevolentUnionType
-		) {
+		if ($types instanceof MixedType) {
 			return TypeUtils::toBenevolentUnion($resultType);
 		}
 

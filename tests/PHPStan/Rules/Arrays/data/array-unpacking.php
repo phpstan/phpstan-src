@@ -18,8 +18,14 @@ function stringKeyedArray(array $bar)
 	$baz = [...$bar];
 }
 
-/** @param array<array-key, string> $bar */
+/** @param array<int|string, string> $bar */
 function unionKeyedArray(array $bar)
+{
+	$baz = [...$bar];
+}
+
+/** @param array<array-key, string> $bar */
+function benevolentUnionKeyedArray(array $bar)
 {
 	$baz = [...$bar];
 }

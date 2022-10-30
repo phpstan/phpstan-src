@@ -16,15 +16,61 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 
 	private bool $checkUnions;
 
+	private bool $checkBenevolentUnions = false;
+
 	protected function getRule(): Rule
 	{
 		return new ArrayUnpackingRule(
 			self::getContainer()->getByType(PhpVersion::class),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnions, false, false, true, false),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, $this->checkUnions, false, false, true, $this->checkBenevolentUnions),
 		);
 	}
 
 	public function testRule(): void
+	{
+		if (PHP_VERSION_ID >= 80100) {
+			$this->markTestSkipped('Test requires PHP version <= 8.0');
+		}
+
+		$this->checkUnions = true;
+		$this->checkBenevolentUnions = true;
+		$this->analyse([__DIR__ . '/data/array-unpacking.php'], [
+			[
+				'Array unpacking cannot be used on an array with potential string keys: array{foo: \'bar\', 0: 1, 1: 2, 2: 3}',
+				7,
+			],
+			[
+				'Array unpacking cannot be used on an array with string keys: array<string, string>',
+				18,
+			],
+			[
+				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
+				24,
+			],
+			[
+				'Array unpacking cannot be used on an array with potential string keys: array<string>',
+				30,
+			],
+			[
+				'Array unpacking cannot be used on an array with potential string keys: array',
+				35,
+			],
+			[
+				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
+				46,
+			],
+			[
+				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
+				58,
+			],
+			[
+				'Array unpacking cannot be used on an array with string keys: array{foo: string, bar: int}',
+				69,
+			],
+		]);
+	}
+
+	public function testRuleDoNotCheckBenevolentUnion(): void
 	{
 		if (PHP_VERSION_ID >= 80100) {
 			$this->markTestSkipped('Test requires PHP version <= 8.0');
@@ -41,24 +87,20 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 				18,
 			],
 			[
-				'Array unpacking cannot be used on an array with potential string keys: array<string>',
+				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
 				24,
 			],
 			[
-				'Array unpacking cannot be used on an array with potential string keys: array',
-				29,
+				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
+				46,
 			],
 			[
 				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
-				40,
-			],
-			[
-				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
-				52,
+				58,
 			],
 			[
 				'Array unpacking cannot be used on an array with string keys: array{foo: string, bar: int}',
-				63,
+				69,
 			],
 		]);
 	}
@@ -77,7 +119,7 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 			],
 			[
 				'Array unpacking cannot be used on an array with string keys: array{foo: string, bar: int}',
-				63,
+				69,
 			],
 		]);
 	}

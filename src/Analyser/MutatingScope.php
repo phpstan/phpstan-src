@@ -3996,12 +3996,6 @@ class MutatingScope implements Scope
 		if ($otherScope === null) {
 			return $this;
 		}
-
-		$variableHolderToType = static fn (ExpressionTypeHolder $holder): Type => $holder->getType();
-		$typeToVariableHolder = static fn (Type $type): ExpressionTypeHolder => new ExpressionTypeHolder($type, TrinaryLogic::createYes());
-
-		$filterVariableHolders = static fn (ExpressionTypeHolder $holder): bool => $holder->getCertainty()->yes();
-
 		$ourExpressionTypes = $this->expressionTypes;
 		$ourVariableTypes = array_filter($ourExpressionTypes, fn ($exprString) => $this->exprStringToExpr((string) $exprString) instanceof Variable, ARRAY_FILTER_USE_KEY);
 		$theirExpressionTypes = $otherScope->expressionTypes;
@@ -4191,10 +4185,6 @@ class MutatingScope implements Scope
 
 	public function processFinallyScope(self $finallyScope, self $originalFinallyScope): self
 	{
-		$variableHolderToType = static fn (ExpressionTypeHolder $holder): Type => $holder->getType();
-		$typeToVariableHolder = static fn (Type $type): ExpressionTypeHolder => new ExpressionTypeHolder($type, TrinaryLogic::createYes());
-		$filterVariableHolders = static fn (ExpressionTypeHolder $holder): bool => $holder->getCertainty()->yes();
-
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -4371,10 +4361,6 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			$otherScope->nativeExpressionTypes,
 		);
-
-		$variableHolderToType = static fn (ExpressionTypeHolder $holder): Type => $holder->getType();
-		$typeToVariableHolder = static fn (Type $type): ExpressionTypeHolder => new ExpressionTypeHolder($type, TrinaryLogic::createYes());
-		$filterVariableHolders = static fn (ExpressionTypeHolder $holder): bool => $holder->getCertainty()->yes();
 
 		return $this->scopeFactory->create(
 			$this->context,

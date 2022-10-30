@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Accessory;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -258,7 +259,10 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 
 	public function exponentiate(Type $exponent): Type
 	{
-		return new ErrorType();
+		return new BenevolentUnionType([
+			new FloatType(),
+			new IntegerType(),
+		]);
 	}
 
 }

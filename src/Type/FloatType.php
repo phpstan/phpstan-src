@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -218,6 +219,13 @@ class FloatType implements Type
 		if (!$numberType->isSuperTypeOf($exponent)->yes()) {
 			return new ErrorType();
 		}
+
+		if ($exponent instanceof ConstantScalarType) {
+			if ($exponent->getValue() == 0) {
+				return new ConstantFloatType(1.0);
+			}
+		}
+
 		return new FloatType();
 	}
 

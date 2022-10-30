@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -162,6 +163,15 @@ class IntegerType implements Type
 
 		if ($exponent instanceof NeverType) {
 			return new NeverType();
+		}
+
+		if ($exponent instanceof ConstantScalarType) {
+			if ($exponent->getValue() == 0) {
+				return new ConstantIntegerType(1);
+			}
+			if ($exponent->getValue() == 1) {
+				return $this;
+			}
 		}
 		if (!$numberType->isSuperTypeOf($exponent)->yes()) {
 			return new ErrorType();

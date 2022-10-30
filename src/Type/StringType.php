@@ -237,7 +237,13 @@ class StringType implements Type
 
 	public function exponentiate(Type $exponent): Type
 	{
-		return new ErrorType();
+		return TypeCombinator::union(
+			new BenevolentUnionType([
+				new FloatType(),
+				new IntegerType(),
+			]),
+			new ErrorType(),
+		);
 	}
 
 	/**

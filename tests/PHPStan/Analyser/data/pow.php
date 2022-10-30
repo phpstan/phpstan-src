@@ -12,16 +12,19 @@ function ($a, $b): void {
 /**
  * @param numeric-string $numericS
  */
-function doFoo(int $a, int $b, string $s, bool $c, $numericS): void {
+function doFoo(int $a, int $b, string $s, bool $c, $numericS, float $f): void {
 	$constString = "hallo";
 	$constNumericString = "123";
-	$constBool = true;
+	$true = true;
+	$null = null;
+	$one = 1;
 
 	assertType('(float|int)', pow($a, $b));
 	assertType('(float|int)', $a ** $b);
 
 	assertType('(float|int)', pow($a, $numericS));
 	assertType('(float|int)', $a ** $numericS);
+	assertType('(float|int)', $numericS ** $numericS);
 	assertType('(float|int)', pow($a, $constNumericString));
 	assertType('(float|int)', $a ** $constNumericString);
 
@@ -32,8 +35,31 @@ function doFoo(int $a, int $b, string $s, bool $c, $numericS): void {
 
 	assertType('(float|int)', pow($a, $c));
 	assertType('(float|int)', $a ** $c);
-	assertType('(float|int)', pow($a, $constBool));
-	assertType('(float|int)', $a ** $constBool);
+	assertType('int', pow($a, $true));
+	assertType('int', $a ** $true);
+
+	assertType('0', pow($null, $constNumericString));
+	assertType('1', pow($null, $null));
+	assertType('0|1', pow($null, $a));
+	assertType('1', $constNumericString ** $null);
+	assertType('1', $a ** $null);
+	assertType('float', $f ** $null); // could be 1.0
+
+	assertType('625', pow('5', '4'));
+	assertType('625', '5' ** '4');
+
+	assertType('int', pow($a, $one));
+	assertType('int', $a ** '1');
+	assertType('float', pow($f, $one));
+	assertType('float', $f ** '1');
+
+	assertType('1', pow($a, 0));
+	assertType('1', $a ** '0');
+	assertType('1.0', pow($f, 0));
+	assertType('1.0', $f ** '0');
+	assertType('float', $f ** false); // could be 1.0
+
+	assertType('NAN', pow(-1,5.5));
 };
 
 function (\GMP $a, \GMP $b): void {
@@ -105,4 +131,7 @@ function foo($positiveInt, $range2, $unionRange1, $unionRange2): void {
 
 	assertType('int<-6, 16>|int<1296, 4096>', pow($unionRange1, $unionRange2));
 	assertType('int<-6, 16>|int<1296, 4096>', $unionRange1 ** $unionRange2);
+
+	assertType('int<2, 4>|int<16, 64>', pow(2, $unionRange2));
+	assertType('int<2, 4>|int<16, 64>', 2 ** $unionRange2);
 }

@@ -475,6 +475,19 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return $this->objectType ??= new ObjectType($this->value);
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		if ($exponent instanceof ConstantScalarType) {
+			$result = $this->getValue() ** $exponent->getValue();
+			if (is_int($result)) {
+				return new ConstantIntegerType($result);
+			}
+			return new ConstantFloatType($result);
+		}
+
+		return parent::exponentiate($exponent);
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

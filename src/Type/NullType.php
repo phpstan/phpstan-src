@@ -290,7 +290,19 @@ class NullType implements ConstantScalarType
 
 	public function exponentiate(Type $exponent): Type
 	{
-		return new ErrorType();
+		if ($exponent instanceof ConstantScalarType) {
+			$result = null ** $exponent->getValue();
+			if (is_int($result)) {
+				return new ConstantIntegerType($result);
+			}
+		}
+
+		return new UnionType(
+			[
+				new ConstantIntegerType(0),
+				new ConstantIntegerType(1),
+			]
+		);
 	}
 
 	/**

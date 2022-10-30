@@ -11,6 +11,8 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function is_float;
 use function is_int;
@@ -93,6 +95,14 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 
 	public function exponentiate(Type $exponent): Type
 	{
+		if ($exponent instanceof UnionType) {
+			$results = [];
+			foreach ($exponent->getTypes() as $unionType) {
+				$results[] = $this->exponentiate($unionType);
+			}
+			return TypeCombinator::union(...$results);
+		}
+
 		if ($exponent instanceof IntegerRangeType) {
 			$min = null;
 			$max = null;
@@ -120,6 +130,14 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 			if (is_numeric($exponentValue)) {
 				return new ConstantFloatType($this->getValue() ** $exponentValue);
 			}
+		}
+
+		if ($exponent instanceof ConstantScalarType) {
+			$result = $this->getValue() ** $exponent->getValue();
+			if (is_int($result)) {
+				return new ConstantIntegerType($result);
+			}
+			return new ConstantFloatType($result);
 		}
 
 		return parent::exponentiate($exponent);

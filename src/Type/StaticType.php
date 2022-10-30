@@ -619,7 +619,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 
 	public function exponentiate(Type $exponent): Type
 	{
-		return new ErrorType();
+		return $this->getStaticObjectType()->exponentiate($exponent);
 	}
 
 	/**

@@ -99,11 +99,11 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	public function exponentiate(Type $exponent): Type
 	{
 		if ($exponent instanceof ConstantScalarType) {
-			$exponentValue = $exponent->getValue();
-
-			if (is_numeric($exponentValue)) {
-				return new ConstantFloatType($this->getValue() ** $exponentValue);
+			$result = $this->getValue() ** $exponent->getValue();
+			if (is_int($result)) {
+				return new ConstantIntegerType($result);
 			}
+			return new ConstantFloatType($result);
 		}
 
 		return parent::exponentiate($exponent);

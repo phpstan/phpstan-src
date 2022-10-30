@@ -119,6 +119,7 @@ use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
+use function array_merge;
 use function array_pop;
 use function array_slice;
 use function count;
@@ -2471,9 +2472,9 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			null,
 			$this->getNamespace(),
-			[
+			array_merge($this->getConstantTypes(), [
 				'$this' => ExpressionTypeHolder::createYes(new ThisType($classReflection)),
-			],
+			]),
 			[],
 			null,
 			null,
@@ -2710,7 +2711,7 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			$functionReflection,
 			$this->getNamespace(),
-			$expressionTypes,
+			array_merge($this->getConstantTypes(), $expressionTypes),
 			[],
 			null,
 			null,
@@ -2899,10 +2900,6 @@ class MutatingScope implements Scope
 			if ($expr === null) {
 				continue;
 			}
-			if ($expr instanceof ConstFetch) {
-				$expressionTypes[$exprString] = $typeHolder;
-				continue;
-			}
 			if ($expr instanceof Variable) {
 				continue;
 			}
@@ -2934,7 +2931,7 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$this->getNamespace(),
-			$expressionTypes,
+			array_merge($this->getConstantTypes(), $expressionTypes),
 			[],
 			$this->inClosureBindScopeClass,
 			new TrivialParametersAcceptor(),
@@ -5160,6 +5157,22 @@ class MutatingScope implements Scope
 		}
 
 		return $typeWithConstant->getConstant($constantName);
+	}
+
+	/**
+	 * @return ExpressionTypeHolder[]
+	 */
+	private function getConstantTypes(): array
+	{
+		$constantTypes = [];
+		foreach ($this->expressionTypes as $exprString => $typeHolder) {
+			$expr = $this->exprStringToExpr((string) $exprString);
+			if (!$expr instanceof ConstFetch) {
+				continue;
+			}
+			$constantTypes[$exprString] = $typeHolder;
+		}
+		return $constantTypes;
 	}
 
 }

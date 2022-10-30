@@ -5,14 +5,12 @@ namespace PHPStan\Analyser;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Type\Type;
 
 interface ScopeFactory
 {
 
 	/**
 	 * @api
-	 * @param array<string, Type> $constantTypes
 	 * @param ExpressionTypeHolder[] $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
@@ -24,7 +22,6 @@ interface ScopeFactory
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
-		array $constantTypes = [],
 		FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
 		array $expressionTypes = [],

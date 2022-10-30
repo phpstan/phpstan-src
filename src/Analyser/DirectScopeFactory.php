@@ -13,7 +13,6 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\Type;
 use function is_a;
 
 /**
@@ -45,7 +44,6 @@ class DirectScopeFactory implements ScopeFactory
 	}
 
 	/**
-	 * @param array<string, Type> $constantTypes
 	 * @param ExpressionTypeHolder[] $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
@@ -57,7 +55,6 @@ class DirectScopeFactory implements ScopeFactory
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
-		array $constantTypes = [],
 		FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
 		array $expressionTypes = [],
@@ -93,7 +90,6 @@ class DirectScopeFactory implements ScopeFactory
 			$context,
 			$this->phpVersion,
 			$declareStrictTypes,
-			$constantTypes,
 			$function,
 			$namespace,
 			$expressionTypes,

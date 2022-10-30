@@ -8381,7 +8381,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'DynamicConstants\NoDynamicConstantClass::DYNAMIC_CONSTANT_IN_CLASS',
 			],
 			[
-				'bool',
+				'false',
 				'GLOBAL_DYNAMIC_CONSTANT',
 			],
 			[

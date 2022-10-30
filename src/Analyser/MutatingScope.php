@@ -2899,6 +2899,10 @@ class MutatingScope implements Scope
 			if ($expr === null) {
 				continue;
 			}
+			if ($expr instanceof ConstFetch) {
+				$expressionTypes[$exprString] = $typeHolder;
+				continue;
+			}
 			if ($expr instanceof Variable) {
 				continue;
 			}

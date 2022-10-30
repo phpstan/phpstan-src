@@ -2498,7 +2498,9 @@ class MutatingScope implements Scope
 			true,
 			[],
 			[],
-			[],
+			[
+				'$this' => ExpressionTypeHolder::createYes(new ThisType($classReflection)),
+			],
 			[],
 			false,
 			$classReflection->isAnonymous() ? $this : null,
@@ -2717,6 +2719,9 @@ class MutatingScope implements Scope
 
 		if ($preserveThis && array_key_exists('$this', $this->expressionTypes)) {
 			$expressionTypes['$this'] = $this->expressionTypes['$this'];
+		}
+		if ($preserveThis && array_key_exists('$this', $this->nativeExpressionTypes)) {
+			$nativeExpressionTypes['$this'] = $this->nativeExpressionTypes['$this'];
 		}
 
 		return $this->scopeFactory->create(

@@ -35,11 +35,16 @@ class ImpossibleInstanceOfRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		$instanceofType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
+		if (!$instanceofType instanceof ConstantBooleanType) {
+			return [];
+		}
+
 		if ($node->class instanceof Node\Name) {
 			$className = $scope->resolveName($node->class);
 			$classType = new ObjectType($className);
 		} else {
-			$classType = $scope->getType($node->class);
+			$classType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->class) : $scope->getNativeType($node->class);
 			$allowed = TypeCombinator::union(
 				new StringType(),
 				new ObjectWithoutClassType(),
@@ -55,17 +60,12 @@ class ImpossibleInstanceOfRule implements Rule
 			}
 		}
 
-		$instanceofType = $scope->getType($node);
-		if (!$instanceofType instanceof ConstantBooleanType) {
-			return [];
-		}
-
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 			if (!$this->treatPhpDocTypesAsCertain) {
 				return $ruleErrorBuilder;
 			}
 
-			$instanceofTypeWithoutPhpDocs = $scope->doNotTreatPhpDocTypesAsCertain()->getType($node);
+			$instanceofTypeWithoutPhpDocs = $scope->getNativeType($node);
 			if ($instanceofTypeWithoutPhpDocs instanceof ConstantBooleanType) {
 				return $ruleErrorBuilder;
 			}

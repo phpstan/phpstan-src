@@ -1663,6 +1663,9 @@ class MutatingScope implements Scope
 
 			return new ErrorType();
 		} elseif ($node instanceof Node\Expr\ClassConstFetch && $node->name instanceof Node\Identifier) {
+			if ($this->hasExpressionType($node)->yes()) {
+				return $this->expressionTypes[$this->getNodeKey($node)]->getType();
+			}
 			return $this->initializerExprTypeResolver->getClassConstFetchTypeByReflection(
 				$node->class,
 				$node->name->name,

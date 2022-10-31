@@ -2132,19 +2132,14 @@ class MutatingScope implements Scope
 			return $this->scopeWithPromotedNativeTypes;
 		}
 
-		$expressionTypes = $this->expressionTypes;
-		foreach ($this->nativeExpressionTypes as $exprString => $typeHolder) {
-			$expressionTypes[$exprString] = $typeHolder;
-		}
-
 		return $this->scopeWithPromotedNativeTypes = $this->scopeFactory->create(
 			$this->context,
 			$this->declareStrictTypes,
 			$this->function,
 			$this->namespace,
-			$expressionTypes,
 			$this->nativeExpressionTypes,
-			$this->conditionalExpressions,
+			[],
+			[],
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,

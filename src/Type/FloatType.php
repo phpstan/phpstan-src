@@ -5,7 +5,6 @@ namespace PHPStan\Type;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -204,28 +203,8 @@ class FloatType implements Type
 
 	public function exponentiate(Type $exponent): Type
 	{
-		$allowedExponentTypes = new UnionType([
-			new IntegerType(),
-			new FloatType(),
-			new StringType(),
-			new BooleanType(),
-			new NullType(),
-		]);
-
-		if ($exponent instanceof NeverType) {
-			return new NeverType();
-		}
-		if (!$allowedExponentTypes->isSuperTypeOf($exponent)->yes()) {
-			return new ErrorType();
-		}
-
-		if ($exponent instanceof ConstantScalarType) {
-			if ($exponent->getValue() == 0) {
-				return new ConstantFloatType(1.0);
-			}
-		}
-
-		return new FloatType();
+		$helper = new ExponentiateHelper();
+		return $helper->exponentiate($this, $exponent);
 	}
 
 	/**

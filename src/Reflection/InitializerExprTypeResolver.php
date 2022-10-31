@@ -1175,7 +1175,12 @@ class InitializerExprTypeResolver
 			return $exponentiatedTyped;
 		}
 
-		return $this->resolveCommonMath(new BinaryOp\Pow($left, $right), $leftType, $rightType);
+		$extensionSpecified = $this->callOperatorTypeSpecifyingExtensions(new BinaryOp\Pow($left, $right), $leftType, $rightType);
+		if ($extensionSpecified !== null) {
+			return $extensionSpecified;
+		}
+
+		return new ErrorType();
 	}
 
 	/**
@@ -1436,13 +1441,13 @@ class InitializerExprTypeResolver
 	}
 
 	/**
-	 * @param BinaryOp\Plus|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Pow|BinaryOp\Div $expr
+	 * @param BinaryOp\Plus|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Div $expr
 	 */
 	private function resolveCommonMath(Expr\BinaryOp $expr, Type $leftType, Type $rightType): Type
 	{
 		if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType || $leftType instanceof UnionType) &&
-			($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType || $rightType instanceof UnionType) &&
-			!$expr instanceof BinaryOp\Pow) {
+			($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType || $rightType instanceof UnionType)
+		) {
 
 			if ($leftType instanceof ConstantIntegerType) {
 				return $this->integerRangeMath(
@@ -1501,13 +1506,6 @@ class InitializerExprTypeResolver
 			|| (new FloatType())->isSuperTypeOf($rightNumberType)->yes()
 		) {
 			return new FloatType();
-		}
-
-		if ($expr instanceof Expr\BinaryOp\Pow) {
-			return new BenevolentUnionType([
-				new FloatType(),
-				new IntegerType(),
-			]);
 		}
 
 		$resultType = TypeCombinator::union($leftNumberType, $rightNumberType);

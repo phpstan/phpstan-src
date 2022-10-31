@@ -21,11 +21,11 @@ function doFoo(int $intA, int $intB, string $s, bool $bool, $numericS, float $fl
 	assertType('(float|int)', $numericS ** $numericS);
 	assertType('(float|int)', pow($intA, "123"));
 	assertType('(float|int)', $intA ** "123");
+	assertType('int', pow($intA, 1));
+	assertType('int', $intA ** '1');
 
 	assertType('(float|int)', pow($intA, $s));
 	assertType('(float|int)', $intA ** $s);
-	assertType('(float|int)', pow($intA, "hallo"));
-	assertType('(float|int)', $intA ** "hallo");
 
 	assertType('(float|int)', pow($intA, $bool)); // could be int
 	assertType('(float|int)', $intA ** $bool); // could be int
@@ -35,8 +35,7 @@ function doFoo(int $intA, int $intB, string $s, bool $bool, $numericS, float $fl
 	assertType('*ERROR*', pow($bool, $arr));
 	assertType('*ERROR*', pow($bool, []));
 
-	assertType('0', pow(null, "123"));
-	assertType('1', pow(null, null));
+	assertType('0|1', pow(null, "123"));
 	assertType('0|1', pow(null, $intA));
 	assertType('1', "123" ** null);
 	assertType('1', $intA ** null);
@@ -48,10 +47,6 @@ function doFoo(int $intA, int $intB, string $s, bool $bool, $numericS, float $fl
 	assertType('625', pow('5', '4'));
 	assertType('625', '5' ** '4');
 
-	assertType('int', pow($intA, 1));
-	assertType('int', $intA ** '1');
-	assertType('float', pow($float, 1));
-	assertType('float', $float ** '1');
 	assertType('(float|int)', pow($intA, $bool)); // could be float
 	assertType('(float|int)', $intA ** $bool); // could be float
 	assertType('*ERROR*', $intA ** $arr);
@@ -65,6 +60,8 @@ function doFoo(int $intA, int $intB, string $s, bool $bool, $numericS, float $fl
 	assertType('1.0', pow($float, 0));
 	assertType('1.0', $float ** '0');
 	assertType('1.0', $float ** false);
+	assertType('float', pow($float, 1));
+	assertType('float', $float ** '1');
 	assertType('*ERROR*', $float ** $arr);
 	assertType('*ERROR*', $float ** []);
 
@@ -76,11 +73,21 @@ function doFoo(int $intA, int $intB, string $s, bool $bool, $numericS, float $fl
 
 	assertType('NAN', pow(-1,5.5));
 
-	assertType('(float|int)', pow($s, 0));
-	assertType('(float|int)', $s ** '0');
-	assertType('(float|int)', $s ** false);
+	assertType('1', pow($s, 0));
+	assertType('1', $s ** '0');
+	assertType('1', $s ** false);
+	assertType('(float|int)', pow($s, 1));
+	assertType('(float|int)', $s ** '1');
 	assertType('*ERROR*', $s ** $arr);
 	assertType('*ERROR*', $s ** []);
+
+	assertType('1', pow($bool, 0));
+	assertType('1', $bool ** '0');
+	assertType('1', $bool ** false);
+	assertType('(float|int)', pow($bool, 1));
+	assertType('(float|int)', $bool ** '1');
+	assertType('*ERROR*', $bool ** $arr);
+	assertType('*ERROR*', $bool ** []);
 };
 
 function (\GMP $a, \GMP $b): void {
@@ -155,4 +162,13 @@ function foo($positiveInt, $range2, $unionRange1, $unionRange2): void {
 
 	assertType('int<2, 4>|int<16, 64>', pow(2, $unionRange2));
 	assertType('int<2, 4>|int<16, 64>', 2 ** $unionRange2);
+
+	assertType('int<2, 4>|int<16, 64>', pow("2", $unionRange2));
+	assertType('int<2, 4>|int<16, 64>', "2" ** $unionRange2);
+
+	assertType('1', pow(true, $unionRange2));
+	assertType('1', true ** $unionRange2);
+
+	assertType('0|1', pow(null, $unionRange2));
+	assertType('0|1', null ** $unionRange2);
 }

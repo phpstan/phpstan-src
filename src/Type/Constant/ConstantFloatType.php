@@ -13,7 +13,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function abs;
 use function is_finite;
-use function is_int;
 use function strpos;
 use const PHP_FLOAT_EPSILON;
 
@@ -94,17 +93,6 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	public function generalize(GeneralizePrecision $precision): Type
 	{
 		return new FloatType();
-	}
-
-	public function exponentiate(Type $exponent): Type
-	{
-		if ($exponent instanceof ConstantScalarType) {
-			$result = $this->getValue() ** $exponent->getValue();
-			// exponentiation of a float always results in a float
-			return new ConstantFloatType($result);
-		}
-
-		return parent::exponentiate($exponent);
 	}
 
 	/**

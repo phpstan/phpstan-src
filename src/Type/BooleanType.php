@@ -129,7 +129,8 @@ class BooleanType implements Type
 
 	public function exponentiate(Type $exponent): Type
 	{
-		return new ErrorType();
+		$helper = new ExponentiateHelper();
+		return $helper->exponentiate($this, $exponent);
 	}
 
 	/**

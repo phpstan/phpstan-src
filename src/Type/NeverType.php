@@ -415,7 +415,7 @@ class NeverType implements CompoundType
 
 	public function exponentiate(Type $exponent): Type
 	{
-		return new ErrorType();
+		return $this;
 	}
 
 	/**

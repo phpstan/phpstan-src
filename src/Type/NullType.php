@@ -15,7 +15,6 @@ use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
-use function is_int;
 
 /** @api */
 class NullType implements ConstantScalarType
@@ -291,13 +290,6 @@ class NullType implements ConstantScalarType
 
 	public function exponentiate(Type $exponent): Type
 	{
-		if ($exponent instanceof ConstantScalarType) {
-			$result = null ** $exponent->getValue();
-			if (is_int($result)) {
-				return new ConstantIntegerType($result);
-			}
-		}
-
 		return new UnionType(
 			[
 				new ConstantIntegerType(0),

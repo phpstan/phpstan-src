@@ -237,25 +237,8 @@ class StringType implements Type
 
 	public function exponentiate(Type $exponent): Type
 	{
-		$allowedExponentTypes = new UnionType([
-			new IntegerType(),
-			new FloatType(),
-			new StringType(),
-			new BooleanType(),
-			new NullType(),
-		]);
-
-		if ($exponent instanceof NeverType) {
-			return new NeverType();
-		}
-		if (!$allowedExponentTypes->isSuperTypeOf($exponent)->yes()) {
-			return new ErrorType();
-		}
-
-		return new BenevolentUnionType([
-			new FloatType(),
-			new IntegerType(),
-		]);
+		$helper = new ExponentiateHelper();
+		return $helper->exponentiate($this, $exponent);
 	}
 
 	/**

@@ -151,42 +151,8 @@ class IntegerType implements Type
 
 	public function exponentiate(Type $exponent): Type
 	{
-		$allowedExponentTypes = new UnionType([
-			new IntegerType(),
-			new FloatType(),
-			new StringType(),
-			new BooleanType(),
-			new NullType(),
-		]);
-
-		if ($exponent instanceof NeverType) {
-			return new NeverType();
-		}
-
-		if ($exponent instanceof UnionType) {
-			$result = [];
-			foreach($exponent->getTypes() as $type) {
-				$result[] = $this->exponentiate($type);
-			}
-			return TypeCombinator::union(...$result);
-		}
-
-		if ($exponent instanceof ConstantScalarType) {
-			if ($exponent->getValue() == 0) {
-				return new ConstantIntegerType(1);
-			}
-			if ($exponent->getValue() == 1) {
-				return $this;
-			}
-		}
-		if (!$allowedExponentTypes->isSuperTypeOf($exponent)->yes()) {
-			return new ErrorType();
-		}
-
-		return new BenevolentUnionType([
-			new FloatType(),
-			new IntegerType(),
-		]);
+		$helper = new ExponentiateHelper();
+		return $helper->exponentiate($this, $exponent);
 	}
 
 }

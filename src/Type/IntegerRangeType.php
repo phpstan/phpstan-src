@@ -562,7 +562,9 @@ class IntegerRangeType extends IntegerType implements CompoundType
 				$results[] = $this->exponentiate($unionType);
 			}
 			return TypeCombinator::union(...$results);
-		} elseif ($exponent instanceof IntegerRangeType) {
+		}
+
+		if ($exponent instanceof IntegerRangeType) {
 			$min = null;
 			$max = null;
 			if ($this->getMin() !== null && $exponent->getMin() !== null) {
@@ -575,7 +577,9 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			if (($min !== null || $max !== null) && !is_float($min) && !is_float($max)) {
 				return self::fromInterval($min, $max);
 			}
-		} elseif ($exponent instanceof ConstantScalarType) {
+		}
+
+		if ($exponent instanceof ConstantScalarType) {
 			$exponentValue = $exponent->getValue();
 			if (is_int($exponentValue)) {
 				$min = null;

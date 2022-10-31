@@ -2481,9 +2481,9 @@ class MutatingScope implements Scope
 			true,
 			[],
 			[],
-			[
+			array_merge($this->getNativeConstantTypes(), [
 				'$this' => $thisHolder,
-			],
+			]),
 			[],
 			false,
 			$classReflection->isAnonymous() ? $this : null,
@@ -2719,7 +2719,7 @@ class MutatingScope implements Scope
 			true,
 			[],
 			[],
-			$nativeExpressionTypes,
+			array_merge($this->getNativeConstantTypes(), $nativeExpressionTypes),
 		);
 	}
 
@@ -2941,7 +2941,7 @@ class MutatingScope implements Scope
 			true,
 			[],
 			[],
-			$nativeTypes,
+			array_merge($this->getNativeConstantTypes(), $nativeTypes),
 			[],
 			false,
 			$this,
@@ -5156,6 +5156,22 @@ class MutatingScope implements Scope
 	{
 		$constantTypes = [];
 		foreach ($this->expressionTypes as $exprString => $typeHolder) {
+			$expr = $typeHolder->getExpr();
+			if (!$expr instanceof ConstFetch) {
+				continue;
+			}
+			$constantTypes[$exprString] = $typeHolder;
+		}
+		return $constantTypes;
+	}
+
+	/**
+	 * @return ExpressionTypeHolder[]
+	 */
+	private function getNativeConstantTypes(): array
+	{
+		$constantTypes = [];
+		foreach ($this->nativeExpressionTypes as $exprString => $typeHolder) {
 			$expr = $typeHolder->getExpr();
 			if (!$expr instanceof ConstFetch) {
 				continue;

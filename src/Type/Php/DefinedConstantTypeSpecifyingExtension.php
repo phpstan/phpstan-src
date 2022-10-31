@@ -14,6 +14,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
 use function count;
+use function explode;
 
 class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
@@ -51,10 +52,20 @@ class DefinedConstantTypeSpecifyingExtension implements FunctionTypeSpecifyingEx
 			return new SpecifiedTypes([], []);
 		}
 
-		return $this->typeSpecifier->create(
-			new Node\Expr\ConstFetch(
+		$classConstParts = explode('::', $constantName->getValue());
+		if (count($classConstParts) >= 2) {
+			$constNode = new Node\Expr\ClassConstFetch(
+				new Node\Name($classConstParts[0]),
+				new Node\Identifier($classConstParts[1]),
+			);
+		} else {
+			$constNode = new Node\Expr\ConstFetch(
 				new Node\Name\FullyQualified($constantName->getValue()),
-			),
+			);
+		}
+
+		return $this->typeSpecifier->create(
+			$constNode,
 			new MixedType(),
 			$context,
 			false,

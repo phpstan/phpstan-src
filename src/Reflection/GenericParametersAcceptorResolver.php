@@ -2,12 +2,15 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
+use function array_map;
 use function array_merge;
 use function count;
 use function is_int;
@@ -19,7 +22,7 @@ class GenericParametersAcceptorResolver
 	 * @api
 	 * @param array<int|string, Type> $argTypes
 	 */
-	public static function resolve(array $argTypes, ParametersAcceptor $parametersAcceptor): ParametersAcceptor
+	public static function resolve(array $argTypes, ParametersAcceptor $parametersAcceptor): ParametersAcceptorWithPhpDocs
 	{
 		$typeMap = TemplateTypeMap::createEmpty();
 		$passedArgs = [];
@@ -78,6 +81,28 @@ class GenericParametersAcceptorResolver
 			$parametersAcceptor->getTemplateTypeMap()->map(static fn (string $name, Type $type): Type => new ErrorType())->getTypes(),
 			$typeMap->getTypes(),
 		));
+
+		if (!$parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
+			$parametersAcceptor = new FunctionVariantWithPhpDocs(
+				$parametersAcceptor->getTemplateTypeMap(),
+				$parametersAcceptor->getResolvedTemplateTypeMap(),
+				array_map(static fn (ParameterReflection $parameter): ParameterReflectionWithPhpDocs => new DummyParameterWithPhpDocs(
+					$parameter->getName(),
+					$parameter->getType(),
+					$parameter->isOptional(),
+					$parameter->passedByReference(),
+					$parameter->isVariadic(),
+					$parameter->getDefaultValue(),
+					new MixedType(),
+					$parameter->getType(),
+					null,
+				), $parametersAcceptor->getParameters()),
+				$parametersAcceptor->isVariadic(),
+				$parametersAcceptor->getReturnType(),
+				$parametersAcceptor->getReturnType(),
+				new MixedType(),
+			);
+		}
 
 		return new ResolvedFunctionVariant(
 			$parametersAcceptor,

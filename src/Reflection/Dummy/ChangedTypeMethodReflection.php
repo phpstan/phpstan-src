@@ -6,7 +6,7 @@ use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
@@ -14,7 +14,7 @@ class ChangedTypeMethodReflection implements ExtendedMethodReflection
 {
 
 	/**
-	 * @param ParametersAcceptor[] $variants
+	 * @param ParametersAcceptorWithPhpDocs[] $variants
 	 */
 	public function __construct(private ClassReflection $declaringClass, private ExtendedMethodReflection $reflection, private array $variants)
 	{

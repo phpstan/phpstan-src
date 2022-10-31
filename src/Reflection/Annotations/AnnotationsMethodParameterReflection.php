@@ -2,11 +2,12 @@
 
 namespace PHPStan\Reflection\Annotations;
 
-use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
-class AnnotationsMethodParameterReflection implements ParameterReflection
+class AnnotationsMethodParameterReflection implements ParameterReflectionWithPhpDocs
 {
 
 	public function __construct(private string $name, private Type $type, private PassedByReference $passedByReference, private bool $isOptional, private bool $isVariadic, private ?Type $defaultValue)
@@ -26,6 +27,21 @@ class AnnotationsMethodParameterReflection implements ParameterReflection
 	public function getType(): Type
 	{
 		return $this->type;
+	}
+
+	public function getPhpDocType(): Type
+	{
+		return $this->type;
+	}
+
+	public function getNativeType(): Type
+	{
+		return new MixedType();
+	}
+
+	public function getOutType(): ?Type
+	{
+		return null;
 	}
 
 	public function passedByReference(): PassedByReference

@@ -6,16 +6,16 @@ use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionVariant;
-use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
 class AnnotationMethodReflection implements ExtendedMethodReflection
 {
 
-	/** @var FunctionVariant[]|null */
+	/** @var FunctionVariantWithPhpDocs[]|null */
 	private ?array $variants = null;
 
 	/**
@@ -63,19 +63,18 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 		return $this->name;
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getVariants(): array
 	{
 		if ($this->variants === null) {
 			$this->variants = [
-				new FunctionVariant(
+				new FunctionVariantWithPhpDocs(
 					TemplateTypeMap::createEmpty(),
 					null,
 					$this->parameters,
 					$this->isVariadic,
 					$this->returnType,
+					$this->returnType,
+					new MixedType(),
 				),
 			];
 		}

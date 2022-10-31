@@ -10,6 +10,7 @@ use PHPStan\Parser\ArrayWalkArgVisitor;
 use PHPStan\Parser\CurlSetOptArgVisitor;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -31,6 +32,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_key_last;
+use function array_map;
 use function array_slice;
 use function constant;
 use function count;
@@ -383,7 +385,7 @@ class ParametersAcceptorSelector
 	/**
 	 * @param ParametersAcceptor[] $acceptors
 	 */
-	public static function combineAcceptors(array $acceptors): ParametersAcceptor
+	public static function combineAcceptors(array $acceptors): ParametersAcceptorWithPhpDocs
 	{
 		if (count($acceptors) === 0) {
 			throw new ShouldNotHappenException(
@@ -391,7 +393,7 @@ class ParametersAcceptorSelector
 			);
 		}
 		if (count($acceptors) === 1) {
-			return $acceptors[0];
+			return self::wrapAcceptor($acceptors[0]);
 		}
 
 		$minimumNumberOfParameters = null;
@@ -415,6 +417,8 @@ class ParametersAcceptorSelector
 		$parameters = [];
 		$isVariadic = false;
 		$returnType = null;
+		$phpDocReturnType = null;
+		$nativeReturnType = null;
 
 		foreach ($acceptors as $acceptor) {
 			if ($returnType === null) {
@@ -422,17 +426,34 @@ class ParametersAcceptorSelector
 			} else {
 				$returnType = TypeCombinator::union($returnType, $acceptor->getReturnType());
 			}
+			if ($acceptor instanceof ParametersAcceptorWithPhpDocs) {
+				if ($phpDocReturnType === null) {
+					$phpDocReturnType = $acceptor->getPhpDocReturnType();
+				} else {
+					$phpDocReturnType = TypeCombinator::union($phpDocReturnType, $acceptor->getPhpDocReturnType());
+				}
+			}
+			if ($acceptor instanceof ParametersAcceptorWithPhpDocs) {
+				if ($nativeReturnType === null) {
+					$nativeReturnType = $acceptor->getNativeReturnType();
+				} else {
+					$nativeReturnType = TypeCombinator::union($nativeReturnType, $acceptor->getNativeReturnType());
+				}
+			}
 			$isVariadic = $isVariadic || $acceptor->isVariadic();
 
 			foreach ($acceptor->getParameters() as $i => $parameter) {
 				if (!isset($parameters[$i])) {
-					$parameters[$i] = new NativeParameterReflection(
+					$parameters[$i] = new DummyParameterWithPhpDocs(
 						$parameter->getName(),
-						$i + 1 > $minimumNumberOfParameters,
 						$parameter->getType(),
+						$i + 1 > $minimumNumberOfParameters,
 						$parameter->passedByReference(),
 						$parameter->isVariadic(),
 						$parameter->getDefaultValue(),
+						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getNativeType() : new MixedType(),
+						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getPhpDocType() : new MixedType(),
+						$parameter instanceof ParameterReflectionWithPhpDocs ? $parameter->getOutType() : null,
 					);
 					continue;
 				}
@@ -446,13 +467,35 @@ class ParametersAcceptorSelector
 					$defaultValue = null;
 				}
 
-				$parameters[$i] = new NativeParameterReflection(
+				$type = TypeCombinator::union($parameters[$i]->getType(), $parameter->getType());
+				$nativeType = $parameters[$i]->getNativeType();
+				$phpDocType = $parameters[$i]->getPhpDocType();
+				$outType = $parameters[$i]->getOutType();
+				if ($parameter instanceof ParameterReflectionWithPhpDocs) {
+					$nativeType = TypeCombinator::union($nativeType, $parameter->getNativeType());
+					$phpDocType = TypeCombinator::union($phpDocType, $parameter->getPhpDocType());
+
+					if ($parameter->getOutType() !== null) {
+						$outType = $outType === null ? null : TypeCombinator::union($outType, $parameter->getOutType());
+					} else {
+						$outType = null;
+					}
+				} else {
+					$nativeType = new MixedType();
+					$phpDocType = $type;
+					$outType = null;
+				}
+
+				$parameters[$i] = new DummyParameterWithPhpDocs(
 					$parameters[$i]->getName() !== $parameter->getName() ? sprintf('%s|%s', $parameters[$i]->getName(), $parameter->getName()) : $parameter->getName(),
+					$type,
 					$i + 1 > $minimumNumberOfParameters,
-					TypeCombinator::union($parameters[$i]->getType(), $parameter->getType()),
 					$parameters[$i]->passedByReference()->combine($parameter->passedByReference()),
 					$isVariadic,
 					$defaultValue,
+					$nativeType,
+					$phpDocType,
+					$outType,
 				);
 
 				if ($isVariadic) {
@@ -462,12 +505,46 @@ class ParametersAcceptorSelector
 			}
 		}
 
-		return new FunctionVariant(
+		return new FunctionVariantWithPhpDocs(
 			TemplateTypeMap::createEmpty(),
 			null,
 			$parameters,
 			$isVariadic,
 			$returnType,
+			$phpDocReturnType ?? $returnType,
+			$nativeReturnType ?? new MixedType(),
+		);
+	}
+
+	private static function wrapAcceptor(ParametersAcceptor $acceptor): ParametersAcceptorWithPhpDocs
+	{
+		if ($acceptor instanceof ParametersAcceptorWithPhpDocs) {
+			return $acceptor;
+		}
+
+		return new FunctionVariantWithPhpDocs(
+			$acceptor->getTemplateTypeMap(),
+			$acceptor->getResolvedTemplateTypeMap(),
+			array_map(static fn (ParameterReflection $parameter): ParameterReflectionWithPhpDocs => self::wrapParameter($parameter), $acceptor->getParameters()),
+			$acceptor->isVariadic(),
+			$acceptor->getReturnType(),
+			$acceptor->getReturnType(),
+			new MixedType(),
+		);
+	}
+
+	private static function wrapParameter(ParameterReflection $parameter): ParameterReflectionWithPhpDocs
+	{
+		return $parameter instanceof ParameterReflectionWithPhpDocs ? $parameter : new DummyParameterWithPhpDocs(
+			$parameter->getName(),
+			$parameter->getType(),
+			$parameter->isOptional(),
+			$parameter->passedByReference(),
+			$parameter->isVariadic(),
+			$parameter->getDefaultValue(),
+			new MixedType(),
+			$parameter->getType(),
+			null,
 		);
 	}
 

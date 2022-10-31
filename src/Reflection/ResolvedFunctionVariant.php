@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection;
 
-use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
@@ -15,21 +14,25 @@ use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function array_map;
 
-class ResolvedFunctionVariant implements ParametersAcceptor
+class ResolvedFunctionVariant implements ParametersAcceptorWithPhpDocs
 {
 
-	/** @var ParameterReflection[]|null */
+	/** @var ParameterReflectionWithPhpDocs[]|null */
 	private ?array $parameters = null;
 
 	private ?Type $returnTypeWithUnresolvableTemplateTypes = null;
 
+	private ?Type $phpDocReturnTypeWithUnresolvableTemplateTypes = null;
+
 	private ?Type $returnType = null;
+
+	private ?Type $phpDocReturnType = null;
 
 	/**
 	 * @param array<string, Type> $passedArgs
 	 */
 	public function __construct(
-		private ParametersAcceptor $parametersAcceptor,
+		private ParametersAcceptorWithPhpDocs $parametersAcceptor,
 		private TemplateTypeMap $resolvedTemplateTypeMap,
 		private array $passedArgs,
 	)
@@ -57,7 +60,7 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 
 		if ($parameters === null) {
 			$parameters = array_map(
-				function (ParameterReflection $param): ParameterReflection {
+				function (ParameterReflectionWithPhpDocs $param): ParameterReflectionWithPhpDocs {
 					$paramType = TypeUtils::resolveLateResolvableTypes(
 						TemplateTypeHelper::resolveTemplateTypes(
 							$this->resolveConditionalTypesForParameter($param->getType()),
@@ -66,27 +69,16 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 						false,
 					);
 
-					if ($param instanceof ParameterReflectionWithPhpDocs) {
-						return new DummyParameterWithPhpDocs(
-							$param->getName(),
-							$paramType,
-							$param->isOptional(),
-							$param->passedByReference(),
-							$param->isVariadic(),
-							$param->getDefaultValue(),
-							$param->getNativeType(),
-							$param->getPhpDocType(),
-							$param->getOutType(),
-						);
-					}
-
-					return new DummyParameter(
+					return new DummyParameterWithPhpDocs(
 						$param->getName(),
 						$paramType,
 						$param->isOptional(),
 						$param->passedByReference(),
 						$param->isVariadic(),
 						$param->getDefaultValue(),
+						$param->getNativeType(),
+						$param->getPhpDocType(),
+						$param->getOutType(),
 					);
 				},
 				$this->parametersAcceptor->getParameters(),
@@ -111,6 +103,14 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 			);
 	}
 
+	public function getPhpDocReturnTypeWithUnresolvableTemplateTypes(): Type
+	{
+		return $this->phpDocReturnTypeWithUnresolvableTemplateTypes ??=
+			$this->resolveConditionalTypesForParameter(
+				$this->resolveResolvableTemplateTypes($this->parametersAcceptor->getPhpDocReturnType()),
+			);
+	}
+
 	public function getReturnType(): Type
 	{
 		$type = $this->returnType;
@@ -128,6 +128,30 @@ class ResolvedFunctionVariant implements ParametersAcceptor
 		}
 
 		return $type;
+	}
+
+	public function getPhpDocReturnType(): Type
+	{
+		$type = $this->phpDocReturnType;
+
+		if ($type === null) {
+			$type = TypeUtils::resolveLateResolvableTypes(
+				TemplateTypeHelper::resolveTemplateTypes(
+					$this->getPhpDocReturnTypeWithUnresolvableTemplateTypes(),
+					$this->resolvedTemplateTypeMap,
+				),
+				false,
+			);
+
+			$this->phpDocReturnType = $type;
+		}
+
+		return $type;
+	}
+
+	public function getNativeReturnType(): Type
+	{
+		return $this->parametersAcceptor->getNativeReturnType();
 	}
 
 	private function resolveResolvableTemplateTypes(Type $type): Type

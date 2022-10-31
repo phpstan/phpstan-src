@@ -7,7 +7,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
 /** @api */
-class TrivialParametersAcceptor implements ParametersAcceptor
+class TrivialParametersAcceptor implements ParametersAcceptorWithPhpDocs
 {
 
 	/** @api */
@@ -25,9 +25,6 @@ class TrivialParametersAcceptor implements ParametersAcceptor
 		return TemplateTypeMap::createEmpty();
 	}
 
-	/**
-	 * @return array<int, ParameterReflection>
-	 */
 	public function getParameters(): array
 	{
 		return [];
@@ -39,6 +36,16 @@ class TrivialParametersAcceptor implements ParametersAcceptor
 	}
 
 	public function getReturnType(): Type
+	{
+		return new MixedType();
+	}
+
+	public function getPhpDocReturnType(): Type
+	{
+		return new MixedType();
+	}
+
+	public function getNativeReturnType(): Type
 	{
 		return new MixedType();
 	}

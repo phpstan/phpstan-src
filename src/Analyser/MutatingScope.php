@@ -3280,9 +3280,21 @@ class MutatingScope implements Scope
 		return array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions);
 	}
 
-	public function assignVariable(string $variableName, Type $type, Type $nativeType): self
+	public function assignVariable(string $variableName, Type $type, Type $nativeType, ?TrinaryLogic $certainty = null): self
 	{
-		return $this->assignExpression(new Variable($variableName), $type, $nativeType);
+		$node = new Variable($variableName);
+		$scope = $this->assignExpression($node, $type, $nativeType);
+		if ($certainty !== null) {
+			if ($certainty->no()) {
+				throw new ShouldNotHappenException();
+			} elseif (!$certainty->yes()) {
+				$exprString = '$' . $variableName;
+				$scope->expressionTypes[$exprString] = new ExpressionTypeHolder($node, $type, $certainty);
+				$scope->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
+			}
+		}
+
+		return $scope;
 	}
 
 	public function unsetExpression(Expr $expr): self

@@ -3115,7 +3115,7 @@ class MutatingScope implements Scope
 			$scope = $scope->specifyExpressionType(
 				new Expr\ArrayDimFetch($iteratee, new Variable($keyName)),
 				$iterateeType->getIterableValueType(),
-				$nativeIterateeType->getIterableKeyType(),
+				$nativeIterateeType->getIterableValueType(),
 			);
 		}
 

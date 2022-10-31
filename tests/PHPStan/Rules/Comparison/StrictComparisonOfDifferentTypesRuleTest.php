@@ -17,7 +17,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new StrictComparisonOfDifferentTypesRule($this->checkAlwaysTrueStrictComparison);
+		return new StrictComparisonOfDifferentTypesRule($this->checkAlwaysTrueStrictComparison, true);
 	}
 
 	public function testStrictComparison(): void

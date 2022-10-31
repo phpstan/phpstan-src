@@ -16,7 +16,7 @@ use function sprintf;
 class StrictComparisonOfDifferentTypesRule implements Rule
 {
 
-	public function __construct(private bool $checkAlwaysTrueStrictComparison)
+	public function __construct(private bool $checkAlwaysTrueStrictComparison, private bool $treatPhpDocTypesAsCertain)
 	{
 	}
 
@@ -31,13 +31,13 @@ class StrictComparisonOfDifferentTypesRule implements Rule
 			return [];
 		}
 
-		$nodeType = $scope->getType($node);
+		$nodeType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node) : $scope->getNativeType($node);
 		if (!$nodeType instanceof ConstantBooleanType) {
 			return [];
 		}
 
-		$leftType = $scope->getType($node->left);
-		$rightType = $scope->getType($node->right);
+		$leftType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->left) : $scope->getNativeType($node->left);
+		$rightType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->right) : $scope->getNativeType($node->right);
 
 		if (!$nodeType->getValue()) {
 			return [

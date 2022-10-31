@@ -2507,6 +2507,10 @@ class MutatingScope implements Scope
 			[],
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
+			true,
+			[],
+			[],
+			$this->nativeExpressionTypes,
 		);
 	}
 

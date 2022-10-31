@@ -19,7 +19,6 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
@@ -64,7 +63,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 			&& !$arrayType->isIterableAtLeastOnce()->no()) {
 			if ($context->truthy()) {
 				$arrayKeyType = $arrayType->getIterableKeyType();
-				if ((new StringType())->isSuperTypeOf($keyType)->yes()) {
+				if ($keyType->isString()->yes()) {
 					$arrayKeyType = $arrayKeyType->toString();
 				}
 
@@ -87,7 +86,7 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 					$context,
 					false,
 					$scope,
-					new Identical($arrayDimFetch, new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT')))
+					new Identical($arrayDimFetch, new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT'))),
 				));
 			}
 

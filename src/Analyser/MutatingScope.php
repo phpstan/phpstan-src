@@ -2723,6 +2723,7 @@ class MutatingScope implements Scope
 		);
 	}
 
+	/** @api */
 	public function enterNamespace(string $namespaceName): self
 	{
 		return $this->scopeFactory->create(

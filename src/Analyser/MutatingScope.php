@@ -3414,10 +3414,6 @@ class MutatingScope implements Scope
 			if (in_array($loweredConstName, ['true', 'false', 'null'], true)) {
 				return $this;
 			}
-			if ($type instanceof NeverType) {
-				unset($this->expressionTypes[$exprString]);
-				return $this;
-			}
 		}
 
 		$scope = $this;

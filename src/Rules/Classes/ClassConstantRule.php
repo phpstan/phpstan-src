@@ -15,7 +15,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -161,7 +160,7 @@ class ClassConstantRule implements Rule
 			]);
 		}
 
-		if (strtolower($constantName) === 'class' || $scope->hasExpressionType($node)->yes() && !$scope->getType($node) instanceof NeverType) {
+		if (strtolower($constantName) === 'class' || $scope->hasExpressionType($node)->yes()) {
 			return $messages;
 		}
 

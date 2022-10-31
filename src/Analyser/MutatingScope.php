@@ -3280,55 +3280,9 @@ class MutatingScope implements Scope
 		return array_key_exists($exprString, $this->currentlyAllowedUndefinedExpressions);
 	}
 
-	public function assignVariable(string $variableName, Type $type, Type $nativeType, ?TrinaryLogic $certainty = null): self
+	public function assignVariable(string $variableName, Type $type, Type $nativeType): self
 	{
-		if ($certainty === null) {
-			$certainty = TrinaryLogic::createYes();
-		} elseif ($certainty->no()) {
-			throw new ShouldNotHappenException();
-		}
-		$node = new Variable($variableName);
-		$varExprString = '$' . $variableName;
-		$expressionTypes = $this->expressionTypes;
-		$expressionTypes[$varExprString] = new ExpressionTypeHolder($node, $type, $certainty);
-
-		$nativeTypes = $this->nativeExpressionTypes;
-		$nativeTypes[$varExprString] = new ExpressionTypeHolder($node, $nativeType, $certainty);
-
-		$conditionalExpressions = [];
-		foreach ($this->conditionalExpressions as $exprString => $holders) {
-			if ($exprString === $varExprString) {
-				continue;
-			}
-
-			foreach ($holders as $holder) {
-				foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionExprString) {
-					if ($conditionExprString === $varExprString) {
-						continue 3;
-					}
-				}
-			}
-
-			$conditionalExpressions[$exprString] = $holders;
-		}
-
-		return $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
-			$expressionTypes,
-			$conditionalExpressions,
-			$this->inClosureBindScopeClass,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
-			$this->currentlyAssignedExpressions,
-			$this->currentlyAllowedUndefinedExpressions,
-			$nativeTypes,
-			$this->inFunctionCallsStack,
-			$this->afterExtractCall,
-			$this->parentScope,
-		)->invalidateExpression(new Variable($variableName), true);
+		return $this->assignExpression(new Variable($variableName), $type, $nativeType);
 	}
 
 	public function unsetExpression(Expr $expr): self
@@ -3538,6 +3492,8 @@ class MutatingScope implements Scope
 				->invalidateMethodsOnExpression($expr->var);
 		} elseif ($expr instanceof Expr\StaticPropertyFetch) {
 			$scope = $this->invalidateExpression($expr);
+		} elseif ($expr instanceof Variable) {
+			$scope = $this->invalidateExpression($expr, true);
 		}
 
 		return $scope->specifyExpressionType($expr, $type, $nativeType);

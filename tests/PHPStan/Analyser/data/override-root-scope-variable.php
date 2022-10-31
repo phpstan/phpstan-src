@@ -27,7 +27,7 @@ function (): void {
 
 	/** @var Foo $foo */
 
-	assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
+	assertVariableCertainty(TrinaryLogic::createYes(), $foo);
 };
 
 assertVariableCertainty(TrinaryLogic::createMaybe(), $bar);

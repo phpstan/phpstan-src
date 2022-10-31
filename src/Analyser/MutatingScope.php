@@ -153,6 +153,8 @@ class MutatingScope implements Scope
 
 	private ?self $scopeOutOfFirstLevelStatement = null;
 
+	private ?self $scopeWithPromotedNativeTypes = null;
+
 	/**
 	 * @param ExpressionTypeHolder[] $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
@@ -2118,24 +2120,7 @@ class MutatingScope implements Scope
 	/** @api */
 	public function getNativeType(Expr $expr): Type
 	{
-		$key = $this->getNodeKey($expr);
-
-		if (array_key_exists($key, $this->nativeExpressionTypes) && $this->nativeExpressionTypes[$key]->getCertainty()->yes()) {
-			return $this->nativeExpressionTypes[$key]->getType();
-		}
-
-		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			return $this->getNullsafeShortCircuitingType(
-				$expr->var,
-				$this->getTypeFromArrayDimFetch(
-					$expr,
-					$this->getNativeType($expr->dim),
-					$this->getNativeType($expr->var),
-				),
-			);
-		}
-
-		return $this->getType($expr);
+		return $this->promoteNativeTypes()->getType($expr);
 	}
 
 	/** @api */
@@ -2185,17 +2170,16 @@ class MutatingScope implements Scope
 			return $this;
 		}
 
+		if ($this->scopeWithPromotedNativeTypes !== null) {
+			return $this->scopeWithPromotedNativeTypes;
+		}
+
 		$expressionTypes = $this->expressionTypes;
 		foreach ($this->nativeExpressionTypes as $exprString => $typeHolder) {
-			$has = $this->hasVariableType(substr((string) $exprString, 1));
-			if ($has->no()) {
-				continue;
-			}
-
 			$expressionTypes[$exprString] = $typeHolder;
 		}
 
-		return $this->scopeFactory->create(
+		return $this->scopeWithPromotedNativeTypes = $this->scopeFactory->create(
 			$this->context,
 			$this->declareStrictTypes,
 			$this->function,

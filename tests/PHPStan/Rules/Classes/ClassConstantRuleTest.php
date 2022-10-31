@@ -297,4 +297,83 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testClassConstFetchDefined(): void
+	{
+		$this->phpVersion = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/class-const-fetch-defined.php'], [
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				12,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				14,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				16,
+			],
+			[
+				'Access to undefined constant Foo::TEST.',
+				17,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				18,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				22,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				24,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				26,
+			],
+			[
+				'Access to undefined constant Foo::TEST.',
+				27,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				28,
+			],
+			[
+				'Access to undefined constant Foo::TEST.',
+				33,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				36,
+			],
+			[
+				'Access to undefined constant Foo::TEST.',
+				37,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				38,
+			],
+			[
+				'Access to undefined constant Foo::TEST.',
+				43,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				46,
+			],
+			[
+				'Access to undefined constant Foo::TEST.',
+				47,
+			],
+			[
+				'Access to undefined constant ClassConstFetchDefined\Foo::TEST.',
+				48,
+			],
+		]);
+	}
+
 }

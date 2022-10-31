@@ -63,4 +63,21 @@ class ConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/const-equals-no-namespace.php'], []);
 	}
 
+	public function testDefinedScopeMerge(): void
+	{
+		$this->analyse([__DIR__ . '/data/defined-scope-merge.php'], [
+			[
+				'Constant TEST not found.',
+				8,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+
+			[
+				'Constant TEST not found.',
+				11,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 }

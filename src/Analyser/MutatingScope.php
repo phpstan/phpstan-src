@@ -185,7 +185,6 @@ class MutatingScope implements Scope
 		private array $currentlyAssignedExpressions = [],
 		private array $currentlyAllowedUndefinedExpressions = [],
 		private array $inFunctionCallsStack = [],
-		private bool $treatPhpDocTypesAsCertain = true,
 		private bool $afterExtractCall = false,
 		private ?Scope $parentScope = null,
 		private bool $nativeTypesPromoted = false,
@@ -741,11 +740,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Node\Expr\BooleanNot) {
-			if ($this->treatPhpDocTypesAsCertain) {
-				$exprBooleanType = $this->getType($node->expr)->toBoolean();
-			} else {
-				$exprBooleanType = $this->getNativeType($node->expr)->toBoolean();
-			}
+			$exprBooleanType = $this->getType($node->expr)->toBoolean();
 			if ($exprBooleanType instanceof ConstantBooleanType) {
 				return new ConstantBooleanType(!$exprBooleanType->getValue());
 			}
@@ -761,23 +756,14 @@ class MutatingScope implements Scope
 			$node instanceof Node\Expr\BinaryOp\BooleanAnd
 			|| $node instanceof Node\Expr\BinaryOp\LogicalAnd
 		) {
-			if ($this->treatPhpDocTypesAsCertain) {
-				$leftBooleanType = $this->getType($node->left)->toBoolean();
-			} else {
-				$leftBooleanType = $this->getNativeType($node->left)->toBoolean();
-			}
-
+			$leftBooleanType = $this->getType($node->left)->toBoolean();
 			if (
 				$leftBooleanType->isFalse()->yes()
 			) {
 				return new ConstantBooleanType(false);
 			}
 
-			if ($this->treatPhpDocTypesAsCertain) {
-				$rightBooleanType = $this->filterByTruthyValue($node->left)->getType($node->right)->toBoolean();
-			} else {
-				$rightBooleanType = $this->promoteNativeTypes()->filterByTruthyValue($node->left)->getType($node->right)->toBoolean();
-			}
+			$rightBooleanType = $this->filterByTruthyValue($node->left)->getType($node->right)->toBoolean();
 
 			if (
 				$rightBooleanType->isFalse()->yes()
@@ -799,22 +785,14 @@ class MutatingScope implements Scope
 			$node instanceof Node\Expr\BinaryOp\BooleanOr
 			|| $node instanceof Node\Expr\BinaryOp\LogicalOr
 		) {
-			if ($this->treatPhpDocTypesAsCertain) {
-				$leftBooleanType = $this->getType($node->left)->toBoolean();
-			} else {
-				$leftBooleanType = $this->getNativeType($node->left)->toBoolean();
-			}
+			$leftBooleanType = $this->getType($node->left)->toBoolean();
 			if (
 				$leftBooleanType->isTrue()->yes()
 			) {
 				return new ConstantBooleanType(true);
 			}
 
-			if ($this->treatPhpDocTypesAsCertain) {
-				$rightBooleanType = $this->filterByFalseyValue($node->left)->getType($node->right)->toBoolean();
-			} else {
-				$rightBooleanType = $this->promoteNativeTypes()->filterByFalseyValue($node->left)->getType($node->right)->toBoolean();
-			}
+			$rightBooleanType = $this->filterByFalseyValue($node->left)->getType($node->right)->toBoolean();
 
 			if (
 				$rightBooleanType->isTrue()->yes()
@@ -833,13 +811,8 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\LogicalXor) {
-			if ($this->treatPhpDocTypesAsCertain) {
-				$leftBooleanType = $this->getType($node->left)->toBoolean();
-				$rightBooleanType = $this->getType($node->right)->toBoolean();
-			} else {
-				$leftBooleanType = $this->getNativeType($node->left)->toBoolean();
-				$rightBooleanType = $this->getNativeType($node->right)->toBoolean();
-			}
+			$leftBooleanType = $this->getType($node->left)->toBoolean();
+			$rightBooleanType = $this->getType($node->right)->toBoolean();
 
 			if (
 				$leftBooleanType instanceof ConstantBooleanType
@@ -864,13 +837,8 @@ class MutatingScope implements Scope
 				return new ConstantBooleanType(true);
 			}
 
-			if ($this->treatPhpDocTypesAsCertain) {
-				$leftType = $this->getType($node->left);
-				$rightType = $this->getType($node->right);
-			} else {
-				$leftType = $this->getNativeType($node->left);
-				$rightType = $this->getNativeType($node->right);
-			}
+			$leftType = $this->getType($node->left);
+			$rightType = $this->getType($node->right);
 
 			if (
 				(
@@ -902,11 +870,7 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof Expr\Instanceof_) {
-			if ($this->treatPhpDocTypesAsCertain) {
-				$expressionType = $this->getType($node->expr);
-			} else {
-				$expressionType = $this->getNativeType($node->expr);
-			}
+			$expressionType = $this->getType($node->expr);
 			if (
 				$this->isInTrait()
 				&& TypeUtils::findThisType($expressionType) !== null
@@ -1922,12 +1886,8 @@ class MutatingScope implements Scope
 
 			return $result;
 		} elseif ($expr instanceof Node\Expr\ArrayDimFetch && $expr->dim !== null) {
-			$type = $this->treatPhpDocTypesAsCertain
-				? $this->getType($expr->var)
-				: $this->getNativeType($expr->var);
-			$dimType = $this->treatPhpDocTypesAsCertain
-				? $this->getType($expr->dim)
-				: $this->getNativeType($expr->dim);
+			$type = $this->getType($expr->var);
+			$dimType = $this->getType($expr->dim);
 			$hasOffsetValue = $type->hasOffsetValueType($dimType);
 			if (!$type->isOffsetAccessible()->yes()) {
 				return $result ?? $this->issetCheckUndefined($expr->var);
@@ -2081,45 +2041,13 @@ class MutatingScope implements Scope
 		return $this->promoteNativeTypes()->getType($expr);
 	}
 
-	/** @api */
+	/**
+	 * @api
+	 * @deprecated Use getNativeType()
+	 */
 	public function doNotTreatPhpDocTypesAsCertain(): Scope
 	{
-		if (!$this->treatPhpDocTypesAsCertain) {
-			return $this;
-		}
-
-		return new self(
-			$this->scopeFactory,
-			$this->reflectionProvider,
-			$this->initializerExprTypeResolver,
-			$this->dynamicReturnTypeExtensionRegistry,
-			$this->exprPrinter,
-			$this->typeSpecifier,
-			$this->propertyReflectionFinder,
-			$this->parser,
-			$this->nodeScopeResolver,
-			$this->constantResolver,
-			$this->context,
-			$this->phpVersion,
-			$this->declareStrictTypes,
-			$this->function,
-			$this->namespace,
-			$this->expressionTypes,
-			$this->nativeExpressionTypes,
-			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
-			$this->currentlyAssignedExpressions,
-			$this->currentlyAllowedUndefinedExpressions,
-			$this->inFunctionCallsStack,
-			false,
-			$this->afterExtractCall,
-			$this->parentScope,
-			false,
-			$this->explicitMixedInUnknownGenericNew,
-			$this->explicitMixedForGlobalVariables,
-		);
+		return $this->promoteNativeTypes();
 	}
 
 	private function promoteNativeTypes(): self

@@ -129,9 +129,8 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				$actualType = $scope->getType($node->getArgs()[1]->value);
 				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertNativeType') {
-				$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
-				$expectedType = $nativeScope->getNativeType($node->getArgs()[0]->value);
-				$actualType = $nativeScope->getNativeType($node->getArgs()[1]->value);
+				$expectedType = $scope->getType($node->getArgs()[0]->value);
+				$actualType = $scope->getNativeType($node->getArgs()[1]->value);
 				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
 			} elseif ($functionName === 'PHPStan\\Testing\\assertVariableCertainty') {
 				$certainty = $node->getArgs()[0]->value;

@@ -590,11 +590,14 @@ services:
 			reportUnmatchedIgnoredErrors: %reportUnmatchedIgnoredErrors%
 
 	-
-		class: PHPStan\Analyser\LazyScopeFactory
+		class: PHPStan\Analyser\LazyInternalScopeFactory
 		arguments:
 			scopeClass: %scopeClass%
 		autowired:
-			- PHPStan\Analyser\ScopeFactory
+			- PHPStan\Analyser\InternalScopeFactory
+
+	-
+		class: PHPStan\Analyser\ScopeFactory
 
 	-
 		class: PHPStan\Analyser\NodeScopeResolver

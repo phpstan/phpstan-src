@@ -15,7 +15,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use function is_a;
 
-class LazyScopeFactory implements ScopeFactory
+class LazyInternalScopeFactory implements InternalScopeFactory
 {
 
 	private bool $treatPhpDocTypesAsCertain;

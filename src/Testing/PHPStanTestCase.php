@@ -3,7 +3,7 @@
 namespace PHPStan\Testing;
 
 use PHPStan\Analyser\ConstantResolver;
-use PHPStan\Analyser\DirectScopeFactory;
+use PHPStan\Analyser\DirectInternalScopeFactory;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -164,21 +164,23 @@ abstract class PHPStanTestCase extends TestCase
 		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
 		$constantResolver = new ConstantResolver($reflectionProviderProvider, $dynamicConstantNames);
 
-		return new DirectScopeFactory(
-			MutatingScope::class,
-			$reflectionProvider,
-			new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), $container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class)),
-			$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
-			$container->getByType(ExprPrinter::class),
-			$typeSpecifier,
-			new PropertyReflectionFinder(),
-			$this->getParser(),
-			$container->getByType(NodeScopeResolver::class),
-			$this->shouldTreatPhpDocTypesAsCertain(),
-			$container->getByType(PhpVersion::class),
-			$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
-			$container->getParameter('featureToggles')['explicitMixedForGlobalVariables'],
-			$constantResolver,
+		return new ScopeFactory(
+			new DirectInternalScopeFactory(
+				MutatingScope::class,
+				$reflectionProvider,
+				new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), $container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class)),
+				$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
+				$container->getByType(ExprPrinter::class),
+				$typeSpecifier,
+				new PropertyReflectionFinder(),
+				$this->getParser(),
+				$container->getByType(NodeScopeResolver::class),
+				$this->shouldTreatPhpDocTypesAsCertain(),
+				$container->getByType(PhpVersion::class),
+				$container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'],
+				$container->getParameter('featureToggles')['explicitMixedForGlobalVariables'],
+				$constantResolver,
+			),
 		);
 	}
 

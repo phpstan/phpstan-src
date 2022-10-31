@@ -15,10 +15,7 @@ use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use function is_a;
 
-/**
- * @internal
- */
-class DirectScopeFactory implements ScopeFactory
+class DirectInternalScopeFactory implements InternalScopeFactory
 {
 
 	/**

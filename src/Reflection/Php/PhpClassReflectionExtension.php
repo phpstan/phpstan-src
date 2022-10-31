@@ -942,12 +942,11 @@ class PhpClassReflectionExtension
 			$namespace = implode('\\', array_slice($classNameParts, 0, -1));
 		}
 
-		$classScope = $this->scopeFactory->create(
-			ScopeContext::create($fileName),
-			false,
-			$constructor,
-			$namespace,
-		)->enterClass($declaringClass);
+		$classScope = $this->scopeFactory->create(ScopeContext::create($fileName));
+		if ($namespace !== null) {
+			$classScope = $classScope->enterNamespace($namespace);
+		}
+		$classScope = $classScope->enterClass($declaringClass);
 		[$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, , $phpDocComment, $asserts, $selfOutType, $phpDocParameterOutTypes] = $this->nodeScopeResolver->getPhpDocs($classScope, $methodNode);
 		$methodScope = $classScope->enterClassMethod(
 			$methodNode,

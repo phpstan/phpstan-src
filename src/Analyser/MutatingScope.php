@@ -162,7 +162,7 @@ class MutatingScope implements Scope
 	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
 	 */
 	public function __construct(
-		private ScopeFactory $scopeFactory,
+		private InternalScopeFactory $scopeFactory,
 		private ReflectionProvider $reflectionProvider,
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private DynamicReturnTypeExtensionRegistry $dynamicReturnTypeExtensionRegistry,

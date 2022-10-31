@@ -2187,7 +2187,7 @@ class MutatingScope implements Scope
 
 		$expressionTypes = $this->expressionTypes;
 		foreach ($this->nativeExpressionTypes as $exprString => $typeHolder) {
-			$has = $this->hasVariableType(substr($exprString, 1));
+			$has = $this->hasVariableType(substr((string) $exprString, 1));
 			if ($has->no()) {
 				continue;
 			}

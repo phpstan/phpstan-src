@@ -3419,6 +3419,10 @@ class MutatingScope implements Scope
 				return $this;
 			}
 		}
+		if ($expr instanceof Expr\ClassConstFetch && $type instanceof NeverType) {
+			unset($this->expressionTypes[$exprString]);
+			return $this;
+		}
 
 		$scope = $this;
 		if ($expr instanceof Variable && is_string($expr->name)) {

@@ -289,7 +289,12 @@ class ClassConstantRuleTest extends RuleTestCase
 	public function testBug8034(): void
 	{
 		$this->phpVersion = PHP_VERSION_ID;
-		$this->analyse([__DIR__ . '/data/bug-8034.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-8034.php'], [
+			[
+				'Access to undefined constant static(Bug8034\HelloWorld)::FIELDS.',
+				19,
+			],
+		]);
 	}
 
 }

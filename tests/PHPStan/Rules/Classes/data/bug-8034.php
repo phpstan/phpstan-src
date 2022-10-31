@@ -16,6 +16,7 @@ abstract class HelloWorld
 
 			return $aOutput;
 		} else {
+			static::FIELDS;
 			return [];
 		}
 	}

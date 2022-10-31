@@ -160,7 +160,7 @@ class ClassConstantRule implements Rule
 			]);
 		}
 
-		if (strtolower($constantName) === 'class') {
+		if (strtolower($constantName) === 'class' || $scope->hasExpressionType($node)->yes()) {
 			return $messages;
 		}
 

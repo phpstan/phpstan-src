@@ -608,6 +608,9 @@ class MutatingScope implements Scope
 	/** @api */
 	public function getType(Expr $node): Type
 	{
+		if (count($this->expressionTypes) !== count($this->nativeExpressionTypes)) {
+			throw new \Error();
+		}
 		if ($node instanceof GetIterableKeyTypeExpr) {
 			return $this->getType($node->getExpr())->getIterableKeyType();
 		}

@@ -30,4 +30,9 @@ class DeadForeachRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug7913(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7913.php'], []);
+	}
+
 }

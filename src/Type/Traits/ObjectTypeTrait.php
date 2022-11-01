@@ -133,7 +133,7 @@ trait ObjectTypeTrait
 
 	public function toString(): Type
 	{
-		return new StringType();
+		return new ErrorType();
 	}
 
 	public function toInteger(): Type

@@ -10,7 +10,9 @@ use PHPStan\Reflection\Type\CallbackUnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
@@ -123,6 +125,15 @@ class HasMethodType implements AccessoryType, CompoundType
 		}
 
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function toString(): Type
+	{
+		if ($this->getCanonicalMethodName() === '__tostring') {
+			return new StringType();
+		}
+
+		return new ErrorType();
 	}
 
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array

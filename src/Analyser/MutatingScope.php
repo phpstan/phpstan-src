@@ -1647,6 +1647,22 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof MethodCall && $node->name instanceof Node\Identifier) {
+			if ($this->nativeTypesPromoted) {
+				$typeCallback = function () use ($node): Type {
+					$methodReflection = $this->getMethodReflection(
+						$this->getNativeType($node->var),
+						$node->name->name,
+					);
+					if ($methodReflection === null) {
+						return new ErrorType();
+					}
+
+					return ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType();
+				};
+
+				return $this->getNullsafeShortCircuitingType($node->var, $typeCallback());
+			}
+
 			$typeCallback = function () use ($node): Type {
 				$returnType = $this->methodCallReturnType(
 					$this->getType($node->var),

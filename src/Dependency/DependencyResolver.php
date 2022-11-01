@@ -84,6 +84,11 @@ class DependencyResolver
 					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 				}
 			}
+			if ($nativeMethod->getSelfOutType() !== null) {
+				foreach ($nativeMethod->getSelfOutType()->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+			}
 		} elseif ($node instanceof ClassPropertyNode) {
 			$nativeTypeNode = $node->getNativeType();
 			if ($nativeTypeNode !== null && $scope->isInClass()) {
@@ -224,6 +229,12 @@ class DependencyResolver
 							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 						}
 						foreach ($assertTag->getOriginalType()->getReferencedClasses() as $referencedClass) {
+							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+						}
+					}
+
+					if ($methodReflection->getSelfOutType() !== null) {
+						foreach ($methodReflection->getSelfOutType()->getReferencedClasses() as $referencedClass) {
 							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 						}
 					}

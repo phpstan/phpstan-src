@@ -15,6 +15,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\StringInput;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use function stream_get_contents;
@@ -86,6 +87,38 @@ class AnalyseCommand extends \Symfony\Component\Console\Command\Command
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
+		if ($output instanceof ConsoleOutputInterface) {
+			$errorOutput = $output->getErrorOutput();
+			$errorOutput->writeln('');
+			$errorOutput->writeln("⚠️  You're running a really old version of PHPStan.️");
+			$errorOutput->writeln('');
+			$errorOutput->writeln('The last release in the 0.12.x series with new features');
+
+			$lastRelease = new \DateTimeImmutable('2021-09-12 00:00:00');
+			$daysSince = (time() - $lastRelease->getTimestamp()) / 60 / 60 / 24;
+			if ($daysSince > 360) {
+				$errorOutput->writeln('and bugfixes was released on <fg=red>September 12th 2021</>,');
+				$errorOutput->writeln(sprintf('that\'s <fg=red>%d days ago.</>', floor($daysSince)));
+			} else {
+				$errorOutput->writeln('and bugfixes was released on <fg=red>September 12th 2021</>.');
+			}
+			$errorOutput->writeln('');
+
+			$errorOutput->writeln('Since then more than <fg=cyan>67 new PHPStan versions</> were released');
+			$errorOutput->writeln('with hundreds of new features, bugfixes, and other');
+			$errorOutput->writeln('quality of life improvements.');
+			$errorOutput->writeln('');
+
+			$errorOutput->writeln("To learn about what you're missing out on, check out");
+			$errorOutput->writeln('this blog with articles about the latest major releases:');
+			$errorOutput->writeln('<options=underscore>https://phpstan.org/blog</>');
+			$errorOutput->writeln('');
+
+			$errorOutput->writeln('Upgrade today to <fg=green>PHPStan 1.8 or newer</> by using');
+			$errorOutput->writeln('<fg=cyan>"phpstan/phpstan": "^1.8"</> in your <fg=cyan>composer.json</>.');
+			$errorOutput->writeln('');
+		}
+
 		$paths = $input->getArgument('paths');
 		$memoryLimit = $input->getOption('memory-limit');
 		$autoloadFile = $input->getOption('autoload-file');

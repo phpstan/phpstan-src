@@ -403,6 +403,18 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function toNumber(): Type
 	{
+		if ($this->subtractedType !== null) {
+			$float = new FloatType();
+			$int = new IntegerType();
+
+			if ($float->isSuperTypeOf($this->subtractedType)->yes()) {
+				return $int;
+			}
+			if ($int->isSuperTypeOf($this->subtractedType)->yes()) {
+				return $float;
+			}
+		}
+
 		return new UnionType([
 			$this->toInteger(),
 			$this->toFloat(),

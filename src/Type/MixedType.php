@@ -426,6 +426,10 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function toArray(): Type
 	{
+		if ($this->isArray()->no()) {
+			return new NeverType();
+		}
+
 		$mixed = new self($this->isExplicitMixed);
 
 		return new ArrayType($mixed, $mixed);

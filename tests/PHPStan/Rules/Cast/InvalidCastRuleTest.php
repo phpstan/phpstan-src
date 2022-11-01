@@ -35,6 +35,10 @@ class InvalidCastRuleTest extends RuleTestCase
 				24,
 			],
 			[
+				'Cannot cast object to string.',
+				35,
+			],
+			[
 				'Cannot cast Test\\Foo to string.',
 				41,
 			],
@@ -59,6 +63,20 @@ class InvalidCastRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/invalid-cast-nullsafe.php'], [
 			[
 				'Cannot cast stdClass|null to string.',
+				13,
+			],
+		]);
+	}
+
+	public function testCastObjectToString(): void
+	{
+		$this->analyse([__DIR__ . '/data/cast-object-to-string.php'], [
+			[
+				'Cannot cast object to string.',
+				12,
+			],
+			[
+				'Cannot cast object|string to string.',
 				13,
 			],
 		]);

@@ -262,6 +262,14 @@ class ImpossibleCheckTypeHelper
 			return is_string($expr->name) && !$scope->hasVariableType($expr->name)->yes();
 		}
 
+		if ($expr instanceof Expr\ArrayDimFetch || $expr instanceof Expr\PropertyFetch) {
+			return self::isSpecified($scope, $node, $expr->var) && !$scope->hasExpressionType($expr)->yes();
+		}
+
+		if ($expr instanceof Expr\StaticPropertyFetch) {
+			return !$scope->hasExpressionType($expr)->yes();
+		}
+
 		if ($expr instanceof Expr\BooleanNot) {
 			return self::isSpecified($scope, $node, $expr->expr);
 		}

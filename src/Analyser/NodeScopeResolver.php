@@ -1436,12 +1436,9 @@ class NodeScopeResolver
 			$this->processExprNode($stmt->var, $scope, $nodeCallback, ExpressionContext::createDeep());
 			$scope = $scope->exitExpressionAssign($stmt->var);
 			$scope = $scope->assignVariable($stmt->var->name, new MixedType(), new MixedType());
-		} elseif ($stmt instanceof Node\Stmt\Const_ || $stmt instanceof Node\Stmt\ClassConst) {
+		} elseif ($stmt instanceof Node\Stmt\Const_) {
 			$hasYield = false;
 			$throwPoints = [];
-			if ($stmt instanceof Node\Stmt\ClassConst) {
-				$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
-			}
 			foreach ($stmt->consts as $const) {
 				$nodeCallback($const, $scope);
 				$this->processExprNode($const->value, $scope, $nodeCallback, ExpressionContext::createDeep());
@@ -1451,6 +1448,22 @@ class NodeScopeResolver
 					$constantName = new Name\FullyQualified($const->name->toString());
 				}
 				$scope = $scope->assignExpression(new ConstFetch($constantName), $scope->getType($const->value), $scope->getNativeType($const->value));
+			}
+		} elseif ($stmt instanceof Node\Stmt\ClassConst) {
+			$hasYield = false;
+			$throwPoints = [];
+			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
+			foreach ($stmt->consts as $const) {
+				$nodeCallback($const, $scope);
+				$this->processExprNode($const->value, $scope, $nodeCallback, ExpressionContext::createDeep());
+				if ($scope->getClassReflection() === null) {
+					throw new ShouldNotHappenException();
+				}
+				$scope = $scope->assignExpression(
+					new Expr\ClassConstFetch(new Name\FullyQualified($scope->getClassReflection()->getName()), $const->name),
+					$scope->getType($const->value),
+					$scope->getNativeType($const->value),
+				);
 			}
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
 			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);

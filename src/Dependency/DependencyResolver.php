@@ -70,12 +70,18 @@ class DependencyResolver
 				$this->addClassToDependencies($className->toString(), $dependenciesReflections);
 			}
 		} elseif ($node instanceof InClassMethodNode) {
-			$nativeMethod = $scope->getFunction();
-			if ($nativeMethod !== null) {
-				$parametersAcceptor = ParametersAcceptorSelector::selectSingle($nativeMethod->getVariants());
-				$this->extractThrowType($nativeMethod->getThrowType(), $dependenciesReflections);
-				if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
-					$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
+			$nativeMethod = $node->getMethodReflection();
+			$parametersAcceptor = ParametersAcceptorSelector::selectSingle($nativeMethod->getVariants());
+			$this->extractThrowType($nativeMethod->getThrowType(), $dependenciesReflections);
+			if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
+				$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
+			}
+			foreach ($nativeMethod->getAsserts()->getAll() as $assertTag) {
+				foreach ($assertTag->getType()->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+				foreach ($assertTag->getOriginalType()->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 				}
 			}
 		} elseif ($node instanceof ClassPropertyNode) {
@@ -93,13 +99,19 @@ class DependencyResolver
 				}
 			}
 		} elseif ($node instanceof InFunctionNode) {
-			$functionReflection = $scope->getFunction();
-			if ($functionReflection !== null) {
-				$this->extractThrowType($functionReflection->getThrowType(), $dependenciesReflections);
-				$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
+			$functionReflection = $node->getFunctionReflection();
+			$this->extractThrowType($functionReflection->getThrowType(), $dependenciesReflections);
+			$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 
-				if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
-					$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
+			if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
+				$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
+			}
+			foreach ($functionReflection->getAsserts()->getAll() as $assertTag) {
+				foreach ($assertTag->getType()->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+				}
+				foreach ($assertTag->getOriginalType()->getReferencedClasses() as $referencedClass) {
+					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 				}
 			}
 		} elseif ($node instanceof Closure || $node instanceof Node\Expr\ArrowFunction) {
@@ -134,6 +146,15 @@ class DependencyResolver
 							foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
 								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 							}
+						}
+					}
+
+					foreach ($functionReflection->getAsserts()->getAll() as $assertTag) {
+						foreach ($assertTag->getType()->getReferencedClasses() as $referencedClass) {
+							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+						}
+						foreach ($assertTag->getOriginalType()->getReferencedClasses() as $referencedClass) {
+							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 						}
 					}
 				} catch (FunctionNotFoundException) {
@@ -195,6 +216,15 @@ class DependencyResolver
 							foreach ($parameter->getOutType()->getReferencedClasses() as $referencedClass) {
 								$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 							}
+						}
+					}
+
+					foreach ($methodReflection->getAsserts()->getAll() as $assertTag) {
+						foreach ($assertTag->getType()->getReferencedClasses() as $referencedClass) {
+							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
+						}
+						foreach ($assertTag->getOriginalType()->getReferencedClasses() as $referencedClass) {
+							$this->addClassToDependencies($referencedClass, $dependenciesReflections);
 						}
 					}
 				}

@@ -3,11 +3,11 @@
 namespace Bug2435;
 
 class Foo {
-	/** @var Bar|null */
+	/** @var Bar */
 	private $root;
 
 	public function checkRoot(): bool {
-		return $this->root?->root !== null;
+		return $this->root->root !== null;
 	}
 }
 

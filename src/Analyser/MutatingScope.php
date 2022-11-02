@@ -248,6 +248,13 @@ class MutatingScope implements Scope
 			null,
 			null,
 			$this->expressionTypes,
+			[],
+			null,
+			null,
+			true,
+			[],
+			[],
+			$this->nativeExpressionTypes,
 		);
 	}
 
@@ -365,6 +372,40 @@ class MutatingScope implements Scope
 				continue 2;
 			}
 		}
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		foreach (array_keys($nativeExpressionTypes) as $exprString) {
+			// list from https://www.php.net/manual/en/function.clearstatcache.php
+
+			// stat(), lstat(), file_exists(), is_writable(), is_readable(), is_executable(), is_file(), is_dir(), is_link(), filectime(), fileatime(), filemtime(), fileinode(), filegroup(), fileowner(), filesize(), filetype(), and fileperms().
+			foreach ([
+						 'stat',
+						 'lstat',
+						 'file_exists',
+						 'is_writable',
+						 'is_writeable',
+						 'is_readable',
+						 'is_executable',
+						 'is_file',
+						 'is_dir',
+						 'is_link',
+						 'filectime',
+						 'fileatime',
+						 'filemtime',
+						 'fileinode',
+						 'filegroup',
+						 'fileowner',
+						 'filesize',
+						 'filetype',
+						 'fileperms',
+					 ] as $functionName) {
+				if (!str_starts_with((string) $exprString, $functionName . '(') && !str_starts_with((string) $exprString, '\\' . $functionName . '(')) {
+					continue;
+				}
+
+				unset($nativeExpressionTypes[$exprString]);
+				continue 2;
+			}
+		}
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -377,7 +418,7 @@ class MutatingScope implements Scope
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
 			$this->currentlyAllowedUndefinedExpressions,
-			$this->nativeExpressionTypes,
+			$nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
 			$this->parentScope,
@@ -446,6 +487,66 @@ class MutatingScope implements Scope
 			unset($expressionTypes['\openssl_error_string()']);
 		}
 
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+
+		if (in_array($openSslFunctionName, [
+			'openssl_cipher_iv_length',
+			'openssl_cms_decrypt',
+			'openssl_cms_encrypt',
+			'openssl_cms_read',
+			'openssl_cms_sign',
+			'openssl_cms_verify',
+			'openssl_csr_export_to_file',
+			'openssl_csr_export',
+			'openssl_csr_get_public_key',
+			'openssl_csr_get_subject',
+			'openssl_csr_new',
+			'openssl_csr_sign',
+			'openssl_decrypt',
+			'openssl_dh_compute_key',
+			'openssl_digest',
+			'openssl_encrypt',
+			'openssl_get_curve_names',
+			'openssl_get_privatekey',
+			'openssl_get_publickey',
+			'openssl_open',
+			'openssl_pbkdf2',
+			'openssl_pkcs12_export_to_file',
+			'openssl_pkcs12_export',
+			'openssl_pkcs12_read',
+			'openssl_pkcs7_decrypt',
+			'openssl_pkcs7_encrypt',
+			'openssl_pkcs7_read',
+			'openssl_pkcs7_sign',
+			'openssl_pkcs7_verify',
+			'openssl_pkey_derive',
+			'openssl_pkey_export_to_file',
+			'openssl_pkey_export',
+			'openssl_pkey_get_private',
+			'openssl_pkey_get_public',
+			'openssl_pkey_new',
+			'openssl_private_decrypt',
+			'openssl_private_encrypt',
+			'openssl_public_decrypt',
+			'openssl_public_encrypt',
+			'openssl_random_pseudo_bytes',
+			'openssl_seal',
+			'openssl_sign',
+			'openssl_spki_export_challenge',
+			'openssl_spki_export',
+			'openssl_spki_new',
+			'openssl_spki_verify',
+			'openssl_verify',
+			'openssl_x509_checkpurpose',
+			'openssl_x509_export_to_file',
+			'openssl_x509_export',
+			'openssl_x509_fingerprint',
+			'openssl_x509_read',
+			'openssl_x509_verify',
+		], true)) {
+			unset($nativeExpressionTypes['\openssl_error_string()']);
+		}
+
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -458,7 +559,7 @@ class MutatingScope implements Scope
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
 			$this->currentlyAllowedUndefinedExpressions,
-			$this->nativeExpressionTypes,
+			$nativeExpressionTypes,
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
 			$this->parentScope,
@@ -2880,7 +2981,7 @@ class MutatingScope implements Scope
 	): self
 	{
 		$expressionTypes = [];
-		$nativeTypes = [];
+		$nativeExpressionTypes = [];
 		foreach ($closure->params as $i => $parameter) {
 			if (!$parameter->var instanceof Variable || !is_string($parameter->var->name)) {
 				throw new ShouldNotHappenException();
@@ -2904,7 +3005,7 @@ class MutatingScope implements Scope
 			}
 			$holder = ExpressionTypeHolder::createYes($parameter->var, $parameterType);
 			$expressionTypes[$paramExprString] = $holder;
-			$nativeTypes[$paramExprString] = $holder;
+			$nativeExpressionTypes[$paramExprString] = $holder;
 		}
 
 		$nonRefVariableNames = [];
@@ -2917,7 +3018,7 @@ class MutatingScope implements Scope
 			if ($use->byRef) {
 				$holder = ExpressionTypeHolder::createYes($use->var, new MixedType());
 				$expressionTypes[$paramExprString] = $holder;
-				$nativeTypes[$paramExprString] = $holder;
+				$nativeExpressionTypes[$paramExprString] = $holder;
 				continue;
 			}
 			$nonRefVariableNames[$variableName] = true;
@@ -2929,7 +3030,7 @@ class MutatingScope implements Scope
 				$variableNativeType = $this->getNativeType($use->var);
 			}
 			$expressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($use->var, $variableType);
-			$nativeTypes[$paramExprString] = ExpressionTypeHolder::createYes($use->var, $variableNativeType);
+			$nativeExpressionTypes[$paramExprString] = ExpressionTypeHolder::createYes($use->var, $variableNativeType);
 		}
 
 		foreach ($this->expressionTypes as $exprString => $typeHolder) {
@@ -2954,12 +3055,13 @@ class MutatingScope implements Scope
 			}
 
 			$expressionTypes[$exprString] = $typeHolder;
+			$nativeExpressionTypes[$exprString] = $typeHolder;
 		}
 
 		if ($this->hasVariableType('this')->yes() && !$closure->static) {
 			$node = new Variable('this');
 			$expressionTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getType($node));
-			$nativeTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getNativeType($node));
+			$nativeExpressionTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getNativeType($node));
 		}
 
 		return $this->scopeFactory->create(
@@ -2974,7 +3076,7 @@ class MutatingScope implements Scope
 			true,
 			[],
 			[],
-			array_merge($this->getNativeConstantTypes(), $nativeTypes),
+			array_merge($this->getNativeConstantTypes(), $nativeExpressionTypes),
 			[],
 			false,
 			$this,
@@ -3020,7 +3122,7 @@ class MutatingScope implements Scope
 			true,
 			[],
 			[],
-			[],
+			$scope->nativeExpressionTypes,
 			[],
 			$scope->afterExtractCall,
 			$scope->parentScope,
@@ -3451,8 +3553,8 @@ class MutatingScope implements Scope
 
 			$expressionTypes = $this->expressionTypes;
 			$expressionTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $type);
-			$nativeTypes = $this->nativeExpressionTypes;
-			$nativeTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $nativeType);
+			$nativeExpressionTypes = $this->nativeExpressionTypes;
+			$nativeExpressionTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $nativeType);
 			foreach ($expressionTypes as $specifiedExprString => $specificTypeHolder) {
 				if (!$specificTypeHolder->getCertainty()->yes()) {
 					continue;
@@ -3477,7 +3579,7 @@ class MutatingScope implements Scope
 				}
 
 				$expressionTypes[$specifiedExprString] = ExpressionTypeHolder::createYes($specifiedExpr, $this->getType($specifiedExpr->var)->getOffsetValueType($type));
-				$nativeTypes[$specifiedExprString] = ExpressionTypeHolder::createYes($specifiedExpr, $this->getNativeType($specifiedExpr->var)->getOffsetValueType($type));
+				$nativeExpressionTypes[$specifiedExprString] = ExpressionTypeHolder::createYes($specifiedExpr, $this->getNativeType($specifiedExpr->var)->getOffsetValueType($type));
 			}
 
 			return $this->scopeFactory->create(
@@ -3492,7 +3594,7 @@ class MutatingScope implements Scope
 				$this->inFirstLevelStatement,
 				$this->currentlyAssignedExpressions,
 				$this->currentlyAllowedUndefinedExpressions,
-				$nativeTypes,
+				$nativeExpressionTypes,
 				$this->inFunctionCallsStack,
 				$this->afterExtractCall,
 				$this->parentScope,
@@ -3861,8 +3963,10 @@ class MutatingScope implements Scope
 
 			if ($typeHolder->getCertainty()->no()) {
 				unset($scope->expressionTypes[$variableExprString]);
+				unset($scope->nativeExpressionTypes[$variableExprString]);
 			} else {
 				$scope->expressionTypes[$variableExprString] = $typeHolder;
+				$scope->nativeExpressionTypes[$variableExprString] = $typeHolder;
 			}
 		}
 

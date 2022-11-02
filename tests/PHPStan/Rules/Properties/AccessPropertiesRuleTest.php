@@ -709,4 +709,12 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/php-82-dynamic-properties-allow.php'], $errors);
 	}
 
+	public function testBug2435(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
+		$this->analyse([__DIR__ . '/data/bug-2435.php'], []);
+	}
+
 }

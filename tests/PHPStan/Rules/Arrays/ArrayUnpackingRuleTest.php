@@ -44,28 +44,28 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 				18,
 			],
 			[
-				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
+				'Array unpacking cannot be used on an array with potential string keys: array<string>',
 				24,
 			],
 			[
-				'Array unpacking cannot be used on an array with potential string keys: array<string>',
-				30,
-			],
-			[
 				'Array unpacking cannot be used on an array with potential string keys: array',
-				35,
+				29,
 			],
 			[
 				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
-				46,
+				40,
 			],
 			[
 				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
-				58,
+				52,
 			],
 			[
 				'Array unpacking cannot be used on an array with string keys: array{foo: string, bar: int}',
-				69,
+				63,
+			],
+			[
+				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
+				71,
 			],
 		]);
 	}
@@ -88,19 +88,19 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 			],
 			[
 				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
-				24,
+				40,
 			],
 			[
 				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
-				46,
-			],
-			[
-				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
-				58,
+				52,
 			],
 			[
 				'Array unpacking cannot be used on an array with string keys: array{foo: string, bar: int}',
-				69,
+				63,
+			],
+			[
+				'Array unpacking cannot be used on an array with potential string keys: array<int|string, string>',
+				71,
 			],
 		]);
 	}
@@ -119,7 +119,7 @@ class ArrayUnpackingRuleTest extends RuleTestCase
 			],
 			[
 				'Array unpacking cannot be used on an array with string keys: array{foo: string, bar: int}',
-				69,
+				63,
 			],
 		]);
 	}

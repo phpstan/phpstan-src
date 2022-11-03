@@ -17,7 +17,7 @@ use function PHPStan\Testing\assertType;
 final class DsCopy
 {
 	/**
-	 * @param Collection<int> $col
+	 * @param Collection<string, int> $col
 	 * @param Sequence<int> $seq
 	 * @param Vector<int> $vec
 	 * @param Deque<int> $deque
@@ -52,7 +52,7 @@ final class DsCopy
 		$pq = $this->pq->copy();
 		$set = $this->set->copy();
 
-		assertType('Ds\Collection<int>', $col);
+		assertType('Ds\Collection<string, int>', $col);
 		assertType('Ds\Sequence<int>', $seq);
 		assertType('Ds\Vector<int>', $vec);
 		assertType('Ds\Deque<int>', $deque);

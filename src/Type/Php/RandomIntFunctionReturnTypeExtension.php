@@ -23,12 +23,12 @@ class RandomIntFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return in_array($functionReflection->getName(), ['random_int', 'rand'], true);
+		return in_array($functionReflection->getName(), ['random_int', 'rand', 'mt_rand'], true);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
-		if ($functionReflection->getName() === 'rand' && count($functionCall->getArgs()) === 0) {
+		if (in_array($functionReflection->getName(), ['rand', 'mt_rand'], true) && count($functionCall->getArgs()) === 0) {
 			return IntegerRangeType::fromInterval(0, null);
 		}
 

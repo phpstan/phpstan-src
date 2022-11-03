@@ -156,6 +156,8 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 			[new ConstantIntegerType(0)],
 			[$this],
 			[1],
+			[],
+			true,
 		);
 	}
 

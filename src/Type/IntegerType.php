@@ -77,6 +77,8 @@ class IntegerType implements Type
 			[new ConstantIntegerType(0)],
 			[$this],
 			[1],
+			[],
+			true,
 		);
 	}
 

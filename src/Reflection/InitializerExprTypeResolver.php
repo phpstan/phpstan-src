@@ -1434,6 +1434,7 @@ class InitializerExprTypeResolver
 
 			return $union->toNumber();
 		}
+
 		if ($rightType instanceof UnionType) {
 			$unionParts = [];
 			foreach ($rightType->getTypes() as $type) {
@@ -1505,6 +1506,10 @@ class InitializerExprTypeResolver
 
 		$resultType = TypeCombinator::union($leftNumberType, $rightNumberType);
 		if ($expr instanceof Expr\BinaryOp\Div) {
+			if ($rightType->equals(new ConstantIntegerType(1))) {
+				return $leftType->toNumber();
+			}
+
 			if ($types instanceof MixedType || $resultType instanceof IntegerType) {
 				return new BenevolentUnionType([new IntegerType(), new FloatType()]);
 			}

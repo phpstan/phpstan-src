@@ -304,7 +304,7 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 
 	public function toArray(): Type
 	{
-		return new MixedType();
+		return $this;
 	}
 
 	public function toArrayKey(): Type

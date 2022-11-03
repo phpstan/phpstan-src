@@ -221,23 +221,32 @@ class RuleLevelHelper
 			return new FoundTypeResult(new ErrorType(), [], $errors, null);
 		}
 
-		if (!$this->checkUnionTypes) {
-			if ($type instanceof ObjectWithoutClassType) {
-				return new FoundTypeResult(new ErrorType(), [], [], null);
+		if (!$this->checkUnionTypes && $type instanceof ObjectWithoutClassType) {
+			return new FoundTypeResult(new ErrorType(), [], [], null);
+		}
+
+		if (
+			(
+				!$this->checkUnionTypes
+				&& $type instanceof UnionType
+				&& !$type instanceof BenevolentUnionType
+			) || (
+				!$this->checkBenevolentUnionTypes
+				&& $type instanceof BenevolentUnionType
+			)
+		) {
+			$newTypes = [];
+
+			foreach ($type->getTypes() as $innerType) {
+				if (!$unionTypeCriteriaCallback($innerType)) {
+					continue;
+				}
+
+				$newTypes[] = $innerType;
 			}
-			if ($type instanceof UnionType) {
-				$newTypes = [];
-				foreach ($type->getTypes() as $innerType) {
-					if (!$unionTypeCriteriaCallback($innerType)) {
-						continue;
-					}
 
-					$newTypes[] = $innerType;
-				}
-
-				if (count($newTypes) > 0) {
-					return new FoundTypeResult(TypeCombinator::union(...$newTypes), $directClassNames, [], null);
-				}
+			if (count($newTypes) > 0) {
+				return new FoundTypeResult(TypeCombinator::union(...$newTypes), $directClassNames, [], null);
 			}
 		}
 

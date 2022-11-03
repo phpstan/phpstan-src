@@ -19,7 +19,7 @@ function stringKeyedArray(array $bar)
 }
 
 /** @param array<array-key, string> $bar */
-function unionKeyedArray(array $bar)
+function benevolentUnionKeyedArray(array $bar)
 {
 	$baz = [...$bar];
 }
@@ -63,4 +63,10 @@ function unpackingArrayShapes(array $foo, array $bar)
 		...$foo,
 		...$bar,
 	];
+}
+
+/** @param array<int|string, string> $bar */
+function unionKeyedArray(array $bar)
+{
+	$baz = [...$bar];
 }

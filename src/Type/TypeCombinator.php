@@ -985,7 +985,7 @@ class TypeCombinator
 						continue 2;
 					}
 
-					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof ArrayType && !$types[$j] instanceof ConstantArrayType) {
+					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof ArrayType) {
 						$newArray = ConstantArrayTypeBuilder::createEmpty();
 						$valueTypes = $types[$i]->getValueTypes();
 						foreach ($types[$i]->getKeyTypes() as $k => $keyType) {
@@ -997,6 +997,22 @@ class TypeCombinator
 						}
 						$types[$i] = $newArray->getArray();
 						array_splice($types, $j--, 1);
+						$typesCount--;
+						continue 2;
+					}
+
+					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof ArrayType) {
+						$newArray = ConstantArrayTypeBuilder::createEmpty();
+						$valueTypes = $types[$j]->getValueTypes();
+						foreach ($types[$j]->getKeyTypes() as $k => $keyType) {
+							$newArray->setOffsetValueType(
+								self::intersect($keyType, $types[$i]->getIterableKeyType()),
+								self::intersect($valueTypes[$k], $types[$i]->getIterableValueType()),
+								$types[$j]->isOptionalKey($k),
+							);
+						}
+						$types[$j] = $newArray->getArray();
+						array_splice($types, $i--, 1);
 						$typesCount--;
 						continue 2;
 					}

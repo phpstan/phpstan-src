@@ -135,7 +135,7 @@ class StringType implements Type
 			[$this],
 			[1],
 			[],
-			true
+			true,
 		);
 	}
 

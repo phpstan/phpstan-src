@@ -226,8 +226,14 @@ class RuleLevelHelper
 		}
 
 		if (
-			!$this->checkUnionTypes && $type instanceof UnionType && !$type instanceof BenevolentUnionType
-			|| !$this->checkBenevolentUnionTypes && $type instanceof BenevolentUnionType
+			(
+				!$this->checkUnionTypes
+				&& $type instanceof UnionType
+				&& !$type instanceof BenevolentUnionType
+			) || (
+				!$this->checkBenevolentUnionTypes
+				&& $type instanceof BenevolentUnionType
+			)
 		) {
 			$newTypes = [];
 

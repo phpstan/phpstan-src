@@ -1341,6 +1341,21 @@ class TypeSpecifier
 				$containsUnresolvedTemplate || $assert->isEquality() ? $call : null,
 			);
 			$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
+
+			if (!$context->null() || !$assert->getType() instanceof ConstantBooleanType) {
+				continue;
+			}
+
+			$subContext = $assert->getType()->getValue() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createFalse();
+			if ($assert->isNegated()) {
+				$subContext = $subContext->negate();
+			}
+
+			$types = $types->unionWith($this->specifyTypesInCondition(
+				$scope,
+				$assertExpr,
+				$subContext,
+			));
 		}
 
 		return $types;

@@ -289,6 +289,8 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			[new ConstantIntegerType(0)],
 			[$this],
 			[1],
+			[],
+			true,
 		);
 	}
 

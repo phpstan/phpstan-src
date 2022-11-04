@@ -2657,4 +2657,13 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testArrayCastListTypes(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = false;
+		$this->checkUnionTypes = false;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/array-cast-list-types.php'], []);
+	}
+
 }

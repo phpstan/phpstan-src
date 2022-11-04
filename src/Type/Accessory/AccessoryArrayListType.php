@@ -22,6 +22,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/** @api */
 class AccessoryArrayListType implements CompoundType, AccessoryType
 {
 
@@ -332,6 +333,7 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return self::$enabled;
 	}
 
+	/** @api */
 	public static function intersectWith(Type $type): Type
 	{
 		if (self::$enabled) {

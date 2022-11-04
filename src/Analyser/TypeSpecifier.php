@@ -1313,6 +1313,17 @@ class TypeSpecifier
 				continue;
 			}
 
+			$assertedType = TypeTraverser::map($assert->getType(), static function (Type $type, callable $traverse) use ($argsMap, $scope): Type {
+				if ($type instanceof ConditionalTypeForParameter) {
+					$parameterName = substr($type->getParameterName(), 1);
+					if (array_key_exists($parameterName, $argsMap)) {
+						$type = $type->toConditional($scope->getType($argsMap[$parameterName]));
+					}
+				}
+
+				return $traverse($type);
+			});
+
 			$assertExpr = $assert->getParameter()->getExpr($parameterExpr);
 
 			$templateTypeMap = $parametersAcceptor->getResolvedTemplateTypeMap();
@@ -1334,7 +1345,7 @@ class TypeSpecifier
 
 			$newTypes = $this->create(
 				$assertExpr,
-				$assert->getType(),
+				$assertedType,
 				$assert->isNegated() ? TypeSpecifierContext::createFalse() : TypeSpecifierContext::createTrue(),
 				false,
 				$scope,
@@ -1342,11 +1353,11 @@ class TypeSpecifier
 			);
 			$types = $types !== null ? $types->unionWith($newTypes) : $newTypes;
 
-			if (!$context->null() || !$assert->getType() instanceof ConstantBooleanType) {
+			if (!$context->null() || !$assertedType instanceof ConstantBooleanType) {
 				continue;
 			}
 
-			$subContext = $assert->getType()->getValue() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createFalse();
+			$subContext = $assertedType->getValue() ? TypeSpecifierContext::createTrue() : TypeSpecifierContext::createFalse();
 			if ($assert->isNegated()) {
 				$subContext = $subContext->negate();
 			}

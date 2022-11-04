@@ -2665,4 +2665,5 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/array-cast-list-types.php'], []);
 	}
+
 }

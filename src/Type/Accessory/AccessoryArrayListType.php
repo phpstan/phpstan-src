@@ -22,6 +22,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
+/** @api */
 class AccessoryArrayListType implements CompoundType, AccessoryType
 {
 

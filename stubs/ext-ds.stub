@@ -18,7 +18,7 @@ use UnderflowException;
 interface Collection extends IteratorAggregate, Countable, JsonSerializable
 {
 	/**
-	 * @return Collection<TKey, TValue>
+	 * @return static
 	 */
 	public function copy();
 
@@ -391,11 +391,6 @@ interface Sequence extends Collection, ArrayAccess
 	 * @return void
 	 */
 	public function apply(callable $callback);
-
-	/**
-	 * @return Sequence<TValue>
-	 */
-	public function copy();
 
 	/**
 	 * @param TValue ...$values

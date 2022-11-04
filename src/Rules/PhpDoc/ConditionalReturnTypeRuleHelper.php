@@ -25,12 +25,21 @@ class ConditionalReturnTypeRuleHelper
 	public function check(ParametersAcceptor $acceptor): array
 	{
 		$templateTypeMap = $acceptor->getTemplateTypeMap();
+
+		$conditionalTypes = [];
 		$parametersByName = [];
 		foreach ($acceptor->getParameters() as $parameter) {
+			TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
+				if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
+					$conditionalTypes[] = $type;
+				}
+
+				return $traverse($type);
+			});
+
 			$parametersByName[$parameter->getName()] = $parameter;
 		}
 
-		$conditionalTypes = [];
 		TypeTraverser::map($acceptor->getReturnType(), static function (Type $type, callable $traverse) use (&$conditionalTypes): Type {
 			if ($type instanceof ConditionalType || $type instanceof ConditionalTypeForParameter) {
 				$conditionalTypes[] = $type;

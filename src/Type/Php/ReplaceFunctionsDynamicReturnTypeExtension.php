@@ -30,6 +30,7 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 		'str_replace' => 2,
 		'str_ireplace' => 2,
 		'substr_replace' => 0,
+		'strtr' => 0,
 	];
 
 	/** @var array<string, int> */
@@ -38,6 +39,7 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 		'str_replace' => 1,
 		'str_ireplace' => 1,
 		'substr_replace' => 1,
+		'strtr' => 2,
 	];
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
@@ -53,7 +55,11 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 	{
 		$type = $this->getPreliminarilyResolvedTypeFromFunctionCall($functionReflection, $functionCall, $scope);
 
-		$possibleTypes = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+		$possibleTypes = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$functionCall->getArgs(),
+			$functionReflection->getVariants(),
+		)->getReturnType();
 		// resolve conditional return types
 		$possibleTypes = TypeUtils::resolveLateResolvableTypes($possibleTypes);
 
@@ -71,12 +77,17 @@ class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctionRetur
 	): Type
 	{
 		$argumentPosition = $this->functionsSubjectPosition[$functionReflection->getName()];
+		$defaultReturnType = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$functionCall->getArgs(),
+			$functionReflection->getVariants(),
+		)->getReturnType();
+
 		if (count($functionCall->getArgs()) <= $argumentPosition) {
-			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
+			return $defaultReturnType;
 		}
 
 		$subjectArgumentType = $scope->getType($functionCall->getArgs()[$argumentPosition]->value);
-		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		if ($subjectArgumentType instanceof MixedType) {
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}

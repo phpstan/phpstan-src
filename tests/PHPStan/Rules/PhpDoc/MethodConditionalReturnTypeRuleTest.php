@@ -70,4 +70,14 @@ class MethodConditionalReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8284(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8284.php'], [
+			[
+				'Conditional return type references unknown parameter $callable.',
+				14,
+			],
+		]);
+	}
+
 }

@@ -1656,10 +1656,10 @@ class InitializerExprTypeResolver
 				}
 			}
 		} elseif ($node instanceof Expr\BinaryOp\Mul) {
-			$min1 = ($rangeMin ?? -INF) * ($operandMin ?? -INF);
-			$min2 = ($rangeMin ?? -INF) * ($operandMax ?? INF);
-			$max1 = ($rangeMax ?? INF) * ($operandMin ?? -INF);
-			$max2 = ($rangeMax ?? INF) * ($operandMax ?? INF);
+			$min1 = $rangeMin === 0 || $operandMin === 0 ? 0 : ($rangeMin ?? -INF) * ($operandMin ?? -INF);
+			$min2 = $rangeMin === 0 || $operandMax === 0 ? 0 : ($rangeMin ?? -INF) * ($operandMax ?? INF);
+			$max1 = $rangeMax === 0 || $operandMin === 0 ? 0 : ($rangeMax ?? INF) * ($operandMin ?? -INF);
+			$max2 = $rangeMax === 0 || $operandMax === 0 ? 0 : ($rangeMax ?? INF) * ($operandMax ?? INF);
 
 			$min = min($min1, $min2, $max1, $max2);
 			$max = max($min1, $min2, $max1, $max2);

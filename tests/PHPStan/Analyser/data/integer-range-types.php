@@ -342,4 +342,16 @@ class X {
 		assertType('float|int<-2, 2>', $p / $u);
 	}
 
+	/**
+	 * @param int<0, max> $positive
+	 * @param int<min, 0> $negative
+	 */
+	public function zeroIssues($positive, $negative)
+	{
+		assertType('0', 0 * $positive);
+		assertType('int<0, max>', $positive * $positive);
+		assertType('0', 0 * $negative);
+		assertType('int<0, max>', $negative * $negative);
+	}
+
 }

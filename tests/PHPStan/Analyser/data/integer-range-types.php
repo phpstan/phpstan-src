@@ -352,6 +352,7 @@ class X {
 		assertType('int<0, max>', $positive * $positive);
 		assertType('0', 0 * $negative);
 		assertType('int<0, max>', $negative * $negative);
+		assertType('int<min, 0>', $negative * $positive);
 	}
 
 }

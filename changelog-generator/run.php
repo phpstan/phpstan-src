@@ -36,6 +36,7 @@ use function sprintf;
 			$this->addArgument('fromCommit', InputArgument::REQUIRED);
 			$this->addArgument('toCommit', InputArgument::REQUIRED);
 			$this->addOption('exclude-branch', null, InputOption::VALUE_REQUIRED);
+			$this->addOption('include-headings', null, InputOption::VALUE_NONE);
 		}
 
 		protected function execute(InputInterface $input, OutputInterface $output)
@@ -72,6 +73,41 @@ use function sprintf;
 					'message' => $message,
 				];
 			}, explode("\n", $commitLines));
+
+			if ($input->getOption('include-headings')) {
+				$output->writeln(<<<'MARKDOWN'
+				Major new features 🚀
+				=====================
+
+				Bleeding edge 🔪
+				=====================
+
+				*
+
+				*If you want to see the shape of things to come and adopt bleeding edge features early, you can include this config file in your project's `phpstan.neon`:*
+
+				```
+				includes:
+					- vendor/phpstan/phpstan/conf/bleedingEdge.neon
+				```
+
+				*Of course, there are no backwards compatibility guarantees when you include this file. The behaviour and reported errors can change in minor versions with this file included. [Learn more](https://phpstan.org/blog/what-is-bleeding-edge)*
+
+				Improvements 🔧
+				=====================
+
+				Bugfixes 🐛
+				=====================
+
+				Function signature fixes 🤖
+				=======================
+
+				Internals 🔍
+				=====================
+
+
+				MARKDOWN);
+			}
 
 			foreach ($commits as $commit) {
 				$pullRequests = $searchApi->issues(sprintf('repo:phpstan/phpstan-src %s', $commit['hash']));

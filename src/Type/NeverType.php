@@ -12,10 +12,8 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
-use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
@@ -25,9 +23,7 @@ class NeverType implements CompoundType
 {
 
 	use UndecidedBooleanTypeTrait;
-	use NonArrayTypeTrait;
 	use NonGenericTypeTrait;
-	use NonIterableTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
@@ -46,6 +42,16 @@ class NeverType implements CompoundType
 	 * @return string[]
 	 */
 	public function getReferencedClasses(): array
+	{
+		return [];
+	}
+
+	public function getArrays(): array
+	{
+		return [];
+	}
+
+	public function getConstantArrays(): array
 	{
 		return [];
 	}
@@ -149,7 +155,22 @@ class NeverType implements CompoundType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getArraySize(): Type
+	{
+		return new NeverType();
+	}
+
 	public function getIterableKeyType(): Type
+	{
+		return new NeverType();
+	}
+
+	public function getFirstIterableKeyType(): Type
+	{
+		return new NeverType();
+	}
+
+	public function getLastIterableKeyType(): Type
 	{
 		return new NeverType();
 	}
@@ -157,6 +178,36 @@ class NeverType implements CompoundType
 	public function getIterableValueType(): Type
 	{
 		return new NeverType();
+	}
+
+	public function getFirstIterableValueType(): Type
+	{
+		return new NeverType();
+	}
+
+	public function getLastIterableValueType(): Type
+	{
+		return new NeverType();
+	}
+
+	public function isArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isConstantArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isOversizedArray(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isList(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
 	}
 
 	public function isOffsetAccessible(): TrinaryLogic
@@ -180,6 +231,51 @@ class NeverType implements CompoundType
 	}
 
 	public function unsetOffset(Type $offsetType): Type
+	{
+		return new NeverType();
+	}
+
+	public function getKeysArray(): Type
+	{
+		return new NeverType();
+	}
+
+	public function getValuesArray(): Type
+	{
+		return new NeverType();
+	}
+
+	public function fillKeysArray(Type $valueType): Type
+	{
+		return new NeverType();
+	}
+
+	public function flipArray(): Type
+	{
+		return new NeverType();
+	}
+
+	public function intersectKeyArray(Type $otherArraysType): Type
+	{
+		return new NeverType();
+	}
+
+	public function popArray(): Type
+	{
+		return new NeverType();
+	}
+
+	public function searchArray(Type $needleType): Type
+	{
+		return new NeverType();
+	}
+
+	public function shiftArray(): Type
+	{
+		return new NeverType();
+	}
+
+	public function shuffleArray(): Type
 	{
 		return new NeverType();
 	}

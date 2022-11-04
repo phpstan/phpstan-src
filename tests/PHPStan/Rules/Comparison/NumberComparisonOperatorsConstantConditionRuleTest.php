@@ -17,6 +17,11 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		return new NumberComparisonOperatorsConstantConditionRule();
 	}
 
+	public function testBug8277(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8277.php'], []);
+	}
+
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/number-comparison-operators.php'], [

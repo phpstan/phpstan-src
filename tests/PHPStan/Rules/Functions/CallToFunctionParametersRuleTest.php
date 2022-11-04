@@ -1224,10 +1224,4 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-8280.php'], []);
 	}
-
-	public function testListTypes(): void
-	{
-		$this->analyse([__DIR__ . '/data/array-cast-list-types.php'], []);
-	}
-
 }

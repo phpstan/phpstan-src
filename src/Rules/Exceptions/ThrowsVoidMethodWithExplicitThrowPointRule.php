@@ -54,7 +54,11 @@ class ThrowsVoidMethodWithExplicitThrowPointRule implements Rule
 			foreach (TypeUtils::flattenTypes($throwPoint->getType()) as $throwPointType) {
 				if (
 					$throwPointType instanceof TypeWithClassName
-					&& $this->exceptionTypeResolver->isCheckedException($throwPointType->getClassName(), $throwPoint->getScope())
+					&& $this->exceptionTypeResolver->isCheckedException(
+						$throwPointType->getClassName(),
+						$throwPoint->getScope(),
+						$throwPoint->getNode()
+					)
 					&& $this->missingCheckedExceptionInThrows
 				) {
 					continue;

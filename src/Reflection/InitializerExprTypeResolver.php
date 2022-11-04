@@ -65,6 +65,7 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use function array_keys;
 use function array_merge;
+use function assert;
 use function ceil;
 use function count;
 use function dirname;
@@ -1682,9 +1683,14 @@ class InitializerExprTypeResolver
 					($operandMin < 0 || $operandMin === null)
 					&& ($operandMax > 0 || $operandMax === null)
 				) {
+					$negativeOperand = IntegerRangeType::fromInterval($operandMin, 0);
+					assert($negativeOperand instanceof IntegerRangeType);
+					$positiveOperand = IntegerRangeType::fromInterval(0, $operandMax);
+					assert($positiveOperand instanceof IntegerRangeType);
+
 					$result = TypeCombinator::union(
-						$this->integerRangeMath($range, $node, IntegerRangeType::fromInterval($operandMin, 0)),
-						$this->integerRangeMath($range, $node, IntegerRangeType::fromInterval(0, $operandMax))
+						$this->integerRangeMath($range, $node, $negativeOperand),
+						$this->integerRangeMath($range, $node, $positiveOperand)
 					)->toNumber();
 
 					if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
@@ -1697,9 +1703,14 @@ class InitializerExprTypeResolver
 					($rangeMin < 0 || $rangeMin === null)
 					&& ($rangeMax > 0 || $rangeMax === null)
 				) {
+					$negativeRange = IntegerRangeType::fromInterval($rangeMin, 0);
+					assert($negativeRange instanceof IntegerRangeType);
+					$positiveRange = IntegerRangeType::fromInterval(0, $rangeMax);
+					assert($positiveRange instanceof IntegerRangeType);
+
 					$result = TypeCombinator::union(
-						$this->integerRangeMath(IntegerRangeType::fromInterval($rangeMin, 0), $node, $operand),
-						$this->integerRangeMath(IntegerRangeType::fromInterval(0, $rangeMax), $node, $operand)
+						$this->integerRangeMath($negativeRange, $node, $operand),
+						$this->integerRangeMath($positiveRange, $node, $operand)
 					)->toNumber();
 
 					if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {

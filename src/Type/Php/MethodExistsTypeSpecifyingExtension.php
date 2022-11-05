@@ -53,7 +53,7 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 
 		$objectType = $scope->getType($node->getArgs()[0]->value);
 		if ($objectType->isString()->yes()) {
-			if ($objectType instanceof ConstantStringType && $objectType->isClassString()) {
+			if ($objectType->isClassStringType()->yes()) {
 				return $this->typeSpecifier->create(
 					$node->getArgs()[0]->value,
 					new IntersectionType([

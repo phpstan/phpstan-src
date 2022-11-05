@@ -64,14 +64,6 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return $this->value;
 	}
 
-	public function hasMethod(string $methodName): TrinaryLogic
-	{
-		if ($this->isClassString()) {
-			return TrinaryLogic::createMaybe();
-		}
-		return TrinaryLogic::createNo();
-	}
-
 	public function isClassStringType(): TrinaryLogic
 	{
 		if ($this->isClassString()) {

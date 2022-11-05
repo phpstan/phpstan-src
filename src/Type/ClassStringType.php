@@ -87,6 +87,11 @@ class ClassStringType extends StringType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isClassStringType(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

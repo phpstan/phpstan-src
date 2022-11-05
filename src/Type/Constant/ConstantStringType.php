@@ -72,6 +72,19 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isClassStringType(): TrinaryLogic
+	{
+		if ($this->isClassString()) {
+			return TrinaryLogic::createYes();
+		}
+
+		return TrinaryLogic::createNo();
+	}
+
+
+	/**
+	 * @deprecated use isClassStringType() instead
+	 */
 	public function isClassString(): bool
 	{
 		if ($this->isClassString) {

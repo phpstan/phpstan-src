@@ -169,6 +169,11 @@ class StringType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isClassStringType(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->getValue() === '') {

@@ -335,6 +335,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isLiteralString();
 	}
 
+	public function isClassStringType(): TrinaryLogic
+	{
+		return $this->resolve()->isClassStringType();
+	}
+
 	public function getSmallerType(): Type
 	{
 		return $this->resolve()->getSmallerType();

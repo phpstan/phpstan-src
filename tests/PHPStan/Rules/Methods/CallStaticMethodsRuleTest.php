@@ -537,4 +537,5 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/static-has-method.php'], []);
 	}
+
 }

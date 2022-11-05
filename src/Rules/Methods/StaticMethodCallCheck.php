@@ -109,6 +109,11 @@ class StaticMethodCallCheck
 
 				$classType = $scope->resolveTypeByName($class);
 			} else {
+				$classStringType = $scope->getType(new Expr\ClassConstFetch($class, 'class'));
+				if ($classStringType->hasMethod($methodName)->yes()) {
+					return [[], null];
+				}
+
 				if (!$this->reflectionProvider->hasClass($className)) {
 					if ($scope->isInClassExists($className)) {
 						return [[], null];

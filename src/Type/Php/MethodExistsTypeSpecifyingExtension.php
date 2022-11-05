@@ -47,16 +47,28 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		$objectType = $scope->getType($node->getArgs()[0]->value);
-		if (!$objectType instanceof ObjectType) {
-			if ($objectType->isString()->yes()) {
-				return new SpecifiedTypes([], []);
-			}
-		}
-
 		$methodNameType = $scope->getType($node->getArgs()[1]->value);
 		if (!$methodNameType instanceof ConstantStringType) {
 			return new SpecifiedTypes([], []);
+		}
+
+		$objectType = $scope->getType($node->getArgs()[0]->value);
+		if (!$objectType instanceof ObjectType) {
+			if ($objectType instanceof ConstantStringType && $objectType->isClassString()) {
+				return $this->typeSpecifier->create(
+					$node->getArgs()[0]->value,
+					new IntersectionType([
+						$objectType,
+						new HasMethodType($methodNameType->getValue()),
+					]),
+					$context,
+					false,
+					$scope,
+				);
+			}
+			if ($objectType->isString()->yes()) {
+				return new SpecifiedTypes([], []);
+			}
 		}
 
 		return $this->typeSpecifier->create(

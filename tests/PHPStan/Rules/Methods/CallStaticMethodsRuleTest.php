@@ -531,4 +531,20 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7489.php'], []);
 	}
 
+	public function testHasMethodStaticCall(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/static-has-method.php'], [
+			[
+				'Call to an undefined static method StaticHasMethodCall\rex_var::doesNotExist().',
+				38,
+			],
+			[
+				'Call to an undefined static method StaticHasMethodCall\rex_var::doesNotExist().',
+				48,
+			],
+		]);
+	}
+
 }

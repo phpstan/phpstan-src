@@ -14,7 +14,6 @@ use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\UnionType;
 use function count;
@@ -53,7 +52,7 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 		}
 
 		$objectType = $scope->getType($node->getArgs()[0]->value);
-		if (!$objectType instanceof ObjectType) {
+		if ($objectType->isString()->yes()) {
 			if ($objectType instanceof ConstantStringType && $objectType->isClassString()) {
 				return $this->typeSpecifier->create(
 					$node->getArgs()[0]->value,
@@ -66,9 +65,8 @@ class MethodExistsTypeSpecifyingExtension implements FunctionTypeSpecifyingExten
 					$scope,
 				);
 			}
-			if ($objectType->isString()->yes()) {
-				return new SpecifiedTypes([], []);
-			}
+
+			return new SpecifiedTypes([], []);
 		}
 
 		return $this->typeSpecifier->create(

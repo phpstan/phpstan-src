@@ -553,4 +553,5 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = false;
 		$this->analyse([__DIR__ . '/data/bug-1267.php'], []);
 	}
+
 }

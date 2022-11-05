@@ -27,7 +27,7 @@ class ClassStringType extends StringType
 		}
 
 		if ($type instanceof ConstantStringType) {
-			return TrinaryLogic::createFromBoolean($type->isClassString());
+			return TrinaryLogic::createFromBoolean($type->isClassStringType()->yes());
 		}
 
 		if ($type instanceof self) {
@@ -44,7 +44,7 @@ class ClassStringType extends StringType
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof ConstantStringType) {
-			return TrinaryLogic::createFromBoolean($type->isClassString());
+			return TrinaryLogic::createFromBoolean($type->isClassStringType()->yes());
 		}
 
 		if ($type instanceof self) {

@@ -29,14 +29,12 @@ class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExten
 		$string = $scope->getType($functionCall->getArgs()[0]->value);
 		$trimChars = $scope->getType($functionCall->getArgs()[1]->value);
 
-		if ($trimChars instanceof ConstantStringType && $trimChars->getValue() === '\\') {
-			if ($string instanceof ConstantStringType && $string->isClassString()) {
+		if ($trimChars instanceof ConstantStringType && $trimChars->getValue() === '\\' && $string->isClassStringType()->yes()) {
+			if ($string instanceof ConstantStringType) {
 				return new ConstantStringType(ltrim($string->getValue(), $trimChars->getValue()), true);
 			}
 
-			if ($string instanceof ClassStringType) {
-				return new ClassStringType();
-			}
+			return new ClassStringType();
 		}
 
 		return null;

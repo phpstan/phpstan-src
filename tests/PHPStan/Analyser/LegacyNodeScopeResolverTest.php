@@ -2720,11 +2720,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mixedNoFloat + []',
 			],
 			[
-				'int',
+				'(float|int)',
 				'$mixedNoFloat + 5',
 			],
 			[
-				'float',
+				'(float|int)',
 				'$mixedNoInt + 5',
 			],
 			[

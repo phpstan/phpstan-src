@@ -971,6 +971,14 @@ class InitializerExprTypeResolver
 		}
 
 		if ($leftType instanceof MixedType && $rightType instanceof MixedType) {
+			if (
+				($leftIsArray->no() && $rightIsArray->no())
+			) {
+				return new BenevolentUnionType([
+					new FloatType(),
+					new IntegerType(),
+				]);
+			}
 			return new BenevolentUnionType([
 				new FloatType(),
 				new IntegerType(),

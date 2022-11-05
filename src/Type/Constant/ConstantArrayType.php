@@ -748,37 +748,26 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	public function searchArray(Type $needleType): Type
 	{
 		$matches = [];
-		$optionalDirectMatches = [];
+		$hasIdenticalValue = false;
 
 		foreach ($this->valueTypes as $index => $valueType) {
 			$isNeedleSuperType = $valueType->isSuperTypeOf($needleType);
 			if ($isNeedleSuperType->no()) {
-				$matches[] = new ConstantBooleanType(false);
 				continue;
 			}
 
 			if ($needleType instanceof ConstantScalarType && $valueType instanceof ConstantScalarType
 				&& $needleType->getValue() === $valueType->getValue()
+				&& !$this->isOptionalKey($index)
 			) {
-				if (!$this->isOptionalKey($index)) {
-					return TypeCombinator::union($this->keyTypes[$index], ...$optionalDirectMatches);
-				}
-				$optionalDirectMatches[] = $this->keyTypes[$index];
+				$hasIdenticalValue = true;
 			}
 
 			$matches[] = $this->keyTypes[$index];
-			if (!$isNeedleSuperType->maybe()) {
-				continue;
-			}
-
-			$matches[] = new ConstantBooleanType(false);
 		}
 
 		if (count($matches) > 0) {
-			if (
-				$this->getIterableValueType()->accepts($needleType, true)->yes()
-				&& $needleType->isSuperTypeOf(new ObjectWithoutClassType())->no()
-			) {
+			if ($hasIdenticalValue) {
 				return TypeCombinator::union(...$matches);
 			}
 

@@ -152,6 +152,11 @@ class StrictMixedType implements CompoundType
 		return $this;
 	}
 
+	public function isBoolean(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isInteger(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

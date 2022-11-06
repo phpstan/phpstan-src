@@ -252,6 +252,11 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isBoolean(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isInteger(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

@@ -833,6 +833,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this->getIterableValueType();
 	}
 
+	public function isBoolean(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isInteger(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

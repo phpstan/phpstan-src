@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -85,6 +86,11 @@ class BooleanType implements Type
 	public function toArrayKey(): Type
 	{
 		return new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
+	}
+
+	public function isBoolean(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
 	}
 
 	public function tryRemove(Type $typeToRemove): ?Type

@@ -391,6 +391,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		);
 	}
 
+	public function isBoolean(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isInteger(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

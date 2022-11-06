@@ -308,5 +308,6 @@ function headers_sent(string &$filename = null, int &$line = null): bool {}
 
 /**
  * @param-out callable-string $callable_name
+ * @return ($value is callable ? true : false)
  */
 function is_callable(mixed $value, bool $syntax_only = false, string &$callable_name = null): bool {}

@@ -2162,11 +2162,7 @@ class NodeScopeResolver
 				$className = $scope->resolveName($expr->class);
 				if ($this->reflectionProvider->hasClass($className)) {
 					$classReflection = $this->reflectionProvider->getClass($className);
-					if (is_string($expr->name)) {
-						$methodName = $expr->name;
-					} else {
-						$methodName = $expr->name->name;
-					}
+					$methodName = $expr->name->name;
 					if ($classReflection->hasMethod($methodName)) {
 						$methodReflection = $classReflection->getMethod($methodName, $scope);
 						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(

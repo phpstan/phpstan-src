@@ -22,7 +22,6 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ClosureType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
@@ -458,11 +457,7 @@ class DependencyResolver
 		}
 
 		$itemType = $scope->getType($items[0]->value);
-		if (!$itemType instanceof ConstantStringType) {
-			return false;
-		}
-
-		return $itemType->isClassString();
+		return $itemType->isClassStringType()->yes();
 	}
 
 	/**

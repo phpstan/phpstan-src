@@ -1,6 +1,2 @@
 parameters:
-	ignoreErrors:
-		-
-			message: "#^Call to an undefined static method PHPUnit\\\\Framework\\\\TestCase\\:\\:assertFileDoesNotExist\\(\\)\\.$#"
-			count: 1
-			path: ../src/Testing/LevelsTestCase.php
+	ignoreErrors: []

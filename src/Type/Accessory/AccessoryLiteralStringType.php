@@ -191,6 +191,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
+	public function isClassStringType(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

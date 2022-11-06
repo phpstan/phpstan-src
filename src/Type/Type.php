@@ -151,6 +151,8 @@ interface Type
 
 	public function isLiteralString(): TrinaryLogic;
 
+	public function isClassStringType(): TrinaryLogic;
+
 	public function getSmallerType(): Type;
 
 	public function getSmallerOrEqualType(): Type;

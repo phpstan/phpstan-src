@@ -52,7 +52,7 @@ class GenericClassStringType extends ClassStringType
 		}
 
 		if ($type instanceof ConstantStringType) {
-			if (!$type->isClassString()) {
+			if (!$type->isClassStringType()->yes()) {
 				return TrinaryLogic::createNo();
 			}
 
@@ -98,7 +98,7 @@ class GenericClassStringType extends ClassStringType
 				$isSuperType = $genericType->isSuperTypeOf($objectType);
 			}
 
-			if (!$type->isClassString()) {
+			if (!$type->isClassStringType()->yes()) {
 				$isSuperType = $isSuperType->and(TrinaryLogic::createMaybe());
 			}
 
@@ -132,7 +132,7 @@ class GenericClassStringType extends ClassStringType
 			$typeToInfer = new ObjectType($receivedType->getValue());
 		} elseif ($receivedType instanceof self) {
 			$typeToInfer = $receivedType->type;
-		} elseif ($receivedType instanceof ClassStringType) {
+		} elseif ($receivedType->isClassStringType()->yes()) {
 			$typeToInfer = $this->type;
 			if ($typeToInfer instanceof TemplateType) {
 				$typeToInfer = $typeToInfer->getBound();
@@ -180,7 +180,7 @@ class GenericClassStringType extends ClassStringType
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->isClassString()) {
+		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->isClassStringType()->yes()) {
 			$generic = $this->getGenericType();
 
 			if ($generic instanceof TypeWithClassName) {

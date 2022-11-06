@@ -64,23 +64,24 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return $this->value;
 	}
 
-	public function hasMethod(string $methodName): TrinaryLogic
-	{
-		if ($this->isClassString()) {
-			return TrinaryLogic::createMaybe();
-		}
-		return TrinaryLogic::createNo();
-	}
-
-	public function isClassString(): bool
+	public function isClassStringType(): TrinaryLogic
 	{
 		if ($this->isClassString) {
-			return true;
+			return TrinaryLogic::createYes();
+
 		}
 
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
-		return $reflectionProvider->hasClass($this->value);
+		return TrinaryLogic::createFromBoolean($reflectionProvider->hasClass($this->value));
+	}
+
+	/**
+	 * @deprecated use isClassStringType() instead
+	 */
+	public function isClassString(): bool
+	{
+		return $this->isClassStringType()->yes();
 	}
 
 	public function describe(VerbosityLevel $level): string
@@ -143,7 +144,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			return TrinaryLogic::createNo();
 		}
 		if ($type instanceof ClassStringType) {
-			return $this->isClassString() ? TrinaryLogic::createMaybe() : TrinaryLogic::createNo();
+			return $this->isClassStringType()->yes() ? TrinaryLogic::createMaybe() : TrinaryLogic::createNo();
 		}
 
 		if ($type instanceof self) {
@@ -445,7 +446,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function canAccessConstants(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->isClassString());
+		return $this->isClassStringType();
 	}
 
 	public function hasConstant(string $constantName): TrinaryLogic

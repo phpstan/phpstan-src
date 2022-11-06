@@ -1,15 +1,5 @@
 <?php
 
-class DateInterval
-{
-
-	/**
-	 * @var int|false
-	 */
-	public $days;
-
-}
-
 /**
  * @template TDate of DateTimeInterface
  * @template TEnd of ?DateTimeInterface

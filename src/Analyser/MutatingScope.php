@@ -39,6 +39,7 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
@@ -3721,7 +3722,6 @@ class MutatingScope implements Scope
 		});
 
 		$scope = $this;
-		$typeGuards = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
 			$type = $typeSpecification['type'];
@@ -3734,34 +3734,20 @@ class MutatingScope implements Scope
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
 			}
-
-			if ($specifiedTypes->shouldOverwrite()) {
-				continue;
-			}
-			if ($scope->hasExpressionType($expr)->no()) {
-				continue;
-			}
-
-			$exprString = $this->getNodeKey($expr);
-			$typeGuards[$exprString] = $scope->expressionTypes[$exprString]->getType();
 		}
 
 		$newConditionalExpressions = $specifiedTypes->getNewConditionalExpressionHolders();
 		foreach ($this->conditionalExpressions as $variableExprString => $conditionalExpressions) {
-			if (array_key_exists($variableExprString, $typeGuards)) {
-				continue;
-			}
-
 			$typeHolder = null;
 
 			foreach ($conditionalExpressions as $conditionalExpression) {
 				$matchingConditions = [];
 				foreach ($conditionalExpression->getConditionExpressionTypes() as $conditionExprString => $conditionalType) {
-					if (!array_key_exists($conditionExprString, $typeGuards)) {
+					$conditionExpr = $this->exprStringToExpr($conditionExprString);
+					if ($conditionExpr === null) {
 						continue;
 					}
-
-					if (!$typeGuards[$conditionExprString]->equals($conditionalType)) {
+					if (!$scope->getType($conditionExpr)->equals($conditionalType)) {
 						continue;
 					}
 
@@ -3800,6 +3786,20 @@ class MutatingScope implements Scope
 		}
 
 		return $scope->changeConditionalExpressions($newConditionalExpressions);
+	}
+
+	private function exprStringToExpr(string $exprString): ?Expr
+	{
+		try {
+			$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
+		} catch (ParserErrorsException) {
+			return null;
+		}
+		if (!$expr instanceof Node\Stmt\Expression) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $expr->expr;
 	}
 
 	/**

@@ -48,7 +48,7 @@ class FloatType implements Type
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
-		if ($type instanceof self || $type instanceof IntegerType) {
+		if ($type instanceof self || $type->isInteger()->yes()) {
 			return TrinaryLogic::createYes();
 		}
 

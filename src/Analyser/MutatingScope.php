@@ -1590,9 +1590,6 @@ class MutatingScope implements Scope
 
 		if ($node instanceof Expr\BinaryOp\Coalesce) {
 			$leftType = $this->getType($node->left);
-			$rightType = $this->filterByFalseyValue(
-				new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null'))),
-			)->getType($node->right);
 
 			$result = $this->issetCheck($node->left, static function (Type $type): ?bool {
 				$isNull = (new NullType())->isSuperTypeOf($type);
@@ -1603,15 +1600,19 @@ class MutatingScope implements Scope
 				return !$isNull->yes();
 			});
 
+			if ($result !== null && $result !== false) {
+				return TypeCombinator::removeNull($leftType);
+			}
+
+			$rightType = $this->filterByFalseyValue(
+				new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null'))),
+			)->getType($node->right);
+
 			if ($result === null) {
 				return TypeCombinator::union(
 					TypeCombinator::removeNull($leftType),
 					$rightType,
 				);
-			}
-
-			if ($result) {
-				return TypeCombinator::removeNull($leftType);
 			}
 
 			return $rightType;

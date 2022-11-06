@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -85,6 +86,11 @@ class IntegerType implements Type
 	public function toArrayKey(): Type
 	{
 		return $this;
+	}
+
+	public function isInteger(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
 	}
 
 	public function tryRemove(Type $typeToRemove): ?Type

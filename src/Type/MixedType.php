@@ -602,6 +602,17 @@ class MixedType implements CompoundType, SubtractableType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isInteger(): TrinaryLogic
+	{
+		if ($this->subtractedType !== null) {
+			if ($this->subtractedType->isSuperTypeOf(new IntegerType())->yes()) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {

@@ -206,7 +206,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	private function determineExactType(Type $in, int $filterValue, Type $defaultType, ?Arg $flagsArg, Scope $scope): ?Type
 	{
 		if (($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN') && $in instanceof BooleanType)
-			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in instanceof IntegerType)
+			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in->isInteger()->yes())
 			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in instanceof FloatType)) {
 			return $in;
 		}
@@ -229,7 +229,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			return preg_match('/\A[+-]?(?:0|[1-9][0-9]*)\z/', $value) === 1 ? $in->toInteger() : $defaultType;
 		}
 
-		if ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in instanceof IntegerType) {
+		if ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in->isInteger()->yes()) {
 			return $in->toFloat();
 		}
 

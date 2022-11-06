@@ -61,7 +61,7 @@ class BcMathStringOrNullReturnTypeExtension implements DynamicFunctionReturnType
 		}
 
 		$secondArgument = $scope->getType($functionCall->getArgs()[1]->value);
-		$secondArgumentIsNumeric = ($secondArgument instanceof ConstantScalarType && is_numeric($secondArgument->getValue())) || $secondArgument instanceof IntegerType;
+		$secondArgumentIsNumeric = ($secondArgument instanceof ConstantScalarType && is_numeric($secondArgument->getValue())) || $secondArgument->isInteger()->yes();
 
 		if ($secondArgument instanceof ConstantScalarType && ($this->isZero($secondArgument->getValue()) || !$secondArgumentIsNumeric)) {
 			if ($this->phpVersion->throwsTypeErrorForInternalFunctions()) {

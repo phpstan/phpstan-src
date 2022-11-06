@@ -613,6 +613,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThanOrEqual($otherType));
 	}
 
+	public function isInteger(): TrinaryLogic
+	{
+		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isInteger());
+	}
+
 	public function isGreaterThan(Type $otherType): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $otherType->isSmallerThan($type));

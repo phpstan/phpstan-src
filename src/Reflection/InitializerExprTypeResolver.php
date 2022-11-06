@@ -1507,7 +1507,7 @@ class InitializerExprTypeResolver
 
 		$resultType = TypeCombinator::union($leftNumberType, $rightNumberType);
 		if ($expr instanceof Expr\BinaryOp\Div) {
-			if ($types instanceof MixedType || $resultType instanceof IntegerType) {
+			if ($types instanceof MixedType || $resultType->isInteger()->yes()) {
 				return new BenevolentUnionType([new IntegerType(), new FloatType()]);
 			}
 
@@ -1925,7 +1925,7 @@ class InitializerExprTypeResolver
 
 				return TypeCombinator::intersect(...$accessories);
 			}
-			if ($type instanceof IntegerType || $type instanceof FloatType) {
+			if ($type->isInteger()->yes() || $type instanceof FloatType) {
 				return new IntegerType(); //no const types here, result depends on PHP_INT_SIZE
 			}
 			return new ErrorType();

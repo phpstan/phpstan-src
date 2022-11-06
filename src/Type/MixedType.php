@@ -679,8 +679,10 @@ class MixedType implements CompoundType, SubtractableType
 	public function isClassStringType(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
-			$stringType = new StringType();
-			if ($this->subtractedType->isSuperTypeOf($stringType)->yes()) {
+			if ($this->subtractedType->isSuperTypeOf(new StringType())->yes()) {
+				return TrinaryLogic::createNo();
+			}
+			if ($this->subtractedType->isSuperTypeOf(new ClassStringType())->yes()) {
 				return TrinaryLogic::createNo();
 			}
 		}

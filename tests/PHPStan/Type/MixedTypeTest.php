@@ -592,6 +592,50 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
+	 * @dataProvider dataSubstractedIsClassString
+	 */
+	public function testSubstractedIsClassString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isClassStringType();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isClassStringType()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsClassString(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new StringType(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new ClassStringType(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new IntersectionType([
+					new StringType(),
+					new AccessoryLiteralStringType(),
+				]),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	/**
 	 * @dataProvider dataSubstractedIsLiteralString
 	 */
 	public function testSubstractedIsLiteralString(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void

@@ -349,7 +349,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 
 	public function isClassStringType(): TrinaryLogic
 	{
-		return TrinaryLogic::createNo();
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isCommonCallable(): bool

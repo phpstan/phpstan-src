@@ -446,7 +446,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function canAccessConstants(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->isClassStringType()->yes());
+		return $this->isClassStringType();
 	}
 
 	public function hasConstant(string $constantName): TrinaryLogic

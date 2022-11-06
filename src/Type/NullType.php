@@ -177,6 +177,11 @@ class NullType implements ConstantScalarType
 		return $this;
 	}
 
+	public function isInteger(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

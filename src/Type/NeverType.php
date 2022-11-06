@@ -333,6 +333,11 @@ class NeverType implements CompoundType
 		return $this;
 	}
 
+	public function isInteger(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

@@ -260,6 +260,11 @@ class ArrayType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isInteger(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

@@ -349,7 +349,7 @@ class TypeSpecifier
 			$rightType = $scope->getType($expr->right);
 
 			$leftBooleanType = $leftType->toBoolean();
-			if ($leftBooleanType instanceof ConstantBooleanType && $rightType instanceof BooleanType) {
+			if ($leftBooleanType instanceof ConstantBooleanType && $rightType->isBoolean()->yes()) {
 				return $this->specifyTypesInCondition(
 					$scope,
 					new Expr\BinaryOp\Identical(
@@ -362,7 +362,7 @@ class TypeSpecifier
 			}
 
 			$rightBooleanType = $rightType->toBoolean();
-			if ($rightBooleanType instanceof ConstantBooleanType && $leftType instanceof BooleanType) {
+			if ($rightBooleanType instanceof ConstantBooleanType && $leftType->isBoolean()->yes()) {
 				return $this->specifyTypesInCondition(
 					$scope,
 					new Expr\BinaryOp\Identical(

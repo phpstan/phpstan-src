@@ -10,6 +10,7 @@ use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use function sprintf;
@@ -685,6 +686,47 @@ class MixedTypeTest extends PHPStanTestCase
 				new MixedType(),
 				new IterableType(new StringType(), new StringType()),
 				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataSubstractedIsBoolean
+	 */
+	public function testSubstractedIsBoolean(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isBoolean();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isBoolean()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsBoolean(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ConstantBooleanType(true),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ConstantBooleanType(false),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new BooleanType(),
+				TrinaryLogic::createNo(),
 			],
 		];
 	}

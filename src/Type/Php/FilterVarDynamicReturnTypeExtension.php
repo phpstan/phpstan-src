@@ -205,7 +205,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	private function determineExactType(Type $in, int $filterValue, Type $defaultType, ?Arg $flagsArg, Scope $scope): ?Type
 	{
-		if (($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN') && $in instanceof BooleanType)
+		if (($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN') && $in->isBoolean()->yes())
 			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in->isInteger()->yes())
 			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in instanceof FloatType)) {
 			return $in;

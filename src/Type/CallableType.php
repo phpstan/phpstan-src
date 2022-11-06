@@ -322,6 +322,16 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return TrinaryLogic::createNo();
 	}
 
+	public function isTrue(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isFalse(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isBoolean(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

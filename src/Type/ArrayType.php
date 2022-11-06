@@ -260,6 +260,16 @@ class ArrayType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isTrue(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isFalse(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isBoolean(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

@@ -121,6 +121,16 @@ class FloatType implements Type
 		return new IntegerType();
 	}
 
+	public function isTrue(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isFalse(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isBoolean(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

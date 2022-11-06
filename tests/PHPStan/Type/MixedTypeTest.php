@@ -731,6 +731,90 @@ class MixedTypeTest extends PHPStanTestCase
 		];
 	}
 
+
+	/**
+	 * @dataProvider dataSubstractedIsFalse
+	 */
+	public function testSubstractedIsFalse(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isFalse();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isFalse()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsFalse(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ConstantBooleanType(true),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ConstantBooleanType(false),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new BooleanType(),
+				TrinaryLogic::createNo(),
+			],
+		];
+	}
+
+
+	/**
+	 * @dataProvider dataSubstractedIsTrue
+	 */
+	public function testSubstractedIsTrue(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isTrue();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isTrue()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsTrue(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ConstantBooleanType(true),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new ConstantBooleanType(false),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new BooleanType(),
+				TrinaryLogic::createNo(),
+			],
+		];
+	}
+
 	/**
 	 * @dataProvider dataSubstractedIsInteger
 	 */

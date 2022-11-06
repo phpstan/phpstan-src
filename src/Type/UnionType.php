@@ -625,6 +625,16 @@ class UnionType implements CompoundType
 		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThanOrEqual($otherType));
 	}
 
+	public function isTrue(): TrinaryLogic
+	{
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isTrue());
+	}
+
+	public function isFalse(): TrinaryLogic
+	{
+		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isFalse());
+	}
+
 	public function isBoolean(): TrinaryLogic
 	{
 		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isBoolean());

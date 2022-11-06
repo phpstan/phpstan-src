@@ -310,6 +310,16 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isSmallerThanOrEqual($otherType);
 	}
 
+	public function isTrue(): TrinaryLogic
+	{
+		return $this->resolve()->isTrue();
+	}
+
+	public function isFalse(): TrinaryLogic
+	{
+		return $this->resolve()->isFalse();
+	}
+
 	public function isBoolean(): TrinaryLogic
 	{
 		return $this->resolve()->isBoolean();

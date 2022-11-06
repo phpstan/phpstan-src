@@ -31,8 +31,7 @@ class UnreachableTernaryElseBranchRule implements Rule
 		$conditionType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->cond) : $scope->getNativeType($node->cond);
 		$conditionBooleanType = $conditionType->toBoolean();
 		if (
-			$conditionBooleanType instanceof ConstantBooleanType
-			&& $conditionBooleanType->getValue()
+			$conditionBooleanType->isTrue()->yes()
 			&& $this->helper->shouldSkip($scope, $node->cond)
 			&& !$this->helper->shouldReportAlwaysTrueByDefault($node->cond)
 		) {

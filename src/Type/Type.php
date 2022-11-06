@@ -141,6 +141,12 @@ interface Type
 
 	public function isSmallerThanOrEqual(Type $otherType): TrinaryLogic;
 
+	public function isTrue(): TrinaryLogic;
+
+	public function isFalse(): TrinaryLogic;
+
+	public function isBoolean(): TrinaryLogic;
+
 	public function isInteger(): TrinaryLogic;
 
 	public function isString(): TrinaryLogic;

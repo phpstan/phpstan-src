@@ -719,7 +719,7 @@ class NodeScopeResolver
 			], $throwPoints);
 		} elseif ($stmt instanceof If_) {
 			$conditionType = $scope->getType($stmt->cond)->toBoolean();
-			$ifAlwaysTrue = $conditionType instanceof ConstantBooleanType && $conditionType->getValue();
+			$ifAlwaysTrue = $conditionType->isTrue()->yes();
 			$condResult = $this->processExprNode($stmt->cond, $scope, $nodeCallback, ExpressionContext::createDeep());
 			$exitPoints = [];
 			$throwPoints = $overridingThrowPoints ?? $condResult->getThrowPoints();
@@ -769,8 +769,7 @@ class NodeScopeResolver
 				}
 
 				if (
-					$elseIfConditionType instanceof ConstantBooleanType
-					&& $elseIfConditionType->getValue()
+					$elseIfConditionType->isTrue()->yes()
 				) {
 					$lastElseIfConditionIsTrue = true;
 				}
@@ -924,9 +923,9 @@ class NodeScopeResolver
 
 			$beforeCondBooleanType = $scope->getType($stmt->cond)->toBoolean();
 			$condBooleanType = $bodyScopeMaybeRan->getType($stmt->cond)->toBoolean();
-			$isIterableAtLeastOnce = $beforeCondBooleanType instanceof ConstantBooleanType && $beforeCondBooleanType->getValue();
-			$alwaysIterates = $condBooleanType instanceof ConstantBooleanType && $condBooleanType->getValue();
-			$neverIterates = $condBooleanType instanceof ConstantBooleanType && !$condBooleanType->getValue();
+			$isIterableAtLeastOnce = $beforeCondBooleanType->isTrue()->yes();
+			$alwaysIterates = $condBooleanType->isTrue()->yes();
+			$neverIterates = $condBooleanType->isFalse()->yes();
 			$nodeCallback(new BreaklessWhileLoopNode($stmt, $finalScopeResult->getExitPoints()), $bodyScopeMaybeRan);
 
 			if ($alwaysIterates) {
@@ -997,7 +996,7 @@ class NodeScopeResolver
 				$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 			}
 			$condBooleanType = $bodyScope->getType($stmt->cond)->toBoolean();
-			$alwaysIterates = $condBooleanType instanceof ConstantBooleanType && $condBooleanType->getValue();
+			$alwaysIterates = $condBooleanType->isTrue()->yes();
 
 			$nodeCallback(new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->getExitPoints()), $bodyScope);
 
@@ -2687,7 +2686,7 @@ class NodeScopeResolver
 					$throwPoints = array_merge($throwPoints, $armCondResult->getThrowPoints());
 					$armCondExpr = new BinaryOp\Identical($expr->cond, $armCond);
 					$armCondType = $armCondResult->getScope()->getType($armCondExpr);
-					if ($armCondType instanceof ConstantBooleanType && $armCondType->getValue()) {
+					if ($armCondType->isTrue()->yes()) {
 						$hasAlwaysTrueCond = true;
 					}
 					$armCondScope = $armCondResult->getScope()->filterByFalseyValue($armCondExpr);

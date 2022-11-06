@@ -1405,7 +1405,7 @@ class InitializerExprTypeResolver
 			}
 
 			$leftIdenticalToRight = $valueComparisonCallback($leftValueTypes[$i], $rightValueTypes[$j]);
-			if ($leftIdenticalToRight instanceof ConstantBooleanType && !$leftIdenticalToRight->getValue()) {
+			if ($leftIdenticalToRight->isFalse()->yes()) {
 				return new ConstantBooleanType(false);
 			}
 			$resultType = TypeCombinator::union($resultType, $leftIdenticalToRight);

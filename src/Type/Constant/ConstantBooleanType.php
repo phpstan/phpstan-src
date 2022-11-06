@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\GeneralizePrecision;
@@ -94,6 +95,16 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 	public function toArrayKey(): Type
 	{
 		return new ConstantIntegerType((int) $this->value);
+	}
+
+	public function isTrue(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->value === true);
+	}
+
+	public function isFalse(): TrinaryLogic
+	{
+		return TrinaryLogic::createFromBoolean($this->value === false);
 	}
 
 	public function generalize(GeneralizePrecision $precision): Type

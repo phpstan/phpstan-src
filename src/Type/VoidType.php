@@ -104,6 +104,21 @@ class VoidType implements Type
 		return new ErrorType();
 	}
 
+	public function isTrue(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isFalse(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
+	public function isBoolean(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isInteger(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

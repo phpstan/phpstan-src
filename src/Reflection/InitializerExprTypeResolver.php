@@ -74,8 +74,10 @@ use function in_array;
 use function is_float;
 use function is_int;
 use function max;
+use function min;
 use function sprintf;
 use function strtolower;
+use const INF;
 
 class InitializerExprTypeResolver
 {
@@ -1690,14 +1692,14 @@ class InitializerExprTypeResolver
 
 					$result = TypeCombinator::union(
 						$this->integerRangeMath($range, $node, $negativeOperand),
-						$this->integerRangeMath($range, $node, $positiveOperand)
+						$this->integerRangeMath($range, $node, $positiveOperand),
 					)->toNumber();
 
 					if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
 						return new BenevolentUnionType([new IntegerType(), new FloatType()]);
-					} else {
-						return $result;
 					}
+
+					return $result;
 				}
 				if (
 					($rangeMin < 0 || $rangeMin === null)
@@ -1710,14 +1712,14 @@ class InitializerExprTypeResolver
 
 					$result = TypeCombinator::union(
 						$this->integerRangeMath($negativeRange, $node, $operand),
-						$this->integerRangeMath($positiveRange, $node, $operand)
+						$this->integerRangeMath($positiveRange, $node, $operand),
 					)->toNumber();
 
 					if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
 						return new BenevolentUnionType([new IntegerType(), new FloatType()]);
-					} else {
-						return $result;
 					}
+
+					return $result;
 				}
 
 				$rangeMinSign = ($rangeMin ?? -INF) <=> 0;

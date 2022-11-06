@@ -221,7 +221,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 		}
 
 		$booleanResult = $scope->getType($expr)->toBoolean();
-		if ($booleanResult instanceof ConstantBooleanType && !$booleanResult->getValue()) {
+		if ($booleanResult->isFalse()->yes()) {
 			return [new NeverType(), new NeverType(), false];
 		}
 

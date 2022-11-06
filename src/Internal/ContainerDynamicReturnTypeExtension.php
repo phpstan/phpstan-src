@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\ObjectType;
@@ -44,7 +43,7 @@ class ContainerDynamicReturnTypeExtension implements DynamicMethodReturnTypeExte
 		$type = new ObjectType($argType->getValue());
 		if ($methodReflection->getName() === 'getByType' && count($methodCall->getArgs()) >= 2) {
 			$argType = $scope->getType($methodCall->getArgs()[1]->value);
-			if ($argType instanceof ConstantBooleanType && $argType->getValue()) {
+			if ($argType->isTrue()->yes()) {
 				$type = TypeCombinator::addNull($type);
 			}
 		}

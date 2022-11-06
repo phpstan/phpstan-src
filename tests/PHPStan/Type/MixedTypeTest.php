@@ -731,7 +731,6 @@ class MixedTypeTest extends PHPStanTestCase
 		];
 	}
 
-
 	/**
 	 * @dataProvider dataSubstractedIsFalse
 	 */
@@ -772,7 +771,6 @@ class MixedTypeTest extends PHPStanTestCase
 			],
 		];
 	}
-
 
 	/**
 	 * @dataProvider dataSubstractedIsTrue

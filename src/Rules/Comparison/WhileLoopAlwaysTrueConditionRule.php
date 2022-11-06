@@ -60,7 +60,7 @@ class WhileLoopAlwaysTrueConditionRule implements Rule
 		}
 		$originalNode = $node->getOriginalNode();
 		$exprType = $this->helper->getBooleanType($scope, $originalNode->cond);
-		if ($exprType instanceof ConstantBooleanType && $exprType->getValue()) {
+		if ($exprType->isTrue()->yes()) {
 			$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
 					return $ruleErrorBuilder;

@@ -766,8 +766,7 @@ class MutatingScope implements Scope
 			}
 
 			if (
-				$leftBooleanType instanceof ConstantBooleanType
-				&& !$leftBooleanType->getValue()
+				$leftBooleanType->isFalse()->yes()
 			) {
 				return new ConstantBooleanType(false);
 			}
@@ -779,17 +778,14 @@ class MutatingScope implements Scope
 			}
 
 			if (
-				$rightBooleanType instanceof ConstantBooleanType
-				&& !$rightBooleanType->getValue()
+				$rightBooleanType->isFalse()->yes()
 			) {
 				return new ConstantBooleanType(false);
 			}
 
 			if (
-				$leftBooleanType instanceof ConstantBooleanType
-				&& $leftBooleanType->getValue()
-				&& $rightBooleanType instanceof ConstantBooleanType
-				&& $rightBooleanType->getValue()
+				$leftBooleanType->isTrue()->yes()
+				&& $rightBooleanType->isTrue()->yes()
 			) {
 				return new ConstantBooleanType(true);
 			}
@@ -807,8 +803,7 @@ class MutatingScope implements Scope
 				$leftBooleanType = $this->getNativeType($node->left)->toBoolean();
 			}
 			if (
-				$leftBooleanType instanceof ConstantBooleanType
-				&& $leftBooleanType->getValue()
+				$leftBooleanType->isTrue()->yes()
 			) {
 				return new ConstantBooleanType(true);
 			}
@@ -820,17 +815,14 @@ class MutatingScope implements Scope
 			}
 
 			if (
-				$rightBooleanType instanceof ConstantBooleanType
-				&& $rightBooleanType->getValue()
+				$rightBooleanType->isTrue()->yes()
 			) {
 				return new ConstantBooleanType(true);
 			}
 
 			if (
-				$leftBooleanType instanceof ConstantBooleanType
-				&& !$leftBooleanType->getValue()
-				&& $rightBooleanType instanceof ConstantBooleanType
-				&& !$rightBooleanType->getValue()
+				$leftBooleanType->isFalse()->yes()
+				&& $rightBooleanType->isFalse()->yes()
 			) {
 				return new ConstantBooleanType(false);
 			}
@@ -3496,7 +3488,7 @@ class MutatingScope implements Scope
 			}
 		}
 
-		if ($expr instanceof FuncCall && $expr->name instanceof Name && $type instanceof ConstantBooleanType && !$type->getValue()) {
+		if ($expr instanceof FuncCall && $expr->name instanceof Name && $type->isFalse()->yes()) {
 			$functionName = $this->reflectionProvider->resolveFunctionName($expr->name, $this);
 			if ($functionName !== null && in_array(strtolower($functionName), [
 				'is_dir',

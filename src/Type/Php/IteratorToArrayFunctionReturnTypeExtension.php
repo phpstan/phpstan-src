@@ -8,7 +8,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
@@ -37,7 +36,7 @@ final class IteratorToArrayFunctionReturnTypeExtension implements DynamicFunctio
 		if (isset($arguments[1])) {
 			$preserveKeysType = $scope->getType($arguments[1]->value);
 
-			if ($preserveKeysType instanceof ConstantBooleanType && !$preserveKeysType->getValue()) {
+			if ($preserveKeysType->isFalse()->yes()) {
 				$arrayKeyType = new IntegerType();
 				$isList = true;
 			}

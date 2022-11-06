@@ -32,7 +32,7 @@ class UnreachableIfBranchesRule implements Rule
 		$condition = $node->cond;
 		$conditionType = $this->treatPhpDocTypesAsCertain ? $scope->getType($condition) : $scope->getNativeType($condition);
 		$conditionBooleanType = $conditionType->toBoolean();
-		$nextBranchIsDead = $conditionBooleanType instanceof ConstantBooleanType && $conditionBooleanType->getValue() && $this->helper->shouldSkip($scope, $node->cond) && !$this->helper->shouldReportAlwaysTrueByDefault($node->cond);
+		$nextBranchIsDead = $conditionBooleanType->isTrue()->yes() && $this->helper->shouldSkip($scope, $node->cond) && !$this->helper->shouldReportAlwaysTrueByDefault($node->cond);
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, &$condition): RuleErrorBuilder {
 			if (!$this->treatPhpDocTypesAsCertain) {
 				return $ruleErrorBuilder;
@@ -63,7 +63,7 @@ class UnreachableIfBranchesRule implements Rule
 			$condition = $elseif->cond;
 			$conditionType = $this->treatPhpDocTypesAsCertain ? $scope->getType($condition) : $scope->getNativeType($condition);
 			$conditionBooleanType = $conditionType->toBoolean();
-			$nextBranchIsDead = $conditionBooleanType instanceof ConstantBooleanType && $conditionBooleanType->getValue() && $this->helper->shouldSkip($scope, $elseif->cond) && !$this->helper->shouldReportAlwaysTrueByDefault($elseif->cond);
+			$nextBranchIsDead = $conditionBooleanType->isTrue()->yes() && $this->helper->shouldSkip($scope, $elseif->cond) && !$this->helper->shouldReportAlwaysTrueByDefault($elseif->cond);
 		}
 
 		if ($node->else !== null && $nextBranchIsDead) {

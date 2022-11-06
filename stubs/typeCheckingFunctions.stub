@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @return ($value is string ? true : false)
+ * @phpstan-assert-if-true string $value
  */
 function is_string(mixed $value): bool
 {
@@ -9,7 +9,7 @@ function is_string(mixed $value): bool
 }
 
 /**
- * @return ($value is float ? true : false)
+ * @phpstan-assert-if-true float $value
  */
 function is_float(mixed $value): bool
 {
@@ -17,7 +17,7 @@ function is_float(mixed $value): bool
 }
 
 /**
- * @return ($value is float ? true : false)
+ * @phpstan-assert-if-true float $value
  */
 function is_double(mixed $value): bool
 {
@@ -25,7 +25,7 @@ function is_double(mixed $value): bool
 }
 
 /**
- * @return ($value is float ? true : false)
+ * @phpstan-assert-if-true float $value
  */
 function is_real(mixed $value): bool
 {
@@ -33,7 +33,7 @@ function is_real(mixed $value): bool
 }
 
 /**
- * @return ($value is float|int|numeric-string ? true : false)
+ * @phpstan-assert-if-true float|int|numeric-string $value
  */
 function is_numeric(mixed $value): bool
 {
@@ -41,7 +41,7 @@ function is_numeric(mixed $value): bool
 }
 
 /**
- * @return ($value is null ? true : false)
+ * @phpstan-assert-if-true null $value
  */
 function is_null(mixed $value): bool
 {
@@ -49,7 +49,7 @@ function is_null(mixed $value): bool
 }
 
 /**
- * @return ($value is bool ? true : false)
+ * @phpstan-assert-if-true bool $value
  */
 function is_bool(mixed $value): bool
 {
@@ -57,7 +57,7 @@ function is_bool(mixed $value): bool
 }
 
 /**
- * @return ($value is array<array-key, mixed>|\Countable ? true : false)
+ * @phpstan-assert-if-true array<array-key, mixed>|\Countable $value
  */
 function is_countable(mixed $value): bool
 {
@@ -65,7 +65,7 @@ function is_countable(mixed $value): bool
 }
 
 /**
- * @return ($value is object ? true : false)
+ * @phpstan-assert-if-true object $value
  */
 function is_object(mixed $value): bool
 {
@@ -73,7 +73,7 @@ function is_object(mixed $value): bool
 }
 
 /**
- * @return ($value is scalar ? true : false)
+ * @phpstan-assert-if-true scalar $value
  */
 function is_scalar(mixed $value): bool
 {
@@ -81,7 +81,7 @@ function is_scalar(mixed $value): bool
 }
 
 /**
- * @return ($value is int ? true : false)
+ * @phpstan-assert-if-true int $value
  */
 function is_int(mixed $value): bool
 {
@@ -89,7 +89,7 @@ function is_int(mixed $value): bool
 }
 
 /**
- * @return ($value is int ? true : false)
+ * @phpstan-assert-if-true int $value
  */
 function is_integer(mixed $value): bool
 {
@@ -97,7 +97,7 @@ function is_integer(mixed $value): bool
 }
 
 /**
- * @return ($value is int ? true : false)
+ * @phpstan-assert-if-true int $value
  */
 function is_long(mixed $value): bool
 {
@@ -106,25 +106,8 @@ function is_long(mixed $value): bool
 
 /**
  * @phpstan-assert-if-true resource $value
- * @return bool
  */
 function is_resource(mixed $value): bool
-{
-
-}
-
-/**
- * @return ($value is array ? true : false)
- */
-function is_array(mixed $value): bool
-{
-
-}
-
-/**
- * @return ($value is iterable<mixed, mixed> ? true : false)
- */
-function is_iterable(mixed $value): bool
 {
 
 }

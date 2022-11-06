@@ -23,15 +23,74 @@ class KeyExists
 		assertType('true', key_exists('3', $b));
 		assertType('false', key_exists(4, $b));
 
-		if (array_key_exists($key, $b)) {
+		if (key_exists($key, $b)) {
 			assertType("'3'|'foo'", $key);
 		}
-		if (array_key_exists($anotherKey, $b)) {
+		if (key_exists($anotherKey, $b)) {
 			assertType('3', $anotherKey);
 		}
 
 		$empty = [];
 		assertType('false', key_exists('foo', $empty));
 		assertType('false', key_exists($key, $empty));
+	}
+
+	/**
+	 * @param array<int, mixed>    $a
+	 * @param array<string, mixed> $b
+	 * @param array<mixed>         $c
+	 * @param array-key $key4
+	 *
+	 * @return void
+	 */
+	public function doBar(array $a, array $b, array $c, int $key1, string $key2, int|string $key3, $key4, mixed $key5): void
+	{
+		if (key_exists($key1, $a)) {
+			assertType('int', $key1);
+		}
+		if (key_exists($key2, $a)) {
+			assertType('numeric-string', $key2);
+		}
+		if (key_exists($key3, $a)) {
+			assertType('int', $key3);
+		}
+		if (key_exists($key4, $a)) {
+			assertType('int', $key4);
+		}
+		if (key_exists($key5, $a)) {
+			assertType('int', $key5);
+		}
+
+		if (key_exists($key1, $b)) {
+			assertType('*NEVER*', $key1);
+		}
+		if (key_exists($key2, $b)) {
+			assertType('string', $key2);
+		}
+		if (key_exists($key3, $b)) {
+			assertType('string', $key3);
+		}
+		if (key_exists($key4, $b)) {
+			assertType('string', $key4);
+		}
+		if (key_exists($key5, $b)) {
+			assertType('string', $key5);
+		}
+
+		if (key_exists($key1, $c)) {
+			assertType('int', $key1);
+		}
+		if (key_exists($key2, $c)) {
+			assertType('string', $key2);
+		}
+		if (key_exists($key3, $c)) {
+			assertType('(int|string)', $key3);
+		}
+		if (key_exists($key4, $c)) {
+			assertType('(int|string)', $key4);
+		}
+		if (key_exists($key5, $c)) {
+			assertType('(int|string)', $key5);
+		}
 	}
 }

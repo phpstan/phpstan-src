@@ -814,6 +814,42 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
+	 * @dataProvider dataSubstractedIsFloat
+	 */
+	public function testSubstractedIsFloat(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isFloat();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isFloat()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsFloat(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				IntegerRangeType::fromInterval(-5, 5),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new FloatType(),
+				TrinaryLogic::createNo(),
+			],
+		];
+	}
+
+	/**
 	 * @dataProvider dataSubstractedIsInteger
 	 */
 	public function testSubstractedIsInteger(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void

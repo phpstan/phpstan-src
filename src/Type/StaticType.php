@@ -426,6 +426,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->isList();
 	}
 
+	public function isNull(): TrinaryLogic
+	{
+		return $this->getStaticObjectType()->isNull();
+	}
+
 	public function isTrue(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isTrue();

@@ -5,7 +5,6 @@ namespace PHPStan\Reflection\Php;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
@@ -43,7 +42,7 @@ class PhpParameterFromParserNodeReflection implements ParameterReflectionWithPhp
 		if ($this->type === null) {
 			$phpDocType = $this->phpDocType;
 			if ($phpDocType !== null && $this->defaultValue !== null) {
-				if ($this->defaultValue instanceof NullType) {
+				if ($this->defaultValue->isNull()->yes()) {
 					$inferred = $phpDocType->inferTemplateTypes($this->defaultValue);
 					if ($inferred->isEmpty()) {
 						$phpDocType = TypeCombinator::addNull($phpDocType);

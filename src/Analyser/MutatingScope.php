@@ -875,7 +875,7 @@ class MutatingScope implements Scope
 					$node->left instanceof Node\Expr\PropertyFetch
 					|| $node->left instanceof Node\Expr\StaticPropertyFetch
 				)
-				&& $rightType instanceof NullType
+				&& $rightType->isNull()->yes()
 				&& !$this->hasPropertyNativeType($node->left)
 			) {
 				return new BooleanType();
@@ -886,7 +886,7 @@ class MutatingScope implements Scope
 					$node->right instanceof Node\Expr\PropertyFetch
 					|| $node->right instanceof Node\Expr\StaticPropertyFetch
 				)
-				&& $leftType instanceof NullType
+				&& $leftType->isNull()->yes()
 				&& !$this->hasPropertyNativeType($node->right)
 			) {
 				return new BooleanType();

@@ -88,6 +88,11 @@ class IntegerType implements Type
 		return $this;
 	}
 
+	public function isNull(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isTrue(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

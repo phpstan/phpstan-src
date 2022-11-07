@@ -10,7 +10,6 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\NullType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -71,7 +70,7 @@ class TooWideFunctionReturnTypehintRule implements Rule
 				continue;
 			}
 
-			if ($type instanceof NullType && !$node->hasNativeReturnTypehint()) {
+			if ($type->isNull()->yes() && !$node->hasNativeReturnTypehint()) {
 				foreach ($node->getExecutionEnds() as $executionEnd) {
 					if ($executionEnd->getStatementResult()->isAlwaysTerminating()) {
 						continue;

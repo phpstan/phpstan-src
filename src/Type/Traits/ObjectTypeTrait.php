@@ -116,6 +116,11 @@ trait ObjectTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
+	public function isFloat(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isInteger(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

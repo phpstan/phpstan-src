@@ -147,6 +147,8 @@ interface Type
 
 	public function isBoolean(): TrinaryLogic;
 
+	public function isFloat(): TrinaryLogic;
+
 	public function isInteger(): TrinaryLogic;
 
 	public function isString(): TrinaryLogic;

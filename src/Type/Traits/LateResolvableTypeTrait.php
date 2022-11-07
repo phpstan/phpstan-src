@@ -325,6 +325,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isBoolean();
 	}
 
+	public function isFloat(): TrinaryLogic
+	{
+		return $this->resolve()->isFloat();
+	}
+
 	public function isInteger(): TrinaryLogic
 	{
 		return $this->resolve()->isInteger();

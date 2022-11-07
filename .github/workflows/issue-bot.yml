@@ -110,7 +110,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: results-${{ matrix.phpVersion }}-${{ matrix.playgroundExamples }}
-          path: issue-bot/tmp/results-tmp
+          path: issue-bot/tmp/results.tmp
 
   evaluate:
     name: "Evaluate results"

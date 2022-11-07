@@ -18,7 +18,7 @@ env:
   COMPOSER_ROOT_VERSION: "1.9.x-dev"
 
 concurrency:
-  group: issue-bot-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
+  group: build-issue-bot-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
   cancel-in-progress: true
 
 jobs:

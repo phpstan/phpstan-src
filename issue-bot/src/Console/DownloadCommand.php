@@ -91,7 +91,7 @@ class DownloadCommand extends Command
 
 		$matrix = [
 			'phpVersion' => [70200, 70300, 70400, 80000, 80100, 80200],
-			'playgroundExamples' => array_chunk($hashes, $chunkSize),
+			'playgroundExamples' => implode(',', array_chunk($hashes, $chunkSize)),
 		];
 
 		$output->writeln(Json::encode($matrix));

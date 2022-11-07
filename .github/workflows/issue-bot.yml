@@ -73,7 +73,8 @@ jobs:
 
     runs-on: "ubuntu-latest"
 
-    matrix: ${{ fromJSON(needs.download.outputs.matrix) }}
+    strategy:
+      matrix: ${{ fromJSON(needs.download.outputs.matrix) }}
 
     steps:
       - name: "Checkout"

@@ -3723,8 +3723,10 @@ class MutatingScope implements Scope
 		});
 
 		$scope = $this;
+		$specifiedExpressions = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
+			$specifiedExpressions[$this->getNodeKey($expr)] = true;
 			$type = $typeSpecification['type'];
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
@@ -3737,7 +3739,12 @@ class MutatingScope implements Scope
 			}
 		}
 
+		$newConditionalExpressions = $specifiedTypes->getNewConditionalExpressionHolders();
 		foreach ($this->conditionalExpressions as $variableExprString => $conditionalExpressions) {
+			if (array_key_exists($variableExprString, $specifiedExpressions)) {
+				continue;
+			}
+			$newConditionalExpressions[$variableExprString] = $conditionalExpressions;
 			foreach ($conditionalExpressions as $conditionalExpression) {
 				foreach ($conditionalExpression->getConditionExpressionTypes() as $conditionExprString => $conditionalType) {
 					$conditionExpr = $this->exprStringToExpr($conditionExprString);
@@ -3764,7 +3771,7 @@ class MutatingScope implements Scope
 			$scope->getFunction(),
 			$scope->getNamespace(),
 			$scope->expressionTypes,
-			array_merge($specifiedTypes->getNewConditionalExpressionHolders(), $this->conditionalExpressions),
+			$newConditionalExpressions,
 			$scope->inClosureBindScopeClass,
 			$scope->anonymousFunctionReflection,
 			$scope->inFirstLevelStatement,

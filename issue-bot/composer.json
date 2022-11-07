@@ -5,6 +5,7 @@
 		"guzzlehttp/guzzle": "^7.5",
 		"knplabs/github-api": "^3.9",
 		"league/commonmark": "^2.3",
+		"nette/neon": "^3.3",
 		"nette/utils": "^3.2",
 		"symfony/console": "^6.1"
 	},

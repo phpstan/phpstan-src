@@ -71,7 +71,7 @@ jobs:
           path: issue-bot/tmp/playgroundCache.tmp
 
   analyse:
-    name: "Analyse results"
+    name: "Analyse"
     needs: download
 
     runs-on: "ubuntu-latest"
@@ -92,12 +92,51 @@ jobs:
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"
 
+      - name: "Install Issue Bot dependencies"
+        working-directory: "issue-bot"
+        run: "composer install --no-interaction --no-progress"
+
       - uses: actions/download-artifact@v3
         with:
           name: playground-cache
           path: issue-bot/tmp
 
-      - working-directory: issue-bot/tmp
-        run: "ls -R"
+      - name: "Run PHPStan"
+        working-directory: "issue-bot"
+        env:
+          GITHUB_PAT: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+        run: ./console.php run ${{ matrix.phpVersion }} ${{ matrix.playgroundExamples }}
 
-      - run: "echo ${{ matrix.phpVersion }}: ${{ matrix.playgroundExamples }}"
+      - uses: actions/upload-artifact@v3
+        with:
+          name: results-${{ matrix.phpVersion }}-${{ matrix.playgroundExamples }}
+          path: issue-bot/tmp/results-tmp
+
+  evaluate:
+    name: "Evaluate results"
+    needs: analyse
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Install Issue Bot dependencies"
+        working-directory: "issue-bot"
+        run: "composer install --no-interaction --no-progress"
+
+      - uses: actions/download-artifact@v3
+        with:
+          path: issue-bot/tmp
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: issue-bot/tmp

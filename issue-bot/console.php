@@ -14,6 +14,7 @@ use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\Parser\MarkdownParser;
 use PHPStan\IssueBot\Comment\BotCommentParser;
 use PHPStan\IssueBot\Console\DownloadCommand;
+use PHPStan\IssueBot\Console\RunCommand;
 use PHPStan\IssueBot\GitHub\RateLimitPlugin;
 use PHPStan\IssueBot\GitHub\RequestCounterPlugin;
 use PHPStan\IssueBot\Playground\PlaygroundClient;
@@ -38,8 +39,11 @@ use Symfony\Component\Console\Application;
 	$markdownEnvironment->addExtension(new GithubFlavoredMarkdownExtension());
 	$botCommentParser = new BotCommentParser(new MarkdownParser($markdownEnvironment));
 
+	$playgroundCachePath = __DIR__ . '/tmp/playgroundCache.tmp';
+
 	$application = new Application();
-	$application->add(new DownloadCommand($client, $botCommentParser, new PlaygroundClient(new \GuzzleHttp\Client()), __DIR__ . '/tmp/issueCache.tmp', __DIR__ . '/tmp/playgroundCache.tmp'));
+	$application->add(new DownloadCommand($client, $botCommentParser, new PlaygroundClient(new \GuzzleHttp\Client()), __DIR__ . '/tmp/issueCache.tmp', $playgroundCachePath));
+	$application->add(new RunCommand($playgroundCachePath, __DIR__ . '/tmp'));
 
 	$application->setCatchExceptions(false);
 	$application->run();

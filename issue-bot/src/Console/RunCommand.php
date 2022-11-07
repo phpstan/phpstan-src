@@ -41,17 +41,19 @@ class RunCommand extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$playgroundHashes = explode(',', $input->getArgument('playgroundHashes'));
+		$phpVersion = (int) $input->getArgument('phpVersion');
+		$commaSeparatedPlaygroundHashes = $input->getArgument('playgroundHashes');
+		$playgroundHashes = explode(',', $commaSeparatedPlaygroundHashes);
 		$playgroundCache = $this->loadPlaygroundCache();
 		$errors = [];
 		foreach ($playgroundHashes as $hash) {
 			if (!array_key_exists($hash, $playgroundCache->getResults())) {
 				throw new Exception(sprintf('Hash %s must exist', $hash));
 			}
-			$errors[$hash] = $this->analyseHash((int) $input->getArgument('phpVersion'), $playgroundCache->getResults()[$hash]);
+			$errors[$hash] = $this->analyseHash($phpVersion, $playgroundCache->getResults()[$hash]);
 		}
 
-		$writeSuccess = file_put_contents($this->tmpDir . '/results.tmp', serialize($errors));
+		$writeSuccess = file_put_contents(sprintf($this->tmpDir . '/results-%d-%s.tmp', $phpVersion, $commaSeparatedPlaygroundHashes), serialize($errors));
 		if ($writeSuccess === false) {
 			throw new Exception('Result write unsuccessful');
 		}

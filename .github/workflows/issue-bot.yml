@@ -109,8 +109,8 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: results-${{ matrix.phpVersion }}-${{ matrix.playgroundExamples }}
-          path: issue-bot/tmp/results.tmp
+          name: results
+          path: issue-bot/tmp/results-${{ matrix.phpVersion }}-${{ matrix.playgroundExamples }}.tmp
 
   evaluate:
     name: "Evaluate results"
@@ -137,6 +137,7 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
+          name: results
           path: issue-bot/tmp
 
       - name: Display structure of downloaded files

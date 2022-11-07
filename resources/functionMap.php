@@ -5698,7 +5698,7 @@ return [
 'join\'1' => ['string', 'pieces'=>'array'],
 'jpeg2wbmp' => ['bool', 'jpegname'=>'string', 'wbmpname'=>'string', 'dest_height'=>'int', 'dest_width'=>'int', 'threshold'=>'int'],
 'json_decode' => ['mixed', 'json'=>'string', 'assoc='=>'bool|null', 'depth='=>'positive-int', 'options='=>'int'],
-'json_encode' => ['string|false', 'data'=>'mixed', 'options='=>'int', 'depth='=>'positive-int'],
+'json_encode' => ['non-empty-string|false', 'data'=>'mixed', 'options='=>'int', 'depth='=>'positive-int'],
 'json_last_error' => ['int'],
 'json_last_error_msg' => ['string'],
 'JsonIncrementalParser::__construct' => ['void', 'depth'=>'', 'options'=>''],

@@ -8705,19 +8705,19 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'string|false',
+				'non-empty-string|false',
 				'json_encode($mixed)',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'json_encode($mixed,  JSON_THROW_ON_ERROR)',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'json_encode($mixed,  JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[
-				'string',
+				'non-empty-string',
 				'json_encode($mixed,  $integer | JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[

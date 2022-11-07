@@ -3058,7 +3058,7 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			$arrowFunctionScope->getFunction(),
 			$arrowFunctionScope->getNamespace(),
-			$arrowFunctionScope->expressionTypes,
+			$this->invalidateStaticExpressions($arrowFunctionScope->expressionTypes),
 			$arrowFunctionScope->conditionalExpressions,
 			$arrowFunctionScope->inClosureBindScopeClass,
 			null,

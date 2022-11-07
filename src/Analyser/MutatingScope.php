@@ -2898,7 +2898,7 @@ class MutatingScope implements Scope
 			$nativeTypes[$paramExprString] = ExpressionTypeHolder::createYes($use->var, $variableNativeType);
 		}
 
-		foreach ($this->expressionTypes as $exprString => $typeHolder) {
+		foreach ($this->invalidateStaticExpressions($this->expressionTypes) as $exprString => $typeHolder) {
 			$expr = $typeHolder->getExpr();
 			if ($expr instanceof Variable) {
 				continue;
@@ -2959,6 +2959,27 @@ class MutatingScope implements Scope
 			&& isset($expr->getArgs()[0])
 			&& count(TypeUtils::getConstantStrings($this->getType($expr->getArgs()[0]->value))) === 1
 			&& (new ConstantBooleanType(true))->isSuperTypeOf($type)->yes();
+	}
+
+	/**
+	 * @param ExpressionTypeHolder[] $expressionTypes
+	 * @return ExpressionTypeHolder[]
+	 */
+	private function invalidateStaticExpressions(array $expressionTypes): array
+	{
+		$filteredExpressionTypes = [];
+		$nodeFinder = new NodeFinder();
+		foreach ($expressionTypes as $exprString => $expressionType) {
+			$staticExpression = $nodeFinder->findFirst(
+				[$expressionType->getExpr()],
+				static fn ($node) => $node instanceof Expr\StaticCall || $node instanceof Expr\StaticPropertyFetch,
+			);
+			if ($staticExpression !== null) {
+				continue;
+			}
+			$filteredExpressionTypes[$exprString] = $expressionType;
+		}
+		return $filteredExpressionTypes;
 	}
 
 	/**

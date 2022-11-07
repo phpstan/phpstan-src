@@ -22,11 +22,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use function array_chunk;
 use function array_key_exists;
 use function array_keys;
+use function array_map;
 use function array_merge;
 use function ceil;
 use function count;
 use function file_get_contents;
 use function file_put_contents;
+use function implode;
 use function is_file;
 use function serialize;
 use function unserialize;
@@ -91,7 +93,7 @@ class DownloadCommand extends Command
 
 		$matrix = [
 			'phpVersion' => [70200, 70300, 70400, 80000, 80100, 80200],
-			'playgroundExamples' => implode(',', array_chunk($hashes, $chunkSize)),
+			'playgroundExamples' => array_map(static fn (array $chunk) => implode(',', $chunk), array_chunk($hashes, $chunkSize)),
 		];
 
 		$output->writeln(Json::encode($matrix));

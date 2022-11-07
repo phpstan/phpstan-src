@@ -8,7 +8,6 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
@@ -52,7 +51,7 @@ class PhpParameterReflection implements ParameterReflectionWithPhpDocs
 					$this->reflection->getDefaultValueExpression(),
 					InitializerExprContext::fromReflectionParameter($this->reflection),
 				);
-				if ($defaultValueType instanceof NullType) {
+				if ($defaultValueType->isNull()->yes()) {
 					$phpDocType = TypeCombinator::addNull($phpDocType);
 				}
 			}

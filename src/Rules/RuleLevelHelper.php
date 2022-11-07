@@ -169,7 +169,7 @@ class RuleLevelHelper
 			return new FoundTypeResult(new ErrorType(), [], [], null);
 		}
 		$type = $scope->getType($var);
-		if (!$this->checkNullables && !$type instanceof NullType) {
+		if (!$this->checkNullables && !$type->isNull()->yes()) {
 			$type = TypeCombinator::removeNull($type);
 		}
 

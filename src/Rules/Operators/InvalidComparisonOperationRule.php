@@ -11,7 +11,6 @@ use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -106,7 +105,7 @@ class InvalidComparisonOperationRule implements Rule
 			return false;
 		}
 
-		if (TypeCombinator::containsNull($type) && !$type instanceof NullType) {
+		if (TypeCombinator::containsNull($type) && !$type->isNull()->yes()) {
 			$type = TypeCombinator::removeNull($type);
 		}
 
@@ -127,7 +126,7 @@ class InvalidComparisonOperationRule implements Rule
 			static fn (Type $type): bool => $type->isArray()->yes(),
 		)->getType();
 
-		if (TypeCombinator::containsNull($type) && !$type instanceof NullType) {
+		if (TypeCombinator::containsNull($type) && !$type->isNull()->yes()) {
 			$type = TypeCombinator::removeNull($type);
 		}
 

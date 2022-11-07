@@ -11,7 +11,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\NullType;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -80,7 +79,7 @@ class TooWideMethodReturnTypehintRule implements Rule
 		$returnType = TypeCombinator::union(...$returnTypes);
 		if (
 			!$method->isPrivate()
-			&& ($returnType instanceof NullType || $returnType instanceof ConstantBooleanType)
+			&& ($returnType->isNull()->yes() || $returnType instanceof ConstantBooleanType)
 			&& !$isFirstDeclaration
 		) {
 			return [];
@@ -92,7 +91,7 @@ class TooWideMethodReturnTypehintRule implements Rule
 				continue;
 			}
 
-			if ($type instanceof NullType && !$node->hasNativeReturnTypehint()) {
+			if ($type->isNull()->yes() && !$node->hasNativeReturnTypehint()) {
 				foreach ($node->getExecutionEnds() as $executionEnd) {
 					if ($executionEnd->getStatementResult()->isAlwaysTerminating()) {
 						continue;

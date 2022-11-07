@@ -2167,7 +2167,7 @@ class NodeScopeResolver
 							$thisType = null;
 							if (isset($expr->getArgs()[1])) {
 								$argType = $scope->getType($expr->getArgs()[1]->value);
-								if ($argType instanceof NullType) {
+								if ($argType->isNull()->yes()) {
 									$thisType = null;
 								} else {
 									$thisType = $argType;

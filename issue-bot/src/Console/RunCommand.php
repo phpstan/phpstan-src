@@ -21,6 +21,7 @@ use function file_put_contents;
 use function implode;
 use function is_file;
 use function serialize;
+use function sha1;
 use function sprintf;
 use function unserialize;
 
@@ -53,7 +54,7 @@ class RunCommand extends Command
 			$errors[$hash] = $this->analyseHash($phpVersion, $playgroundCache->getResults()[$hash]);
 		}
 
-		$writeSuccess = file_put_contents(sprintf($this->tmpDir . '/results-%d-%s.tmp', $phpVersion, $commaSeparatedPlaygroundHashes), serialize($errors));
+		$writeSuccess = file_put_contents(sprintf($this->tmpDir . '/results-%d-%s.tmp', $phpVersion, sha1($commaSeparatedPlaygroundHashes)), serialize($errors));
 		if ($writeSuccess === false) {
 			throw new Exception('Result write unsuccessful');
 		}

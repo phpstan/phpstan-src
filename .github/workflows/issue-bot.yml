@@ -53,4 +53,6 @@ jobs:
 
       - name: "Download comments"
         working-directory: "issue-bot"
+        env:
+          GITHUB_PAT: ${{ secrets.PHPSTAN_BOT_TOKEN }}
         run: ./console.php download

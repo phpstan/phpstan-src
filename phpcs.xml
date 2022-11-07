@@ -16,6 +16,8 @@
 	<file>apigen/src</file>
 	<file>changelog-generator/src</file>
 	<file>changelog-generator/run.php</file>
+	<file>issue-bot/src</file>
+	<file>issue-bot/console.php</file>
 
 	<rule ref="build-cs/vendor/consistence-community/coding-standard/Consistence/ruleset.xml">
 		<exclude name="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration.InvalidFormat"/>
@@ -99,6 +101,7 @@
 				<element key="tests/e2e" value="PHPStan\Tests"/>
 				<element key="apigen/src" value="PHPStan\ApiGen"/>
 				<element key="changelog-generator/src" value="PHPStan\ChangelogGenerator"/>
+				<element key="issue-bot/src" value="PHPStan\IssueBot"/>
 			</property>
 		</properties>
 	</rule>

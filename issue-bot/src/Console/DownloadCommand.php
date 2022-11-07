@@ -12,10 +12,13 @@ use PHPStan\IssueBot\Comment\BotCommentParserException;
 use PHPStan\IssueBot\Comment\Comment;
 use PHPStan\IssueBot\Issue\Issue;
 use PHPStan\IssueBot\Issue\IssueCache;
+use PHPStan\IssueBot\Playground\PlaygroundCache;
+use PHPStan\IssueBot\Playground\PlaygroundClient;
 use PHPStan\IssueBot\Playground\PlaygroundExample;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use function array_key_exists;
 use function array_merge;
 use function count;
 use function file_get_contents;
@@ -31,7 +34,9 @@ class DownloadCommand extends Command
 	public function __construct(
 		private Client $githubClient,
 		private BotCommentParser $botCommentParser,
+		private PlaygroundClient $playgroundClient,
 		private string $issueCachePath,
+		private string $playgroundCachePath,
 	)
 	{
 		parent::__construct();
@@ -44,7 +49,44 @@ class DownloadCommand extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$this->getIssues($output);
+		$issues = $this->getIssues($output);
+
+		$playgroundCache = $this->loadPlaygroundCache();
+		if ($playgroundCache === null) {
+			$cachedResults = [];
+			$output->writeln('Downloading playground results fresh');
+		} else {
+			$cachedResults = $playgroundCache->getResults();
+		}
+		foreach ($issues as $issue) {
+			$botComments = [];
+			$deduplicatedExamples = [];
+			foreach ($issue->getComments() as $comment) {
+				if ($comment instanceof BotComment) {
+					$botComments[] = $comment;
+					continue;
+				}
+				foreach ($comment->getPlaygroundExamples() as $example) {
+					if (isset($deduplicatedExamples[$example->getHash()])) {
+						$deduplicatedExamples[$example->getHash()]->addUser($comment->getAuthor());
+						continue;
+					}
+					$deduplicatedExamples[$example->getHash()] = $example;
+				}
+				foreach ($deduplicatedExamples as $hash => $example) {
+					if (array_key_exists($hash, $cachedResults)) {
+						$result = $cachedResults[$hash];
+					} else {
+						$output->writeln(sprintf('Downloading playground result %s', $hash));
+						$result = $this->playgroundClient->getResult($hash);
+						$cachedResults[$hash] = $result;
+					}
+				}
+			}
+		}
+
+		$this->savePlaygroundCache(new PlaygroundCache($cachedResults));
+
 		return 0;
 	}
 
@@ -58,7 +100,7 @@ class DownloadCommand extends Command
 
 		$cache = $this->loadIssueCache();
 		if ($cache === null) {
-			$output->writeln('Downloading everything fresh');
+			$output->writeln('Downloading issues fresh');
 		} else {
 			$output->writeln('Downloading only issues updated since: ' . $cache->getDate()->format(DateTimeImmutable::ATOM));
 		}
@@ -99,13 +141,13 @@ class DownloadCommand extends Command
 				$output->writeln(sprintf('Downloading issue #%d', $issue['number']));
 			}
 			$comments = [];
-			$issueExamples = $this->searchBody($issue['body']);
+			$issueExamples = $this->searchBody($issue['body'], $issue['user']['login']);
 			if (count($issueExamples) > 0) {
 				$comments[] = new Comment($issue['user']['login'], $issue['body'], $issueExamples);
 			}
 
 			foreach ($this->getComments($issue['number']) as $issueComment) {
-				$commentExamples = $this->searchBody($issueComment['body']);
+				$commentExamples = $this->searchBody($issueComment['body'], $issueComment['user']['login']);
 				if (count($commentExamples) === 0) {
 					continue;
 				}
@@ -156,17 +198,39 @@ class DownloadCommand extends Command
 		}
 	}
 
+	private function loadPlaygroundCache(): ?PlaygroundCache
+	{
+		if (!is_file($this->playgroundCachePath)) {
+			return null;
+		}
+
+		$contents = file_get_contents($this->playgroundCachePath);
+		if ($contents === false) {
+			throw new Exception('Read unsuccessful');
+		}
+
+		return unserialize($contents);
+	}
+
+	private function savePlaygroundCache(PlaygroundCache $cache): void
+	{
+		$result = file_put_contents($this->playgroundCachePath, serialize($cache));
+		if ($result === false) {
+			throw new Exception('Write unsuccessful');
+		}
+	}
+
 	/**
 	 * @return list<PlaygroundExample>
 	 */
-	private function searchBody(string $text): array
+	private function searchBody(string $text, string $user): array
 	{
 		$matches = Strings::matchAll($text, '/https:\/\/phpstan\.org\/r\/([0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12})/i');
 
 		$examples = [];
 
 		foreach ($matches as [$url, $hash]) {
-			$examples[] = new PlaygroundExample($url, $hash);
+			$examples[] = new PlaygroundExample($url, $hash, $user);
 		}
 
 		return $examples;

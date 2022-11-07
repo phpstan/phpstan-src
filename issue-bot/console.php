@@ -16,6 +16,7 @@ use PHPStan\IssueBot\Comment\BotCommentParser;
 use PHPStan\IssueBot\Console\DownloadCommand;
 use PHPStan\IssueBot\GitHub\RateLimitPlugin;
 use PHPStan\IssueBot\GitHub\RequestCounterPlugin;
+use PHPStan\IssueBot\Playground\PlaygroundClient;
 use Symfony\Component\Console\Application;
 
 (static function (): void {
@@ -38,7 +39,7 @@ use Symfony\Component\Console\Application;
 	$botCommentParser = new BotCommentParser(new MarkdownParser($markdownEnvironment));
 
 	$application = new Application();
-	$application->add(new DownloadCommand($client, $botCommentParser, __DIR__ . '/tmp/issueCache.tmp'));
+	$application->add(new DownloadCommand($client, $botCommentParser, new PlaygroundClient(new \GuzzleHttp\Client()), __DIR__ . '/tmp/issueCache.tmp',  __DIR__ . '/tmp/playgroundCache.tmp'));
 
 	$application->setCatchExceptions(false);
 	$application->run();

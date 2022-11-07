@@ -165,6 +165,8 @@ interface Type
 
 	public function isClassStringType(): TrinaryLogic;
 
+	public function isVoid(): TrinaryLogic;
+
 	public function getSmallerType(): Type;
 
 	public function getSmallerOrEqualType(): Type;

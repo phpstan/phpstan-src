@@ -405,12 +405,9 @@ class PhpMethodReflection implements ExtendedMethodReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
-		$name = strtolower($this->getName());
-		$isVoid = $this->getReturnType() instanceof VoidType;
-
 		if (
-			$name !== '__construct'
-			&& $isVoid
+			strtolower($this->getName()) !== '__construct'
+			&& $this->getReturnType()->isVoid()->yes()
 		) {
 			return TrinaryLogic::createYes();
 		}

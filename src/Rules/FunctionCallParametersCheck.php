@@ -23,7 +23,6 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
-use PHPStan\Type\VoidType;
 use function array_fill;
 use function array_key_exists;
 use function count;
@@ -209,7 +208,7 @@ class FunctionCallParametersCheck
 		}
 
 		if (
-			$scope->getType($funcCall) instanceof VoidType
+			$scope->getType($funcCall)->isVoid()->yes()
 			&& !$scope->isInFirstLevelStatement()
 			&& !$funcCall instanceof Node\Expr\New_
 		) {

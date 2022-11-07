@@ -24,7 +24,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
-use PHPStan\Type\VoidType;
 use function array_map;
 use function array_pop;
 use function count;
@@ -331,7 +330,7 @@ class ImpossibleCheckTypeHelper
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $functionReflection->getVariants());
 				$returnType = TypeUtils::resolveLateResolvableTypes($parametersAcceptor->getReturnType());
 
-				return $returnType instanceof VoidType ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
+				return $returnType->isVoid()->yes() ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
 			}
 		} elseif ($node instanceof MethodCall && $node->name instanceof Node\Identifier) {
 			$methodCalledOnType = $scope->getType($node->var);
@@ -340,7 +339,7 @@ class ImpossibleCheckTypeHelper
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $methodReflection->getVariants());
 				$returnType = TypeUtils::resolveLateResolvableTypes($parametersAcceptor->getReturnType());
 
-				return $returnType instanceof VoidType ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
+				return $returnType->isVoid()->yes() ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
 			}
 		} elseif ($node instanceof StaticCall && $node->name instanceof Node\Identifier) {
 			if ($node->class instanceof Node\Name) {
@@ -354,7 +353,7 @@ class ImpossibleCheckTypeHelper
 				$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $staticMethodReflection->getVariants());
 				$returnType = TypeUtils::resolveLateResolvableTypes($parametersAcceptor->getReturnType());
 
-				return $returnType instanceof VoidType ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
+				return $returnType->isVoid()->yes() ? TypeSpecifierContext::createNull() : TypeSpecifierContext::createTruthy();
 			}
 		}
 

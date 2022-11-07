@@ -155,7 +155,7 @@ class TypehintHelper
 			if (
 				$type instanceof MixedType
 				&& !$type->isExplicitMixed()
-				&& $phpDocType instanceof VoidType
+				&& $phpDocType->isVoid()->yes()
 			) {
 				return $phpDocType;
 			}

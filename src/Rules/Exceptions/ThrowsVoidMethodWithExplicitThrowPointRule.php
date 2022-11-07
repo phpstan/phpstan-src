@@ -12,7 +12,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
-use PHPStan\Type\VoidType;
 use function sprintf;
 
 /**
@@ -41,7 +40,7 @@ class ThrowsVoidMethodWithExplicitThrowPointRule implements Rule
 			throw new ShouldNotHappenException();
 		}
 
-		if (!$methodReflection->getThrowType() instanceof VoidType) {
+		if ($methodReflection->getThrowType() === null || !$methodReflection->getThrowType()->isVoid()->yes()) {
 			return [];
 		}
 

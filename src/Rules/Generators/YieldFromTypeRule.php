@@ -14,7 +14,6 @@ use PHPStan\Type\GenericTypeVariableResolver;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
-use PHPStan\Type\VoidType;
 use function sprintf;
 
 /**
@@ -127,7 +126,7 @@ class YieldFromTypeRule implements Rule
 			))->build();
 		}
 
-		if ($scope->getType($node) instanceof VoidType && !$scope->isInFirstLevelStatement()) {
+		if ($scope->getType($node)->isVoid()->yes() && !$scope->isInFirstLevelStatement()) {
 			$messages[] = RuleErrorBuilder::message('Result of yield from (void) is used.')->build();
 		}
 

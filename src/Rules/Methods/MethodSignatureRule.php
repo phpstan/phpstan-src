@@ -22,7 +22,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
-use PHPStan\Type\VoidType;
 use function count;
 use function min;
 use function sprintf;
@@ -164,12 +163,12 @@ class MethodSignatureRule implements Rule
 		);
 		$parentReturnType = $this->transformStaticType($declaringClass, $originalParentReturnType);
 		// Allow adding `void` return type hints when the parent defines no return type
-		if ($returnType instanceof VoidType && $parentReturnType instanceof MixedType) {
+		if ($returnType->isVoid()->yes() && $parentReturnType instanceof MixedType) {
 			return [TrinaryLogic::createYes(), $returnType, $parentReturnType];
 		}
 
 		// We can return anything
-		if ($parentReturnType instanceof VoidType) {
+		if ($parentReturnType->isVoid()->yes()) {
 			return [TrinaryLogic::createYes(), $returnType, $parentReturnType];
 		}
 

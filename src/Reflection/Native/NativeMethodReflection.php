@@ -13,7 +13,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
-use PHPStan\Type\VoidType;
 use ReflectionException;
 use function strtolower;
 
@@ -144,7 +143,7 @@ class NativeMethodReflection implements ExtendedMethodReflection
 	private function isVoid(): bool
 	{
 		foreach ($this->variants as $variant) {
-			if (!$variant->getReturnType() instanceof VoidType) {
+			if (!$variant->getReturnType()->isVoid()->yes()) {
 				return false;
 			}
 		}

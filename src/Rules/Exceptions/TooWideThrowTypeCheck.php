@@ -8,7 +8,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
-use PHPStan\Type\VoidType;
 use function array_map;
 
 class TooWideThrowTypeCheck
@@ -20,7 +19,7 @@ class TooWideThrowTypeCheck
 	 */
 	public function check(Type $throwType, array $throwPoints): array
 	{
-		if ($throwType instanceof VoidType) {
+		if ($throwType->isVoid()->yes()) {
 			return [];
 		}
 

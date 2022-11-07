@@ -229,6 +229,11 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isVoid(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function getKeysArray(): Type
 	{
 		return new NonEmptyArrayType();

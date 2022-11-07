@@ -7,7 +7,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
-use PHPStan\Type\VoidType;
 
 class NativeFunctionReflection implements FunctionReflection
 {
@@ -89,7 +88,7 @@ class NativeFunctionReflection implements FunctionReflection
 	private function isVoid(): bool
 	{
 		foreach ($this->variants as $variant) {
-			if (!$variant->getReturnType() instanceof VoidType) {
+			if (!$variant->getReturnType()->isVoid()->yes()) {
 				return false;
 			}
 		}

@@ -60,6 +60,11 @@ class IterableType implements CompoundType
 		);
 	}
 
+	public function getConstantStrings(): array
+	{
+		return [];
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {

@@ -17,7 +17,6 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 use function is_bool;
 use function substr;
@@ -55,7 +54,7 @@ class SubstrDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExten
 				$positiveLength = IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($length)->yes();
 			}
 
-			$constantStrings = TypeUtils::getConstantStrings($string);
+			$constantStrings = $string->getConstantStrings();
 			if (
 				count($constantStrings) > 0
 				&& $offset instanceof ConstantIntegerType

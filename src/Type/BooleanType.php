@@ -38,6 +38,11 @@ class BooleanType implements Type
 	{
 	}
 
+	public function getConstantStrings(): array
+	{
+		return [];
+	}
+
 	public function describe(VerbosityLevel $level): string
 	{
 		return 'bool';

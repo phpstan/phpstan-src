@@ -11,7 +11,6 @@ use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use ReflectionFunction;
 use function count;
 
@@ -34,7 +33,7 @@ class ReflectionFunctionConstructorThrowTypeExtension implements DynamicStaticMe
 		}
 
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
-		foreach (TypeUtils::getConstantStrings($valueType) as $constantString) {
+		foreach ($valueType->getConstantStrings() as $constantString) {
 			if (!$this->reflectionProvider->hasFunction(new Name($constantString->getValue()), $scope)) {
 				return $methodReflection->getThrowType();
 			}

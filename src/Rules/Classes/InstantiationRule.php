@@ -234,7 +234,7 @@ class InstantiationRule implements Rule
 		return array_merge(
 			array_map(
 				static fn (ConstantStringType $type): array => [$type->getValue(), true],
-				TypeUtils::getConstantStrings($type),
+				$type->getConstantStrings(),
 			),
 			array_map(
 				static fn (string $name): array => [$name, false],

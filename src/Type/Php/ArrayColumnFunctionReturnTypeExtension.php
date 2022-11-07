@@ -21,7 +21,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 
 class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -157,7 +156,7 @@ class ArrayColumnFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		if (!$type->canAccessProperties()->no()) {
-			$propertyTypes = TypeUtils::getConstantStrings($offsetOrProperty);
+			$propertyTypes = $offsetOrProperty->getConstantStrings();
 			if ($propertyTypes === []) {
 				return new MixedType();
 			}

@@ -13,7 +13,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function array_map;
 use function count;
@@ -125,7 +124,7 @@ class UnusedPrivatePropertyRule implements Rule
 				$propertyNames = [$fetch->name->toString()];
 			} else {
 				$propertyNameType = $usage->getScope()->getType($fetch->name);
-				$strings = TypeUtils::getConstantStrings($propertyNameType);
+				$strings = $propertyNameType->getConstantStrings();
 				if (count($strings) === 0) {
 					return [];
 				}

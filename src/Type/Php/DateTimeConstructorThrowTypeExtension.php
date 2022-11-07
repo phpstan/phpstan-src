@@ -11,7 +11,6 @@ use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 use function in_array;
 
@@ -30,7 +29,7 @@ class DateTimeConstructorThrowTypeExtension implements DynamicStaticMethodThrowT
 		}
 
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
-		$constantStrings = TypeUtils::getConstantStrings($valueType);
+		$constantStrings = $valueType->getConstantStrings();
 
 		foreach ($constantStrings as $constantString) {
 			try {

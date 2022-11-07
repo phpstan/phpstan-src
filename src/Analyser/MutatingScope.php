@@ -2971,7 +2971,7 @@ class MutatingScope implements Scope
 			&& $expr->name instanceof FullyQualified
 			&& $expr->name->toLowerString() === 'function_exists'
 			&& isset($expr->getArgs()[0])
-			&& count(TypeUtils::getConstantStrings($this->getType($expr->getArgs()[0]->value))) === 1
+			&& count($this->getType($expr->getArgs()[0]->value)->getConstantStrings()) === 1
 			&& (new ConstantBooleanType(true))->isSuperTypeOf($type)->yes();
 	}
 

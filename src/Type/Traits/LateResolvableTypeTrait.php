@@ -31,6 +31,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->getConstantArrays();
 	}
 
+	public function getConstantStrings(): array
+	{
+		return $this->resolve()->getConstantStrings();
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		return $this->resolve()->accepts($type, $strictTypes);

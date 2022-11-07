@@ -113,6 +113,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->getConstantArrays();
 	}
 
+	public function getConstantStrings(): array
+	{
+		return $this->getStaticObjectType()->getConstantStrings();
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof CompoundType) {

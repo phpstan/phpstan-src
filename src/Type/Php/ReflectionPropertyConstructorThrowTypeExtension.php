@@ -10,7 +10,6 @@ use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use ReflectionProperty;
 use function count;
 
@@ -34,13 +33,13 @@ class ReflectionPropertyConstructorThrowTypeExtension implements DynamicStaticMe
 
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
 		$propertyType = $scope->getType($methodCall->getArgs()[1]->value);
-		foreach (TypeUtils::getConstantStrings($valueType) as $constantString) {
+		foreach ($valueType->getConstantStrings() as $constantString) {
 			if (!$this->reflectionProvider->hasClass($constantString->getValue())) {
 				return $methodReflection->getThrowType();
 			}
 
 			$classReflection = $this->reflectionProvider->getClass($constantString->getValue());
-			foreach (TypeUtils::getConstantStrings($propertyType) as $constantPropertyString) {
+			foreach ($propertyType->getConstantStrings() as $constantPropertyString) {
 				if (!$classReflection->hasProperty($constantPropertyString->getValue())) {
 					return $methodReflection->getThrowType();
 				}
@@ -54,7 +53,7 @@ class ReflectionPropertyConstructorThrowTypeExtension implements DynamicStaticMe
 		}
 
 		// Look for non constantStrings value.
-		foreach (TypeUtils::getConstantStrings($propertyType) as $constantPropertyString) {
+		foreach ($propertyType->getConstantStrings() as $constantPropertyString) {
 			$propertyType = TypeCombinator::remove($propertyType, $constantPropertyString);
 		}
 

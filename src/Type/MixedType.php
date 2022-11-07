@@ -73,6 +73,11 @@ class MixedType implements CompoundType, SubtractableType
 		return [];
 	}
 
+	public function getConstantStrings(): array
+	{
+		return [];
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

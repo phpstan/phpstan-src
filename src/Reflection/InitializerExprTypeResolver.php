@@ -376,7 +376,7 @@ class InitializerExprTypeResolver
 
 		// we limit the number of union-types for performance reasons
 		if ($leftStringType instanceof UnionType && count($leftStringType->getTypes()) <= 16 && $rightStringType instanceof ConstantStringType) {
-			$constantStrings = TypeUtils::getConstantStrings($leftStringType);
+			$constantStrings = $leftStringType->getConstantStrings();
 			if (count($constantStrings) > 0) {
 				$strings = [];
 				foreach ($constantStrings as $constantString) {
@@ -391,7 +391,7 @@ class InitializerExprTypeResolver
 			}
 		}
 		if ($rightStringType instanceof UnionType && count($rightStringType->getTypes()) <= 16 && $leftStringType instanceof ConstantStringType) {
-			$constantStrings = TypeUtils::getConstantStrings($rightStringType);
+			$constantStrings = $rightStringType->getConstantStrings();
 			if (count($constantStrings) > 0) {
 				$strings = [];
 				foreach ($constantStrings as $constantString) {

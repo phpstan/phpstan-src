@@ -70,7 +70,7 @@ class MbStrlenFunctionReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		} elseif (count($functionCall->getArgs()) === 2) { // custom encoding is specified
 			$encodings = array_map(
 				static fn (ConstantStringType $t) => $t->getValue(),
-				TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[1]->value)),
+				$scope->getType($functionCall->getArgs()[1]->value)->getConstantStrings(),
 			);
 		}
 

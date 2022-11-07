@@ -41,6 +41,11 @@ class ResourceType implements Type
 		return 'resource';
 	}
 
+	public function getConstantStrings(): array
+	{
+		return [];
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();

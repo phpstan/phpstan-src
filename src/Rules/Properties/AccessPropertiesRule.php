@@ -16,7 +16,6 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
@@ -48,7 +47,7 @@ class AccessPropertiesRule implements Rule
 		if ($node->name instanceof Identifier) {
 			$names = [$node->name->name];
 		} else {
-			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), TypeUtils::getConstantStrings($scope->getType($node->name)));
+			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $scope->getType($node->name)->getConstantStrings());
 		}
 
 		$errors = [];

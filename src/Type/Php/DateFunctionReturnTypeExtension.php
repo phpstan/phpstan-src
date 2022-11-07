@@ -14,7 +14,6 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
 use function date;
@@ -38,7 +37,7 @@ class DateFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtens
 			return new StringType();
 		}
 		$argType = $scope->getType($functionCall->getArgs()[0]->value);
-		$constantStrings = TypeUtils::getConstantStrings($argType);
+		$constantStrings = $argType->getConstantStrings();
 
 		if (count($constantStrings) === 0) {
 			return new StringType();

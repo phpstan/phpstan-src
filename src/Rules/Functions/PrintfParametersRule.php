@@ -9,7 +9,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\TypeUtils;
 use function array_filter;
 use function count;
 use function in_array;
@@ -73,7 +72,7 @@ class PrintfParametersRule implements Rule
 
 		$formatArgType = $scope->getType($args[$formatArgumentPosition]->value);
 		$placeHoldersCount = null;
-		foreach (TypeUtils::getConstantStrings($formatArgType) as $formatString) {
+		foreach ($formatArgType->getConstantStrings() as $formatString) {
 			$format = $formatString->getValue();
 			$tempPlaceHoldersCount = $this->getPlaceholdersCount($name, $format);
 			if ($placeHoldersCount === null) {

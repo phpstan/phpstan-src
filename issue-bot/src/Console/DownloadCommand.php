@@ -19,9 +19,11 @@ use PHPStan\IssueBot\Playground\PlaygroundExample;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use function array_chunk;
 use function array_key_exists;
+use function array_keys;
 use function array_merge;
-use function array_values;
+use function ceil;
 use function count;
 use function file_get_contents;
 use function file_put_contents;
@@ -71,7 +73,8 @@ class DownloadCommand extends Command
 			}
 		}
 
-		foreach ($deduplicatedExamples as $hash => $example) {
+		$hashes = array_keys($deduplicatedExamples);
+		foreach ($hashes as $hash) {
 			if (array_key_exists($hash, $cachedResults)) {
 				continue;
 			}
@@ -81,11 +84,14 @@ class DownloadCommand extends Command
 
 		$this->savePlaygroundCache(new PlaygroundCache($cachedResults));
 
-		$hashes = array_keys($deduplicatedExamples);
+		$chunkSize = (int) ceil(count($hashes) / 20);
+		if ($chunkSize < 1) {
+			throw new Exception('Chunk size less than 1');
+		}
 
 		$matrix = [
 			'phpVersion' => [70200, 70300, 70400, 80000, 80100, 80200],
-			'playgroundExamples' => array_chunk($hashes, (int) ceil(count($hashes) / 20)),
+			'playgroundExamples' => array_chunk($hashes, $chunkSize),
 		];
 
 		$output->writeln(Json::encode($matrix));

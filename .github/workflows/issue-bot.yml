@@ -92,5 +92,9 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: playground-cache
+          path: issue-bot/tmp
 
-      - run: "ls -R"
+      - working-directory: issue-bot/tmp
+        run: "ls -R"
+
+      - run: "echo ${{ matrix.phpVersion }}: ${{ matrix.playgroundExamples }}"

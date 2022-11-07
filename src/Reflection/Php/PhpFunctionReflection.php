@@ -24,7 +24,6 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
-use PHPStan\Type\VoidType;
 use function array_map;
 use function filemtime;
 use function is_file;
@@ -240,7 +239,7 @@ class PhpFunctionReflection implements FunctionReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
-		if ($this->getReturnType() instanceof VoidType) {
+		if ($this->getReturnType()->isVoid()->yes()) {
 			return TrinaryLogic::createYes();
 		}
 		if ($this->isPure !== null) {

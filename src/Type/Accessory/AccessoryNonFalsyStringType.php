@@ -226,6 +226,11 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isVoid(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

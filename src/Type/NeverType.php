@@ -393,6 +393,11 @@ class NeverType implements CompoundType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isVoid(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

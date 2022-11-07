@@ -29,7 +29,6 @@ use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
-use PHPStan\Type\VoidType;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -114,7 +113,7 @@ class FunctionDefinitionCheck
 				throw new ShouldNotHappenException();
 			}
 			$type = $scope->getFunctionType($param->type, false, false);
-			if ($type instanceof VoidType) {
+			if ($type->isVoid()->yes()) {
 				$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $param->var->name, 'void'))->line($param->type->getLine())->nonIgnorable()->build();
 			}
 			if (
@@ -260,7 +259,7 @@ class FunctionDefinitionCheck
 				if (!$parameterVar instanceof Variable || !is_string($parameterVar->name)) {
 					throw new ShouldNotHappenException();
 				}
-				if ($parameter->getNativeType() instanceof VoidType) {
+				if ($parameter->getNativeType()->isVoid()->yes()) {
 					$errors[] = RuleErrorBuilder::message(sprintf($parameterMessage, $parameterVar->name, 'void'))->line($parameterNodeCallback()->getLine())->nonIgnorable()->build();
 				}
 				if (

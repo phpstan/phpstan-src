@@ -112,4 +112,9 @@ trait JustNullableTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
+	public function isVoid(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 }

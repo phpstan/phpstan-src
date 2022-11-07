@@ -229,6 +229,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isVoid(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

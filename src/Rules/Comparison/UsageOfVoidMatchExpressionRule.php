@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\VoidType;
 
 /**
  * @implements Rule<Node\Expr\Match_>
@@ -23,7 +22,7 @@ class UsageOfVoidMatchExpressionRule implements Rule
 	{
 		$matchResultType = $scope->getType($node);
 		if (
-			$matchResultType instanceof VoidType
+			$matchResultType->isVoid()->yes()
 			&& !$scope->isInFirstLevelStatement()
 		) {
 			return [RuleErrorBuilder::message('Result of match expression (void) is used.')->build()];

@@ -370,6 +370,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isClassStringType();
 	}
 
+	public function isVoid(): TrinaryLogic
+	{
+		return $this->resolve()->isVoid();
+	}
+
 	public function getSmallerType(): Type
 	{
 		return $this->resolve()->getSmallerType();

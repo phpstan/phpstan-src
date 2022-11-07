@@ -8,7 +8,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\VoidType;
 use function in_array;
 use function sprintf;
 
@@ -46,7 +45,7 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 		if ($function->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
 			if (!$node->expr->isFirstClassCallable()) {
 				$throwsType = $function->getThrowType();
-				if ($throwsType !== null && !$throwsType instanceof VoidType) {
+				if ($throwsType !== null && !$throwsType->isVoid()->yes()) {
 					return [];
 				}
 			}

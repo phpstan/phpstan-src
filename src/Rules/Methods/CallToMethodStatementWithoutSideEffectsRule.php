@@ -11,7 +11,6 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
-use PHPStan\Type\VoidType;
 use function sprintf;
 
 /**
@@ -65,7 +64,7 @@ class CallToMethodStatementWithoutSideEffectsRule implements Rule
 		if ($method->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
 			if (!$node->expr->isFirstClassCallable()) {
 				$throwsType = $method->getThrowType();
-				if ($throwsType !== null && !$throwsType instanceof VoidType) {
+				if ($throwsType !== null && !$throwsType->isVoid()->yes()) {
 					return [];
 				}
 			}

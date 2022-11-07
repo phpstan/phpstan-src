@@ -8,7 +8,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
-use PHPStan\Type\VoidType;
 use function sprintf;
 
 /**
@@ -50,7 +49,7 @@ class CallToConstructorStatementWithoutSideEffectsRule implements Rule
 		$constructor = $classReflection->getConstructor();
 		if ($constructor->hasSideEffects()->no()) {
 			$throwsType = $constructor->getThrowType();
-			if ($throwsType !== null && !$throwsType instanceof VoidType) {
+			if ($throwsType !== null && !$throwsType->isVoid()->yes()) {
 				return [];
 			}
 

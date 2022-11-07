@@ -82,7 +82,7 @@ class MissingReturnRule implements Rule
 				);
 				if ($generatorReturnType !== null) {
 					$returnType = $generatorReturnType;
-					if ($returnType instanceof VoidType) {
+					if ($returnType->isVoid()->yes()) {
 						return [];
 					}
 					if (!$returnType instanceof MixedType) {

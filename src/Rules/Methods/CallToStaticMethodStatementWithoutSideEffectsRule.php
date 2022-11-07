@@ -13,7 +13,6 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use PHPStan\Type\VoidType;
 use function sprintf;
 use function strtolower;
 
@@ -88,7 +87,7 @@ class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 		if ($method->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
 			if (!$node->expr->isFirstClassCallable()) {
 				$throwsType = $method->getThrowType();
-				if ($throwsType !== null && !$throwsType instanceof VoidType) {
+				if ($throwsType !== null && !$throwsType->isVoid()->yes()) {
 					return [];
 				}
 			}

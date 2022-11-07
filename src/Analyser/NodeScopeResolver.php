@@ -150,7 +150,6 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
-use PHPStan\Type\VoidType;
 use Throwable;
 use Traversable;
 use TypeError;
@@ -1498,7 +1497,7 @@ class NodeScopeResolver
 			$throwsTag = $resolvedPhpDoc->getThrowsTag();
 			if ($throwsTag !== null) {
 				$throwsType = $throwsTag->getType();
-				if ($throwsType instanceof VoidType) {
+				if ($throwsType->isVoid()->yes()) {
 					return [];
 				}
 
@@ -2820,7 +2819,7 @@ class NodeScopeResolver
 		}
 
 		if ($throwType !== null) {
-			if (!$throwType instanceof VoidType) {
+			if (!$throwType->isVoid()->yes()) {
 				return ThrowPoint::createExplicit($scope, $throwType, $funcCall, true);
 			}
 		} elseif ($this->implicitThrows) {
@@ -2878,7 +2877,7 @@ class NodeScopeResolver
 		}
 
 		if ($throwType !== null) {
-			if (!$throwType instanceof VoidType) {
+			if (!$throwType->isVoid()->yes()) {
 				return ThrowPoint::createExplicit($scope, $throwType, $methodCall, true);
 			}
 		} elseif ($this->implicitThrows) {
@@ -2915,7 +2914,7 @@ class NodeScopeResolver
 
 		if ($constructorReflection->getThrowType() !== null) {
 			$throwType = $constructorReflection->getThrowType();
-			if (!$throwType instanceof VoidType) {
+			if (!$throwType->isVoid()->yes()) {
 				return ThrowPoint::createExplicit($scope, $throwType, $new, true);
 			}
 		} elseif ($this->implicitThrows) {
@@ -2947,7 +2946,7 @@ class NodeScopeResolver
 
 		if ($methodReflection->getThrowType() !== null) {
 			$throwType = $methodReflection->getThrowType();
-			if (!$throwType instanceof VoidType) {
+			if (!$throwType->isVoid()->yes()) {
 				return ThrowPoint::createExplicit($scope, $throwType, $methodCall, true);
 			}
 		} elseif ($this->implicitThrows) {

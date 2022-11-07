@@ -74,7 +74,7 @@ use function sprintf;
 				];
 			}, explode("\n", $commitLines));
 
-			if ($input->getOption('include-headings')) {
+			if ($input->getOption('include-headings') === true) {
 				$output->writeln(<<<'MARKDOWN'
 				Major new features 🚀
 				=====================

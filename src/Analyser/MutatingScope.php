@@ -3370,17 +3370,8 @@ class MutatingScope implements Scope
 			$exprVarNativeType = $this->getType($expr->var);
 			$dimNativeType = $this->getType($expr->dim);
 			$unsetNativeType = $exprVarNativeType->unsetOffset($dimNativeType);
-			$scope = $this->specifyExpressionType($expr->var, $unsetType, $unsetNativeType)->invalidateExpression(
-				new FuncCall(new FullyQualified('count'), [new Arg($expr->var)]),
-			)->invalidateExpression(
-				new FuncCall(new FullyQualified('sizeof'), [new Arg($expr->var)]),
-			)->invalidateExpression(
-				new FuncCall(new Name('count'), [new Arg($expr->var)]),
-			)->invalidateExpression(
-				new FuncCall(new Name('sizeof'), [new Arg($expr->var)]),
-			);
-
 			if ($expr->var instanceof Expr\ArrayDimFetch && $expr->var->dim !== null) {
+				$scope = $this->addMoreSpecificType($expr->var, $unsetType, $unsetNativeType);
 				$scope = $scope->specifyExpressionType(
 					$expr->var->var,
 					$scope->getType($expr->var->var)->setOffsetValueType(
@@ -3392,9 +3383,18 @@ class MutatingScope implements Scope
 						$scope->getNativeType($expr->var),
 					),
 				);
+			} else {
+				$scope = $this->specifyExpressionType($expr->var, $unsetType, $unsetNativeType);
 			}
-
-			return $scope;
+			return $scope->invalidateExpression(
+				new FuncCall(new FullyQualified('count'), [new Arg($expr->var)]),
+			)->invalidateExpression(
+				new FuncCall(new FullyQualified('sizeof'), [new Arg($expr->var)]),
+			)->invalidateExpression(
+				new FuncCall(new Name('count'), [new Arg($expr->var)]),
+			)->invalidateExpression(
+				new FuncCall(new Name('sizeof'), [new Arg($expr->var)]),
+			);
 		}
 
 		return $this;

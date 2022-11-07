@@ -207,7 +207,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	{
 		if (($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN') && $in->isBoolean()->yes())
 			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in->isInteger()->yes())
-			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in instanceof FloatType)) {
+			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in->isFloat()->yes())) {
 			return $in;
 		}
 

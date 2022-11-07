@@ -1925,7 +1925,7 @@ class InitializerExprTypeResolver
 
 				return TypeCombinator::intersect(...$accessories);
 			}
-			if ($type->isInteger()->yes() || $type instanceof FloatType) {
+			if ($type->isInteger()->yes() || $type->isFloat()->yes()) {
 				return new IntegerType(); //no const types here, result depends on PHP_INT_SIZE
 			}
 			return new ErrorType();

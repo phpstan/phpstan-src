@@ -54,7 +54,9 @@ class RunCommand extends Command
 			$errors[$hash] = $this->analyseHash($phpVersion, $playgroundCache->getResults()[$hash]);
 		}
 
-		$writeSuccess = file_put_contents(sprintf($this->tmpDir . '/results-%d-%s.tmp', $phpVersion, sha1($commaSeparatedPlaygroundHashes)), serialize($errors));
+		$data = ['phpVersion' => $phpVersion, 'errors' => $errors];
+
+		$writeSuccess = file_put_contents(sprintf($this->tmpDir . '/results-%d-%s.tmp', $phpVersion, sha1($commaSeparatedPlaygroundHashes)), serialize($data));
 		if ($writeSuccess === false) {
 			throw new Exception('Result write unsuccessful');
 		}

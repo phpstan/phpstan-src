@@ -26,6 +26,9 @@ jobs:
 
     runs-on: "ubuntu-latest"
 
+    outputs:
+      matrix: ${{ steps.download-data.outputs.matrix }}
+
     steps:
       - name: "Checkout"
         uses: actions/checkout@v3
@@ -53,6 +56,40 @@ jobs:
 
       - name: "Download data"
         working-directory: "issue-bot"
+        id: download-data
         env:
           GITHUB_PAT: ${{ secrets.PHPSTAN_BOT_TOKEN }}
-        run: ./console.php download
+        run: echo "matrix=$(./console.php download)" >> $GITHUB_OUTPUT
+
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: playground-cache
+          path: issue-bot/tmp/playgroundCache.tmp
+
+  analyse:
+    name: "Analyse results"
+    needs: download
+
+    runs-on: "ubuntu-latest"
+
+    matrix: ${{ fromJSON(needs.download.outputs.matrix) }}
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "8.1"
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: playground-cache
+
+      - run: "ls -R"

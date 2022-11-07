@@ -5,6 +5,7 @@ namespace PHPStan\IssueBot\Console;
 use DateTimeImmutable;
 use Exception;
 use Github\Client;
+use Nette\Utils\Json;
 use Nette\Utils\Strings;
 use PHPStan\IssueBot\Comment\BotComment;
 use PHPStan\IssueBot\Comment\BotCommentParser;
@@ -20,12 +21,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use function array_key_exists;
 use function array_merge;
+use function array_values;
 use function count;
 use function file_get_contents;
 use function file_put_contents;
 use function is_file;
 use function serialize;
-use function sprintf;
 use function unserialize;
 
 class DownloadCommand extends Command
@@ -49,43 +50,45 @@ class DownloadCommand extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$issues = $this->getIssues($output);
+		$issues = $this->getIssues();
 
 		$playgroundCache = $this->loadPlaygroundCache();
 		if ($playgroundCache === null) {
 			$cachedResults = [];
-			$output->writeln('Downloading playground results fresh');
 		} else {
 			$cachedResults = $playgroundCache->getResults();
 		}
+
+		$deduplicatedExamples = [];
 		foreach ($issues as $issue) {
-			$botComments = [];
-			$deduplicatedExamples = [];
 			foreach ($issue->getComments() as $comment) {
 				if ($comment instanceof BotComment) {
-					$botComments[] = $comment;
 					continue;
 				}
 				foreach ($comment->getPlaygroundExamples() as $example) {
-					if (isset($deduplicatedExamples[$example->getHash()])) {
-						$deduplicatedExamples[$example->getHash()]->addUser($comment->getAuthor());
-						continue;
-					}
 					$deduplicatedExamples[$example->getHash()] = $example;
-				}
-				foreach ($deduplicatedExamples as $hash => $example) {
-					if (array_key_exists($hash, $cachedResults)) {
-						$result = $cachedResults[$hash];
-					} else {
-						$output->writeln(sprintf('Downloading playground result %s', $hash));
-						$result = $this->playgroundClient->getResult($hash);
-						$cachedResults[$hash] = $result;
-					}
 				}
 			}
 		}
 
+		foreach ($deduplicatedExamples as $hash => $example) {
+			if (array_key_exists($hash, $cachedResults)) {
+				continue;
+			}
+
+			$cachedResults[$hash] = $this->playgroundClient->getResult($hash);
+		}
+
 		$this->savePlaygroundCache(new PlaygroundCache($cachedResults));
+
+		$hashes = array_keys($deduplicatedExamples);
+
+		$matrix = [
+			'phpVersion' => [70200, 70300, 70400, 80000, 80100, 80200],
+			'playgroundExamples' => array_chunk($hashes, (int) ceil(count($hashes) / 20)),
+		];
+
+		$output->writeln(Json::encode($matrix));
 
 		return 0;
 	}
@@ -93,18 +96,12 @@ class DownloadCommand extends Command
 	/**
 	 * @return Issue[]
 	 */
-	private function getIssues(OutputInterface $output): array
+	private function getIssues(): array
 	{
 		/** @var \Github\Api\Issue $api */
 		$api = $this->githubClient->api('issue');
 
 		$cache = $this->loadIssueCache();
-		if ($cache === null) {
-			$output->writeln('Downloading issues fresh');
-		} else {
-			$output->writeln('Downloading only issues updated since: ' . $cache->getDate()->format(DateTimeImmutable::ATOM));
-		}
-
 		$newDate = new DateTimeImmutable();
 
 		$page = 1;
@@ -137,9 +134,6 @@ class DownloadCommand extends Command
 			$issueObjects = $cache->getIssues();
 		}
 		foreach ($issues as $issue) {
-			if ($cache !== null) {
-				$output->writeln(sprintf('Downloading issue #%d', $issue['number']));
-			}
 			$comments = [];
 			$issueExamples = $this->searchBody($issue['body'], $issue['user']['login']);
 			if (count($issueExamples) > 0) {
@@ -230,7 +224,7 @@ class DownloadCommand extends Command
 		$examples = [];
 
 		foreach ($matches as [$url, $hash]) {
-			$examples[] = new PlaygroundExample($url, $hash, $user);
+			$examples[] = new PlaygroundExample($url, $hash);
 		}
 
 		return $examples;

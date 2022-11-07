@@ -39,7 +39,7 @@ use Symfony\Component\Console\Application;
 	$botCommentParser = new BotCommentParser(new MarkdownParser($markdownEnvironment));
 
 	$application = new Application();
-	$application->add(new DownloadCommand($client, $botCommentParser, new PlaygroundClient(new \GuzzleHttp\Client()), __DIR__ . '/tmp/issueCache.tmp',  __DIR__ . '/tmp/playgroundCache.tmp'));
+	$application->add(new DownloadCommand($client, $botCommentParser, new PlaygroundClient(new \GuzzleHttp\Client()), __DIR__ . '/tmp/issueCache.tmp', __DIR__ . '/tmp/playgroundCache.tmp'));
 
 	$application->setCatchExceptions(false);
 	$application->run();

@@ -773,6 +773,52 @@ class MixedTypeTest extends PHPStanTestCase
 	}
 
 	/**
+	 * @dataProvider dataSubstractedIsNull
+	 */
+	public function testSubstractedIsNull(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isNull();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isNull()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubstractedIsNull(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new IntegerType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ConstantBooleanType(true),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ConstantBooleanType(false),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new BooleanType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new NullType(),
+				TrinaryLogic::createNo(),
+			],
+		];
+	}
+
+	/**
 	 * @dataProvider dataSubstractedIsTrue
 	 */
 	public function testSubstractedIsTrue(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void

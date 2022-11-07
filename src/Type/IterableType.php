@@ -260,6 +260,11 @@ class IterableType implements CompoundType
 		return $this->getItemType();
 	}
 
+	public function isNull(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isTrue(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

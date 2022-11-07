@@ -88,6 +88,11 @@ class BooleanType implements Type
 		return new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]);
 	}
 
+	public function isNull(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isTrue(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

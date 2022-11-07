@@ -138,6 +138,11 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
+          name: playground-cache
+          path: issue-bot/tmp
+
+      - uses: actions/download-artifact@v3
+        with:
           name: results
           path: issue-bot/tmp
 

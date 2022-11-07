@@ -1,36 +1,30 @@
 # https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
-name: "Build Issue Bot"
+name: "Issue bot"
 
 on:
   pull_request:
-    paths:
-      - 'issue-bot/**'
-      - '.github/workflows/build-issue-bot.yml'
+    paths-ignore:
+      - 'compiler/**'
+      - 'apigen/**'
+      - 'changelog-generator/**'
   push:
     branches:
       - "1.9.x"
-    paths:
-      - 'issue-bot/**'
-      - '.github/workflows/build-issue-bot.yml'
+    paths-ignore:
+      - 'compiler/**'
+      - 'apigen/**'
+      - 'changelog-generator/**'
 
 concurrency:
-  group: issue-bot-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
+  group: issue-bot-${{ github.ref }} # will be canceled on subsequent pushes in both branches and pull requests
   cancel-in-progress: true
 
 jobs:
-  build-issue-bot:
-    name: "Build Issue Bot"
+  download:
+    name: "Download comments"
 
     runs-on: "ubuntu-latest"
-    timeout-minutes: 60
-
-    strategy:
-      fail-fast: false
-      matrix:
-        script:
-          - "../bin/phpstan"
-          - "vendor/bin/phpunit"
 
     steps:
       - name: "Checkout"
@@ -49,6 +43,14 @@ jobs:
         working-directory: "issue-bot"
         run: "composer install --no-interaction --no-progress"
 
-      - name: "Tests"
+      - name: "Cache downloaded comments"
+        uses: actions/cache@v3
+        with:
+          path: ./issue-bot/tmp/issueCache.tmp
+          key: "issue-bot-download-v1-${{ github.run_id }}"
+          restore-keys: |
+            issue-bot-download-v1-
+
+      - name: "Download comments"
         working-directory: "issue-bot"
-        run: ${{ matrix.script }}
+        run: ./console.php download

@@ -7,14 +7,12 @@ on:
     paths-ignore:
       - 'compiler/**'
       - 'apigen/**'
-      - 'changelog-generator/**'
   push:
     branches:
       - "1.9.x"
     paths-ignore:
       - 'compiler/**'
       - 'apigen/**'
-      - 'changelog-generator/**'
 
 env:
   COMPOSER_ROOT_VERSION: "1.9.x-dev"

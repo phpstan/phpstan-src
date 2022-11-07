@@ -9,4 +9,5 @@ parameters:
 	level: 8
 	paths:
 		- src
+		- tests
 		- console.php

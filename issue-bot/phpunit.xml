@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+		 cacheResult="false"
+		 colors="true"
+		 failOnRisky="true"
+		 failOnWarning="true"
+		 beStrictAboutChangesToGlobalState="true"
+		 beStrictAboutCoversAnnotation="true"
+		 beStrictAboutOutputDuringTests="true"
+		 beStrictAboutTodoAnnotatedTests="true"
+		 convertDeprecationsToExceptions="true">
+	<coverage processUncoveredFiles="true">
+		<include>
+			<directory suffix=".php">src</directory>
+		</include>
+		<report>
+			<text outputFile="php://stdout" showUncoveredFiles="true" showOnlySummary="true"/>
+		</report>
+	</coverage>
+
+	<testsuites>
+		<testsuite name="PHPStan">
+			<directory suffix="Test.php">tests</directory>
+		</testsuite>
+	</testsuites>
+	<logging/>
+</phpunit>

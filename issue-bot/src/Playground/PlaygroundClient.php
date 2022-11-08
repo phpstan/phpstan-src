@@ -24,7 +24,7 @@ class PlaygroundClient
 
 		$versionedErrors = [];
 		foreach ($json['versionedErrors'] as ['phpVersion' => $phpVersion, 'errors' => $errors]) {
-			$versionedErrors[(int) $phpVersion] = array_map(static fn (array $error) => new PlaygroundError($error['line'], $error['message']), array_values($errors));
+			$versionedErrors[(int) $phpVersion] = array_map(static fn (array $error) => new PlaygroundError($error['line'] ?? -1, $error['message']), array_values($errors));
 		}
 
 		return new PlaygroundResult(

@@ -114,7 +114,7 @@ class RunCommand extends Command
 		foreach ($json['files'] as ['messages' => $messages]) {
 			foreach ($messages as $message) {
 				$messageText = str_replace(sprintf('/%s.php', $hash), '/tmp.php', $message['message']);
-				$errors[] = new PlaygroundError($message['line'], $messageText);
+				$errors[] = new PlaygroundError($message['line'] ?? -1, $messageText);
 			}
 		}
 

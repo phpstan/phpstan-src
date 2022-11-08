@@ -61,7 +61,7 @@ jobs:
         working-directory: "issue-bot"
         id: download-data
         env:
-          GITHUB_PAT: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
         run: echo "matrix=$(./console.php download)" >> $GITHUB_OUTPUT
 
 

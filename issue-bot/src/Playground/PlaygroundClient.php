@@ -5,6 +5,7 @@ namespace PHPStan\IssueBot\Playground;
 use GuzzleHttp\Client;
 use Nette\Utils\Json;
 use function array_map;
+use function array_values;
 use function sprintf;
 
 class PlaygroundClient
@@ -23,7 +24,7 @@ class PlaygroundClient
 
 		$versionedErrors = [];
 		foreach ($json['versionedErrors'] as ['phpVersion' => $phpVersion, 'errors' => $errors]) {
-			$versionedErrors[(int) $phpVersion] = array_map(static fn (array $error) => new PlaygroundError($error['line'], $error['message']), $errors);
+			$versionedErrors[(int) $phpVersion] = array_map(static fn (array $error) => new PlaygroundError($error['line'], $error['message']), array_values($errors));
 		}
 
 		return new PlaygroundResult(

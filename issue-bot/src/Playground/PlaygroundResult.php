@@ -6,7 +6,7 @@ class PlaygroundResult
 {
 
 	/**
-	 * @param array<int, array<PlaygroundError>> $versionedErrors
+	 * @param array<int, list<PlaygroundError>> $versionedErrors
 	 */
 	public function __construct(
 		private string $url,
@@ -57,7 +57,7 @@ class PlaygroundResult
 	}
 
 	/**
-	 * @return array<int, array<PlaygroundError>>
+	 * @return array<int, list<PlaygroundError>>
 	 */
 	public function getVersionedErrors(): array
 	{

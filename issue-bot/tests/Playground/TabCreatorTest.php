@@ -24,7 +24,7 @@ class TabCreatorTest extends TestCase
 					],
 				],
 				[
-					new PlaygroundResultTab('PHP 7.1 - 7.2', []),
+					new PlaygroundResultTab('PHP 7.1 – 7.2', []),
 				],
 			],
 			[
@@ -37,7 +37,7 @@ class TabCreatorTest extends TestCase
 					],
 				],
 				[
-					new PlaygroundResultTab('PHP 7.1 - 7.2 (1 error)', [
+					new PlaygroundResultTab('PHP 7.1 – 7.2 (1 error)', [
 						new PlaygroundError(2, 'Foo'),
 					]),
 				],
@@ -54,7 +54,7 @@ class TabCreatorTest extends TestCase
 					],
 				],
 				[
-					new PlaygroundResultTab('PHP 7.1 - 7.2 (2 errors)', [
+					new PlaygroundResultTab('PHP 7.1 – 7.2 (2 errors)', [
 						new PlaygroundError(2, 'Foo'),
 						new PlaygroundError(3, 'Foo'),
 					]),

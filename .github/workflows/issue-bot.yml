@@ -152,4 +152,4 @@ jobs:
 
       - name: "Evaluate results"
         working-directory: "issue-bot"
-        run: ./console.php evaluate
+        run: echo "$(./console.php evaluate)" >> $GITHUB_STEP_SUMMARY

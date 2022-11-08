@@ -7,7 +7,9 @@
 		"league/commonmark": "^2.3",
 		"nette/neon": "^3.3",
 		"nette/utils": "^3.2",
-		"symfony/console": "^6.1"
+		"phpstan/phpstan-strict-rules": "^1.4",
+		"symfony/console": "^6.1",
+		"symfony/finder": "^6.1"
 	},
 	"autoload": {
 		"psr-4": {

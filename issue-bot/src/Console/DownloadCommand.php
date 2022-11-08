@@ -112,9 +112,9 @@ class DownloadCommand extends Command
 		$cache = $this->loadIssueCache();
 		$newDate = new DateTimeImmutable();
 
-		$page = 1;
 		$issues = [];
 		foreach (['feature-request', 'bug'] as $label) {
+			$page = 1;
 			while (true) {
 				$parameters = [
 					'state' => 'open',

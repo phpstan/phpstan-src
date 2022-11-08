@@ -23,9 +23,14 @@ use PHPStan\IssueBot\Playground\TabCreator;
 use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use Symfony\Component\Console\Application;
+use function exec;
+use function implode;
 
 (static function (): void {
 	$token = $_SERVER['GITHUB_PAT'] ?? 'unknown';
+
+	$phpstanSrcCommitBefore = $_SERVER['PHPSTAN_SRC_COMMIT_BEFORE'] ?? 'unknown';
+	$phpstanSrcCommitAfter = $_SERVER['PHPSTAN_SRC_COMMIT_AFTER'] ?? 'unknown';
 
 	$rateLimitPlugin = new RateLimitPlugin();
 	$requestCounter = new RequestCounterPlugin();
@@ -47,12 +52,19 @@ use Symfony\Component\Console\Application;
 	$playgroundCachePath = __DIR__ . '/tmp/playgroundCache.tmp';
 	$tmpDir = __DIR__ . '/tmp';
 
+	exec('git branch --show-current', $gitBranchLines, $exitCode);
+	if ($exitCode === 0) {
+		$gitBranch = implode("\n", $gitBranchLines);
+	} else {
+		$gitBranch = 'dev-master';
+	}
+
 	$postGenerator = new PostGenerator(new Differ(new UnifiedDiffOutputBuilder('')));
 
 	$application = new Application();
 	$application->add(new DownloadCommand($client, $botCommentParser, new PlaygroundClient(new \GuzzleHttp\Client()), $issueCachePath, $playgroundCachePath));
 	$application->add(new RunCommand($playgroundCachePath, $tmpDir));
-	$application->add(new EvaluateCommand(new TabCreator(), $postGenerator, $issueCachePath, $playgroundCachePath, $tmpDir));
+	$application->add(new EvaluateCommand(new TabCreator(), $postGenerator, $client, $issueCachePath, $playgroundCachePath, $tmpDir, $gitBranch, $phpstanSrcCommitBefore, $phpstanSrcCommitAfter));
 
 	$application->setCatchExceptions(false);
 	$application->run();

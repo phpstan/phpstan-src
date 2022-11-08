@@ -3,6 +3,8 @@
 namespace PHPStan\IssueBot\Console;
 
 use Exception;
+use Github\Api\Issue as GitHubIssueApi;
+use Github\Client;
 use PHPStan\IssueBot\Comment\BotComment;
 use PHPStan\IssueBot\Issue\IssueCache;
 use PHPStan\IssueBot\Playground\PlaygroundCache;
@@ -11,6 +13,7 @@ use PHPStan\IssueBot\Playground\TabCreator;
 use PHPStan\IssueBot\PostGenerator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
 use function array_key_exists;
@@ -32,9 +35,13 @@ class EvaluateCommand extends Command
 	public function __construct(
 		private TabCreator $tabCreator,
 		private PostGenerator $postGenerator,
+		private Client $githubClient,
 		private string $issueCachePath,
 		private string $playgroundCachePath,
 		private string $tmpDir,
+		private string $gitBranch,
+		private string $phpstanSrcCommitBefore,
+		private string $phpstanSrcCommitAfter,
 	)
 	{
 		parent::__construct();
@@ -43,6 +50,7 @@ class EvaluateCommand extends Command
 	protected function configure(): void
 	{
 		$this->setName('evaluate');
+		$this->addOption('post-comments', null, InputOption::VALUE_NONE);
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output): int
@@ -128,6 +136,34 @@ class EvaluateCommand extends Command
 			$text .= "\n\n---\n";
 
 			$output->writeln($text);
+		}
+
+		$postComments = (bool) $input->getOption('post-comments');
+		if ($postComments) {
+			foreach ($toPost as ['issue' => $issue, 'hash' => $hash, 'users' => $users, 'diff' => $diff, 'details' => $details]) {
+				$text = sprintf(
+					"%s After [the latest push in %s](https://github.com/phpstan/phpstan-src/compare/%s...%s), PHPStan now reports different result with your [code snippet](https://phpstan.org/r/%s):\n\n```diff\n%s```",
+					implode(' ', array_map(static fn (string $user): string => sprintf('@%s', $user), $users)),
+					$this->gitBranch,
+					$this->phpstanSrcCommitBefore,
+					$this->phpstanSrcCommitAfter,
+					$hash,
+					$diff,
+				);
+				if ($details !== null) {
+					$text .= "\n\n" . sprintf('<details>
+ <summary>Full report</summary>
+
+%s
+</details>', $details);
+				}
+
+				/** @var GitHubIssueApi $issueApi */
+				$issueApi = $this->githubClient->api('issue');
+				$issueApi->comments()->create('phpstan', 'phpstan', $issue, [
+					'body' => $text,
+				]);
+			}
 		}
 
 		return 0;

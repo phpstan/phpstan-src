@@ -23,6 +23,7 @@ use function serialize;
 use function sha1;
 use function sprintf;
 use function str_replace;
+use function strpos;
 use function unserialize;
 
 class RunCommand extends Command
@@ -106,7 +107,7 @@ class RunCommand extends Command
 		exec(implode(' ', $commandArray), $outputLines, $exitCode);
 
 		if ($exitCode !== 0 && $exitCode !== 1) {
-			throw new Exception(sprintf('PHPStan exited with code %d', $exitCode));
+			throw new Exception(sprintf('PHPStan exited with code %d during analysis of %s', $exitCode, $hash));
 		}
 
 		$json = Json::decode(implode("\n", $outputLines), Json::FORCE_ARRAY);
@@ -114,6 +115,9 @@ class RunCommand extends Command
 		foreach ($json['files'] as ['messages' => $messages]) {
 			foreach ($messages as $message) {
 				$messageText = str_replace(sprintf('/%s.php', $hash), '/tmp.php', $message['message']);
+				if (strpos($messageText, 'Internal error') !== false) {
+					throw new Exception(sprintf('While analysing %s: %s', $hash, $messageText));
+				}
 				$errors[] = new PlaygroundError($message['line'] ?? -1, $messageText);
 			}
 		}

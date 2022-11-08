@@ -70,6 +70,11 @@ jobs:
           name: playground-cache
           path: issue-bot/tmp/playgroundCache.tmp
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: issue-cache
+          path: issue-bot/tmp/issueCache.tmp
+
   analyse:
     name: "Analyse"
     needs: download
@@ -139,6 +144,11 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: playground-cache
+          path: issue-bot/tmp
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: issue-cache
           path: issue-bot/tmp
 
       - uses: actions/download-artifact@v3

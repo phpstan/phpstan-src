@@ -23,6 +23,7 @@ use function is_file;
 use function serialize;
 use function sha1;
 use function sprintf;
+use function str_replace;
 use function unserialize;
 
 class RunCommand extends Command
@@ -117,7 +118,8 @@ class RunCommand extends Command
 
 		$errors = [];
 		foreach ($json['files'][$file]['messages'] as $message) {
-			$errors[] = new PlaygroundError($message['line'], $message['message']);
+			$messageText = str_replace(sprintf('/%s.php', $hash), '/tmp.php', $message['message']);
+			$errors[] = new PlaygroundError($message['line'], $messageText);
 		}
 
 		return $errors;

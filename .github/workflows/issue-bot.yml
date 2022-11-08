@@ -150,6 +150,6 @@ jobs:
           name: results
           path: issue-bot/tmp
 
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: issue-bot/tmp
+      - name: "Evaluate results"
+        working-directory: "issue-bot"
+        run: ./console.php evaluate

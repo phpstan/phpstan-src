@@ -4,7 +4,9 @@ namespace PHPStan\IssueBot\Playground;
 
 use function count;
 use function floor;
+use function ksort;
 use function usort;
+use const SORT_NUMERIC;
 
 class TabCreator
 {
@@ -15,6 +17,8 @@ class TabCreator
 	 */
 	public function create(array $versionedErrors): array
 	{
+		ksort($versionedErrors, SORT_NUMERIC);
+
 		$versions = [];
 		$last = null;
 

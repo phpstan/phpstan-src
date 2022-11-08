@@ -8,7 +8,6 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use function array_map;
 use function array_merge;
 use function count;
 use function strcasecmp;
@@ -24,12 +23,12 @@ class UnionTypeHelper
 	 */
 	public static function getReferencedClasses(array $types): array
 	{
-		return array_merge(
-			...array_map(
-				static fn (Type $type) => $type->getReferencedClasses(),
-				$types,
-			),
-		);
+		$referencedClasses = [];
+		foreach ($types as $type) {
+			$referencedClasses[] = $type->getReferencedClasses();
+		}
+
+		return array_merge(...$referencedClasses);
 	}
 
 	/**
@@ -38,12 +37,12 @@ class UnionTypeHelper
 	 */
 	public static function getArrays(array $types): array
 	{
-		return array_merge(
-			...array_map(
-				static fn (Type $type) => $type->getArrays(),
-				$types,
-			),
-		);
+		$arrays = [];
+		foreach ($types as $type) {
+			$arrays[] = $type->getArrays();
+		}
+
+		return array_merge(...$arrays);
 	}
 
 	/**
@@ -52,12 +51,12 @@ class UnionTypeHelper
 	 */
 	public static function getConstantArrays(array $types): array
 	{
-		return array_merge(
-			...array_map(
-				static fn (Type $type) => $type->getConstantArrays(),
-				$types,
-			),
-		);
+		$constantArrays = [];
+		foreach ($types as $type) {
+			$constantArrays[] = $type->getConstantArrays();
+		}
+
+		return array_merge(...$constantArrays);
 	}
 
 	/**

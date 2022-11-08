@@ -92,7 +92,7 @@ class DownloadCommand extends Command
 		}
 
 		$matrix = [
-			'phpVersion' => [70200, 70300, 70400, 80000, 80100, 80200],
+			'phpVersion' => [70100, 70200, 70300, 70400, 80000, 80100, 80200],
 			'playgroundExamples' => array_map(static fn (array $chunk) => implode(',', $chunk), array_chunk($hashes, $chunkSize)),
 		];
 

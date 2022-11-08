@@ -257,4 +257,9 @@ class CallCallablesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testStaticCallInFunctions(): void
+	{
+		$this->analyse([__DIR__ . '/data/static-call-in-functions.php'], []);
+	}
+
 }

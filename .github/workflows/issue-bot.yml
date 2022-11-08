@@ -42,9 +42,6 @@ jobs:
           coverage: "none"
           php-version: "8.1"
 
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
-
       - name: "Install Issue Bot dependencies"
         working-directory: "issue-bot"
         run: "composer install --no-interaction --no-progress"
@@ -95,7 +92,7 @@ jobs:
           php-version: "8.1"
 
       - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
+        run: "composer install --no-interaction --no-progress --no-dev"
 
       - name: "Install Issue Bot dependencies"
         working-directory: "issue-bot"
@@ -133,9 +130,6 @@ jobs:
         with:
           coverage: "none"
           php-version: "8.1"
-
-      - name: "Install dependencies"
-        run: "composer install --no-interaction --no-progress"
 
       - name: "Install Issue Bot dependencies"
         working-directory: "issue-bot"

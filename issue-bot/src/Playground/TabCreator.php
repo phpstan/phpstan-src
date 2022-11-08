@@ -75,7 +75,7 @@ class TabCreator
 			$title = 'PHP ';
 			if (count($version['versions']) > 1) {
 				$title .= $this->versionNumberToString($version['versions'][0]);
-				$title .= ' - ';
+				$title .= ' – ';
 				$title .= $this->versionNumberToString($version['versions'][count($version['versions']) - 1]);
 			} else {
 				$title .= $this->versionNumberToString($version['versions'][0]);

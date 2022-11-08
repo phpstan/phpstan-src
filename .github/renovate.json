@@ -26,6 +26,16 @@
       "groupName": "apigen"
     },
     {
+	  "matchPaths": ["issue-bot/**"],
+	  "enabled": true,
+	  "groupName": "issue-bot"
+    },
+    {
+      "matchPaths": ["changelog-generator/**"],
+      "enabled": true,
+      "groupName": "changelog-generator"
+    },
+    {
       "matchPaths": ["compiler/**"],
       "enabled": true,
       "groupName": "compiler"

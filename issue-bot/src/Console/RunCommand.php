@@ -13,7 +13,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use function array_key_exists;
-use function array_key_first;
 use function exec;
 use function explode;
 use function file_get_contents;
@@ -111,15 +110,12 @@ class RunCommand extends Command
 		}
 
 		$json = Json::decode(implode("\n", $outputLines), Json::FORCE_ARRAY);
-		$file = array_key_first($json['files']);
-		if ($file === null) {
-			return [];
-		}
-
 		$errors = [];
-		foreach ($json['files'][$file]['messages'] as $message) {
-			$messageText = str_replace(sprintf('/%s.php', $hash), '/tmp.php', $message['message']);
-			$errors[] = new PlaygroundError($message['line'], $messageText);
+		foreach ($json['files'] as ['messages' => $messages]) {
+			foreach ($messages as $message) {
+				$messageText = str_replace(sprintf('/%s.php', $hash), '/tmp.php', $message['message']);
+				$errors[] = new PlaygroundError($message['line'], $messageText);
+			}
 		}
 
 		return $errors;

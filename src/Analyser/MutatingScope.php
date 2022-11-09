@@ -3142,7 +3142,7 @@ class MutatingScope implements Scope
 		$scope = $this->assignVariable($keyName, $iterateeType->getIterableKeyType(), $nativeIterateeType->getIterableKeyType());
 
 		if ($iterateeType->isArray()->yes()) {
-			$scope = $scope->specifyExpressionType(
+			$scope = $scope->assignExpression(
 				new Expr\ArrayDimFetch($iteratee, new Variable($keyName)),
 				$iterateeType->getIterableValueType(),
 				$nativeIterateeType->getIterableValueType(),
@@ -3341,7 +3341,7 @@ class MutatingScope implements Scope
 			$exprVarNativeType = $scope->getType($expr->var);
 			$dimNativeType = $scope->getType($expr->dim);
 			$unsetNativeType = $exprVarNativeType->unsetOffset($dimNativeType);
-			$scope = $scope->specifyExpressionType($expr->var, $unsetType, $unsetNativeType)->invalidateExpression(
+			$scope = $scope->assignExpression($expr->var, $unsetType, $unsetNativeType)->invalidateExpression(
 				new FuncCall(new FullyQualified('count'), [new Arg($expr->var)]),
 			)->invalidateExpression(
 				new FuncCall(new FullyQualified('sizeof'), [new Arg($expr->var)]),
@@ -3352,7 +3352,7 @@ class MutatingScope implements Scope
 			);
 
 			if ($expr->var instanceof Expr\ArrayDimFetch && $expr->var->dim !== null) {
-				$scope = $scope->specifyExpressionType(
+				$scope = $scope->assignExpression(
 					$expr->var->var,
 					$this->getType($expr->var->var)->setOffsetValueType(
 						$scope->getType($expr->var->dim),
@@ -3449,23 +3449,6 @@ class MutatingScope implements Scope
 		}
 
 		$exprString = $this->getNodeKey($expr);
-		$conditionalExpressions = [];
-		foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
-			if ($conditionalExprString === $exprString) {
-				continue;
-			}
-
-			foreach ($holders as $holder) {
-				foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionExprString2) {
-					if ($conditionExprString2 === $exprString) {
-						continue 3;
-					}
-				}
-			}
-
-			$conditionalExpressions[$conditionalExprString] = $holders;
-		}
-
 		$expressionTypes = $scope->expressionTypes;
 		$expressionTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $type);
 		$nativeTypes = $scope->nativeExpressionTypes;
@@ -3477,7 +3460,7 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$expressionTypes,
-			$conditionalExpressions,
+			$this->conditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
@@ -3503,6 +3486,25 @@ class MutatingScope implements Scope
 			$scope = $this->invalidateExpression($expr);
 		} elseif ($expr instanceof Variable) {
 			$scope = $this->invalidateExpression($expr, true);
+		}
+
+		$exprString = $this->getNodeKey($expr);
+		foreach ($scope->conditionalExpressions as $conditionalExprString => $holders) {
+			if ($conditionalExprString === $exprString) {
+				unset($scope->conditionalExpressions[$conditionalExprString]);
+				continue;
+			}
+
+			foreach ($holders as $holder) {
+				foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionExprString2) {
+					if ($conditionExprString2 !== $exprString) {
+						continue;
+					}
+
+					unset($scope->conditionalExpressions[$conditionalExprString]);
+					continue 3;
+				}
+			}
 		}
 
 		return $scope->specifyExpressionType($expr, $type, $nativeType);
@@ -3730,7 +3732,7 @@ class MutatingScope implements Scope
 			$type = $typeSpecification['type'];
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
-					$scope = $scope->specifyExpressionType($expr, $type, $type);
+					$scope = $scope->assignExpression($expr, $type, $type);
 				} else {
 					$scope = $scope->addTypeToExpression($expr, $type);
 				}
@@ -3740,7 +3742,7 @@ class MutatingScope implements Scope
 		}
 
 		$newConditionalExpressions = $specifiedTypes->getNewConditionalExpressionHolders();
-		foreach ($this->conditionalExpressions as $variableExprString => $conditionalExpressions) {
+		foreach ($scope->conditionalExpressions as $variableExprString => $conditionalExpressions) {
 			if (array_key_exists($variableExprString, $specifiedExpressions)) {
 				continue;
 			}

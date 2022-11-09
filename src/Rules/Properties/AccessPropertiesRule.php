@@ -122,6 +122,9 @@ class AccessPropertiesRule implements Rule
 				$parentClassReflection = $propertyClassReflection->getParentClass();
 				while ($parentClassReflection !== null) {
 					if ($parentClassReflection->hasProperty($name)) {
+						if ($scope->canAccessProperty($parentClassReflection->getProperty($name, $scope))) {
+							return [];
+						}
 						return [
 							RuleErrorBuilder::message(sprintf(
 								'Access to private property $%s of parent class %s.',

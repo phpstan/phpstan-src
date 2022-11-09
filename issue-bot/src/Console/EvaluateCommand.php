@@ -140,6 +140,10 @@ class EvaluateCommand extends Command
 
 		$postComments = (bool) $input->getOption('post-comments');
 		if ($postComments) {
+			if (count($toPost) > 20) {
+				$output->writeln('Too many comments to post, something is probably wrong.');
+				return 1;
+			}
 			foreach ($toPost as ['issue' => $issue, 'hash' => $hash, 'users' => $users, 'diff' => $diff, 'details' => $details]) {
 				$text = sprintf(
 					"%s After [the latest push in %s](https://github.com/phpstan/phpstan-src/compare/%s...%s), PHPStan now reports different result with your [code snippet](https://phpstan.org/r/%s):\n\n```diff\n%s```",

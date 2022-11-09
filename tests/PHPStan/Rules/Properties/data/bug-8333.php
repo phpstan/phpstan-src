@@ -22,3 +22,30 @@ class Foo {
 class Bar extends Foo {
 
 }
+
+class FooAccessProperties
+{
+
+	static private $foo;
+
+	static protected $bar;
+
+	static public $ipsum;
+
+}
+
+class BarAccessProperties extends FooAccessProperties
+{
+
+	static private $foobar;
+
+	public function foo()
+	{
+		static::$loremipsum; // nonexistent
+		static::$foo; // private from an ancestor
+		static::$bar;
+		static::$ipsum;
+		static::$foobar;
+	}
+
+}

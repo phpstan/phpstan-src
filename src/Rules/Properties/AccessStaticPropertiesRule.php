@@ -194,6 +194,14 @@ class AccessStaticPropertiesRule implements Rule
 					if ($scope->canAccessProperty($parentClassReflection->getProperty($name, $scope))) {
 						return [];
 					}
+
+					return [
+						RuleErrorBuilder::message(sprintf(
+							'Access to private static property $%s of parent class %s.',
+							$name,
+							$parentClassReflection->getDisplayName(),
+						))->build(),
+					];
 				}
 			}
 

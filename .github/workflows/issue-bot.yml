@@ -80,6 +80,7 @@ jobs:
     timeout-minutes: 5
 
     strategy:
+      fail-fast: false
       matrix: ${{ fromJSON(needs.download.outputs.matrix) }}
 
     steps:

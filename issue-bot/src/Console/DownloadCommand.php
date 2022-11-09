@@ -63,6 +63,8 @@ class DownloadCommand extends Command
 			$cachedResults = $playgroundCache->getResults();
 		}
 
+		$unusedCachedResults = $cachedResults;
+
 		$deduplicatedExamples = [];
 		foreach ($issues as $issue) {
 			foreach ($issue->getComments() as $comment) {
@@ -78,10 +80,15 @@ class DownloadCommand extends Command
 		$hashes = array_keys($deduplicatedExamples);
 		foreach ($hashes as $hash) {
 			if (array_key_exists($hash, $cachedResults)) {
+				unset($unusedCachedResults[$hash]);
 				continue;
 			}
 
 			$cachedResults[$hash] = $this->playgroundClient->getResult($hash);
+		}
+
+		foreach (array_keys($unusedCachedResults) as $hash) {
+			unset($cachedResults[$hash]);
 		}
 
 		$this->savePlaygroundCache(new PlaygroundCache($cachedResults));
@@ -117,7 +124,6 @@ class DownloadCommand extends Command
 			$page = 1;
 			while (true) {
 				$parameters = [
-					'state' => 'open',
 					'labels' => $label,
 					'page' => $page,
 					'per_page' => 100,
@@ -125,7 +131,10 @@ class DownloadCommand extends Command
 					'direction' => 'desc',
 				];
 				if ($cache !== null) {
+					$parameters['state'] = 'all';
 					$parameters['since'] = $cache->getDate()->format(DateTimeImmutable::ATOM);
+				} else {
+					$parameters['state'] = 'open';
 				}
 				$newIssues = $api->all('phpstan', 'phpstan', $parameters);
 				$issues = array_merge($issues, $newIssues);
@@ -142,6 +151,10 @@ class DownloadCommand extends Command
 			$issueObjects = $cache->getIssues();
 		}
 		foreach ($issues as $issue) {
+			if ($issue['state'] === 'closed') {
+				unset($issueObjects[$issue['number']]);
+				continue;
+			}
 			$comments = [];
 			$issueExamples = $this->searchBody($issue['body'], $issue['user']['login']);
 			if (count($issueExamples) > 0) {

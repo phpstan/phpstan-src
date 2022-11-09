@@ -23,6 +23,7 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
@@ -182,6 +183,18 @@ class AccessStaticPropertiesRule implements Rule
 		if (!$has->yes()) {
 			if ($scope->hasExpressionType($node)->yes()) {
 				return $messages;
+			}
+
+			if ($typeForDescribe instanceof TypeWithClassName && $typeForDescribe->getClassReflection() !== null) {
+				foreach ($typeForDescribe->getClassReflection()->getParents() as $parentClassReflection) {
+					if (!$parentClassReflection->hasProperty($name)) {
+						continue;
+					}
+
+					if ($scope->canAccessProperty($parentClassReflection->getProperty($name, $scope))) {
+						return [];
+					}
+				}
 			}
 
 			return array_merge($messages, [

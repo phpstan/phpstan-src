@@ -440,4 +440,9 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6809.php'], $errors);
 	}
 
+	public function testBug8333(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8333.php'], []);
+	}
+
 }

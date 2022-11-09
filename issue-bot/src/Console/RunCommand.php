@@ -19,6 +19,7 @@ use function file_get_contents;
 use function file_put_contents;
 use function implode;
 use function is_file;
+use function microtime;
 use function serialize;
 use function sha1;
 use function sprintf;
@@ -52,7 +53,7 @@ class RunCommand extends Command
 			if (!array_key_exists($hash, $playgroundCache->getResults())) {
 				throw new Exception(sprintf('Hash %s must exist', $hash));
 			}
-			$errors[$hash] = $this->analyseHash($phpVersion, $playgroundCache->getResults()[$hash]);
+			$errors[$hash] = $this->analyseHash($output, $phpVersion, $playgroundCache->getResults()[$hash]);
 		}
 
 		$data = ['phpVersion' => $phpVersion, 'errors' => $errors];
@@ -68,7 +69,7 @@ class RunCommand extends Command
 	/**
 	 * @return list<PlaygroundError>
 	 */
-	private function analyseHash(int $phpVersion, PlaygroundResult $result): array
+	private function analyseHash(OutputInterface $output, int $phpVersion, PlaygroundResult $result): array
 	{
 		$configFiles = [];
 		if ($result->isBleedingEdge()) {
@@ -104,7 +105,10 @@ class RunCommand extends Command
 			$codePath,
 		];
 
+		$startTime = microtime(true);
 		exec(implode(' ', $commandArray), $outputLines, $exitCode);
+		$elapsedTime = microtime(true) - $startTime;
+		$output->writeln(sprintf('Analysis of %s took %.2f s', $hash, $elapsedTime));
 
 		if ($exitCode !== 0 && $exitCode !== 1) {
 			throw new Exception(sprintf('PHPStan exited with code %d during analysis of %s', $exitCode, $hash));

@@ -702,6 +702,7 @@ return [
 	'array_replace_recursive' => ['hasSideEffects' => false],
 	'array_reverse' => ['hasSideEffects' => false],
 	'array_search' => ['hasSideEffects' => false],
+	'array_shift' => ['hasSideEffects' => true],
 	'array_slice' => ['hasSideEffects' => false],
 	'array_sum' => ['hasSideEffects' => false],
 	'array_udiff' => ['hasSideEffects' => false],

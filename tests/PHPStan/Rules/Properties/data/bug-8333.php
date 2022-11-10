@@ -23,6 +23,30 @@ class Bar extends Foo {
 
 }
 
+class FooSelf
+{
+	/** @var BarSelf|null */
+	private static $root;
+
+	static public function setRoot(?FooSelf $bar)
+	{
+		self::$root = $bar;
+	}
+
+	static public function checkRoot(): bool
+	{
+		if (self::$root === null) {
+			return false;
+		}
+		return self::$root::$root !== null;
+	}
+}
+
+class BarSelf extends FooSelf
+{
+
+}
+
 class FooAccessProperties
 {
 

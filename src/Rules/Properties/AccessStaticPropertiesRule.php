@@ -185,9 +185,9 @@ class AccessStaticPropertiesRule implements Rule
 				return $messages;
 			}
 
-			$classNames = $classType->getReferencedClasses();
+			$classNames = TypeUtils::getDirectClassNames($classType);
 			if (count($classNames) === 1) {
-				$referencedClass = $classType->getReferencedClasses()[0];
+				$referencedClass = $classNames[0];
 				$propertyClassReflection = $this->reflectionProvider->getClass($referencedClass);
 				$parentClassReflection = $propertyClassReflection->getParentClass();
 

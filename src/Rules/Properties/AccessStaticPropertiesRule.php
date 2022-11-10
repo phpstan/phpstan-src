@@ -23,10 +23,10 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
+use function count;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -185,23 +185,27 @@ class AccessStaticPropertiesRule implements Rule
 				return $messages;
 			}
 
-			if ($typeForDescribe instanceof TypeWithClassName && $typeForDescribe->getClassReflection() !== null) {
-				foreach ($typeForDescribe->getClassReflection()->getParents() as $parentClassReflection) {
-					if (!$parentClassReflection->hasProperty($name)) {
-						continue;
+			$classNames = $classType->getReferencedClasses();
+			if (count($classNames) === 1) {
+				$referencedClass = $classType->getReferencedClasses()[0];
+				$propertyClassReflection = $this->reflectionProvider->getClass($referencedClass);
+				$parentClassReflection = $propertyClassReflection->getParentClass();
+
+				while ($parentClassReflection !== null) {
+					if ($parentClassReflection->hasProperty($name)) {
+						if ($scope->canAccessProperty($parentClassReflection->getProperty($name, $scope))) {
+							return [];
+						}
+						return [
+							RuleErrorBuilder::message(sprintf(
+								'Access to private static property $%s of parent class %s.',
+								$name,
+								$parentClassReflection->getDisplayName(),
+							))->build(),
+						];
 					}
 
-					if ($scope->canAccessProperty($parentClassReflection->getProperty($name, $scope))) {
-						return [];
-					}
-
-					return [
-						RuleErrorBuilder::message(sprintf(
-							'Access to private static property $%s of parent class %s.',
-							$name,
-							$parentClassReflection->getDisplayName(),
-						))->build(),
-					];
+					$parentClassReflection = $parentClassReflection->getParentClass();
 				}
 			}
 

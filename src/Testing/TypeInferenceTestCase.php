@@ -177,6 +177,10 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$asserts[$file . ':' . $node->getLine()] = $assert;
 		});
 
+		if (count($asserts) === 0) {
+			$this->fail(sprintf('File %s does not contain any asserts', $file));
+		}
+
 		return $asserts;
 	}
 

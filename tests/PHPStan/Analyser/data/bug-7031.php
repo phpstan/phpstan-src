@@ -2,6 +2,8 @@
 
 namespace Bug7031;
 
+use function PHPStan\Testing\assertType;
+
 class SomeKey {}
 
 function () {

@@ -4,12 +4,13 @@ namespace DateTimeModifyReturnTypes;
 
 use DateTime;
 use DateTimeImmutable;
+use function PHPStan\Testing\assertType;
 
 class Foo
 {
 	public function modify(DateTime $datetime, DateTimeImmutable $dateTimeImmutable, string $modify): void {
-		assertType('DateTime|false', $datetime->modify($modify));
-		assertType('DateTimeImmutable|false', $dateTimeImmutable->modify($modify));
+		assertType('(DateTime|false)', $datetime->modify($modify));
+		assertType('(DateTimeImmutable|false)', $dateTimeImmutable->modify($modify));
 	}
 
 	/**
@@ -32,8 +33,8 @@ class Foo
 	 * @param '+1 day'|'koko' $modify
 	 */
 	public function modifyWithBothConstant(DateTime $datetime, DateTimeImmutable $dateTimeImmutable, string $modify): void {
-		assertType('DateTime|false', $datetime->modify($modify));
-		assertType('DateTimeImmutable|false', $dateTimeImmutable->modify($modify));
+		assertType('(DateTime|false)', $datetime->modify($modify));
+		assertType('(DateTimeImmutable|false)', $dateTimeImmutable->modify($modify));
 	}
 
 }

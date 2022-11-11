@@ -99,7 +99,7 @@ class AccessPropertiesRule implements Rule
 				return [];
 			}
 
-			$classNames = $typeResult->getReferencedClasses();
+			$classNames = TypeUtils::getDirectClassNames($type);
 			if (!$this->reportMagicProperties) {
 				foreach ($classNames as $className) {
 					if (!$this->reflectionProvider->hasClass($className)) {
@@ -117,8 +117,7 @@ class AccessPropertiesRule implements Rule
 			}
 
 			if (count($classNames) === 1) {
-				$referencedClass = $typeResult->getReferencedClasses()[0];
-				$propertyClassReflection = $this->reflectionProvider->getClass($referencedClass);
+				$propertyClassReflection = $this->reflectionProvider->getClass($classNames[0]);
 				$parentClassReflection = $propertyClassReflection->getParentClass();
 				while ($parentClassReflection !== null) {
 					if ($parentClassReflection->hasProperty($name)) {

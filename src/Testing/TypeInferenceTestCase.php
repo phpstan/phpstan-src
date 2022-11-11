@@ -22,6 +22,7 @@ use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
 use function count;
+use function implode;
 use function is_string;
 use function sprintf;
 
@@ -75,6 +76,40 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	}
 
 	/**
+	 * @param callable(): array<string, array<mixed>> $assertionsCallback
+	 * @api
+	 */
+	public function assertAssertions(callable $assertionsCallback): void
+	{
+		$assertions = $assertionsCallback();
+
+		$errors = [];
+		foreach ($assertions as $args) {
+			$type = $args[0];
+			$file = $args[1];
+			if ($type === 'type') {
+				$expectedType = $args[2];
+				$this->assertInstanceOf(ConstantScalarType::class, $expectedType);
+				$expected = $expectedType->getValue();
+				$actual = $args[3]->describe(VerbosityLevel::precise());
+				$line = $args[4];
+				if ($expected !== $actual) {
+					$errors[] = sprintf('Expected type %s, got type %s in %s on line %d.', $expected, $actual, $file, $line);
+				}
+			} elseif ($type === 'variableCertainty') {
+				$expectedCertainty = $args[2];
+				$actualCertainty = $args[3];
+				$variableName = $args[4];
+				$line = $args[5];
+				if (!$expectedCertainty->equals($actualCertainty)) {
+					$errors[] = sprintf('Expected %s, actual certainty of variable $%s is %s in %s on line %d.', $expectedCertainty->describe(), $variableName, $actualCertainty->describe(), $file, $line);
+				}
+			}
+		}
+		$this->assertEmpty($errors, implode("\n", $errors));
+	}
+
+	/**
 	 * @api
 	 * @param mixed ...$args
 	 */
@@ -104,6 +139,15 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				sprintf('Expected %s, actual certainty of variable $%s is %s in %s on line %d.', $expectedCertainty->describe(), $variableName, $actualCertainty->describe(), $file, $args[3]),
 			);
 		}
+	}
+
+	/**
+	 * @api
+	 * @return iterable<string, array{callable(): array<string, array<mixed>>}>
+	 */
+	public function gatherAssertions(string $file): iterable
+	{
+		yield $file => [fn () => $this->gatherAssertTypes($file)];
 	}
 
 	/**

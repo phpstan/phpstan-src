@@ -136,6 +136,13 @@ class NativeMethodReflection implements ExtendedMethodReflection
 		) {
 			return TrinaryLogic::createYes();
 		}
+		foreach ($this->variants as $variant) {
+			foreach ($variant->getParameters() as $parameter) {
+				if ($parameter->passedByReference()->yes()) {
+					return TrinaryLogic::createYes();
+				}
+			}
+		}
 
 		return $this->hasSideEffects;
 	}

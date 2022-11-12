@@ -245,6 +245,15 @@ class PhpFunctionReflection implements FunctionReflection
 		if ($this->isPure !== null) {
 			return TrinaryLogic::createFromBoolean(!$this->isPure);
 		}
+		if ($this->variants !== null) {
+			foreach ($this->variants as $variant) {
+				foreach ($variant->getParameters() as $parameter) {
+					if ($parameter->passedByReference()->yes()) {
+						return TrinaryLogic::createYes();
+					}
+				}
+			}
+		}
 
 		return TrinaryLogic::createMaybe();
 	}

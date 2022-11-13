@@ -114,6 +114,7 @@ use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use Throwable;
 use function abs;
+use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -3873,44 +3874,43 @@ class MutatingScope implements Scope
 			return $this;
 		}
 		$ourExpressionTypes = $this->expressionTypes;
+		$ourVariableTypes = array_filter($ourExpressionTypes, static fn ($expressionTypeHolder) => $expressionTypeHolder->getExpr() instanceof Variable);
 		$theirExpressionTypes = $otherScope->expressionTypes;
+		$theirVariableTypes = array_filter($theirExpressionTypes, static fn ($expressionTypeHolder) => $expressionTypeHolder->getExpr() instanceof Variable);
 		if ($this->canAnyVariableExist()) {
-			foreach ($theirExpressionTypes as $exprString => $theirVariableTypeHolder) {
-				if (!$theirVariableTypeHolder->getExpr() instanceof Variable) {
-					continue;
-				}
-				if (array_key_exists($exprString, $ourExpressionTypes)) {
+			foreach ($theirVariableTypes as $exprString => $theirVariableTypeHolder) {
+				if (array_key_exists($exprString, $ourVariableTypes)) {
 					continue;
 				}
 
 				$ourExpressionTypes[$exprString] = ExpressionTypeHolder::createMaybe($theirVariableTypeHolder->getExpr(), new MixedType());
+				$ourVariableTypes[$exprString] = ExpressionTypeHolder::createMaybe($theirVariableTypeHolder->getExpr(), new MixedType());
 			}
 
-			foreach ($ourExpressionTypes as $exprString => $ourVariableTypeHolder) {
-				if (!$ourVariableTypeHolder->getExpr() instanceof Variable) {
-					continue;
-				}
-				if (array_key_exists($exprString, $theirExpressionTypes)) {
+			foreach ($ourVariableTypes as $exprString => $ourVariableTypeHolder) {
+				if (array_key_exists($exprString, $theirVariableTypes)) {
 					continue;
 				}
 
 				$theirExpressionTypes[$exprString] = ExpressionTypeHolder::createMaybe($ourVariableTypeHolder->getExpr(), new MixedType());
+				$theirVariableTypes[$exprString] = ExpressionTypeHolder::createMaybe($ourVariableTypeHolder->getExpr(), new MixedType());
 			}
 		}
 
+		$mergedVariableTypes = $this->mergeVariableHolders($ourVariableTypes, $theirVariableTypes);
 		$mergedExpressionTypes = $this->mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes);
 		$conditionalExpressions = $this->intersectConditionalExpressions($otherScope->conditionalExpressions);
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
-			$ourExpressionTypes,
-			$theirExpressionTypes,
-			$mergedExpressionTypes,
+			$ourVariableTypes,
+			$theirVariableTypes,
+			$mergedVariableTypes,
 		);
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
-			$theirExpressionTypes,
-			$ourExpressionTypes,
-			$mergedExpressionTypes,
+			$theirVariableTypes,
+			$ourVariableTypes,
+			$mergedVariableTypes,
 		);
 		return $this->scopeFactory->create(
 			$this->context,

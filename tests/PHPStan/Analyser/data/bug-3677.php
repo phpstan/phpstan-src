@@ -61,7 +61,6 @@ class HelloWorld
 	{
 		[$first, $second] = $this->getValue();
 		if ($first || $second) {
-			// this assert passes but the ternary breaks the next assert
 			assertType(Field::class, $first ?: $second);
 			assertType(Field::class, $first ?? $second);
 		}
@@ -71,7 +70,6 @@ class HelloWorld
 	{
 		[$first, $second] = $this->getValue();
 		if ($first || $second) {
-			// this assert passes but the ternary breaks the next assert
 			assertType(Field::class, $first ? $first : $second);
 			assertType(Field::class, $first ?? $second);
 		}

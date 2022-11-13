@@ -12,6 +12,7 @@ function (): void {
 		assertType('array<int<0, max>|string, array<string>|string>', $data[$key]);
 		if ($key === 'classmap') {
 			assertType('list<string>', $data[$key]);
+			assertType('list<string>', $value);
 			echo implode(', ', $value); // not working :(
 			echo implode(', ', $data[$key]); // this works though?!
 		}

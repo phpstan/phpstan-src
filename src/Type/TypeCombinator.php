@@ -492,14 +492,9 @@ class TypeCombinator
 		}
 
 		if ($type instanceof SubtractableType) {
-			if ($type->getSubtractedType() === null) {
-				return $type;
-			}
-
-			$subtractedType = self::union(
-				$type->getSubtractedType(),
-				$subtractedType,
-			);
+			$subtractedType = $type->getSubtractedType() === null
+				? $subtractedType
+				: self::union($type->getSubtractedType(), $subtractedType);
 			if ($subtractedType instanceof NeverType) {
 				$subtractedType = null;
 			}

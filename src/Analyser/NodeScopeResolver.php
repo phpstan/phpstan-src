@@ -3982,19 +3982,30 @@ class NodeScopeResolver
 			&& $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)
 			&& $stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)
 		) {
-			$conditionalHolders = [];
+			$valueConditionalHolders = [];
+			$arrayDimFetchConditionalHolders = [];
 			foreach ($iterateeType->getKeyTypes() as $i => $keyType) {
 				$valueType = $iterateeType->getValueTypes()[$i];
 				$holder = new ConditionalExpressionHolder([
 					'$' . $stmt->keyVar->name => $keyType,
 				], new ExpressionTypeHolder($stmt->valueVar, $valueType, TrinaryLogic::createYes()));
-				$conditionalHolders[$holder->getKey()] = $holder;
+				$valueConditionalHolders[$holder->getKey()] = $holder;
+				$arrayDimFetchHolder = new ConditionalExpressionHolder([
+					'$' . $stmt->keyVar->name => $keyType,
+				], new ExpressionTypeHolder(new ArrayDimFetch($stmt->expr, $stmt->keyVar), $valueType, TrinaryLogic::createYes()));
+				$arrayDimFetchConditionalHolders[$arrayDimFetchHolder->getKey()] = $arrayDimFetchHolder;
 			}
 
 			$scope = $scope->addConditionalExpressions(
 				'$' . $stmt->valueVar->name,
-				$conditionalHolders,
+				$valueConditionalHolders,
 			);
+			if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
+				$scope = $scope->addConditionalExpressions(
+					sprintf('$%s[$%s]', $stmt->expr->name, $stmt->keyVar->name),
+					$arrayDimFetchConditionalHolders,
+				);
+			}
 		}
 
 		return $this->processVarAnnotation($scope, $vars, $stmt);

@@ -5,7 +5,6 @@ namespace PHPStan\Analyser;
 use ArrayAccess;
 use Closure;
 use Generator;
-use Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
@@ -40,6 +39,7 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
@@ -1591,9 +1591,6 @@ class MutatingScope implements Scope
 
 		if ($node instanceof Expr\BinaryOp\Coalesce) {
 			$leftType = $this->getType($node->left);
-			$rightType = $this->filterByFalseyValue(
-				new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null'))),
-			)->getType($node->right);
 
 			$result = $this->issetCheck($node->left, static function (Type $type): ?bool {
 				$isNull = (new NullType())->isSuperTypeOf($type);
@@ -1604,15 +1601,19 @@ class MutatingScope implements Scope
 				return !$isNull->yes();
 			});
 
+			if ($result !== null && $result !== false) {
+				return TypeCombinator::removeNull($leftType);
+			}
+
+			$rightType = $this->filterByFalseyValue(
+				new BinaryOp\NotIdentical($node->left, new ConstFetch(new Name('null'))),
+			)->getType($node->right);
+
 			if ($result === null) {
 				return TypeCombinator::union(
 					TypeCombinator::removeNull($leftType),
 					$rightType,
 				);
-			}
-
-			if ($result) {
-				return TypeCombinator::removeNull($leftType);
 			}
 
 			return $rightType;
@@ -3142,7 +3143,7 @@ class MutatingScope implements Scope
 		$scope = $this->assignVariable($keyName, $iterateeType->getIterableKeyType(), $nativeIterateeType->getIterableKeyType());
 
 		if ($iterateeType->isArray()->yes()) {
-			$scope = $scope->specifyExpressionType(
+			$scope = $scope->assignExpression(
 				new Expr\ArrayDimFetch($iteratee, new Variable($keyName)),
 				$iterateeType->getIterableValueType(),
 				$nativeIterateeType->getIterableValueType(),
@@ -3333,60 +3334,15 @@ class MutatingScope implements Scope
 
 	public function unsetExpression(Expr $expr): self
 	{
-		if ($expr instanceof Variable && is_string($expr->name)) {
-			if ($this->hasVariableType($expr->name)->no()) {
-				return $this;
-			}
-			$exprString = '$' . $expr->name;
-			$expressionTypes = $this->expressionTypes;
-			unset($expressionTypes[$exprString]);
-			$nativeTypes = $this->nativeExpressionTypes;
-			unset($nativeTypes[$exprString]);
-
-			$conditionalExpressions = $this->conditionalExpressions;
-			unset($conditionalExpressions[$exprString]);
-
-			return $this->scopeFactory->create(
-				$this->context,
-				$this->isDeclareStrictTypes(),
-				$this->getFunction(),
-				$this->getNamespace(),
-				$expressionTypes,
-				$conditionalExpressions,
-				$this->inClosureBindScopeClass,
-				$this->anonymousFunctionReflection,
-				$this->inFirstLevelStatement,
-				[],
-				[],
-				$nativeTypes,
-				[],
-				$this->afterExtractCall,
-				$this->parentScope,
-			);
-		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			$exprVarType = $this->getType($expr->var);
-			$dimType = $this->getType($expr->dim);
+		$scope = $this;
+		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
+			$exprVarType = $scope->getType($expr->var);
+			$dimType = $scope->getType($expr->dim);
 			$unsetType = $exprVarType->unsetOffset($dimType);
-			$exprVarNativeType = $this->getType($expr->var);
-			$dimNativeType = $this->getType($expr->dim);
+			$exprVarNativeType = $scope->getType($expr->var);
+			$dimNativeType = $scope->getType($expr->dim);
 			$unsetNativeType = $exprVarNativeType->unsetOffset($dimNativeType);
-			if ($expr->var instanceof Expr\ArrayDimFetch && $expr->var->dim !== null) {
-				$scope = $this->addMoreSpecificType($expr->var, $unsetType, $unsetNativeType);
-				$scope = $scope->specifyExpressionType(
-					$expr->var->var,
-					$scope->getType($expr->var->var)->setOffsetValueType(
-						$scope->getType($expr->var->dim),
-						$scope->getType($expr->var),
-					),
-					$scope->getNativeType($expr->var->var)->setOffsetValueType(
-						$scope->getNativeType($expr->var->dim),
-						$scope->getNativeType($expr->var),
-					),
-				);
-			} else {
-				$scope = $this->specifyExpressionType($expr->var, $unsetType, $unsetNativeType);
-			}
-			return $scope->invalidateExpression(
+			$scope = $scope->assignExpression($expr->var, $unsetType, $unsetNativeType)->invalidateExpression(
 				new FuncCall(new FullyQualified('count'), [new Arg($expr->var)]),
 			)->invalidateExpression(
 				new FuncCall(new FullyQualified('sizeof'), [new Arg($expr->var)]),
@@ -3395,9 +3351,52 @@ class MutatingScope implements Scope
 			)->invalidateExpression(
 				new FuncCall(new Name('sizeof'), [new Arg($expr->var)]),
 			);
+
+			if ($expr->var instanceof Expr\ArrayDimFetch && $expr->var->dim !== null) {
+				$scope = $scope->assignExpression(
+					$expr->var->var,
+					$this->getType($expr->var->var)->setOffsetValueType(
+						$scope->getType($expr->var->dim),
+						$scope->getType($expr->var),
+					),
+					$this->getNativeType($expr->var->var)->setOffsetValueType(
+						$scope->getNativeType($expr->var->dim),
+						$scope->getNativeType($expr->var),
+					),
+				);
+			}
 		}
 
-		return $this;
+		if ($scope->hasExpressionType($expr)->no()) {
+			return $scope;
+		}
+
+		$exprString = $this->getNodeKey($expr);
+		$expressionTypes = $scope->expressionTypes;
+		unset($expressionTypes[$exprString]);
+		$nativeTypes = $scope->nativeExpressionTypes;
+		unset($nativeTypes[$exprString]);
+
+		$conditionalExpressions = $scope->conditionalExpressions;
+		unset($conditionalExpressions[$exprString]);
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$conditionalExpressions,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			[],
+			[],
+			$nativeTypes,
+			[],
+			$this->afterExtractCall,
+			$this->parentScope,
+		);
 	}
 
 	private function specifyExpressionType(Expr $expr, Type $type, Type $nativeType): self
@@ -3406,7 +3405,6 @@ class MutatingScope implements Scope
 			return $this;
 		}
 
-		$exprString = $this->getNodeKey($expr);
 		if ($expr instanceof ConstFetch) {
 			$loweredConstName = strtolower($expr->name->toString());
 			if (in_array($loweredConstName, ['true', 'false', 'null'], true)) {
@@ -3414,102 +3412,7 @@ class MutatingScope implements Scope
 			}
 		}
 
-		$scope = $this;
-		if ($expr instanceof Variable && is_string($expr->name)) {
-			$variableName = $expr->name;
-			$exprString = '$' . $variableName;
-
-			$conditionalExpressions = [];
-			foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
-				if ($conditionalExprString === $exprString) {
-					continue;
-				}
-
-				foreach ($holders as $holder) {
-					foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionExprString2) {
-						if ($conditionExprString2 === $exprString) {
-							continue 3;
-						}
-					}
-				}
-
-				$conditionalExpressions[$conditionalExprString] = $holders;
-			}
-
-			$expressionTypes = $this->expressionTypes;
-			$expressionTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $type);
-			$nativeTypes = $this->nativeExpressionTypes;
-			$nativeTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $nativeType);
-			foreach ($expressionTypes as $specifiedExprString => $specificTypeHolder) {
-				if (!$specificTypeHolder->getCertainty()->yes()) {
-					continue;
-				}
-
-				$specifiedExprString = (string) $specifiedExprString;
-				$specifiedExpr = $specificTypeHolder->getExpr();
-				if (!$specifiedExpr instanceof Expr\ArrayDimFetch) {
-					continue;
-				}
-
-				if (!$specifiedExpr->dim instanceof Variable) {
-					continue;
-				}
-
-				if (!is_string($specifiedExpr->dim->name)) {
-					continue;
-				}
-
-				if ($specifiedExpr->dim->name !== $variableName) {
-					continue;
-				}
-
-				$expressionTypes[$specifiedExprString] = ExpressionTypeHolder::createYes($specifiedExpr, $this->getType($specifiedExpr->var)->getOffsetValueType($type));
-				unset($nativeTypes[$specifiedExprString]);
-			}
-
-			return $this->scopeFactory->create(
-				$this->context,
-				$this->isDeclareStrictTypes(),
-				$this->getFunction(),
-				$this->getNamespace(),
-				$expressionTypes,
-				$conditionalExpressions,
-				$this->inClosureBindScopeClass,
-				$this->anonymousFunctionReflection,
-				$this->inFirstLevelStatement,
-				$this->currentlyAssignedExpressions,
-				$this->currentlyAllowedUndefinedExpressions,
-				$nativeTypes,
-				$this->inFunctionCallsStack,
-				$this->afterExtractCall,
-				$this->parentScope,
-			);
-		} elseif ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
-			$dimType = $this->getType($expr->dim)->toArrayKey();
-			if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
-				$exprVarType = $this->getType($expr->var);
-				if (!$exprVarType instanceof MixedType && !$exprVarType->isArray()->no()) {
-					$types = [
-						new ArrayType(new MixedType(), new MixedType()),
-						new ObjectType(ArrayAccess::class),
-						new NullType(),
-					];
-					if ($dimType instanceof ConstantIntegerType) {
-						$types[] = new StringType();
-					}
-					$scope = $this->specifyExpressionType(
-						$expr->var,
-						TypeCombinator::intersect(
-							TypeCombinator::intersect($exprVarType, TypeCombinator::union(...$types)),
-							new HasOffsetValueType($dimType, $type),
-						),
-						$this->getNativeType($expr->var),
-					);
-				}
-			}
-		}
-
-		if ($expr instanceof FuncCall && $expr->name instanceof Name && $type->isFalse()->yes()) {
+		if ($expr instanceof FuncCall && $expr->name instanceof Name && $type instanceof ConstantBooleanType && !$type->getValue()) {
 			$functionName = $this->reflectionProvider->resolveFunctionName($expr->name, $this);
 			if ($functionName !== null && in_array(strtolower($functionName), [
 				'is_dir',
@@ -3520,7 +3423,55 @@ class MutatingScope implements Scope
 			}
 		}
 
-		return $scope->addMoreSpecificType($expr, $type, $nativeType);
+		$scope = $this;
+		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {
+			$dimType = $scope->getType($expr->dim)->toArrayKey();
+			if ($dimType instanceof ConstantIntegerType || $dimType instanceof ConstantStringType) {
+				$exprVarType = $scope->getType($expr->var);
+				if (!$exprVarType instanceof MixedType && !$exprVarType->isArray()->no()) {
+					$types = [
+						new ArrayType(new MixedType(), new MixedType()),
+						new ObjectType(ArrayAccess::class),
+						new NullType(),
+					];
+					if ($dimType instanceof ConstantIntegerType) {
+						$types[] = new StringType();
+					}
+					$scope = $scope->specifyExpressionType(
+						$expr->var,
+						TypeCombinator::intersect(
+							TypeCombinator::intersect($exprVarType, TypeCombinator::union(...$types)),
+							new HasOffsetValueType($dimType, $type),
+						),
+						$scope->getNativeType($expr->var),
+					);
+				}
+			}
+		}
+
+		$exprString = $this->getNodeKey($expr);
+		$expressionTypes = $scope->expressionTypes;
+		$expressionTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $type);
+		$nativeTypes = $scope->nativeExpressionTypes;
+		$nativeTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $nativeType);
+
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$nativeTypes,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+		);
 	}
 
 	public function assignExpression(Expr $expr, Type $type, ?Type $nativeType = null): self
@@ -3536,6 +3487,25 @@ class MutatingScope implements Scope
 			$scope = $this->invalidateExpression($expr);
 		} elseif ($expr instanceof Variable) {
 			$scope = $this->invalidateExpression($expr, true);
+		}
+
+		$exprString = $this->getNodeKey($expr);
+		foreach ($scope->conditionalExpressions as $conditionalExprString => $holders) {
+			if ($conditionalExprString === $exprString) {
+				unset($scope->conditionalExpressions[$conditionalExprString]);
+				continue;
+			}
+
+			foreach ($holders as $holder) {
+				foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionExprString2) {
+					if ($conditionExprString2 !== $exprString) {
+						continue;
+					}
+
+					unset($scope->conditionalExpressions[$conditionalExprString]);
+					continue 3;
+				}
+			}
 		}
 
 		return $scope->specifyExpressionType($expr, $type, $nativeType);
@@ -3756,128 +3726,79 @@ class MutatingScope implements Scope
 		});
 
 		$scope = $this;
-		$typeGuards = [];
-		$skipVariables = [];
-		$saveConditionalVariables = [];
+		$specifiedExpressions = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
+			$specifiedExpressions[$this->getNodeKey($expr)] = true;
 			$type = $typeSpecification['type'];
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
-					$scope = $scope->specifyExpressionType($expr, $type, $type);
+					$scope = $scope->assignExpression($expr, $type, $type);
 				} else {
 					$scope = $scope->addTypeToExpression($expr, $type);
 				}
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
 			}
-
-			if (
-				!$expr instanceof Variable
-				|| !is_string($expr->name)
-				|| $specifiedTypes->shouldOverwrite()
-			) {
-				// @phpstan-ignore-next-line
-				$match = Strings::match((string) $typeSpecification['exprString'], '#^(\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*)#');
-				if ($match !== null) {
-					$skipVariables[$match[1]] = true;
-				}
-				continue;
-			}
-
-			if ($scope->hasVariableType($expr->name)->no()) {
-				continue;
-			}
-
-			$saveConditionalVariables['$' . $expr->name] = $scope->getVariableType($expr->name);
-		}
-
-		foreach ($saveConditionalVariables as $variableExprString => $typeGuard) {
-			if (array_key_exists($variableExprString, $skipVariables)) {
-				continue;
-			}
-
-			$typeGuards[$variableExprString] = $typeGuard;
 		}
 
 		$newConditionalExpressions = $specifiedTypes->getNewConditionalExpressionHolders();
-		foreach ($this->conditionalExpressions as $variableExprString => $conditionalExpressions) {
-			if (array_key_exists($variableExprString, $typeGuards)) {
+		foreach ($scope->conditionalExpressions as $variableExprString => $conditionalExpressions) {
+			if (array_key_exists($variableExprString, $specifiedExpressions)) {
 				continue;
 			}
-
-			$typeHolder = null;
-
+			$newConditionalExpressions[$variableExprString] = $conditionalExpressions;
 			foreach ($conditionalExpressions as $conditionalExpression) {
-				$matchingConditions = [];
 				foreach ($conditionalExpression->getConditionExpressionTypes() as $conditionExprString => $conditionalType) {
-					if (!array_key_exists($conditionExprString, $typeGuards)) {
-						continue;
+					$conditionExpr = $this->exprStringToExpr($conditionExprString);
+					if ($conditionExpr === null) {
+						continue 2;
 					}
-
-					if (!$typeGuards[$conditionExprString]->equals($conditionalType)) {
-						continue;
+					if (!$scope->getType($conditionExpr)->equals($conditionalType)) {
+						continue 2;
 					}
-
-					$matchingConditions[$conditionExprString] = $conditionalType;
-				}
-
-				if (count($matchingConditions) === 0) {
-					$newConditionalExpressions[$variableExprString][$conditionalExpression->getKey()] = $conditionalExpression;
-					continue;
-				}
-
-				if (count($matchingConditions) < count($conditionalExpression->getConditionExpressionTypes())) {
-					$filteredConditions = $conditionalExpression->getConditionExpressionTypes();
-					foreach (array_keys($matchingConditions) as $conditionExprString) {
-						unset($filteredConditions[$conditionExprString]);
-					}
-
-					$holder = new ConditionalExpressionHolder($filteredConditions, $conditionalExpression->getTypeHolder());
-					$newConditionalExpressions[$variableExprString][$holder->getKey()] = $holder;
-					continue;
 				}
 
 				$typeHolder = $conditionalExpression->getTypeHolder();
-				break;
-			}
-
-			if ($typeHolder === null) {
-				continue;
-			}
-
-			if ($typeHolder->getCertainty()->no()) {
-				unset($scope->expressionTypes[$variableExprString]);
-			} else {
-				$scope->expressionTypes[$variableExprString] = $typeHolder;
+				if ($typeHolder->getCertainty()->no()) {
+					unset($scope->expressionTypes[$variableExprString]);
+				} else {
+					$scope->expressionTypes[$variableExprString] = $typeHolder;
+				}
 			}
 		}
 
-		return $scope->changeConditionalExpressions($newConditionalExpressions);
+		return $scope->scopeFactory->create(
+			$scope->context,
+			$scope->isDeclareStrictTypes(),
+			$scope->getFunction(),
+			$scope->getNamespace(),
+			$scope->expressionTypes,
+			$newConditionalExpressions,
+			$scope->inClosureBindScopeClass,
+			$scope->anonymousFunctionReflection,
+			$scope->inFirstLevelStatement,
+			$scope->currentlyAssignedExpressions,
+			$scope->currentlyAllowedUndefinedExpressions,
+			$scope->nativeExpressionTypes,
+			$scope->inFunctionCallsStack,
+			$scope->afterExtractCall,
+			$scope->parentScope,
+		);
 	}
 
-	/**
-	 * @param array<string, ConditionalExpressionHolder[]> $newConditionalExpressionHolders
-	 */
-	public function changeConditionalExpressions(array $newConditionalExpressionHolders): self
+	private function exprStringToExpr(string $exprString): ?Expr
 	{
-		return $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
-			$this->expressionTypes,
-			$newConditionalExpressionHolders,
-			$this->inClosureBindScopeClass,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
-			$this->currentlyAssignedExpressions,
-			$this->currentlyAllowedUndefinedExpressions,
-			$this->nativeExpressionTypes,
-			$this->inFunctionCallsStack,
-			$this->afterExtractCall,
-			$this->parentScope,
-		);
+		try {
+			$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
+		} catch (ParserErrorsException) {
+			return null;
+		}
+		if (!$expr instanceof Node\Stmt\Expression) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $expr->expr;
 	}
 
 	/**
@@ -3945,37 +3866,6 @@ class MutatingScope implements Scope
 	public function isInFirstLevelStatement(): bool
 	{
 		return $this->inFirstLevelStatement;
-	}
-
-	/**
-	 * @phpcsSuppress SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedMethod
-	 */
-	private function addMoreSpecificType(Expr $expr, Type $type, Type $nativeType): self
-	{
-		$exprString = $this->getNodeKey($expr);
-		$expressionTypes = $this->expressionTypes;
-		$expressionTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $type);
-
-		$nativeTypes = $this->nativeExpressionTypes;
-		$nativeTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $nativeType);
-
-		return $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
-			$expressionTypes,
-			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
-			$this->currentlyAssignedExpressions,
-			$this->currentlyAllowedUndefinedExpressions,
-			$nativeTypes,
-			[],
-			$this->afterExtractCall,
-			$this->parentScope,
-		);
 	}
 
 	public function mergeWith(?self $otherScope): self

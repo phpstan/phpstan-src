@@ -497,6 +497,9 @@ class MutatingScope implements Scope
 					new NonEmptyArrayType(),
 				));
 			}
+			if ($this->canAnyVariableExist()) {
+				return new MixedType();
+			}
 		}
 
 		if ($this->isGlobalVariable($variableName)) {
@@ -3877,25 +3880,6 @@ class MutatingScope implements Scope
 		$ourVariableTypes = array_filter($ourExpressionTypes, static fn ($expressionTypeHolder) => $expressionTypeHolder->getExpr() instanceof Variable);
 		$theirExpressionTypes = $otherScope->expressionTypes;
 		$theirVariableTypes = array_filter($theirExpressionTypes, static fn ($expressionTypeHolder) => $expressionTypeHolder->getExpr() instanceof Variable);
-		if ($this->canAnyVariableExist()) {
-			foreach ($theirVariableTypes as $exprString => $theirVariableTypeHolder) {
-				if (array_key_exists($exprString, $ourVariableTypes)) {
-					continue;
-				}
-
-				$ourExpressionTypes[$exprString] = ExpressionTypeHolder::createMaybe($theirVariableTypeHolder->getExpr(), new MixedType());
-				$ourVariableTypes[$exprString] = ExpressionTypeHolder::createMaybe($theirVariableTypeHolder->getExpr(), new MixedType());
-			}
-
-			foreach ($ourVariableTypes as $exprString => $ourVariableTypeHolder) {
-				if (array_key_exists($exprString, $theirVariableTypes)) {
-					continue;
-				}
-
-				$theirExpressionTypes[$exprString] = ExpressionTypeHolder::createMaybe($ourVariableTypeHolder->getExpr(), new MixedType());
-				$theirVariableTypes[$exprString] = ExpressionTypeHolder::createMaybe($ourVariableTypeHolder->getExpr(), new MixedType());
-			}
-		}
 
 		$mergedVariableTypes = $this->mergeVariableHolders($ourVariableTypes, $theirVariableTypes);
 		$mergedExpressionTypes = $this->mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes);

@@ -357,7 +357,7 @@ class MutatingScope implements Scope
 				'filetype',
 				'fileperms',
 			] as $functionName) {
-				if (!str_starts_with((string) $exprString, $functionName . '(') && !str_starts_with((string) $exprString, '\\' . $functionName . '(')) {
+				if (!str_starts_with($exprString, $functionName . '(') && !str_starts_with($exprString, '\\' . $functionName . '(')) {
 					continue;
 				}
 
@@ -2186,7 +2186,7 @@ class MutatingScope implements Scope
 
 		$expressionTypes = $this->expressionTypes;
 		foreach ($this->nativeExpressionTypes as $exprString => $typeHolder) {
-			$has = $this->hasVariableType(substr((string) $exprString, 1));
+			$has = $this->hasVariableType(substr($exprString, 1));
 			if ($has->no()) {
 				continue;
 			}
@@ -3404,10 +3404,6 @@ class MutatingScope implements Scope
 
 	private function specifyExpressionType(Expr $expr, Type $type, Type $nativeType): self
 	{
-		if ($expr instanceof Node\Scalar || $expr instanceof Array_) {
-			return $this;
-		}
-
 		if ($expr instanceof ConstFetch) {
 			$loweredConstName = strtolower($expr->name->toString());
 			if (in_array($loweredConstName, ['true', 'false', 'null'], true)) {
@@ -3523,7 +3519,6 @@ class MutatingScope implements Scope
 		$invalidated = false;
 		$nodeFinder = new NodeFinder();
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
-			$exprString = (string) $exprString;
 			$exprExpr = $exprTypeHolder->getExpr();
 			if ($exprExpr instanceof PropertyFetch) {
 				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($exprExpr, $this);
@@ -3588,7 +3583,6 @@ class MutatingScope implements Scope
 		$invalidated = false;
 		$nodeFinder = new NodeFinder();
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
-			$exprString = (string) $exprString;
 			$expr = $exprTypeHolder->getExpr();
 			$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($exprStringToInvalidate): bool {
 				if (!$node instanceof MethodCall) {
@@ -3702,6 +3696,9 @@ class MutatingScope implements Scope
 	{
 		$typeSpecifications = [];
 		foreach ($specifiedTypes->getSureTypes() as $exprString => [$expr, $type]) {
+			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
+				continue;
+			}
 			$typeSpecifications[] = [
 				'sure' => true,
 				'exprString' => $exprString,
@@ -3710,6 +3707,9 @@ class MutatingScope implements Scope
 			];
 		}
 		foreach ($specifiedTypes->getSureNotTypes() as $exprString => [$expr, $type]) {
+			if ($expr instanceof Node\Scalar || $expr instanceof Array_ || $expr instanceof Expr\UnaryMinus && $expr->expr instanceof Node\Scalar) {
+				continue;
+			}
 			$typeSpecifications[] = [
 				'sure' => false,
 				'exprString' => $exprString,
@@ -3719,8 +3719,7 @@ class MutatingScope implements Scope
 		}
 
 		usort($typeSpecifications, static function (array $a, array $b): int {
-			// @phpstan-ignore-next-line
-			$length = strlen((string) $a['exprString']) - strlen((string) $b['exprString']);
+			$length = strlen($a['exprString']) - strlen($b['exprString']);
 			if ($length !== 0) {
 				return $length;
 			}

@@ -154,11 +154,11 @@ class MutatingScope implements Scope
 	private ?self $scopeOutOfFirstLevelStatement = null;
 
 	/**
-	 * @param ExpressionTypeHolder[] $expressionTypes
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param ExpressionTypeHolder[] $nativeExpressionTypes
+	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
 	 */
 	public function __construct(
@@ -2966,8 +2966,8 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param ExpressionTypeHolder[] $expressionTypes
-	 * @return ExpressionTypeHolder[]
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @return array<string, ExpressionTypeHolder>
 	 */
 	private function invalidateStaticExpressions(array $expressionTypes): array
 	{
@@ -4017,9 +4017,9 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param ExpressionTypeHolder[] $ourVariableTypeHolders
-	 * @param ExpressionTypeHolder[] $theirVariableTypeHolders
-	 * @return ExpressionTypeHolder[]
+	 * @param array<string, ExpressionTypeHolder> $ourVariableTypeHolders
+	 * @param array<string, ExpressionTypeHolder> $theirVariableTypeHolders
+	 * @return array<string, ExpressionTypeHolder>
 	 */
 	private function mergeVariableHolders(array $ourVariableTypeHolders, array $theirVariableTypeHolders): array
 	{
@@ -4073,10 +4073,10 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param ExpressionTypeHolder[] $ourVariableTypeHolders
-	 * @param ExpressionTypeHolder[] $finallyVariableTypeHolders
-	 * @param ExpressionTypeHolder[] $originalVariableTypeHolders
-	 * @return ExpressionTypeHolder[]
+	 * @param array<string, ExpressionTypeHolder> $ourVariableTypeHolders
+	 * @param array<string, ExpressionTypeHolder> $finallyVariableTypeHolders
+	 * @param array<string, ExpressionTypeHolder> $originalVariableTypeHolders
+	 * @return array<string, ExpressionTypeHolder>
 	 */
 	private function processFinallyScopeVariableTypeHolders(
 		array $ourVariableTypeHolders,
@@ -4245,9 +4245,9 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param ExpressionTypeHolder[] $variableTypeHolders
-	 * @param ExpressionTypeHolder[] $otherVariableTypeHolders
-	 * @return ExpressionTypeHolder[]
+	 * @param array<string, ExpressionTypeHolder> $variableTypeHolders
+	 * @param array<string, ExpressionTypeHolder> $otherVariableTypeHolders
+	 * @return array<string, ExpressionTypeHolder>
 	 */
 	private function generalizeVariableTypeHolders(
 		array $variableTypeHolders,
@@ -4602,8 +4602,8 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @param ExpressionTypeHolder[] $variableTypeHolders
-	 * @param ExpressionTypeHolder[] $otherVariableTypeHolders
+	 * @param array<string, ExpressionTypeHolder> $variableTypeHolders
+	 * @param array<string, ExpressionTypeHolder> $otherVariableTypeHolders
 	 */
 	private function compareVariableTypeHolders(array $variableTypeHolders, array $otherVariableTypeHolders): bool
 	{
@@ -5021,7 +5021,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @return ExpressionTypeHolder[]
+	 * @return array<string, ExpressionTypeHolder>
 	 */
 	private function getConstantTypes(): array
 	{
@@ -5037,7 +5037,7 @@ class MutatingScope implements Scope
 	}
 
 	/**
-	 * @return ExpressionTypeHolder[]
+	 * @return array<string, ExpressionTypeHolder>
 	 */
 	private function getNativeConstantTypes(): array
 	{

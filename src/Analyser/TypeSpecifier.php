@@ -1386,7 +1386,10 @@ class TypeSpecifier
 				continue;
 			}
 
-			$conditionExpressionTypes[$exprString] = TypeCombinator::intersect($scope->getType($expr), $type);
+			$conditionExpressionTypes[$exprString] = ExpressionTypeHolder::createYes(
+				$expr,
+				TypeCombinator::intersect($scope->getType($expr), $type),
+			);
 		}
 
 		if (count($conditionExpressionTypes) > 0) {

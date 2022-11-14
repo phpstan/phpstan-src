@@ -39,7 +39,6 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\NewAssignedToPropertyVisitor;
 use PHPStan\Parser\Parser;
-use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
@@ -3493,21 +3492,17 @@ class MutatingScope implements Scope
 		}
 
 		$exprString = $this->getNodeKey($expr);
+		if (array_key_exists($exprString, $scope->conditionalExpressions)) {
+			unset($scope->conditionalExpressions[$exprString]);
+		}
 		foreach ($scope->conditionalExpressions as $conditionalExprString => $holders) {
-			if ($conditionalExprString === $exprString) {
-				unset($scope->conditionalExpressions[$conditionalExprString]);
-				continue;
-			}
-
 			foreach ($holders as $holder) {
-				foreach (array_keys($holder->getConditionExpressionTypes()) as $conditionExprString2) {
-					if ($conditionExprString2 !== $exprString) {
-						continue;
-					}
-
-					unset($scope->conditionalExpressions[$conditionalExprString]);
-					continue 3;
+				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
+				if (!array_key_exists($exprString, $conditionalTypeHolders)) {
+					continue;
 				}
+
+				unset($scope->conditionalExpressions[$conditionalExprString]);
 			}
 		}
 
@@ -3752,12 +3747,8 @@ class MutatingScope implements Scope
 			}
 			$newConditionalExpressions[$variableExprString] = $conditionalExpressions;
 			foreach ($conditionalExpressions as $conditionalExpression) {
-				foreach ($conditionalExpression->getConditionExpressionTypes() as $conditionExprString => $conditionalType) {
-					$conditionExpr = $this->exprStringToExpr($conditionExprString);
-					if ($conditionExpr === null) {
-						continue 2;
-					}
-					if (!$scope->getType($conditionExpr)->equals($conditionalType)) {
+				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $conditionalTypeHolder) {
+					if (!$scope->getType($conditionalTypeHolder->getExpr())->equals($conditionalTypeHolder->getType())) {
 						continue 2;
 					}
 				}
@@ -3788,20 +3779,6 @@ class MutatingScope implements Scope
 			$scope->afterExtractCall,
 			$scope->parentScope,
 		);
-	}
-
-	private function exprStringToExpr(string $exprString): ?Expr
-	{
-		try {
-			$expr = $this->parser->parseString('<?php ' . $exprString . ';')[0];
-		} catch (ParserErrorsException) {
-			return null;
-		}
-		if (!$expr instanceof Node\Stmt\Expression) {
-			throw new ShouldNotHappenException();
-		}
-
-		return $expr->expr;
 	}
 
 	/**
@@ -3979,7 +3956,7 @@ class MutatingScope implements Scope
 				continue;
 			}
 
-			$typeGuards[$exprString] = $holder->getType();
+			$typeGuards[$exprString] = $holder;
 		}
 
 		if (count($typeGuards) === 0) {

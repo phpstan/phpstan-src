@@ -56,7 +56,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$typeSpecifier,
 			self::getContainer()->getByType(DynamicThrowTypeExtensionProvider::class),
 			self::getContainer()->getByType(ReadWritePropertiesExtensionProvider::class),
-			true,
+			$this->shouldPolluteScopeWithLoopInitialAssignments(),
 			true,
 			$this->getEarlyTerminatingMethodCalls(),
 			$this->getEarlyTerminatingFunctionCalls(),
@@ -200,6 +200,11 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	protected function getEarlyTerminatingFunctionCalls(): array
 	{
 		return [];
+	}
+
+	protected function shouldPolluteScopeWithLoopInitialAssignments(): bool
+	{
+		return true;
 	}
 
 }

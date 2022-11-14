@@ -1114,22 +1114,13 @@ class NodeScopeResolver
 			}
 
 			if ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
-				if ($this->polluteScopeWithLoopInitialAssignments) {
-					$finalScope = $initScope;
-				} else {
-					$finalScope = $scope;
-				}
-
+				$finalScope = $initScope;
 			} elseif ($isIterableAtLeastOnce->maybe()) {
-				if ($this->polluteScopeWithLoopInitialAssignments) {
-					$finalScope = $finalScope->mergeWith($initScope);
-				} else {
-					$finalScope = $finalScope->mergeWith($scope);
-				}
-			} else {
-				if (!$this->polluteScopeWithLoopInitialAssignments) {
-					$finalScope = $finalScope->mergeWith($scope);
-				}
+				$finalScope = $finalScope->mergeWith($initScope);
+			}
+
+			if (!$this->polluteScopeWithLoopInitialAssignments) {
+				$finalScope = $finalScope->unpolluteVariables($scope, $initScope);
 			}
 
 			return new StatementResult(

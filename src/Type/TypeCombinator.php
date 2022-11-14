@@ -819,6 +819,7 @@ class TypeCombinator
 			array_splice($types, $i--, 1, $type->getTypes());
 			$typesCount = count($types);
 		}
+		unset($type);
 
 		$hasOffsetValueTypeCount = 0;
 		$newTypes = [];

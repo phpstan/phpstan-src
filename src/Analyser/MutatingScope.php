@@ -113,6 +113,7 @@ use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use Throwable;
 use function abs;
+use function array_diff;
 use function array_key_exists;
 use function array_key_first;
 use function array_keys;
@@ -5015,6 +5016,57 @@ class MutatingScope implements Scope
 			$constantTypes[$exprString] = $typeHolder;
 		}
 		return $constantTypes;
+	}
+
+	public function unpolluteVariables(Scope $fromScope, Scope $toScope): self
+	{
+		$introducedVariables = array_diff($toScope->getDefinedVariables(), $fromScope->getDefinedVariables());
+		$expressionTypes = $this->expressionTypes;
+		$nativeTypes = $this->nativeExpressionTypes;
+		$modified = false;
+		foreach ($introducedVariables as $variable) {
+			$exprString = '$' . $variable;
+			$expressionType = $expressionTypes[$exprString] ?? null;
+			if ($expressionType !== null) {
+				$expressionTypes[$exprString] = new ExpressionTypeHolder(
+					$expressionType->getExpr(),
+					$expressionType->getType(),
+					$expressionType->getCertainty()->and(TrinaryLogic::createMaybe()),
+				);
+				$modified = true;
+			}
+			$nativeType = $nativeTypes[$exprString] ?? null;
+			if ($nativeType === null) {
+				continue;
+			}
+			$nativeTypes[$exprString] = new ExpressionTypeHolder(
+				$nativeType->getExpr(),
+				$nativeType->getType(),
+				$nativeType->getCertainty()->and(TrinaryLogic::createMaybe()),
+			);
+			$modified = true;
+		}
+		if (!$modified) {
+			return $this;
+		}
+		return $this->scopeFactory->create(
+			$this->context,
+			$this->isDeclareStrictTypes(),
+			$this->getFunction(),
+			$this->getNamespace(),
+			$expressionTypes,
+			$nativeTypes,
+			$this->conditionalExpressions,
+			$this->inClosureBindScopeClass,
+			$this->anonymousFunctionReflection,
+			$this->inFirstLevelStatement,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$this->inFunctionCallsStack,
+			$this->afterExtractCall,
+			$this->parentScope,
+			$this->nativeTypesPromoted,
+		);
 	}
 
 }

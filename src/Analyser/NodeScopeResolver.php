@@ -3771,7 +3771,7 @@ class NodeScopeResolver
 			}
 
 			$holder = new ConditionalExpressionHolder([
-				'$' . $variableName => $variableType,
+				'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
 			], ExpressionTypeHolder::createYes(
 				$expr,
 				TypeCombinator::intersect($scope->getType($expr), $exprType),
@@ -3801,7 +3801,7 @@ class NodeScopeResolver
 			}
 
 			$holder = new ConditionalExpressionHolder([
-				'$' . $variableName => $variableType,
+				'$' . $variableName => ExpressionTypeHolder::createYes(new Variable($variableName), $variableType),
 			], ExpressionTypeHolder::createYes(
 				$expr,
 				TypeCombinator::remove($scope->getType($expr), $exprType),
@@ -3987,11 +3987,11 @@ class NodeScopeResolver
 			foreach ($iterateeType->getKeyTypes() as $i => $keyType) {
 				$valueType = $iterateeType->getValueTypes()[$i];
 				$holder = new ConditionalExpressionHolder([
-					'$' . $stmt->keyVar->name => $keyType,
+					'$' . $stmt->keyVar->name => ExpressionTypeHolder::createYes(new Variable($stmt->keyVar->name), $keyType),
 				], new ExpressionTypeHolder($stmt->valueVar, $valueType, TrinaryLogic::createYes()));
 				$valueConditionalHolders[$holder->getKey()] = $holder;
 				$arrayDimFetchHolder = new ConditionalExpressionHolder([
-					'$' . $stmt->keyVar->name => $keyType,
+					'$' . $stmt->keyVar->name => ExpressionTypeHolder::createYes(new Variable($stmt->keyVar->name), $keyType),
 				], new ExpressionTypeHolder(new ArrayDimFetch($stmt->expr, $stmt->keyVar), $valueType, TrinaryLogic::createYes()));
 				$arrayDimFetchConditionalHolders[$arrayDimFetchHolder->getKey()] = $arrayDimFetchHolder;
 			}

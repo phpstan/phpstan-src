@@ -1072,4 +1072,9 @@ class TypeCombinator
 		return new IntersectionType($types);
 	}
 
+	public static function removeFalsey(Type $type): Type
+	{
+		return self::remove($type, StaticTypeFactory::falsey());
+	}
+
 }

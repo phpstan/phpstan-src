@@ -987,7 +987,7 @@ class TypeCombinator
 							$newArray->setOffsetValueType(
 								self::intersect($keyType, $types[$j]->getIterableKeyType()),
 								self::intersect($valueTypes[$k], $types[$j]->getIterableValueType()),
-								$types[$i]->isOptionalKey($k),
+								$types[$i]->isOptionalKey($k) && !$types[$j]->hasOffsetValueType($keyType)->yes(),
 							);
 						}
 						$types[$i] = $newArray->getArray();
@@ -1003,7 +1003,7 @@ class TypeCombinator
 							$newArray->setOffsetValueType(
 								self::intersect($keyType, $types[$i]->getIterableKeyType()),
 								self::intersect($valueTypes[$k], $types[$i]->getIterableValueType()),
-								$types[$j]->isOptionalKey($k),
+								$types[$j]->isOptionalKey($k) && !$types[$i]->hasOffsetValueType($keyType)->yes(),
 							);
 						}
 						$types[$j] = $newArray->getArray();

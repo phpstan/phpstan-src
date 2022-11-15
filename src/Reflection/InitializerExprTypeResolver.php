@@ -52,7 +52,6 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
-use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -165,7 +164,7 @@ class InitializerExprTypeResolver
 			$elseType = $this->getType($expr->else, $context);
 			if ($expr->if === null) {
 				return TypeCombinator::union(
-					TypeCombinator::remove($condType, StaticTypeFactory::falsey()),
+					TypeCombinator::removeFalsey($condType),
 					$elseType,
 				);
 			}
@@ -173,7 +172,7 @@ class InitializerExprTypeResolver
 			$ifType = $this->getType($expr->if, $context);
 
 			return TypeCombinator::union(
-				TypeCombinator::remove($ifType, StaticTypeFactory::falsey()),
+				TypeCombinator::removeFalsey($ifType),
 				$elseType,
 			);
 		}

@@ -3417,7 +3417,7 @@ class NodeScopeResolver
 
 			$conditionalExpressions = [];
 
-			$truthyType = TypeCombinator::remove($type, StaticTypeFactory::falsey());
+			$truthyType = TypeCombinator::removeFalsey($type);
 			$falseyType = TypeCombinator::intersect($type, StaticTypeFactory::falsey());
 
 			$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType);

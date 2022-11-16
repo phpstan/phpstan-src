@@ -1615,7 +1615,7 @@ class NodeScopeResolver
 		}
 
 		$nativeType = $scope->getNativeType($exprToSpecify);
-		$scope = $scope->assignExpression(
+		$scope = $scope->specifyExpressionType(
 			$exprToSpecify,
 			$exprTypeWithoutNull,
 			TypeCombinator::removeNull($nativeType),
@@ -1650,7 +1650,7 @@ class NodeScopeResolver
 	private function revertNonNullability(MutatingScope $scope, array $specifiedExpressions): MutatingScope
 	{
 		foreach ($specifiedExpressions as $specifiedExpressionResult) {
-			$scope = $scope->assignExpression(
+			$scope = $scope->specifyExpressionType(
 				$specifiedExpressionResult->getExpression(),
 				$specifiedExpressionResult->getOriginalType(),
 				$specifiedExpressionResult->getOriginalNativeType(),

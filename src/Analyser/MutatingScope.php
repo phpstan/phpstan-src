@@ -3401,7 +3401,7 @@ class MutatingScope implements Scope
 		);
 	}
 
-	private function specifyExpressionType(Expr $expr, Type $type, Type $nativeType): self
+	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType): self
 	{
 		if ($expr instanceof Node\Scalar || $expr instanceof Array_) {
 			return $this;

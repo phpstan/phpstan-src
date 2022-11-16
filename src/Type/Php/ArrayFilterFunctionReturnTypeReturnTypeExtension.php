@@ -33,6 +33,7 @@ use function array_map;
 use function count;
 use function is_string;
 use function strtolower;
+use function substr;
 
 class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -83,7 +84,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 				return $this->filterByTruthyValue($scope, $callbackArg->params[0]->var, $arrayArgType, null, $callbackArg->expr);
 			} elseif ($callbackArg instanceof String_) {
 				$itemVar = new Variable('item');
-				$expr = new FuncCall(new Name($callbackArg->value), [new Arg($itemVar)]);
+				$expr = new FuncCall(self::createFunctionName($callbackArg->value), [new Arg($itemVar)]);
 				return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, null, $expr);
 			}
 		}
@@ -98,7 +99,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 				return $this->filterByTruthyValue($scope, null, $arrayArgType, $callbackArg->params[0]->var, $callbackArg->expr);
 			} elseif ($callbackArg instanceof String_) {
 				$keyVar = new Variable('key');
-				$expr = new FuncCall(new Name($callbackArg->value), [new Arg($keyVar)]);
+				$expr = new FuncCall(self::createFunctionName($callbackArg->value), [new Arg($keyVar)]);
 				return $this->filterByTruthyValue($scope, null, $arrayArgType, $keyVar, $expr);
 			}
 		}
@@ -114,7 +115,7 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			} elseif ($callbackArg instanceof String_) {
 				$itemVar = new Variable('item');
 				$keyVar = new Variable('key');
-				$expr = new FuncCall(new Name($callbackArg->value), [new Arg($itemVar), new Arg($keyVar)]);
+				$expr = new FuncCall(self::createFunctionName($callbackArg->value), [new Arg($itemVar), new Arg($keyVar)]);
 				return $this->filterByTruthyValue($scope, $itemVar, $arrayArgType, $keyVar, $expr);
 			}
 		}
@@ -232,6 +233,15 @@ class ArrayFilterFunctionReturnTypeReturnTypeExtension implements DynamicFunctio
 			$itemVarName !== null ? $scope->getVariableType($itemVarName) : $itemType,
 			!$booleanResult instanceof ConstantBooleanType,
 		];
+	}
+
+	private static function createFunctionName(string $funcName): Name
+	{
+		if ($funcName[0] === '\\') {
+			return new Name\FullyQualified(substr($funcName, 1));
+		}
+
+		return new Name($funcName);
 	}
 
 }

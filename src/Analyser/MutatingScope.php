@@ -113,7 +113,6 @@ use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use Throwable;
 use function abs;
-use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -3854,24 +3853,21 @@ class MutatingScope implements Scope
 			return $this;
 		}
 		$ourExpressionTypes = $this->expressionTypes;
-		$ourVariableTypes = array_filter($ourExpressionTypes, static fn ($expressionTypeHolder) => $expressionTypeHolder->getExpr() instanceof Variable);
 		$theirExpressionTypes = $otherScope->expressionTypes;
-		$theirVariableTypes = array_filter($theirExpressionTypes, static fn ($expressionTypeHolder) => $expressionTypeHolder->getExpr() instanceof Variable);
 
-		$mergedVariableTypes = $this->mergeVariableHolders($ourVariableTypes, $theirVariableTypes);
 		$mergedExpressionTypes = $this->mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes);
 		$conditionalExpressions = $this->intersectConditionalExpressions($otherScope->conditionalExpressions);
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
-			$ourVariableTypes,
-			$theirVariableTypes,
-			$mergedVariableTypes,
+			$ourExpressionTypes,
+			$theirExpressionTypes,
+			$mergedExpressionTypes,
 		);
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
-			$theirVariableTypes,
-			$ourVariableTypes,
-			$mergedVariableTypes,
+			$theirExpressionTypes,
+			$ourExpressionTypes,
+			$mergedExpressionTypes,
 		);
 		return $this->scopeFactory->create(
 			$this->context,
@@ -3919,25 +3915,25 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param array<string, ExpressionTypeHolder> $variableTypes
-	 * @param array<string, ExpressionTypeHolder> $theirVariableTypes
-	 * @param array<string, ExpressionTypeHolder> $mergedVariableTypes
+	 * @param array<string, ExpressionTypeHolder> $ourExpressionTypes
+	 * @param array<string, ExpressionTypeHolder> $theirExpressionTypes
+	 * @param array<string, ExpressionTypeHolder> $mergedExpressionTypes
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
 	private function createConditionalExpressions(
 		array $conditionalExpressions,
-		array $variableTypes,
-		array $theirVariableTypes,
-		array $mergedVariableTypes,
+		array $ourExpressionTypes,
+		array $theirExpressionTypes,
+		array $mergedExpressionTypes,
 	): array
 	{
-		$newVariableTypes = $variableTypes;
-		foreach ($theirVariableTypes as $exprString => $holder) {
-			if (!array_key_exists($exprString, $mergedVariableTypes)) {
+		$newVariableTypes = $ourExpressionTypes;
+		foreach ($theirExpressionTypes as $exprString => $holder) {
+			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
 				continue;
 			}
 
-			if (!$mergedVariableTypes[$exprString]->getType()->equals($holder->getType())) {
+			if (!$mergedExpressionTypes[$exprString]->getType()->equals($holder->getType())) {
 				continue;
 			}
 
@@ -3949,10 +3945,10 @@ class MutatingScope implements Scope
 			if (!$holder->getCertainty()->yes()) {
 				continue;
 			}
-			if (!array_key_exists($exprString, $mergedVariableTypes)) {
+			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
 				continue;
 			}
-			if ($mergedVariableTypes[$exprString]->getType()->equals($holder->getType())) {
+			if ($mergedExpressionTypes[$exprString]->getType()->equals($holder->getType())) {
 				continue;
 			}
 
@@ -3965,8 +3961,8 @@ class MutatingScope implements Scope
 
 		foreach ($newVariableTypes as $exprString => $holder) {
 			if (
-				array_key_exists($exprString, $mergedVariableTypes)
-				&& $mergedVariableTypes[$exprString]->equals($holder)
+				array_key_exists($exprString, $mergedExpressionTypes)
+				&& $mergedExpressionTypes[$exprString]->equals($holder)
 			) {
 				continue;
 			}
@@ -3982,8 +3978,8 @@ class MutatingScope implements Scope
 			$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 		}
 
-		foreach ($mergedVariableTypes as $exprString => $mergedExprTypeHolder) {
-			if (array_key_exists($exprString, $variableTypes)) {
+		foreach ($mergedExpressionTypes as $exprString => $mergedExprTypeHolder) {
+			if (array_key_exists($exprString, $ourExpressionTypes)) {
 				continue;
 			}
 

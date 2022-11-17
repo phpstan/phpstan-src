@@ -336,6 +336,10 @@ class ResultCacheManager
 		}
 
 		$meta = $resultCache->getMeta();
+
+		/**
+		 * @param Error[][] $errorsByFile
+		 */
 		$doSave = function (array $errorsByFile, $collectedDataByFile, ?array $dependencies, array $exportedNodes, ?string $resultCacheName) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isDebug()) {
@@ -364,7 +368,7 @@ class ResultCacheManager
 					}
 
 					if ($output->isDebug()) {
-						$output->writeLineFormatted(sprintf('Result cache was not saved because of non-ignorable exception: %s', $error->getMessage()));
+						$output->writeLineFormatted(sprintf('Result cache was not saved because of non-ignorable exception: %s in %s', $error->getMessage(), $error->getFile()));
 					}
 
 					return false;

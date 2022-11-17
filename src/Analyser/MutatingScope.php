@@ -3745,20 +3745,18 @@ class MutatingScope implements Scope
 				continue;
 			}
 			$newConditionalExpressions[$variableExprString] = $conditionalExpressions;
-			$tmpScope = $scope;
-			unset($tmpScope->conditionalExpressions[$variableExprString]);
 			foreach ($conditionalExpressions as $conditionalExpression) {
+				$targetTypeHolder = $conditionalExpression->getTypeHolder();
 				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $conditionalTypeHolder) {
-					if (!$tmpScope->getType($conditionalTypeHolder->getExpr())->equals($conditionalTypeHolder->getType())) {
+					if (!$scope->unsetExpression($targetTypeHolder->getExpr())->getType($conditionalTypeHolder->getExpr())->equals($conditionalTypeHolder->getType())) {
 						continue 2;
 					}
 				}
 
-				$typeHolder = $conditionalExpression->getTypeHolder();
-				if ($typeHolder->getCertainty()->no()) {
+				if ($targetTypeHolder->getCertainty()->no()) {
 					unset($scope->expressionTypes[$variableExprString]);
 				} else {
-					$scope->expressionTypes[$variableExprString] = $typeHolder;
+					$scope->expressionTypes[$variableExprString] = $targetTypeHolder;
 				}
 			}
 		}

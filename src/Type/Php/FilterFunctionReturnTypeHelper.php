@@ -122,6 +122,11 @@ final class FilterFunctionReturnTypeHelper
 		return $type;
 	}
 
+	public function hasConstantFlag(string $constant, ?Type $flagsType): bool
+	{
+		return $this->hasFlag($this->getConstant($constant), $flagsType);
+	}
+
 	/**
 	 * @return array<int, Type>
 	 */

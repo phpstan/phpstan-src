@@ -910,7 +910,12 @@ class DefinedVariableRuleTest extends RuleTestCase
 		$this->polluteScopeWithLoopInitialAssignments = false;
 		$this->checkMaybeUndefinedVariables = true;
 		$this->polluteScopeWithAlwaysIterableForeach = true;
-		$this->analyse([__DIR__ . '/data/bug-4173.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-4173.php'], [
+			[
+				'Variable $value might not be defined.', // could be fixed
+				30,
+			],
+		]);
 	}
 
 }

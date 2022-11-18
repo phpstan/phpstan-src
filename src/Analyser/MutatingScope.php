@@ -3369,36 +3369,7 @@ class MutatingScope implements Scope
 			}
 		}
 
-		if ($scope->hasExpressionType($expr)->no()) {
-			return $scope;
-		}
-
-		$exprString = $this->getNodeKey($expr);
-		$expressionTypes = $scope->expressionTypes;
-		unset($expressionTypes[$exprString]);
-		$nativeTypes = $scope->nativeExpressionTypes;
-		unset($nativeTypes[$exprString]);
-
-		$conditionalExpressions = $scope->conditionalExpressions;
-		unset($conditionalExpressions[$exprString]);
-
-		return $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
-			$expressionTypes,
-			$conditionalExpressions,
-			$this->inClosureBindScopeClass,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
-			[],
-			[],
-			$nativeTypes,
-			[],
-			$this->afterExtractCall,
-			$this->parentScope,
-		);
+		return $scope->invalidateExpression($expr);
 	}
 
 	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType): self
@@ -3491,26 +3462,6 @@ class MutatingScope implements Scope
 			$scope = $this->invalidateExpression($expr, true);
 		}
 
-		$newConditionalExpressions = [];
-		foreach ($scope->conditionalExpressions as $conditionalExprString => $holders) {
-			if (count($holders) === 0) {
-				continue;
-			}
-			if ($this->shouldInvalidateExpression($expr, $holders[array_key_first($holders)]->getTypeHolder()->getExpr())) {
-				continue;
-			}
-			foreach ($holders as $holder) {
-				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
-				foreach ($conditionalTypeHolders as $conditionalTypeHolder) {
-					if ($this->shouldInvalidateExpression($expr, $conditionalTypeHolder->getExpr())) {
-						continue 3;
-					}
-				}
-			}
-			$newConditionalExpressions[$conditionalExprString] = $holders;
-		}
-		$scope->conditionalExpressions = $newConditionalExpressions;
-
 		return $scope->specifyExpressionType($expr, $type, $nativeType);
 	}
 
@@ -3531,6 +3482,27 @@ class MutatingScope implements Scope
 			$invalidated = true;
 		}
 
+		$newConditionalExpressions = [];
+		foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
+			if (count($holders) === 0) {
+				continue;
+			}
+			if ($this->shouldInvalidateExpression($expressionToInvalidate, $holders[array_key_first($holders)]->getTypeHolder()->getExpr())) {
+				$invalidated = true;
+				continue;
+			}
+			foreach ($holders as $holder) {
+				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
+				foreach ($conditionalTypeHolders as $conditionalTypeHolder) {
+					if ($this->shouldInvalidateExpression($expressionToInvalidate, $conditionalTypeHolder->getExpr())) {
+						$invalidated = true;
+						continue 3;
+					}
+				}
+			}
+			$newConditionalExpressions[$conditionalExprString] = $holders;
+		}
+
 		if (!$invalidated) {
 			return $this;
 		}
@@ -3541,7 +3513,7 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$expressionTypes,
-			$this->conditionalExpressions,
+			$newConditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,

@@ -3510,39 +3510,13 @@ class MutatingScope implements Scope
 
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false): self
 	{
-		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
-		$expressionToInvalidateClass = get_class($expressionToInvalidate);
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		$invalidated = false;
-		$nodeFinder = new NodeFinder();
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
 			$exprString = (string) $exprString;
 			$exprExpr = $exprTypeHolder->getExpr();
-			if ($exprExpr instanceof PropertyFetch) {
-				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($exprExpr, $this);
-				if ($propertyReflection !== null) {
-					$nativePropertyReflection = $propertyReflection->getNativeReflection();
-					if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
-						continue;
-					}
-				}
-			}
-
-			$found = $nodeFinder->findFirst([$exprExpr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
-				if (!$node instanceof $expressionToInvalidateClass) {
-					return false;
-				}
-
-				$nodeString = $this->getNodeKey($node);
-
-				return $nodeString === $exprStringToInvalidate;
-			});
-			if ($found === null) {
-				continue;
-			}
-
-			if ($requireMoreCharacters && $exprString === $exprStringToInvalidate) {
+			if (!$this->shouldInvalidateExpression($expressionToInvalidate, $exprExpr, $requireMoreCharacters)) {
 				continue;
 			}
 
@@ -3572,6 +3546,37 @@ class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 		);
+	}
+
+	private function shouldInvalidateExpression(Expr $exprToInvalidate, Expr $expr, bool $requireMoreCharacters = false): bool
+	{
+		$exprStringToInvalidate = $this->getNodeKey($exprToInvalidate);
+		if ($requireMoreCharacters && $exprStringToInvalidate === $this->getNodeKey($expr)) {
+			return false;
+		}
+		if ($expr instanceof PropertyFetch) {
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+			if ($propertyReflection !== null) {
+				$nativePropertyReflection = $propertyReflection->getNativeReflection();
+				if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
+					return false;
+				}
+			}
+		}
+
+		$nodeFinder = new NodeFinder();
+		$expressionToInvalidateClass = get_class($exprToInvalidate);
+		$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
+			if (!$node instanceof $expressionToInvalidateClass) {
+				return false;
+			}
+
+			$nodeString = $this->getNodeKey($node);
+
+			return $nodeString === $exprStringToInvalidate;
+		});
+
+		return $found !== null;
 	}
 
 	private function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self

@@ -101,7 +101,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			$variableName = $args[2];
 			$this->assertTrue(
 				$expectedCertainty->equals($actualCertainty),
-				sprintf('Expected %s, actual certainty of variable $%s is %s', $expectedCertainty->describe(), $variableName, $actualCertainty->describe()),
+				sprintf('Expected %s, actual certainty of variable $%s is %s in %s on line %d.', $expectedCertainty->describe(), $variableName, $actualCertainty->describe(), $file, $args[3]),
 			);
 		}
 	}
@@ -161,7 +161,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				}
 
 				$actualCertaintyValue = $scope->hasVariableType($variable->name);
-				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variable->name];
+				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variable->name, $node->getLine()];
 			} else {
 				return;
 			}

@@ -113,8 +113,8 @@ use PHPStan\Type\VerbosityLevel;
 use PHPStan\Type\VoidType;
 use Throwable;
 use function abs;
-use function array_filter;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -3369,36 +3369,7 @@ class MutatingScope implements Scope
 			}
 		}
 
-		if ($scope->hasExpressionType($expr)->no()) {
-			return $scope;
-		}
-
-		$exprString = $this->getNodeKey($expr);
-		$expressionTypes = $scope->expressionTypes;
-		unset($expressionTypes[$exprString]);
-		$nativeTypes = $scope->nativeExpressionTypes;
-		unset($nativeTypes[$exprString]);
-
-		$conditionalExpressions = $scope->conditionalExpressions;
-		unset($conditionalExpressions[$exprString]);
-
-		return $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
-			$expressionTypes,
-			$conditionalExpressions,
-			$this->inClosureBindScopeClass,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
-			[],
-			[],
-			$nativeTypes,
-			[],
-			$this->afterExtractCall,
-			$this->parentScope,
-		);
+		return $scope->invalidateExpression($expr);
 	}
 
 	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType): self
@@ -3487,64 +3458,44 @@ class MutatingScope implements Scope
 			$scope = $this->invalidateExpression($expr, true);
 		}
 
-		$exprString = $this->getNodeKey($expr);
-		if (array_key_exists($exprString, $scope->conditionalExpressions)) {
-			unset($scope->conditionalExpressions[$exprString]);
-		}
-		foreach ($scope->conditionalExpressions as $conditionalExprString => $holders) {
-			foreach ($holders as $holder) {
-				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
-				if (!array_key_exists($exprString, $conditionalTypeHolders)) {
-					continue;
-				}
-
-				unset($scope->conditionalExpressions[$conditionalExprString]);
-			}
-		}
-
 		return $scope->specifyExpressionType($expr, $type, $nativeType);
 	}
 
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false): self
 	{
-		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
-		$expressionToInvalidateClass = get_class($expressionToInvalidate);
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		$invalidated = false;
-		$nodeFinder = new NodeFinder();
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
 			$exprExpr = $exprTypeHolder->getExpr();
-			if ($exprExpr instanceof PropertyFetch) {
-				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($exprExpr, $this);
-				if ($propertyReflection !== null) {
-					$nativePropertyReflection = $propertyReflection->getNativeReflection();
-					if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
-						continue;
-					}
-				}
-			}
-
-			$found = $nodeFinder->findFirst([$exprExpr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
-				if (!$node instanceof $expressionToInvalidateClass) {
-					return false;
-				}
-
-				$nodeString = $this->getNodeKey($node);
-
-				return $nodeString === $exprStringToInvalidate;
-			});
-			if ($found === null) {
-				continue;
-			}
-
-			if ($requireMoreCharacters && $exprString === $exprStringToInvalidate) {
+			if (!$this->shouldInvalidateExpression($expressionToInvalidate, $exprExpr, $requireMoreCharacters)) {
 				continue;
 			}
 
 			unset($expressionTypes[$exprString]);
 			unset($nativeExpressionTypes[$exprString]);
 			$invalidated = true;
+		}
+
+		$newConditionalExpressions = [];
+		foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
+			if (count($holders) === 0) {
+				continue;
+			}
+			if ($this->shouldInvalidateExpression($expressionToInvalidate, $holders[array_key_first($holders)]->getTypeHolder()->getExpr())) {
+				$invalidated = true;
+				continue;
+			}
+			foreach ($holders as $holder) {
+				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
+				foreach ($conditionalTypeHolders as $conditionalTypeHolder) {
+					if ($this->shouldInvalidateExpression($expressionToInvalidate, $conditionalTypeHolder->getExpr())) {
+						$invalidated = true;
+						continue 3;
+					}
+				}
+			}
+			$newConditionalExpressions[$conditionalExprString] = $holders;
 		}
 
 		if (!$invalidated) {
@@ -3557,7 +3508,7 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$expressionTypes,
-			$this->conditionalExpressions,
+			$newConditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
@@ -3568,6 +3519,37 @@ class MutatingScope implements Scope
 			$this->afterExtractCall,
 			$this->parentScope,
 		);
+	}
+
+	private function shouldInvalidateExpression(Expr $exprToInvalidate, Expr $expr, bool $requireMoreCharacters = false): bool
+	{
+		$exprStringToInvalidate = $this->getNodeKey($exprToInvalidate);
+		if ($requireMoreCharacters && $exprStringToInvalidate === $this->getNodeKey($expr)) {
+			return false;
+		}
+		if ($expr instanceof PropertyFetch) {
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+			if ($propertyReflection !== null) {
+				$nativePropertyReflection = $propertyReflection->getNativeReflection();
+				if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
+					return false;
+				}
+			}
+		}
+
+		$nodeFinder = new NodeFinder();
+		$expressionToInvalidateClass = get_class($exprToInvalidate);
+		$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {
+			if (!$node instanceof $expressionToInvalidateClass) {
+				return false;
+			}
+
+			$nodeString = $this->getNodeKey($node);
+
+			return $nodeString === $exprStringToInvalidate;
+		});
+
+		return $found !== null;
 	}
 
 	private function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self
@@ -3746,17 +3728,17 @@ class MutatingScope implements Scope
 			}
 			$newConditionalExpressions[$variableExprString] = $conditionalExpressions;
 			foreach ($conditionalExpressions as $conditionalExpression) {
+				$targetTypeHolder = $conditionalExpression->getTypeHolder();
 				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $conditionalTypeHolder) {
-					if (!$scope->getType($conditionalTypeHolder->getExpr())->equals($conditionalTypeHolder->getType())) {
+					if (!$scope->unsetExpression($targetTypeHolder->getExpr())->getType($conditionalTypeHolder->getExpr())->equals($conditionalTypeHolder->getType())) {
 						continue 2;
 					}
 				}
 
-				$typeHolder = $conditionalExpression->getTypeHolder();
-				if ($typeHolder->getCertainty()->no()) {
+				if ($targetTypeHolder->getCertainty()->no()) {
 					unset($scope->expressionTypes[$variableExprString]);
 				} else {
-					$scope->expressionTypes[$variableExprString] = $typeHolder;
+					$scope->expressionTypes[$variableExprString] = $targetTypeHolder;
 				}
 			}
 		}
@@ -3853,24 +3835,21 @@ class MutatingScope implements Scope
 			return $this;
 		}
 		$ourExpressionTypes = $this->expressionTypes;
-		$ourVariableTypes = array_filter($ourExpressionTypes, static fn ($expressionTypeHolder) => $expressionTypeHolder->getExpr() instanceof Variable);
 		$theirExpressionTypes = $otherScope->expressionTypes;
-		$theirVariableTypes = array_filter($theirExpressionTypes, static fn ($expressionTypeHolder) => $expressionTypeHolder->getExpr() instanceof Variable);
 
-		$mergedVariableTypes = $this->mergeVariableHolders($ourVariableTypes, $theirVariableTypes);
 		$mergedExpressionTypes = $this->mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes);
 		$conditionalExpressions = $this->intersectConditionalExpressions($otherScope->conditionalExpressions);
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
-			$ourVariableTypes,
-			$theirVariableTypes,
-			$mergedVariableTypes,
+			$ourExpressionTypes,
+			$theirExpressionTypes,
+			$mergedExpressionTypes,
 		);
 		$conditionalExpressions = $this->createConditionalExpressions(
 			$conditionalExpressions,
-			$theirVariableTypes,
-			$ourVariableTypes,
-			$mergedVariableTypes,
+			$theirExpressionTypes,
+			$ourExpressionTypes,
+			$mergedExpressionTypes,
 		);
 		return $this->scopeFactory->create(
 			$this->context,
@@ -3918,25 +3897,25 @@ class MutatingScope implements Scope
 
 	/**
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param array<string, ExpressionTypeHolder> $variableTypes
-	 * @param array<string, ExpressionTypeHolder> $theirVariableTypes
-	 * @param array<string, ExpressionTypeHolder> $mergedVariableTypes
+	 * @param array<string, ExpressionTypeHolder> $ourExpressionTypes
+	 * @param array<string, ExpressionTypeHolder> $theirExpressionTypes
+	 * @param array<string, ExpressionTypeHolder> $mergedExpressionTypes
 	 * @return array<string, ConditionalExpressionHolder[]>
 	 */
 	private function createConditionalExpressions(
 		array $conditionalExpressions,
-		array $variableTypes,
-		array $theirVariableTypes,
-		array $mergedVariableTypes,
+		array $ourExpressionTypes,
+		array $theirExpressionTypes,
+		array $mergedExpressionTypes,
 	): array
 	{
-		$newVariableTypes = $variableTypes;
-		foreach ($theirVariableTypes as $exprString => $holder) {
-			if (!array_key_exists($exprString, $mergedVariableTypes)) {
+		$newVariableTypes = $ourExpressionTypes;
+		foreach ($theirExpressionTypes as $exprString => $holder) {
+			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
 				continue;
 			}
 
-			if (!$mergedVariableTypes[$exprString]->getType()->equals($holder->getType())) {
+			if (!$mergedExpressionTypes[$exprString]->getType()->equals($holder->getType())) {
 				continue;
 			}
 
@@ -3948,10 +3927,10 @@ class MutatingScope implements Scope
 			if (!$holder->getCertainty()->yes()) {
 				continue;
 			}
-			if (!array_key_exists($exprString, $mergedVariableTypes)) {
+			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
 				continue;
 			}
-			if ($mergedVariableTypes[$exprString]->getType()->equals($holder->getType())) {
+			if ($mergedExpressionTypes[$exprString]->getType()->equals($holder->getType())) {
 				continue;
 			}
 
@@ -3964,8 +3943,8 @@ class MutatingScope implements Scope
 
 		foreach ($newVariableTypes as $exprString => $holder) {
 			if (
-				array_key_exists($exprString, $mergedVariableTypes)
-				&& $mergedVariableTypes[$exprString]->equals($holder)
+				array_key_exists($exprString, $mergedExpressionTypes)
+				&& $mergedExpressionTypes[$exprString]->equals($holder)
 			) {
 				continue;
 			}
@@ -3981,8 +3960,8 @@ class MutatingScope implements Scope
 			$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
 		}
 
-		foreach ($mergedVariableTypes as $exprString => $mergedExprTypeHolder) {
-			if (array_key_exists($exprString, $variableTypes)) {
+		foreach ($mergedExpressionTypes as $exprString => $mergedExprTypeHolder) {
+			if (array_key_exists($exprString, $ourExpressionTypes)) {
 				continue;
 			}
 

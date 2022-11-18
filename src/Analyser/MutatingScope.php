@@ -114,6 +114,7 @@ use PHPStan\Type\VoidType;
 use Throwable;
 use function abs;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -3490,20 +3491,25 @@ class MutatingScope implements Scope
 			$scope = $this->invalidateExpression($expr, true);
 		}
 
-		$exprString = $this->getNodeKey($expr);
-		if (array_key_exists($exprString, $scope->conditionalExpressions)) {
-			unset($scope->conditionalExpressions[$exprString]);
-		}
+		$newConditionalExpressions = [];
 		foreach ($scope->conditionalExpressions as $conditionalExprString => $holders) {
+			if (count($holders) === 0) {
+				continue;
+			}
+			if ($this->shouldInvalidateExpression($expr, $holders[array_key_first($holders)]->getTypeHolder()->getExpr())) {
+				continue;
+			}
 			foreach ($holders as $holder) {
 				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
-				if (!array_key_exists($exprString, $conditionalTypeHolders)) {
-					continue;
+				foreach ($conditionalTypeHolders as $conditionalTypeHolder) {
+					if ($this->shouldInvalidateExpression($expr, $conditionalTypeHolder->getExpr())) {
+						continue 3;
+					}
 				}
-
-				unset($scope->conditionalExpressions[$conditionalExprString]);
 			}
+			$newConditionalExpressions[$conditionalExprString] = $holders;
 		}
+		$scope->conditionalExpressions = $newConditionalExpressions;
 
 		return $scope->specifyExpressionType($expr, $type, $nativeType);
 	}

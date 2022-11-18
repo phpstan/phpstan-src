@@ -440,4 +440,18 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6809.php'], $errors);
 	}
 
+	public function testBug8333(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8333.php'], [
+			[
+				'Access to an undefined static property static(Bug8333\BarAccessProperties)::$loremipsum.',
+				68,
+			],
+			[
+				'Access to private static property $foo of parent class Bug8333\FooAccessProperties.',
+				69,
+			],
+		]);
+	}
+
 }

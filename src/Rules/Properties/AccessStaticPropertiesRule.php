@@ -26,6 +26,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
+use function count;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -182,6 +183,29 @@ class AccessStaticPropertiesRule implements Rule
 		if (!$has->yes()) {
 			if ($scope->hasExpressionType($node)->yes()) {
 				return $messages;
+			}
+
+			$classNames = TypeUtils::getDirectClassNames($classType);
+			if (count($classNames) === 1) {
+				$propertyClassReflection = $this->reflectionProvider->getClass($classNames[0]);
+				$parentClassReflection = $propertyClassReflection->getParentClass();
+
+				while ($parentClassReflection !== null) {
+					if ($parentClassReflection->hasProperty($name)) {
+						if ($scope->canAccessProperty($parentClassReflection->getProperty($name, $scope))) {
+							return [];
+						}
+						return [
+							RuleErrorBuilder::message(sprintf(
+								'Access to private static property $%s of parent class %s.',
+								$name,
+								$parentClassReflection->getDisplayName(),
+							))->build(),
+						];
+					}
+
+					$parentClassReflection = $parentClassReflection->getParentClass();
+				}
 			}
 
 			return array_merge($messages, [

@@ -1045,6 +1045,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testConditionalExpressionInfiniteLoop(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/conditional-expression-infinite-loop.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

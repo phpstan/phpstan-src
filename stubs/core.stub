@@ -70,7 +70,7 @@ function bin2hex(string $string): string {}
 
 /**
  * @param array<mixed> $result
- * @param-out array<int|string, string|list<string>|array<mixed>> $result
+ * @param-out array<int|string, array|string> $result
  */
 function parse_str(string $string, array &$result): void {}
 

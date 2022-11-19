@@ -502,16 +502,16 @@ class MutatingScope implements Scope
 			}
 		}
 
-		if ($this->isGlobalVariable($variableName)) {
-			return new ArrayType(new StringType(), new MixedType($this->explicitMixedForGlobalVariables));
-		}
-
 		if ($this->hasVariableType($variableName)->no()) {
 			throw new UndefinedVariableException($this, $variableName);
 		}
 
 		$varExprString = '$' . $variableName;
 		if (!array_key_exists($varExprString, $this->expressionTypes)) {
+			if ($this->isGlobalVariable($variableName)) {
+				return new ArrayType(new StringType(), new MixedType($this->explicitMixedForGlobalVariables));
+			}
+
 			return new MixedType();
 		}
 

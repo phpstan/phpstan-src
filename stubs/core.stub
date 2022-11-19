@@ -76,7 +76,7 @@ function parse_str(string $string, array &$result): void {}
 
 /**
  * @param array<mixed> $result
- * @param-out array<string, string|list<string>|array<mixed>> $result
+ * @param-out array<string, array|string> $result
  */
 function mb_parse_str(string $string, array &$result): bool {}
 

@@ -3730,7 +3730,7 @@ class MutatingScope implements Scope
 			foreach ($conditionalExpressions as $conditionalExpression) {
 				$targetTypeHolder = $conditionalExpression->getTypeHolder();
 				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $conditionalTypeHolder) {
-					if (!$scope->unsetExpression($targetTypeHolder->getExpr())->getType($conditionalTypeHolder->getExpr())->equals($conditionalTypeHolder->getType())) {
+					if (!$scope->invalidateExpression($targetTypeHolder->getExpr())->getType($conditionalTypeHolder->getExpr())->equals($conditionalTypeHolder->getType())) {
 						continue 2;
 					}
 				}

@@ -181,6 +181,7 @@ abstract class PHPStanTestCase extends TestCase
 				$container->getParameter('featureToggles')['explicitMixedForGlobalVariables'],
 				$constantResolver,
 			),
+			$container->getParameter('featureToggles')['explicitMixedForGlobalVariables'],
 		);
 	}
 

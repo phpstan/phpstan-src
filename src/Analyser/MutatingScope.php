@@ -468,10 +468,6 @@ class MutatingScope implements Scope
 	/** @api */
 	public function hasVariableType(string $variableName): TrinaryLogic
 	{
-		if ($this->isGlobalVariable($variableName)) {
-			return TrinaryLogic::createYes();
-		}
-
 		$varExprString = '$' . $variableName;
 		if (!isset($this->expressionTypes[$varExprString])) {
 			if ($this->canAnyVariableExist()) {
@@ -508,10 +504,6 @@ class MutatingScope implements Scope
 
 		$varExprString = '$' . $variableName;
 		if (!array_key_exists($varExprString, $this->expressionTypes)) {
-			if ($this->isGlobalVariable($variableName)) {
-				return new ArrayType(new StringType(), new MixedType($this->explicitMixedForGlobalVariables));
-			}
-
 			return new MixedType();
 		}
 
@@ -537,21 +529,6 @@ class MutatingScope implements Scope
 		}
 
 		return $variables;
-	}
-
-	private function isGlobalVariable(string $variableName): bool
-	{
-		return in_array($variableName, [
-			'GLOBALS',
-			'_SERVER',
-			'_GET',
-			'_POST',
-			'_FILES',
-			'_COOKIE',
-			'_SESSION',
-			'_REQUEST',
-			'_ENV',
-		], true);
 	}
 
 	/** @api */
@@ -2470,12 +2447,8 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			null,
 			$this->getNamespace(),
-			array_merge($this->getConstantTypes(), [
-				'$this' => $thisHolder,
-			]),
-			array_merge($this->getNativeConstantTypes(), [
-				'$this' => $thisHolder,
-			]),
+			array_merge($this->getSuperglobalExpressionTypes(), $this->getConstantTypes(), ['$this' => $thisHolder]),
+			array_merge($this->getSuperglobalExpressionTypes(), $this->getNativeConstantTypes(), ['$this' => $thisHolder]),
 			[],
 			null,
 			null,
@@ -2711,8 +2684,8 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			$functionReflection,
 			$this->getNamespace(),
-			array_merge($this->getConstantTypes(), $expressionTypes),
-			array_merge($this->getNativeConstantTypes(), $nativeExpressionTypes),
+			array_merge($this->getSuperglobalExpressionTypes(), $this->getConstantTypes(), $expressionTypes),
+			array_merge($this->getSuperglobalExpressionTypes(), $this->getNativeConstantTypes(), $nativeExpressionTypes),
 		);
 	}
 
@@ -2724,6 +2697,8 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			null,
 			$namespaceName,
+			$this->getSuperglobalExpressionTypes(),
+			$this->getSuperglobalExpressionTypes(),
 		);
 	}
 
@@ -2947,8 +2922,8 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$this->getNamespace(),
-			array_merge($this->getConstantTypes(), $expressionTypes),
-			array_merge($this->getNativeConstantTypes(), $nativeTypes),
+			array_merge($this->getSuperglobalExpressionTypes(), $this->getConstantTypes(), $expressionTypes),
+			array_merge($this->getSuperglobalExpressionTypes(), $this->getNativeConstantTypes(), $nativeTypes),
 			[],
 			$this->inClosureBindScopeClass,
 			new TrivialParametersAcceptor(),
@@ -5019,6 +4994,21 @@ class MutatingScope implements Scope
 			$constantTypes[$exprString] = $typeHolder;
 		}
 		return $constantTypes;
+	}
+
+	/** @return array<string, ExpressionTypeHolder> */
+	private function getSuperglobalExpressionTypes(): array
+	{
+		$superglobalExpressionTypes = [];
+		$exprStrings = ['$GLOBALS', '$_SERVER', '$_GET', '$_POST', '$_FILES', '$_COOKIE', '$_SESSION', '$_REQUEST', '$_ENV'];
+		foreach ($this->expressionTypes as $exprString => $typeHolder) {
+			if (!in_array($exprString, $exprStrings, true)) {
+				continue;
+			}
+
+			$superglobalExpressionTypes[$exprString] = $typeHolder;
+		}
+		return $superglobalExpressionTypes;
 	}
 
 }

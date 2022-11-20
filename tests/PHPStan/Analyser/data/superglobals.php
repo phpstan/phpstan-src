@@ -2,6 +2,7 @@
 
 namespace Superglobals;
 
+use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 
 class Superglobals
@@ -22,14 +23,37 @@ class Superglobals
 
 	public function canBeOverwritten(): void
 	{
-		$_SESSION = [];
-		assertType('array{}', $_SESSION);
+		$GLOBALS = [];
+		assertType('array{}', $GLOBALS);
+		assertNativeType('array{}', $GLOBALS);
 	}
 
 	public function canBePartlyOverwritten(): void
 	{
-		$_SESSION['foo'] = 'foo';
-		assertType("non-empty-array<string, mixed>&hasOffsetValue('foo', 'foo')", $_SESSION);
+		$GLOBALS['foo'] = 'foo';
+		assertType("non-empty-array<string, mixed>&hasOffsetValue('foo', 'foo')", $GLOBALS);
+		assertNativeType("non-empty-array<string, mixed>&hasOffsetValue('foo', 'foo')", $GLOBALS);
+	}
+
+	public function canBeNarrowed(): void
+	{
+		if (isset($GLOBALS['foo'])) {
+			assertType("array<string, mixed>&hasOffsetValue('foo', mixed~null)", $GLOBALS);
+			assertNativeType("array<string, mixed>&hasOffset('foo')", $GLOBALS); // https://github.com/phpstan/phpstan/issues/8395
+		} else {
+			assertType('array<string, mixed>', $GLOBALS);
+			assertNativeType('array<string, mixed>', $GLOBALS);
+		}
+		assertType('array<string, mixed>', $GLOBALS);
+		assertNativeType('array<string, mixed>', $GLOBALS);
 	}
 
 }
+
+function functionScope() {
+	assertType('array<string, mixed>', $GLOBALS);
+	assertNativeType('array<string, mixed>', $GLOBALS);
+}
+
+assertType('array<string, mixed>', $GLOBALS);
+assertNativeType('array<string, mixed>', $GLOBALS);

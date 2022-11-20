@@ -12,7 +12,9 @@ class Foo
 	 * @param numeric-string $numericString
 	 */
 	public function strTypes($nonES, $nonFalsyString, $numericString) {
-		if (is_dir($nonES)) {
+		if (dir($nonES)) {
+			assertType('non-empty-string', $nonES);
+		} else {
 			assertType('non-empty-string', $nonES);
 		}
 		assertType('non-empty-string', $nonES);
@@ -32,6 +34,8 @@ class Foo
 	{
 		if (dir($s)) {
 			assertType('non-empty-string', $s);
+		} else {
+			assertType('string', $s);
 		}
 		assertType('string', $s);
 

@@ -34,7 +34,6 @@ class DirectInternalScopeFactory implements InternalScopeFactory
 		private bool $treatPhpDocTypesAsCertain,
 		private PhpVersion $phpVersion,
 		private bool $explicitMixedInUnknownGenericNew,
-		private bool $explicitMixedForGlobalVariables,
 		private ConstantResolver $constantResolver,
 	)
 	{
@@ -102,7 +101,6 @@ class DirectInternalScopeFactory implements InternalScopeFactory
 			$parentScope,
 			$nativeTypesPromoted,
 			$this->explicitMixedInUnknownGenericNew,
-			$this->explicitMixedForGlobalVariables,
 		);
 	}
 

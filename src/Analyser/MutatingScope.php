@@ -190,7 +190,6 @@ class MutatingScope implements Scope
 		private ?Scope $parentScope = null,
 		private bool $nativeTypesPromoted = false,
 		private bool $explicitMixedInUnknownGenericNew = false,
-		private bool $explicitMixedForGlobalVariables = false,
 	)
 	{
 		if ($namespace === '') {
@@ -2150,7 +2149,6 @@ class MutatingScope implements Scope
 			$this->parentScope,
 			false,
 			$this->explicitMixedInUnknownGenericNew,
-			$this->explicitMixedForGlobalVariables,
 		);
 	}
 

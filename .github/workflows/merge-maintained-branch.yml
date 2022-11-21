@@ -15,7 +15,7 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@v3
       - name: "Merge branch"
-        uses: everlytic/branch-merge@1.1.4
+        uses: everlytic/branch-merge@1.1.5
         with:
           github_token: "${{ secrets.PHPSTAN_BOT_TOKEN }}"
           source_ref: ${{ github.ref }}

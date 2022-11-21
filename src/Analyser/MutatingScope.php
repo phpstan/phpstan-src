@@ -247,6 +247,7 @@ class MutatingScope implements Scope
 			null,
 			null,
 			$this->expressionTypes,
+			$this->nativeExpressionTypes,
 		);
 	}
 
@@ -2727,13 +2728,20 @@ class MutatingScope implements Scope
 		);
 	}
 
-	public function enterClosureBind(?Type $thisType, string $scopeClass): self
+	public function enterClosureBind(?Type $thisType, ?Type $nativeThisType, string $scopeClass): self
 	{
 		$expressionTypes = $this->expressionTypes;
 		if ($thisType !== null) {
 			$expressionTypes['$this'] = ExpressionTypeHolder::createYes(new Variable('this'), $thisType);
 		} else {
 			unset($expressionTypes['$this']);
+		}
+
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		if ($nativeThisType !== null) {
+			$nativeExpressionTypes['$this'] = ExpressionTypeHolder::createYes(new Variable('this'), $nativeThisType);
+		} else {
+			unset($nativeExpressionTypes['$this']);
 		}
 
 		if ($scopeClass === 'static' && $this->isInClass()) {
@@ -2746,7 +2754,7 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$expressionTypes,
-			[],
+			$nativeExpressionTypes,
 			$this->conditionalExpressions,
 			$scopeClass,
 			$this->anonymousFunctionReflection,
@@ -2762,23 +2770,33 @@ class MutatingScope implements Scope
 			unset($expressionTypes['$this']);
 		}
 
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		if (isset($originalScope->nativeExpressionTypes['$this'])) {
+			$nativeExpressionTypes['$this'] = $originalScope->nativeExpressionTypes['$this'];
+		} else {
+			unset($nativeExpressionTypes['$this']);
+		}
+
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$this->getNamespace(),
 			$expressionTypes,
-			[],
+			$nativeExpressionTypes,
 			$this->conditionalExpressions,
 			$originalScope->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 		);
 	}
 
-	public function enterClosureCall(Type $thisType): self
+	public function enterClosureCall(Type $thisType, Type $nativeThisType): self
 	{
 		$expressionTypes = $this->expressionTypes;
 		$expressionTypes['$this'] = ExpressionTypeHolder::createYes(new Variable('this'), $thisType);
+
+		$nativeExpressionTypes = $this->nativeExpressionTypes;
+		$nativeExpressionTypes['$this'] = ExpressionTypeHolder::createYes(new Variable('this'), $nativeThisType);
 
 		return $this->scopeFactory->create(
 			$this->context,
@@ -2786,7 +2804,7 @@ class MutatingScope implements Scope
 			$this->getFunction(),
 			$this->getNamespace(),
 			$expressionTypes,
-			[],
+			$nativeExpressionTypes,
 			$this->conditionalExpressions,
 			$thisType instanceof TypeWithClassName ? $thisType->getClassName() : null,
 			$this->anonymousFunctionReflection,
@@ -2998,7 +3016,7 @@ class MutatingScope implements Scope
 			$scope->getFunction(),
 			$scope->getNamespace(),
 			$scope->expressionTypes,
-			[],
+			$scope->nativeExpressionTypes,
 			$scope->conditionalExpressions,
 			$scope->inClosureBindScopeClass,
 			$anonymousFunctionReflection,

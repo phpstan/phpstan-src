@@ -22,7 +22,11 @@ class ClassImplementsFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return $functionReflection->getName() === 'class_implements';
+		return in_array(
+			$functionReflection->getName(),
+			['class_implements', 'class_uses', 'class_parents'],
+			true,
+		);
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type

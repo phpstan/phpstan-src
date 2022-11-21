@@ -5166,7 +5166,7 @@ return [
 'ImagickPixel::clear' => ['bool'],
 'ImagickPixel::clone' => ['void'],
 'ImagickPixel::destroy' => ['bool'],
-'ImagickPixel::getColor' => ['array', 'normalized='=>'bool'],
+'ImagickPixel::getColor' => ['array', 'normalized='=>'int'],
 'ImagickPixel::getColorAsString' => ['string'],
 'ImagickPixel::getColorCount' => ['int'],
 'ImagickPixel::getColorQuantum' => ['mixed'],

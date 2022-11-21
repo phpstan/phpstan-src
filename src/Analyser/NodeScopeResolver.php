@@ -3863,7 +3863,12 @@ class NodeScopeResolver
 					$certainty = TrinaryLogic::createYes();
 				}
 
-				$scope = $scope->assignVariable($name, $varTag->getType(), new MixedType(), $certainty);
+				$scope = $scope->assignVariable(
+					$name,
+					$varTag->getType(),
+					$scope->getNativeType(new Variable($name)),
+					$certainty,
+				);
 			}
 		}
 

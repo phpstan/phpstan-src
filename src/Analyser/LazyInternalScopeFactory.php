@@ -39,10 +39,10 @@ class LazyInternalScopeFactory implements InternalScopeFactory
 
 	/**
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param array<(FunctionReflection|MethodReflection)> $inFunctionCallsStack
 	 *
 	 */
@@ -52,13 +52,13 @@ class LazyInternalScopeFactory implements InternalScopeFactory
 		FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
 		array $expressionTypes = [],
+		array $nativeExpressionTypes = [],
 		array $conditionalExpressions = [],
 		?string $inClosureBindScopeClass = null,
 		?ParametersAcceptor $anonymousFunctionReflection = null,
 		bool $inFirstLevelStatement = true,
 		array $currentlyAssignedExpressions = [],
 		array $currentlyAllowedUndefinedExpressions = [],
-		array $nativeExpressionTypes = [],
 		array $inFunctionCallsStack = [],
 		bool $afterExtractCall = false,
 		?Scope $parentScope = null,
@@ -87,13 +87,13 @@ class LazyInternalScopeFactory implements InternalScopeFactory
 			$function,
 			$namespace,
 			$expressionTypes,
+			$nativeExpressionTypes,
 			$conditionalExpressions,
 			$inClosureBindScopeClass,
 			$anonymousFunctionReflection,
 			$inFirstLevelStatement,
 			$currentlyAssignedExpressions,
 			$currentlyAllowedUndefinedExpressions,
-			$nativeExpressionTypes,
 			$inFunctionCallsStack,
 			$this->treatPhpDocTypesAsCertain,
 			$afterExtractCall,

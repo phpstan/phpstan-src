@@ -11,10 +11,10 @@ interface InternalScopeFactory
 
 	/**
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
 	 */
 	public function create(
@@ -23,13 +23,13 @@ interface InternalScopeFactory
 		FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
 		array $expressionTypes = [],
+		array $nativeExpressionTypes = [],
 		array $conditionalExpressions = [],
 		?string $inClosureBindScopeClass = null,
 		?ParametersAcceptor $anonymousFunctionReflection = null,
 		bool $inFirstLevelStatement = true,
 		array $currentlyAssignedExpressions = [],
 		array $currentlyAllowedUndefinedExpressions = [],
-		array $nativeExpressionTypes = [],
 		array $inFunctionCallsStack = [],
 		bool $afterExtractCall = false,
 		?Scope $parentScope = null,

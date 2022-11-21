@@ -6,7 +6,6 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ObjectType;
@@ -59,7 +58,7 @@ class ClassImplementsFunctionReturnTypeExtension implements DynamicFunctionRetur
 	{
 		return !$type instanceof ObjectType
 			&& !$type instanceof ObjectWithoutClassType
-			&& (!$autoload || !$type instanceof ClassStringType);
+			&& (!$autoload || !$type->isClassStringType()->yes());
 	}
 
 }

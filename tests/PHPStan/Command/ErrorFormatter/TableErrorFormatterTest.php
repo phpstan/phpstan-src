@@ -262,6 +262,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 				new TeamcityErrorFormatter($relativePathHelper),
 			),
 			false,
+			true,
 			$editorUrl,
 		);
 	}

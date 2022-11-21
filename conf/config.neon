@@ -109,6 +109,7 @@ parameters:
 	treatPhpDocTypesAsCertain: true
 	rememberPossiblyImpureFunctionValues: true
 	tipsOfTheDay: true
+	tips: true
 	reportMagicMethods: false
 	reportMagicProperties: false
 	ignoreErrors: []
@@ -304,6 +305,7 @@ parametersSchema:
 	inferPrivatePropertyTypeFromConstructor: bool()
 
 	tipsOfTheDay: bool()
+	tips: bool()
 	reportMaybes: bool()
 	reportMaybesInMethodSignatures: bool()
 	reportMaybesInPropertyPhpDocTypes: bool()
@@ -2011,6 +2013,7 @@ services:
 		arguments:
 			simpleRelativePathHelper: @simpleRelativePathHelper
 			showTipsOfTheDay: %tipsOfTheDay%
+			showTips: %tips%
 			editorUrl: %editorUrl%
 
 	errorFormatter.checkstyle:

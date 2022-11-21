@@ -24,6 +24,7 @@ class TableErrorFormatter implements ErrorFormatter
 		private SimpleRelativePathHelper $simpleRelativePathHelper,
 		private CiDetectedErrorFormatter $ciDetectedErrorFormatter,
 		private bool $showTipsOfTheDay,
+		private bool $showTips,
 		private ?string $editorUrl,
 	)
 	{
@@ -74,7 +75,7 @@ class TableErrorFormatter implements ErrorFormatter
 			$rows = [];
 			foreach ($errors as $error) {
 				$message = $error->getMessage();
-				if ($error->getTip() !== null) {
+				if ($this->showTips && $error->getTip() !== null) {
 					$tip = $error->getTip();
 					$tip = str_replace('%configurationFile%', $projectConfigFile, $tip);
 					$message .= "\n💡 " . $tip;

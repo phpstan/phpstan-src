@@ -76,6 +76,7 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 				new TeamcityErrorFormatter($relativePathHelper),
 			),
 			false,
+			true,
 			null,
 		);
 		$analysisResult = $analyserApplication->analyse(

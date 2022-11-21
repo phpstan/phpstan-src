@@ -170,6 +170,70 @@ class Foo
 		}
 	}
 
+	public function declareStrictTypes(array $array): void
+	{
+		/** @var array<string> $array */
+		assertType('array<string>', $array);
+		assertNativeType('array', $array);
+
+		declare(strict_types=1);
+		assertType('array<string>', $array);
+		assertNativeType('array', $array);
+	}
+
+	public function arrowFunction(array $array): void
+	{
+		/** @var array<string> $array */
+		assertType('array<string>', $array);
+		assertNativeType('array', $array);
+
+		(fn () => assertNativeType('array', $array))();
+	}
+
+	public function closuresUsingCallMethod(array $array, object $object): void
+	{
+		/** @var \stdClass $object */
+		assertType('$this(NativeTypes\Foo)', $this);
+		assertNativeType('$this(NativeTypes\Foo)', $this);
+
+		/** @var array<string> $array */
+		assertType('array<string>', $array);
+		assertNativeType('array', $array);
+
+		(function () use ($array) {
+			assertType('stdClass', $this);
+			assertNativeType('object', $this);
+
+			assertType('array<string>', $array);
+			assertNativeType('array', $array);
+		})->call($object);
+
+		assertType('$this(NativeTypes\Foo)', $this);
+		assertNativeType('$this(NativeTypes\Foo)', $this);
+	}
+
+	public function closureBind(array $array, object $object): void
+	{
+		/** @var \stdClass $object */
+		assertType('$this(NativeTypes\Foo)', $this);
+		assertNativeType('$this(NativeTypes\Foo)', $this);
+
+		/** @var array<string> $array */
+		assertType('array<string>', $array);
+		assertNativeType('array', $array);
+
+		\Closure::bind(function () use ($array) {
+			assertType('stdClass', $this);
+			assertNativeType('object', $this);
+
+			assertType('array<string>', $array);
+			assertNativeType('array', $array);
+		}, $object);
+
+		assertType('$this(NativeTypes\Foo)', $this);
+		assertNativeType('$this(NativeTypes\Foo)', $this);
+	}
+
 }
 
 /**

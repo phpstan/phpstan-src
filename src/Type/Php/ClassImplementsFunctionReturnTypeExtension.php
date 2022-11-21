@@ -14,8 +14,8 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-
 use function count;
+use function in_array;
 
 class ClassImplementsFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -61,4 +61,5 @@ class ClassImplementsFunctionReturnTypeExtension implements DynamicFunctionRetur
 			&& !$type instanceof ObjectWithoutClassType
 			&& (!$autoload || !$type instanceof ClassStringType);
 	}
+
 }

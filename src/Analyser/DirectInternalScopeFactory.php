@@ -42,12 +42,11 @@ class DirectInternalScopeFactory implements InternalScopeFactory
 
 	/**
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param array<(FunctionReflection|MethodReflection)> $inFunctionCallsStack
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
-	 * @param array<(FunctionReflection|MethodReflection)> $inFunctionCallsStack
-	 *
 	 */
 	public function create(
 		ScopeContext $context,
@@ -55,13 +54,13 @@ class DirectInternalScopeFactory implements InternalScopeFactory
 		FunctionReflection|MethodReflection|null $function = null,
 		?string $namespace = null,
 		array $expressionTypes = [],
+		array $nativeExpressionTypes = [],
 		array $conditionalExpressions = [],
 		?string $inClosureBindScopeClass = null,
 		?ParametersAcceptor $anonymousFunctionReflection = null,
 		bool $inFirstLevelStatement = true,
 		array $currentlyAssignedExpressions = [],
 		array $currentlyAllowedUndefinedExpressions = [],
-		array $nativeExpressionTypes = [],
 		array $inFunctionCallsStack = [],
 		bool $afterExtractCall = false,
 		?Scope $parentScope = null,
@@ -90,13 +89,13 @@ class DirectInternalScopeFactory implements InternalScopeFactory
 			$function,
 			$namespace,
 			$expressionTypes,
+			$nativeExpressionTypes,
 			$conditionalExpressions,
 			$inClosureBindScopeClass,
 			$anonymousFunctionReflection,
 			$inFirstLevelStatement,
 			$currentlyAssignedExpressions,
 			$currentlyAllowedUndefinedExpressions,
-			$nativeExpressionTypes,
 			$inFunctionCallsStack,
 			$this->treatPhpDocTypesAsCertain,
 			$afterExtractCall,

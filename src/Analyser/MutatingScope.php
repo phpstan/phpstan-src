@@ -3477,25 +3477,22 @@ class MutatingScope implements Scope
 			$invalidated = true;
 		}
 
-		$newConditionalExpressions = [];
+		$exprString = $this->getNodeKey($expressionToInvalidate);
+		$newConditionalExpressions = $this->conditionalExpressions;
+		if (array_key_exists($exprString, $newConditionalExpressions)) {
+			unset($newConditionalExpressions[$exprString]);
+			$invalidated = true;
+		}
 		foreach ($this->conditionalExpressions as $conditionalExprString => $holders) {
-			if (count($holders) === 0) {
-				continue;
-			}
-			if ($this->shouldInvalidateExpression($expressionToInvalidate, $holders[array_key_first($holders)]->getTypeHolder()->getExpr())) {
-				$invalidated = true;
-				continue;
-			}
 			foreach ($holders as $holder) {
 				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
-				foreach ($conditionalTypeHolders as $conditionalTypeHolder) {
-					if ($this->shouldInvalidateExpression($expressionToInvalidate, $conditionalTypeHolder->getExpr())) {
-						$invalidated = true;
-						continue 3;
-					}
+				if (!array_key_exists($exprString, $conditionalTypeHolders)) {
+					continue;
 				}
+
+				unset($newConditionalExpressions[$conditionalExprString]);
+				$invalidated = true;
 			}
-			$newConditionalExpressions[$conditionalExprString] = $holders;
 		}
 
 		if (!$invalidated) {

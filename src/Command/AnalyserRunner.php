@@ -14,6 +14,7 @@ use function array_values;
 use function count;
 use function function_exists;
 use function is_file;
+use function memory_get_peak_usage;
 
 class AnalyserRunner
 {
@@ -48,7 +49,7 @@ class AnalyserRunner
 	{
 		$filesCount = count($files);
 		if ($filesCount === 0) {
-			return new AnalyserResult([], [], [], [], [], false);
+			return new AnalyserResult([], [], [], [], [], false, memory_get_peak_usage(true));
 		}
 
 		$schedule = $this->scheduler->scheduleWork($this->cpuCoreCounter->getNumberOfCpuCores(), $files);

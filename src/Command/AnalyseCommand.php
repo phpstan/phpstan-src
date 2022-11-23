@@ -379,6 +379,7 @@ class AnalyseCommand extends Command
 					$analysisResult->isDefaultLevelUsed(),
 					$analysisResult->getProjectConfigFile(),
 					$analysisResult->isResultCacheSaved(),
+					$analysisResult->getEstimatedPeakMemoryUsage(),
 				);
 
 				$stdOutput = $inceptionResult->getStdOutput();

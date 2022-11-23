@@ -8,6 +8,7 @@ use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\File\SimpleRelativePathHelper;
+use PHPStan\Internal\BytesHelper;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use function array_map;
 use function count;
@@ -46,6 +47,11 @@ class TableErrorFormatter implements ErrorFormatter
 
 		if (!$analysisResult->hasErrors() && !$analysisResult->hasWarnings()) {
 			$style->success('No errors');
+
+			if ($output->isVerbose()) {
+				$output->writeLineFormatted(sprintf('Took about %s memory', BytesHelper::bytes($analysisResult->getEstimatedPeakMemoryUsage())));
+			}
+
 			if ($this->showTipsOfTheDay) {
 				if ($analysisResult->isDefaultLevelUsed()) {
 					$output->writeLineFormatted('💡 Tip of the Day:');
@@ -127,6 +133,10 @@ class TableErrorFormatter implements ErrorFormatter
 			$style->error($finalMessage);
 		} else {
 			$style->warning($finalMessage);
+		}
+
+		if ($output->isVerbose()) {
+			$output->writeLineFormatted(sprintf('Took about %s memory', BytesHelper::bytes($analysisResult->getEstimatedPeakMemoryUsage())));
 		}
 
 		return $analysisResult->getTotalErrorsCount() > 0 ? 1 : 0;

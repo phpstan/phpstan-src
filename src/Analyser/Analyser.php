@@ -10,6 +10,7 @@ use Throwable;
 use function array_fill_keys;
 use function array_merge;
 use function count;
+use function memory_get_peak_usage;
 use function sprintf;
 
 class Analyser
@@ -110,6 +111,7 @@ class Analyser
 			$internalErrorsCount === 0 ? $dependencies : null,
 			$exportedNodes,
 			$reachedInternalErrorsCountLimit,
+			memory_get_peak_usage(true),
 		);
 	}
 

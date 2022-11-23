@@ -71,6 +71,7 @@ class AnalyseApplication
 			$internalErrors = [];
 			$collectedData = [];
 			$savedResultCache = false;
+			$estimatedMemoryUsage = 0;
 			if ($errorOutput->isDebug()) {
 				$errorOutput->writeLineFormatted('Result cache was not saved because of ignoredErrorHelperResult errors.');
 			}
@@ -97,6 +98,7 @@ class AnalyseApplication
 					$intermediateAnalyserResult->getDependencies(),
 					$intermediateAnalyserResult->getExportedNodes(),
 					$intermediateAnalyserResult->hasReachedInternalErrorsCountLimit(),
+					$intermediateAnalyserResult->getEstimatedPeakMemoryUsage(),
 				);
 			}
 
@@ -105,6 +107,8 @@ class AnalyseApplication
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = $analyserResult->getErrors();
 			$hasInternalErrors = count($internalErrors) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
+			$estimatedMemoryUsage = $analyserResult->getEstimatedPeakMemoryUsage();
+
 			if (!$hasInternalErrors) {
 				foreach ($this->getCollectedDataErrors($analyserResult->getCollectedData()) as $error) {
 					$errors[] = $error;
@@ -139,6 +143,7 @@ class AnalyseApplication
 			$defaultLevelUsed,
 			$projectConfigFile,
 			$savedResultCache,
+			$estimatedMemoryUsage,
 		);
 	}
 
@@ -195,7 +200,7 @@ class AnalyseApplication
 			$errorOutput->getStyle()->progressStart($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressAdvance($allAnalysedFilesCount);
 			$errorOutput->getStyle()->progressFinish();
-			return new AnalyserResult([], [], [], [], [], false);
+			return new AnalyserResult([], [], [], [], [], false, memory_get_peak_usage(true));
 		}
 
 		if (!$debug) {

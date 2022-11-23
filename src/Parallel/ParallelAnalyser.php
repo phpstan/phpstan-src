@@ -19,6 +19,7 @@ use Throwable;
 use function array_map;
 use function array_pop;
 use function array_reverse;
+use function array_sum;
 use function count;
 use function defined;
 use function escapeshellarg;
@@ -64,6 +65,7 @@ class ParallelAnalyser
 
 		$numberOfProcesses = $schedule->getNumberOfProcesses();
 		$errors = [];
+		$peakMemoryUsages = [];
 		$internalErrors = [];
 		$collectedData = [];
 
@@ -138,7 +140,7 @@ class ParallelAnalyser
 				$commandOptions,
 				$input,
 			), $loop, $this->processTimeout);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$collectedData, &$dependencies, &$exportedNodes, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {
 						$internalErrors[] = sprintf('Internal error: %s', $jsonError);
@@ -177,6 +179,10 @@ class ParallelAnalyser
 
 				if ($postFileCallback !== null) {
 					$postFileCallback($json['filesCount']);
+				}
+
+				if (!isset($peakMemoryUsages[$processIdentifier]) || $peakMemoryUsages[$processIdentifier] < $json['memoryUsage']) {
+					$peakMemoryUsages[$processIdentifier] = $json['memoryUsage'];
 				}
 
 				$internalErrorsCount += $json['internalErrorsCount'];
@@ -221,6 +227,7 @@ class ParallelAnalyser
 			$internalErrorsCount === 0 ? $dependencies : null,
 			$exportedNodes,
 			$reachedInternalErrorsCountLimit,
+			(int) array_sum($peakMemoryUsages), // not 100% correct as the peak usages of workers might not have met
 		);
 	}
 

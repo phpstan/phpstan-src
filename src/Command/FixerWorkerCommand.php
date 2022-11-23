@@ -268,6 +268,7 @@ class FixerWorkerCommand extends Command
 			$dependencies,
 			$exportedNodes,
 			$analyserResult->hasReachedInternalErrorsCountLimit(),
+			$analyserResult->getEstimatedPeakMemoryUsage(),
 		);
 	}
 

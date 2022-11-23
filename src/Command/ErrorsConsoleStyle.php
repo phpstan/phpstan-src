@@ -118,6 +118,7 @@ class ErrorsConsoleStyle extends SymfonyStyle
 	public function createProgressBar(int $max = 0): ProgressBar
 	{
 		$this->progressBar = parent::createProgressBar($max);
+		$this->progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s%');
 
 		$ci = $this->isCiDetected();
 		$this->progressBar->setOverwrite(!$ci);

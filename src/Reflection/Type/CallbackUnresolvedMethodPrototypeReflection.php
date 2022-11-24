@@ -7,8 +7,10 @@ use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Type\Type;
 use function array_map;
@@ -83,14 +85,33 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 		$variants = array_map(fn (ParametersAcceptor $acceptor): ParametersAcceptor => new FunctionVariant(
 			$acceptor->getTemplateTypeMap(),
 			$acceptor->getResolvedTemplateTypeMap(),
-			array_map(fn (ParameterReflection $parameter): ParameterReflection => new DummyParameter(
-				$parameter->getName(),
-				$this->transformStaticType($parameter->getType()),
-				$parameter->isOptional(),
-				$parameter->passedByReference(),
-				$parameter->isVariadic(),
-				$parameter->getDefaultValue(),
-			), $acceptor->getParameters()),
+			array_map(
+				function (ParameterReflection $parameter): ParameterReflection {
+					if ($parameter instanceof ParameterReflectionWithPhpDocs) {
+						return new DummyParameterWithPhpDocs(
+							$parameter->getName(),
+							$this->transformStaticType($parameter->getType()),
+							$parameter->isOptional(),
+							$parameter->passedByReference(),
+							$parameter->isVariadic(),
+							$parameter->getDefaultValue(),
+							$parameter->getNativeType(),
+							$parameter->getPhpDocType(),
+							$parameter->getOutType(),
+						);
+					}
+
+					return new DummyParameter(
+						$parameter->getName(),
+						$this->transformStaticType($parameter->getType()),
+						$parameter->isOptional(),
+						$parameter->passedByReference(),
+						$parameter->isVariadic(),
+						$parameter->getDefaultValue(),
+					);
+				},
+				$acceptor->getParameters(),
+			),
 			$acceptor->isVariadic(),
 			$this->transformStaticType($acceptor->getReturnType()),
 		), $method->getVariants());

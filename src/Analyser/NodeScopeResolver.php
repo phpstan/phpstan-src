@@ -2035,7 +2035,10 @@ class NodeScopeResolver
 				&& strtolower($expr->name->name) === 'call'
 				&& isset($expr->getArgs()[0])
 			) {
-				$closureCallScope = $scope->enterClosureCall($scope->getType($expr->getArgs()[0]->value));
+				$closureCallScope = $scope->enterClosureCall(
+					$scope->getType($expr->getArgs()[0]->value),
+					$scope->getNativeType($expr->getArgs()[0]->value),
+				);
 			}
 
 			$result = $this->processExprNode($expr->var, $closureCallScope ?? $scope, $nodeCallback, $context->enterDeep());
@@ -2164,12 +2167,20 @@ class NodeScopeResolver
 							&& strtolower($methodName) === 'bind'
 						) {
 							$thisType = null;
+							$nativeThisType = null;
 							if (isset($expr->getArgs()[1])) {
 								$argType = $scope->getType($expr->getArgs()[1]->value);
 								if ($argType->isNull()->yes()) {
 									$thisType = null;
 								} else {
 									$thisType = $argType;
+								}
+
+								$nativeArgType = $scope->getNativeType($expr->getArgs()[1]->value);
+								if ($nativeArgType->isNull()->yes()) {
+									$nativeThisType = null;
+								} else {
+									$nativeThisType = $nativeArgType;
 								}
 							}
 							$scopeClass = 'static';
@@ -2192,7 +2203,7 @@ class NodeScopeResolver
 									$thisType = $argValueType->getGenericType();
 								}
 							}
-							$closureBindScope = $scope->enterClosureBind($thisType, $scopeClass);
+							$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClass);
 						}
 					} else {
 						$throwPoints[] = ThrowPoint::createImplicit($scope, $expr);

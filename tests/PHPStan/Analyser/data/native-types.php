@@ -202,3 +202,15 @@ function fooFunction(
 	assertType('string', $nonNullableString);
 	assertNativeType('string', $nonNullableString);
 }
+
+function phpDocDoesNotInfluenceExistingNativeType(): void
+{
+	$array = [];
+
+	assertType('array{}', $array);
+	assertNativeType('array{}', $array);
+
+	/** @var array<string> $array */
+	assertType('array<string>', $array);
+	assertNativeType('array{}', $array);
+}

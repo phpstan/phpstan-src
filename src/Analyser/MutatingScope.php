@@ -2445,8 +2445,8 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			null,
 			$this->getNamespace(),
-			array_merge($this->getSuperglobalExpressionTypes(), $this->getConstantTypes(), ['$this' => $thisHolder]),
-			array_merge($this->getSuperglobalExpressionTypes(), $this->getNativeConstantTypes(), ['$this' => $thisHolder]),
+			array_merge($this->getSuperglobalTypes(), $this->getConstantTypes(), ['$this' => $thisHolder]),
+			array_merge($this->getNativeSuperglobalTypes(), $this->getNativeConstantTypes(), ['$this' => $thisHolder]),
 			[],
 			null,
 			null,
@@ -2682,8 +2682,8 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			$functionReflection,
 			$this->getNamespace(),
-			array_merge($this->getSuperglobalExpressionTypes(), $this->getConstantTypes(), $expressionTypes),
-			array_merge($this->getSuperglobalExpressionTypes(), $this->getNativeConstantTypes(), $nativeExpressionTypes),
+			array_merge($this->getSuperglobalTypes(), $this->getConstantTypes(), $expressionTypes),
+			array_merge($this->getNativeSuperglobalTypes(), $this->getNativeConstantTypes(), $nativeExpressionTypes),
 		);
 	}
 
@@ -2695,8 +2695,8 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			null,
 			$namespaceName,
-			$this->getSuperglobalExpressionTypes(),
-			$this->getSuperglobalExpressionTypes(),
+			$this->getSuperglobalTypes(),
+			$this->getNativeSuperglobalTypes(),
 		);
 	}
 
@@ -2920,8 +2920,8 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$this->getNamespace(),
-			array_merge($this->getSuperglobalExpressionTypes(), $this->getConstantTypes(), $expressionTypes),
-			array_merge($this->getSuperglobalExpressionTypes(), $this->getNativeConstantTypes(), $nativeTypes),
+			array_merge($this->getSuperglobalTypes(), $this->getConstantTypes(), $expressionTypes),
+			array_merge($this->getNativeSuperglobalTypes(), $this->getNativeConstantTypes(), $nativeTypes),
 			[],
 			$this->inClosureBindScopeClass,
 			new TrivialParametersAcceptor(),
@@ -4995,18 +4995,33 @@ class MutatingScope implements Scope
 	}
 
 	/** @return array<string, ExpressionTypeHolder> */
-	private function getSuperglobalExpressionTypes(): array
+	private function getSuperglobalTypes(): array
 	{
-		$superglobalExpressionTypes = [];
+		$superglobalTypes = [];
 		$exprStrings = ['$GLOBALS', '$_SERVER', '$_GET', '$_POST', '$_FILES', '$_COOKIE', '$_SESSION', '$_REQUEST', '$_ENV'];
 		foreach ($this->expressionTypes as $exprString => $typeHolder) {
 			if (!in_array($exprString, $exprStrings, true)) {
 				continue;
 			}
 
-			$superglobalExpressionTypes[$exprString] = $typeHolder;
+			$superglobalTypes[$exprString] = $typeHolder;
 		}
-		return $superglobalExpressionTypes;
+		return $superglobalTypes;
+	}
+
+	/** @return array<string, ExpressionTypeHolder> */
+	private function getNativeSuperglobalTypes(): array
+	{
+		$superglobalTypes = [];
+		$exprStrings = ['$GLOBALS', '$_SERVER', '$_GET', '$_POST', '$_FILES', '$_COOKIE', '$_SESSION', '$_REQUEST', '$_ENV'];
+		foreach ($this->nativeExpressionTypes as $exprString => $typeHolder) {
+			if (!in_array($exprString, $exprStrings, true)) {
+				continue;
+			}
+
+			$superglobalTypes[$exprString] = $typeHolder;
+		}
+		return $superglobalTypes;
 	}
 
 }

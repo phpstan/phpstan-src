@@ -223,3 +223,149 @@ jobs:
 
       - name: "Tests"
         run: "make tests-coverage"
+
+  needs-failing-tests-verification:
+    name: "Check needs failing tests verification"
+    needs: tests
+    timeout-minutes: 60
+
+    runs-on: "ubuntu-latest"
+
+    outputs:
+      status: ${{ join(steps.*.outputs.any_changed) }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 100
+
+      - name: Detect changed src/ files
+        id: changed-src
+        uses: tj-actions/changed-files@v34
+        with:
+          files: |
+            src/**
+
+      - name: Detect changed tests/ files
+        id: changed-tests
+        uses: tj-actions/changed-files@v34
+        with:
+          files: |
+            tests/**
+
+  tests-verify-failed:
+    name: "Verify failing test"
+    if: github.event_name == 'pull_request' && !contains(needs.needs-failing-tests-verification.outputs.status, 'false')
+    needs: needs-failing-tests-verification
+    timeout-minutes: 60
+
+    runs-on: ${{ matrix.operating-system }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version:
+          #- "7.3"
+          #- "7.4"
+          #- "8.0"
+          #- "8.1"
+          - "8.2"
+        operating-system: [ ubuntu-latest ]
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 100
+
+      - name: "Restore src/"
+        run: |
+          git reset --soft ${{ github.event.pull_request.base.sha }}
+          git restore --source=HEAD --staged --worktree src/
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-values: memory_limit=2G
+
+      - name: "Install dependencies"
+        run: "composer install --no-interaction --no-progress"
+
+      - name: "Install PHP for code transform"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2'
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: 8.1
+          extensions: mbstring, intl
+
+      - name: "Rector downgrade cache key"
+        id: rector-cache-key
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2'
+        run: echo "sha=$(php build/rector-cache-files-hash.php)" >> $GITHUB_OUTPUT
+
+      - name: "Rector downgrade cache"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2'
+        uses: actions/cache@v3
+        with:
+          path: ./tmp/rectorCache.php
+          key: "rector-v2-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-${{ steps.rector-cache-key.outputs.sha }}"
+          restore-keys: |
+            rector-v2-tests-${{ matrix.script }}-${{ matrix.operating-system }}-${{ hashFiles('composer.lock', 'build/rector-downgrade.php') }}-${{ matrix.php-version }}-
+
+      - name: "Transform source code"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2'
+        shell: bash
+        run: "build/transform-source ${{ matrix.php-version }}"
+
+      - name: "Reinstall matrix PHP version"
+        if: matrix.php-version != '8.1' && matrix.php-version != '8.2'
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ds,mbstring
+          ini-values: memory_limit=2G
+
+      - name: "Tests"
+        run: "make tests > tests/failed-tmp/phpunit.out"
+        id: "make_tests"
+        continue-on-error: true
+
+      - run: "cat tests/failed-tmp/phpunit.out"
+        if: ${{ always() }}
+
+      - run: "mv tests/failed-tmp/phpunit.out tests/failed-tmp/failed-tests-${{ matrix.operating-system }}-${{ matrix.php-version }}.tmp"
+        if: steps.make_tests.outcome != 'success'
+
+      - run: "touch tests/failed-tmp/failed-tests-${{ matrix.operating-system }}-${{ matrix.php-version }}.tmp"
+        if: steps.make_tests.outcome == 'success'
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: "failed-tests-results"
+          path: "tests/failed-tmp/failed-tests-*.tmp"
+
+  evaluate-failed-tests:
+    name: "Evaluate failed tests"
+    needs: tests-verify-failed
+
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: "failed-tests-results"
+          path: "tests/failed-tmp/"
+
+      - name: "Evaluate failed tests result - pull request"
+        run: php tests/verify-tests.php 'tests/failed-tmp/failed-tests-*.tmp' >> $GITHUB_STEP_SUMMARY
+

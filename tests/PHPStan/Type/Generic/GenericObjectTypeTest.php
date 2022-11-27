@@ -490,6 +490,94 @@ class GenericObjectTypeTest extends PHPStanTestCase
 					),
 				],
 			],
+			'param: Out<Invariant<T>>' => [
+				TemplateTypeVariance::createContravariant(),
+				new GenericObjectType(D\Out::class, [
+					new GenericObjectType(D\Invariant::class, [
+						$templateType('T'),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant(),
+					),
+				],
+			],
+			'param: In<Invariant<T>>' => [
+				TemplateTypeVariance::createContravariant(),
+				new GenericObjectType(D\In::class, [
+					new GenericObjectType(D\Invariant::class, [
+						$templateType('T'),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant(),
+					),
+				],
+			],
+			'param: Invariant<Out<T>>' => [
+				TemplateTypeVariance::createContravariant(),
+				new GenericObjectType(D\Invariant::class, [
+					new GenericObjectType(D\Out::class, [
+						$templateType('T'),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant(),
+					),
+				],
+			],
+			'param: Invariant<In<T>>' => [
+				TemplateTypeVariance::createContravariant(),
+				new GenericObjectType(D\Invariant::class, [
+					new GenericObjectType(D\In::class, [
+						$templateType('T'),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant(),
+					),
+				],
+			],
+			'param: In<Invariant<Out<T>>>' => [
+				TemplateTypeVariance::createContravariant(),
+				new GenericObjectType(D\In::class, [
+					new GenericObjectType(D\Invariant::class, [
+						new GenericObjectType(D\Out::class, [
+							$templateType('T'),
+						]),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant(),
+					),
+				],
+			],
+			'param: Out<Invariant<In<T>>>' => [
+				TemplateTypeVariance::createContravariant(),
+				new GenericObjectType(D\Out::class, [
+					new GenericObjectType(D\Invariant::class, [
+						new GenericObjectType(D\In::class, [
+							$templateType('T'),
+						]),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant(),
+					),
+				],
+			],
 			'return: Invariant<T>' => [
 				TemplateTypeVariance::createCovariant(),
 				new GenericObjectType(D\Invariant::class, [
@@ -541,20 +629,6 @@ class GenericObjectTypeTest extends PHPStanTestCase
 					new TemplateTypeReference(
 						$templateType('T'),
 						TemplateTypeVariance::createCovariant(),
-					),
-				],
-			],
-			'return: Out<Invariant<T>>' => [
-				TemplateTypeVariance::createCovariant(),
-				new GenericObjectType(D\Out::class, [
-					new GenericObjectType(D\Invariant::class, [
-						$templateType('T'),
-					]),
-				]),
-				[
-					new TemplateTypeReference(
-						$templateType('T'),
-						TemplateTypeVariance::createInvariant(),
 					),
 				],
 			],
@@ -625,6 +699,94 @@ class GenericObjectTypeTest extends PHPStanTestCase
 					new TemplateTypeReference(
 						$templateType('T'),
 						TemplateTypeVariance::createContravariant(),
+					),
+				],
+			],
+			'return: Out<Invariant<T>>' => [
+				TemplateTypeVariance::createCovariant(),
+				new GenericObjectType(D\Out::class, [
+					new GenericObjectType(D\Invariant::class, [
+						$templateType('T'),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant(),
+					),
+				],
+			],
+			'return: In<Invariant<T>>' => [
+				TemplateTypeVariance::createCovariant(),
+				new GenericObjectType(D\In::class, [
+					new GenericObjectType(D\Invariant::class, [
+						$templateType('T'),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant(),
+					),
+				],
+			],
+			'return: Invariant<Out<T>>' => [
+				TemplateTypeVariance::createCovariant(),
+				new GenericObjectType(D\Invariant::class, [
+					new GenericObjectType(D\Out::class, [
+						$templateType('T'),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant(),
+					),
+				],
+			],
+			'return: Invariant<In<T>>' => [
+				TemplateTypeVariance::createCovariant(),
+				new GenericObjectType(D\Invariant::class, [
+					new GenericObjectType(D\In::class, [
+						$templateType('T'),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant(),
+					),
+				],
+			],
+			'return: In<Invariant<Out<T>>>' => [
+				TemplateTypeVariance::createCovariant(),
+				new GenericObjectType(D\In::class, [
+					new GenericObjectType(D\Invariant::class, [
+						new GenericObjectType(D\Out::class, [
+							$templateType('T'),
+						]),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant(),
+					),
+				],
+			],
+			'return: Out<Invariant<In<T>>>' => [
+				TemplateTypeVariance::createCovariant(),
+				new GenericObjectType(D\Out::class, [
+					new GenericObjectType(D\Invariant::class, [
+						new GenericObjectType(D\In::class, [
+							$templateType('T'),
+						]),
+					]),
+				]),
+				[
+					new TemplateTypeReference(
+						$templateType('T'),
+						TemplateTypeVariance::createInvariant(),
 					),
 				],
 			],

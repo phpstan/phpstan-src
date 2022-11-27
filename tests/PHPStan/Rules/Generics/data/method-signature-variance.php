@@ -2,37 +2,22 @@
 
 namespace MethodSignatureVariance;
 
-/** @template-covariant T */
-interface Out {
-}
-
-/** @template T */
-interface Invariant {
-}
-
-/**
- * @template-covariant T
- * @template-covariant W of \DateTimeInterface
- */
 class C {
 	/**
-	 * @param Out<T> $a
-	 * @param Invariant<T> $b
-	 * @param T $c
-	 * @param W $d
-	 * @return T
+	 * @template U
+	 * @return void
 	 */
-	function a($a, $b, $c, $d) {
-		return $c;
-	}
+	function a() {}
+
 	/**
 	 * @template-covariant U
-	 * @param Out<U> $a
-	 * @param Invariant<U> $b
-	 * @param U $c
-	 * @return U
+	 * @return void
 	 */
-	function b($a, $b, $c) {
-		return $c;
-	}
+	function b() {}
+
+	/**
+	 * @template-contravariant U
+	 * @return void
+	 */
+	function c() {}
 }

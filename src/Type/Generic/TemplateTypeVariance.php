@@ -93,6 +93,10 @@ class TemplateTypeVariance
 			return self::createInvariant();
 		}
 
+		if ($this->invariant()) {
+			return self::createInvariant();
+		}
+
 		return $other;
 	}
 

@@ -63,7 +63,11 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				35,
 			],
 			[
-				'Template type X is declared as covariant, but occurs in contravariant position in parameter k of method MethodSignatureVariance\Covariant\C::a().',
+				'Template type X is declared as covariant, but occurs in invariant position in parameter k of method MethodSignatureVariance\Covariant\C::a().',
+				35,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in invariant position in parameter l of method MethodSignatureVariance\Covariant\C::a().',
 				35,
 			],
 			[
@@ -91,8 +95,12 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				65,
 			],
 			[
-				'Template type X is declared as covariant, but occurs in contravariant position in return type of method MethodSignatureVariance\Covariant\C::l().',
+				'Template type X is declared as covariant, but occurs in invariant position in return type of method MethodSignatureVariance\Covariant\C::l().',
 				68,
+			],
+			[
+				'Template type X is declared as covariant, but occurs in invariant position in return type of method MethodSignatureVariance\Covariant\C::m().',
+				71,
 			],
 		]);
 
@@ -122,7 +130,11 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				35,
 			],
 			[
-				'Template type X is declared as contravariant, but occurs in covariant position in parameter l of method MethodSignatureVariance\Contravariant\C::a().',
+				'Template type X is declared as contravariant, but occurs in invariant position in parameter k of method MethodSignatureVariance\Contravariant\C::a().',
+				35,
+			],
+			[
+				'Template type X is declared as contravariant, but occurs in invariant position in parameter l of method MethodSignatureVariance\Contravariant\C::a().',
 				35,
 			],
 			[
@@ -154,7 +166,11 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				65,
 			],
 			[
-				'Template type X is declared as contravariant, but occurs in covariant position in return type of method MethodSignatureVariance\Contravariant\C::m().',
+				'Template type X is declared as contravariant, but occurs in invariant position in return type of method MethodSignatureVariance\Contravariant\C::l().',
+				68,
+			],
+			[
+				'Template type X is declared as contravariant, but occurs in invariant position in return type of method MethodSignatureVariance\Contravariant\C::m().',
 				71,
 			],
 		]);

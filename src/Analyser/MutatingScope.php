@@ -3856,44 +3856,52 @@ class MutatingScope implements Scope
 		return $this->inFirstLevelStatement;
 	}
 
-	public function mergeWith(?self $otherScope): self
+	public function mergeWith(?self $theirScope): self
 	{
-		if ($otherScope === null) {
-			return $this;
+		$ourScope = $this;
+		foreach ($ourScope->conditionalExpressions as $conditionalExpression) {
+			$ourScope = $ourScope->resolveConditionalType($conditionalExpression[array_key_first($conditionalExpression)]->getTypeHolder()->getExpr());
 		}
-		$ourExpressionTypes = $this->expressionTypes;
-		$theirExpressionTypes = $otherScope->expressionTypes;
+		if ($theirScope === null) {
+			return $ourScope;
+		}
 
-		$mergedExpressionTypes = $this->mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes);
-		$conditionalExpressions = $this->intersectConditionalExpressions($otherScope->conditionalExpressions);
-		$conditionalExpressions = $this->createConditionalExpressions(
+		foreach ($theirScope->conditionalExpressions as $conditionalExpression) {
+			$theirScope = $theirScope->resolveConditionalType($conditionalExpression[array_key_first($conditionalExpression)]->getTypeHolder()->getExpr());
+		}
+		$ourExpressionTypes = $ourScope->expressionTypes;
+		$theirExpressionTypes = $theirScope->expressionTypes;
+
+		$mergedExpressionTypes = $ourScope->mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes);
+		$conditionalExpressions = $ourScope->intersectConditionalExpressions($theirScope->conditionalExpressions);
+		$conditionalExpressions = $ourScope->createConditionalExpressions(
 			$conditionalExpressions,
 			$ourExpressionTypes,
 			$theirExpressionTypes,
 			$mergedExpressionTypes,
 		);
-		$conditionalExpressions = $this->createConditionalExpressions(
+		$conditionalExpressions = $ourScope->createConditionalExpressions(
 			$conditionalExpressions,
 			$theirExpressionTypes,
 			$ourExpressionTypes,
 			$mergedExpressionTypes,
 		);
-		return $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
+		return $ourScope->scopeFactory->create(
+			$ourScope->context,
+			$ourScope->isDeclareStrictTypes(),
+			$ourScope->getFunction(),
+			$ourScope->getNamespace(),
 			$mergedExpressionTypes,
-			$this->mergeVariableHolders($this->nativeExpressionTypes, $otherScope->nativeExpressionTypes),
+			$ourScope->mergeVariableHolders($ourScope->nativeExpressionTypes, $theirScope->nativeExpressionTypes),
 			$conditionalExpressions,
-			$this->inClosureBindScopeClass,
-			$this->anonymousFunctionReflection,
-			$this->inFirstLevelStatement,
+			$ourScope->inClosureBindScopeClass,
+			$ourScope->anonymousFunctionReflection,
+			$ourScope->inFirstLevelStatement,
 			[],
 			[],
 			[],
-			$this->afterExtractCall && $otherScope->afterExtractCall,
-			$this->parentScope,
+			$ourScope->afterExtractCall && $theirScope->afterExtractCall,
+			$ourScope->parentScope,
 		);
 	}
 

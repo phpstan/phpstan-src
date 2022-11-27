@@ -9,3 +9,7 @@ interface Invariant {
 /** @template-covariant T */
 interface Covariant {
 }
+
+/** @template-contravariant T */
+interface Contravariant {
+}

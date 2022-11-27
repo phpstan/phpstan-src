@@ -119,6 +119,7 @@ use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_pop;
+use function array_reverse;
 use function array_slice;
 use function count;
 use function explode;
@@ -473,15 +474,16 @@ class MutatingScope implements Scope
 		}
 
 		$varExprString = '$' . $variableName;
-		if (!isset($this->expressionTypes[$varExprString])) {
-			if ($this->canAnyVariableExist()) {
+		$scope = $this->resolveConditionalType($varExprString);
+		if (!isset($scope->expressionTypes[$varExprString])) {
+			if ($scope->canAnyVariableExist()) {
 				return TrinaryLogic::createMaybe();
 			}
 
 			return TrinaryLogic::createNo();
 		}
 
-		return $this->expressionTypes[$varExprString]->getCertainty();
+		return $scope->expressionTypes[$varExprString]->getCertainty();
 	}
 
 	/** @api */
@@ -511,11 +513,12 @@ class MutatingScope implements Scope
 		}
 
 		$varExprString = '$' . $variableName;
-		if (!array_key_exists($varExprString, $this->expressionTypes)) {
+		$scope = $this->resolveConditionalType($varExprString);
+		if (!array_key_exists($varExprString, $scope->expressionTypes)) {
 			return new MixedType();
 		}
 
-		return TypeUtils::resolveLateResolvableTypes($this->expressionTypes[$varExprString]->getType());
+		return TypeUtils::resolveLateResolvableTypes($scope->expressionTypes[$varExprString]->getType());
 	}
 
 	/**
@@ -640,9 +643,10 @@ class MutatingScope implements Scope
 		}
 
 		$key = $this->getNodeKey($node);
+		$scope = $this->resolveConditionalType($key);
 
 		if (!array_key_exists($key, $this->resolvedTypes)) {
-			$this->resolvedTypes[$key] = TypeUtils::resolveLateResolvableTypes($this->resolveType($node));
+			$this->resolvedTypes[$key] = TypeUtils::resolveLateResolvableTypes($scope->resolveType($node));
 		}
 		return $this->resolvedTypes[$key];
 	}
@@ -1933,6 +1937,34 @@ class MutatingScope implements Scope
 		}
 
 		return $type;
+	}
+
+	private function resolveConditionalType(string $exprString): MutatingScope
+	{
+		if (!array_key_exists($exprString, $this->conditionalExpressions)) {
+			return $this;
+		}
+		$scope = $this;
+		$conditionalExpressions = array_reverse($scope->conditionalExpressions[$exprString]);
+		foreach ($conditionalExpressions as $conditionalExpression) {
+			$targetTypeHolder = $conditionalExpression->getTypeHolder();
+			foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $conditionalTypeHolder) {
+				if (!$scope->invalidateExpression($targetTypeHolder->getExpr())
+					->getType($conditionalTypeHolder->getExpr())
+					->equals($conditionalTypeHolder->getType())
+				) {
+					continue 2;
+				}
+			}
+
+			if ($targetTypeHolder->getCertainty()->no()) {
+				unset($scope->expressionTypes[$exprString]);
+			} else {
+				$scope->expressionTypes[$exprString] = $targetTypeHolder;
+			}
+			return $scope;
+		}
+		return $this;
 	}
 
 	/**
@@ -3539,15 +3571,16 @@ class MutatingScope implements Scope
 		if ($requireMoreCharacters && $exprStringToInvalidate === $this->getNodeKey($expr)) {
 			return false;
 		}
-		if ($expr instanceof PropertyFetch) {
-			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
-			if ($propertyReflection !== null) {
-				$nativePropertyReflection = $propertyReflection->getNativeReflection();
-				if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
-					return false;
-				}
-			}
-		}
+		// tmp: causes an infinite loop by `getType` in `findPropertyReflectionFromNode`
+		//      if ($expr instanceof PropertyFetch) {
+		//          $propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+		//          if ($propertyReflection !== null) {
+		//              $nativePropertyReflection = $propertyReflection->getNativeReflection();
+		//              if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
+		//                  return false;
+		//              }
+		//          }
+		//      }
 
 		$nodeFinder = new NodeFinder();
 		$expressionToInvalidateClass = get_class($exprToInvalidate);
@@ -3717,10 +3750,8 @@ class MutatingScope implements Scope
 		});
 
 		$scope = $this;
-		$specifiedExpressions = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
-			$specifiedExpressions[$this->getNodeKey($expr)] = true;
 			$type = $typeSpecification['type'];
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
@@ -3733,28 +3764,6 @@ class MutatingScope implements Scope
 			}
 		}
 
-		$newConditionalExpressions = $specifiedTypes->getNewConditionalExpressionHolders();
-		foreach ($scope->conditionalExpressions as $variableExprString => $conditionalExpressions) {
-			if (array_key_exists($variableExprString, $specifiedExpressions)) {
-				continue;
-			}
-			$newConditionalExpressions[$variableExprString] = $conditionalExpressions;
-			foreach ($conditionalExpressions as $conditionalExpression) {
-				$targetTypeHolder = $conditionalExpression->getTypeHolder();
-				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $conditionalTypeHolder) {
-					if (!$scope->invalidateExpression($targetTypeHolder->getExpr())->getType($conditionalTypeHolder->getExpr())->equals($conditionalTypeHolder->getType())) {
-						continue 2;
-					}
-				}
-
-				if ($targetTypeHolder->getCertainty()->no()) {
-					unset($scope->expressionTypes[$variableExprString]);
-				} else {
-					$scope->expressionTypes[$variableExprString] = $targetTypeHolder;
-				}
-			}
-		}
-
 		return $scope->scopeFactory->create(
 			$scope->context,
 			$scope->isDeclareStrictTypes(),
@@ -3762,7 +3771,7 @@ class MutatingScope implements Scope
 			$scope->getNamespace(),
 			$scope->expressionTypes,
 			$scope->nativeExpressionTypes,
-			$newConditionalExpressions,
+			array_merge($scope->conditionalExpressions, $specifiedTypes->getNewConditionalExpressionHolders()),
 			$scope->inClosureBindScopeClass,
 			$scope->anonymousFunctionReflection,
 			$scope->inFirstLevelStatement,

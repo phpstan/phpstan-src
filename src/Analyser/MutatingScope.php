@@ -474,7 +474,7 @@ class MutatingScope implements Scope
 		}
 
 		$varExprString = '$' . $variableName;
-		$scope = $this->resolveConditionalType($varExprString);
+		$scope = $this->resolveConditionalType(new Variable($variableName));
 		if (!isset($scope->expressionTypes[$varExprString])) {
 			if ($scope->canAnyVariableExist()) {
 				return TrinaryLogic::createMaybe();
@@ -513,7 +513,7 @@ class MutatingScope implements Scope
 		}
 
 		$varExprString = '$' . $variableName;
-		$scope = $this->resolveConditionalType($varExprString);
+		$scope = $this->resolveConditionalType(new Variable($variableName));
 		if (!array_key_exists($varExprString, $scope->expressionTypes)) {
 			return new MixedType();
 		}
@@ -643,8 +643,7 @@ class MutatingScope implements Scope
 		}
 
 		$key = $this->getNodeKey($node);
-		$scope = $this->resolveConditionalType($key);
-
+		$scope = $this->resolveConditionalType($node);
 		if (!array_key_exists($key, $this->resolvedTypes)) {
 			$this->resolvedTypes[$key] = TypeUtils::resolveLateResolvableTypes($scope->resolveType($node));
 		}
@@ -1939,8 +1938,9 @@ class MutatingScope implements Scope
 		return $type;
 	}
 
-	private function resolveConditionalType(string $exprString): MutatingScope
+	private function resolveConditionalType(Expr $expr): MutatingScope
 	{
+		$exprString = $this->getNodeKey($expr);
 		if (!array_key_exists($exprString, $this->conditionalExpressions)) {
 			return $this;
 		}
@@ -1960,7 +1960,13 @@ class MutatingScope implements Scope
 			if ($targetTypeHolder->getCertainty()->no()) {
 				unset($scope->expressionTypes[$exprString]);
 			} else {
-				$scope->expressionTypes[$exprString] = $targetTypeHolder;
+				$scope->expressionTypes[$exprString] = array_key_exists($exprString, $scope->expressionTypes)
+					? new ExpressionTypeHolder(
+						$expr,
+						TypeCombinator::intersect($scope->expressionTypes[$exprString]->getType(), $targetTypeHolder->getType()),
+						TrinaryLogic::maxMin($scope->expressionTypes[$exprString]->getCertainty(), $targetTypeHolder->getCertainty()),
+					)
+					: $targetTypeHolder;
 			}
 			return $scope;
 		}
@@ -3771,7 +3777,7 @@ class MutatingScope implements Scope
 			$scope->getNamespace(),
 			$scope->expressionTypes,
 			$scope->nativeExpressionTypes,
-			array_merge($scope->conditionalExpressions, $specifiedTypes->getNewConditionalExpressionHolders()),
+			array_merge($specifiedTypes->getNewConditionalExpressionHolders(), $scope->conditionalExpressions),
 			$scope->inClosureBindScopeClass,
 			$scope->anonymousFunctionReflection,
 			$scope->inFirstLevelStatement,

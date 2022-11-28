@@ -1,0 +1,9 @@
+<?php
+
+class ImagickPixel
+{
+	/**
+	 * @return ($normalized is 0 ? array{r: int<0, 255>, g: int<0, 255>, b: int<0, 255>, a: int<0, 1>} : ($normalized is 1 ? array{r: float, g: float, b: float, a: float} : ($normalized is 2 ? array{r: int<0, 255>, g: int<0, 255>, b: int<0, 255>, a: int<0, 255>} : array{})))
+	 */
+	public function getColor(int $normalized = 0): array;
+}

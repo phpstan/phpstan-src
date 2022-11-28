@@ -133,6 +133,7 @@ parameters:
 		- ../stubs/ArrayObject.stub
 		- ../stubs/WeakReference.stub
 		- ../stubs/ext-ds.stub
+		- ../stubs/ImagickPixel.stub
 		- ../stubs/PDOStatement.stub
 		- ../stubs/date.stub
 		- ../stubs/mysqli.stub

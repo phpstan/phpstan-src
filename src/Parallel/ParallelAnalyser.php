@@ -25,6 +25,7 @@ use function defined;
 use function escapeshellarg;
 use function is_string;
 use function max;
+use function memory_get_usage;
 use function parse_url;
 use function sprintf;
 use const PHP_URL_PORT;
@@ -64,6 +65,7 @@ class ParallelAnalyser
 		$loop = new StreamSelectLoop();
 
 		$numberOfProcesses = $schedule->getNumberOfProcesses();
+		$someChildEnded = false;
 		$errors = [];
 		$peakMemoryUsages = [];
 		$internalErrors = [];
@@ -198,7 +200,12 @@ class ParallelAnalyser
 
 				$job = array_pop($jobs);
 				$process->request(['action' => 'analyse', 'files' => $job]);
-			}, $handleError, function ($exitCode, string $output) use (&$internalErrors, &$internalErrorsCount, $processIdentifier): void {
+			}, $handleError, function ($exitCode, string $output) use (&$someChildEnded, &$peakMemoryUsages, &$internalErrors, &$internalErrorsCount, $processIdentifier): void {
+				if ($someChildEnded === false) {
+					$peakMemoryUsages['main'] = memory_get_usage(true);
+				}
+				$someChildEnded = true;
+
 				$this->processPool->tryQuitProcess($processIdentifier);
 				if ($exitCode === 0) {
 					return;

@@ -224,6 +224,15 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		$this->assertStringContainsString('editor://custom/path/rel/Foo.php', $this->getOutputContent(true));
 	}
 
+	public function testEditorUrlWithCustomTitle(): void
+	{
+		$formatter = $this->createErrorFormatter('editor://any', '%relFile%:%line%');
+		$error = new Error('Test', 'Foo.php', 12, true, self::DIRECTORY_PATH . '/rel/Foo.php');
+		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true), $this->getOutput(true));
+
+		$this->assertStringContainsString('rel/Foo.php:12', $this->getOutputContent(true));
+	}
+
 	public function testBug6727(): void
 	{
 		putenv('COLUMNS=30');
@@ -250,7 +259,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		self::expectNotToPerformAssertions();
 	}
 
-	private function createErrorFormatter(?string $editorUrl): TableErrorFormatter
+	private function createErrorFormatter(?string $editorUrl, ?string $editorUrlTitle = null): TableErrorFormatter
 	{
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
 
@@ -263,6 +272,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 			),
 			false,
 			$editorUrl,
+			$editorUrlTitle,
 		);
 	}
 

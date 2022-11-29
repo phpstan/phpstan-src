@@ -205,6 +205,7 @@ parameters:
 		- ZEND_THREAD_SAFE
 	customRulesetUsed: null
 	editorUrl: null
+	editorUrlTitle: null
 	errorFormat: null
 	__validate: true
 
@@ -384,6 +385,7 @@ parametersSchema:
 	scanDirectories: listOf(string())
 	fixerTmpDir: string()
 	editorUrl: schema(string(), nullable())
+	editorUrlTitle: schema(string(), nullable())
 	errorFormat: schema(string(), nullable())
 
 	# irrelevant Nette parameters
@@ -2012,6 +2014,7 @@ services:
 			simpleRelativePathHelper: @simpleRelativePathHelper
 			showTipsOfTheDay: %tipsOfTheDay%
 			editorUrl: %editorUrl%
+			editorUrlTitle: %editorUrlTitle%
 
 	errorFormatter.checkstyle:
 		class: PHPStan\Command\ErrorFormatter\CheckstyleErrorFormatter

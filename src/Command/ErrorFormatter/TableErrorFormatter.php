@@ -25,6 +25,7 @@ class TableErrorFormatter implements ErrorFormatter
 		private CiDetectedErrorFormatter $ciDetectedErrorFormatter,
 		private bool $showTipsOfTheDay,
 		private ?string $editorUrl,
+		private ?string $editorUrlTitle,
 	)
 	{
 	}
@@ -86,7 +87,18 @@ class TableErrorFormatter implements ErrorFormatter
 						[$editorFile, $this->simpleRelativePathHelper->getRelativePath($editorFile), (string) $error->getLine()],
 						$this->editorUrl,
 					);
-					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $this->relativePathHelper->getRelativePath($editorFile) . '</>';
+
+					if (is_string($this->editorUrlTitle)) {
+						$title = str_replace(
+							['%file%', '%relFile%', '%line%'],
+							[$editorFile, $this->simpleRelativePathHelper->getRelativePath($editorFile), (string) $error->getLine()],
+							$this->editorUrlTitle,
+						);
+					} else {
+						$title = $this->relativePathHelper->getRelativePath($editorFile);
+					}
+
+					$message .= "\n✏️  <href=" . OutputFormatter::escape($url) . '>' . $title . '</>';
 				}
 				$rows[] = [
 					$this->formatLineNumber($error->getLine()),

@@ -3484,7 +3484,11 @@ class MutatingScope implements Scope
 					$newConditionExpressionTypeHolders[$holderExprString] = $conditionalTypeHolder;
 				}
 				if ($newConditionExpressionTypeHolders === []) {
-					$expressionTypes[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+					if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
+						unset($expressionTypes[$conditionalExprString]);
+					} else {
+						$expressionTypes[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+					}
 					continue 2;
 				}
 			}

@@ -3474,6 +3474,27 @@ class MutatingScope implements Scope
 		$nativeTypes = $scope->nativeExpressionTypes;
 		$nativeTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $nativeType);
 
+		$newConditionalExpressions = [];
+		foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
+			$newConditionalExpression = [];
+			foreach (array_reverse($conditionalExpressions) as $conditionalExpression) {
+				$newConditionExpressionTypeHolders = [];
+				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+					if ($holderExprString === $exprString && $expressionTypes[$holderExprString]->equals($conditionalTypeHolder)) {
+						continue;
+					}
+					$newConditionExpressionTypeHolders[$holderExprString] = $conditionalTypeHolder;
+				}
+				if ($newConditionExpressionTypeHolders === []) {
+					$expressionTypes[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+					continue 2;
+				}
+				$newHolder = new ConditionalExpressionHolder($newConditionExpressionTypeHolders, $conditionalExpression->getTypeHolder());
+				$newConditionalExpression[$newHolder->getKey()] = $newHolder;
+			}
+			$newConditionalExpressions[$conditionalExprString] = $newConditionalExpression;
+		}
+
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -3481,7 +3502,7 @@ class MutatingScope implements Scope
 			$this->getNamespace(),
 			$expressionTypes,
 			$nativeTypes,
-			$this->conditionalExpressions,
+			$newConditionalExpressions,
 			$this->inClosureBindScopeClass,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,

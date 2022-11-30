@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CallToFunctionStatementWithoutSideEffectsRule>
@@ -23,7 +24,32 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 				'Call to function sprintf() on a separate line has no effect.',
 				13,
 			],
+			[
+				'Call to function file_get_contents() on a separate line has no effect.',
+				14,
+			],
+			[
+				'Call to function file_get_contents() on a separate line has no effect.',
+				22,
+			],
 		]);
+
+		if (PHP_VERSION_ID >= 80000) {
+			$this->analyse([__DIR__ . '/data/function-call-statement-no-side-effects-8.0.php'], [
+				[
+					'Call to function file_get_contents() on a separate line has no effect.',
+					12,
+				],
+				[
+					'Call to function file_get_contents() on a separate line has no effect.',
+					13,
+				],
+				[
+					'Call to function file_get_contents() on a separate line has no effect.',
+					14,
+				],
+			]);
+		}
 	}
 
 	public function testPhpDoc(): void

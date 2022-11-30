@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
+use PhpParser\Node\Arg;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -42,7 +43,48 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$function = $this->reflectionProvider->getFunction($funcCall->name, $scope);
-		if ($function->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
+		$functionName = $function->getName();
+		$functionHasSideEffects = !$function->hasSideEffects()->no();
+
+		if (in_array($functionName, [
+			'PHPStan\\dumpType',
+			'PHPStan\\Testing\\assertType',
+			'PHPStan\\Testing\\assertNativeType',
+			'PHPStan\\Testing\\assertVariableCertainty',
+		], true)) {
+			return [];
+		}
+
+		if ($functionName === 'file_get_contents') {
+			$hasNamedParameter = false;
+			foreach ($funcCall->getRawArgs() as $i => $arg) {
+				if (!$arg instanceof Arg) {
+					return [];
+				}
+
+				$isContextParameter = false;
+
+				if ($arg->name !== null) {
+					$hasNamedParameter = true;
+
+					if ($arg->name->name === 'context') {
+						$isContextParameter = true;
+					}
+				}
+
+				if (!$hasNamedParameter && $i === 2) {
+					$isContextParameter = true;
+				}
+
+				if ($isContextParameter && !$scope->getType($arg->value)->isNull()->yes()) {
+					return [];
+				}
+			}
+
+			$functionHasSideEffects = false;
+		}
+
+		if (!$functionHasSideEffects || $node->expr->isFirstClassCallable()) {
 			if (!$node->expr->isFirstClassCallable()) {
 				$throwsType = $function->getThrowType();
 				if ($throwsType !== null && !$throwsType->isVoid()->yes()) {
@@ -52,15 +94,6 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 
 			$functionResult = $scope->getType($funcCall);
 			if ($functionResult instanceof NeverType && $functionResult->isExplicit()) {
-				return [];
-			}
-
-			if (in_array($function->getName(), [
-				'PHPStan\\dumpType',
-				'PHPStan\\Testing\\assertType',
-				'PHPStan\\Testing\\assertNativeType',
-				'PHPStan\\Testing\\assertVariableCertainty',
-			], true)) {
 				return [];
 			}
 

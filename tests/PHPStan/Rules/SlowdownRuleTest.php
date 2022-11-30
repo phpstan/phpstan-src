@@ -31,6 +31,7 @@ class SlowdownRuleTest extends RuleTestCase
 			{
 				return [];
 			}
+
 		};
 	}
 

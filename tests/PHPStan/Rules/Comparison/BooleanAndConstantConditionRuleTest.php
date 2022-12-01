@@ -121,6 +121,90 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleAndBleedingEdge(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->bleedingEdge = true;
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+		$this->analyse([__DIR__ . '/data/boolean-and.php'], [
+			[
+				'Left side of boolean && is always true.',
+				15,
+			],
+			[
+				'Right side of boolean && is always true.',
+				19,
+			],
+			[
+				'Left side of boolean && is always false.',
+				24,
+			],
+			[
+				'Right side of boolean && is always false.',
+				27,
+			],
+			[
+				'Result of boolean && is always false.',
+				30,
+			],
+			[
+				'Right side of boolean && is always true.',
+				33,
+			],
+			[
+				'Right side of boolean && is always true.',
+				36,
+			],
+			[
+				'Right side of boolean && is always true.',
+				39,
+			],
+			[
+				'Result of boolean && is always false.',
+				50,
+			],
+			[
+				'Result of boolean && is always true.',
+				54,
+				$tipText,
+			],
+			[
+				'Result of boolean && is always false.',
+				60,
+			],
+			[
+				'Result of boolean && is always true.',
+				64,
+				//$tipText,
+			],
+			[
+				'Result of boolean && is always false.',
+				66,
+				//$tipText,
+			],
+			[
+				'Result of boolean && is always false.',
+				125,
+			],
+			[
+				'Left side of boolean && is always false.',
+				139,
+			],
+			[
+				'Right side of boolean && is always false.',
+				141,
+			],
+			[
+				'Left side of boolean && is always true.',
+				145,
+			],
+			[
+				'Right side of boolean && is always true.',
+				147,
+			],
+		]);
+	}
+
 	public function testRuleLogicalAnd(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

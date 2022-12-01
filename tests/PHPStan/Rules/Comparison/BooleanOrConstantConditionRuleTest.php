@@ -113,6 +113,81 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRuleAndBleedingEdge(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->bleedingEdge = true;
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+		$this->analyse([__DIR__ . '/data/boolean-or.php'], [
+			[
+				'Left side of boolean || is always true.',
+				15,
+			],
+			[
+				'Right side of boolean || is always true.',
+				19,
+			],
+			[
+				'Left side of boolean || is always false.',
+				24,
+			],
+			[
+				'Right side of boolean || is always false.',
+				27,
+			],
+			[
+				'Right side of boolean || is always true.',
+				30,
+			],
+			[
+				'Result of boolean || is always true.',
+				33,
+			],
+			[
+				'Right side of boolean || is always false.',
+				36,
+			],
+			[
+				'Right side of boolean || is always false.',
+				39,
+			],
+			[
+				'Result of boolean || is always true.',
+				50,
+				$tipText,
+			],
+			[
+				'Result of boolean || is always true.',
+				54,
+				$tipText,
+			],
+			[
+				'Result of boolean || is always true.',
+				61,
+			],
+			[
+				'Result of boolean || is always true.',
+				65,
+			],
+			[
+				'Left side of boolean || is always false.',
+				77,
+			],
+			[
+				'Right side of boolean || is always false.',
+				79,
+			],
+			[
+				'Left side of boolean || is always true.',
+				83,
+			],
+			[
+				'Right side of boolean || is always true.',
+				85,
+			],
+		]);
+	}
+
 	public function testRuleLogicalOr(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

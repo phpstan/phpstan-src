@@ -1348,6 +1348,11 @@ services:
 			- phpstan.dynamicStaticMethodThrowTypeExtension
 
 	-
+		class: PHPStan\Type\Php\DateTimeZoneConstructorThrowTypeExtension
+		tags:
+			- phpstan.dynamicStaticMethodThrowTypeExtension
+
+	-
 		class: PHPStan\Type\Php\DsMapDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicMethodReturnTypeExtension

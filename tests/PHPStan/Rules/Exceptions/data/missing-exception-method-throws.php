@@ -85,4 +85,14 @@ class Foo
 
 	}
 
+	public function dateTimeZoneDoesNotThrow(): void
+	{
+		new \DateTimeZone('UTC');
+	}
+
+	public function dateTimeZoneDoesThrows(string $tz): void
+	{
+		new \DateTimeZone($tz);
+	}
+
 }

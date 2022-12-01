@@ -40,6 +40,10 @@ class MissingCheckedExceptionInMethodThrowsRuleTest extends RuleTestCase
 				'Method MissingExceptionMethodThrows\Foo::doLorem2() throws checked exception InvalidArgumentException but it\'s missing from the PHPDoc @throws tag.',
 				34,
 			],
+			[
+				'Method MissingExceptionMethodThrows\Foo::dateTimeZoneDoesThrows() throws checked exception Exception but it\'s missing from the PHPDoc @throws tag.',
+				95,
+			],
 		]);
 	}
 

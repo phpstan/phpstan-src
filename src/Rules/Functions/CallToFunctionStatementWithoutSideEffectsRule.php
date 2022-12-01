@@ -9,6 +9,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\Type;
 use function in_array;
 use function sprintf;
 
@@ -17,6 +18,13 @@ use function sprintf;
  */
 class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 {
+
+	private const SIDE_EFFECT_FLIP_PARAMETERS = [
+		// functionName => [name, pos, testName, defaultHasSideEffect]
+		'file_get_contents' => ['context', 2, 'isNotNull', false],
+		'print_r' => ['return', 1, 'isTruthy', true],
+		'var_export' => ['return', 1, 'isTruthy', true],
+	];
 
 	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
@@ -55,30 +63,47 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 			return [];
 		}
 
-		if ($functionName === 'file_get_contents') {
+		if (isset(self::SIDE_EFFECT_FLIP_PARAMETERS[$functionName])) {
+			[
+				$flipParameterName,
+				$flipParameterPosision,
+				$testName,
+				$defaultHasSideEffect,
+			] = self::SIDE_EFFECT_FLIP_PARAMETERS[$functionName];
+
+			$sideEffectFlipped = false;
 			$hasNamedParameter = false;
+			$checker = [
+				'isNotNull' => static fn (Type $type) => $type->isNull()->no(),
+				'isTruthy' => static fn (Type $type) => $type->toBoolean()->isTrue()->yes(),
+			][$testName];
+
 			foreach ($funcCall->getRawArgs() as $i => $arg) {
 				if (!$arg instanceof Arg) {
 					return [];
 				}
 
-				$isContextParameter = false;
+				$isFlipParameter = false;
 
 				if ($arg->name !== null) {
 					$hasNamedParameter = true;
-
-					if ($arg->name->name === 'context') {
-						$isContextParameter = true;
+					if ($arg->name->name === $flipParameterName) {
+						$isFlipParameter = true;
 					}
 				}
 
-				if (!$hasNamedParameter && $i === 2) {
-					$isContextParameter = true;
+				if (!$hasNamedParameter && $i === $flipParameterPosision) {
+					$isFlipParameter = true;
 				}
 
-				if ($isContextParameter && !$scope->getType($arg->value)->isNull()->yes()) {
-					return [];
+				if ($isFlipParameter) {
+					$sideEffectFlipped = $checker($scope->getType($arg->value));
+					break;
 				}
+			}
+
+			if ($sideEffectFlipped xor $defaultHasSideEffect) {
+				return [];
 			}
 
 			$functionHasSideEffects = false;

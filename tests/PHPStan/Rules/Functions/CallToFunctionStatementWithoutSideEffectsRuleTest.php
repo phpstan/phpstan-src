@@ -32,21 +32,41 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 				'Call to function file_get_contents() on a separate line has no effect.',
 				22,
 			],
+			[
+				'Call to function var_export() on a separate line has no effect.',
+				24,
+			],
+			[
+				'Call to function print_r() on a separate line has no effect.',
+				26,
+			],
 		]);
 
 		if (PHP_VERSION_ID >= 80000) {
 			$this->analyse([__DIR__ . '/data/function-call-statement-no-side-effects-8.0.php'], [
 				[
 					'Call to function file_get_contents() on a separate line has no effect.',
-					12,
+					15,
 				],
 				[
 					'Call to function file_get_contents() on a separate line has no effect.',
-					13,
+					16,
 				],
 				[
 					'Call to function file_get_contents() on a separate line has no effect.',
-					14,
+					17,
+				],
+				[
+					'Call to function file_get_contents() on a separate line has no effect.',
+					18,
+				],
+				[
+					'Call to function var_export() on a separate line has no effect.',
+					19,
+				],
+				[
+					'Call to function print_r() on a separate line has no effect.',
+					20,
 				],
 			]);
 		}

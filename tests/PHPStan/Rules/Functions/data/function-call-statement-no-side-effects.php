@@ -20,6 +20,10 @@ class Foo
 			],
 		]));
 		file_get_contents($url, false, null);
+		var_export([]);
+		var_export([], true);
+		print_r([]);
+		print_r([], true);
 	}
 
 	public function doBar(string $s)

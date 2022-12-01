@@ -194,69 +194,69 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		$this->analyse([__DIR__ . '/data/boolean-logical-or.php'], [
 			[
-				'Left side of or is always true.',
+				'Left side of logical OR is always true.',
 				15,
 			],
 			[
-				'Right side of or is always true.',
+				'Right side of logical OR is always true.',
 				19,
 			],
 			[
-				'Left side of or is always false.',
+				'Left side of logical OR is always false.',
 				24,
 			],
 			[
-				'Right side of or is always false.',
+				'Right side of logical OR is always false.',
 				27,
 			],
 			[
-				'Right side of or is always true.',
+				'Right side of logical OR is always true.',
 				30,
 			],
 			[
-				'Result of or is always true.',
+				'Result of logical OR is always true.',
 				33,
 			],
 			[
-				'Right side of or is always false.',
+				'Right side of logical OR is always false.',
 				36,
 			],
 			[
-				'Right side of or is always false.',
+				'Right side of logical OR is always false.',
 				39,
 			],
 			[
-				'Result of or is always true.',
+				'Result of logical OR is always true.',
 				50,
 				$tipText,
 			],
 			[
-				'Result of or is always true.',
+				'Result of logical OR is always true.',
 				54,
 				$tipText,
 			],
 			[
-				'Result of or is always true.',
+				'Result of logical OR is always true.',
 				61,
 			],
 			[
-				'Result of or is always true.',
+				'Result of logical OR is always true.',
 				65,
 			],
 			[
-				'Left side of or is always false.',
+				'Left side of logical OR is always false.',
 				77,
 			],
 			[
-				'Right side of or is always false.',
+				'Right side of logical OR is always false.',
 				79,
 			],
 			[
-				'Left side of or is always true.',
+				'Left side of logical OR is always true.',
 				83,
 			],
 			[
-				'Right side of or is always true.',
+				'Right side of logical OR is always true.',
 				85,
 			],
 		]);

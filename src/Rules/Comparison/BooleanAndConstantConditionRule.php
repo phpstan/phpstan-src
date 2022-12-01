@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
+use PhpParser\Node\Expr\BinaryOp\LogicalAnd;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\BooleanAndNode;
 use PHPStan\Rules\Rule;
@@ -10,6 +12,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use function count;
 use function sprintf;
+use function strtoupper;
 
 /**
  * @implements Rule<BooleanAndNode>
@@ -37,7 +40,7 @@ class BooleanAndConstantConditionRule implements Rule
 	{
 		$errors = [];
 		$originalNode = $node->getOriginalNode();
-		$nodeText = $this->bleedingEdge ? $originalNode->getOperatorSigil() : '&&';
+		$nodeText = $this->bleedingEdge ? $this->getOperatorDescription($originalNode) : '&&';
 		$leftType = $this->helper->getBooleanType($scope, $originalNode->left);
 		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
 		if ($leftType instanceof ConstantBooleanType) {
@@ -118,6 +121,15 @@ class BooleanAndConstantConditionRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	private function getOperatorDescription(LogicalAnd|BooleanAnd $originalNode): string
+	{
+		return sprintf(
+			'%s %s',
+			$originalNode instanceof LogicalAnd ? 'logical' : 'boolean',
+			strtoupper($originalNode->getOperatorSigil()),
+		);
 	}
 
 }

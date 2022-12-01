@@ -1944,31 +1944,30 @@ class MutatingScope implements Scope
 		if (!array_key_exists($exprString, $this->conditionalExpressions)) {
 			return $this;
 		}
-		$scope = $this;
-		$conditionalExpressions = array_reverse($scope->conditionalExpressions[$exprString]);
+
+		$conditionalExpressions = array_reverse($this->conditionalExpressions[$exprString]);
+		$selfInvalidatedScope = clone $this;
+		unset($selfInvalidatedScope->conditionalExpressions[$exprString]);
 		foreach ($conditionalExpressions as $conditionalExpression) {
 			$targetTypeHolder = $conditionalExpression->getTypeHolder();
 			foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $conditionalTypeHolder) {
-				if (!$scope->invalidateExpression($targetTypeHolder->getExpr())
-					->getType($conditionalTypeHolder->getExpr())
-					->equals($conditionalTypeHolder->getType())
-				) {
+				if (!$selfInvalidatedScope->getType($conditionalTypeHolder->getExpr())->equals($conditionalTypeHolder->getType())) {
 					continue 2;
 				}
 			}
 
 			if ($targetTypeHolder->getCertainty()->no()) {
-				unset($scope->expressionTypes[$exprString]);
+				unset($this->expressionTypes[$exprString]);
 			} else {
-				$scope->expressionTypes[$exprString] = array_key_exists($exprString, $scope->expressionTypes)
+				$this->expressionTypes[$exprString] = array_key_exists($exprString, $this->expressionTypes)
 					? new ExpressionTypeHolder(
 						$expr,
-						TypeCombinator::intersect($scope->expressionTypes[$exprString]->getType(), $targetTypeHolder->getType()),
-						TrinaryLogic::maxMin($scope->expressionTypes[$exprString]->getCertainty(), $targetTypeHolder->getCertainty()),
+						TypeCombinator::intersect($this->expressionTypes[$exprString]->getType(), $targetTypeHolder->getType()),
+						TrinaryLogic::maxMin($this->expressionTypes[$exprString]->getCertainty(), $targetTypeHolder->getCertainty()),
 					)
 					: $targetTypeHolder;
 			}
-			return $scope;
+			return $this;
 		}
 		return $this;
 	}
@@ -3599,16 +3598,16 @@ class MutatingScope implements Scope
 		if ($requireMoreCharacters && $exprStringToInvalidate === $this->getNodeKey($expr)) {
 			return false;
 		}
-		// tmp: causes an infinite loop by `getType` in `findPropertyReflectionFromNode`
-		//      if ($expr instanceof PropertyFetch) {
-		//          $propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
-		//          if ($propertyReflection !== null) {
-		//              $nativePropertyReflection = $propertyReflection->getNativeReflection();
-		//              if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
-		//                  return false;
-		//              }
-		//          }
-		//      }
+
+		if ($expr instanceof PropertyFetch) {
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+			if ($propertyReflection !== null) {
+				$nativePropertyReflection = $propertyReflection->getNativeReflection();
+				if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
+					return false;
+				}
+			}
+		}
 
 		$nodeFinder = new NodeFinder();
 		$expressionToInvalidateClass = get_class($exprToInvalidate);

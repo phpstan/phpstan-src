@@ -30,33 +30,43 @@
         "ignorable": true
     },
     {
+        "message": "Method Levels\\Unreachable\\Foo::doLogicalAnd() has no return type specified.",
+        "line": 66,
+        "ignorable": true
+    },
+    {
         "message": "Method Levels\\Unreachable\\Bar::doStrictComparison() has no return type specified.",
-        "line": 71,
+        "line": 83,
         "ignorable": true
     },
     {
         "message": "Method Levels\\Unreachable\\Bar::doInstanceOf() has no return type specified.",
-        "line": 77,
+        "line": 89,
         "ignorable": true
     },
     {
         "message": "Method Levels\\Unreachable\\Bar::doTypeSpecifyingFunction() has no return type specified.",
-        "line": 82,
+        "line": 94,
         "ignorable": true
     },
     {
         "message": "Method Levels\\Unreachable\\Bar::doOtherFunction() has no return type specified.",
-        "line": 87,
+        "line": 99,
         "ignorable": true
     },
     {
         "message": "Method Levels\\Unreachable\\Bar::doOtherValue() has no return type specified.",
-        "line": 92,
+        "line": 104,
         "ignorable": true
     },
     {
         "message": "Method Levels\\Unreachable\\Bar::doBooleanAnd() has no return type specified.",
-        "line": 97,
+        "line": 109,
+        "ignorable": true
+    },
+    {
+        "message": "Method Levels\\Unreachable\\Bar::doLogicalAnd() has no return type specified.",
+        "line": 117,
         "ignorable": true
     }
 ]

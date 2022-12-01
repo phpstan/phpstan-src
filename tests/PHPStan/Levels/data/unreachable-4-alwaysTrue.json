@@ -40,63 +40,88 @@
         "ignorable": true
     },
     {
-        "message": "Left side of && is always true.",
+        "message": "Left side of boolean && is always true.",
         "line": 59,
         "ignorable": true
     },
     {
-        "message": "Right side of && is always true.",
+        "message": "Right side of boolean && is always true.",
         "line": 59,
+        "ignorable": true
+    },
+    {
+        "message": "If condition is always true.",
+        "line": 71,
+        "ignorable": true
+    },
+    {
+        "message": "Left side of logical AND is always true.",
+        "line": 71,
+        "ignorable": true
+    },
+    {
+        "message": "Right side of logical AND is always true.",
+        "line": 71,
         "ignorable": true
     },
     {
         "message": "Else branch is unreachable because ternary operator condition is always true.",
-        "line": 74,
+        "line": 86,
         "ignorable": true
     },
     {
         "message": "Strict comparison using === between 5 and 5 will always evaluate to true.",
-        "line": 74,
+        "line": 86,
         "ignorable": true
     },
     {
         "message": "Else branch is unreachable because ternary operator condition is always true.",
-        "line": 79,
+        "line": 91,
         "ignorable": true
     },
     {
         "message": "Instanceof between $this(Levels\\Unreachable\\Bar) and Levels\\Unreachable\\Bar will always evaluate to true.",
-        "line": 79,
+        "line": 91,
         "ignorable": true
     },
     {
         "message": "Call to function is_string() with string will always evaluate to true.",
-        "line": 84,
+        "line": 96,
         "ignorable": true
     },
     {
         "message": "Else branch is unreachable because ternary operator condition is always true.",
-        "line": 84,
+        "line": 96,
         "ignorable": true
     },
     {
         "message": "Ternary operator condition is always true.",
-        "line": 89,
+        "line": 101,
         "ignorable": true
     },
     {
         "message": "Ternary operator condition is always true.",
-        "line": 94,
+        "line": 106,
         "ignorable": true
     },
     {
-        "message": "Left side of && is always true.",
-        "line": 102,
+        "message": "Left side of boolean && is always true.",
+        "line": 114,
         "ignorable": true
     },
     {
-        "message": "Right side of && is always true.",
-        "line": 102,
+        "message": "Right side of boolean && is always true.",
+        "line": 114,
+        "ignorable": true
+    },
+    {
+        "message": "Left side of logical AND is always true.",
+        "line": 122,
+        "ignorable": true
+    },
+    {
+        "message": "Ternary operator condition is always true.",
+        "line": 122,
         "ignorable": true
     }
 ]

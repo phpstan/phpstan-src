@@ -25,48 +25,68 @@
         "ignorable": true
     },
     {
-        "message": "Left side of && is always true.",
+        "message": "Left side of boolean && is always true.",
         "line": 59,
         "ignorable": true
     },
     {
-        "message": "Right side of && is always true.",
+        "message": "Right side of boolean && is always true.",
         "line": 59,
         "ignorable": true
     },
     {
-        "message": "Else branch is unreachable because ternary operator condition is always true.",
-        "line": 74,
+        "message": "Left side of logical AND is always true.",
+        "line": 71,
+        "ignorable": true
+    },
+    {
+        "message": "Right side of logical AND is always true.",
+        "line": 71,
         "ignorable": true
     },
     {
         "message": "Else branch is unreachable because ternary operator condition is always true.",
-        "line": 79,
+        "line": 86,
         "ignorable": true
     },
     {
         "message": "Else branch is unreachable because ternary operator condition is always true.",
-        "line": 84,
+        "line": 91,
+        "ignorable": true
+    },
+    {
+        "message": "Else branch is unreachable because ternary operator condition is always true.",
+        "line": 96,
         "ignorable": true
     },
     {
         "message": "Ternary operator condition is always true.",
-        "line": 89,
+        "line": 101,
         "ignorable": true
     },
     {
         "message": "Ternary operator condition is always true.",
-        "line": 94,
+        "line": 105,
         "ignorable": true
     },
     {
-        "message": "Left side of && is always true.",
-        "line": 102,
+        "message": "Left side of boolean && is always true.",
+        "line": 114,
         "ignorable": true
     },
     {
-        "message": "Right side of && is always true.",
-        "line": 102,
+        "message": "Right side of boolean && is always true.",
+        "line": 114,
+        "ignorable": true
+    },
+    {
+        "message": "Left side of logical AND is always true.",
+        "line": 114,
+        "ignorable": true
+    },
+    {
+        "message": "Right side of logical AND is always true.",
+        "line": 114,
         "ignorable": true
     }
 ]

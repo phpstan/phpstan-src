@@ -63,6 +63,18 @@ class Foo
 		}
 	}
 
+	public function doLogicalAnd()
+	{
+		$foo = 1;
+		$bar = 2;
+
+		if ($foo and $bar) {
+
+		} else {
+
+		}
+	}
+
 }
 
 class Bar
@@ -100,6 +112,14 @@ class Bar
 		$bar = 2;
 
 		$foo && $bar ? 'foo' : 'bar';
+	}
+
+	public function doLogicalAnd()
+	{
+		$foo = 1;
+		$bar = 2;
+
+		$foo and $bar ? 'foo' : 'bar';
 	}
 
 }

@@ -3473,28 +3473,6 @@ class MutatingScope implements Scope
 		$nativeTypes = $scope->nativeExpressionTypes;
 		$nativeTypes[$exprString] = ExpressionTypeHolder::createYes($expr, $nativeType);
 
-		foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
-			foreach (array_reverse($conditionalExpressions) as $conditionalExpression) {
-				$newConditionExpressionTypeHolders = [];
-				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-					if ($holderExprString === $exprString && $expressionTypes[$holderExprString]->equals($conditionalTypeHolder)) {
-						continue;
-					}
-					$newConditionExpressionTypeHolders[$holderExprString] = $conditionalTypeHolder;
-				}
-				if ($newConditionExpressionTypeHolders !== []) {
-					continue;
-				}
-
-				if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
-					unset($expressionTypes[$conditionalExprString]);
-				} else {
-					$expressionTypes[$conditionalExprString] = $conditionalExpression->getTypeHolder();
-				}
-				continue 2;
-			}
-		}
-
 		return $this->scopeFactory->create(
 			$this->context,
 			$this->isDeclareStrictTypes(),
@@ -3777,6 +3755,7 @@ class MutatingScope implements Scope
 		});
 
 		$scope = $this;
+		$specifiedExpressions = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
 			$type = $typeSpecification['type'];
@@ -3788,6 +3767,29 @@ class MutatingScope implements Scope
 				}
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
+			}
+			$specifiedExpressions[$this->getNodeKey($expr)] = $scope->getType($expr);
+		}
+
+		foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
+			foreach (array_reverse($conditionalExpressions) as $conditionalExpression) {
+				$newConditionExpressionTypeHolders = [];
+				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+					if (array_key_exists($holderExprString, $specifiedExpressions) && $specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder->getType())) {
+						continue;
+					}
+					$newConditionExpressionTypeHolders[$holderExprString] = $conditionalTypeHolder;
+				}
+				if ($newConditionExpressionTypeHolders !== []) {
+					continue;
+				}
+
+				if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
+					unset($scope->expressionTypes[$conditionalExprString]);
+				} else {
+					$scope->expressionTypes[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+				}
+				continue 2;
 			}
 		}
 

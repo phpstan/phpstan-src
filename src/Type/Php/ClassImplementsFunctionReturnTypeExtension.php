@@ -8,7 +8,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -56,8 +55,7 @@ class ClassImplementsFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 	private function canFunctionReturnFalse(Type $type, bool $autoload): bool
 	{
-		return !$type instanceof ObjectType
-			&& !$type instanceof ObjectWithoutClassType
+		return (new ObjectWithoutClassType())->isSuperTypeOf($type)->no()
 			&& (!$autoload || !$type->isClassStringType()->yes());
 	}
 

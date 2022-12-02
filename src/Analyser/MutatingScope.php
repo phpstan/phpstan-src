@@ -3751,6 +3751,7 @@ class MutatingScope implements Scope
 					unset($scope->expressionTypes[$conditionalExprString]);
 				} else {
 					$scope->expressionTypes[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder()->getType();
 				}
 				continue 2;
 			}

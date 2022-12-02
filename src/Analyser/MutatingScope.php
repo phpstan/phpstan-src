@@ -3736,15 +3736,10 @@ class MutatingScope implements Scope
 
 		foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
 			foreach (array_reverse($conditionalExpressions) as $conditionalExpression) {
-				$newConditionExpressionTypeHolders = [];
 				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-					if (array_key_exists($holderExprString, $specifiedExpressions) && $specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder->getType())) {
-						continue;
+					if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder->getType())) {
+						continue 2;
 					}
-					$newConditionExpressionTypeHolders[$holderExprString] = $conditionalTypeHolder;
-				}
-				if ($newConditionExpressionTypeHolders !== []) {
-					continue;
 				}
 
 				if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {

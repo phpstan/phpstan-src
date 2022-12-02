@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Bug5803;
+namespace Bug5805;
 
 function () {
 	if (!($_GET['foo'])) { // if 'foo' is falsy, SET $var

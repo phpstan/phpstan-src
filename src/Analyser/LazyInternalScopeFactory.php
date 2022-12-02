@@ -34,14 +34,6 @@ class LazyInternalScopeFactory implements InternalScopeFactory
 		$this->explicitMixedInUnknownGenericNew = $this->container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'];
 	}
 
-	/**
-	 * @param array<string, ExpressionTypeHolder> $expressionTypes
-	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
-	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param array<string, true> $currentlyAssignedExpressions
-	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param array<(FunctionReflection|MethodReflection)> $inFunctionCallsStack
-	 */
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,

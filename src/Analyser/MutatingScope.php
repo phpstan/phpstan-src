@@ -119,6 +119,7 @@ use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_pop;
+use function array_reverse;
 use function array_slice;
 use function count;
 use function explode;
@@ -3720,7 +3721,6 @@ class MutatingScope implements Scope
 		$specifiedExpressions = [];
 		foreach ($typeSpecifications as $typeSpecification) {
 			$expr = $typeSpecification['expr'];
-			$specifiedExpressions[$this->getNodeKey($expr)] = true;
 			$type = $typeSpecification['type'];
 			if ($typeSpecification['sure']) {
 				if ($specifiedTypes->shouldOverwrite()) {
@@ -3731,27 +3731,24 @@ class MutatingScope implements Scope
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
 			}
+			$specifiedExpressions[$this->getNodeKey($expr)] = $scope->getType($expr);
 		}
 
-		$newConditionalExpressions = $specifiedTypes->getNewConditionalExpressionHolders();
-		foreach ($scope->conditionalExpressions as $variableExprString => $conditionalExpressions) {
-			if (array_key_exists($variableExprString, $specifiedExpressions)) {
-				continue;
-			}
-			$newConditionalExpressions[$variableExprString] = $conditionalExpressions;
-			foreach ($conditionalExpressions as $conditionalExpression) {
-				$targetTypeHolder = $conditionalExpression->getTypeHolder();
-				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $conditionalTypeHolder) {
-					if (!$scope->invalidateExpression($targetTypeHolder->getExpr())->getType($conditionalTypeHolder->getExpr())->equals($conditionalTypeHolder->getType())) {
+		foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
+			foreach (array_reverse($conditionalExpressions) as $conditionalExpression) {
+				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+					if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder->getType())) {
 						continue 2;
 					}
 				}
 
-				if ($targetTypeHolder->getCertainty()->no()) {
-					unset($scope->expressionTypes[$variableExprString]);
+				if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
+					unset($scope->expressionTypes[$conditionalExprString]);
 				} else {
-					$scope->expressionTypes[$variableExprString] = $targetTypeHolder;
+					$scope->expressionTypes[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder()->getType();
 				}
+				continue 2;
 			}
 		}
 
@@ -3762,7 +3759,7 @@ class MutatingScope implements Scope
 			$scope->getNamespace(),
 			$scope->expressionTypes,
 			$scope->nativeExpressionTypes,
-			$newConditionalExpressions,
+			array_merge($specifiedTypes->getNewConditionalExpressionHolders(), $scope->conditionalExpressions),
 			$scope->inClosureBindScopeClass,
 			$scope->anonymousFunctionReflection,
 			$scope->inFirstLevelStatement,

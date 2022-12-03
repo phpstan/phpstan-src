@@ -13,6 +13,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use function array_filter;
 use function count;
 use function in_array;
+use function is_int;
 use function max;
 use function sprintf;
 use function sscanf;
@@ -113,10 +114,11 @@ class PrintfParametersRule implements Rule
 		try {
 			@sprintf($format);
 		} catch (ArgumentCountError $e) {
-			$message = $e->getMessage();
-			sscanf($message, '%i arguments are required, %i given', $required, $given);
+			sscanf($e->getMessage(), '%i arguments are required, %i given', $required, $given);
 
-			return $required - 1;
+			if (is_int($required)) {
+				return $required - 1;
+			}
 		}
 
 		// fallback for php < 8

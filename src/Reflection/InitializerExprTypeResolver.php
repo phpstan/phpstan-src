@@ -336,6 +336,10 @@ class InitializerExprTypeResolver
 		}
 
 		if ($expr instanceof MagicConst\Class_) {
+			if ($context->getTraitName() !== null) {
+				return new StringType();
+			}
+
 			if ($context->getClassName() === null) {
 				return new ConstantStringType('');
 			}
@@ -344,6 +348,10 @@ class InitializerExprTypeResolver
 		}
 
 		if ($expr instanceof MagicConst\Namespace_) {
+			if ($context->getTraitName() !== null) {
+				return new StringType();
+			}
+
 			return new ConstantStringType($context->getNamespace() ?? '');
 		}
 

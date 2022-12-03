@@ -114,7 +114,7 @@ class PrintfParametersRule implements Rule
 			@sprintf($format);
 		} catch (ArgumentCountError $e) {
 			$message = $e->getMessage();
-			sscanf($message, '%d arguments are required, %d given', $required, $given);
+			sscanf($message, '%i arguments are required, %i given', $required, $given);
 
 			return $required - 1;
 		}

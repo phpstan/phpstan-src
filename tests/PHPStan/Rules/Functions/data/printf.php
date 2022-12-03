@@ -9,7 +9,7 @@ sprintf('foo %s', 'foo', 'bar'); // one parameter over
 sprintf('%2$s %1$s %% %1$s %%%', 'one'); // one parameter missing
 sprintf('%2$s %%'); // two parameters required
 sprintf('%2$s %1$s %1$s %s %s %s %s'); // four parameters required
-sprintf('%2$s %1$s %% %s %s %s %s %%% %%%%', 'one', 'two', 'three', 'four'); // 5 parameters required
+
 sprintf("%'.9d %1$'.9d %0.3f %d %d %d", 123, 456);
 sprintf('%-4s', 'foo'); // ok
 sprintf('%%s %s', 'foo', 'bar'); // one parameter over
@@ -52,5 +52,3 @@ if (rand(0, 1) === 0) {
 sprintf($variousPlaceholderCount, 'bar');
 sprintf($variousPlaceholderCount, 'bar', 'baz');
 sprintf($variousPlaceholderCount, 'bar', 'baz', 'lorem');
-
-sprintf('UPDATE {{%loans}} SET field=1');

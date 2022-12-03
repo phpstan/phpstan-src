@@ -59,5 +59,6 @@ return [
 	],
 	'old' => [
 		'implode\'2' => ['string', 'pieces'=>'array', 'glue'=>'string'],
+        'PDOStatement::fetchAll' => ['array|false', 'fetch_style='=>'int', 'fetch_argument='=>'int|string|callable', 'ctor_args='=>'?array']
 	],
 ];

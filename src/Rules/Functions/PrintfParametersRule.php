@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Functions;
 
+use ArgumentCountError;
 use Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
@@ -14,6 +15,7 @@ use function count;
 use function in_array;
 use function max;
 use function sprintf;
+use function sscanf;
 use function strlen;
 use function strtolower;
 use const PREG_SET_ORDER;
@@ -108,6 +110,16 @@ class PrintfParametersRule implements Rule
 
 	private function getPlaceholdersCount(string $functionName, string $format): int
 	{
+		try {
+			@sprintf($format);
+		} catch (ArgumentCountError $e) {
+			$message = $e->getMessage();
+			sscanf($message, '%d arguments are required, %d given', $required, $given);
+
+			return $required - 1;
+		}
+
+		// fallback for php < 8
 		$specifiers = in_array($functionName, ['sprintf', 'printf'], true) ? '[bcdeEfFgGosuxX%s]' : '(?:[cdDeEfinosuxX%s]|\[[^\]]+\])';
 		$addSpecifier = '';
 		if ($this->phpVersion->supportsHhPrintfSpecifier()) {

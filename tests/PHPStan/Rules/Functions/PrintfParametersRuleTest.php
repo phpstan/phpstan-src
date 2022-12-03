@@ -46,6 +46,10 @@ class PrintfParametersRuleTest extends RuleTestCase
 				11,
 			],
 			[
+				'Call to sprintf contains 5 placeholders, 4 values given.',
+				12,
+			],
+			[
 				'Call to sprintf contains 5 placeholders, 2 values given.',
 				13,
 			],
@@ -92,6 +96,10 @@ class PrintfParametersRuleTest extends RuleTestCase
 			[
 				'Call to sprintf contains 2 placeholders, 3 values given.',
 				54,
+			],
+			[
+				'Call to sprintf contains 1 placeholder, 0 values given.',
+				56,
 			],
 		]);
 	}

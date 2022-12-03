@@ -145,6 +145,11 @@ class TypeSpecifier
 				} else {
 					$type = new ObjectType($className);
 				}
+
+				if ($scope->isInTrait() && $context->false() && TypeUtils::findThisType($scope->getType($exprNode)) !== null) {
+					return new SpecifiedTypes([], [], false, [], $rootExpr);
+				}
+
 				return $this->create($exprNode, $type, $context, false, $scope, $rootExpr);
 			}
 

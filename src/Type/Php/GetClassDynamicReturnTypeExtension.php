@@ -17,6 +17,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeWithClassName;
@@ -34,12 +35,17 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
 		$args = $functionCall->getArgs();
+
 		if (count($args) === 0) {
 			if ($scope->isInClass()) {
 				return new ConstantStringType($scope->getClassReflection()->getName(), true);
 			}
 
 			return new ConstantBooleanType(false);
+		}
+
+		if ($scope->isInTrait()) {
+			return new StringType();
 		}
 
 		$argType = $scope->getType($args[0]->value);

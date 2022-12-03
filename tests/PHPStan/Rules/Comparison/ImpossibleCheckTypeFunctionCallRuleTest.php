@@ -196,18 +196,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 				],
 				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'method\' will always evaluate to true.',
-					643,
-				],
-				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'someAnother\' will always evaluate to true.',
-					646,
-				],
-				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
-					649,
-				],
-				[
 					'Call to function is_string() with string will always evaluate to true.',
 					678,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
@@ -352,10 +340,6 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
 					640,
 					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
-				],
-				[
-					'Call to function method_exists() with \'CheckTypeFunctionCall\\\\MethodExistsWithTrait\' and \'unknown\' will always evaluate to false.',
-					649,
 				],
 				[
 					'Call to function assert() with false will always evaluate to false.',
@@ -1034,6 +1018,13 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$issues = self::getLooseComparisonAgainsEnumsIssues();
 		$issues = array_values(array_filter($issues, static fn (array $i) => count($i) === 2));
 		$this->analyse([__DIR__ . '/data/loose-comparison-against-enums.php'], $issues);
+	}
+
+	public function testBug4570(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-4570.php'], []);
 	}
 
 }

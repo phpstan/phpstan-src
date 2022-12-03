@@ -352,7 +352,7 @@ parameters:
 
 		-
 			message: "#^Call to method getProperty\\(\\) on an unknown class PHPStan\\\\BetterReflection\\\\Reflection\\\\Adapter\\\\ReflectionEnum\\.$#"
-			count: 1
+			count: 2
 			path: ../tests/PHPStan/Analyser/AnalyserIntegrationTest.php
 
 		-

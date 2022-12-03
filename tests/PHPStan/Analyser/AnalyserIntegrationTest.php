@@ -2,9 +2,6 @@
 
 namespace PHPStan\Analyser;
 
-use Bug4288\MyClass;
-use Bug4713\Service;
-use ExtendingKnownClassWithCheck\Foo;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
@@ -13,6 +10,7 @@ use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\MixedType;
 use function extension_loaded;
 use function restore_error_handler;
 use function sprintf;
@@ -84,7 +82,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 
 		$reflectionProvider = $this->createReflectionProvider();
-		$this->assertTrue($reflectionProvider->hasClass(Foo::class));
+		$this->assertTrue($reflectionProvider->hasClass(\ExtendingKnownClassWithCheck\Foo::class)); // phpcs:ignore
 	}
 
 	public function testInfiniteRecursionWithCallable(): void
@@ -361,11 +359,11 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame('Method Bug4713\Service::createInstance() should return Bug4713\Service but returns object.', $errors[0]->getMessage());
 
 		$reflectionProvider = $this->createReflectionProvider();
-		$class = $reflectionProvider->getClass(Service::class);
+		$class = $reflectionProvider->getClass(\Bug4713\Service::class); // phpcs:ignore
 		$parameter = ParametersAcceptorSelector::selectSingle($class->getNativeMethod('createInstance')->getVariants())->getParameters()[0];
 		$defaultValue = $parameter->getDefaultValue();
 		$this->assertInstanceOf(ConstantStringType::class, $defaultValue);
-		$this->assertSame(Service::class, $defaultValue->getValue());
+		$this->assertSame(\Bug4713\Service::class, $defaultValue->getValue()); // phpcs:ignore
 	}
 
 	public function testBug4288(): void
@@ -374,7 +372,28 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 
 		$reflectionProvider = $this->createReflectionProvider();
-		$class = $reflectionProvider->getClass(MyClass::class);
+		$class = $reflectionProvider->getClass(\Bug4288\MyClass::class); // phpcs:ignore
+		$parameter = ParametersAcceptorSelector::selectSingle($class->getNativeMethod('paginate')->getVariants())->getParameters()[0];
+		$defaultValue = $parameter->getDefaultValue();
+		$this->assertInstanceOf(MixedType::class, $defaultValue);
+
+		$nativeProperty = $class->getNativeReflection()->getProperty('test');
+		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
+		$defaultValueType = $initializerExprTypeResolver->getType(
+			$nativeProperty->getDefaultValueExpression(),
+			InitializerExprContext::fromClassReflection($class->getNativeProperty('test')->getDeclaringClass()),
+		);
+		$this->assertInstanceOf(ConstantIntegerType::class, $defaultValueType);
+		$this->assertSame(10, $defaultValueType->getValue());
+	}
+
+	public function testBug4288b(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-4288b.php');
+		$this->assertNoErrors($errors);
+
+		$reflectionProvider = $this->createReflectionProvider();
+		$class = $reflectionProvider->getClass(\Bug4288b\MyClass::class); // phpcs:ignore
 		$parameter = ParametersAcceptorSelector::selectSingle($class->getNativeMethod('paginate')->getVariants())->getParameters()[0];
 		$defaultValue = $parameter->getDefaultValue();
 		$this->assertInstanceOf(ConstantIntegerType::class, $defaultValue);

@@ -163,7 +163,7 @@ class InitializerExprTypeResolver
 			return $var->getOffsetValueType($dim);
 		}
 		if ($expr instanceof ClassConstFetch && $expr->name instanceof Identifier) {
-			return $this->getClassConstFetchType($expr->class, $expr->name->toString(), $context->getClassName(), fn (Expr $expr): Type => $this->getType($expr, $context));
+			return $this->getClassConstFetchType($expr->class, $expr->name->toString(), $context->getClassName(), fn (Expr $expr): Type => $this->getType($expr, $context), $context);
 		}
 		if ($expr instanceof Expr\UnaryPlus) {
 			return $this->getType($expr->expr, $context)->toNumber();
@@ -1762,7 +1762,7 @@ class InitializerExprTypeResolver
 	/**
 	 * @param callable(Expr): Type $getTypeCallback
 	 */
-	public function getClassConstFetchTypeByReflection(Name|Expr $class, string $constantName, ?ClassReflection $classReflection, callable $getTypeCallback): Type
+	public function getClassConstFetchTypeByReflection(Name|Expr $class, string $constantName, ?ClassReflection $classReflection, callable $getTypeCallback, InitializerExprContext $context): Type
 	{
 		$isObject = false;
 		if ($class instanceof Name) {
@@ -1789,6 +1789,19 @@ class InitializerExprTypeResolver
 				if ($resolvedName === 'parent' && strtolower($constantName) === 'class') {
 					return new ClassStringType();
 				}
+
+				if ($classReflection !== null && $resolvedName === $classReflection->getName()) {
+					if ($context->getTraitName() !== null) {
+						if (strtolower($constantName) === 'class') {
+							return TypeCombinator::intersect(
+								new ClassStringType(),
+								new AccessoryLiteralStringType(),
+							);
+						}
+						return new MixedType();
+					}
+				}
+
 				$constantClassType = $this->resolveTypeByName($class, $classReflection);
 			}
 
@@ -1908,14 +1921,14 @@ class InitializerExprTypeResolver
 	/**
 	 * @param callable(Expr): Type $getTypeCallback
 	 */
-	public function getClassConstFetchType(Name|Expr $class, string $constantName, ?string $className, callable $getTypeCallback): Type
+	public function getClassConstFetchType(Name|Expr $class, string $constantName, ?string $className, callable $getTypeCallback, InitializerExprContext $context): Type
 	{
 		$classReflection = null;
 		if ($className !== null && $this->getReflectionProvider()->hasClass($className)) {
 			$classReflection = $this->getReflectionProvider()->getClass($className);
 		}
 
-		return $this->getClassConstFetchTypeByReflection($class, $constantName, $classReflection, $getTypeCallback);
+		return $this->getClassConstFetchTypeByReflection($class, $constantName, $classReflection, $getTypeCallback, $context);
 	}
 
 	/**

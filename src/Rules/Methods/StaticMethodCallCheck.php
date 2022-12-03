@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use DOMDocument;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\NullsafeOperatorHelper;
@@ -224,6 +225,11 @@ class StaticMethodCallCheck
 					&& !$scope->getClassReflection()->isSubclassOf($classType->getClassName())
 				)
 			) {
+				// per php-src docs, this method can be called statically, even if declared non-static
+				if (strtolower($method->getName()) === 'loadhtml' && $method->getDeclaringClass()->getName() === DOMDocument::class) {
+					return [[], null];
+				}
+
 				return [
 					array_merge($errors, [
 						RuleErrorBuilder::message(sprintf(

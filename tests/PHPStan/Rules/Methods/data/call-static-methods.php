@@ -345,3 +345,11 @@ class CallWithStatic
 	}
 
 }
+
+class Bug2759 {
+	public function sayHello(string $html): void
+	{
+		$dom = \DOMDocument::loadHTML($html, LIBXML_NOWARNING | LIBXML_NONET | LIBXML_NOERROR);
+	}
+}
+

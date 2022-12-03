@@ -91,4 +91,10 @@ class UnreachableTernaryElseBranchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug3019(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-3019.php'], []);
+	}
+
 }

@@ -3731,13 +3731,13 @@ class MutatingScope implements Scope
 			} else {
 				$scope = $scope->removeTypeFromExpression($expr, $type);
 			}
-			$specifiedExpressions[$this->getNodeKey($expr)] = $scope->getType($expr);
+			$specifiedExpressions[$this->getNodeKey($expr)] = ExpressionTypeHolder::createYes($expr, $scope->getType($expr));
 		}
 
 		foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
 			foreach (array_reverse($conditionalExpressions) as $conditionalExpression) {
 				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-					if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder->getType())) {
+					if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
 						continue 2;
 					}
 				}
@@ -3746,7 +3746,7 @@ class MutatingScope implements Scope
 					unset($scope->expressionTypes[$conditionalExprString]);
 				} else {
 					$scope->expressionTypes[$conditionalExprString] = $conditionalExpression->getTypeHolder();
-					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder()->getType();
+					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
 				}
 				continue 2;
 			}

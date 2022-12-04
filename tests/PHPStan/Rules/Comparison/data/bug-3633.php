@@ -17,6 +17,13 @@ class HelloWorld {
 	use Foo;
 
 	public function bar(): void {
+		if (get_class($this) === HelloWorld::class) {
+			echo "OK";
+		}
+		if (get_class($this) === OtherClass::class) {
+			echo "OK";
+		}
+
 		$this->test();
 	}
 }
@@ -25,6 +32,34 @@ class OtherClass {
 	use Foo;
 
 	public function bar(): void {
+		if (get_class($this) === HelloWorld::class) {
+			echo "OK";
+		}
+		if (get_class($this) === OtherClass::class) {
+			echo "OK";
+		}
+
+		$this->test();
+	}
+}
+
+final class FinalClass {
+	use Foo;
+
+	public function bar(): void {
+		if (get_class($this) === HelloWorld::class) {
+			echo "OK";
+		}
+		if (get_class($this) === OtherClass::class) {
+			echo "OK";
+		}
+		if (get_class($this) !== FinalClass::class) {
+			echo "OK";
+		}
+		if (get_class($this) === FinalClass::class) {
+			echo "OK";
+		}
+
 		$this->test();
 	}
 }

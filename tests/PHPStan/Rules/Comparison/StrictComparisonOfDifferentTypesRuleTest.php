@@ -622,7 +622,28 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	public function testBug3633(): void
 	{
 		$this->checkAlwaysTrueStrictComparison = true;
-		$this->analyse([__DIR__ . '/data/bug-3633.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-3633.php'], [
+			[
+				'Strict comparison using === between class-string<Bug3633\HelloWorld> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
+				23,
+			],
+			[
+				'Strict comparison using === between class-string<Bug3633\OtherClass> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
+				35,
+			],
+			[
+				'Strict comparison using === between class-string<Bug3633\FinalClass> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
+				50,
+			],
+			[
+				'Strict comparison using === between class-string<Bug3633\FinalClass> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
+				53,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to true.',
+				59,
+			],
+		]);
 	}
 
 }

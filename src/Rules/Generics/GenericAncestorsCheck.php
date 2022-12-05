@@ -98,7 +98,7 @@ class GenericAncestorsCheck
 				$messages[] = RuleErrorBuilder::message(sprintf($invalidTypeMessage, $referencedClass))->build();
 			}
 
-			$variance = TemplateTypeVariance::createInvariant();
+			$variance = TemplateTypeVariance::createStatic();
 			$messageContext = sprintf(
 				$invalidVarianceMessage,
 				$ancestorType->describe(VerbosityLevel::typeOnly()),

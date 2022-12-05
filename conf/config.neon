@@ -109,6 +109,7 @@ parameters:
 	propertyAlwaysReadTags: []
 	additionalConstructors: []
 	treatPhpDocTypesAsCertain: true
+	usePathConstantsAsConstantString: false
 	rememberPossiblyImpureFunctionValues: true
 	tipsOfTheDay: true
 	reportMagicMethods: false
@@ -328,6 +329,7 @@ parametersSchema:
 	propertyAlwaysReadTags: listOf(string())
 	additionalConstructors: listOf(string())
 	treatPhpDocTypesAsCertain: bool()
+	usePathConstantsAsConstantString: bool()
 	rememberPossiblyImpureFunctionValues: bool()
 	reportMagicMethods: bool()
 	reportMagicProperties: bool()
@@ -804,6 +806,8 @@ services:
 
 	-
 		class: PHPStan\Reflection\InitializerExprTypeResolver
+		arguments:
+			usePathConstantsAsConstantString: %usePathConstantsAsConstantString%
 
 	-
 		class: PHPStan\Reflection\Annotations\AnnotationsMethodsClassReflectionExtension

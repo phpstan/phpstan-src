@@ -7,6 +7,7 @@
 	<arg name="tab-width" value="4"/>
 	<arg name="cache" value="tmp/cache/phpcs"/>
 	<arg name="ignore" value="compiler/tests/*/data,tests/*/data,tests/*/traits,tests/notAutoloaded,tests/*/cache,src/Reflection/SignatureMap/functionMap.php,tests/e2e/magic-setter,tests/e2e/anon-class"/>
+	<arg name="parallel" value="120"/>
 	<arg value="sp"/>
 	<file>bin</file>
 	<file>src</file>

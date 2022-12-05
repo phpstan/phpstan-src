@@ -2512,6 +2512,32 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testGenericVariance(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/generic-variance.php'], [
+			[
+				'Parameter #1 $param of method GenericVarianceCall\Foo::invariant() expects GenericVarianceCall\Invariant<GenericVarianceCall\B>, GenericVarianceCall\Invariant<GenericVarianceCall\A> given.',
+				45,
+			],
+			[
+				'Parameter #1 $param of method GenericVarianceCall\Foo::invariant() expects GenericVarianceCall\Invariant<GenericVarianceCall\B>, GenericVarianceCall\Invariant<GenericVarianceCall\C> given.',
+				53,
+			],
+			[
+				'Parameter #1 $param of method GenericVarianceCall\Foo::covariant() expects GenericVarianceCall\Covariant<GenericVarianceCall\B>, GenericVarianceCall\Covariant<GenericVarianceCall\A> given.',
+				60,
+			],
+			[
+				'Parameter #1 $param of method GenericVarianceCall\Foo::contravariant() expects GenericVarianceCall\Contravariant<GenericVarianceCall\B>, GenericVarianceCall\Contravariant<GenericVarianceCall\C> given.',
+				83,
+			],
+		]);
+	}
+
 	public function testBug6904(): void
 	{
 		if (PHP_VERSION_ID < 80100) {

@@ -143,13 +143,22 @@ class ErrorsConsoleStyle extends SymfonyStyle
 
 	private function getProgressBarFormat(): ?string
 	{
-		$formatName = match ($this->getVerbosity()) {
-			OutputInterface::VERBOSITY_NORMAL => ProgressBar::FORMAT_NORMAL,
-			OutputInterface::VERBOSITY_VERBOSE => ProgressBar::FORMAT_VERBOSE,
-			OutputInterface::VERBOSITY_VERY_VERBOSE,
-			OutputInterface::VERBOSITY_DEBUG => ProgressBar::FORMAT_VERY_VERBOSE, // FORMAT_DEBUG shows invalid memory, avoid that
-			default => null,
-		};
+		switch ($this->getVerbosity()) {
+			case OutputInterface::VERBOSITY_NORMAL:
+				$formatName = ProgressBar::FORMAT_NORMAL;
+				break;
+			case OutputInterface::VERBOSITY_VERBOSE:
+				$formatName = ProgressBar::FORMAT_VERBOSE;
+				break;
+			case OutputInterface::VERBOSITY_VERY_VERBOSE:
+			case OutputInterface::VERBOSITY_DEBUG:
+				$formatName = ProgressBar::FORMAT_VERY_VERBOSE;
+				break;
+			default:
+				$formatName = null;
+				break;
+		}
+
 		if ($formatName === null) {
 			return null;
 		}

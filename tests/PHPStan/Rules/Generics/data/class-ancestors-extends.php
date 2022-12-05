@@ -194,6 +194,24 @@ class FooGeneric9 extends FooGeneric8
 
 }
 
+/**
+ * @template-contravariant T
+ * @extends FooGeneric8<T, T>
+ */
+class FooGeneric10 extends FooGeneric8
+{
+
+}
+
+/**
+ * @template T
+ * @extends FooGeneric8<T, T>
+ */
+class FooGeneric11 extends FooGeneric8
+{
+
+}
+
 class FilterIteratorChild extends \FilterIterator
 {
 

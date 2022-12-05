@@ -96,8 +96,16 @@ class ClassAncestorsRuleTest extends RuleTestCase
 				192,
 			],
 			[
+				'Template type T is declared as contravariant, but occurs in covariant position in extended type ClassAncestorsExtends\FooGeneric8<T, T> of class ClassAncestorsExtends\FooGeneric10.',
+				201,
+			],
+			[
+				'Template type T is declared as contravariant, but occurs in invariant position in extended type ClassAncestorsExtends\FooGeneric8<T, T> of class ClassAncestorsExtends\FooGeneric10.',
+				201,
+			],
+			[
 				'Class ClassAncestorsExtends\FilterIteratorChild extends generic class FilterIterator but does not specify its types: TKey, TValue, TIterator',
-				197,
+				215,
 				'You can turn this off by setting <fg=cyan>checkGenericClassInNonGenericObjectType: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);

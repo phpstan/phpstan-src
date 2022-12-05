@@ -13,3 +13,9 @@ interface Out {
 	/** @return T */
 	public function get();
 }
+
+/** @template-contravariant T */
+interface In {
+	/** @return T */
+	public function get();
+}

@@ -54,7 +54,7 @@ class UnusedFunctionParametersCheck
 	}
 
 	/**
-	 * @param Node[]|Node|scalar $node
+	 * @param Node[]|Node|scalar|null $node
 	 * @return string[]
 	 */
 	private function getUsedVariables(Scope $scope, $node): array

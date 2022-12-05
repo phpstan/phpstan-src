@@ -563,7 +563,7 @@ class FileTypeMapper
 	}
 
 	/**
-	 * @param Node[]|Node|scalar $node
+	 * @param Node[]|Node|scalar|null $node
 	 * @param Closure(Node $node): mixed $nodeCallback
 	 * @param Closure(Node $node, mixed $callbackResult): void $endNodeCallback
 	 */

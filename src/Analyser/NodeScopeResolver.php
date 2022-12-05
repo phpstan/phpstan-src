@@ -4064,7 +4064,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @param Node[]|Node|scalar $node
+	 * @param Node[]|Node|scalar|null $node
 	 * @param Node\Stmt\TraitUseAdaptation[] $adaptations
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */

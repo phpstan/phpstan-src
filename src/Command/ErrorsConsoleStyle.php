@@ -118,7 +118,11 @@ class ErrorsConsoleStyle extends SymfonyStyle
 	public function createProgressBar(int $max = 0): ProgressBar
 	{
 		$this->progressBar = parent::createProgressBar($max);
-		$this->progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s%');
+
+		$format = $this->getProgressBarFormat();
+		if ($format !== null) {
+			$this->progressBar->setFormat($format);
+		}
 
 		$ci = $this->isCiDetected();
 		$this->progressBar->setOverwrite(!$ci);
@@ -135,6 +139,22 @@ class ErrorsConsoleStyle extends SymfonyStyle
 		}
 
 		return $this->progressBar;
+	}
+
+	private function getProgressBarFormat(): ?string
+	{
+		$formatName = match ($this->getVerbosity()) {
+			OutputInterface::VERBOSITY_NORMAL => ProgressBar::FORMAT_NORMAL,
+			OutputInterface::VERBOSITY_VERBOSE => ProgressBar::FORMAT_VERBOSE,
+			OutputInterface::VERBOSITY_VERY_VERBOSE,
+			OutputInterface::VERBOSITY_DEBUG => ProgressBar::FORMAT_VERY_VERBOSE, // FORMAT_DEBUG shows invalid memory, avoid that
+			default => null,
+		};
+		if ($formatName === null) {
+			return null;
+		}
+
+		return ProgressBar::getFormatDefinition($formatName);
 	}
 
 	public function progressStart(int $max = 0): void

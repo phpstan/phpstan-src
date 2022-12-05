@@ -228,7 +228,7 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 	{
 		$formatter = $this->createErrorFormatter('editor://any', '%relFile%:%line%');
 		$error = new Error('Test', 'Foo.php', 12, true, self::DIRECTORY_PATH . '/rel/Foo.php');
-		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true), $this->getOutput(true));
+		$formatter->formatErrors(new AnalysisResult([$error], [], [], [], [], false, null, true, 0), $this->getOutput(true));
 
 		$this->assertStringContainsString('rel/Foo.php:12', $this->getOutputContent(true));
 	}

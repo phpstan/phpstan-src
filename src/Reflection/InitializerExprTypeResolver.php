@@ -81,6 +81,7 @@ class InitializerExprTypeResolver
 		private ReflectionProviderProvider $reflectionProviderProvider,
 		private PhpVersion $phpVersion,
 		private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
+		private bool $usePathConstantsAsConstantString = false,
 	)
 	{
 	}
@@ -120,11 +121,19 @@ class InitializerExprTypeResolver
 		}
 		if ($expr instanceof File) {
 			$file = $context->getFile();
-			return $file !== null ? (new ConstantStringType($file))->generalize(GeneralizePrecision::moreSpecific()) : new StringType();
+			if ($file === null) {
+				return new StringType();
+			}
+			$stringType = new ConstantStringType($file);
+			return $this->usePathConstantsAsConstantString ? $stringType : $stringType->generalize(GeneralizePrecision::moreSpecific());
 		}
 		if ($expr instanceof Dir) {
 			$file = $context->getFile();
-			return $file !== null ? (new ConstantStringType(dirname($file)))->generalize(GeneralizePrecision::moreSpecific()) : new StringType();
+			if ($file === null) {
+				return new StringType();
+			}
+			$stringType = new ConstantStringType(dirname($file));
+			return $this->usePathConstantsAsConstantString ? $stringType : $stringType->generalize(GeneralizePrecision::moreSpecific());
 		}
 		if ($expr instanceof Line) {
 			return new ConstantIntegerType($expr->getLine());

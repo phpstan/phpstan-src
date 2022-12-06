@@ -61,6 +61,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use function array_keys;
+use function array_merge;
 use function count;
 use function dirname;
 use function in_array;
@@ -361,8 +362,16 @@ class InitializerExprTypeResolver
 	 */
 	public function getConcatType(Expr $left, Expr $right, callable $getTypeCallback): Type
 	{
-		$leftStringType = $getTypeCallback($left)->toString();
-		$rightStringType = $getTypeCallback($right)->toString();
+		$leftType = $getTypeCallback($left);
+		$rightType = $getTypeCallback($right);
+
+		return $this->resolveConcatType($leftType, $rightType);
+	}
+
+	public function resolveConcatType(Type $left, Type $right): Type
+	{
+		$leftStringType = $left->toString();
+		$rightStringType = $right->toString();
 		if (TypeCombinator::union(
 			$leftStringType,
 			$rightStringType,
@@ -382,34 +391,33 @@ class InitializerExprTypeResolver
 			return $leftStringType->append($rightStringType);
 		}
 
+		$leftConstantStrings = $leftStringType->getConstantStrings();
+		$rightConstantStrings = $rightStringType->getConstantStrings();
+		$combinedConstantStringsCount = count($leftConstantStrings) * count($rightConstantStrings);
+
 		// we limit the number of union-types for performance reasons
-		if ($leftStringType instanceof UnionType && count($leftStringType->getTypes()) <= 16 && $rightStringType instanceof ConstantStringType) {
-			$constantStrings = $leftStringType->getConstantStrings();
-			if (count($constantStrings) > 0) {
-				$strings = [];
-				foreach ($constantStrings as $constantString) {
-					if ($constantString->getValue() === '') {
-						$strings[] = $rightStringType;
+		if ($combinedConstantStringsCount > 0 && $combinedConstantStringsCount <= 16) {
+			$strings = [];
+
+			foreach ($leftConstantStrings as $leftConstantString) {
+				if ($leftConstantString->getValue() === '') {
+					$strings = array_merge($strings, $rightConstantStrings);
+
+					continue;
+				}
+
+				foreach ($rightConstantStrings as $rightConstantString) {
+					if ($rightConstantString->getValue() === '') {
+						$strings[] = $leftConstantString;
 
 						continue;
 					}
-					$strings[] = $constantString->append($rightStringType);
+
+					$strings[] = $leftConstantString->append($rightConstantString);
 				}
-				return TypeCombinator::union(...$strings);
 			}
-		}
-		if ($rightStringType instanceof UnionType && count($rightStringType->getTypes()) <= 16 && $leftStringType instanceof ConstantStringType) {
-			$constantStrings = $rightStringType->getConstantStrings();
-			if (count($constantStrings) > 0) {
-				$strings = [];
-				foreach ($constantStrings as $constantString) {
-					if ($constantString->getValue() === '') {
-						$strings[] = $leftStringType;
 
-						continue;
-					}
-					$strings[] = $leftStringType->append($constantString);
-				}
+			if (count($strings) > 0) {
 				return TypeCombinator::union(...$strings);
 			}
 		}

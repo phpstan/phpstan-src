@@ -21,6 +21,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use Symfony\Component\Finder\Finder;
 use function array_diff_key;
 use function array_map;
@@ -174,6 +175,7 @@ class ContainerFactory
 
 		BleedingEdgeToggle::setBleedingEdge($container->getParameter('featureToggles')['bleedingEdge']);
 		AccessoryArrayListType::setListTypeEnabled($container->getParameter('featureToggles')['listType']);
+		TemplateTypeVariance::setInvarianceCompositionEnabled($container->getParameter('featureToggles')['invarianceComposition']);
 	}
 
 	public function clearOldContainers(string $tempDirectory): void

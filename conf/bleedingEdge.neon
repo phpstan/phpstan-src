@@ -24,3 +24,4 @@ parameters:
 		nullContextForVoidReturningFunctions: true
 		unescapeStrings: true
 		duplicateStubs: true
+		invarianceComposition: true

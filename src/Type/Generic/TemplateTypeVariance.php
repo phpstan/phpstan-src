@@ -21,6 +21,8 @@ class TemplateTypeVariance
 	/** @var self[] */
 	private static array $registry;
 
+	private static bool $invarianceCompositionEnabled = false;
+
 	private function __construct(private int $value)
 	{
 	}
@@ -93,7 +95,7 @@ class TemplateTypeVariance
 			return self::createInvariant();
 		}
 
-		if ($this->invariant()) {
+		if (self::$invarianceCompositionEnabled && $this->invariant()) {
 			return self::createInvariant();
 		}
 
@@ -175,6 +177,11 @@ class TemplateTypeVariance
 	public static function __set_state(array $properties): self
 	{
 		return new self($properties['value']);
+	}
+
+	public static function setInvarianceCompositionEnabled(bool $enabled): void
+	{
+		self::$invarianceCompositionEnabled = $enabled;
 	}
 
 }

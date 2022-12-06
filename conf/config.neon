@@ -54,6 +54,7 @@ parameters:
 		nullContextForVoidReturningFunctions: false
 		unescapeStrings: false
 		duplicateStubs: false
+		invarianceComposition: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -271,6 +272,7 @@ parametersSchema:
 		nullContextForVoidReturningFunctions: bool()
 		unescapeStrings: bool()
 		duplicateStubs: bool()
+		invarianceComposition: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

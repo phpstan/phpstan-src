@@ -53,4 +53,9 @@ class ImplodeFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Arrays/data/bug-6000.php'], []);
 	}
 
+	public function testBug8467a(): void
+	{
+		$this->analyse([__DIR__ . '/../Arrays/data/bug-8467a.php'], []);
+	}
+
 }

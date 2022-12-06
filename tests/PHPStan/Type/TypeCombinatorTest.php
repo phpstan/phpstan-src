@@ -824,7 +824,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 				],
 				UnionType::class,
-				'float|int|string',
+				'(int|string)|float',
 			],
 			[
 				[
@@ -832,7 +832,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 				],
 				UnionType::class,
-				'float|int|string',
+				'(int|string)|float',
 			],
 			[
 				[
@@ -840,7 +840,15 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 				],
 				UnionType::class,
-				'float|int|string',
+				'(int|string)|float',
+			],
+			[
+				[
+					new BenevolentUnionType([new FloatType(), new IntegerType()]),
+					new NullType(),
+				],
+				UnionType::class,
+				'(float|int)|null',
 			],
 			[
 				[
@@ -1365,7 +1373,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new FloatType(),
 				],
 				UnionType::class,
-				'float|int|string',
+				'(int|string)|float',
 			],
 			[
 				[
@@ -1373,7 +1381,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new UnionType([new IntegerType(), new StringType(), new FloatType()]),
 				],
 				UnionType::class,
-				'float|int|string',
+				'(int|string)|float',
 			],
 			[
 				[
@@ -1389,7 +1397,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new UnionType([new ConstantIntegerType(1), new ConstantIntegerType(2), new FloatType()]),
 				],
 				UnionType::class,
-				'float|int|string',
+				'(int|string)|float',
 			],
 			[
 				[

@@ -66,8 +66,6 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
-use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
-use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
@@ -1088,63 +1086,25 @@ class MutatingScope implements Scope
 		} elseif ($node instanceof String_) {
 			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
 		} elseif ($node instanceof Node\Scalar\Encapsed) {
-			$parts = [];
+			$resultType = null;
+
 			foreach ($node->parts as $part) {
-				if ($part instanceof EncapsedStringPart) {
-					$parts[] = new ConstantStringType($part->value);
+				$partType = $part instanceof EncapsedStringPart
+					? new ConstantStringType($part->value)
+					: $this->getType($part);
+				if ($resultType === null) {
+					$resultType = $partType;
+
 					continue;
 				}
 
-				$partStringType = $this->getType($part)->toString();
-				if ($partStringType instanceof ErrorType) {
-					return new ErrorType();
+				$resultType = $this->initializerExprTypeResolver->resolveConcatType($resultType, $partType);
+				if (! $resultType instanceof ConstantStringType && ! $resultType instanceof UnionType) {
+					return $resultType;
 				}
-
-				$parts[] = $partStringType;
 			}
 
-			$constantString = new ConstantStringType('');
-			foreach ($parts as $part) {
-				if ($part instanceof ConstantStringType) {
-					$constantString = $constantString->append($part);
-					continue;
-				}
-
-				$isNonEmpty = false;
-				$isNonFalsy = false;
-				$isLiteralString = true;
-				foreach ($parts as $partType) {
-					if ($partType->isNonFalsyString()->yes()) {
-						$isNonFalsy = true;
-					}
-					if ($partType->isNonEmptyString()->yes()) {
-						$isNonEmpty = true;
-					}
-					if ($partType->isLiteralString()->yes()) {
-						continue;
-					}
-					$isLiteralString = false;
-				}
-
-				$accessoryTypes = [];
-				if ($isNonFalsy === true) {
-					$accessoryTypes[] = new AccessoryNonFalsyStringType();
-				} elseif ($isNonEmpty === true) {
-					$accessoryTypes[] = new AccessoryNonEmptyStringType();
-				}
-
-				if ($isLiteralString === true) {
-					$accessoryTypes[] = new AccessoryLiteralStringType();
-				}
-				if (count($accessoryTypes) > 0) {
-					$accessoryTypes[] = new StringType();
-					return new IntersectionType($accessoryTypes);
-				}
-
-				return new StringType();
-			}
-
-			return $constantString;
+			return $resultType ?? new ConstantStringType('');
 		} elseif ($node instanceof DNumber) {
 			return $this->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
 		} elseif ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {

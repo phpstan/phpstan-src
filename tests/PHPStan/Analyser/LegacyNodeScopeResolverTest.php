@@ -2996,15 +2996,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$decrementedFooString',
 			],
 			[
-				'literal-string&non-falsy-string',
+				"'barbar'|'barfoo'|'foobar'|'foofoo'",
 				'$conditionalString . $conditionalString',
 			],
 			[
-				'literal-string&non-falsy-string',
+				"'baripsum'|'barlorem'|'fooipsum'|'foolorem'",
 				'$conditionalString . $anotherConditionalString',
 			],
 			[
-				'literal-string&non-falsy-string',
+				"'ipsumbar'|'ipsumfoo'|'lorembar'|'loremfoo'",
 				'$anotherConditionalString . $conditionalString',
 			],
 			[

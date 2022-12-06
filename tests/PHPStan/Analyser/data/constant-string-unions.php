@@ -1,10 +1,10 @@
 <?php
 
-namespace Bug6439;
+namespace ConstantStringUnions;
 
 use function PHPStan\Testing\assertType;
 
-
+// See https://github.com/phpstan/phpstan/issues/6439
 class HelloWorld
 {
 	public function unionOnLeft(string $name, ?int $gesperrt = null, ?int $adaid = null):void
@@ -33,6 +33,28 @@ class HelloWorld
 		assertType("'branch-a general'|'branch-b branch-a general'|'branch-b general'|'general'", $string);
 	}
 
+	public function unionOnBoth():void
+	{
+		$left = rand() ? 'a' : 'b';
+		$right = rand() ? 'x' : 'y';
+		assertType("'ax'|'ay'|'bx'|'by'", $left . $right);
+	}
+
+	public function encapsedString():void
+	{
+		$str = rand() ? 'a' : 'b';
+		$int = rand() ? 1 : 0;
+		$float = rand() ? 1.0 : 2.0;
+		$bool = (bool) rand();
+		$nullable = rand() ? 'a' : null;
+		assertType("'.a.'|'.b.'", ".$str.");
+		assertType("'.0.'|'.1.'", ".$int.");
+		assertType("'.1.'|'.2.'", ".$float.");
+		assertType("'..'|'.1.'", ".$bool.");
+		assertType("'..'|'.a.'", ".$nullable.");
+		assertType("'.a.0.'|'.a.1.'|'.b.0.'|'.b.1.'", ".$str.$int.");
+	}
+
 	/**
 	 * @param '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15' $s15
 	 * @param '1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9'|'10'|'11'|'12'|'13'|'14'|'15'|'16' $s16
@@ -51,6 +73,23 @@ class HelloWorld
 		assertType("'1'|'10'|'10a'|'11'|'11a'|'12'|'12a'|'13'|'13a'|'14'|'14a'|'15'|'15a'|'16'|'16a'|'1a'|'2'|'2a'|'3'|'3a'|'4'|'4a'|'5'|'5a'|'6'|'6a'|'7'|'7a'|'8'|'8a'|'9'|'9a'", $s16);
 		// fallback to the more general form
 		assertType("literal-string&non-falsy-string", $s17);
+		$left = rand() ? 'a' : 'b';
+		$right = rand() ? 'x' : 'y';
+		$left .= $right;
+		$left .= $right;
+		$left .= $right;
+		assertType("'axxx'|'axxy'|'axyx'|'axyy'|'ayxx'|'ayxy'|'ayyx'|'ayyy'|'bxxx'|'bxxy'|'bxyx'|'bxyy'|'byxx'|'byxy'|'byyx'|'byyy'", $left);
+		$left .= $right;
+		assertType("literal-string&non-falsy-string", $left);
+
+		$left = rand() ? 'a' : 'b';
+		$right = rand() ? 'x' : 'y';
+		$left = "{$left}{$right}";
+		$left = "{$left}{$right}";
+		$left = "{$left}{$right}";
+		assertType("'axxx'|'axxy'|'axyx'|'axyy'|'ayxx'|'ayxy'|'ayyx'|'ayyy'|'bxxx'|'bxxy'|'bxyx'|'bxyy'|'byxx'|'byxy'|'byyx'|'byyy'", $left);
+		$left = "{$left}{$right}";
+		assertType("literal-string&non-falsy-string", $left);
 	}
 
 	/**

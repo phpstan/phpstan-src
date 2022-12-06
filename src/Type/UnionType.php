@@ -70,6 +70,9 @@ class UnionType implements CompoundType
 			if (!($type instanceof UnionType)) {
 				continue;
 			}
+			if ($type instanceof BenevolentUnionType) {
+				continue;
+			}
 			if ($type instanceof TemplateType) {
 				continue;
 			}

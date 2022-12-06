@@ -145,25 +145,12 @@ final class TypeCombinator
 			return new NeverType();
 		}
 
-		$benevolentTypes = [];
-		$benevolentUnionObject = null;
 		// transform A | (B | C) to A | B | C
 		for ($i = 0; $i < $typesCount; $i++) {
-			if ($types[$i] instanceof BenevolentUnionType) {
-				if ($types[$i] instanceof TemplateBenevolentUnionType && $benevolentUnionObject === null) {
-					$benevolentUnionObject = $types[$i];
-				}
-				$benevolentTypesCount = 0;
-				$typesInner = $types[$i]->getTypes();
-				foreach ($typesInner as $benevolentInnerType) {
-					$benevolentTypesCount++;
-					$benevolentTypes[$benevolentInnerType->describe(VerbosityLevel::value())] = $benevolentInnerType;
-				}
-				array_splice($types, $i, 1, $typesInner);
-				$typesCount += $benevolentTypesCount - 1;
+			if (!($types[$i] instanceof UnionType)) {
 				continue;
 			}
-			if (!($types[$i] instanceof UnionType)) {
+			if ($types[$i] instanceof BenevolentUnionType) {
 				continue;
 			}
 			if ($types[$i] instanceof TemplateType) {
@@ -345,25 +332,6 @@ final class TypeCombinator
 		}
 		if ($typesCount === 1) {
 			return $types[0];
-		}
-
-		if ($benevolentTypes !== []) {
-			$tempTypes = $types;
-			foreach ($tempTypes as $i => $type) {
-				if (!isset($benevolentTypes[$type->describe(VerbosityLevel::value())])) {
-					break;
-				}
-
-				unset($tempTypes[$i]);
-			}
-
-			if ($tempTypes === []) {
-				if ($benevolentUnionObject instanceof TemplateBenevolentUnionType) {
-					return $benevolentUnionObject->withTypes($types);
-				}
-
-				return new BenevolentUnionType($types);
-			}
 		}
 
 		return new UnionType($types, true);

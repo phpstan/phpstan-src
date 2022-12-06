@@ -10,9 +10,9 @@ class Foo
 	public function nonEmpty(array $arr, string $string): void
 	{
 		/** @var non-empty-array<string> $arr */
-		assertType('int|string|false', array_search('foo', $arr, true));
-		assertType('int|string|false', array_search('foo', $arr));
-		assertType('int|string|false', array_search($string, $arr, true));
+		assertType('(int|string)|false', array_search('foo', $arr, true));
+		assertType('(int|string)|false', array_search('foo', $arr));
+		assertType('(int|string)|false', array_search($string, $arr, true));
 	}
 
 	public function normalArrays(array $arr, string $string): void

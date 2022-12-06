@@ -351,31 +351,23 @@ class CallMethodsRuleTest extends RuleTestCase
 				791,
 			],
 			[
-				'Parameter #1 $i of method Test\CheckDefaultArrayKeys::doBar() expects int, int|stdClass|string given.',
+				'Parameter #1 $i of method Test\CheckDefaultArrayKeys::doBar() expects int, (int|string)|stdClass given.',
 				797,
 			],
 			[
-				'Parameter #1 $str of method Test\CheckDefaultArrayKeys::doBaz() expects string, int|stdClass|string given.',
+				'Parameter #1 $str of method Test\CheckDefaultArrayKeys::doBaz() expects string, (int|string)|stdClass given.',
 				798,
 			],
 			[
-				'Parameter #1 $intOrString of method Test\CheckDefaultArrayKeys::doLorem() expects int|string, int|stdClass|string given.',
+				'Parameter #1 $intOrString of method Test\CheckDefaultArrayKeys::doLorem() expects int|string, (int|string)|stdClass given.',
 				799,
 			],
 			[
-				'Parameter #1 $stdOrInt of method Test\CheckDefaultArrayKeys::doIpsum() expects int|stdClass, int|stdClass|string given.', // should not expect this
-				800,
-			],
-			[
-				'Parameter #1 $stdOrString of method Test\CheckDefaultArrayKeys::doDolor() expects stdClass|string, int|stdClass|string given.', // should not expect this
-				801,
-			],
-			[
-				'Parameter #1 $dateOrString of method Test\CheckDefaultArrayKeys::doSit() expects DateTimeImmutable|string, int|stdClass|string given.',
+				'Parameter #1 $dateOrString of method Test\CheckDefaultArrayKeys::doSit() expects DateTimeImmutable|string, (int|string)|stdClass given.',
 				802,
 			],
 			[
-				'Parameter #1 $std of method Test\CheckDefaultArrayKeys::doAmet() expects stdClass, int|stdClass|string given.',
+				'Parameter #1 $std of method Test\CheckDefaultArrayKeys::doAmet() expects stdClass, (int|string)|stdClass given.',
 				803,
 			],
 			[
@@ -727,31 +719,23 @@ class CallMethodsRuleTest extends RuleTestCase
 				791,
 			],
 			[
-				'Parameter #1 $i of method Test\CheckDefaultArrayKeys::doBar() expects int, int|stdClass|string given.',
+				'Parameter #1 $i of method Test\CheckDefaultArrayKeys::doBar() expects int, (int|string)|stdClass given.',
 				797,
 			],
 			[
-				'Parameter #1 $str of method Test\CheckDefaultArrayKeys::doBaz() expects string, int|stdClass|string given.',
+				'Parameter #1 $str of method Test\CheckDefaultArrayKeys::doBaz() expects string, (int|string)|stdClass given.',
 				798,
 			],
 			[
-				'Parameter #1 $intOrString of method Test\CheckDefaultArrayKeys::doLorem() expects int|string, int|stdClass|string given.',
+				'Parameter #1 $intOrString of method Test\CheckDefaultArrayKeys::doLorem() expects int|string, (int|string)|stdClass given.',
 				799,
 			],
 			[
-				'Parameter #1 $stdOrInt of method Test\CheckDefaultArrayKeys::doIpsum() expects int|stdClass, int|stdClass|string given.', // should not expect this
-				800,
-			],
-			[
-				'Parameter #1 $stdOrString of method Test\CheckDefaultArrayKeys::doDolor() expects stdClass|string, int|stdClass|string given.', // should not expect this
-				801,
-			],
-			[
-				'Parameter #1 $dateOrString of method Test\CheckDefaultArrayKeys::doSit() expects DateTimeImmutable|string, int|stdClass|string given.',
+				'Parameter #1 $dateOrString of method Test\CheckDefaultArrayKeys::doSit() expects DateTimeImmutable|string, (int|string)|stdClass given.',
 				802,
 			],
 			[
-				'Parameter #1 $std of method Test\CheckDefaultArrayKeys::doAmet() expects stdClass, int|stdClass|string given.',
+				'Parameter #1 $std of method Test\CheckDefaultArrayKeys::doAmet() expects stdClass, (int|string)|stdClass given.',
 				803,
 			],
 			[
@@ -2813,6 +2797,32 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/reflection-class-issue-8679.php'], []);
+	}
+
+	public function testBug7049(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = false;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-7049.php'], []);
+	}
+
+	public function testBug8268(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkThisOnly = false;
+		$this->checkNullables = false;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-8268.php'], []);
 	}
 
 	public function testNonEmptyArray(): void

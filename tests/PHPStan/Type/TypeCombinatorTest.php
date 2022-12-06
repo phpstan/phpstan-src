@@ -13,6 +13,8 @@ use DynamicProperties\FinalFoo;
 use Exception;
 use InvalidArgumentException;
 use Iterator;
+use LengthException;
+use LogicException;
 use ObjectShapesAcceptance\ClassWithFooIntProperty;
 use PHPStan\Fixture\FinalClass;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
@@ -828,7 +830,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 				],
 				UnionType::class,
-				'float|int|string',
+				'(int|string)|float',
 			],
 			[
 				[
@@ -836,7 +838,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 				],
 				UnionType::class,
-				'float|int|string',
+				'(int|string)|float',
 			],
 			[
 				[
@@ -844,7 +846,86 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 				],
 				UnionType::class,
-				'float|int|string',
+				'(int|string)|float',
+			],
+			[
+				[
+					new BenevolentUnionType([new FloatType(), new IntegerType()]),
+					new NullType(),
+				],
+				UnionType::class,
+				'(float|int)|null',
+			],
+			[
+				[
+					new BenevolentUnionType([new IntegerType(), new StringType()]),
+					new ConstantStringType('1'),
+				],
+				UnionType::class,
+				'(int|string)',
+			],
+			[
+				[
+					new BenevolentUnionType([new IntegerType(), new StringType()]),
+					new StringType(),
+				],
+				UnionType::class,
+				'(int|string)',
+			],
+			[
+				[
+					new BenevolentUnionType([new IntegerType(), new StringType()]),
+					new ConstantBooleanType(true),
+				],
+				UnionType::class,
+				'(int|string)|true',
+			],
+			[
+				[
+					new BenevolentUnionType([new IntegerType(), new StringType()]),
+					new BenevolentUnionType([new ConstantIntegerType(17), new ConstantStringType('foo')]),
+					new BenevolentUnionType([new FloatType(), new IntegerType()]),
+					new BenevolentUnionType([new ConstantBooleanType(true), new ConstantFloatType(17)]),
+					new NullType(),
+				],
+				UnionType::class,
+				'(float|int)|(17.0|true)|(int|string)|null',
+			],
+			[
+				[
+					new BenevolentUnionType([new ConstantIntegerType(1), new ConstantIntegerType(2)]),
+					new StringType(),
+				],
+				UnionType::class,
+				'(1|2)|string',
+			],
+			[
+				[
+					new BenevolentUnionType([new ConstantStringType('1'), new ConstantStringType('2')]),
+					new StringType(),
+				],
+				StringType::class,
+				'string',
+			],
+			[
+				[
+					new BenevolentUnionType([new ConstantIntegerType(1), new ConstantIntegerType(2), new ConstantIntegerType(3)]),
+					IntegerRangeType::fromInterval(2, 3),
+				],
+				UnionType::class,
+				'(1|2|3)',
+			],
+			[
+				[
+					new BenevolentUnionType([
+						new ObjectType(InvalidArgumentException::class),
+						new ObjectType(LengthException::class),
+						new ObjectType(stdClass::class),
+					]),
+					new ObjectType(LogicException::class),
+				],
+				UnionType::class,
+				'(InvalidArgumentException|LengthException|stdClass)|LogicException',
 			],
 			[
 				[
@@ -1355,7 +1436,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new FloatType(),
 				],
 				UnionType::class,
-				'float|int|string',
+				'(int|string)|float',
 			],
 			[
 				[
@@ -1363,7 +1444,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new UnionType([new IntegerType(), new StringType(), new FloatType()]),
 				],
 				UnionType::class,
-				'float|int|string',
+				'(int|string)|float',
 			],
 			[
 				[
@@ -1379,7 +1460,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new UnionType([new ConstantIntegerType(1), new ConstantIntegerType(2), new FloatType()]),
 				],
 				UnionType::class,
-				'float|int|string',
+				'(int|string)|float',
 			],
 			[
 				[

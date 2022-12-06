@@ -4942,11 +4942,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_search(new stdClass, $generalStringKeys, true)',
 			],
 			[
-				'int|string|false',
+				'(int|string)|false',
 				'array_search($mixed, $array, true)',
 			],
 			[
-				'int|string|false',
+				'(int|string)|false',
 				'array_search($mixed, $array, false)',
 			],
 			[
@@ -5006,15 +5006,15 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'array_search(\'id\', doFoo() ? $thisDoesNotExistAndIsMixedInUnion : false, true)',
 			],
 			[
-				'int|string|false',
+				'(int|string)|false',
 				'array_search(1, $generalIntegers, true)',
 			],
 			[
-				'int|string|false',
+				'(int|string)|false',
 				'array_search(1, $generalIntegers, false)',
 			],
 			[
-				'int|string|false',
+				'(int|string)|false',
 				'array_search(1, $generalIntegers)',
 			],
 			[
@@ -8820,11 +8820,11 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'json_decode($mixed, false, 512, $integer | JSON_THROW_ON_ERROR | JSON_NUMERIC_CHECK)',
 			],
 			[
-				'int|string|null',
+				'(int|string)|null',
 				'array_key_first($mixedArray)',
 			],
 			[
-				'int|string|null',
+				'(int|string)|null',
 				'array_key_last($mixedArray)',
 			],
 			[
@@ -8904,7 +8904,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$hrtime3',
 			],
 			[
-				'array{int, int}|float|int',
+				'(float|int)|array{int, int}',
 				'$hrtime4',
 			],
 		];

@@ -2,6 +2,8 @@
 
 namespace Bug8467a;
 
+use function PHPStan\Testing\assertType;
+
 /**
  * @phpstan-type AutoloadRules array{psr-0?: array<string, string|string[]>, psr-4?: array<string, string|string[]>, classmap?: list<string>, files?: list<string>, exclude-from-classmap?: list<string>}
  */
@@ -25,9 +27,11 @@ class Test {
 		if (\count($package->getAutoload()) > 0) {
 			$autoloadConfig = $package->getAutoload();
 			foreach ($autoloadConfig as $type => $autoloads) {
+				assertType('array<int<0, max>|string, array<string>|string>', $autoloadConfig[$type]);
 				if ($type === 'psr-0' || $type === 'psr-4') {
 
 				} elseif ($type === 'classmap') {
+					assertType('list<string>', $autoloadConfig[$type]);
 					implode(', ', $autoloadConfig[$type]);
 				}
 			}

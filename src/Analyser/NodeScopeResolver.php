@@ -3992,16 +3992,18 @@ class NodeScopeResolver
 			}
 		}
 
+		$constantArrays = $iterateeType->getConstantArrays();
 		if (
 			$stmt->getDocComment() === null
-			&& $iterateeType instanceof ConstantArrayType
+			&& $iterateeType->isConstantArray()->yes()
+			&& count($constantArrays) === 1
 			&& $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)
 			&& $stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)
 		) {
 			$valueConditionalHolders = [];
 			$arrayDimFetchConditionalHolders = [];
-			foreach ($iterateeType->getKeyTypes() as $i => $keyType) {
-				$valueType = $iterateeType->getValueTypes()[$i];
+			foreach ($constantArrays[0]->getKeyTypes() as $i => $keyType) {
+				$valueType = $constantArrays[0]->getValueTypes()[$i];
 				$holder = new ConditionalExpressionHolder([
 					'$' . $stmt->keyVar->name => ExpressionTypeHolder::createYes(new Variable($stmt->keyVar->name), $keyType),
 				], new ExpressionTypeHolder($stmt->valueVar, $valueType, TrinaryLogic::createYes()));

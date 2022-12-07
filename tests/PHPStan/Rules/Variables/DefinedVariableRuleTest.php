@@ -514,11 +514,11 @@ class DefinedVariableRuleTest extends RuleTestCase
 						10,
 					],
 					[
-						'Undefined variable: $key',
+						'Variable $key might not be defined.',
 						19,
 					],
 					[
-						'Undefined variable: $val',
+						'Variable $val might not be defined.',
 						20,
 					],
 					[
@@ -526,11 +526,11 @@ class DefinedVariableRuleTest extends RuleTestCase
 						21,
 					],
 					[
-						'Undefined variable: $key',
+						'Variable $key might not be defined.',
 						32,
 					],
 					[
-						'Undefined variable: $val',
+						'Variable $val might not be defined.',
 						33,
 					],
 					[
@@ -554,7 +554,7 @@ class DefinedVariableRuleTest extends RuleTestCase
 						62,
 					],
 					[
-						'Undefined variable: $key',
+						'Variable $key might not be defined.',
 						75,
 					],
 					[

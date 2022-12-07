@@ -70,8 +70,9 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 			/** @var string[] $pathArray */
 			$pathArray = explode($directorySeparator, $path);
 			$pathTempParts = [];
+			$pathArraySize = count($pathArray);
 			foreach ($pathArray as $i => $pathPart) {
-				if (str_ends_with($pathPart, '.php')) {
+				if ($i === $pathArraySize - 1 && str_ends_with($pathPart, '.php')) {
 					continue;
 				}
 				if (!isset($pathToTrimArray[$i])) {

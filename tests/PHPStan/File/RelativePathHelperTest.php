@@ -142,6 +142,40 @@ class RelativePathHelperTest extends TestCase
 				'/usr/app/src/analyzed.php',
 				'/usr/app/src/analyzed.php',
 			],
+			[
+				'/Users/ondrej/Downloads/phpstan-wtf/normal.php',
+				[
+					'/Users/ondrej/Downloads/phpstan-wtf/normal.php/src',
+				],
+				'/Users/ondrej/Downloads/phpstan-wtf/normal.php/src/index.php',
+				'index.php',
+			],
+			[
+				'/Users/ondrej/Downloads/phpstan-wtf/normal',
+				[
+					'/Users/ondrej/Downloads/phpstan-wtf/normal/src',
+				],
+				'/Users/ondrej/Downloads/phpstan-wtf/normal/src/index.php',
+				'index.php',
+			],
+			[
+				'/Users/ondrej/Downloads/phpstan-wtf/normal.php',
+				[
+					'/Users/ondrej/Downloads/phpstan-wtf/normal.php/src',
+					'/Users/ondrej/Downloads/phpstan-wtf/normal.php/tests',
+				],
+				'/Users/ondrej/Downloads/phpstan-wtf/normal.php/src/index.php',
+				'src/index.php',
+			],
+			[
+				'/Users/ondrej/Downloads/phpstan-wtf/normal',
+				[
+					'/Users/ondrej/Downloads/phpstan-wtf/normal/src',
+					'/Users/ondrej/Downloads/phpstan-wtf/normal/tests',
+				],
+				'/Users/ondrej/Downloads/phpstan-wtf/normal/src/index.php',
+				'src/index.php',
+			],
 		];
 	}
 

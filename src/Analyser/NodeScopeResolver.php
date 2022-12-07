@@ -862,7 +862,11 @@ class NodeScopeResolver
 					$finalScope = $finalScope->mergeWith($scope);
 				}
 			} elseif (!$this->polluteScopeWithAlwaysIterableForeach) {
-				$finalScope = $scope->processAlwaysIterableForeachScopeWithoutPollute($finalScope);
+				$finalScope = $scope->processAlwaysIterableForeachScopeWithoutPollute($finalScope)
+					->invalidateExpression($stmt->valueVar);
+				if ($stmt->keyVar !== null) {
+					$finalScope = $finalScope->invalidateExpression($stmt->keyVar);
+				}
 				// get types from finalScope, but don't create new variables
 			}
 

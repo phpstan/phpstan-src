@@ -86,6 +86,7 @@ parameters:
 	checkTooWideReturnTypesInProtectedAndPublicMethods: false
 	checkUninitializedProperties: false
 	checkDynamicProperties: false
+	deprecationRulesInstalled: false
 	inferPrivatePropertyTypeFromConstructor: false
 	reportMaybes: false
 	reportMaybesInMethodSignatures: false
@@ -303,6 +304,7 @@ parametersSchema:
 	checkTooWideReturnTypesInProtectedAndPublicMethods: bool()
 	checkUninitializedProperties: bool()
 	checkDynamicProperties: bool()
+	deprecationRulesInstalled: bool()
 	inferPrivatePropertyTypeFromConstructor: bool()
 
 	tipsOfTheDay: bool()

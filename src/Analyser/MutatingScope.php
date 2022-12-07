@@ -119,7 +119,6 @@ use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_pop;
-use function array_reverse;
 use function array_slice;
 use function count;
 use function explode;
@@ -3735,7 +3734,7 @@ class MutatingScope implements Scope
 		}
 
 		foreach ($scope->conditionalExpressions as $conditionalExprString => $conditionalExpressions) {
-			foreach (array_reverse($conditionalExpressions) as $conditionalExpression) {
+			foreach ($conditionalExpressions as $conditionalExpression) {
 				foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
 					if (!array_key_exists($holderExprString, $specifiedExpressions) || !$specifiedExpressions[$holderExprString]->equals($conditionalTypeHolder)) {
 						continue 2;
@@ -3745,10 +3744,15 @@ class MutatingScope implements Scope
 				if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
 					unset($scope->expressionTypes[$conditionalExprString]);
 				} else {
-					$scope->expressionTypes[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+					$scope->expressionTypes[$conditionalExprString] = array_key_exists($conditionalExprString, $scope->expressionTypes)
+						? new ExpressionTypeHolder(
+							$scope->expressionTypes[$conditionalExprString]->getExpr(),
+							TypeCombinator::intersect($scope->expressionTypes[$conditionalExprString]->getType(), $conditionalExpression->getTypeHolder()->getType()),
+							TrinaryLogic::maxMin($scope->expressionTypes[$conditionalExprString]->getCertainty(), $conditionalExpression->getTypeHolder()->getCertainty()),
+						)
+						: $conditionalExpression->getTypeHolder();
 					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
 				}
-				continue 2;
 			}
 		}
 

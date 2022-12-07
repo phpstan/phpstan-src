@@ -13,7 +13,7 @@ class Test {
 
 		if ($initialClone && isset($origCwd)) {
 			assertType('string', $origCwd);
-			assertType('null', $cwd);
+			assertType('string|null', $cwd); // could be null
 		}
 	}
 

@@ -20,7 +20,10 @@ use function strtolower;
 class ArrayFilterRule implements Rule
 {
 
-	public function __construct(private ReflectionProvider $reflectionProvider)
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private bool $treatPhpDocTypesAsCertain,
+	)
 	{
 	}
 
@@ -46,7 +49,11 @@ class ArrayFilterRule implements Rule
 			return [];
 		}
 
-		$arrayType = $scope->getType($args[0]->value);
+		if ($this->treatPhpDocTypesAsCertain) {
+			$arrayType = $scope->getType($args[0]->value);
+		} else {
+			$arrayType = $scope->getNativeType($args[0]->value);
+		}
 
 		if ($arrayType->isIterableAtLeastOnce()->no()) {
 			$message = 'Parameter #1 $array (%s) to function array_filter is empty, call has no effect.';

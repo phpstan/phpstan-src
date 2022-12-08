@@ -23,3 +23,5 @@ services:
 
 	-
 		class: PHPStan\Rules\Functions\ArrayFilterRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%

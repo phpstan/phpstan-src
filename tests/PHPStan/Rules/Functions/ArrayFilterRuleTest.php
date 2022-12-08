@@ -11,9 +11,11 @@ use PHPStan\Testing\RuleTestCase;
 class ArrayFilterRuleTest extends RuleTestCase
 {
 
+	private bool $treatPhpDocTypesAsCertain = true;
+
 	protected function getRule(): Rule
 	{
-		return new ArrayFilterRule($this->createReflectionProvider());
+		return new ArrayFilterRule($this->createReflectionProvider(), $this->treatPhpDocTypesAsCertain);
 	}
 
 	public function testFile(): void
@@ -66,6 +68,25 @@ class ArrayFilterRuleTest extends RuleTestCase
 		];
 
 		$this->analyse([__DIR__ . '/data/array_filter_empty.php'], $expectedErrors);
+	}
+
+	public function testBug2065WithPhpDocTypesAsCertain(): void
+	{
+		$expectedErrors = [
+			[
+				'Parameter #1 $array (array<class-string>) to function array_filter does not contain falsy values, the array will always stay the same.',
+				12,
+			],
+		];
+
+		$this->analyse([__DIR__ . '/data/bug-array-filter.php'], $expectedErrors);
+	}
+
+	public function testBug2065WithoutPhpDocTypesAsCertain(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+
+		$this->analyse([__DIR__ . '/data/bug-array-filter.php'], []);
 	}
 
 }

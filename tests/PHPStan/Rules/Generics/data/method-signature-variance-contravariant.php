@@ -69,4 +69,7 @@ class C {
 
 	/** @return Invariant<Out<X>> */
 	function m() {}
+
+	/** @return X */
+	private function n() {}
 }

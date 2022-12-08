@@ -20,20 +20,10 @@ class VarianceCheck
 		string $returnTypeMessage,
 		string $generalMessage,
 		bool $isStatic,
+		bool $isPrivate,
 	): array
 	{
 		$errors = [];
-
-		foreach ($parametersAcceptor->getParameters() as $parameterReflection) {
-			$variance = $isStatic
-				? TemplateTypeVariance::createStatic()
-				: TemplateTypeVariance::createContravariant();
-			$type = $parameterReflection->getType();
-			$message = sprintf($parameterTypeMessage, $parameterReflection->getName());
-			foreach ($this->check($variance, $type, $message) as $error) {
-				$errors[] = $error;
-			}
-		}
 
 		foreach ($parametersAcceptor->getTemplateTypeMap()->getTypes() as $templateType) {
 			if (!$templateType instanceof TemplateType
@@ -48,6 +38,21 @@ class VarianceCheck
 				$templateType->getName(),
 				$generalMessage,
 			))->build();
+		}
+
+		if ($isPrivate) {
+			return $errors;
+		}
+
+		foreach ($parametersAcceptor->getParameters() as $parameterReflection) {
+			$variance = $isStatic
+				? TemplateTypeVariance::createStatic()
+				: TemplateTypeVariance::createContravariant();
+			$type = $parameterReflection->getType();
+			$message = sprintf($parameterTypeMessage, $parameterReflection->getName());
+			foreach ($this->check($variance, $type, $message) as $error) {
+				$errors[] = $error;
+			}
 		}
 
 		$variance = TemplateTypeVariance::createCovariant();

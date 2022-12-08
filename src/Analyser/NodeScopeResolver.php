@@ -818,11 +818,11 @@ class NodeScopeResolver
 				$inForeachScope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 			}
 			$nodeCallback(new InForeachNode($stmt), $inForeachScope);
-			$bodyScope = $this->enterForeach($scope->filterByTruthyValue($arrayComparisonExpr), $stmt);
+			$bodyScope = $this->polluteScopeWithAlwaysIterableForeach ? $this->enterForeach($scope->filterByTruthyValue($arrayComparisonExpr), $stmt) : $this->enterForeach($scope, $stmt);
 			$count = 0;
 			do {
 				$prevScope = $bodyScope;
-				$bodyScope = $bodyScope->mergeWith($scope->filterByTruthyValue($arrayComparisonExpr));
+				$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
 				$bodyScope = $this->enterForeach($bodyScope, $stmt);
 				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
 				})->filterOutLoopExitPoints();
@@ -841,7 +841,7 @@ class NodeScopeResolver
 				$count++;
 			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
 
-			$bodyScope = $bodyScope->mergeWith($scope->filterByTruthyValue($arrayComparisonExpr));
+			$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
 			$bodyScope = $this->enterForeach($bodyScope, $stmt);
 			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope();

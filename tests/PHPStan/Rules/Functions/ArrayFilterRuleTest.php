@@ -70,50 +70,23 @@ class ArrayFilterRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/array_filter_empty.php'], $expectedErrors);
 	}
 
-	public function testFileWithoutPhpDocTypesAsCertain(): void
+	public function testBug2065WithPhpDocTypesAsCertain(): void
 	{
-		$this->treatPhpDocTypesAsCertain = false;
-
 		$expectedErrors = [
 			[
-				'Parameter #1 $array (array{1, 3}) to function array_filter does not contain falsy values, the array will always stay the same.',
-				11,
-			],
-			[
-				'Parameter #1 $array (array{\'test\'}) to function array_filter does not contain falsy values, the array will always stay the same.',
+				'Parameter #1 $array (array<class-string>) to function array_filter does not contain falsy values, the array will always stay the same.',
 				12,
-			],
-			[
-				'Parameter #1 $array (array{true, true}) to function array_filter does not contain falsy values, the array will always stay the same.',
-				17,
-			],
-			[
-				'Parameter #1 $array (array{stdClass}) to function array_filter does not contain falsy values, the array will always stay the same.',
-				18,
-			],
-			[
-				'Parameter #1 $array (array{0}) to function array_filter contains falsy values only, the result will always be an empty array.',
-				23,
-			],
-			[
-				'Parameter #1 $array (array{null}) to function array_filter contains falsy values only, the result will always be an empty array.',
-				24,
-			],
-			[
-				'Parameter #1 $array (array{null, null}) to function array_filter contains falsy values only, the result will always be an empty array.',
-				25,
-			],
-			[
-				'Parameter #1 $array (array{null, 0}) to function array_filter contains falsy values only, the result will always be an empty array.',
-				26,
-			],
-			[
-				'Parameter #1 $array (array{}) to function array_filter is empty, call has no effect.',
-				28,
 			],
 		];
 
-		$this->analyse([__DIR__ . '/data/array_filter_empty.php'], $expectedErrors);
+		$this->analyse([__DIR__ . '/data/bug-array-filter.php'], $expectedErrors);
+	}
+
+	public function testBug2065WithoutPhpDocTypesAsCertain(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+
+		$this->analyse([__DIR__ . '/data/bug-array-filter.php'], []);
 	}
 
 }

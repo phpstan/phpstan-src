@@ -69,4 +69,7 @@ class C {
 
 	/** @return Invariant<Out<X>> */
 	function m() {}
+
+	/** @param X $n */
+	private function n($n) {}
 }

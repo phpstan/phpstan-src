@@ -10,6 +10,7 @@
 		"clue/ndjson-react": "^1.0",
 		"composer/ca-bundle": "^1.2",
 		"composer/xdebug-handler": "^3.0.3",
+		"fidry/cpu-core-counter": "^0.4.0",
 		"hoa/compiler": "3.17.08.08",
 		"hoa/exception": "^1.0",
 		"hoa/regex": "1.17.01.13",

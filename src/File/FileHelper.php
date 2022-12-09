@@ -57,7 +57,7 @@ class FileHelper
 		if ($originalPath !== '') {
 			if ($originalPath[0] === '/') {
 				$isLocalPath = true;
-			} elseif (strlen($originalPath) >= 3 && $originalPath[0] === 'C' && $originalPath[1] === ':' && $originalPath[2] === '\\') {
+			} elseif (strlen($originalPath) >= 3 && $originalPath[0] >= 'A' && $originalPath[0] <= 'Z' && $originalPath[1] === ':' && $originalPath[2] === '\\') {
 				$isLocalPath = true;
 			}
 		}

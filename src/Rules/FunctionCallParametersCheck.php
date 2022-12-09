@@ -208,9 +208,9 @@ class FunctionCallParametersCheck
 		}
 
 		if (
-			$scope->getType($funcCall)->isVoid()->yes()
+			!$funcCall instanceof Node\Expr\New_
 			&& !$scope->isInFirstLevelStatement()
-			&& !$funcCall instanceof Node\Expr\New_
+			&& $scope->getType($funcCall)->isVoid()->yes()
 		) {
 			$errors[] = RuleErrorBuilder::message($messages[7])->line($funcCall->getLine())->build();
 		}

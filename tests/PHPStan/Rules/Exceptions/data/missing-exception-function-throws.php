@@ -56,3 +56,14 @@ function doBar3(): void
 {
 	throw new \LogicException(); // error
 }
+
+function testImmediatelyCalledFunctionsWithClosure(): void
+{
+	array_map(function () {
+		throw new \RuntimeException();
+	}, ['']);
+
+	array_filter([''], function () {
+		throw new \LogicException();
+	});
+}

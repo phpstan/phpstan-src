@@ -49,6 +49,14 @@ class MissingCheckedExceptionInFunctionThrowsRuleTest extends RuleTestCase
 				'Function MissingExceptionFunctionThrows\doBar3() throws checked exception LogicException but it\'s missing from the PHPDoc @throws tag.',
 				57,
 			],
+			[
+				'Function MissingExceptionFunctionThrows\testImmediatelyCalledFunctionsWithClosure() throws checked exception RuntimeException but it\'s missing from the PHPDoc @throws tag.',
+				62,
+			],
+			[
+				'Function MissingExceptionFunctionThrows\testImmediatelyCalledFunctionsWithClosure() throws checked exception LogicException but it\'s missing from the PHPDoc @throws tag.',
+				66,
+			],
 		]);
 	}
 

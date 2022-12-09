@@ -11804,7 +11804,7 @@ return [
 'strtotime' => ['int|false', 'time'=>'string', 'now='=>'int'],
 'strtoupper' => ['string', 'str'=>'string'],
 'strtr' => ['string', 'str'=>'string', 'from'=>'string', 'to'=>'string'],
-'strtr\'1' => ['string', 'str'=>'string', 'replace_pairs'=>'array'],
+'strtr\'1' => ['string', 'str'=>'string', 'replace_pairs'=>'array<string,string>'],
 'strval' => ['string', 'var'=>'mixed'],
 'substr' => ['__benevolent<string|false>', 'string'=>'string', 'start'=>'int', 'length='=>'int'],
 'substr_compare' => ['int<-1, 1>|false', 'main_str'=>'string', 'str'=>'string', 'offset'=>'int', 'length='=>'int', 'case_sensitivity='=>'bool'],

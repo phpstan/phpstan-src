@@ -10,6 +10,7 @@ use function ltrim;
 use function rtrim;
 use function str_replace;
 use function str_starts_with;
+use function strlen;
 use function strpos;
 use function substr;
 use function trim;
@@ -52,7 +53,14 @@ class FileHelper
 	/** @api */
 	public function normalizePath(string $originalPath, string $directorySeparator = DIRECTORY_SEPARATOR): string
 	{
-		$isLocalPath = $originalPath !== '' && $originalPath[0] === '/';
+		$isLocalPath = false;
+		if ($originalPath !== '') {
+			if ($originalPath[0] === '/') {
+				$isLocalPath = true;
+			} elseif (strlen($originalPath) >= 3 && $originalPath[0] === 'C' && $originalPath[1] === ':' && $originalPath[2] === '\\') {
+				$isLocalPath = true;
+			}
+		}
 
 		$matches = null;
 		if (!$isLocalPath) {

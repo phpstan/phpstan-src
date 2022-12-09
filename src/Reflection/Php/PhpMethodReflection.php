@@ -38,7 +38,6 @@ use function array_map;
 use function explode;
 use function filemtime;
 use function is_bool;
-use function is_file;
 use function sprintf;
 use function strtolower;
 use function time;
@@ -223,8 +222,8 @@ class PhpMethodReflection implements ExtendedMethodReflection
 			$filename = $this->declaringTrait->getFileName();
 		}
 
-		if (!$isNativelyVariadic && $filename !== null && is_file($filename)) {
-			$modifiedTime = filemtime($filename);
+		if (!$isNativelyVariadic && $filename !== null) {
+			$modifiedTime = @filemtime($filename);
 			if ($modifiedTime === false) {
 				$modifiedTime = time();
 			}

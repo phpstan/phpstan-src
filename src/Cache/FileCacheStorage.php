@@ -52,10 +52,6 @@ class FileCacheStorage implements CacheStorage
 		[,, $filePath] = $this->getFilePaths($key);
 
 		return (static function () use ($variableKey, $filePath) {
-			if (!is_file($filePath)) {
-				return null;
-			}
-
 			$cacheItem = @include $filePath;
 			if (!$cacheItem instanceof CacheItem) {
 				return null;

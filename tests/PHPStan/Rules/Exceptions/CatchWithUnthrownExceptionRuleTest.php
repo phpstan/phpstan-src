@@ -108,6 +108,18 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				'Dead catch - Exception is never thrown in the try block.',
 				532,
 			],
+			[
+				'Dead catch - LogicException is never thrown in the try block.',
+				556,
+			],
+			[
+				'Dead catch - OverflowException is never thrown in the try block.',
+				580,
+			],
+			[
+				'Dead catch - JsonException is never thrown in the try block.',
+				602,
+			],
 		]);
 	}
 

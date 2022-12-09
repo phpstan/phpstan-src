@@ -34,7 +34,7 @@ class CatchWithUnthrownExceptionRule implements Rule
 
 		return [
 			RuleErrorBuilder::message(
-				sprintf('Dead catch - %s is never thrown in the try block.', $node->getCaughtType()->describe(VerbosityLevel::typeOnly())),
+				sprintf('Dead catch - %s is never thrown in the try block.', $node->getUnthrownType()->describe(VerbosityLevel::typeOnly())),
 			)->line($node->getLine())->build(),
 		];
 	}

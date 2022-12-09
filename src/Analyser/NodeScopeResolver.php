@@ -1297,7 +1297,12 @@ class NodeScopeResolver
 				}
 				$throwPoints = $newThrowPoints;
 
-				if (count($matchingThrowPoints) === 0) {
+				$matchingThrowTypes = array_map(static fn (ThrowPoint $throwPoint): Type => $throwPoint->getType(), $matchingThrowPoints);
+				$matchingThrowUnion = TypeCombinator::union(... $matchingThrowTypes);
+				$unthrownCatchType = TypeCombinator::remove($catchType, $matchingThrowUnion);
+
+				//              if (!$unthrownCatchType instanceof NeverType) {
+				if (count($matchingThrowPoints) < count($catchNode->types) && !$unthrownCatchType instanceof NeverType) {
 					$throwableThrowPoints = [];
 					if ($originalCatchType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
 						foreach ($branchScopeResult->getThrowPoints() as $originalThrowPoint) {
@@ -1310,7 +1315,7 @@ class NodeScopeResolver
 					}
 
 					if (count($throwableThrowPoints) === 0) {
-						$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType, $originalCatchType), $scope);
+						$nodeCallback(new CatchWithUnthrownExceptionNode($catchNode, $catchType, $unthrownCatchType, $originalCatchType), $scope);
 						continue;
 					}
 

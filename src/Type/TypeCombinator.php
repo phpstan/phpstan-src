@@ -32,6 +32,7 @@ use function count;
 use function get_class;
 use function is_int;
 use function md5;
+use function ob_flush;
 use function sprintf;
 use function usort;
 
@@ -108,10 +109,14 @@ class TypeCombinator
 			return new NeverType();
 		}
 
+		$buckets = [];
 		$benevolentTypes = [];
 		$benevolentUnionObject = null;
-		// transform A | (B | C) to A | B | C
 		for ($i = 0; $i < $typesCount; $i++) {
+			if (!($types[$i] instanceof UnionType)) {
+				$buckets[] = [$types[$i]];
+				continue;
+			}
 			if ($types[$i] instanceof BenevolentUnionType) {
 				if ($types[$i] instanceof TemplateBenevolentUnionType && $benevolentUnionObject === null) {
 					$benevolentUnionObject = $types[$i];
@@ -126,95 +131,104 @@ class TypeCombinator
 				$typesCount += $benevolentTypesCount - 1;
 				continue;
 			}
-			if (!($types[$i] instanceof UnionType)) {
-				continue;
-			}
 			if ($types[$i] instanceof TemplateType) {
+				$buckets[] = [$types[$i]];
 				continue;
 			}
 
-			$typesInner = $types[$i]->getTypes();
-			array_splice($types, $i, 1, $typesInner);
-			$typesCount += count($typesInner) - 1;
-		}
+			if ($types[$i]->isNormalized()) {
+				$buckets[] = $types[$i]->getTypes();
+				continue;
+			}
 
-		if ($typesCount === 1) {
-			return $types[0];
+			foreach ($types[$i]->getTypes() as $type) {
+				$buckets[] = [$type];
+			}
 		}
 
 		$arrayTypes = [];
 		$arrayAccessoryTypes = [];
 		$scalarTypes = [];
 		$hasGenericScalarTypes = [];
-		for ($i = 0; $i < $typesCount; $i++) {
-			if ($types[$i] instanceof ConstantScalarType) {
-				$type = $types[$i];
-				$scalarTypes[get_class($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
-				unset($types[$i]);
-				continue;
-			}
-			if ($types[$i] instanceof BooleanType) {
-				$hasGenericScalarTypes[ConstantBooleanType::class] = true;
-			}
-			if ($types[$i] instanceof FloatType) {
-				$hasGenericScalarTypes[ConstantFloatType::class] = true;
-			}
-			if ($types[$i] instanceof IntegerType && !$types[$i] instanceof IntegerRangeType) {
-				$hasGenericScalarTypes[ConstantIntegerType::class] = true;
-			}
-			if ($types[$i] instanceof StringType && !$types[$i] instanceof ClassStringType) {
-				$hasGenericScalarTypes[ConstantStringType::class] = true;
-			}
-			if ($types[$i] instanceof IntersectionType) {
-				$intermediateArrayType = null;
-				$intermediateAccessoryTypes = [];
-				foreach ($types[$i]->getTypes() as $innerType) {
-					if ($innerType instanceof TemplateType) {
+		for ($i = 0; $i < count($buckets); $i++) {
+			for ($j = 0; $j < count($buckets[$i]); $j++) {
+				$type = $buckets[$i][$j];
+				if ($type instanceof ConstantScalarType) {
+					$scalarTypes[get_class($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
+					array_splice($buckets[$i], $j--, 1);
+					if (count($buckets[$i]) === 0) {
+						array_splice($buckets, $i--, 1);
 						continue 2;
 					}
-					if ($innerType instanceof ArrayType) {
-						$intermediateArrayType = $innerType;
-						continue;
-					}
-					if ($innerType instanceof AccessoryType || $innerType instanceof CallableType) {
-						if ($innerType instanceof HasOffsetValueType) {
-							$intermediateAccessoryTypes[sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()))][] = $innerType;
-							continue;
-						}
-
-						$intermediateAccessoryTypes[$innerType->describe(VerbosityLevel::cache())][] = $innerType;
-						continue;
-					}
-				}
-
-				if ($intermediateArrayType !== null) {
-					$arrayTypes[] = $intermediateArrayType;
-					$arrayAccessoryTypes[] = $intermediateAccessoryTypes;
-					unset($types[$i]);
 					continue;
 				}
-			}
-			if (!$types[$i] instanceof ArrayType) {
-				continue;
-			}
+				if ($type instanceof BooleanType) {
+					$hasGenericScalarTypes[ConstantBooleanType::class] = true;
+				}
+				if ($type instanceof FloatType) {
+					$hasGenericScalarTypes[ConstantFloatType::class] = true;
+				}
+				if ($type instanceof IntegerType && !$type instanceof IntegerRangeType) {
+					$hasGenericScalarTypes[ConstantIntegerType::class] = true;
+				}
+				if ($type instanceof StringType && !$type instanceof ClassStringType) {
+					$hasGenericScalarTypes[ConstantStringType::class] = true;
+				}
+				if ($type instanceof IntersectionType) {
+					$intermediateArrayType = null;
+					$intermediateAccessoryTypes = [];
+					foreach ($type->getTypes() as $innerType) {
+						if ($innerType instanceof TemplateType) {
+							continue 2;
+						}
+						if ($innerType instanceof ArrayType) {
+							$intermediateArrayType = $innerType;
+							continue;
+						}
+						if ($innerType instanceof AccessoryType || $innerType instanceof CallableType) {
+							if ($innerType instanceof HasOffsetValueType) {
+								$intermediateAccessoryTypes[sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()))][] = $innerType;
+								continue;
+							}
 
-			$arrayTypes[] = $types[$i];
+							$intermediateAccessoryTypes[$innerType->describe(VerbosityLevel::cache())][] = $innerType;
+							continue;
+						}
+					}
 
-			$intermediateAccessoryTypes = [];
-			if ($types[$i]->isIterableAtLeastOnce()->yes()) {
-				$nonEmpty = new NonEmptyArrayType();
-				$intermediateAccessoryTypes[$nonEmpty->describe(VerbosityLevel::cache())] = [$nonEmpty];
-			}
-			if ($types[$i]->isList()->yes() && AccessoryArrayListType::isListTypeEnabled()) {
-				$list = new AccessoryArrayListType();
-				$intermediateAccessoryTypes[$list->describe(VerbosityLevel::cache())] = [$list];
-			}
-			$arrayAccessoryTypes[] = $intermediateAccessoryTypes;
-			unset($types[$i]);
-		}
+					if ($intermediateArrayType !== null) {
+						$arrayTypes[] = $intermediateArrayType;
+						$arrayAccessoryTypes[] = $intermediateAccessoryTypes;
+						array_splice($buckets[$i], $j--, 1);
+						if (count($buckets[$i]) === 0) {
+							array_splice($buckets, $i--, 1);
+							continue 2;
+						}
+						continue;
+					}
+				}
+				if (!$type instanceof ArrayType) {
+					continue;
+				}
 
-		foreach ($scalarTypes as $classType => $scalarTypeItems) {
-			$scalarTypes[$classType] = array_values($scalarTypeItems);
+				$arrayTypes[] = $type;
+
+				$intermediateAccessoryTypes = [];
+				if ($type->isIterableAtLeastOnce()->yes()) {
+					$nonEmpty = new NonEmptyArrayType();
+					$intermediateAccessoryTypes[$nonEmpty->describe(VerbosityLevel::cache())] = [$nonEmpty];
+				}
+				if ($type->isList()->yes() && AccessoryArrayListType::isListTypeEnabled()) {
+					$list = new AccessoryArrayListType();
+					$intermediateAccessoryTypes[$list->describe(VerbosityLevel::cache())] = [$list];
+				}
+				$arrayAccessoryTypes[] = $intermediateAccessoryTypes;
+				array_splice($buckets[$i], $j--, 1);
+				if (count($buckets[$i]) === 0) {
+					array_splice($buckets, $i--, 1);
+					continue 2;
+				}
+			}
 		}
 
 		/** @var ArrayType[] $arrayTypes */
@@ -238,31 +252,14 @@ class TypeCombinator
 			$arrayAccessoryTypesToProcess[] = self::union(...$typesToUnion);
 		}
 
-		$types = array_values(
-			array_merge(
-				$types,
-				self::processArrayTypes($arrayTypes, $arrayAccessoryTypesToProcess),
-			),
-		);
-		$typesCount = count($types);
+		foreach (self::processArrayTypes($arrayTypes, $arrayAccessoryTypesToProcess) as $type) {
+			$buckets[] = [$type];
+		}
 
-		// simplify string[] | int[] to (string|int)[]
-		for ($i = 0; $i < $typesCount; $i++) {
-			if (! $types[$i] instanceof IterableType) {
-				continue;
-			}
+		// TODO simplify string[] | int[] to (string|int)[]
 
-			for ($j = $i + 1; $j < $typesCount; $j++) {
-				if ($types[$j] instanceof IterableType) {
-					$types[$i] = new IterableType(
-						self::union($types[$i]->getIterableKeyType(), $types[$j]->getIterableKeyType()),
-						self::union($types[$i]->getIterableValueType(), $types[$j]->getIterableValueType()),
-					);
-					array_splice($types, $j, 1);
-					$typesCount--;
-					continue 2;
-				}
-			}
+		foreach ($scalarTypes as $classType => $scalarTypeItems) {
+			$scalarTypes[$classType] = array_values($scalarTypeItems);
 		}
 
 		foreach ($scalarTypes as $classType => $scalarTypeItems) {
@@ -271,32 +268,37 @@ class TypeCombinator
 				continue;
 			}
 			if ($classType === ConstantBooleanType::class && count($scalarTypeItems) === 2) {
-				$types[] = new BooleanType();
-				$typesCount++;
+				$buckets[] = [new BooleanType()];
 				unset($scalarTypes[$classType]);
 				continue;
 			}
 
 			$scalarTypeItemsCount = count($scalarTypeItems);
-			for ($i = 0; $i < $typesCount; $i++) {
-				for ($j = 0; $j < $scalarTypeItemsCount; $j++) {
-					$compareResult = self::compareTypesInUnion($types[$i], $scalarTypeItems[$j]);
-					if ($compareResult === null) {
-						continue;
-					}
+			for ($i = 0; $i < count($buckets); $i++) {
+				for ($j = 0; $j < count($buckets[$i]); $j++) {
+					$type = $buckets[$i][$j];
+					for ($k = 0; $k < $scalarTypeItemsCount; $k++) {
+						$compareResult = self::compareTypesInUnion($type, $scalarTypeItems[$k]);
+						if ($compareResult === null) {
+							continue;
+						}
 
-					[$a, $b] = $compareResult;
-					if ($a !== null) {
-						$types[$i] = $a;
-						array_splice($scalarTypeItems, $j--, 1);
-						$scalarTypeItemsCount--;
-						continue 1;
-					}
-					if ($b !== null) {
-						$scalarTypeItems[$j] = $b;
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
+						[$a, $b] = $compareResult;
+						if ($a !== null) {
+							$buckets[$i][$j] = $a;
+							array_splice($scalarTypeItems, $k--, 1);
+							$scalarTypeItemsCount--;
+							continue 1;
+						}
+						if ($b !== null) {
+							$scalarTypeItems[$k] = $b;
+							array_splice($buckets[$i], $j--, 1);
+							if (count($buckets[$i]) === 0) {
+								array_splice($buckets, $i--, 1);
+								continue 3;
+							}
+							continue 2;
+						}
 					}
 				}
 			}
@@ -304,53 +306,69 @@ class TypeCombinator
 			$scalarTypes[$classType] = $scalarTypeItems;
 		}
 
-		if (count($types) > 16) {
-			$newTypes = [];
-			foreach ($types as $type) {
-				$newTypes[$type->describe(VerbosityLevel::cache())] = $type;
+		for ($i = 0; $i < count($buckets); $i++) {
+			for ($j = $i + 1; $j < count($buckets); $j++) {
+				for ($k = 0; $k < count($buckets[$i]); $k++) {
+					for ($l = 0; $l < count($buckets[$j]); $l++) {
+						$typeA = $buckets[$i][$k];
+						$typeB = $buckets[$j][$l];
+						$compareResult = self::compareTypesInUnion($typeA, $typeB);
+						if ($compareResult === null) {
+							continue;
+						}
+
+						[$a, $b] = $compareResult;
+						if ($a !== null) {
+							$buckets[$i][$k] = $a;
+							array_splice($buckets[$j], $l--, 1);
+							if (count($buckets[$j]) === 0) {
+								array_splice($buckets, $j--, 1);
+								continue 3;
+							}
+							continue;
+						}
+
+						if ($b !== null) {
+							$buckets[] = [$b];
+							array_splice($buckets[$i], $k--, 1);
+							array_splice($buckets[$j], $l, 1);
+							if (count($buckets[$j]) === 0) {
+								array_splice($buckets, $j, 1);
+							}
+
+							if (count($buckets[$i]) === 0) {
+								array_splice($buckets, $i--, 1);
+								continue 4;
+							}
+
+							continue 2;
+						}
+					}
+				}
 			}
-			$types = array_values($newTypes);
-			$typesCount = count($types);
 		}
 
-		// transform A | A to A
-		// transform A | never to A
-		for ($i = 0; $i < $typesCount; $i++) {
-			for ($j = $i + 1; $j < $typesCount; $j++) {
-				$compareResult = self::compareTypesInUnion($types[$i], $types[$j]);
-				if ($compareResult === null) {
-					continue;
-				}
-
-				[$a, $b] = $compareResult;
-				if ($a !== null) {
-					$types[$i] = $a;
-					array_splice($types, $j--, 1);
-					$typesCount--;
-					continue 1;
-				}
-				if ($b !== null) {
-					$types[$j] = $b;
-					array_splice($types, $i--, 1);
-					$typesCount--;
-					continue 2;
-				}
+		$types = [];
+		foreach ($buckets as $bucketTypes) {
+			foreach ($bucketTypes as $type) {
+				$types[] = $type;
 			}
 		}
 
 		foreach ($scalarTypes as $scalarTypeItems) {
 			foreach ($scalarTypeItems as $scalarType) {
 				$types[] = $scalarType;
-				$typesCount++;
 			}
 		}
 
+		$typesCount = count($types);
 		if ($typesCount === 0) {
 			return new NeverType();
 		}
 		if ($typesCount === 1) {
 			return $types[0];
 		}
+
 
 		if ($benevolentTypes !== []) {
 			$tempTypes = $types;

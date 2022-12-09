@@ -32,6 +32,11 @@ class ImmediatelyCalledClosureInFunctionCallThrowTypeExtension implements Dynami
 		'array_udiff_uassoc' => [2, 3],
 		'array_filter' => [1],
 		'array_map' => [0],
+		'array_walk_recursive' => [1],
+		'array_walk' => [1],
+		'uasort' => [1],
+		'uksort' => [1],
+		'usort' => [1],
 
 	];
 

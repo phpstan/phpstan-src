@@ -7,6 +7,7 @@ use function array_pop;
 use function explode;
 use function implode;
 use function ltrim;
+use function ord;
 use function rtrim;
 use function str_replace;
 use function str_starts_with;
@@ -18,6 +19,9 @@ use const DIRECTORY_SEPARATOR;
 
 class FileHelper
 {
+
+	private const LETTER_A = 65;
+	private const LETTER_Z = 90;
 
 	private string $workingDirectory;
 
@@ -57,7 +61,7 @@ class FileHelper
 		if ($originalPath !== '') {
 			if ($originalPath[0] === '/') {
 				$isLocalPath = true;
-			} elseif (strlen($originalPath) >= 3 && $originalPath[0] >= 'A' && $originalPath[0] <= 'Z' && $originalPath[1] === ':' && $originalPath[2] === '\\') {
+			} elseif (strlen($originalPath) >= 3 && ord($originalPath[0]) >= self::LETTER_A && ord($originalPath[0]) <= self::LETTER_Z && $originalPath[1] === ':' && $originalPath[2] === '\\') {
 				$isLocalPath = true;
 			}
 		}

@@ -371,7 +371,7 @@ class TypeCombinator
 			}
 		}
 
-		return new UnionType($types);
+		return new UnionType($types, true);
 	}
 
 	/**

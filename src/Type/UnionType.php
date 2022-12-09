@@ -42,7 +42,7 @@ class UnionType implements CompoundType
 	 * @api
 	 * @param Type[] $types
 	 */
-	public function __construct(private array $types)
+	public function __construct(private array $types, private bool $normalized = false)
 	{
 		$throwException = static function () use ($types): void {
 			throw new ShouldNotHappenException(sprintf(
@@ -72,6 +72,11 @@ class UnionType implements CompoundType
 	public function getTypes(): array
 	{
 		return $this->types;
+	}
+
+	public function isNormalized(): bool
+	{
+		return $this->normalized;
 	}
 
 	/**
@@ -836,7 +841,7 @@ class UnionType implements CompoundType
 	 */
 	public static function __set_state(array $properties): Type
 	{
-		return new self($properties['types']);
+		return new self($properties['types'], $properties['normalized']);
 	}
 
 	/**

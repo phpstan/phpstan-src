@@ -38,6 +38,9 @@ class UnionType implements CompoundType
 
 	private bool $sortedTypes = false;
 
+	/** @var array<int, string> */
+	private array $cachedDescriptions = [];
+
 	/**
 	 * @api
 	 * @param Type[] $types
@@ -208,6 +211,9 @@ class UnionType implements CompoundType
 
 	public function describe(VerbosityLevel $level): string
 	{
+		if (isset($this->cachedDescriptions[$level->getLevelValue()])) {
+			return $this->cachedDescriptions[$level->getLevelValue()];
+		}
 		$joinTypes = static function (array $types) use ($level): string {
 			$typeNames = [];
 			foreach ($types as $i => $type) {
@@ -240,7 +246,7 @@ class UnionType implements CompoundType
 			return implode('|', $typeNames);
 		};
 
-		return $level->handle(
+		return $this->cachedDescriptions[$level->getLevelValue()] = $level->handle(
 			function () use ($joinTypes): string {
 				$types = TypeCombinator::union(...array_map(static function (Type $type): Type {
 					if (

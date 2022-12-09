@@ -87,6 +87,8 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	/** @var array<string, self|null> */
 	private array $currentAncestors = [];
 
+	private ?string $cachedDescription = null;
+
 	/** @api */
 	public function __construct(
 		private string $className,
@@ -449,8 +451,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	private function describeCache(): string
 	{
+		if ($this->cachedDescription !== null) {
+			return $this->cachedDescription;
+		}
+
 		if (static::class !== self::class) {
-			return $this->describe(VerbosityLevel::cache());
+			return $this->cachedDescription = $this->describe(VerbosityLevel::cache());
 		}
 
 		$description = $this->className;
@@ -475,7 +481,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$description .= '-';
 		}
 
-		return $description;
+		return $this->cachedDescription = $description;
 	}
 
 	public function toNumber(): Type

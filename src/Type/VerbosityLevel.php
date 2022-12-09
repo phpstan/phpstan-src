@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -23,14 +22,26 @@ class VerbosityLevel
 	/** @var self[] */
 	private static array $registry;
 
+	/**
+	 * @param self::* $value
+	 */
 	private function __construct(private int $value)
 	{
 	}
 
+	/**
+	 * @param self::* $value
+	 */
 	private static function create(int $value): self
 	{
 		self::$registry[$value] ??= new self($value);
 		return self::$registry[$value];
+	}
+
+	/** @return self::* */
+	public function getLevelValue(): int
+	{
+		return $this->value;
 	}
 
 	/** @api */
@@ -174,19 +185,15 @@ class VerbosityLevel
 			return $valueCallback();
 		}
 
-		if ($this->value === self::CACHE) {
-			if ($cacheCallback !== null) {
-				return $cacheCallback();
-			}
-
-			if ($preciseCallback !== null) {
-				return $preciseCallback();
-			}
-
-			return $valueCallback();
+		if ($cacheCallback !== null) {
+			return $cacheCallback();
 		}
 
-		throw new ShouldNotHappenException();
+		if ($preciseCallback !== null) {
+			return $preciseCallback();
+		}
+
+		return $valueCallback();
 	}
 
 }

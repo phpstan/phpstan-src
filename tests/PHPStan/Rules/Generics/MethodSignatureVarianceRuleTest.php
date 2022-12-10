@@ -174,6 +174,17 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				71,
 			],
 		]);
+
+		$this->analyse([__DIR__ . '/data/method-signature-variance-static.php'], [
+			[
+				'Class template type X cannot be referenced in a static member in return type of method MethodSignatureVariance\Static\C::b().',
+				18,
+			],
+			[
+				'Class template type X cannot be referenced in a static member in return type of method MethodSignatureVariance\Static\C::c().',
+				23,
+			],
+		]);
 	}
 
 }

@@ -19,6 +19,7 @@ class VarianceCheck
 		string $parameterTypeMessage,
 		string $returnTypeMessage,
 		string $generalMessage,
+		bool $isConstructor,
 		bool $isStatic,
 		bool $isPrivate,
 	): array
@@ -40,24 +41,20 @@ class VarianceCheck
 			))->build();
 		}
 
-		if ($isPrivate) {
-			return $errors;
-		}
-
 		foreach ($parametersAcceptor->getParameters() as $parameterReflection) {
-			$variance = $isStatic
+			$variance = $isConstructor || $isStatic
 				? TemplateTypeVariance::createStatic()
 				: TemplateTypeVariance::createContravariant();
 			$type = $parameterReflection->getType();
 			$message = sprintf($parameterTypeMessage, $parameterReflection->getName());
-			foreach ($this->check($variance, $type, $message) as $error) {
+			foreach ($this->check($variance, $type, $message, $isStatic, $isPrivate) as $error) {
 				$errors[] = $error;
 			}
 		}
 
 		$variance = TemplateTypeVariance::createCovariant();
 		$type = $parametersAcceptor->getReturnType();
-		foreach ($this->check($variance, $type, $returnTypeMessage) as $error) {
+		foreach ($this->check($variance, $type, $returnTypeMessage, $isStatic, $isPrivate) as $error) {
 			$errors[] = $error;
 		}
 
@@ -65,12 +62,32 @@ class VarianceCheck
 	}
 
 	/** @return RuleError[] */
-	public function check(TemplateTypeVariance $positionVariance, Type $type, string $messageContext): array
+	public function check(
+		TemplateTypeVariance $positionVariance,
+		Type $type,
+		string $messageContext,
+		bool $isStatic,
+		bool $isPrivate,
+	): array
 	{
 		$errors = [];
 
 		foreach ($type->getReferencedTemplateTypes($positionVariance) as $reference) {
 			$referredType = $reference->getType();
+
+			if ($isStatic && $referredType->getScope()->getFunctionName() === null) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Class template type %s cannot be referenced in a static member %s.',
+					$referredType->getName(),
+					$messageContext,
+				))->build();
+				continue;
+			}
+
+			if ($isPrivate) {
+				continue;
+			}
+
 			if (($referredType->getScope()->getFunctionName() !== null && !$referredType->getVariance()->invariant())
 				|| $this->isTemplateTypeVarianceValid($reference->getPositionVariance(), $referredType)) {
 				continue;

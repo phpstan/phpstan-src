@@ -103,7 +103,7 @@ class GenericAncestorsCheck
 				$invalidVarianceMessage,
 				$ancestorType->describe(VerbosityLevel::typeOnly()),
 			);
-			foreach ($this->varianceCheck->check($variance, $ancestorType, $messageContext) as $message) {
+			foreach ($this->varianceCheck->check($variance, $ancestorType, $messageContext, false, false) as $message) {
 				$messages[] = $message;
 			}
 		}

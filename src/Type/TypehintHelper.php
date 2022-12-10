@@ -11,7 +11,6 @@ use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
 use function array_map;
-use function count;
 use function get_class;
 use function sprintf;
 use function str_ends_with;
@@ -191,22 +190,7 @@ class TypehintHelper
 				$resultType = $type;
 			}
 
-			if ($type instanceof UnionType) {
-				$addToUnionTypes = [];
-				foreach ($type->getTypes() as $innerType) {
-					if (!$innerType->isSuperTypeOf($resultType)->no()) {
-						continue;
-					}
-
-					$addToUnionTypes[] = $innerType;
-				}
-
-				if (count($addToUnionTypes) > 0) {
-					$type = TypeCombinator::union($resultType, ...$addToUnionTypes);
-				} else {
-					$type = $resultType;
-				}
-			} elseif (TypeCombinator::containsNull($type)) {
+			if (TypeCombinator::containsNull($type)) {
 				$type = TypeCombinator::addNull($resultType);
 			} else {
 				$type = $resultType;

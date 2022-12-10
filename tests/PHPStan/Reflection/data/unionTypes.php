@@ -64,10 +64,10 @@ class Baz
 	 */
 	public function doBaz(array|false $foo): void
 	{
-		assertType('array<int, string>|false', $foo);
+		assertType('array<int, string>', $foo);
 		assertNativeType('array|false', $foo);
 
-		assertType('array<int, string>|false', $this->doLorem());
+		assertType('array<int, string>', $this->doLorem());
 	}
 
 	/**
@@ -89,5 +89,4 @@ class Baz
 	{
 
 	}
-
 }

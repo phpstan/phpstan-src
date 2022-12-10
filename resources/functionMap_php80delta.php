@@ -206,6 +206,7 @@ return [
 		'imagejpeg' => ['bool', 'im'=>'resource', 'filename='=>'string|resource|null', 'quality='=>'int'],
 		'imagerotate' => ['resource|false', 'src_im'=>'resource', 'angle'=>'float', 'bgdcolor'=>'int', 'ignoretransparent='=>'int'],
 		'imagescale' => ['resource|false', 'im'=>'resource', 'new_width'=>'int', 'new_height='=>'int', 'method='=>'int'],
+		'implode' => ['string', 'glue'=>'string|array', 'pieces'=>'array'],
 		'implode\'1' => ['string', 'pieces'=>'array'],
 		'jpeg2wbmp' => ['bool', 'jpegname'=>'string', 'wbmpname'=>'string', 'dest_height'=>'int', 'dest_width'=>'int', 'threshold'=>'int'],
 		'ldap_set_rebind_proc' => ['bool', 'link_identifier'=>'resource', 'callback'=>'callable'],

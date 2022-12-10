@@ -106,6 +106,8 @@ class ClassReflection
 
 	private string|false|null $reflectionDocComment = false;
 
+	private false|ResolvedPhpDocBlock $resolvedPhpDocBlock = false;
+
 	/** @var ClassReflection[]|null */
 	private ?array $cachedInterfaces = null;
 
@@ -1319,7 +1321,11 @@ class ClassReflection
 			return null;
 		}
 
-		return $this->fileTypeMapper->getResolvedPhpDoc($fileName, $this->getName(), null, null, $this->reflectionDocComment);
+		if ($this->resolvedPhpDocBlock !== false) {
+			return $this->resolvedPhpDocBlock;
+		}
+
+		return $this->resolvedPhpDocBlock = $this->fileTypeMapper->getResolvedPhpDoc($fileName, $this->getName(), null, null, $this->reflectionDocComment);
 	}
 
 	private function getFirstExtendsTag(): ?ExtendsTag

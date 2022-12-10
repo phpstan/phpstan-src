@@ -623,15 +623,99 @@ class TypeCombinator
 			return [
 				self::intersect(new ArrayType(
 					self::union(...$keyTypesForGeneralArray),
-					self::union(...$valueTypesForGeneralArray),
+					self::union(...self::optimizeConstantArrays($valueTypesForGeneralArray)),
 				), ...$accessoryTypes),
 			];
 		}
 
+		$reducedArrayTypes = self::reduceArrays($arrayTypes);
+
 		return array_map(
 			static fn (Type $arrayType) => self::intersect($arrayType, ...$accessoryTypes),
-			self::reduceArrays($arrayTypes),
+			self::optimizeConstantArrays($reducedArrayTypes),
 		);
+	}
+
+	/**
+	 * @param Type[] $types
+	 * @return Type[]
+	 */
+	private static function optimizeConstantArrays(array $types): array
+	{
+		$constantArrayValuesCount = self::countConstantArrayValueTypes($types);
+
+		if ($constantArrayValuesCount > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+			$results = [];
+			foreach ($types as $type) {
+				$results[] = TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+					if ($type instanceof ConstantArrayType) {
+						if ($type->isIterableAtLeastOnce()->no()) {
+							return $type;
+						}
+
+						$isList = true;
+						$valueTypes = [];
+						$keyTypes = [];
+						$nextAutoIndex = 0;
+						foreach ($type->getKeyTypes() as $i => $innerKeyType) {
+							if (!$innerKeyType instanceof ConstantIntegerType) {
+								$isList = false;
+							} elseif ($innerKeyType->getValue() !== $nextAutoIndex) {
+								$isList = false;
+								$nextAutoIndex = $innerKeyType->getValue() + 1;
+							} else {
+								$nextAutoIndex++;
+							}
+
+							$generalizedKeyType = $innerKeyType->generalize(GeneralizePrecision::moreSpecific());
+							$keyTypes[$generalizedKeyType->describe(VerbosityLevel::precise())] = $generalizedKeyType;
+
+							$innerValueType = $type->getValueTypes()[$i];
+							$generalizedValueType = $traverse($innerValueType);
+							$valueTypes[$generalizedValueType->describe(VerbosityLevel::precise())] = $generalizedValueType;
+						}
+
+						$keyType = TypeCombinator::union(...array_values($keyTypes));
+						$valueType = TypeCombinator::union(...array_values($valueTypes));
+
+						$arrayType = new ArrayType($keyType, $valueType);
+						if ($isList) {
+							$arrayType = AccessoryArrayListType::intersectWith($arrayType);
+						}
+
+						return TypeCombinator::intersect($arrayType, new NonEmptyArrayType(), new OversizedArrayType());
+					}
+
+					return $traverse($type);
+				});
+			}
+
+			return $results;
+		}
+
+		return $types;
+	}
+
+	/**
+	 * @param Type[] $types
+	 */
+	private static function countConstantArrayValueTypes(array $types): int
+	{
+		$constantArrayValuesCount = 0;
+		foreach ($types as $type) {
+			if ($type instanceof ConstantArrayType) {
+				$constantArrayValuesCount += count($type->getValueTypes());
+			}
+
+			TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constantArrayValuesCount): Type {
+				if ($type instanceof ConstantArrayType) {
+					$constantArrayValuesCount += count($type->getValueTypes());
+				}
+
+				return $traverse($type);
+			});
+		}
+		return $constantArrayValuesCount;
 	}
 
 	/**

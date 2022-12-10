@@ -77,7 +77,6 @@ class OversizedArrayBuilder
 					$isList = false;
 					$nextAutoIndex = $itemKeyType->getValue() + 1;
 				} else {
-					$itemKeyType = new ConstantIntegerType($nextAutoIndex);
 					$nextAutoIndex++;
 				}
 			} else {

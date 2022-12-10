@@ -300,7 +300,14 @@ class ConstantArrayType extends ArrayType implements ConstantType
 			$result = $result->and($acceptsValue);
 		}
 
-		return $result->and($type->isArray());
+		$result = $result->and($type->isArray());
+		if ($type->isOversizedArray()->yes()) {
+			if (!$result->no()) {
+				return TrinaryLogic::createYes();
+			}
+		}
+
+		return $result;
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

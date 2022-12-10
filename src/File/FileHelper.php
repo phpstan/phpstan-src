@@ -6,9 +6,7 @@ use Nette\Utils\Strings;
 use function array_pop;
 use function explode;
 use function implode;
-use function in_array;
 use function ltrim;
-use function range;
 use function rtrim;
 use function str_replace;
 use function str_starts_with;
@@ -59,7 +57,7 @@ class FileHelper
 		if ($originalPath !== '') {
 			if ($originalPath[0] === '/') {
 				$isLocalPath = true;
-			} elseif (strlen($originalPath) >= 3 && $originalPath[1] === ':' && $originalPath[2] === '\\') { // e.g. C:\\
+			} elseif (strlen($originalPath) >= 3 && $originalPath[1] === ':' && $originalPath[2] === '\\') { // e.g. C:\
 				$isLocalPath = true;
 			}
 		}

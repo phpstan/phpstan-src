@@ -642,7 +642,7 @@ class MutatingScope implements Scope
 		$key = $this->getNodeKey($node);
 
 		if (!array_key_exists($key, $this->resolvedTypes)) {
-			$this->resolvedTypes[$key] = TypeUtils::resolveLateResolvableTypes($this->resolveType($node));
+			$this->resolvedTypes[$key] = TypeUtils::resolveLateResolvableTypes($this->resolveType($key, $node));
 		}
 		return $this->resolvedTypes[$key];
 	}
@@ -662,13 +662,12 @@ class MutatingScope implements Scope
 		return $key;
 	}
 
-	private function resolveType(Expr $node): Type
+	private function resolveType(string $exprString, Expr $node): Type
 	{
 		if ($node instanceof Expr\Exit_ || $node instanceof Expr\Throw_) {
 			return new NeverType(true);
 		}
 
-		$exprString = $this->getNodeKey($node);
 		if (!$node instanceof Variable && $this->hasExpressionType($node)->yes()) {
 			return $this->expressionTypes[$exprString]->getType();
 		}

@@ -22,7 +22,7 @@ class FunctionSignatureVarianceRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/function-signature-variance.php'], [
 			[
-				'Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type T in in function FunctionSignatureVariance\f().',
+				'Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type T in function FunctionSignatureVariance\f().',
 				20,
 			],
 		]);

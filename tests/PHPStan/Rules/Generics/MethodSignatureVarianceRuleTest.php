@@ -22,11 +22,11 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/method-signature-variance.php'], [
 			[
-				'Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type U in in method MethodSignatureVariance\C::b().',
+				'Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type U in method MethodSignatureVariance\C::b().',
 				16,
 			],
 			[
-				'Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type U in in method MethodSignatureVariance\C::c().',
+				'Variance annotation is only allowed for type parameters of classes and interfaces, but occurs in template type U in method MethodSignatureVariance\C::c().',
 				22,
 			],
 		]);

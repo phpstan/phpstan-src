@@ -55,6 +55,7 @@ parameters:
 		unescapeStrings: false
 		duplicateStubs: false
 		invarianceComposition: false
+		checkPropertyVariance: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -274,6 +275,7 @@ parametersSchema:
 		unescapeStrings: bool()
 		duplicateStubs: bool()
 		invarianceComposition: bool()
+		checkPropertyVariance: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

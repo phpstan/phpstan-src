@@ -25,3 +25,4 @@ parameters:
 		unescapeStrings: true
 		duplicateStubs: true
 		invarianceComposition: true
+		checkPropertyVariance: true

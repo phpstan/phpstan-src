@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Generics;
 
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Generic\TemplateType;
@@ -72,6 +73,44 @@ class VarianceCheck
 		$type = $parametersAcceptor->getReturnType();
 		foreach ($this->check($variance, $type, $returnTypeMessage, $isStatic, $isPrivate) as $error) {
 			$errors[] = $error;
+		}
+
+		return $errors;
+	}
+
+	/** @return RuleError[] */
+	public function checkProperty(
+		PropertyReflection $propertyReflection,
+		string $message,
+		bool $isStatic,
+		bool $isPrivate,
+		bool $isReadOnly,
+	): array
+	{
+		$readableType = $propertyReflection->getReadableType();
+		$writableType = $propertyReflection->getWritableType();
+
+		if ($readableType->equals($writableType)) {
+			$variance = $isReadOnly
+				? TemplateTypeVariance::createCovariant()
+				: TemplateTypeVariance::createInvariant();
+
+			return $this->check($variance, $readableType, $message, $isStatic, $isPrivate);
+		}
+
+		$errors = [];
+
+		if ($propertyReflection->isReadable()) {
+			foreach ($this->check(TemplateTypeVariance::createCovariant(), $readableType, $message, $isStatic, $isPrivate) as $error) {
+				$errors[] = $error;
+			}
+		}
+
+		if ($propertyReflection->isWritable()) {
+			$checkStatic = $isStatic && !$propertyReflection->isReadable();
+			foreach ($this->check(TemplateTypeVariance::createContravariant(), $writableType, $message, $checkStatic, $isPrivate) as $error) {
+				$errors[] = $error;
+			}
 		}
 
 		return $errors;

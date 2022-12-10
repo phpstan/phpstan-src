@@ -76,16 +76,16 @@ class FileTypeMapper
 		string $docComment,
 	): ResolvedPhpDocBlock
 	{
-		if ($fileName !== null) {
-			$fileName = $this->fileHelper->normalizePath($fileName);
-		}
-
 		if ($className === null && $traitName !== null) {
 			throw new ShouldNotHappenException();
 		}
 
 		if ($docComment === '') {
 			return ResolvedPhpDocBlock::createEmpty();
+		}
+
+		if ($fileName !== null) {
+			$fileName = $this->fileHelper->normalizePath($fileName);
 		}
 
 		$nameScopeKey = $this->getNameScopeKey($fileName, $className, $traitName, $functionName);

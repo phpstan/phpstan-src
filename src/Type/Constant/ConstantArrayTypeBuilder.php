@@ -22,7 +22,7 @@ use function range;
 class ConstantArrayTypeBuilder
 {
 
-	public const ARRAY_COUNT_LIMIT = 256;
+	public const ARRAY_COUNT_LIMIT = 64 * 1024;
 
 	private bool $degradeToGeneralArray = false;
 

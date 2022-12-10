@@ -3478,9 +3478,11 @@ class MutatingScope implements Scope
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
 		$invalidated = false;
+		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
+
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
 			$exprExpr = $exprTypeHolder->getExpr();
-			if (!$this->shouldInvalidateExpression($expressionToInvalidate, $exprExpr, $requireMoreCharacters)) {
+			if (!$this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $exprExpr, $requireMoreCharacters)) {
 				continue;
 			}
 
@@ -3494,14 +3496,14 @@ class MutatingScope implements Scope
 			if (count($holders) === 0) {
 				continue;
 			}
-			if ($this->shouldInvalidateExpression($expressionToInvalidate, $holders[array_key_first($holders)]->getTypeHolder()->getExpr())) {
+			if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $holders[array_key_first($holders)]->getTypeHolder()->getExpr())) {
 				$invalidated = true;
 				continue;
 			}
 			foreach ($holders as $holder) {
 				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
 				foreach ($conditionalTypeHolders as $conditionalTypeHolder) {
-					if ($this->shouldInvalidateExpression($expressionToInvalidate, $conditionalTypeHolder->getExpr())) {
+					if ($this->shouldInvalidateExpression($exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr())) {
 						$invalidated = true;
 						continue 3;
 					}
@@ -3533,9 +3535,8 @@ class MutatingScope implements Scope
 		);
 	}
 
-	private function shouldInvalidateExpression(Expr $exprToInvalidate, Expr $expr, bool $requireMoreCharacters = false): bool
+	private function shouldInvalidateExpression(string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, bool $requireMoreCharacters = false): bool
 	{
-		$exprStringToInvalidate = $this->getNodeKey($exprToInvalidate);
 		if ($requireMoreCharacters && $exprStringToInvalidate === $this->getNodeKey($expr)) {
 			return false;
 		}

@@ -27,8 +27,22 @@ class VarianceCheck
 		$errors = [];
 
 		foreach ($parametersAcceptor->getTemplateTypeMap()->getTypes() as $templateType) {
-			if (!$templateType instanceof TemplateType
-				|| $templateType->getScope()->getFunctionName() === null
+			if (!$templateType instanceof TemplateType) {
+				continue;
+			}
+
+			if ($templateType->getScope()->getClassName() !== null
+				&& $templateType->getScope()->getFunctionName() === '__construct'
+			) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Constructor is not allowed to define type parameters, but template type %s is defined %s.',
+					$templateType->getName(),
+					$generalMessage,
+				))->build();
+				continue;
+			}
+
+			if ($templateType->getScope()->getFunctionName() === null
 				|| $templateType->getVariance()->invariant()
 			) {
 				continue;

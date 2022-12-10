@@ -186,7 +186,12 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 			],
 		]);
 
-		$this->analyse([__DIR__ . '/data/method-signature-variance-constructor.php'], []);
+		$this->analyse([__DIR__ . '/data/method-signature-variance-constructor.php'], [
+			[
+				'Constructor is not allowed to define type parameters, but template type Y is defined in method MethodSignatureVariance\Constructor\D::__construct().',
+				79,
+			],
+		]);
 	}
 
 }

@@ -70,3 +70,11 @@ class C {
 	 */
 	function __construct($a, $b, $c, $d, $e, $f, $g, $h, $i, $j, $k, $l) {}
 }
+
+/** @template X */
+class D {
+	/**
+	 * @template Y of X
+	 */
+	function __construct() {}
+}

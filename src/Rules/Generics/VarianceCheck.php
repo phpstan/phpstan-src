@@ -41,10 +41,12 @@ class VarianceCheck
 			))->build();
 		}
 
+		if ($isConstructor) {
+			return $errors;
+		}
+
 		foreach ($parametersAcceptor->getParameters() as $parameterReflection) {
-			$variance = $isConstructor || $isStatic
-				? TemplateTypeVariance::createStatic()
-				: TemplateTypeVariance::createContravariant();
+			$variance = TemplateTypeVariance::createContravariant();
 			$type = $parameterReflection->getType();
 			$message = sprintf($parameterTypeMessage, $parameterReflection->getName());
 			foreach ($this->check($variance, $type, $message, $isStatic, $isPrivate) as $error) {

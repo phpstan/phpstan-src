@@ -185,6 +185,8 @@ class MethodSignatureVarianceRuleTest extends RuleTestCase
 				23,
 			],
 		]);
+
+		$this->analyse([__DIR__ . '/data/method-signature-variance-constructor.php'], []);
 	}
 
 }

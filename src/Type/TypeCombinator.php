@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
@@ -370,6 +371,42 @@ class TypeCombinator
 				$b = self::intersectWithSubtractedType($b, $a);
 				return [null, $b];
 			}
+		}
+
+		if ($a instanceof UnionType && !$a instanceof TemplateType && $b instanceof UnionType && !$b instanceof TemplateType) {
+			// TODO
+			return [TypeCombinator::union($a, ...$b->getTypes()), null];
+		}
+
+		if ($a instanceof UnionType && !$a instanceof TemplateType) {
+			$aTypes = $a->getTypes();
+			foreach ($aTypes as $i => $aType) {
+				$compareResult = self::compareTypesInUnion($aType, $b);
+				if ($compareResult === null) {
+					continue;
+				}
+				$aTypes[$i] = $compareResult[0] ?? $compareResult[1];
+				return [new UnionType($aTypes, true), null];
+			}
+			$aTypes[] = $b;
+
+			return [new UnionType($aTypes, true), null];
+		}
+
+		if ($b instanceof UnionType && !$b instanceof TemplateType) {
+			$bTypes = $b->getTypes();
+			foreach ($bTypes as $i => $bType) {
+				$compareResult = self::compareTypesInUnion($bType, $a);
+				if ($compareResult === null) {
+					continue;
+				}
+
+				$bTypes[$i] = $compareResult[0] ?? $compareResult[1];
+				return [null, new UnionType($bTypes, true)];
+			}
+			$bTypes[] = $a;
+
+			return [null, new UnionType($bTypes, true)];
 		}
 
 		if ($b->isSuperTypeOf($a)->yes()) {

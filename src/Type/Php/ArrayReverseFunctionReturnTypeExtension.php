@@ -5,14 +5,12 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\UnionType;
+use PHPStan\Type\TypeCombinator;
+use function count;
 
 class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
@@ -32,19 +30,21 @@ class ArrayReverseFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		$preserveKeysType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : new NeverType();
 		$preserveKeys = $preserveKeysType instanceof ConstantBooleanType ? $preserveKeysType->getValue() : false;
 
-		if (!$type->isIterable()->yes()) {
+		if (!$type->isArray()->yes()) {
 			return null;
 		}
 
-		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($preserveKeys): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
+		$constantArrays = $type->getConstantArrays();
+		if (count($constantArrays) > 0) {
+			$results = [];
+			foreach ($constantArrays as $constantArray) {
+				$results[] = $constantArray->reverse($preserveKeys);
 			}
-			if ($type instanceof ConstantArrayType) {
-				return $type->reverse($preserveKeys);
-			}
-			return $type;
-		});
+
+			return TypeCombinator::union(...$results);
+		}
+
+		return $type;
 	}
 
 }

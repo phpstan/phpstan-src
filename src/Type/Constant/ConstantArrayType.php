@@ -330,7 +330,12 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				} elseif ($hasOffset->maybe() && !$this->isOptionalKey($i)) {
 					$results[] = TrinaryLogic::createMaybe();
 				}
-				$results[] = $this->valueTypes[$i]->isSuperTypeOf($type->getOffsetValueType($keyType));
+
+				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($type->getOffsetValueType($keyType));
+				if ($isValueSuperType->no()) {
+					return TrinaryLogic::createNo();
+				}
+				$results[] = $isValueSuperType;
 			}
 
 			return TrinaryLogic::createYes()->and(...$results);

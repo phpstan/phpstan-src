@@ -9085,7 +9085,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 	{
 		return [
 			[
-				'array{}|array{foo: array<array>}',
+				'array{}|array{foo?: array}',
 				'$data',
 			],
 		];

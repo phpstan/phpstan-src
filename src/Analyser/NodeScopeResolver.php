@@ -246,7 +246,7 @@ class NodeScopeResolver
 				continue;
 			}
 
-			$statementResult = $this->processStmtNode($node, $scope, $nodeCallback);
+			$statementResult = $this->processStmtNode($node, $scope, $nodeCallback, StatementContext::createTopLevel());
 			$scope = $statementResult->getScope();
 			if (!$statementResult->isAlwaysTerminating()) {
 				continue;
@@ -274,8 +274,12 @@ class NodeScopeResolver
 		array $stmts,
 		MutatingScope $scope,
 		callable $nodeCallback,
+		?StatementContext $context = null,
 	): StatementResult
 	{
+		if ($context === null) {
+			$context = StatementContext::createTopLevel();
+		}
 		$exitPoints = [];
 		$throwPoints = [];
 		$alreadyTerminated = false;
@@ -290,6 +294,7 @@ class NodeScopeResolver
 				$stmt,
 				$scope,
 				$nodeCallback,
+				$context,
 			);
 			$scope = $statementResult->getScope();
 			$hasYield = $hasYield || $statementResult->hasYield();
@@ -346,6 +351,7 @@ class NodeScopeResolver
 		Node\Stmt $stmt,
 		MutatingScope $scope,
 		callable $nodeCallback,
+		StatementContext $context,
 	): StatementResult
 	{
 		if (
@@ -460,7 +466,7 @@ class NodeScopeResolver
 				}
 
 				$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
-			});
+			}, StatementContext::createTopLevel());
 
 			$nodeCallback(new FunctionReturnStatementsNode(
 				$stmt,
@@ -560,7 +566,7 @@ class NodeScopeResolver
 					}
 
 					$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
-				});
+				}, StatementContext::createTopLevel());
 				$nodeCallback(new MethodReturnStatementsNode(
 					$stmt,
 					$gatheredReturnStatements,
@@ -629,7 +635,7 @@ class NodeScopeResolver
 				$scope = $scope->enterNamespace($stmt->name->toString());
 			}
 
-			$scope = $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback)->getScope();
+			$scope = $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback, $context)->getScope();
 			$hasYield = false;
 			$throwPoints = [];
 		} elseif ($stmt instanceof Node\Stmt\Trait_) {
@@ -659,7 +665,7 @@ class NodeScopeResolver
 			$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
 			$this->processAttributeGroups($stmt->attrGroups, $classScope, $classStatementsGatherer);
 
-			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer);
+			$this->processStmtNodes($stmt, $stmt->stmts, $classScope, $classStatementsGatherer, $context);
 			$nodeCallback(new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensionProvider, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls()), $classScope);
 			$nodeCallback(new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls()), $classScope);
 			$nodeCallback(new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches()), $classScope);
@@ -670,7 +676,7 @@ class NodeScopeResolver
 			$this->processAttributeGroups($stmt->attrGroups, $scope, $nodeCallback);
 
 			foreach ($stmt->props as $prop) {
-				$this->processStmtNode($prop, $scope, $nodeCallback);
+				$this->processStmtNode($prop, $scope, $nodeCallback, $context);
 				[,,,,,,,,,,$isReadOnly, $docComment, ,,,$varTags] = $this->getPhpDocs($scope, $stmt);
 				if (!$scope->isInClass()) {
 					throw new ShouldNotHappenException();
@@ -726,7 +732,7 @@ class NodeScopeResolver
 			$alwaysTerminating = true;
 			$hasYield = $condResult->hasYield();
 
-			$branchScopeStatementResult = $this->processStmtNodes($stmt, $stmt->stmts, $condResult->getTruthyScope(), $nodeCallback);
+			$branchScopeStatementResult = $this->processStmtNodes($stmt, $stmt->stmts, $condResult->getTruthyScope(), $nodeCallback, $context);
 
 			if (!$conditionType instanceof ConstantBooleanType || $conditionType->getValue()) {
 				$exitPoints = $branchScopeStatementResult->getExitPoints();
@@ -747,7 +753,7 @@ class NodeScopeResolver
 				$condResult = $this->processExprNode($elseif->cond, $condScope, $nodeCallback, ExpressionContext::createDeep());
 				$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 				$condScope = $condResult->getScope();
-				$branchScopeStatementResult = $this->processStmtNodes($elseif, $elseif->stmts, $condResult->getTruthyScope(), $nodeCallback);
+				$branchScopeStatementResult = $this->processStmtNodes($elseif, $elseif->stmts, $condResult->getTruthyScope(), $nodeCallback, $context);
 
 				if (
 					!$ifAlwaysTrue
@@ -784,7 +790,7 @@ class NodeScopeResolver
 				}
 			} else {
 				$nodeCallback($stmt->else, $scope);
-				$branchScopeStatementResult = $this->processStmtNodes($stmt->else, $stmt->else->stmts, $scope, $nodeCallback);
+				$branchScopeStatementResult = $this->processStmtNodes($stmt->else, $stmt->else->stmts, $scope, $nodeCallback, $context);
 
 				if (!$ifAlwaysTrue && !$lastElseIfConditionIsTrue) {
 					$exitPoints = array_merge($exitPoints, $branchScopeStatementResult->getExitPoints());
@@ -825,11 +831,14 @@ class NodeScopeResolver
 				$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
 				$bodyScope = $this->enterForeach($bodyScope, $stmt);
 				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
-				})->filterOutLoopExitPoints();
+				}, $context->enterDeep())->filterOutLoopExitPoints();
 				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 				$bodyScope = $bodyScopeResult->getScope();
 				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+				}
+				if (!$context->isTopLevel()) {
+					break;
 				}
 				if ($bodyScope->equals($prevScope)) {
 					break;
@@ -843,7 +852,7 @@ class NodeScopeResolver
 
 			$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
 			$bodyScope = $this->enterForeach($bodyScope, $stmt);
-			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback)->filterOutLoopExitPoints();
+			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback, $context)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope();
 			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 				$finalScope = $continueExitPoint->getScope()->mergeWith($finalScope);
@@ -891,11 +900,14 @@ class NodeScopeResolver
 				$bodyScope = $this->processExprNode($stmt->cond, $bodyScope, static function (): void {
 				}, ExpressionContext::createDeep())->getTruthyScope();
 				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
-				})->filterOutLoopExitPoints();
+				}, $context->enterDeep())->filterOutLoopExitPoints();
 				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 				$bodyScope = $bodyScopeResult->getScope();
 				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+				}
+				if (!$context->isTopLevel()) {
+					break;
 				}
 				if ($bodyScope->equals($prevScope)) {
 					break;
@@ -910,7 +922,7 @@ class NodeScopeResolver
 			$bodyScope = $bodyScope->mergeWith($scope);
 			$bodyScopeMaybeRan = $bodyScope;
 			$bodyScope = $this->processExprNode($stmt->cond, $bodyScope, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
-			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback)->filterOutLoopExitPoints();
+			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback, $context)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope()->filterByFalseyValue($stmt->cond);
 			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 				$finalScope = $finalScope->mergeWith($continueExitPoint->getScope());
@@ -965,7 +977,7 @@ class NodeScopeResolver
 				$prevScope = $bodyScope;
 				$bodyScope = $bodyScope->mergeWith($scope);
 				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
-				})->filterOutLoopExitPoints();
+				}, $context->enterDeep())->filterOutLoopExitPoints();
 				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 				$bodyScope = $bodyScopeResult->getScope();
 				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
@@ -977,6 +989,9 @@ class NodeScopeResolver
 				}
 				$bodyScope = $this->processExprNode($stmt->cond, $bodyScope, static function (): void {
 				}, ExpressionContext::createDeep())->getTruthyScope();
+				if (!$context->isTopLevel()) {
+					break;
+				}
 				if ($bodyScope->equals($prevScope)) {
 					break;
 				}
@@ -989,7 +1004,7 @@ class NodeScopeResolver
 
 			$bodyScope = $bodyScope->mergeWith($scope);
 
-			$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback)->filterOutLoopExitPoints();
+			$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback, $context)->filterOutLoopExitPoints();
 			$bodyScope = $bodyScopeResult->getScope();
 			foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 				$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
@@ -1065,7 +1080,7 @@ class NodeScopeResolver
 					}, ExpressionContext::createDeep())->getTruthyScope();
 				}
 				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
-				})->filterOutLoopExitPoints();
+				}, $context->enterDeep())->filterOutLoopExitPoints();
 				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 				$bodyScope = $bodyScopeResult->getScope();
 				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
@@ -1077,6 +1092,10 @@ class NodeScopeResolver
 					$bodyScope = $exprResult->getScope();
 					$hasYield = $hasYield || $exprResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
+				}
+
+				if (!$context->isTopLevel()) {
+					break;
 				}
 
 				if ($bodyScope->equals($prevScope)) {
@@ -1094,7 +1113,7 @@ class NodeScopeResolver
 				$bodyScope = $this->processExprNode($condExpr, $bodyScope, $nodeCallback, ExpressionContext::createDeep())->getTruthyScope();
 			}
 
-			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback)->filterOutLoopExitPoints();
+			$finalScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback, $context)->filterOutLoopExitPoints();
 			$finalScope = $finalScopeResult->getScope();
 			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 				$finalScope = $continueExitPoint->getScope()->mergeWith($finalScope);
@@ -1164,7 +1183,7 @@ class NodeScopeResolver
 				}
 
 				$branchScope = $branchScope->mergeWith($prevScope);
-				$branchScopeResult = $this->processStmtNodes($caseNode, $caseNode->stmts, $branchScope, $nodeCallback);
+				$branchScopeResult = $this->processStmtNodes($caseNode, $caseNode->stmts, $branchScope, $nodeCallback, $context);
 				$branchScope = $branchScopeResult->getScope();
 				$branchFinalScopeResult = $branchScopeResult->filterOutLoopExitPoints();
 				$hasYield = $hasYield || $branchFinalScopeResult->hasYield();
@@ -1208,7 +1227,7 @@ class NodeScopeResolver
 
 			return new StatementResult($finalScope, $hasYield, $alwaysTerminating, $exitPointsForOuterLoop, $throwPoints);
 		} elseif ($stmt instanceof TryCatch) {
-			$branchScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback);
+			$branchScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $scope, $nodeCallback, $context);
 			$branchScope = $branchScopeResult->getScope();
 			$finalScope = $branchScopeResult->isAlwaysTerminating() ? null : $branchScope;
 
@@ -1311,7 +1330,7 @@ class NodeScopeResolver
 					$variableName = $catchNode->var->name;
 				}
 
-				$catchScopeResult = $this->processStmtNodes($catchNode, $catchNode->stmts, $catchScope->enterCatchType($catchType, $variableName), $nodeCallback);
+				$catchScopeResult = $this->processStmtNodes($catchNode, $catchNode->stmts, $catchScope->enterCatchType($catchType, $variableName), $nodeCallback, $context);
 				$catchScopeForFinally = $catchScopeResult->getScope();
 
 				$finalScope = $catchScopeResult->isAlwaysTerminating() ? $finalScope : $catchScopeResult->getScope()->mergeWith($finalScope);
@@ -1355,7 +1374,7 @@ class NodeScopeResolver
 
 			if ($finallyScope !== null && $stmt->finally !== null) {
 				$originalFinallyScope = $finallyScope;
-				$finallyResult = $this->processStmtNodes($stmt->finally, $stmt->finally->stmts, $finallyScope, $nodeCallback);
+				$finallyResult = $this->processStmtNodes($stmt->finally, $stmt->finally->stmts, $finallyScope, $nodeCallback, $context);
 				$alwaysTerminating = $alwaysTerminating || $finallyResult->isAlwaysTerminating();
 				$hasYield = $hasYield || $finallyResult->hasYield();
 				$throwPointsForLater = array_merge($throwPointsForLater, $finallyResult->getThrowPoints());
@@ -1384,7 +1403,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			foreach ($stmt->uses as $use) {
-				$this->processStmtNode($use, $scope, $nodeCallback);
+				$this->processStmtNode($use, $scope, $nodeCallback, $context);
 			}
 		} elseif ($stmt instanceof Node\Stmt\Global_) {
 			$hasYield = false;
@@ -1412,7 +1431,7 @@ class NodeScopeResolver
 
 			$vars = [];
 			foreach ($stmt->vars as $var) {
-				$scope = $this->processStmtNode($var, $scope, $nodeCallback)->getScope();
+				$scope = $this->processStmtNode($var, $scope, $nodeCallback, $context)->getScope();
 				if (!is_string($var->var->name)) {
 					continue;
 				}
@@ -2542,7 +2561,7 @@ class NodeScopeResolver
 				}
 			} elseif ($expr->class instanceof Class_) {
 				$this->reflectionProvider->getAnonymousClassReflection($expr->class, $scope); // populates $expr->class->name
-				$this->processStmtNode($expr->class, $scope, $nodeCallback);
+				$this->processStmtNode($expr->class, $scope, $nodeCallback, StatementContext::createTopLevel());
 			} else {
 				$className = $scope->resolveName($expr->class);
 				if ($this->reflectionProvider->hasClass($className)) {
@@ -3149,7 +3168,7 @@ class NodeScopeResolver
 			$gatheredReturnStatements[] = new ReturnStatement($scope, $node);
 		};
 		if (count($byRefUses) === 0) {
-			$statementResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, $closureStmtsCallback);
+			$statementResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, $closureStmtsCallback, StatementContext::createTopLevel());
 			$nodeCallback(new ClosureReturnStatementsNode(
 				$expr,
 				$gatheredReturnStatements,
@@ -3165,7 +3184,7 @@ class NodeScopeResolver
 			$prevScope = $closureScope;
 
 			$intermediaryClosureScopeResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, static function (): void {
-			});
+			}, StatementContext::createTopLevel());
 			$intermediaryClosureScope = $intermediaryClosureScopeResult->getScope();
 			foreach ($intermediaryClosureScopeResult->getExitPoints() as $exitPoint) {
 				$intermediaryClosureScope = $intermediaryClosureScope->mergeWith($exitPoint->getScope());
@@ -3181,7 +3200,7 @@ class NodeScopeResolver
 			$count++;
 		} while ($count < self::LOOP_SCOPE_ITERATIONS);
 
-		$statementResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, $closureStmtsCallback);
+		$statementResult = $this->processStmtNodes($expr, $expr->stmts, $closureScope, $closureStmtsCallback, StatementContext::createTopLevel());
 		$nodeCallback(new ClosureReturnStatementsNode(
 			$expr,
 			$gatheredReturnStatements,
@@ -4101,7 +4120,7 @@ class NodeScopeResolver
 					$methodAst->flags = ($methodAst->flags & ~ Node\Stmt\Class_::VISIBILITY_MODIFIER_MASK) | $methodModifiers[$methodName];
 					$stmts[$i] = $methodAst;
 				}
-				$this->processStmtNodes($node, $stmts, $scope->enterTrait($traitReflection), $nodeCallback);
+				$this->processStmtNodes($node, $stmts, $scope->enterTrait($traitReflection), $nodeCallback, StatementContext::createTopLevel());
 				return;
 			}
 			if ($node instanceof Node\Stmt\ClassLike) {

@@ -158,24 +158,25 @@ class TrinaryLogic
 		callable $callback,
 	): self
 	{
+		if ($objects === []) {
+			throw new ShouldNotHappenException();
+		}
+
 		$lastResult = null;
-		$results = [];
 		foreach ($objects as $object) {
 			$result = $callback($object);
 			if ($lastResult === null) {
 				$lastResult = $result;
-				$results[] = $result;
 				continue;
 			}
 			if ($lastResult->equals($result)) {
-				$results[] = $result;
 				continue;
 			}
 
 			return self::createMaybe();
 		}
 
-		return self::extremeIdentity(...$results);
+		return $lastResult;
 	}
 
 	public static function maxMin(self ...$operands): self

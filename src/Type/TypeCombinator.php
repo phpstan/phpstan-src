@@ -128,6 +128,9 @@ class TypeCombinator
 			if (!($types[$i] instanceof UnionType)) {
 				continue;
 			}
+			if ($types[$i]->isNormalized()) {
+				continue;
+			}
 			if ($types[$i] instanceof TemplateType) {
 				continue;
 			}
@@ -289,7 +292,16 @@ class TypeCombinator
 			}
 		}
 
-		return new UnionType($types, true);
+		$resultTypes = [];
+		foreach ($types as $type) {
+			if (!($type instanceof UnionType) || $type instanceof TemplateType) {
+				$resultTypes[] = $type;
+				continue;
+			}
+			$resultTypes = array_merge($resultTypes, $type->getTypes());
+		}
+
+		return new UnionType($resultTypes, true);
 	}
 
 	/**

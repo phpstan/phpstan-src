@@ -5,14 +5,11 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\UnionType;
+use PHPStan\Type\TypeCombinator;
 use function count;
 
 class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -30,7 +27,7 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 		}
 
 		$valueType = $scope->getType($functionCall->getArgs()[0]->value);
-		if (!$valueType->isIterable()->yes()) {
+		if (!$valueType->isArray()->yes()) {
 			return null;
 		}
 
@@ -43,18 +40,21 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 		$preserveKeysType = isset($functionCall->getArgs()[3]) ? $scope->getType($functionCall->getArgs()[3]->value) : null;
 		$preserveKeys = $preserveKeysType instanceof ConstantBooleanType ? $preserveKeysType->getValue() : false;
 
-		return TypeTraverser::map($valueType, static function (Type $type, callable $traverse) use ($offset, $limit, $preserveKeys): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
+		$constantArrays = $valueType->getConstantArrays();
+		if (count($constantArrays) > 0) {
+			$results = [];
+			foreach ($constantArrays as $constantArray) {
+				$results[] = $constantArray->slice($offset, $limit, $preserveKeys);
 			}
-			if ($type instanceof ConstantArrayType) {
-				return $type->slice($offset, $limit, $preserveKeys);
-			}
-			if ($type->isIterableAtLeastOnce()->yes()) {
-				return $type->toArray();
-			}
-			return $type;
-		});
+
+			return TypeCombinator::union(...$results);
+		}
+
+		if ($valueType->isIterableAtLeastOnce()->yes()) {
+			return $valueType->toArray();
+		}
+
+		return $valueType;
 	}
 
 }

@@ -17,13 +17,10 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\UnionType;
 use function array_map;
 use function array_unique;
 use function count;
@@ -91,30 +88,28 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 		$stringType = $scope->getType($functionCall->getArgs()[0]->value);
 
-		return TypeTraverser::map($stringType, function (Type $type, callable $traverse) use ($encoding, $splitLength, $scope): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
+		$constantStrings = TypeUtils::getConstantStrings($stringType);
+		if (count($constantStrings) > 0) {
+			$results = [];
+			foreach ($constantStrings as $constantString) {
+				$items = $encoding === null
+					? str_split($constantString->getValue(), $splitLength)
+					: @mb_str_split($constantString->getValue(), $splitLength, $encoding);
+				if ($items === false) {
+					throw new ShouldNotHappenException();
+				}
+
+				$results[] = self::createConstantArrayFrom($items, $scope);
 			}
 
-			if (!$type instanceof ConstantStringType) {
-				$returnType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType()));
+			return TypeCombinator::union(...$results);
+		}
 
-				return $encoding === null && !$this->phpVersion->strSplitReturnsEmptyArray()
-					? TypeCombinator::intersect($returnType, new NonEmptyArrayType())
-					: $returnType;
-			}
+		$returnType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), new StringType()));
 
-			$stringValue = $type->getValue();
-
-			$items = $encoding === null
-				? str_split($stringValue, $splitLength)
-				: @mb_str_split($stringValue, $splitLength, $encoding);
-			if ($items === false) {
-				throw new ShouldNotHappenException();
-			}
-
-			return self::createConstantArrayFrom($items, $scope);
-		});
+		return $encoding === null && !$this->phpVersion->strSplitReturnsEmptyArray()
+			? TypeCombinator::intersect($returnType, new NonEmptyArrayType())
+			: $returnType;
 	}
 
 	/**

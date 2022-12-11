@@ -9,18 +9,14 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerType;
-use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\UnionType;
 use function count;
 
 final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -58,29 +54,24 @@ final class ArrayChunkFunctionReturnTypeExtension implements DynamicFunctionRetu
 			return null;
 		}
 
-		return TypeTraverser::map($arrayType, static function (Type $type, callable $traverse) use ($lengthType, $preserveKeys): Type {
-			if ($type instanceof UnionType || $type instanceof IntersectionType) {
-				return $traverse($type);
+		$constantArrays = $arrayType->getConstantArrays();
+		if ($lengthType instanceof ConstantIntegerType && $lengthType->getValue() >= 1 && $preserveKeys !== null && count($constantArrays) > 0) {
+			$results = [];
+			foreach ($constantArrays as $constantArray) {
+				$results[] = $constantArray->chunk($lengthType->getValue(), $preserveKeys);
 			}
 
-			if (
-				$type instanceof ConstantArrayType
-				&& $lengthType instanceof ConstantIntegerType
-				&& $lengthType->getValue() >= 1
-				&& $preserveKeys !== null
-			) {
-				return $type->chunk($lengthType->getValue(), $preserveKeys);
-			}
+			return TypeCombinator::union(...$results);
+		}
 
-			$chunkType = self::getChunkType($type, $preserveKeys);
+		$chunkType = self::getChunkType($arrayType, $preserveKeys);
 
-			$resultType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $chunkType));
-			if ($type->isIterableAtLeastOnce()->yes()) {
-				 $resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
-			}
+		$resultType = AccessoryArrayListType::intersectWith(new ArrayType(new IntegerType(), $chunkType));
+		if ($arrayType->isIterableAtLeastOnce()->yes()) {
+			$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
+		}
 
-			return $resultType;
-		});
+		return $resultType;
 	}
 
 	private static function getChunkType(Type $type, ?bool $preserveKeys): Type

@@ -1498,14 +1498,14 @@ class TypeSpecifier
 	{
 		if ($scope !== null) {
 			if ($context->true()) {
-				$resultType = TypeCombinator::intersect($scope->getType($expr), $type);
+				$containsNull = TypeCombinator::containsNull($type) && TypeCombinator::containsNull($scope->getType($expr));
 			} elseif ($context->false()) {
-				$resultType = TypeCombinator::remove($scope->getType($expr), $type);
+				$containsNull = !TypeCombinator::containsNull($type) && TypeCombinator::containsNull($scope->getType($expr));
 			}
 		}
 
 		$originalExpr = $expr;
-		if (isset($resultType) && !TypeCombinator::containsNull($resultType)) {
+		if (isset($containsNull) && !$containsNull) {
 			$expr = NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($expr);
 		}
 
@@ -1554,7 +1554,7 @@ class TypeSpecifier
 				|| $methodReflection->hasSideEffects()->yes()
 				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
 			) {
-				if (isset($resultType) && !TypeCombinator::containsNull($resultType)) {
+				if (isset($containsNull) && !$containsNull) {
 					return $this->createNullsafeTypes($rootExpr, $originalExpr, $scope, $context, $overwrite, $type);
 				}
 
@@ -1580,7 +1580,7 @@ class TypeSpecifier
 				|| $methodReflection->hasSideEffects()->yes()
 				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
 			) {
-				if (isset($resultType) && !TypeCombinator::containsNull($resultType)) {
+				if (isset($containsNull) && !$containsNull) {
 					return $this->createNullsafeTypes($rootExpr, $originalExpr, $scope, $context, $overwrite, $type);
 				}
 
@@ -1605,7 +1605,7 @@ class TypeSpecifier
 		}
 
 		$types = new SpecifiedTypes($sureTypes, $sureNotTypes, $overwrite, [], $rootExpr);
-		if ($scope !== null && isset($resultType) && !TypeCombinator::containsNull($resultType)) {
+		if ($scope !== null && isset($containsNull) && !$containsNull) {
 			return $this->createNullsafeTypes($rootExpr, $originalExpr, $scope, $context, $overwrite, $type)->unionWith($types);
 		}
 

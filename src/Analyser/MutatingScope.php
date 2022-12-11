@@ -1325,7 +1325,7 @@ class MutatingScope implements Scope
 					}
 
 					$closureYieldStatements[] = [$node, $scope];
-				});
+				}, StatementContext::createTopLevel());
 
 				$returnTypes = [];
 				$hasNull = false;

@@ -107,11 +107,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	private function export(string $value): string
 	{
-		if (Strings::match($value, '([\000-\037])') !== null) {
-			return '"' . addcslashes($value, "\0..\37\\\"") . '"';
-		}
-
-		return "'" . addcslashes($value, '\\\'') . "'";
+		return '"' . addcslashes($value, "\0..\37\\\"") . '"';
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

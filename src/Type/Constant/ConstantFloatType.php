@@ -11,8 +11,10 @@ use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function abs;
 use function is_finite;
 use function strpos;
+use const PHP_FLOAT_EPSILON;
 
 /** @api */
 class ConstantFloatType extends FloatType implements ConstantScalarType
@@ -52,7 +54,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	{
 		if ($type instanceof self) {
 			if (!$this->equals($type)) {
-				if ($this->describe(VerbosityLevel::value()) === $type->describe(VerbosityLevel::value())) {
+				if (abs($this->value - $type->value) < PHP_FLOAT_EPSILON) {
 					return TrinaryLogic::createMaybe();
 				}
 

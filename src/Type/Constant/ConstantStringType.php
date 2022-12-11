@@ -53,6 +53,8 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	private ?ObjectType $objectType = null;
 
+	private ?Type $arrayKeyType = null;
+
 	/** @api */
 	public function __construct(private string $value, private bool $isClassString = false)
 	{
@@ -263,9 +265,13 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function toArrayKey(): Type
 	{
+		if ($this->arrayKeyType !== null) {
+			return $this->arrayKeyType;
+		}
+
 		/** @var int|string $offsetValue */
 		$offsetValue = key([$this->value => null]);
-		return is_int($offsetValue) ? new ConstantIntegerType($offsetValue) : new ConstantStringType($offsetValue);
+		return $this->arrayKeyType = is_int($offsetValue) ? new ConstantIntegerType($offsetValue) : new ConstantStringType($offsetValue);
 	}
 
 	public function isString(): TrinaryLogic

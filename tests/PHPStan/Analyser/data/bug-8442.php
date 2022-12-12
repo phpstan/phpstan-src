@@ -3,6 +3,7 @@
 namespace Bug8442;
 
 use function PHPStan\Testing\assertType;
+use DateInterval;
 
-assertType('false', \DateInterval::createFromDateString('foo'));
-assertType('DateInterval', \DateInterval::createFromDateString('1 Day'));
+assertType('false', DateInterval::createFromDateString('foo'));
+assertType('DateInterval', DateInterval::createFromDateString('1 Day'));

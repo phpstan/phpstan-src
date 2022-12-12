@@ -11,9 +11,11 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 
 class DateIntervalDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
+
 	public function getClass(): string
 	{
 		return DateInterval::class;
@@ -24,7 +26,7 @@ class DateIntervalDynamicReturnTypeExtension implements DynamicStaticMethodRetur
 		return $methodReflection->getName() === 'createFromDateString';
 	}
 
-	public function getTypeFromStaticMethodCall( MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope ): ?\PHPStan\Type\Type
+	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
 		$defaultReturnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
@@ -42,4 +44,5 @@ class DateIntervalDynamicReturnTypeExtension implements DynamicStaticMethodRetur
 
 		return $isValid ? new ObjectType(DateInterval::class) : new ConstantBooleanType(false);
 	}
+
 }

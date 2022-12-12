@@ -7,5 +7,16 @@
  */
 class PDOStatement implements Traversable, IteratorAggregate
 {
+    /**
+     * @template T of object
+     * @param class-string<T> $class
+     * @param array<mixed> $ctorArgs
+     * @return false|T
+     */
+    public function fetchObject($class = \stdClass::class, array $ctorArgs = array()) {}
 
+    /**
+     * @return array{name: string, table?: string, native_type?: string, len: int, flags: array<int, string>, precision: int<0, max>, pdo_type: PDO::PARAM_* }|false
+     */
+    public function getColumnMeta(int $column) {}
 }

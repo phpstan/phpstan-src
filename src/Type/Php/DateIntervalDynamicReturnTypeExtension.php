@@ -6,12 +6,12 @@ use DateInterval;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeUtils;
 
 class DateIntervalDynamicReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
@@ -28,16 +28,10 @@ class DateIntervalDynamicReturnTypeExtension implements DynamicStaticMethodRetur
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		$defaultReturnType = ParametersAcceptorSelector::selectFromArgs(
-			$scope,
-			$methodCall->getArgs(),
-			$methodReflection->getVariants(),
-		)->getReturnType();
-
-		$dateTimeString = $scope->getType($methodCall->getArgs()[0]->value);
+		$dateTimeString = TypeUtils::getConstantStrings($scope->getType($methodCall->getArgs()[0]->value));
 
 		if (!($dateTimeString instanceof ConstantStringType)) {
-			return $defaultReturnType;
+			return null;
 		}
 
 		$isValid = DateInterval::createFromDateString($dateTimeString->getValue()) !== false;

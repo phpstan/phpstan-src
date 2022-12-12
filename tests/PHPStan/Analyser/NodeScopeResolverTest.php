@@ -971,6 +971,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/unset-conditional-expressions.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/conditional-types-inference.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7210.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7279.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7341.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-string-strstr-specifying.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-string-strrchr-specifying.php');
@@ -987,6 +988,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7153.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/in-array-non-empty.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-4117.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7423.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-7490.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/remember-possibly-impure-function-values.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/emptyiterator.php');

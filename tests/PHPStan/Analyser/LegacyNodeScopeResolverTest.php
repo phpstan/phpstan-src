@@ -5898,7 +5898,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$mixed',
 			],
 			[
-				'iterable<Iterables\Bar>',
+				'iterable<(int|string), Iterables\Bar>',
 				'$iterableWithConcreteTypehint',
 			],
 			[
@@ -5914,7 +5914,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'$this->doBar()',
 			],
 			[
-				'iterable<Iterables\Baz>',
+				'iterable<(int|string), Iterables\Baz>',
 				'$this->doBaz()',
 			],
 			[

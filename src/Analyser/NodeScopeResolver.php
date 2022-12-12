@@ -824,31 +824,32 @@ class NodeScopeResolver
 				$inForeachScope = $this->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
 			}
 			$nodeCallback(new InForeachNode($stmt), $inForeachScope);
-			$bodyScope = $this->polluteScopeWithAlwaysIterableForeach ? $this->enterForeach($scope->filterByTruthyValue($arrayComparisonExpr), $stmt) : $this->enterForeach($scope, $stmt);
-			$count = 0;
-			do {
-				$prevScope = $bodyScope;
-				$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
-				$bodyScope = $this->enterForeach($bodyScope, $stmt);
-				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
-				}, $context->enterDeep())->filterOutLoopExitPoints();
-				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
-				$bodyScope = $bodyScopeResult->getScope();
-				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-				}
-				if (!$context->isTopLevel()) {
-					break;
-				}
-				if ($bodyScope->equals($prevScope)) {
-					break;
-				}
+			$bodyScope = $scope;
 
-				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $prevScope->generalizeWith($bodyScope);
-				}
-				$count++;
-			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+			if ($context->isTopLevel()) {
+				$bodyScope = $this->polluteScopeWithAlwaysIterableForeach ? $this->enterForeach($scope->filterByTruthyValue($arrayComparisonExpr), $stmt) : $this->enterForeach($scope, $stmt);
+				$count = 0;
+				do {
+					$prevScope = $bodyScope;
+					$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
+					$bodyScope = $this->enterForeach($bodyScope, $stmt);
+					$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
+					}, $context->enterDeep())->filterOutLoopExitPoints();
+					$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
+					$bodyScope = $bodyScopeResult->getScope();
+					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+					}
+					if ($bodyScope->equals($prevScope)) {
+						break;
+					}
+
+					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+						$bodyScope = $prevScope->generalizeWith($bodyScope);
+					}
+					$count++;
+				} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+			}
 
 			$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
 			$bodyScope = $this->enterForeach($bodyScope, $stmt);
@@ -893,31 +894,31 @@ class NodeScopeResolver
 			$condResult = $this->processExprNode($stmt->cond, $scope, static function (): void {
 			}, ExpressionContext::createDeep());
 			$bodyScope = $condResult->getTruthyScope();
-			$count = 0;
-			do {
-				$prevScope = $bodyScope;
-				$bodyScope = $bodyScope->mergeWith($scope);
-				$bodyScope = $this->processExprNode($stmt->cond, $bodyScope, static function (): void {
-				}, ExpressionContext::createDeep())->getTruthyScope();
-				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
-				}, $context->enterDeep())->filterOutLoopExitPoints();
-				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
-				$bodyScope = $bodyScopeResult->getScope();
-				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-				}
-				if (!$context->isTopLevel()) {
-					break;
-				}
-				if ($bodyScope->equals($prevScope)) {
-					break;
-				}
 
-				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $prevScope->generalizeWith($bodyScope);
-				}
-				$count++;
-			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+			if ($context->isTopLevel()) {
+				$count = 0;
+				do {
+					$prevScope = $bodyScope;
+					$bodyScope = $bodyScope->mergeWith($scope);
+					$bodyScope = $this->processExprNode($stmt->cond, $bodyScope, static function (): void {
+					}, ExpressionContext::createDeep())->getTruthyScope();
+					$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
+					}, $context->enterDeep())->filterOutLoopExitPoints();
+					$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
+					$bodyScope = $bodyScopeResult->getScope();
+					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+					}
+					if ($bodyScope->equals($prevScope)) {
+						break;
+					}
+
+					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+						$bodyScope = $prevScope->generalizeWith($bodyScope);
+					}
+					$count++;
+				} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+			}
 
 			$bodyScope = $bodyScope->mergeWith($scope);
 			$bodyScopeMaybeRan = $bodyScope;
@@ -973,36 +974,35 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 
-			do {
-				$prevScope = $bodyScope;
+			if ($context->isTopLevel()) {
+				do {
+					$prevScope = $bodyScope;
+					$bodyScope = $bodyScope->mergeWith($scope);
+					$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
+					}, $context->enterDeep())->filterOutLoopExitPoints();
+					$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
+					$bodyScope = $bodyScopeResult->getScope();
+					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+					}
+					$finalScope = $alwaysTerminating ? $finalScope : $bodyScope->mergeWith($finalScope);
+					foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
+						$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+					}
+					$bodyScope = $this->processExprNode($stmt->cond, $bodyScope, static function (): void {
+					}, ExpressionContext::createDeep())->getTruthyScope();
+					if ($bodyScope->equals($prevScope)) {
+						break;
+					}
+
+					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+						$bodyScope = $prevScope->generalizeWith($bodyScope);
+					}
+					$count++;
+				} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+
 				$bodyScope = $bodyScope->mergeWith($scope);
-				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
-				}, $context->enterDeep())->filterOutLoopExitPoints();
-				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
-				$bodyScope = $bodyScopeResult->getScope();
-				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-				}
-				$finalScope = $alwaysTerminating ? $finalScope : $bodyScope->mergeWith($finalScope);
-				foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-					$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
-				}
-				$bodyScope = $this->processExprNode($stmt->cond, $bodyScope, static function (): void {
-				}, ExpressionContext::createDeep())->getTruthyScope();
-				if (!$context->isTopLevel()) {
-					break;
-				}
-				if ($bodyScope->equals($prevScope)) {
-					break;
-				}
-
-				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $prevScope->generalizeWith($bodyScope);
-				}
-				$count++;
-			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
-
-			$bodyScope = $bodyScope->mergeWith($scope);
+			}
 
 			$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, $nodeCallback, $context)->filterOutLoopExitPoints();
 			$bodyScope = $bodyScopeResult->getScope();
@@ -1071,42 +1071,40 @@ class NodeScopeResolver
 				$bodyScope = $condResult->getTruthyScope();
 			}
 
-			$count = 0;
-			do {
-				$prevScope = $bodyScope;
-				$bodyScope = $bodyScope->mergeWith($initScope);
-				foreach ($stmt->cond as $condExpr) {
-					$bodyScope = $this->processExprNode($condExpr, $bodyScope, static function (): void {
-					}, ExpressionContext::createDeep())->getTruthyScope();
-				}
-				$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
-				}, $context->enterDeep())->filterOutLoopExitPoints();
-				$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
-				$bodyScope = $bodyScopeResult->getScope();
-				foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
-					$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
-				}
-				foreach ($stmt->loop as $loopExpr) {
-					$exprResult = $this->processExprNode($loopExpr, $bodyScope, static function (): void {
-					}, ExpressionContext::createTopLevel());
-					$bodyScope = $exprResult->getScope();
-					$hasYield = $hasYield || $exprResult->hasYield();
-					$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
-				}
+			if ($context->isTopLevel()) {
+				$count = 0;
+				do {
+					$prevScope = $bodyScope;
+					$bodyScope = $bodyScope->mergeWith($initScope);
+					foreach ($stmt->cond as $condExpr) {
+						$bodyScope = $this->processExprNode($condExpr, $bodyScope, static function (): void {
+						}, ExpressionContext::createDeep())->getTruthyScope();
+					}
+					$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
+					}, $context->enterDeep())->filterOutLoopExitPoints();
+					$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
+					$bodyScope = $bodyScopeResult->getScope();
+					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
+					}
+					foreach ($stmt->loop as $loopExpr) {
+						$exprResult = $this->processExprNode($loopExpr, $bodyScope, static function (): void {
+						}, ExpressionContext::createTopLevel());
+						$bodyScope = $exprResult->getScope();
+						$hasYield = $hasYield || $exprResult->hasYield();
+						$throwPoints = array_merge($throwPoints, $exprResult->getThrowPoints());
+					}
 
-				if (!$context->isTopLevel()) {
-					break;
-				}
+					if ($bodyScope->equals($prevScope)) {
+						break;
+					}
 
-				if ($bodyScope->equals($prevScope)) {
-					break;
-				}
-
-				if ($count >= self::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $prevScope->generalizeWith($bodyScope);
-				}
-				$count++;
-			} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+						$bodyScope = $prevScope->generalizeWith($bodyScope);
+					}
+					$count++;
+				} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+			}
 
 			$bodyScope = $bodyScope->mergeWith($initScope);
 			foreach ($stmt->cond as $condExpr) {

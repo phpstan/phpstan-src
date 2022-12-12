@@ -1057,6 +1057,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testPr2030(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/pr-2030.php');
+		$this->assertNoErrors($errors);
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

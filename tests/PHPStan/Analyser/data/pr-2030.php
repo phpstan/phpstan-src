@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Foo;
+namespace Pr2030;
 
 use function trim;
 
@@ -19,7 +19,7 @@ class Foo
 	 * @param array<mixed> $data
 	 * @return array<mixed>
 	 */
-	private function someMethod(array $data): array
+	public function someMethod(array $data): array
 	{
 		foreach ($data[self::FIELD_NOTES][self::SUBFIELD_NOTE] ?? [] as $index => $noteData) {
 			$noteTitle = $noteData[self::FIELD_TITLE] ?? null;

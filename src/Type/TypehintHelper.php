@@ -83,8 +83,8 @@ class TypehintHelper
 	): Type
 	{
 		if ($reflectionType === null) {
-			if ($isVariadic && $phpDocType instanceof ArrayType) {
-				$phpDocType = $phpDocType->getItemType();
+			if ($isVariadic && $phpDocType !== null && $phpDocType->isArray()->yes()) {
+				$phpDocType = $phpDocType->getIterableValueType();
 			}
 			return $phpDocType ?? new MixedType();
 		}
@@ -164,20 +164,20 @@ class TypehintHelper
 				if ($phpDocType instanceof UnionType) {
 					$innerTypes = [];
 					foreach ($phpDocType->getTypes() as $innerType) {
-						if ($innerType instanceof ArrayType) {
+						if ($innerType->isArray()->yes()) {
 							$innerTypes[] = new IterableType(
-								$innerType->getKeyType(),
-								$innerType->getItemType(),
+								$innerType->getIterableKeyType(),
+								$innerType->getIterableValueType(),
 							);
 						} else {
 							$innerTypes[] = $innerType;
 						}
 					}
 					$phpDocType = new UnionType($innerTypes);
-				} elseif ($phpDocType instanceof ArrayType) {
+				} elseif ($phpDocType->isArray()->yes()) {
 					$phpDocType = new IterableType(
-						$phpDocType->getKeyType(),
-						$phpDocType->getItemType(),
+						$phpDocType->getIterableKeyType(),
+						$phpDocType->getIterableValueType(),
 					);
 				}
 			}

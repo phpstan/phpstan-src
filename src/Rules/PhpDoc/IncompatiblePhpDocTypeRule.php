@@ -12,7 +12,6 @@ use PHPStan\Rules\Generics\GenericObjectTypeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
@@ -95,10 +94,10 @@ class IncompatiblePhpDocTypeRule implements Rule
 					if (
 						$phpDocParamTag instanceof ParamTag
 						&& $phpDocParamTag->isVariadic()
-						&& $phpDocParamType instanceof ArrayType
-						&& !$nativeParamType instanceof ArrayType
+						&& $phpDocParamType->isArray()->yes()
+						&& $nativeParamType->isArray()->no()
 					) {
-						$phpDocParamType = $phpDocParamType->getItemType();
+						$phpDocParamType = $phpDocParamType->getIterableValueType();
 					}
 					$isParamSuperType = $nativeParamType->isSuperTypeOf($phpDocParamType);
 

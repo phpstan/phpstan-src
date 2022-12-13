@@ -424,10 +424,6 @@ class TypeSpecifier
 			);
 
 		} elseif ($expr instanceof Node\Expr\BinaryOp\Smaller || $expr instanceof Node\Expr\BinaryOp\SmallerOrEqual) {
-			$orEqual = $expr instanceof Node\Expr\BinaryOp\SmallerOrEqual;
-			$offset = $orEqual ? 0 : 1;
-			$leftType = $scope->getType($expr->left);
-			$rightType = $scope->getType($expr->right);
 
 			if (
 				$expr->left instanceof FuncCall
@@ -452,6 +448,9 @@ class TypeSpecifier
 				);
 			}
 
+			$orEqual = $expr instanceof Node\Expr\BinaryOp\SmallerOrEqual;
+			$offset = $orEqual ? 0 : 1;
+			$leftType = $scope->getType($expr->left);
 			$result = new SpecifiedTypes([], [], false, [], $rootExpr);
 
 			if (
@@ -522,6 +521,7 @@ class TypeSpecifier
 				}
 			}
 
+			$rightType = $scope->getType($expr->right);
 			if ($rightType instanceof ConstantIntegerType) {
 				if ($expr->left instanceof Expr\PostInc) {
 					$result = $result->unionWith($this->createRangeTypes(

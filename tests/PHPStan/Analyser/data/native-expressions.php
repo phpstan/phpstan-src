@@ -3,6 +3,7 @@
 namespace NativeExpressions;
 
 use function PHPStan\Testing\assertType;
+use function PHPStan\Testing\assertNativeType;
 
 function doFoo(): string
 {
@@ -12,7 +13,7 @@ function (): void {
 	/** @var non-empty-string $a */
 	$a = doFoo();
 	assertType('non-empty-string', $a);
-	assertNativeType('string', $a);
+	assertNativeType('mixed', $a); // could be fixed
 };
 
 /**
@@ -34,7 +35,7 @@ class Foo{
 		private array $array
 	){
 		assertType('non-empty-array', $this->array);
-		assertNativeType('array', $this->array);
+		assertNativeType('non-empty-array', $this->array); // could be fixed issue https://github.com/phpstan/phpstan/issues/6260
 		if(count($array) === 0){
 			throw new \InvalidArgumentException();
 		}

@@ -34,9 +34,6 @@ class ImpossibleInstanceOfRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$instanceofType = $scope->getType($node);
-		$expressionType = $scope->getType($node->expr);
-
 		if ($node->class instanceof Node\Name) {
 			$className = $scope->resolveName($node->class);
 			$classType = new ObjectType($className);
@@ -50,13 +47,14 @@ class ImpossibleInstanceOfRule implements Rule
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Instanceof between %s and %s results in an error.',
-						$expressionType->describe(VerbosityLevel::typeOnly()),
+						$scope->getType($node->expr)->describe(VerbosityLevel::typeOnly()),
 						$classType->describe(VerbosityLevel::typeOnly()),
 					))->build(),
 				];
 			}
 		}
 
+		$instanceofType = $scope->getType($node);
 		if (!$instanceofType instanceof ConstantBooleanType) {
 			return [];
 		}
@@ -78,7 +76,7 @@ class ImpossibleInstanceOfRule implements Rule
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to false.',
-					$expressionType->describe(VerbosityLevel::typeOnly()),
+					$scope->getType($node->expr)->describe(VerbosityLevel::typeOnly()),
 					$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
 				)))->build(),
 			];
@@ -86,7 +84,7 @@ class ImpossibleInstanceOfRule implements Rule
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to true.',
-					$expressionType->describe(VerbosityLevel::typeOnly()),
+					$scope->getType($node->expr)->describe(VerbosityLevel::typeOnly()),
 					$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
 				)))->build(),
 			];

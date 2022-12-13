@@ -56,6 +56,16 @@ final class ComposerHelper
 		return $root . '/' . trim($vendorDirectory, '/');
 	}
 
+	/**
+	 * @param array<string, mixed> $composerConfig
+	 */
+	public static function getBinDirFromComposerConfig(string $root, array $composerConfig): string
+	{
+		$vendorDirectory = $composerConfig['config']['bin-dir'] ?? 'vendor/bin';
+
+		return $root . '/' . trim($vendorDirectory, '/');
+	}
+
 	public static function getPhpStanVersion(): string
 	{
 		if (self::$phpstanVersion !== null) {

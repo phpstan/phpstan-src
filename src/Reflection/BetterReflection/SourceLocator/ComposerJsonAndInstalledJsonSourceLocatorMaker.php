@@ -11,15 +11,20 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Php\PhpVersion;
 use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function array_merge_recursive;
+use function array_reverse;
 use function count;
 use function dirname;
+use function glob;
 use function is_dir;
 use function is_file;
+use function strpos;
+use const GLOB_ONLYDIR;
 
 class ComposerJsonAndInstalledJsonSourceLocatorMaker
 {
@@ -28,6 +33,7 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		private OptimizedDirectorySourceLocatorRepository $optimizedDirectorySourceLocatorRepository,
 		private OptimizedPsrAutoloaderLocatorFactory $optimizedPsrAutoloaderLocatorFactory,
 		private OptimizedDirectorySourceLocatorFactory $optimizedDirectorySourceLocatorFactory,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -123,6 +129,39 @@ class ComposerJsonAndInstalledJsonSourceLocatorMaker
 
 		if (count($files) > 0) {
 			$locators[] = $this->optimizedDirectorySourceLocatorFactory->createByFiles($files);
+		}
+
+		$binDir = ComposerHelper::getBinDirFromComposerConfig($projectInstallationPath, $composer);
+		$phpunitBridgeDir = $binDir . '/.phpunit';
+		if (!is_dir($vendorDirectory . '/phpunit/phpunit') && is_dir($phpunitBridgeDir)) {
+			// from https://github.com/composer/composer/blob/8ff237afb61b8766efa576b8ae1cc8560c8aed96/phpstan/locate-phpunit-autoloader.php
+			$bestDirFound = null;
+			$phpunitBridgeDirectories = glob($phpunitBridgeDir . '/phpunit-*', GLOB_ONLYDIR);
+			if ($phpunitBridgeDirectories !== false) {
+				foreach (array_reverse($phpunitBridgeDirectories) as $dir) {
+					$bestDirFound = $dir;
+					if ($this->phpVersion->getVersionId() >= 80100 && strpos($dir, 'phpunit-10') !== false) {
+						break;
+					}
+					if ($this->phpVersion->getVersionId() >= 80000) {
+						if (strpos($dir, 'phpunit-9') !== false) {
+							break;
+						}
+						continue;
+					}
+
+					if (strpos($dir, 'phpunit-8') !== false || strpos($dir, 'phpunit-7') !== false) {
+						break;
+					}
+				}
+
+				if ($bestDirFound !== null) {
+					$phpunitBridgeLocator = $this->create($bestDirFound);
+					if ($phpunitBridgeLocator !== null) {
+						$locators[] = $phpunitBridgeLocator;
+					}
+				}
+			}
 		}
 
 		return new AggregateSourceLocator($locators);

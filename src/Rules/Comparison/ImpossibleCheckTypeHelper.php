@@ -154,7 +154,6 @@ class ImpossibleCheckTypeHelper
 					}
 				} elseif ($functionName === 'method_exists' && $argsCount >= 2) {
 					$objectType = $scope->getType($node->getArgs()[0]->value);
-					$methodType = $scope->getType($node->getArgs()[1]->value);
 
 					if ($objectType instanceof ConstantStringType
 						&& !$this->reflectionProvider->hasClass($objectType->getValue())
@@ -162,6 +161,7 @@ class ImpossibleCheckTypeHelper
 						return false;
 					}
 
+					$methodType = $scope->getType($node->getArgs()[1]->value);
 					if ($methodType instanceof ConstantStringType) {
 						if ($objectType instanceof ConstantStringType) {
 							$objectType = new ObjectType($objectType->getValue());

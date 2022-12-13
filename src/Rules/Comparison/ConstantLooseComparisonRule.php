@@ -36,16 +36,13 @@ class ConstantLooseComparisonRule implements Rule
 			return [];
 		}
 
-		$leftType = $scope->getType($node->left);
-		$rightType = $scope->getType($node->right);
-
 		if (!$nodeType->getValue()) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Loose comparison using %s between %s and %s will always evaluate to false.',
 					$node instanceof Node\Expr\BinaryOp\Equal ? '==' : '!=',
-					$leftType->describe(VerbosityLevel::value()),
-					$rightType->describe(VerbosityLevel::value()),
+					$scope->getType($node->left)->describe(VerbosityLevel::value()),
+					$scope->getType($node->right)->describe(VerbosityLevel::value()),
 				))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueLooseComparison) {
@@ -53,8 +50,8 @@ class ConstantLooseComparisonRule implements Rule
 				RuleErrorBuilder::message(sprintf(
 					'Loose comparison using %s between %s and %s will always evaluate to true.',
 					$node instanceof Node\Expr\BinaryOp\Equal ? '==' : '!=',
-					$leftType->describe(VerbosityLevel::value()),
-					$rightType->describe(VerbosityLevel::value()),
+					$scope->getType($node->left)->describe(VerbosityLevel::value()),
+					$scope->getType($node->right)->describe(VerbosityLevel::value()),
 				))->build(),
 			];
 		}

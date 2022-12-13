@@ -53,7 +53,6 @@ class OffsetAccessValueAssignmentRule implements Rule
 			$assignedValueType = $scope->getType($node);
 		}
 
-		$originalArrayType = $scope->getType($arrayDimFetch->var);
 		$arrayTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$arrayDimFetch->var,
@@ -75,6 +74,8 @@ class OffsetAccessValueAssignmentRule implements Rule
 		if (!$resultType instanceof ErrorType) {
 			return [];
 		}
+
+		$originalArrayType = $scope->getType($arrayDimFetch->var);
 
 		return [
 			RuleErrorBuilder::message(sprintf(

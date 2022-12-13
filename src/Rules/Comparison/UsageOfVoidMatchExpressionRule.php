@@ -20,12 +20,11 @@ class UsageOfVoidMatchExpressionRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$matchResultType = $scope->getType($node);
-		if (
-			$matchResultType->isVoid()->yes()
-			&& !$scope->isInFirstLevelStatement()
-		) {
-			return [RuleErrorBuilder::message('Result of match expression (void) is used.')->build()];
+		if (!$scope->isInFirstLevelStatement()) {
+			$matchResultType = $scope->getType($node);
+			if ($matchResultType->isVoid()->yes()) {
+				return [RuleErrorBuilder::message('Result of match expression (void) is used.')->build()];
+			}
 		}
 
 		return [];

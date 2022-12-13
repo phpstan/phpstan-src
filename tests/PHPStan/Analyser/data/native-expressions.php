@@ -40,5 +40,17 @@ class Foo{
 			throw new \InvalidArgumentException();
 		}
 	}
+
+	/**
+	 * @param array{a: 'b'} $a
+	 * @return void
+	 */
+	public function doUnset(array $a){
+		assertType("array{a: 'b'}", $a);
+		assertNativeType('array', $a);
+		unset($a['a']);
+		assertType("array{}", $a);
+		assertNativeType('array', $a);
+	}
 }
 

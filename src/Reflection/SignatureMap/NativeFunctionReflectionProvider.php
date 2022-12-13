@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection\SignatureMap;
 
-use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\Reflector;
@@ -74,7 +73,7 @@ class NativeFunctionReflectionProvider
 					$isDeprecated = $reflectionFunction->isDeprecated();
 				}
 			}
-		} catch (IdentifierNotFound | InvalidIdentifierName) {
+		} catch (IdentifierNotFound) {
 			// pass
 		}
 

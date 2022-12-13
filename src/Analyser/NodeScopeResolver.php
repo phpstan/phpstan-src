@@ -1261,7 +1261,8 @@ class NodeScopeResolver
 			foreach ($stmt->catches as $catchNode) {
 				$nodeCallback($catchNode, $scope);
 
-				$catchType = TypeCombinator::union(...array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types));
+				$listedCatchTypes = array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types);
+				$catchType = TypeCombinator::union(...$listedCatchTypes);
 				$originalCatchType = $catchType;
 				$isThrowable = TrinaryLogic::createNo()->lazyOr(
 					$originalCatchType->getObjectClassNames(),
@@ -1298,11 +1299,26 @@ class NodeScopeResolver
 				$throwPoints = $newThrowPoints;
 
 				$matchingThrowTypes = array_map(static fn (ThrowPoint $throwPoint): Type => $throwPoint->getType(), $matchingThrowPoints);
-				$matchingThrowUnion = TypeCombinator::union(... $matchingThrowTypes);
-				$unthrownCatchType = TypeCombinator::remove($catchType, $matchingThrowUnion);
+				$unthrownCatchTypes = [];
+				foreach ($listedCatchTypes as $listedCatchType) {
+					$foundMatching = false;
+					foreach ($matchingThrowTypes as $matchingThrowType) {
+						if (!$listedCatchType->isSuperTypeOf($matchingThrowType)->no()) {
+							$foundMatching = true;
+							break;
+						}
+					}
 
-				//              if (!$unthrownCatchType instanceof NeverType) {
-				if (count($matchingThrowPoints) < count($catchNode->types) && !$unthrownCatchType instanceof NeverType) {
+					if ($foundMatching !== false) {
+						continue;
+					}
+
+					$unthrownCatchTypes[] = $listedCatchType;
+				}
+
+				$unthrownCatchType = TypeCombinator::union(... $unthrownCatchTypes);
+
+				if (!$unthrownCatchType instanceof NeverType) {
 					$throwableThrowPoints = [];
 					if ($originalCatchType->isSuperTypeOf(new ObjectType(Throwable::class))->yes()) {
 						foreach ($branchScopeResult->getThrowPoints() as $originalThrowPoint) {
@@ -1329,6 +1345,9 @@ class NodeScopeResolver
 					} else {
 						$catchScope = $catchScope->mergeWith($matchingThrowPoint->getScope());
 					}
+				}
+				if ($catchScope === null) {
+					$catchScope = $branchScope;
 				}
 
 				$variableName = null;

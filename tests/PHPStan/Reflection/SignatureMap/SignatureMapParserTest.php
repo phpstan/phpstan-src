@@ -4,7 +4,6 @@ namespace PHPStan\Reflection\SignatureMap;
 
 use DateInterval;
 use DateTime;
-use OutOfBoundsException;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
@@ -530,7 +529,7 @@ class SignatureMapParserTest extends PHPStanTestCase
 				} else {
 					$reflectionFunction = new ReflectionFunction($reflector->reflectFunction($realFunctionName));
 				}
-			} catch (IdentifierNotFound | OutOfBoundsException $e) {
+			} catch (IdentifierNotFound $e) {
 				// pass
 			}
 

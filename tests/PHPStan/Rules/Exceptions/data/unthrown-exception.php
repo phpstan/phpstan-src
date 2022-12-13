@@ -604,6 +604,48 @@ class TestMultiCatchContainingDeadExceptions
 		}
 	}
 
+	public function doBal()
+	{
+		try {
+			$this->throwLogicRangeJsonExceptions();
+
+		} catch (\RuntimeException | \JsonException $t) {
+
+		} catch (\InvalidArgumentException $t) {
+
+		}
+	}
+
+	public function doBap()
+	{
+		try {
+			$this->throwLogicRangeJsonExceptions();
+
+		} catch (\InvalidArgumentException $t) {
+
+		} catch (\RuntimeException | \JsonException $t) {
+
+		}
+	}
+
+	public function doZaz()
+	{
+		try {
+			\ThrowPoints\Helpers\maybeThrows();
+		} catch (\LogicException $e) {
+
+		}
+	}
+
+	public function doZab()
+	{
+		try {
+			\ThrowPoints\Helpers\maybeThrows();
+		} catch (\InvalidArgumentException | \LogicException $e) {
+
+		}
+	}
+
 	/**
 	 * @throws \RangeException
 	 * @throws \LogicException

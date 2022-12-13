@@ -53,12 +53,6 @@ class YieldTypeRule implements Rule
 			$keyType = $scope->getType($node->key);
 		}
 
-		if ($node->value === null) {
-			$valueType = new NullType();
-		} else {
-			$valueType = $scope->getType($node->value);
-		}
-
 		$messages = [];
 		if (!$this->ruleLevelHelper->accepts($returnType->getIterableKeyType(), $keyType, $scope->isDeclareStrictTypes())) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType->getIterableKeyType(), $keyType);
@@ -68,6 +62,13 @@ class YieldTypeRule implements Rule
 				$keyType->describe($verbosityLevel),
 			))->build();
 		}
+
+		if ($node->value === null) {
+			$valueType = new NullType();
+		} else {
+			$valueType = $scope->getType($node->value);
+		}
+
 		if (!$this->ruleLevelHelper->accepts($returnType->getIterableValueType(), $valueType, $scope->isDeclareStrictTypes())) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType->getIterableValueType(), $valueType);
 			$messages[] = RuleErrorBuilder::message(sprintf(
@@ -76,7 +77,7 @@ class YieldTypeRule implements Rule
 				$valueType->describe($verbosityLevel),
 			))->build();
 		}
-		if ($scope->getType($node)->isVoid()->yes() && !$scope->isInFirstLevelStatement()) {
+		if (!$scope->isInFirstLevelStatement() && $scope->getType($node)->isVoid()->yes()) {
 			$messages[] = RuleErrorBuilder::message('Result of yield (void) is used.')->build();
 		}
 

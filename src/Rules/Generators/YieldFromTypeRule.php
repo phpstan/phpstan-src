@@ -126,7 +126,7 @@ class YieldFromTypeRule implements Rule
 			))->build();
 		}
 
-		if ($scope->getType($node)->isVoid()->yes() && !$scope->isInFirstLevelStatement()) {
+		if (!$scope->isInFirstLevelStatement() && $scope->getType($node)->isVoid()->yes()) {
 			$messages[] = RuleErrorBuilder::message('Result of yield from (void) is used.')->build();
 		}
 

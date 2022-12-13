@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -81,6 +82,10 @@ class ImpossibleInstanceOfRule implements Rule
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueInstanceof) {
+			if ($node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) === true) {
+				return [];
+			}
+
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to true.',

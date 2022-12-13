@@ -2,6 +2,8 @@
 
 namespace Bug8485;
 
+use function PHPStan\Testing\assertType;
+
 enum E {
 	case c;
 }
@@ -30,7 +32,6 @@ function shouldError():void {
 	}
 }
 
-
 function allGood(E $e, F $f):void {
 	if ($f === $e) {
 	}
@@ -43,3 +44,35 @@ function allGood(E $e, F $f):void {
 	}
 }
 
+enum FooEnum
+{
+	case A;
+	case B;
+	case C;
+}
+function dooFoo(FooEnum $s):void {
+	if ($s === FooEnum::A) {
+	} elseif ($s === FooEnum::B) {
+	} elseif ($s === FooEnum::C) {
+	}
+
+	if ($s === FooEnum::A) {
+	} elseif ($s === FooEnum::B) {
+	} else {
+		assertType('Bug8485\FooEnum::C', $s);
+	}
+
+	if ($s === FooEnum::A) {
+	} elseif ($s === FooEnum::B) {
+	} elseif ($s === FooEnum::C) {
+	} else {
+		assertType('*NEVER*', $s);
+	}
+
+	if ($s === FooEnum::A) {
+	} elseif ($s === FooEnum::B) {
+	} elseif ($s === FooEnum::C) {
+	} elseif (rand(0, 1)) {
+	}
+
+}

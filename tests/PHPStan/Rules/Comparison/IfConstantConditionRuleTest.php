@@ -140,15 +140,15 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8485.php'], [
 			[
 				'If condition is always true.',
-				19,
+				21,
 			],
 			[
 				'If condition is always false.',
-				24,
+				26,
 			],
 			[
 				'If condition is always false.',
-				29,
+				31,
 			],
 		]);
 	}

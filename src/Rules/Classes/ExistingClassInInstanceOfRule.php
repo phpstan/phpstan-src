@@ -77,9 +77,10 @@ class ExistingClassInInstanceOfRule implements Rule
 		}
 
 		$classReflection = $this->reflectionProvider->getClass($name);
-		$expressionType = $scope->getType($node->expr);
 
 		if ($classReflection->isTrait()) {
+			$expressionType = $scope->getType($node->expr);
+
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Instanceof between %s and trait %s will always evaluate to false.',
 				$expressionType->describe(VerbosityLevel::typeOnly()),

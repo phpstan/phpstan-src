@@ -1622,8 +1622,9 @@ class NodeScopeResolver
 		$exprTypeWithoutNull = TypeCombinator::removeNull($exprType);
 		if ($exprType->equals($exprTypeWithoutNull)) {
 			$originalExprType = $originalScope->getType($exprToSpecify);
-			$originalNativeType = $originalScope->getNativeType($exprToSpecify);
 			if (!$originalExprType->equals($exprTypeWithoutNull)) {
+				$originalNativeType = $originalScope->getNativeType($exprToSpecify);
+
 				return new EnsuredNonNullabilityResult($scope, [
 					new EnsuredNonNullabilityResultExpression($exprToSpecify, $originalExprType, $originalNativeType),
 				]);
@@ -2643,14 +2644,17 @@ class NodeScopeResolver
 			$elseResult = $this->processExprNode($expr->else, $ifFalseScope, $nodeCallback, $context);
 			$throwPoints = array_merge($throwPoints, $elseResult->getThrowPoints());
 			$ifFalseScope = $elseResult->getScope();
-			$ifFalseType = $ifFalseScope->getType($expr->else);
 
 			if ($ifTrueType instanceof NeverType && $ifTrueType->isExplicit()) {
 				$finalScope = $ifFalseScope;
-			} elseif ($ifFalseType instanceof NeverType && $ifFalseType->isExplicit()) {
-				$finalScope = $ifTrueScope;
 			} else {
-				$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
+				$ifFalseType = $ifFalseScope->getType($expr->else);
+
+				if ($ifFalseType instanceof NeverType && $ifFalseType->isExplicit()) {
+					$finalScope = $ifTrueScope;
+				} else {
+					$finalScope = $ifTrueScope->mergeWith($ifFalseScope);
+				}
 			}
 
 			return new ExpressionResult(

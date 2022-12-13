@@ -717,6 +717,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $class->getConstant($constantName);
 	}
 
+	public function getConstantStrings(): array
+	{
+		return [];
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return $this->isInstanceOf(Traversable::class);

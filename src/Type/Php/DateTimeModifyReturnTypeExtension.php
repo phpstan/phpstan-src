@@ -12,7 +12,6 @@ use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function count;
 
 class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtension
@@ -44,7 +43,7 @@ class DateTimeModifyReturnTypeExtension implements DynamicMethodReturnTypeExtens
 		}
 
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
-		$constantStrings = TypeUtils::getConstantStrings($valueType);
+		$constantStrings = $valueType->getConstantStrings();
 
 		$hasFalse = false;
 		$hasDateTime = false;

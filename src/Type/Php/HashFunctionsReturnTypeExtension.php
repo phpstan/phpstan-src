@@ -99,7 +99,7 @@ final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTyp
 			return TypeUtils::toBenevolentUnion($defaultReturnType);
 		}
 
-		$constantAlgorithmTypes = TypeUtils::getConstantStrings($algorithmType);
+		$constantAlgorithmTypes = $algorithmType->getConstantStrings();
 
 		if ($constantAlgorithmTypes === []) {
 			return TypeUtils::toBenevolentUnion($defaultReturnType);

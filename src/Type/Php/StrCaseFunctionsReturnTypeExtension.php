@@ -71,13 +71,13 @@ class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		} elseif (in_array($fnName, ['ucwords', 'mb_convert_kana'], true)) {
 			if (count($args) >= 2) {
 				$modeType = $scope->getType($args[1]->value);
-				$modes = array_map(static fn ($mode) => $mode->getValue(), TypeUtils::getConstantStrings($modeType));
+				$modes = array_map(static fn ($mode) => $mode->getValue(), $modeType->getConstantStrings());
 			} else {
 				$modes = $fnName === 'mb_convert_kana' ? ['KV'] : [" \t\r\n\f\v"];
 			}
 		}
 
-		$constantStrings = array_map(static fn ($type) => $type->getValue(), TypeUtils::getConstantStrings($argType));
+		$constantStrings = array_map(static fn ($type) => $type->getValue(), $argType->getConstantStrings());
 		if (count($constantStrings) > 0 && mb_check_encoding($constantStrings, 'UTF-8')) {
 			$strings = [];
 

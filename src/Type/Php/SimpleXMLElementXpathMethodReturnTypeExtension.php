@@ -12,7 +12,6 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use SimpleXMLElement;
 
 class SimpleXMLElementXpathMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
@@ -38,7 +37,7 @@ class SimpleXMLElementXpathMethodReturnTypeExtension implements DynamicMethodRet
 
 		$xmlElement = new SimpleXMLElement('<foo />');
 
-		foreach (TypeUtils::getConstantStrings($argType) as $constantString) {
+		foreach ($argType->getConstantStrings() as $constantString) {
 			$result = @$xmlElement->xpath($constantString->getValue());
 			if ($result === false) {
 				// We can't be sure since it's maybe a namespaced xpath

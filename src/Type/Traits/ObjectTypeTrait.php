@@ -96,6 +96,11 @@ trait ObjectTypeTrait
 		return new DummyConstantReflection($constantName);
 	}
 
+	public function getConstantStrings(): array
+	{
+		return [];
+	}
+
 	public function isCloneable(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

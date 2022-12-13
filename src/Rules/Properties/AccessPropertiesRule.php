@@ -48,7 +48,7 @@ class AccessPropertiesRule implements Rule
 		if ($node->name instanceof Identifier) {
 			$names = [$node->name->name];
 		} else {
-			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), TypeUtils::getConstantStrings($scope->getType($node->name)));
+			$names = array_map(static fn (ConstantStringType $type): string => $type->getValue(), $scope->getType($node->name)->getConstantStrings());
 		}
 
 		$errors = [];

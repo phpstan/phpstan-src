@@ -14,7 +14,6 @@ use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\TypeUtils;
 use function array_map;
 use function count;
 use function sprintf;
@@ -76,7 +75,7 @@ class UnusedPrivateMethodRule implements Rule
 				$methodNames = [$methodCallNode->name->toString()];
 			} else {
 				$methodNameType = $callScope->getType($methodCallNode->name);
-				$strings = TypeUtils::getConstantStrings($methodNameType);
+				$strings = $methodNameType->getConstantStrings();
 				if (count($strings) === 0) {
 					return [];
 				}

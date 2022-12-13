@@ -9,7 +9,6 @@ use PhpParser\Node\VarLikeIdentifier;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
 use function array_map;
 
 class PropertyReflectionFinder
@@ -25,7 +24,7 @@ class PropertyReflectionFinder
 			if ($propertyFetch->name instanceof Node\Identifier) {
 				$names = [$propertyFetch->name->name];
 			} else {
-				$names = array_map(static fn (ConstantStringType $name): string => $name->getValue(), TypeUtils::getConstantStrings($scope->getType($propertyFetch->name)));
+				$names = array_map(static fn (ConstantStringType $name): string => $name->getValue(), $scope->getType($propertyFetch->name)->getConstantStrings());
 			}
 
 			$reflections = [];
@@ -58,7 +57,7 @@ class PropertyReflectionFinder
 		if ($propertyFetch->name instanceof VarLikeIdentifier) {
 			$names = [$propertyFetch->name->name];
 		} else {
-			$names = array_map(static fn (ConstantStringType $name): string => $name->getValue(), TypeUtils::getConstantStrings($scope->getType($propertyFetch->name)));
+			$names = array_map(static fn (ConstantStringType $name): string => $name->getValue(), $scope->getType($propertyFetch->name)->getConstantStrings());
 		}
 
 		$reflections = [];

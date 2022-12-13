@@ -41,6 +41,11 @@ class IntegerType implements Type
 		return 'int';
 	}
 
+	public function getConstantStrings(): array
+	{
+		return [];
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

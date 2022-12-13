@@ -50,7 +50,7 @@ class ReflectionMethodConstructorThrowTypeExtension implements DynamicStaticMeth
 
 			foreach ($classes as $class) {
 				$classReflection = $this->reflectionProvider->getClass($class);
-				foreach (TypeUtils::getConstantStrings($propertyType) as $constantPropertyString) {
+				foreach ($propertyType->getConstantStrings() as $constantPropertyString) {
 					if (!$classReflection->hasMethod($constantPropertyString->getValue())) {
 						return $methodReflection->getThrowType();
 					}
@@ -65,7 +65,7 @@ class ReflectionMethodConstructorThrowTypeExtension implements DynamicStaticMeth
 		}
 
 		// Look for non constantStrings value.
-		foreach (TypeUtils::getConstantStrings($propertyType) as $constantPropertyString) {
+		foreach ($propertyType->getConstantStrings() as $constantPropertyString) {
 			$propertyType = TypeCombinator::remove($propertyType, $constantPropertyString);
 		}
 

@@ -15,7 +15,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_map;
@@ -55,7 +54,7 @@ class MbFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtensi
 			return TypeCombinator::remove($returnType, new BooleanType());
 		}
 
-		$strings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[$positionEncodingParam - 1]->value));
+		$strings = $scope->getType($functionCall->getArgs()[$positionEncodingParam - 1]->value)->getConstantStrings();
 		$results = array_unique(array_map(fn (ConstantStringType $encoding): bool => $this->isSupportedEncoding($encoding->getValue()), $strings));
 
 		if ($returnType->equals(new UnionType([new StringType(), new BooleanType()]))) {

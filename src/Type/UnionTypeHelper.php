@@ -61,6 +61,20 @@ class UnionTypeHelper
 
 	/**
 	 * @param Type[] $types
+	 * @return list<ConstantStringType>
+	 */
+	public static function getConstantStrings(array $types): array
+	{
+		$strings = [];
+		foreach ($types as $type) {
+			$strings[] = $type->getConstantStrings();
+		}
+
+		return array_merge(...$strings);
+	}
+
+	/**
+	 * @param Type[] $types
 	 * @return Type[]
 	 */
 	public static function sortTypes(array $types): array

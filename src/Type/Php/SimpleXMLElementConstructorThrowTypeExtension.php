@@ -9,7 +9,6 @@ use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use SimpleXMLElement;
 use function count;
 
@@ -28,7 +27,7 @@ class SimpleXMLElementConstructorThrowTypeExtension implements DynamicStaticMeth
 		}
 
 		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
-		$constantStrings = TypeUtils::getConstantStrings($valueType);
+		$constantStrings = $valueType->getConstantStrings();
 
 		foreach ($constantStrings as $constantString) {
 			try {

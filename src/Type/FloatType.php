@@ -46,6 +46,11 @@ class FloatType implements Type
 		return [];
 	}
 
+	public function getConstantStrings(): array
+	{
+		return [];
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof self || $type->isInteger()->yes()) {

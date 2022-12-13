@@ -39,6 +39,11 @@ class HasPropertyType implements AccessoryType, CompoundType
 		return [];
 	}
 
+	public function getConstantStrings(): array
+	{
+		return [];
+	}
+
 	public function getPropertyName(): string
 	{
 		return $this->propertyName;

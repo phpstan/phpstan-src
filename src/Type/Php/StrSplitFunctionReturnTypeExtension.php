@@ -20,7 +20,6 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function array_map;
 use function array_unique;
 use function count;
@@ -66,7 +65,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 		$encoding = null;
 		if ($functionReflection->getName() === 'mb_str_split') {
 			if (count($functionCall->getArgs()) >= 3) {
-				$strings = TypeUtils::getConstantStrings($scope->getType($functionCall->getArgs()[2]->value));
+				$strings = $scope->getType($functionCall->getArgs()[2]->value)->getConstantStrings();
 				$values = array_unique(array_map(static fn (ConstantStringType $encoding): string => $encoding->getValue(), $strings));
 
 				if (count($values) !== 1) {
@@ -88,7 +87,7 @@ final class StrSplitFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 		$stringType = $scope->getType($functionCall->getArgs()[0]->value);
 
-		$constantStrings = TypeUtils::getConstantStrings($stringType);
+		$constantStrings = $stringType->getConstantStrings();
 		if (count($constantStrings) > 0) {
 			$results = [];
 			foreach ($constantStrings as $constantString) {

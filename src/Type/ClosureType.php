@@ -230,6 +230,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return $this->objectType->getConstant($constantName);
 	}
 
+	public function getConstantStrings(): array
+	{
+		return [];
+	}
+
 	public function isIterable(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

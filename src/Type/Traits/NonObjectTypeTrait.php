@@ -69,6 +69,11 @@ trait NonObjectTypeTrait
 		throw new ShouldNotHappenException();
 	}
 
+	public function getConstantStrings(): array
+	{
+		return [];
+	}
+
 	public function isCloneable(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

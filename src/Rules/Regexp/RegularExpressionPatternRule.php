@@ -10,7 +10,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\TypeUtils;
 use function in_array;
 use function sprintf;
 use function str_starts_with;
@@ -65,7 +64,7 @@ class RegularExpressionPatternRule implements Rule
 
 		$patternStrings = [];
 
-		foreach (TypeUtils::getConstantStrings($patternType) as $constantStringType) {
+		foreach ($patternType->getConstantStrings() as $constantStringType) {
 			if (
 				!in_array($functionName, [
 					'preg_match',

@@ -93,6 +93,8 @@ class TypeUtils
 
 	/**
 	 * @return ConstantStringType[]
+	 *
+	 * @deprecated Use PHPStan\Type\Type::getConstantStrings() instead
 	 */
 	public static function getConstantStrings(Type $type): array
 	{

@@ -41,6 +41,11 @@ class StringType implements Type
 		return 'string';
 	}
 
+	public function getConstantStrings(): array
+	{
+		return [];
+	}
+
 	public function isOffsetAccessible(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

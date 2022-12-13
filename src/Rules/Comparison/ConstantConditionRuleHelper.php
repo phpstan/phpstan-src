@@ -21,6 +21,10 @@ class ConstantConditionRuleHelper
 
 	public function shouldReportAlwaysTrueByDefault(Expr $expr): bool
 	{
+		if ($expr->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) === true) {
+			return false;
+		}
+
 		return $expr instanceof Expr\BooleanNot
 			|| $expr instanceof Expr\BinaryOp\BooleanOr
 			|| $expr instanceof Expr\BinaryOp\BooleanAnd

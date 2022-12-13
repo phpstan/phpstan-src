@@ -380,13 +380,24 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8042.php'], [
 			[
 				'Instanceof between Bug8042\B and Bug8042\B will always evaluate to true.',
-				18
+				18,
 			],
 			[
 				'Instanceof between Bug8042\B and Bug8042\B will always evaluate to true.',
-				26
+				26,
 			],
 		]);
+	}
+
+	public function testBug7721(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('This test needs PHP 8.1');
+		}
+
+		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-7721.php'], []);
 	}
 
 }

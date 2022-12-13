@@ -1303,10 +1303,6 @@ class InitializerExprTypeResolver
 			return new ConstantBooleanType($leftType->getValue() === $rightType->getValue());
 		}
 
-		if ($leftType instanceof EnumCaseObjectType && $rightType instanceof EnumCaseObjectType) {
-			return new ConstantBooleanType($leftType->equals($rightType));
-		}
-
 		$isSuperset = $leftType->isSuperTypeOf($rightType);
 		if ($isSuperset->no()) {
 			return new ConstantBooleanType(false);
@@ -1323,10 +1319,8 @@ class InitializerExprTypeResolver
 	{
 		$integerType = new IntegerType();
 		$floatType = new FloatType();
-
 		if (
-			($leftType instanceof EnumCaseObjectType && $rightType instanceof EnumCaseObjectType)
-			|| ($leftType->isString()->yes() && $rightType->isString()->yes())
+			($leftType->isString()->yes() && $rightType->isString()->yes())
 			|| ($integerType->isSuperTypeOf($leftType)->yes() && $integerType->isSuperTypeOf($rightType)->yes())
 			|| ($floatType->isSuperTypeOf($leftType)->yes() && $floatType->isSuperTypeOf($rightType)->yes())
 		) {

@@ -607,37 +607,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8158.php'], []);
 	}
 
-	public function testBug8485(): void
-	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
-		$this->checkAlwaysTrueStrictComparison = true;
-		$this->analyse([__DIR__ . '/data/bug-8485.php'], [
-			[
-				'Strict comparison using === between Bug8485\E::c and Bug8485\E::c will always evaluate to true.',
-				17,
-			],
-			[
-				'Strict comparison using === between Bug8485\F::c and Bug8485\E::c will always evaluate to false.',
-				22,
-			],
-			[
-				'Strict comparison using === between Bug8485\F::c and Bug8485\E::c will always evaluate to false.',
-				27,
-			],
-			[
-				'Strict comparison using === between Bug8485\F and Bug8485\E will always evaluate to false.',
-				35,
-			],
-			[
-				'Strict comparison using === between Bug8485\F and Bug8485\E::c will always evaluate to false.',
-				40,
-			],
-		]);
-	}
-
 	public function testPhpUnitIntegration(): void
 	{
 		$this->checkAlwaysTrueStrictComparison = true;

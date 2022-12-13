@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<IfConstantConditionRule>
@@ -128,29 +127,6 @@ class IfConstantConditionRuleTest extends RuleTestCase
 	{
 		$this->treatPhpDocTypesAsCertain = true;
 		$this->analyse([__DIR__ . '/data/bug-6902.php'], []);
-	}
-
-	public function testBug8485(): void
-	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
-		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-8485.php'], [
-			[
-				'If condition is always true.',
-				19,
-			],
-			[
-				'If condition is always false.',
-				24,
-			],
-			[
-				'If condition is always false.',
-				29,
-			],
-		]);
 	}
 
 }

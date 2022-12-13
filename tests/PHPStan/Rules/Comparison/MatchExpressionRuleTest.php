@@ -153,11 +153,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 				56,
 			],
 			[
-				'Match arm comparison between MatchEnums\Foo::THREE and MatchEnums\Foo::THREE is always true.',
-				76,
-			],
-			[
-				'Match arm is unreachable because previous comparison is always true.',
+				'Match arm comparison between *NEVER* and MatchEnums\Foo is always false.',
 				77,
 			],
 		]);

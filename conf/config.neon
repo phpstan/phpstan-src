@@ -489,6 +489,11 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\LastConditionVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PhpParser\NodeVisitor\NodeConnectingVisitor
 
 	-

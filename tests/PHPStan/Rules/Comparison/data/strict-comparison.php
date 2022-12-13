@@ -982,3 +982,23 @@ function () {
 	INF !== INF;
 	NAN !== NAN;
 };
+
+class ArrayWithLongStrings
+{
+
+	public function doFoo()
+	{
+		$array = ['foofoofoofoofoofoofoo','foofoofoofoofoofoofob'];
+
+		foreach ($array as $value) {
+			if ('foofoofoofoofoofoofoo' === $value) {
+				echo 'nope';
+			} elseif ('foofoofoofoofoofoofob' === $value) {
+				echo 'nop nope';
+			} elseif (rand(0, 1) === 0) {
+				echo 'nope';
+			}
+		}
+	}
+
+}

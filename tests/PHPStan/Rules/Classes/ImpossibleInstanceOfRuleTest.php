@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ImpossibleInstanceOfRule>
@@ -364,6 +365,26 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 			[
 				'Instanceof between Bug5333\FinalRoute and Bug5333\FinalRoute will always evaluate to true.',
 				113,
+			],
+		]);
+	}
+
+	public function testBug8042(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('This test needs PHP 8.0');
+		}
+
+		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-8042.php'], [
+			[
+				'Instanceof between Bug8042\B and Bug8042\B will always evaluate to true.',
+				18
+			],
+			[
+				'Instanceof between Bug8042\B and Bug8042\B will always evaluate to true.',
+				26
 			],
 		]);
 	}

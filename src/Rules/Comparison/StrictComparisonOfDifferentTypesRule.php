@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -49,6 +50,10 @@ class StrictComparisonOfDifferentTypesRule implements Rule
 				))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueStrictComparison) {
+			if ($node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) === true) {
+				return [];
+			}
+
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Strict comparison using %s between %s and %s will always evaluate to true.',

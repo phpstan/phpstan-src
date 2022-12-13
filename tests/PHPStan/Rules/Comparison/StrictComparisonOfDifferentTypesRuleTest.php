@@ -183,10 +183,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					635,
 				],
 				[
-					'Strict comparison using === between \'foofoofoofoofoofoof…\' and \'foofoofoofoofoofoof…\' will always evaluate to true.',
-					654,
-				],
-				[
 					'Strict comparison using === between string|null and 1 will always evaluate to false.',
 					685,
 				],
@@ -249,6 +245,10 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				[
 					'Strict comparison using !== between NAN and NAN will always evaluate to true.',
 					983,
+				],
+				[
+					'Strict comparison using === between \'foofoofoofoofoofoof…\' and \'foofoofoofoofoofoof…\' will always evaluate to true.',
+					996,
 				],
 			],
 		);
@@ -617,23 +617,27 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8485.php'], [
 			[
 				'Strict comparison using === between Bug8485\E::c and Bug8485\E::c will always evaluate to true.',
-				17,
+				19,
 			],
 			[
 				'Strict comparison using === between Bug8485\F::c and Bug8485\E::c will always evaluate to false.',
-				22,
+				24,
 			],
 			[
 				'Strict comparison using === between Bug8485\F::c and Bug8485\E::c will always evaluate to false.',
-				27,
+				29,
 			],
 			[
 				'Strict comparison using === between Bug8485\F and Bug8485\E will always evaluate to false.',
-				35,
+				36,
 			],
 			[
 				'Strict comparison using === between Bug8485\F and Bug8485\E::c will always evaluate to false.',
-				40,
+				41,
+			],
+			[
+				'Strict comparison using === between Bug8485\FooEnum::C and Bug8485\FooEnum::C will always evaluate to true.',
+				74,
 			],
 		]);
 	}

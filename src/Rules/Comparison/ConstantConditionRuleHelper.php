@@ -6,6 +6,7 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Type\BooleanType;
 
 class ConstantConditionRuleHelper

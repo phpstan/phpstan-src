@@ -41,10 +41,7 @@ class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			return ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
 		}
 
-		$startIndexType = $scope->getType($functionCall->getArgs()[0]->value);
 		$numberType = $scope->getType($functionCall->getArgs()[1]->value);
-		$valueType = $scope->getType($functionCall->getArgs()[2]->value);
-
 		$isValidNumberType = IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($numberType);
 
 		// check against negative-int, which is not allowed
@@ -54,6 +51,9 @@ class ArrayFillFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 			}
 			return new ConstantBooleanType(false);
 		}
+
+		$startIndexType = $scope->getType($functionCall->getArgs()[0]->value);
+		$valueType = $scope->getType($functionCall->getArgs()[2]->value);
 
 		if (
 			$startIndexType instanceof ConstantIntegerType

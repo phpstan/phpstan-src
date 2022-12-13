@@ -34,14 +34,14 @@ class ArraySliceFunctionReturnTypeExtension implements DynamicFunctionReturnType
 		$offsetType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : null;
 		$offset = $offsetType instanceof ConstantIntegerType ? $offsetType->getValue() : 0;
 
-		$limitType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
-		$limit = $limitType instanceof ConstantIntegerType ? $limitType->getValue() : null;
-
-		$preserveKeysType = isset($functionCall->getArgs()[3]) ? $scope->getType($functionCall->getArgs()[3]->value) : null;
-		$preserveKeys = $preserveKeysType instanceof ConstantBooleanType ? $preserveKeysType->getValue() : false;
-
 		$constantArrays = $valueType->getConstantArrays();
 		if (count($constantArrays) > 0) {
+			$limitType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
+			$limit = $limitType instanceof ConstantIntegerType ? $limitType->getValue() : null;
+
+			$preserveKeysType = isset($functionCall->getArgs()[3]) ? $scope->getType($functionCall->getArgs()[3]->value) : null;
+			$preserveKeys = $preserveKeysType instanceof ConstantBooleanType ? $preserveKeysType->getValue() : false;
+
 			$results = [];
 			foreach ($constantArrays as $constantArray) {
 				$results[] = $constantArray->slice($offset, $limit, $preserveKeys);

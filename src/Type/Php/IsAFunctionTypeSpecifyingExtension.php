@@ -37,14 +37,15 @@ class IsAFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtens
 		if (count($node->getArgs()) < 2) {
 			return new SpecifiedTypes();
 		}
-		$objectOrClassType = $scope->getType($node->getArgs()[0]->value);
 		$classType = $scope->getType($node->getArgs()[1]->value);
-		$allowStringType = isset($node->getArgs()[2]) ? $scope->getType($node->getArgs()[2]->value) : new ConstantBooleanType(false);
-		$allowString = !$allowStringType->equals(new ConstantBooleanType(false));
 
 		if (!$classType instanceof ConstantStringType && !$context->truthy()) {
 			return new SpecifiedTypes([], []);
 		}
+
+		$objectOrClassType = $scope->getType($node->getArgs()[0]->value);
+		$allowStringType = isset($node->getArgs()[2]) ? $scope->getType($node->getArgs()[2]->value) : new ConstantBooleanType(false);
+		$allowString = !$allowStringType->equals(new ConstantBooleanType(false));
 
 		return $this->typeSpecifier->create(
 			$node->getArgs()[0]->value,

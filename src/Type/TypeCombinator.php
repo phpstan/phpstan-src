@@ -246,25 +246,6 @@ class TypeCombinator
 		);
 		$typesCount = count($types);
 
-		// simplify string[] | int[] to (string|int)[]
-		for ($i = 0; $i < $typesCount; $i++) {
-			if (! $types[$i] instanceof IterableType) {
-				continue;
-			}
-
-			for ($j = $i + 1; $j < $typesCount; $j++) {
-				if ($types[$j] instanceof IterableType) {
-					$types[$i] = new IterableType(
-						self::union($types[$i]->getIterableKeyType(), $types[$j]->getIterableKeyType()),
-						self::union($types[$i]->getIterableValueType(), $types[$j]->getIterableValueType()),
-					);
-					array_splice($types, $j, 1);
-					$typesCount--;
-					continue 2;
-				}
-			}
-		}
-
 		foreach ($scalarTypes as $classType => $scalarTypeItems) {
 			if (isset($hasGenericScalarTypes[$classType])) {
 				unset($scalarTypes[$classType]);
@@ -403,6 +384,17 @@ class TypeCombinator
 		}
 		if ($a instanceof ConstantArrayType && $b instanceof ConstantArrayType) {
 			return null;
+		}
+
+		// simplify string[] | int[] to (string|int)[]
+		if ($a instanceof IterableType && $b instanceof IterableType) {
+			return [
+				new IterableType(
+					self::union($a->getIterableKeyType(), $b->getIterableKeyType()),
+					self::union($a->getIterableValueType(), $b->getIterableValueType()),
+				),
+				null
+			];
 		}
 
 		if ($a instanceof SubtractableType) {

@@ -56,7 +56,6 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 
 		$this->cacheReturnTypes();
 
-		$urlType = $scope->getType($functionCall->getArgs()[0]->value);
 		if (count($functionCall->getArgs()) > 1) {
 			$componentType = $scope->getType($functionCall->getArgs()[1]->value);
 
@@ -73,6 +72,7 @@ final class ParseUrlFunctionDynamicReturnTypeExtension implements DynamicFunctio
 			$componentType = new ConstantIntegerType(-1);
 		}
 
+		$urlType = $scope->getType($functionCall->getArgs()[0]->value);
 		if ($urlType instanceof ConstantStringType) {
 			try {
 				$result = @parse_url($urlType->getValue(), $componentType->getValue());

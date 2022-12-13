@@ -1285,7 +1285,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->analyse([__DIR__ . '/data/call-methods-iterable.php'], [
 			[
-				'Parameter #1 $ids of method CallMethodsIterables\Uuid::bar() expects iterable<(int|string), CallMethodsIterables\Uuid>, array<int, null> given.',
+				'Parameter #1 $ids of method CallMethodsIterables\Uuid::bar() expects iterable<CallMethodsIterables\Uuid>, array<int, null> given.',
 				14,
 			],
 			[
@@ -1305,7 +1305,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				62,
 			],
 			[
-				'Parameter #3 $iterableWithConcreteTypehint of method CallMethodsIterables\Foo::doFoo() expects iterable<(int|string), CallMethodsIterables\Bar>, int given.',
+				'Parameter #3 $iterableWithConcreteTypehint of method CallMethodsIterables\Foo::doFoo() expects iterable<CallMethodsIterables\Bar>, int given.',
 				62,
 			],
 			[

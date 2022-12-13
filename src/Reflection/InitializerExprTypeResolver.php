@@ -1475,9 +1475,9 @@ class InitializerExprTypeResolver
 
 		$types = TypeCombinator::union($leftType, $rightType);
 		if (
-			$leftType->isArray()->yes()
-			|| $rightType->isArray()->yes()
-			|| $types->isArray()->yes()
+			$leftType instanceof ArrayType
+			|| $rightType instanceof ArrayType
+			|| $types instanceof ArrayType
 		) {
 			return new ErrorType();
 		}

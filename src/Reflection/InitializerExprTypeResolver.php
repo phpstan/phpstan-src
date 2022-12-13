@@ -1304,10 +1304,7 @@ class InitializerExprTypeResolver
 		}
 
 		if ($leftType instanceof EnumCaseObjectType && $rightType instanceof EnumCaseObjectType) {
-			return new ConstantBooleanType(
-				$leftType->getClassName() === $rightType->getClassName()
-				&& $leftType->getEnumCaseName() === $rightType->getEnumCaseName(),
-			);
+			return new ConstantBooleanType($leftType->equals($rightType));
 		}
 
 		$isSuperset = $leftType->isSuperTypeOf($rightType);

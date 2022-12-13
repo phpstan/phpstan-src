@@ -3352,8 +3352,8 @@ class MutatingScope implements Scope
 			$exprVarType = $scope->getType($expr->var);
 			$dimType = $scope->getType($expr->dim);
 			$unsetType = $exprVarType->unsetOffset($dimType);
-			$exprVarNativeType = $scope->getType($expr->var);
-			$dimNativeType = $scope->getType($expr->dim);
+			$exprVarNativeType = $scope->getNativeType($expr->var);
+			$dimNativeType = $scope->getNativeType($expr->dim);
 			$unsetNativeType = $exprVarNativeType->unsetOffset($dimNativeType);
 			$scope = $scope->assignExpression($expr->var, $unsetType, $unsetNativeType)->invalidateExpression(
 				new FuncCall(new FullyQualified('count'), [new Arg($expr->var)]),

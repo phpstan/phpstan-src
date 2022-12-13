@@ -50,7 +50,7 @@ class Foo{
 		assertNativeType('array', $a);
 		unset($a['a']);
 		assertType("array{}", $a);
-		assertNativeType('array', $a);
+		assertNativeType("array<mixed~'a', mixed>", $a);
 	}
 }
 

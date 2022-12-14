@@ -7,11 +7,10 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeUtils;
+use function count;
 
 class DateIntervalDynamicReturnTypeExtension
 	implements DynamicStaticMethodReturnTypeExtension
@@ -22,34 +21,34 @@ class DateIntervalDynamicReturnTypeExtension
 		return DateInterval::class;
 	}
 
-	public function isStaticMethodSupported( MethodReflection $methodReflection ): bool
+	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
 	{
 		return $methodReflection->getName() === 'createFromDateString';
 	}
 
-	public function getTypeFromStaticMethodCall( MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope ): ?Type
+	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		$strings = $scope->getType( $methodCall->getArgs()[ 0 ]->value )->getConstantStrings();
+		$strings = $scope->getType($methodCall->getArgs()[0 ]->value)->getConstantStrings();
 
-		if ( $strings === [] ) {
+		if ( $strings === []) {
 			return null;
 		}
 
-		if ( count( $strings ) === 1 ) {
-			if ( DateInterval::createFromDateString( $strings[ 0 ]->getValue() ) === false ) {
-				return new ConstantBooleanType( false );
+		if ( count($strings) === 1) {
+			if ( DateInterval::createFromDateString($strings[0 ]->getValue()) === false) {
+				return new ConstantBooleanType(false);
 			}
 
-			return new ObjectType( DateInterval::class );
+			return new ObjectType(DateInterval::class);
 		}
 
-		foreach ( $strings as $string ) {
-			if ( DateInterval::createFromDateString( $string->getValue() ) === false ) {
+		foreach ($strings as $string) {
+			if ( DateInterval::createFromDateString($string->getValue()) === false) {
 				return null;
 			}
 		}
 
-		return new ObjectType( DateInterval::class );
+		return new ObjectType(DateInterval::class);
 	}
 
 }

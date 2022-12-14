@@ -28,15 +28,26 @@ class DateIntervalDynamicReturnTypeExtension implements DynamicStaticMethodRetur
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		$dateTimeString = TypeUtils::getConstantStrings($scope->getType($methodCall->getArgs()[0]->value));
-
-		if (!($dateTimeString instanceof ConstantStringType)) {
-			return null;
+		$strings = $scope->getType($methodCall->getArgs()[0]->value)->getConstantStrings();
+		
+		if ($strings === []) {
+		   return null;
+		}
+		
+		if (count($strings) === 1) {
+           if (DateInterval::createFromDateString($dateTimeString->getValue()) === false) {
+    		 return new ConstantBooleanType(false);
+           }
+           return new ObjectType(DateInterval::class);
+		}
+		
+		foreach($strings as $string) {
+		  if (DateInterval::createFromDateString($dateTimeString->getValue()) === false) {
+		    return null;
+		  }
 		}
 
-		$isValid = DateInterval::createFromDateString($dateTimeString->getValue()) !== false;
-
-		return $isValid ? new ObjectType(DateInterval::class) : new ConstantBooleanType(false);
+		return new ObjectType(DateInterval::class);
 	}
 
 }

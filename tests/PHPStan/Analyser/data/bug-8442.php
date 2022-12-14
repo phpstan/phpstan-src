@@ -10,11 +10,19 @@ function () {
 	assertType('DateInterval', DateInterval::createFromDateString('1 Day'));
 
 	if (rand(0,1)) {
-		$interval = 'P1Y';
+		$interval = '1 day';
 	} else {
-		$interval = 'P2Y';
+		$interval = '2 day';
 	}
 
 	assertType('DateInterval', DateInterval::createFromDateString($interval));
+
+	if (rand(0,1)) {
+		$interval = 'foo';
+	} else {
+		$interval = '2 day';
+	}
+
+	assertType('DateInterval|false', DateInterval::createFromDateString($interval));
 };
 

@@ -63,6 +63,10 @@ class NeverType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		if ($this->isExplicit()) {
+			return $this->isSuperTypeOf($type);
+		}
+
 		return TrinaryLogic::createYes();
 	}
 

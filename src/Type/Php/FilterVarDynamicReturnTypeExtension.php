@@ -3,7 +3,6 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node;
-use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
@@ -143,32 +142,30 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	{
 		$mixedType = new MixedType();
 
-		$filterArg = $functionCall->getArgs()[1] ?? null;
-		if ($filterArg === null) {
+		$filterType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : null;
+		if ($filterType === null) {
 			$filterValue = $this->getConstant('FILTER_DEFAULT');
 		} else {
-			$filterType = $scope->getType($filterArg->value);
 			if (!$filterType instanceof ConstantIntegerType) {
 				return $mixedType;
 			}
 			$filterValue = $filterType->getValue();
 		}
 
-		$flagsArg = $functionCall->getArgs()[2] ?? null;
+		$flagsType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
 		$inputType = $scope->getType($functionCall->getArgs()[0]->value);
-
-		$defaultType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsArg, $scope)
+		$defaultType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsType)
 			? new NullType()
 			: new ConstantBooleanType(false);
-		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType, $flagsArg, $scope);
+		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType, $flagsType);
 		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 
 		$typeOptionNames = $this->getFilterTypeOptions()[$filterValue] ?? [];
-		$otherTypes = $this->getOtherTypes($flagsArg, $scope, $typeOptionNames, $defaultType);
+		$otherTypes = $this->getOtherTypes($flagsType, $typeOptionNames, $defaultType);
 
 		if ($inputType->isNonEmptyString()->yes()
 			&& $type->isString()->yes()
-			&& !$this->canStringBeSanitized($filterValue, $flagsArg, $scope)) {
+			&& !$this->canStringBeSanitized($filterValue, $flagsType)) {
 			$accessory = new AccessoryNonEmptyStringType();
 			if ($inputType->isNonFalsyString()->yes()) {
 				$accessory = new AccessoryNonFalsyStringType();
@@ -196,14 +193,14 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$type = TypeCombinator::union($type, $otherTypes['default']);
 		}
 
-		if ($this->hasFlag($this->getConstant('FILTER_FORCE_ARRAY'), $flagsArg, $scope)) {
+		if ($this->hasFlag($this->getConstant('FILTER_FORCE_ARRAY'), $flagsType)) {
 			return new ArrayType(new MixedType(), $type);
 		}
 
 		return $type;
 	}
 
-	private function determineExactType(Type $in, int $filterValue, Type $defaultType, ?Arg $flagsArg, Scope $scope): ?Type
+	private function determineExactType(Type $in, int $filterValue, Type $defaultType, ?Type $flagsType): ?Type
 	{
 		if (($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN') && $in->isBoolean()->yes())
 			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in->isInteger()->yes())
@@ -213,8 +210,8 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 		if ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in instanceof ConstantStringType) {
 			$value = $in->getValue();
-			$allowOctal = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_OCTAL'), $flagsArg, $scope);
-			$allowHex = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_HEX'), $flagsArg, $scope);
+			$allowOctal = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_OCTAL'), $flagsType);
+			$allowHex = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_HEX'), $flagsType);
 
 			if ($allowOctal && preg_match('/\A0[oO][0-7]+\z/', $value) === 1) {
 				$octalValue = octdec($value);
@@ -240,14 +237,14 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	 * @param list<string> $typeOptionNames
 	 * @return array{default: Type, range?: Type}
 	 */
-	private function getOtherTypes(?Node\Arg $flagsArg, Scope $scope, array $typeOptionNames, Type $defaultType): array
+	private function getOtherTypes(?Type $flagsType, array $typeOptionNames, Type $defaultType): array
 	{
 		$falseType = new ConstantBooleanType(false);
-		if ($flagsArg === null) {
+		if ($flagsType === null) {
 			return ['default' => $falseType];
 		}
 
-		$typeOptions = $this->getOptions($flagsArg, $scope, 'default', ...$typeOptionNames);
+		$typeOptions = $this->getOptions($flagsType, 'default', ...$typeOptionNames);
 		$defaultType = $typeOptions['default'] ?? $defaultType;
 		$otherTypes = ['default' => $defaultType];
 		$range = [];
@@ -278,16 +275,15 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	/**
 	 * @return array<string, ?Type>
 	 */
-	private function getOptions(Node\Arg $expression, Scope $scope, string ...$optionNames): array
+	private function getOptions(Type $flagsType, string ...$optionNames): array
 	{
 		$options = [];
 
-		$exprType = $scope->getType($expression->value);
-		if (!$exprType instanceof ConstantArrayType) {
+		if (!$flagsType instanceof ConstantArrayType) {
 			return $options;
 		}
 
-		$optionsType = $exprType->getOffsetValueType(new ConstantStringType('options'));
+		$optionsType = $flagsType->getOffsetValueType(new ConstantStringType('options'));
 		if (!$optionsType instanceof ConstantArrayType) {
 			return $options;
 		}
@@ -300,13 +296,13 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return $options;
 	}
 
-	private function hasFlag(int $flag, ?Node\Arg $expression, Scope $scope): bool
+	private function hasFlag(int $flag, ?Type $flagsType): bool
 	{
-		if ($expression === null) {
+		if ($flagsType === null) {
 			return false;
 		}
 
-		$type = $this->getFlagsValue($scope->getType($expression->value));
+		$type = $this->getFlagsValue($flagsType);
 
 		return $type instanceof ConstantIntegerType && ($type->getValue() & $flag) === $flag;
 	}
@@ -320,7 +316,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return $exprType->getOffsetValueType($this->flagsString);
 	}
 
-	private function canStringBeSanitized(int $filterValue, ?Node\Arg $flagsArg, Scope $scope): bool
+	private function canStringBeSanitized(int $filterValue, ?Type $flagsType): bool
 	{
 		// If it is a validation filter, the string will not be changed
 		if (($filterValue & self::VALIDATION_FILTER_BITMASK) !== 0) {
@@ -330,9 +326,9 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		// FILTER_DEFAULT will not sanitize, unless it has FILTER_FLAG_STRIP_LOW,
 		// FILTER_FLAG_STRIP_HIGH, or FILTER_FLAG_STRIP_BACKTICK
 		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
-			return $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_LOW'), $flagsArg, $scope)
-				|| $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_HIGH'), $flagsArg, $scope)
-				|| $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_BACKTICK'), $flagsArg, $scope);
+			return $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_LOW'), $flagsType)
+				|| $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_HIGH'), $flagsType)
+				|| $this->hasFlag($this->getConstant('FILTER_FLAG_STRIP_BACKTICK'), $flagsType);
 		}
 
 		return true;

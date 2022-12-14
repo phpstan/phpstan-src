@@ -2475,7 +2475,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					StaticTypeFactory::truthy(),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2483,7 +2483,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new NeverType(),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2542,7 +2542,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new IterableType(new StringType(), new MixedType()),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2550,7 +2550,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new IterableType(new MixedType(), new StringType()),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2638,7 +2638,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new HasMethodType('doBar'),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2654,7 +2654,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new HasMethodType('__toString'),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2695,7 +2695,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new HasPropertyType('fooProperty'),
 				],
 				PHP_VERSION_ID < 80200 ? IntersectionType::class : NeverType::class,
-				PHP_VERSION_ID < 80200 ? 'Test\Foo&hasProperty(fooProperty)' : '*NEVER*',
+				PHP_VERSION_ID < 80200 ? 'Test\Foo&hasProperty(fooProperty)' : '*NEVER*=implicit',
 			],
 			[
 				[
@@ -2727,7 +2727,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new HasPropertyType('fooProperty'),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2760,7 +2760,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new HasPropertyType('fooProperty'),
 				],
 				PHP_VERSION_ID < 80200 ? UnionType::class : NeverType::class,
-				PHP_VERSION_ID < 80200 ? '(Test\FirstInterface&hasProperty(fooProperty))|(Test\Foo&hasProperty(fooProperty))' : '*NEVER*',
+				PHP_VERSION_ID < 80200 ? '(Test\FirstInterface&hasProperty(fooProperty))|(Test\Foo&hasProperty(fooProperty))' : '*NEVER*=implicit',
 			],
 			[
 				[
@@ -2817,7 +2817,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new HasOffsetType(new ConstantStringType('b')),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2825,7 +2825,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new HasOffsetType(new ConstantStringType('a')),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2907,7 +2907,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new NonEmptyArrayType(),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2941,7 +2941,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new NonEmptyArrayType(),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2963,7 +2963,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new IntegerType(),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2971,7 +2971,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new StringType(),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -2979,7 +2979,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ConstantStringType('foo'),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -3094,7 +3094,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ConstantStringType('Nonexistent'),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -3102,7 +3102,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new IntegerType(),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -3158,7 +3158,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new GenericClassStringType(new ObjectType(stdClass::class)),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -3190,7 +3190,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ConstantStringType(stdClass::class),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -3214,7 +3214,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					IntegerRangeType::fromInterval(7, 9),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -3230,7 +3230,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ConstantIntegerType(4),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -3361,7 +3361,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ClassStringType(),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -3423,7 +3423,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new AccessoryNumericStringType(),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -3447,7 +3447,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new AccessoryNumericStringType(),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -3458,7 +3458,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new NeverType(),
 				],
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				[
@@ -3507,6 +3507,22 @@ class TypeCombinatorTest extends PHPStanTestCase
 				StrictMixedType::class,
 				'mixed',
 			],
+			[
+				[
+					new NeverType(true),
+					new IntegerType(),
+				],
+				NeverType::class,
+				'*NEVER*=explicit',
+			],
+			[
+				[
+					new NeverType(),
+					new IntegerType(),
+				],
+				NeverType::class,
+				'*NEVER*=implicit',
+			],
 		];
 
 		if (PHP_VERSION_ID < 80100) {
@@ -3527,7 +3543,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new EnumCaseObjectType(stdClass::class, 'ONE'),
 			],
 			NeverType::class,
-			'*NEVER*',
+			'*NEVER*=implicit',
 		];
 		yield [
 			[
@@ -3551,7 +3567,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'TWO'),
 			],
 			NeverType::class,
-			'*NEVER*',
+			'*NEVER*=implicit',
 		];
 		yield [
 			[
@@ -3575,7 +3591,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new EnumCaseObjectType('PHPStan\Fixture\AnotherTestEnum', 'ONE'),
 			],
 			NeverType::class,
-			'*NEVER*',
+			'*NEVER*=implicit',
 		];
 		yield [
 			[
@@ -3583,7 +3599,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
 			],
 			NeverType::class,
-			'*NEVER*',
+			'*NEVER*=implicit',
 		];
 		yield [
 			[
@@ -3599,7 +3615,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new EnumCaseObjectType('PHPStan\Fixture\TestEnum', 'ONE'),
 			],
 			NeverType::class,
-			'*NEVER*',
+			'*NEVER*=implicit',
 		];
 		yield [
 			[
@@ -3660,7 +3676,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ConstantStringType('0'),
 			],
 			NeverType::class,
-			'*NEVER*',
+			'*NEVER*=implicit',
 		];
 
 		yield [
@@ -3711,6 +3727,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$actualTypeDescription .= '=implicit';
 			}
 		}
+		if ($actualType instanceof NeverType) {
+			if ($actualType->isExplicit()) {
+				$actualTypeDescription .= '=explicit';
+			} else {
+				$actualTypeDescription .= '=implicit';
+			}
+		}
 		$this->assertSame($expectedTypeDescription, $actualTypeDescription);
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
@@ -3735,6 +3758,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 				$actualTypeDescription .= '=implicit';
 			}
 		}
+		if ($actualType instanceof NeverType) {
+			if ($actualType->isExplicit()) {
+				$actualTypeDescription .= '=explicit';
+			} else {
+				$actualTypeDescription .= '=implicit';
+			}
+		}
 		$this->assertSame($expectedTypeDescription, $actualTypeDescription);
 		$this->assertInstanceOf($expectedTypeClass, $actualType);
 	}
@@ -3746,7 +3776,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ConstantBooleanType(true),
 				new ConstantBooleanType(true),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				new UnionType([
@@ -3802,13 +3832,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ConstantBooleanType(true),
 				new BooleanType(),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				new ConstantBooleanType(false),
 				new BooleanType(),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				new BooleanType(),
@@ -3826,19 +3856,19 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new BooleanType(),
 				new BooleanType(),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				StaticTypeFactory::falsey(),
 				StaticTypeFactory::falsey(),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				StaticTypeFactory::truthy(),
 				StaticTypeFactory::truthy(),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				StaticTypeFactory::truthy(),
@@ -3959,7 +3989,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new BenevolentUnionType([new IntegerType(), new StringType()]),
 				new UnionType([new IntegerType(), new StringType()]),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				new ArrayType(new MixedType(), new MixedType()),
@@ -3987,7 +4017,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				]),
 				new NonEmptyArrayType(),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				new ArrayType(new MixedType(), new MixedType()),
@@ -4026,13 +4056,13 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new MixedType(false),
 				new MixedType(),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				new MixedType(false, new StringType()),
 				new MixedType(),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				new MixedType(false),
@@ -4062,7 +4092,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new ObjectType('Exception'),
 				new ObjectType('Throwable'),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				new ObjectType('Exception', new ObjectType('InvalidArgumentException')),
@@ -4104,25 +4134,25 @@ class TypeCombinatorTest extends PHPStanTestCase
 				IntegerRangeType::fromInterval(0, 2),
 				IntegerRangeType::fromInterval(-1, 3),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				IntegerRangeType::fromInterval(0, 2),
 				IntegerRangeType::fromInterval(0, 3),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				IntegerRangeType::fromInterval(0, 2),
 				IntegerRangeType::fromInterval(-1, 2),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				IntegerRangeType::fromInterval(0, 2),
 				new IntegerType(),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				IntegerRangeType::fromInterval(null, 1),
@@ -4155,7 +4185,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				], 2),
 				new HasOffsetType(new ConstantIntegerType(1)),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				new ConstantArrayType([
@@ -4179,7 +4209,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				], 2, [1]),
 				new HasOffsetType(new ConstantIntegerType(0)),
 				NeverType::class,
-				'*NEVER*',
+				'*NEVER*=implicit',
 			],
 			[
 				new MixedType(),
@@ -4225,7 +4255,15 @@ class TypeCombinatorTest extends PHPStanTestCase
 	): void
 	{
 		$result = TypeCombinator::remove($fromType, $type);
-		$this->assertSame($expectedTypeDescription, $result->describe(VerbosityLevel::precise()));
+		$actualTypeDescription = $result->describe(VerbosityLevel::precise());
+		if ($result instanceof NeverType) {
+			if ($result->isExplicit()) {
+				$actualTypeDescription .= '=explicit';
+			} else {
+				$actualTypeDescription .= '=implicit';
+			}
+		}
+		$this->assertSame($expectedTypeDescription, $actualTypeDescription);
 		$this->assertInstanceOf($expectedTypeClass, $result);
 	}
 

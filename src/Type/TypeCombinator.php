@@ -946,7 +946,7 @@ class TypeCombinator
 						$valueType = $types[$j]->getValueType();
 						$newValueType = self::intersect($types[$i]->getOffsetValueType($offsetType), $valueType);
 						if ($newValueType instanceof NeverType) {
-							return new NeverType();
+							return $newValueType;
 						}
 						$types[$i] = $types[$i]->setOffsetValueType($offsetType, $newValueType);
 						array_splice($types, $j--, 1);
@@ -959,7 +959,7 @@ class TypeCombinator
 						$valueType = $types[$i]->getValueType();
 						$newValueType = self::intersect($types[$j]->getOffsetValueType($offsetType), $valueType);
 						if ($newValueType instanceof NeverType) {
-							return new NeverType();
+							return $newValueType;
 						}
 
 						$types[$j] = $types[$j]->setOffsetValueType($offsetType, $newValueType);
@@ -1044,7 +1044,7 @@ class TypeCombinator
 					) {
 						$keyType = self::intersect($types[$i]->getIterableKeyType(), $types[$j]->getIterableKeyType());
 						if ($keyType instanceof NeverType) {
-							return new NeverType();
+							return $keyType;
 						}
 						$types[$i] = new ArrayType($keyType, $types[$i]->getItemType());
 						continue;

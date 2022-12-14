@@ -22,4 +22,22 @@ class Foo
 		}
 	}
 
+	public function doFooBar(): void
+	{
+		if (0 == "1") {
+
+		} elseif (0 == "0") { // always-true should not be reported because last condition
+
+		}
+
+		if (0 == "1") {
+
+		} elseif (0 == "0") { // always-true should be reported, because another condition below
+
+		} elseif (rand (0, 1)) {
+
+		}
+
+	}
+
 }

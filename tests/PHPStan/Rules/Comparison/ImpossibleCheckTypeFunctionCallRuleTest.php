@@ -238,6 +238,10 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 					'Call to function testIsInt() with int will always evaluate to true.',
 					875,
 				],
+				[
+					'Call to function is_int() with int will always evaluate to true.',
+					889,
+				],
 			],
 		);
 	}

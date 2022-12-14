@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
@@ -65,6 +66,10 @@ class ImpossibleCheckTypeFunctionCallRule implements Rule
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
+			if ($node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) === true) {
+				return [];
+			}
+
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Call to function %s()%s will always evaluate to true.',

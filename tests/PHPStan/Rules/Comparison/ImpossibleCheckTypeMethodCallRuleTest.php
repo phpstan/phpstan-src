@@ -149,6 +149,10 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 				'Call to method ImpossibleMethodCall\Foo::isNotSame() with 2 and 2 will always evaluate to false.',
 				194,
 			],
+			[
+				'Call to method ImpossibleMethodCall\ConditionalAlwaysTrue::isInt() with int will always evaluate to true.',
+				208,
+			],
 		]);
 	}
 

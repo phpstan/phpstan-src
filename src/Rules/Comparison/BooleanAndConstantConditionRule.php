@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Comparison;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\BooleanAndNode;
+use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -53,11 +54,14 @@ class BooleanAndConstantConditionRule implements Rule
 
 				return $ruleErrorBuilder->tip($tipText);
 			};
-			$errors[] = $addTipLeft(RuleErrorBuilder::message(sprintf(
-				'Left side of %s is always %s.',
-				$nodeText,
-				$leftType->getValue() ? 'true' : 'false',
-			)))->line($originalNode->left->getLine())->build();
+
+			if ($leftType->getValue() === false || $originalNode->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) !== true) {
+				$errors[] = $addTipLeft(RuleErrorBuilder::message(sprintf(
+					'Left side of %s is always %s.',
+					$nodeText,
+					$leftType->getValue() ? 'true' : 'false',
+				)))->line($originalNode->left->getLine())->build();
+			}
 		}
 
 		$rightScope = $node->getRightScope();
@@ -65,7 +69,7 @@ class BooleanAndConstantConditionRule implements Rule
 			$rightScope,
 			$originalNode->right,
 		);
-		if ($rightType instanceof ConstantBooleanType) {
+		if ($rightType instanceof ConstantBooleanType && !$scope->isInFirstLevelStatement()) {
 			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($rightScope, $originalNode, $tipText): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
 					return $ruleErrorBuilder;
@@ -82,7 +86,7 @@ class BooleanAndConstantConditionRule implements Rule
 				return $ruleErrorBuilder->tip($tipText);
 			};
 
-			if (!$scope->isInFirstLevelStatement()) {
+			if ($rightType->getValue() === false || $originalNode->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) !== true) {
 				$errors[] = $addTipRight(RuleErrorBuilder::message(sprintf(
 					'Right side of %s is always %s.',
 					$nodeText,
@@ -91,7 +95,7 @@ class BooleanAndConstantConditionRule implements Rule
 			}
 		}
 
-		if (count($errors) === 0) {
+		if (count($errors) === 0 && !$scope->isInFirstLevelStatement()) {
 			$nodeType = $this->treatPhpDocTypesAsCertain ? $scope->getType($originalNode) : $scope->getNativeType($originalNode);
 			if ($nodeType instanceof ConstantBooleanType) {
 				$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode, $tipText): RuleErrorBuilder {
@@ -107,7 +111,7 @@ class BooleanAndConstantConditionRule implements Rule
 					return $ruleErrorBuilder->tip($tipText);
 				};
 
-				if (!$scope->isInFirstLevelStatement()) {
+				if ($nodeType->getValue() === false || $originalNode->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) !== true) {
 					$errors[] = $addTip(RuleErrorBuilder::message(sprintf(
 						'Result of %s is always %s.',
 						$nodeText,

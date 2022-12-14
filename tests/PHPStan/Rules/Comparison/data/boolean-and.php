@@ -164,3 +164,19 @@ function bug1924() {
 	if (isset($arr['a']) && isset($arr['b'])) {
 	}
 }
+
+class ConditionalAlwaysTrue
+{
+	public function sayHello(int $i): void
+	{
+		$one = 1;
+		if ($i < 5) {
+		} elseif ($one && $i) { // always-true should not be reported because last condition
+		}
+
+		if ($i < 5) {
+		} elseif ($one && $i) { // always-true should be reported, because another condition below
+		} elseif (rand(0,1)) {
+		}
+	}
+}

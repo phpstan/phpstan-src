@@ -52,3 +52,22 @@ class BooleanNot
 		}
 	}
 }
+
+class ConditionalAlwaysTrue
+{
+	public function doFoo(int $i)
+	{
+		$zero = 0;
+		if ($i < 0) {
+		} elseif (!$zero) { // always-true should not be reported because last condition
+		}
+
+		$zero = 0;
+		if ($i < 0) {
+		} elseif (!$zero) { // always-true should be reported, because another condition below
+		} elseif (rand(0,1)) {
+		}
+	}
+
+}
+

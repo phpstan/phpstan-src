@@ -110,6 +110,14 @@ class BooleanOrConstantConditionRuleTest extends RuleTestCase
 				'Right side of || is always true.',
 				85,
 			],
+			[
+				'Left side of || is always true.',
+				101,
+			],
+			[
+				'Right side of || is always true.',
+				110,
+			],
 		]);
 	}
 

@@ -39,3 +39,23 @@ class ElseIfCondition
 	}
 
 }
+
+class ConditionalAlwaysTrue
+{
+	/**
+	 * @param int $i
+	 * @param \stdClass $std
+	 */
+	public function doFoo(int $i, \stdClass $std)
+	{
+		if ($i) {
+		} elseif ($std) { // always-true should not be reported because last condition
+		}
+
+		if ($i) {
+		} elseif ($std) { // always-true should be reported, because another condition below
+		} elseif (rand(0,1)) {
+		}
+	}
+
+}

@@ -195,3 +195,24 @@ class Foo
 	}
 
 }
+
+class ConditionalAlwaysTrue
+{
+	public function sayHello(?int $date): void
+	{
+		if ($date === null) {
+		} elseif ($this->isInt($date)) { // always-true should not be reported because last condition
+		}
+
+		if ($date === null) {
+		} elseif ($this->isInt($date)) { // always-true should be reported, because another condition below
+		} elseif (rand(0,1)) {
+		}
+	}
+
+	/**
+	 * @phpstan-assert-if-true int $value
+	 */
+	public function isInt($value): bool {
+	}
+}

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Comparison;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -66,6 +67,10 @@ class ImpossibleCheckTypeStaticMethodCallRule implements Rule
 				)))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueCheckTypeFunctionCall) {
+			if ($node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) === true) {
+				return [];
+			}
+
 			$method = $this->getMethod($node->class, $node->name->name, $scope);
 
 			return [

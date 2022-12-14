@@ -26,6 +26,14 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 				"Loose comparison using == between 0 and '1' will always evaluate to false.",
 				20,
 			],
+			[
+				"Loose comparison using == between 0 and '1' will always evaluate to false.",
+				27,
+			],
+			[
+				"Loose comparison using == between 0 and '1' will always evaluate to false.",
+				33,
+			],
 		]);
 	}
 
@@ -40,6 +48,18 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 			[
 				"Loose comparison using == between 0 and '1' will always evaluate to false.",
 				20,
+			],
+			[
+				"Loose comparison using == between 0 and '1' will always evaluate to false.",
+				27,
+			],
+			[
+				"Loose comparison using == between 0 and '1' will always evaluate to false.",
+				33,
+			],
+			[
+				"Loose comparison using == between 0 and '0' will always evaluate to true.",
+				35,
 			],
 		]);
 	}

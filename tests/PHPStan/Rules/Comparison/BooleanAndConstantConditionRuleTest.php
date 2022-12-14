@@ -118,6 +118,14 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 				'Right side of && is always true.',
 				147,
 			],
+			[
+				'Left side of && is always true.',
+				178,
+			],
+			[
+				'Right side of && is always true.',
+				178,
+			],
 		]);
 	}
 

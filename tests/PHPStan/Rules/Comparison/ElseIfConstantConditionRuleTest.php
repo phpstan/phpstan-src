@@ -41,7 +41,7 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/elseif-condition.php'], [
 			[
 				'Elseif condition is always true.',
-				18,
+				56,
 			],
 		]);
 	}
@@ -52,7 +52,7 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/elseif-condition-not-phpdoc.php'], [
 			[
 				'Elseif condition is always true.',
-				18,
+				46,
 			],
 		]);
 	}
@@ -63,11 +63,11 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/elseif-condition-not-phpdoc.php'], [
 			[
 				'Elseif condition is always true.',
-				18,
+				46,
 			],
 			[
 				'Elseif condition is always true.',
-				24,
+				56,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);

@@ -87,3 +87,29 @@ class OrInIfCondition
 		}
 	}
 }
+
+class ConditionalAlwaysTrue
+{
+	public function doFoo(int $i, $x)
+	{
+		$one = 1;
+		if ($x) {
+		} elseif ($one || $i) { // always-true should not be reported because last condition
+		}
+
+		if ($x) {
+		} elseif ($one || $i) { // always-true should be reported, because another condition below
+		} elseif (rand(0,1)) {
+		}
+
+		if ($x) {
+		} elseif ($i || $one) { // always-true should not be reported because last condition
+		}
+
+		if ($x) {
+		} elseif ($i || $one) { // always-true should be reported, because another condition below
+		} elseif (rand(0,1)) {
+		}
+	}
+
+}

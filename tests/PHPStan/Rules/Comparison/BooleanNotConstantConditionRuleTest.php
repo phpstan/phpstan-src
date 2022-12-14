@@ -64,6 +64,10 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 				'Negated boolean expression is always false.',
 				50,
 			],
+			[
+				'Negated boolean expression is always true.',
+				67,
+			],
 		]);
 	}
 

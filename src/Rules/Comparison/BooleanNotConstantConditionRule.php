@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -47,12 +48,14 @@ class BooleanNotConstantConditionRule implements Rule
 				return $ruleErrorBuilder->tip('Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.');
 			};
 
-			return [
-				$addTip(RuleErrorBuilder::message(sprintf(
-					'Negated boolean expression is always %s.',
-					$exprType->getValue() ? 'false' : 'true',
-				)))->line($node->expr->getLine())->build(),
-			];
+			if ($exprType->getValue() === true || $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) !== true) {
+				return [
+					$addTip(RuleErrorBuilder::message(sprintf(
+						'Negated boolean expression is always %s.',
+						$exprType->getValue() ? 'false' : 'true',
+					)))->line($node->expr->getLine())->build(),
+				];
+			}
 		}
 
 		return [];

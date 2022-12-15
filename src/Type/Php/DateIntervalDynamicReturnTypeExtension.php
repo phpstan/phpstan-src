@@ -12,6 +12,7 @@ use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function array_map;
+use function count;
 use function gettype;
 use function in_array;
 
@@ -43,6 +44,11 @@ implements DynamicStaticMethodReturnTypeExtension
 			static fn (ConstantStringType $s): string => gettype(@DateInterval::createFromDateString($s->getValue())),
 			$strings,
 		);
+
+		// the error case, when wrong types are passed
+		if (count($possibleReturnTypes) === 0) {
+			return null;
+		}
 
 		if (in_array('boolean', $possibleReturnTypes, true) && in_array('object', $possibleReturnTypes, true)) {
 			return null;

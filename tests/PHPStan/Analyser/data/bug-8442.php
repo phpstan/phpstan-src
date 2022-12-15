@@ -2,6 +2,7 @@
 
 namespace Bug8442;
 
+use stdClass;
 use function PHPStan\Testing\assertType;
 use DateInterval;
 
@@ -33,6 +34,7 @@ function () {
 
 	assertType('false', DateInterval::createFromDateString($interval));
 
-	DateInterval::createFromDateString();
+	assertType('DateInterval|false',DateInterval::createFromDateString());
+	assertType('DateInterval|false',DateInterval::createFromDateString(new stdClass()));
 };
 

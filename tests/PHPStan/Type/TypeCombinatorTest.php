@@ -22,6 +22,7 @@ use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -2321,6 +2322,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 			ConstantArrayType::class,
 			'array{default?: RecursionCallable\Foo, range?: RecursionCallable\Foo}',
 		];
+		yield [
+			[
+				new IntersectionType([new ArrayType(new IntegerType(), new StringType()), new OversizedArrayType()]),
+				new ArrayType(new IntegerType(), new StringType()),
+			],
+			ArrayType::class,
+			'array<int, string>',
+		];
 	}
 
 	/**
@@ -3745,6 +3754,14 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			IntersectionType::class,
 			'array&hasOffsetValue(\'a\', 1)',
+		];
+		yield [
+			[
+				new IntersectionType([new ArrayType(new IntegerType(), new StringType()), new OversizedArrayType()]),
+				new ArrayType(new IntegerType(), new StringType()),
+			],
+			IntersectionType::class,
+			'array<int, string>&oversized-array',
 		];
 	}
 

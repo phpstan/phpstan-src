@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -63,6 +64,11 @@ class ArrayTypeTest extends PHPStanTestCase
 			[
 				new ArrayType(new MixedType(), new MixedType(false, new NullType())),
 				new ConstantArrayType([], []),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new ArrayType(new IntegerType(), new StringType()),
+				new IntersectionType([new ArrayType(new IntegerType(), new StringType()), new OversizedArrayType()]),
 				TrinaryLogic::createYes(),
 			],
 		];

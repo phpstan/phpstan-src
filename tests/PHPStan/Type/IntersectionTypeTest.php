@@ -9,6 +9,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -264,6 +265,12 @@ class IntersectionTypeTest extends PHPStanTestCase
 				new IterableType(new MixedType(), new ObjectType(stdClass::class)),
 			]),
 			TrinaryLogic::createYes(),
+		];
+
+		yield [
+			new IntersectionType([new ArrayType(new IntegerType(), new StringType()), new OversizedArrayType()]),
+			new ArrayType(new IntegerType(), new StringType()),
+			TrinaryLogic::createMaybe(),
 		];
 	}
 

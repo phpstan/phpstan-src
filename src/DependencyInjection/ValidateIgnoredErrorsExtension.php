@@ -23,6 +23,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Reflection\ReflectionProvider\DummyReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\Type\Constant\OversizedArrayBuilder;
 use PHPStan\Type\DirectTypeAliasResolverProvider;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\Type;
@@ -97,7 +98,7 @@ class ValidateIgnoredErrorsExtension extends CompilerExtension
 							return new OperatorTypeSpecifyingExtensionRegistry(null, []);
 						}
 
-					}),
+					}, new OversizedArrayBuilder()),
 				),
 			),
 		);

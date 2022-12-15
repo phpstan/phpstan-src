@@ -5,14 +5,20 @@ namespace PHPStan\Analyser;
 use Bug4288\MyClass;
 use Bug4713\Service;
 use ExtendingKnownClassWithCheck\Foo;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Scalar\LNumber;
+use PhpParser\Node\Scalar\String_;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\Type;
 use function extension_loaded;
 use function restore_error_handler;
 use function sprintf;
@@ -1073,6 +1079,118 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8503.php');
 		$this->assertNoErrors($errors);
+	}
+
+	/**
+	 * @dataProvider dataExplicitNever
+	 *
+	 * @param class-string $resultClass
+	 * @param callable(Expr): Type $callback
+	 */
+	public function testExplicitNever(Expr $left, Expr $right, callable $callback, string $resultClass, ?bool $resultIsExplicit = null): void
+	{
+		$initializerExprTypeResolver = self::getContainer()->getByType(InitializerExprTypeResolver::class);
+
+		$result = $initializerExprTypeResolver->getPlusType(
+			$left,
+			$right,
+			$callback,
+		);
+		$this->assertInstanceOf($resultClass, $result);
+
+		if (!($result instanceof NeverType)) {
+			return;
+		}
+
+		if ($resultIsExplicit === null) {
+			throw new ShouldNotHappenException();
+		}
+		$this->assertSame($resultIsExplicit, $result->isExplicit());
+	}
+
+	public function dataExplicitNever(): iterable
+	{
+		yield [
+			new LNumber(1),
+			new String_('foo'),
+			static function (Expr $expr): Type {
+				if ($expr instanceof LNumber) {
+					return new ConstantIntegerType(1);
+				}
+				return new NeverType(true);
+			},
+			NeverType::class,
+			true,
+		];
+		yield [
+			new String_('foo'),
+			new LNumber(1),
+			static function (Expr $expr): Type {
+				if ($expr instanceof LNumber) {
+					return new ConstantIntegerType(1);
+				}
+				return new NeverType(true);
+			},
+			NeverType::class,
+			true,
+		];
+
+		yield [
+			new LNumber(1),
+			new String_('foo'),
+			static function (Expr $expr): Type {
+				if ($expr instanceof LNumber) {
+					return new ConstantIntegerType(1);
+				}
+				return new NeverType(false);
+			},
+			NeverType::class,
+			false,
+		];
+		yield [
+			new String_('foo'),
+			new LNumber(1),
+			static function (Expr $expr): Type {
+				if ($expr instanceof LNumber) {
+					return new ConstantIntegerType(1);
+				}
+				return new NeverType(false);
+			},
+			NeverType::class,
+			false,
+		];
+
+		yield [
+			new String_('foo'),
+			new LNumber(1),
+			static function (Expr $expr): Type {
+				if ($expr instanceof LNumber) {
+					return new NeverType(true);
+				}
+				return new NeverType(false);
+			},
+			NeverType::class,
+			true,
+		];
+		yield [
+			new LNumber(1),
+			new String_('foo'),
+			static function (Expr $expr): Type {
+				if ($expr instanceof LNumber) {
+					return new NeverType(true);
+				}
+				return new NeverType(false);
+			},
+			NeverType::class,
+			true,
+		];
+
+		yield [
+			new LNumber(1),
+			new LNumber(1),
+			static fn (Expr $expr): Type => new ConstantIntegerType(1),
+			ConstantIntegerType::class,
+		];
 	}
 
 	/**

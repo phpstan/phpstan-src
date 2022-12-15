@@ -498,7 +498,7 @@ class InitializerExprTypeResolver
 		$rightType = $getTypeCallback($right);
 
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return new NeverType();
+			return $this->getNeverType($leftType, $rightType);
 		}
 
 		$leftTypes = TypeUtils::getConstantScalars($leftType);
@@ -565,7 +565,7 @@ class InitializerExprTypeResolver
 		$rightType = $getTypeCallback($right);
 
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return new NeverType();
+			return $this->getNeverType($leftType, $rightType);
 		}
 
 		$leftTypes = TypeUtils::getConstantScalars($leftType);
@@ -622,7 +622,7 @@ class InitializerExprTypeResolver
 		$rightType = $getTypeCallback($right);
 
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return new NeverType();
+			return $this->getNeverType($leftType, $rightType);
 		}
 
 		$leftTypes = TypeUtils::getConstantScalars($leftType);
@@ -679,7 +679,7 @@ class InitializerExprTypeResolver
 		$callbackRightType = $getTypeCallback($right);
 
 		if ($callbackLeftType instanceof NeverType || $callbackRightType instanceof NeverType) {
-			return new NeverType();
+			return $this->getNeverType($callbackLeftType, $callbackRightType);
 		}
 
 		$leftTypes = TypeUtils::getConstantScalars($callbackLeftType);
@@ -772,7 +772,7 @@ class InitializerExprTypeResolver
 		$rightType = $getTypeCallback($right);
 
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return new NeverType();
+			return $this->getNeverType($leftType, $rightType);
 		}
 
 		$leftTypes = TypeUtils::getConstantScalars($leftType);
@@ -873,7 +873,7 @@ class InitializerExprTypeResolver
 		$rightType = $getTypeCallback($right);
 
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return new NeverType();
+			return $this->getNeverType($leftType, $rightType);
 		}
 
 		$leftTypes = TypeUtils::getConstantScalars($leftType);
@@ -1192,7 +1192,7 @@ class InitializerExprTypeResolver
 		$rightType = $getTypeCallback($right);
 
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return new NeverType();
+			return $this->getNeverType($leftType, $rightType);
 		}
 
 		$leftTypes = TypeUtils::getConstantScalars($leftType);
@@ -1249,7 +1249,7 @@ class InitializerExprTypeResolver
 		$rightType = $getTypeCallback($right);
 
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
-			return new NeverType();
+			return $this->getNeverType($leftType, $rightType);
 		}
 
 		$leftTypes = TypeUtils::getConstantScalars($leftType);
@@ -1488,7 +1488,7 @@ class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 		if ($leftNumberType instanceof NeverType || $rightNumberType instanceof NeverType) {
-			return new NeverType();
+			return $this->getNeverType($leftNumberType, $rightNumberType);
 		}
 
 		if (
@@ -1980,6 +1980,18 @@ class InitializerExprTypeResolver
 	private function getReflectionProvider(): ReflectionProvider
 	{
 		return $this->reflectionProviderProvider->getReflectionProvider();
+	}
+
+	private function getNeverType(Type $leftType, Type $rightType): Type
+	{
+		// make sure we don't lose the explicit flag in the process
+		if ($leftType instanceof NeverType && $leftType->isExplicit()) {
+			return $leftType;
+		}
+		if ($rightType instanceof NeverType && $rightType->isExplicit()) {
+			return $rightType;
+		}
+		return new NeverType();
 	}
 
 }

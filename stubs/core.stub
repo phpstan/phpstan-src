@@ -70,9 +70,15 @@ function bin2hex(string $string): string {}
 
 /**
  * @param array<mixed> $result
- * @param-out array<int|string, string|list<string>> $result
+ * @param-out array<int|string, array|string> $result
  */
 function parse_str(string $string, array &$result): void {}
+
+/**
+ * @param array<mixed> $result
+ * @param-out array<string, array|string> $result
+ */
+function mb_parse_str(string $string, array &$result): bool {}
 
 /** @param-out float $percent */
 function similar_text(string $string1, string $string2, float &$percent = null) : int {}
@@ -299,12 +305,6 @@ function fsockopen(string $hostname, int $port = -1, int &$error_code = null, st
  * @param-out int $line
  */
 function headers_sent(string &$filename = null, int &$line = null): bool {}
-
-/**
- * @param mixed $result
- * @param-out array<string, string|array<string>> $result
- */
-function mb_parse_str(string $string, &$result = []): bool {}
 
 /**
  * @param-out callable-string $callable_name

@@ -700,4 +700,15 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6243.php'], []);
 	}
 
+	public function testBug8356(): void
+	{
+		$this->bleedingEdge = true;
+		$this->analyse([__DIR__ . '/data/bug-8356.php'], [
+			[
+				"Offset 'x' might not exist on array|string.",
+				7,
+			],
+		]);
+	}
+
 }

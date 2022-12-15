@@ -24,5 +24,13 @@ function () {
 	}
 
 	assertType('DateInterval|false', DateInterval::createFromDateString($interval));
+
+	if (rand(0,1)) {
+		$interval = 'foo';
+	} else {
+		$interval = 'foo';
+	}
+
+	assertType('false', DateInterval::createFromDateString($interval));
 };
 

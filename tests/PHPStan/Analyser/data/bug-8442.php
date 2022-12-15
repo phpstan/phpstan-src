@@ -34,6 +34,7 @@ function () {
 
 	assertType('false', DateInterval::createFromDateString($interval));
 
+	assertType('DateInterval|false',DateInterval::createFromDateString(str_shuffle('1 day')));
 	assertType('DateInterval|false',DateInterval::createFromDateString());
 	assertType('DateInterval|false',DateInterval::createFromDateString(new stdClass()));
 };

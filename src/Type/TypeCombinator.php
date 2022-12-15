@@ -31,7 +31,6 @@ use function array_values;
 use function count;
 use function get_class;
 use function is_int;
-use function md5;
 use function sprintf;
 use function usort;
 
@@ -149,7 +148,7 @@ class TypeCombinator
 		for ($i = 0; $i < $typesCount; $i++) {
 			if ($types[$i] instanceof ConstantScalarType) {
 				$type = $types[$i];
-				$scalarTypes[get_class($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
+				$scalarTypes[get_class($type)][$type->describe(VerbosityLevel::cache())] = $type;
 				unset($types[$i]);
 				continue;
 			}

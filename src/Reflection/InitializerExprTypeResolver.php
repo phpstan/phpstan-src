@@ -5,6 +5,8 @@ namespace PHPStan\Reflection;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp;
+use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\DNumber;
@@ -35,6 +37,7 @@ use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Constant\OversizedArrayBuilder;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\Enum\EnumCaseObjectType;
@@ -81,6 +84,7 @@ class InitializerExprTypeResolver
 		private ReflectionProviderProvider $reflectionProviderProvider,
 		private PhpVersion $phpVersion,
 		private OperatorTypeSpecifyingExtensionRegistryProvider $operatorTypeSpecifyingExtensionRegistryProvider,
+		private OversizedArrayBuilder $oversizedArrayBuilder,
 		private bool $usePathConstantsAsConstantString = false,
 	)
 	{
@@ -101,7 +105,7 @@ class InitializerExprTypeResolver
 		if ($expr instanceof String_) {
 			return new ConstantStringType($expr->value);
 		}
-		if ($expr instanceof Expr\ConstFetch) {
+		if ($expr instanceof ConstFetch) {
 			$constName = (string) $expr->name;
 			$loweredConstName = strtolower($constName);
 			if ($loweredConstName === 'true') {
@@ -153,7 +157,7 @@ class InitializerExprTypeResolver
 			$dim = $this->getType($expr->dim, $context);
 			return $var->getOffsetValueType($dim);
 		}
-		if ($expr instanceof Expr\ClassConstFetch && $expr->name instanceof Identifier) {
+		if ($expr instanceof ClassConstFetch && $expr->name instanceof Identifier) {
 			return $this->getClassConstFetchType($expr->class, $expr->name->toString(), $context->getClassName(), fn (Expr $expr): Type => $this->getType($expr, $context));
 		}
 		if ($expr instanceof Expr\UnaryPlus) {
@@ -448,10 +452,11 @@ class InitializerExprTypeResolver
 	 */
 	public function getArrayType(Expr\Array_ $expr, callable $getTypeCallback): Type
 	{
-		$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 		if (count($expr->items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-			$arrayBuilder->degradeToGeneralArray();
+			return $this->oversizedArrayBuilder->build($expr, $getTypeCallback);
 		}
+
+		$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 		$isList = null;
 		foreach ($expr->items as $arrayItem) {
 			if ($arrayItem === null) {

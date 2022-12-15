@@ -1797,6 +1797,9 @@ services:
 		arguments:
 			parser: @currentPhpVersionPhpParser
 
+	-
+		class: PHPStan\Type\Constant\OversizedArrayBuilder
+
 	exceptionTypeResolver:
 		class: PHPStan\Rules\Exceptions\ExceptionTypeResolver
 		factory: @PHPStan\Rules\Exceptions\DefaultExceptionTypeResolver

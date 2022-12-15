@@ -29,6 +29,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProvider\DirectReflectionProviderProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
+use PHPStan\Type\Constant\OversizedArrayBuilder;
 use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\UsefulTypeAliasResolver;
 use PHPUnit\Framework\ExpectationFailedException;
@@ -168,7 +169,7 @@ abstract class PHPStanTestCase extends TestCase
 			new DirectInternalScopeFactory(
 				MutatingScope::class,
 				$reflectionProvider,
-				new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), $container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class), $container->getParameter('usePathConstantsAsConstantString')),
+				new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), $container->getByType(OperatorTypeSpecifyingExtensionRegistryProvider::class), new OversizedArrayBuilder(), $container->getParameter('usePathConstantsAsConstantString')),
 				$container->getByType(DynamicReturnTypeExtensionRegistryProvider::class),
 				$container->getByType(ExprPrinter::class),
 				$typeSpecifier,

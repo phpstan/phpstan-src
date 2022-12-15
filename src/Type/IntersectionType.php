@@ -145,12 +145,26 @@ class IntersectionType implements CompoundType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return TrinaryLogic::lazyMaxMin($this->getTypes(), static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType));
+		$result = TrinaryLogic::lazyMaxMin($this->getTypes(), static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType));
+		if ($this->isOversizedArray()->yes()) {
+			if (!$result->no()) {
+				return TrinaryLogic::createYes();
+			}
+		}
+
+		return $result;
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return TrinaryLogic::lazyMaxMin($this->getTypes(), static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes));
+		$result = TrinaryLogic::lazyMaxMin($this->getTypes(), static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes));
+		if ($this->isOversizedArray()->yes()) {
+			if (!$result->no()) {
+				return TrinaryLogic::createYes();
+			}
+		}
+
+		return $result;
 	}
 
 	public function equals(Type $type): bool

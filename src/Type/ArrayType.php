@@ -198,8 +198,12 @@ class ArrayType implements Type
 		return new self($this->keyType, $this->itemType->generalize(GeneralizePrecision::lessSpecific()));
 	}
 
-	public function getKeysArray(): Type
+	public function getKeysArray(?Type $filterValueType = null): Type
 	{
+		if ($filterValueType !== null && $filterValueType->isSuperTypeOf($this->getIterableValueType())->no()) {
+			return new ConstantArrayType([], []);
+		}
+
 		return AccessoryArrayListType::intersectWith(new self(new IntegerType(), $this->getIterableKeyType()));
 	}
 

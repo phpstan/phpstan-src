@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -27,7 +28,7 @@ class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) !== 1) {
+		if (count($functionCall->getArgs()) < 1) {
 			return null;
 		}
 
@@ -36,7 +37,16 @@ class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 			return $this->phpVersion->arrayFunctionsReturnNullWithNonArray() ? new NullType() : new NeverType();
 		}
 
-		return $arrayType->getKeysArray();
+		$searchValueType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : null;
+		$strictType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
+		$strict = $strictType instanceof ConstantBooleanType && $strictType->getValue();
+
+		if ($searchValueType !== null && !$strict) {
+			// Non-strict value searches need something like Type::looseCompare() which does not exist yet
+			return null;
+		}
+
+		return $arrayType->getKeysArray($searchValueType);
 	}
 
 }

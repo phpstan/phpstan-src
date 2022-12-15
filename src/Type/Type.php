@@ -139,7 +139,7 @@ interface Type
 
 	public function unsetOffset(Type $offsetType): Type;
 
-	public function getKeysArray(): Type;
+	public function getKeysArray(?Type $filterValueType = null): Type;
 
 	public function getValuesArray(): Type;
 

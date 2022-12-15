@@ -303,8 +303,12 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return new BooleanType();
 	}
 
-	public function getKeysArray(): Type
+	public function getKeysArray(?Type $filterValueType = null): Type
 	{
+		if ($filterValueType !== null) {
+			return new MixedType();
+		}
+
 		return new NonEmptyArrayType();
 	}
 

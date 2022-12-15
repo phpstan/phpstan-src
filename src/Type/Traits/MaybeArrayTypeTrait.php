@@ -39,7 +39,7 @@ trait MaybeArrayTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
-	public function getKeysArray(): Type
+	public function getKeysArray(?Type $filterValueType = null): Type
 	{
 		return new ErrorType();
 	}

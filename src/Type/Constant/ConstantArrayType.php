@@ -1239,26 +1239,32 @@ class ConstantArrayType extends ArrayType implements ConstantType
 	/**
 	 * @return self
 	 */
-	public function getKeysArray(): Type
+	public function getKeysArray(?Type $filterValueType = null): Type
 	{
-		$keyTypes = [];
-		$valueTypes = [];
-		$optionalKeys = [];
-		$autoIndex = 0;
+		$builder = ConstantArrayTypeBuilder::createEmpty();
 
 		foreach ($this->keyTypes as $i => $keyType) {
-			$keyTypes[] = new ConstantIntegerType($i);
-			$valueTypes[] = $keyType;
-			$autoIndex++;
+			$isOptionalKey = $this->isOptionalKey($i);
+			if ($filterValueType !== null) {
+				if ($filterValueType->isSuperTypeOf($this->valueTypes[$i])->no()) {
+					continue;
+				}
 
-			if (!$this->isOptionalKey($i)) {
-				continue;
+				if (!$filterValueType->equals($this->valueTypes[$i])) {
+					$isOptionalKey = true;
+				}
 			}
 
-			$optionalKeys[] = $i;
+			$builder->setOffsetValueType(null, $keyType, $isOptionalKey);
 		}
 
-		return new self($keyTypes, $valueTypes, $autoIndex, $optionalKeys, true);
+		$array = $builder->getArray();
+
+		if (!$array instanceof ConstantArrayType) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $array;
 	}
 
 	/**

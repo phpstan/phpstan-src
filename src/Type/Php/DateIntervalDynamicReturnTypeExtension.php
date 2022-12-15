@@ -31,7 +31,13 @@ implements DynamicStaticMethodReturnTypeExtension
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		$strings = $scope->getType($methodCall->getArgs()[0]->value)->getConstantStrings();
+		$arguments = $methodCall->getArgs();
+
+		if (!isset($arguments[0])) {
+			return null;
+		}
+
+		$strings = $scope->getType($arguments[0]->value)->getConstantStrings();
 
 		$possibleReturnTypes = array_map(
 			static fn (ConstantStringType $s): string => gettype(@DateInterval::createFromDateString($s->getValue())),

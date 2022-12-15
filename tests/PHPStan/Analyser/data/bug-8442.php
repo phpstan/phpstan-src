@@ -32,5 +32,7 @@ function () {
 	}
 
 	assertType('false', DateInterval::createFromDateString($interval));
+
+	DateInterval::createFromDateString();
 };
 

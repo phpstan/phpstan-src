@@ -86,4 +86,9 @@ class UnsetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8113.php'], []);
 	}
 
+	public function testBug4565(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-4565.php'], []);
+	}
+
 }

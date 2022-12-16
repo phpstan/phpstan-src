@@ -653,7 +653,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/bug-8586.php'], []);
 	}
-	
+
 	public function testBug4242(): void
 	{
 		if (PHP_VERSION_ID < 80100) {

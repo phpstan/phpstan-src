@@ -246,4 +246,30 @@ class MatchExpressionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7746.php'], []);
 	}
 
+	public function testBug8240(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-8240.php'], [
+			[
+				'Match arm comparison between Bug8240\Foo and Bug8240\Foo::BAR is always true.',
+				13,
+			],
+			[
+				'Match arm is unreachable because previous comparison is always true.',
+				14,
+			],
+			[
+				'Match arm comparison between Bug8240\Foo2::BAZ and Bug8240\Foo2::BAZ is always true.',
+				28,
+			],
+			[
+				'Match arm is unreachable because previous comparison is always true.',
+				29,
+			],
+		]);
+	}
+
 }

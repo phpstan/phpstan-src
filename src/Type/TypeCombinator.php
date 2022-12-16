@@ -20,9 +20,7 @@ use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
-use function array_intersect_key;
 use function array_key_exists;
-use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_slice;
@@ -331,7 +329,7 @@ class TypeCombinator
 					self::union($a->getIterableKeyType(), $b->getIterableKeyType()),
 					self::union($a->getIterableValueType(), $b->getIterableValueType()),
 				),
-				null
+				null,
 			];
 		}
 
@@ -505,7 +503,8 @@ class TypeCombinator
 	 * @param Type[] $arrayTypes
 	 * @return Type[]
 	 */
-	private static function processArrayAccessoryTypes(array $arrayTypes) {
+	private static function processArrayAccessoryTypes(array $arrayTypes): array
+	{
 		$accessoryTypes = [];
 		foreach ($arrayTypes as $i => $arrayType) {
 			if ($arrayType instanceof IntersectionType) {
@@ -518,15 +517,17 @@ class TypeCombinator
 						$type = isset($accessoryTypes[$key][$i])
 							? new HasOffsetValueType(
 								$innerType->getOffsetType(),
-								self::union($innerType->getValueType(), $accessoryTypes[$key][$i]->getValueType())
+								self::union($innerType->getValueType(), $accessoryTypes[$key][$i]->getValueType()),
 							)
 							: $innerType;
 						$accessoryTypes[$key][$i] = $type;
 						continue;
 					}
-					if ($innerType instanceof AccessoryType || $innerType instanceof CallableType) {
-						$accessoryTypes[$innerType->describe(VerbosityLevel::cache())][$i] = $innerType;
+					if (!($innerType instanceof AccessoryType) && !($innerType instanceof CallableType)) {
+						continue;
 					}
+
+					$accessoryTypes[$innerType->describe(VerbosityLevel::cache())][$i] = $innerType;
 				}
 			}
 
@@ -541,10 +542,12 @@ class TypeCombinator
 					$accessoryTypes[$list->describe(VerbosityLevel::cache())][$i] = $list;
 				}
 
-				if ($constantArray->isIterableAtLeastOnce()->yes()) {
-					$nonEmpty = new NonEmptyArrayType();
-					$accessoryTypes[$nonEmpty->describe(VerbosityLevel::cache())][$i] = $nonEmpty;
+				if (!$constantArray->isIterableAtLeastOnce()->yes()) {
+					continue;
 				}
+
+				$nonEmpty = new NonEmptyArrayType();
+				$accessoryTypes[$nonEmpty->describe(VerbosityLevel::cache())][$i] = $nonEmpty;
 			}
 		}
 
@@ -555,7 +558,7 @@ class TypeCombinator
 				continue;
 			}
 
-			$commonAccessoryTypes[] = TypeCombinator::union(...$accessoryType);
+			$commonAccessoryTypes[] = self::union(...$accessoryType);
 		}
 
 		return $commonAccessoryTypes;

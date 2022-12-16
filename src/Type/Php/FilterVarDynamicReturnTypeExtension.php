@@ -8,17 +8,16 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
@@ -27,6 +26,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_merge;
 use function hexdec;
 use function is_int;
 use function octdec;
@@ -160,8 +160,8 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType, $flagsType);
 		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 
-		$typeOptionNames = $this->getFilterTypeOptions()[$filterValue] ?? [];
-		$otherTypes = $this->getOtherTypes($flagsType, $typeOptionNames, $defaultType);
+		$options = $flagsType !== null && $this->hasOptions($flagsType)->yes() ? $this->getOptions($flagsType, $filterValue) : [];
+		$otherTypes = $this->getOtherTypes($flagsType, $options, $defaultType);
 
 		if ($inputType->isNonEmptyString()->yes()
 			&& $type->isString()->yes()
@@ -234,17 +234,16 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 	}
 
 	/**
-	 * @param list<string> $typeOptionNames
+	 * @param array<string, ?Type> $typeOptions
 	 * @return array{default: Type, range?: Type}
 	 */
-	private function getOtherTypes(?Type $flagsType, array $typeOptionNames, Type $defaultType): array
+	private function getOtherTypes(?Type $flagsType, array $typeOptions, Type $defaultType): array
 	{
 		$falseType = new ConstantBooleanType(false);
 		if ($flagsType === null) {
 			return ['default' => $falseType];
 		}
 
-		$typeOptions = $this->getOptions($flagsType, 'default', ...$typeOptionNames);
 		$defaultType = $typeOptions['default'] ?? $defaultType;
 		$otherTypes = ['default' => $defaultType];
 		$range = [];
@@ -272,25 +271,31 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		return $otherTypes;
 	}
 
-	/**
-	 * @return array<string, ?Type>
-	 */
-	private function getOptions(Type $flagsType, string ...$optionNames): array
+	private function hasOptions(Type $flagsType): TrinaryLogic
+	{
+		return $flagsType->isConstantArray()
+			->and($flagsType->hasOffsetValueType(new ConstantStringType('options')));
+	}
+
+	/** @return array<string, ?Type> */
+	private function getOptions(Type $flagsType, int $filterValue): array
 	{
 		$options = [];
 
-		if (!$flagsType instanceof ConstantArrayType) {
-			return $options;
-		}
-
 		$optionsType = $flagsType->getOffsetValueType(new ConstantStringType('options'));
-		if (!$optionsType instanceof ConstantArrayType) {
+		if (!$optionsType->isConstantArray()->yes()) {
 			return $options;
 		}
 
+		$optionNames = array_merge(['default'], $this->getFilterTypeOptions()[$filterValue] ?? []);
 		foreach ($optionNames as $optionName) {
-			$type = $optionsType->getOffsetValueType(new ConstantStringType($optionName));
-			$options[$optionName] = $type instanceof ErrorType ? null : $type;
+			$optionaNameType = new ConstantStringType($optionName);
+			if (!$optionsType->hasOffsetValueType($optionaNameType)->yes()) {
+				$options[$optionName] = null;
+				continue;
+			}
+
+			$options[$optionName] = $optionsType->getOffsetValueType($optionaNameType);
 		}
 
 		return $options;
@@ -309,7 +314,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	private function getFlagsValue(Type $exprType): Type
 	{
-		if (!$exprType instanceof ConstantArrayType) {
+		if (!$exprType->isConstantArray()->yes()) {
 			return $exprType;
 		}
 

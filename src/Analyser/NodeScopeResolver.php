@@ -835,7 +835,6 @@ class NodeScopeResolver
 					$bodyScope = $this->enterForeach($bodyScope, $stmt);
 					$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
 					}, $context->enterDeep())->filterOutLoopExitPoints();
-					$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 					$bodyScope = $bodyScopeResult->getScope();
 					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
@@ -848,7 +847,7 @@ class NodeScopeResolver
 						$bodyScope = $prevScope->generalizeWith($bodyScope);
 					}
 					$count++;
-				} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+				} while ($count < self::LOOP_SCOPE_ITERATIONS);
 			}
 
 			$bodyScope = $bodyScope->mergeWith($this->polluteScopeWithAlwaysIterableForeach ? $scope->filterByTruthyValue($arrayComparisonExpr) : $scope);
@@ -904,7 +903,6 @@ class NodeScopeResolver
 					}, ExpressionContext::createDeep())->getTruthyScope();
 					$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
 					}, $context->enterDeep())->filterOutLoopExitPoints();
-					$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 					$bodyScope = $bodyScopeResult->getScope();
 					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
@@ -917,7 +915,7 @@ class NodeScopeResolver
 						$bodyScope = $prevScope->generalizeWith($bodyScope);
 					}
 					$count++;
-				} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+				} while ($count < self::LOOP_SCOPE_ITERATIONS);
 			}
 
 			$bodyScope = $bodyScope->mergeWith($scope);
@@ -999,7 +997,7 @@ class NodeScopeResolver
 						$bodyScope = $prevScope->generalizeWith($bodyScope);
 					}
 					$count++;
-				} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+				} while ($count < self::LOOP_SCOPE_ITERATIONS);
 
 				$bodyScope = $bodyScope->mergeWith($scope);
 			}
@@ -1082,7 +1080,6 @@ class NodeScopeResolver
 					}
 					$bodyScopeResult = $this->processStmtNodes($stmt, $stmt->stmts, $bodyScope, static function (): void {
 					}, $context->enterDeep())->filterOutLoopExitPoints();
-					$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 					$bodyScope = $bodyScopeResult->getScope();
 					foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 						$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
@@ -1103,7 +1100,7 @@ class NodeScopeResolver
 						$bodyScope = $prevScope->generalizeWith($bodyScope);
 					}
 					$count++;
-				} while (!$alwaysTerminating && $count < self::LOOP_SCOPE_ITERATIONS);
+				} while ($count < self::LOOP_SCOPE_ITERATIONS);
 			}
 
 			$bodyScope = $bodyScope->mergeWith($initScope);

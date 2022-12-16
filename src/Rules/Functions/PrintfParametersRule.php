@@ -19,6 +19,7 @@ use function sprintf;
 use function sscanf;
 use function strlen;
 use function strtolower;
+use const PHP_VERSION_ID;
 use const PREG_SET_ORDER;
 
 /**
@@ -119,6 +120,10 @@ class PrintfParametersRule implements Rule
 			if (is_int($required)) {
 				return $required - 1;
 			}
+		}
+
+		if (PHP_VERSION_ID >= 80000) {
+			return 0;
 		}
 
 		// fallback for php < 8

@@ -143,7 +143,6 @@ class TypeCombinator
 		}
 
 		$arrayTypes = [];
-		$arrayAccessoryTypes = [];
 		$scalarTypes = [];
 		$hasGenericScalarTypes = [];
 		for ($i = 0; $i < $typesCount; $i++) {
@@ -165,51 +164,11 @@ class TypeCombinator
 			if ($types[$i] instanceof StringType && !$types[$i] instanceof ClassStringType) {
 				$hasGenericScalarTypes[ConstantStringType::class] = true;
 			}
-			if ($types[$i] instanceof IntersectionType) {
-				$intermediateArrayType = null;
-				$intermediateAccessoryTypes = [];
-				foreach ($types[$i]->getTypes() as $innerType) {
-					if ($innerType instanceof TemplateType) {
-						continue 2;
-					}
-					if ($innerType instanceof ArrayType) {
-						$intermediateArrayType = $innerType;
-						continue;
-					}
-					if ($innerType instanceof AccessoryType || $innerType instanceof CallableType) {
-						if ($innerType instanceof HasOffsetValueType) {
-							$intermediateAccessoryTypes[sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()))][] = $innerType;
-							continue;
-						}
-
-						$intermediateAccessoryTypes[$innerType->describe(VerbosityLevel::cache())][] = $innerType;
-						continue;
-					}
-				}
-
-				if ($intermediateArrayType !== null) {
-					$arrayTypes[] = $intermediateArrayType;
-					$arrayAccessoryTypes[] = $intermediateAccessoryTypes;
-					unset($types[$i]);
-					continue;
-				}
-			}
-			if (!$types[$i] instanceof ArrayType) {
+			if (!$types[$i]->isArray()->yes()) {
 				continue;
 			}
 
 			$arrayTypes[] = $types[$i];
-
-			$intermediateAccessoryTypes = [];
-			if ($types[$i]->isIterableAtLeastOnce()->yes()) {
-				$nonEmpty = new NonEmptyArrayType();
-				$intermediateAccessoryTypes[$nonEmpty->describe(VerbosityLevel::cache())] = [$nonEmpty];
-			}
-			if ($types[$i]->isList()->yes() && AccessoryArrayListType::isListTypeEnabled()) {
-				$list = new AccessoryArrayListType();
-				$intermediateAccessoryTypes[$list->describe(VerbosityLevel::cache())] = [$list];
-			}
-			$arrayAccessoryTypes[] = $intermediateAccessoryTypes;
 			unset($types[$i]);
 		}
 
@@ -217,31 +176,10 @@ class TypeCombinator
 			$scalarTypes[$classType] = array_values($scalarTypeItems);
 		}
 
-		/** @var ArrayType[] $arrayTypes */
-		$arrayTypes = $arrayTypes;
-
-		$commonArrayAccessoryTypesKeys = [];
-		if (count($arrayAccessoryTypes) > 1) {
-			$commonArrayAccessoryTypesKeys = array_keys(array_intersect_key(...$arrayAccessoryTypes));
-		} elseif (count($arrayAccessoryTypes) > 0) {
-			$commonArrayAccessoryTypesKeys = array_keys($arrayAccessoryTypes[0]);
-		}
-
-		$arrayAccessoryTypesToProcess = [];
-		foreach ($commonArrayAccessoryTypesKeys as $commonKey) {
-			$typesToUnion = [];
-			foreach ($arrayAccessoryTypes as $array) {
-				foreach ($array[$commonKey] as $arrayAccessoryType) {
-					$typesToUnion[] = $arrayAccessoryType;
-				}
-			}
-			$arrayAccessoryTypesToProcess[] = self::union(...$typesToUnion);
-		}
-
 		$types = array_values(
 			array_merge(
 				$types,
-				self::processArrayTypes($arrayTypes, $arrayAccessoryTypesToProcess),
+				self::processArrayTypes($arrayTypes),
 			),
 		);
 		$typesCount = count($types);
@@ -564,33 +502,77 @@ class TypeCombinator
 	}
 
 	/**
-	 * @param ArrayType[] $arrayTypes
-	 * @param Type[] $accessoryTypes
+	 * @param Type[] $arrayTypes
 	 * @return Type[]
 	 */
-	private static function processArrayTypes(array $arrayTypes, array $accessoryTypes): array
-	{
-		foreach ($arrayTypes as $arrayType) {
-			if (!$arrayType instanceof ConstantArrayType) {
-				continue;
-			}
-			if (count($arrayType->getKeyTypes()) > 0) {
-				continue;
+	private static function processArrayAccessoryTypes(array $arrayTypes) {
+		$accessoryTypes = [];
+		foreach ($arrayTypes as $i => $arrayType) {
+			if ($arrayType instanceof IntersectionType) {
+				foreach ($arrayType->getTypes() as $innerType) {
+					if ($innerType instanceof TemplateType) {
+						break;
+					}
+					if ($innerType instanceof HasOffsetValueType) {
+						$key = sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()));
+						$type = isset($accessoryTypes[$key][$i])
+							? new HasOffsetValueType(
+								$innerType->getOffsetType(),
+								self::union($innerType->getValueType(), $accessoryTypes[$key][$i]->getValueType())
+							)
+							: $innerType;
+						$accessoryTypes[$key][$i] = $type;
+						continue;
+					}
+					if ($innerType instanceof AccessoryType || $innerType instanceof CallableType) {
+						$accessoryTypes[$innerType->describe(VerbosityLevel::cache())][$i] = $innerType;
+					}
+				}
 			}
 
-			foreach ($accessoryTypes as $i => $accessoryType) {
-				if (!$accessoryType instanceof NonEmptyArrayType) {
-					continue;
+			if (!$arrayType->isConstantArray()->yes()) {
+				continue;
+			}
+			$constantArrays = $arrayType->getConstantArrays();
+
+			foreach ($constantArrays as $constantArray) {
+				if (AccessoryArrayListType::isListTypeEnabled() && $constantArray->isList()->yes()) {
+					$list = new AccessoryArrayListType();
+					$accessoryTypes[$list->describe(VerbosityLevel::cache())][$i] = $list;
 				}
 
-				unset($accessoryTypes[$i]);
-				break 2;
+				if ($constantArray->isIterableAtLeastOnce()->yes()) {
+					$nonEmpty = new NonEmptyArrayType();
+					$accessoryTypes[$nonEmpty->describe(VerbosityLevel::cache())][$i] = $nonEmpty;
+				}
 			}
 		}
 
+		$commonAccessoryTypes = [];
+		$arrayTypeCount = count($arrayTypes);
+		foreach ($accessoryTypes as $accessoryType) {
+			if (count($accessoryType) !== $arrayTypeCount) {
+				continue;
+			}
+
+			$commonAccessoryTypes[] = TypeCombinator::union(...$accessoryType);
+		}
+
+		return $commonAccessoryTypes;
+	}
+
+	/**
+	 * @param Type[] $arrayTypes
+	 * @return Type[]
+	 */
+	private static function processArrayTypes(array $arrayTypes): array
+	{
 		if ($arrayTypes === []) {
 			return [];
 		}
+
+		$accessoryTypes = self::processArrayAccessoryTypes($arrayTypes);
+
 		if (count($arrayTypes) === 1) {
 			return [
 				self::intersect(...$arrayTypes, ...$accessoryTypes),
@@ -606,27 +588,32 @@ class TypeCombinator
 		$nextConstantKeyTypeIndex = 1;
 
 		foreach ($arrayTypes as $arrayType) {
-			if (!$arrayType instanceof ConstantArrayType || $generalArrayOccurred) {
-				$keyTypesForGeneralArray[] = $arrayType->getKeyType();
-				$valueTypesForGeneralArray[] = $arrayType->getItemType();
-				$generalArrayOccurred = true;
+			if ($generalArrayOccurred || !$arrayType->isConstantArray()->yes()) {
+				foreach ($arrayType->getArrays() as $type) {
+					$keyTypesForGeneralArray[] = $type->getKeyType();
+					$valueTypesForGeneralArray[] = $type->getItemType();
+					$generalArrayOccurred = true;
+				}
 				continue;
 			}
 
-			foreach ($arrayType->getKeyTypes() as $i => $keyType) {
-				$keyTypesForGeneralArray[] = $keyType;
-				$valueTypesForGeneralArray[] = $arrayType->getValueTypes()[$i];
+			$constantArrays = $arrayType->getConstantArrays();
+			foreach ($constantArrays as $constantArray) {
+				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
+					$keyTypesForGeneralArray[] = $keyType;
+					$valueTypesForGeneralArray[] = $constantArray->getValueTypes()[$i];
 
-				$keyTypeValue = $keyType->getValue();
-				if (array_key_exists($keyTypeValue, $constantKeyTypesNumbered)) {
-					continue;
-				}
+					$keyTypeValue = $keyType->getValue();
+					if (array_key_exists($keyTypeValue, $constantKeyTypesNumbered)) {
+						continue;
+					}
 
-				$constantKeyTypesNumbered[$keyTypeValue] = $nextConstantKeyTypeIndex;
-				$nextConstantKeyTypeIndex *= 2;
-				if (!is_int($nextConstantKeyTypeIndex)) {
-					$generalArrayOccurred = true;
-					continue;
+					$constantKeyTypesNumbered[$keyTypeValue] = $nextConstantKeyTypeIndex;
+					$nextConstantKeyTypeIndex *= 2;
+					if (!is_int($nextConstantKeyTypeIndex)) {
+						$generalArrayOccurred = true;
+						continue 2;
+					}
 				}
 			}
 		}

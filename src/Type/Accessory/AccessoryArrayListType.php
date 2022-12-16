@@ -239,7 +239,7 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 
 	public function isArray(): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isConstantArray(): TrinaryLogic

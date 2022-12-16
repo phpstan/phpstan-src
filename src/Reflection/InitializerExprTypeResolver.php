@@ -1333,6 +1333,23 @@ class InitializerExprTypeResolver
 			return new ConstantBooleanType($leftType->equals($rightType));
 		}
 
+		if ($leftType instanceof TypeWithClassName && $rightType instanceof EnumCaseObjectType) {
+			$classReflection = $leftType->getClassReflection();
+			if ($classReflection !== null && $classReflection->isEnum() && $classReflection->getName() === $rightType->getClassName()) {
+				if (count($classReflection->getEnumCases()) === 1) {
+					return new ConstantBooleanType(true);
+				}
+			}
+		}
+		if ($rightType instanceof TypeWithClassName && $leftType instanceof EnumCaseObjectType) {
+			$classReflection = $rightType->getClassReflection();
+			if ($classReflection !== null && $classReflection->isEnum() && $classReflection->getName() === $leftType->getClassName()) {
+				if (count($classReflection->getEnumCases()) === 1) {
+					return new ConstantBooleanType(true);
+				}
+			}
+		}
+
 		$isSuperset = $leftType->isSuperTypeOf($rightType);
 		if ($isSuperset->no()) {
 			return new ConstantBooleanType(false);

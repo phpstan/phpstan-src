@@ -38,10 +38,10 @@ class ArrayKeysFunctionDynamicReturnTypeExtension implements DynamicFunctionRetu
 		}
 
 		$searchValueType = isset($functionCall->getArgs()[1]) ? $scope->getType($functionCall->getArgs()[1]->value) : null;
-		$strictType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
-		$strict = $strictType instanceof ConstantBooleanType && $strictType->getValue();
+		$strictType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : new ConstantBooleanType(false);
+		$strict = (new ConstantBooleanType(true))->isSuperTypeOf($strictType);
 
-		if ($searchValueType !== null && !$strict) {
+		if ($searchValueType !== null && !$strict->yes()) {
 			// Non-strict value searches need something like Type::looseCompare() which does not exist yet
 			return null;
 		}

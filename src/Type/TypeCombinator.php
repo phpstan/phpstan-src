@@ -513,14 +513,7 @@ class TypeCombinator
 						break;
 					}
 					if ($innerType instanceof HasOffsetValueType) {
-						$key = sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()));
-						$type = isset($accessoryTypes[$key][$i])
-							? new HasOffsetValueType(
-								$innerType->getOffsetType(),
-								self::union($innerType->getValueType(), $accessoryTypes[$key][$i]->getValueType()),
-							)
-							: $innerType;
-						$accessoryTypes[$key][$i] = $type;
+						$accessoryTypes[sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()))][$i] = $innerType;
 						continue;
 					}
 					if (!($innerType instanceof AccessoryType) && !($innerType instanceof CallableType)) {
@@ -558,7 +551,12 @@ class TypeCombinator
 				continue;
 			}
 
-			$commonAccessoryTypes[] = self::union(...$accessoryType);
+			if ($accessoryType[0] instanceof HasOffsetValueType) {
+				$commonAccessoryTypes[] = TypeCombinator::union(...$accessoryType);
+				continue;
+			}
+
+			$commonAccessoryTypes[] = $accessoryType[0];
 		}
 
 		return $commonAccessoryTypes;

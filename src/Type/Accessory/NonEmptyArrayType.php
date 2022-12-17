@@ -224,7 +224,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 
 	public function isArray(): TrinaryLogic
 	{
-		return TrinaryLogic::createMaybe();
+		return TrinaryLogic::createYes();
 	}
 
 	public function isConstantArray(): TrinaryLogic

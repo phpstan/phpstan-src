@@ -181,7 +181,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		$ancestor = $this->getAncestorWithClassName($property->getDeclaringClass()->getName());
 		$resolvedClassReflection = null;
-		if ($ancestor !== null) {
+		if ($ancestor !== null && $ancestor->hasProperty($propertyName)->yes()) {
 			$resolvedClassReflection = $ancestor->getClassReflection();
 			if ($ancestor !== $this) {
 				$property = $ancestor->getUnresolvedPropertyPrototype($propertyName, $scope)->getNakedProperty();

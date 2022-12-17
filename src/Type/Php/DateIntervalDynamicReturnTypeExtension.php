@@ -7,13 +7,10 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use function array_map;
 use function count;
-use function gettype;
 use function in_array;
 
 class DateIntervalDynamicReturnTypeExtension
@@ -40,21 +37,21 @@ implements DynamicStaticMethodReturnTypeExtension
 
 		$strings = $scope->getType($arguments[0]->value)->getConstantStrings();
 
-		$possibleReturnTypes = array_map(
-			static fn (ConstantStringType $s): string => gettype(@DateInterval::createFromDateString($s->getValue())),
-			$strings,
-		);
+		$possibleReturnTypes = [];
+		foreach ($strings as $string) {
+			$possibleReturnTypes[] = @DateInterval::createFromDateString($string->getValue()) instanceof DateInterval ? DateInterval::class : false;
+		}
 
 		// the error case, when wrong types are passed
 		if (count($possibleReturnTypes) === 0) {
 			return null;
 		}
 
-		if (in_array('boolean', $possibleReturnTypes, true) && in_array('object', $possibleReturnTypes, true)) {
+		if (in_array(false, $possibleReturnTypes, true) && in_array(DateInterval::class, $possibleReturnTypes, true)) {
 			return null;
 		}
 
-		if (in_array('boolean', $possibleReturnTypes, true)) {
+		if (in_array(false, $possibleReturnTypes, true)) {
 			return new ConstantBooleanType(false);
 		}
 

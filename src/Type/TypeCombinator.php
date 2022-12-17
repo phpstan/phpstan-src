@@ -512,11 +512,11 @@ class TypeCombinator
 					if ($innerType instanceof TemplateType) {
 						break;
 					}
-					if ($innerType instanceof HasOffsetValueType) {
-						$accessoryTypes[sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()))][$i] = $innerType;
+					if (!($innerType instanceof AccessoryType) && !($innerType instanceof CallableType)) {
 						continue;
 					}
-					if (!($innerType instanceof AccessoryType) && !($innerType instanceof CallableType)) {
+					if ($innerType instanceof HasOffsetValueType) {
+						$accessoryTypes[sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()))][$i] = $innerType;
 						continue;
 					}
 
@@ -530,7 +530,7 @@ class TypeCombinator
 			$constantArrays = $arrayType->getConstantArrays();
 
 			foreach ($constantArrays as $constantArray) {
-				if (AccessoryArrayListType::isListTypeEnabled() && $constantArray->isList()->yes()) {
+				if ($constantArray->isList()->yes() && AccessoryArrayListType::isListTypeEnabled()) {
 					$list = new AccessoryArrayListType();
 					$accessoryTypes[$list->describe(VerbosityLevel::cache())][$i] = $list;
 				}
@@ -552,7 +552,7 @@ class TypeCombinator
 			}
 
 			if ($accessoryType[0] instanceof HasOffsetValueType) {
-				$commonAccessoryTypes[] = TypeCombinator::union(...$accessoryType);
+				$commonAccessoryTypes[] = self::union(...$accessoryType);
 				continue;
 			}
 

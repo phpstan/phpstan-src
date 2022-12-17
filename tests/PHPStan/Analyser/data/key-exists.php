@@ -17,16 +17,16 @@ class KeyExists
 		assertType('bool', key_exists('foo', $a));
 		assertType('false', key_exists('2', $a));
 
-		$b = ['foo' => 2, 3 => 'bar'];
-		assertType('true', key_exists('foo', $b));
-		assertType('true', key_exists(3, $b));
-		assertType('true', key_exists('3', $b));
-		assertType('false', key_exists(4, $b));
+		$a = ['foo' => 2, 3 => 'bar'];
+		assertType('true', key_exists('foo', $a));
+		assertType('true', key_exists(3, $a));
+		assertType('true', key_exists('3', $a));
+		assertType('false', key_exists(4, $a));
 
-		if (key_exists($key, $b)) {
+		if (key_exists($key, $a)) {
 			assertType("'3'|'foo'", $key);
 		}
-		if (key_exists($anotherKey, $b)) {
+		if (key_exists($anotherKey, $a)) {
 			assertType('3', $anotherKey);
 		}
 

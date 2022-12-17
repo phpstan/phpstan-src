@@ -18,16 +18,16 @@ class Foo
 		assertType('bool', array_key_exists('foo', $a));
 		assertType('false', array_key_exists('2', $a));
 
-		$b = ['foo' => 2, 3 => 'bar'];
-		assertType('true', array_key_exists('foo', $b));
-		assertType('true', array_key_exists(3, $b));
-		assertType('true', array_key_exists('3', $b));
-		assertType('false', array_key_exists(4, $b));
+		$a = ['foo' => 2, 3 => 'bar'];
+		assertType('true', array_key_exists('foo', $a));
+		assertType('true', array_key_exists(3, $a));
+		assertType('true', array_key_exists('3', $a));
+		assertType('false', array_key_exists(4, $a));
 
-		if (array_key_exists($key, $b)) {
+		if (array_key_exists($key, $a)) {
 			assertType("'3'|'foo'", $key);
 		}
-		if (array_key_exists($anotherKey, $b)) {
+		if (array_key_exists($anotherKey, $a)) {
 			assertType('3', $anotherKey);
 		}
 
@@ -35,8 +35,6 @@ class Foo
 		assertType('false', array_key_exists('foo', $empty));
 		assertType('false', array_key_exists($key, $empty));
 	}
-
-
 
 	/**
 	 * @param array<int, mixed>    $a

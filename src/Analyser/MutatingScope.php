@@ -3465,7 +3465,7 @@ class MutatingScope implements Scope
 		} elseif ($expr instanceof Expr\StaticPropertyFetch) {
 			$scope = $this->invalidateExpression($expr);
 		} elseif ($expr instanceof Variable) {
-			$scope = $this->invalidateExpression($expr, true);
+			$scope = $this->invalidateExpression($expr);
 		}
 
 		return $scope->specifyExpressionType($expr, $type, $nativeType);
@@ -3538,15 +3538,6 @@ class MutatingScope implements Scope
 		if ($requireMoreCharacters && $exprStringToInvalidate === $this->getNodeKey($expr)) {
 			return false;
 		}
-		if ($expr instanceof PropertyFetch) {
-			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
-			if ($propertyReflection !== null) {
-				$nativePropertyReflection = $propertyReflection->getNativeReflection();
-				if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
-					return false;
-				}
-			}
-		}
 
 		$nodeFinder = new NodeFinder();
 		$expressionToInvalidateClass = get_class($exprToInvalidate);
@@ -3560,7 +3551,21 @@ class MutatingScope implements Scope
 			return $nodeString === $exprStringToInvalidate;
 		});
 
-		return $found !== null;
+		if ($found === null) {
+			return false;
+		}
+
+		if ($this->phpVersion->supportsReadOnlyProperties() && $expr instanceof PropertyFetch && $expr->name instanceof Node\Identifier && $requireMoreCharacters) {
+			$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+			if ($propertyReflection !== null) {
+				$nativePropertyReflection = $propertyReflection->getNativeReflection();
+				if ($nativePropertyReflection !== null && $nativePropertyReflection->isReadOnly()) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	private function invalidateMethodsOnExpression(Expr $expressionToInvalidate): self

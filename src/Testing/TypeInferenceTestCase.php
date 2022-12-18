@@ -22,8 +22,10 @@ use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
 use function count;
+use function in_array;
 use function is_string;
 use function sprintf;
+use function stripos;
 
 /** @api */
 abstract class TypeInferenceTestCase extends PHPStanTestCase
@@ -125,7 +127,13 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			}
 
 			$functionName = $nameNode->toString();
-			if ($functionName === 'PHPStan\\Testing\\assertType') {
+			if (in_array($functionName, ['assertType', 'assertNativeType', 'assertVariableCertainty'], true)) {
+				self::fail(sprintf(
+					'ERROR: Missing import for %s() on line %d.',
+					$functionName,
+					$node->getLine(),
+				));
+			} elseif ($functionName === 'PHPStan\\Testing\\assertType') {
 				$expectedType = $scope->getType($node->getArgs()[0]->value);
 				$actualType = $scope->getType($node->getArgs()[1]->value);
 				$assert = ['type', $file, $expectedType, $actualType, $node->getLine()];
@@ -163,7 +171,24 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 				$actualCertaintyValue = $scope->hasVariableType($variable->name);
 				$assert = ['variableCertainty', $file, $expectedertaintyValue, $actualCertaintyValue, $variable->name, $node->getLine()];
 			} else {
-				return;
+				$isAssertFn = false;
+				foreach (['assertType', 'assertNativeType', 'assertVariableCertainty'] as $assertFn) {
+					if (stripos($functionName, $assertFn) === false) {
+						continue;
+					}
+
+					$isAssertFn = true;
+				}
+
+				if ($isAssertFn !== true) {
+					return;
+				}
+
+				self::fail(sprintf(
+					'ERROR: Assert-Method %s imported with wrong namespace called from line %d.',
+					$functionName,
+					$node->getLine(),
+				));
 			}
 
 			if (count($node->getArgs()) !== 2) {

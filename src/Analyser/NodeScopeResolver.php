@@ -180,8 +180,8 @@ class NodeScopeResolver
 	private const LOOP_SCOPE_ITERATIONS = 3;
 	private const GENERALIZE_AFTER_ITERATION = 1;
 
-	/** @var bool[] filePath(string) => bool(true) */
-	private array $analysedFiles = [];
+	/** @var ?array<string, bool> filePath(string) => bool(true) */
+	private ?array $analysedFiles = [];
 
 	/** @var array<string, true> */
 	private array $earlyTerminatingMethodNames = [];
@@ -222,11 +222,11 @@ class NodeScopeResolver
 
 	/**
 	 * @api
-	 * @param string[] $files
+	 * @param ?string[] $files
 	 */
-	public function setAnalysedFiles(array $files): void
+	public function setAnalysedFiles(?array $files): void
 	{
-		$this->analysedFiles = array_fill_keys($files, true);
+		$this->analysedFiles = $files !== null ? array_fill_keys($files, true) : null;
 	}
 
 	/**
@@ -4075,7 +4075,7 @@ class NodeScopeResolver
 				continue; // trait from eval or from PHP itself
 			}
 			$fileName = $this->fileHelper->normalizePath($traitFileName);
-			if (!isset($this->analysedFiles[$fileName])) {
+			if ($this->analysedFiles !== null && !isset($this->analysedFiles[$fileName])) {
 				continue;
 			}
 			$parserNodes = $this->parser->parseFile($fileName);

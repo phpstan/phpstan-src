@@ -622,7 +622,6 @@ class AnalyserTest extends PHPStanTestCase
 			$fileAnalyser,
 			$ruleRegistry,
 			$collectorRegistry,
-			$nodeScopeResolver,
 			50,
 		);
 	}

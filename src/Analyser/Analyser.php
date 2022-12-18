@@ -19,7 +19,6 @@ class Analyser
 		private FileAnalyser $fileAnalyser,
 		private RuleRegistry $ruleRegistry,
 		private CollectorRegistry $collectorRegistry,
-		private NodeScopeResolver $nodeScopeResolver,
 		private int $internalErrorsCountLimit,
 	)
 	{
@@ -43,7 +42,6 @@ class Analyser
 			$allAnalysedFiles = $files;
 		}
 
-		$this->nodeScopeResolver->setAnalysedFiles($allAnalysedFiles);
 		$allAnalysedFiles = array_fill_keys($allAnalysedFiles, true);
 
 		/** @var list<Error> $errors */

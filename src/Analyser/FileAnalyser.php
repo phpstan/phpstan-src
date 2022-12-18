@@ -179,6 +179,7 @@ class FileAnalyser
 					$parserNodes,
 					$scope,
 					$nodeCallback,
+					array_keys($analysedFiles),
 				);
 				$unmatchedLineIgnores = $linesToIgnore;
 				foreach ($temporaryFileErrors as $tmpFileError) {

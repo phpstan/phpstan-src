@@ -2280,6 +2280,47 @@ class TypeCombinatorTest extends PHPStanTestCase
 			IntersectionType::class,
 			"array<int, array>&hasOffsetValue(0, array&hasOffsetValue('code', mixed))",
 		];
+
+		yield [
+			[
+				new ConstantArrayType(
+					[new ConstantStringType('default'), new ConstantStringType('range')],
+					[new ObjectType(Foo::class), new ObjectType(Foo::class)],
+					[0],
+					[0, 1],
+				),
+				new ConstantArrayType(
+					[new ConstantStringType('range')],
+					[new ObjectType(Foo::class)],
+					[0],
+					[0],
+				),
+			],
+			ConstantArrayType::class,
+			'array{default?: RecursionCallable\Foo, range?: RecursionCallable\Foo}',
+		];
+
+		yield [
+			[
+				new IntersectionType([
+					new ConstantArrayType(
+						[new ConstantStringType('default'), new ConstantStringType('range')],
+						[new ObjectType(Foo::class), new ObjectType(Foo::class)],
+						[0],
+						[0, 1],
+					),
+					new NonEmptyArrayType(),
+				]),
+				new ConstantArrayType(
+					[new ConstantStringType('range')],
+					[new ObjectType(Foo::class)],
+					[0],
+					[0],
+				),
+			],
+			ConstantArrayType::class,
+			'array{default?: RecursionCallable\Foo, range?: RecursionCallable\Foo}',
+		];
 	}
 
 	/**

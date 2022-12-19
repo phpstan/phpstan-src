@@ -1,6 +1,6 @@
 <?php
 
-namespace pathinfo;
+namespace pathinfoInference;
 
 use function PHPStan\Testing\assertType;
 

@@ -409,7 +409,7 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 	public function testBug7270(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-7271.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-7270.php'], []);
 	}
 
 	public function testBug5743(): void

@@ -1,6 +1,6 @@
 <?php
 
-namespace Bug7271;
+namespace Bug7270;
 
 class Foo
 {

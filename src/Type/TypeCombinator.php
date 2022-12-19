@@ -108,6 +108,7 @@ class TypeCombinator
 			return new NeverType();
 		}
 
+		$arrayTypes = [];
 		$benevolentTypes = [];
 		$benevolentUnionObject = null;
 		// transform A | (B | C) to A | B | C
@@ -129,10 +130,27 @@ class TypeCombinator
 			if (!($types[$i] instanceof UnionType)) {
 				continue;
 			}
-			if ($types[$i]->isNormalized()) {
+			if ($types[$i] instanceof TemplateType) {
 				continue;
 			}
-			if ($types[$i] instanceof TemplateType) {
+			if ($types[$i]->isNormalized()) {
+				$innerTypes = $types[$i]->getTypes();
+				foreach ($innerTypes as $key => $innerType) {
+					if ($innerType->isArray()->yes()) {
+						$arrayTypes[] = $innerType;
+						unset($innerTypes[$key]);
+					}
+				}
+				if (count($innerTypes) === 0) {
+					$typesCount--;
+					unset($types[$i]);
+					continue;
+				}
+				if (count($innerTypes) === 1) {
+					$types[$i] = reset($innerTypes);
+					continue;
+				}
+				$types[$i] = new UnionType(array_values($innerTypes), true);
 				continue;
 			}
 
@@ -141,11 +159,12 @@ class TypeCombinator
 			$typesCount += count($typesInner) - 1;
 		}
 
+		$types = array_values($types);
+
 		if ($typesCount === 1) {
 			return $types[0];
 		}
 
-		$arrayTypes = [];
 		$scalarTypes = [];
 		$hasGenericScalarTypes = [];
 		for ($i = 0; $i < $typesCount; $i++) {
@@ -327,13 +346,14 @@ class TypeCombinator
 		if ($a instanceof IntegerRangeType && $b instanceof IntegerRangeType) {
 			return null;
 		}
+		if ($a instanceof ConstantArrayType && $b instanceof ConstantArrayType) {
+			return null;
+		}
+
 		if ($a instanceof HasOffsetValueType && $b instanceof HasOffsetValueType) {
 			if ($a->getOffsetType()->equals($b->getOffsetType())) {
 				return [new HasOffsetValueType($a->getOffsetType(), self::union($a->getValueType(), $b->getValueType())), null];
 			}
-		}
-		if ($a instanceof ConstantArrayType && $b instanceof ConstantArrayType) {
-			return null;
 		}
 
 		// simplify string[] | int[] to (string|int)[]
@@ -388,9 +408,8 @@ class TypeCombinator
 				$aTypes[$i] = $compareResult[0] ?? $compareResult[1];
 				return [new UnionType($aTypes, true), null];
 			}
-			$aTypes[] = $b;
 
-			return [new UnionType($aTypes, true), null];
+			return null;
 		}
 
 		if ($b instanceof UnionType && !$b instanceof TemplateType) {
@@ -404,9 +423,8 @@ class TypeCombinator
 				$bTypes[$i] = $compareResult[0] ?? $compareResult[1];
 				return [null, new UnionType($bTypes, true)];
 			}
-			$bTypes[] = $a;
 
-			return [null, new UnionType($bTypes, true)];
+			return null;
 		}
 
 		if ($b->isSuperTypeOf($a)->yes()) {

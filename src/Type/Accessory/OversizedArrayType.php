@@ -188,7 +188,7 @@ class OversizedArrayType implements CompoundType, AccessoryType
 
 	public function getArraySize(): Type
 	{
-		return IntegerRangeType::fromInterval(0, null);
+		return IntegerRangeType::fromInterval(1, null);
 	}
 
 	public function getIterableKeyType(): Type

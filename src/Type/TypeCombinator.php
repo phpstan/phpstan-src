@@ -644,7 +644,7 @@ class TypeCombinator
 		$arraysToProcess = [];
 		$emptyArray = null;
 		foreach ($constantArrays as $constantArray) {
-			if (!$constantArray instanceof ConstantArrayType) {
+			if (!$constantArray->isConstantArray()->yes()) {
 				$newArrays[] = $constantArray;
 				continue;
 			}
@@ -654,7 +654,7 @@ class TypeCombinator
 				continue;
 			}
 
-			$arraysToProcess[] = $constantArray;
+			$arraysToProcess = array_merge($arraysToProcess, $constantArray->getConstantArrays());
 		}
 
 		if ($emptyArray !== null) {

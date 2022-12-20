@@ -24,7 +24,7 @@ if (PHP_VERSION_ID < 70400) {
 	$includes[] = __DIR__ . '/enum-adapter-errors.neon';
 }
 
-if (PHP_VERSION_ID >= 70300 && PHP_VERSION_ID < 80000) {
+if (PHP_VERSION_ID < 80000) {
 	$includes[] = __DIR__ . '/more-enum-adapter-errors.neon';
 }
 

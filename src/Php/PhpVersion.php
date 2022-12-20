@@ -205,7 +205,7 @@ class PhpVersion
 	{
 		return $this->versionId >= 80200;
 	}
-	
+
 	public function serializableRequiresMagicMethods(): bool
 	{
 		return $this->versionId >= 80100;

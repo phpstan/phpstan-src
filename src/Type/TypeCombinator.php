@@ -108,7 +108,6 @@ class TypeCombinator
 			return new NeverType();
 		}
 
-		$arrayTypes = [];
 		$benevolentTypes = [];
 		$benevolentUnionObject = null;
 		// transform A | (B | C) to A | B | C
@@ -137,8 +136,9 @@ class TypeCombinator
 				$innerTypes = $types[$i]->getTypes();
 				foreach ($innerTypes as $key => $innerType) {
 					if ($innerType->isArray()->yes()) {
-						$arrayTypes[] = $innerType;
+						$types[] = $innerType;
 						unset($innerTypes[$key]);
+						$typesCount++;
 					}
 				}
 				if (count($innerTypes) === 0) {
@@ -165,6 +165,7 @@ class TypeCombinator
 			return $types[0];
 		}
 
+		$arrayTypes = [];
 		$scalarTypes = [];
 		$hasGenericScalarTypes = [];
 		for ($i = 0; $i < $typesCount; $i++) {

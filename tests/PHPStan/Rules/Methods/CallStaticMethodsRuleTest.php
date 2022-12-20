@@ -411,11 +411,11 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->analyse([__DIR__ . '/data/bug-4550.php'], [
 			[
-				'Parameter #1 $class of static method Bug4550\Test::valuesOf() expects class-string<Person>, string given.',
+				'Parameter #1 $class of static method Bug4550\Test::valuesOf() expects class-string<mixed>, string given.',
 				34,
 			],
 			[
-				'Parameter #1 $class of static method Bug4550\Test::valuesOf() expects class-string<Person>, string given.',
+				'Parameter #1 $class of static method Bug4550\Test::valuesOf() expects class-string<mixed>, string given.',
 				44,
 			],
 		]);

@@ -28,7 +28,7 @@ class Bug6687
 	function baz(string $a): void
 	{
 		if ($a === BAZ || is_subclass_of($a, BAZ)) {
-			assertType("'BAZ'|class-string<BAZ>", $a);
+			assertType("class-string<BAZ>", $a);
 		}
 	}
 

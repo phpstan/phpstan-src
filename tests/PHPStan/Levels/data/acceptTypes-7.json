@@ -154,6 +154,11 @@
         "line": 692,
         "ignorable": true
     },
+	{
+		"message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects numeric-string, string given.",
+		"line": 708,
+		"ignorable": true
+	},
     {
         "message": "Parameter #2 $array of function implode expects array|null, array|int|string given.",
         "line": 756,

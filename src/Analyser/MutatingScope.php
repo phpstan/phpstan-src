@@ -68,6 +68,7 @@ use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ClosureType;
@@ -4356,6 +4357,9 @@ class MutatingScope implements Scope
 				}
 				if ($generalArraysA->isList()->yes() && $generalArraysB->isList()->yes()) {
 					$resultType = AccessoryArrayListType::intersectWith($resultType);
+				}
+				if ($generalArraysA->isOversizedArray()->yes() && $generalArraysB->isOversizedArray()->yes()) {
+					$resultType = TypeCombinator::intersect($resultType, new OversizedArrayType());
 				}
 				$resultTypes[] = $resultType;
 			}

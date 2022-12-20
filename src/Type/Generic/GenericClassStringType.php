@@ -53,9 +53,6 @@ class GenericClassStringType extends ClassStringType
 
 		if ($type instanceof ConstantStringType) {
 			if (!$type->isClassStringType()->yes()) {
-				if ($this->type instanceof TypeWithClassName) {
-					return TrinaryLogic::createFromBoolean($this->type->getClassName() === $type->getValue());
-				}
 				return TrinaryLogic::createNo();
 			}
 
@@ -102,9 +99,6 @@ class GenericClassStringType extends ClassStringType
 			}
 
 			if (!$type->isClassStringType()->yes()) {
-				if ($this->type instanceof TypeWithClassName) {
-					return $isSuperType->or(TrinaryLogic::createFromBoolean($this->type->getClassName() === $type->getValue()));
-				}
 				$isSuperType = $isSuperType->and(TrinaryLogic::createMaybe());
 			}
 
@@ -134,7 +128,7 @@ class GenericClassStringType extends ClassStringType
 			return $receivedType->inferTemplateTypesOn($this);
 		}
 
-		if ($receivedType instanceof ConstantStringType && $receivedType->isClassStringType()->yes()) {
+		if ($receivedType instanceof ConstantStringType) {
 			$typeToInfer = new ObjectType($receivedType->getValue());
 		} elseif ($receivedType instanceof self) {
 			$typeToInfer = $receivedType->type;

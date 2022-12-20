@@ -155,11 +155,6 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 				new ConstantStringType(IntegerType::class),
 				TrinaryLogic::createMaybe(),
 			],
-			[
-				new GenericClassStringType(new ObjectType('NonexistentClass')),
-				new ConstantStringType('NonexistentClass'),
-				TrinaryLogic::createYes(),
-			],
 		];
 	}
 
@@ -276,11 +271,6 @@ class GenericClassStringTypeTest extends PHPStanTestCase
 				)),
 				new BenevolentUnionType([new IntegerType(), new StringType()]),
 				TrinaryLogic::createMaybe(),
-			],
-			[
-				new GenericClassStringType(new ObjectType('NonexistentClass')),
-				new ConstantStringType('NonexistentClass'),
-				TrinaryLogic::createYes(),
 			],
 		];
 	}

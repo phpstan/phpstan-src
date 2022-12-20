@@ -114,7 +114,10 @@ class RuleLevelHelper
 		}
 
 		$accepts = $acceptingType->accepts($acceptedType, $strictTypes);
-		if (!$accepts->yes() && $acceptingType instanceof UnionType) {
+		if ($accepts->yes()) {
+			return true;
+		}
+		if ($acceptingType instanceof UnionType) {
 			foreach ($acceptingType->getTypes() as $innerType) {
 				if (self::accepts($innerType, $acceptedType, $strictTypes)) {
 					return true;

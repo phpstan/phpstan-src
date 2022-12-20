@@ -118,13 +118,12 @@ class IntersectionType implements CompoundType
 
 	public function accepts(Type $otherType, bool $strictTypes): TrinaryLogic
 	{
+		$results = [];
 		foreach ($this->types as $type) {
-			if (!$type->accepts($otherType, $strictTypes)->yes()) {
-				return TrinaryLogic::createNo();
-			}
+			$results[] = $type->accepts($otherType, $strictTypes);
 		}
 
-		return TrinaryLogic::createYes();
+		return TrinaryLogic::createYes()->and(...$results);
 	}
 
 	public function isSuperTypeOf(Type $otherType): TrinaryLogic

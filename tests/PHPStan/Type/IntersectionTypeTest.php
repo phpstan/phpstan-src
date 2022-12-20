@@ -42,7 +42,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		yield [
 			$intersectionType,
 			new IterableType(new MixedType(), new ObjectType('Item')),
-			TrinaryLogic::createNo(),
+			TrinaryLogic::createMaybe(),
 		];
 
 		yield [
@@ -57,7 +57,7 @@ class IntersectionTypeTest extends PHPStanTestCase
 		yield [
 			TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new CallableType()),
 			new CallableType(),
-			TrinaryLogic::createNo(),
+			TrinaryLogic::createMaybe(),
 		];
 	}
 

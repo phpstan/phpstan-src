@@ -21,6 +21,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
 use function array_key_exists;
+use function array_key_first;
 use function array_map;
 use function array_merge;
 use function array_slice;
@@ -548,6 +549,10 @@ class TypeCombinator
 		$arrayTypeCount = count($arrayTypes);
 		foreach ($accessoryTypes as $accessoryType) {
 			if (count($accessoryType) !== $arrayTypeCount) {
+				$firstKey = array_key_first($accessoryType);
+				if ($accessoryType[$firstKey] instanceof OversizedArrayType) {
+					$commonAccessoryTypes[] = $accessoryType[$firstKey];
+				}
 				continue;
 			}
 

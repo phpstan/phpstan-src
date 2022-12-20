@@ -2327,8 +2327,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				new IntersectionType([new ArrayType(new IntegerType(), new StringType()), new OversizedArrayType()]),
 				new ArrayType(new IntegerType(), new StringType()),
 			],
-			ArrayType::class,
-			'array<int, string>',
+			IntersectionType::class,
+			'array<int, string>&oversized-array',
 		];
 	}
 

@@ -20,7 +20,7 @@ trait ConstantScalarTypeTrait
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		return TrinaryLogic::createNo();
+		return parent::accepts($type, $strictTypes)->and(TrinaryLogic::createMaybe());
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

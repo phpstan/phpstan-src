@@ -1,6 +1,0 @@
-parameters:
-	ignoreErrors:
-		-
-			message: "#^Parameter \\#1 \\$expected of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) expects class\\-string\\<ReflectionEnum\\>, string given\\.$#"
-			count: 1
-			path: ../tests/PHPStan/Reflection/ClassReflectionTest.php

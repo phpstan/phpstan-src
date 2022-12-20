@@ -93,7 +93,9 @@ class ArrayType implements Type
 			$itemType = $this->getItemType();
 			foreach ($type->getKeyTypes() as $i => $keyType) {
 				$valueType = $type->getValueTypes()[$i];
-				$result = $result->and($thisKeyType->accepts($keyType, $strictTypes))->and($itemType->accepts($valueType, $strictTypes));
+				$acceptsKey = $thisKeyType->accepts($keyType, $strictTypes);
+				$acceptsValue = $itemType->accepts($valueType, $strictTypes);
+				$result = $result->and($acceptsKey)->and($acceptsValue);
 			}
 
 			return $result;

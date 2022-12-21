@@ -279,7 +279,7 @@ class TypeCombinator
 						[$a, $b] = $compareResult;
 						if ($a !== null) {
 							$innerTypes[$key] = $a;
-							$types[$i] = new UnionType($innerTypes, true);
+							$types[$i] = count($innerTypes) === 1 ? reset($innerTypes) : new UnionType(array_values($innerTypes), true);
 							array_splice($types, $j--, 1);
 							$typesCount--;
 							continue 2;
@@ -287,10 +287,14 @@ class TypeCombinator
 						if ($b !== null) {
 							$types[$j] = $b;
 							unset($innerTypes[$key]);
-							$types[$i] = count($innerTypes) === 1 ? reset($innerTypes) : new UnionType(array_values($innerTypes), true);
-							continue 2;
 						}
 					}
+					if (count($innerTypes) === 0) {
+						array_splice($types, $i--, 1);
+						$typesCount--;
+						continue 2;
+					}
+					$types[$i] = count($innerTypes) === 1 ? reset($innerTypes) : new UnionType(array_values($innerTypes), true);
 					continue;
 				}
 
@@ -304,7 +308,7 @@ class TypeCombinator
 						[$a, $b] = $compareResult;
 						if ($a !== null) {
 							$innerTypes[$key] = $a;
-							$types[$j] = new UnionType($innerTypes, true);
+							$types[$j] = count($innerTypes) === 1 ? reset($innerTypes) : new UnionType(array_values($innerTypes), true);
 							array_splice($types, $i--, 1);
 							$typesCount--;
 							continue 3;
@@ -312,10 +316,14 @@ class TypeCombinator
 						if ($b !== null) {
 							$types[$i] = $b;
 							unset($innerTypes[$key]);
-							$types[$j] = count($innerTypes) === 1 ? reset($innerTypes) : new UnionType(array_values($innerTypes), true);
-							continue 2;
 						}
 					}
+					if (count($innerTypes) === 0) {
+						array_splice($types, $j--, 1);
+						$typesCount--;
+						continue 1;
+					}
+					$types[$j] = count($innerTypes) === 1 ? reset($innerTypes) : new UnionType(array_values($innerTypes), true);
 					continue;
 				}
 

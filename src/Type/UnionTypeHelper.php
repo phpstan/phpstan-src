@@ -70,6 +70,10 @@ class UnionTypeHelper
 			$strings[] = $type->getConstantStrings();
 		}
 
+		if ($strings === []) {
+			return [];
+		}
+
 		return array_merge(...$strings);
 	}
 

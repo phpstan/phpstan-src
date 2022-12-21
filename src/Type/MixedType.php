@@ -514,6 +514,10 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function hasOffsetValueType(Type $offsetType): TrinaryLogic
 	{
+		if ($this->isOffsetAccessible()->no()) {
+			return TrinaryLogic::createNo();
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 

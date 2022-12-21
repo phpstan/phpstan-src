@@ -1030,4 +1030,62 @@ class MixedTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function dataSubtractedHasOffsetValueType(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new ArrayType(new MixedType(), new MixedType()),
+				new StringType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new StringType(),
+				new StringType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new ObjectType(ArrayAccess::class),
+				new StringType(),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new MixedType(),
+				new UnionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new StringType(),
+					new ObjectType(ArrayAccess::class),
+				]),
+				new StringType(),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new UnionType([
+					new ArrayType(new MixedType(), new MixedType()),
+					new StringType(),
+					new ObjectType(ArrayAccess::class),
+					new FloatType(),
+				]),
+				new StringType(),
+				TrinaryLogic::createNo(),
+			],
+		];
+	}
+
+	/** @dataProvider dataSubtractedHasOffsetValueType */
+	public function testSubtractedHasOffsetValueType(MixedType $mixedType, Type $typeToSubtract, Type $offsetType, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->hasOffsetValueType($offsetType);
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> hasOffsetValueType()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
 }

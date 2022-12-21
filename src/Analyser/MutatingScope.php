@@ -3500,6 +3500,11 @@ class MutatingScope implements Scope
 			return false;
 		}
 
+		// Variables will not contain traversable expressions. skip the NodeFinder overhead
+		if ($expr instanceof Variable && is_string($expr->name)) {
+			return $exprStringToInvalidate === $this->getNodeKey($expr);
+		}
+
 		$nodeFinder = new NodeFinder();
 		$expressionToInvalidateClass = get_class($exprToInvalidate);
 		$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($expressionToInvalidateClass, $exprStringToInvalidate): bool {

@@ -210,10 +210,11 @@ class TypeCombinator
 		}
 
 		if ($scalarTypes !== []) {
-			if (count($scalarTypes) === 1) {
-				$types[] = $scalarTypes[array_key_first($scalarTypes)][0];
+			$flattenTypes = array_merge(...array_values($scalarTypes));
+			if (count($flattenTypes) === 1) {
+				$types[] = $flattenTypes[0];
 			} else {
-				$types[] = new UnionType(array_merge(...array_values($scalarTypes)), true);
+				$types[] = new UnionType($flattenTypes, true);
 			}
 		}
 

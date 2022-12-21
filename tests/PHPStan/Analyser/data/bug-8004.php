@@ -73,7 +73,7 @@ class Importer
             }
         }
 
-		assertType("list<non-empty-array<literal-string&non-falsy-string, 'empty_answer'|'empty_question'|'invalid_answer_1_too_long'|'invalid_answer_1_type'|'invalid_answer_2_too_long'|'invalid_answer_2_type'|'invalid_answer_3_too_long'|'invalid_answer_3_type'|'invalid_answer_4_too_long'|'invalid_answer_4_type'|'invalid_question_too_long'|'invalid_right_answer'|int>&oversized-array>&oversized-array", $errors);
+		assertType("list<array{line: int, type: 'empty_answer'|'empty_question'|'invalid_answer_1_too_long'|'invalid_answer_1_type'|'invalid_answer_2_too_long'|'invalid_answer_2_type'|'invalid_answer_3_too_long'|'invalid_answer_3_type'|'invalid_answer_4_too_long'|'invalid_answer_4_type'|'invalid_question_too_long'|'invalid_right_answer', value: int}>&oversized-array", $errors);
 
         return $errors;
     }

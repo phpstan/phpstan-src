@@ -197,7 +197,24 @@ class TypeCombinator
 		}
 
 		foreach ($scalarTypes as $classType => $scalarTypeItems) {
+			if (isset($hasGenericScalarTypes[$classType])) {
+				unset($scalarTypes[$classType]);
+				continue;
+			}
+			if ($classType === ConstantBooleanType::class && count($scalarTypeItems) === 2) {
+				$types[] = new BooleanType();
+				unset($scalarTypes[$classType]);
+				continue;
+			}
 			$scalarTypes[$classType] = array_values($scalarTypeItems);
+		}
+
+		if ($scalarTypes !== []) {
+			if (count($scalarTypes) === 1) {
+				$types[] = $scalarTypes[array_key_first($scalarTypes)][0];
+			} else {
+				$types[] = new UnionType(array_merge(...array_values($scalarTypes)), true);
+			}
 		}
 
 		$types = array_values(
@@ -208,58 +225,99 @@ class TypeCombinator
 		);
 		$typesCount = count($types);
 
-		foreach ($scalarTypes as $classType => $scalarTypeItems) {
-			if (isset($hasGenericScalarTypes[$classType])) {
-				unset($scalarTypes[$classType]);
-				continue;
-			}
-			if ($classType === ConstantBooleanType::class && count($scalarTypeItems) === 2) {
-				$types[] = new BooleanType();
-				$typesCount++;
-				unset($scalarTypes[$classType]);
-				continue;
-			}
-
-			$scalarTypeItemsCount = count($scalarTypeItems);
-			for ($i = 0; $i < $typesCount; $i++) {
-				for ($j = 0; $j < $scalarTypeItemsCount; $j++) {
-					$compareResult = self::compareTypesInUnion($types[$i], $scalarTypeItems[$j]);
-					if ($compareResult === null) {
-						continue;
-					}
-
-					[$a, $b] = $compareResult;
-					if ($a !== null) {
-						$types[$i] = $a;
-						array_splice($scalarTypeItems, $j--, 1);
-						$scalarTypeItemsCount--;
-						continue 1;
-					}
-					if ($b !== null) {
-						$scalarTypeItems[$j] = $b;
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
-				}
-			}
-
-			$scalarTypes[$classType] = $scalarTypeItems;
-		}
-
-		if (count($types) > 16) {
-			$newTypes = [];
-			foreach ($types as $type) {
-				$newTypes[$type->describe(VerbosityLevel::cache())] = $type;
-			}
-			$types = array_values($newTypes);
-			$typesCount = count($types);
-		}
-
 		// transform A | A to A
 		// transform A | never to A
 		for ($i = 0; $i < $typesCount; $i++) {
 			for ($j = $i + 1; $j < $typesCount; $j++) {
+				if ($types[$i] instanceof UnionType && !$types[$i] instanceof TemplateType && $types[$j] instanceof UnionType && !$types[$j] instanceof TemplateType) {
+					$aTypes = $types[$i]->getTypes();
+					$bTypes = $types[$j]->getTypes();
+					foreach ($aTypes as $aKey => $aType) {
+						foreach ($bTypes as $bKey => $bType) {
+							$compareResult = self::compareTypesInUnion($aType, $bType);
+							if ($compareResult === null) {
+								continue;
+							}
+							[$a, $b] = $compareResult;
+							if ($a !== null) {
+								$aTypes[$aKey] = $a;
+								unset($bTypes[$bKey]);
+								continue 1;
+							}
+							if ($b !== null) {
+								$bTypes[$bKey] = $b;
+								unset($aTypes[$aKey]);
+								continue 2;
+							}
+						}
+					}
+					if (count($aTypes) === 0) {
+						array_splice($types, $i--, 1);
+						$typesCount--;
+						$types[$j] = count($bTypes) === 1 ? reset($bTypes) : new UnionType(array_values($bTypes), true);
+						continue 2;
+					}
+					if (count($bTypes) === 0) {
+						array_splice($types, $j--, 1);
+						$typesCount--;
+						$types[$i] = count($aTypes) === 1 ? reset($aTypes) : new UnionType(array_values($aTypes), true);
+						continue 1;
+					}
+					$types[$i] = count($aTypes) === 1 ? reset($aTypes) : new UnionType(array_values($aTypes), true);
+					$types[$j] = count($bTypes) === 1 ? reset($bTypes) : new UnionType(array_values($bTypes), true);
+					continue;
+				}
+
+				if ($types[$i] instanceof UnionType && !$types[$i] instanceof TemplateType) {
+					$innerTypes = $types[$i]->getTypes();
+					foreach ($innerTypes as $key => $innerType) {
+						$compareResult = self::compareTypesInUnion($innerType, $types[$j]);
+						if ($compareResult === null) {
+							continue;
+						}
+						[$a, $b] = $compareResult;
+						if ($a !== null) {
+							$innerTypes[$key] = $a;
+							$types[$i] = new UnionType($innerTypes, true);
+							array_splice($types, $j--, 1);
+							$typesCount--;
+							continue 2;
+						}
+						if ($b !== null) {
+							$types[$j] = $b;
+							unset($innerTypes[$key]);
+							$types[$i] = count($innerTypes) === 1 ? reset($innerTypes) : new UnionType(array_values($innerTypes), true);
+							continue 2;
+						}
+					}
+					continue;
+				}
+
+				if ($types[$j] instanceof UnionType && !$types[$j] instanceof TemplateType) {
+					$innerTypes = $types[$j]->getTypes();
+					foreach ($innerTypes as $key => $innerType) {
+						$compareResult = self::compareTypesInUnion($innerType, $types[$i]);
+						if ($compareResult === null) {
+							continue;
+						}
+						[$a, $b] = $compareResult;
+						if ($a !== null) {
+							$innerTypes[$key] = $a;
+							$types[$j] = new UnionType($innerTypes, true);
+							array_splice($types, $i--, 1);
+							$typesCount--;
+							continue 3;
+						}
+						if ($b !== null) {
+							$types[$i] = $b;
+							unset($innerTypes[$key]);
+							$types[$j] = count($innerTypes) === 1 ? reset($innerTypes) : new UnionType(array_values($innerTypes), true);
+							continue 2;
+						}
+					}
+					continue;
+				}
+
 				$compareResult = self::compareTypesInUnion($types[$i], $types[$j]);
 				if ($compareResult === null) {
 					continue;
@@ -278,13 +336,6 @@ class TypeCombinator
 					$typesCount--;
 					continue 2;
 				}
-			}
-		}
-
-		foreach ($scalarTypes as $scalarTypeItems) {
-			foreach ($scalarTypeItems as $scalarType) {
-				$types[] = $scalarType;
-				$typesCount++;
 			}
 		}
 
@@ -393,40 +444,6 @@ class TypeCombinator
 				$b = self::intersectWithSubtractedType($b, $a);
 				return [null, $b];
 			}
-		}
-
-		if ($a instanceof UnionType && !$a instanceof TemplateType && $b instanceof UnionType && !$b instanceof TemplateType) {
-			// TODO
-			return [TypeCombinator::union($a, ...$b->getTypes()), null];
-		}
-
-		if ($a instanceof UnionType && !$a instanceof TemplateType) {
-			$aTypes = $a->getTypes();
-			foreach ($aTypes as $i => $aType) {
-				$compareResult = self::compareTypesInUnion($aType, $b);
-				if ($compareResult === null) {
-					continue;
-				}
-				$aTypes[$i] = $compareResult[0] ?? $compareResult[1];
-				return [new UnionType($aTypes, true), null];
-			}
-
-			return null;
-		}
-
-		if ($b instanceof UnionType && !$b instanceof TemplateType) {
-			$bTypes = $b->getTypes();
-			foreach ($bTypes as $i => $bType) {
-				$compareResult = self::compareTypesInUnion($bType, $a);
-				if ($compareResult === null) {
-					continue;
-				}
-
-				$bTypes[$i] = $compareResult[0] ?? $compareResult[1];
-				return [null, new UnionType($bTypes, true)];
-			}
-
-			return null;
 		}
 
 		if ($b->isSuperTypeOf($a)->yes()) {

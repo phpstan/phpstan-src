@@ -314,30 +314,33 @@ class PhpMethodReflection implements ExtendedMethodReflection
 	{
 		if ($this->returnType === null) {
 			$name = strtolower($this->getName());
-			if (
-				$name === '__construct'
-				|| $name === '__destruct'
-				|| $name === '__unset'
-				|| $name === '__wakeup'
-				|| $name === '__clone'
-			) {
-				return $this->returnType = TypehintHelper::decideType(new VoidType(), $this->phpDocReturnType);
-			}
-			if ($name === '__tostring') {
-				return $this->returnType = TypehintHelper::decideType(new StringType(), $this->phpDocReturnType);
-			}
-			if ($name === '__isset') {
-				return $this->returnType = TypehintHelper::decideType(new BooleanType(), $this->phpDocReturnType);
-			}
-			if ($name === '__sleep') {
-				return $this->returnType = TypehintHelper::decideType(new ArrayType(new IntegerType(), new StringType()), $this->phpDocReturnType);
-			}
-			if ($name === '__set_state') {
-				return $this->returnType = TypehintHelper::decideType(new ObjectWithoutClassType(), $this->phpDocReturnType);
+			$returnType = $this->reflection->getReturnType();
+			if (!$returnType) {
+				if (
+					$name === '__construct'
+					|| $name === '__destruct'
+					|| $name === '__unset'
+					|| $name === '__wakeup'
+					|| $name === '__clone'
+				) {
+					return $this->returnType = TypehintHelper::decideType(new VoidType(), $this->phpDocReturnType);
+				}
+				if ($name === '__tostring') {
+					return $this->returnType = TypehintHelper::decideType(new StringType(), $this->phpDocReturnType);
+				}
+				if ($name === '__isset') {
+					return $this->returnType = TypehintHelper::decideType(new BooleanType(), $this->phpDocReturnType);
+				}
+				if ($name === '__sleep') {
+					return $this->returnType = TypehintHelper::decideType(new ArrayType(new IntegerType(), new StringType()), $this->phpDocReturnType);
+				}
+				if ($name === '__set_state') {
+					return $this->returnType = TypehintHelper::decideType(new ObjectWithoutClassType(), $this->phpDocReturnType);
+				}
 			}
 
 			$this->returnType = TypehintHelper::decideTypeFromReflection(
-				$this->reflection->getReturnType(),
+				$returnType,
 				$this->phpDocReturnType,
 				$this->declaringClass->getName(),
 			);

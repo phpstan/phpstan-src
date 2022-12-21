@@ -871,10 +871,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7554.php');
 		$this->assertCount(2, $errors);
 
-		$this->assertSame(sprintf('Parameter #1 $%s of function count expects array|Countable, array<int, array<int, int<0, max>|string>>|false given.', PHP_VERSION_ID < 80000 ? 'var' : 'value'), $errors[0]->getMessage());
+		$this->assertSame(sprintf('Parameter #1 $%s of function count expects array|Countable, array<int, array<int, int|string>>|false given.', PHP_VERSION_ID < 80000 ? 'var' : 'value'), $errors[0]->getMessage());
 		$this->assertSame(26, $errors[0]->getLine());
 
-		$this->assertSame('Cannot access offset int<1, max> on array<int, array{string, int<0, max>}>|false.', $errors[1]->getMessage());
+		$this->assertSame('Cannot access offset int<1, max> on list<array{string, int<0, max>}>|false.', $errors[1]->getMessage());
 		$this->assertSame(27, $errors[1]->getLine());
 	}
 
@@ -1089,6 +1089,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8146a.php');
 		$this->assertNoErrors($errors);
+	}
+
+	public static function getAdditionalConfigFiles(): array
+	{
+		return [
+			__DIR__ . '/../../../conf/bleedingEdge.neon',
+		];
 	}
 
 	/**

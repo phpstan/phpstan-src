@@ -21,6 +21,6 @@ function keysAsString(array $array): array
 }
 
 function () {
-	assertType('array<int, numeric-string>', keysAsString([]));
-	assertType('non-empty-array<int, numeric-string>', keysAsString(['' => '']));
+	assertType('list<numeric-string>', keysAsString([]));
+	assertType('non-empty-list<numeric-string>', keysAsString(['' => '']));
 };

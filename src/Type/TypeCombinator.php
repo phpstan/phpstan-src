@@ -135,11 +135,12 @@ class TypeCombinator
 			if ($types[$i]->isNormalized()) {
 				$innerTypes = $types[$i]->getTypes();
 				foreach ($innerTypes as $key => $innerType) {
-					if ($innerType->isArray()->yes()) {
-						$types[] = $innerType;
-						unset($innerTypes[$key]);
-						$typesCount++;
+					if (!$innerType->isArray()->yes() && !($innerType instanceof ConstantScalarType)) {
+						continue;
 					}
+					$types[] = $innerType;
+					unset($innerTypes[$key]);
+					$typesCount++;
 				}
 				if (count($innerTypes) === 0) {
 					$typesCount--;

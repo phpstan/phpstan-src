@@ -27,6 +27,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use function array_map;
+use function array_merge;
 use function count;
 use function implode;
 use function in_array;
@@ -98,22 +99,42 @@ class IntersectionType implements CompoundType
 	 */
 	public function getReferencedClasses(): array
 	{
-		return UnionTypeHelper::getReferencedClasses($this->types);
+		$classes = [];
+		foreach ($this->types as $type) {
+			$classes[] = $type->getReferencedClasses();
+		}
+
+		return array_merge(...$classes);
 	}
 
 	public function getArrays(): array
 	{
-		return UnionTypeHelper::getArrays($this->getTypes());
+		$arrays = [];
+		foreach ($this->types as $type) {
+			$arrays[] = $type->getArrays();
+		}
+
+		return array_merge(...$arrays);
 	}
 
 	public function getConstantArrays(): array
 	{
-		return UnionTypeHelper::getConstantArrays($this->getTypes());
+		$constantArrays = [];
+		foreach ($this->types as $type) {
+			$constantArrays[] = $type->getConstantArrays();
+		}
+
+		return array_merge(...$constantArrays);
 	}
 
 	public function getConstantStrings(): array
 	{
-		return UnionTypeHelper::getConstantStrings($this->getTypes());
+		$strings = [];
+		foreach ($this->types as $type) {
+			$strings[] = $type->getConstantStrings();
+		}
+
+		return array_merge(...$strings);
 	}
 
 	public function accepts(Type $otherType, bool $strictTypes): TrinaryLogic

@@ -15,4 +15,12 @@ class HelloWorld
 	{
 		return rand() ? 5 : null;
 	}
+
+	/**
+	 * @param numeric-string $numericS
+	 */
+	public function intersections($numericS): void {
+		assertType('non-falsy-string', 'a'. $numericS);
+		assertType('numeric-string', (string) $numericS);
+	}
 }

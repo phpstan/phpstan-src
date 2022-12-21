@@ -16,6 +16,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -26,6 +27,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_map;
+use function array_merge;
 use function count;
 use function implode;
 use function sprintf;
@@ -121,22 +123,54 @@ class UnionType implements CompoundType
 	 */
 	public function getReferencedClasses(): array
 	{
-		return UnionTypeHelper::getReferencedClasses($this->getTypes());
+		$classes = [];
+		foreach ($this->types as $type) {
+			$classes[] = $type->getReferencedClasses();
+		}
+
+		return array_merge(...$classes);
 	}
 
 	public function getArrays(): array
 	{
-		return UnionTypeHelper::getArrays($this->getTypes());
+		$arrays = [];
+		foreach ($this->types as $type) {
+			$arrays[] = $type->getArrays();
+		}
+
+		if ($arrays === []) {
+			return [];
+		}
+
+		return array_merge(...$arrays);
 	}
 
 	public function getConstantArrays(): array
 	{
-		return UnionTypeHelper::getConstantArrays($this->getTypes());
+		$constantArrays = [];
+		foreach ($this->getTypesOfClass(ConstantArrayType::class) as $type) {
+			$constantArrays[] = $type->getConstantArrays();
+		}
+
+		if ($constantArrays === []) {
+			return [];
+		}
+
+		return array_merge(...$constantArrays);
 	}
 
 	public function getConstantStrings(): array
 	{
-		return UnionTypeHelper::getConstantStrings($this->getTypesOfClass(ConstantStringType::class));
+		$strings = [];
+		foreach ($this->getTypesOfClass(ConstantStringType::class) as $type) {
+			$strings[] = $type->getConstantStrings();
+		}
+
+		if ($strings === []) {
+			return [];
+		}
+
+		return array_merge(...$strings);
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic

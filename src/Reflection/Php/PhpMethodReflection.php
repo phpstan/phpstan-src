@@ -315,7 +315,7 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		if ($this->returnType === null) {
 			$name = strtolower($this->getName());
 			$returnType = $this->reflection->getReturnType();
-			if (!$returnType) {
+			if ($returnType === null) {
 				if (
 					$name === '__construct'
 					|| $name === '__destruct'

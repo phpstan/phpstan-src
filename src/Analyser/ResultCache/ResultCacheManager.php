@@ -734,6 +734,9 @@ return [
 		sort($extensions);
 
 		if ($projectConfigArray !== null) {
+			unset($projectConfigArray['parameters']['editorUrl']);
+			unset($projectConfigArray['parameters']['editorUrlTitle']);
+			unset($projectConfigArray['parameters']['errorFormat']);
 			unset($projectConfigArray['parameters']['ignoreErrors']);
 			unset($projectConfigArray['parameters']['tipsOfTheDay']);
 			unset($projectConfigArray['parameters']['parallel']);

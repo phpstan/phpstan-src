@@ -17,6 +17,7 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
@@ -77,6 +78,24 @@ class UnionType implements CompoundType
 		return $this->types;
 	}
 
+	/**
+	 * @param class-string<Type> $typeClass
+	 * @return list<Type>
+	 */
+	private function getTypesOfClass(string $typeClass): array
+	{
+		$matchingTypes = [];
+		foreach ($this->getTypes() as $innerType) {
+			if (!$innerType instanceof $typeClass) {
+				return [];
+			}
+
+			$matchingTypes[] = $innerType;
+		}
+
+		return $matchingTypes;
+	}
+
 	public function isNormalized(): bool
 	{
 		return $this->normalized;
@@ -117,7 +136,7 @@ class UnionType implements CompoundType
 
 	public function getConstantStrings(): array
 	{
-		return UnionTypeHelper::getConstantStrings($this->getTypes());
+		return UnionTypeHelper::getConstantStrings($this->getTypesOfClass(ConstantStringType::class));
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic

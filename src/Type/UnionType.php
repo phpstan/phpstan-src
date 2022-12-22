@@ -16,9 +16,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
@@ -27,7 +25,6 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_map;
-use function array_merge;
 use function count;
 use function implode;
 use function sprintf;
@@ -80,24 +77,6 @@ class UnionType implements CompoundType
 		return $this->types;
 	}
 
-	/**
-	 * @param class-string<Type> $typeClass
-	 * @return list<Type>
-	 */
-	private function getTypesOfClass(string $typeClass): array
-	{
-		$matchingTypes = [];
-		foreach ($this->getTypes() as $innerType) {
-			if (!$innerType instanceof $typeClass) {
-				return [];
-			}
-
-			$matchingTypes[] = $innerType;
-		}
-
-		return $matchingTypes;
-	}
-
 	public function isNormalized(): bool
 	{
 		return $this->normalized;
@@ -125,52 +104,60 @@ class UnionType implements CompoundType
 	{
 		$classes = [];
 		foreach ($this->types as $type) {
-			$classes[] = $type->getReferencedClasses();
+			foreach ($type->getReferencedClasses() as $className) {
+				$classes[] = $className;
+			}
 		}
 
-		return array_merge(...$classes);
+		return $classes;
 	}
 
 	public function getArrays(): array
 	{
 		$arrays = [];
 		foreach ($this->types as $type) {
-			$arrays[] = $type->getArrays();
+			foreach ($type->getArrays() as $array) {
+				$arrays[] = $array;
+			}
 		}
 
-		if ($arrays === []) {
-			return [];
-		}
-
-		return array_merge(...$arrays);
+		return $arrays;
 	}
 
 	public function getConstantArrays(): array
 	{
 		$constantArrays = [];
-		foreach ($this->getTypesOfClass(ConstantArrayType::class) as $type) {
-			$constantArrays[] = $type->getConstantArrays();
+		foreach ($this->types as $type) {
+			$typeAsConstantArrays = $type->getConstantArrays();
+
+			if ($typeAsConstantArrays === []) {
+				return [];
+			}
+
+			foreach ($typeAsConstantArrays as $constantArray) {
+				$constantArrays[] = $constantArray;
+			}
 		}
 
-		if ($constantArrays === []) {
-			return [];
-		}
-
-		return array_merge(...$constantArrays);
+		return $constantArrays;
 	}
 
 	public function getConstantStrings(): array
 	{
 		$strings = [];
-		foreach ($this->getTypesOfClass(ConstantStringType::class) as $type) {
-			$strings[] = $type->getConstantStrings();
+		foreach ($this->types as $type) {
+			$constantStrings = $type->getConstantStrings();
+
+			if ($constantStrings === []) {
+				return [];
+			}
+
+			foreach ($constantStrings as $string) {
+				$strings[] = $string;
+			}
 		}
 
-		if ($strings === []) {
-			return [];
-		}
-
-		return array_merge(...$strings);
+		return $strings;
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic

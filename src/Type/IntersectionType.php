@@ -27,7 +27,6 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use function array_map;
-use function array_merge;
 use function count;
 use function implode;
 use function in_array;
@@ -94,47 +93,52 @@ class IntersectionType implements CompoundType
 		return $types;
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
 		$classes = [];
 		foreach ($this->types as $type) {
-			$classes[] = $type->getReferencedClasses();
+			foreach ($type->getReferencedClasses() as $className) {
+				$classes[] = $className;
+			}
 		}
 
-		return array_merge(...$classes);
+		return $classes;
 	}
 
 	public function getArrays(): array
 	{
 		$arrays = [];
 		foreach ($this->types as $type) {
-			$arrays[] = $type->getArrays();
+			foreach ($type->getArrays() as $array) {
+				$arrays[] = $array;
+			}
 		}
 
-		return array_merge(...$arrays);
+		return $arrays;
 	}
 
 	public function getConstantArrays(): array
 	{
 		$constantArrays = [];
 		foreach ($this->types as $type) {
-			$constantArrays[] = $type->getConstantArrays();
+			foreach ($type->getConstantArrays() as $constantArray) {
+				$constantArrays[] = $constantArray;
+			}
 		}
 
-		return array_merge(...$constantArrays);
+		return $constantArrays;
 	}
 
 	public function getConstantStrings(): array
 	{
 		$strings = [];
 		foreach ($this->types as $type) {
-			$strings[] = $type->getConstantStrings();
+			foreach ($type->getConstantStrings() as $string) {
+				$strings[] = $string;
+			}
 		}
 
-		return array_merge(...$strings);
+		return $strings;
 	}
 
 	public function accepts(Type $otherType, bool $strictTypes): TrinaryLogic

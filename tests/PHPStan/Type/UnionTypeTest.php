@@ -10,6 +10,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -25,6 +26,7 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use RecursionCallable\Foo;
 use stdClass;
 use function array_merge;
 use function array_reverse;
@@ -1278,6 +1280,134 @@ class UnionTypeTest extends PHPStanTestCase
 			$type1->equals($type2),
 			'UnionType sorting always produces the same order',
 		);
+	}
+
+	/**
+	 * @dataProvider dataGetConstantArrays
+	 * @param Type[] $types
+	 * @param list<string> $expectedDescriptions
+	 */
+	public function testGetConstantArrays(
+		array $types,
+		array $expectedDescriptions,
+	): void
+	{
+		$unionType = TypeCombinator::union(...$types);
+		$constantArrays = $unionType->getConstantArrays();
+
+		$actualDescriptions = [];
+		foreach ($constantArrays as $constantArray) {
+			$actualDescriptions[] = $constantArray->describe(VerbosityLevel::precise());
+		}
+
+		$this->assertSame($expectedDescriptions, $actualDescriptions);
+	}
+
+	public function dataGetConstantArrays(): iterable
+	{
+		yield from [
+			[
+				[
+					TypeCombinator::intersect(
+						new ConstantArrayType(
+							[new ConstantIntegerType(1), new ConstantIntegerType(2)],
+							[new IntegerType(), new StringType()],
+							2,
+							[0, 1],
+						),
+						new NonEmptyArrayType(),
+					),
+					new ConstantArrayType(
+						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+						[new ObjectType(Foo::class), new ObjectType(stdClass::class)],
+						2,
+					),
+				],
+				[
+					'array{1?: int, 2?: string}',
+					'array{RecursionCallable\Foo, stdClass}',
+				],
+			],
+			[
+				[
+					TypeCombinator::intersect(
+						new ConstantArrayType(
+							[new ConstantIntegerType(1), new ConstantIntegerType(2)],
+							[new IntegerType(), new StringType()],
+							2,
+							[0, 1],
+						),
+					),
+					new IntegerType(),
+				],
+				[],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataGetConstantStrings
+	 * @param list<string> $expectedDescriptions
+	 */
+	public function testGetConstantStrings(
+		Type $unionType,
+		array $expectedDescriptions,
+	): void
+	{
+		$constantStrings = $unionType->getConstantStrings();
+
+		$actualDescriptions = [];
+		foreach ($constantStrings as $constantString) {
+			$actualDescriptions[] = $constantString->describe(VerbosityLevel::precise());
+		}
+
+		$this->assertSame($expectedDescriptions, $actualDescriptions);
+	}
+
+	public function dataGetConstantStrings(): iterable
+	{
+		yield from [
+			[
+				TypeCombinator::union(
+					new ConstantStringType('hello'),
+					new ConstantStringType('world'),
+				),
+				[
+					"'hello'",
+					"'world'",
+				],
+			],
+			[
+				TypeCombinator::union(
+					new ConstantStringType(''),
+					TypeCombinator::intersect(
+						new StringType(),
+						new AccessoryNumericStringType(),
+					),
+				),
+				[],
+			],
+			[
+				new UnionType([
+					new IntersectionType(
+						[
+							new ConstantStringType('foo'),
+							new AccessoryLiteralStringType(),
+						],
+					),
+					new IntersectionType(
+						[
+							new ConstantStringType('bar'),
+							new AccessoryLiteralStringType(),
+						],
+					),
+				]),
+				[
+					"'foo'",
+					"'bar'",
+				],
+			],
+		];
 	}
 
 }

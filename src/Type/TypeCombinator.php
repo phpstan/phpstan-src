@@ -168,25 +168,24 @@ class TypeCombinator
 
 		$arrayTypes = [];
 		$scalarTypes = [];
-		$hasGenericScalarTypes = [];
+		$hasSuperClassOfScalarType = [];
 		for ($i = 0; $i < $typesCount; $i++) {
+			switch (get_class($types[$i])) {
+				case StringType::class:
+				case IntegerType::class:
+				case FloatType::class:
+				case BooleanType::class:
+					$hasSuperClassOfScalarType[get_class($types[$i])] = true;
+			}
 			if ($types[$i] instanceof ConstantScalarType) {
 				$type = $types[$i];
-				$scalarTypes[get_class($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
+				$scalarTypes[get_parent_class($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
 				unset($types[$i]);
 				continue;
 			}
-			if ($types[$i] instanceof BooleanType) {
-				$hasGenericScalarTypes[ConstantBooleanType::class] = true;
-			}
-			if ($types[$i] instanceof FloatType) {
-				$hasGenericScalarTypes[ConstantFloatType::class] = true;
-			}
-			if ($types[$i] instanceof IntegerType && !$types[$i] instanceof IntegerRangeType) {
-				$hasGenericScalarTypes[ConstantIntegerType::class] = true;
-			}
-			if ($types[$i] instanceof StringType && !$types[$i] instanceof ClassStringType) {
-				$hasGenericScalarTypes[ConstantStringType::class] = true;
+			if ($types[$i] instanceof TemplateType) {
+				$hasSuperClassOfScalarType[get_parent_class($types[$i])] = true;
+				continue;
 			}
 			if (!$types[$i]->isArray()->yes()) {
 				continue;
@@ -197,11 +196,11 @@ class TypeCombinator
 		}
 
 		foreach ($scalarTypes as $classType => $scalarTypeItems) {
-			if (isset($hasGenericScalarTypes[$classType])) {
+			if (isset($hasSuperClassOfScalarType[$classType])) {
 				unset($scalarTypes[$classType]);
 				continue;
 			}
-			if ($classType === ConstantBooleanType::class && count($scalarTypeItems) === 2) {
+			if ($classType === BooleanType::class && count($scalarTypeItems) === 2) {
 				$types[] = new BooleanType();
 				unset($scalarTypes[$classType]);
 				continue;

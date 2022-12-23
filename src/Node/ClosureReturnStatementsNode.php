@@ -35,6 +35,11 @@ class ClosureReturnStatementsNode extends NodeAbstract implements ReturnStatemen
 		return $this->closureExpr;
 	}
 
+	public function hasNativeReturnTypehint(): bool
+	{
+		return $this->closureExpr->returnType !== null;
+	}
+
 	/**
 	 * @return ReturnStatement[]
 	 */

@@ -17,4 +17,6 @@ interface ReturnStatementsNode extends VirtualNode
 
 	public function returnsByRef(): bool;
 
+	public function hasNativeReturnTypehint(): bool;
+
 }

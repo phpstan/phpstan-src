@@ -123,6 +123,8 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\AccessoryArrayListType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClosureType;
@@ -1994,7 +1996,31 @@ class NodeScopeResolver
 				isset($functionReflection)
 				&& in_array($functionReflection->getName(), ['fopen', 'file_get_contents'], true)
 			) {
-				$scope = $scope->assignVariable('http_response_header', new ArrayType(new IntegerType(), new StringType()), new ArrayType(new IntegerType(), new StringType()));
+				$scope = $scope->assignVariable(
+					'http_response_header',
+					TypeCombinator::intersect(
+						new ArrayType(
+							new IntegerType(),
+							TypeCombinator::intersect(
+								new StringType(),
+								new AccessoryNonFalsyStringType(),
+							)
+						),
+						new AccessoryArrayListType(),
+						new NonEmptyArrayType()
+					),
+					TypeCombinator::intersect(
+						new ArrayType(
+							new IntegerType(),
+							TypeCombinator::intersect(
+								new StringType(),
+								new AccessoryNonFalsyStringType(),
+							)
+						),
+						new AccessoryArrayListType(),
+						new NonEmptyArrayType()
+					),
+				);
 			}
 
 			if (isset($functionReflection) && $functionReflection->getName() === 'shuffle') {

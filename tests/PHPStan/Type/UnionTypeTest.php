@@ -1410,4 +1410,77 @@ class UnionTypeTest extends PHPStanTestCase
 		];
 	}
 
+	/**
+	 * @dataProvider dataGetArrays
+	 * @param list<string> $expectedDescriptions
+	 */
+	public function testGetArrays(
+		Type $unionType,
+		array $expectedDescriptions,
+	): void
+	{
+		$arrays = $unionType->getArrays();
+
+		$actualDescriptions = [];
+		foreach ($arrays as $arrayType) {
+			$actualDescriptions[] = $arrayType->describe(VerbosityLevel::precise());
+		}
+
+		$this->assertSame($expectedDescriptions, $actualDescriptions);
+	}
+
+	public function dataGetArrays(): iterable
+	{
+		yield from [
+			[
+				TypeCombinator::union(
+					new ConstantStringType('hello'),
+					new ConstantStringType('world'),
+				),
+				[],
+			],
+			[
+				TypeCombinator::union(
+					TypeCombinator::intersect(
+						new ConstantArrayType(
+							[new ConstantIntegerType(1), new ConstantIntegerType(2)],
+							[new IntegerType(), new StringType()],
+							2,
+							[0, 1],
+						),
+						new NonEmptyArrayType(),
+					),
+					new ConstantArrayType(
+						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+						[new ObjectType(Foo::class), new ObjectType(stdClass::class)],
+						2,
+					),
+				),
+				[
+					'array{1?: int, 2?: string}',
+					'array{RecursionCallable\Foo, stdClass}',
+				],
+			],
+			[
+				TypeCombinator::union(
+					new ArrayType(new IntegerType(), new StringType()),
+					new ConstantArrayType(
+						[new ConstantIntegerType(1), new ConstantIntegerType(2)],
+						[new IntegerType(), new StringType()],
+						2,
+						[0, 1],
+					),
+					new ConstantArrayType(
+						[new ConstantIntegerType(0), new ConstantIntegerType(1)],
+						[new ObjectType(Foo::class), new ObjectType(stdClass::class)],
+						2,
+					),
+				),
+				[
+					'array<int, int|RecursionCallable\Foo|stdClass|string>',
+				],
+			],
+		];
+	}
+
 }

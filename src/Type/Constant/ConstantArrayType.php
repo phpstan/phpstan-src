@@ -145,6 +145,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		return $this->optionalKeys;
 	}
 
+	public function getArrays(): array
+	{
+		return $this->getAllArrays();
+	}
+
 	/**
 	 * @return self[]
 	 */

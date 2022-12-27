@@ -120,7 +120,7 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 			if ($node instanceof Node\Stmt\Namespace_) {
 				$isNamespaced = true;
 			}
-			if ($node instanceof Node\Stmt\Class_ && $node->name !== null || $node instanceof Node\Stmt\Function_) {
+			if ($node instanceof Node\Stmt\Class_ && $node->name !== null || $node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\Trait_) {
 				$requiresNamespace = true;
 			}
 

@@ -82,7 +82,10 @@ class Foo
 		assertType('9', $return);
 
 		$return = filter_var(1.0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 9]]);
-		assertType('int<1, 9>|false', $return);
+		assertType('1', $return);
+
+		$return = filter_var(11.0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 9]]);
+		assertType('false', $return);
 
 		$return = filter_var($str, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => $positive_int]]);
 		assertType('int<1, max>|false', $return);

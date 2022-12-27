@@ -665,6 +665,35 @@ class MixedTypeTest extends PHPStanTestCase
 		];
 	}
 
+	/** @dataProvider dataSubtractedIsScalar */
+	public function testSubtractedIsScalar(MixedType $mixedType, Type $typeToSubtract, TrinaryLogic $expectedResult): void
+	{
+		$subtracted = $mixedType->subtract($typeToSubtract);
+		$actualResult = $subtracted->isScalar();
+
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isScalar()', $subtracted->describe(VerbosityLevel::precise())),
+		);
+	}
+
+	public function dataSubtractedIsScalar(): array
+	{
+		return [
+			[
+				new MixedType(),
+				new UnionType([new BooleanType(), new FloatType(), new IntegerType(), new StringType()]),
+				TrinaryLogic::createNo(),
+			],
+			[
+				new MixedType(),
+				new StringType(),
+				TrinaryLogic::createMaybe(),
+			],
+		];
+	}
+
 	/**
 	 * @dataProvider dataSubstractedIsLiteralString
 	 */

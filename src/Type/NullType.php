@@ -247,6 +247,11 @@ class NullType implements ConstantScalarType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isScalar(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function getSmallerType(): Type
 	{
 		return new NeverType();

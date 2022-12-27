@@ -171,6 +171,8 @@ interface Type
 
 	public function isVoid(): TrinaryLogic;
 
+	public function isScalar(): TrinaryLogic;
+
 	public function getSmallerType(): Type;
 
 	public function getSmallerOrEqualType(): Type;

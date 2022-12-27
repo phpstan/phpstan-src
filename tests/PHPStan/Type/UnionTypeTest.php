@@ -643,6 +643,69 @@ class UnionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function dataIsScalar(): array
+	{
+		return [
+			[
+				TypeCombinator::union(
+					new BooleanType(),
+					new IntegerType(),
+					new FloatType(),
+					new StringType(),
+				),
+				TrinaryLogic::createYes(),
+			],
+			[
+				new UnionType([
+					new BooleanType(),
+					new ObjectType(DateTimeImmutable::class),
+				]),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new UnionType([
+					new IntegerType(),
+					new NullType(),
+				]),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new UnionType([
+					new FloatType(),
+					new MixedType(),
+				]),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new UnionType([
+					new ArrayType(new IntegerType(), new StringType()),
+					new StringType(),
+				]),
+				TrinaryLogic::createMaybe(),
+			],
+			[
+				new UnionType([
+					new ArrayType(new IntegerType(), new StringType()),
+					new NullType(),
+					new ObjectType(DateTimeImmutable::class),
+					new ResourceType(),
+				]),
+				TrinaryLogic::createNo(),
+			],
+		];
+	}
+
+	/** @dataProvider dataIsScalar */
+	public function testIsScalar(UnionType $type, TrinaryLogic $expectedResult): void
+	{
+		$actualResult = $type->isScalar();
+		$this->assertSame(
+			$expectedResult->describe(),
+			$actualResult->describe(),
+			sprintf('%s -> isScalar()', $type->describe(VerbosityLevel::precise())),
+		);
+	}
+
 	public function dataDescribe(): array
 	{
 		return [

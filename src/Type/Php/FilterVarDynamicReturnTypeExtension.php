@@ -152,7 +152,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$filterValue = $filterType->getValue();
 		}
 
-		$flagsType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
+		$flagsType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : new ConstantIntegerType(0);
 		$inputType = $scope->getType($functionCall->getArgs()[0]->value);
 		$defaultType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsType)
 			? new NullType()
@@ -160,7 +160,8 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType, $flagsType);
 		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 
-		$options = $flagsType !== null && $this->hasOptions($flagsType)->yes() ? $this->getOptions($flagsType, $filterValue) : [];
+		$hasOptions = $this->hasOptions($flagsType);
+		$options = $hasOptions->yes() ? $this->getOptions($flagsType, $filterValue) : [];
 		$otherTypes = $this->getOtherTypes($flagsType, $options, $defaultType);
 
 		if ($inputType->isNonEmptyString()->yes()
@@ -185,7 +186,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			}
 		}
 
-		if ($exactType !== null) {
+		if ($exactType !== null && !$hasOptions->maybe()) {
 			unset($otherTypes['default']);
 		}
 
@@ -273,7 +274,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	private function hasOptions(Type $flagsType): TrinaryLogic
 	{
-		return $flagsType->isConstantArray()
+		return $flagsType->isArray()
 			->and($flagsType->hasOffsetValueType(new ConstantStringType('options')));
 	}
 

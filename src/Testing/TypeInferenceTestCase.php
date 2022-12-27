@@ -112,8 +112,18 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 	 */
 	public function gatherAssertTypes(string $file): array
 	{
+		$isNamespaced = false;
+		$requiresNamespace = false;
+
 		$asserts = [];
-		$this->processFile($file, function (Node $node, Scope $scope) use (&$asserts, $file): void {
+		$this->processFile($file, function (Node $node, Scope $scope) use (&$asserts, $file, &$isNamespaced, &$requiresNamespace): void {
+			if ($node instanceof Node\Stmt\Namespace_) {
+				$isNamespaced = true;
+			}
+			if ($node instanceof Node\Stmt\Class_ && $node->name !== null || $node instanceof Node\Stmt\Function_) {
+				$requiresNamespace = true;
+			}
+
 			if (!$node instanceof Node\Expr\FuncCall) {
 				return;
 			}
@@ -179,6 +189,10 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 
 		if (count($asserts) === 0) {
 			$this->fail(sprintf('File %s does not contain any asserts', $file));
+		}
+
+		if ($requiresNamespace === true && $isNamespaced === false) {
+			$this->fail(sprintf('File %s does not contain a namespace declaration', $file));
 		}
 
 		return $asserts;

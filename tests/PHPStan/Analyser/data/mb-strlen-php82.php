@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+namespace MbStrlenPhp82;
 
 use function PHPStan\Testing\assertType;
 
-class MbStrlenPhp8
+class MbStrlenPhp82
 {
 
 	/**

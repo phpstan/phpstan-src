@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+namespace bug1014;
+
 use function PHPStan\Testing\assertType;
 
 function bug1014(): void {

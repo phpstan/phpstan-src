@@ -1,5 +1,7 @@
 <?php
 
+namespace PregSplit;
+
 use function PHPStan\Testing\assertType;
 
 class HelloWorld

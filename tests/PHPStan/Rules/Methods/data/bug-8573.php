@@ -1,5 +1,7 @@
 <?php declare(strict_types = 1);
 
+namespace Bug8573;
+
 class A
 {
 	final public function __construct() { }

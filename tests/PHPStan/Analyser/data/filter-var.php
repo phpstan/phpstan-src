@@ -20,6 +20,7 @@ class FilterVar
 	{
 		assertType('int', filter_var($int, FILTER_VALIDATE_INT));
 		assertType('int|false', filter_var($int, FILTER_VALIDATE_INT, $options));
+		assertType('int<0, max>|false', filter_var($int, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]));
 	}
 
 	public function constants(): void

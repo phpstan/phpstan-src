@@ -186,7 +186,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			}
 		}
 
-		if ($exactType !== null && !$hasOptions->maybe()) {
+		if ($exactType !== null && !$hasOptions->maybe() && ($inputType->equals($type) || !$inputType->isSuperTypeOf($type)->yes())) {
 			unset($otherTypes['default']);
 		}
 

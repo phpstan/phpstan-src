@@ -7,12 +7,11 @@ use DateTimeImmutable;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 
@@ -24,25 +23,29 @@ class DateTimeDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 		return in_array($functionReflection->getName(), ['date_create_from_format', 'date_create_immutable_from_format'], true);
 	}
 
-	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
+	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		$defaultReturnType = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType();
-
 		if (count($functionCall->getArgs()) < 2) {
-			return $defaultReturnType;
+			return null;
 		}
 
-		$format = $scope->getType($functionCall->getArgs()[0]->value);
-		$datetime = $scope->getType($functionCall->getArgs()[1]->value);
+		$formats = $scope->getType($functionCall->getArgs()[0]->value)->getConstantStrings();
+		$datetimes = $scope->getType($functionCall->getArgs()[1]->value)->getConstantStrings();
 
-		if (!$format instanceof ConstantStringType || !$datetime instanceof ConstantStringType) {
-			return $defaultReturnType;
+		if (count($formats) === 0 || count($datetimes) === 0) {
+			return null;
 		}
 
-		$isValid = (DateTime::createFromFormat($format->getValue(), $datetime->getValue()) !== false);
-
+		$types = [];
 		$className = $functionReflection->getName() === 'date_create_from_format' ? DateTime::class : DateTimeImmutable::class;
-		return $isValid ? new ObjectType($className) : new ConstantBooleanType(false);
+		foreach ($formats as $formatConstantString) {
+			foreach ($datetimes as $datetimeConstantString) {
+				$isValid = (DateTime::createFromFormat($formatConstantString->getValue(), $datetimeConstantString->getValue()) !== false);
+				$types[] = $isValid ? new ObjectType($className) : new ConstantBooleanType(false);
+			}
+		}
+
+		return TypeCombinator::union(...$types);
 	}
 
 }

@@ -113,6 +113,11 @@ class BooleanType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	public function isScalar(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		if ($typeToRemove instanceof ConstantBooleanType) {

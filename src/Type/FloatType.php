@@ -191,6 +191,11 @@ class FloatType implements Type
 		return TrinaryLogic::createNo();
 	}
 
+	public function isScalar(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

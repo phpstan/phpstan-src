@@ -169,6 +169,11 @@ class VoidType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	public function isScalar(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

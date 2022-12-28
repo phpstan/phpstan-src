@@ -380,6 +380,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isVoid();
 	}
 
+	public function isScalar(): TrinaryLogic
+	{
+		return $this->resolve()->isScalar();
+	}
+
 	public function getSmallerType(): Type
 	{
 		return $this->resolve()->getSmallerType();

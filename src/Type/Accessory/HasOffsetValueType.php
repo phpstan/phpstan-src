@@ -290,6 +290,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isScalar(): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();

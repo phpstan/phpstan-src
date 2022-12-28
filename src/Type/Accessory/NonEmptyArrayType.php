@@ -307,6 +307,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return TrinaryLogic::createNo();
 	}
 
+	public function isScalar(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function toNumber(): Type
 	{
 		return new ErrorType();

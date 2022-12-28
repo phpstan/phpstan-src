@@ -134,6 +134,11 @@ class NonexistentParentClassType implements Type
 		return new ErrorType();
 	}
 
+	public function isScalar(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

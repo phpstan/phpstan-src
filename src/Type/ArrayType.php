@@ -327,6 +327,11 @@ class ArrayType implements Type
 		return TrinaryLogic::createNo();
 	}
 
+	public function isScalar(): TrinaryLogic
+	{
+		return TrinaryLogic::createNo();
+	}
+
 	public function isOffsetAccessible(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

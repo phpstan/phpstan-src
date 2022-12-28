@@ -526,6 +526,11 @@ class UnionType implements CompoundType
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isVoid());
 	}
 
+	public function isScalar(): TrinaryLogic
+	{
+		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isScalar());
+	}
+
 	public function isOffsetAccessible(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isOffsetAccessible());

@@ -209,6 +209,11 @@ class StringType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function isScalar(): TrinaryLogic
+	{
+		return TrinaryLogic::createYes();
+	}
+
 	public function hasMethod(string $methodName): TrinaryLogic
 	{
 		if ($this->isClassStringType()->yes()) {

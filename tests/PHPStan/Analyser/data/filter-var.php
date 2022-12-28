@@ -78,9 +78,9 @@ class FilterVar
 		assertType('numeric-string', filter_var($int));
 		assertType('numeric-string', filter_var($intRange));
 		assertType("'17'", filter_var(17));
-		assertType('string|false', filter_var($string));
-		assertType('non-empty-string|false', filter_var($nonEmptyString)); // could be non-empty-string
-		assertType('non-falsy-string|false', filter_var('17')); // could be '17'
+		assertType('string', filter_var($string));
+		assertType('non-empty-string', filter_var($nonEmptyString));
+		assertType("'17'", filter_var('17'));
 		assertType("''", filter_var(null));
 	}
 

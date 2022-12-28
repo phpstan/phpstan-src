@@ -16,7 +16,7 @@ class Foo
 		assertType('non-empty-string', $str);
 
 		$return = filter_var($str, FILTER_DEFAULT);
-		assertType('non-empty-string|false', $return);
+		assertType('non-empty-string', $return);
 
 		$return = filter_var($str, FILTER_DEFAULT, FILTER_FLAG_STRIP_LOW);
 		assertType('string|false', $return);
@@ -98,7 +98,7 @@ class Foo
 
 		$str2 = '';
 		$return = filter_var($str2, FILTER_DEFAULT);
-		assertType('string|false', $return);
+		assertType("''", $return);
 
 		$return = filter_var($str2, FILTER_VALIDATE_URL);
 		assertType('string|false', $return);

@@ -248,6 +248,10 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
+			if (!$this->canStringBeSanitized($filterValue, $flagsType) && $in->isString()->yes()) {
+				return $in;
+			}
+
 			if ($in->isBoolean()->yes() || $in->isFloat()->yes() || $in->isInteger()->yes() || $in->isNull()->yes()) {
 				return $in->toString();
 			}

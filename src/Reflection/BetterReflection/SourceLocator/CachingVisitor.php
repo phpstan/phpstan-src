@@ -45,7 +45,6 @@ class CachingVisitor extends NodeVisitorAbstract
 				$this->classNodes[strtolower($fullClassName)][] = new FetchedNode(
 					$node,
 					$this->currentNamespaceNode,
-					$this->fileName,
 					new LocatedSource($this->contents, $fullClassName, $this->fileName),
 				);
 			}
@@ -59,7 +58,6 @@ class CachingVisitor extends NodeVisitorAbstract
 				$this->functionNodes[strtolower($functionName)][] = new FetchedNode(
 					$node,
 					$this->currentNamespaceNode,
-					$this->fileName,
 					new LocatedSource($this->contents, $functionName, $this->fileName),
 				);
 			}
@@ -76,7 +74,6 @@ class CachingVisitor extends NodeVisitorAbstract
 				$this->constantNodes[ConstantNameHelper::normalize($const->namespacedName->toString())][] = new FetchedNode(
 					$node,
 					$this->currentNamespaceNode,
-					$this->fileName,
 					new LocatedSource($this->contents, null, $this->fileName),
 				);
 			}
@@ -98,7 +95,6 @@ class CachingVisitor extends NodeVisitorAbstract
 			$constantNode = new FetchedNode(
 				$node,
 				$this->currentNamespaceNode,
-				$this->fileName,
 				new LocatedSource($this->contents, $constantName, $this->fileName),
 			);
 			$this->constantNodes[ConstantNameHelper::normalize($constantName)][] = $constantNode;

@@ -203,40 +203,54 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	private function determineExactType(Type $in, int $filterValue, Type $defaultType, ?Type $flagsType): ?Type
 	{
-		if (($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN') && $in->isBoolean()->yes())
-			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in->isInteger()->yes())
-			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in->isFloat()->yes())) {
-			return $in;
+		if ($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN')) {
+			if ($in->isBoolean()->yes()) {
+				return $in;
+			}
 		}
 
-		if ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in instanceof ConstantStringType) {
-			$value = $in->getValue();
-			$allowOctal = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_OCTAL'), $flagsType);
-			$allowHex = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_HEX'), $flagsType);
-
-			if ($allowOctal && preg_match('/\A0[oO][0-7]+\z/', $value) === 1) {
-				$octalValue = octdec($value);
-				return is_int($octalValue) ? new ConstantIntegerType($octalValue) : $defaultType;
+		if ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT')) {
+			if ($in->isFloat()->yes()) {
+				return $in;
 			}
 
-			if ($allowHex && preg_match('/\A0[xX][0-9A-Fa-f]+\z/', $value) === 1) {
-				$hexValue = hexdec($value);
-				return is_int($hexValue) ? new ConstantIntegerType($hexValue) : $defaultType;
+			if ($in->isInteger()->yes()) {
+				return $in->toFloat();
+			}
+		}
+
+		if ($filterValue === $this->getConstant('FILTER_VALIDATE_INT')) {
+			if ($in->isFloat()->yes()) {
+				return $in->toInteger();
 			}
 
-			return preg_match('/\A[+-]?(?:0|[1-9][0-9]*)\z/', $value) === 1 ? $in->toInteger() : $defaultType;
+			if ($in->isInteger()->yes()) {
+				return $in;
+			}
+
+			if ($in instanceof ConstantStringType) {
+				$value = $in->getValue();
+				$allowOctal = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_OCTAL'), $flagsType);
+				$allowHex = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_HEX'), $flagsType);
+
+				if ($allowOctal && preg_match('/\A0[oO][0-7]+\z/', $value) === 1) {
+					$octalValue = octdec($value);
+					return is_int($octalValue) ? new ConstantIntegerType($octalValue) : $defaultType;
+				}
+
+				if ($allowHex && preg_match('/\A0[xX][0-9A-Fa-f]+\z/', $value) === 1) {
+					$hexValue = hexdec($value);
+					return is_int($hexValue) ? new ConstantIntegerType($hexValue) : $defaultType;
+				}
+
+				return preg_match('/\A[+-]?(?:0|[1-9][0-9]*)\z/', $value) === 1 ? $in->toInteger() : $defaultType;
+			}
 		}
 
-		if ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in->isInteger()->yes()) {
-			return $in->toFloat();
-		}
-
-		if ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in->isFloat()->yes()) {
-			return $in->toInteger();
-		}
-
-		if ($filterValue === $this->getConstant('FILTER_DEFAULT') && ($in->isBoolean()->yes() || $in->isFloat()->yes() || $in->isInteger()->yes() || $in->isNull()->yes())) {
-			return $in->toString();
+		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
+			if ($in->isBoolean()->yes() || $in->isFloat()->yes() || $in->isInteger()->yes() || $in->isNull()->yes()) {
+				return $in->toString();
+			}
 		}
 
 		return null;

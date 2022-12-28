@@ -394,7 +394,7 @@ class CallableType implements CompoundType, ParametersAcceptor
 
 	public function isScalar(): TrinaryLogic
 	{
-		return TrinaryLogic::createNo();
+		return TrinaryLogic::createMaybe();
 	}
 
 	public function isCommonCallable(): bool

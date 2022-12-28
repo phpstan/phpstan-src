@@ -2,6 +2,7 @@
 
 namespace FilterVar;
 
+use stdClass;
 use function PHPStan\Testing\assertType;
 
 class FilterVar
@@ -16,6 +17,15 @@ class FilterVar
 		assertType('0|int<17, 19>', filter_var($mixed, FILTER_VALIDATE_INT, ['options' => ['default' => 0, 'min_range' => 17, 'max_range' => 19]]));
 
 		assertType('array<false>', filter_var(false, FILTER_VALIDATE_BOOLEAN, FILTER_FORCE_ARRAY | FILTER_NULL_ON_FAILURE));
+	}
+
+	/** @param resource $resource */
+	public function invalidInput(array $arr, object $object, $resource): void
+	{
+		assertType('false', filter_var($arr));
+		assertType('false', filter_var($object));
+		assertType('false', filter_var($resource));
+		assertType('null', filter_var(new stdClass(), FILTER_DEFAULT, FILTER_NULL_ON_FAILURE));
 	}
 
 	public function intToInt(int $int, array $options): void

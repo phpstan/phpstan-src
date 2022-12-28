@@ -17,7 +17,6 @@ class FetchedNode
 	public function __construct(
 		private Node $node,
 		private ?Node\Stmt\Namespace_ $namespace,
-		private string $fileName,
 		private LocatedSource $locatedSource,
 	)
 	{
@@ -34,11 +33,6 @@ class FetchedNode
 	public function getNamespace(): ?Node\Stmt\Namespace_
 	{
 		return $this->namespace;
-	}
-
-	public function getFileName(): string
-	{
-		return $this->fileName;
 	}
 
 	public function getLocatedSource(): LocatedSource

@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\ShouldNotHappenException;
+use function is_dir;
 use function is_file;
 use function stat;
 use function stream_resolve_include_path;
@@ -257,6 +258,16 @@ final class FileReadTrapStreamWrapper
 	public function stream_set_option($option, $arg1, $arg2): bool
 	{
 		return false;
+	}
+
+	public function dir_opendir(string $path, int $options): bool
+	{
+		return is_dir($path);
+	}
+
+	public function dir_readdir(): string
+	{
+		return '';
 	}
 
 }

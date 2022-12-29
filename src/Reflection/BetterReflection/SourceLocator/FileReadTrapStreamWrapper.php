@@ -27,6 +27,7 @@ use const STREAM_URL_STAT_QUIET;
  */
 final class FileReadTrapStreamWrapper
 {
+
 	/** @var resource|null */
 	public $context;
 

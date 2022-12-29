@@ -4078,7 +4078,7 @@ class MutatingScope implements Scope
 				$prevVariableType = $prevScope->getVariableType($variableName);
 				if (!$variableType->equals($prevVariableType)) {
 					$variableType = TypeCombinator::union($variableType, $prevVariableType);
-					$variableType = self::generalizeType($variableType, $prevVariableType);
+					$variableType = self::generalizeType($variableType, $prevVariableType, 0);
 				}
 			}
 
@@ -4200,7 +4200,7 @@ class MutatingScope implements Scope
 
 			$variableTypeHolders[$variableExprString] = new ExpressionTypeHolder(
 				$variableTypeHolder->getExpr(),
-				self::generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType()),
+				self::generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType(), 0),
 				$variableTypeHolder->getCertainty(),
 			);
 		}
@@ -4208,7 +4208,7 @@ class MutatingScope implements Scope
 		return $variableTypeHolders;
 	}
 
-	private static function generalizeType(Type $a, Type $b): Type
+	private static function generalizeType(Type $a, Type $b, int $depth): Type
 	{
 		if ($a->equals($b)) {
 			return $a;
@@ -4301,6 +4301,7 @@ class MutatingScope implements Scope
 							self::generalizeType(
 								$constantArraysA->getOffsetValueType($keyType),
 								$constantArraysB->getOffsetValueType($keyType),
+								$depth + 1,
 							),
 							!$constantArraysA->hasOffsetValueType($keyType)->and($constantArraysB->hasOffsetValueType($keyType))->negate()->no(),
 						);
@@ -4309,8 +4310,8 @@ class MutatingScope implements Scope
 					$resultTypes[] = $resultArrayBuilder->getArray();
 				} else {
 					$resultType = new ArrayType(
-						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType())),
-						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType())),
+						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType(), $depth + 1)),
+						TypeCombinator::union(self::generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType(), $depth + 1)),
 					);
 					if ($constantArraysA->isIterableAtLeastOnce()->yes() && $constantArraysB->isIterableAtLeastOnce()->yes()) {
 						$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
@@ -4334,16 +4335,14 @@ class MutatingScope implements Scope
 
 				$aValueType = $generalArraysA->getIterableValueType();
 				$bValueType = $generalArraysB->getIterableValueType();
-				$aArrays = $aValueType->getArrays();
-				$bArrays = $bValueType->getArrays();
 				if (
-					count($aArrays) === 1
-					&& $aArrays[0]->isConstantArray()->no()
-					&& count($bArrays) === 1
-					&& $bArrays[0]->isConstantArray()->no()
+					$aValueType->isArray()->yes()
+					&& $aValueType->isConstantArray()->no()
+					&& $bValueType->isArray()->yes()
+					&& $bValueType->isConstantArray()->no()
 				) {
-					$aDepth = self::getArrayDepth($aArrays[0]);
-					$bDepth = self::getArrayDepth($bArrays[0]);
+					$aDepth = self::getArrayDepth($aValueType) + $depth;
+					$bDepth = self::getArrayDepth($bValueType) + $depth;
 					if (
 						($aDepth > 2 || $bDepth > 2)
 						&& abs($aDepth - $bDepth) > 0
@@ -4354,8 +4353,8 @@ class MutatingScope implements Scope
 				}
 
 				$resultType = new ArrayType(
-					TypeCombinator::union(self::generalizeType($generalArraysA->getIterableKeyType(), $generalArraysB->getIterableKeyType())),
-					TypeCombinator::union(self::generalizeType($aValueType, $bValueType)),
+					TypeCombinator::union(self::generalizeType($generalArraysA->getIterableKeyType(), $generalArraysB->getIterableKeyType(), $depth + 1)),
+					TypeCombinator::union(self::generalizeType($aValueType, $bValueType, $depth + 1)),
 				);
 				if ($generalArraysA->isIterableAtLeastOnce()->yes() && $generalArraysB->isIterableAtLeastOnce()->yes()) {
 					$resultType = TypeCombinator::intersect($resultType, new NonEmptyArrayType());
@@ -4514,17 +4513,14 @@ class MutatingScope implements Scope
 		);
 	}
 
-	private static function getArrayDepth(ArrayType $type): int
+	private static function getArrayDepth(Type $type): int
 	{
 		$depth = 0;
-		while ($type instanceof ArrayType) {
+		$arrays = TypeUtils::getAnyArrays($type);
+		while (count($arrays) > 0) {
 			$temp = $type->getIterableValueType();
-			$arrays = $temp->getArrays();
-			if (count($arrays) === 1) {
-				$type = $arrays[0];
-			} else {
-				$type = $temp;
-			}
+			$type = $temp;
+			$arrays = TypeUtils::getAnyArrays($type);
 			$depth++;
 		}
 

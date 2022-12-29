@@ -116,11 +116,12 @@ class UnionType implements CompoundType
 	{
 		$arrays = [];
 		foreach ($this->types as $type) {
-			if (!$type instanceof ArrayType) {
+			$innerTypeArrays = $type->getArrays();
+			if ($innerTypeArrays === []) {
 				return [];
 			}
 
-			foreach ($type->getArrays() as $array) {
+			foreach ($innerTypeArrays as $array) {
 				$arrays[] = $array;
 			}
 		}

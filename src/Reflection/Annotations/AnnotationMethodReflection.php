@@ -11,6 +11,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
+use function strtolower;
 
 class AnnotationMethodReflection implements ExtendedMethodReflection
 {
@@ -109,6 +110,13 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
+		if (
+			strtolower($this->getName()) !== '__construct'
+			&& $this->returnType->isVoid()->yes()
+		) {
+			return TrinaryLogic::createYes();
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 

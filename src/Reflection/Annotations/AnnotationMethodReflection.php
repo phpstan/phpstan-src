@@ -109,6 +109,10 @@ class AnnotationMethodReflection implements ExtendedMethodReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
+		if ($this->returnType->isVoid()->yes()) {
+			return TrinaryLogic::createYes();
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 

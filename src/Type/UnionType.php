@@ -102,22 +102,67 @@ class UnionType implements CompoundType
 	 */
 	public function getReferencedClasses(): array
 	{
-		return UnionTypeHelper::getReferencedClasses($this->getTypes());
+		$classes = [];
+		foreach ($this->types as $type) {
+			foreach ($type->getReferencedClasses() as $className) {
+				$classes[] = $className;
+			}
+		}
+
+		return $classes;
 	}
 
 	public function getArrays(): array
 	{
-		return UnionTypeHelper::getArrays($this->getTypes());
+		$arrays = [];
+		foreach ($this->types as $type) {
+			$innerTypeArrays = $type->getArrays();
+			if ($innerTypeArrays === []) {
+				return [];
+			}
+
+			foreach ($innerTypeArrays as $array) {
+				$arrays[] = $array;
+			}
+		}
+
+		return $arrays;
 	}
 
 	public function getConstantArrays(): array
 	{
-		return UnionTypeHelper::getConstantArrays($this->getTypes());
+		$constantArrays = [];
+		foreach ($this->types as $type) {
+			$typeAsConstantArrays = $type->getConstantArrays();
+
+			if ($typeAsConstantArrays === []) {
+				return [];
+			}
+
+			foreach ($typeAsConstantArrays as $constantArray) {
+				$constantArrays[] = $constantArray;
+			}
+		}
+
+		return $constantArrays;
 	}
 
 	public function getConstantStrings(): array
 	{
-		return UnionTypeHelper::getConstantStrings($this->getTypes());
+		$strings = [];
+		foreach ($this->types as $type) {
+			$constantStrings = $type->getConstantStrings();
+
+			if ($constantStrings === []) {
+				return [];
+			}
+
+			foreach ($constantStrings as $string) {
+				$strings[] = $string;
+			}
+		}
+
+		return $strings;
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic

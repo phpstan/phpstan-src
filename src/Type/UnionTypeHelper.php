@@ -3,12 +3,10 @@
 namespace PHPStan\Type;
 
 use PHPStan\Type\Accessory\AccessoryType;
-use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use function array_merge;
 use function count;
 use function strcasecmp;
 use function usort;
@@ -16,62 +14,6 @@ use const PHP_INT_MIN;
 
 class UnionTypeHelper
 {
-
-	/**
-	 * @param Type[] $types
-	 * @return string[]
-	 */
-	public static function getReferencedClasses(array $types): array
-	{
-		$referencedClasses = [];
-		foreach ($types as $type) {
-			$referencedClasses[] = $type->getReferencedClasses();
-		}
-
-		return array_merge(...$referencedClasses);
-	}
-
-	/**
-	 * @param Type[] $types
-	 * @return list<ArrayType>
-	 */
-	public static function getArrays(array $types): array
-	{
-		$arrays = [];
-		foreach ($types as $type) {
-			$arrays[] = $type->getArrays();
-		}
-
-		return array_merge(...$arrays);
-	}
-
-	/**
-	 * @param Type[] $types
-	 * @return list<ConstantArrayType>
-	 */
-	public static function getConstantArrays(array $types): array
-	{
-		$constantArrays = [];
-		foreach ($types as $type) {
-			$constantArrays[] = $type->getConstantArrays();
-		}
-
-		return array_merge(...$constantArrays);
-	}
-
-	/**
-	 * @param Type[] $types
-	 * @return list<ConstantStringType>
-	 */
-	public static function getConstantStrings(array $types): array
-	{
-		$strings = [];
-		foreach ($types as $type) {
-			$strings[] = $type->getConstantStrings();
-		}
-
-		return array_merge(...$strings);
-	}
 
 	/**
 	 * @param Type[] $types

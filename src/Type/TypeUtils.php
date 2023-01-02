@@ -218,7 +218,9 @@ class TypeUtils
 		if ($type instanceof UnionType) {
 			$matchingTypes = [];
 			foreach ($type->getTypes() as $innerType) {
-				if (!$innerType instanceof $typeClass) {
+				$matchingInner = self::map($typeClass, $innerType, $inspectIntersections, $stopOnUnmatched);
+
+				if ($matchingInner === []) {
 					if ($stopOnUnmatched) {
 						return [];
 					}
@@ -226,7 +228,9 @@ class TypeUtils
 					continue;
 				}
 
-				$matchingTypes[] = $innerType;
+				foreach ($matchingInner as $innerMapped) {
+					$matchingTypes[] = $innerMapped;
+				}
 			}
 
 			return $matchingTypes;

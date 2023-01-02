@@ -17,6 +17,14 @@ parameters:
 
 		-
 			message: """
+				#^Call to deprecated method getAnyArrays\\(\\) of class PHPStan\\\\Type\\\\TypeUtils\\:
+				Use PHPStan\\\\Type\\\\Type\\:\\:getArrays\\(\\) instead\\.$#
+			"""
+			count: 2
+			path: src/Analyser/MutatingScope.php
+
+		-
+			message: """
 				#^Call to deprecated method getTypeFromValue\\(\\) of class PHPStan\\\\Type\\\\ConstantTypeHelper\\:
 				Use PHPStan\\\\Reflection\\\\InitializerExprTypeResolver$#
 			"""

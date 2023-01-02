@@ -93,27 +93,52 @@ class IntersectionType implements CompoundType
 		return $types;
 	}
 
-	/**
-	 * @return string[]
-	 */
 	public function getReferencedClasses(): array
 	{
-		return UnionTypeHelper::getReferencedClasses($this->types);
+		$classes = [];
+		foreach ($this->types as $type) {
+			foreach ($type->getReferencedClasses() as $className) {
+				$classes[] = $className;
+			}
+		}
+
+		return $classes;
 	}
 
 	public function getArrays(): array
 	{
-		return UnionTypeHelper::getArrays($this->getTypes());
+		$arrays = [];
+		foreach ($this->types as $type) {
+			foreach ($type->getArrays() as $array) {
+				$arrays[] = $array;
+			}
+		}
+
+		return $arrays;
 	}
 
 	public function getConstantArrays(): array
 	{
-		return UnionTypeHelper::getConstantArrays($this->getTypes());
+		$constantArrays = [];
+		foreach ($this->types as $type) {
+			foreach ($type->getConstantArrays() as $constantArray) {
+				$constantArrays[] = $constantArray;
+			}
+		}
+
+		return $constantArrays;
 	}
 
 	public function getConstantStrings(): array
 	{
-		return UnionTypeHelper::getConstantStrings($this->getTypes());
+		$strings = [];
+		foreach ($this->types as $type) {
+			foreach ($type->getConstantStrings() as $string) {
+				$strings[] = $string;
+			}
+		}
+
+		return $strings;
 	}
 
 	public function accepts(Type $otherType, bool $strictTypes): TrinaryLogic

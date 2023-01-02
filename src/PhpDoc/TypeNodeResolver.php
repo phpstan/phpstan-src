@@ -189,6 +189,7 @@ class TypeNodeResolver
 				return IntegerRangeType::fromInterval(0, null);
 
 			case 'string':
+			case 'lowercase-string':
 				return new StringType();
 
 			case 'literal-string':
@@ -246,6 +247,7 @@ class TypeNodeResolver
 				]);
 
 			case 'non-empty-string':
+			case 'non-empty-lowercase-string':
 				return new IntersectionType([
 					new StringType(),
 					new AccessoryNonEmptyStringType(),

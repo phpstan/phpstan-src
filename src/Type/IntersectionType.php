@@ -576,7 +576,12 @@ class IntersectionType implements CompoundType
 
 	public function getOffsetValueType(Type $offsetType): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->getOffsetValueType($offsetType));
+		$result = $this->intersectTypes(static fn (Type $type): Type => $type->getOffsetValueType($offsetType));
+		if ($this->isOversizedArray()->yes()) {
+			return TypeUtils::toBenevolentUnion($result);
+		}
+
+		return $result;
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type

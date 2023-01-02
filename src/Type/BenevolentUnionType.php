@@ -43,6 +43,25 @@ class BenevolentUnionType extends UnionType
 		return TypeUtils::toBenevolentUnion(TypeCombinator::union(...$resultTypes));
 	}
 
+	public function getOffsetValueType(Type $offsetType): Type
+	{
+		$types = [];
+		foreach ($this->getTypes() as $innerType) {
+			$valueType = $innerType->getOffsetValueType($offsetType);
+			if ($valueType instanceof ErrorType) {
+				continue;
+			}
+
+			$types[] = $valueType;
+		}
+
+		if (count($types) === 0) {
+			return new ErrorType();
+		}
+
+		return TypeUtils::toBenevolentUnion(TypeCombinator::union(...$types));
+	}
+
 	protected function unionResults(callable $getResult): TrinaryLogic
 	{
 		return TrinaryLogic::createNo()->lazyOr($this->getTypes(), $getResult);

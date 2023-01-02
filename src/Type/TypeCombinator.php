@@ -676,7 +676,13 @@ class TypeCombinator
 							$keyTypes[$generalizedKeyType->describe(VerbosityLevel::precise())] = $generalizedKeyType;
 
 							$innerValueType = $type->getValueTypes()[$i];
-							$generalizedValueType = $traverse($innerValueType);
+							$generalizedValueType = TypeTraverser::map($innerValueType, static function (Type $type, callable $innerTraverse) use ($traverse): Type {
+								if ($type instanceof ArrayType) {
+									return TypeCombinator::intersect($type, new OversizedArrayType());
+								}
+
+								return $traverse($type);
+							});
 							$valueTypes[$generalizedValueType->describe(VerbosityLevel::precise())] = $generalizedValueType;
 						}
 

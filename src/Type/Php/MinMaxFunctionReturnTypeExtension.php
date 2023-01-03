@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Ternary;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -27,6 +28,12 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		'min' => '',
 		'max' => '',
 	];
+
+	public function __construct(
+		private PhpVersion $phpVersion,
+	)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -107,12 +114,12 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 			$resultTypes = [];
 			foreach ($constArrayTypes as $constArrayType) {
 				$isIterable = $constArrayType->isIterableAtLeastOnce();
-				if ($isIterable->no()) {
+				if ($isIterable->no() && !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 					$resultTypes[] = new ConstantBooleanType(false);
 					continue;
 				}
 				$argumentTypes = [];
-				if (!$isIterable->yes()) {
+				if (!$isIterable->yes() && !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 					$argumentTypes[] = new ConstantBooleanType(false);
 				}
 
@@ -127,12 +134,12 @@ class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExte
 		}
 
 		$isIterable = $argType->isIterableAtLeastOnce();
-		if ($isIterable->no()) {
+		if ($isIterable->no() && !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 			return new ConstantBooleanType(false);
 		}
 		$iterableValueType = $argType->getIterableValueType();
 		$argumentTypes = [];
-		if (!$isIterable->yes()) {
+		if (!$isIterable->yes() && !$this->phpVersion->throwsValueErrorForInternalFunctions()) {
 			$argumentTypes[] = new ConstantBooleanType(false);
 		}
 

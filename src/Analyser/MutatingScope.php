@@ -1092,7 +1092,7 @@ class MutatingScope implements Scope
 			foreach ($node->parts as $part) {
 				$partType = $part instanceof EncapsedStringPart
 					? new ConstantStringType($part->value)
-					: $this->getType($part);
+					: $this->getType($part)->toString();
 				if ($resultType === null) {
 					$resultType = $partType;
 

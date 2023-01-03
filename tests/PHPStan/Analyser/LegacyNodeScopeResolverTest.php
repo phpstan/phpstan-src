@@ -2916,7 +2916,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 				'"$fooString bar"',
 			],
 			[
-				'*ERROR*',
+				'non-falsy-string',
 				'"$std bar"',
 			],
 			[

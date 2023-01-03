@@ -3795,6 +3795,10 @@ class NodeScopeResolver
 				continue;
 			}
 
+			if ($expr->name === $variableName) {
+				continue;
+			}
+
 			if (!isset($conditionalExpressions[$exprString])) {
 				$conditionalExpressions[$exprString] = [];
 			}
@@ -3822,6 +3826,10 @@ class NodeScopeResolver
 				continue;
 			}
 			if (!is_string($expr->name)) {
+				continue;
+			}
+
+			if ($expr->name === $variableName) {
 				continue;
 			}
 

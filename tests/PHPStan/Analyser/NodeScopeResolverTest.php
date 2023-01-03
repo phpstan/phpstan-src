@@ -133,7 +133,13 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/../Reflection/data/staticReturnType.php');
 
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/minmax-arrays.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/minmax.php');
+		if (PHP_VERSION_ID < 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/minmax-arrays.php');
+		}
+		if (PHP_VERSION_ID >= 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/minmax-php8.php');
+		}
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/classPhpDocs.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/non-empty-array-key-type.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3133.php');
@@ -509,7 +515,12 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-5529.php');
 
-		yield from $this->gatherAssertTypes(__DIR__ . '/data/sizeof.php');
+		if (PHP_VERSION_ID >= 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/sizeof-php8.php');
+		}
+		if (PHP_VERSION_ID < 80000) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/sizeof.php');
+		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/div-by-zero.php');
 

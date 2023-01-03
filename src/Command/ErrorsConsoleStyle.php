@@ -119,7 +119,7 @@ class ErrorsConsoleStyle extends SymfonyStyle
 	{
 		$this->progressBar = parent::createProgressBar($max);
 
-		$format = $this->getProgressBarFormat();
+		$format = $this->getProgressBarFormat($max);
 		if ($format !== null) {
 			$this->progressBar->setFormat($format);
 		}
@@ -141,7 +141,7 @@ class ErrorsConsoleStyle extends SymfonyStyle
 		return $this->progressBar;
 	}
 
-	private function getProgressBarFormat(): ?string
+	private function getProgressBarFormat(int $max): ?string
 	{
 		switch ($this->getVerbosity()) {
 			case OutputInterface::VERBOSITY_NORMAL:
@@ -161,6 +161,10 @@ class ErrorsConsoleStyle extends SymfonyStyle
 
 		if ($formatName === null) {
 			return null;
+		}
+
+		if ($max === 0) {
+			$formatName .= '_nomax';
 		}
 
 		return ProgressBar::getFormatDefinition($formatName);

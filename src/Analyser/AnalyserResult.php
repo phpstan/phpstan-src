@@ -26,7 +26,7 @@ class AnalyserResult
 		private ?array $dependencies,
 		private array $exportedNodes,
 		private bool $reachedInternalErrorsCountLimit,
-		private int $estimatedPeakMemoryUsage,
+		private int $peakMemoryUsageBytes,
 	)
 	{
 		$this->unorderedErrors = $errors;
@@ -98,9 +98,9 @@ class AnalyserResult
 		return $this->reachedInternalErrorsCountLimit;
 	}
 
-	public function getEstimatedPeakMemoryUsage(): int
+	public function getPeakMemoryUsageBytes(): int
 	{
-		return $this->estimatedPeakMemoryUsage;
+		return $this->peakMemoryUsageBytes;
 	}
 
 }

@@ -30,7 +30,7 @@ class AnalysisResult
 		private bool $defaultLevelUsed,
 		private ?string $projectConfigFile,
 		private bool $savedResultCache,
-		private int $estimatedPeakMemoryUsage,
+		private int $peakMemoryUsageBytes,
 	)
 	{
 		usort(
@@ -124,9 +124,9 @@ class AnalysisResult
 		return $this->savedResultCache;
 	}
 
-	public function getEstimatedPeakMemoryUsage(): int
+	public function getPeakMemoryUsageBytes(): int
 	{
-		return $this->estimatedPeakMemoryUsage;
+		return $this->peakMemoryUsageBytes;
 	}
 
 }

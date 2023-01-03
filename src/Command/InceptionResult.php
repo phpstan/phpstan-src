@@ -3,6 +3,8 @@
 namespace PHPStan\Command;
 
 use PHPStan\DependencyInjection\Container;
+use PHPStan\Internal\BytesHelper;
+use function sprintf;
 
 class InceptionResult
 {
@@ -76,8 +78,12 @@ class InceptionResult
 		return $this->generateBaselineFile;
 	}
 
-	public function handleReturn(int $exitCode): int
+	public function handleReturn(int $exitCode, ?int $peakMemoryUsageBytes): int
 	{
+		if ($peakMemoryUsageBytes !== null && $this->getErrorOutput()->isVerbose()) {
+			$this->getErrorOutput()->writeLineFormatted(sprintf('Used memory: %s', BytesHelper::bytes($peakMemoryUsageBytes)));
+		}
+
 		return $exitCode;
 	}
 

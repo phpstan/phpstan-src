@@ -157,7 +157,7 @@ class AnalyseCommand extends Command
 
 		if ($generateBaselineFile === null && $allowEmptyBaseline) {
 			$inceptionResult->getStdOutput()->getStyle()->error('You must pass the --generate-baseline option alongside --allow-empty-baseline.');
-			return $inceptionResult->handleReturn(1);
+			return $inceptionResult->handleReturn(1, null);
 		}
 
 		$errorOutput = $inceptionResult->getErrorOutput();
@@ -200,13 +200,13 @@ class AnalyseCommand extends Command
 			$baselineExtension = pathinfo($generateBaselineFile, PATHINFO_EXTENSION);
 			if ($baselineExtension === '') {
 				$inceptionResult->getStdOutput()->getStyle()->error(sprintf('Baseline filename must have an extension, %s provided instead.', pathinfo($generateBaselineFile, PATHINFO_BASENAME)));
-				return $inceptionResult->handleReturn(1);
+				return $inceptionResult->handleReturn(1, null);
 			}
 
 			if ($baselineExtension !== 'neon') {
 				$inceptionResult->getStdOutput()->getStyle()->error(sprintf('Baseline filename extension must be .neon, .%s was used instead.', $baselineExtension));
 
-				return $inceptionResult->handleReturn(1);
+				return $inceptionResult->handleReturn(1, null);
 			}
 		}
 
@@ -267,7 +267,7 @@ class AnalyseCommand extends Command
 					$previous = $previous->getPrevious();
 				}
 
-				return $inceptionResult->handleReturn(1);
+				return $inceptionResult->handleReturn(1, null);
 			}
 
 			throw $t;
@@ -278,12 +278,12 @@ class AnalyseCommand extends Command
 				$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
 				$inceptionResult->getStdOutput()->writeLineFormatted('To allow generating empty baselines, pass <fg=cyan>--allow-empty-baseline</> option.');
 
-				return $inceptionResult->handleReturn(1);
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 			}
 			if ($analysisResult->hasInternalErrors()) {
 				$inceptionResult->getStdOutput()->getStyle()->error('An internal error occurred. Baseline could not be generated. Re-run PHPStan without --generate-baseline to see what\'s going on.');
 
-				return $inceptionResult->handleReturn(1);
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 			}
 
 			$baselineFileDirectory = dirname($generateBaselineFile);
@@ -308,7 +308,7 @@ class AnalyseCommand extends Command
 				if ($mkdirResult === false) {
 					$inceptionResult->getStdOutput()->writeLineFormatted(sprintf('Failed to create directory "%s".', $baselineFileDirectory));
 
-					return $inceptionResult->handleReturn(1);
+					return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 				}
 			}
 
@@ -317,7 +317,7 @@ class AnalyseCommand extends Command
 			} catch (CouldNotWriteFileException $e) {
 				$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
 
-				return $inceptionResult->handleReturn(1);
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 			}
 
 			$errorsCount = 0;
@@ -348,7 +348,7 @@ class AnalyseCommand extends Command
 				$inceptionResult->getStdOutput()->getStyle()->warning($message . "\nSome errors could not be put into baseline. Re-run PHPStan and fix them.");
 			}
 
-			return $inceptionResult->handleReturn(0);
+			return $inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes());
 		}
 
 		if ($fix) {
@@ -356,7 +356,7 @@ class AnalyseCommand extends Command
 			if ($ciDetector->isCiDetected()) {
 				$inceptionResult->getStdOutput()->writeLineFormatted('PHPStan Pro can\'t run in CI environment yet. Stay tuned!');
 
-				return $inceptionResult->handleReturn(1);
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 			}
 			$container->getByType(ResultCacheClearer::class)->clearTemporaryCaches();
 			$hasInternalErrors = $analysisResult->hasInternalErrors();
@@ -379,7 +379,7 @@ class AnalyseCommand extends Command
 					$analysisResult->isDefaultLevelUsed(),
 					$analysisResult->getProjectConfigFile(),
 					$analysisResult->isResultCacheSaved(),
-					$analysisResult->getEstimatedPeakMemoryUsage(),
+					$analysisResult->getPeakMemoryUsageBytes(),
 				);
 
 				$stdOutput = $inceptionResult->getStdOutput();
@@ -396,7 +396,7 @@ class AnalyseCommand extends Command
 					$stdOutput->writeLineFormatted(sprintf('nonIgnorableErrorsByExceptionCount: %d', count($nonIgnorableErrorsByException)));
 				}
 
-				return $inceptionResult->handleReturn(1);
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 			}
 
 			if (!$analysisResult->isResultCacheSaved() && !$onlyFiles) {
@@ -404,7 +404,7 @@ class AnalyseCommand extends Command
 				$stdOutput = $inceptionResult->getStdOutput();
 				if (count($analysisResult->getFileSpecificErrors()) > 0) {
 					$stdOutput->getStyle()->error('Unknown error. Please report this as a bug.');
-					return $inceptionResult->handleReturn(1);
+					return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 				}
 
 				$stdOutput->getStyle()->error('PHPStan Pro can\'t be launched because of these errors:');
@@ -419,10 +419,10 @@ class AnalyseCommand extends Command
 					$stdOutput->writeLineFormatted('Result cache was not saved.');
 				}
 
-				return $inceptionResult->handleReturn(1);
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes());
 			}
 
-			$inceptionResult->handleReturn(0);
+			$inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes());
 
 			/** @var FixerApplication $fixerApplication */
 			$fixerApplication = $container->getByType(FixerApplication::class);
@@ -444,6 +444,7 @@ class AnalyseCommand extends Command
 
 		return $inceptionResult->handleReturn(
 			$errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput()),
+			$analysisResult->getPeakMemoryUsageBytes(),
 		);
 	}
 

@@ -424,7 +424,7 @@ class ResultCacheManager
 			$dependencies,
 			$exportedNodes,
 			$analyserResult->hasReachedInternalErrorsCountLimit(),
-			$analyserResult->getEstimatedPeakMemoryUsage(),
+			$analyserResult->getPeakMemoryUsageBytes(),
 		), $saved);
 	}
 

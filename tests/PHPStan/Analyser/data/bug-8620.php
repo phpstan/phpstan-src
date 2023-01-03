@@ -2,11 +2,14 @@
 
 namespace Bug8620;
 
+use function PHPStan\Testing\assertType;
+
 class HelloWorld
 {
 	public function nullCoalesceAndConcatenation (?int $a = null): int
 	{
 		$key = ($a ?? "x") . "-";
+		assertType('non-falsy-string', $key);
 		if ($key === "x-") { return 0; }
 
 		return 1;
@@ -15,6 +18,7 @@ class HelloWorld
 	public function nullCoalesce (?int $a = null): int
 	{
 		$key = ($a ?? "");
+		assertType("''|int", $key);
 		if ($key === "") { return 0; }
 
 		return 1;

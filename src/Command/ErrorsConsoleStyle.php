@@ -119,6 +119,11 @@ class ErrorsConsoleStyle extends SymfonyStyle
 	{
 		$this->progressBar = parent::createProgressBar($max);
 
+		$format = $this->getProgressBarFormat();
+		if ($format !== null) {
+			$this->progressBar->setFormat($format);
+		}
+
 		$ci = $this->isCiDetected();
 		$this->progressBar->setOverwrite(!$ci);
 
@@ -134,6 +139,31 @@ class ErrorsConsoleStyle extends SymfonyStyle
 		}
 
 		return $this->progressBar;
+	}
+
+	private function getProgressBarFormat(): ?string
+	{
+		switch ($this->getVerbosity()) {
+			case OutputInterface::VERBOSITY_NORMAL:
+				$formatName = ProgressBar::FORMAT_NORMAL;
+				break;
+			case OutputInterface::VERBOSITY_VERBOSE:
+				$formatName = ProgressBar::FORMAT_VERBOSE;
+				break;
+			case OutputInterface::VERBOSITY_VERY_VERBOSE:
+			case OutputInterface::VERBOSITY_DEBUG:
+				$formatName = ProgressBar::FORMAT_VERY_VERBOSE;
+				break;
+			default:
+				$formatName = null;
+				break;
+		}
+
+		if ($formatName === null) {
+			return null;
+		}
+
+		return ProgressBar::getFormatDefinition($formatName);
 	}
 
 	public function progressStart(int $max = 0): void

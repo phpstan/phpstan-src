@@ -46,6 +46,7 @@ class TableErrorFormatter implements ErrorFormatter
 
 		if (!$analysisResult->hasErrors() && !$analysisResult->hasWarnings()) {
 			$style->success('No errors');
+
 			if ($this->showTipsOfTheDay) {
 				if ($analysisResult->isDefaultLevelUsed()) {
 					$output->writeLineFormatted('💡 Tip of the Day:');

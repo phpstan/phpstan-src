@@ -19,11 +19,13 @@ use Throwable;
 use function array_map;
 use function array_pop;
 use function array_reverse;
+use function array_sum;
 use function count;
 use function defined;
 use function escapeshellarg;
 use function is_string;
 use function max;
+use function memory_get_usage;
 use function parse_url;
 use function sprintf;
 use const PHP_URL_PORT;
@@ -63,7 +65,9 @@ class ParallelAnalyser
 		$loop = new StreamSelectLoop();
 
 		$numberOfProcesses = $schedule->getNumberOfProcesses();
+		$someChildEnded = false;
 		$errors = [];
+		$peakMemoryUsages = [];
 		$internalErrors = [];
 		$collectedData = [];
 
@@ -138,7 +142,7 @@ class ParallelAnalyser
 				$commandOptions,
 				$input,
 			), $loop, $this->processTimeout);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$collectedData, &$dependencies, &$exportedNodes, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$collectedData, &$dependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier): void {
 				foreach ($json['errors'] as $jsonError) {
 					if (is_string($jsonError)) {
 						$internalErrors[] = sprintf('Internal error: %s', $jsonError);
@@ -179,6 +183,10 @@ class ParallelAnalyser
 					$postFileCallback($json['filesCount']);
 				}
 
+				if (!isset($peakMemoryUsages[$processIdentifier]) || $peakMemoryUsages[$processIdentifier] < $json['memoryUsage']) {
+					$peakMemoryUsages[$processIdentifier] = $json['memoryUsage'];
+				}
+
 				$internalErrorsCount += $json['internalErrorsCount'];
 				if ($internalErrorsCount >= $this->internalErrorsCountLimit) {
 					$reachedInternalErrorsCountLimit = true;
@@ -192,7 +200,12 @@ class ParallelAnalyser
 
 				$job = array_pop($jobs);
 				$process->request(['action' => 'analyse', 'files' => $job]);
-			}, $handleError, function ($exitCode, string $output) use (&$internalErrors, &$internalErrorsCount, $processIdentifier): void {
+			}, $handleError, function ($exitCode, string $output) use (&$someChildEnded, &$peakMemoryUsages, &$internalErrors, &$internalErrorsCount, $processIdentifier): void {
+				if ($someChildEnded === false) {
+					$peakMemoryUsages['main'] = memory_get_usage(true);
+				}
+				$someChildEnded = true;
+
 				$this->processPool->tryQuitProcess($processIdentifier);
 				if ($exitCode === 0) {
 					return;
@@ -221,6 +234,7 @@ class ParallelAnalyser
 			$internalErrorsCount === 0 ? $dependencies : null,
 			$exportedNodes,
 			$reachedInternalErrorsCountLimit,
+			(int) array_sum($peakMemoryUsages), // not 100% correct as the peak usages of workers might not have met
 		);
 	}
 

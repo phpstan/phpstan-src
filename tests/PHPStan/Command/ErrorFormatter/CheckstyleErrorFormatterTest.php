@@ -154,6 +154,7 @@ class CheckstyleErrorFormatterTest extends ErrorFormatterTestCase
 			false,
 			null,
 			true,
+			0,
 		), $this->getOutput());
 		$this->assertXmlStringEqualsXmlString('<checkstyle>
 	<file name="FooTrait.php">

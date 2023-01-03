@@ -60,6 +60,7 @@ use function ini_get;
 use function is_dir;
 use function is_file;
 use function is_string;
+use function memory_get_peak_usage;
 use function min;
 use function mkdir;
 use function parse_url;
@@ -507,7 +508,7 @@ class FixerApplication
 		$resultCache = $resultCacheManager->restore($inceptionFiles, false, false, $projectConfigArray, $inceptionResult->getErrorOutput(), $fixerSuggestionId);
 		if (count($resultCache->getFilesToAnalyse()) === 0) {
 			$result = $resultCacheManager->process(
-				new AnalyserResult([], [], [], [], [], false),
+				new AnalyserResult([], [], [], [], [], false, memory_get_peak_usage(true)),
 				$resultCache,
 				$inceptionResult->getErrorOutput(),
 				false,

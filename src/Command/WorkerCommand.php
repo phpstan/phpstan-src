@@ -30,6 +30,7 @@ use function defined;
 use function is_array;
 use function is_bool;
 use function is_string;
+use function memory_get_peak_usage;
 use function sprintf;
 
 class WorkerCommand extends Command
@@ -242,6 +243,7 @@ class WorkerCommand extends Command
 				'result' => [
 					'errors' => $errors,
 					'collectedData' => $collectedData,
+					'memoryUsage' => memory_get_peak_usage(true),
 					'dependencies' => $dependencies,
 					'exportedNodes' => $exportedNodes,
 					'filesCount' => count($files),

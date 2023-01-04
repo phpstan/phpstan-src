@@ -178,7 +178,6 @@ class NodeScopeResolver
 {
 
 	private const LOOP_SCOPE_ITERATIONS = 3;
-	private const GENERALIZE_AFTER_ITERATION = 1;
 
 	/** @var bool[] filePath(string) => bool(true) */
 	private array $analysedFiles = [];
@@ -843,7 +842,7 @@ class NodeScopeResolver
 						break;
 					}
 
-					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+					if ($count < self::LOOP_SCOPE_ITERATIONS - 1) {
 						$bodyScope = $prevScope->generalizeWith($bodyScope);
 					}
 					$count++;
@@ -911,7 +910,7 @@ class NodeScopeResolver
 						break;
 					}
 
-					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+					if ($count < self::LOOP_SCOPE_ITERATIONS - 1) {
 						$bodyScope = $prevScope->generalizeWith($bodyScope);
 					}
 					$count++;
@@ -993,7 +992,7 @@ class NodeScopeResolver
 						break;
 					}
 
-					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+					if ($count < self::LOOP_SCOPE_ITERATIONS - 1) {
 						$bodyScope = $prevScope->generalizeWith($bodyScope);
 					}
 					$count++;
@@ -1096,7 +1095,7 @@ class NodeScopeResolver
 						break;
 					}
 
-					if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+					if ($count < self::LOOP_SCOPE_ITERATIONS - 1) {
 						$bodyScope = $prevScope->generalizeWith($bodyScope);
 					}
 					$count++;
@@ -3193,7 +3192,7 @@ class NodeScopeResolver
 			if ($closureScope->equals($prevScope)) {
 				break;
 			}
-			if ($count >= self::GENERALIZE_AFTER_ITERATION) {
+			if ($count < self::LOOP_SCOPE_ITERATIONS - 1) {
 				$closureScope = $prevScope->generalizeWith($closureScope);
 			}
 			$count++;

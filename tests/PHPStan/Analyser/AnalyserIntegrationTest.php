@@ -1104,6 +1104,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testSkipCheckNoGenericClasses(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/skip-check-no-generic-classes.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Method SkipCheckNoGenericClasses\Foo::doFoo() has parameter $i with generic class LimitIterator but does not specify its types: TKey, TValue, TIterator', $errors[0]->getMessage());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return Error[]

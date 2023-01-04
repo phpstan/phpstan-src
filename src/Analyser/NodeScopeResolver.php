@@ -934,8 +934,8 @@ class NodeScopeResolver
 			$beforeCondBooleanType = $scope->getType($stmt->cond)->toBoolean();
 			$condBooleanType = $bodyScopeMaybeRan->getType($stmt->cond)->toBoolean();
 			$isIterableAtLeastOnce = $beforeCondBooleanType->isTrue()->yes();
-			$alwaysIterates = $condBooleanType->isTrue()->yes();
-			$neverIterates = $condBooleanType->isFalse()->yes();
+			$alwaysIterates = $condBooleanType->isTrue()->yes() && $context->isTopLevel();
+			$neverIterates = $condBooleanType->isFalse()->yes() && $context->isTopLevel();
 			$nodeCallback(new BreaklessWhileLoopNode($stmt, $finalScopeResult->getExitPoints()), $bodyScopeMaybeRan);
 
 			if ($alwaysIterates) {
@@ -1008,7 +1008,7 @@ class NodeScopeResolver
 				$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 			}
 			$condBooleanType = $bodyScope->getType($stmt->cond)->toBoolean();
-			$alwaysIterates = $condBooleanType->isTrue()->yes();
+			$alwaysIterates = $condBooleanType->isTrue()->yes() && $context->isTopLevel();
 
 			$nodeCallback(new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->getExitPoints()), $bodyScope);
 

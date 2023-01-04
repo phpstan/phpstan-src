@@ -134,10 +134,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			);
 		}
 
-		if (
-			$type instanceof TypeWithClassName
-			&& $type->getClassName() === Closure::class
-		) {
+		if ($type->getObjectClassNames() === [Closure::class]) {
 			return TrinaryLogic::createMaybe();
 		}
 

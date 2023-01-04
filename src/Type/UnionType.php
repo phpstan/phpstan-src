@@ -114,55 +114,17 @@ class UnionType implements CompoundType
 
 	public function getArrays(): array
 	{
-		$arrays = [];
-		foreach ($this->types as $type) {
-			$innerTypeArrays = $type->getArrays();
-			if ($innerTypeArrays === []) {
-				return [];
-			}
-
-			foreach ($innerTypeArrays as $array) {
-				$arrays[] = $array;
-			}
-		}
-
-		return $arrays;
+		return $this->pickTypes(static fn (Type $type) => $type->getArrays());
 	}
 
 	public function getConstantArrays(): array
 	{
-		$constantArrays = [];
-		foreach ($this->types as $type) {
-			$typeAsConstantArrays = $type->getConstantArrays();
-
-			if ($typeAsConstantArrays === []) {
-				return [];
-			}
-
-			foreach ($typeAsConstantArrays as $constantArray) {
-				$constantArrays[] = $constantArray;
-			}
-		}
-
-		return $constantArrays;
+		return $this->pickTypes(static fn (Type $type) => $type->getConstantArrays());
 	}
 
 	public function getConstantStrings(): array
 	{
-		$strings = [];
-		foreach ($this->types as $type) {
-			$constantStrings = $type->getConstantStrings();
-
-			if ($constantStrings === []) {
-				return [];
-			}
-
-			foreach ($constantStrings as $string) {
-				$strings[] = $string;
-			}
-		}
-
-		return $strings;
+		return $this->pickTypes(static fn (Type $type) => $type->getConstantStrings());
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
@@ -927,6 +889,28 @@ class UnionType implements CompoundType
 	protected function unionTypes(callable $getType): Type
 	{
 		return TypeCombinator::union(...array_map($getType, $this->types));
+	}
+
+	/**
+	 * @template T of Type
+	 * @param callable(Type $type): list<T> $getTypes
+	 * @return list<T>
+	 */
+	protected function pickTypes(callable $getTypes): array
+	{
+		$types = [];
+		foreach ($this->types as $type) {
+			$innerTypes = $getTypes($type);
+			if ($innerTypes === []) {
+				return [];
+			}
+
+			foreach ($innerTypes as $innerType) {
+				$types[] = $innerType;
+			}
+		}
+
+		return $types;
 	}
 
 }

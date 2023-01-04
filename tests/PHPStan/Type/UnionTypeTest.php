@@ -1407,6 +1407,15 @@ class UnionTypeTest extends PHPStanTestCase
 					"'bar'",
 				],
 			],
+			[
+				new BenevolentUnionType([
+					new ConstantStringType('foo'),
+					new NullType(),
+				]),
+				[
+					"'foo'",
+				],
+			],
 		];
 	}
 

@@ -1230,4 +1230,34 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8389.php'], []);
 	}
 
+	public function testBug7239(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-7239.php'], [
+			[
+				'Parameter #1 ...$arg1 of function max expects non-empty-array, array{} given.',
+				14,
+			],
+			[
+				'Parameter #1 ...$arg1 of function min expects non-empty-array, array{} given.',
+				15,
+			],
+			[
+				'Parameter #1 ...$arg1 of function max expects non-empty-array, array{} given.',
+				21,
+			],
+			[
+				'Parameter #1 ...$arg1 of function min expects non-empty-array, array{} given.',
+				22,
+			],
+			[
+				'Parameter #1 ...$arg1 of function max expects non-empty-array, array{} given.',
+				32,
+			],
+			[
+				'Parameter #1 ...$arg1 of function min expects non-empty-array, array{} given.',
+				33,
+			],
+		]);
+	}
+
 }

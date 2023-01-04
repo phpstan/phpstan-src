@@ -98,7 +98,7 @@ class AnalyseCommand extends Command
 		if ((bool) $input->getOption('debug')) {
 			$application = $this->getApplication();
 			if ($application === null) {
-				throw new ShouldNotHappenException();
+				return;
 			}
 			$application->setCatchExceptions(false);
 			return;

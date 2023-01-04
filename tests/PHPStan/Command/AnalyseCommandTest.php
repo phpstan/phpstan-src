@@ -50,12 +50,24 @@ class AnalyseCommandTest extends PHPStanTestCase
 
 	public function testValidAutoloadFile(): void
 	{
+		$originalDir = getcwd();
+		if ($originalDir === false) {
+			throw new ShouldNotHappenException();
+		}
+
 		$autoloadFile = __DIR__ . DIRECTORY_SEPARATOR . 'data/autoload-file.php';
 
-		$output = $this->runCommand(0, ['--autoload-file' => $autoloadFile]);
-		$this->assertStringContainsString('[OK] No errors', $output);
-		$this->assertStringNotContainsString(sprintf('Autoload file "%s" not found.' . PHP_EOL, $autoloadFile), $output);
-		$this->assertSame('magic value', SOME_CONSTANT_IN_AUTOLOAD_FILE);
+		chdir(__DIR__);
+
+		try {
+			$output = $this->runCommand(0, ['--autoload-file' => $autoloadFile]);
+			$this->assertStringContainsString('[OK] No errors', $output);
+			$this->assertStringNotContainsString(sprintf('Autoload file "%s" not found.' . PHP_EOL, $autoloadFile), $output);
+			$this->assertSame('magic value', SOME_CONSTANT_IN_AUTOLOAD_FILE);
+		} catch (Throwable $e) {
+			chdir($originalDir);
+			throw $e;
+		}
 	}
 
 	/**
@@ -96,9 +108,10 @@ class AnalyseCommandTest extends PHPStanTestCase
 
 		$commandTester->execute([
 			'paths' => [__DIR__ . DIRECTORY_SEPARATOR . 'test'],
-		] + $parameters);
+			'--debug' => true,
+		] + $parameters, ['debug' => true]);
 
-		$this->assertSame($expectedStatusCode, $commandTester->getStatusCode());
+		$this->assertSame($expectedStatusCode, $commandTester->getStatusCode(), $commandTester->getDisplay());
 
 		return $commandTester->getDisplay();
 	}

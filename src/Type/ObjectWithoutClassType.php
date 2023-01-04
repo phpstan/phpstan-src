@@ -52,7 +52,7 @@ class ObjectWithoutClassType implements SubtractableType
 		}
 
 		return TrinaryLogic::createFromBoolean(
-			$type instanceof self || $type instanceof TypeWithClassName,
+			$type instanceof self || $type->getObjectClassNames() !== [],
 		);
 	}
 
@@ -76,15 +76,15 @@ class ObjectWithoutClassType implements SubtractableType
 			return TrinaryLogic::createMaybe();
 		}
 
-		if ($type instanceof TypeWithClassName) {
-			if ($this->subtractedType === null) {
-				return TrinaryLogic::createYes();
-			}
-
-			return $this->subtractedType->isSuperTypeOf($type)->negate();
+		if ($type->getObjectClassNames() === []) {
+			return TrinaryLogic::createNo();
 		}
 
-		return TrinaryLogic::createNo();
+		if ($this->subtractedType === null) {
+			return TrinaryLogic::createYes();
+		}
+
+		return $this->subtractedType->isSuperTypeOf($type)->negate();
 	}
 
 	public function equals(Type $type): bool

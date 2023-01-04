@@ -12,8 +12,9 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
+use function array_unique;
+use function array_values;
 
 final class IsAFunctionTypeSpecifyingHelper
 {
@@ -25,16 +26,22 @@ final class IsAFunctionTypeSpecifyingHelper
 		bool $allowSameClass,
 	): Type
 	{
-		$objectOrClassTypeClassName = $this->determineClassNameFromObjectOrClassType($objectOrClassType, $allowString);
+		$objectOrClassTypeClassNames = $objectOrClassType->getObjectClassNames();
+		if ($allowString) {
+			foreach ($objectOrClassType->getConstantStrings() as $constantString) {
+				$objectOrClassTypeClassNames[] = $constantString->getValue();
+			}
+			$objectOrClassTypeClassNames = array_values(array_unique($objectOrClassTypeClassNames));
+		}
 
 		return TypeTraverser::map(
 			$classType,
-			static function (Type $type, callable $traverse) use ($objectOrClassTypeClassName, $allowString, $allowSameClass): Type {
+			static function (Type $type, callable $traverse) use ($objectOrClassTypeClassNames, $allowString, $allowSameClass): Type {
 				if ($type instanceof UnionType || $type instanceof IntersectionType) {
 					return $traverse($type);
 				}
 				if ($type instanceof ConstantStringType) {
-					if (!$allowSameClass && $type->getValue() === $objectOrClassTypeClassName) {
+					if (!$allowSameClass && $objectOrClassTypeClassNames === [$type->getValue()]) {
 						return new NeverType();
 					}
 					if ($allowString) {
@@ -66,19 +73,6 @@ final class IsAFunctionTypeSpecifyingHelper
 				return new ObjectWithoutClassType();
 			},
 		);
-	}
-
-	private function determineClassNameFromObjectOrClassType(Type $type, bool $allowString): ?string
-	{
-		if ($type instanceof TypeWithClassName) {
-			return $type->getClassName();
-		}
-
-		if ($allowString && $type instanceof ConstantStringType) {
-			return $type->getValue();
-		}
-
-		return null;
 	}
 
 }

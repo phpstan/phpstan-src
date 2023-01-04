@@ -1,6 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
-declare(strict_types=1);
+namespace MbStrlenPhp8;
 
 use function PHPStan\Testing\assertType;
 

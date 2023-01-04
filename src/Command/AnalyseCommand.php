@@ -217,6 +217,13 @@ class AnalyseCommand extends Command
 			return 1;
 		}
 
+		if (count($files) === 0) {
+			$inceptionResult->getErrorOutput()->getStyle()->note('No files found to analyse.');
+			$inceptionResult->getErrorOutput()->getStyle()->warning('This will cause a non-zero exit code in PHPStan 2.0.');
+
+			return $inceptionResult->handleReturn(0, null);
+		}
+
 		/** @var AnalyseApplication  $application */
 		$application = $container->getByType(AnalyseApplication::class);
 

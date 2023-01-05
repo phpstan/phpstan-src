@@ -9,7 +9,6 @@ on:
 
 concurrency:
   group: pr-title-edited-${{ github.head_ref }} # will be canceled on subsequent pushes in pull requests
-  cancel-in-progress: true
 
 jobs:
   revert-title:

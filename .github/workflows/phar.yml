@@ -223,7 +223,10 @@ jobs:
           GPG_ID: ${{ secrets.GPG_ID }}
 
       - name: "Install lucky_commit"
-        run: cargo install lucky_commit --locked
+        uses: baptiste0928/cargo-install@v1
+        with:
+          crate: lucky_commit
+          args: --no-default-features
 
       - name: "Commit PHAR - development"
         if: "!startsWith(github.ref, 'refs/tags/') && steps.checksum-difference.outputs.result == 'different'"

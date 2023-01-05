@@ -240,7 +240,7 @@ jobs:
           git config --global user.name "Ondrej Mirtes"
           git config --global user.email "ondrej@mirtes.cz"
           git add .
-          git commit --gpg-sign -m "Updated PHPStan to commit ${{ github.event.after }}\n\n${{ steps.git-log.outputs.log }}" --author "Ondrej Mirtes <ondrej@mirtes.cz>"
+          git commit --gpg-sign -m "Updated PHPStan to commit ${{ github.event.after }}" -m "${{ steps.git-log.outputs.log }}" --author "Ondrej Mirtes <ondrej@mirtes.cz>"
           lucky_commit ${{ steps.short-src-sha.outputs.sha }}
           git push
 

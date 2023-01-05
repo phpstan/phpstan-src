@@ -182,7 +182,7 @@ jobs:
       - name: "Get short phpstan-src SHA"
         id: short-src-sha
         working-directory: phpstan-src
-        run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        run: echo "sha=$(git rev-parse --short=7 HEAD)" >> $GITHUB_OUTPUT
 
       - name: "Check PHAR checksum"
         id: checksum-difference

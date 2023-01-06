@@ -22,13 +22,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use function array_chunk;
 use function array_key_exists;
 use function array_keys;
-use function array_map;
 use function array_merge;
 use function ceil;
 use function count;
 use function file_get_contents;
 use function file_put_contents;
 use function implode;
+use function in_array;
 use function is_file;
 use function serialize;
 use function unserialize;
@@ -98,12 +98,41 @@ class DownloadCommand extends Command
 			throw new Exception('Chunk size less than 1');
 		}
 
-		$matrix = [
-			'phpVersion' => [70100, 70200, 70300, 70400, 80000, 80100, 80200],
-			'playgroundExamples' => array_map(static fn (array $chunk) => implode(',', $chunk), array_chunk($hashes, $chunkSize)),
-		];
+		$matrix = [];
+		foreach ([70100, 70200, 70300, 70400, 80000, 80100, 80200] as $phpVersion) {
+			$phpVersionHashes = [];
+			foreach ($cachedResults as $hash => $result) {
+				$resultPhpVersions = array_keys($result->getVersionedErrors());
+				if ($resultPhpVersions === [70400]) {
+					$resultPhpVersions = [70100, 70200, 70300, 70400, 80000];
+				}
 
-		$output->writeln(Json::encode($matrix));
+				if (!in_array(80100, $resultPhpVersions, true)) {
+					$resultPhpVersions[] = 80100;
+				}
+				if (!in_array(80200, $resultPhpVersions, true)) {
+					$resultPhpVersions[] = 80200;
+				}
+
+				if (!in_array($phpVersion, $resultPhpVersions, true)) {
+					continue;
+				}
+				$phpVersionHashes[] = $hash;
+			}
+			$chunkSize = (int) ceil(count($phpVersionHashes) / 18);
+			if ($chunkSize < 1) {
+				throw new Exception('Chunk size less than 1');
+			}
+			$chunks = array_chunk($phpVersionHashes, $chunkSize);
+			foreach ($chunks as $chunk) {
+				$matrix[] = [
+					'phpVersion' => $phpVersion,
+					'playgroundExamples' => implode(',', $chunk),
+				];
+			}
+		}
+
+		$output->writeln(Json::encode(['include' => $matrix]));
 
 		return 0;
 	}

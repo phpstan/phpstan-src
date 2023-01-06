@@ -22,6 +22,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\ObjectType;
 use Symfony\Component\Finder\Finder;
 use function array_diff_key;
 use function array_map;
@@ -171,6 +172,7 @@ class ContainerFactory
 		$broker = $container->getByType(Broker::class);
 		Broker::registerInstance($broker);
 		ReflectionProviderStaticAccessor::registerInstance($container->getByType(ReflectionProvider::class));
+		ObjectType::resetCaches();
 		$container->getService('typeSpecifier');
 
 		BleedingEdgeToggle::setBleedingEdge($container->getParameter('featureToggles')['bleedingEdge']);

@@ -48,6 +48,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          ini-file: development
           extensions: mbstring
 
       - name: "Install dependencies"
@@ -86,6 +87,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          ini-file: development
           extensions: mbstring
 
       - name: "Downgrade PHPUnit"
@@ -117,6 +119,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          ini-file: development
           extensions: mbstring
 
       - name: "Install dependencies"
@@ -158,6 +161,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "8.1"
+          ini-file: development
 
       - name: "Install dependencies"
         run: "composer install --no-interaction --no-progress"

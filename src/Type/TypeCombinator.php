@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
@@ -13,7 +12,6 @@ use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -135,7 +133,7 @@ class TypeCombinator
 			if ($types[$i]->isNormalized()) {
 				$innerTypes = $types[$i]->getTypes();
 				foreach ($innerTypes as $key => $innerType) {
-					if (!$innerType->isArray()->yes() && !($innerType instanceof ConstantScalarType)) {
+					if (!$innerType->isArray()->yes() && !self::isScalarType($innerType)) {
 						continue;
 					}
 					$types[] = $innerType;
@@ -168,52 +166,37 @@ class TypeCombinator
 
 		$arrayTypes = [];
 		$scalarTypes = [];
-		$hasSuperClassOfScalarType = [];
 		for ($i = 0; $i < $typesCount; $i++) {
-			switch (get_class($types[$i])) {
-				case StringType::class:
-				case IntegerType::class:
-				case FloatType::class:
-				case BooleanType::class:
-					$hasSuperClassOfScalarType[get_class($types[$i])] = true;
+			$type = $types[$i];
+			if ($type instanceof UnionType) {
+				continue;
 			}
-			if ($types[$i] instanceof ConstantScalarType) {
-				$type = $types[$i];
-				$scalarTypes[get_parent_class($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
+			if ($type->isArray()->yes()) {
+				$arrayTypes[] = $type;
 				unset($types[$i]);
 				continue;
 			}
-			if ($types[$i] instanceof TemplateType) {
-				$hasSuperClassOfScalarType[get_parent_class($types[$i])] = true;
-				continue;
+			if (self::isScalarType($type)) {
+				$scalarTypes[self::getScalarClass($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
+				unset($types[$i]);
 			}
-			if (!$types[$i]->isArray()->yes()) {
-				continue;
-			}
-
-			$arrayTypes[] = $types[$i];
-			unset($types[$i]);
 		}
 
-		foreach ($scalarTypes as $classType => $scalarTypeItems) {
-			if (isset($hasSuperClassOfScalarType[$classType])) {
-				unset($scalarTypes[$classType]);
+		$resultTypes = [];
+		foreach ($scalarTypes as $classString => $scalarTypeArray) {
+			$scalarTypeArray = array_values($scalarTypeArray);
+			$superTypes = array_filter($scalarTypeArray, static fn($type) => get_class($type) === $classString || $type instanceof TemplateType);
+			if ($superTypes !== []) {
+				$resultTypes = array_merge($resultTypes, self::unionTypes($superTypes));
 				continue;
 			}
-			if ($classType === BooleanType::class && count($scalarTypeItems) === 2) {
-				$types[] = new BooleanType();
-				unset($scalarTypes[$classType]);
-				continue;
-			}
-			$scalarTypes[$classType] = array_values($scalarTypeItems);
+			$resultTypes = array_merge($resultTypes, self::unionTypes($scalarTypeArray));
 		}
-
-		if ($scalarTypes !== []) {
-			$flattenTypes = array_merge(...array_values($scalarTypes));
-			if (count($flattenTypes) === 1) {
-				$types[] = $flattenTypes[0];
+		if ($resultTypes !== []) {
+			if (count($resultTypes) === 1) {
+				$types[] = $resultTypes[0];
 			} else {
-				$types[] = new UnionType($flattenTypes, true);
+				$types[] = new UnionType($resultTypes, true);
 			}
 		}
 
@@ -223,10 +206,57 @@ class TypeCombinator
 				self::processArrayTypes($arrayTypes),
 			),
 		);
-		$typesCount = count($types);
 
 		// transform A | A to A
 		// transform A | never to A
+		$types = self::unionTypes($types);
+		$typesCount = count($types);
+
+		if ($typesCount === 0) {
+			return new NeverType();
+		}
+		if ($typesCount === 1) {
+			return $types[0];
+		}
+
+		if ($benevolentTypes !== []) {
+			$tempTypes = $types;
+			foreach ($tempTypes as $i => $type) {
+				if (!isset($benevolentTypes[$type->describe(VerbosityLevel::value())])) {
+					break;
+				}
+
+				unset($tempTypes[$i]);
+			}
+
+			if ($tempTypes === []) {
+				if ($benevolentUnionObject instanceof TemplateBenevolentUnionType) {
+					return $benevolentUnionObject->withTypes($types);
+				}
+
+				return new BenevolentUnionType($types);
+			}
+		}
+
+		$resultTypes = [];
+		foreach ($types as $type) {
+			if (!($type instanceof UnionType) || $type instanceof TemplateType) {
+				$resultTypes[] = $type;
+				continue;
+			}
+			$resultTypes = array_merge($resultTypes, $type->getTypes());
+		}
+
+		return new UnionType($resultTypes, true);
+	}
+
+	/**
+	 * @param Type[] $types
+	 * @return Type[]
+	 */
+	private static function unionTypes(array $types): array
+	{
+		$typesCount = count($types);
 		for ($i = 0; $i < $typesCount; $i++) {
 			for ($j = $i + 1; $j < $typesCount; $j++) {
 				if ($types[$i] instanceof UnionType && !$types[$i] instanceof TemplateType && $types[$j] instanceof UnionType && !$types[$j] instanceof TemplateType) {
@@ -346,43 +376,37 @@ class TypeCombinator
 				}
 			}
 		}
+		return array_values($types);
+	}
 
-		if ($typesCount === 0) {
-			return new NeverType();
+	/**
+	 * @param Type $type
+	 */
+	private static function isScalarType(Type $type): bool
+	{
+		return $type->isInteger()->yes() || $type->isFloat()->yes() || $type->isString()->yes() || $type->isBoolean()->yes() || $type->isNull()->yes();
+	}
+
+	/**
+	 * @param Type $type
+	 */
+	private static function getScalarClass(Type $type): ?string {
+		if ($type->isInteger()->yes()) {
+			return IntegerType::class;
 		}
-		if ($typesCount === 1) {
-			return $types[0];
+		if ($type->isFloat()->yes()) {
+			return FloatType::class;
 		}
-
-		if ($benevolentTypes !== []) {
-			$tempTypes = $types;
-			foreach ($tempTypes as $i => $type) {
-				if (!isset($benevolentTypes[$type->describe(VerbosityLevel::value())])) {
-					break;
-				}
-
-				unset($tempTypes[$i]);
-			}
-
-			if ($tempTypes === []) {
-				if ($benevolentUnionObject instanceof TemplateBenevolentUnionType) {
-					return $benevolentUnionObject->withTypes($types);
-				}
-
-				return new BenevolentUnionType($types);
-			}
+		if ($type->isString()->yes()) {
+			return StringType::class;
 		}
-
-		$resultTypes = [];
-		foreach ($types as $type) {
-			if (!($type instanceof UnionType) || $type instanceof TemplateType) {
-				$resultTypes[] = $type;
-				continue;
-			}
-			$resultTypes = array_merge($resultTypes, $type->getTypes());
+		if ($type->isBoolean()->yes()) {
+			return BooleanType::class;
 		}
-
-		return new UnionType($resultTypes, true);
+		if ($type->isNull()->yes()) {
+			return NullType::class;
+		}
+		return null;
 	}
 
 	/**
@@ -390,6 +414,10 @@ class TypeCombinator
 	 */
 	private static function compareTypesInUnion(Type $a, Type $b): ?array
 	{
+		if ($a instanceof ConstantBooleanType && $b instanceof ConstantBooleanType) {
+			return [$a->getValue() === $b->getValue() ? $a : new BooleanType(), null];
+		}
+
 		if ($a instanceof IntegerRangeType) {
 			$type = $a->tryUnion($b);
 			if ($type !== null) {

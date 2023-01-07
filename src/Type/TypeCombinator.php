@@ -210,6 +210,16 @@ class TypeCombinator
 		// transform A | A to A
 		// transform A | never to A
 		$types = self::unionTypes($types);
+
+		$resultTypes = [];
+		foreach ($types as $type) {
+			if (!($type instanceof UnionType) || $type instanceof TemplateType) {
+				$resultTypes[] = $type;
+				continue;
+			}
+			$resultTypes = array_merge($resultTypes, $type->getTypes());
+		}
+		$types = $resultTypes;
 		$typesCount = count($types);
 
 		if ($typesCount === 0) {
@@ -236,15 +246,6 @@ class TypeCombinator
 
 				return new BenevolentUnionType($types);
 			}
-		}
-
-		$resultTypes = [];
-		foreach ($types as $type) {
-			if (!($type instanceof UnionType) || $type instanceof TemplateType) {
-				$resultTypes[] = $type;
-				continue;
-			}
-			$resultTypes = array_merge($resultTypes, $type->getTypes());
 		}
 
 		return new UnionType($resultTypes, true);

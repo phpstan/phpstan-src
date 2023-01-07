@@ -142,7 +142,7 @@ class TypeCombinator
 				}
 				if (count($innerTypes) === 0) {
 					$typesCount--;
-					unset($types[$i]);
+					array_splice($types, $i--, 1);
 					continue;
 				}
 				if (count($innerTypes) === 1) {
@@ -248,7 +248,7 @@ class TypeCombinator
 			}
 		}
 
-		return new UnionType($resultTypes, true);
+		return new UnionType($types, true);
 	}
 
 	/**

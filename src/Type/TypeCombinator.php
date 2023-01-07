@@ -19,6 +19,7 @@ use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
+use function array_filter;
 use function array_key_exists;
 use function array_key_first;
 use function array_map;
@@ -30,6 +31,7 @@ use function count;
 use function get_class;
 use function is_int;
 use function md5;
+use function reset;
 use function sprintf;
 use function usort;
 
@@ -176,16 +178,18 @@ class TypeCombinator
 				unset($types[$i]);
 				continue;
 			}
-			if (self::isScalarType($type)) {
-				$scalarTypes[self::getScalarClass($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
-				unset($types[$i]);
+			if (!self::isScalarType($type)) {
+				continue;
 			}
+
+			$scalarTypes[self::getScalarClass($type)][md5($type->describe(VerbosityLevel::cache()))] = $type;
+			unset($types[$i]);
 		}
 
 		$resultTypes = [];
 		foreach ($scalarTypes as $classString => $scalarTypeArray) {
 			$scalarTypeArray = array_values($scalarTypeArray);
-			$superTypes = array_filter($scalarTypeArray, static fn($type) => get_class($type) === $classString || $type instanceof TemplateType);
+			$superTypes = array_filter($scalarTypeArray, static fn ($type) => get_class($type) === $classString || $type instanceof TemplateType);
 			if ($superTypes !== []) {
 				$resultTypes = array_merge($resultTypes, self::unionTypes($superTypes));
 				continue;
@@ -314,10 +318,12 @@ class TypeCombinator
 							$typesCount--;
 							continue 2;
 						}
-						if ($b !== null) {
-							$types[$j] = $b;
-							unset($innerTypes[$key]);
+						if ($b === null) {
+							continue;
 						}
+
+						$types[$j] = $b;
+						unset($innerTypes[$key]);
 					}
 					if (count($innerTypes) === 0) {
 						array_splice($types, $i--, 1);
@@ -343,10 +349,12 @@ class TypeCombinator
 							$typesCount--;
 							continue 3;
 						}
-						if ($b !== null) {
-							$types[$i] = $b;
-							unset($innerTypes[$key]);
+						if ($b === null) {
+							continue;
 						}
+
+						$types[$i] = $b;
+						unset($innerTypes[$key]);
 					}
 					if (count($innerTypes) === 0) {
 						array_splice($types, $j--, 1);
@@ -380,18 +388,13 @@ class TypeCombinator
 		return array_values($types);
 	}
 
-	/**
-	 * @param Type $type
-	 */
 	private static function isScalarType(Type $type): bool
 	{
 		return $type->isInteger()->yes() || $type->isFloat()->yes() || $type->isString()->yes() || $type->isBoolean()->yes() || $type->isNull()->yes();
 	}
 
-	/**
-	 * @param Type $type
-	 */
-	private static function getScalarClass(Type $type): ?string {
+	private static function getScalarClass(Type $type): ?string
+	{
 		if ($type->isInteger()->yes()) {
 			return IntegerType::class;
 		}

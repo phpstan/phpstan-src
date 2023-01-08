@@ -625,23 +625,55 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-3633.php'], [
 			[
 				'Strict comparison using === between class-string<Bug3633\HelloWorld> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
-				23,
+				37,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\HelloWorld\' and \'Bug3633\\\HelloWorld\' will always evaluate to true.',
+				41,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\HelloWorld\' and \'Bug3633\\\OtherClass\' will always evaluate to false.',
+				44,
 			],
 			[
 				'Strict comparison using === between class-string<Bug3633\OtherClass> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
-				35,
+				64,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\OtherClass\' and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
+				71,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\OtherClass\' and \'Bug3633\\\OtherClass\' will always evaluate to true.',
+				74,
 			],
 			[
 				'Strict comparison using === between class-string<Bug3633\FinalClass> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
-				50,
+				93,
 			],
 			[
 				'Strict comparison using === between class-string<Bug3633\FinalClass> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
-				53,
+				96,
 			],
 			[
 				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to true.',
-				59,
+				102,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
+				106,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\OtherClass\' will always evaluate to false.',
+				109,
+			],
+			[
+				'Strict comparison using !== between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to false.',
+				112,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to true.',
+				115,
 			],
 		]);
 	}

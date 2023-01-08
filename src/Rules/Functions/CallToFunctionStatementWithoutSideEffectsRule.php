@@ -3,11 +3,13 @@
 namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
+use PhpParser\Node\Arg;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\Type;
 use function in_array;
 use function sprintf;
 
@@ -16,6 +18,13 @@ use function sprintf;
  */
 class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 {
+
+	private const SIDE_EFFECT_FLIP_PARAMETERS = [
+		// functionName => [name, pos, testName, defaultHasSideEffect]
+		'file_get_contents' => ['context', 2, 'isNotNull', false],
+		'print_r' => ['return', 1, 'isTruthy', true],
+		'var_export' => ['return', 1, 'isTruthy', true],
+	];
 
 	public function __construct(private ReflectionProvider $reflectionProvider)
 	{
@@ -42,7 +51,65 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 		}
 
 		$function = $this->reflectionProvider->getFunction($funcCall->name, $scope);
-		if ($function->hasSideEffects()->no() || $node->expr->isFirstClassCallable()) {
+		$functionName = $function->getName();
+		$functionHasSideEffects = !$function->hasSideEffects()->no();
+
+		if (in_array($functionName, [
+			'PHPStan\\dumpType',
+			'PHPStan\\Testing\\assertType',
+			'PHPStan\\Testing\\assertNativeType',
+			'PHPStan\\Testing\\assertVariableCertainty',
+		], true)) {
+			return [];
+		}
+
+		if (isset(self::SIDE_EFFECT_FLIP_PARAMETERS[$functionName])) {
+			[
+				$flipParameterName,
+				$flipParameterPosision,
+				$testName,
+				$defaultHasSideEffect,
+			] = self::SIDE_EFFECT_FLIP_PARAMETERS[$functionName];
+
+			$sideEffectFlipped = false;
+			$hasNamedParameter = false;
+			$checker = [
+				'isNotNull' => static fn (Type $type) => $type->isNull()->no(),
+				'isTruthy' => static fn (Type $type) => $type->toBoolean()->isTrue()->yes(),
+			][$testName];
+
+			foreach ($funcCall->getRawArgs() as $i => $arg) {
+				if (!$arg instanceof Arg) {
+					return [];
+				}
+
+				$isFlipParameter = false;
+
+				if ($arg->name !== null) {
+					$hasNamedParameter = true;
+					if ($arg->name->name === $flipParameterName) {
+						$isFlipParameter = true;
+					}
+				}
+
+				if (!$hasNamedParameter && $i === $flipParameterPosision) {
+					$isFlipParameter = true;
+				}
+
+				if ($isFlipParameter) {
+					$sideEffectFlipped = $checker($scope->getType($arg->value));
+					break;
+				}
+			}
+
+			if ($sideEffectFlipped xor $defaultHasSideEffect) {
+				return [];
+			}
+
+			$functionHasSideEffects = false;
+		}
+
+		if (!$functionHasSideEffects || $node->expr->isFirstClassCallable()) {
 			if (!$node->expr->isFirstClassCallable()) {
 				$throwsType = $function->getThrowType();
 				if ($throwsType !== null && !$throwsType->isVoid()->yes()) {
@@ -52,15 +119,6 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 
 			$functionResult = $scope->getType($funcCall);
 			if ($functionResult instanceof NeverType && $functionResult->isExplicit()) {
-				return [];
-			}
-
-			if (in_array($function->getName(), [
-				'PHPStan\\dumpType',
-				'PHPStan\\Testing\\assertType',
-				'PHPStan\\Testing\\assertNativeType',
-				'PHPStan\\Testing\\assertVariableCertainty',
-			], true)) {
 				return [];
 			}
 

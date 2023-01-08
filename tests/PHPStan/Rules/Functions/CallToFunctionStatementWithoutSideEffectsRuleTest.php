@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CallToFunctionStatementWithoutSideEffectsRule>
@@ -22,6 +23,53 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 			[
 				'Call to function sprintf() on a separate line has no effect.',
 				13,
+			],
+			[
+				'Call to function file_get_contents() on a separate line has no effect.',
+				14,
+			],
+			[
+				'Call to function file_get_contents() on a separate line has no effect.',
+				22,
+			],
+			[
+				'Call to function var_export() on a separate line has no effect.',
+				24,
+			],
+			[
+				'Call to function print_r() on a separate line has no effect.',
+				26,
+			],
+		]);
+
+		if (PHP_VERSION_ID < 80000) {
+			return;
+		}
+
+		$this->analyse([__DIR__ . '/data/function-call-statement-no-side-effects-8.0.php'], [
+			[
+				'Call to function file_get_contents() on a separate line has no effect.',
+				15,
+			],
+			[
+				'Call to function file_get_contents() on a separate line has no effect.',
+				16,
+			],
+			[
+				'Call to function file_get_contents() on a separate line has no effect.',
+				17,
+			],
+			[
+				'Call to function file_get_contents() on a separate line has no effect.',
+				18,
+			],
+			[
+				'Call to function var_export() on a separate line has no effect.',
+				19,
+			],
+			[
+				'Call to function print_r() on a separate line has no effect.',
+				20,
 			],
 		]);
 	}

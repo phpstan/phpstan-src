@@ -66,7 +66,7 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 		if (isset(self::SIDE_EFFECT_FLIP_PARAMETERS[$functionName])) {
 			[
 				$flipParameterName,
-				$flipParameterPosision,
+				$flipParameterPosition,
 				$testName,
 				$defaultHasSideEffect,
 			] = self::SIDE_EFFECT_FLIP_PARAMETERS[$functionName];
@@ -92,7 +92,7 @@ class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 					}
 				}
 
-				if (!$hasNamedParameter && $i === $flipParameterPosision) {
+				if (!$hasNamedParameter && $i === $flipParameterPosition) {
 					$isFlipParameter = true;
 				}
 

@@ -360,4 +360,12 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7968.php'], []);
 	}
 
+	public function testBug8084(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->strictUnnecessaryNullsafePropertyFetch = true;
+
+		$this->analyse([__DIR__ . '/data/bug-8084.php'], []);
+	}
+
 }

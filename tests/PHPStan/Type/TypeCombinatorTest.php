@@ -13,6 +13,8 @@ use DynamicProperties\FinalFoo;
 use Exception;
 use InvalidArgumentException;
 use Iterator;
+use LengthException;
+use LogicException;
 use PHPStan\Fixture\FinalClass;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -884,6 +886,34 @@ class TypeCombinatorTest extends PHPStanTestCase
 				],
 				UnionType::class,
 				'(float|int)|(17.0|true)|(int|string)|null',
+			],
+			[
+				[
+					new BenevolentUnionType([new ConstantIntegerType(1), new ConstantIntegerType(2)]),
+					new StringType(),
+				],
+				UnionType::class,
+				'(1|2)|string',
+			],
+			[
+				[
+					new BenevolentUnionType([new ConstantIntegerType(1), new ConstantIntegerType(2), new ConstantIntegerType(3)]),
+					IntegerRangeType::fromInterval(2, 3),
+				],
+				UnionType::class,
+				'(1|2|3)',
+			],
+			[
+				[
+					new BenevolentUnionType([
+						new ObjectType(InvalidArgumentException::class),
+						new ObjectType(LengthException::class),
+						new ObjectType(stdClass::class),
+					]),
+					new ObjectType(LogicException::class),
+				],
+				UnionType::class,
+				'(InvalidArgumentException|LengthException|stdClass)|LogicException',
 			],
 			[
 				[

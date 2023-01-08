@@ -876,6 +876,17 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			[
 				[
+					new BenevolentUnionType([new IntegerType(), new StringType()]),
+					new BenevolentUnionType([new ConstantIntegerType(17), new ConstantStringType('foo')]),
+					new BenevolentUnionType([new FloatType(), new IntegerType()]),
+					new BenevolentUnionType([new ConstantBooleanType(true), new ConstantFloatType(17)]),
+					new NullType(),
+				],
+				UnionType::class,
+				'(float|int)|(17.0|true)|(int|string)|null',
+			],
+			[
+				[
 					new ConstantStringType('foo'),
 					new ConstantStringType('foo'),
 					new ConstantStringType('bar'),

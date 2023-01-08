@@ -619,4 +619,63 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8586.php'], []);
 	}
 
+	public function testBug3633(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/data/bug-3633.php'], [
+			[
+				'Strict comparison using === between class-string<Bug3633\HelloWorld> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
+				37,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\HelloWorld\' and \'Bug3633\\\HelloWorld\' will always evaluate to true.',
+				41,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\HelloWorld\' and \'Bug3633\\\OtherClass\' will always evaluate to false.',
+				44,
+			],
+			[
+				'Strict comparison using === between class-string<Bug3633\OtherClass> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
+				64,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\OtherClass\' and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
+				71,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\OtherClass\' and \'Bug3633\\\OtherClass\' will always evaluate to true.',
+				74,
+			],
+			[
+				'Strict comparison using === between class-string<Bug3633\FinalClass> and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
+				93,
+			],
+			[
+				'Strict comparison using === between class-string<Bug3633\FinalClass> and \'Bug3633\\\OtherClass\' will always evaluate to false.',
+				96,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to true.',
+				102,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\HelloWorld\' will always evaluate to false.',
+				106,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\OtherClass\' will always evaluate to false.',
+				109,
+			],
+			[
+				'Strict comparison using !== between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to false.',
+				112,
+			],
+			[
+				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to true.',
+				115,
+			],
+		]);
+	}
+
 }

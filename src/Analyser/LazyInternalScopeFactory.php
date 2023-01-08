@@ -22,8 +22,6 @@ class LazyInternalScopeFactory implements InternalScopeFactory
 
 	private bool $explicitMixedInUnknownGenericNew;
 
-	private bool $explicitMixedForGlobalVariables;
-
 	/**
 	 * @param class-string $scopeClass
 	 */
@@ -34,18 +32,8 @@ class LazyInternalScopeFactory implements InternalScopeFactory
 	{
 		$this->treatPhpDocTypesAsCertain = $container->getParameter('treatPhpDocTypesAsCertain');
 		$this->explicitMixedInUnknownGenericNew = $this->container->getParameter('featureToggles')['explicitMixedInUnknownGenericNew'];
-		$this->explicitMixedForGlobalVariables = $this->container->getParameter('featureToggles')['explicitMixedForGlobalVariables'];
 	}
 
-	/**
-	 * @param array<string, ExpressionTypeHolder> $expressionTypes
-	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
-	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
-	 * @param array<string, true> $currentlyAssignedExpressions
-	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param array<(FunctionReflection|MethodReflection)> $inFunctionCallsStack
-	 *
-	 */
 	public function create(
 		ScopeContext $context,
 		bool $declareStrictTypes = false,
@@ -100,7 +88,6 @@ class LazyInternalScopeFactory implements InternalScopeFactory
 			$parentScope,
 			$nativeTypesPromoted,
 			$this->explicitMixedInUnknownGenericNew,
-			$this->explicitMixedForGlobalVariables,
 		);
 	}
 

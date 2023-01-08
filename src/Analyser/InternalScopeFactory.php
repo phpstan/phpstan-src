@@ -15,7 +15,7 @@ interface InternalScopeFactory
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
-	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
+	 * @param array<FunctionReflection|MethodReflection> $inFunctionCallsStack
 	 */
 	public function create(
 		ScopeContext $context,

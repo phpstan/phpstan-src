@@ -337,7 +337,10 @@ class InitializerExprTypeResolver
 
 		if ($expr instanceof MagicConst\Class_) {
 			if ($context->getTraitName() !== null) {
-				return new StringType();
+				return new IntersectionType([
+					new ClassStringType(),
+					new AccessoryLiteralStringType(),
+				]);
 			}
 
 			if ($context->getClassName() === null) {
@@ -349,7 +352,10 @@ class InitializerExprTypeResolver
 
 		if ($expr instanceof MagicConst\Namespace_) {
 			if ($context->getTraitName() !== null) {
-				return new StringType();
+				return new IntersectionType([
+					new StringType(),
+					new AccessoryLiteralStringType(),
+				]);
 			}
 
 			return new ConstantStringType($context->getNamespace() ?? '');

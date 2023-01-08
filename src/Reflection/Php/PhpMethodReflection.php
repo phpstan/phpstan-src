@@ -416,13 +416,6 @@ class PhpMethodReflection implements ExtendedMethodReflection
 		if ($this->isPure !== null) {
 			return TrinaryLogic::createFromBoolean(!$this->isPure);
 		}
-		foreach ($this->getVariants() as $variant) {
-			foreach ($variant->getParameters() as $parameter) {
-				if ($parameter->passedByReference()->yes()) {
-					return TrinaryLogic::createYes();
-				}
-			}
-		}
 
 		return TrinaryLogic::createMaybe();
 	}

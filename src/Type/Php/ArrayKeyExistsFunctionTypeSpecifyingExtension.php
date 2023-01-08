@@ -65,6 +65,8 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 				$arrayKeyType = $arrayType->getIterableKeyType();
 				if ($keyType->isString()->yes()) {
 					$arrayKeyType = $arrayKeyType->toString();
+				} elseif ($keyType->isString()->maybe()) {
+					$arrayKeyType = TypeCombinator::union($arrayKeyType, $arrayKeyType->toString());
 				}
 
 				$specifiedTypes = $this->typeSpecifier->create(

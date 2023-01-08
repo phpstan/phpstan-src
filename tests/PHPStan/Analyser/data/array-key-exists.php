@@ -53,13 +53,13 @@ class Foo
 			assertType('numeric-string', $key2);
 		}
 		if (array_key_exists($key3, $a)) {
-			assertType('int', $key3);
+			assertType('int|numeric-string', $key3);
 		}
 		if (array_key_exists($key4, $a)) {
-			assertType('int', $key4);
+			assertType('(int|numeric-string)', $key4);
 		}
 		if (array_key_exists($key5, $a)) {
-			assertType('int', $key5);
+			assertType('int|numeric-string', $key5);
 		}
 
 		if (array_key_exists($key1, $b)) {
@@ -92,6 +92,22 @@ class Foo
 		}
 		if (array_key_exists($key5, $c)) {
 			assertType('(int|string)', $key5);
+		}
+
+		if (array_key_exists($key1, [3 => 'foo', 4 => 'bar'])) {
+			assertType('3|4', $key1);
+		}
+		if (array_key_exists($key2, [3 => 'foo', 4 => 'bar'])) {
+			assertType("'3'|'4'", $key2);
+		}
+		if (array_key_exists($key3, [3 => 'foo', 4 => 'bar'])) {
+			assertType("3|4|'3'|'4'", $key3);
+		}
+		if (array_key_exists($key4, [3 => 'foo', 4 => 'bar'])) {
+			assertType("(3|4|'3'|'4')", $key4);
+		}
+		if (array_key_exists($key5, [3 => 'foo', 4 => 'bar'])) {
+			assertType("3|4|'3'|'4'", $key5);
 		}
 	}
 

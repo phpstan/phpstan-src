@@ -65,14 +65,19 @@ use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use function array_keys;
 use function array_merge;
+use function assert;
+use function ceil;
 use function count;
 use function dirname;
+use function floor;
 use function in_array;
 use function is_float;
 use function is_int;
 use function max;
+use function min;
 use function sprintf;
 use function strtolower;
+use const INF;
 
 class InitializerExprTypeResolver
 {
@@ -1580,6 +1585,14 @@ class InitializerExprTypeResolver
 			return $union->toNumber();
 		}
 
+		if ($operand instanceof IntegerRangeType) {
+			$operandMin = $operand->getMin();
+			$operandMax = $operand->getMax();
+		} else {
+			$operandMin = $operand->getValue();
+			$operandMax = $operand->getValue();
+		}
+
 		if ($node instanceof BinaryOp\Plus) {
 			if ($operand instanceof ConstantIntegerType) {
 				/** @var int|float|null $min */
@@ -1645,63 +1658,103 @@ class InitializerExprTypeResolver
 				}
 			}
 		} elseif ($node instanceof Expr\BinaryOp\Mul) {
+			$min1 = $rangeMin === 0 || $operandMin === 0 ? 0 : ($rangeMin ?? -INF) * ($operandMin ?? -INF);
+			$min2 = $rangeMin === 0 || $operandMax === 0 ? 0 : ($rangeMin ?? -INF) * ($operandMax ?? INF);
+			$max1 = $rangeMax === 0 || $operandMin === 0 ? 0 : ($rangeMax ?? INF) * ($operandMin ?? -INF);
+			$max2 = $rangeMax === 0 || $operandMax === 0 ? 0 : ($rangeMax ?? INF) * ($operandMax ?? INF);
+
+			$min = min($min1, $min2, $max1, $max2);
+			$max = max($min1, $min2, $max1, $max2);
+
+			if ($min === -INF) {
+				$min = null;
+			}
+			if ($max === INF) {
+				$max = null;
+			}
+		} else {
 			if ($operand instanceof ConstantIntegerType) {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null ? $rangeMin * $operand->getValue() : null;
-
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null ? $rangeMax * $operand->getValue() : null;
+				$min = $rangeMin !== null && $operand->getValue() !== 0 ? $rangeMin / $operand->getValue() : null;
+				$max = $rangeMax !== null && $operand->getValue() !== 0 ? $rangeMax / $operand->getValue() : null;
 			} else {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null && $operand->getMin() !== null ? $rangeMin * $operand->getMin() : null;
+				// Avoid division by zero when looking for the min and the max by using the closest int
+				$operandMin = $operandMin !== 0 ? $operandMin : 1;
+				$operandMax = $operandMax !== 0 ? $operandMax : -1;
 
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null && $operand->getMax() !== null ? $rangeMax * $operand->getMax() : null;
+				if (
+					($operandMin < 0 || $operandMin === null)
+					&& ($operandMax > 0 || $operandMax === null)
+				) {
+					$negativeOperand = IntegerRangeType::fromInterval($operandMin, 0);
+					assert($negativeOperand instanceof IntegerRangeType);
+					$positiveOperand = IntegerRangeType::fromInterval(0, $operandMax);
+					assert($positiveOperand instanceof IntegerRangeType);
+
+					$result = TypeCombinator::union(
+						$this->integerRangeMath($range, $node, $negativeOperand),
+						$this->integerRangeMath($range, $node, $positiveOperand),
+					)->toNumber();
+
+					if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
+						return new BenevolentUnionType([new IntegerType(), new FloatType()]);
+					}
+
+					return $result;
+				}
+				if (
+					($rangeMin < 0 || $rangeMin === null)
+					&& ($rangeMax > 0 || $rangeMax === null)
+				) {
+					$negativeRange = IntegerRangeType::fromInterval($rangeMin, 0);
+					assert($negativeRange instanceof IntegerRangeType);
+					$positiveRange = IntegerRangeType::fromInterval(0, $rangeMax);
+					assert($positiveRange instanceof IntegerRangeType);
+
+					$result = TypeCombinator::union(
+						$this->integerRangeMath($negativeRange, $node, $operand),
+						$this->integerRangeMath($positiveRange, $node, $operand),
+					)->toNumber();
+
+					if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
+						return new BenevolentUnionType([new IntegerType(), new FloatType()]);
+					}
+
+					return $result;
+				}
+
+				$rangeMinSign = ($rangeMin ?? -INF) <=> 0;
+				$rangeMaxSign = ($rangeMax ?? INF) <=> 0;
+
+				$min1 = $operandMin !== null ? ($rangeMin ?? -INF) / $operandMin : $rangeMinSign * -0.1;
+				$min2 = $operandMax !== null ? ($rangeMin ?? -INF) / $operandMax : $rangeMinSign * 0.1;
+				$max1 = $operandMin !== null ? ($rangeMax ?? INF) / $operandMin : $rangeMaxSign * -0.1;
+				$max2 = $operandMax !== null ? ($rangeMax ?? INF) / $operandMax : $rangeMaxSign * 0.1;
+
+				$min = min($min1, $min2, $max1, $max2);
+				$max = max($min1, $min2, $max1, $max2);
+
+				if ($min === -INF) {
+					$min = null;
+				}
+				if ($max === INF) {
+					$max = null;
+				}
 			}
 
 			if ($min !== null && $max !== null && $min > $max) {
 				[$min, $max] = [$max, $min];
 			}
 
-			// invert maximas on multiplication with negative constants
-			if ((($range instanceof ConstantIntegerType && $range->getValue() < 0)
-					|| ($operand instanceof ConstantIntegerType && $operand->getValue() < 0))
-				&& ($min === null || $max === null)) {
-				[$min, $max] = [$max, $min];
-			}
-
-		} else {
-			if ($operand instanceof ConstantIntegerType) {
-				$min = $rangeMin !== null && $operand->getValue() !== 0 ? $rangeMin / $operand->getValue() : null;
-				$max = $rangeMax !== null && $operand->getValue() !== 0 ? $rangeMax / $operand->getValue() : null;
-			} else {
-				$min = $rangeMin !== null && $operand->getMin() !== null && $operand->getMin() !== 0 ? $rangeMin / $operand->getMin() : null;
-				$max = $rangeMax !== null && $operand->getMax() !== null && $operand->getMax() !== 0 ? $rangeMax / $operand->getMax() : null;
-			}
-
-			if ($range instanceof IntegerRangeType && $operand instanceof IntegerRangeType) {
-				if ($rangeMax === null && $operand->getMax() === null) {
-					$min = 0;
-				} elseif ($rangeMin === null && $operand->getMin() === null) {
-					$min = null;
-					$max = null;
-				}
-			}
-
 			if ($operand instanceof IntegerRangeType
-				&& ($operand->getMin() === null || $operand->getMax() === null)
 				|| ($rangeMin === null || $rangeMax === null)
-				|| is_float($min) || is_float($max)
+				|| is_float($min)
+				|| is_float($max)
 			) {
 				if (is_float($min)) {
-					$min = (int) $min;
+					$min = (int) ceil($min);
 				}
 				if (is_float($max)) {
-					$max = (int) $max;
-				}
-
-				if ($min !== null && $max !== null && $min > $max) {
-					[$min, $max] = [$max, $min];
+					$max = (int) floor($max);
 				}
 
 				// invert maximas on division with negative constants

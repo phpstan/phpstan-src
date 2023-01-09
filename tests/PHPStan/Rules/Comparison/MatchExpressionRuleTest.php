@@ -80,10 +80,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 				61,
 			],
 			[
-				'Match arm comparison between 1 and 1 is always true.',
-				66,
-			],
-			[
 				'Match expression does not handle remaining values: 1|2|3',
 				78,
 			],
@@ -268,6 +264,60 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm is unreachable because previous comparison is always true.',
 				29,
+			],
+		]);
+	}
+
+	public function testLastArmAlwaysTrue(): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/last-match-arm-always-true.php'], [
+			[
+				'Match arm comparison between $this(LastMatchArmAlwaysTrue\Foo)&LastMatchArmAlwaysTrue\Foo::TWO and LastMatchArmAlwaysTrue\Foo::TWO is always true.',
+				22,
+			],
+			[
+				'Match arm is unreachable because previous comparison is always true.',
+				23,
+			],
+			[
+				'Match arm comparison between $this(LastMatchArmAlwaysTrue\Foo)&LastMatchArmAlwaysTrue\Foo::TWO and LastMatchArmAlwaysTrue\Foo::TWO is always true.',
+				31,
+			],
+			[
+				'Match arm is unreachable because previous comparison is always true.',
+				32,
+			],
+			[
+				'Match arm comparison between $this(LastMatchArmAlwaysTrue\Foo)&LastMatchArmAlwaysTrue\Foo::TWO and LastMatchArmAlwaysTrue\Foo::TWO is always true.',
+				40,
+			],
+			[
+				'Match arm is unreachable because previous comparison is always true.',
+				41,
+			],
+			[
+				'Match arm is unreachable because previous comparison is always true.',
+				42,
+			],
+			[
+				'Match arm comparison between $this(LastMatchArmAlwaysTrue\Bar) and LastMatchArmAlwaysTrue\Bar::ONE is always true.',
+				62,
+			],
+			[
+				'Match arm is unreachable because previous comparison is always true.',
+				63,
+			],
+			[
+				'Match arm comparison between 1 and 0 is always false.',
+				70,
+			],
+			[
+				'Match expression does not handle remaining value: 1',
+				69,
 			],
 		]);
 	}

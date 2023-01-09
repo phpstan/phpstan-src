@@ -63,7 +63,7 @@ class Foo
 		};
 
 		match (1) {
-			1 => 1, // always true - report with strict-rules
+			1 => 1,
 		};
 
 		match ($i) {

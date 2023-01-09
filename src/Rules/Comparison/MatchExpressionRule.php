@@ -72,7 +72,7 @@ class MatchExpressionRule implements Rule
 					$nextArmIsDead = true;
 					if (
 						$this->checkAlwaysTrueStrictComparison
-						&& ($i !== $armsCount - 1 || $i === 0)
+						&& $i !== $armsCount - 1
 					) {
 						$errors[] = RuleErrorBuilder::message(sprintf(
 							'Match arm comparison between %s and %s is always true.',

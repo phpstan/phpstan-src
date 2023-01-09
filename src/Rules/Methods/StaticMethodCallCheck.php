@@ -18,6 +18,7 @@ use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -25,7 +26,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function in_array;
@@ -213,15 +213,18 @@ class StaticMethodCallCheck
 		$method = $classType->getMethod($methodName, $scope);
 		if (!$method->isStatic()) {
 			$function = $scope->getFunction();
+
+			$scopeIsInMethodClassOrSubClass = TrinaryLogic::createFromBoolean($scope->isInClass())->lazyAnd(
+				$classType->getObjectClassNames(),
+				static fn (string $objectClassName) => TrinaryLogic::createFromBoolean(
+					$scope->isInClass()
+					&& ($scope->getClassReflection()->getName() === $objectClassName || $scope->getClassReflection()->isSubclassOf($objectClassName)),
+				),
+			);
 			if (
 				!$function instanceof MethodReflection
 				|| $function->isStatic()
-				|| !$scope->isInClass()
-				|| (
-					$classType instanceof TypeWithClassName
-					&& $scope->getClassReflection()->getName() !== $classType->getClassName()
-					&& !$scope->getClassReflection()->isSubclassOf($classType->getClassName())
-				)
+				|| $scopeIsInMethodClassOrSubClass->no()
 			) {
 				// per php-src docs, this method can be called statically, even if declared non-static
 				if (strtolower($method->getName()) === 'loadhtml' && $method->getDeclaringClass()->getName() === DOMDocument::class) {

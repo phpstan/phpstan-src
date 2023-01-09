@@ -17,7 +17,6 @@ use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\TypeWithClassName;
 use function array_map;
 use function array_merge;
 use function count;
@@ -220,12 +219,15 @@ class InstantiationRule implements Rule
 		}
 
 		if ($node->class instanceof Node\Stmt\Class_) {
-			$anonymousClassType = $scope->getType($node);
-			if (!$anonymousClassType instanceof TypeWithClassName) {
+			$classNames = $scope->getType($node)->getObjectClassNames();
+			if ($classNames === []) {
 				throw new ShouldNotHappenException();
 			}
 
-			return [[$anonymousClassType->getClassName(), true]];
+			return array_map(
+				static fn (string $className) => [$className, true],
+				$classNames,
+			);
 		}
 
 		$type = $scope->getType($node->class);

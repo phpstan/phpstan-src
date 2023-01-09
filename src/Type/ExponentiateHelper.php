@@ -46,27 +46,24 @@ final class ExponentiateHelper
 		$float = new FloatType();
 		$isFloatBase = $float->isSuperTypeOf($base)->yes();
 
-		if ($exponent instanceof ConstantScalarType) {
-			$isLooseZero = (new ConstantIntegerType(0))->isSuperTypeOf($exponent->toNumber());
-			$isLooseOne = (new ConstantIntegerType(1))->isSuperTypeOf($exponent->toNumber());
-
-			if ($isLooseZero->yes()) {
-				if ($isFloatBase) {
-					return new ConstantFloatType(1);
-				}
-
-				return new ConstantIntegerType(1);
+		$isLooseZero = (new ConstantIntegerType(0))->isSuperTypeOf($exponent->toNumber());
+		if ($isLooseZero->yes()) {
+			if ($isFloatBase) {
+				return new ConstantFloatType(1);
 			}
 
-			if ($isLooseOne->yes()) {
-				$possibleResults = new UnionType([
-					new FloatType(),
-					new IntegerType(),
-				]);
+			return new ConstantIntegerType(1);
+		}
 
-				if ($possibleResults->isSuperTypeOf($base)->yes()) {
-					return $base;
-				}
+		$isLooseOne = (new ConstantIntegerType(1))->isSuperTypeOf($exponent->toNumber());
+		if ($isLooseOne->yes()) {
+			$possibleResults = new UnionType([
+				new FloatType(),
+				new IntegerType(),
+			]);
+
+			if ($possibleResults->isSuperTypeOf($base)->yes()) {
+				return $base;
 			}
 		}
 

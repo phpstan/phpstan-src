@@ -148,7 +148,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use Throwable;
 use Traversable;
@@ -1260,7 +1259,10 @@ class NodeScopeResolver
 
 				$catchType = TypeCombinator::union(...array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types));
 				$originalCatchType = $catchType;
-				$isThrowable = $originalCatchType instanceof TypeWithClassName && strtolower($originalCatchType->getClassName()) === 'throwable';
+				$isThrowable = TrinaryLogic::createNo()->lazyOr(
+					$originalCatchType->getObjectClassNames(),
+					static fn (string $objectClassName) => TrinaryLogic::createFromBoolean(strtolower($objectClassName) === 'throwable'),
+				);
 				$catchType = TypeCombinator::remove($catchType, $pastCatchTypes);
 				$pastCatchTypes = TypeCombinator::union($pastCatchTypes, $originalCatchType);
 				$matchingThrowPoints = [];
@@ -1284,7 +1286,7 @@ class NodeScopeResolver
 					if ($isSuperType->yes()) {
 						continue;
 					}
-					if ($isThrowable) {
+					if ($isThrowable->yes()) {
 						continue;
 					}
 					$newThrowPoints[] = $throwPoint->subtractCatchType($catchType);
@@ -2208,12 +2210,12 @@ class NodeScopeResolver
 								} elseif ($argValueType instanceof ConstantStringType) {
 									$scopeClass = $argValueType->getValue();
 									$thisType = new ObjectType($scopeClass);
-								} elseif (
-									$argValueType instanceof GenericClassStringType
-									&& $argValueType->getGenericType() instanceof TypeWithClassName
-								) {
-									$scopeClass = $argValueType->getGenericType()->getClassName();
-									$thisType = $argValueType->getGenericType();
+								} elseif ($argValueType instanceof GenericClassStringType) {
+									$genericClassNames = $argValueType->getGenericType()->getObjectClassNames();
+									if (count($genericClassNames) === 1) {
+										$scopeClass = $genericClassNames[0];
+										$thisType = $argValueType->getGenericType();
+									}
 								}
 							}
 							$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClass);

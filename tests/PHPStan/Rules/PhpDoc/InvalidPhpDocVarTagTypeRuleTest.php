@@ -24,7 +24,7 @@ class InvalidPhpDocVarTagTypeRuleTest extends RuleTestCase
 			$broker,
 			new ClassCaseSensitivityCheck($broker, true),
 			new GenericObjectTypeCheck(),
-			new MissingTypehintCheck($broker, true, true, true, true, []),
+			new MissingTypehintCheck(true, true, true, true, []),
 			new UnresolvableTypeHelper(),
 			true,
 			true,

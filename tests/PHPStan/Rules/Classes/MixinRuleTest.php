@@ -24,7 +24,7 @@ class MixinRuleTest extends RuleTestCase
 			$reflectionProvider,
 			new ClassCaseSensitivityCheck($reflectionProvider, true),
 			new GenericObjectTypeCheck(),
-			new MissingTypehintCheck($reflectionProvider, true, true, true, true, []),
+			new MissingTypehintCheck(true, true, true, true, []),
 			new UnresolvableTypeHelper(),
 			true,
 		);

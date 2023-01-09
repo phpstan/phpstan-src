@@ -6,7 +6,6 @@ use Closure;
 use Generator;
 use Iterator;
 use IteratorAggregate;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\CallableType;
@@ -20,7 +19,6 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\TypeWithClassName;
 use Traversable;
 use function array_keys;
 use function array_merge;
@@ -45,7 +43,6 @@ class MissingTypehintCheck
 	 * @param string[] $skipCheckGenericClasses
 	 */
 	public function __construct(
-		private ReflectionProvider $reflectionProvider,
 		private bool $disableCheckMissingIterableValueType,
 		private bool $checkMissingIterableValueType,
 		private bool $checkGenericClassInNonGenericObjectType,
@@ -86,16 +83,6 @@ class MissingTypehintCheck
 			if ($type->isIterable()->yes()) {
 				$iterableValue = $type->getIterableValueType();
 				if ($iterableValue instanceof MixedType && !$iterableValue->isExplicitMixed()) {
-					if (
-						$type instanceof TypeWithClassName
-						&& !in_array($type->getClassName(), self::ITERABLE_GENERIC_CLASS_NAMES, true)
-						&& $this->reflectionProvider->hasClass($type->getClassName())
-					) {
-						$classReflection = $this->reflectionProvider->getClass($type->getClassName());
-						if ($classReflection->isGeneric()) {
-							return $type;
-						}
-					}
 					$iterablesWithMissingValueTypehint[] = $type;
 				}
 				if (!$type instanceof IntersectionType) {

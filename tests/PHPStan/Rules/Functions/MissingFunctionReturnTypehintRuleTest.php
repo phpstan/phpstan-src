@@ -14,8 +14,7 @@ class MissingFunctionReturnTypehintRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$broker = $this->createReflectionProvider();
-		return new MissingFunctionReturnTypehintRule(new MissingTypehintCheck($broker, true, true, true, true, []));
+		return new MissingFunctionReturnTypehintRule(new MissingTypehintCheck(true, true, true, true, []));
 	}
 
 	public function testRule(): void

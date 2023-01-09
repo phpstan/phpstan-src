@@ -12,7 +12,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use function count;
 use function sprintf;
@@ -94,7 +93,7 @@ class ApiInstanceofRule implements Rule
 		$exprType = $scope->getType($node->expr);
 		if ($exprType instanceof UnionType) {
 			foreach ($exprType->getTypes() as $innerType) {
-				if ($innerType instanceof TypeWithClassName && $classType->isSuperTypeOf($innerType)->yes()) {
+				if ($innerType->getObjectClassNames() !== [] && $classType->isSuperTypeOf($innerType)->yes()) {
 					return [];
 				}
 			}

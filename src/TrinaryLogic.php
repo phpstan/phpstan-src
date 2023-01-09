@@ -94,6 +94,10 @@ class TrinaryLogic
 		callable $callback,
 	): self
 	{
+		if ($this->no()) {
+			return $this;
+		}
+
 		$results = [];
 		foreach ($objects as $object) {
 			$result = $callback($object);
@@ -124,6 +128,10 @@ class TrinaryLogic
 		callable $callback,
 	): self
 	{
+		if ($this->yes()) {
+			return $this;
+		}
+
 		$results = [];
 		foreach ($objects as $object) {
 			$result = $callback($object);

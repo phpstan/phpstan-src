@@ -9,8 +9,8 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
@@ -51,11 +51,11 @@ class ThrowsVoidFunctionWithExplicitThrowPointRule implements Rule
 			}
 
 			foreach (TypeUtils::flattenTypes($throwPoint->getType()) as $throwPointType) {
-				if (
-					$throwPointType instanceof TypeWithClassName
-					&& $this->exceptionTypeResolver->isCheckedException($throwPointType->getClassName(), $throwPoint->getScope())
-					&& $this->missingCheckedExceptionInThrows
-				) {
+				$isCheckedException = TrinaryLogic::createFromBoolean($this->missingCheckedExceptionInThrows)->lazyAnd(
+					$throwPointType->getObjectClassNames(),
+					fn (string $objectClassName) => TrinaryLogic::createFromBoolean($this->exceptionTypeResolver->isCheckedException($objectClassName, $throwPoint->getScope())),
+				);
+				if ($isCheckedException->yes()) {
 					continue;
 				}
 

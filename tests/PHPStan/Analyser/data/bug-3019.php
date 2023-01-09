@@ -8,8 +8,13 @@ trait FooTrait
 {
 	public function doFoo(): void
 	{
-		assertType('string', __CLASS__);
-		assertType('string', __NAMESPACE__);
+		assertType('class-string&literal-string', __CLASS__);
+		assertType('literal-string', __NAMESPACE__);
+	}
+
+	public function doFooBaz(): void
+	{
+		$key = __CLASS__ === 'Bug3019\Foo' ? 'display' : 'layout';
 	}
 }
 

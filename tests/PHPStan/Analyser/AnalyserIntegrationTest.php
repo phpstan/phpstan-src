@@ -617,7 +617,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug6940(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6940.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('Loose comparison using == between array{} and array{} will always evaluate to true.', $errors[0]->getMessage());
+		$this->assertSame(12, $errors[0]->getLine());
 	}
 
 	public function testBug1447(): void
@@ -881,13 +883,16 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug7637(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-7637.php');
-		$this->assertCount(2, $errors);
+		$this->assertCount(3, $errors);
 
 		$this->assertSame('Method Bug7637\HelloWorld::getProperty() has invalid return type Bug7637\rex_backend_login.', $errors[0]->getMessage());
 		$this->assertSame(54, $errors[0]->getLine());
 
 		$this->assertSame('Method Bug7637\HelloWorld::getProperty() has invalid return type Bug7637\rex_timer.', $errors[1]->getMessage());
 		$this->assertSame(54, $errors[1]->getLine());
+
+		$this->assertSame('Call to function is_string() with string will always evaluate to true.', $errors[2]->getMessage());
+		$this->assertSame(57, $errors[2]->getLine());
 	}
 
 	public function testBug7737(): void
@@ -1022,11 +1027,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testAssertDocblock(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/assert-docblock.php');
-		$this->assertCount(2, $errors);
+		$this->assertCount(4, $errors);
 		$this->assertSame('Call to method AssertDocblock\A::testInt() with string will always evaluate to false.', $errors[0]->getMessage());
 		$this->assertSame(218, $errors[0]->getLine());
-		$this->assertSame('Call to method AssertDocblock\A::testNotInt() with int will always evaluate to false.', $errors[1]->getMessage());
-		$this->assertSame(238, $errors[1]->getLine());
+		$this->assertSame('Call to method AssertDocblock\A::testNotInt() with string will always evaluate to true.', $errors[1]->getMessage());
+		$this->assertSame(224, $errors[1]->getLine());
+		$this->assertSame('Call to method AssertDocblock\A::testInt() with int will always evaluate to true.', $errors[2]->getMessage());
+		$this->assertSame(232, $errors[2]->getLine());
+		$this->assertSame('Call to method AssertDocblock\A::testNotInt() with int will always evaluate to false.', $errors[3]->getMessage());
+		$this->assertSame(238, $errors[3]->getLine());
 	}
 
 	public function testBug8147(): void
@@ -1101,7 +1110,12 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug8004(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-8004.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(2, $errors);
+		$this->assertSame('Strict comparison using !== between null and DateTimeInterface|string will always evaluate to true.', $errors[0]->getMessage());
+		$this->assertSame(49, $errors[0]->getLine());
+
+		$this->assertSame('Strict comparison using !== between null and DateTimeInterface|string will always evaluate to true.', $errors[1]->getMessage());
+		$this->assertSame(59, $errors[1]->getLine());
 	}
 
 	public function testSkipCheckNoGenericClasses(): void

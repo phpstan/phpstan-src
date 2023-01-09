@@ -55,13 +55,14 @@ parameters:
 		unescapeStrings: false
 		duplicateStubs: false
 		invarianceComposition: false
+		alwaysTrueAlwaysReported: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
-	checkAlwaysTrueCheckTypeFunctionCall: false
-	checkAlwaysTrueInstanceof: false
-	checkAlwaysTrueStrictComparison: false
-	checkAlwaysTrueLooseComparison: false
+	checkAlwaysTrueCheckTypeFunctionCall: %featureToggles.alwaysTrueAlwaysReported%
+	checkAlwaysTrueInstanceof: %featureToggles.alwaysTrueAlwaysReported%
+	checkAlwaysTrueStrictComparison: %featureToggles.alwaysTrueAlwaysReported%
+	checkAlwaysTrueLooseComparison: %featureToggles.alwaysTrueAlwaysReported%
 	checkClassCaseSensitivity: false
 	checkExplicitMixed: false
 	checkImplicitMixed: false
@@ -275,6 +276,7 @@ parametersSchema:
 		unescapeStrings: bool()
 		duplicateStubs: bool()
 		invarianceComposition: bool()
+		alwaysTrueAlwaysReported: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

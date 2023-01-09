@@ -637,6 +637,10 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			],
 			[
 				'Strict comparison using === between Bug8485\FooEnum::C and Bug8485\FooEnum::C will always evaluate to true.',
+				67,
+			],
+			[
+				'Strict comparison using === between Bug8485\FooEnum::C and Bug8485\FooEnum::C will always evaluate to true.',
 				74,
 			],
 		]);
@@ -719,6 +723,17 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between \'Bug3633\\\FinalClass\' and \'Bug3633\\\FinalClass\' will always evaluate to true.',
 				115,
+			],
+		]);
+	}
+
+	public function testLastConditionAlwaysTrue(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->analyse([__DIR__ . '/data/strict-comparison-last-condition-always-true.php'], [
+			[
+				'Strict comparison using === between \'bar\' and \'bar\' will always evaluate to true.',
+				15,
 			],
 		]);
 	}

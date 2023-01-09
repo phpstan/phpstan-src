@@ -13,7 +13,7 @@ class LastConditionVisitor extends NodeVisitorAbstract
 
 	public function enterNode(Node $node): ?Node
 	{
-		if ($node instanceof Node\Stmt\If_ && $node->elseifs !== []) {
+		if ($node instanceof Node\Stmt\If_ && $node->elseifs !== [] && $node->else === null) {
 			$lastElseIf = count($node->elseifs) - 1;
 
 			$node->elseifs[$lastElseIf]->cond->setAttribute(self::ATTRIBUTE_NAME, true);

@@ -155,6 +155,7 @@ class MutatingScope implements Scope
 	/**
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param list<string> $inClosureBindScopeClasses
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
@@ -179,7 +180,7 @@ class MutatingScope implements Scope
 		private array $expressionTypes = [],
 		private array $nativeExpressionTypes = [],
 		private array $conditionalExpressions = [],
-		private ?string $inClosureBindScopeClass = null,
+		private array $inClosureBindScopeClasses = [],
 		private ?ParametersAcceptor $anonymousFunctionReflection = null,
 		private bool $inFirstLevelStatement = true,
 		private array $currentlyAssignedExpressions = [],
@@ -317,7 +318,7 @@ class MutatingScope implements Scope
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			[],
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
@@ -372,7 +373,7 @@ class MutatingScope implements Scope
 			$expressionTypes,
 			$this->nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
@@ -453,7 +454,7 @@ class MutatingScope implements Scope
 			$expressionTypes,
 			$this->nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
@@ -900,7 +901,7 @@ class MutatingScope implements Scope
 					if ($type instanceof UnionType || $type instanceof IntersectionType) {
 						return $traverse($type);
 					}
-					if ($type instanceof TypeWithClassName) {
+					if ($type->getObjectClassNames() !== []) {
 						$uncertainty = true;
 						return $type;
 					}
@@ -2110,7 +2111,7 @@ class MutatingScope implements Scope
 			$this->nativeExpressionTypes,
 			[],
 			[],
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
@@ -2200,8 +2201,8 @@ class MutatingScope implements Scope
 				'self',
 				'static',
 			], true)) {
-				if ($this->inClosureBindScopeClass !== null && $this->inClosureBindScopeClass !== 'static') {
-					return $this->inClosureBindScopeClass;
+				if ($this->inClosureBindScopeClasses !== [] && $this->inClosureBindScopeClasses !== ['static']) {
+					return $this->inClosureBindScopeClasses[0];
 				}
 				return $this->getClassReflection()->getName();
 			} elseif ($originalClass === 'parent') {
@@ -2219,9 +2220,9 @@ class MutatingScope implements Scope
 	public function resolveTypeByName(Name $name): TypeWithClassName
 	{
 		if ($name->toLowerString() === 'static' && $this->isInClass()) {
-			if ($this->inClosureBindScopeClass !== null && $this->inClosureBindScopeClass !== 'static') {
-				if ($this->reflectionProvider->hasClass($this->inClosureBindScopeClass)) {
-					return new StaticType($this->reflectionProvider->getClass($this->inClosureBindScopeClass));
+			if ($this->inClosureBindScopeClasses !== [] && $this->inClosureBindScopeClasses !== ['static']) {
+				if ($this->reflectionProvider->hasClass($this->inClosureBindScopeClasses[0])) {
+					return new StaticType($this->reflectionProvider->getClass($this->inClosureBindScopeClasses[0]));
 				}
 			}
 
@@ -2230,11 +2231,11 @@ class MutatingScope implements Scope
 
 		$originalClass = $this->resolveName($name);
 		if ($this->isInClass()) {
-			if ($this->inClosureBindScopeClass === $originalClass) {
-				if ($this->reflectionProvider->hasClass($this->inClosureBindScopeClass)) {
-					return new ThisType($this->reflectionProvider->getClass($this->inClosureBindScopeClass));
+			if ($this->inClosureBindScopeClasses === [$originalClass]) {
+				if ($this->reflectionProvider->hasClass($originalClass)) {
+					return new ThisType($this->reflectionProvider->getClass($originalClass));
 				}
-				return new ObjectType($this->inClosureBindScopeClass);
+				return new ObjectType($originalClass);
 			}
 
 			$thisType = new ThisType($this->getClassReflection());
@@ -2291,7 +2292,7 @@ class MutatingScope implements Scope
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
@@ -2320,7 +2321,7 @@ class MutatingScope implements Scope
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
@@ -2386,7 +2387,7 @@ class MutatingScope implements Scope
 				'$this' => $thisHolder,
 			]),
 			[],
-			null,
+			[],
 			null,
 			true,
 			[],
@@ -2413,7 +2414,7 @@ class MutatingScope implements Scope
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			[],
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 		);
 	}
@@ -2664,7 +2665,7 @@ class MutatingScope implements Scope
 			$expressionTypes,
 			$nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$scopeClass,
+			[$scopeClass],
 			$this->anonymousFunctionReflection,
 		);
 	}
@@ -2693,7 +2694,7 @@ class MutatingScope implements Scope
 			$expressionTypes,
 			$nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$originalScope->inClosureBindScopeClass,
+			$originalScope->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 		);
 	}
@@ -2714,7 +2715,7 @@ class MutatingScope implements Scope
 			$expressionTypes,
 			$nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$thisType instanceof TypeWithClassName ? $thisType->getClassName() : null,
+			$thisType->getObjectClassNames(),
 			$this->anonymousFunctionReflection,
 		);
 	}
@@ -2722,7 +2723,7 @@ class MutatingScope implements Scope
 	/** @api */
 	public function isInClosureBind(): bool
 	{
-		return $this->inClosureBindScopeClass !== null;
+		return $this->inClosureBindScopeClasses !== [];
 	}
 
 	/**
@@ -2749,7 +2750,7 @@ class MutatingScope implements Scope
 			$scope->expressionTypes,
 			$scope->nativeExpressionTypes,
 			[],
-			$scope->inClosureBindScopeClass,
+			$scope->inClosureBindScopeClasses,
 			$anonymousFunctionReflection,
 			true,
 			[],
@@ -2859,7 +2860,7 @@ class MutatingScope implements Scope
 			array_merge($this->getConstantTypes(), $expressionTypes),
 			array_merge($this->getNativeConstantTypes(), $nativeTypes),
 			[],
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			new TrivialParametersAcceptor(),
 			true,
 			[],
@@ -2926,7 +2927,7 @@ class MutatingScope implements Scope
 			$scope->expressionTypes,
 			$scope->nativeExpressionTypes,
 			$scope->conditionalExpressions,
-			$scope->inClosureBindScopeClass,
+			$scope->inClosureBindScopeClasses,
 			$anonymousFunctionReflection,
 			true,
 			[],
@@ -2984,7 +2985,7 @@ class MutatingScope implements Scope
 			$this->invalidateStaticExpressions($arrowFunctionScope->expressionTypes),
 			$arrowFunctionScope->nativeExpressionTypes,
 			$arrowFunctionScope->conditionalExpressions,
-			$arrowFunctionScope->inClosureBindScopeClass,
+			$arrowFunctionScope->inClosureBindScopeClasses,
 			null,
 			true,
 			[],
@@ -3113,7 +3114,7 @@ class MutatingScope implements Scope
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$currentlyAssignedExpressions,
@@ -3143,7 +3144,7 @@ class MutatingScope implements Scope
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$currentlyAssignedExpressions,
@@ -3184,7 +3185,7 @@ class MutatingScope implements Scope
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
@@ -3214,7 +3215,7 @@ class MutatingScope implements Scope
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->isInFirstLevelStatement(),
 			$this->currentlyAssignedExpressions,
@@ -3352,7 +3353,7 @@ class MutatingScope implements Scope
 			$expressionTypes,
 			$nativeTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
@@ -3432,7 +3433,7 @@ class MutatingScope implements Scope
 			$expressionTypes,
 			$nativeExpressionTypes,
 			$newConditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
@@ -3520,7 +3521,7 @@ class MutatingScope implements Scope
 			$expressionTypes,
 			$nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
@@ -3683,7 +3684,7 @@ class MutatingScope implements Scope
 			$scope->expressionTypes,
 			$scope->nativeExpressionTypes,
 			array_merge($specifiedTypes->getNewConditionalExpressionHolders(), $scope->conditionalExpressions),
-			$scope->inClosureBindScopeClass,
+			$scope->inClosureBindScopeClasses,
 			$scope->anonymousFunctionReflection,
 			$scope->inFirstLevelStatement,
 			$scope->currentlyAssignedExpressions,
@@ -3709,7 +3710,7 @@ class MutatingScope implements Scope
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			$conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			$this->currentlyAssignedExpressions,
@@ -3738,7 +3739,7 @@ class MutatingScope implements Scope
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			false,
 			$this->currentlyAssignedExpressions,
@@ -3791,7 +3792,7 @@ class MutatingScope implements Scope
 			$mergedExpressionTypes,
 			$this->mergeVariableHolders($this->nativeExpressionTypes, $otherScope->nativeExpressionTypes),
 			$conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			[],
@@ -3949,7 +3950,7 @@ class MutatingScope implements Scope
 				$originalFinallyScope->nativeExpressionTypes,
 			),
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			[],
@@ -4043,7 +4044,7 @@ class MutatingScope implements Scope
 			$expressionTypes,
 			$nativeExpressionTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			[],
@@ -4091,7 +4092,7 @@ class MutatingScope implements Scope
 			$expressionTypes,
 			$nativeTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			[],
@@ -4121,7 +4122,7 @@ class MutatingScope implements Scope
 			$variableTypeHolders,
 			$nativeTypes,
 			$this->conditionalExpressions,
-			$this->inClosureBindScopeClass,
+			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
 			[],
@@ -4544,29 +4545,39 @@ class MutatingScope implements Scope
 			return true;
 		}
 
-		if ($this->inClosureBindScopeClass !== null && $this->reflectionProvider->hasClass($this->inClosureBindScopeClass)) {
-			$currentClassReflection = $this->reflectionProvider->getClass($this->inClosureBindScopeClass);
-		} elseif ($this->isInClass()) {
-			$currentClassReflection = $this->getClassReflection();
-		} else {
-			return false;
-		}
-
 		$classReflectionName = $classMemberReflection->getDeclaringClass()->getName();
-		if ($classMemberReflection->isPrivate()) {
-			return $currentClassReflection->getName() === $classReflectionName;
+		$canAccessClassMember = static function (ClassReflection $classReflection) use ($classMemberReflection, $classReflectionName) {
+			if ($classMemberReflection->isPrivate()) {
+				return $classReflection->getName() === $classReflectionName;
+			}
+
+			// protected
+
+			if (
+				$classReflection->getName() === $classReflectionName
+				|| $classReflection->isSubclassOf($classReflectionName)
+			) {
+				return true;
+			}
+
+			return $classMemberReflection->getDeclaringClass()->isSubclassOf($classReflection->getName());
+		};
+
+		foreach ($this->inClosureBindScopeClasses as $inClosureBindScopeClass) {
+			if (!$this->reflectionProvider->hasClass($inClosureBindScopeClass)) {
+				continue;
+			}
+
+			if ($canAccessClassMember($this->reflectionProvider->getClass($inClosureBindScopeClass))) {
+				return true;
+			}
 		}
 
-		// protected
-
-		if (
-			$currentClassReflection->getName() === $classReflectionName
-			|| $currentClassReflection->isSubclassOf($classReflectionName)
-		) {
-			return true;
+		if ($this->isInClass()) {
+			return $canAccessClassMember($this->getClassReflection());
 		}
 
-		return $classMemberReflection->getDeclaringClass()->isSubclassOf($currentClassReflection->getName());
+		return false;
 	}
 
 	/**

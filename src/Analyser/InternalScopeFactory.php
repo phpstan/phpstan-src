@@ -13,6 +13,7 @@ interface InternalScopeFactory
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param list<string> $inClosureBindScopeClasses
 	 * @param array<string, true> $currentlyAssignedExpressions
 	 * @param array<string, true> $currentlyAllowedUndefinedExpressions
 	 * @param array<MethodReflection|FunctionReflection> $inFunctionCallsStack
@@ -25,7 +26,7 @@ interface InternalScopeFactory
 		array $expressionTypes = [],
 		array $nativeExpressionTypes = [],
 		array $conditionalExpressions = [],
-		?string $inClosureBindScopeClass = null,
+		array $inClosureBindScopeClasses = [],
 		?ParametersAcceptor $anonymousFunctionReflection = null,
 		bool $inFirstLevelStatement = true,
 		array $currentlyAssignedExpressions = [],

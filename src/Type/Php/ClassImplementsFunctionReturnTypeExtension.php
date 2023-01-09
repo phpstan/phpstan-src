@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -33,30 +34,28 @@ class ClassImplementsFunctionReturnTypeExtension implements DynamicFunctionRetur
 			return null;
 		}
 
-		$objectOrClassType = $scope->getType($functionCall->getArgs()[0]->value);
+		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
 		$autoload = !isset($functionCall->getArgs()[1])
 			|| $scope->getType($functionCall->getArgs()[1]->value)->equals(new ConstantBooleanType(true));
 
-		if ($objectOrClassType instanceof UnionType) {
-			foreach ($objectOrClassType->getTypes() as $type) {
-				if ($this->canFunctionReturnFalse($type, $autoload)) {
-					return null;
-				}
-			}
-		} elseif ($this->canFunctionReturnFalse($objectOrClassType, $autoload)) {
-			return null;
+		$isObject = (new ObjectWithoutClassType())->isSuperTypeOf($firstArgType);
+
+		$objectOrClassString = (new UnionType([new ObjectWithoutClassType(), new ClassStringType()]));
+		if (
+			$autoload && $objectOrClassString->isSuperTypeOf($firstArgType)->yes()
+			|| $isObject->yes()
+		) {
+			return TypeCombinator::remove(
+				ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType(),
+				new ConstantBooleanType(false),
+			);
 		}
 
-		return TypeCombinator::remove(
-			ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType(),
-			new ConstantBooleanType(false),
-		);
-	}
+		if ($isObject->no() && $firstArgType->isClassStringType()->no()) {
+			return new ConstantBooleanType(false);
+		}
 
-	private function canFunctionReturnFalse(Type $type, bool $autoload): bool
-	{
-		return (new ObjectWithoutClassType())->isSuperTypeOf($type)->no()
-			&& (!$autoload || !$type->isClassStringType()->yes());
+		return null;
 	}
 
 }

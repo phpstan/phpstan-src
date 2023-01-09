@@ -63,7 +63,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use function array_filter;
 use function array_key_exists;
@@ -152,7 +151,7 @@ class TypeSpecifier
 				if ($type instanceof UnionType || $type instanceof IntersectionType) {
 					return $traverse($type);
 				}
-				if ($type instanceof TypeWithClassName) {
+				if ($type->getObjectClassNames() !== []) {
 					return $type;
 				}
 				if ($type instanceof GenericClassStringType) {

@@ -137,20 +137,9 @@ class IfConstantConditionRuleTest extends RuleTestCase
 		}
 
 		$this->treatPhpDocTypesAsCertain = true;
-		$this->analyse([__DIR__ . '/data/bug-8485.php'], [
-			[
-				'If condition is always true.',
-				21,
-			],
-			[
-				'If condition is always false.',
-				26,
-			],
-			[
-				'If condition is always false.',
-				31,
-			],
-		]);
+
+		// reported by ConstantLooseComparisonRule instead
+		$this->analyse([__DIR__ . '/data/bug-8485.php'], []);
 	}
 
 }

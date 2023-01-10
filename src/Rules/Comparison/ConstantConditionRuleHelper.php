@@ -35,6 +35,8 @@ class ConstantConditionRuleHelper
 			$expr instanceof Expr\Instanceof_
 			|| $expr instanceof Expr\BinaryOp\Identical
 			|| $expr instanceof Expr\BinaryOp\NotIdentical
+			|| $expr instanceof Expr\BinaryOp\Equal
+			|| $expr instanceof Expr\BinaryOp\NotEqual
 			|| $expr instanceof Expr\BooleanNot
 			|| $expr instanceof Expr\BinaryOp\BooleanOr
 			|| $expr instanceof Expr\BinaryOp\BooleanAnd

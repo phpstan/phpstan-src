@@ -26,7 +26,9 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use function array_intersect_key;
 use function array_map;
+use function array_values;
 use function count;
 use function implode;
 use function in_array;
@@ -641,14 +643,16 @@ class IntersectionType implements CompoundType
 
 	public function getEnumCases(): array
 	{
-		$enumCases = [];
+		$compare = [];
 		foreach ($this->types as $type) {
+			$oneType = [];
 			foreach ($type->getEnumCases() as $enumCase) {
-				$enumCases[] = $enumCase;
+				$oneType[$enumCase->describe(VerbosityLevel::typeOnly())] = $enumCase;
 			}
+			$compare[] = $oneType;
 		}
 
-		return $enumCases;
+		return array_values(array_intersect_key(...$compare));
 	}
 
 	public function isCallable(): TrinaryLogic

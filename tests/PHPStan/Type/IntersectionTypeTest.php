@@ -412,6 +412,10 @@ class IntersectionTypeTest extends PHPStanTestCase
 
 	public function dataGetEnumCases(): iterable
 	{
+		if (PHP_VERSION_ID < 80100) {
+			return [];
+		}
+
 		$reflectionProvider = $this->createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass(FooEnum::class);
 
@@ -435,10 +439,6 @@ class IntersectionTypeTest extends PHPStanTestCase
 		array $expectedEnumCases,
 	): void
 	{
-		if (PHP_VERSION_ID < 80100) {
-			$this->markTestSkipped('Test requires PHP 8.1.');
-		}
-
 		$enumCases = $type->getEnumCases();
 		$this->assertCount(count($expectedEnumCases), $enumCases);
 		foreach ($enumCases as $i => $enumCase) {

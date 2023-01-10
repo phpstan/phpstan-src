@@ -784,7 +784,7 @@ class NodeScopeResolver
 			}
 
 			if ($stmt->else === null) {
-				if (!$ifAlwaysTrue) {
+				if (!$ifAlwaysTrue && !$lastElseIfConditionIsTrue) {
 					$finalScope = $scope->mergeWith($finalScope);
 					$alwaysTerminating = false;
 				}

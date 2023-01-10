@@ -1813,7 +1813,7 @@ class InitializerExprTypeResolver
 		if (strtolower($constantName) === 'class') {
 			return TypeTraverser::map(
 				$constantClassType,
-				static function (Type $type, callable $traverse): Type {
+				function (Type $type, callable $traverse): Type {
 					if ($type instanceof UnionType || $type instanceof IntersectionType) {
 						return $traverse($type);
 					}
@@ -1829,14 +1829,19 @@ class InitializerExprTypeResolver
 						);
 					}
 
-					if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {
+					$objectClassNames = $type->getObjectClassNames();
+					if (count($objectClassNames) > 1) {
+						throw new ShouldNotHappenException();
+					}
+
+					if ($type instanceof TemplateType && $objectClassNames === []) {
 						return TypeCombinator::intersect(
 							new GenericClassStringType($type),
 							new AccessoryLiteralStringType(),
 						);
-					} elseif ($type instanceof TypeWithClassName) {
-						$reflection = $type->getClassReflection();
-						if ($reflection !== null && $reflection->isFinalByKeyword()) {
+					} elseif ($objectClassNames !== [] && $this->getReflectionProvider()->hasClass($objectClassNames[0])) {
+						$reflection = $this->getReflectionProvider()->getClass($objectClassNames[0]);
+						if ($reflection->isFinalByKeyword()) {
 							return new ConstantStringType($reflection->getName(), true);
 						}
 

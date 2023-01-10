@@ -26,3 +26,4 @@ parameters:
 		duplicateStubs: true
 		invarianceComposition: true
 		alwaysTrueAlwaysReported: true
+		disableUnreachableBranchesRules: true

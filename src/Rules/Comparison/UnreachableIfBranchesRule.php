@@ -17,6 +17,7 @@ class UnreachableIfBranchesRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $disable,
 	)
 	{
 	}
@@ -28,6 +29,10 @@ class UnreachableIfBranchesRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($this->disable) {
+			return [];
+		}
+
 		$errors = [];
 		$condition = $node->cond;
 		$conditionType = $this->treatPhpDocTypesAsCertain ? $scope->getType($condition) : $scope->getNativeType($condition);

@@ -149,6 +149,7 @@ services:
 		class: PHPStan\Rules\Comparison\UnreachableIfBranchesRule
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			disable: %featureToggles.disableUnreachableBranchesRules%
 		tags:
 			- phpstan.rules.rule
 

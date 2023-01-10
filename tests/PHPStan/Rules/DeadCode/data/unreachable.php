@@ -114,3 +114,25 @@ class Foo
 	}
 
 }
+
+class LastElseIf
+{
+
+	/**
+	 * @param 'a'|'b'|'c' $s
+	 * @return void
+	 */
+	public function doFoo(string $s): void
+	{
+		if ($s === 'a') {
+			return;
+		} elseif ($s === 'b') {
+			return;
+		} elseif ($s === 'c') {
+			return;
+		}
+
+		echo "test";
+	}
+
+}

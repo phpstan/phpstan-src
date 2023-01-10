@@ -25,6 +25,7 @@ class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 					true,
 				),
 				$this->treatPhpDocTypesAsCertain,
+				true,
 			),
 			$this->treatPhpDocTypesAsCertain,
 		);

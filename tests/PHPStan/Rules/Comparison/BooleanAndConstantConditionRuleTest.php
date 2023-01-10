@@ -27,6 +27,7 @@ class BooleanAndConstantConditionRuleTest extends RuleTestCase
 					true,
 				),
 				$this->treatPhpDocTypesAsCertain,
+				true,
 			),
 			$this->treatPhpDocTypesAsCertain,
 			$this->bleedingEdge,

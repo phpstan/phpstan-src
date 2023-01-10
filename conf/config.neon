@@ -945,6 +945,7 @@ services:
 		class: PHPStan\Rules\Comparison\ConstantConditionRuleHelper
 		arguments:
 			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			looseComparisonRuleEnabled: %featureToggles.looseComparison%
 
 	-
 		class: PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper

@@ -866,6 +866,7 @@ return [
 	'fgetss' => ['hasSideEffects' => true],
 	'file' => ['hasSideEffects' => false],
 	'file_exists' => ['hasSideEffects' => false],
+	'file_get_contents' => ['hasSideEffects' => false],
 	'file_put_contents' => ['hasSideEffects' => true],
 	'fileatime' => ['hasSideEffects' => false],
 	'filectime' => ['hasSideEffects' => false],

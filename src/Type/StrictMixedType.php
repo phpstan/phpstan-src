@@ -312,6 +312,11 @@ class StrictMixedType implements CompoundType
 		return [];
 	}
 
+	public function getEnumCases(): array
+	{
+		return [];
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

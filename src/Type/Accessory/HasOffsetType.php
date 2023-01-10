@@ -284,6 +284,11 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
+	public function getEnumCases(): array
+	{
+		return [];
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

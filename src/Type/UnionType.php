@@ -622,6 +622,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => $type->shuffleArray());
 	}
 
+	public function getEnumCases(): array
+	{
+		return $this->pickTypes(static fn (Type $type) => $type->getEnumCases());
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->unionResults(static fn (Type $type): TrinaryLogic => $type->isCallable());

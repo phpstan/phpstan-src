@@ -639,6 +639,18 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => $type->shuffleArray());
 	}
 
+	public function getEnumCases(): array
+	{
+		$enumCases = [];
+		foreach ($this->types as $type) {
+			foreach ($type->getEnumCases() as $enumCase) {
+				$enumCases[] = $enumCase;
+			}
+		}
+
+		return $enumCases;
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isCallable());

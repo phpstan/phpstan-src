@@ -145,6 +145,11 @@ class EnumCaseObjectType extends ObjectType
 		return TrinaryLogic::createNo();
 	}
 
+	public function getEnumCases(): array
+	{
+		return [$this];
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

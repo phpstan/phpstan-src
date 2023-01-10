@@ -1039,6 +1039,35 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this;
 	}
 
+	public function getEnumCases(): array
+	{
+		$classReflection = $this->getClassReflection();
+		if ($classReflection === null) {
+			return [];
+		}
+
+		if (!$classReflection->isEnum()) {
+			return [];
+		}
+
+		$subtracted = [];
+		if ($this->subtractedType !== null) {
+			foreach ($this->subtractedType->getEnumCases() as $enumCase) {
+				$subtracted[$enumCase->getEnumCaseName()] = true;
+			}
+		}
+
+		$cases = [];
+		foreach ($classReflection->getEnumCases() as $enumCase) {
+			if (array_key_exists($enumCase->getName(), $subtracted)) {
+				continue;
+			}
+			$cases[] = new EnumCaseObjectType($classReflection->getName(), $enumCase->getName(), $classReflection);
+		}
+
+		return $cases;
+	}
+
 	public function isCallable(): TrinaryLogic
 	{
 		$parametersAcceptors = $this->findCallableParametersAcceptors();

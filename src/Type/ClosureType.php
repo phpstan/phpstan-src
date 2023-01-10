@@ -250,6 +250,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return TrinaryLogic::createYes();
 	}
 
+	public function getEnumCases(): array
+	{
+		return [];
+	}
+
 	/**
 	 * @return ParametersAcceptor[]
 	 */

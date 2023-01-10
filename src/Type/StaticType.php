@@ -411,6 +411,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->isCallable();
 	}
 
+	public function getEnumCases(): array
+	{
+		return $this->getStaticObjectType()->getEnumCases();
+	}
+
 	public function isArray(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isArray();

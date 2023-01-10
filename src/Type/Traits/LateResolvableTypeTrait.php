@@ -260,6 +260,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isCallable();
 	}
 
+	public function getEnumCases(): array
+	{
+		return $this->resolve()->getEnumCases();
+	}
+
 	public function getCallableParametersAcceptors(ClassMemberAccessAnswerer $scope): array
 	{
 		return $this->resolve()->getCallableParametersAcceptors($scope);

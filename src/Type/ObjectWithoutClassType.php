@@ -119,6 +119,11 @@ class ObjectWithoutClassType implements SubtractableType
 		);
 	}
 
+	public function getEnumCases(): array
+	{
+		return [];
+	}
+
 	public function subtract(Type $type): Type
 	{
 		if ($type instanceof self) {

@@ -40,7 +40,6 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\ConstantType;
-use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -232,7 +231,7 @@ class TypeSpecifier
 			$exprRightType = $scope->getType($expr->right);
 			if (
 				$exprLeftType instanceof ConstantScalarType
-				|| $exprLeftType instanceof EnumCaseObjectType
+				|| count($exprLeftType->getEnumCases()) === 1
 				|| ($exprLeftType instanceof ConstantType && !$exprRightType->equals($exprLeftType) && $exprRightType->isSuperTypeOf($exprLeftType)->yes())
 			) {
 				$types = $this->create(
@@ -246,7 +245,7 @@ class TypeSpecifier
 			}
 			if (
 				$exprRightType instanceof ConstantScalarType
-				|| $exprRightType instanceof EnumCaseObjectType
+				|| count($exprRightType->getEnumCases()) === 1
 				|| ($exprRightType instanceof ConstantType && !$exprLeftType->equals($exprRightType) && $exprLeftType->isSuperTypeOf($exprRightType)->yes())
 			) {
 				$leftType = $this->create(

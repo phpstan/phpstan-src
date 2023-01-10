@@ -7,3 +7,6 @@ parameters:
 		-
 			message: '#^Access to constant ONE on an unknown class EnumTypeAssertions\\Foo\.$#'
 			path: ../tests/PHPStan/Analyser/NodeScopeResolverTest.php
+		-
+			message: '#^Class ObjectTypeEnums\\FooEnum not found\.$#'
+			path: ../tests/PHPStan/Type/ObjectTypeTest.php

@@ -4,3 +4,4 @@ includes:
 parameters:
 	phpVersion: 80000
 	resultCachePath: %tmpDir%/myResultCacheFile.php
+	treatPhpDocTypesAsCertain: false

@@ -6,33 +6,23 @@ parameters:
 			path: PHP-Parser/lib/PhpParser/Builder/Class_.php
 
 		-
-			message: "#^PHPDoc tag @param references unknown parameter\\: \\$interfaces$#"
-			count: 1
-			path: PHP-Parser/lib/PhpParser/Builder/Interface_.php
-
-		-
 			message: "#^Access to an undefined property PhpParser\\\\Node\\:\\:\\$stmts\\.$#"
 			count: 1
 			path: PHP-Parser/lib/PhpParser/Builder/Interface_.php
 
 		-
-			message: "#^Result of && is always false\\.$#"
+			message: "#^PHPDoc tag @param references unknown parameter\\: \\$interfaces$#"
 			count: 1
+			path: PHP-Parser/lib/PhpParser/Builder/Interface_.php
+
+		-
+			message: "#^Access to an undefined property PhpParser\\\\BuilderAbstract\\:\\:\\$flags\\.$#"
+			count: 2
 			path: PHP-Parser/lib/PhpParser/BuilderAbstract.php
 
 		-
 			message: "#^Method PhpParser\\\\BuilderAbstract\\:\\:normalizeValue\\(\\) should return PhpParser\\\\Node\\\\Expr but returns PhpParser\\\\Node\\.$#"
 			count: 1
-			path: PHP-Parser/lib/PhpParser/BuilderAbstract.php
-
-		-
-			message: "#^Else branch is unreachable because previous condition is always true\\.$#"
-			count: 1
-			path: PHP-Parser/lib/PhpParser/BuilderAbstract.php
-
-		-
-			message: "#^Access to an undefined property PhpParser\\\\BuilderAbstract\\:\\:\\$flags\\.$#"
-			count: 2
 			path: PHP-Parser/lib/PhpParser/BuilderAbstract.php
 
 		-
@@ -86,6 +76,16 @@ parameters:
 			path: PHP-Parser/lib/PhpParser/Node/Stmt/TryCatch.php
 
 		-
+			message: "#^Access to an undefined property PhpParser\\\\Node\\:\\:\\$name\\.$#"
+			count: 1
+			path: PHP-Parser/lib/PhpParser/NodeVisitor/NameResolver.php
+
+		-
+			message: "#^Access to an undefined property PhpParser\\\\Node\\:\\:\\$namespacedName\\.$#"
+			count: 1
+			path: PHP-Parser/lib/PhpParser/NodeVisitor/NameResolver.php
+
+		-
 			message: "#^Method PhpParser\\\\NodeVisitor\\\\NameResolver\\:\\:beforeTraverse\\(\\) should return array\\<PhpParser\\\\Node\\>\\|null but return statement is missing\\.$#"
 			count: 1
 			path: PHP-Parser/lib/PhpParser/NodeVisitor/NameResolver.php
@@ -96,14 +96,9 @@ parameters:
 			path: PHP-Parser/lib/PhpParser/NodeVisitor/NameResolver.php
 
 		-
-			message: "#^Access to an undefined property PhpParser\\\\Node\\:\\:\\$name\\.$#"
+			message: "#^Method PhpParser\\\\NodeVisitorAbstract\\:\\:afterTraverse\\(\\) should return array\\<PhpParser\\\\Node\\>\\|null but return statement is missing\\.$#"
 			count: 1
-			path: PHP-Parser/lib/PhpParser/NodeVisitor/NameResolver.php
-
-		-
-			message: "#^Access to an undefined property PhpParser\\\\Node\\:\\:\\$namespacedName\\.$#"
-			count: 1
-			path: PHP-Parser/lib/PhpParser/NodeVisitor/NameResolver.php
+			path: PHP-Parser/lib/PhpParser/NodeVisitorAbstract.php
 
 		-
 			message: "#^Method PhpParser\\\\NodeVisitorAbstract\\:\\:beforeTraverse\\(\\) should return array\\<PhpParser\\\\Node\\>\\|null but return statement is missing\\.$#"
@@ -117,11 +112,6 @@ parameters:
 
 		-
 			message: "#^Method PhpParser\\\\NodeVisitorAbstract\\:\\:leaveNode\\(\\) should return array\\<PhpParser\\\\Node\\>\\|int\\|PhpParser\\\\Node\\|false\\|null but return statement is missing\\.$#"
-			count: 1
-			path: PHP-Parser/lib/PhpParser/NodeVisitorAbstract.php
-
-		-
-			message: "#^Method PhpParser\\\\NodeVisitorAbstract\\:\\:afterTraverse\\(\\) should return array\\<PhpParser\\\\Node\\>\\|null but return statement is missing\\.$#"
 			count: 1
 			path: PHP-Parser/lib/PhpParser/NodeVisitorAbstract.php
 
@@ -146,16 +136,6 @@ parameters:
 			path: PHP-Parser/lib/PhpParser/Parser/Php7.php
 
 		-
-			message: "#^Property PhpParser\\\\ParserAbstract\\:\\:\\$endAttributes \\(array\\) does not accept string\\.$#"
-			count: 1
-			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
-
-		-
-			message: "#^Property PhpParser\\\\ParserAbstract\\:\\:\\$endAttributeStack \\(array\\<array\\>\\) does not accept array\\<int, string\\>\\.$#"
-			count: 1
-			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
-
-		-
 			message: "#^Comparison operation \"\\<\" between \\(array\\|float\\|int\\<0, max\\>\\) and int results in an error\\.$#"
 			count: 3
 			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
@@ -166,7 +146,12 @@ parameters:
 			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
 
 		-
-			message: "#^Variable \\$tokenValue might not be defined\\.$#"
+			message: "#^Property PhpParser\\\\ParserAbstract\\:\\:\\$endAttributeStack \\(array\\<array\\>\\) does not accept array\\<int, string\\>\\.$#"
+			count: 1
+			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
+
+		-
+			message: "#^Property PhpParser\\\\ParserAbstract\\:\\:\\$endAttributes \\(array\\) does not accept string\\.$#"
 			count: 1
 			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
 
@@ -176,14 +161,9 @@ parameters:
 			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
 
 		-
-			message: "#^Strict comparison using \\=\\=\\= between null and PhpParser\\\\Node will always evaluate to false\\.$#"
+			message: "#^Variable \\$tokenValue might not be defined\\.$#"
 			count: 1
-			path: PHP-Parser/lib/PhpParser/PrettyPrinterAbstract.php
-
-		-
-			message: "#^Else branch is unreachable because previous condition is always true\\.$#"
-			count: 1
-			path: PHP-Parser/lib/PhpParser/PrettyPrinterAbstract.php
+			path: PHP-Parser/lib/PhpParser/ParserAbstract.php
 
 		-
 			message: "#^Argument of an invalid type PhpParser\\\\Node supplied for foreach, only iterables are supported\\.$#"

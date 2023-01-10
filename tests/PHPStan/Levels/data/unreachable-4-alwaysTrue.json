@@ -5,28 +5,13 @@
         "ignorable": true
     },
     {
-        "message": "Else branch is unreachable because previous condition is always true.",
-        "line": 13,
-        "ignorable": true
-    },
-    {
         "message": "Instanceof between $this(Levels\\Unreachable\\Foo) and Levels\\Unreachable\\Foo will always evaluate to true.",
         "line": 20,
         "ignorable": true
     },
     {
-        "message": "Else branch is unreachable because previous condition is always true.",
-        "line": 22,
-        "ignorable": true
-    },
-    {
         "message": "Call to function is_string() with string will always evaluate to true.",
         "line": 29,
-        "ignorable": true
-    },
-    {
-        "message": "Else branch is unreachable because previous condition is always true.",
-        "line": 31,
         "ignorable": true
     },
     {

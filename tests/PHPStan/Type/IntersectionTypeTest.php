@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use DoctrineIntersectionTypeIsSupertypeOf\Collection;
 use Iterator;
+use ObjectTypeEnums\FooEnum;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasOffsetType;
@@ -13,10 +14,13 @@ use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use stdClass;
 use Test\ClassWithToString;
 use Traversable;
+use function count;
 use function sprintf;
+use const PHP_VERSION_ID;
 
 class IntersectionTypeTest extends PHPStanTestCase
 {
@@ -404,6 +408,43 @@ class IntersectionTypeTest extends PHPStanTestCase
 	{
 		$type = new IntersectionType([new NeverType(), new NonEmptyArrayType()]);
 		$this->assertSame('true', $type->toBoolean()->describe(VerbosityLevel::precise()));
+	}
+
+	public function dataGetEnumCases(): iterable
+	{
+		$reflectionProvider = $this->createReflectionProvider();
+		$classReflection = $reflectionProvider->getClass(FooEnum::class);
+
+		yield [
+			new IntersectionType([
+				new ThisType($classReflection),
+				new EnumCaseObjectType(FooEnum::class, 'FOO'),
+			]),
+			[
+				new EnumCaseObjectType(FooEnum::class, 'FOO'),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataGetEnumCases
+	 * @param list<EnumCaseObjectType> $expectedEnumCases
+	 */
+	public function testGetEnumCases(
+		IntersectionType $type,
+		array $expectedEnumCases,
+	): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$enumCases = $type->getEnumCases();
+		$this->assertCount(count($expectedEnumCases), $enumCases);
+		foreach ($enumCases as $i => $enumCase) {
+			$expectedEnumCase = $expectedEnumCases[$i];
+			$this->assertTrue($expectedEnumCase->equals($enumCase), sprintf('%s->equals(%s)', $expectedEnumCase->describe(VerbosityLevel::precise()), $enumCase->describe(VerbosityLevel::precise())));
+		}
 	}
 
 }

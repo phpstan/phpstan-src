@@ -105,6 +105,8 @@ class RunCommand extends Command
 			$codePath,
 		];
 
+		$output->writeln(sprintf('Starting analysis of %s', $hash));
+
 		$startTime = microtime(true);
 		exec(implode(' ', $commandArray), $outputLines, $exitCode);
 		$elapsedTime = microtime(true) - $startTime;

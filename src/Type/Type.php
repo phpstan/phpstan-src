@@ -12,6 +12,7 @@ use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeReference;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -117,6 +118,11 @@ interface Type
 	public function shiftArray(): Type;
 
 	public function shuffleArray(): Type;
+
+	/**
+	 * @return list<EnumCaseObjectType>
+	 */
+	public function getEnumCases(): array;
 
 	public function isCallable(): TrinaryLogic;
 

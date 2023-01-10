@@ -16,12 +16,14 @@ use Generator;
 use InvalidArgumentException;
 use Iterator;
 use LogicException;
+use ObjectTypeEnums\FooEnum;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -32,6 +34,7 @@ use stdClass;
 use Throwable;
 use ThrowPoints\TryCatch\MyInvalidArgumentException;
 use Traversable;
+use function count;
 use function sprintf;
 use const PHP_VERSION_ID;
 
@@ -580,6 +583,55 @@ class ObjectTypeTest extends PHPStanTestCase
 			$type->hasOffsetValueType($offsetType)->describe(),
 			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $offsetType->describe(VerbosityLevel::precise())),
 		);
+	}
+
+	public function dataGetEnumCases(): iterable
+	{
+		yield [
+			new ObjectType(stdClass::class),
+			[],
+		];
+
+		yield [
+			new ObjectType(FooEnum::class),
+			[
+				new EnumCaseObjectType(FooEnum::class, 'FOO'),
+				new EnumCaseObjectType(FooEnum::class, 'BAR'),
+				new EnumCaseObjectType(FooEnum::class, 'BAZ'),
+			],
+		];
+
+		yield [
+			new ObjectType(FooEnum::class, new EnumCaseObjectType(FooEnum::class, 'FOO')),
+			[
+				new EnumCaseObjectType(FooEnum::class, 'BAR'),
+				new EnumCaseObjectType(FooEnum::class, 'BAZ'),
+			],
+		];
+
+		yield [
+			new ObjectType(FooEnum::class, new UnionType([new EnumCaseObjectType(FooEnum::class, 'FOO'), new EnumCaseObjectType(FooEnum::class, 'BAR')])),
+			[
+				new EnumCaseObjectType(FooEnum::class, 'BAZ'),
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataGetEnumCases
+	 * @param list<EnumCaseObjectType> $expectedEnumCases
+	 */
+	public function testGetEnumCases(
+		ObjectType $type,
+		array $expectedEnumCases,
+	): void
+	{
+		$enumCases = $type->getEnumCases();
+		$this->assertCount(count($expectedEnumCases), $enumCases);
+		foreach ($enumCases as $i => $enumCase) {
+			$expectedEnumCase = $expectedEnumCases[$i];
+			$this->assertTrue($expectedEnumCase->equals($enumCase), sprintf('%s->equals(%s)', $expectedEnumCase->describe(VerbosityLevel::precise()), $enumCase->describe(VerbosityLevel::precise())));
+		}
 	}
 
 }

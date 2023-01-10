@@ -408,6 +408,11 @@ class NeverType implements CompoundType
 		return TrinaryLogic::createNo();
 	}
 
+	public function getEnumCases(): array
+	{
+		return [];
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

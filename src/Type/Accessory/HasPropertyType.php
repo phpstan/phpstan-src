@@ -104,6 +104,11 @@ class HasPropertyType implements AccessoryType, CompoundType
 		return [new TrivialParametersAcceptor()];
 	}
 
+	public function getEnumCases(): array
+	{
+		return [];
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		return $this;

@@ -79,4 +79,9 @@ trait NonObjectTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
+	public function getEnumCases(): array
+	{
+		return [];
+	}
+
 }

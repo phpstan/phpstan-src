@@ -325,6 +325,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new ErrorType();
 	}
 
+	public function getEnumCases(): array
+	{
+		return [];
+	}
+
 	public function traverse(callable $cb): Type
 	{
 		$newValueType = $cb($this->valueType);

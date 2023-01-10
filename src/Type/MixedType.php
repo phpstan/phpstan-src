@@ -241,6 +241,11 @@ class MixedType implements CompoundType, SubtractableType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getEnumCases(): array
+	{
+		return [];
+	}
+
 	/**
 	 * @return ParametersAcceptor[]
 	 */

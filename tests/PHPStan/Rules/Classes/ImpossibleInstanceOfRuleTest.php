@@ -400,4 +400,82 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7721.php'], []);
 	}
 
+	public function testUnreachableIfBranches(): void
+	{
+		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-if-branches.php'], [
+			[
+				'Instanceof between stdClass and stdClass will always evaluate to true.',
+				5,
+			],
+			[
+				'Instanceof between stdClass and stdClass will always evaluate to true.',
+				13,
+			],
+			[
+				'Instanceof between stdClass and stdClass will always evaluate to true.',
+				23,
+			],
+			[
+				'Instanceof between stdClass and stdClass will always evaluate to true.',
+				37,
+			],
+		]);
+	}
+
+	public function testDoNotReportPhpDoc(): void
+	{
+		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-if-branches-not-phpdoc.php'], [
+			[
+				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
+				16,
+			],
+			[
+				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
+				26,
+			],
+			[
+				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
+				36,
+			],
+		]);
+	}
+
+	public function testReportPhpDoc(): void
+	{
+		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$tipText = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+		$this->analyse([__DIR__ . '/../Comparison/data/unreachable-if-branches-not-phpdoc.php'], [
+			[
+				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
+				16,
+			],
+			[
+				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
+				26,
+			],
+			[
+				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
+				36,
+			],
+			[
+				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
+				42,
+				$tipText,
+			],
+			[
+				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
+				52,
+			],
+			[
+				'Instanceof between UnreachableIfBranchesNotPhpDoc\Foo and UnreachableIfBranchesNotPhpDoc\Foo will always evaluate to true.',
+				62,
+			],
+		]);
+	}
+
 }

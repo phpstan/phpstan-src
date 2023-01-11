@@ -75,4 +75,9 @@ class IterableInForeachRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6564.php'], []);
 	}
 
+	public function testBug4335(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-4335.php'], []);
+	}
+
 }

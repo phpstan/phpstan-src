@@ -203,8 +203,7 @@ class FloatType implements Type
 
 	public function exponentiate(Type $exponent): Type
 	{
-		$helper = new ExponentiateHelper();
-		return $helper->exponentiate($this, $exponent);
+		return ExponentiateHelper::exponentiate($this, $exponent);
 	}
 
 	/**

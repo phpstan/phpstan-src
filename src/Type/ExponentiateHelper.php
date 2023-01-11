@@ -10,7 +10,7 @@ use function is_int;
 final class ExponentiateHelper
 {
 
-	public function exponentiate(Type $base, Type $exponent): Type
+	public static function exponentiate(Type $base, Type $exponent): Type
 	{
 		if ($exponent instanceof UnionType) {
 			$results = [];

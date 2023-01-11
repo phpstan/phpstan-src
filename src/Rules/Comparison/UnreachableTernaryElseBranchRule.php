@@ -17,6 +17,7 @@ class UnreachableTernaryElseBranchRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private bool $treatPhpDocTypesAsCertain,
+		private bool $disable,
 	)
 	{
 	}
@@ -28,6 +29,10 @@ class UnreachableTernaryElseBranchRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if ($this->disable) {
+			return [];
+		}
+
 		$conditionType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->cond) : $scope->getNativeType($node->cond);
 		$conditionBooleanType = $conditionType->toBoolean();
 		if (

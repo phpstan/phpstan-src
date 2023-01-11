@@ -28,6 +28,7 @@ class UnreachableTernaryElseBranchRuleTest extends RuleTestCase
 				true,
 			),
 			$this->treatPhpDocTypesAsCertain,
+			false,
 		);
 	}
 

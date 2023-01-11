@@ -336,6 +336,13 @@ class InitializerExprTypeResolver
 		}
 
 		if ($expr instanceof MagicConst\Class_) {
+			if ($context->getTraitName() !== null) {
+				return TypeCombinator::intersect(
+					new ClassStringType(),
+					new AccessoryLiteralStringType(),
+				);
+			}
+
 			if ($context->getClassName() === null) {
 				return new ConstantStringType('');
 			}
@@ -344,6 +351,13 @@ class InitializerExprTypeResolver
 		}
 
 		if ($expr instanceof MagicConst\Namespace_) {
+			if ($context->getTraitName() !== null) {
+				return TypeCombinator::intersect(
+					new StringType(),
+					new AccessoryLiteralStringType(),
+				);
+			}
+
 			return new ConstantStringType($context->getNamespace() ?? '');
 		}
 

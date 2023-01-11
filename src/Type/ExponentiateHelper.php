@@ -15,7 +15,7 @@ final class ExponentiateHelper
 		if ($exponent instanceof UnionType) {
 			$results = [];
 			foreach ($exponent->getTypes() as $unionType) {
-				$results[] = $this->exponentiate($base, $unionType);
+				$results[] = self::exponentiate($base, $unionType);
 			}
 			return TypeCombinator::union(...$results);
 		}
@@ -36,7 +36,7 @@ final class ExponentiateHelper
 		}
 
 		if ($base instanceof ConstantScalarType) {
-			$result = $this->exponentiateConstantScalar($base, $exponent);
+			$result = self::exponentiateConstantScalar($base, $exponent);
 			if ($result !== null) {
 				return $result;
 			}
@@ -77,7 +77,7 @@ final class ExponentiateHelper
 		]);
 	}
 
-	private function exponentiateConstantScalar(ConstantScalarType $base, Type $exponent): ?Type
+	private static function exponentiateConstantScalar(ConstantScalarType $base, Type $exponent): ?Type
 	{
 		if ($exponent instanceof IntegerRangeType) {
 			$min = null;

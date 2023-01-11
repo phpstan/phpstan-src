@@ -2710,4 +2710,13 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/imagick-pixel.php'], []);
 	}
 
+	public function testNewInstanceArgsIssue8679(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/reflection-class-issue-8679.php'], []);
+	}
+
 }

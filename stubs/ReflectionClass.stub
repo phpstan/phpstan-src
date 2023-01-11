@@ -31,7 +31,7 @@ class ReflectionClass
 	public function newInstance(...$args) {}
 
 	/**
-	 * @param array<int, mixed> $args
+	 * @param array<int|string, mixed> $args
 	 *
 	 * @return T
 	 */

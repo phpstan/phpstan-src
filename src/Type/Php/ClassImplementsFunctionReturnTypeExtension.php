@@ -6,12 +6,14 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use function count;
 use function in_array;
@@ -30,28 +32,32 @@ class ClassImplementsFunctionReturnTypeExtension implements DynamicFunctionRetur
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
-		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
-		$autoload = !isset($functionCall->getArgs()[1])
-			|| $scope->getType($functionCall->getArgs()[1]->value)->equals(new ConstantBooleanType(true));
-
-		$isObject = (new ObjectWithoutClassType())->isSuperTypeOf($firstArgType);
-
-		$objectOrClassString = (new UnionType([new ObjectWithoutClassType(), new ClassStringType()]));
-		if (
-			$autoload && $objectOrClassString->isSuperTypeOf($firstArgType)->yes()
-			|| $isObject->yes()
-		) {
-			return TypeCombinator::remove(
-				ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getReturnType(),
-				new ConstantBooleanType(false),
-			);
+		$firstArgType = $scope->getType($args[0]->value);
+		$autoload = TrinaryLogic::createYes();
+		if (isset($args[1])) {
+			$autoload = $scope->getType($args[1]->value)->isTrue();
 		}
 
-		if ($isObject->no() && $firstArgType->isClassStringType()->no()) {
+		$isObject = (new ObjectWithoutClassType())->isSuperTypeOf($firstArgType);
+		$variant = ParametersAcceptorSelector::selectFromArgs($scope, $args, $functionReflection->getVariants());
+		if ($isObject->yes()) {
+			return TypeCombinator::remove($variant->getReturnType(), new ConstantBooleanType(false));
+		}
+		$isClassStringOrObject = (new UnionType([new ObjectWithoutClassType(), new ClassStringType()]))->isSuperTypeOf($firstArgType);
+		if ($isClassStringOrObject->yes()) {
+			if ($autoload->yes()) {
+				return TypeUtils::toBenevolentUnion($variant->getReturnType());
+			}
+
+			return $variant->getReturnType();
+		}
+
+		if ($firstArgType->isClassStringType()->no()) {
 			return new ConstantBooleanType(false);
 		}
 

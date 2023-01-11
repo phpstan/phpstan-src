@@ -62,6 +62,11 @@ parameters:
 			path: src/Collectors/Registry.php
 
 		-
+			message: "#^Only numeric types are allowed in \\+, \\(array\\<string, class\\-string\\>\\|false\\) given on the right side\\.$#"
+			count: 2
+			path: src/Collectors/Registry.php
+
+		-
 			message: "#^Property PHPStan\\\\Collectors\\\\Registry\\:\\:\\$cache with generic interface PHPStan\\\\Collectors\\\\Collector does not specify its types\\: TNodeType, TValue$#"
 			count: 1
 			path: src/Collectors/Registry.php
@@ -361,6 +366,11 @@ parameters:
 			path: src/Rules/DirectRegistry.php
 
 		-
+			message: "#^Only numeric types are allowed in \\+, \\(array\\<string, class\\-string\\>\\|false\\) given on the right side\\.$#"
+			count: 2
+			path: src/Rules/DirectRegistry.php
+
+		-
 			message: "#^Property PHPStan\\\\Rules\\\\DirectRegistry\\:\\:\\$cache with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
 			path: src/Rules/DirectRegistry.php
@@ -383,6 +393,11 @@ parameters:
 		-
 			message: "#^Method PHPStan\\\\Rules\\\\LazyRegistry\\:\\:getRulesFromContainer\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
+			path: src/Rules/LazyRegistry.php
+
+		-
+			message: "#^Only numeric types are allowed in \\+, \\(array\\<string, class\\-string\\>\\|false\\) given on the right side\\.$#"
+			count: 2
 			path: src/Rules/LazyRegistry.php
 
 		-

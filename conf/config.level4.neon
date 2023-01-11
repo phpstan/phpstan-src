@@ -122,6 +122,7 @@ services:
 		class: PHPStan\Rules\Comparison\MatchExpressionRule
 		arguments:
 			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%
+			disableUnreachable: %featureToggles.disableUnreachableBranchesRules%
 		tags:
 			- phpstan.rules.rule
 

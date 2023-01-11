@@ -25,7 +25,10 @@ use function sprintf;
 class MatchExpressionRule implements Rule
 {
 
-	public function __construct(private bool $checkAlwaysTrueStrictComparison)
+	public function __construct(
+		private bool $checkAlwaysTrueStrictComparison,
+		private bool $disableUnreachable,
+	)
 	{
 	}
 
@@ -43,7 +46,9 @@ class MatchExpressionRule implements Rule
 		$hasDefault = false;
 		foreach ($node->getArms() as $i => $arm) {
 			if ($nextArmIsDead) {
-				$errors[] = RuleErrorBuilder::message('Match arm is unreachable because previous comparison is always true.')->line($arm->getLine())->build();
+				if (!$this->disableUnreachable) {
+					$errors[] = RuleErrorBuilder::message('Match arm is unreachable because previous comparison is always true.')->line($arm->getLine())->build();
+				}
 				continue;
 			}
 			$armConditions = $arm->getConditions();

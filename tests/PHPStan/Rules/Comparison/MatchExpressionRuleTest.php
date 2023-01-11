@@ -16,7 +16,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MatchExpressionRule(true);
+		return new MatchExpressionRule(true, false);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool

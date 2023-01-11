@@ -424,7 +424,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testDoNotReportPhpDoc(): void
+	public function testIfBranchesDoNotReportPhpDoc(): void
 	{
 		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = false;
@@ -444,7 +444,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testReportPhpDoc(): void
+	public function testIfBranchesReportPhpDoc(): void
 	{
 		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = true;

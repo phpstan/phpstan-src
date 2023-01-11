@@ -35,18 +35,8 @@
         "ignorable": true
     },
     {
-        "message": "Else branch is unreachable because ternary operator condition is always true.",
-        "line": 74,
-        "ignorable": true
-    },
-    {
         "message": "Strict comparison using === between 5 and 5 will always evaluate to true.",
         "line": 74,
-        "ignorable": true
-    },
-    {
-        "message": "Else branch is unreachable because ternary operator condition is always true.",
-        "line": 79,
         "ignorable": true
     },
     {
@@ -56,11 +46,6 @@
     },
     {
         "message": "Call to function is_string() with string will always evaluate to true.",
-        "line": 84,
-        "ignorable": true
-    },
-    {
-        "message": "Else branch is unreachable because ternary operator condition is always true.",
         "line": 84,
         "ignorable": true
     },

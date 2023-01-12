@@ -123,6 +123,7 @@ services:
 		arguments:
 			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%
 			disableUnreachable: %featureToggles.disableUnreachableBranchesRules%
+			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
 		tags:
 			- phpstan.rules.rule
 

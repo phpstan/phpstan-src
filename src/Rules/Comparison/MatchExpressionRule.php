@@ -28,6 +28,7 @@ class MatchExpressionRule implements Rule
 	public function __construct(
 		private bool $checkAlwaysTrueStrictComparison,
 		private bool $disableUnreachable,
+		private bool $reportAlwaysTrueInLastCondition,
 	)
 	{
 	}
@@ -75,15 +76,19 @@ class MatchExpressionRule implements Rule
 					))->line($armLine)->build();
 				} else {
 					$nextArmIsDead = true;
-					if (
-						$this->checkAlwaysTrueStrictComparison
-						&& $i !== $armsCount - 1
-					) {
-						$errors[] = RuleErrorBuilder::message(sprintf(
+					if ($this->checkAlwaysTrueStrictComparison) {
+						if ($i === $armsCount - 1 && !$this->reportAlwaysTrueInLastCondition) {
+							continue;
+						}
+						$errorBuilder = RuleErrorBuilder::message(sprintf(
 							'Match arm comparison between %s and %s is always true.',
 							$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
 							$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
-						))->line($armLine)->build();
+						))->line($armLine);
+						if ($i !== $armsCount - 1 && !$this->reportAlwaysTrueInLastCondition) {
+							$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+						}
+						$errors[] = $errorBuilder->build();
 					}
 				}
 			}

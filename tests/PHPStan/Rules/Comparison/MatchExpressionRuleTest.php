@@ -14,9 +14,13 @@ class MatchExpressionRuleTest extends RuleTestCase
 
 	private bool $treatPhpDocTypesAsCertain = true;
 
+	private bool $reportAlwaysTrueInLastCondition = false;
+
+	private bool $disableUnreachable = false;
+
 	protected function getRule(): Rule
 	{
-		return new MatchExpressionRule(true, false);
+		return new MatchExpressionRule(true, $this->disableUnreachable, $this->reportAlwaysTrueInLastCondition);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -26,6 +30,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
+		$tipText = 'Remove remaining cases below this one and this error will disappear too.';
 		$this->analyse([__DIR__ . '/data/match-expr.php'], [
 			[
 				'Match arm comparison between 1|2|3 and \'foo\' is always false.',
@@ -38,6 +43,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm comparison between 3 and 3 is always true.',
 				28,
+				$tipText,
 			],
 			[
 				'Match arm is unreachable because previous comparison is always true.',
@@ -46,6 +52,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm comparison between 3 and 3 is always true.',
 				35,
+				$tipText,
 			],
 			[
 				'Match arm is unreachable because previous comparison is always true.',
@@ -54,6 +61,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm comparison between 1 and 1 is always true.',
 				40,
+				$tipText,
 			],
 			[
 				'Match arm is unreachable because previous comparison is always true.',
@@ -66,6 +74,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm comparison between 1 and 1 is always true.',
 				46,
+				$tipText,
 			],
 			[
 				'Match arm is unreachable because previous comparison is always true.',
@@ -151,6 +160,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm comparison between MatchEnums\Foo::THREE and MatchEnums\Foo::THREE is always true.',
 				76,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Match arm is unreachable because previous comparison is always true.',
@@ -252,6 +262,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm comparison between Bug8240\Foo and Bug8240\Foo::BAR is always true.',
 				13,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Match arm is unreachable because previous comparison is always true.',
@@ -260,6 +271,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm comparison between Bug8240\Foo2::BAZ and Bug8240\Foo2::BAZ is always true.',
 				28,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Match arm is unreachable because previous comparison is always true.',
@@ -274,10 +286,12 @@ class MatchExpressionRuleTest extends RuleTestCase
 			$this->markTestSkipped('Test requires PHP 8.1.');
 		}
 		$this->treatPhpDocTypesAsCertain = true;
+		$tipText = 'Remove remaining cases below this one and this error will disappear too.';
 		$this->analyse([__DIR__ . '/data/last-match-arm-always-true.php'], [
 			[
 				'Match arm comparison between $this(LastMatchArmAlwaysTrue\Foo)&LastMatchArmAlwaysTrue\Foo::TWO and LastMatchArmAlwaysTrue\Foo::TWO is always true.',
 				22,
+				$tipText,
 			],
 			[
 				'Match arm is unreachable because previous comparison is always true.',
@@ -286,6 +300,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm comparison between $this(LastMatchArmAlwaysTrue\Foo)&LastMatchArmAlwaysTrue\Foo::TWO and LastMatchArmAlwaysTrue\Foo::TWO is always true.',
 				31,
+				$tipText,
 			],
 			[
 				'Match arm is unreachable because previous comparison is always true.',
@@ -294,6 +309,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm comparison between $this(LastMatchArmAlwaysTrue\Foo)&LastMatchArmAlwaysTrue\Foo::TWO and LastMatchArmAlwaysTrue\Foo::TWO is always true.',
 				40,
+				$tipText,
 			],
 			[
 				'Match arm is unreachable because previous comparison is always true.',
@@ -306,6 +322,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match arm comparison between $this(LastMatchArmAlwaysTrue\Bar) and LastMatchArmAlwaysTrue\Bar::ONE is always true.',
 				62,
+				$tipText,
 			],
 			[
 				'Match arm is unreachable because previous comparison is always true.',
@@ -320,6 +337,67 @@ class MatchExpressionRuleTest extends RuleTestCase
 				69,
 			],
 		]);
+	}
+
+	public function dataReportAlwaysTrueInLastCondition(): iterable
+	{
+		yield [false, false, [
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				23,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				'Match arm is unreachable because previous comparison is always true.',
+				24,
+			],
+		]];
+		yield [true, false, [
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				15,
+			],
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				23,
+			],
+			[
+				'Match arm is unreachable because previous comparison is always true.',
+				24,
+			],
+		]];
+		yield [false, true, [
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				23,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]];
+		yield [true, true, [
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				15,
+			],
+			[
+				'Match arm comparison between $this(MatchAlwaysTrueLastArm\Foo)&MatchAlwaysTrueLastArm\Foo::BAR and MatchAlwaysTrueLastArm\Foo::BAR is always true.',
+				23,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataReportAlwaysTrueInLastCondition
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testReportAlwaysTrueInLastCondition(bool $reportAlwaysTrueInLastCondition, bool $disableUnreachable, array $expectedErrors): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
+		$this->disableUnreachable = $disableUnreachable;
+		$this->analyse([__DIR__ . '/data/match-always-true-last-arm.php'], $expectedErrors);
 	}
 
 }

@@ -64,6 +64,7 @@ parameters:
 	checkAlwaysTrueInstanceof: %featureToggles.alwaysTrueAlwaysReported%
 	checkAlwaysTrueStrictComparison: %featureToggles.alwaysTrueAlwaysReported%
 	checkAlwaysTrueLooseComparison: %featureToggles.alwaysTrueAlwaysReported%
+	reportAlwaysTrueInLastCondition: false
 	checkClassCaseSensitivity: false
 	checkExplicitMixed: false
 	checkImplicitMixed: false
@@ -286,6 +287,7 @@ parametersSchema:
 	checkAlwaysTrueInstanceof: bool()
 	checkAlwaysTrueStrictComparison: bool()
 	checkAlwaysTrueLooseComparison: bool()
+	reportAlwaysTrueInLastCondition: bool()
 	checkClassCaseSensitivity: bool()
 	checkExplicitMixed: bool()
 	checkImplicitMixed: bool()

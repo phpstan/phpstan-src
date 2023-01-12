@@ -26,6 +26,7 @@ class MatchExpressionRule implements Rule
 {
 
 	public function __construct(
+		private ConstantConditionRuleHelper $constantConditionRuleHelper,
 		private bool $checkAlwaysTrueStrictComparison,
 		private bool $disableUnreachable,
 		private bool $reportAlwaysTrueInLastCondition,
@@ -41,6 +42,7 @@ class MatchExpressionRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$matchCondition = $node->getCondition();
+		$matchConditionType = $scope->getType($matchCondition);
 		$nextArmIsDead = false;
 		$errors = [];
 		$armsCount = count($node->getArms());
@@ -67,6 +69,17 @@ class MatchExpressionRule implements Rule
 					continue;
 				}
 
+				if ($armConditionResult->getValue()) {
+					$nextArmIsDead = true;
+				}
+
+				if ($matchConditionType instanceof ConstantBooleanType) {
+					$armConditionStandaloneResult = $this->constantConditionRuleHelper->getBooleanType($armConditionScope, $armCondition->getCondition());
+					if (!$armConditionStandaloneResult instanceof ConstantBooleanType) {
+						continue;
+					}
+				}
+
 				$armLine = $armCondition->getLine();
 				if (!$armConditionResult->getValue()) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
@@ -75,7 +88,6 @@ class MatchExpressionRule implements Rule
 						$armConditionScope->getType($armCondition->getCondition())->describe(VerbosityLevel::value()),
 					))->line($armLine)->build();
 				} else {
-					$nextArmIsDead = true;
 					if ($this->checkAlwaysTrueStrictComparison) {
 						if ($i === $armsCount - 1 && !$this->reportAlwaysTrueInLastCondition) {
 							continue;

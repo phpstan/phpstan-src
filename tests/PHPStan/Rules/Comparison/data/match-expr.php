@@ -83,13 +83,13 @@ class Foo
 	public function doBar(\Exception $e): void
 	{
 		match (true) {
-			$e instanceof \InvalidArgumentException, $e instanceof \InvalidArgumentException => true,
+			$e instanceof \InvalidArgumentException, $e instanceof \InvalidArgumentException => true, // reported by ImpossibleInstanceOfRule
 			default => null,
 		};
 
 		match (true) {
 			$e instanceof \InvalidArgumentException => true,
-			$e instanceof \InvalidArgumentException => true,
+			$e instanceof \InvalidArgumentException => true, // reported by ImpossibleInstanceOfRule
 		};
 	}
 

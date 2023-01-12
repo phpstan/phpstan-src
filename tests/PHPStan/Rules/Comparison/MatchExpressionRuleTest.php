@@ -20,7 +20,22 @@ class MatchExpressionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MatchExpressionRule(true, $this->disableUnreachable, $this->reportAlwaysTrueInLastCondition);
+		return new MatchExpressionRule(
+			new ConstantConditionRuleHelper(
+				new ImpossibleCheckTypeHelper(
+					$this->createReflectionProvider(),
+					$this->getTypeSpecifier(),
+					[],
+					$this->treatPhpDocTypesAsCertain,
+					true,
+				),
+				$this->treatPhpDocTypesAsCertain,
+				true,
+			),
+			true,
+			$this->disableUnreachable,
+			$this->reportAlwaysTrueInLastCondition,
+		);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -91,14 +106,6 @@ class MatchExpressionRuleTest extends RuleTestCase
 			[
 				'Match expression does not handle remaining values: 1|2|3',
 				78,
-			],
-			[
-				'Match arm comparison between true and false is always false.',
-				86,
-			],
-			[
-				'Match arm comparison between true and false is always false.',
-				92,
 			],
 			[
 				'Match expression does not handle remaining value: true',

@@ -464,6 +464,11 @@ trait LateResolvableTypeTrait
 		return $otherType->isSmallerThanOrEqual($result);
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return $this->resolve()->exponentiate($exponent);
+	}
+
 	public function resolve(): Type
 	{
 		if ($this->result === null) {

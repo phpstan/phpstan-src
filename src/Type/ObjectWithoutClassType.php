@@ -171,6 +171,18 @@ class ObjectWithoutClassType implements SubtractableType
 		return null;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		if (!$exponent instanceof NeverType && !$this->isSuperTypeOf($exponent)->no()) {
+			return TypeCombinator::union($this, $exponent);
+		}
+
+		return new BenevolentUnionType([
+			new FloatType(),
+			new IntegerType(),
+		]);
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

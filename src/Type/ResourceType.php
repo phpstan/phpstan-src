@@ -88,6 +88,11 @@ class ResourceType implements Type
 		return TrinaryLogic::createNo();
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return new ErrorType();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

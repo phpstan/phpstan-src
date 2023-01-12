@@ -201,6 +201,11 @@ class FloatType implements Type
 		return $this;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return ExponentiateHelper::exponentiate($this, $exponent);
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

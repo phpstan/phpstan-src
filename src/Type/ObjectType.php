@@ -1405,4 +1405,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return null;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		$object = new ObjectWithoutClassType();
+		if (!$exponent instanceof NeverType && !$object->isSuperTypeOf($this)->no() && !$object->isSuperTypeOf($exponent)->no()) {
+			return TypeCombinator::union($this, $exponent);
+		}
+		return new ErrorType();
+	}
+
 }

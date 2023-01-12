@@ -855,6 +855,11 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => TypeCombinator::remove($type, $typeToRemove));
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return $this->intersectTypes(static fn (Type $type): Type => $type->exponentiate($exponent));
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

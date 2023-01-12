@@ -2,8 +2,6 @@
 
 namespace PHPStan\File;
 
-use PHPStan\PhpDoc\StubFilesProvider;
-use function array_merge;
 use function fnmatch;
 use function in_array;
 use function preg_match;
@@ -36,11 +34,10 @@ class FileExcluder
 	 */
 	public function __construct(
 		FileHelper $fileHelper,
-		StubFilesProvider $stubFilesProvider,
 		array $analyseExcludes,
 	)
 	{
-		foreach (array_merge($analyseExcludes, $stubFilesProvider->getStubFiles()) as $exclude) {
+		foreach ($analyseExcludes as $exclude) {
 			$len = strlen($exclude);
 			$trailingDirSeparator = ($len > 0 && in_array($exclude[$len - 1], ['\\', '/'], true));
 

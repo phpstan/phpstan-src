@@ -2,7 +2,6 @@
 
 namespace PHPStan\File;
 
-use PHPStan\PhpDoc\EmptyStubFilesProvider;
 use PHPStan\Testing\PHPStanTestCase;
 
 class FileExcluderTest extends PHPStanTestCase
@@ -20,7 +19,7 @@ class FileExcluderTest extends PHPStanTestCase
 	{
 		$this->skipIfNotOnWindows();
 
-		$fileExcluder = new FileExcluder($this->getFileHelper(), new EmptyStubFilesProvider(), $analyseExcludes);
+		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes);
 
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}
@@ -128,7 +127,7 @@ class FileExcluderTest extends PHPStanTestCase
 	{
 		$this->skipIfNotOnUnix();
 
-		$fileExcluder = new FileExcluder($this->getFileHelper(), new EmptyStubFilesProvider(), $analyseExcludes);
+		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes);
 
 		$this->assertSame($isExcluded, $fileExcluder->isExcludedFromAnalysing($filePath));
 	}

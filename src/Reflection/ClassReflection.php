@@ -346,6 +346,10 @@ class ClassReflection
 
 	public function allowsDynamicProperties(): bool
 	{
+		if ($this->isEnum()) {
+			return false;
+		}
+
 		if (!$this->phpVersion->deprecatesDynamicProperties()) {
 			return true;
 		}

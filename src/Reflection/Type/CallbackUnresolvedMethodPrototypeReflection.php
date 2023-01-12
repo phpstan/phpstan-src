@@ -8,7 +8,6 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
-use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Type\Type;
@@ -85,30 +84,17 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 			$acceptor->getTemplateTypeMap(),
 			$acceptor->getResolvedTemplateTypeMap(),
 			array_map(
-				function (ParameterReflectionWithPhpDocs $parameter): ParameterReflectionWithPhpDocs {
-					if ($parameter instanceof ParameterReflectionWithPhpDocs) {
-						return new DummyParameterWithPhpDocs(
-							$parameter->getName(),
-							$this->transformStaticType($parameter->getType()),
-							$parameter->isOptional(),
-							$parameter->passedByReference(),
-							$parameter->isVariadic(),
-							$parameter->getDefaultValue(),
-							$parameter->getNativeType(),
-							$parameter->getPhpDocType(),
-							$parameter->getOutType(),
-						);
-					}
-
-					return new DummyParameter(
-						$parameter->getName(),
-						$this->transformStaticType($parameter->getType()),
-						$parameter->isOptional(),
-						$parameter->passedByReference(),
-						$parameter->isVariadic(),
-						$parameter->getDefaultValue(),
-					);
-				},
+				fn (ParameterReflectionWithPhpDocs $parameter): ParameterReflectionWithPhpDocs => new DummyParameterWithPhpDocs(
+					$parameter->getName(),
+					$this->transformStaticType($parameter->getType()),
+					$parameter->isOptional(),
+					$parameter->passedByReference(),
+					$parameter->isVariadic(),
+					$parameter->getDefaultValue(),
+					$parameter->getNativeType(),
+					$parameter->getPhpDocType(),
+					$parameter->getOutType(),
+				),
 				$acceptor->getParameters(),
 			),
 			$acceptor->isVariadic(),

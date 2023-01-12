@@ -23,11 +23,11 @@ class InvalidPHPStanDocTagRule implements Rule
 		'@phpstan-param',
 		'@phpstan-param-out',
 		'@phpstan-var',
-		'@phpstan-template',
 		'@phpstan-extends',
 		'@phpstan-implements',
 		'@phpstan-use',
 		'@phpstan-template',
+		'@phpstan-template-contravariant',
 		'@phpstan-template-covariant',
 		'@phpstan-return',
 		'@phpstan-throws',
@@ -36,6 +36,7 @@ class InvalidPHPStanDocTagRule implements Rule
 		'@phpstan-method',
 		'@phpstan-pure',
 		'@phpstan-impure',
+		'@phpstan-immutable',
 		'@phpstan-type',
 		'@phpstan-import-type',
 		'@phpstan-property',
@@ -47,6 +48,9 @@ class InvalidPHPStanDocTagRule implements Rule
 		'@phpstan-assert-if-false',
 		'@phpstan-self-out',
 		'@phpstan-this-out',
+		'@phpstan-allow-private-mutation',
+		'@phpstan-readonly',
+		'@phpstan-readonly-allow-private-mutation',
 	];
 
 	public function __construct(private Lexer $phpDocLexer, private PhpDocParser $phpDocParser)

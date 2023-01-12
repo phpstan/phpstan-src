@@ -149,4 +149,9 @@ class IntegerType implements Type
 		return null;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return ExponentiateHelper::exponentiate($this, $exponent);
+	}
+
 }

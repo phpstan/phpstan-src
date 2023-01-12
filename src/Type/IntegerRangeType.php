@@ -11,6 +11,7 @@ use function ceil;
 use function count;
 use function floor;
 use function get_class;
+use function is_float;
 use function is_int;
 use function max;
 use function min;
@@ -551,6 +552,52 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		}
 
 		return null;
+	}
+
+	public function exponentiate(Type $exponent): Type
+	{
+		if ($exponent instanceof UnionType) {
+			$results = [];
+			foreach ($exponent->getTypes() as $unionType) {
+				$results[] = $this->exponentiate($unionType);
+			}
+			return TypeCombinator::union(...$results);
+		}
+
+		if ($exponent instanceof IntegerRangeType) {
+			$min = null;
+			$max = null;
+			if ($this->getMin() !== null && $exponent->getMin() !== null) {
+				$min = $this->getMin() ** $exponent->getMin();
+			}
+			if ($this->getMax() !== null && $exponent->getMax() !== null) {
+				$max = $this->getMax() ** $exponent->getMax();
+			}
+
+			if (($min !== null || $max !== null) && !is_float($min) && !is_float($max)) {
+				return self::fromInterval($min, $max);
+			}
+		}
+
+		if ($exponent instanceof ConstantScalarType) {
+			$exponentValue = $exponent->getValue();
+			if (is_int($exponentValue)) {
+				$min = null;
+				$max = null;
+				if ($this->getMin() !== null) {
+					$min = $this->getMin() ** $exponentValue;
+				}
+				if ($this->getMax() !== null) {
+					$max = $this->getMax() ** $exponentValue;
+				}
+
+				if (!is_float($min) && !is_float($max)) {
+					return self::fromInterval($min, $max);
+				}
+			}
+		}
+
+		return parent::exponentiate($exponent);
 	}
 
 	/**

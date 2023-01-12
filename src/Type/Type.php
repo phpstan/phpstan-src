@@ -124,6 +124,8 @@ interface Type
 	 */
 	public function getEnumCases(): array;
 
+	public function exponentiate(Type $exponent): Type;
+
 	public function isCallable(): TrinaryLogic;
 
 	/**

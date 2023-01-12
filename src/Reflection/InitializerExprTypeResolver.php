@@ -1170,57 +1170,17 @@ class InitializerExprTypeResolver
 		$leftType = $getTypeCallback($left);
 		$rightType = $getTypeCallback($right);
 
-		if ($leftType instanceof MixedType || $rightType instanceof MixedType) {
-			return new BenevolentUnionType([
-				new FloatType(),
-				new IntegerType(),
-			]);
+		$exponentiatedTyped = $leftType->exponentiate($rightType);
+		if (!$exponentiatedTyped instanceof ErrorType) {
+			return $exponentiatedTyped;
 		}
 
-		$object = new ObjectWithoutClassType();
-		if (
-			!$leftType instanceof NeverType &&
-			!$rightType instanceof NeverType &&
-			(
-				!$object->isSuperTypeOf($leftType)->no()
-				|| !$object->isSuperTypeOf($rightType)->no()
-			)
-		) {
-			return TypeCombinator::union($leftType, $rightType);
+		$extensionSpecified = $this->callOperatorTypeSpecifyingExtensions(new BinaryOp\Pow($left, $right), $leftType, $rightType);
+		if ($extensionSpecified !== null) {
+			return $extensionSpecified;
 		}
 
-		$leftTypes = TypeUtils::getConstantScalars($leftType);
-		$rightTypes = TypeUtils::getConstantScalars($rightType);
-		$leftTypesCount = count($leftTypes);
-		$rightTypesCount = count($rightTypes);
-		if ($leftTypesCount > 0 && $rightTypesCount > 0) {
-			$resultTypes = [];
-			$generalize = $leftTypesCount * $rightTypesCount > self::CALCULATE_SCALARS_LIMIT;
-			foreach ($leftTypes as $leftTypeInner) {
-				foreach ($rightTypes as $rightTypeInner) {
-					$leftNumberType = $leftTypeInner->toNumber();
-					$rightNumberType = $rightTypeInner->toNumber();
-
-					if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
-						return new ErrorType();
-					}
-
-					if (!$leftNumberType instanceof ConstantScalarType || !$rightNumberType instanceof ConstantScalarType) {
-						throw new ShouldNotHappenException();
-					}
-
-					$resultType = $this->getTypeFromValue($leftNumberType->getValue() ** $rightNumberType->getValue());
-					if ($generalize) {
-						$resultType = $resultType->generalize(GeneralizePrecision::lessSpecific());
-					}
-					$resultTypes[] = $resultType;
-				}
-			}
-
-			return TypeCombinator::union(...$resultTypes);
-		}
-
-		return $this->resolveCommonMath(new BinaryOp\Pow($left, $right), $leftType, $rightType);
+		return new ErrorType();
 	}
 
 	/**
@@ -1469,14 +1429,33 @@ class InitializerExprTypeResolver
 		return $resultType->toBoolean();
 	}
 
+	private function callOperatorTypeSpecifyingExtensions(Expr\BinaryOp $expr, Type $leftType, Type $rightType): ?Type
+	{
+		$operatorSigil = $expr->getOperatorSigil();
+		$operatorTypeSpecifyingExtensions = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()->getOperatorTypeSpecifyingExtensions($operatorSigil, $leftType, $rightType);
+
+		/** @var Type[] $extensionTypes */
+		$extensionTypes = [];
+
+		foreach ($operatorTypeSpecifyingExtensions as $extension) {
+			$extensionTypes[] = $extension->specifyType($operatorSigil, $leftType, $rightType);
+		}
+
+		if (count($extensionTypes) > 0) {
+			return TypeCombinator::union(...$extensionTypes);
+		}
+
+		return null;
+	}
+
 	/**
-	 * @param BinaryOp\Plus|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Pow|BinaryOp\Div $expr
+	 * @param BinaryOp\Plus|BinaryOp\Minus|BinaryOp\Mul|BinaryOp\Div $expr
 	 */
 	private function resolveCommonMath(Expr\BinaryOp $expr, Type $leftType, Type $rightType): Type
 	{
 		if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType || $leftType instanceof UnionType) &&
-			($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType || $rightType instanceof UnionType) &&
-			!$expr instanceof BinaryOp\Pow) {
+			($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType || $rightType instanceof UnionType)
+		) {
 
 			if ($leftType instanceof ConstantIntegerType) {
 				return $this->integerRangeMath(
@@ -1507,18 +1486,9 @@ class InitializerExprTypeResolver
 			return $this->integerRangeMath($leftType, $expr, $rightType);
 		}
 
-		$operatorSigil = $expr->getOperatorSigil();
-		$operatorTypeSpecifyingExtensions = $this->operatorTypeSpecifyingExtensionRegistryProvider->getRegistry()->getOperatorTypeSpecifyingExtensions($operatorSigil, $leftType, $rightType);
-
-		/** @var Type[] $extensionTypes */
-		$extensionTypes = [];
-
-		foreach ($operatorTypeSpecifyingExtensions as $extension) {
-			$extensionTypes[] = $extension->specifyType($operatorSigil, $leftType, $rightType);
-		}
-
-		if (count($extensionTypes) > 0) {
-			return TypeCombinator::union(...$extensionTypes);
+		$specifiedTypes = $this->callOperatorTypeSpecifyingExtensions($expr, $leftType, $rightType);
+		if ($specifiedTypes !== null) {
+			return $specifiedTypes;
 		}
 
 		$types = TypeCombinator::union($leftType, $rightType);
@@ -1544,13 +1514,6 @@ class InitializerExprTypeResolver
 			|| (new FloatType())->isSuperTypeOf($rightNumberType)->yes()
 		) {
 			return new FloatType();
-		}
-
-		if ($expr instanceof Expr\BinaryOp\Pow) {
-			return new BenevolentUnionType([
-				new FloatType(),
-				new IntegerType(),
-			]);
 		}
 
 		$resultType = TypeCombinator::union($leftNumberType, $rightNumberType);

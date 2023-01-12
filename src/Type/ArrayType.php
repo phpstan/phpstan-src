@@ -612,6 +612,11 @@ class ArrayType implements Type
 		return null;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return new ErrorType();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

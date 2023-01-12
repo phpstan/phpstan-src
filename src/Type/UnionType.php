@@ -864,6 +864,11 @@ class UnionType implements CompoundType
 		return $this->unionTypes(static fn (Type $type): Type => TypeCombinator::remove($type, $typeToRemove));
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return $this->unionTypes(static fn (Type $type): Type => $type->exponentiate($exponent));
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

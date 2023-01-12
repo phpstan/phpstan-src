@@ -6,6 +6,7 @@ use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -112,6 +113,11 @@ class HasPropertyType implements AccessoryType, CompoundType
 	public function traverse(callable $cb): Type
 	{
 		return $this;
+	}
+
+	public function exponentiate(Type $exponent): Type
+	{
+		return new ErrorType();
 	}
 
 	public static function __set_state(array $properties): Type

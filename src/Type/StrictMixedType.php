@@ -322,6 +322,11 @@ class StrictMixedType implements CompoundType
 		return $this;
 	}
 
+	public function exponentiate(Type $exponent): Type
+	{
+		return new ErrorType();
+	}
+
 	/**
 	 * @param mixed[] $properties
 	 */

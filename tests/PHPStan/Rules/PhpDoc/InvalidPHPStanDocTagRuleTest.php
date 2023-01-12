@@ -35,4 +35,9 @@ class InvalidPHPStanDocTagRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8697(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8697.php'], []);
+	}
+
 }

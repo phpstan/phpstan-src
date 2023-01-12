@@ -18,7 +18,11 @@ class Foo
 		assertType('array|stdClass|null', $config);
 		if (empty($config))
 		{
-			assertNativeType('0|0.0|\'\'|\'0\'|array{}|false|null', $config);
+			// the native type should be `0|0.0|''|'0'|array{}|false|null`
+			// the problem is that `empty($config)` translates to `!isset($config) || !$config`
+			// and before specified types of the left and right side are intersected they are "normalized"
+			// by removing the sureNotType from $scope->getType() which is `stdClass|array|null` here
+			assertNativeType('array{}|null', $config);
 			assertType('array{}|null', $config);
 			$config = new \stdClass();
 		} elseif (! (is_array($config) || $config instanceof \stdClass)) {

@@ -534,6 +534,7 @@ class NodeScopeResolver
 						false,
 						$scope->isInTrait(),
 						$scope->getClassReflection()->isReadOnly(),
+						false,
 					), $methodScope);
 				}
 			}
@@ -677,7 +678,7 @@ class NodeScopeResolver
 
 			foreach ($stmt->props as $prop) {
 				$this->processStmtNode($prop, $scope, $nodeCallback, $context);
-				[,,,,,,,,,,$isReadOnly, $docComment, ,,,$varTags] = $this->getPhpDocs($scope, $stmt);
+				[,,,,,,,,,,$isReadOnly, $docComment, ,,,$varTags, $isAllowedPrivateMutation] = $this->getPhpDocs($scope, $stmt);
 				if (!$scope->isInClass()) {
 					throw new ShouldNotHappenException();
 				}
@@ -701,6 +702,7 @@ class NodeScopeResolver
 						$isReadOnly,
 						$scope->isInTrait(),
 						$scope->getClassReflection()->isReadOnly(),
+						$isAllowedPrivateMutation,
 					),
 					$scope,
 				);
@@ -4148,7 +4150,7 @@ class NodeScopeResolver
 	}
 
 	/**
-	 * @return array{TemplateTypeMap, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>, array<(string|int), VarTag>}
+	 * @return array{TemplateTypeMap, array<string, Type>, ?Type, ?Type, ?string, bool, bool, bool, bool|null, bool, bool, string|null, Assertions, ?Type, array<string, Type>, array<(string|int), VarTag>, bool}
 	 */
 	public function getPhpDocs(Scope $scope, Node\FunctionLike|Node\Stmt\Property $node): array
 	{
@@ -4161,6 +4163,7 @@ class NodeScopeResolver
 		$isInternal = false;
 		$isFinal = false;
 		$isPure = false;
+		$isAllowedPrivateMutation = false;
 		$acceptsNamedArguments = true;
 		$isReadOnly = $scope->isInClass() && $scope->getClassReflection()->isImmutable();
 		$asserts = Assertions::createEmpty();
@@ -4276,6 +4279,7 @@ class NodeScopeResolver
 			$isInternal = $resolvedPhpDoc->isInternal();
 			$isFinal = $resolvedPhpDoc->isFinal();
 			$isPure = $resolvedPhpDoc->isPure();
+			$isAllowedPrivateMutation = $resolvedPhpDoc->isAllowedPrivateMutation();
 			$acceptsNamedArguments = $resolvedPhpDoc->acceptsNamedArguments();
 			$isReadOnly = $isReadOnly || $resolvedPhpDoc->isReadOnly();
 			$asserts = Assertions::createFromResolvedPhpDocBlock($resolvedPhpDoc);
@@ -4283,7 +4287,7 @@ class NodeScopeResolver
 			$varTags = $resolvedPhpDoc->getVarTags();
 		}
 
-		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $varTags];
+		return [$templateTypeMap, $phpDocParameterTypes, $phpDocReturnType, $phpDocThrowType, $deprecatedDescription, $isDeprecated, $isInternal, $isFinal, $isPure, $acceptsNamedArguments, $isReadOnly, $docComment, $asserts, $selfOutType, $phpDocParameterOutTypes, $varTags, $isAllowedPrivateMutation];
 	}
 
 	private function transformStaticType(ClassReflection $declaringClass, Type $type): Type

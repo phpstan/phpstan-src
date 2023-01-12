@@ -26,6 +26,7 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		private bool $isReadonlyByPhpDoc,
 		private bool $isDeclaredInTrait,
 		private bool $isReadonlyClass,
+		private bool $isAllowedPrivateMutation,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());
@@ -95,6 +96,11 @@ class ClassPropertyNode extends NodeAbstract implements VirtualNode
 	public function isDeclaredInTrait(): bool
 	{
 		return $this->isDeclaredInTrait;
+	}
+
+	public function isAllowedPrivateMutation(): bool
+	{
+		return $this->isAllowedPrivateMutation;
 	}
 
 	/**

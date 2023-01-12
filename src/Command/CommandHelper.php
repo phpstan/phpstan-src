@@ -20,16 +20,20 @@ use PHPStan\DependencyInjection\DuplicateIncludedFilesException;
 use PHPStan\DependencyInjection\InvalidIgnoredErrorPatternsException;
 use PHPStan\DependencyInjection\LoaderFactory;
 use PHPStan\ExtensionInstaller\GeneratedConfig;
+use PHPStan\File\FileExcluder;
 use PHPStan\File\FileFinder;
 use PHPStan\File\FileHelper;
+use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
+use function array_filter;
 use function array_key_exists;
 use function array_map;
+use function array_values;
 use function class_exists;
 use function count;
 use function dirname;
@@ -467,12 +471,19 @@ class CommandHelper
 
 		$pathRoutingParser = $container->getService('pathRoutingParser');
 
+		/** @var StubFilesProvider $stubFilesProvider */
+		$stubFilesProvider = $container->getByType(StubFilesProvider::class);
+
 		/** @var Closure(): array{string[], bool} $filesCallback */
-		$filesCallback = static function () use ($fileFinder, $pathRoutingParser, $paths): array {
+		$filesCallback = static function () use ($currentWorkingDirectoryFileHelper, $stubFilesProvider, $fileFinder, $pathRoutingParser, $paths): array {
 			$fileFinderResult = $fileFinder->findFiles($paths);
 			$files = $fileFinderResult->getFiles();
 
 			$pathRoutingParser->setAnalysedFiles($files);
+
+			$stubFilesExcluder = new FileExcluder($currentWorkingDirectoryFileHelper, $stubFilesProvider->getProjectStubFiles());
+
+			$files = array_values(array_filter($files, static fn (string $file) => !$stubFilesExcluder->isExcludedFromAnalysing($file)));
 
 			return [$files, $fileFinderResult->isOnlyFiles()];
 		};

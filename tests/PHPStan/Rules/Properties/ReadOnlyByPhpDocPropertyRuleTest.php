@@ -52,4 +52,18 @@ class ReadOnlyByPhpDocPropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/read-only-property-phpdoc-and-native.php'], []);
 	}
 
+	public function testRuleAllowedPrivateMutation(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->analyse([__DIR__ . '/data/read-only-property-phpdoc-allowed-private-mutation.php'], [
+			[
+				'@readonly property cannot have a default value.',
+				9,
+			],
+		]);
+	}
+
 }

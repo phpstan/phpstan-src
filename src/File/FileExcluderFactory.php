@@ -2,7 +2,6 @@
 
 namespace PHPStan\File;
 
-use PHPStan\PhpDoc\StubFilesProvider;
 use function array_key_exists;
 use function array_merge;
 use function array_unique;
@@ -17,7 +16,6 @@ class FileExcluderFactory
 	 */
 	public function __construct(
 		private FileExcluderRawFactory $fileExcluderRawFactory,
-		private StubFilesProvider $stubFilesProvider,
 		private array $obsoleteExcludesAnalyse,
 		private ?array $excludePaths,
 	)
@@ -27,7 +25,7 @@ class FileExcluderFactory
 	public function createAnalyseFileExcluder(): FileExcluder
 	{
 		if ($this->excludePaths === null) {
-			return $this->fileExcluderRawFactory->create(array_merge($this->obsoleteExcludesAnalyse, $this->stubFilesProvider->getStubFiles()));
+			return $this->fileExcluderRawFactory->create($this->obsoleteExcludesAnalyse);
 		}
 
 		$paths = [];
@@ -38,7 +36,7 @@ class FileExcluderFactory
 			$paths = array_merge($paths, $this->excludePaths['analyseAndScan']);
 		}
 
-		return $this->fileExcluderRawFactory->create(array_merge(array_values(array_unique($paths)), $this->stubFilesProvider->getStubFiles()));
+		return $this->fileExcluderRawFactory->create(array_values(array_unique($paths)));
 	}
 
 	public function createScanFileExcluder(): FileExcluder

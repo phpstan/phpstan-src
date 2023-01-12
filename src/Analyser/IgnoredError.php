@@ -5,7 +5,6 @@ namespace PHPStan\Analyser;
 use Nette\Utils\Strings;
 use PHPStan\File\FileExcluder;
 use PHPStan\File\FileHelper;
-use PHPStan\PhpDoc\EmptyStubFilesProvider;
 use function count;
 use function implode;
 use function is_array;
@@ -60,7 +59,7 @@ class IgnoredError
 				return false;
 			}
 
-			$fileExcluder = new FileExcluder($fileHelper, new EmptyStubFilesProvider(), [$path]);
+			$fileExcluder = new FileExcluder($fileHelper, [$path]);
 			$isExcluded = $fileExcluder->isExcludedFromAnalysing($error->getFilePath());
 			if (!$isExcluded && $error->getTraitFilePath() !== null) {
 				return $fileExcluder->isExcludedFromAnalysing($error->getTraitFilePath());

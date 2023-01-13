@@ -24,9 +24,20 @@ class Foo
 
 		/** @var int $int */
 		$int = 'foo';
+
+		/** @var int $test */
+		$test = $this->doBaz();
 	}
 
 	public function doBar(): string
+	{
+
+	}
+
+	/**
+	 * @return string
+	 */
+	public function doBaz()
 	{
 
 	}

@@ -97,6 +97,7 @@ parameters:
 	reportMaybesInMethodSignatures: false
 	reportMaybesInPropertyPhpDocTypes: false
 	reportStaticMethodSignatures: false
+	reportWrongPhpDocTypeInVarTag: false
 	mixinExcludeClasses: []
 	scanFiles: []
 	scanDirectories: []
@@ -323,6 +324,7 @@ parametersSchema:
 	reportMaybesInMethodSignatures: bool()
 	reportMaybesInPropertyPhpDocTypes: bool()
 	reportStaticMethodSignatures: bool()
+	reportWrongPhpDocTypeInVarTag: bool()
 	parallel: structure([
 		jobSize: int(),
 		processTimeout: float(),

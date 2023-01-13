@@ -15,11 +15,14 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 
 	private bool $checkTypeAgainstNativeType = false;
 
+	private bool $checkTypeAgainstPhpDocType = false;
+
 	protected function getRule(): Rule
 	{
 		return new WrongVariableNameInVarTagRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
 			$this->checkTypeAgainstNativeType,
+			$this->checkTypeAgainstPhpDocType,
 		);
 	}
 
@@ -191,23 +194,53 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testReportWrongType(): void
+	public function dataReportWrongType(): iterable
 	{
-		$this->checkTypeAgainstNativeType = true;
-		$this->analyse([__DIR__ . '/data/wrong-var-native-type.php'], [
+		yield [false, false, []];
+		yield [true, false, [
 			[
 				'PHPDoc tag @var with type string|null is not subtype of native type string.',
 				14,
 			],
 			[
-				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage.',
+				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage<object, mixed>.',
 				23,
 			],
 			[
 				'PHPDoc tag @var with type int is not subtype of native type \'foo\'.',
 				26,
 			],
-		]);
+		]];
+		yield [false, true, []];
+		yield [true, true, [
+			[
+				'PHPDoc tag @var with type string|null is not subtype of native type string.',
+				14,
+			],
+			[
+				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage<object, mixed>.',
+				23,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type \'foo\'.',
+				26,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of type string.',
+				29,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataReportWrongType
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testReportWrongType(bool $checkTypeAgainstNativeType, bool $checkTypeAgainstPhpDocType, array $expectedErrors): void
+	{
+		$this->checkTypeAgainstNativeType = $checkTypeAgainstNativeType;
+		$this->checkTypeAgainstPhpDocType = $checkTypeAgainstPhpDocType;
+		$this->analyse([__DIR__ . '/data/wrong-var-native-type.php'], $expectedErrors);
 	}
 
 }

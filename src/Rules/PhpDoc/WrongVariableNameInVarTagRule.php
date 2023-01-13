@@ -19,6 +19,7 @@ use PHPStan\Type\ConstantType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_keys;
 use function array_map;
@@ -39,6 +40,7 @@ class WrongVariableNameInVarTagRule implements Rule
 	public function __construct(
 		private FileTypeMapper $fileTypeMapper,
 		private bool $checkTypeAgainstNativeType,
+		private bool $checkTypeAgainstPhpDocType,
 	)
 	{
 	}
@@ -139,26 +141,38 @@ class WrongVariableNameInVarTagRule implements Rule
 		$assignedVariables = $this->getAssignedVariables($var);
 		foreach ($varTags as $key => $varTag) {
 			if ($this->checkTypeAgainstNativeType) {
-				$exprNativeType = $scope->getNativeType($expr);
-				if ($expr instanceof Expr\New_) {
-					if ($exprNativeType instanceof GenericObjectType) {
-						$exprNativeType = new ObjectType($exprNativeType->getClassName());
+				$reportType = static function (Type $type) use ($expr, $varTag): bool {
+					if ($expr instanceof Expr\New_) {
+						if ($type instanceof GenericObjectType) {
+							$type = new ObjectType($type->getClassName());
+						}
 					}
-				}
 
-				if ($exprNativeType instanceof ConstantType) {
-					$report = $exprNativeType->isSuperTypeOf($varTag->getType())->no();
-				} else {
-					$report = !$exprNativeType->isSuperTypeOf($varTag->getType())->yes();
-				}
+					if ($type instanceof ConstantType) {
+						return $type->isSuperTypeOf($varTag->getType())->no();
+					}
 
-				if ($report) {
+					return !$type->isSuperTypeOf($varTag->getType())->yes();
+				};
+
+				$exprNativeType = $scope->getNativeType($expr);
+				if ($reportType($exprNativeType)) {
 					$verbosity = VerbosityLevel::getRecommendedLevelByType($exprNativeType, $varTag->getType());
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'PHPDoc tag @var with type %s is not subtype of native type %s.',
 						$varTag->getType()->describe($verbosity),
 						$exprNativeType->describe($verbosity),
 					))->build();
+				} elseif ($this->checkTypeAgainstPhpDocType) {
+					$exprType = $scope->getType($expr);
+					if ($reportType($exprType)) {
+						$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTag->getType());
+						$errors[] = RuleErrorBuilder::message(sprintf(
+							'PHPDoc tag @var with type %s is not subtype of type %s.',
+							$varTag->getType()->describe($verbosity),
+							$exprType->describe($verbosity),
+						))->build();
+					}
 				}
 			}
 

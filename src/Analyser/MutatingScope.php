@@ -188,6 +188,7 @@ class MutatingScope implements Scope
 		private ?Scope $parentScope = null,
 		private bool $nativeTypesPromoted = false,
 		private bool $explicitMixedInUnknownGenericNew = false,
+		private bool $explicitMixedForGlobalVariables = false,
 	)
 	{
 		if ($namespace === '') {
@@ -465,6 +466,10 @@ class MutatingScope implements Scope
 	/** @api */
 	public function hasVariableType(string $variableName): TrinaryLogic
 	{
+		if ($this->isGlobalVariable($variableName)) {
+			return TrinaryLogic::createYes();
+		}
+
 		$varExprString = '$' . $variableName;
 		if (!isset($this->expressionTypes[$varExprString])) {
 			if ($this->canAnyVariableExist()) {
@@ -493,6 +498,10 @@ class MutatingScope implements Scope
 			if ($this->canAnyVariableExist()) {
 				return new MixedType();
 			}
+		}
+
+		if ($this->isGlobalVariable($variableName)) {
+			return new ArrayType(new StringType(), new MixedType($this->explicitMixedForGlobalVariables));
 		}
 
 		if ($this->hasVariableType($variableName)->no()) {
@@ -526,6 +535,21 @@ class MutatingScope implements Scope
 		}
 
 		return $variables;
+	}
+
+	private function isGlobalVariable(string $variableName): bool
+	{
+		return in_array($variableName, [
+			'GLOBALS',
+			'_SERVER',
+			'_GET',
+			'_POST',
+			'_FILES',
+			'_COOKIE',
+			'_SESSION',
+			'_REQUEST',
+			'_ENV',
+		], true);
 	}
 
 	/** @api */
@@ -2109,6 +2133,7 @@ class MutatingScope implements Scope
 			$this->parentScope,
 			false,
 			$this->explicitMixedInUnknownGenericNew,
+			$this->explicitMixedForGlobalVariables,
 		);
 	}
 
@@ -2405,8 +2430,12 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			null,
 			$this->getNamespace(),
-			array_merge($this->getSuperglobalTypes(), $this->getConstantTypes(), ['$this' => $thisHolder]),
-			array_merge($this->getNativeSuperglobalTypes(), $this->getNativeConstantTypes(), ['$this' => $thisHolder]),
+			array_merge($this->getConstantTypes(), [
+				'$this' => $thisHolder,
+			]),
+			array_merge($this->getNativeConstantTypes(), [
+				'$this' => $thisHolder,
+			]),
 			[],
 			null,
 			null,
@@ -2642,8 +2671,8 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			$functionReflection,
 			$this->getNamespace(),
-			array_merge($this->getSuperglobalTypes(), $this->getConstantTypes(), $expressionTypes),
-			array_merge($this->getNativeSuperglobalTypes(), $this->getNativeConstantTypes(), $nativeExpressionTypes),
+			array_merge($this->getConstantTypes(), $expressionTypes),
+			array_merge($this->getNativeConstantTypes(), $nativeExpressionTypes),
 		);
 	}
 
@@ -2655,8 +2684,6 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			null,
 			$namespaceName,
-			$this->getSuperglobalTypes(),
-			$this->getNativeSuperglobalTypes(),
 		);
 	}
 
@@ -2880,8 +2907,8 @@ class MutatingScope implements Scope
 			$this->isDeclareStrictTypes(),
 			$this->getFunction(),
 			$this->getNamespace(),
-			array_merge($this->getSuperglobalTypes(), $this->getConstantTypes(), $expressionTypes),
-			array_merge($this->getNativeSuperglobalTypes(), $this->getNativeConstantTypes(), $nativeTypes),
+			array_merge($this->getConstantTypes(), $expressionTypes),
+			array_merge($this->getNativeConstantTypes(), $nativeTypes),
 			[],
 			$this->inClosureBindScopeClass,
 			new TrivialParametersAcceptor(),
@@ -4961,36 +4988,6 @@ class MutatingScope implements Scope
 			$constantTypes[$exprString] = $typeHolder;
 		}
 		return $constantTypes;
-	}
-
-	/** @return array<string, ExpressionTypeHolder> */
-	private function getSuperglobalTypes(): array
-	{
-		$superglobalTypes = [];
-		$exprStrings = ['$GLOBALS', '$_SERVER', '$_GET', '$_POST', '$_FILES', '$_COOKIE', '$_SESSION', '$_REQUEST', '$_ENV'];
-		foreach ($this->expressionTypes as $exprString => $typeHolder) {
-			if (!in_array($exprString, $exprStrings, true)) {
-				continue;
-			}
-
-			$superglobalTypes[$exprString] = $typeHolder;
-		}
-		return $superglobalTypes;
-	}
-
-	/** @return array<string, ExpressionTypeHolder> */
-	private function getNativeSuperglobalTypes(): array
-	{
-		$superglobalTypes = [];
-		$exprStrings = ['$GLOBALS', '$_SERVER', '$_GET', '$_POST', '$_FILES', '$_COOKIE', '$_SESSION', '$_REQUEST', '$_ENV'];
-		foreach ($this->nativeExpressionTypes as $exprString => $typeHolder) {
-			if (!in_array($exprString, $exprStrings, true)) {
-				continue;
-			}
-
-			$superglobalTypes[$exprString] = $typeHolder;
-		}
-		return $superglobalTypes;
 	}
 
 }

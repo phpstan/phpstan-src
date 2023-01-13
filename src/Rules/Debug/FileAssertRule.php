@@ -94,7 +94,6 @@ class FileAssertRule implements Rule
 			return [];
 		}
 
-		$scope = $scope->doNotTreatPhpDocTypesAsCertain();
 		$expectedTypeString = $scope->getNativeType($args[0]->value);
 		if (!$expectedTypeString instanceof ConstantStringType) {
 			return [

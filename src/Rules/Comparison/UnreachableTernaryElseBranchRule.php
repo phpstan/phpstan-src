@@ -45,7 +45,7 @@ class UnreachableTernaryElseBranchRule implements Rule
 					return $ruleErrorBuilder;
 				}
 
-				$booleanNativeType = $scope->doNotTreatPhpDocTypesAsCertain()->getType($node->cond);
+				$booleanNativeType = $scope->getNativeType($node->cond);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
 					return $ruleErrorBuilder;
 				}

@@ -73,6 +73,9 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 
 	public function getNativeType(Expr $expr): Type;
 
+	/**
+	 * @deprecated Use getNativeType()
+	 */
 	public function doNotTreatPhpDocTypesAsCertain(): self;
 
 	public function resolveName(Name $name): string;

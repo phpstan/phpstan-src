@@ -22,6 +22,11 @@ use PHPStan\Type\Type;
 interface ExtendedMethodReflection extends MethodReflection
 {
 
+	/**
+	 * @return ParametersAcceptorWithPhpDocs[]
+	 */
+	public function getVariants(): array;
+
 	public function getAsserts(): Assertions;
 
 	public function getSelfOutType(): ?Type;

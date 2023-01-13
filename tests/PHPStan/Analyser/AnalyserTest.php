@@ -602,6 +602,7 @@ class AnalyserTest extends PHPStanTestCase
 			[],
 			[],
 			true,
+			$this->shouldTreatPhpDocTypesAsCertain(),
 		);
 		$lexer = new Lexer(['usedAttributes' => ['comments', 'startLine', 'endLine', 'startTokenPos', 'endTokenPos']]);
 		$fileAnalyser = new FileAnalyser(

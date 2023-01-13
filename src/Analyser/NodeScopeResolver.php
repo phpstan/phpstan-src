@@ -209,6 +209,7 @@ class NodeScopeResolver
 		private readonly array $earlyTerminatingMethodCalls,
 		private readonly array $earlyTerminatingFunctionCalls,
 		private readonly bool $implicitThrows,
+		private readonly bool $treatPhpDocTypesAsCertain,
 	)
 	{
 		$earlyTerminatingMethodNames = [];
@@ -723,7 +724,7 @@ class NodeScopeResolver
 				new StatementExitPoint($stmt, $scope),
 			], $throwPoints);
 		} elseif ($stmt instanceof If_) {
-			$conditionType = $scope->getType($stmt->cond)->toBoolean();
+			$conditionType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($stmt->cond) : $scope->getNativeType($stmt->cond))->toBoolean();
 			$ifAlwaysTrue = $conditionType->isTrue()->yes();
 			$condResult = $this->processExprNode($stmt->cond, $scope, $nodeCallback, ExpressionContext::createDeep());
 			$exitPoints = [];
@@ -749,7 +750,7 @@ class NodeScopeResolver
 			$condScope = $scope;
 			foreach ($stmt->elseifs as $elseif) {
 				$nodeCallback($elseif, $scope);
-				$elseIfConditionType = $condScope->getType($elseif->cond)->toBoolean();
+				$elseIfConditionType = ($this->treatPhpDocTypesAsCertain ? $condScope->getType($elseif->cond) : $scope->getNativeType($elseif->cond))->toBoolean();
 				$condResult = $this->processExprNode($elseif->cond, $condScope, $nodeCallback, ExpressionContext::createDeep());
 				$throwPoints = array_merge($throwPoints, $condResult->getThrowPoints());
 				$condScope = $condResult->getScope();
@@ -931,8 +932,8 @@ class NodeScopeResolver
 				$finalScope = $finalScope->mergeWith($breakExitPoint->getScope());
 			}
 
-			$beforeCondBooleanType = $scope->getType($stmt->cond)->toBoolean();
-			$condBooleanType = $bodyScopeMaybeRan->getType($stmt->cond)->toBoolean();
+			$beforeCondBooleanType = ($this->treatPhpDocTypesAsCertain ? $scope->getType($stmt->cond) : $scope->getNativeType($stmt->cond))->toBoolean();
+			$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScopeMaybeRan->getType($stmt->cond) : $bodyScopeMaybeRan->getNativeType($stmt->cond))->toBoolean();
 			$isIterableAtLeastOnce = $beforeCondBooleanType->isTrue()->yes();
 			$alwaysIterates = $condBooleanType->isTrue()->yes() && $context->isTopLevel();
 			$neverIterates = $condBooleanType->isFalse()->yes() && $context->isTopLevel();
@@ -1007,7 +1008,7 @@ class NodeScopeResolver
 			foreach ($bodyScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 				$bodyScope = $bodyScope->mergeWith($continueExitPoint->getScope());
 			}
-			$condBooleanType = $bodyScope->getType($stmt->cond)->toBoolean();
+			$condBooleanType = ($this->treatPhpDocTypesAsCertain ? $bodyScope->getType($stmt->cond) : $bodyScope->getNativeType($stmt->cond))->toBoolean();
 			$alwaysIterates = $condBooleanType->isTrue()->yes() && $context->isTopLevel();
 
 			$nodeCallback(new DoWhileLoopConditionNode($stmt->cond, $bodyScopeResult->getExitPoints()), $bodyScope);
@@ -1057,7 +1058,8 @@ class NodeScopeResolver
 				$condResult = $this->processExprNode($condExpr, $bodyScope, static function (): void {
 				}, ExpressionContext::createDeep());
 				$initScope = $condResult->getScope();
-				$condTruthiness = $condResult->getScope()->getType($condExpr)->toBoolean();
+				$condResultScope = $condResult->getScope();
+				$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResultScope->getType($condExpr) : $condResultScope->getNativeType($condExpr))->toBoolean();
 				if ($condTruthiness instanceof ConstantBooleanType) {
 					$condTruthinessTrinary = TrinaryLogic::createFromBoolean($condTruthiness->getValue());
 				} else {
@@ -2160,11 +2162,7 @@ class NodeScopeResolver
 				$className = $scope->resolveName($expr->class);
 				if ($this->reflectionProvider->hasClass($className)) {
 					$classReflection = $this->reflectionProvider->getClass($className);
-					if (is_string($expr->name)) {
-						$methodName = $expr->name;
-					} else {
-						$methodName = $expr->name->name;
-					}
+					$methodName = $expr->name->name;
 					if ($classReflection->hasMethod($methodName)) {
 						$methodReflection = $classReflection->getMethod($methodName, $scope);
 						$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
@@ -2713,7 +2711,8 @@ class NodeScopeResolver
 					$hasYield = $hasYield || $armCondResult->hasYield();
 					$throwPoints = array_merge($throwPoints, $armCondResult->getThrowPoints());
 					$armCondExpr = new BinaryOp\Identical($expr->cond, $armCond);
-					$armCondType = $armCondResult->getScope()->getType($armCondExpr);
+					$armCondResultScope = $armCondResult->getScope();
+					$armCondType = $this->treatPhpDocTypesAsCertain ? $armCondResultScope->getType($armCondExpr) : $armCondResultScope->getNativeType($armCondExpr);
 					if ($armCondType->isTrue()->yes()) {
 						$hasAlwaysTrueCond = true;
 					}

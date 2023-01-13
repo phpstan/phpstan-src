@@ -5,11 +5,9 @@ namespace PHPStan\Reflection\Type;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\ChangedTypeMethodReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionVariant;
-use PHPStan\Reflection\ParameterReflection;
+use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
-use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Type\Type;
@@ -82,38 +80,27 @@ class CallbackUnresolvedMethodPrototypeReflection implements UnresolvedMethodPro
 
 	private function transformMethodWithStaticType(ClassReflection $declaringClass, ExtendedMethodReflection $method): ExtendedMethodReflection
 	{
-		$variants = array_map(fn (ParametersAcceptor $acceptor): ParametersAcceptor => new FunctionVariant(
+		$variants = array_map(fn (ParametersAcceptorWithPhpDocs $acceptor): ParametersAcceptorWithPhpDocs => new FunctionVariantWithPhpDocs(
 			$acceptor->getTemplateTypeMap(),
 			$acceptor->getResolvedTemplateTypeMap(),
 			array_map(
-				function (ParameterReflection $parameter): ParameterReflection {
-					if ($parameter instanceof ParameterReflectionWithPhpDocs) {
-						return new DummyParameterWithPhpDocs(
-							$parameter->getName(),
-							$this->transformStaticType($parameter->getType()),
-							$parameter->isOptional(),
-							$parameter->passedByReference(),
-							$parameter->isVariadic(),
-							$parameter->getDefaultValue(),
-							$parameter->getNativeType(),
-							$parameter->getPhpDocType(),
-							$parameter->getOutType(),
-						);
-					}
-
-					return new DummyParameter(
-						$parameter->getName(),
-						$this->transformStaticType($parameter->getType()),
-						$parameter->isOptional(),
-						$parameter->passedByReference(),
-						$parameter->isVariadic(),
-						$parameter->getDefaultValue(),
-					);
-				},
+				fn (ParameterReflectionWithPhpDocs $parameter): ParameterReflectionWithPhpDocs => new DummyParameterWithPhpDocs(
+					$parameter->getName(),
+					$this->transformStaticType($parameter->getType()),
+					$parameter->isOptional(),
+					$parameter->passedByReference(),
+					$parameter->isVariadic(),
+					$parameter->getDefaultValue(),
+					$parameter->getNativeType(),
+					$parameter->getPhpDocType(),
+					$parameter->getOutType(),
+				),
 				$acceptor->getParameters(),
 			),
 			$acceptor->isVariadic(),
 			$this->transformStaticType($acceptor->getReturnType()),
+			$this->transformStaticType($acceptor->getPhpDocReturnType()),
+			$this->transformStaticType($acceptor->getNativeReturnType()),
 		), $method->getVariants());
 
 		return new ChangedTypeMethodReflection($declaringClass, $method, $variants);

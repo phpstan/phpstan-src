@@ -71,10 +71,6 @@ class MethodSignatureRule implements Rule
 				continue;
 			}
 			$parentParameters = ParametersAcceptorSelector::selectSingle($parentVariants);
-			if (!$parentParameters instanceof ParametersAcceptorWithPhpDocs) {
-				continue;
-			}
-
 			[$returnTypeCompatibility, $returnType, $parentReturnType] = $this->checkReturnTypeCompatibility($declaringClass, $parameters, $parentParameters);
 			if ($returnTypeCompatibility->no() || (!$returnTypeCompatibility->yes() && $this->reportMaybes)) {
 				$errors[] = RuleErrorBuilder::message(sprintf(

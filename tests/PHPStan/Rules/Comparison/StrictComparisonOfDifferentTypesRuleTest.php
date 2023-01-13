@@ -15,9 +15,16 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	private bool $checkAlwaysTrueStrictComparison;
 
+	private bool $treatPhpDocTypesAsCertain = true;
+
 	protected function getRule(): Rule
 	{
-		return new StrictComparisonOfDifferentTypesRule($this->checkAlwaysTrueStrictComparison, true);
+		return new StrictComparisonOfDifferentTypesRule($this->checkAlwaysTrueStrictComparison, $this->treatPhpDocTypesAsCertain);
+	}
+
+	protected function shouldTreatPhpDocTypesAsCertain(): bool
+	{
+		return $this->treatPhpDocTypesAsCertain;
 	}
 
 	public function testStrictComparison(): void
@@ -742,6 +749,24 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-3019.php'], []);
+	}
+
+	public function testBug7578(): void
+	{
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-7578.php'], []);
+	}
+
+	public function testBug6260(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped('Test requires PHP 8.0.');
+		}
+
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-6260.php'], []);
 	}
 
 }

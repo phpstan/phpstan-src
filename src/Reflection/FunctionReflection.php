@@ -14,7 +14,7 @@ interface FunctionReflection
 	public function getFileName(): ?string;
 
 	/**
-	 * @return ParametersAcceptor[]
+	 * @return ParametersAcceptorWithPhpDocs[]
 	 */
 	public function getVariants(): array;
 

@@ -2,7 +2,6 @@
 
 namespace PHPStan\Command;
 
-use Closure;
 use Composer\XdebugHandler\XdebugHandler;
 use Nette\DI\Helpers;
 use Nette\DI\InvalidConfigurationException;
@@ -91,7 +90,6 @@ class CommandHelper
 	{
 		$stdOutput = new SymfonyOutput($output, new SymfonyStyle(new ErrorsConsoleStyle($input, $output)));
 
-		/** @var Output $errorOutput */
 		$errorOutput = (static function () use ($input, $output): Output {
 			$symfonyErrorOutput = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
 			return new SymfonyOutput($symfonyErrorOutput, new SymfonyStyle(new ErrorsConsoleStyle($input, $symfonyErrorOutput)));
@@ -474,7 +472,6 @@ class CommandHelper
 		/** @var StubFilesProvider $stubFilesProvider */
 		$stubFilesProvider = $container->getByType(StubFilesProvider::class);
 
-		/** @var Closure(): array{string[], bool} $filesCallback */
 		$filesCallback = static function () use ($currentWorkingDirectoryFileHelper, $stubFilesProvider, $fileFinder, $pathRoutingParser, $paths): array {
 			$fileFinderResult = $fileFinder->findFiles($paths);
 			$files = $fileFinderResult->getFiles();

@@ -37,7 +37,7 @@ class FunctionVariantWithPhpDocs extends FunctionVariant implements ParametersAc
 	 */
 	public function getParameters(): array
 	{
-		/** @var ParameterReflectionWithPhpDocs[] $parameters */
+		/** @var array<int, ParameterReflectionWithPhpDocs> $parameters */
 		$parameters = parent::getParameters();
 
 		return $parameters;

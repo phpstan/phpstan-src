@@ -545,7 +545,9 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug6501(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6501.php');
-		$this->assertNoErrors($errors);
+		$this->assertCount(1, $errors);
+		$this->assertSame('PHPDoc tag @var with type R of Exception|stdClass is not subtype of native type stdClass.', $errors[0]->getMessage());
+		$this->assertSame(24, $errors[0]->getLine());
 	}
 
 	public function testBug6114(): void
@@ -591,9 +593,15 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	public function testBug6842(): void
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-6842.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Generator expects value type T of DateTimeInterface, DateTime|DateTimeImmutable|T of DateTimeInterface given.', $errors[0]->getMessage());
-		$this->assertSame(28, $errors[0]->getLine());
+		$this->assertCount(3, $errors);
+		$this->assertSame('PHPDoc tag @var with type Iterator<mixed, T of DateTimeInterface> is not subtype of native type DatePeriod.', $errors[0]->getMessage());
+		$this->assertSame(22, $errors[0]->getLine());
+
+		$this->assertSame('Generator expects value type T of DateTimeInterface, DateTime|DateTimeImmutable|T of DateTimeInterface given.', $errors[1]->getMessage());
+		$this->assertSame(28, $errors[1]->getLine());
+
+		$this->assertSame('Generator expects value type T of DateTimeInterface, DateTime|DateTimeImmutable|T of DateTimeInterface given.', $errors[2]->getMessage());
+		$this->assertSame(54, $errors[2]->getLine());
 	}
 
 	public function testBug6896(): void

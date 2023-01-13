@@ -334,7 +334,6 @@ class AutoloadSourceLocator implements SourceLocator
 		$this->silenceErrors();
 
 		try {
-			/** @var array{string[], string, null}|null */
 			$result = FileReadTrapStreamWrapper::withStreamWrapperOverride(
 				static function () use ($className): ?array {
 					$functions = spl_autoload_functions();

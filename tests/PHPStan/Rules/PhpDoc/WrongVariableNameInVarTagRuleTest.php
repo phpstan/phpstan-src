@@ -13,10 +13,13 @@ use const PHP_VERSION_ID;
 class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 {
 
+	private bool $checkTypeAgainstNativeType = false;
+
 	protected function getRule(): Rule
 	{
 		return new WrongVariableNameInVarTagRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
+			$this->checkTypeAgainstNativeType,
 		);
 	}
 
@@ -184,6 +187,25 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var above an enum has no effect.',
 				13,
+			],
+		]);
+	}
+
+	public function testReportWrongType(): void
+	{
+		$this->checkTypeAgainstNativeType = true;
+		$this->analyse([__DIR__ . '/data/wrong-var-native-type.php'], [
+			[
+				'PHPDoc tag @var with type string|null is not subtype of native type string.',
+				14,
+			],
+			[
+				'PHPDoc tag @var with type stdClass is not subtype of native type SplObjectStorage.',
+				23,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type \'foo\'.',
+				26,
 			],
 		]);
 	}

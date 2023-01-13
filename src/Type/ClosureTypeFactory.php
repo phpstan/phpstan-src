@@ -54,7 +54,7 @@ class ClosureTypeFactory
 			throw new ShouldNotHappenException('Closure reflection not found.');
 		}
 
-		/** @var \PHPStan\BetterReflection\Reflection\ReflectionFunction[] $reflections */
+		/** @var list<\PHPStan\BetterReflection\Reflection\ReflectionFunction> $reflections */
 		$reflections = $find($this->reflector, $ast, new IdentifierType(IdentifierType::IDENTIFIER_FUNCTION), $locatedSource);
 		if (count($reflections) !== 1) {
 			throw new ShouldNotHappenException('Closure reflection not found.');

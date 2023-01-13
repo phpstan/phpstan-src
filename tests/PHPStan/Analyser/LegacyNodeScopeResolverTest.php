@@ -65,7 +65,6 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 
 	private function getFileScope(string $filename): Scope
 	{
-		/** @var Scope $testScope */
 		$testScope = null;
 		$this->processFile($filename, static function (Node $node, Scope $scope) use (&$testScope): void {
 			if (!($node instanceof Exit_)) {
@@ -75,6 +74,7 @@ class LegacyNodeScopeResolverTest extends TypeInferenceTestCase
 			$testScope = $scope;
 		});
 
+		/** @var Scope */
 		return $testScope;
 	}
 

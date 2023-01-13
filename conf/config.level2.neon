@@ -42,7 +42,6 @@ rules:
 	- PHPStan\Rules\PhpDoc\InvalidPhpDocTagValueRule
 	- PHPStan\Rules\PhpDoc\InvalidPHPStanDocTagRule
 	- PHPStan\Rules\PhpDoc\InvalidThrowsPhpDocValueRule
-	- PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
 	- PHPStan\Rules\Properties\AccessPrivatePropertyThroughStaticRule
 
 conditionalTags:
@@ -73,5 +72,11 @@ services:
 		arguments:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 			checkMissingVarTagTypehint: %checkMissingVarTagTypehint%
+		tags:
+			- phpstan.rules.rule
+	-
+		class: PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
+		arguments:
+			checkTypeAgainstNativeType: %featureToggles.varTagType%
 		tags:
 			- phpstan.rules.rule

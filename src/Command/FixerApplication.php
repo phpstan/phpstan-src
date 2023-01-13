@@ -120,7 +120,7 @@ class FixerApplication
 		/** @var string $serverAddress */
 		$serverAddress = $server->getAddress();
 
-		/** @var int $serverPort */
+		/** @var int<0, 65535> $serverPort */
 		$serverPort = parse_url($serverAddress, PHP_URL_PORT);
 
 		$reanalyseProcessQueue = new RunnableQueue(

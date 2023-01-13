@@ -57,6 +57,7 @@ parameters:
 		invarianceComposition: false
 		alwaysTrueAlwaysReported: false
 		disableUnreachableBranchesRules: false
+		varTagType: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -280,6 +281,7 @@ parametersSchema:
 		invarianceComposition: bool()
 		alwaysTrueAlwaysReported: bool()
 		disableUnreachableBranchesRules: bool()
+		varTagType: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

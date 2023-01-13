@@ -77,6 +77,11 @@ parameters:
 			path: src/Command/CommandHelper.php
 
 		-
+			message: "#^PHPDoc tag @var with type array\\<callable\\>\\|false is not subtype of native type array\\.$#"
+			count: 2
+			path: src/Command/CommandHelper.php
+
+		-
 			message: "#^Parameter \\#1 \\$path of function dirname expects string, string\\|false given\\.$#"
 			count: 1
 			path: src/Command/CommandHelper.php
@@ -336,6 +341,11 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
+			message: "#^PHPDoc tag @var with type float\\|int is not subtype of native type int\\.$#"
+			count: 1
+			path: src/Reflection/InitializerExprTypeResolver.php
+
+		-
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"
 			count: 1
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
@@ -402,6 +412,16 @@ parameters:
 			message: "#^Anonymous function has an unused use \\$container\\.$#"
 			count: 1
 			path: src/Testing/PHPStanTestCase.php
+
+		-
+			message: "#^PHPDoc tag @var with type float\\|int is not subtype of native type int\\.$#"
+			count: 3
+			path: src/Type/Constant/ConstantArrayTypeBuilder.php
+
+		-
+			message: "#^PHPDoc tag @var with type int\\|string is not subtype of native type string\\.$#"
+			count: 1
+			path: src/Type/Constant/ConstantStringType.php
 
 		-
 			message: """

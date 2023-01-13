@@ -61,13 +61,11 @@ class FuzzyRelativePathHelper implements RelativePathHelper
 		) {
 			[$pathBeginning, $currentWorkingDirectory] = $trimBeginning($currentWorkingDirectory);
 
-			/** @var string[] $pathToTrimArray */
 			$pathToTrimArray = explode($directorySeparator, $currentWorkingDirectory);
 		}
 		foreach ($analysedPaths as $pathNumber => $path) {
 			[$tempPathBeginning, $path] = $trimBeginning($path);
 
-			/** @var string[] $pathArray */
 			$pathArray = explode($directorySeparator, $path);
 			$pathTempParts = [];
 			$pathArraySize = count($pathArray);

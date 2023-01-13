@@ -15,7 +15,11 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ConstantType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\VerbosityLevel;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -34,6 +38,7 @@ class WrongVariableNameInVarTagRule implements Rule
 
 	public function __construct(
 		private FileTypeMapper $fileTypeMapper,
+		private bool $checkTypeAgainstNativeType,
 	)
 	{
 	}
@@ -127,12 +132,36 @@ class WrongVariableNameInVarTagRule implements Rule
 	 * @param VarTag[] $varTags
 	 * @return RuleError[]
 	 */
-	private function processAssign(Scope $scope, Node\Expr $var, array $varTags): array
+	private function processAssign(Scope $scope, Node\Expr $var, Node\Expr $expr, array $varTags): array
 	{
 		$errors = [];
 		$hasMultipleMessage = false;
 		$assignedVariables = $this->getAssignedVariables($var);
-		foreach (array_keys($varTags) as $key) {
+		foreach ($varTags as $key => $varTag) {
+			if ($this->checkTypeAgainstNativeType) {
+				$exprNativeType = $scope->getNativeType($expr);
+				if ($expr instanceof Expr\New_) {
+					if ($exprNativeType instanceof GenericObjectType) {
+						$exprNativeType = new ObjectType($exprNativeType->getClassName());
+					}
+				}
+
+				if ($exprNativeType instanceof ConstantType) {
+					$report = $exprNativeType->isSuperTypeOf($varTag->getType())->no();
+				} else {
+					$report = !$exprNativeType->isSuperTypeOf($varTag->getType())->yes();
+				}
+
+				if ($report) {
+					$verbosity = VerbosityLevel::getRecommendedLevelByType($exprNativeType, $varTag->getType());
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'PHPDoc tag @var with type %s is not subtype of native type %s.',
+						$varTag->getType()->describe($verbosity),
+						$exprNativeType->describe($verbosity),
+					))->build();
+				}
+			}
+
 			if (is_int($key)) {
 				if (count($varTags) !== 1) {
 					if (!$hasMultipleMessage) {
@@ -289,7 +318,7 @@ class WrongVariableNameInVarTagRule implements Rule
 	private function processExpression(Scope $scope, Expr $expr, array $varTags): array
 	{
 		if ($expr instanceof Node\Expr\Assign || $expr instanceof Node\Expr\AssignRef) {
-			return $this->processAssign($scope, $expr->var, $varTags);
+			return $this->processAssign($scope, $expr->var, $expr->expr, $varTags);
 		}
 
 		return $this->processStmt($scope, $varTags, null);

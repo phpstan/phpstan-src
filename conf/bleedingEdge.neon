@@ -27,3 +27,4 @@ parameters:
 		invarianceComposition: true
 		alwaysTrueAlwaysReported: true
 		disableUnreachableBranchesRules: true
+		varTagType: true

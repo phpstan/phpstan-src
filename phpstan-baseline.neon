@@ -341,6 +341,14 @@ parameters:
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
 
 		-
+			message: """
+				#^Call to deprecated method doNotTreatPhpDocTypesAsCertain\\(\\) of class PHPStan\\\\Analyser\\\\Scope\\:
+				Use getNativeType\\(\\)$#
+			"""
+			count: 1
+			path: src/Rules/Comparison/ImpossibleCheckTypeHelper.php
+
+		-
 			message: "#^Function class_implements\\(\\) is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine\\. Use objects retrieved from ReflectionProvider instead\\.$#"
 			count: 1
 			path: src/Rules/DirectRegistry.php

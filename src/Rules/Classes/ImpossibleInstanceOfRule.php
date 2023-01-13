@@ -74,10 +74,12 @@ class ImpossibleInstanceOfRule implements Rule
 		};
 
 		if (!$instanceofType->getValue()) {
+			$exprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->expr) : $scope->getNativeType($node->expr);
+
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to false.',
-					$scope->getType($node->expr)->describe(VerbosityLevel::typeOnly()),
+					$exprType->describe(VerbosityLevel::typeOnly()),
 					$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
 				)))->build(),
 			];
@@ -86,10 +88,12 @@ class ImpossibleInstanceOfRule implements Rule
 				return [];
 			}
 
+			$exprType = $this->treatPhpDocTypesAsCertain ? $scope->getType($node->expr) : $scope->getNativeType($node->expr);
+
 			return [
 				$addTip(RuleErrorBuilder::message(sprintf(
 					'Instanceof between %s and %s will always evaluate to true.',
-					$scope->getType($node->expr)->describe(VerbosityLevel::typeOnly()),
+					$exprType->describe(VerbosityLevel::typeOnly()),
 					$classType->describe(VerbosityLevel::getRecommendedLevelByType($classType)),
 				)))->build(),
 			];

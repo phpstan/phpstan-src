@@ -26,7 +26,6 @@ class FileNodesFetcher
 		$contents = FileReader::read($fileName);
 
 		try {
-			/** @var Node[] $ast */
 			$ast = $this->parser->parseFile($fileName);
 		} catch (ParserErrorsException) {
 			return new FetchedNodesResult([], [], []);

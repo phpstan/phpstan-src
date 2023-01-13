@@ -26,7 +26,6 @@ class ExportedNodeFetcher
 		$nodeTraverser->addVisitor($this->visitor);
 
 		try {
-			/** @var Node[] $ast */
 			$ast = $this->parser->parseFile($fileName);
 		} catch (ParserErrorsException) {
 			return [];

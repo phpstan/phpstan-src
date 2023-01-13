@@ -156,7 +156,7 @@ trait TemplateTypeTrait
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		/** @var Type $bound */
+		/** @var TBound $bound */
 		$bound = $this->getBound();
 		if (
 			!$acceptingType instanceof $bound
@@ -200,7 +200,7 @@ trait TemplateTypeTrait
 
 	public function isSubTypeOf(Type $type): TrinaryLogic
 	{
-		/** @var Type $bound */
+		/** @var TBound $bound */
 		$bound = $this->getBound();
 		if (
 			!$type instanceof $bound

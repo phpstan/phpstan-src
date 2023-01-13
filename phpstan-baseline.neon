@@ -346,6 +346,16 @@ parameters:
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
+			message: "#^PHPDoc tag @var with type float\\|int is not subtype of type int\\.$#"
+			count: 4
+			path: src/Reflection/InitializerExprTypeResolver.php
+
+		-
+			message: "#^PHPDoc tag @var with type float\\|int\\|null is not subtype of type int\\|null\\.$#"
+			count: 6
+			path: src/Reflection/InitializerExprTypeResolver.php
+
+		-
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"
 			count: 1
 			path: src/Reflection/SignatureMap/Php8SignatureMapProvider.php
@@ -424,6 +434,16 @@ parameters:
 			path: src/Type/Constant/ConstantStringType.php
 
 		-
+			message: "#^Instanceof between PHPStan\\\\Type\\\\Type and PHPStan\\\\Type\\\\IntersectionType will always evaluate to false\\.$#"
+			count: 2
+			path: src/Type/Generic/TemplateIntersectionType.php
+
+		-
+			message: "#^Instanceof between PHPStan\\\\Type\\\\Type and PHPStan\\\\Type\\\\UnionType will always evaluate to false\\.$#"
+			count: 2
+			path: src/Type/Generic/TemplateUnionType.php
+
+		-
 			message: """
 				#^Call to deprecated method getInstance\\(\\) of class PHPStan\\\\Broker\\\\Broker\\:
 				Use PHPStan\\\\Reflection\\\\ReflectionProviderStaticAccessor instead$#
@@ -496,6 +516,11 @@ parameters:
 			message: "#^Method PHPStan\\\\Node\\\\FileNodeTest\\:\\:getRule\\(\\) return type with generic interface PHPStan\\\\Rules\\\\Rule does not specify its types\\: TNodeType$#"
 			count: 1
 			path: tests/PHPStan/Node/FileNodeTest.php
+
+		-
+			message: "#^PHPDoc tag @var with type string is not subtype of type class\\-string\\.$#"
+			count: 1
+			path: tests/PHPStan/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocatorTest.php
 
 		-
 			message: "#^Creating new PHPStan\\\\Php8StubsMap is not covered by backward compatibility promise\\. The class might change in a minor PHPStan version\\.$#"

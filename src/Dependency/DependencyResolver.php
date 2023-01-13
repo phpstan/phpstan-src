@@ -72,9 +72,7 @@ class DependencyResolver
 			$nativeMethod = $node->getMethodReflection();
 			$parametersAcceptor = ParametersAcceptorSelector::selectSingle($nativeMethod->getVariants());
 			$this->extractThrowType($nativeMethod->getThrowType(), $dependenciesReflections);
-			if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
-				$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
-			}
+			$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
 			foreach ($nativeMethod->getAsserts()->getAll() as $assertTag) {
 				foreach ($assertTag->getType()->getReferencedClasses() as $referencedClass) {
 					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
@@ -107,9 +105,7 @@ class DependencyResolver
 			$this->extractThrowType($functionReflection->getThrowType(), $dependenciesReflections);
 			$parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionReflection->getVariants());
 
-			if ($parametersAcceptor instanceof ParametersAcceptorWithPhpDocs) {
-				$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
-			}
+			$this->extractFromParametersAcceptor($parametersAcceptor, $dependenciesReflections);
 			foreach ($functionReflection->getAsserts()->getAll() as $assertTag) {
 				foreach ($assertTag->getType()->getReferencedClasses() as $referencedClass) {
 					$this->addClassToDependencies($referencedClass, $dependenciesReflections);
@@ -141,9 +137,6 @@ class DependencyResolver
 
 					foreach ($functionReflection->getVariants() as $functionVariant) {
 						foreach ($functionVariant->getParameters() as $parameter) {
-							if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
-								continue;
-							}
 							if ($parameter->getOutType() === null) {
 								continue;
 							}
@@ -211,9 +204,6 @@ class DependencyResolver
 					$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
 					foreach ($methodReflection->getVariants() as $methodVariant) {
 						foreach ($methodVariant->getParameters() as $parameter) {
-							if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
-								continue;
-							}
 							if ($parameter->getOutType() === null) {
 								continue;
 							}
@@ -281,9 +271,6 @@ class DependencyResolver
 							$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
 							foreach ($methodReflection->getVariants() as $methodVariant) {
 								foreach ($methodVariant->getParameters() as $parameter) {
-									if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
-										continue;
-									}
 									if ($parameter->getOutType() === null) {
 										continue;
 									}
@@ -300,9 +287,6 @@ class DependencyResolver
 						$this->addClassToDependencies($methodReflection->getDeclaringClass()->getName(), $dependenciesReflections);
 						foreach ($methodReflection->getVariants() as $methodVariant) {
 							foreach ($methodVariant->getParameters() as $parameter) {
-								if (!$parameter instanceof ParameterReflectionWithPhpDocs) {
-									continue;
-								}
 								if ($parameter->getOutType() === null) {
 									continue;
 								}

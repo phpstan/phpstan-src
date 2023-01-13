@@ -6,11 +6,11 @@ use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\FunctionVariant;
-use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
 class EnumCasesMethodReflection implements ExtendedMethodReflection
@@ -60,17 +60,16 @@ class EnumCasesMethodReflection implements ExtendedMethodReflection
 		return $unitEnum->getNativeMethod('cases');
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getVariants(): array
 	{
 		return [
-			new FunctionVariant(
+			new FunctionVariantWithPhpDocs(
 				TemplateTypeMap::createEmpty(),
 				TemplateTypeMap::createEmpty(),
 				[],
 				false,
+				$this->returnType,
+				new MixedType(),
 				$this->returnType,
 			),
 		];

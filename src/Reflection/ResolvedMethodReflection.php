@@ -11,7 +11,7 @@ use PHPStan\Type\Type;
 class ResolvedMethodReflection implements ExtendedMethodReflection
 {
 
-	/** @var ParametersAcceptor[]|null */
+	/** @var ParametersAcceptorWithPhpDocs[]|null */
 	private ?array $variants = null;
 
 	private ?Assertions $asserts = null;
@@ -32,9 +32,6 @@ class ResolvedMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->getPrototype();
 	}
 
-	/**
-	 * @return ParametersAcceptor[]
-	 */
 	public function getVariants(): array
 	{
 		$variants = $this->variants;

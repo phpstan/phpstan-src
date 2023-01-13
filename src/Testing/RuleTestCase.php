@@ -97,6 +97,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				[],
 				[],
 				true,
+				$this->shouldTreatPhpDocTypesAsCertain(),
 			);
 			$fileAnalyser = new FileAnalyser(
 				$this->createScopeFactory($reflectionProvider, $typeSpecifier),

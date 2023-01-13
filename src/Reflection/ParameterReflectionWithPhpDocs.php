@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\Type\Type;
 
+/** @api */
 interface ParameterReflectionWithPhpDocs extends ParameterReflection
 {
 

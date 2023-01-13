@@ -2,8 +2,11 @@
 
 namespace PHPStan\Reflection;
 
+use PHPStan\Reflection\Php\DummyParameterWithPhpDocs;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
+use function array_map;
 
 class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 {
@@ -49,7 +52,35 @@ class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 
 	public function getVariants(): array
 	{
-		return $this->method->getVariants();
+		$variants = [];
+		foreach ($this->method->getVariants() as $variant) {
+			if ($variant instanceof ParametersAcceptorWithPhpDocs) {
+				$variants[] = $variant;
+				continue;
+			}
+
+			$variants[] = new FunctionVariantWithPhpDocs(
+				$variant->getTemplateTypeMap(),
+				$variant->getResolvedTemplateTypeMap(),
+				array_map(static fn (ParameterReflection $parameter): ParameterReflectionWithPhpDocs => $parameter instanceof ParameterReflectionWithPhpDocs ? $parameter : new DummyParameterWithPhpDocs(
+					$parameter->getName(),
+					$parameter->getType(),
+					$parameter->isOptional(),
+					$parameter->passedByReference(),
+					$parameter->isVariadic(),
+					$parameter->getDefaultValue(),
+					new MixedType(),
+					$parameter->getType(),
+					null,
+				), $variant->getParameters()),
+				$variant->isVariadic(),
+				$variant->getReturnType(),
+				$variant->getReturnType(),
+				new MixedType(),
+			);
+		}
+
+		return $variants;
 	}
 
 	public function isDeprecated(): TrinaryLogic

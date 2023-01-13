@@ -43,7 +43,7 @@ class UnreachableIfBranchesRule implements Rule
 				return $ruleErrorBuilder;
 			}
 
-			$booleanNativeType = $scope->doNotTreatPhpDocTypesAsCertain()->getType($condition)->toBoolean();
+			$booleanNativeType = $scope->getNativeType($condition)->toBoolean();
 			if ($booleanNativeType instanceof ConstantBooleanType) {
 				return $ruleErrorBuilder;
 			}

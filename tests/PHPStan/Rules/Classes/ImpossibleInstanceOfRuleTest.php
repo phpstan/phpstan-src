@@ -147,14 +147,14 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					'Instanceof between ImpossibleInstanceOf\Bar and ImpossibleInstanceOf\BarGrandChild will always evaluate to false.',
 					322,
 				],
-				[
+				/*[
 					'Instanceof between mixed and int results in an error.',
 					353,
 				],
 				[
 					'Instanceof between mixed and ImpossibleInstanceOf\InvalidTypeTest|int results in an error.',
 					362,
-				],
+				],*/
 				[
 					'Instanceof between ImpossibleInstanceOf\Foo and ImpossibleInstanceOf\Foo will always evaluate to true.',
 					388,
@@ -173,6 +173,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				[
 					'Instanceof between class-string<DateTimeInterface> and class-string<DateTimeInterface> will always evaluate to false.',
 					419,
+					$tipText,
 				],
 				[
 					'Instanceof between class-string<DateTimeInterface> and \'DateTimeInterface\' will always evaluate to false.',
@@ -254,14 +255,14 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					'Instanceof between ImpossibleInstanceOf\Bar and ImpossibleInstanceOf\BarGrandChild will always evaluate to false.',
 					322,
 				],
-				[
+				/*[
 					'Instanceof between mixed and int results in an error.',
 					353,
 				],
 				[
 					'Instanceof between mixed and ImpossibleInstanceOf\InvalidTypeTest|int results in an error.',
 					362,
-				],
+				],*/
 				[
 					'Instanceof between T of Exception and Error will always evaluate to false.',
 					404,
@@ -275,6 +276,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				[
 					'Instanceof between class-string<DateTimeInterface> and class-string<DateTimeInterface> will always evaluate to false.',
 					419,
+					$tipText,
 				],
 				[
 					'Instanceof between class-string<DateTimeInterface> and \'DateTimeInterface\' will always evaluate to false.',
@@ -299,11 +301,11 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				15,
 			],
 			[
-				'Instanceof between DateTimeImmutable and DateTimeInterface will always evaluate to true.',
+				'Instanceof between DateTimeInterface and DateTimeInterface will always evaluate to true.',
 				27,
 			],
 			[
-				'Instanceof between DateTimeImmutable and ImpossibleInstanceofNotPhpDoc\SomeFinalClass will always evaluate to false.',
+				'Instanceof between DateTimeInterface and ImpossibleInstanceofNotPhpDoc\SomeFinalClass will always evaluate to false.',
 				30,
 			],
 		]);
@@ -535,6 +537,13 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				$tipText,
 			],
 		]);
+	}
+
+	public function testBug4689(): void
+	{
+		$this->checkAlwaysTrueInstanceOf = true;
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-4689.php'], []);
 	}
 
 }

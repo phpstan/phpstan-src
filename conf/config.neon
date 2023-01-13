@@ -618,8 +618,6 @@ services:
 
 	-
 		class: PHPStan\Analyser\ScopeFactory
-		arguments:
-			explicitMixedForGlobalVariables: %featureToggles.explicitMixedForGlobalVariables%
 
 	-
 		class: PHPStan\Analyser\NodeScopeResolver

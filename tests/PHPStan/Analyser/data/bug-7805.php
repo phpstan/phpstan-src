@@ -21,12 +21,10 @@ function foo(array $params)
 		assertNativeType("array<mixed~'help', mixed>", $params);
 		$params = $params === [] ? ['list'] : $params;
 		assertType("array{'list'}", $params);
-		assertNativeType("array{'list'}", $params);
-		// assertNativeType("array<mixed~'help', mixed>", $params); // not working yet
+		assertNativeType("non-empty-array<mixed~'help', mixed>", $params);
 		array_unshift($params, 'help');
 		assertType("array{'help', 'list'}", $params);
-		assertNativeType("array{'list'}", $params);
-		// assertNativeType("array<mixed~'help', mixed>", $params); // not working yet
+		assertNativeType("non-empty-array<mixed~'help', mixed>", $params);
 	}
 	assertType("array{}|array{'help', 'list'}", $params);
 	assertNativeType('array', $params);

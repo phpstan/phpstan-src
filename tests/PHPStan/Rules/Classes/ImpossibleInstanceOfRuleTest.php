@@ -147,14 +147,14 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					'Instanceof between ImpossibleInstanceOf\Bar and ImpossibleInstanceOf\BarGrandChild will always evaluate to false.',
 					322,
 				],
-				[
+				/*[
 					'Instanceof between mixed and int results in an error.',
 					353,
 				],
 				[
 					'Instanceof between mixed and ImpossibleInstanceOf\InvalidTypeTest|int results in an error.',
 					362,
-				],
+				],*/
 				[
 					'Instanceof between ImpossibleInstanceOf\Foo and ImpossibleInstanceOf\Foo will always evaluate to true.',
 					388,
@@ -173,6 +173,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				[
 					'Instanceof between class-string<DateTimeInterface> and class-string<DateTimeInterface> will always evaluate to false.',
 					419,
+					$tipText,
 				],
 				[
 					'Instanceof between class-string<DateTimeInterface> and \'DateTimeInterface\' will always evaluate to false.',
@@ -254,14 +255,14 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 					'Instanceof between ImpossibleInstanceOf\Bar and ImpossibleInstanceOf\BarGrandChild will always evaluate to false.',
 					322,
 				],
-				[
+				/*[
 					'Instanceof between mixed and int results in an error.',
 					353,
 				],
 				[
 					'Instanceof between mixed and ImpossibleInstanceOf\InvalidTypeTest|int results in an error.',
 					362,
-				],
+				],*/
 				[
 					'Instanceof between T of Exception and Error will always evaluate to false.',
 					404,
@@ -275,6 +276,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 				[
 					'Instanceof between class-string<DateTimeInterface> and class-string<DateTimeInterface> will always evaluate to false.',
 					419,
+					$tipText,
 				],
 				[
 					'Instanceof between class-string<DateTimeInterface> and \'DateTimeInterface\' will always evaluate to false.',

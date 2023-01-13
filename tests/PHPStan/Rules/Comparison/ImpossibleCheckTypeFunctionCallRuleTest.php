@@ -495,7 +495,7 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 			[
 				'Call to function in_array() with arguments \'b\', non-empty-array<int, \'a\'> and true will always evaluate to false.',
 				43,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				//'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Call to function in_array() with arguments int, array{} and true will always evaluate to false.',

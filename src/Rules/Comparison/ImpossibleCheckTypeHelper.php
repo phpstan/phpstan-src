@@ -187,7 +187,8 @@ class ImpossibleCheckTypeHelper
 			}
 		}
 
-		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($scope, $node, $this->determineContext($scope, $node));
+		$typeSpecifierScope = $this->treatPhpDocTypesAsCertain ? $scope : $scope->doNotTreatPhpDocTypesAsCertain();
+		$specifiedTypes = $this->typeSpecifier->specifyTypesInCondition($typeSpecifierScope, $node, $this->determineContext($typeSpecifierScope, $node));
 
 		// don't validate types on overwrite
 		if ($specifiedTypes->shouldOverwrite()) {
@@ -199,7 +200,7 @@ class ImpossibleCheckTypeHelper
 
 		$rootExpr = $specifiedTypes->getRootExpr();
 		if ($rootExpr !== null) {
-			if (self::isSpecified($scope, $node, $rootExpr)) {
+			if (self::isSpecified($typeSpecifierScope, $node, $rootExpr)) {
 				return null;
 			}
 
@@ -214,7 +215,7 @@ class ImpossibleCheckTypeHelper
 		$results = [];
 
 		foreach ($sureTypes as $sureType) {
-			if (self::isSpecified($scope, $node, $sureType[0])) {
+			if (self::isSpecified($typeSpecifierScope, $node, $sureType[0])) {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
 			}
@@ -232,7 +233,7 @@ class ImpossibleCheckTypeHelper
 		}
 
 		foreach ($sureNotTypes as $sureNotType) {
-			if (self::isSpecified($scope, $node, $sureNotType[0])) {
+			if (self::isSpecified($typeSpecifierScope, $node, $sureNotType[0])) {
 				$results[] = TrinaryLogic::createMaybe();
 				continue;
 			}

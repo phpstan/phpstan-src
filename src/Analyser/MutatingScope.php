@@ -3143,10 +3143,12 @@ class MutatingScope implements Scope
 			return $this;
 		}
 
+		$intersectedCatchType = TypeCombinator::intersect($catchType, new ObjectType(Throwable::class));
+
 		return $this->assignVariable(
 			$variableName,
-			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
-			TypeCombinator::intersect($catchType, new ObjectType(Throwable::class)),
+			$intersectedCatchType,
+			$intersectedCatchType,
 		);
 	}
 

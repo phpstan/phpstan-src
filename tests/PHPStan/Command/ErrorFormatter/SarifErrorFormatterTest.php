@@ -62,6 +62,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 			"results": [
 				{
 					"message": {
+						"level": "error",
 						"text": "Foo"
 					},
 					"locations": [
@@ -109,6 +110,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 			"results": [
 				{
 					"message": {
+						"level": "error",
 						"text": "first generic error"
 					}
 				}

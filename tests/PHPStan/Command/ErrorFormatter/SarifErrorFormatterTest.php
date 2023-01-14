@@ -2,7 +2,7 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
-use Jean85\PrettyVersions;
+// use Jean85\PrettyVersions;
 use PHPStan\Testing\ErrorFormatterTestCase;
 use function sprintf;
 

@@ -1,10 +1,8 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace PHPStan\Command\ErrorFormatter;
 
-use Jean85\PrettyVersions;
+// use Jean85\PrettyVersions;
 use Nette\Utils\Json;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
@@ -41,11 +39,11 @@ class SarifErrorFormatter implements ErrorFormatter
 					[
 						'physicalLocation' => [
 							'artifactLocation' => [
-								'uri' => 'file://'.$fileSpecificError->getFile(),
+								'uri' => 'file://' . $fileSpecificError->getFile(),
 							],
 							'region' => [
 								'startLine' => $fileSpecificError->getLine(),
-							]
+							],
 						],
 					],
 				],
@@ -83,4 +81,5 @@ class SarifErrorFormatter implements ErrorFormatter
 
 		return $analysisResult->hasErrors() ? 1 : 0;
 	}
+
 }

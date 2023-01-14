@@ -2102,3 +2102,8 @@ services:
 		class: PHPStan\Command\ErrorFormatter\TeamcityErrorFormatter
 		arguments:
 			relativePathHelper: @simpleRelativePathHelper
+
+	errorFormatter.sarif:
+		class: PHPStan\Command\ErrorFormatter\SarifErrorFormatter
+		arguments:
+			pretty: true

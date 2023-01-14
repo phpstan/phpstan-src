@@ -174,8 +174,8 @@ class AnalyserTraitsIntegrationTest extends PHPStanTestCase
 		$files = array_map(fn (string $file): string => $this->getFileHelper()->normalizePath($file), $files);
 		/** @var Analyser $analyser */
 		$analyser = self::getContainer()->getByType(Analyser::class);
-		$errors = $analyser->analyse($files)->getErrors();
-		return $errors;
+
+		return $analyser->analyse($files)->getErrors();
 	}
 
 }

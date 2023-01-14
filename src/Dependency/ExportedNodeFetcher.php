@@ -2,7 +2,6 @@
 
 namespace PHPStan\Dependency;
 
-use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;

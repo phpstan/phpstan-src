@@ -2,7 +2,6 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
-use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PHPStan\File\FileReader;
 use PHPStan\Parser\Parser;

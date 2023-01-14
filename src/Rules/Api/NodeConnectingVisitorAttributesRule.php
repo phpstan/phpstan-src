@@ -41,12 +41,16 @@ class NodeConnectingVisitorAttributesRule implements Rule
 		if ($node->name->toLowerString() !== 'getattribute') {
 			return [];
 		}
-		$calledOnType = $scope->getType($node->var);
-		if (!(new ObjectType(Node::class))->isSuperTypeOf($calledOnType)->yes()) {
-			return [];
-		}
 		$args = $node->getArgs();
 		if (!isset($args[0])) {
+			return [];
+		}
+		if (!$scope->isInClass()) {
+			return [];
+		}
+
+		$calledOnType = $scope->getType($node->var);
+		if (!(new ObjectType(Node::class))->isSuperTypeOf($calledOnType)->yes()) {
 			return [];
 		}
 		$argType = $scope->getType($args[0]->value);
@@ -54,9 +58,6 @@ class NodeConnectingVisitorAttributesRule implements Rule
 			return [];
 		}
 		if (!in_array($argType->getValue(), ['parent', 'previous', 'next'], true)) {
-			return [];
-		}
-		if (!$scope->isInClass()) {
 			return [];
 		}
 

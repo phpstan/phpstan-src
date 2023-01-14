@@ -2,10 +2,10 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
-// use Jean85\PrettyVersions;
 use Nette\Utils\Json;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use PHPStan\Internal\ComposerHelper;
 
 class SarifErrorFormatter implements ErrorFormatter
 {
@@ -16,14 +16,14 @@ class SarifErrorFormatter implements ErrorFormatter
 
 	public function formatErrors(AnalysisResult $analysisResult, Output $output): int
 	{
-		// $phpstanVersion = PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
-		$phpstanVersion = '1.9.11';
+		$phpstanVersion = ComposerHelper::getPhpStanVersion();
 
 		$tool = [
 			'driver' => [
 				'name' => 'PHPStan',
 				'fullName' => 'PHP Static Analysis Tool',
 				'informationUri' => 'https://phpstan.org',
+				'version' => $phpstanVersion,
 				'semanticVersion' => $phpstanVersion,
 			],
 		];

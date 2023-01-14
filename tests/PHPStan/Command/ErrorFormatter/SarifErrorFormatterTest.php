@@ -2,7 +2,7 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
-// use Jean85\PrettyVersions;
+use PHPStan\Internal\ComposerHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
 use function sprintf;
 
@@ -11,8 +11,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 
 	public function dataFormatterOutputProvider(): iterable
 	{
-		// $phpstanVersion = PrettyVersions::getVersion('phpstan/phpstan')->getPrettyVersion();
-		$phpstanVersion = '1.9.11';
+		$phpstanVersion = ComposerHelper::getPhpStanVersion();
 
 		yield [
 			'No errors',
@@ -29,8 +28,9 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 				"driver": {
 					"name": "PHPStan",
 					"fullName": "PHP Static Analysis Tool",
-					"semanticVersion": "' . $phpstanVersion . '",
-					"informationUri": "https:\/\/phpstan.org"
+					"informationUri": "https:\/\/phpstan.org",
+					"version": "' . $phpstanVersion . '",
+					"semanticVersion": "' . $phpstanVersion . '"
 				}
 			},
 			"results": []
@@ -54,8 +54,9 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 				"driver": {
 					"name": "PHPStan",
 					"fullName": "PHP Static Analysis Tool",
-					"semanticVersion": "' . $phpstanVersion . '",
-					"informationUri": "https:\/\/phpstan.org"
+					"informationUri": "https:\/\/phpstan.org",
+					"version": "' . $phpstanVersion . '",
+					"semanticVersion": "' . $phpstanVersion . '"
 				}
 			},
 			"results": [
@@ -100,8 +101,9 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 				"driver": {
 					"name": "PHPStan",
 					"fullName": "PHP Static Analysis Tool",
-					"semanticVersion": "' . $phpstanVersion . '",
-					"informationUri": "https:\/\/phpstan.org"
+					"informationUri": "https:\/\/phpstan.org",
+					"version": "' . $phpstanVersion . '",
+					"semanticVersion": "' . $phpstanVersion . '"
 				}
 			},
 			"results": [

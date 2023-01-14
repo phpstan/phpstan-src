@@ -245,6 +245,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'PHPDoc tag @var with type Iterator<mixed, string> is not subtype of type Iterator<int, int>.',
 				44,
 			],
+			/*[
+				'PHPDoc tag @var with type string is not subtype of type int.',
+				95,
+			],*/
 		]];
 	}
 

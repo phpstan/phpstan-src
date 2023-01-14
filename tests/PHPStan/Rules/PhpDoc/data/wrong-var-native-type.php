@@ -82,4 +82,18 @@ class Foo
 
 	}
 
+	/** @param int[] $integers */
+	public function trickyForeachCase(array $integers): void
+	{
+		foreach ($integers as $int) {
+			/** @var int $int */
+			$a = new \stdClass();
+		}
+
+		foreach ($integers as $int) {
+			/** @var string $int */
+			$a = new \stdClass();
+		}
+	}
+
 }

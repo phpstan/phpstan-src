@@ -140,6 +140,21 @@ class WrongVariableNameInVarTagRule implements Rule
 		$hasMultipleMessage = false;
 		$assignedVariables = $this->getAssignedVariables($var);
 		foreach ($varTags as $key => $varTag) {
+			if (is_int($key)) {
+				if (count($varTags) !== 1) {
+					if (!$hasMultipleMessage) {
+						$errors[] = RuleErrorBuilder::message('Multiple PHPDoc @var tags above single variable assignment are not supported.')->build();
+						$hasMultipleMessage = true;
+					}
+					continue;
+				} elseif (count($assignedVariables) !== 1) {
+					$errors[] = RuleErrorBuilder::message(
+						'PHPDoc tag @var above assignment does not specify variable name.',
+					)->build();
+					continue;
+				}
+			}
+
 			if ($this->checkTypeAgainstNativeType) {
 				$reportType = static function (Type $type) use ($expr, $varTag): bool {
 					if ($expr instanceof Expr\New_) {
@@ -163,38 +178,30 @@ class WrongVariableNameInVarTagRule implements Rule
 					return !$type->isSuperTypeOf($varTag->getType())->yes();
 				};
 
-				$exprNativeType = $scope->getNativeType($expr);
-				if ($reportType($exprNativeType)) {
-					$verbosity = VerbosityLevel::getRecommendedLevelByType($exprNativeType, $varTag->getType());
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'PHPDoc tag @var with type %s is not subtype of native type %s.',
-						$varTag->getType()->describe($verbosity),
-						$exprNativeType->describe($verbosity),
-					))->build();
-				} elseif ($this->checkTypeAgainstPhpDocType) {
-					$exprType = $scope->getType($expr);
-					if ($reportType($exprType)) {
-						$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTag->getType());
+				if (is_int($key) || in_array($key, $assignedVariables, true)) {
+					$exprNativeType = $scope->getNativeType($expr);
+					if ($reportType($exprNativeType)) {
+						$verbosity = VerbosityLevel::getRecommendedLevelByType($exprNativeType, $varTag->getType());
 						$errors[] = RuleErrorBuilder::message(sprintf(
-							'PHPDoc tag @var with type %s is not subtype of type %s.',
+							'PHPDoc tag @var with type %s is not subtype of native type %s.',
 							$varTag->getType()->describe($verbosity),
-							$exprType->describe($verbosity),
+							$exprNativeType->describe($verbosity),
 						))->build();
+					} elseif ($this->checkTypeAgainstPhpDocType) {
+						$exprType = $scope->getType($expr);
+						if ($reportType($exprType)) {
+							$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTag->getType());
+							$errors[] = RuleErrorBuilder::message(sprintf(
+								'PHPDoc tag @var with type %s is not subtype of type %s.',
+								$varTag->getType()->describe($verbosity),
+								$exprType->describe($verbosity),
+							))->build();
+						}
 					}
 				}
 			}
 
 			if (is_int($key)) {
-				if (count($varTags) !== 1) {
-					if (!$hasMultipleMessage) {
-						$errors[] = RuleErrorBuilder::message('Multiple PHPDoc @var tags above single variable assignment are not supported.')->build();
-						$hasMultipleMessage = true;
-					}
-				} elseif (count($assignedVariables) !== 1) {
-					$errors[] = RuleErrorBuilder::message(
-						'PHPDoc tag @var above assignment does not specify variable name.',
-					)->build();
-				}
 				continue;
 			}
 

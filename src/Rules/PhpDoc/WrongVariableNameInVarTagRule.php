@@ -152,6 +152,14 @@ class WrongVariableNameInVarTagRule implements Rule
 						return $type->isSuperTypeOf($varTag->getType())->no();
 					}
 
+					if ($type->isIterable()->yes() && $varTag->getType()->isIterable()->yes()) {
+						if ($type->isSuperTypeOf($varTag->getType())->no()) {
+							return true;
+						}
+
+						return !$type->getIterableValueType()->isSuperTypeOf($varTag->getType()->getIterableValueType())->yes();
+					}
+
 					return !$type->isSuperTypeOf($varTag->getType())->yes();
 				};
 

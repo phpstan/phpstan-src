@@ -27,6 +27,24 @@ class Foo
 
 		/** @var int $test */
 		$test = $this->doBaz();
+
+		/** @var array<int> $ints */
+		$ints = $this->returnsListOfIntegers();
+
+		/** @var array<string> $strings */
+		$strings = $this->returnsListOfIntegers();
+
+		/** @var \Iterator<int> $intIterator */
+		$intIterator = $this->returnsListOfIntegers();
+
+		/** @var \Iterator<int> $intIterator */
+		$intIterator2 = $this->returnsIteratorOfIntegers();
+
+		/** @var \Iterator<string> $stringIterator */
+		$stringIterator = $this->returnsIteratorOfIntegers();
+
+		/** @var int[] $ints2 */
+		$ints2 = $this->returnsArrayOfIntegers();
 	}
 
 	public function doBar(): string
@@ -38,6 +56,28 @@ class Foo
 	 * @return string
 	 */
 	public function doBaz()
+	{
+
+	}
+
+	/**
+	 * @return list<int>
+	 */
+	public function returnsListOfIntegers(): array
+	{
+
+	}
+
+	/**
+	 * @return \Iterator<int, int>
+	 */
+	public function returnsIteratorOfIntegers(): \Iterator
+	{
+
+	}
+
+	/** @return array<int, int> */
+	public function returnsArrayOfIntegers(): array
 	{
 
 	}

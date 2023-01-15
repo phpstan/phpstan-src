@@ -4,6 +4,7 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
+use function getcwd;
 use function sprintf;
 
 class SarifErrorFormatterTest extends ErrorFormatterTestCase

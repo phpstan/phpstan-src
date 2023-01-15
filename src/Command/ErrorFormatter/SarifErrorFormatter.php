@@ -6,11 +6,14 @@ use Nette\Utils\Json;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\Internal\ComposerHelper;
+use function getcwd;
+use function strlen;
+use function substr;
 
 class SarifErrorFormatter implements ErrorFormatter
 {
 
-	const URI_BASE_ID = 'WORKINGDIR';
+	private const URI_BASE_ID = 'WORKINGDIR';
 
 	public function __construct(private bool $pretty)
 	{
@@ -119,4 +122,5 @@ class SarifErrorFormatter implements ErrorFormatter
 
 		return $path;
 	}
+
 }

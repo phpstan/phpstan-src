@@ -119,6 +119,117 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 	]
 }',
 		];
+
+		yield [
+			'Multiple file errors',
+			1,
+			4,
+			0,
+			'
+{
+	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0",
+	"version": "2.1.0",
+	"runs": [
+		{
+			"tool": {
+				"driver": {
+					"name": "PHPStan",
+					"fullName": "PHP Static Analysis Tool",
+					"informationUri": "https:\/\/phpstan.org",
+					"version": "' . $phpstanVersion . '",
+					"semanticVersion": "' . $phpstanVersion . '"
+				}
+			},
+			"results": [
+				{
+					"message": {
+						"level": "error",
+						"text": "Bar\nBar2"
+					},
+					"locations": [
+						{
+							"physicalLocation": {
+								"artifactLocation": {
+									"uri": "file:///data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php"
+								},
+								"region": {
+									"startLine": 2
+								}
+							}
+						}
+					],
+					"properties": {
+						"ignorable": true
+					}
+				},
+				{
+					"message": {
+						"level": "error",
+						"text": "Foo"
+					},
+					"locations": [
+						{
+							"physicalLocation": {
+								"artifactLocation": {
+									"uri": "file:///data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php"
+								},
+								"region": {
+									"startLine": 4
+								}
+							}
+						}
+					],
+					"properties": {
+						"ignorable": true
+					}
+				},
+				{
+					"message": {
+						"level": "error",
+						"text": "Foo"
+					},
+					"locations": [
+						{
+							"physicalLocation": {
+								"artifactLocation": {
+									"uri": "file:///data/folder/with space/and unicode 😃/project/foo.php"
+								},
+								"region": {
+									"startLine": 1
+								}
+							}
+						}
+					],
+					"properties": {
+						"ignorable": true
+					}
+				},
+				{
+					"message": {
+						"level": "error",
+						"text": "Bar\nBar2"
+					},
+					"locations": [
+						{
+							"physicalLocation": {
+								"artifactLocation": {
+									"uri": "file:///data/folder/with space/and unicode 😃/project/foo.php"
+								},
+								"region": {
+									"startLine": 5
+								}
+							}
+						}
+					],
+					"properties": {
+						"ignorable": true
+					}
+				}
+			]
+		}
+	]
+}',
+		];
 	}
 
 	/**

@@ -222,7 +222,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						}
 					],
 					"properties": {
-						"ignorable": true
+						"ignorable": true,
+						"tip": "a tip"
 					}
 				}
 			]
@@ -372,7 +373,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						}
 					],
 					"properties": {
-						"ignorable": true
+						"ignorable": true,
+						"tip": "a tip"
 					}
 				},
 				{

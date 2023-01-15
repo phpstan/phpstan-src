@@ -31,7 +31,7 @@ class SarifErrorFormatter implements ErrorFormatter
 		$results = [];
 
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-			$results[] = [
+			$result = [
 				'message' => [
 					'level' => 'error',
 					'text' => $fileSpecificError->getMessage(),
@@ -51,10 +51,15 @@ class SarifErrorFormatter implements ErrorFormatter
 				'properties' => [
 					'ignorable' => $fileSpecificError->canBeIgnored(),
 					// 'identifier' => $fileSpecificError->getIdentifier(),
-					// 'tip' => $fileSpecificError->getTip(),
 					// 'metadata' => $fileSpecificError->getMetadata(),
 				],
 			];
+
+			if ($fileSpecificError->getTip() !== null) {
+				$result['properties']['tip'] = $fileSpecificError->getTip();
+			}
+
+			$results[] = $result;
 		}
 
 		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {

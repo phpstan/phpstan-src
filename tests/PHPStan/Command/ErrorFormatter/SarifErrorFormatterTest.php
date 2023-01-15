@@ -269,6 +269,129 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 	]
 }',
 		];
+
+		yield [
+			'Multiple file, multiple generic errors',
+			1,
+			4,
+			2,
+			'
+{
+	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0",
+	"version": "2.1.0",
+	"runs": [
+		{
+			"tool": {
+				"driver": {
+					"name": "PHPStan",
+					"fullName": "PHP Static Analysis Tool",
+					"informationUri": "https:\/\/phpstan.org",
+					"version": "' . $phpstanVersion . '",
+					"semanticVersion": "' . $phpstanVersion . '"
+				}
+			},
+			"results": [
+				{
+					"message": {
+						"level": "error",
+						"text": "Bar\nBar2"
+					},
+					"locations": [
+						{
+							"physicalLocation": {
+								"artifactLocation": {
+									"uri": "file:///data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php"
+								},
+								"region": {
+									"startLine": 2
+								}
+							}
+						}
+					],
+					"properties": {
+						"ignorable": true
+					}
+				},
+				{
+					"message": {
+						"level": "error",
+						"text": "Foo"
+					},
+					"locations": [
+						{
+							"physicalLocation": {
+								"artifactLocation": {
+									"uri": "file:///data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php"
+								},
+								"region": {
+									"startLine": 4
+								}
+							}
+						}
+					],
+					"properties": {
+						"ignorable": true
+					}
+				},
+				{
+					"message": {
+						"level": "error",
+						"text": "Foo"
+					},
+					"locations": [
+						{
+							"physicalLocation": {
+								"artifactLocation": {
+									"uri": "file:///data/folder/with space/and unicode 😃/project/foo.php"
+								},
+								"region": {
+									"startLine": 1
+								}
+							}
+						}
+					],
+					"properties": {
+						"ignorable": true
+					}
+				},
+				{
+					"message": {
+						"level": "error",
+						"text": "Bar\nBar2"
+					},
+					"locations": [
+						{
+							"physicalLocation": {
+								"artifactLocation": {
+									"uri": "file:///data/folder/with space/and unicode 😃/project/foo.php"
+								},
+								"region": {
+									"startLine": 5
+								}
+							}
+						}
+					],
+					"properties": {
+						"ignorable": true
+					}
+				},
+				{
+					"message": {
+						"level": "error",
+						"text": "first generic error"
+					}
+				},
+				{
+					"message": {
+						"level": "error",
+						"text": "second generic error"
+					}
+				}
+			]
+		}
+	]
+}',
+		];
 	}
 
 	/**

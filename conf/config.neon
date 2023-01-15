@@ -2106,4 +2106,5 @@ services:
 	errorFormatter.sarif:
 		class: PHPStan\Command\ErrorFormatter\SarifErrorFormatter
 		arguments:
+			relativePathHelper: @simpleRelativePathHelper
 			pretty: true

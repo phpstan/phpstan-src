@@ -5,17 +5,19 @@ namespace PHPStan\Command\ErrorFormatter;
 use Nette\Utils\Json;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use PHPStan\File\RelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
 use function getcwd;
-use function strlen;
-use function substr;
 
 class SarifErrorFormatter implements ErrorFormatter
 {
 
 	private const URI_BASE_ID = 'WORKINGDIR';
 
-	public function __construct(private bool $pretty)
+	public function __construct(
+		private RelativePathHelper $relativePathHelper,
+		private bool $pretty,
+	)
 	{
 	}
 
@@ -49,7 +51,7 @@ class SarifErrorFormatter implements ErrorFormatter
 					[
 						'physicalLocation' => [
 							'artifactLocation' => [
-								'uri' => $this->pathToArtifactLocation($fileSpecificError->getFilePath()),
+								'uri' => $this->relativePathHelper->getRelativePath($fileSpecificError->getFile()),
 								'uriBaseId' => self::URI_BASE_ID,
 							],
 							'region' => [
@@ -107,20 +109,6 @@ class SarifErrorFormatter implements ErrorFormatter
 		$output->writeRaw($json);
 
 		return $analysisResult->hasErrors() ? 1 : 0;
-	}
-
-	private function pathToArtifactLocation(string $path): string
-	{
-		$workingDir = getcwd();
-		if ($workingDir === false) {
-			$workingDir = '.';
-		}
-
-		if (substr($path, 0, strlen($workingDir)) === $workingDir) {
-			return substr($path, strlen($workingDir) + 1);
-		}
-
-		return $path;
 	}
 
 }

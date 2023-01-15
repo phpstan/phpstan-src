@@ -2,6 +2,8 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use PHPStan\File\FuzzyRelativePathHelper;
+use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
 use function getcwd;
@@ -77,7 +79,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+									"uri": "folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
 									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
@@ -165,7 +167,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+									"uri": "folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
 									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
@@ -187,7 +189,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+									"uri": "folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
 									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
@@ -209,7 +211,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "/data/folder/with space/and unicode 😃/project/foo.php",
+									"uri": "foo.php",
 									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
@@ -231,7 +233,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "/data/folder/with space/and unicode 😃/project/foo.php",
+									"uri": "foo.php",
 									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
@@ -326,7 +328,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+									"uri": "folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
 									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
@@ -348,7 +350,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+									"uri": "folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
 									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
@@ -370,7 +372,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "/data/folder/with space/and unicode 😃/project/foo.php",
+									"uri": "foo.php",
 									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
@@ -392,7 +394,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "/data/folder/with space/and unicode 😃/project/foo.php",
+									"uri": "foo.php",
 									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
@@ -437,7 +439,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 		string $expected,
 	): void
 	{
-		$formatter = new SarifErrorFormatter(true);
+		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
+		$formatter = new SarifErrorFormatter($relativePathHelper, true);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
@@ -460,7 +463,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 		string $expected,
 	): void
 	{
-		$formatter = new SarifErrorFormatter(false);
+		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
+		$formatter = new SarifErrorFormatter($relativePathHelper, false);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),

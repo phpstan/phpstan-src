@@ -49,7 +49,7 @@ class SarifErrorFormatter implements ErrorFormatter
 					],
 				],
 				'properties' => [
-					'canBeIgnored' => $fileSpecificError->canBeIgnored(),
+					'ignorable' => $fileSpecificError->canBeIgnored(),
 					// 'identifier' => $fileSpecificError->getIdentifier(),
 					// 'tip' => $fileSpecificError->getTip(),
 					// 'metadata' => $fileSpecificError->getMetadata(),

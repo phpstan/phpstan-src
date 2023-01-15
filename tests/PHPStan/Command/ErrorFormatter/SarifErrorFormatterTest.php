@@ -78,7 +78,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						}
 					],
 					"properties": {
-						"canBeIgnored": true
+						"ignorable": true
 					}
 				}
 			]

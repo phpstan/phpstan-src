@@ -6,6 +6,7 @@ use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InFunctionNode;
@@ -21,6 +22,7 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -139,69 +141,23 @@ class WrongVariableNameInVarTagRule implements Rule
 		$errors = [];
 		$hasMultipleMessage = false;
 		$assignedVariables = $this->getAssignedVariables($var);
-		foreach ($varTags as $key => $varTag) {
+		if ($this->checkTypeAgainstNativeType) {
+			foreach ($this->checkVarType($scope, $var, $expr, $varTags, $assignedVariables) as $error) {
+				$errors[] = $error;
+			}
+		}
+		foreach (array_keys($varTags) as $key) {
 			if (is_int($key)) {
 				if (count($varTags) !== 1) {
 					if (!$hasMultipleMessage) {
 						$errors[] = RuleErrorBuilder::message('Multiple PHPDoc @var tags above single variable assignment are not supported.')->build();
 						$hasMultipleMessage = true;
 					}
-					continue;
 				} elseif (count($assignedVariables) !== 1) {
 					$errors[] = RuleErrorBuilder::message(
 						'PHPDoc tag @var above assignment does not specify variable name.',
 					)->build();
-					continue;
 				}
-			}
-
-			if ($this->checkTypeAgainstNativeType) {
-				$reportType = static function (Type $type) use ($expr, $varTag): bool {
-					if ($expr instanceof Expr\New_) {
-						if ($type instanceof GenericObjectType) {
-							$type = new ObjectType($type->getClassName());
-						}
-					}
-
-					if ($type instanceof ConstantType) {
-						return $type->isSuperTypeOf($varTag->getType())->no();
-					}
-
-					if ($type->isIterable()->yes() && $varTag->getType()->isIterable()->yes()) {
-						if ($type->isSuperTypeOf($varTag->getType())->no()) {
-							return true;
-						}
-
-						return !$type->getIterableValueType()->isSuperTypeOf($varTag->getType()->getIterableValueType())->yes();
-					}
-
-					return !$type->isSuperTypeOf($varTag->getType())->yes();
-				};
-
-				if (is_int($key) || in_array($key, $assignedVariables, true)) {
-					$exprNativeType = $scope->getNativeType($expr);
-					if ($reportType($exprNativeType)) {
-						$verbosity = VerbosityLevel::getRecommendedLevelByType($exprNativeType, $varTag->getType());
-						$errors[] = RuleErrorBuilder::message(sprintf(
-							'PHPDoc tag @var with type %s is not subtype of native type %s.',
-							$varTag->getType()->describe($verbosity),
-							$exprNativeType->describe($verbosity),
-						))->build();
-					} elseif ($this->checkTypeAgainstPhpDocType) {
-						$exprType = $scope->getType($expr);
-						if ($reportType($exprType)) {
-							$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTag->getType());
-							$errors[] = RuleErrorBuilder::message(sprintf(
-								'PHPDoc tag @var with type %s is not subtype of type %s.',
-								$varTag->getType()->describe($verbosity),
-								$exprType->describe($verbosity),
-							))->build();
-						}
-					}
-				}
-			}
-
-			if (is_int($key)) {
 				continue;
 			}
 
@@ -225,6 +181,87 @@ class WrongVariableNameInVarTagRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * @param VarTag[] $varTags
+	 * @param string[] $assignedVariables
+	 * @return RuleError[]
+	 */
+	private function checkVarType(Scope $scope, Node\Expr $var, Node\Expr $expr, array $varTags, array $assignedVariables): array
+	{
+		$errors = [];
+
+		if ($var instanceof Expr\Variable && is_string($var->name)) {
+			if (array_key_exists($var->name, $varTags)) {
+				$varTagType = $varTags[$var->name]->getType();
+			} elseif (count($assignedVariables) === 1 && array_key_exists(0, $varTags)) {
+				$varTagType = $varTags[0]->getType();
+			} else {
+				return [];
+			}
+
+			$exprNativeType = $scope->getNativeType($expr);
+			if ($this->shouldVarTagTypeBeReported($expr, $exprNativeType, $varTagType)) {
+				$verbosity = VerbosityLevel::getRecommendedLevelByType($exprNativeType, $varTagType);
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'PHPDoc tag @var with type %s is not subtype of native type %s.',
+					$varTagType->describe($verbosity),
+					$exprNativeType->describe($verbosity),
+				))->build();
+			} elseif ($this->checkTypeAgainstPhpDocType) {
+				$exprType = $scope->getType($expr);
+				if ($this->shouldVarTagTypeBeReported($expr, $exprType, $varTagType)) {
+					$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTagType);
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'PHPDoc tag @var with type %s is not subtype of type %s.',
+						$varTagType->describe($verbosity),
+						$exprType->describe($verbosity),
+					))->build();
+				}
+			}
+		} elseif ($var instanceof Expr\List_ || $var instanceof Expr\Array_) {
+			foreach ($var->items as $i => $arrayItem) {
+				if ($arrayItem === null) {
+					continue;
+				}
+				if ($arrayItem->key === null) {
+					$dimExpr = new Node\Scalar\LNumber($i);
+				} else {
+					$dimExpr = $arrayItem->key;
+				}
+
+				$itemErrors = $this->checkVarType($scope, $arrayItem->value, new GetOffsetValueTypeExpr($expr, $dimExpr), $varTags, $assignedVariables);
+				foreach ($itemErrors as $error) {
+					$errors[] = $error;
+				}
+			}
+		}
+
+		return $errors;
+	}
+
+	private function shouldVarTagTypeBeReported(Node\Expr $expr, Type $type, Type $varTagType): bool
+	{
+		if ($expr instanceof Expr\New_) {
+			if ($type instanceof GenericObjectType) {
+				$type = new ObjectType($type->getClassName());
+			}
+		}
+
+		if ($type instanceof ConstantType) {
+			return $type->isSuperTypeOf($varTagType)->no();
+		}
+
+		if ($type->isIterable()->yes() && $varTagType->isIterable()->yes()) {
+			if ($type->isSuperTypeOf($varTagType)->no()) {
+				return true;
+			}
+
+			return !$type->getIterableValueType()->isSuperTypeOf($varTagType->getIterableValueType())->yes();
+		}
+
+		return !$type->isSuperTypeOf($varTagType)->yes();
 	}
 
 	/**

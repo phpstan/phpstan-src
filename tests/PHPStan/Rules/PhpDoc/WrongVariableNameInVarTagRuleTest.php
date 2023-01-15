@@ -214,6 +214,14 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'PHPDoc tag @var with type Iterator<mixed, int> is not subtype of native type array.',
 				38,
 			],
+			[
+				'PHPDoc tag @var with type string is not subtype of native type 1.',
+				99,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type string.',
+				109,
+			],
 		]];
 		yield [false, true, []];
 		yield [true, true, [
@@ -249,6 +257,14 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'PHPDoc tag @var with type string is not subtype of type int.',
 				95,
 			],*/
+			[
+				'PHPDoc tag @var with type string is not subtype of native type 1.',
+				99,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type string.',
+				109,
+			],
 		]];
 	}
 

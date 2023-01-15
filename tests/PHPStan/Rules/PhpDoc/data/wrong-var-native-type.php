@@ -94,6 +94,19 @@ class Foo
 			/** @var string $int */
 			$a = new \stdClass();
 		}
+
+		/** @var string */
+		$nameless = 1;
+	}
+
+	public function testArrayDestructuring(int $i, string $s): void
+	{
+		/**
+		 * @var int $a
+		 * @var string $b
+		 * @var int $c
+		 */
+		[$a, $b, $c] = [$i, $s, $s];
 	}
 
 }

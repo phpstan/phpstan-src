@@ -10,6 +10,8 @@ use PHPStan\Internal\ComposerHelper;
 class SarifErrorFormatter implements ErrorFormatter
 {
 
+	const URI_BASE_ID = 'WORKINGDIR';
+
 	public function __construct(private bool $pretty)
 	{
 	}
@@ -28,6 +30,10 @@ class SarifErrorFormatter implements ErrorFormatter
 			],
 		];
 
+		$originalUriBaseIds = [
+			self::URI_BASE_ID => 'file://' . getcwd() . '/',
+		];
+
 		$results = [];
 
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
@@ -40,7 +46,8 @@ class SarifErrorFormatter implements ErrorFormatter
 					[
 						'physicalLocation' => [
 							'artifactLocation' => [
-								'uri' => 'file://' . $fileSpecificError->getFile(),
+								'uri' => $this->pathToArtifactLocation($fileSpecificError->getFilePath()),
+								'uriBaseId' => self::URI_BASE_ID,
 							],
 							'region' => [
 								'startLine' => $fileSpecificError->getLine(),
@@ -86,6 +93,7 @@ class SarifErrorFormatter implements ErrorFormatter
 			'runs' => [
 				[
 					'tool' => $tool,
+					'originalUriBaseIds' => $originalUriBaseIds,
 					'results' => $results,
 				],
 			],
@@ -98,4 +106,17 @@ class SarifErrorFormatter implements ErrorFormatter
 		return $analysisResult->hasErrors() ? 1 : 0;
 	}
 
+	private function pathToArtifactLocation(string $path): string
+	{
+		$workingDir = getcwd();
+		if ($workingDir === false) {
+			$workingDir = '.';
+		}
+
+		if (substr($path, 0, strlen($workingDir)) === $workingDir) {
+			return substr($path, strlen($workingDir) + 1);
+		}
+
+		return $path;
+	}
 }

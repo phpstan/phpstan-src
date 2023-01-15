@@ -12,6 +12,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 	public function dataFormatterOutputProvider(): iterable
 	{
 		$phpstanVersion = ComposerHelper::getPhpStanVersion();
+		$workingDir = getcwd();
 
 		yield [
 			'No errors',
@@ -32,6 +33,9 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					"version": "' . $phpstanVersion . '",
 					"semanticVersion": "' . $phpstanVersion . '"
 				}
+			},
+			"originalUriBaseIds": {
+				"WORKINGDIR": "file://' . $workingDir . '/"
 			},
 			"results": []
 		}
@@ -59,6 +63,9 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					"semanticVersion": "' . $phpstanVersion . '"
 				}
 			},
+			"originalUriBaseIds": {
+				"WORKINGDIR": "file://' . $workingDir . '/"
+			},
 			"results": [
 				{
 					"message": {
@@ -69,7 +76,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "file:///data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php"
+									"uri": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
 									"startLine": 4
@@ -107,6 +115,9 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					"semanticVersion": "' . $phpstanVersion . '"
 				}
 			},
+			"originalUriBaseIds": {
+				"WORKINGDIR": "file://' . $workingDir . '/"
+			},
 			"results": [
 				{
 					"message": {
@@ -140,6 +151,9 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					"semanticVersion": "' . $phpstanVersion . '"
 				}
 			},
+			"originalUriBaseIds": {
+				"WORKINGDIR": "file://' . $workingDir . '/"
+			},
 			"results": [
 				{
 					"message": {
@@ -150,7 +164,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "file:///data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php"
+									"uri": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
 									"startLine": 2
@@ -171,7 +186,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "file:///data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php"
+									"uri": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
 									"startLine": 4
@@ -192,7 +208,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "file:///data/folder/with space/and unicode 😃/project/foo.php"
+									"uri": "/data/folder/with space/and unicode 😃/project/foo.php",
+									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
 									"startLine": 1
@@ -213,7 +230,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "file:///data/folder/with space/and unicode 😃/project/foo.php"
+									"uri": "/data/folder/with space/and unicode 😃/project/foo.php",
+									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
 									"startLine": 5
@@ -251,6 +269,9 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					"version": "' . $phpstanVersion . '",
 					"semanticVersion": "' . $phpstanVersion . '"
 				}
+			},
+			"originalUriBaseIds": {
+				"WORKINGDIR": "file://' . $workingDir . '/"
 			},
 			"results": [
 				{
@@ -291,6 +312,9 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					"semanticVersion": "' . $phpstanVersion . '"
 				}
 			},
+			"originalUriBaseIds": {
+				"WORKINGDIR": "file://' . $workingDir . '/"
+			},
 			"results": [
 				{
 					"message": {
@@ -301,7 +325,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "file:///data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php"
+									"uri": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
 									"startLine": 2
@@ -322,7 +347,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "file:///data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php"
+									"uri": "/data/folder/with space/and unicode 😃/project/folder with unicode 😃/file name with \"spaces\" and unicode 😃.php",
+									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
 									"startLine": 4
@@ -343,7 +369,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "file:///data/folder/with space/and unicode 😃/project/foo.php"
+									"uri": "/data/folder/with space/and unicode 😃/project/foo.php",
+									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
 									"startLine": 1
@@ -364,7 +391,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 						{
 							"physicalLocation": {
 								"artifactLocation": {
-									"uri": "file:///data/folder/with space/and unicode 😃/project/foo.php"
+									"uri": "/data/folder/with space/and unicode 😃/project/foo.php",
+									"uriBaseId": "WORKINGDIR"
 								},
 								"region": {
 									"startLine": 5

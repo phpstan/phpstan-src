@@ -278,3 +278,24 @@ function phpDocDoesNotInfluenceExistingNativeType(): void
 	assertType('array<string>', $array);
 	assertNativeType('array{}', $array);
 }
+
+class NativeStaticCall
+{
+
+	public function doFoo()
+	{
+		assertType('non-empty-string', self::doBar());
+		assertNativeType('string', self::doBar());
+
+		$s = new self();
+		assertType('non-empty-string', $s::doBar());
+		assertNativeType('string', $s::doBar());
+	}
+
+	/** @return non-empty-string */
+	public static function doBar(): string
+	{
+
+	}
+
+}

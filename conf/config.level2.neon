@@ -78,6 +78,5 @@ services:
 		class: PHPStan\Rules\PhpDoc\WrongVariableNameInVarTagRule
 		arguments:
 			checkTypeAgainstNativeType: %featureToggles.varTagType%
-			checkTypeAgainstPhpDocType: %reportWrongPhpDocTypeInVarTag%
 		tags:
 			- phpstan.rules.rule

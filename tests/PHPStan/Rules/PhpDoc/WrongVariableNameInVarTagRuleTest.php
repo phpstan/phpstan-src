@@ -21,8 +21,8 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 	{
 		return new WrongVariableNameInVarTagRule(
 			self::getContainer()->getByType(FileTypeMapper::class),
+			new VarTagTypeRuleHelper($this->checkTypeAgainstPhpDocType),
 			$this->checkTypeAgainstNativeType,
-			$this->checkTypeAgainstPhpDocType,
 		);
 	}
 
@@ -258,6 +258,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				44,
 			],
 			/*[
+				// reported by a different rule
 				'PHPDoc tag @var with type string is not subtype of type int.',
 				95,
 			],*/

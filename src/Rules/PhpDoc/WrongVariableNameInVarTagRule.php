@@ -93,7 +93,7 @@ class WrongVariableNameInVarTagRule implements Rule
 		}
 
 		if ($node instanceof Node\Stmt\Static_) {
-			return $this->processStatic($node->vars, $varTags);
+			return $this->processStatic($scope, $node->vars, $varTags);
 		}
 
 		if ($node instanceof Node\Stmt\Expression) {
@@ -355,7 +355,7 @@ class WrongVariableNameInVarTagRule implements Rule
 	 * @param VarTag[] $varTags
 	 * @return RuleError[]
 	 */
-	private function processStatic(array $vars, array $varTags): array
+	private function processStatic(Scope $scope, array $vars, array $varTags): array
 	{
 		$variableNames = [];
 		foreach ($vars as $var) {
@@ -363,7 +363,7 @@ class WrongVariableNameInVarTagRule implements Rule
 				continue;
 			}
 
-			$variableNames[$var->var->name] = true;
+			$variableNames[] = $var->var->name;
 		}
 
 		$errors = [];
@@ -379,15 +379,26 @@ class WrongVariableNameInVarTagRule implements Rule
 				continue;
 			}
 
-			if (isset($variableNames[$name])) {
+			if (in_array($name, $variableNames, true)) {
 				continue;
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'Variable $%s in PHPDoc tag @var does not match any static variable: %s',
 				$name,
-				implode(', ', array_map(static fn (string $name): string => sprintf('$%s', $name), array_keys($variableNames))),
+				implode(', ', array_map(static fn (string $name): string => sprintf('$%s', $name), $variableNames)),
 			))->build();
+		}
+
+		if ($this->checkTypeAgainstNativeType) {
+			foreach ($vars as $var) {
+				if ($var->default === null) {
+					continue;
+				}
+				foreach ($this->checkVarType($scope, $var->var, $var->default, $varTags, $variableNames) as $error) {
+					$errors[] = $error;
+				}
+			}
 		}
 
 		return $errors;

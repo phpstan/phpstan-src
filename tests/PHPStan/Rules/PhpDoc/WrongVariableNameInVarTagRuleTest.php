@@ -222,6 +222,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'PHPDoc tag @var with type int is not subtype of native type string.',
 				109,
 			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type \'foo\'.',
+				148,
+			],
 		]];
 		yield [false, true, []];
 		yield [true, true, [
@@ -276,6 +280,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 			[
 				'PHPDoc tag @var with type int is not subtype of type string.',
 				137,
+			],
+			[
+				'PHPDoc tag @var with type int is not subtype of native type \'foo\'.',
+				148,
 			],
 		]];
 	}

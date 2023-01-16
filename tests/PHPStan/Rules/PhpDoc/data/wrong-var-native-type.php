@@ -139,4 +139,13 @@ class Foo
 		}
 	}
 
+	public function testStatic(): void
+	{
+		/** @var int $a */
+		static $a = 1;
+
+		/** @var int $b */
+		static $b = 'foo';
+	}
+
 }

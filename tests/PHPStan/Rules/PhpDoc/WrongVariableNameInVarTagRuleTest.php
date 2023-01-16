@@ -258,7 +258,7 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				44,
 			],
 			/*[
-				// reported by a different rule
+				// reported by VarTagChangedExpressionTypeRule
 				'PHPDoc tag @var with type string is not subtype of type int.',
 				95,
 			],*/

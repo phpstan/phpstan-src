@@ -44,25 +44,7 @@ class VarTagTypeRuleHelper
 				return [];
 			}
 
-			$exprNativeType = $scope->getNativeType($expr);
-			if ($this->shouldVarTagTypeBeReported($expr, $exprNativeType, $varTagType)) {
-				$verbosity = VerbosityLevel::getRecommendedLevelByType($exprNativeType, $varTagType);
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'PHPDoc tag @var with type %s is not subtype of native type %s.',
-					$varTagType->describe($verbosity),
-					$exprNativeType->describe($verbosity),
-				))->build();
-			} elseif ($this->checkTypeAgainstPhpDocType) {
-				$exprType = $scope->getType($expr);
-				if ($this->shouldVarTagTypeBeReported($expr, $exprType, $varTagType)) {
-					$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTagType);
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'PHPDoc tag @var with type %s is not subtype of type %s.',
-						$varTagType->describe($verbosity),
-						$exprType->describe($verbosity),
-					))->build();
-				}
-			}
+			return $this->checkExprType($scope, $expr, $varTagType);
 		} elseif ($var instanceof Expr\List_ || $var instanceof Expr\Array_) {
 			foreach ($var->items as $i => $arrayItem) {
 				if ($arrayItem === null) {
@@ -78,6 +60,35 @@ class VarTagTypeRuleHelper
 				foreach ($itemErrors as $error) {
 					$errors[] = $error;
 				}
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return RuleError[]
+	 */
+	public function checkExprType(Scope $scope, Node\Expr $expr, Type $varTagType): array
+	{
+		$errors = [];
+		$exprNativeType = $scope->getNativeType($expr);
+		if ($this->shouldVarTagTypeBeReported($expr, $exprNativeType, $varTagType)) {
+			$verbosity = VerbosityLevel::getRecommendedLevelByType($exprNativeType, $varTagType);
+			$errors[] = RuleErrorBuilder::message(sprintf(
+				'PHPDoc tag @var with type %s is not subtype of native type %s.',
+				$varTagType->describe($verbosity),
+				$exprNativeType->describe($verbosity),
+			))->build();
+		} elseif ($this->checkTypeAgainstPhpDocType) {
+			$exprType = $scope->getType($expr);
+			if ($this->shouldVarTagTypeBeReported($expr, $exprType, $varTagType)) {
+				$verbosity = VerbosityLevel::getRecommendedLevelByType($exprType, $varTagType);
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'PHPDoc tag @var with type %s is not subtype of type %s.',
+					$varTagType->describe($verbosity),
+					$exprType->describe($verbosity),
+				))->build();
 			}
 		}
 

@@ -99,6 +99,7 @@ use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\UnreachableStatementNode;
+use PHPStan\Node\VarTagChangedExpressionTypeNode;
 use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\Parser;
@@ -359,7 +360,7 @@ class NodeScopeResolver
 			$stmt instanceof Throw_
 			|| $stmt instanceof Return_
 		) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt, $stmt->expr);
+			$scope = $this->processStmtVarAnnotation($scope, $stmt, $stmt->expr, $nodeCallback);
 		} elseif (
 			!$stmt instanceof Static_
 			&& !$stmt instanceof Foreach_
@@ -369,7 +370,7 @@ class NodeScopeResolver
 			&& !$stmt instanceof Node\Stmt\ClassConst
 			&& !$stmt instanceof Node\Stmt\Const_
 		) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
+			$scope = $this->processStmtVarAnnotation($scope, $stmt, null, $nodeCallback);
 		}
 
 		if ($stmt instanceof Node\Stmt\ClassMethod) {
@@ -1482,7 +1483,6 @@ class NodeScopeResolver
 				);
 			}
 		} elseif ($stmt instanceof Node\Stmt\Nop) {
-			$scope = $this->processStmtVarAnnotation($scope, $stmt, null);
 			$hasYield = false;
 			$throwPoints = $overridingThrowPoints ?? [];
 		} else {
@@ -1803,7 +1803,7 @@ class NodeScopeResolver
 				if (!$varChangedScope) {
 					$scope = $this->processStmtVarAnnotation($scope, new Node\Stmt\Expression($expr, [
 						'comments' => $expr->getAttribute('comments'),
-					]), null);
+					]), null, $nodeCallback);
 				}
 			}
 		} elseif ($expr instanceof Expr\AssignOp) {
@@ -3850,7 +3850,10 @@ class NodeScopeResolver
 		return $conditionalExpressions;
 	}
 
-	private function processStmtVarAnnotation(MutatingScope $scope, Node\Stmt $stmt, ?Expr $defaultExpr): MutatingScope
+	/**
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processStmtVarAnnotation(MutatingScope $scope, Node\Stmt $stmt, ?Expr $defaultExpr, callable $nodeCallback): MutatingScope
 	{
 		$function = $scope->getFunction();
 		$variableLessTags = [];
@@ -3901,17 +3904,28 @@ class NodeScopeResolver
 					$certainty = TrinaryLogic::createYes();
 				}
 
+				$variableNode = new Variable($name, $stmt->getAttributes());
+				$originalType = $scope->getVariableType($name);
+				if (!$originalType->equals($varTag->getType())) {
+					$nodeCallback(new VarTagChangedExpressionTypeNode($varTag, $variableNode), $scope);
+				}
+
 				$scope = $scope->assignVariable(
 					$name,
 					$varTag->getType(),
-					$scope->getNativeType(new Variable($name)),
+					$scope->getNativeType($variableNode),
 					$certainty,
 				);
 			}
 		}
 
 		if (count($variableLessTags) === 1 && $defaultExpr !== null) {
-			$scope = $scope->assignExpression($defaultExpr, $variableLessTags[0]->getType(), new MixedType());
+			$originalType = $scope->getType($defaultExpr);
+			$varTag = $variableLessTags[0];
+			if (!$originalType->equals($varTag->getType())) {
+				$nodeCallback(new VarTagChangedExpressionTypeNode($varTag, $defaultExpr), $scope);
+			}
+			$scope = $scope->assignExpression($defaultExpr, $varTag->getType(), new MixedType());
 		}
 
 		return $scope;

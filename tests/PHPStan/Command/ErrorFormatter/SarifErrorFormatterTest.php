@@ -6,7 +6,6 @@ use PHPStan\File\FuzzyRelativePathHelper;
 use PHPStan\File\NullRelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Testing\ErrorFormatterTestCase;
-use function getcwd;
 use function sprintf;
 
 class SarifErrorFormatterTest extends ErrorFormatterTestCase
@@ -15,7 +14,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 	public function dataFormatterOutputProvider(): iterable
 	{
 		$phpstanVersion = ComposerHelper::getPhpStanVersion();
-		$workingDir = getcwd();
+		$workingDir = self::DIRECTORY_PATH;
 
 		yield [
 			'No errors',
@@ -440,7 +439,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 	): void
 	{
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
-		$formatter = new SarifErrorFormatter($relativePathHelper, true);
+		$formatter = new SarifErrorFormatter($relativePathHelper, self::DIRECTORY_PATH, true);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),
@@ -464,7 +463,7 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 	): void
 	{
 		$relativePathHelper = new FuzzyRelativePathHelper(new NullRelativePathHelper(), self::DIRECTORY_PATH, [], '/');
-		$formatter = new SarifErrorFormatter($relativePathHelper, false);
+		$formatter = new SarifErrorFormatter($relativePathHelper, self::DIRECTORY_PATH, false);
 
 		$this->assertSame($exitCode, $formatter->formatErrors(
 			$this->getAnalysisResult($numFileErrors, $numGenericErrors),

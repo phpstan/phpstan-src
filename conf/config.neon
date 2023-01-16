@@ -2107,4 +2107,5 @@ services:
 		class: PHPStan\Command\ErrorFormatter\SarifErrorFormatter
 		arguments:
 			relativePathHelper: @simpleRelativePathHelper
+			currentWorkingDirectory: %currentWorkingDirectory%
 			pretty: true

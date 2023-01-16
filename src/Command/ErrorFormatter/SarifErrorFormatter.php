@@ -7,7 +7,6 @@ use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
-use function getcwd;
 
 class SarifErrorFormatter implements ErrorFormatter
 {
@@ -16,6 +15,7 @@ class SarifErrorFormatter implements ErrorFormatter
 
 	public function __construct(
 		private RelativePathHelper $relativePathHelper,
+		private string $currentWorkingDirectory,
 		private bool $pretty,
 	)
 	{
@@ -36,7 +36,7 @@ class SarifErrorFormatter implements ErrorFormatter
 		];
 
 		$originalUriBaseIds = [
-			self::URI_BASE_ID => 'file://' . getcwd() . '/',
+			self::URI_BASE_ID => 'file://' . $this->currentWorkingDirectory . '/',
 		];
 
 		$results = [];

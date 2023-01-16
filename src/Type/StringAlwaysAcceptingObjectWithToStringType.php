@@ -10,19 +10,25 @@ class StringAlwaysAcceptingObjectWithToStringType extends StringType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
-		if ($type instanceof TypeWithClassName) {
-			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-			if (!$reflectionProvider->hasClass($type->getClassName())) {
-				return TrinaryLogic::createNo();
-			}
-
-			$typeClass = $reflectionProvider->getClass($type->getClassName());
-			return TrinaryLogic::createFromBoolean(
-				$typeClass->hasNativeMethod('__toString'),
-			);
+		$thatClassNames = $type->getObjectClassNames();
+		if ($thatClassNames === []) {
+			return parent::accepts($type, $strictTypes);
 		}
 
-		return parent::accepts($type, $strictTypes);
+		return TrinaryLogic::createNo()->lazyOr(
+			$thatClassNames,
+			static function (string $thatClassName) {
+				$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+				if (!$reflectionProvider->hasClass($thatClassName)) {
+					return TrinaryLogic::createNo();
+				}
+
+				$typeClass = $reflectionProvider->getClass($thatClassName);
+				return TrinaryLogic::createFromBoolean(
+					$typeClass->hasNativeMethod('__toString'),
+				);
+			},
+		);
 	}
 
 }

@@ -74,6 +74,11 @@ class CallableType implements CompoundType, ParametersAcceptor
 		return array_merge($classes, $this->returnType->getReferencedClasses());
 	}
 
+	public function getObjectClassNames(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

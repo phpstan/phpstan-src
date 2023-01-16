@@ -71,6 +71,11 @@ class ArrayType implements Type
 		);
 	}
 
+	public function getObjectClassNames(): array
+	{
+		return [];
+	}
+
 	public function getArrays(): array
 	{
 		return [$this];

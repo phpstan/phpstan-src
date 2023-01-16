@@ -22,7 +22,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_pop;
@@ -173,7 +172,7 @@ class ImpossibleCheckTypeHelper
 							$objectType = new ObjectType($objectType->getValue());
 						}
 
-						if ($objectType instanceof TypeWithClassName) {
+						if ($objectType->getObjectClassNames() !== []) {
 							if ($objectType->hasMethod($methodType->getValue())->yes()) {
 								return true;
 							}

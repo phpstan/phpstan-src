@@ -26,6 +26,9 @@ interface Type
 	 */
 	public function getReferencedClasses(): array;
 
+	/** @return list<string> */
+	public function getObjectClassNames(): array;
+
 	/** @return list<ArrayType> */
 	public function getArrays(): array;
 

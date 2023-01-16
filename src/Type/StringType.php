@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -16,6 +17,7 @@ use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function count;
 
 /** @api */
 class StringType implements Type
@@ -98,19 +100,24 @@ class StringType implements Type
 			return $type->isAcceptedBy($this, $strictTypes);
 		}
 
-		if ($type instanceof TypeWithClassName && !$strictTypes) {
-			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
-			if (!$reflectionProvider->hasClass($type->getClassName())) {
-				return TrinaryLogic::createNo();
-			}
-
-			$typeClass = $reflectionProvider->getClass($type->getClassName());
-			return TrinaryLogic::createFromBoolean(
-				$typeClass->hasNativeMethod('__toString'),
-			);
+		$thatClassNames = $type->getObjectClassNames();
+		if (count($thatClassNames) > 1) {
+			throw new ShouldNotHappenException();
 		}
 
-		return TrinaryLogic::createNo();
+		if ($thatClassNames === [] || $strictTypes) {
+			return TrinaryLogic::createNo();
+		}
+
+		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
+		if (!$reflectionProvider->hasClass($thatClassNames[0])) {
+			return TrinaryLogic::createNo();
+		}
+
+		$typeClass = $reflectionProvider->getClass($thatClassNames[0]);
+		return TrinaryLogic::createFromBoolean(
+			$typeClass->hasNativeMethod('__toString'),
+		);
 	}
 
 	public function toNumber(): Type

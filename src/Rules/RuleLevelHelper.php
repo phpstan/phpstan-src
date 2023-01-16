@@ -17,7 +17,6 @@ use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function count;
@@ -202,7 +201,7 @@ class RuleLevelHelper
 		}
 
 		$errors = [];
-		$directClassNames = TypeUtils::getDirectClassNames($type);
+		$directClassNames = $type->getObjectClassNames();
 		$hasClassExistsClass = false;
 		foreach ($directClassNames as $referencedClass) {
 			if ($this->reflectionProvider->hasClass($referencedClass)) {

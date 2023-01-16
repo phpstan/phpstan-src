@@ -97,6 +97,11 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 		return array_merge($classes, $this->returnType->getReferencedClasses());
 	}
 
+	public function getObjectClassNames(): array
+	{
+		return [$this->objectType->getClassName()];
+	}
+
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		if ($type instanceof CompoundType) {
@@ -129,10 +134,7 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 			);
 		}
 
-		if (
-			$type instanceof TypeWithClassName
-			&& $type->getClassName() === Closure::class
-		) {
+		if ($type->getObjectClassNames() === [Closure::class]) {
 			return TrinaryLogic::createMaybe();
 		}
 

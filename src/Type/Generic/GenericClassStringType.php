@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
@@ -15,9 +16,9 @@ use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function count;
 use function sprintf;
 
 /** @api */
@@ -183,13 +184,10 @@ class GenericClassStringType extends ClassStringType
 		if ($typeToRemove instanceof ConstantStringType && $typeToRemove->isClassStringType()->yes()) {
 			$generic = $this->getGenericType();
 
-			if ($generic instanceof TypeWithClassName) {
-				$classReflection = $generic->getClassReflection();
-				if (
-					$classReflection !== null
-					&& $classReflection->isFinal()
-					&& $generic->getClassName() === $typeToRemove->getValue()
-				) {
+			$genericObjectClassNames = $generic->getObjectClassNames();
+			if (count($genericObjectClassNames) === 1) {
+				$classReflection = ReflectionProviderStaticAccessor::getInstance()->getClass($genericObjectClassNames[0]);
+				if ($classReflection->isFinal() && $genericObjectClassNames[0] === $typeToRemove->getValue()) {
 					return new NeverType();
 				}
 			}

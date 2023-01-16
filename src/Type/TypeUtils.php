@@ -145,6 +145,8 @@ class TypeUtils
 
 	/**
 	 * @return list<string>
+	 *
+	 * @deprecated Use Type::getObjectClassNames() instead.
 	 */
 	public static function getDirectClassNames(Type $type): array
 	{

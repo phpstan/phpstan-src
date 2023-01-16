@@ -47,6 +47,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		return [];
 	}
 
+	public function getObjectClassNames(): array
+	{
+		return [];
+	}
+
 	public function getConstantStrings(): array
 	{
 		return [];

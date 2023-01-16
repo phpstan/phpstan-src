@@ -63,6 +63,11 @@ class MixedType implements CompoundType, SubtractableType
 		return [];
 	}
 
+	public function getObjectClassNames(): array
+	{
+		return [];
+	}
+
 	public function getArrays(): array
 	{
 		return [];

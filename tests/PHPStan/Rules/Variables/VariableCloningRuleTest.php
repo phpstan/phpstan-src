@@ -38,8 +38,12 @@ class VariableCloningRuleTest extends RuleTestCase
 				19,
 			],
 			[
-				'Cloning object of an unknown class VariableCloning\Bar.',
+				'Cannot clone non-object variable $baz of type VariableCloning\Bar|VariableCloning\Foo|null.',
 				23,
+			],
+			[
+				'Cloning object of an unknown class VariableCloning\Bar.',
+				35,
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);

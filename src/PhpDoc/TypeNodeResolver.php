@@ -85,7 +85,6 @@ use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\TypeAliasResolverProvider;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\ValueOfType;
 use PHPStan\Type\VoidType;
@@ -629,9 +628,14 @@ class TypeNodeResolver
 			return new ErrorType();
 		} elseif ($mainTypeName === 'value-of') {
 			if (count($genericTypes) === 1) { // value-of<ValueType>
-				if ($genericTypes[0] instanceof TypeWithClassName) {
-					if ($this->getReflectionProvider()->hasClass($genericTypes[0]->getClassName())) {
-						$classReflection = $this->getReflectionProvider()->getClass($genericTypes[0]->getClassName());
+				$genericTypeObjectClassNames = $genericTypes[0]->getObjectClassNames();
+				if (count($genericTypeObjectClassNames) > 1) {
+					throw new ShouldNotHappenException();
+				}
+
+				if ($genericTypeObjectClassNames !== []) {
+					if ($this->getReflectionProvider()->hasClass($genericTypeObjectClassNames[0])) {
+						$classReflection = $this->getReflectionProvider()->getClass($genericTypeObjectClassNames[0]);
 
 						if ($classReflection->isBackedEnum()) {
 							$cases = [];
@@ -680,37 +684,42 @@ class TypeNodeResolver
 		}
 
 		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);
+		$mainTypeObjectClassNames = $mainType->getObjectClassNames();
+		if (count($mainTypeObjectClassNames) > 1) {
+			throw new ShouldNotHappenException();
+		}
+		$mainTypeClassName = $mainTypeObjectClassNames[0] ?? null;
 
-		if ($mainType instanceof TypeWithClassName) {
-			if (!$this->getReflectionProvider()->hasClass($mainType->getClassName())) {
-				return new GenericObjectType($mainType->getClassName(), $genericTypes);
+		if ($mainTypeClassName !== null) {
+			if (!$this->getReflectionProvider()->hasClass($mainTypeClassName)) {
+				return new GenericObjectType($mainTypeClassName, $genericTypes);
 			}
 
-			$classReflection = $this->getReflectionProvider()->getClass($mainType->getClassName());
+			$classReflection = $this->getReflectionProvider()->getClass($mainTypeClassName);
 			if ($classReflection->isGeneric()) {
-				if (in_array($mainType->getClassName(), [
+				if (in_array($mainTypeClassName, [
 					Traversable::class,
 					IteratorAggregate::class,
 					Iterator::class,
 				], true)) {
 					if (count($genericTypes) === 1) {
-						return new GenericObjectType($mainType->getClassName(), [
+						return new GenericObjectType($mainTypeClassName, [
 							new MixedType(true),
 							$genericTypes[0],
 						]);
 					}
 
 					if (count($genericTypes) === 2) {
-						return new GenericObjectType($mainType->getClassName(), [
+						return new GenericObjectType($mainTypeClassName, [
 							$genericTypes[0],
 							$genericTypes[1],
 						]);
 					}
 				}
-				if ($mainType->getClassName() === Generator::class) {
+				if ($mainTypeClassName === Generator::class) {
 					if (count($genericTypes) === 1) {
 						$mixed = new MixedType(true);
-						return new GenericObjectType($mainType->getClassName(), [
+						return new GenericObjectType($mainTypeClassName, [
 							$mixed,
 							$genericTypes[0],
 							$mixed,
@@ -720,7 +729,7 @@ class TypeNodeResolver
 
 					if (count($genericTypes) === 2) {
 						$mixed = new MixedType(true);
-						return new GenericObjectType($mainType->getClassName(), [
+						return new GenericObjectType($mainTypeClassName, [
 							$genericTypes[0],
 							$genericTypes[1],
 							$mixed,
@@ -730,14 +739,14 @@ class TypeNodeResolver
 				}
 
 				if (!$mainType->isIterable()->yes()) {
-					return new GenericObjectType($mainType->getClassName(), $genericTypes);
+					return new GenericObjectType($mainTypeClassName, $genericTypes);
 				}
 
 				if (
 					count($genericTypes) !== 1
 					|| $classReflection->getTemplateTypeMap()->count() === 1
 				) {
-					return new GenericObjectType($mainType->getClassName(), $genericTypes);
+					return new GenericObjectType($mainTypeClassName, $genericTypes);
 				}
 			}
 		}
@@ -758,8 +767,8 @@ class TypeNodeResolver
 			}
 		}
 
-		if ($mainType instanceof TypeWithClassName) {
-			return new GenericObjectType($mainType->getClassName(), $genericTypes);
+		if ($mainTypeClassName !== null) {
+			return new GenericObjectType($mainTypeClassName, $genericTypes);
 		}
 
 		return new ErrorType();

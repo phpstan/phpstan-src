@@ -148,8 +148,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\TypeUtils;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use Throwable;
 use Traversable;
@@ -1261,7 +1259,10 @@ class NodeScopeResolver
 
 				$catchType = TypeCombinator::union(...array_map(static fn (Name $name): Type => new ObjectType($name->toString()), $catchNode->types));
 				$originalCatchType = $catchType;
-				$isThrowable = $originalCatchType instanceof TypeWithClassName && strtolower($originalCatchType->getClassName()) === 'throwable';
+				$isThrowable = TrinaryLogic::createNo()->lazyOr(
+					$originalCatchType->getObjectClassNames(),
+					static fn (string $objectClassName) => TrinaryLogic::createFromBoolean(strtolower($objectClassName) === 'throwable'),
+				);
 				$catchType = TypeCombinator::remove($catchType, $pastCatchTypes);
 				$pastCatchTypes = TypeCombinator::union($pastCatchTypes, $originalCatchType);
 				$matchingThrowPoints = [];
@@ -1285,7 +1286,7 @@ class NodeScopeResolver
 					if ($isSuperType->yes()) {
 						continue;
 					}
-					if ($isThrowable) {
+					if ($isThrowable->yes()) {
 						continue;
 					}
 					$newThrowPoints[] = $throwPoint->subtractCatchType($catchType);
@@ -1693,8 +1694,7 @@ class NodeScopeResolver
 					}
 				}
 
-				$directClassNames = TypeUtils::getDirectClassNames($methodCalledOnType);
-				foreach ($directClassNames as $referencedClass) {
+				foreach ($methodCalledOnType->getObjectClassNames() as $referencedClass) {
 					if (!$this->reflectionProvider->hasClass($referencedClass)) {
 						continue;
 					}
@@ -2133,9 +2133,9 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			if ($expr->class instanceof Expr) {
-				$objectClasses = TypeUtils::getDirectClassNames($scope->getType($expr->class));
+				$objectClasses = $scope->getType($expr->class)->getObjectClassNames();
 				if (count($objectClasses) !== 1) {
-					$objectClasses = TypeUtils::getDirectClassNames($scope->getType(new New_($expr->class)));
+					$objectClasses = $scope->getType(new New_($expr->class))->getObjectClassNames();
 				}
 				if (count($objectClasses) === 1) {
 					$objectExprResult = $this->processExprNode(new StaticCall(new Name($objectClasses[0]), $expr->name, []), $scope, static function (): void {
@@ -2203,19 +2203,19 @@ class NodeScopeResolver
 								$argValue = $expr->getArgs()[2]->value;
 								$argValueType = $scope->getType($argValue);
 
-								$directClassNames = TypeUtils::getDirectClassNames($argValueType);
+								$directClassNames = $argValueType->getObjectClassNames();
 								if (count($directClassNames) === 1) {
 									$scopeClass = $directClassNames[0];
 									$thisType = new ObjectType($scopeClass);
 								} elseif ($argValueType instanceof ConstantStringType) {
 									$scopeClass = $argValueType->getValue();
 									$thisType = new ObjectType($scopeClass);
-								} elseif (
-									$argValueType instanceof GenericClassStringType
-									&& $argValueType->getGenericType() instanceof TypeWithClassName
-								) {
-									$scopeClass = $argValueType->getGenericType()->getClassName();
-									$thisType = $argValueType->getGenericType();
+								} elseif ($argValueType instanceof GenericClassStringType) {
+									$genericClassNames = $argValueType->getGenericType()->getObjectClassNames();
+									if (count($genericClassNames) === 1) {
+										$scopeClass = $genericClassNames[0];
+										$thisType = $argValueType->getGenericType();
+									}
 								}
 							}
 							$closureBindScope = $scope->enterClosureBind($thisType, $nativeThisType, $scopeClass);
@@ -2539,7 +2539,7 @@ class NodeScopeResolver
 			$hasYield = false;
 			$throwPoints = [];
 			if ($expr->class instanceof Expr) {
-				$objectClasses = TypeUtils::getDirectClassNames($scope->getType($expr));
+				$objectClasses = $scope->getType($expr)->getObjectClassNames();
 				if (count($objectClasses) === 1) {
 					$objectExprResult = $this->processExprNode(new New_(new Name($objectClasses[0])), $scope, static function (): void {
 					}, $context->enterDeep());

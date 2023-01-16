@@ -20,7 +20,6 @@ use PHPStan\Type\StaticType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
-use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnionType;
 use function count;
 
@@ -65,7 +64,8 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 					return new GenericClassStringType(new ObjectType($type->getClassName()));
 				}
 
-				if ($type instanceof TemplateType && !$type instanceof TypeWithClassName) {
+				$objectClassNames = $type->getObjectClassNames();
+				if ($type instanceof TemplateType && $objectClassNames === []) {
 					if ($type instanceof ObjectWithoutClassType) {
 						return new GenericClassStringType($type);
 					}
@@ -81,7 +81,7 @@ class GetClassDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExt
 					]);
 				} elseif ($type instanceof StaticType) {
 					return new GenericClassStringType($type->getStaticObjectType());
-				} elseif ($type instanceof TypeWithClassName) {
+				} elseif ($objectClassNames !== []) {
 					return new GenericClassStringType($type);
 				} elseif ($type instanceof ObjectWithoutClassType) {
 					return new ClassStringType();

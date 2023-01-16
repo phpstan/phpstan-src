@@ -2,6 +2,8 @@
 
 namespace ClosureTypes;
 
+use DateTimeInterface;
+use stdClass;
 use function PHPStan\Testing\assertType;
 
 class Foo
@@ -45,6 +47,24 @@ class Foo
 
 			return 1;
 		});
+	}
+
+	public function closureNewThisIntersection(stdClass $foo) {
+		if (!$foo instanceof DateTimeInterface) {
+			return;
+		}
+
+		(function () {
+			assertType('DateTimeInterface&stdClass', $this);
+		})->call($foo);
+	}
+
+	public function arrowFunctionNewThisIntersection(stdClass $foo) {
+		if (!$foo instanceof DateTimeInterface) {
+			return;
+		}
+
+		(fn () => assertType('DateTimeInterface&stdClass', $this))->call($foo);
 	}
 
 }

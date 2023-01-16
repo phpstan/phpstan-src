@@ -25,6 +25,8 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_map;
+use function array_unique;
+use function array_values;
 use function count;
 use function implode;
 use function sprintf;
@@ -112,19 +114,24 @@ class UnionType implements CompoundType
 		return $classes;
 	}
 
+	public function getObjectClassNames(): array
+	{
+		return array_values(array_unique($this->pickFromTypes(static fn (Type $type) => $type->getObjectClassNames())));
+	}
+
 	public function getArrays(): array
 	{
-		return $this->pickTypes(static fn (Type $type) => $type->getArrays());
+		return $this->pickFromTypes(static fn (Type $type) => $type->getArrays());
 	}
 
 	public function getConstantArrays(): array
 	{
-		return $this->pickTypes(static fn (Type $type) => $type->getConstantArrays());
+		return $this->pickFromTypes(static fn (Type $type) => $type->getConstantArrays());
 	}
 
 	public function getConstantStrings(): array
 	{
-		return $this->pickTypes(static fn (Type $type) => $type->getConstantStrings());
+		return $this->pickFromTypes(static fn (Type $type) => $type->getConstantStrings());
 	}
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
@@ -624,7 +631,7 @@ class UnionType implements CompoundType
 
 	public function getEnumCases(): array
 	{
-		return $this->pickTypes(static fn (Type $type) => $type->getEnumCases());
+		return $this->pickFromTypes(static fn (Type $type) => $type->getEnumCases());
 	}
 
 	public function isCallable(): TrinaryLogic
@@ -905,22 +912,34 @@ class UnionType implements CompoundType
 	 * @template T of Type
 	 * @param callable(Type $type): list<T> $getTypes
 	 * @return list<T>
+	 *
+	 * @deprecated Use pickFromTypes() instead.
 	 */
 	protected function pickTypes(callable $getTypes): array
 	{
-		$types = [];
+		return $this->pickFromTypes($getTypes);
+	}
+
+	/**
+	 * @template T
+	 * @param callable(Type $type): list<T> $getValues
+	 * @return list<T>
+	 */
+	protected function pickFromTypes(callable $getValues): array
+	{
+		$values = [];
 		foreach ($this->types as $type) {
-			$innerTypes = $getTypes($type);
-			if ($innerTypes === []) {
+			$innerValues = $getValues($type);
+			if ($innerValues === []) {
 				return [];
 			}
 
-			foreach ($innerTypes as $innerType) {
-				$types[] = $innerType;
+			foreach ($innerValues as $innerType) {
+				$values[] = $innerType;
 			}
 		}
 
-		return $types;
+		return $values;
 	}
 
 }

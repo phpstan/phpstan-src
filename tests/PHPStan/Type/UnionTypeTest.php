@@ -1420,6 +1420,48 @@ class UnionTypeTest extends PHPStanTestCase
 	}
 
 	/**
+	 * @dataProvider dataGetObjectClassNames
+	 * @param list<string> $expectedObjectClassNames
+	 */
+	public function testGetObjectClassNames(
+		Type $unionType,
+		array $expectedObjectClassNames,
+	): void
+	{
+		$this->assertSame($expectedObjectClassNames, $unionType->getObjectClassNames());
+	}
+
+	public function dataGetObjectClassNames(): iterable
+	{
+		yield from [
+			[
+				TypeCombinator::union(
+					new ObjectType(stdClass::class),
+					new ObjectType(DateTimeImmutable::class),
+				),
+				[
+					'stdClass',
+					'DateTimeImmutable',
+				],
+			],
+			[
+				TypeCombinator::union(
+					new ObjectType(stdClass::class),
+					new NullType(),
+				),
+				[],
+			],
+			[
+				TypeCombinator::union(
+					new StringType(),
+					new NullType(),
+				),
+				[],
+			],
+		];
+	}
+
+	/**
 	 * @dataProvider dataGetArrays
 	 * @param list<string> $expectedDescriptions
 	 */

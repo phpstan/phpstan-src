@@ -21,6 +21,11 @@ trait LateResolvableTypeTrait
 
 	private ?Type $result = null;
 
+	public function getObjectClassNames(): array
+	{
+		return $this->resolve()->getObjectClassNames();
+	}
+
 	public function getArrays(): array
 	{
 		return $this->resolve()->getArrays();

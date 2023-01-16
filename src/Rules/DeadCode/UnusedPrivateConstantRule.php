@@ -9,7 +9,7 @@ use PHPStan\Rules\Constants\AlwaysUsedClassConstantsExtensionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\TypeWithClassName;
+use PHPStan\TrinaryLogic;
 use function sprintf;
 
 /**
@@ -72,10 +72,11 @@ class UnusedPrivateConstantRule implements Rule
 				}
 			} else {
 				$classExprType = $fetch->getScope()->getType($fetchNode->class);
-				if (!$classExprType instanceof TypeWithClassName) {
-					continue;
-				}
-				if ($classExprType->getClassName() !== $classReflection->getName()) {
+				$isDifferentClass = TrinaryLogic::createNo()->lazyOr(
+					$classExprType->getObjectClassNames(),
+					static fn (string $objectClassName) => TrinaryLogic::createFromBoolean($objectClassName !== $classReflection->getName()),
+				);
+				if ($isDifferentClass->yes()) {
 					continue;
 				}
 			}

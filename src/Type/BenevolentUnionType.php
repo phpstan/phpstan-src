@@ -43,17 +43,17 @@ class BenevolentUnionType extends UnionType
 		return TypeUtils::toBenevolentUnion(TypeCombinator::union(...$resultTypes));
 	}
 
-	protected function pickTypes(callable $getTypes): array
+	protected function pickFromTypes(callable $getValues): array
 	{
-		$types = [];
+		$values = [];
 		foreach ($this->getTypes() as $type) {
-			$innerTypes = $getTypes($type);
-			foreach ($innerTypes as $innerType) {
-				$types[] = $innerType;
+			$innerValues = $getValues($type);
+			foreach ($innerValues as $innerType) {
+				$values[] = $innerType;
 			}
 		}
 
-		return $types;
+		return $values;
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type

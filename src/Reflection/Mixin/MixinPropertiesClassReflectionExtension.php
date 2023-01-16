@@ -7,7 +7,6 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_intersect;
 use function count;
@@ -44,7 +43,7 @@ class MixinPropertiesClassReflectionExtension implements PropertiesClassReflecti
 	{
 		$mixinTypes = $classReflection->getResolvedMixinTypes();
 		foreach ($mixinTypes as $type) {
-			if (count(array_intersect(TypeUtils::getDirectClassNames($type), $this->mixinExcludeClasses)) > 0) {
+			if (count(array_intersect($type->getObjectClassNames(), $this->mixinExcludeClasses)) > 0) {
 				continue;
 			}
 

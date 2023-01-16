@@ -6,6 +6,8 @@ use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
+use PHPStan\Node\Expr\GetIterableKeyTypeExpr;
+use PHPStan\Node\Expr\GetIterableValueTypeExpr;
 use PHPStan\Node\Expr\GetOffsetValueTypeExpr;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InClassNode;
@@ -87,7 +89,7 @@ class WrongVariableNameInVarTagRule implements Rule
 		}
 
 		if ($node instanceof Node\Stmt\Foreach_) {
-			return $this->processForeach($node->expr, $node->keyVar, $node->valueVar, $varTags);
+			return $this->processForeach($scope, $node->expr, $node->keyVar, $node->valueVar, $varTags);
 		}
 
 		if ($node instanceof Node\Stmt\Static_) {
@@ -297,7 +299,7 @@ class WrongVariableNameInVarTagRule implements Rule
 	 * @param VarTag[] $varTags
 	 * @return RuleError[]
 	 */
-	private function processForeach(Node\Expr $iterateeExpr, ?Node\Expr $keyVar, Node\Expr $valueVar, array $varTags): array
+	private function processForeach(Scope $scope, Node\Expr $iterateeExpr, ?Node\Expr $keyVar, Node\Expr $valueVar, array $varTags): array
 	{
 		$variableNames = [];
 		if ($iterateeExpr instanceof Node\Expr\Variable && is_string($iterateeExpr->name)) {
@@ -329,6 +331,20 @@ class WrongVariableNameInVarTagRule implements Rule
 				$name,
 				implode(', ', array_map(static fn (string $name): string => sprintf('$%s', $name), $variableNames)),
 			))->build();
+		}
+
+		if ($this->checkTypeAgainstNativeType) {
+			foreach ($this->checkVarType($scope, $iterateeExpr, $iterateeExpr, $varTags, $variableNames) as $error) {
+				$errors[] = $error;
+			}
+			if ($keyVar !== null) {
+				foreach ($this->checkVarType($scope, $keyVar, new GetIterableKeyTypeExpr($iterateeExpr), $varTags, $variableNames) as $error) {
+					$errors[] = $error;
+				}
+			}
+			foreach ($this->checkVarType($scope, $valueVar, new GetIterableValueTypeExpr($iterateeExpr), $varTags, $variableNames) as $error) {
+				$errors[] = $error;
+			}
 		}
 
 		return $errors;

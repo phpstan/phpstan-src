@@ -109,4 +109,34 @@ class Foo
 		[$a, $b, $c] = [$i, $s, $s];
 	}
 
+	/**
+	 * @param array<int, string> $a
+	 */
+	public function testForeach(array $a): void
+	{
+		/**
+		 * @var string[] $a
+		 * @var int $k
+		 * @var string $v
+		 */
+		foreach ($a as $k => $v) {
+
+		}
+	}
+
+	/**
+	 * @param array<int, string> $a
+	 */
+	public function testForeach2(array $a): void
+	{
+		/**
+		 * @var int[] $a
+		 * @var string $k
+		 * @var int $v
+		 */
+		foreach ($a as $k => $v) {
+
+		}
+	}
+
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\Cast;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\SpecifiedTypes;
@@ -38,7 +39,8 @@ class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			throw new ShouldNotHappenException();
 		}
 
-		if ($context->true() && $scope->getType($node->getArgs()[0]->value)->isNumericString()->yes()) {
+		$exprArg = $node->getArgs()[0]->value;
+		if ($context->true() && $scope->getType($exprArg)->isNumericString()->yes()) {
 			return new SpecifiedTypes();
 		}
 
@@ -54,7 +56,18 @@ class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 			]);
 		}
 
-		return $this->typeSpecifier->create($node->getArgs()[0]->value, TypeCombinator::union(...$types), $context, false, $scope);
+		$unionType = TypeCombinator::union(...$types);
+		$specifiedTypes = $this->typeSpecifier->create($exprArg, $unionType, $context, false, $scope);
+
+		if ($context->true() && $exprArg instanceof Cast) {
+			$castOriginType = TypeCombinator::intersect($scope->getType($exprArg->expr), $unionType);
+
+			$specifiedTypes = $specifiedTypes->unionWith(
+				$this->typeSpecifier->create($exprArg->expr, $castOriginType, $context, false, $scope)
+			);
+		}
+
+		return $specifiedTypes;
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

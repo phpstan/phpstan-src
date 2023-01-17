@@ -363,12 +363,7 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueInstanceOf = true;
 		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-5333.php'], [
-			[
-				'Instanceof between Bug5333\FinalRoute and Bug5333\FinalRoute will always evaluate to true.',
-				113,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-5333.php'], []);
 	}
 
 	public function testBug8042(): void

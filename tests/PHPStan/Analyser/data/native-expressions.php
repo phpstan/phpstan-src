@@ -35,7 +35,7 @@ class Foo{
 		private array $array
 	){
 		assertType('non-empty-array', $this->array);
-		assertNativeType('non-empty-array', $this->array); // could be fixed issue https://github.com/phpstan/phpstan/issues/6260
+		assertNativeType('array', $this->array);
 		if(count($array) === 0){
 			throw new \InvalidArgumentException();
 		}

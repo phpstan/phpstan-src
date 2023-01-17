@@ -60,11 +60,11 @@ class HelloWorld2
 	public function getFoo(): Route
 	{
 		assertType('Bug5333\Route|(callable(): Bug5333\Route)', $this->foo);
-		assertNativeType('Bug5333\Route|(callable(): Bug5333\Route)', $this->foo);
+		assertNativeType('mixed', $this->foo);
 
 		if (\is_callable($this->foo)) {
 			assertType('(Bug5333\Route&callable(): mixed)|(callable(): Bug5333\Route)', $this->foo);
-			assertNativeType('(Bug5333\Route&callable(): mixed)|(callable(): Bug5333\Route)', $this->foo);
+			assertNativeType('callable(): mixed', $this->foo);
 
 			$res = ($this->foo)();
 			assertType('mixed', $res);
@@ -101,15 +101,15 @@ class HelloFinalWorld
 	public function getFoo(): FinalRoute
 	{
 		assertType('Bug5333\FinalRoute|(callable(): Bug5333\FinalRoute)', $this->foo);
-		assertNativeType('Bug5333\FinalRoute|(callable(): Bug5333\FinalRoute)', $this->foo);
+		assertNativeType('mixed', $this->foo);
 
 		if (\is_callable($this->foo)) {
 			assertType('callable(): Bug5333\FinalRoute', $this->foo);
-			assertNativeType('callable(): Bug5333\FinalRoute', $this->foo);
+			assertNativeType('callable(): mixed', $this->foo);
 
 			$res = ($this->foo)();
 			assertType('Bug5333\FinalRoute', $res);
-			assertNativeType('Bug5333\FinalRoute', $res);
+			assertNativeType('mixed', $res);
 			if (!$res instanceof FinalRoute) {
 				throw new \Exception();
 			}

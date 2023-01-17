@@ -1760,6 +1760,19 @@ class MutatingScope implements Scope
 		}
 
 		if ($node instanceof PropertyFetch && $node->name instanceof Node\Identifier) {
+			if ($this->nativeTypesPromoted) {
+				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node, $this);
+				if ($propertyReflection === null) {
+					return new ErrorType();
+				}
+				$nativeType = $propertyReflection->getNativeType();
+				if ($nativeType === null) {
+					return new ErrorType();
+				}
+
+				return $this->getNullsafeShortCircuitingType($node->var, $nativeType);
+			}
+
 			$typeCallback = function () use ($node): Type {
 				$returnType = $this->propertyFetchType(
 					$this->getType($node->var),
@@ -1792,6 +1805,23 @@ class MutatingScope implements Scope
 			$node instanceof Expr\StaticPropertyFetch
 			&& $node->name instanceof Node\VarLikeIdentifier
 		) {
+			if ($this->nativeTypesPromoted) {
+				$propertyReflection = $this->propertyReflectionFinder->findPropertyReflectionFromNode($node, $this);
+				if ($propertyReflection === null) {
+					return new ErrorType();
+				}
+				$nativeType = $propertyReflection->getNativeType();
+				if ($nativeType === null) {
+					return new ErrorType();
+				}
+
+				if ($node->class instanceof Expr) {
+					return $this->getNullsafeShortCircuitingType($node->class, $nativeType);
+				}
+
+				return $nativeType;
+			}
+
 			$typeCallback = function () use ($node): Type {
 				if ($node->class instanceof Name) {
 					$staticPropertyFetchedOnType = $this->resolveTypeByName($node->class);

@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 7.4
 
 namespace NativeTypes;
 
@@ -296,6 +296,33 @@ class NativeStaticCall
 	public static function doBar(): string
 	{
 
+	}
+
+}
+
+class TypedProperties
+{
+
+	/** @var int */
+	private $untyped;
+
+	private int $typed;
+
+	/** @var int */
+	private static $untypedStatic;
+
+	private static int $typedStatic;
+
+	public function doFoo(): void
+	{
+		assertType('int', $this->untyped);
+		assertNativeType('mixed', $this->untyped);
+		assertType('int', $this->typed);
+		assertNativeType('int', $this->typed);
+		assertType('int', self::$untypedStatic);
+		assertNativeType('mixed', self::$untypedStatic);
+		assertType('int', self::$typedStatic);
+		assertNativeType('int', self::$typedStatic);
 	}
 
 }

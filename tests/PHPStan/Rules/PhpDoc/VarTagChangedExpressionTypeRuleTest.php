@@ -24,7 +24,7 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 				17,
 			],
 			[
-				'PHPDoc tag @var with type string is not subtype of native type int.',
+				'PHPDoc tag @var with type string is not subtype of type int.',
 				37,
 			],
 			[

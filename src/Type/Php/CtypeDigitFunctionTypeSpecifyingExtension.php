@@ -60,10 +60,8 @@ class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		$specifiedTypes = $this->typeSpecifier->create($exprArg, $unionType, $context, false, $scope);
 
 		if ($context->true() && $exprArg instanceof Cast) {
-			$castOriginType = TypeCombinator::intersect($scope->getType($exprArg->expr), $unionType);
-
 			$specifiedTypes = $specifiedTypes->unionWith(
-				$this->typeSpecifier->create($exprArg->expr, $castOriginType, $context, false, $scope)
+				$this->typeSpecifier->create($exprArg->expr, $unionType, $context, false, $scope),
 			);
 		}
 

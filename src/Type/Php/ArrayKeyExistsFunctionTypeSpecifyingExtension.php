@@ -57,13 +57,39 @@ class ArrayKeyExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 		$array = $node->getArgs()[1]->value;
 		$keyType = $scope->getType($key);
 		$arrayType = $scope->getType($array);
-		if (!$keyType instanceof ConstantIntegerType && !$keyType instanceof ConstantStringType && !$arrayType->isIterableAtLeastOnce()->no()) {
+
+		if (!$keyType instanceof ConstantIntegerType
+			&& !$keyType instanceof ConstantStringType
+			&& !$arrayType->isIterableAtLeastOnce()->no()) {
 			if ($context->truthy()) {
+				$arrayKeyType = $arrayType->getIterableKeyType();
+				if ($keyType->isString()->yes()) {
+					$arrayKeyType = $arrayKeyType->toString();
+				} elseif ($keyType->isString()->maybe()) {
+					$arrayKeyType = TypeCombinator::union($arrayKeyType, $arrayKeyType->toString());
+				}
+
+				$specifiedTypes = $this->typeSpecifier->create(
+					$key,
+					$arrayKeyType,
+					$context,
+					false,
+					$scope,
+				);
+
 				$arrayDimFetch = new ArrayDimFetch(
 					$array,
 					$key,
 				);
-				return $this->typeSpecifier->create($arrayDimFetch, $arrayType->getIterableValueType(), $context, false, $scope, new Identical($arrayDimFetch, new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT'))));
+
+				return $specifiedTypes->unionWith($this->typeSpecifier->create(
+					$arrayDimFetch,
+					$arrayType->getIterableValueType(),
+					$context,
+					false,
+					$scope,
+					new Identical($arrayDimFetch, new ConstFetch(new Name('__PHPSTAN_FAUX_CONSTANT'))),
+				));
 			}
 
 			return new SpecifiedTypes();

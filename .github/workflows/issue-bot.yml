@@ -77,7 +77,7 @@ jobs:
     needs: download
 
     runs-on: "ubuntu-latest"
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     strategy:
       fail-fast: false

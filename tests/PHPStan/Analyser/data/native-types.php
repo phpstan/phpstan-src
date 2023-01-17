@@ -326,3 +326,20 @@ class TypedProperties
 	}
 
 }
+
+/** @return non-empty-string */
+function funcWithANativeReturnType(): string
+{
+
+}
+
+class TestFuncWithANativeReturnType
+{
+
+	public function doFoo(): void
+	{
+		assertType('non-empty-string', funcWithANativeReturnType());
+		assertNativeType('string', funcWithANativeReturnType());
+	}
+
+}

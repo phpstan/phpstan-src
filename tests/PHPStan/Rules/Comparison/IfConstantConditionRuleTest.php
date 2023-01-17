@@ -53,6 +53,7 @@ class IfConstantConditionRuleTest extends RuleTestCase
 			[
 				'If condition is always true.',
 				96,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'If condition is always true.',

@@ -1870,6 +1870,10 @@ class MutatingScope implements Scope
 			}
 
 			$functionReflection = $this->reflectionProvider->getFunction($node->name, $this);
+			if ($this->nativeTypesPromoted) {
+				return ParametersAcceptorSelector::combineAcceptors($functionReflection->getVariants())->getNativeReturnType();
+			}
+
 			$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 				$this,
 				$node->getArgs(),

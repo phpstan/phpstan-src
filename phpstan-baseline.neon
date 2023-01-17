@@ -434,7 +434,7 @@ parameters:
 			path: src/Type/Constant/ConstantArrayTypeBuilder.php
 
 		-
-			message: "#^PHPDoc tag @var with type int\\|string is not subtype of native type string\\.$#"
+			message: "#^PHPDoc tag @var with type int\\|string is not subtype of type string\\.$#"
 			count: 1
 			path: src/Type/Constant/ConstantStringType.php
 

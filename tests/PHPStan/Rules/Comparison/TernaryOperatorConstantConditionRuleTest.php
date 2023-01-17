@@ -97,16 +97,7 @@ class TernaryOperatorConstantConditionRuleTest extends RuleTestCase
 	public function testBug7580(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
-		$this->analyse([__DIR__ . '/data/bug-7580.php'], [
-			[
-				'Ternary operator condition is always false.',
-				6,
-			],
-			[
-				'Ternary operator condition is always true.',
-				9,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-7580.php'], []);
 	}
 
 	public function testBug3370(): void

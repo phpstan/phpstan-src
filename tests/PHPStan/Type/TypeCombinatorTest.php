@@ -8,6 +8,7 @@ use Closure;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use DynamicProperties\FinalFoo;
 use Exception;
 use InvalidArgumentException;
 use Iterator;
@@ -2744,8 +2745,16 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ObjectType(\Test\Foo::class),
 					new HasPropertyType('fooProperty'),
 				],
+				IntersectionType::class,
+				'Test\Foo&hasProperty(fooProperty)',
+			],
+			[
+				[
+					new ObjectType(FinalFoo::class),
+					new HasPropertyType('fooProperty'),
+				],
 				PHP_VERSION_ID < 80200 ? IntersectionType::class : NeverType::class,
-				PHP_VERSION_ID < 80200 ? 'Test\Foo&hasProperty(fooProperty)' : '*NEVER*=implicit',
+				PHP_VERSION_ID < 80200 ? 'DynamicProperties\FinalFoo&hasProperty(fooProperty)' : '*NEVER*=implicit',
 			],
 			[
 				[
@@ -2809,8 +2818,19 @@ class TypeCombinatorTest extends PHPStanTestCase
 					]),
 					new HasPropertyType('fooProperty'),
 				],
-				PHP_VERSION_ID < 80200 ? UnionType::class : NeverType::class,
-				PHP_VERSION_ID < 80200 ? '(Test\FirstInterface&hasProperty(fooProperty))|(Test\Foo&hasProperty(fooProperty))' : '*NEVER*=implicit',
+				UnionType::class,
+				'(Test\FirstInterface&hasProperty(fooProperty))|(Test\Foo&hasProperty(fooProperty))',
+			],
+			[
+				[
+					new UnionType([
+						new ObjectType(FinalFoo::class),
+						new ObjectType(FirstInterface::class),
+					]),
+					new HasPropertyType('fooProperty'),
+				],
+				PHP_VERSION_ID < 80200 ? UnionType::class : IntersectionType::class,
+				PHP_VERSION_ID < 80200 ? '(DynamicProperties\FinalFoo&hasProperty(fooProperty))|(Test\FirstInterface&hasProperty(fooProperty))' : 'Test\FirstInterface&hasProperty(fooProperty)',
 			],
 			[
 				[

@@ -29,3 +29,17 @@ class Baz {
 	}
 }
 
+final class FinalBar {}
+
+final class FinalFoo {
+	public function doBar() {
+		isset($this->dynamicProperty);
+		empty($this->dynamicProperty);
+			$this->dynamicProperty ?? 'test';
+
+		$bar = new FinalBar();
+		isset($bar->dynamicProperty);
+		empty($bar->dynamicProperty);
+			$bar->dynamicProperty ?? 'test';
+	}
+}

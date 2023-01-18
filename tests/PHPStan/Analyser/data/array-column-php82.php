@@ -1,6 +1,6 @@
 <?php
 
-namespace ArrayColumn;
+namespace ArrayColumn82;
 
 use DOMElement;
 use function PHPStan\Testing\assertType;
@@ -175,10 +175,10 @@ class ArrayColumnTest
 		assertType('list<string>', array_column($array, 'nodeName'));
 		assertType('array<string, string>', array_column($array, 'nodeName', 'tagName'));
 		assertType('array<string, DOMElement>', array_column($array, null, 'tagName'));
-		assertType('array{}', array_column($array, 'foo'));
-		assertType('array{}', array_column($array, 'foo', 'tagName'));
-		assertType('array<*NEVER*, string>', array_column($array, 'nodeName', 'foo'));
-		assertType('array<*NEVER*, DOMElement>', array_column($array, null, 'foo'));
+		assertType('list<mixed>', array_column($array, 'foo'));
+		assertType('array<string, mixed>', array_column($array, 'foo', 'tagName'));
+		assertType('array<int|string, string>', array_column($array, 'nodeName', 'foo'));
+		assertType('array<int|string, DOMElement>', array_column($array, null, 'foo'));
 	}
 
 	/** @param non-empty-array<int, DOMElement> $array */
@@ -187,10 +187,10 @@ class ArrayColumnTest
 		assertType('non-empty-list<string>', array_column($array, 'nodeName'));
 		assertType('non-empty-array<string, string>', array_column($array, 'nodeName', 'tagName'));
 		assertType('non-empty-array<string, DOMElement>', array_column($array, null, 'tagName'));
-		assertType('array{}', array_column($array, 'foo'));
-		assertType('array{}', array_column($array, 'foo', 'tagName'));
-		assertType('non-empty-array<*NEVER*, string>', array_column($array, 'nodeName', 'foo'));
-		assertType('non-empty-array<*NEVER*, DOMElement>', array_column($array, null, 'foo'));
+		assertType('list<mixed>', array_column($array, 'foo'));
+		assertType('array<string, mixed>', array_column($array, 'foo', 'tagName'));
+		assertType('non-empty-array<int|string, string>', array_column($array, 'nodeName', 'foo'));
+		assertType('non-empty-array<int|string, DOMElement>', array_column($array, null, 'foo'));
 	}
 
 	/** @param array{DOMElement} $array */
@@ -199,10 +199,22 @@ class ArrayColumnTest
 		assertType('array{string}', array_column($array, 'nodeName'));
 		assertType('non-empty-array<string, string>', array_column($array, 'nodeName', 'tagName'));
 		assertType('non-empty-array<string, DOMElement>', array_column($array, null, 'tagName'));
-		assertType('array{*NEVER*}', array_column($array, 'foo'));
-		assertType('non-empty-array<string, *NEVER*>', array_column($array, 'foo', 'tagName'));
-		assertType('non-empty-array<*NEVER*, string>', array_column($array, 'nodeName', 'foo'));
-		assertType('non-empty-array<*NEVER*, DOMElement>', array_column($array, null, 'foo'));
+		assertType('list<mixed>', array_column($array, 'foo'));
+		assertType('array<string, mixed>', array_column($array, 'foo', 'tagName'));
+		assertType('non-empty-array<int|string, string>', array_column($array, 'nodeName', 'foo'));
+		assertType('non-empty-array<int|string, DOMElement>', array_column($array, null, 'foo'));
+	}
+
+}
+
+final class Foo
+{
+
+	/** @param array<int, self> $a */
+	public function doFoo(array $a): void
+	{
+		assertType('array{}', array_column($a, 'nodeName'));
+		assertType('array{}', array_column($a, 'nodeName', 'tagName'));
 	}
 
 }

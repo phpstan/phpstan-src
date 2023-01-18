@@ -220,3 +220,15 @@ class ArrayColumnTest
 	}
 
 }
+
+final class Foo
+{
+
+	/** @param array<int, self> $a */
+	public function doFoo(array $a): void
+	{
+		assertType('list<mixed>', array_column($a, 'nodeName'));
+		assertType('array<int|string, mixed>', array_column($a, 'nodeName', 'tagName'));
+	}
+
+}

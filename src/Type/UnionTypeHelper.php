@@ -115,8 +115,8 @@ class UnionTypeHelper
 	}
 
 	/**
-	 * @param IntegerType[] $types
-	 * @return IntegerType[]
+	 * @param Type[] $types
+	 * @return Type[]
 	 */
 	public static function sortIntegerTypes(array $types): array
 	{

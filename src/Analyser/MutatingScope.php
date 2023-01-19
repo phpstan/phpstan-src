@@ -54,6 +54,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
@@ -2102,10 +2103,14 @@ class MutatingScope implements Scope
 	{
 		$closureTypes = [];
 		foreach ($variants as $variant) {
+			$returnType = $variant->getReturnType();
+			if ($variant instanceof ParametersAcceptorWithPhpDocs) {
+				$returnType = $this->nativeTypesPromoted ? $variant->getNativeReturnType() : $returnType;
+			}
 			$parameters = $variant->getParameters();
 			$closureTypes[] = new ClosureType(
 				$parameters,
-				$variant->getReturnType(),
+				$returnType,
 				$variant->isVariadic(),
 				$variant->getTemplateTypeMap(),
 				$variant->getResolvedTemplateTypeMap(),

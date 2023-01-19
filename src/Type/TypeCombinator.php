@@ -194,6 +194,9 @@ class TypeCombinator
 				$resultTypes = array_merge($resultTypes, self::unionTypes($superTypes));
 				continue;
 			}
+			if ($classString === IntegerType::class) {
+				$scalarTypeArray = UnionTypeHelper::sortIntegerTypes($scalarTypeArray);
+			}
 			$resultTypes = array_merge($resultTypes, self::unionTypes($scalarTypeArray));
 		}
 		if ($resultTypes !== []) {

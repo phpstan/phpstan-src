@@ -114,6 +114,31 @@ class UnionTypeHelper
 		return $types;
 	}
 
+	/**
+	 * @param IntegerType[] $types
+	 * @return IntegerType[]
+	 */
+	public static function sortIntegerTypes(array $types): array
+	{
+		usort($types, static function (Type $a, Type $b): int {
+			if ($a instanceof IntegerRangeType && $b instanceof IntegerRangeType) {
+				return ($a->getMin() ?? PHP_INT_MIN) <=> ($b->getMin() ?? PHP_INT_MIN);
+			}
+
+			if ($a instanceof IntegerRangeType && $b instanceof ConstantIntegerType) {
+				return ($a->getMin() ?? PHP_INT_MIN) <=> $b->getValue();
+			}
+
+			if ($b instanceof IntegerRangeType && $a instanceof ConstantIntegerType) {
+				return ($b->getMin() ?? PHP_INT_MIN) <=> $a->getValue();
+			}
+
+			return self::compareStrings($a->describe(VerbosityLevel::typeOnly()), $b->describe(VerbosityLevel::typeOnly()));
+		});
+
+		return $types;
+	}
+
 	private static function compareStrings(string $a, string $b): int
 	{
 		$cmp = strcasecmp($a, $b);

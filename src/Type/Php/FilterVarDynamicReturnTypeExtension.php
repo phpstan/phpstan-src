@@ -152,15 +152,21 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			$filterValue = $filterType->getValue();
 		}
 
-		$flagsType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : null;
+		$flagsType = isset($functionCall->getArgs()[2]) ? $scope->getType($functionCall->getArgs()[2]->value) : new ConstantIntegerType(0);
 		$inputType = $scope->getType($functionCall->getArgs()[0]->value);
 		$defaultType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsType)
 			? new NullType()
 			: new ConstantBooleanType(false);
+
+		if ($inputType->isScalar()->no() && $inputType->isNull()->no()) {
+			return $defaultType;
+		}
+
 		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType, $flagsType);
 		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
 
-		$options = $flagsType !== null && $this->hasOptions($flagsType)->yes() ? $this->getOptions($flagsType, $filterValue) : [];
+		$hasOptions = $this->hasOptions($flagsType);
+		$options = $hasOptions->yes() ? $this->getOptions($flagsType, $filterValue) : [];
 		$otherTypes = $this->getOtherTypes($flagsType, $options, $defaultType);
 
 		if ($inputType->isNonEmptyString()->yes()
@@ -185,7 +191,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 			}
 		}
 
-		if ($exactType !== null) {
+		if ($exactType !== null && !$hasOptions->maybe() && ($inputType->equals($type) || !$inputType->isSuperTypeOf($type)->yes())) {
 			unset($otherTypes['default']);
 		}
 
@@ -202,32 +208,58 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	private function determineExactType(Type $in, int $filterValue, Type $defaultType, ?Type $flagsType): ?Type
 	{
-		if (($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN') && $in->isBoolean()->yes())
-			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in->isInteger()->yes())
-			|| ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in->isFloat()->yes())) {
-			return $in;
+		if ($filterValue === $this->getConstant('FILTER_VALIDATE_BOOLEAN')) {
+			if ($in->isBoolean()->yes()) {
+				return $in;
+			}
 		}
 
-		if ($filterValue === $this->getConstant('FILTER_VALIDATE_INT') && $in instanceof ConstantStringType) {
-			$value = $in->getValue();
-			$allowOctal = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_OCTAL'), $flagsType);
-			$allowHex = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_HEX'), $flagsType);
-
-			if ($allowOctal && preg_match('/\A0[oO][0-7]+\z/', $value) === 1) {
-				$octalValue = octdec($value);
-				return is_int($octalValue) ? new ConstantIntegerType($octalValue) : $defaultType;
+		if ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT')) {
+			if ($in->isFloat()->yes()) {
+				return $in;
 			}
 
-			if ($allowHex && preg_match('/\A0[xX][0-9A-Fa-f]+\z/', $value) === 1) {
-				$hexValue = hexdec($value);
-				return is_int($hexValue) ? new ConstantIntegerType($hexValue) : $defaultType;
+			if ($in->isInteger()->yes()) {
+				return $in->toFloat();
 			}
-
-			return preg_match('/\A[+-]?(?:0|[1-9][0-9]*)\z/', $value) === 1 ? $in->toInteger() : $defaultType;
 		}
 
-		if ($filterValue === $this->getConstant('FILTER_VALIDATE_FLOAT') && $in->isInteger()->yes()) {
-			return $in->toFloat();
+		if ($filterValue === $this->getConstant('FILTER_VALIDATE_INT')) {
+			if ($in->isFloat()->yes()) {
+				return $in->toInteger();
+			}
+
+			if ($in->isInteger()->yes()) {
+				return $in;
+			}
+
+			if ($in instanceof ConstantStringType) {
+				$value = $in->getValue();
+				$allowOctal = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_OCTAL'), $flagsType);
+				$allowHex = $this->hasFlag($this->getConstant('FILTER_FLAG_ALLOW_HEX'), $flagsType);
+
+				if ($allowOctal && preg_match('/\A0[oO][0-7]+\z/', $value) === 1) {
+					$octalValue = octdec($value);
+					return is_int($octalValue) ? new ConstantIntegerType($octalValue) : $defaultType;
+				}
+
+				if ($allowHex && preg_match('/\A0[xX][0-9A-Fa-f]+\z/', $value) === 1) {
+					$hexValue = hexdec($value);
+					return is_int($hexValue) ? new ConstantIntegerType($hexValue) : $defaultType;
+				}
+
+				return preg_match('/\A[+-]?(?:0|[1-9][0-9]*)\z/', $value) === 1 ? $in->toInteger() : $defaultType;
+			}
+		}
+
+		if ($filterValue === $this->getConstant('FILTER_DEFAULT')) {
+			if (!$this->canStringBeSanitized($filterValue, $flagsType) && $in->isString()->yes()) {
+				return $in;
+			}
+
+			if ($in->isBoolean()->yes() || $in->isFloat()->yes() || $in->isInteger()->yes() || $in->isNull()->yes()) {
+				return $in->toString();
+			}
 		}
 
 		return null;
@@ -273,7 +305,7 @@ class FilterVarDynamicReturnTypeExtension implements DynamicFunctionReturnTypeEx
 
 	private function hasOptions(Type $flagsType): TrinaryLogic
 	{
-		return $flagsType->isConstantArray()
+		return $flagsType->isArray()
 			->and($flagsType->hasOffsetValueType(new ConstantStringType('options')));
 	}
 

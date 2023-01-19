@@ -15,7 +15,7 @@ class HelloWorld
 		if (ctype_digit((string) $mixed)) {
 			assertType('int<0, max>|numeric-string|true', $mixed);
 		} else {
-			assertType('mixed', $mixed);
+			assertType('mixed~int<0, max>|numeric-string|true', $mixed);
 		}
 		assertType('mixed', $mixed);
 
@@ -29,7 +29,7 @@ class HelloWorld
 		if (ctype_digit((string) $int)) {
 			assertType('int', $int);
 		} else {
-			assertType('int', $int);
+			assertType('int<min, -1>', $int);
 		}
 		assertType('int', $int);
 
@@ -57,14 +57,14 @@ class HelloWorld
 		if (ctype_digit((string) $numericString)) {
 			assertType('numeric-string', $numericString);
 		} else {
-			assertType('numeric-string', $numericString); // could be *NEVER*
+			assertType('*NEVER*', $numericString);
 		}
 		assertType('numeric-string', $numericString);
 
 		if (ctype_digit((string) $bool)) {
 			assertType('true', $bool);
 		} else {
-			assertType('bool', $bool);
+			assertType('false', $bool);
 		}
 		assertType('bool', $bool);
 	}

@@ -2792,6 +2792,7 @@ class MutatingScope implements Scope
 			[],
 			false,
 			$this,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -2902,6 +2903,7 @@ class MutatingScope implements Scope
 			[],
 			false,
 			$this,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -2969,6 +2971,7 @@ class MutatingScope implements Scope
 			[],
 			$scope->afterExtractCall,
 			$scope->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -3027,6 +3030,7 @@ class MutatingScope implements Scope
 			[],
 			$arrowFunctionScope->afterExtractCall,
 			$arrowFunctionScope->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 

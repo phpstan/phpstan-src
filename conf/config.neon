@@ -1383,6 +1383,9 @@ services:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension
 
 	-
+		class: PHPStan\Type\Php\FilterFunctionReturnTypeHelper
+
+	-
 		class: PHPStan\Type\Php\FilterVarDynamicReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicFunctionReturnTypeExtension

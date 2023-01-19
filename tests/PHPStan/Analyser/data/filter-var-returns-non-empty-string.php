@@ -16,7 +16,7 @@ class Foo
 		assertType('non-empty-string', $str);
 
 		$return = filter_var($str, FILTER_DEFAULT);
-		assertType('non-empty-string|false', $return);
+		assertType('non-empty-string', $return);
 
 		$return = filter_var($str, FILTER_DEFAULT, FILTER_FLAG_STRIP_LOW);
 		assertType('string|false', $return);
@@ -82,7 +82,10 @@ class Foo
 		assertType('9', $return);
 
 		$return = filter_var(1.0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 9]]);
-		assertType('int<1, 9>|false', $return);
+		assertType('1', $return);
+
+		$return = filter_var(11.0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 9]]);
+		assertType('false', $return);
 
 		$return = filter_var($str, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => $positive_int]]);
 		assertType('int<1, max>|false', $return);
@@ -95,7 +98,7 @@ class Foo
 
 		$str2 = '';
 		$return = filter_var($str2, FILTER_DEFAULT);
-		assertType('string|false', $return);
+		assertType("''", $return);
 
 		$return = filter_var($str2, FILTER_VALIDATE_URL);
 		assertType('string|false', $return);

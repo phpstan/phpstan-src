@@ -623,6 +623,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		}
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/filesystem-functions.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/filter-var.php');
 
 		if (PHP_VERSION_ID >= 80100) {
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/enums.php');

@@ -3747,6 +3747,7 @@ class MutatingScope implements Scope
 			$scope->inFunctionCallsStack,
 			$scope->afterExtractCall,
 			$scope->parentScope,
+			$scope->nativeTypesPromoted,
 		);
 	}
 

@@ -54,3 +54,30 @@ class Test
 	}
 
 }
+
+class Nullsafe
+{
+
+	/** @var int */
+	private $untyped;
+
+	private int $typed;
+
+	/** @return non-empty-string */
+	public function doFoo(): string
+	{
+
+	}
+
+	public function doBar(?self $self): void
+	{
+		assertType('non-empty-string|null', $self?->doFoo());
+		assertNativeType('string|null', $self?->doFoo());
+
+		assertType('int|null', $self?->untyped);
+		assertNativeType('mixed', $self?->untyped);
+		assertType('int|null', $self?->typed);
+		assertNativeType('int|null', $self?->typed);
+	}
+
+}

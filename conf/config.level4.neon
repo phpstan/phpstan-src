@@ -3,7 +3,6 @@ includes:
 
 rules:
 	- PHPStan\Rules\Arrays\DeadForeachRule
-	- PHPStan\Rules\Comparison\NumberComparisonOperatorsConstantConditionRule
 	- PHPStan\Rules\DeadCode\NoopRule
 	- PHPStan\Rules\DeadCode\UnreachableStatementRule
 	- PHPStan\Rules\DeadCode\UnusedPrivateConstantRule
@@ -124,6 +123,13 @@ services:
 			checkAlwaysTrueStrictComparison: %checkAlwaysTrueStrictComparison%
 			disableUnreachable: %featureToggles.disableUnreachableBranchesRules%
 			reportAlwaysTrueInLastCondition: %reportAlwaysTrueInLastCondition%
+		tags:
+			- phpstan.rules.rule
+
+	-
+		class: PHPStan\Rules\Comparison\NumberComparisonOperatorsConstantConditionRule
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
 		tags:
 			- phpstan.rules.rule
 

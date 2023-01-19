@@ -12,9 +12,11 @@ use const PHP_VERSION_ID;
 class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 {
 
+	private bool $treatPhpDocTypesAsCertain = true;
+
 	protected function getRule(): Rule
 	{
-		return new NumberComparisonOperatorsConstantConditionRule();
+		return new NumberComparisonOperatorsConstantConditionRule($this->treatPhpDocTypesAsCertain);
 	}
 
 	public function testBug8277(): void
@@ -158,6 +160,39 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 	public function testBug8643(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8643.php'], []);
+	}
+
+	public function dataTreatPhpDocTypesAsCertain(): iterable
+	{
+		yield [
+			false,
+			[],
+		];
+		yield [
+			true,
+			[
+				[
+					'Comparison operation ">=" between int<1, max> and 0 is always true.',
+					11,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				],
+				[
+					'Comparison operation "<" between int<1, max> and 0 is always false.',
+					18,
+					'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataTreatPhpDocTypesAsCertain
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testTreatPhpDocTypesAsCertain(bool $treatPhpDocTypesAsCertain, array $expectedErrors): void
+	{
+		$this->treatPhpDocTypesAsCertain = $treatPhpDocTypesAsCertain;
+		$this->analyse([__DIR__ . '/data/number-comparison-treat.php'], $expectedErrors);
 	}
 
 }

@@ -377,3 +377,20 @@ class TestPhp8Stubs
 	}
 
 }
+
+class PositiveInt
+{
+
+	/**
+	 * @param positive-int $i
+	 * @return void
+	 */
+	public function doFoo(int $i): void
+	{
+		assertType('true', $i > 0);
+		assertType('false', $i <= 0);
+		assertNativeType('bool', $i > 0);
+		assertNativeType('bool', $i <= 0);
+	}
+
+}

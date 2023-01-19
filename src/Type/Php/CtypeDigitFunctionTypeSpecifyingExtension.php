@@ -12,11 +12,13 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function strtolower;
 
 class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
@@ -59,9 +61,17 @@ class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 		$unionType = TypeCombinator::union(...$types);
 		$specifiedTypes = $this->typeSpecifier->create($exprArg, $unionType, $context, false, $scope);
 
-		if ($context->true() && $exprArg instanceof Cast) {
+		if ($exprArg instanceof Cast\String_) {
+			$castedType = new UnionType([
+				IntegerRangeType::fromInterval(0, null),
+				new IntersectionType([
+					new StringType(),
+					new AccessoryNumericStringType(),
+				]),
+				new ConstantBooleanType(true),
+			]);
 			$specifiedTypes = $specifiedTypes->unionWith(
-				$this->typeSpecifier->create($exprArg->expr, $unionType, $context, false, $scope),
+				$this->typeSpecifier->create($exprArg->expr, $castedType, $context, false, $scope),
 			);
 		}
 

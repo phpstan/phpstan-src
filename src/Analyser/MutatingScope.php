@@ -326,6 +326,7 @@ class MutatingScope implements Scope
 			$this->inFunctionCallsStack,
 			true,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -381,6 +382,7 @@ class MutatingScope implements Scope
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -462,6 +464,7 @@ class MutatingScope implements Scope
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -2334,6 +2337,7 @@ class MutatingScope implements Scope
 			$stack,
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -2363,6 +2367,7 @@ class MutatingScope implements Scope
 			$stack,
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -3160,6 +3165,7 @@ class MutatingScope implements Scope
 			[],
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -3190,6 +3196,7 @@ class MutatingScope implements Scope
 			[],
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -3231,6 +3238,7 @@ class MutatingScope implements Scope
 			[],
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -3261,6 +3269,7 @@ class MutatingScope implements Scope
 			[],
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -3399,6 +3408,7 @@ class MutatingScope implements Scope
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -3479,6 +3489,7 @@ class MutatingScope implements Scope
 			[],
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -3567,6 +3578,7 @@ class MutatingScope implements Scope
 			[],
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -3756,6 +3768,7 @@ class MutatingScope implements Scope
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -3785,6 +3798,7 @@ class MutatingScope implements Scope
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 		$scope->resolvedTypes = $this->resolvedTypes;
 		$scope->truthyScopes = $this->truthyScopes;
@@ -3838,6 +3852,7 @@ class MutatingScope implements Scope
 			[],
 			$this->afterExtractCall && $otherScope->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -3996,6 +4011,7 @@ class MutatingScope implements Scope
 			[],
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -4090,6 +4106,7 @@ class MutatingScope implements Scope
 			$this->inFunctionCallsStack,
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -4138,6 +4155,7 @@ class MutatingScope implements Scope
 			[],
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 
@@ -4168,6 +4186,7 @@ class MutatingScope implements Scope
 			[],
 			$this->afterExtractCall,
 			$this->parentScope,
+			$this->nativeTypesPromoted,
 		);
 	}
 

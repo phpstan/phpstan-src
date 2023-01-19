@@ -86,6 +86,12 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield from $this->gatherAssertTypes(__DIR__ . '/data/native-types-first-class-callables.php');
 		}
 
+		if (PHP_VERSION_ID >= 80100) {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/native-types-ftp-connect.php');
+		} else {
+			yield from $this->gatherAssertTypes(__DIR__ . '/data/native-types-ftp-connect-resource.php');
+		}
+
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/type-change-after-array-access-assignment.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/iterator_to_array.php');
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/key-of.php');

@@ -110,15 +110,54 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertNoErrors($result);
 	}
 
-	public function testIgnoreErrorByPathAndCount(): void
+	public function dataIgnoreErrorByPathAndCount(): iterable
 	{
-		$ignoreErrors = [
+		yield [
 			[
-				'message' => '#Fail\.#',
-				'count' => 3,
-				'path' => __DIR__ . '/data/two-fails.php',
+				[
+					'message' => '#Fail\.#',
+					'count' => 3,
+					'path' => __DIR__ . '/data/two-fails.php',
+				],
 			],
 		];
+
+		yield [
+			[
+				[
+					'message' => '#Fail\.#',
+					'count' => 2,
+					'path' => __DIR__ . '/data/two-fails.php',
+				],
+				[
+					'message' => '#Fail\.#',
+					'count' => 1,
+					'path' => __DIR__ . '/data/two-fails.php',
+				],
+			],
+		];
+
+		yield [
+			[
+				[
+					'message' => '#Fail\.#',
+					'count' => 2,
+					'path' => __DIR__ . '/data/two-fails.php',
+				],
+				[
+					'message' => '#Fail\.#',
+					'path' => __DIR__ . '/data/two-fails.php',
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider dataIgnoreErrorByPathAndCount
+	 * @param mixed[] $ignoreErrors
+	 */
+	public function testIgnoreErrorByPathAndCount(array $ignoreErrors): void
+	{
 		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/two-fails.php', false);
 		$this->assertNoErrors($result);
 	}

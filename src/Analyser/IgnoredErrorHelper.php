@@ -5,6 +5,8 @@ namespace PHPStan\Analyser;
 use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use PHPStan\File\FileHelper;
+use function array_key_exists;
+use function array_values;
 use function is_array;
 use function is_file;
 use function sprintf;
@@ -53,6 +55,33 @@ class IgnoredErrorHelper
 				$expandedIgnoreErrors[] = $ignoreError;
 			}
 		}
+
+		$uniquedExpandedIgnoreErrors = [];
+		foreach ($expandedIgnoreErrors as $ignoreError) {
+			if (!isset($ignoreError['message'])) {
+				$uniquedExpandedIgnoreErrors[] = $ignoreError;
+				continue;
+			}
+			if (!isset($ignoreError['path'])) {
+				$uniquedExpandedIgnoreErrors[] = $ignoreError;
+				continue;
+			}
+
+			$key = sprintf("%s\n%s", $ignoreError['message'], $ignoreError['path']);
+			if (!array_key_exists($key, $uniquedExpandedIgnoreErrors)) {
+				$uniquedExpandedIgnoreErrors[$key] = $ignoreError;
+				continue;
+			}
+
+			$uniquedExpandedIgnoreErrors[$key] = [
+				'message' => $ignoreError['message'],
+				'path' => $ignoreError['path'],
+				'count' => ($uniquedExpandedIgnoreErrors[$key]['count'] ?? 1) + ($ignoreError['count'] ?? 1),
+				'reportUnmatched' => ($uniquedExpandedIgnoreErrors[$key]['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors) || ($ignoreError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors),
+			];
+		}
+
+		$expandedIgnoreErrors = array_values($uniquedExpandedIgnoreErrors);
 
 		foreach ($expandedIgnoreErrors as $i => $ignoreError) {
 			$ignoreErrorEntry = [

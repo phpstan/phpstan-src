@@ -32,19 +32,22 @@ class SarifErrorFormatter implements ErrorFormatter
 				'informationUri' => 'https://phpstan.org',
 				'version' => $phpstanVersion,
 				'semanticVersion' => $phpstanVersion,
+				'rules' => [],
 			],
 		];
 
 		$originalUriBaseIds = [
-			self::URI_BASE_ID => 'file://' . $this->currentWorkingDirectory . '/',
+			self::URI_BASE_ID => [
+				'uri' => 'file://' . $this->currentWorkingDirectory . '/',
+			],
 		];
 
 		$results = [];
 
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			$result = [
+				'level' => 'error',
 				'message' => [
-					'level' => 'error',
 					'text' => $fileSpecificError->getMessage(),
 				],
 				'locations' => [
@@ -76,8 +79,8 @@ class SarifErrorFormatter implements ErrorFormatter
 
 		foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {
 			$results[] = [
+				'level' => 'error',
 				'message' => [
-					'level' => 'error',
 					'text' => $notFileSpecificError,
 				],
 			];
@@ -85,15 +88,15 @@ class SarifErrorFormatter implements ErrorFormatter
 
 		foreach ($analysisResult->getWarnings() as $warning) {
 			$results[] = [
+				'level' => 'warning',
 				'message' => [
-					'level' => 'warning',
 					'text' => $warning,
 				],
 			];
 		}
 
 		$sarif = [
-			'$schema' => 'https://json.schemastore.org/sarif-2.1.0',
+			'$schema' => 'https://json.schemastore.org/sarif-2.1.0.json',
 			'version' => '2.1.0',
 			'runs' => [
 				[
@@ -104,11 +107,12 @@ class SarifErrorFormatter implements ErrorFormatter
 			],
 		];
 
-		$json = Json::encode($sarif, $this->pretty ? Json::PRETTY : 0);
+		$encodeOptions = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | ($this->pretty ? JSON_PRETTY_PRINT : 0);
+
+		$json = json_encode($sarif, $encodeOptions);
 
 		$output->writeRaw($json);
 
 		return $analysisResult->hasErrors() ? 1 : 0;
 	}
-
 }

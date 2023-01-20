@@ -2,16 +2,11 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use Nette\Utils\Json;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
-use function json_encode;
-use const JSON_HEX_AMP;
-use const JSON_HEX_APOS;
-use const JSON_HEX_QUOT;
-use const JSON_HEX_TAG;
-use const JSON_PRETTY_PRINT;
 
 class SarifErrorFormatter implements ErrorFormatter
 {
@@ -33,10 +28,8 @@ class SarifErrorFormatter implements ErrorFormatter
 		$tool = [
 			'driver' => [
 				'name' => 'PHPStan',
-				'fullName' => 'PHP Static Analysis Tool',
 				'informationUri' => 'https://phpstan.org',
 				'version' => $phpstanVersion,
-				'semanticVersion' => $phpstanVersion,
 				'rules' => [],
 			],
 		];
@@ -70,8 +63,6 @@ class SarifErrorFormatter implements ErrorFormatter
 				],
 				'properties' => [
 					'ignorable' => $fileSpecificError->canBeIgnored(),
-					// 'identifier' => $fileSpecificError->getIdentifier(),
-					// 'metadata' => $fileSpecificError->getMetadata(),
 				],
 			];
 
@@ -112,9 +103,7 @@ class SarifErrorFormatter implements ErrorFormatter
 			],
 		];
 
-		$encodeOptions = JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | ($this->pretty ? JSON_PRETTY_PRINT : 0);
-
-		$json = json_encode($sarif, $encodeOptions);
+		$json = Json::encode($sarif, $this->pretty ? Json::PRETTY : 0);
 
 		$output->writeRaw($json);
 

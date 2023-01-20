@@ -1,6 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^PHPDoc tag @var with type array\\<callable\\>\\|false is not subtype of native type array\\.$#"
+			message: "#^PHPDoc tag @var with type array\\<callable\\>\\|false is not subtype of native type list\\<callable\\(string\\)\\: void\\>\\|false\\.$#"
 			count: 2
-			path: src/Command/CommandHelper.php
+			path: ../src/Command/CommandHelper.php

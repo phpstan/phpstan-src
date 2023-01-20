@@ -32,7 +32,7 @@ class FilterInputDynamicReturnTypeExtension implements DynamicFunctionReturnType
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
-		return strtolower($functionReflection->getName()) === 'filter_input';
+		return $functionReflection->getName() === 'filter_input';
 	}
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type

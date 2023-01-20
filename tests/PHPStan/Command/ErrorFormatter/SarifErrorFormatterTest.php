@@ -23,21 +23,22 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			'
 {
-	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0",
+	"$schema": "https://json.schemastore.org/sarif-2.1.0.json",
 	"version": "2.1.0",
 	"runs": [
 		{
 			"tool": {
 				"driver": {
 					"name": "PHPStan",
-					"fullName": "PHP Static Analysis Tool",
-					"informationUri": "https:\/\/phpstan.org",
+					"informationUri": "https://phpstan.org",
 					"version": "' . $phpstanVersion . '",
-					"semanticVersion": "' . $phpstanVersion . '"
+					"rules": []
 				}
 			},
 			"originalUriBaseIds": {
-				"WORKINGDIR": "file://' . $workingDir . '/"
+				"WORKINGDIR": {
+					"uri": "file://' . $workingDir . '/"
+				}
 			},
 			"results": []
 		}
@@ -52,26 +53,27 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			'
 {
-	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0",
+	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0.json",
 	"version": "2.1.0",
 	"runs": [
 		{
 			"tool": {
 				"driver": {
 					"name": "PHPStan",
-					"fullName": "PHP Static Analysis Tool",
 					"informationUri": "https:\/\/phpstan.org",
 					"version": "' . $phpstanVersion . '",
-					"semanticVersion": "' . $phpstanVersion . '"
+					"rules": []
 				}
 			},
 			"originalUriBaseIds": {
-				"WORKINGDIR": "file://' . $workingDir . '/"
+				"WORKINGDIR": {
+					"uri": "file://' . $workingDir . '/"
+				}
 			},
 			"results": [
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "Foo"
 					},
 					"locations": [
@@ -104,26 +106,27 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			'
 {
-	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0",
+	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0.json",
 	"version": "2.1.0",
 	"runs": [
 		{
 			"tool": {
 				"driver": {
 					"name": "PHPStan",
-					"fullName": "PHP Static Analysis Tool",
 					"informationUri": "https:\/\/phpstan.org",
 					"version": "' . $phpstanVersion . '",
-					"semanticVersion": "' . $phpstanVersion . '"
+					"rules": []
 				}
 			},
 			"originalUriBaseIds": {
-				"WORKINGDIR": "file://' . $workingDir . '/"
+				"WORKINGDIR": {
+					"uri": "file://' . $workingDir . '/"
+				}
 			},
 			"results": [
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "first generic error"
 					}
 				}
@@ -140,26 +143,27 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			'
 {
-	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0",
+	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0.json",
 	"version": "2.1.0",
 	"runs": [
 		{
 			"tool": {
 				"driver": {
 					"name": "PHPStan",
-					"fullName": "PHP Static Analysis Tool",
 					"informationUri": "https:\/\/phpstan.org",
 					"version": "' . $phpstanVersion . '",
-					"semanticVersion": "' . $phpstanVersion . '"
+					"rules": []
 				}
 			},
 			"originalUriBaseIds": {
-				"WORKINGDIR": "file://' . $workingDir . '/"
+				"WORKINGDIR": {
+					"uri": "file://' . $workingDir . '/"
+				}
 			},
 			"results": [
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "Bar\nBar2"
 					},
 					"locations": [
@@ -180,8 +184,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					}
 				},
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "Foo"
 					},
 					"locations": [
@@ -202,8 +206,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					}
 				},
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "Foo"
 					},
 					"locations": [
@@ -224,8 +228,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					}
 				},
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "Bar\nBar2"
 					},
 					"locations": [
@@ -259,32 +263,33 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 			2,
 			'
 {
-	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0",
+	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0.json",
 	"version": "2.1.0",
 	"runs": [
 		{
 			"tool": {
 				"driver": {
 					"name": "PHPStan",
-					"fullName": "PHP Static Analysis Tool",
 					"informationUri": "https:\/\/phpstan.org",
 					"version": "' . $phpstanVersion . '",
-					"semanticVersion": "' . $phpstanVersion . '"
+					"rules": []
 				}
 			},
 			"originalUriBaseIds": {
-				"WORKINGDIR": "file://' . $workingDir . '/"
+				"WORKINGDIR": {
+					"uri": "file://' . $workingDir . '/"
+				}
 			},
 			"results": [
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "first generic error"
 					}
 				},
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "second generic error"
 					}
 				}
@@ -301,26 +306,27 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 			2,
 			'
 {
-	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0",
+	"$schema": "https:\/\/json.schemastore.org\/sarif-2.1.0.json",
 	"version": "2.1.0",
 	"runs": [
 		{
 			"tool": {
 				"driver": {
 					"name": "PHPStan",
-					"fullName": "PHP Static Analysis Tool",
 					"informationUri": "https:\/\/phpstan.org",
 					"version": "' . $phpstanVersion . '",
-					"semanticVersion": "' . $phpstanVersion . '"
+					"rules": []
 				}
 			},
 			"originalUriBaseIds": {
-				"WORKINGDIR": "file://' . $workingDir . '/"
+				"WORKINGDIR": {
+					"uri": "file://' . $workingDir . '/"
+				}
 			},
 			"results": [
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "Bar\nBar2"
 					},
 					"locations": [
@@ -341,8 +347,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					}
 				},
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "Foo"
 					},
 					"locations": [
@@ -363,8 +369,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					}
 				},
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "Foo"
 					},
 					"locations": [
@@ -385,8 +391,8 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					}
 				},
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "Bar\nBar2"
 					},
 					"locations": [
@@ -408,14 +414,14 @@ class SarifErrorFormatterTest extends ErrorFormatterTestCase
 					}
 				},
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "first generic error"
 					}
 				},
 				{
+					"level": "error",
 					"message": {
-						"level": "error",
 						"text": "second generic error"
 					}
 				}

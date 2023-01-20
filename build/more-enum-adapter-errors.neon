@@ -4,3 +4,17 @@ parameters:
 			message: "#^Parameter \\#1 \\$expected of method PHPUnit\\\\Framework\\\\Assert\\:\\:assertInstanceOf\\(\\) expects class\\-string\\<ReflectionEnum\\>, string given\\.$#"
 			count: 1
 			path: ../tests/PHPStan/Reflection/ClassReflectionTest.php
+		-
+			message: "#^Strict comparison using \\!\\=\\= between class\\-string and 'UnitEnum' will always evaluate to true\\.$#"
+			count: 1
+			path: ../src/Reflection/Php/PhpClassReflectionExtension.php
+
+		-
+			message: "#^Access to property \\$name on an unknown class UnitEnum\\.$#"
+			count: 1
+			path: ../src/Type/ConstantTypeHelper.php
+
+		-
+			message: "#^PHPDoc tag @var for variable \\$value contains unknown class UnitEnum\\.$#"
+			count: 1
+			path: ../src/Type/ConstantTypeHelper.php

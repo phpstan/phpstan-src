@@ -77,11 +77,6 @@ parameters:
 			path: src/Command/CommandHelper.php
 
 		-
-			message: "#^PHPDoc tag @var with type array\\<callable\\>\\|false is not subtype of native type array\\.$#"
-			count: 2
-			path: src/Command/CommandHelper.php
-
-		-
 			message: "#^Parameter \\#1 \\$path of function dirname expects string, string\\|false given\\.$#"
 			count: 1
 			path: src/Command/CommandHelper.php

@@ -29,7 +29,9 @@ if (PHP_VERSION_ID < 80000) {
 }
 
 if (PHP_VERSION_ID < 80000) {
-	$includes[] = __DIR__ . '/even-more-enum-adapter-errors.neon';
+	$includes[] = __DIR__ . '/spl-autoload-functions-pre-php-7.neon';
+} else {
+	$includes[] = __DIR__ . '/spl-autoload-functions-php-8.neon';
 }
 
 $config = [];

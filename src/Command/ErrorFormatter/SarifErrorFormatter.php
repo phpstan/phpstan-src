@@ -2,11 +2,16 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
-use Nette\Utils\Json;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Internal\ComposerHelper;
+use function json_encode;
+use const JSON_HEX_AMP;
+use const JSON_HEX_APOS;
+use const JSON_HEX_QUOT;
+use const JSON_HEX_TAG;
+use const JSON_PRETTY_PRINT;
 
 class SarifErrorFormatter implements ErrorFormatter
 {
@@ -115,4 +120,5 @@ class SarifErrorFormatter implements ErrorFormatter
 
 		return $analysisResult->hasErrors() ? 1 : 0;
 	}
+
 }

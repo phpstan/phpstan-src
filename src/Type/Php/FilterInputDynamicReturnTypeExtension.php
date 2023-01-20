@@ -14,7 +14,6 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
-use function strtolower;
 
 class FilterInputDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

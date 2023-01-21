@@ -2733,4 +2733,39 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testCannotCallOnGenericClassString(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/../Comparison/data/impossible-method-exists-on-generic-class-string.php'], [
+			[
+				'Cannot call method nonExistent() on class-string<ImpossibleMethodExistsOnGenericClassString\S>.',
+				14,
+			],
+			[
+				'Cannot call method staticAbc() on class-string<ImpossibleMethodExistsOnGenericClassString\S>.',
+				20,
+			],
+			[
+				'Cannot call method nonStaticAbc() on class-string<ImpossibleMethodExistsOnGenericClassString\S>.',
+				25,
+			],
+			[
+				'Cannot call method nonExistent() on class-string<ImpossibleMethodExistsOnGenericClassString\FinalS>.',
+				35,
+			],
+			[
+				'Cannot call method staticAbc() on class-string<ImpossibleMethodExistsOnGenericClassString\FinalS>.',
+				41,
+			],
+			[
+				'Cannot call method nonStaticAbc() on class-string<ImpossibleMethodExistsOnGenericClassString\FinalS>.',
+				46,
+			],
+		]);
+	}
+
 }

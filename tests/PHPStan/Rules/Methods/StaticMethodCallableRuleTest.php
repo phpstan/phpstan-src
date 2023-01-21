@@ -99,4 +99,9 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8752.php'], []);
 	}
 
+	public function testCallsOnGenericClassString(): void
+	{
+		$this->analyse([__DIR__ . '/../Comparison/data/impossible-method-exists-on-generic-class-string.php'], []);
+	}
+
 }

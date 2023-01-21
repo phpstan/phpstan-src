@@ -94,4 +94,9 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8752(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8752.php'], []);
+	}
+
 }

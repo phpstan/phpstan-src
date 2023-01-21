@@ -2719,4 +2719,18 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/reflection-class-issue-8679.php'], []);
 	}
 
+	public function testBug8752(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8752.php'], [
+			[
+				'Cannot call method abc() on class-string.',
+				18,
+			],
+		]);
+	}
+
 }

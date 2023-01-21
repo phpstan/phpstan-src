@@ -60,6 +60,7 @@ use PHPStan\Type\StaticMethodTypeSpecifyingExtension;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\StringType;
+use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
@@ -146,8 +147,12 @@ class TypeSpecifier
 					$type = new ObjectType($className);
 				}
 
-				if ($scope->isInTrait() && $context->false() && TypeUtils::findThisType($scope->getType($exprNode)) !== null) {
-					return new SpecifiedTypes([], [], false, [], $rootExpr);
+				if ($scope->isInTrait()) {
+					$thisType = TypeUtils::findThisType($scope->getType($exprNode));
+
+					if ($thisType !== null) {
+						$type = new ThisType($this->reflectionProvider->getClass($className), $thisType->getSubtractedType(), true);
+					}
 				}
 
 				return $this->create($exprNode, $type, $context, false, $scope, $rootExpr);

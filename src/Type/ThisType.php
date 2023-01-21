@@ -17,6 +17,7 @@ class ThisType extends StaticType
 	public function __construct(
 		ClassReflection $classReflection,
 		?Type $subtractedType = null,
+		private bool $isInTrait = false,
 	)
 	{
 		parent::__construct($classReflection, $subtractedType);
@@ -35,6 +36,10 @@ class ThisType extends StaticType
 	public function isSuperTypeOf(Type $type): TrinaryLogic
 	{
 		if ($type instanceof self) {
+			if ($this->isInTrait || $type->isInTrait) {
+				return TrinaryLogic::createMaybe();
+			}
+
 			return $this->getStaticObjectType()->isSuperTypeOf($type);
 		}
 

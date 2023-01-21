@@ -1131,4 +1131,10 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		return $errors;
 	}
 
+	public function testTraitInstanceOf(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/trait-instance-of.php');
+		$this->assertNoErrors($errors);
+	}
+
 }

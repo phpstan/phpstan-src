@@ -8,15 +8,19 @@ trait Foo {
 	public function test(): string {
 		assertType('$this(TraitInstanceOf\HelloWorld)', $this);
 		if ($this instanceof HelloWorld) {
+			$this->bar();
+
 			assertType('$this(TraitInstanceOf\HelloWorld)', $this);
 			return 'hello world';
 		}
-		assertType('$this(TraitInstanceOf\HelloWorld)', $this);
+		assertType('$this(TraitInstanceOf\HelloWorld~$this(TraitInstanceOf\HelloWorld))', $this);
 		if ($this instanceof OtherClass) {
-			assertType('*NEVER*', $this);
+			$this->doOther();
+
+			assertType('$this(TraitInstanceOf\HelloWorld~$this(TraitInstanceOf\HelloWorld))&$this(TraitInstanceOf\OtherClass~$this(TraitInstanceOf\HelloWorld))', $this);
 			return 'other class';
 		}
-		assertType('$this(TraitInstanceOf\HelloWorld)', $this);
+		assertType('$this(TraitInstanceOf\HelloWorld~$this(TraitInstanceOf\HelloWorld))', $this);
 
 		return 'no';
 	}
@@ -32,4 +36,6 @@ class HelloWorld
 }
 
 class OtherClass {
+	public function doOther():void {
+	}
 }

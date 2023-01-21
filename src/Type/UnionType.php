@@ -802,10 +802,8 @@ class UnionType implements CompoundType
 			$myTypes = $this->types;
 		}
 
-		$myTemplateTypes = [];
 		foreach ($myTypes as $type) {
 			if ($type instanceof TemplateType || ($type instanceof GenericClassStringType && $type->getGenericType() instanceof TemplateType)) {
-				$myTemplateTypes[] = $type;
 				continue;
 			}
 			$types = $types->union($type->inferTemplateTypes($receivedType));

@@ -17,7 +17,11 @@ use function sprintf;
 class StrictComparisonOfDifferentTypesRule implements Rule
 {
 
-	public function __construct(private bool $checkAlwaysTrueStrictComparison, private bool $treatPhpDocTypesAsCertain)
+	public function __construct(
+		private bool $checkAlwaysTrueStrictComparison,
+		private bool $treatPhpDocTypesAsCertain,
+		private bool $reportAlwaysTrueInLastCondition,
+	)
 	{
 	}
 
@@ -50,7 +54,7 @@ class StrictComparisonOfDifferentTypesRule implements Rule
 				))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueStrictComparison) {
-			if ($node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) === true) {
+			if ($node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) === true && !$this->reportAlwaysTrueInLastCondition) {
 				return [];
 			}
 

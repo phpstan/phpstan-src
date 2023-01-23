@@ -15,11 +15,13 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	private bool $checkAlwaysTrueStrictComparison;
 
+	private bool $reportAlwaysTrueInLastCondition = false;
+
 	private bool $treatPhpDocTypesAsCertain = true;
 
 	protected function getRule(): Rule
 	{
-		return new StrictComparisonOfDifferentTypesRule($this->checkAlwaysTrueStrictComparison, $this->treatPhpDocTypesAsCertain);
+		return new StrictComparisonOfDifferentTypesRule($this->checkAlwaysTrueStrictComparison, $this->treatPhpDocTypesAsCertain, $this->reportAlwaysTrueInLastCondition);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -783,6 +785,32 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/bug-8736.php'], []);
+	}
+
+	public function dataLastMatchArm(): iterable
+	{
+		yield [false, []];
+		yield [true, [
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				17,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataLastMatchArm
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testLastMatchArm(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
+		$this->analyse([__DIR__ . '/data/strict-comparison-last-match-arm.php'], $expectedErrors);
 	}
 
 }

@@ -258,6 +258,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				[
 					'Strict comparison using === between \'foofoofoofoofoofoof…\' and \'foofoofoofoofoofoof…\' will always evaluate to true.',
 					996,
+					'Remove remaining cases below this one and this error will disappear too.',
 				],
 			],
 		);
@@ -647,10 +648,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between Bug8485\FooEnum::C and Bug8485\FooEnum::C will always evaluate to true.',
 				67,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Strict comparison using === between Bug8485\FooEnum::C and Bug8485\FooEnum::C will always evaluate to true.',
 				74,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -753,6 +756,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between \'bar\' and \'bar\' will always evaluate to true.',
 				15,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -789,11 +793,51 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	public function dataLastMatchArm(): iterable
 	{
-		yield [false, []];
+		yield [false, [
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				36,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				"Strict comparison using === between *NEVER* and 'ccc' will always evaluate to false.",
+				38,
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				46,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				62,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]];
 		yield [true, [
 			[
 				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
 				17,
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				30,
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				36,
+			],
+			[
+				"Strict comparison using === between *NEVER* and 'ccc' will always evaluate to false.",
+				38,
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				46,
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				62,
 			],
 		]];
 	}

@@ -13,17 +13,25 @@ class LastConditionVisitor extends NodeVisitorAbstract
 
 	public function enterNode(Node $node): ?Node
 	{
-		if ($node instanceof Node\Stmt\If_ && $node->elseifs !== [] && $node->else === null) {
+		if ($node instanceof Node\Stmt\If_ && $node->elseifs !== []) {
 			$lastElseIf = count($node->elseifs) - 1;
 
-			$node->elseifs[$lastElseIf]->cond->setAttribute(self::ATTRIBUTE_NAME, true);
+			foreach ($node->elseifs as $i => $elseif) {
+				$isLast = $i === $lastElseIf && $node->else === null;
+				$elseif->cond->setAttribute(self::ATTRIBUTE_NAME, $isLast);
+			}
 		}
 
 		if ($node instanceof Node\Expr\Match_ && $node->arms !== []) {
 			$lastArm = count($node->arms) - 1;
 
-			if ($node->arms[$lastArm]->conds !== null && $node->arms[$lastArm]->conds !== []) {
-				$node->arms[$lastArm]->conds[0]->setAttribute(self::ATTRIBUTE_NAME, true);
+			foreach ($node->arms as $i => $arm) {
+				if ($arm->conds === null || $arm->conds === []) {
+					continue;
+				}
+
+				$isLast = $i === $lastArm;
+				$arm->conds[0]->setAttribute(self::ATTRIBUTE_NAME, $isLast);
 			}
 		}
 

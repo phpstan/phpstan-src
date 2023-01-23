@@ -54,17 +54,23 @@ class StrictComparisonOfDifferentTypesRule implements Rule
 				))->build(),
 			];
 		} elseif ($this->checkAlwaysTrueStrictComparison) {
-			if ($node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME) === true && !$this->reportAlwaysTrueInLastCondition) {
+			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
+			if ($isLast === true && !$this->reportAlwaysTrueInLastCondition) {
 				return [];
 			}
 
+			$errorBuilder = RuleErrorBuilder::message(sprintf(
+				'Strict comparison using %s between %s and %s will always evaluate to true.',
+				$node instanceof Node\Expr\BinaryOp\Identical ? '===' : '!==',
+				$leftType->describe(VerbosityLevel::value()),
+				$rightType->describe(VerbosityLevel::value()),
+			));
+			if ($isLast === false && !$this->reportAlwaysTrueInLastCondition) {
+				$errorBuilder->tip('Remove remaining cases below this one and this error will disappear too.');
+			}
+
 			return [
-				RuleErrorBuilder::message(sprintf(
-					'Strict comparison using %s between %s and %s will always evaluate to true.',
-					$node instanceof Node\Expr\BinaryOp\Identical ? '===' : '!==',
-					$leftType->describe(VerbosityLevel::value()),
-					$rightType->describe(VerbosityLevel::value()),
-				))->build(),
+				$errorBuilder->build(),
 			];
 		}
 

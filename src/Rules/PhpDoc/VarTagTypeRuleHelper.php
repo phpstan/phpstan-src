@@ -117,7 +117,14 @@ class VarTagTypeRuleHelper
 				return true;
 			}
 
-			return $this->checkType($type->getIterableValueType(), $varTagType->getIterableValueType());
+			$innerType = $type->getIterableValueType();
+			$innerVarTagType = $varTagType->getIterableValueType();
+
+			if ($type->equals($innerType) || $varTagType->equals($innerVarTagType)) {
+				return !$innerType->isSuperTypeOf($innerVarTagType)->yes();
+			}
+
+			return $this->checkType($innerType, $innerVarTagType);
 		}
 
 		return !$type->isSuperTypeOf($varTagType)->yes();

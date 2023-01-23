@@ -2,6 +2,9 @@
 
 namespace PHPStan\Command\ErrorFormatter;
 
+use Nette\Utils\Json;
+use PHPStan\Analyser\Error;
+use PHPStan\Command\AnalysisResult;
 use PHPStan\Testing\ErrorFormatterTestCase;
 use function sprintf;
 
@@ -233,6 +236,28 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		), sprintf('%s: response code do not match', $message));
 
 		$this->assertJsonStringEqualsJsonString($expected, $this->getOutputContent(), sprintf('%s: JSON do not match', $message));
+	}
+
+	public function dataFormatTip(): iterable
+	{
+		yield ['tip', 'tip'];
+		yield ['<fg=cyan>%configurationFile%</>', '%configurationFile%'];
+		yield ['this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.', 'this check by setting treatPhpDocTypesAsCertain: false in your %configurationFile%.'];
+	}
+
+	/**
+	 * @dataProvider dataFormatTip
+	 */
+	public function testFormatTip(string $tip, string $expectedTip): void
+	{
+		$formatter = new JsonErrorFormatter(false);
+		$formatter->formatErrors(new AnalysisResult([
+			new Error('Foo', '/foo/bar.php', 1, true, null, null, $tip),
+		], [], [], [], [], false, null, true, 0), $this->getOutput());
+
+		$content = $this->getOutputContent();
+		$json = Json::decode($content, Json::FORCE_ARRAY);
+		$this->assertSame($expectedTip, $json['files']['/foo/bar.php']['messages'][0]['tip']);
 	}
 
 }

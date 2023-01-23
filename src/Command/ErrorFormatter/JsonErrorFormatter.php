@@ -5,6 +5,7 @@ namespace PHPStan\Command\ErrorFormatter;
 use Nette\Utils\Json;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\Output;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use function array_key_exists;
 use function count;
 
@@ -26,6 +27,8 @@ class JsonErrorFormatter implements ErrorFormatter
 			'errors' => [],
 		];
 
+		$tipFormatter = new OutputFormatter(false);
+
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			$file = $fileSpecificError->getFile();
 			if (!array_key_exists($file, $errorsArray['files'])) {
@@ -43,7 +46,7 @@ class JsonErrorFormatter implements ErrorFormatter
 			];
 
 			if ($fileSpecificError->getTip() !== null) {
-				$message['tip'] = $fileSpecificError->getTip();
+				$message['tip'] = $tipFormatter->format($fileSpecificError->getTip());
 			}
 
 			$errorsArray['files'][$file]['messages'][] = $message;

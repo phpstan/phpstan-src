@@ -103,6 +103,11 @@ class VarTagTypeRuleHelper
 			}
 		}
 
+		return $this->checkType($type, $varTagType);
+	}
+
+	private function checkType(Type $type, Type $varTagType): bool
+	{
 		if ($type instanceof ConstantType) {
 			return $type->isSuperTypeOf($varTagType)->no();
 		}
@@ -112,7 +117,7 @@ class VarTagTypeRuleHelper
 				return true;
 			}
 
-			return !$type->getIterableValueType()->isSuperTypeOf($varTagType->getIterableValueType())->yes();
+			return $this->checkType($type->getIterableValueType(), $varTagType->getIterableValueType());
 		}
 
 		return !$type->isSuperTypeOf($varTagType)->yes();

@@ -148,4 +148,25 @@ class Foo
 		static $b = 'foo';
 	}
 
+	public function iterablesRecursively(): void
+	{
+		/** @var array<array<string>> $a */
+		$a = $this->arrayOfLists();
+
+		/** @var array<array<string>> $b */
+		$b = $this->arrayOfLists();
+
+		/** @var array<array<int>> $c */
+		$c = $this->arrayOfLists();
+
+		/** @var array<\Traversable<string>> $d */
+		$d = $this->arrayOfLists();
+	}
+
+	/** @return array<list<string|null>> */
+	private function arrayOfLists(): array
+	{
+
+	}
+
 }

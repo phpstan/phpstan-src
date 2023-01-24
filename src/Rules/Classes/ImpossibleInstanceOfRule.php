@@ -49,7 +49,7 @@ class ImpossibleInstanceOfRule implements Rule
 				new StringType(),
 				new ObjectWithoutClassType(),
 			);
-			if (!$allowed->accepts($classType, true)->yes()) {
+			if (!$allowed->isSuperTypeOf($classType)->yes()) {
 				return [
 					RuleErrorBuilder::message(sprintf(
 						'Instanceof between %s and %s results in an error.',

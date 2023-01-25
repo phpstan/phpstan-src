@@ -8,7 +8,6 @@ use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
@@ -37,11 +36,7 @@ final class MissingFunctionParameterTypehintRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$functionReflection = $scope->getFunction();
-		if (!$functionReflection instanceof PhpFunctionFromParserNodeReflection) {
-			return [];
-		}
-
+		$functionReflection = $node->getFunctionReflection();
 		$messages = [];
 
 		foreach (ParametersAcceptorSelector::selectSingle($functionReflection->getVariants())->getParameters() as $parameterReflection) {

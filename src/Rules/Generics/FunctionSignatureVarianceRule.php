@@ -27,11 +27,7 @@ class FunctionSignatureVarianceRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$functionReflection = $scope->getFunction();
-		if ($functionReflection === null) {
-			return [];
-		}
-
+		$functionReflection = $node->getFunctionReflection();
 		$functionName = $functionReflection->getName();
 
 		return $this->varianceCheck->checkParametersAcceptor(

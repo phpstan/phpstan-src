@@ -28,3 +28,4 @@ parameters:
 		alwaysTrueAlwaysReported: true
 		disableUnreachableBranchesRules: true
 		varTagType: true
+		closureDefaultParameterTypeRule: true

@@ -58,6 +58,7 @@ parameters:
 		alwaysTrueAlwaysReported: false
 		disableUnreachableBranchesRules: false
 		varTagType: false
+		closureDefaultParameterTypeRule: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -283,6 +284,7 @@ parametersSchema:
 		alwaysTrueAlwaysReported: bool()
 		disableUnreachableBranchesRules: bool()
 		varTagType: bool()
+		closureDefaultParameterTypeRule: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

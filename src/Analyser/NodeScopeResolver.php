@@ -3271,7 +3271,11 @@ class NodeScopeResolver
 		}
 
 		$arrowFunctionScope = $scope->enterArrowFunction($expr, $callableParameters);
-		$nodeCallback(new InArrowFunctionNode($expr), $arrowFunctionScope);
+		$arrowFunctionType = $arrowFunctionScope->getAnonymousFunctionReflection();
+		if (!$arrowFunctionType instanceof ClosureType) {
+			throw new ShouldNotHappenException();
+		}
+		$nodeCallback(new InArrowFunctionNode($arrowFunctionType, $expr), $arrowFunctionScope);
 		$this->processExprNode($expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
 
 		return new ExpressionResult($scope, false, []);

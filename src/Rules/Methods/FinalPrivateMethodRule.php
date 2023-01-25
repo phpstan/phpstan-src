@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Php\PhpVersion;
-use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
@@ -28,11 +27,7 @@ class FinalPrivateMethodRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$method = $scope->getFunction();
-		if (!$method instanceof PhpMethodFromParserNodeReflection) {
-			return [];
-		}
-
+		$method = $node->getMethodReflection();
 		if (!$this->phpVersion->producesWarningForFinalPrivateMethods()) {
 			return [];
 		}

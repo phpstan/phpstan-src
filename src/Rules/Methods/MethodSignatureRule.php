@@ -10,7 +10,6 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ParametersAcceptorWithPhpDocs;
-use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
@@ -46,11 +45,7 @@ class MethodSignatureRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$method = $scope->getFunction();
-		if (!$method instanceof PhpMethodFromParserNodeReflection) {
-			return [];
-		}
-
+		$method = $node->getMethodReflection();
 		$methodName = $method->getName();
 		if ($methodName === '__construct') {
 			return [];

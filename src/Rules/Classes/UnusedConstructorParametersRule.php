@@ -8,7 +8,6 @@ use PhpParser\Node\Param;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassMethodNode;
-use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedFunctionParametersCheck;
 use PHPStan\ShouldNotHappenException;
@@ -37,15 +36,7 @@ class UnusedConstructorParametersRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-
-		$method = $scope->getFunction();
-		if (!$method instanceof MethodReflection) {
-			return [];
-		}
-
+		$method = $node->getMethodReflection();
 		$originalNode = $node->getOriginalNode();
 		if (strtolower($method->getName()) !== '__construct' || $originalNode->stmts === null) {
 			return [];
@@ -57,9 +48,9 @@ class UnusedConstructorParametersRule implements Rule
 
 		$message = sprintf(
 			'Constructor of class %s has an unused parameter $%%s.',
-			SprintfHelper::escapeFormatString($scope->getClassReflection()->getDisplayName()),
+			SprintfHelper::escapeFormatString($node->getClassReflection()->getDisplayName()),
 		);
-		if ($scope->getClassReflection()->isAnonymous()) {
+		if ($node->getClassReflection()->isAnonymous()) {
 			$message = 'Constructor of an anonymous class has an unused parameter $%s.';
 		}
 

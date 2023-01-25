@@ -8,10 +8,8 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\DummyConstructorReflection;
 use PHPStan\Reflection\MethodPrototypeReflection;
-use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Rules\Rule;
-use PHPStan\ShouldNotHappenException;
 use function strtolower;
 
 /** @implements Rule<InClassMethodNode> */
@@ -31,12 +29,7 @@ class ConsistentConstructorRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$method = $scope->getFunction();
-
-		if (! $method instanceof PhpMethodFromParserNodeReflection) {
-			throw new ShouldNotHappenException();
-		}
-
+		$method = $node->getMethodReflection();
 		if (strtolower($method->getName()) !== '__construct') {
 			return [];
 		}

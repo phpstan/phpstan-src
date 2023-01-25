@@ -6,10 +6,8 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassMethodNode;
-use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\ShouldNotHappenException;
 use function sprintf;
 
 /**
@@ -29,15 +27,8 @@ class ExistingClassesInTypehintsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$methodReflection = $scope->getFunction();
-		if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
-			throw new ShouldNotHappenException();
-		}
-		if (!$scope->isInClass()) {
-			throw new ShouldNotHappenException();
-		}
-
-		$className = SprintfHelper::escapeFormatString($scope->getClassReflection()->getDisplayName());
+		$methodReflection = $node->getMethodReflection();
+		$className = SprintfHelper::escapeFormatString($node->getClassReflection()->getDisplayName());
 		$methodName = SprintfHelper::escapeFormatString($methodReflection->getName());
 
 		return $this->check->checkClassMethod(

@@ -9,11 +9,9 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\FunctionVariantWithPhpDocs;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function count;
@@ -42,11 +40,7 @@ class OverridingMethodRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$method = $scope->getFunction();
-		if (!$method instanceof PhpMethodFromParserNodeReflection) {
-			throw new ShouldNotHappenException();
-		}
-
+		$method = $node->getMethodReflection();
 		$prototype = $method->getPrototype();
 		if ($prototype->getDeclaringClass()->getName() === $method->getDeclaringClass()->getName()) {
 			if (strtolower($method->getName()) === '__construct') {

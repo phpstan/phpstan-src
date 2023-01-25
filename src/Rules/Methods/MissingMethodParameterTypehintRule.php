@@ -34,11 +34,7 @@ final class MissingMethodParameterTypehintRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$methodReflection = $scope->getFunction();
-		if (!$methodReflection instanceof MethodReflection) {
-			return [];
-		}
-
+		$methodReflection = $node->getMethodReflection();
 		$messages = [];
 
 		foreach (ParametersAcceptorSelector::selectSingle($methodReflection->getVariants())->getParameters() as $parameterReflection) {

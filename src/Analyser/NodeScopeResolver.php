@@ -508,6 +508,10 @@ class NodeScopeResolver
 				$phpDocParameterOutTypes,
 			);
 
+			if (!$scope->isInClass()) {
+				throw new ShouldNotHappenException();
+			}
+
 			if ($stmt->name->toLowerString() === '__construct') {
 				foreach ($stmt->params as $param) {
 					if ($param->flags === 0) {
@@ -520,9 +524,6 @@ class NodeScopeResolver
 					$phpDoc = null;
 					if ($param->getDocComment() !== null) {
 						$phpDoc = $param->getDocComment()->getText();
-					}
-					if (!$scope->isInClass()) {
-						throw new ShouldNotHappenException();
 					}
 					$nodeCallback(new ClassPropertyNode(
 						$param->var->name,
@@ -546,7 +547,7 @@ class NodeScopeResolver
 				if (!$methodReflection instanceof ExtendedMethodReflection) {
 					throw new ShouldNotHappenException();
 				}
-				$nodeCallback(new InClassMethodNode($methodReflection, $stmt), $methodScope);
+				$nodeCallback(new InClassMethodNode($scope->getClassReflection(), $methodReflection, $stmt), $methodScope);
 			}
 
 			if ($stmt->stmts !== null) {

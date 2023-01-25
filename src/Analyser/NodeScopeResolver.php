@@ -118,6 +118,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
@@ -443,7 +444,7 @@ class NodeScopeResolver
 				$phpDocParameterOutTypes,
 			);
 			$functionReflection = $functionScope->getFunction();
-			if (!$functionReflection instanceof FunctionReflection) {
+			if (!$functionReflection instanceof PhpFunctionFromParserNodeReflection) {
 				throw new ShouldNotHappenException();
 			}
 

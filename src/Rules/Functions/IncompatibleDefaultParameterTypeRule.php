@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
@@ -28,10 +27,7 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$function = $scope->getFunction();
-		if (!$function instanceof PhpFunctionFromParserNodeReflection) {
-			return [];
-		}
+		$function = $node->getFunctionReflection();
 		$parameters = ParametersAcceptorSelector::selectSingle($function->getVariants());
 
 		$errors = [];

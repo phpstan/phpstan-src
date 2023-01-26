@@ -9,6 +9,7 @@ use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use function sprintf;
 
 /** @api */
 class TemplateTypeVariance
@@ -105,10 +106,10 @@ class TemplateTypeVariance
 
 	public function isValidVariance(Type $a, Type $b): TrinaryLogic
 	{
-		return $this->isValidVarianceWithReason($a, $b)->result;
+		return $this->isValidVarianceWithReason(null, $a, $b)->result;
 	}
 
-	public function isValidVarianceWithReason(Type $a, Type $b): AcceptsResult
+	public function isValidVarianceWithReason(?TemplateType $templateType, Type $a, Type $b): AcceptsResult
 	{
 		if ($b instanceof NeverType) {
 			return AcceptsResult::createYes();
@@ -138,8 +139,16 @@ class TemplateTypeVariance
 			$result = $a->equals($b);
 			$reasons = [];
 			if (!$result) {
-				if ($a->isSuperTypeOf($b)->yes()) {
-					$reasons[] = 'See: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>';
+				if (
+					$templateType !== null
+					&& $templateType->getScope()->getClassName() !== null
+					&& $a->isSuperTypeOf($b)->yes()
+				) {
+					$reasons[] = sprintf(
+						'Template type %s on class %s is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+						$templateType->getName(),
+						$templateType->getScope()->getClassName(),
+					);
 				}
 			}
 

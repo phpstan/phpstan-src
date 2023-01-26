@@ -95,7 +95,7 @@ trait TemplateTypeTrait
 
 	public function isValidVarianceWithReason(Type $a, Type $b): AcceptsResult
 	{
-		return $this->variance->isValidVarianceWithReason($a, $b);
+		return $this->variance->isValidVarianceWithReason($this, $a, $b);
 	}
 
 	public function subtract(Type $typeToRemove): Type

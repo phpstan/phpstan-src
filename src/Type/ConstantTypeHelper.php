@@ -46,7 +46,7 @@ class ConstantTypeHelper
 		} elseif (is_array($value)) {
 			$arrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 			if (count($value) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
-				$arrayBuilder->degradeToGeneralArray();
+				$arrayBuilder->degradeToGeneralArray(true);
 			}
 			foreach ($value as $k => $v) {
 				$arrayBuilder->setOffsetValueType(self::getTypeFromValue($k), self::getTypeFromValue($v));

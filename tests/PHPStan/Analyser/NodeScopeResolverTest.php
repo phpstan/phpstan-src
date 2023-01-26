@@ -1178,6 +1178,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-3019.php');
 
 		yield from $this->gatherAssertTypes(__DIR__ . '/data/callsite-cast-narrowing.php');
+		yield from $this->gatherAssertTypes(__DIR__ . '/data/bug-8775.php');
 	}
 
 	/**

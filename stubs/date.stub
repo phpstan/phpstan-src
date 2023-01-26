@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @template TDate of DateTimeInterface
- * @template TEnd of ?DateTimeInterface
- * @template TRecurrences of ?int
+ * @template-covariant TDate of DateTimeInterface
+ * @template-covariant TEnd of ?DateTimeInterface
+ * @template-covariant TRecurrences of ?int
  * @implements \IteratorAggregate<int, TDate>
  * @implements \Traversable<int, TDate>
  */

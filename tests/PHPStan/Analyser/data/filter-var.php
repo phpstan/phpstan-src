@@ -26,6 +26,7 @@ class FilterVar
 		assertType('false', filter_var($object));
 		assertType('false', filter_var($resource));
 		assertType('null', filter_var(new stdClass(), FILTER_DEFAULT, FILTER_NULL_ON_FAILURE));
+		assertType("'invalid'", filter_var(new stdClass(), FILTER_DEFAULT, ['options' => ['default' => 'invalid']]));
 	}
 
 	public function intToInt(int $int, array $options): void

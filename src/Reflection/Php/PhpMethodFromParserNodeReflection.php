@@ -21,6 +21,9 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VoidType;
 use function strtolower;
 
+/**
+ * @api
+ */
 class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeReflection implements ExtendedMethodReflection
 {
 

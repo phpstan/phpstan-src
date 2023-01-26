@@ -57,6 +57,10 @@ class HasPropertyType implements AccessoryType, CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		if ($type instanceof CompoundType) {
+			return $type->isAcceptedBy($this, $strictTypes);
+		}
+
 		return TrinaryLogic::createFromBoolean($this->equals($type));
 	}
 

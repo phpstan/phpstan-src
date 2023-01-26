@@ -92,12 +92,17 @@ class StringType implements Type
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
 		if ($type instanceof self) {
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
 		$thatClassNames = $type->getObjectClassNames();
@@ -106,16 +111,16 @@ class StringType implements Type
 		}
 
 		if ($thatClassNames === [] || $strictTypes) {
-			return TrinaryLogic::createNo();
+			return AcceptsResult::createNo();
 		}
 
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 		if (!$reflectionProvider->hasClass($thatClassNames[0])) {
-			return TrinaryLogic::createNo();
+			return AcceptsResult::createNo();
 		}
 
 		$typeClass = $reflectionProvider->getClass($thatClassNames[0]);
-		return TrinaryLogic::createFromBoolean(
+		return AcceptsResult::createFromBoolean(
 			$typeClass->hasNativeMethod('__toString'),
 		);
 	}

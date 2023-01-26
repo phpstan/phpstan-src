@@ -761,6 +761,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				'Method Bug6358\HelloWorld::sayHello() should return list<stdClass> but returns array{1: stdClass}.',
 				14,
+				'array{1: stdClass} is not a list.',
 			],
 		]);
 	}
@@ -784,6 +785,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				"Method Bug8174\HelloWorld::filterList() should return list<string> but returns array<int<0, max>, '23423'>.",
 				21,
+				"array<int<0, max>, '23423'> might not be a list.",
 			],
 		]);
 	}

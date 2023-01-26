@@ -813,6 +813,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				"Parameter #1 \$command of function proc_open expects list<string>|string, array{something: 'bogus', in: 'here'} given.",
 				6,
+				"array{something: 'bogus', in: 'here'} is not a list.",
 			],
 		]);
 	}

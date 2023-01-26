@@ -44,7 +44,8 @@ class IncompatibleArrowFunctionDefaultParameterTypeRule implements Rule
 			$parameterType = $parameters[$paramI]->getType();
 			$parameterType = TemplateTypeHelper::resolveToBounds($parameterType);
 
-			if ($parameterType->accepts($defaultValueType, true)->yes()) {
+			$accepts = $parameterType->acceptsWithReason($defaultValueType, true);
+			if ($accepts->yes()) {
 				continue;
 			}
 
@@ -56,7 +57,7 @@ class IncompatibleArrowFunctionDefaultParameterTypeRule implements Rule
 				$param->var->name,
 				$defaultValueType->describe($verbosityLevel),
 				$parameterType->describe($verbosityLevel),
-			))->line($param->getLine())->build();
+			))->line($param->getLine())->acceptsReasonsTip($accepts->reasons)->build();
 		}
 
 		return $errors;

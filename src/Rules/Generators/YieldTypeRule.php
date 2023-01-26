@@ -54,13 +54,14 @@ class YieldTypeRule implements Rule
 		}
 
 		$messages = [];
-		if (!$this->ruleLevelHelper->accepts($returnType->getIterableKeyType(), $keyType, $scope->isDeclareStrictTypes())) {
+		$acceptsKey = $this->ruleLevelHelper->acceptsWithReason($returnType->getIterableKeyType(), $keyType, $scope->isDeclareStrictTypes());
+		if (!$acceptsKey->result) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType->getIterableKeyType(), $keyType);
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects key type %s, %s given.',
 				$returnType->getIterableKeyType()->describe($verbosityLevel),
 				$keyType->describe($verbosityLevel),
-			))->build();
+			))->acceptsReasonsTip($acceptsKey->reasons)->build();
 		}
 
 		if ($node->value === null) {
@@ -69,13 +70,14 @@ class YieldTypeRule implements Rule
 			$valueType = $scope->getType($node->value);
 		}
 
-		if (!$this->ruleLevelHelper->accepts($returnType->getIterableValueType(), $valueType, $scope->isDeclareStrictTypes())) {
+		$acceptsValue = $this->ruleLevelHelper->acceptsWithReason($returnType->getIterableValueType(), $valueType, $scope->isDeclareStrictTypes());
+		if (!$acceptsValue->result) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($returnType->getIterableValueType(), $valueType);
 			$messages[] = RuleErrorBuilder::message(sprintf(
 				'Generator expects value type %s, %s given.',
 				$returnType->getIterableValueType()->describe($verbosityLevel),
 				$valueType->describe($verbosityLevel),
-			))->build();
+			))->acceptsReasonsTip($acceptsValue->reasons)->build();
 		}
 		if (!$scope->isInFirstLevelStatement() && $scope->getType($node)->isVoid()->yes()) {
 			$messages[] = RuleErrorBuilder::message('Result of yield (void) is used.')->build();

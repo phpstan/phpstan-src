@@ -49,11 +49,16 @@ class VoidType implements Type
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return TrinaryLogic::createFromBoolean($type instanceof self);
+		return AcceptsResult::createFromBoolean($type instanceof self);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

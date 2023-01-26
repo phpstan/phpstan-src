@@ -236,20 +236,25 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
 		if ($type instanceof StaticType) {
 			return $this->checkSubclassAcceptability($type->getClassName());
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
 		if ($type instanceof ClosureType) {
-			return $this->isInstanceOf(Closure::class);
+			return new AcceptsResult($this->isInstanceOf(Closure::class), []);
 		}
 
 		if ($type instanceof ObjectWithoutClassType) {
-			return TrinaryLogic::createMaybe();
+			return AcceptsResult::createMaybe();
 		}
 
 		$thatClassNames = $type->getObjectClassNames();
@@ -258,7 +263,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($thatClassNames === []) {
-			return TrinaryLogic::createNo();
+			return AcceptsResult::createNo();
 		}
 
 		return $this->checkSubclassAcceptability($thatClassNames[0]);
@@ -392,16 +397,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this->subtractedType->equals($type->subtractedType);
 	}
 
-	private function checkSubclassAcceptability(string $thatClass): TrinaryLogic
+	private function checkSubclassAcceptability(string $thatClass): AcceptsResult
 	{
 		if ($this->className === $thatClass) {
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 
 		if ($this->getClassReflection() === null || !$reflectionProvider->hasClass($thatClass)) {
-			return TrinaryLogic::createNo();
+			return AcceptsResult::createNo();
 		}
 
 		$thisReflection = $this->getClassReflection();
@@ -409,16 +414,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 		if ($thisReflection->getName() === $thatReflection->getName()) {
 			// class alias
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		if ($thisReflection->isInterface() && $thatReflection->isInterface()) {
-			return TrinaryLogic::createFromBoolean(
+			return AcceptsResult::createFromBoolean(
 				$thatReflection->implementsInterface($this->className),
 			);
 		}
 
-		return TrinaryLogic::createFromBoolean(
+		return AcceptsResult::createFromBoolean(
 			$thatReflection->isSubclassOf($this->className),
 		);
 	}

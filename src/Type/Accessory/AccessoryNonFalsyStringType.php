@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Accessory;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -60,11 +61,16 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return $type->isNonFalsyString();
+		return new AcceptsResult($type->isNonFalsyString(), []);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -96,7 +102,12 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return $this->isSubTypeOf($acceptingType);
+		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
+	}
+
+	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	{
+		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
 	}
 
 	public function equals(Type $type): bool

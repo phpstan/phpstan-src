@@ -4,6 +4,7 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -104,40 +105,45 @@ class TemplateTypeVariance
 
 	public function isValidVariance(Type $a, Type $b): TrinaryLogic
 	{
+		return $this->isValidVarianceWithReason($a, $b)->result;
+	}
+
+	public function isValidVarianceWithReason(Type $a, Type $b): AcceptsResult
+	{
 		if ($b instanceof NeverType) {
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		if ($a instanceof MixedType && !$a instanceof TemplateType) {
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		if ($a instanceof BenevolentUnionType) {
 			if (!$a->isSuperTypeOf($b)->no()) {
-				return TrinaryLogic::createYes();
+				return AcceptsResult::createYes();
 			}
 		}
 
 		if ($b instanceof BenevolentUnionType) {
 			if (!$b->isSuperTypeOf($a)->no()) {
-				return TrinaryLogic::createYes();
+				return AcceptsResult::createYes();
 			}
 		}
 
 		if ($b instanceof MixedType && !$b instanceof TemplateType) {
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		if ($this->invariant()) {
-			return TrinaryLogic::createFromBoolean($a->equals($b));
+			return AcceptsResult::createFromBoolean($a->equals($b));
 		}
 
 		if ($this->covariant()) {
-			return $a->isSuperTypeOf($b);
+			return new AcceptsResult($a->isSuperTypeOf($b), []);
 		}
 
 		if ($this->contravariant()) {
-			return $b->isSuperTypeOf($a);
+			return new AcceptsResult($b->isSuperTypeOf($a), []);
 		}
 
 		throw new ShouldNotHappenException();

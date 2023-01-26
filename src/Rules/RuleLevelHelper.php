@@ -19,6 +19,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
 use function count;
 use function sprintf;
 use function strpos;
@@ -47,6 +48,11 @@ class RuleLevelHelper
 
 	/** @api */
 	public function accepts(Type $acceptingType, Type $acceptedType, bool $strictTypes): bool
+	{
+		return $this->acceptsWithReason($acceptingType, $acceptedType, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $acceptingType, Type $acceptedType, bool $strictTypes): RuleLevelHelperAcceptsResult
 	{
 		$checkForUnion = $this->checkUnionTypes;
 
@@ -112,18 +118,22 @@ class RuleLevelHelper
 			$acceptedType = TypeCombinator::removeNull($acceptedType);
 		}
 
-		$accepts = $acceptingType->accepts($acceptedType, $strictTypes);
+		$accepts = $acceptingType->acceptsWithReason($acceptedType, $strictTypes);
 		if ($accepts->yes()) {
-			return true;
+			return new RuleLevelHelperAcceptsResult(true, $accepts->reasons);
 		}
 		if ($acceptingType instanceof UnionType) {
+			$reasons = [];
 			foreach ($acceptingType->getTypes() as $innerType) {
-				if (self::accepts($innerType, $acceptedType, $strictTypes)) {
-					return true;
+				$accepts = self::acceptsWithReason($innerType, $acceptedType, $strictTypes);
+				if ($accepts->result) {
+					return $accepts;
 				}
+
+				$reasons = array_merge($reasons, $accepts->reasons);
 			}
 
-			return false;
+			return new RuleLevelHelperAcceptsResult(false, $reasons);
 		}
 
 		if (
@@ -135,25 +145,47 @@ class RuleLevelHelper
 			)
 			&& $acceptingType->isConstantArray()->no()
 		) {
-			return (
-				!$acceptingType->isIterableAtLeastOnce()->yes()
-				|| $acceptedType->isIterableAtLeastOnce()->yes()
-			) && (
-				!$this->checkListType
-				|| !$acceptingType->isList()->yes()
-				|| $acceptedType->isList()->yes()
-			) && self::accepts(
+			if ($acceptingType->isIterableAtLeastOnce()->yes() && !$acceptedType->isIterableAtLeastOnce()->yes()) {
+				$verbosity = VerbosityLevel::getRecommendedLevelByType($acceptingType, $acceptedType);
+				return new RuleLevelHelperAcceptsResult(false, [
+					sprintf(
+						'%s %s empty.',
+						$acceptedType->describe($verbosity),
+						$acceptedType->isIterableAtLeastOnce()->no() ? 'is' : 'might be',
+					),
+				]);
+			}
+
+			if (
+				$this->checkListType
+				&& $acceptingType->isList()->yes()
+				&& !$acceptedType->isList()->yes()
+			) {
+				$verbosity = VerbosityLevel::getRecommendedLevelByType($acceptingType, $acceptedType);
+				return new RuleLevelHelperAcceptsResult(false, [
+					sprintf(
+						'%s %s a list.',
+						$acceptedType->describe($verbosity),
+						$acceptedType->isList()->no() ? 'is not' : 'might not be',
+					),
+				]);
+			}
+
+			return self::acceptsWithReason(
 				$acceptingType->getIterableKeyType(),
 				$acceptedType->getIterableKeyType(),
 				$strictTypes,
-			) && self::accepts(
+			)->and(self::acceptsWithReason(
 				$acceptingType->getIterableValueType(),
 				$acceptedType->getIterableValueType(),
 				$strictTypes,
-			);
+			));
 		}
 
-		return $checkForUnion ? $accepts->yes() : !$accepts->no();
+		return new RuleLevelHelperAcceptsResult(
+			$checkForUnion ? $accepts->yes() : !$accepts->no(),
+			$accepts->reasons,
+		);
 	}
 
 	/**

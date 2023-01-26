@@ -136,6 +136,11 @@ class UnionType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
 		if (
 			$type->equals(new ObjectType(DateTimeInterface::class))
 			&& $this->accepts(
@@ -143,20 +148,23 @@ class UnionType implements CompoundType
 				$strictTypes,
 			)->yes()
 		) {
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		if ($type instanceof CompoundType && !$type instanceof CallableType && !$type instanceof TemplateType && !$type instanceof IntersectionType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		$result = TrinaryLogic::createNo()->lazyOr($this->getTypes(), static fn (Type $innerType) => $innerType->accepts($type, $strictTypes));
+		$result = AcceptsResult::createNo();
+		foreach ($this->types as $innerType) {
+			$result = $result->or($innerType->acceptsWithReason($type, $strictTypes));
+		}
 		if ($result->yes()) {
 			return $result;
 		}
 
 		if ($type instanceof TemplateUnionType) {
-			return $result->or($type->isAcceptedBy($this, $strictTypes));
+			return $result->or($type->isAcceptedWithReasonBy($this, $strictTypes));
 		}
 
 		return $result;
@@ -194,7 +202,12 @@ class UnionType implements CompoundType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return TrinaryLogic::lazyExtremeIdentity($this->getTypes(), static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes));
+		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
+	}
+
+	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	{
+		return AcceptsResult::extremeIdentity(...array_map(static fn (Type $innerType) => $acceptingType->acceptsWithReason($innerType, $strictTypes), $this->types));
 	}
 
 	public function equals(Type $type): bool

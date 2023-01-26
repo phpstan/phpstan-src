@@ -510,6 +510,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Property Bug3311b\Foo::$bar (list<string>) does not accept non-empty-array<int<0, max>, string>.',
 				16,
+				'non-empty-array<int<0, max>, string> might not be a list.',
 			],
 		]);
 	}

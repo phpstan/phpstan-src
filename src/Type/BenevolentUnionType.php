@@ -82,7 +82,17 @@ class BenevolentUnionType extends UnionType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return TrinaryLogic::createNo()->lazyOr($this->getTypes(), static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes));
+		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
+	}
+
+	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	{
+		$result = AcceptsResult::createNo();
+		foreach ($this->getTypes() as $innerType) {
+			$result = $result->or($acceptingType->acceptsWithReason($innerType, $strictTypes));
+		}
+
+		return $result;
 	}
 
 	public function inferTemplateTypes(Type $receivedType): TemplateTypeMap

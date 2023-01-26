@@ -45,19 +45,29 @@ class StrictMixedType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
+		return AcceptsResult::createYes();
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
+		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
+	}
+
+	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	{
 		if ($acceptingType instanceof self) {
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 		if ($acceptingType instanceof MixedType && !$acceptingType instanceof TemplateMixedType) {
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 
-		return TrinaryLogic::createMaybe();
+		return AcceptsResult::createMaybe();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

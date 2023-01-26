@@ -11,6 +11,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
@@ -98,8 +99,13 @@ class GenericObjectType extends ObjectType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
 		return $this->isSuperTypeOfInternal($type, true);
@@ -111,12 +117,12 @@ class GenericObjectType extends ObjectType
 			return $type->isSubTypeOf($this);
 		}
 
-		return $this->isSuperTypeOfInternal($type, false);
+		return $this->isSuperTypeOfInternal($type, false)->result;
 	}
 
-	private function isSuperTypeOfInternal(Type $type, bool $acceptsContext): TrinaryLogic
+	private function isSuperTypeOfInternal(Type $type, bool $acceptsContext): AcceptsResult
 	{
-		$nakedSuperTypeOf = parent::isSuperTypeOf($type);
+		$nakedSuperTypeOf = new AcceptsResult(parent::isSuperTypeOf($type), []);
 		if ($nakedSuperTypeOf->no()) {
 			return $nakedSuperTypeOf;
 		}
@@ -134,11 +140,11 @@ class GenericObjectType extends ObjectType
 				return $nakedSuperTypeOf;
 			}
 
-			return $nakedSuperTypeOf->and(TrinaryLogic::createMaybe());
+			return $nakedSuperTypeOf->and(AcceptsResult::createMaybe());
 		}
 
 		if (count($this->types) !== count($ancestor->types)) {
-			return TrinaryLogic::createNo();
+			return AcceptsResult::createNo();
 		}
 
 		$classReflection = $this->getClassReflection();
@@ -162,14 +168,19 @@ class GenericObjectType extends ObjectType
 				throw new ShouldNotHappenException();
 			}
 
-			$results[] = $templateType->isValidVariance($this->types[$i], $ancestor->types[$i]);
+			$results[] = $templateType->isValidVarianceWithReason($this->types[$i], $ancestor->types[$i]);
 		}
 
 		if (count($results) === 0) {
 			return $nakedSuperTypeOf;
 		}
 
-		return $nakedSuperTypeOf->and(...$results);
+		$result = AcceptsResult::createYes();
+		foreach ($results as $innerResult) {
+			$result = $result->and($innerResult);
+		}
+
+		return $result;
 	}
 
 	public function getClassReflection(): ?ClassReflection

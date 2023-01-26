@@ -8,6 +8,7 @@ use PHPStan\Reflection\Php\EnumPropertyReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\GeneralizePrecision;
@@ -54,7 +55,12 @@ class EnumCaseObjectType extends ObjectType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
-		return $this->isSuperTypeOf($type);
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
+		return new AcceptsResult($this->isSuperTypeOf($type), []);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

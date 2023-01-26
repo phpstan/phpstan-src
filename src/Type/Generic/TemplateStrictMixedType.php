@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
@@ -36,7 +37,12 @@ final class TemplateStrictMixedType extends StrictMixedType implements TemplateT
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return $this->isSubTypeOf($acceptingType);
+		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
+	}
+
+	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	{
+		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
 	}
 
 }

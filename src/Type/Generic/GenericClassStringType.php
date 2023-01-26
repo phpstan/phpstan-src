@@ -4,6 +4,7 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -46,15 +47,15 @@ class GenericClassStringType extends ClassStringType
 		return sprintf('%s<%s>', parent::describe($level), $this->type->describe($level));
 	}
 
-	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
 	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
 		if ($type instanceof ConstantStringType) {
 			if (!$type->isClassStringType()->yes()) {
-				return TrinaryLogic::createNo();
+				return AcceptsResult::createNo();
 			}
 
 			$objectType = new ObjectType($type->getValue());
@@ -63,12 +64,12 @@ class GenericClassStringType extends ClassStringType
 		} elseif ($type instanceof ClassStringType) {
 			$objectType = new ObjectWithoutClassType();
 		} elseif ($type instanceof StringType) {
-			return TrinaryLogic::createMaybe();
+			return AcceptsResult::createMaybe();
 		} else {
-			return TrinaryLogic::createNo();
+			return AcceptsResult::createNo();
 		}
 
-		return $this->type->accepts($objectType, $strictTypes);
+		return $this->type->acceptsWithReason($objectType, $strictTypes);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

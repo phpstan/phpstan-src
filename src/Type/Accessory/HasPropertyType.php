@@ -5,6 +5,7 @@ namespace PHPStan\Type\Accessory;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntersectionType;
@@ -57,11 +58,16 @@ class HasPropertyType implements AccessoryType, CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return TrinaryLogic::createFromBoolean($this->equals($type));
+		return AcceptsResult::createFromBoolean($this->equals($type));
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -86,7 +92,12 @@ class HasPropertyType implements AccessoryType, CompoundType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return $this->isSubTypeOf($acceptingType);
+		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
+	}
+
+	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	{
+		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
 	}
 
 	public function equals(Type $type): bool

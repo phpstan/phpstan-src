@@ -59,7 +59,8 @@ class TypesAssignedToPropertiesRule implements Rule
 		$scope = $propertyReflection->getScope();
 		$assignedValueType = $scope->getType($assignedExpr);
 
-		if (!$this->ruleLevelHelper->accepts($propertyType, $assignedValueType, $scope->isDeclareStrictTypes())) {
+		$accepts = $this->ruleLevelHelper->acceptsWithReason($propertyType, $assignedValueType, $scope->isDeclareStrictTypes());
+		if (!$accepts->result) {
 			$propertyDescription = $this->propertyDescriptor->describePropertyByName($propertyReflection, $propertyReflection->getName());
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($propertyType, $assignedValueType);
 
@@ -69,7 +70,7 @@ class TypesAssignedToPropertiesRule implements Rule
 					$propertyDescription,
 					$propertyType->describe($verbosityLevel),
 					$assignedValueType->describe($verbosityLevel),
-				))->build(),
+				))->acceptsReasonsTip($accepts->reasons)->build(),
 			];
 		}
 

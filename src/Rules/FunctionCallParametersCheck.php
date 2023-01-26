@@ -252,21 +252,23 @@ class FunctionCallParametersCheck
 			if ($this->checkArgumentTypes) {
 				$parameterType = TypeUtils::resolveLateResolvableTypes($parameter->getType());
 
-				if (!$parameter->passedByReference()->createsNewVariable()
-					&& !$this->ruleLevelHelper->accepts($parameterType, $argumentValueType, $scope->isDeclareStrictTypes())
-				) {
-					$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType, $argumentValueType);
-					$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						$messages[6],
-						$argumentName === null ? sprintf(
-							'#%d %s',
-							$i + 1,
-							$parameterDescription,
-						) : $parameterDescription,
-						$parameterType->describe($verbosityLevel),
-						$argumentValueType->describe($verbosityLevel),
-					))->line($argumentLine)->build();
+				if (!$parameter->passedByReference()->createsNewVariable()) {
+					$accepts = $this->ruleLevelHelper->acceptsWithReason($parameterType, $argumentValueType, $scope->isDeclareStrictTypes());
+
+					if (!$accepts->result) {
+						$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType, $argumentValueType);
+						$parameterDescription = sprintf('%s$%s', $parameter->isVariadic() ? '...' : '', $parameter->getName());
+						$errors[] = RuleErrorBuilder::message(sprintf(
+							$messages[6],
+							$argumentName === null ? sprintf(
+								'#%d %s',
+								$i + 1,
+								$parameterDescription,
+							) : $parameterDescription,
+							$parameterType->describe($verbosityLevel),
+							$argumentValueType->describe($verbosityLevel),
+						))->line($argumentLine)->acceptsReasonsTip($accepts->reasons)->build();
+					}
 				}
 
 				if ($this->checkUnresolvableParameterTypes

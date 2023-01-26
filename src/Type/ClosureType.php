@@ -104,15 +104,20 @@ class ClosureType implements TypeWithClassName, ParametersAcceptor
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
 		if (!$type instanceof ClosureType) {
-			return $this->objectType->accepts($type, $strictTypes);
+			return $this->objectType->acceptsWithReason($type, $strictTypes);
 		}
 
-		return $this->isSuperTypeOfInternal($type, true);
+		return new AcceptsResult($this->isSuperTypeOfInternal($type, true), []);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

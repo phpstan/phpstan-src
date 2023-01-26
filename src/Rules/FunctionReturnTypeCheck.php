@@ -93,13 +93,14 @@ class FunctionReturnTypeCheck
 			];
 		}
 
-		if (!$this->ruleLevelHelper->accepts($returnType, $returnValueType, $scope->isDeclareStrictTypes())) {
+		$accepts = $this->ruleLevelHelper->acceptsWithReason($returnType, $returnValueType, $scope->isDeclareStrictTypes());
+		if (!$accepts->result) {
 			return [
 				RuleErrorBuilder::message(sprintf(
 					$typeMismatchMessage,
 					$returnType->describe($verbosityLevel),
 					$returnValueType->describe($verbosityLevel),
-				))->line($returnNode->getLine())->build(),
+				))->line($returnNode->getLine())->acceptsReasonsTip($accepts->reasons)->build(),
 			];
 		}
 

@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Type;
 
@@ -12,13 +12,13 @@ use PHPStan\Type\Type;
 class TemplateTypeArgumentStrategy implements TemplateTypeStrategy
 {
 
-	public function accepts(TemplateType $left, Type $right, bool $strictTypes): TrinaryLogic
+	public function accepts(TemplateType $left, Type $right, bool $strictTypes): AcceptsResult
 	{
 		if ($right instanceof CompoundType) {
-			$accepts = $right->isAcceptedBy($left, $strictTypes);
+			$accepts = $right->isAcceptedWithReasonBy($left, $strictTypes);
 		} else {
-			$accepts = $left->getBound()->accepts($right, $strictTypes)
-				->and(TrinaryLogic::createMaybe());
+			$accepts = $left->getBound()->acceptsWithReason($right, $strictTypes)
+				->and(AcceptsResult::createMaybe());
 		}
 
 		return $accepts;

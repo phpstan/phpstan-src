@@ -135,7 +135,15 @@ class TemplateTypeVariance
 		}
 
 		if ($this->invariant()) {
-			return AcceptsResult::createFromBoolean($a->equals($b));
+			$result = $a->equals($b);
+			$reasons = [];
+			if (!$result) {
+				if ($a->isSuperTypeOf($b)->yes()) {
+					$reasons[] = 'See: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>';
+				}
+			}
+
+			return new AcceptsResult(TrinaryLogic::createFromBoolean($result), $reasons);
 		}
 
 		if ($this->covariant()) {

@@ -439,14 +439,17 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				'Method Bug4590\\Controller::test1() should return Bug4590\\OkResponse<array<string, string>> but returns Bug4590\\OkResponse<array{ok: string}>.',
 				39,
+				'See: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 			[
 				'Method Bug4590\\Controller::test2() should return Bug4590\\OkResponse<array<int, string>> but returns Bug4590\\OkResponse<array{string}>.',
 				47,
+				'See: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 			[
 				'Method Bug4590\\Controller::test3() should return Bug4590\\OkResponse<array<string>> but returns Bug4590\\OkResponse<array{string}>.',
 				55,
+				'See: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 		]);
 	}

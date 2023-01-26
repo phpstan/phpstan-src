@@ -2117,6 +2117,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $c of method GenericObjectLowerBound\Foo::doFoo() expects GenericObjectLowerBound\Collection<GenericObjectLowerBound\Cat|GenericObjectLowerBound\Dog>, GenericObjectLowerBound\Collection<GenericObjectLowerBound\Dog> given.',
 				48,
+				'See: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 		]);
 	}
@@ -2151,14 +2152,17 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
 				68,
+				'See: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 			[
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
 				72,
+				'See: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 			[
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, literal-string> given.',
 				85,
+				'See: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 		]);
 	}
@@ -2526,6 +2530,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $param of method GenericVarianceCall\Foo::invariant() expects GenericVarianceCall\Invariant<GenericVarianceCall\B>, GenericVarianceCall\Invariant<GenericVarianceCall\C> given.',
 				53,
+				'See: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 			[
 				'Parameter #1 $param of method GenericVarianceCall\Foo::covariant() expects GenericVarianceCall\Covariant<GenericVarianceCall\B>, GenericVarianceCall\Covariant<GenericVarianceCall\A> given.',

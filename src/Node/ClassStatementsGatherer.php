@@ -16,8 +16,11 @@ use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ThisType;
+use function array_key_exists;
 use function count;
 use function in_array;
 
@@ -56,6 +59,7 @@ class ClassStatementsGatherer
 	public function __construct(
 		private ClassReflection $classReflection,
 		callable $nodeCallback,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 		$this->nodeCallback = $nodeCallback;
@@ -158,6 +162,36 @@ class ClassStatementsGatherer
 			$this->tryToApplyPropertyReads($node, $scope);
 			return;
 		}
+
+		if ($node instanceof Expr\FuncCall && $node->name instanceof Node\Name && $this->reflectionProvider->hasFunction($node->name, $scope)) {
+			$function = $this->reflectionProvider->getFunction($node->name, $scope);
+			$acceptor = ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$node->getArgs(),
+				$function->getVariants(),
+			);
+			$parameters = $acceptor->getParameters();
+
+			foreach ($node->getArgs() as $i => $arg) {
+				if (!$arg->value instanceof PropertyFetch) {
+					continue;
+				}
+
+				if (!array_key_exists($i, $parameters)) {
+					continue;
+				}
+
+				if (!$parameters[$i]->passedByReference()->createsNewVariable()) {
+					continue;
+				}
+
+				$this->propertyUsages[] = new PropertyWrite(
+					$arg->value,
+					$scope,
+				);
+			}
+		}
+
 		if ($node instanceof Array_ && count($node->items) === 2) {
 			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
 			return;

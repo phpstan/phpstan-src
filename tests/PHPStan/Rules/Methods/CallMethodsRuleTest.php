@@ -33,7 +33,7 @@ class CallMethodsRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed, $this->checkImplicitMixed, true, false);
+		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, $this->checkNullables, $this->checkThisOnly, $this->checkUnionTypes, $this->checkExplicitMixed, $this->checkImplicitMixed, false);
 		return new CallMethodsRule(
 			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
 			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion($this->phpVersion), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, true),
@@ -2729,6 +2729,25 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/reflection-class-issue-8679.php'], []);
+	}
+
+	public function testNonEmptyArray(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/non-empty-array.php'], [
+			[
+				'Parameter #1 $nonEmpty of method AcceptNonEmptyArray\Foo::requireNonEmpty() expects non-empty-array<int>, array<int> given.',
+				15,
+				'array<int> might be empty.',
+			],
+			[
+				'Parameter #1 $nonEmpty of method AcceptNonEmptyArray\Foo::requireNonEmpty() expects non-empty-array<int>, array{} given.',
+				17,
+				'array{} is empty.',
+			],
+		]);
 	}
 
 }

@@ -87,7 +87,7 @@ class UnionType implements CompoundType
 	/**
 	 * @return Type[]
 	 */
-	public function getSortedTypes(): array
+	private function getSortedTypes(): array
 	{
 		if ($this->sortedTypes) {
 			return $this->types;

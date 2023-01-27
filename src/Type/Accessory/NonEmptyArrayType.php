@@ -21,6 +21,7 @@ use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 class NonEmptyArrayType implements CompoundType, AccessoryType
 {
@@ -74,7 +75,19 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($type->isArray()->and($type->isIterableAtLeastOnce()), []);
+		$isArray = $type->isArray();
+		$isIterableAtLeastOnce = $type->isIterableAtLeastOnce();
+		$reasons = [];
+		if ($isArray->yes() && !$isIterableAtLeastOnce->yes()) {
+			$verbosity = VerbosityLevel::getRecommendedLevelByType($this, $type);
+			$reasons[] = sprintf(
+				'%s %s empty.',
+				$type->describe($verbosity),
+				$isIterableAtLeastOnce->no() ? 'is' : 'might be',
+			);
+		}
+
+		return new AcceptsResult($isArray->and($isIterableAtLeastOnce), $reasons);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

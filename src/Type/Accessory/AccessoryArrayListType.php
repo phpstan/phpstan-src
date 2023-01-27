@@ -22,6 +22,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function sprintf;
 
 /** @api */
 class AccessoryArrayListType implements CompoundType, AccessoryType
@@ -77,7 +78,19 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return new AcceptsResult($type->isArray()->and($type->isList()), []);
+		$isArray = $type->isArray();
+		$isList = $type->isList();
+		$reasons = [];
+		if ($isArray->yes() && !$isList->yes()) {
+			$verbosity = VerbosityLevel::getRecommendedLevelByType($this, $type);
+			$reasons[] = sprintf(
+				'%s %s a list.',
+				$type->describe($verbosity),
+				$isList->no() ? 'is not' : 'might not be',
+			);
+		}
+
+		return new AcceptsResult($isArray->and($isList), $reasons);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

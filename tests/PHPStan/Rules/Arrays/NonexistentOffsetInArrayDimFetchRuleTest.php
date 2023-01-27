@@ -19,7 +19,7 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, false, true, false);
+		$ruleLevelHelper = new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, false, false);
 
 		return new NonexistentOffsetInArrayDimFetchRule(
 			$ruleLevelHelper,

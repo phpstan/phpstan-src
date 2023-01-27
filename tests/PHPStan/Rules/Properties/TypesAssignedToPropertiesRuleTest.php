@@ -17,7 +17,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new TypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, false, true, false), new PropertyDescriptor(), new PropertyReflectionFinder());
+		return new TypesAssignedToPropertiesRule(new RuleLevelHelper($this->createReflectionProvider(), true, false, true, $this->checkExplicitMixed, false, false), new PropertyDescriptor(), new PropertyReflectionFinder());
 	}
 
 	public function testTypesAssignedToProperties(): void
@@ -515,7 +515,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Property Bug3311b\Foo::$bar (list<string>) does not accept non-empty-array<int<0, max>, string>.',
 				16,
-				'non-empty-array<int<0, max>, string> might not be a list.',
+				'array<int<0, max>, string> might not be a list.',
 			],
 		]);
 	}

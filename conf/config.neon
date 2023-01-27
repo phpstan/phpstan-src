@@ -83,7 +83,6 @@ parameters:
 	checkThisOnly: true
 	checkUnionTypes: false
 	checkBenevolentUnionTypes: false
-	checkListType: false
 	checkExplicitMixedMissingReturn: false
 	checkPhpDocMissingReturn: false
 	checkPhpDocMethodSignatures: false
@@ -309,7 +308,6 @@ parametersSchema:
 	checkThisOnly: bool()
 	checkUnionTypes: bool()
 	checkBenevolentUnionTypes: bool()
-	checkListType: bool()
 	checkExplicitMixedMissingReturn: bool()
 	checkPhpDocMissingReturn: bool()
 	checkPhpDocMethodSignatures: bool()
@@ -1106,7 +1104,6 @@ services:
 			checkUnionTypes: %checkUnionTypes%
 			checkExplicitMixed: %checkExplicitMixed%
 			checkImplicitMixed: %checkImplicitMixed%
-			checkListType: %checkListType%
 			checkBenevolentUnionTypes: %checkBenevolentUnionTypes%
 
 	-

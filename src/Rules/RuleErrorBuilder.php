@@ -130,7 +130,7 @@ class RuleErrorBuilder
 			return $this->tip($reasons[0]);
 		}
 
-		return $this->tip(implode("\n", array_map(static fn (string $reason) => sprintf('* %s', $reason), $reasons)));
+		return $this->tip(implode("\n", array_map(static fn (string $reason) => sprintf('• %s', $reason), $reasons)));
 	}
 
 	public function identifier(string $identifier): self

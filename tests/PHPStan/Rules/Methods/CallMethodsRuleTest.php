@@ -477,6 +477,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $members of method Test\\ParameterTypeCheckVerbosity::doBar() expects array<array{id: string, code: string}>, array<array{code: string}> given.',
 				1589,
+				"Array does not have offset 'id'.",
 			],
 			[
 				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, 123 given.',
@@ -796,6 +797,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $members of method Test\\ParameterTypeCheckVerbosity::doBar() expects array<array{id: string, code: string}>, array<array{code: string}> given.',
 				1589,
+				"Array does not have offset 'id'.",
 			],
 			[
 				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, 123 given.',
@@ -2539,6 +2541,11 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $param of method GenericVarianceCall\Foo::contravariant() expects GenericVarianceCall\Contravariant<GenericVarianceCall\B>, GenericVarianceCall\Contravariant<GenericVarianceCall\C> given.',
 				83,
+			],
+			[
+				'Parameter #1 $param of method GenericVarianceCall\Foo::invariantArray() expects array{GenericVarianceCall\Invariant<GenericVarianceCall\B>}, array{GenericVarianceCall\Invariant<GenericVarianceCall\C>} given.',
+				97,
+				'Offset 0 (GenericVarianceCall\Invariant<GenericVarianceCall\B>) does not accept type GenericVarianceCall\Invariant<GenericVarianceCall\C>: Template type T on class GenericVarianceCall\Invariant is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 		]);
 	}

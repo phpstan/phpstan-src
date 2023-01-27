@@ -322,10 +322,12 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Property Bug6286\HelloWorld::$details (array{name: string, age: int}) does not accept array{name: string, age: \'Forty-two\'}.',
 				19,
+				"Offset 'age' (int) does not accept type string.",
 			],
 			[
 				"Property Bug6286\HelloWorld::\$nestedDetails (array<array{name: string, age: int}>) does not accept non-empty-array<array{name: string, age: 'Eleventy-one'|int}>.",
 				22,
+				"Offset 'age' (int) does not accept type int|string.",
 			],
 		]);
 	}
@@ -460,14 +462,17 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Property Bug6356b\HelloWorld2::$details (array{name: string, age: int}) does not accept array{name: string, age: \'Forty-two\'}.',
 				19,
+				"Offset 'age' (int) does not accept type string.",
 			],
 			[
 				'Property Bug6356b\HelloWorld2::$nestedDetails (array<array{name: string, age: int}>) does not accept non-empty-array<array{name: string, age: \'Eleventy-one\'|int}>.',
 				21,
+				"Offset 'age' (int) does not accept type int|string.",
 			],
 			[
 				'Property Bug6356b\HelloWorld2::$nestedDetails (array<array{name: string, age: int}>) does not accept non-empty-array<array{name: string, age: \'Twelve\'|int}>.',
 				26,
+				"Offset 'age' (int) does not accept type int|string.",
 			],
 		]);
 	}

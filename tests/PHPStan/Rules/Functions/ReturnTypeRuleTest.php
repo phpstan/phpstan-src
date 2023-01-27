@@ -154,10 +154,14 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				'Function Bug3801\do_foo() should return array{bool, null}|array{null, bool} but returns array{false, true}.',
 				17,
+				'• Type #1 from the union: Offset 1 (null) does not accept type true.
+• Type #2 from the union: Offset 0 (null) does not accept type false.',
 			],
 			[
 				'Function Bug3801\do_foo() should return array{bool, null}|array{null, bool} but returns array{false, false}.',
 				21,
+				'• Type #1 from the union: Offset 1 (null) does not accept type false.
+• Type #2 from the union: Offset 0 (null) does not accept type false.',
 			],
 		]);
 	}

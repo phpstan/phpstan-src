@@ -515,6 +515,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $params of static method TemplateTypeInOneBranchOfConditional\DriverManager::getConnection() expects array{wrapperClass?: class-string<TemplateTypeInOneBranchOfConditional\Connection>}, array{wrapperClass: \'stdClass\'} given.',
 				27,
+				"Offset 'wrapperClass' (class-string<TemplateTypeInOneBranchOfConditional\Connection>) does not accept type string.",
 			],
 			[
 				'Unable to resolve the template type T in call to method static method TemplateTypeInOneBranchOfConditional\DriverManager::getConnection()',

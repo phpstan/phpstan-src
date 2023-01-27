@@ -25,4 +25,17 @@ class RuleLevelHelperAcceptsResult
 		);
 	}
 
+	/**
+	 * @param callable(string): string $cb
+	 */
+	public function decorateReasons(callable $cb): self
+	{
+		$reasons = [];
+		foreach ($this->reasons as $reason) {
+			$reasons[] = $cb($reason);
+		}
+
+		return new self($this->result, $reasons);
+	}
+
 }

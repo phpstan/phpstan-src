@@ -124,8 +124,8 @@ class RuleLevelHelper
 		}
 		if ($acceptingType instanceof UnionType) {
 			$reasons = [];
-			foreach ($acceptingType->getTypes() as $innerType) {
-				$accepts = self::acceptsWithReason($innerType, $acceptedType, $strictTypes);
+			foreach ($acceptingType->getSortedTypes() as $i => $innerType) {
+				$accepts = self::acceptsWithReason($innerType, $acceptedType, $strictTypes)->decorateReasons(static fn (string $reason) => sprintf('Type #%d from the union: %s', $i + 1, $reason));
 				if ($accepts->result) {
 					return $accepts;
 				}

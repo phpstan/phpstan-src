@@ -737,6 +737,8 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				'Method TaggedUnionReturnCheck\HelloWorld::sayHello() should return array{updated: false, id: null}|array{updated: true, id: int} but returns array{updated: false, id: 5}.',
 				12,
+				"• Type #1 from the union: Offset 'id' (null) does not accept type int.
+• Type #2 from the union: Offset 'updated' (true) does not accept type false.",
 			],
 		]);
 	}

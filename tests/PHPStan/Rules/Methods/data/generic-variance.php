@@ -82,4 +82,18 @@ class Foo
 		$contravariantC = new Contravariant();
 		$this->contravariant($contravariantC);
 	}
+
+	/**
+	 * @param array{Invariant<B>} $param
+	 */
+	public function invariantArray(array $param): void
+	{
+	}
+
+	public function testInvariantArray(): void
+	{
+		/** @var Invariant<C> $invariantC */
+		$invariantC = new Invariant();
+		$this->invariantArray([$invariantC]);
+	}
 }

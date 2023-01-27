@@ -87,7 +87,7 @@ class UnionType implements CompoundType
 	/**
 	 * @return Type[]
 	 */
-	private function getSortedTypes(): array
+	public function getSortedTypes(): array
 	{
 		if ($this->sortedTypes) {
 			return $this->types;
@@ -156,8 +156,8 @@ class UnionType implements CompoundType
 		}
 
 		$result = AcceptsResult::createNo();
-		foreach ($this->types as $innerType) {
-			$result = $result->or($innerType->acceptsWithReason($type, $strictTypes));
+		foreach ($this->getSortedTypes() as $i => $innerType) {
+			$result = $result->or($innerType->acceptsWithReason($type, $strictTypes)->decorateReasons(static fn (string $reason) => sprintf('Type #%d from the union: %s', $i + 1, $reason)));
 		}
 		if ($result->yes()) {
 			return $result;

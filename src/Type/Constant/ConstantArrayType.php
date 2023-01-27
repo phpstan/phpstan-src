@@ -286,7 +286,11 @@ class ConstantArrayType extends ArrayType implements ConstantType
 		$result = AcceptsResult::createYes();
 		foreach ($this->keyTypes as $i => $keyType) {
 			$valueType = $this->valueTypes[$i];
-			$hasOffset = new AcceptsResult($type->hasOffsetValueType($keyType), []);
+			$hasOffsetValueType = $type->hasOffsetValueType($keyType);
+			$hasOffset = new AcceptsResult(
+				$hasOffsetValueType,
+				$hasOffsetValueType->yes() || !$type->isConstantArray()->yes() ? [] : [sprintf('Array %s have offset %s.', $hasOffsetValueType->no() ? 'does not' : 'might not', $keyType->describe(VerbosityLevel::value()))],
+			);
 			if ($hasOffset->no()) {
 				if ($this->isOptionalKey($i)) {
 					continue;
@@ -299,7 +303,26 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 			$result = $result->and($hasOffset);
 			$otherValueType = $type->getOffsetValueType($keyType);
-			$acceptsValue = $valueType->acceptsWithReason($otherValueType, $strictTypes);
+			$verbosity = VerbosityLevel::getRecommendedLevelByType($valueType, $otherValueType);
+			$acceptsValue = $valueType->acceptsWithReason($otherValueType, $strictTypes)->decorateReasons(
+				static fn (string $reason) => sprintf(
+					'Offset %s (%s) does not accept type %s: %s',
+					$keyType->describe(VerbosityLevel::value()),
+					$valueType->describe($verbosity),
+					$otherValueType->describe($verbosity),
+					$reason,
+				),
+			);
+			if (!$acceptsValue->yes() && count($acceptsValue->reasons) === 0 && $type->isConstantArray()->yes()) {
+				$acceptsValue = new AcceptsResult($acceptsValue->result, [
+					sprintf(
+						'Offset %s (%s) does not accept type %s.',
+						$keyType->describe(VerbosityLevel::value()),
+						$valueType->describe($verbosity),
+						$otherValueType->describe($verbosity),
+					),
+				]);
+			}
 			if ($acceptsValue->no()) {
 				return $acceptsValue;
 			}

@@ -15,6 +15,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
+use PHPStan\Parser\CallLikePropertyFetchArgVisitor;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -163,35 +164,6 @@ class ClassStatementsGatherer
 			return;
 		}
 
-		if ($node instanceof Expr\FuncCall && $node->name instanceof Node\Name && $this->reflectionProvider->hasFunction($node->name, $scope)) {
-			$function = $this->reflectionProvider->getFunction($node->name, $scope);
-			$acceptor = ParametersAcceptorSelector::selectFromArgs(
-				$scope,
-				$node->getArgs(),
-				$function->getVariants(),
-			);
-			$parameters = $acceptor->getParameters();
-
-			foreach ($node->getArgs() as $i => $arg) {
-				if (!$arg->value instanceof PropertyFetch) {
-					continue;
-				}
-
-				if (!array_key_exists($i, $parameters)) {
-					continue;
-				}
-
-				if (!$parameters[$i]->passedByReference()->createsNewVariable()) {
-					continue;
-				}
-
-				$this->propertyUsages[] = new PropertyWrite(
-					$arg->value,
-					$scope,
-				);
-			}
-		}
-
 		if ($node instanceof Array_ && count($node->items) === 2) {
 			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node, $scope);
 			return;
@@ -240,6 +212,48 @@ class ClassStatementsGatherer
 		}
 		if (!$node instanceof PropertyFetch && !$node instanceof StaticPropertyFetch) {
 			return;
+		}
+
+		if ($node instanceof PropertyFetch && $node->hasAttribute(CallLikePropertyFetchArgVisitor::ATTRIBUTE_NAME)) {
+			$callLike = $node->getAttribute(CallLikePropertyFetchArgVisitor::ATTRIBUTE_NAME);
+
+			if ($callLike instanceof Expr\FuncCall && $callLike->name instanceof Node\Name && $this->reflectionProvider->hasFunction($callLike->name, $scope)) {
+				$function = $this->reflectionProvider->getFunction($callLike->name, $scope);
+				$acceptor = ParametersAcceptorSelector::selectFromArgs(
+					$scope,
+					$callLike->getArgs(),
+					$function->getVariants(),
+				);
+				$parameters = $acceptor->getParameters();
+
+				foreach ($callLike->getArgs() as $i => $arg) {
+					if (!$arg->value instanceof PropertyFetch) {
+						continue;
+					}
+
+					if ($arg->value !== $node) {
+						continue;
+					}
+
+					if (!array_key_exists($i, $parameters) || !$parameters[$i]->passedByReference()->createsNewVariable()) {
+						$this->propertyUsages[] = new PropertyRead(
+							$arg->value,
+							$scope,
+						);
+
+						return;
+					}
+
+					$this->propertyUsages[] = new PropertyWrite(
+						$arg->value,
+						$scope,
+					);
+
+					return;
+				}
+
+				return;
+			}
 		}
 
 		$this->propertyUsages[] = new PropertyRead($node, $scope);

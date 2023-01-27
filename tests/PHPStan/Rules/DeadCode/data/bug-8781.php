@@ -33,3 +33,29 @@ class ExecSync
 	}
 }
 
+class OnlyWritten
+{
+	/**
+	 * @var array<mixed>
+	 */
+	private $stdOut;
+
+	/**
+	 * @var string
+	 */
+	private $command;
+
+	/**
+	 * @param string $command
+	 */
+	public function __construct($command)
+	{
+		$this->command = $command;
+	}
+
+	public function run(): void
+	{
+		exec($this->command, $this->stdOut);
+	}
+}
+

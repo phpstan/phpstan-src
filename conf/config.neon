@@ -461,6 +461,11 @@ services:
 			- phpstan.parser.richParserNodeVisitor
 
 	-
+		class: PHPStan\Parser\CallLikePropertyFetchArgVisitor
+		tags:
+			- phpstan.parser.richParserNodeVisitor
+
+	-
 		class: PHPStan\Parser\ClosureArgVisitor
 		tags:
 			- phpstan.parser.richParserNodeVisitor

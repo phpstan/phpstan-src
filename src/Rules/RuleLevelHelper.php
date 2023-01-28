@@ -19,6 +19,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
 use function count;
 use function sprintf;
 use function strpos;
@@ -33,6 +34,7 @@ class RuleLevelHelper
 		private bool $checkUnionTypes,
 		private bool $checkExplicitMixed,
 		private bool $checkImplicitMixed,
+		private bool $newRuleLevelHelper,
 		private bool $checkBenevolentUnionTypes,
 	)
 	{
@@ -105,10 +107,148 @@ class RuleLevelHelper
 
 	public function acceptsWithReason(Type $acceptingType, Type $acceptedType, bool $strictTypes): RuleLevelHelperAcceptsResult
 	{
-		[$acceptedType, $checkForUnion] = $this->transformAcceptedType($acceptingType, $acceptedType);
-		$acceptingType = $this->transformCommonType($acceptingType);
+		if ($this->newRuleLevelHelper) {
+			[$acceptedType, $checkForUnion] = $this->transformAcceptedType($acceptingType, $acceptedType);
+			$acceptingType = $this->transformCommonType($acceptingType);
+
+			$accepts = $acceptingType->acceptsWithReason($acceptedType, $strictTypes);
+
+			return new RuleLevelHelperAcceptsResult(
+				$checkForUnion ? $accepts->yes() : !$accepts->no(),
+				$accepts->reasons,
+			);
+		}
+
+		$checkForUnion = $this->checkUnionTypes;
+
+		if ($this->checkBenevolentUnionTypes) {
+			$traverse = static function (Type $type, callable $traverse) use (&$checkForUnion): Type {
+				if ($type instanceof BenevolentUnionType) {
+					$checkForUnion = true;
+					return new UnionType($type->getTypes());
+				}
+
+				return $traverse($type);
+			};
+
+			$acceptedType = TypeTraverser::map($acceptedType, $traverse);
+		}
+
+		if (
+			$this->checkExplicitMixed
+		) {
+			$traverse = static function (Type $type, callable $traverse): Type {
+				if ($type instanceof TemplateMixedType) {
+					return $type->toStrictMixedType();
+				}
+				if (
+					$type instanceof MixedType
+					&& $type->isExplicitMixed()
+				) {
+					return new StrictMixedType();
+				}
+
+				return $traverse($type);
+			};
+			$acceptingType = TypeTraverser::map($acceptingType, $traverse);
+			$acceptedType = TypeTraverser::map($acceptedType, $traverse);
+		}
+
+		if (
+			$this->checkImplicitMixed
+		) {
+			$traverse = static function (Type $type, callable $traverse): Type {
+				if ($type instanceof TemplateMixedType) {
+					return $type->toStrictMixedType();
+				}
+				if (
+					$type instanceof MixedType
+					&& !$type->isExplicitMixed()
+				) {
+					return new StrictMixedType();
+				}
+
+				return $traverse($type);
+			};
+			$acceptingType = TypeTraverser::map($acceptingType, $traverse);
+			$acceptedType = TypeTraverser::map($acceptedType, $traverse);
+		}
+
+		if (
+			!$this->checkNullables
+			&& !$acceptingType instanceof NullType
+			&& !$acceptedType instanceof NullType
+			&& !$acceptedType instanceof BenevolentUnionType
+		) {
+			$acceptedType = TypeCombinator::removeNull($acceptedType);
+		}
 
 		$accepts = $acceptingType->acceptsWithReason($acceptedType, $strictTypes);
+		if ($accepts->yes()) {
+			return new RuleLevelHelperAcceptsResult(true, $accepts->reasons);
+		}
+		if ($acceptingType instanceof UnionType) {
+			$reasons = [];
+			foreach ($acceptingType->getTypes() as $innerType) {
+				$accepts = self::acceptsWithReason($innerType, $acceptedType, $strictTypes);
+				if ($accepts->result) {
+					return $accepts;
+				}
+
+				$reasons = array_merge($reasons, $accepts->reasons);
+			}
+
+			return new RuleLevelHelperAcceptsResult(false, $reasons);
+		}
+
+		if (
+			$acceptedType->isArray()->yes()
+			&& $acceptingType->isArray()->yes()
+			&& (
+				$acceptedType->isConstantArray()->no()
+				|| !$acceptedType->isIterableAtLeastOnce()->no()
+			)
+			&& $acceptingType->isConstantArray()->no()
+		) {
+			if ($acceptingType->isIterableAtLeastOnce()->yes() && !$acceptedType->isIterableAtLeastOnce()->yes()) {
+				$verbosity = VerbosityLevel::getRecommendedLevelByType($acceptingType, $acceptedType);
+				return new RuleLevelHelperAcceptsResult(false, [
+					sprintf(
+						'%s %s empty.',
+						$acceptedType->describe($verbosity),
+						$acceptedType->isIterableAtLeastOnce()->no() ? 'is' : 'might be',
+					),
+				]);
+			}
+
+			if (
+				$acceptingType->isList()->yes()
+				&& !$acceptedType->isList()->yes()
+			) {
+				$report = $checkForUnion || $acceptedType->isList()->no();
+
+				if ($report) {
+					$verbosity = VerbosityLevel::getRecommendedLevelByType($acceptingType, $acceptedType);
+					return new RuleLevelHelperAcceptsResult(false, [
+						sprintf(
+							'%s %s a list.',
+							$acceptedType->describe($verbosity),
+							$acceptedType->isList()->no() ? 'is not' : 'might not be',
+						),
+					]);
+				}
+			}
+
+			return self::acceptsWithReason(
+				$acceptingType->getIterableKeyType(),
+				$acceptedType->getIterableKeyType(),
+				$strictTypes,
+			)->and(self::acceptsWithReason(
+				$acceptingType->getIterableValueType(),
+				$acceptedType->getIterableValueType(),
+				$strictTypes,
+			));
+		}
 
 		return new RuleLevelHelperAcceptsResult(
 			$checkForUnion ? $accepts->yes() : !$accepts->no(),

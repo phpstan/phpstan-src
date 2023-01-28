@@ -23,7 +23,7 @@ class CallMethodsRuleNoBleedingEdgeTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = $this->createReflectionProvider();
-		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, $this->checkExplicitMixed, false, false);
+		$ruleLevelHelper = new RuleLevelHelper($reflectionProvider, true, false, true, $this->checkExplicitMixed, false, true, false);
 		return new CallMethodsRule(
 			new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
 			new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new PhpVersion(PHP_VERSION_ID), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), true, true, true, true, false),

@@ -16,7 +16,7 @@ class ReadingWriteOnlyPropertiesRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new ReadingWriteOnlyPropertiesRule(new PropertyDescriptor(), new PropertyReflectionFinder(), new RuleLevelHelper($this->createReflectionProvider(), true, $this->checkThisOnly, true, false, false, false), $this->checkThisOnly);
+		return new ReadingWriteOnlyPropertiesRule(new PropertyDescriptor(), new PropertyReflectionFinder(), new RuleLevelHelper($this->createReflectionProvider(), true, $this->checkThisOnly, true, false, false, true, false), $this->checkThisOnly);
 	}
 
 	public function testPropertyMustBeReadableInAssignOp(): void

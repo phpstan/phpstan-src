@@ -15,7 +15,7 @@ class ImplodeFunctionRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		$broker = $this->createReflectionProvider();
-		return new ImplodeFunctionRule($broker, new RuleLevelHelper($broker, true, false, true, false, false, false));
+		return new ImplodeFunctionRule($broker, new RuleLevelHelper($broker, true, false, true, false, false, true, false));
 	}
 
 	public function testFile(): void

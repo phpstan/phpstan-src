@@ -17,7 +17,7 @@ class AppendedArrayItemTypeRuleTest extends RuleTestCase
 	{
 		return new AppendedArrayItemTypeRule(
 			new PropertyReflectionFinder(),
-			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, false),
+			new RuleLevelHelper($this->createReflectionProvider(), true, false, true, false, false, true, false),
 		);
 	}
 

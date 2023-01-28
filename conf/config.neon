@@ -59,6 +59,7 @@ parameters:
 		disableUnreachableBranchesRules: false
 		varTagType: false
 		closureDefaultParameterTypeRule: false
+		newRuleLevelHelper: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -284,6 +285,7 @@ parametersSchema:
 		disableUnreachableBranchesRules: bool()
 		varTagType: bool()
 		closureDefaultParameterTypeRule: bool()
+		newRuleLevelHelper: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -1104,6 +1106,7 @@ services:
 			checkUnionTypes: %checkUnionTypes%
 			checkExplicitMixed: %checkExplicitMixed%
 			checkImplicitMixed: %checkImplicitMixed%
+			newRuleLevelHelper: %featureToggles.newRuleLevelHelper%
 			checkBenevolentUnionTypes: %checkBenevolentUnionTypes%
 
 	-

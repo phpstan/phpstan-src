@@ -6,6 +6,8 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\CallableType;
+use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\MixedType;
@@ -83,6 +85,28 @@ class RuleLevelHelper
 	{
 		$checkForUnion = $this->checkUnionTypes;
 		$acceptedType = TypeTraverser::map($acceptedType, function (Type $acceptedType, callable $traverse) use ($acceptingType, &$checkForUnion): Type {
+			if ($acceptedType instanceof CallableType) {
+				if ($acceptedType->isCommonCallable()) {
+					return new CallableType(null, null, $acceptedType->isVariadic());
+				}
+
+				return new CallableType(
+					$acceptedType->getParameters(),
+					$traverse($this->transformCommonType($acceptedType->getReturnType())),
+					$acceptedType->isVariadic(),
+				);
+			}
+
+			if ($acceptedType instanceof ClosureType) {
+				return new ClosureType(
+					$acceptedType->getParameters(),
+					$traverse($this->transformCommonType($acceptedType->getReturnType())),
+					$acceptedType->isVariadic(),
+					$acceptedType->getTemplateTypeMap(),
+					$acceptedType->getResolvedTemplateTypeMap(),
+				);
+			}
+
 			if (
 				!$this->checkNullables
 				&& !$acceptingType instanceof NullType

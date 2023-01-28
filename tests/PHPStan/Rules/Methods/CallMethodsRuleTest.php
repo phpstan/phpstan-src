@@ -2750,4 +2750,51 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function dataCallablesWithoutCheckNullables(): iterable
+	{
+		yield [false, false, []];
+		yield [true, false, []];
+
+		$errors = [
+			[
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar() expects callable(float|null): float|null, Closure(float): float given.',
+				25,
+			],
+			[
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBaz() expects Closure(float|null): float|null, Closure(float): float given.',
+				28,
+			],
+			[
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar2() expects callable(float|null): float, Closure(float|null): float|null given.',
+				32,
+			],
+			[
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBaz2() expects Closure(float|null): float, Closure(float|null): float|null given.',
+				35,
+			],
+			[
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar2() expects callable(float|null): float, Closure(float): float given.',
+				45,
+			],
+			[
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBaz2() expects Closure(float|null): float, Closure(float): float given.',
+				48,
+			],
+		];
+		yield [false, true, $errors];
+		yield [true, true, $errors];
+	}
+
+	/**
+	 * @dataProvider dataCallablesWithoutCheckNullables
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testCallablesWithoutCheckNullables(bool $checkNullables, bool $checkUnionTypes, array $expectedErrors): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = $checkNullables;
+		$this->checkUnionTypes = $checkUnionTypes;
+		$this->analyse([__DIR__ . '/data/callables-without-check-nullables.php'], $expectedErrors);
+	}
+
 }

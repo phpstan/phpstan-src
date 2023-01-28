@@ -11,9 +11,12 @@ use PHPStan\File\SimpleRelativePathHelper;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use function array_map;
 use function count;
+use function explode;
 use function getenv;
 use function is_string;
+use function ltrim;
 use function sprintf;
+use function str_contains;
 use function str_replace;
 
 class TableErrorFormatter implements ErrorFormatter
@@ -79,7 +82,16 @@ class TableErrorFormatter implements ErrorFormatter
 				if ($error->getTip() !== null) {
 					$tip = $error->getTip();
 					$tip = str_replace('%configurationFile%', $projectConfigFile, $tip);
-					$message .= "\n💡 " . $tip;
+
+					$message .= "\n";
+					if (str_contains($tip, "\n")) {
+						$lines = explode("\n", $tip);
+						foreach ($lines as $line) {
+							$message .= '💡 ' . ltrim($line, ' •') . "\n";
+						}
+					} else {
+						$message .= '💡 ' . $tip;
+					}
 				}
 				if (is_string($this->editorUrl)) {
 					$editorFile = $error->getTraitFilePath() ?? $error->getFilePath();

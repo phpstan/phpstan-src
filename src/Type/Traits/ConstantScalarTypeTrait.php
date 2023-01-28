@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Traits;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\Type;
@@ -12,15 +13,20 @@ trait ConstantScalarTypeTrait
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
 		if ($type instanceof self) {
-			return TrinaryLogic::createFromBoolean($this->value === $type->value);
+			return AcceptsResult::createFromBoolean($this->value === $type->value);
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return parent::accepts($type, $strictTypes)->and(TrinaryLogic::createMaybe());
+		return parent::acceptsWithReason($type, $strictTypes)->and(AcceptsResult::createMaybe());
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

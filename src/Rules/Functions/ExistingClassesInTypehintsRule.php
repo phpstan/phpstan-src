@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InFunctionNode;
-use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Rules\FunctionDefinitionCheck;
 use PHPStan\Rules\Rule;
 use function sprintf;
@@ -28,15 +27,11 @@ class ExistingClassesInTypehintsRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->getFunction() instanceof PhpFunctionFromParserNodeReflection) {
-			return [];
-		}
-
-		$functionName = SprintfHelper::escapeFormatString($scope->getFunction()->getName());
+		$functionName = SprintfHelper::escapeFormatString($node->getFunctionReflection()->getName());
 
 		return $this->check->checkFunction(
 			$node->getOriginalNode(),
-			$scope->getFunction(),
+			$node->getFunctionReflection(),
 			sprintf(
 				'Parameter $%%s of function %s() has invalid type %%s.',
 				$functionName,

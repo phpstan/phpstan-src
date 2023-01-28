@@ -6,6 +6,8 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\BenevolentUnionType;
+use PHPStan\Type\CallableType;
+use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\MixedType;
@@ -19,6 +21,7 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
 use function count;
 use function sprintf;
 use function strpos;
@@ -33,7 +36,7 @@ class RuleLevelHelper
 		private bool $checkUnionTypes,
 		private bool $checkExplicitMixed,
 		private bool $checkImplicitMixed,
-		private bool $checkListType,
+		private bool $newRuleLevelHelper,
 		private bool $checkBenevolentUnionTypes,
 	)
 	{
@@ -48,6 +51,98 @@ class RuleLevelHelper
 	/** @api */
 	public function accepts(Type $acceptingType, Type $acceptedType, bool $strictTypes): bool
 	{
+		return $this->acceptsWithReason($acceptingType, $acceptedType, $strictTypes)->result;
+	}
+
+	private function transformCommonType(Type $type): Type
+	{
+		if (!$this->checkExplicitMixed && !$this->checkImplicitMixed) {
+			return $type;
+		}
+
+		return TypeTraverser::map($type, function (Type $type, callable $traverse) {
+			if ($type instanceof TemplateMixedType) {
+				return $type->toStrictMixedType();
+			}
+			if (
+				$type instanceof MixedType
+				&& (
+					($type->isExplicitMixed() && $this->checkExplicitMixed)
+					|| (!$type->isExplicitMixed() && $this->checkImplicitMixed)
+				)
+			) {
+				return new StrictMixedType();
+			}
+
+			return $traverse($type);
+		});
+	}
+
+	/**
+	 * @return array{Type, bool}
+	 */
+	private function transformAcceptedType(Type $acceptingType, Type $acceptedType): array
+	{
+		$checkForUnion = $this->checkUnionTypes;
+		$acceptedType = TypeTraverser::map($acceptedType, function (Type $acceptedType, callable $traverse) use ($acceptingType, &$checkForUnion): Type {
+			if ($acceptedType instanceof CallableType) {
+				if ($acceptedType->isCommonCallable()) {
+					return new CallableType(null, null, $acceptedType->isVariadic());
+				}
+
+				return new CallableType(
+					$acceptedType->getParameters(),
+					$traverse($this->transformCommonType($acceptedType->getReturnType())),
+					$acceptedType->isVariadic(),
+				);
+			}
+
+			if ($acceptedType instanceof ClosureType) {
+				return new ClosureType(
+					$acceptedType->getParameters(),
+					$traverse($this->transformCommonType($acceptedType->getReturnType())),
+					$acceptedType->isVariadic(),
+					$acceptedType->getTemplateTypeMap(),
+					$acceptedType->getResolvedTemplateTypeMap(),
+				);
+			}
+
+			if (
+				!$this->checkNullables
+				&& !$acceptingType instanceof NullType
+				&& !$acceptedType instanceof NullType
+				&& !$acceptedType instanceof BenevolentUnionType
+			) {
+				return $traverse(TypeCombinator::removeNull($acceptedType));
+			}
+
+			if ($this->checkBenevolentUnionTypes) {
+				if ($acceptedType instanceof BenevolentUnionType) {
+					$checkForUnion = true;
+					return $traverse(new UnionType($acceptedType->getTypes()));
+				}
+			}
+
+			return $traverse($this->transformCommonType($acceptedType));
+		});
+
+		return [$acceptedType, $checkForUnion];
+	}
+
+	public function acceptsWithReason(Type $acceptingType, Type $acceptedType, bool $strictTypes): RuleLevelHelperAcceptsResult
+	{
+		if ($this->newRuleLevelHelper) {
+			[$acceptedType, $checkForUnion] = $this->transformAcceptedType($acceptingType, $acceptedType);
+			$acceptingType = $this->transformCommonType($acceptingType);
+
+			$accepts = $acceptingType->acceptsWithReason($acceptedType, $strictTypes);
+
+			return new RuleLevelHelperAcceptsResult(
+				$checkForUnion ? $accepts->yes() : !$accepts->no(),
+				$accepts->reasons,
+			);
+		}
+
 		$checkForUnion = $this->checkUnionTypes;
 
 		if ($this->checkBenevolentUnionTypes) {
@@ -112,18 +207,22 @@ class RuleLevelHelper
 			$acceptedType = TypeCombinator::removeNull($acceptedType);
 		}
 
-		$accepts = $acceptingType->accepts($acceptedType, $strictTypes);
+		$accepts = $acceptingType->acceptsWithReason($acceptedType, $strictTypes);
 		if ($accepts->yes()) {
-			return true;
+			return new RuleLevelHelperAcceptsResult(true, $accepts->reasons);
 		}
 		if ($acceptingType instanceof UnionType) {
+			$reasons = [];
 			foreach ($acceptingType->getTypes() as $innerType) {
-				if (self::accepts($innerType, $acceptedType, $strictTypes)) {
-					return true;
+				$accepts = self::acceptsWithReason($innerType, $acceptedType, $strictTypes);
+				if ($accepts->result) {
+					return $accepts;
 				}
+
+				$reasons = array_merge($reasons, $accepts->reasons);
 			}
 
-			return false;
+			return new RuleLevelHelperAcceptsResult(false, $reasons);
 		}
 
 		if (
@@ -135,25 +234,50 @@ class RuleLevelHelper
 			)
 			&& $acceptingType->isConstantArray()->no()
 		) {
-			return (
-				!$acceptingType->isIterableAtLeastOnce()->yes()
-				|| $acceptedType->isIterableAtLeastOnce()->yes()
-			) && (
-				!$this->checkListType
-				|| !$acceptingType->isList()->yes()
-				|| $acceptedType->isList()->yes()
-			) && self::accepts(
+			if ($acceptingType->isIterableAtLeastOnce()->yes() && !$acceptedType->isIterableAtLeastOnce()->yes()) {
+				$verbosity = VerbosityLevel::getRecommendedLevelByType($acceptingType, $acceptedType);
+				return new RuleLevelHelperAcceptsResult(false, [
+					sprintf(
+						'%s %s empty.',
+						$acceptedType->describe($verbosity),
+						$acceptedType->isIterableAtLeastOnce()->no() ? 'is' : 'might be',
+					),
+				]);
+			}
+
+			if (
+				$acceptingType->isList()->yes()
+				&& !$acceptedType->isList()->yes()
+			) {
+				$report = $checkForUnion || $acceptedType->isList()->no();
+
+				if ($report) {
+					$verbosity = VerbosityLevel::getRecommendedLevelByType($acceptingType, $acceptedType);
+					return new RuleLevelHelperAcceptsResult(false, [
+						sprintf(
+							'%s %s a list.',
+							$acceptedType->describe($verbosity),
+							$acceptedType->isList()->no() ? 'is not' : 'might not be',
+						),
+					]);
+				}
+			}
+
+			return self::acceptsWithReason(
 				$acceptingType->getIterableKeyType(),
 				$acceptedType->getIterableKeyType(),
 				$strictTypes,
-			) && self::accepts(
+			)->and(self::acceptsWithReason(
 				$acceptingType->getIterableValueType(),
 				$acceptedType->getIterableValueType(),
 				$strictTypes,
-			);
+			));
 		}
 
-		return $checkForUnion ? $accepts->yes() : !$accepts->no();
+		return new RuleLevelHelperAcceptsResult(
+			$checkForUnion ? $accepts->yes() : !$accepts->no(),
+			$accepts->reasons,
+		);
 	}
 
 	/**

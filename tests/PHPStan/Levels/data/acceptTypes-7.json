@@ -21,11 +21,6 @@
     },
     {
         "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Foo::doBarArray() expects array<int>, array<int, float|int> given.",
-        "line": 120,
-        "ignorable": true
-    },
-    {
-        "message": "Parameter #1 $i of method Levels\\AcceptTypes\\Foo::doBarArray() expects array<int>, array<int, float|int> given.",
         "line": 132,
         "ignorable": true
     },
@@ -154,11 +149,16 @@
         "line": 692,
         "ignorable": true
     },
-	{
-		"message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects numeric-string, string given.",
-		"line": 708,
-		"ignorable": true
-	},
+    {
+        "message": "Parameter #1 $numericString of method Levels\\AcceptTypes\\NumericStrings::doBar() expects numeric-string, string given.",
+        "line": 708,
+        "ignorable": true
+    },
+    {
+        "message": "Parameter #1 $nonEmpty of method Levels\\AcceptTypes\\AcceptNonEmpty::doBar() expects non-empty-array, array given.",
+        "line": 735,
+        "ignorable": true
+    },
     {
         "message": "Parameter #2 $array of function implode expects array|null, array|int|string given.",
         "line": 756,

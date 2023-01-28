@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Rules\Rule;
-use PHPStan\ShouldNotHappenException;
 use function count;
 
 /**
@@ -26,11 +25,7 @@ class FunctionAssertRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$function = $scope->getFunction();
-		if ($function === null) {
-			throw new ShouldNotHappenException();
-		}
-
+		$function = $node->getFunctionReflection();
 		$variants = $function->getVariants();
 		if (count($variants) !== 1) {
 			return [];

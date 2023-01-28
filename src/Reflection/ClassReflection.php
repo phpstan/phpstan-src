@@ -1151,6 +1151,9 @@ class ClassReflection
 				$arguments[] = new Arg($expression, false, false, [], is_int($i) ? null : new Identifier($i));
 			}
 
+			if (!$attributeClass->hasConstructor()) {
+				return null;
+			}
 			$attributeConstructor = $attributeClass->getConstructor();
 			$attributeConstructorVariant = ParametersAcceptorSelector::selectSingle($attributeConstructor->getVariants());
 

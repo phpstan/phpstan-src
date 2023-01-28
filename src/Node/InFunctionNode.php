@@ -3,21 +3,21 @@
 namespace PHPStan\Node;
 
 use PhpParser\Node;
-use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 
 /** @api */
 class InFunctionNode extends Node\Stmt implements VirtualNode
 {
 
 	public function __construct(
-		private FunctionReflection $functionReflection,
+		private PhpFunctionFromParserNodeReflection $functionReflection,
 		private Node\Stmt\Function_ $originalNode,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());
 	}
 
-	public function getFunctionReflection(): FunctionReflection
+	public function getFunctionReflection(): PhpFunctionFromParserNodeReflection
 	{
 		return $this->functionReflection;
 	}

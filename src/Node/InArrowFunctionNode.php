@@ -5,6 +5,7 @@ namespace PHPStan\Node;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\NodeAbstract;
+use PHPStan\Type\ClosureType;
 
 /** @api */
 class InArrowFunctionNode extends NodeAbstract implements VirtualNode
@@ -12,10 +13,15 @@ class InArrowFunctionNode extends NodeAbstract implements VirtualNode
 
 	private Node\Expr\ArrowFunction $originalNode;
 
-	public function __construct(ArrowFunction $originalNode)
+	public function __construct(private ClosureType $closureType, ArrowFunction $originalNode)
 	{
 		parent::__construct($originalNode->getAttributes());
 		$this->originalNode = $originalNode;
+	}
+
+	public function getClosureType(): ClosureType
+	{
+		return $this->closureType;
 	}
 
 	public function getOriginalNode(): Node\Expr\ArrowFunction

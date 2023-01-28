@@ -45,6 +45,10 @@ rules:
 	- PHPStan\Rules\Properties\AccessPrivatePropertyThroughStaticRule
 
 conditionalTags:
+	PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule:
+		phpstan.rules.rule: %featureToggles.closureDefaultParameterTypeRule%
+	PHPStan\Rules\Functions\IncompatibleClosureDefaultParameterTypeRule:
+		phpstan.rules.rule: %featureToggles.closureDefaultParameterTypeRule%
 	PHPStan\Rules\Methods\IllegalConstructorMethodCallRule:
 		phpstan.rules.rule: %featureToggles.illegalConstructorMethodCall%
 	PHPStan\Rules\Methods\IllegalConstructorStaticCallRule:
@@ -59,6 +63,10 @@ services:
 			checkClassCaseSensitivity: %checkClassCaseSensitivity%
 		tags:
 			- phpstan.rules.rule
+	-
+		class: PHPStan\Rules\Functions\IncompatibleArrowFunctionDefaultParameterTypeRule
+	-
+		class: PHPStan\Rules\Functions\IncompatibleClosureDefaultParameterTypeRule
 	-
 		class: PHPStan\Rules\Functions\CallCallablesRule
 		arguments:

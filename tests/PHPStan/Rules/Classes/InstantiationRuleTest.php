@@ -441,6 +441,7 @@ class InstantiationRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $bar of class Bug3311a\Foo constructor expects list<string>, array{1: \'baz\'} given.',
 				24,
+				"array{1: 'baz'} is not a list.",
 			],
 		]);
 	}

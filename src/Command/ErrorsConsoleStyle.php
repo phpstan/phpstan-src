@@ -101,12 +101,28 @@ class ErrorsConsoleStyle extends SymfonyStyle
 				if (str_starts_with($columnRow, '✏️')) {
 					continue;
 				}
-				$columnRows[$k] = wordwrap(
+				$wrapped = wordwrap(
 					$columnRow,
 					$terminalWidth - $maxHeaderWidth - 5,
 					"\n",
 					true,
 				);
+				if (str_starts_with($columnRow, '💡 ')) {
+					$wrappedLines = explode("\n", $wrapped);
+					$newWrappedLines = [];
+					foreach ($wrappedLines as $l => $line) {
+						if ($l === 0) {
+							$newWrappedLines[] = $line;
+							continue;
+						}
+
+						$newWrappedLines[] = '   ' . $line;
+					}
+					$columnRows[$k] = implode("\n", $newWrappedLines);
+				} else {
+					$columnRows[$k] = $wrapped;
+				}
+
 			}
 
 			$rows[$i] = implode("\n", $columnRows);

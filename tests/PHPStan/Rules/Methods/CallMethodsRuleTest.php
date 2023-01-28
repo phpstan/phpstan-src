@@ -477,6 +477,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $members of method Test\\ParameterTypeCheckVerbosity::doBar() expects array<array{id: string, code: string}>, array<array{code: string}> given.',
 				1589,
+				"Array does not have offset 'id'.",
 			],
 			[
 				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, 123 given.',
@@ -796,6 +797,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $members of method Test\\ParameterTypeCheckVerbosity::doBar() expects array<array{id: string, code: string}>, array<array{code: string}> given.',
 				1589,
+				"Array does not have offset 'id'.",
 			],
 			[
 				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, 123 given.',
@@ -2117,6 +2119,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $c of method GenericObjectLowerBound\Foo::doFoo() expects GenericObjectLowerBound\Collection<GenericObjectLowerBound\Cat|GenericObjectLowerBound\Dog>, GenericObjectLowerBound\Collection<GenericObjectLowerBound\Dog> given.',
 				48,
+				'Template type T on class GenericObjectLowerBound\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 		]);
 	}
@@ -2151,14 +2154,17 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
 				68,
+				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 			[
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, class-string> given.',
 				72,
+				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 			[
 				'Parameter #1 $list of method Bug5372\Foo::takesStrings() expects Bug5372\Collection<int, string>, Bug5372\Collection<int, literal-string> given.',
 				85,
+				'Template type T on class Bug5372\Collection is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 		]);
 	}
@@ -2526,6 +2532,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $param of method GenericVarianceCall\Foo::invariant() expects GenericVarianceCall\Invariant<GenericVarianceCall\B>, GenericVarianceCall\Invariant<GenericVarianceCall\C> given.',
 				53,
+				'Template type T on class GenericVarianceCall\Invariant is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 			[
 				'Parameter #1 $param of method GenericVarianceCall\Foo::covariant() expects GenericVarianceCall\Covariant<GenericVarianceCall\B>, GenericVarianceCall\Covariant<GenericVarianceCall\A> given.',
@@ -2534,6 +2541,11 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $param of method GenericVarianceCall\Foo::contravariant() expects GenericVarianceCall\Contravariant<GenericVarianceCall\B>, GenericVarianceCall\Contravariant<GenericVarianceCall\C> given.',
 				83,
+			],
+			[
+				'Parameter #1 $param of method GenericVarianceCall\Foo::invariantArray() expects array{GenericVarianceCall\Invariant<GenericVarianceCall\B>}, array{GenericVarianceCall\Invariant<GenericVarianceCall\C>} given.',
+				97,
+				'Offset 0 (GenericVarianceCall\Invariant<GenericVarianceCall\B>) does not accept type GenericVarianceCall\Invariant<GenericVarianceCall\C>: Template type T on class GenericVarianceCall\Invariant is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
 			],
 		]);
 	}
@@ -2717,6 +2729,72 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkExplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/reflection-class-issue-8679.php'], []);
+	}
+
+	public function testNonEmptyArray(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/non-empty-array.php'], [
+			[
+				'Parameter #1 $nonEmpty of method AcceptNonEmptyArray\Foo::requireNonEmpty() expects non-empty-array<int>, array<int> given.',
+				15,
+				'array<int> might be empty.',
+			],
+			[
+				'Parameter #1 $nonEmpty of method AcceptNonEmptyArray\Foo::requireNonEmpty() expects non-empty-array<int>, array{} given.',
+				17,
+				'array{} is empty.',
+			],
+		]);
+	}
+
+	public function dataCallablesWithoutCheckNullables(): iterable
+	{
+		yield [false, false, []];
+		yield [true, false, []];
+
+		$errors = [
+			[
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar() expects callable(float|null): float|null, Closure(float): float given.',
+				25,
+			],
+			[
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBaz() expects Closure(float|null): float|null, Closure(float): float given.',
+				28,
+			],
+			[
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar2() expects callable(float|null): float, Closure(float|null): float|null given.',
+				32,
+			],
+			[
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBaz2() expects Closure(float|null): float, Closure(float|null): float|null given.',
+				35,
+			],
+			[
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBar2() expects callable(float|null): float, Closure(float): float given.',
+				45,
+			],
+			[
+				'Parameter #1 $cb of method CallablesWithoutCheckNullables\Foo::doBaz2() expects Closure(float|null): float, Closure(float): float given.',
+				48,
+			],
+		];
+		yield [false, true, $errors];
+		yield [true, true, $errors];
+	}
+
+	/**
+	 * @dataProvider dataCallablesWithoutCheckNullables
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testCallablesWithoutCheckNullables(bool $checkNullables, bool $checkUnionTypes, array $expectedErrors): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = $checkNullables;
+		$this->checkUnionTypes = $checkUnionTypes;
+		$this->analyse([__DIR__ . '/data/callables-without-check-nullables.php'], $expectedErrors);
 	}
 
 }

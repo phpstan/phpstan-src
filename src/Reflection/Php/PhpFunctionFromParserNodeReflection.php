@@ -23,6 +23,9 @@ use function array_reverse;
 use function is_array;
 use function is_string;
 
+/**
+ * @api
+ */
 class PhpFunctionFromParserNodeReflection implements FunctionReflection
 {
 

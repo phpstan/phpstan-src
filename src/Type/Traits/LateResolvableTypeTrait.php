@@ -9,6 +9,7 @@ use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -44,6 +45,11 @@ trait LateResolvableTypeTrait
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
 		return $this->resolve()->accepts($type, $strictTypes);
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
+		return $this->resolve()->acceptsWithReason($type, $strictTypes);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -438,13 +444,18 @@ trait LateResolvableTypeTrait
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
+		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
+	}
+
+	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	{
 		$result = $this->resolve();
 
 		if ($result instanceof CompoundType) {
-			return $result->isAcceptedBy($acceptingType, $strictTypes);
+			return $result->isAcceptedWithReasonBy($acceptingType, $strictTypes);
 		}
 
-		return $acceptingType->accepts($result, $strictTypes);
+		return $acceptingType->acceptsWithReason($result, $strictTypes);
 	}
 
 	public function isGreaterThan(Type $otherType): TrinaryLogic

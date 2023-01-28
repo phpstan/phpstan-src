@@ -2,13 +2,13 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\Type;
 
 interface TemplateTypeStrategy
 {
 
-	public function accepts(TemplateType $left, Type $right, bool $strictTypes): TrinaryLogic;
+	public function accepts(TemplateType $left, Type $right, bool $strictTypes): AcceptsResult;
 
 	public function isArgument(): bool;
 

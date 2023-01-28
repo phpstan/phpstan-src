@@ -58,6 +58,8 @@ parameters:
 		alwaysTrueAlwaysReported: false
 		disableUnreachableBranchesRules: false
 		varTagType: false
+		closureDefaultParameterTypeRule: false
+		newRuleLevelHelper: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -82,7 +84,6 @@ parameters:
 	checkThisOnly: true
 	checkUnionTypes: false
 	checkBenevolentUnionTypes: false
-	checkListType: false
 	checkExplicitMixedMissingReturn: false
 	checkPhpDocMissingReturn: false
 	checkPhpDocMethodSignatures: false
@@ -283,6 +284,8 @@ parametersSchema:
 		alwaysTrueAlwaysReported: bool()
 		disableUnreachableBranchesRules: bool()
 		varTagType: bool()
+		closureDefaultParameterTypeRule: bool()
+		newRuleLevelHelper: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -307,7 +310,6 @@ parametersSchema:
 	checkThisOnly: bool()
 	checkUnionTypes: bool()
 	checkBenevolentUnionTypes: bool()
-	checkListType: bool()
 	checkExplicitMixedMissingReturn: bool()
 	checkPhpDocMissingReturn: bool()
 	checkPhpDocMethodSignatures: bool()
@@ -1104,7 +1106,7 @@ services:
 			checkUnionTypes: %checkUnionTypes%
 			checkExplicitMixed: %checkExplicitMixed%
 			checkImplicitMixed: %checkImplicitMixed%
-			checkListType: %checkListType%
+			newRuleLevelHelper: %featureToggles.newRuleLevelHelper%
 			checkBenevolentUnionTypes: %checkBenevolentUnionTypes%
 
 	-

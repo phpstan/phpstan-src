@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
@@ -28,11 +27,7 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$method = $scope->getFunction();
-		if (!$method instanceof PhpMethodFromParserNodeReflection) {
-			return [];
-		}
-
+		$method = $node->getMethodReflection();
 		$parameters = ParametersAcceptorSelector::selectSingle($method->getVariants());
 
 		$errors = [];
@@ -51,7 +46,8 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 			$parameterType = $parameters->getParameters()[$paramI]->getType();
 			$parameterType = TemplateTypeHelper::resolveToBounds($parameterType);
 
-			if ($parameterType->accepts($defaultValueType, true)->yes()) {
+			$accepts = $parameterType->acceptsWithReason($defaultValueType, true);
+			if ($accepts->yes()) {
 				continue;
 			}
 
@@ -65,7 +61,7 @@ class IncompatibleDefaultParameterTypeRule implements Rule
 				$method->getDeclaringClass()->getDisplayName(),
 				$method->getName(),
 				$parameterType->describe($verbosityLevel),
-			))->line($param->getLine())->build();
+			))->line($param->getLine())->acceptsReasonsTip($accepts->reasons)->build();
 		}
 
 		return $errors;

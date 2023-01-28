@@ -9,6 +9,7 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -269,18 +270,27 @@ class ConstantArrayType extends ArrayType implements ConstantType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
 		if ($type instanceof MixedType && !$type instanceof TemplateMixedType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
 		if ($type instanceof self && count($this->keyTypes) === 0) {
-			return TrinaryLogic::createFromBoolean(count($type->keyTypes) === 0);
+			return AcceptsResult::createFromBoolean(count($type->keyTypes) === 0);
 		}
 
-		$result = TrinaryLogic::createYes();
+		$result = AcceptsResult::createYes();
 		foreach ($this->keyTypes as $i => $keyType) {
 			$valueType = $this->valueTypes[$i];
-			$hasOffset = $type->hasOffsetValueType($keyType);
+			$hasOffsetValueType = $type->hasOffsetValueType($keyType);
+			$hasOffset = new AcceptsResult(
+				$hasOffsetValueType,
+				$hasOffsetValueType->yes() || !$type->isConstantArray()->yes() ? [] : [sprintf('Array %s have offset %s.', $hasOffsetValueType->no() ? 'does not' : 'might not', $keyType->describe(VerbosityLevel::value()))],
+			);
 			if ($hasOffset->no()) {
 				if ($this->isOptionalKey($i)) {
 					continue;
@@ -288,22 +298,41 @@ class ConstantArrayType extends ArrayType implements ConstantType
 				return $hasOffset;
 			}
 			if ($hasOffset->maybe() && $this->isOptionalKey($i)) {
-				$hasOffset = TrinaryLogic::createYes();
+				$hasOffset = AcceptsResult::createYes();
 			}
 
 			$result = $result->and($hasOffset);
 			$otherValueType = $type->getOffsetValueType($keyType);
-			$acceptsValue = $valueType->accepts($otherValueType, $strictTypes);
+			$verbosity = VerbosityLevel::getRecommendedLevelByType($valueType, $otherValueType);
+			$acceptsValue = $valueType->acceptsWithReason($otherValueType, $strictTypes)->decorateReasons(
+				static fn (string $reason) => sprintf(
+					'Offset %s (%s) does not accept type %s: %s',
+					$keyType->describe(VerbosityLevel::value()),
+					$valueType->describe($verbosity),
+					$otherValueType->describe($verbosity),
+					$reason,
+				),
+			);
+			if (!$acceptsValue->yes() && count($acceptsValue->reasons) === 0 && $type->isConstantArray()->yes()) {
+				$acceptsValue = new AcceptsResult($acceptsValue->result, [
+					sprintf(
+						'Offset %s (%s) does not accept type %s.',
+						$keyType->describe(VerbosityLevel::value()),
+						$valueType->describe($verbosity),
+						$otherValueType->describe($verbosity),
+					),
+				]);
+			}
 			if ($acceptsValue->no()) {
 				return $acceptsValue;
 			}
 			$result = $result->and($acceptsValue);
 		}
 
-		$result = $result->and($type->isArray());
+		$result = $result->and(new AcceptsResult($type->isArray(), []));
 		if ($type->isOversizedArray()->yes()) {
 			if (!$result->no()) {
-				return TrinaryLogic::createYes();
+				return AcceptsResult::createYes();
 			}
 		}
 

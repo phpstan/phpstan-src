@@ -15,11 +15,13 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 
 	private bool $checkAlwaysTrueStrictComparison;
 
+	private bool $reportAlwaysTrueInLastCondition = false;
+
 	private bool $treatPhpDocTypesAsCertain = true;
 
 	protected function getRule(): Rule
 	{
-		return new StrictComparisonOfDifferentTypesRule($this->checkAlwaysTrueStrictComparison, $this->treatPhpDocTypesAsCertain);
+		return new StrictComparisonOfDifferentTypesRule($this->checkAlwaysTrueStrictComparison, $this->treatPhpDocTypesAsCertain, $this->reportAlwaysTrueInLastCondition);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -256,6 +258,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 				[
 					'Strict comparison using === between \'foofoofoofoofoofoof…\' and \'foofoofoofoofoofoof…\' will always evaluate to true.',
 					996,
+					'Remove remaining cases below this one and this error will disappear too.',
 				],
 			],
 		);
@@ -645,10 +648,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between Bug8485\FooEnum::C and Bug8485\FooEnum::C will always evaluate to true.',
 				67,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 			[
 				'Strict comparison using === between Bug8485\FooEnum::C and Bug8485\FooEnum::C will always evaluate to true.',
 				74,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -751,6 +756,7 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between \'bar\' and \'bar\' will always evaluate to true.',
 				15,
+				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
 	}
@@ -783,6 +789,72 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 	{
 		$this->checkAlwaysTrueStrictComparison = true;
 		$this->analyse([__DIR__ . '/data/bug-8736.php'], []);
+	}
+
+	public function dataLastMatchArm(): iterable
+	{
+		yield [false, [
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				36,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				"Strict comparison using === between *NEVER* and 'ccc' will always evaluate to false.",
+				38,
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				46,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				62,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]];
+		yield [true, [
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				17,
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				30,
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				36,
+			],
+			[
+				"Strict comparison using === between *NEVER* and 'ccc' will always evaluate to false.",
+				38,
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				46,
+			],
+			[
+				"Strict comparison using === between 'bbb' and 'bbb' will always evaluate to true.",
+				62,
+			],
+		]];
+	}
+
+	/**
+	 * @dataProvider dataLastMatchArm
+	 * @param list<array{0: string, 1: int, 2?: string}> $expectedErrors
+	 */
+	public function testLastMatchArm(bool $reportAlwaysTrueInLastCondition, array $expectedErrors): void
+	{
+		if (PHP_VERSION_ID < 80100) {
+			$this->markTestSkipped('Test requires PHP 8.1.');
+		}
+
+		$this->checkAlwaysTrueStrictComparison = true;
+		$this->reportAlwaysTrueInLastCondition = $reportAlwaysTrueInLastCondition;
+		$this->analyse([__DIR__ . '/data/strict-comparison-last-match-arm.php'], $expectedErrors);
 	}
 
 }

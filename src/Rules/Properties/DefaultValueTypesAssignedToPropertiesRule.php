@@ -48,7 +48,8 @@ class DefaultValueTypesAssignedToPropertiesRule implements Rule
 			}
 		}
 		$defaultValueType = $scope->getType($default);
-		if ($this->ruleLevelHelper->accepts($propertyType, $defaultValueType, true)) {
+		$accepts = $this->ruleLevelHelper->acceptsWithReason($propertyType, $defaultValueType, true);
+		if ($accepts->result) {
 			return [];
 		}
 
@@ -62,7 +63,7 @@ class DefaultValueTypesAssignedToPropertiesRule implements Rule
 				$node->getName(),
 				$propertyType->describe($verbosityLevel),
 				$defaultValueType->describe($verbosityLevel),
-			))->build(),
+			))->acceptsReasonsTip($accepts->reasons)->build(),
 		];
 	}
 

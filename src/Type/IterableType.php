@@ -72,19 +72,24 @@ class IterableType implements CompoundType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
 		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 		if ($type->isIterable()->yes()) {
-			return $this->getIterableValueType()->accepts($type->getIterableValueType(), $strictTypes)
-				->and($this->getIterableKeyType()->accepts($type->getIterableKeyType(), $strictTypes));
+			return $this->getIterableValueType()->acceptsWithReason($type->getIterableValueType(), $strictTypes)
+				->and($this->getIterableKeyType()->acceptsWithReason($type->getIterableKeyType(), $strictTypes));
 		}
 
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return TrinaryLogic::createNo();
+		return AcceptsResult::createNo();
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic
@@ -157,7 +162,12 @@ class IterableType implements CompoundType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		return $this->isSubTypeOf($acceptingType);
+		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
+	}
+
+	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	{
+		return new AcceptsResult($this->isSubTypeOf($acceptingType), []);
 	}
 
 	public function equals(Type $type): bool

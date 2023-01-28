@@ -110,7 +110,6 @@ use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
@@ -119,6 +118,8 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflectionWithPhpDocs;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
+use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtensionProvider;
@@ -443,7 +444,7 @@ class NodeScopeResolver
 				$phpDocParameterOutTypes,
 			);
 			$functionReflection = $functionScope->getFunction();
-			if (!$functionReflection instanceof FunctionReflection) {
+			if (!$functionReflection instanceof PhpFunctionFromParserNodeReflection) {
 				throw new ShouldNotHappenException();
 			}
 
@@ -508,6 +509,10 @@ class NodeScopeResolver
 				$phpDocParameterOutTypes,
 			);
 
+			if (!$scope->isInClass()) {
+				throw new ShouldNotHappenException();
+			}
+
 			if ($stmt->name->toLowerString() === '__construct') {
 				foreach ($stmt->params as $param) {
 					if ($param->flags === 0) {
@@ -520,9 +525,6 @@ class NodeScopeResolver
 					$phpDoc = null;
 					if ($param->getDocComment() !== null) {
 						$phpDoc = $param->getDocComment()->getText();
-					}
-					if (!$scope->isInClass()) {
-						throw new ShouldNotHappenException();
 					}
 					$nodeCallback(new ClassPropertyNode(
 						$param->var->name,
@@ -543,10 +545,10 @@ class NodeScopeResolver
 
 			if ($stmt->getAttribute('virtual', false) === false) {
 				$methodReflection = $methodScope->getFunction();
-				if (!$methodReflection instanceof ExtendedMethodReflection) {
+				if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
 					throw new ShouldNotHappenException();
 				}
-				$nodeCallback(new InClassMethodNode($methodReflection, $stmt), $methodScope);
+				$nodeCallback(new InClassMethodNode($scope->getClassReflection(), $methodReflection, $stmt), $methodScope);
 			}
 
 			if ($stmt->stmts !== null) {
@@ -3270,7 +3272,11 @@ class NodeScopeResolver
 		}
 
 		$arrowFunctionScope = $scope->enterArrowFunction($expr, $callableParameters);
-		$nodeCallback(new InArrowFunctionNode($expr), $arrowFunctionScope);
+		$arrowFunctionType = $arrowFunctionScope->getAnonymousFunctionReflection();
+		if (!$arrowFunctionType instanceof ClosureType) {
+			throw new ShouldNotHappenException();
+		}
+		$nodeCallback(new InArrowFunctionNode($arrowFunctionType, $expr), $arrowFunctionScope);
 		$this->processExprNode($expr->expr, $arrowFunctionScope, $nodeCallback, ExpressionContext::createTopLevel());
 
 		return new ExpressionResult($scope, false, []);

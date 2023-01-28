@@ -21,11 +21,16 @@ class ClassStringType extends StringType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
 		if ($type instanceof CompoundType) {
-			return $type->isAcceptedBy($this, $strictTypes);
+			return $type->isAcceptedWithReasonBy($this, $strictTypes);
 		}
 
-		return $type->isClassStringType();
+		return new AcceptsResult($type->isClassStringType(), []);
 	}
 
 	public function isSuperTypeOf(Type $type): TrinaryLogic

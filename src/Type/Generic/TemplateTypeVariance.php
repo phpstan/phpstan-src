@@ -4,10 +4,12 @@ namespace PHPStan\Type\Generic;
 
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use function sprintf;
 
 /** @api */
 class TemplateTypeVariance
@@ -104,40 +106,61 @@ class TemplateTypeVariance
 
 	public function isValidVariance(Type $a, Type $b): TrinaryLogic
 	{
+		return $this->isValidVarianceWithReason(null, $a, $b)->result;
+	}
+
+	public function isValidVarianceWithReason(?TemplateType $templateType, Type $a, Type $b): AcceptsResult
+	{
 		if ($b instanceof NeverType) {
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		if ($a instanceof MixedType && !$a instanceof TemplateType) {
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		if ($a instanceof BenevolentUnionType) {
 			if (!$a->isSuperTypeOf($b)->no()) {
-				return TrinaryLogic::createYes();
+				return AcceptsResult::createYes();
 			}
 		}
 
 		if ($b instanceof BenevolentUnionType) {
 			if (!$b->isSuperTypeOf($a)->no()) {
-				return TrinaryLogic::createYes();
+				return AcceptsResult::createYes();
 			}
 		}
 
 		if ($b instanceof MixedType && !$b instanceof TemplateType) {
-			return TrinaryLogic::createYes();
+			return AcceptsResult::createYes();
 		}
 
 		if ($this->invariant()) {
-			return TrinaryLogic::createFromBoolean($a->equals($b));
+			$result = $a->equals($b);
+			$reasons = [];
+			if (!$result) {
+				if (
+					$templateType !== null
+					&& $templateType->getScope()->getClassName() !== null
+					&& $a->isSuperTypeOf($b)->yes()
+				) {
+					$reasons[] = sprintf(
+						'Template type %s on class %s is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+						$templateType->getName(),
+						$templateType->getScope()->getClassName(),
+					);
+				}
+			}
+
+			return new AcceptsResult(TrinaryLogic::createFromBoolean($result), $reasons);
 		}
 
 		if ($this->covariant()) {
-			return $a->isSuperTypeOf($b);
+			return new AcceptsResult($a->isSuperTypeOf($b), []);
 		}
 
 		if ($this->contravariant()) {
-			return $b->isSuperTypeOf($a);
+			return new AcceptsResult($b->isSuperTypeOf($a), []);
 		}
 
 		throw new ShouldNotHappenException();

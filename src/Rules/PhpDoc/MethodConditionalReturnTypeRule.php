@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Rule;
-use PHPStan\ShouldNotHappenException;
 use function count;
 
 /**
@@ -26,11 +25,7 @@ class MethodConditionalReturnTypeRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$method = $scope->getFunction();
-		if ($method === null) {
-			throw new ShouldNotHappenException();
-		}
-
+		$method = $node->getMethodReflection();
 		$variants = $method->getVariants();
 		if (count($variants) !== 1) {
 			return [];

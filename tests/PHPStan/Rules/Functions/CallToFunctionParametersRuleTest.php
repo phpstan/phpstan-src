@@ -813,6 +813,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				"Parameter #1 \$command of function proc_open expects list<string>|string, array{something: 'bogus', in: 'here'} given.",
 				6,
+				"Type #1 from the union: array{something: 'bogus', in: 'here'} is not a list.",
 			],
 		]);
 	}
@@ -1090,10 +1091,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $foo of function Discussion7450\foo expects array{policy: non-empty-string, entitlements: array<non-empty-string>}, array{policy: mixed, entitlements: mixed} given.',
 				18,
+				"• Offset 'policy' (non-empty-string) does not accept type mixed.
+• Offset 'entitlements' (array<non-empty-string>) does not accept type mixed.",
 			],
 			[
 				'Parameter #1 $foo of function Discussion7450\foo expects array{policy: non-empty-string, entitlements: array<non-empty-string>}, array{policy: mixed, entitlements: mixed} given.',
 				28,
+				"• Offset 'policy' (non-empty-string) does not accept type mixed.
+• Offset 'entitlements' (array<non-empty-string>) does not accept type mixed.",
 			],
 		]);
 	}

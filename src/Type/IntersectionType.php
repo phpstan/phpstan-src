@@ -157,14 +157,19 @@ class IntersectionType implements CompoundType
 		return $strings;
 	}
 
-	public function accepts(Type $otherType, bool $strictTypes): TrinaryLogic
+	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
-		$results = [];
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $otherType, bool $strictTypes): AcceptsResult
+	{
+		$result = AcceptsResult::createYes();
 		foreach ($this->types as $type) {
-			$results[] = $type->accepts($otherType, $strictTypes);
+			$result = $result->and($type->acceptsWithReason($otherType, $strictTypes));
 		}
 
-		return TrinaryLogic::createYes()->and(...$results);
+		return $result;
 	}
 
 	public function isSuperTypeOf(Type $otherType): TrinaryLogic
@@ -198,10 +203,15 @@ class IntersectionType implements CompoundType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		$result = TrinaryLogic::lazyMaxMin($this->getTypes(), static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes));
+		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
+	}
+
+	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	{
+		$result = AcceptsResult::maxMin(...array_map(static fn (Type $innerType) => $acceptingType->acceptsWithReason($innerType, $strictTypes), $this->types));
 		if ($this->isOversizedArray()->yes()) {
 			if (!$result->no()) {
-				return TrinaryLogic::createYes();
+				return AcceptsResult::createYes();
 			}
 		}
 

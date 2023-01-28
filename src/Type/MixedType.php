@@ -85,7 +85,12 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function accepts(Type $type, bool $strictTypes): TrinaryLogic
 	{
-		return TrinaryLogic::createYes();
+		return $this->acceptsWithReason($type, $strictTypes)->result;
+	}
+
+	public function acceptsWithReason(Type $type, bool $strictTypes): AcceptsResult
+	{
+		return AcceptsResult::createYes();
 	}
 
 	public function isSuperTypeOfMixed(MixedType $type): TrinaryLogic
@@ -298,11 +303,16 @@ class MixedType implements CompoundType, SubtractableType
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): TrinaryLogic
 	{
-		$isSuperType = $this->isSuperTypeOf($acceptingType);
+		return $this->isAcceptedWithReasonBy($acceptingType, $strictTypes)->result;
+	}
+
+	public function isAcceptedWithReasonBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	{
+		$isSuperType = new AcceptsResult($this->isSuperTypeOf($acceptingType), []);
 		if ($isSuperType->no()) {
 			return $isSuperType;
 		}
-		return TrinaryLogic::createYes();
+		return AcceptsResult::createYes();
 	}
 
 	public function canAccessProperties(): TrinaryLogic

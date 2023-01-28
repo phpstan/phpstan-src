@@ -3,7 +3,10 @@
 namespace PHPStan\Rules;
 
 use PHPStan\ShouldNotHappenException;
+use function array_map;
 use function class_exists;
+use function count;
+use function implode;
 use function sprintf;
 
 /** @api */
@@ -112,6 +115,22 @@ class RuleErrorBuilder
 	public function discoveringSymbolsTip(): self
 	{
 		return $this->tip('Learn more at https://phpstan.org/user-guide/discovering-symbols');
+	}
+
+	/**
+	 * @param list<string> $reasons
+	 */
+	public function acceptsReasonsTip(array $reasons): self
+	{
+		if (count($reasons) === 0) {
+			return $this;
+		}
+
+		if (count($reasons) === 1) {
+			return $this->tip($reasons[0]);
+		}
+
+		return $this->tip(implode("\n", array_map(static fn (string $reason) => sprintf('• %s', $reason), $reasons)));
 	}
 
 	public function identifier(string $identifier): self

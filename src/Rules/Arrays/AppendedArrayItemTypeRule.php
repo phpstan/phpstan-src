@@ -73,14 +73,15 @@ class AppendedArrayItemTypeRule implements Rule
 		}
 
 		$itemType = $assignedToType->getItemType();
-		if (!$this->ruleLevelHelper->accepts($itemType, $assignedValueType, $scope->isDeclareStrictTypes())) {
+		$accepts = $this->ruleLevelHelper->acceptsWithReason($itemType, $assignedValueType, $scope->isDeclareStrictTypes());
+		if (!$accepts->result) {
 			$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($itemType, $assignedValueType);
 			return [
 				RuleErrorBuilder::message(sprintf(
 					'Array (%s) does not accept %s.',
 					$assignedToType->describe($verbosityLevel),
 					$assignedValueType->describe($verbosityLevel),
-				))->build(),
+				))->acceptsReasonsTip($accepts->reasons)->build(),
 			];
 		}
 

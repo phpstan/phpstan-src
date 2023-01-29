@@ -4,6 +4,7 @@ namespace PHPStan\Type\Constant;
 
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\TestCase;
 
@@ -96,6 +97,18 @@ class ConstantArrayTypeBuilderTest extends TestCase
 
 		$builder->setOffsetValueType(null, new ConstantIntegerType(17));
 		$this->assertSame('array{0: 17|bool|null, 1?: 17|null, 2?: 17}', $builder->getArray()->describe(VerbosityLevel::precise()));
+	}
+
+	public function testDegradedArrayIsNotAlwaysOversized(): void
+	{
+		$builder = ConstantArrayTypeBuilder::createEmpty();
+		$builder->degradeToGeneralArray();
+		for ($i = 0; $i < 300; $i++) {
+			$builder->setOffsetValueType(new StringType(), new StringType());
+		}
+
+		$array = $builder->getArray();
+		$this->assertSame('non-empty-array<string, string>', $array->describe(VerbosityLevel::precise()));
 	}
 
 }

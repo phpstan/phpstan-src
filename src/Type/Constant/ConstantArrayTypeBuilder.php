@@ -5,6 +5,7 @@ namespace PHPStan\Type\Constant;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -26,6 +27,8 @@ class ConstantArrayTypeBuilder
 	public const ARRAY_COUNT_LIMIT = 256;
 
 	private bool $degradeToGeneralArray = false;
+
+	private bool $oversized = false;
 
 	/**
 	 * @param array<int, Type> $keyTypes
@@ -59,7 +62,7 @@ class ConstantArrayTypeBuilder
 		);
 
 		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
-			$builder->degradeToGeneralArray();
+			$builder->degradeToGeneralArray(true);
 		}
 
 		return $builder;
@@ -260,9 +263,10 @@ class ConstantArrayTypeBuilder
 		$this->degradeToGeneralArray = true;
 	}
 
-	public function degradeToGeneralArray(): void
+	public function degradeToGeneralArray(bool $oversized = false): void
 	{
 		$this->degradeToGeneralArray = true;
+		$this->oversized = $this->oversized || $oversized;
 	}
 
 	public function getArray(): Type
@@ -286,6 +290,11 @@ class ConstantArrayTypeBuilder
 		if (count($this->optionalKeys) < $keyTypesCount) {
 			$array = TypeCombinator::intersect($array, new NonEmptyArrayType());
 		}
+
+		if ($this->oversized) {
+			$array = TypeCombinator::intersect($array, new OversizedArrayType());
+		}
+
 		if ($this->isList) {
 			$array = AccessoryArrayListType::intersectWith($array);
 		}

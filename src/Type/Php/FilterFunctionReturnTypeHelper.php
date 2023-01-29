@@ -65,9 +65,12 @@ final class FilterFunctionReturnTypeHelper
 			$flagsType = new ConstantIntegerType(0);
 		}
 
-		$defaultType = $this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsType)
+		$hasOptions = $this->hasOptions($flagsType);
+		$options = $hasOptions->yes() ? $this->getOptions($flagsType, $filterValue) : [];
+
+		$defaultType = $options['default'] ?? ($this->hasFlag($this->getConstant('FILTER_NULL_ON_FAILURE'), $flagsType)
 			? new NullType()
-			: new ConstantBooleanType(false);
+			: new ConstantBooleanType(false));
 
 		if ($inputType->isScalar()->no() && $inputType->isNull()->no()) {
 			return $defaultType;
@@ -75,10 +78,7 @@ final class FilterFunctionReturnTypeHelper
 
 		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType, $flagsType);
 		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
-
-		$hasOptions = $this->hasOptions($flagsType);
-		$options = $hasOptions->yes() ? $this->getOptions($flagsType, $filterValue) : [];
-		$otherTypes = $this->getOtherTypes($flagsType, $options, $defaultType);
+		$otherTypes = $this->getOtherTypes($flagsType, $options);
 
 		if ($inputType->isNonEmptyString()->yes()
 			&& $type->isString()->yes()
@@ -93,21 +93,17 @@ final class FilterFunctionReturnTypeHelper
 		if (isset($otherTypes['range'])) {
 			if ($type instanceof ConstantScalarType) {
 				if ($otherTypes['range']->isSuperTypeOf($type)->no()) {
-					$type = $otherTypes['default'];
+					$type = $defaultType;
 				}
-
-				unset($otherTypes['default']);
 			} else {
 				$type = $otherTypes['range'];
 			}
 		}
 
-		if ($exactType !== null && !$hasOptions->maybe() && ($inputType->equals($type) || !$inputType->isSuperTypeOf($type)->yes())) {
-			unset($otherTypes['default']);
-		}
-
-		if (isset($otherTypes['default']) && $otherTypes['default']->isSuperTypeOf($type)->no()) {
-			$type = TypeCombinator::union($type, $otherTypes['default']);
+		if ($exactType === null || $hasOptions->maybe() || (!$inputType->equals($type) && $inputType->isSuperTypeOf($type)->yes())) {
+			if ($defaultType->isSuperTypeOf($type)->no()) {
+				$type = TypeCombinator::union($type, $defaultType);
+			}
 		}
 
 		if ($this->hasFlag($this->getConstant('FILTER_FORCE_ARRAY'), $flagsType)) {
@@ -252,17 +248,15 @@ final class FilterFunctionReturnTypeHelper
 
 	/**
 	 * @param array<string, ?Type> $typeOptions
-	 * @return array{default: Type, range?: Type}
+	 * @return array{range?: Type}
 	 */
-	private function getOtherTypes(?Type $flagsType, array $typeOptions, Type $defaultType): array
+	private function getOtherTypes(?Type $flagsType, array $typeOptions): array
 	{
-		$falseType = new ConstantBooleanType(false);
 		if ($flagsType === null) {
-			return ['default' => $falseType];
+			return [];
 		}
 
-		$defaultType = $typeOptions['default'] ?? $defaultType;
-		$otherTypes = ['default' => $defaultType];
+		$otherTypes = [];
 		$range = [];
 		if (isset($typeOptions['min_range'])) {
 			if ($typeOptions['min_range'] instanceof ConstantScalarType) {

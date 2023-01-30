@@ -248,6 +248,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function hasMethod(string $methodName): TrinaryLogic
+	{
+		return TrinaryLogic::createMaybe();
+	}
+
 	public function isVoid(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

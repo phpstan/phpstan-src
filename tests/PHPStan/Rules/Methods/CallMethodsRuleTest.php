@@ -2736,6 +2736,7 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkNullables = true;
 		$this->checkUnionTypes = true;
+
 		$this->analyse([__DIR__ . '/data/non-empty-array.php'], [
 			[
 				'Parameter #1 $nonEmpty of method AcceptNonEmptyArray\Foo::requireNonEmpty() expects non-empty-array<int>, array<int> given.',
@@ -2746,6 +2747,20 @@ class CallMethodsRuleTest extends RuleTestCase
 				'Parameter #1 $nonEmpty of method AcceptNonEmptyArray\Foo::requireNonEmpty() expects non-empty-array<int>, array{} given.',
 				17,
 				'array{} is empty.',
+			],
+		]);
+	}
+
+	public function testBug8752(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8752.php'], [
+			[
+				'Cannot call method abc() on class-string.',
+				18,
 			],
 		]);
 	}
@@ -2795,6 +2810,41 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->checkNullables = $checkNullables;
 		$this->checkUnionTypes = $checkUnionTypes;
 		$this->analyse([__DIR__ . '/data/callables-without-check-nullables.php'], $expectedErrors);
+	}
+
+	public function testCannotCallOnGenericClassString(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->checkExplicitMixed = true;
+
+		$this->analyse([__DIR__ . '/../Comparison/data/impossible-method-exists-on-generic-class-string.php'], [
+			[
+				'Cannot call method nonExistent() on class-string<ImpossibleMethodExistsOnGenericClassString\S>.',
+				14,
+			],
+			[
+				'Cannot call method staticAbc() on class-string<ImpossibleMethodExistsOnGenericClassString\S>.',
+				20,
+			],
+			[
+				'Cannot call method nonStaticAbc() on class-string<ImpossibleMethodExistsOnGenericClassString\S>.',
+				25,
+			],
+			[
+				'Cannot call method nonExistent() on class-string<ImpossibleMethodExistsOnGenericClassString\FinalS>.',
+				35,
+			],
+			[
+				'Cannot call method staticAbc() on class-string<ImpossibleMethodExistsOnGenericClassString\FinalS>.',
+				41,
+			],
+			[
+				'Cannot call method nonStaticAbc() on class-string<ImpossibleMethodExistsOnGenericClassString\FinalS>.',
+				46,
+			],
+		]);
 	}
 
 }

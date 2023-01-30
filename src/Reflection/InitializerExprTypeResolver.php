@@ -1446,23 +1446,26 @@ class InitializerExprTypeResolver
 	 */
 	private function resolveCommonMath(Expr\BinaryOp $expr, Type $leftType, Type $rightType): Type
 	{
-		if (($leftType instanceof IntegerRangeType || $leftType instanceof ConstantIntegerType || $leftType instanceof UnionType) &&
-			($rightType instanceof IntegerRangeType || $rightType instanceof ConstantIntegerType || $rightType instanceof UnionType)
+		$leftNumberType = $leftType->toNumber();
+		$rightNumberType = $rightType->toNumber();
+
+		if (($leftNumberType instanceof IntegerRangeType || $leftNumberType instanceof ConstantIntegerType || $leftType instanceof UnionType) &&
+			($rightNumberType instanceof IntegerRangeType || $rightNumberType instanceof ConstantIntegerType || $rightType instanceof UnionType)
 		) {
 
-			if ($leftType instanceof ConstantIntegerType) {
+			if ($leftNumberType instanceof ConstantIntegerType) {
 				return $this->integerRangeMath(
-					$leftType,
+					$leftNumberType,
 					$expr,
-					$rightType,
+					$rightNumberType,
 				);
 			} elseif ($leftType instanceof UnionType) {
-
 				$unionParts = [];
 
 				foreach ($leftType->getTypes() as $type) {
-					if ($type instanceof IntegerRangeType || $type instanceof ConstantIntegerType) {
-						$unionParts[] = $this->integerRangeMath($type, $expr, $rightType);
+					$numberType = $type->toNumber();
+					if ($numberType instanceof IntegerRangeType || $numberType instanceof ConstantIntegerType) {
+						$unionParts[] = $this->integerRangeMath($numberType, $expr, $rightNumberType);
 					} else {
 						$unionParts[] = $type;
 					}
@@ -1493,8 +1496,6 @@ class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		$leftNumberType = $leftType->toNumber();
-		$rightNumberType = $rightType->toNumber();
 		if ($leftNumberType instanceof ErrorType || $rightNumberType instanceof ErrorType) {
 			return new ErrorType();
 		}

@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Bug8776_2;
+namespace Bug8776Part2;
 
 class HelloWorld
 {

@@ -22,6 +22,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_key_exists;
 use function array_merge;
 use function hexdec;
 use function is_int;
@@ -281,7 +282,7 @@ final class FilterFunctionReturnTypeHelper
 				}
 
 				// Open ranges on either side means that the input is potentially not part of the range
-				return ($min === null || $max === null) ? TypeCombinator::union($rangeType, $defaultType) : $rangeType;
+				return $min === null || $max === null ? TypeCombinator::union($rangeType, $defaultType) : $rangeType;
 			}
 		}
 

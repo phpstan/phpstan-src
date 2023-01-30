@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Bug8776_1;
+namespace Bug8776Part1;
 
 use LogicException;
 

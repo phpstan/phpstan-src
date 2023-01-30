@@ -142,4 +142,10 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug8797(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-8797.php'], []);
+	}
+
 }

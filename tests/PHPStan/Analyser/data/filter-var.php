@@ -47,12 +47,14 @@ class FilterVar
 		assertType('false', filter_var(false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE));
 		assertType('bool|null', filter_var($float, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE));
 		assertType('bool|null', filter_var(17.0, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)); // could be null
+		assertType('bool|null', filter_var(17.1, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)); // could be null
 		assertType('bool|null', filter_var($int, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE));
 		assertType('bool|null', filter_var($intRange, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE));
 		assertType('bool|null', filter_var(17, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)); // could be null
 		assertType('bool|null', filter_var($string, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE));
 		assertType('bool|null', filter_var($nonEmptyString, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE));
 		assertType('bool|null', filter_var('17', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)); // could be null
+		assertType('bool|null', filter_var('17.1', FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)); // could be null
 		assertType('bool|null', filter_var(null, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)); // could be null
 
 		assertType('float|false', filter_var($bool, FILTER_VALIDATE_FLOAT));
@@ -60,25 +62,29 @@ class FilterVar
 		assertType('float|false', filter_var(false, FILTER_VALIDATE_FLOAT)); // could be false
 		assertType('float', filter_var($float, FILTER_VALIDATE_FLOAT));
 		assertType('17.0', filter_var(17.0, FILTER_VALIDATE_FLOAT));
+		assertType('17.1', filter_var(17.1, FILTER_VALIDATE_FLOAT));
 		assertType('float', filter_var($int, FILTER_VALIDATE_FLOAT));
 		assertType('float', filter_var($intRange, FILTER_VALIDATE_FLOAT));
 		assertType('17.0', filter_var(17, FILTER_VALIDATE_FLOAT));
 		assertType('float|false', filter_var($string, FILTER_VALIDATE_FLOAT));
 		assertType('float|false', filter_var($nonEmptyString, FILTER_VALIDATE_FLOAT));
 		assertType('float|false', filter_var('17', FILTER_VALIDATE_FLOAT)); // could be 17.0
+		assertType('float|false', filter_var('17.1', FILTER_VALIDATE_FLOAT)); // could be 17.1
 		assertType('float|false', filter_var(null, FILTER_VALIDATE_FLOAT)); // could be false
 
 		assertType('int|false', filter_var($bool, FILTER_VALIDATE_INT));
 		assertType('int|false', filter_var(true, FILTER_VALIDATE_INT)); // could be 1
 		assertType('int|false', filter_var(false, FILTER_VALIDATE_INT)); // could be false
-		assertType('int', filter_var($float, FILTER_VALIDATE_INT));
+		assertType('int|false', filter_var($float, FILTER_VALIDATE_INT));
 		assertType('17', filter_var(17.0, FILTER_VALIDATE_INT));
+		assertType('false', filter_var(17.1, FILTER_VALIDATE_INT));
 		assertType('int', filter_var($int, FILTER_VALIDATE_INT));
 		assertType('int<0, 9>', filter_var($intRange, FILTER_VALIDATE_INT));
 		assertType('17', filter_var(17, FILTER_VALIDATE_INT));
 		assertType('int|false', filter_var($string, FILTER_VALIDATE_INT));
 		assertType('int|false', filter_var($nonEmptyString, FILTER_VALIDATE_INT));
 		assertType('17', filter_var('17', FILTER_VALIDATE_INT));
+		assertType('false', filter_var('17.1', FILTER_VALIDATE_INT));
 		assertType('int|false', filter_var(null, FILTER_VALIDATE_INT)); // could be false
 
 		assertType("''|'1'", filter_var($bool));
@@ -86,12 +92,14 @@ class FilterVar
 		assertType("''", filter_var(false));
 		assertType('numeric-string', filter_var($float));
 		assertType("'17'", filter_var(17.0));
+		assertType("'17.1'", filter_var(17.1));
 		assertType('numeric-string', filter_var($int));
 		assertType('numeric-string', filter_var($intRange));
 		assertType("'17'", filter_var(17));
 		assertType('string', filter_var($string));
 		assertType('non-empty-string', filter_var($nonEmptyString));
 		assertType("'17'", filter_var('17'));
+		assertType("'17.1'", filter_var('17.1'));
 		assertType("''", filter_var(null));
 	}
 

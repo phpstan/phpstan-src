@@ -78,7 +78,7 @@ final class FilterFunctionReturnTypeHelper
 
 		$exactType = $this->determineExactType($inputType, $filterValue, $defaultType, $flagsType);
 		$type = $exactType ?? $this->getFilterTypeMap()[$filterValue] ?? $mixedType;
-		$otherTypes = $this->getOtherTypes($flagsType, $options);
+		$type = $this->applyRangeOptions($type, $options, $defaultType);
 
 		if ($inputType->isNonEmptyString()->yes()
 			&& $type->isString()->yes()
@@ -88,16 +88,6 @@ final class FilterFunctionReturnTypeHelper
 				$accessory = new AccessoryNonFalsyStringType();
 			}
 			$type = TypeCombinator::intersect($type, $accessory);
-		}
-
-		if (isset($otherTypes['range'])) {
-			if ($type instanceof ConstantScalarType) {
-				if ($otherTypes['range']->isSuperTypeOf($type)->no()) {
-					$type = $defaultType;
-				}
-			} else {
-				$type = $otherTypes['range'];
-			}
 		}
 
 		if ($exactType === null || $hasOptions->maybe() || (!$inputType->equals($type) && $inputType->isSuperTypeOf($type)->yes())) {
@@ -246,17 +236,13 @@ final class FilterFunctionReturnTypeHelper
 		return null;
 	}
 
-	/**
-	 * @param array<string, ?Type> $typeOptions
-	 * @return array{range?: Type}
-	 */
-	private function getOtherTypes(?Type $flagsType, array $typeOptions): array
+	/** @param array<string, ?Type> $typeOptions */
+	private function applyRangeOptions(Type $type, array $typeOptions, Type $defaultType): Type
 	{
-		if ($flagsType === null) {
-			return [];
+		if (!$type->isInteger()->yes()) {
+			return $type;
 		}
 
-		$otherTypes = [];
 		$range = [];
 		if (isset($typeOptions['min_range'])) {
 			if ($typeOptions['min_range'] instanceof ConstantScalarType) {
@@ -276,10 +262,18 @@ final class FilterFunctionReturnTypeHelper
 		if (isset($range['min']) || isset($range['max'])) {
 			$min = isset($range['min']) && is_int($range['min']) ? $range['min'] : null;
 			$max = isset($range['max']) && is_int($range['max']) ? $range['max'] : null;
-			$otherTypes['range'] = IntegerRangeType::fromInterval($min, $max);
+			$rangeType = IntegerRangeType::fromInterval($min, $max);
+
+			if (!($type instanceof ConstantScalarType)) {
+				return $rangeType;
+			}
+
+			if ($rangeType->isSuperTypeOf($type)->no()) {
+				return $defaultType;
+			}
 		}
 
-		return $otherTypes;
+		return $type;
 	}
 
 	private function hasOptions(Type $flagsType): TrinaryLogic

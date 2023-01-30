@@ -11,6 +11,7 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
@@ -28,6 +29,7 @@ use function is_int;
 use function octdec;
 use function preg_match;
 use function sprintf;
+use const PHP_FLOAT_EPSILON;
 
 final class FilterFunctionReturnTypeHelper
 {
@@ -196,12 +198,14 @@ final class FilterFunctionReturnTypeHelper
 		}
 
 		if ($filterValue === $this->getConstant('FILTER_VALIDATE_INT')) {
-			if ($in->isFloat()->yes()) {
-				return $in->toInteger();
-			}
-
 			if ($in->isInteger()->yes()) {
 				return $in;
+			}
+
+			if ($in instanceof ConstantFloatType) {
+				return $in->getValue() - (int) $in->getValue() <= PHP_FLOAT_EPSILON
+					? $in->toInteger()
+					: $defaultType;
 			}
 
 			if ($in instanceof ConstantStringType) {

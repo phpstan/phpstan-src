@@ -275,15 +275,13 @@ final class FilterFunctionReturnTypeHelper
 				return $defaultType;
 			}
 
-			if (!($type instanceof ConstantScalarType)) {
-				if ($rangeTypeIsSuperType->yes() && !$rangeType->equals($type)) {
-					// e.g. if 18 or int<18, 19> are filtered with a range of int<17, 19>
-					return $type;
-				}
-
-				// Open ranges on either side means that the input is potentially not part of the range
-				return $min === null || $max === null ? TypeCombinator::union($rangeType, $defaultType) : $rangeType;
+			if ($rangeTypeIsSuperType->yes() && !$rangeType->equals($type)) {
+				// e.g. if 18 or int<18, 19> are filtered with a range of int<17, 19>
+				return $type;
 			}
+
+			// Open ranges on either side means that the input is potentially not part of the range
+			return $min === null || $max === null ? TypeCombinator::union($rangeType, $defaultType) : $rangeType;
 		}
 
 		return $type;

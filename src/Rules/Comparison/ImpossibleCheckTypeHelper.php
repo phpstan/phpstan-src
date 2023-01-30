@@ -17,12 +17,16 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_pop;
@@ -173,6 +177,30 @@ class ImpossibleCheckTypeHelper
 							}
 
 							if ($objectType->hasMethod($methodType->getValue())->no()) {
+								return false;
+							}
+						}
+
+						$genericType = TypeTraverser::map($objectType, static function (Type $type, callable $traverse): Type {
+							if ($type instanceof UnionType || $type instanceof IntersectionType) {
+								return $traverse($type);
+							}
+							if ($type instanceof GenericClassStringType) {
+								return $type->getGenericType();
+							}
+							return new MixedType();
+						});
+
+						if ($genericType instanceof TypeWithClassName) {
+							if ($genericType->hasMethod($methodType->getValue())->yes()) {
+								return true;
+							}
+
+							$classReflection = $genericType->getClassReflection();
+							if (
+								$classReflection !== null
+								&& $classReflection->isFinal()
+								&& $genericType->hasMethod($methodType->getValue())->no()) {
 								return false;
 							}
 						}

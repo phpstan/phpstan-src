@@ -50,7 +50,7 @@ class MethodCallCheck
 		if ($type instanceof ErrorType) {
 			return [$typeResult->getUnknownClassErrors(), null];
 		}
-		if (!$type->canCallMethods()->yes()) {
+		if (!$type->canCallMethods()->yes() || $type->isClassStringType()->yes()) {
 			return [
 				[
 					RuleErrorBuilder::message(sprintf(

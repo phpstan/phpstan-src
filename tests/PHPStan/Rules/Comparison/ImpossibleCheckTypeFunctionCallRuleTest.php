@@ -671,4 +671,40 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-8474.php'], []);
 	}
 
+	public function testBug8752(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/../../Analyser/data/bug-8752.php'], []);
+	}
+
+	public function testImpossibleMethodExistOnGenericClassString(): void
+	{
+		$this->checkAlwaysTrueCheckTypeFunctionCall = true;
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/impossible-method-exists-on-generic-class-string.php'], [
+			[
+				"Call to function method_exists() with class-string<ImpossibleMethodExistsOnGenericClassString\S>&literal-string and 'staticAbc' will always evaluate to true.",
+				18,
+			],
+			[
+				"Call to function method_exists() with class-string<ImpossibleMethodExistsOnGenericClassString\S>&literal-string and 'nonStaticAbc' will always evaluate to true.",
+				23,
+			],
+			[
+				"Call to function method_exists() with class-string<ImpossibleMethodExistsOnGenericClassString\FinalS>&literal-string and 'nonExistent' will always evaluate to false.",
+				34,
+			],
+			[
+				"Call to function method_exists() with class-string<ImpossibleMethodExistsOnGenericClassString\FinalS>&literal-string and 'staticAbc' will always evaluate to true.",
+				39,
+			],
+			[
+				"Call to function method_exists() with class-string<ImpossibleMethodExistsOnGenericClassString\FinalS>&literal-string and 'nonStaticAbc' will always evaluate to true.",
+				44,
+			],
+
+		]);
+	}
+
 }

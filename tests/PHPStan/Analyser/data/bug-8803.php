@@ -17,4 +17,11 @@ class HelloWorld
 			assertType('int<2, 21>', $value);
 		}
 	}
+
+	public function testWithMixed(mixed $a, mixed $b): void
+	{
+		assertType('(array|float|int)', $a + $b);
+		assertType('(float|int)', 3 + $b);
+		assertType('(float|int)', $a + 3);
+	}
 }
